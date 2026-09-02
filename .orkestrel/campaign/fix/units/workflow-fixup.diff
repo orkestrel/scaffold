@@ -1,0 +1,527 @@
+diff --git a/guides/workflow.md b/guides/workflow.md
+index 5797867..474a0da 100644
+--- a/guides/workflow.md
++++ b/guides/workflow.md
+@@ -7,7 +7,7 @@ Read the module as five layers of one substrate, top to bottom:
+ - **The tree describes.** The **definition** family (`WorkflowDefinition → PhaseDefinition → TaskDefinition`) is pure JSON — behavior referenced BY NAME, never inline functions — so the whole tree serializes, round-trips, and is safe for a 2B model to emit. One compiled [contract](contract.md) (`createWorkflowContract`) keeps the JSON Schema + guard + parser + seeded generator in lockstep with the hand-written interfaces, so definition and runtime can never drift.
+ - **The entities control.** The live **entity** family (`Workflow` / `Phase` / `Task`) is the runtime mirror BUILT from a definition: each node is an [§13-observable](emitter.md) synchronous state machine whose status is DERIVED from its children, mutable through its own `add` / `remove` / `move` / `update`, pausable, and snapshot-able at any instant.
+ - **The engine drives.** The `WorkflowRunner` is a PURE engine that walks the live tree — phases sequentially, each phase's tasks concurrently — COMPOSING the substrate rather than re-implementing status / concurrency / retries / abort, under a `bail` failure policy: `false` (graceful, the default) records each leaf failure as data and finishes every phase; `true` (the database-transaction halt) aborts the in-flight siblings on the first failure and skips the rest.
+-- **The substrate executes.** Underneath sit the shipped primitives the engine composes: the `Scheduler` paces the host between work, the queue-backed `Runner` bounds and drives a set of units, and a `Controller` is the per-unit handle a handler receives. The engine folds [abort](abort.md) / [timeout](timeout.md) / [budget](budget.md) through this same substrate.
++- **The substrate executes.** Underneath sit the shipped primitives the engine composes: the `Scheduler` paces the host between work, the queue-backed `Runner` bounds and drives a set of units, and a `ControllerInterface` is the per-unit handle a handler receives. The engine folds [abort](abort.md) / [timeout](timeout.md) / [budget](budget.md) through this same substrate.
+ - **The consumer supplies behavior.** A task's `behavior` is a PLAIN STRING naming a behavior in the `WorkflowOptions.functions` registry — resolved ONCE at construction into the task's `handler` (a `WorkflowFunction`); the engine dispatches by invoking `task.handler` directly and carries no registry or provider knowledge of its own. Integrations compose real `WorkflowFunction`s at the application edge.
+ 
+ **Determinism is fixed by design, not configured: tasks within a phase run concurrently; phases run sequentially.** A dependency is expressed STRUCTURALLY — a task that needs another's output goes in a later phase — so the same tree always sequences the same way and there is no DAG to misconfigure. The only per-phase knob is an optional `concurrency` throttle (max-in-flight), never a sequencing control.
+@@ -122,7 +122,6 @@ Both handles are minted per dispatch from values only the driving engine holds 
+ | `WorkflowRunner`      | class | The PURE engine — phases sequential (a plain await loop), each phase's tasks concurrent (one substrate `createRunner` per phase), dispatching each task's OWN resolved `handler`. `execute` has TWO overloads: build-and-drive from a `WorkflowDefinition`, or drive an ALREADY-BUILT caller-owned `WorkflowInterface` (re-reading its live phases/tasks every iteration so a mid-run `add` lands). |
+ | `WorkflowPersistence` | class | Advanced runner-owned one-writer durability infrastructure, normally composed through `execute({ store })`; implements `WorkflowPersistenceInterface`.                                                                                                                                                                                                                                              |
+ | `Runner`              | class | The substrate orchestrator over a set of units — drives a `Queue`, ordered result aggregation, fail-fast, `pause` / `resume` / graceful `stop`, one-shot.                                                                                                                                                                                                                                           |
+-| `RunHolder`           | class | The run-scoped cell holding the phase `Runner` one `execute` call is driving — `hold(runner)` takes it as a phase starts, `hold()` releases it, and `runner` reads it back.                                                                                                                                                                                                                         |
+ 
+ ### Scheduler (pacing)
+ 
+@@ -227,7 +226,7 @@ workflow-specific validation and translate ownership failures into `WorkflowErro
+ | `isTaskResult`              | function | Validate a boxed result and its full lineage against its containing snapshot nodes.                                                             |
+ | `matchesDescription`        | function | Compare two optional description values without inventing an absence sentinel.                                                                  |
+ | `hasWorkflowHandlers`       | function | Whether every snapshot behavior resolves to a once-read callable registry binding, or every live named task already carries a callable handler. |
+-| `locateSnapshotContext`     | function | Locate the nearest identifiable phase/task for an inconsistent snapshot diagnostic.                                                             |
++| `scanSnapshotContext`       | function | Locate the nearest identifiable phase/task for an inconsistent snapshot diagnostic.                                                             |
+ | `isTerminalStatus`          | function | Whether a `LifecycleStatus` is terminal — the ONE check across all three tiers (`completed` / `failed` / `skipped` / `stopped`).                |
+ | `derivePhaseStatus`         | function | Derive a `PhaseStatus` from its tasks' statuses (order-insensitive; most-severe terminal wins; `bail`-agnostic).                                |
+ | `deriveWorkflowStatus`      | function | Derive a `WorkflowStatus` from its phases' statuses UNDER `bail` (`failed` reachable only when `bail: true`).                                   |
+@@ -282,7 +281,7 @@ import {
+ 	isTaskResult,
+ 	matchesDescription,
+ 	recoverWorkflowSnapshot,
+-	locateSnapshotContext,
++	scanSnapshotContext,
+ } from '@orkestrel/workflow'
+ 
+ const functions = { work: () => null }
+@@ -312,7 +311,7 @@ if (phase !== undefined && task !== undefined) {
+ }
+ matchesDescription(snapshot.description, workflow.description)
+ hasWorkflowHandlers(snapshot, functions)
+-locateSnapshotContext({ ...snapshot, bail: 'invalid' })
++scanSnapshotContext({ ...snapshot, bail: 'invalid' })
+ errorToMessage(new Error('provider failed'))
+ recoverWorkflowSnapshot(snapshot)
+ ```
+@@ -429,7 +428,7 @@ The shape VALUES `createWorkflowContract` compiles into the four lockstep output
+ | `SchedulerOptions`             | interface | `{ priority?: SchedulerPriority; signal?: AbortSignal }` — options for a single `yield` / `delay`.                                                                                                                                                                       |
+ | `SchedulerInterface`           | interface | The `yield` / `delay` cooperative-yield methods.                                                                                                                                                                                                                         |
+ | `ControllerInterface`          | interface | The per-unit handle a runner handler receives — `id` / `input` / `signal` / `aborted` data members + `wait` / `spawn` / `abort` methods.                                                                                                                                 |
+-| `RunnerHandler`                | type      | `(controller) => Promise<TResult> \| TResult` — runs one unit's work against its `Controller`.                                                                                                                                                                           |
++| `RunnerHandler`                | type      | `(controller) => Promise<TResult> \| TResult` — runs one unit's work against its `ControllerInterface`.                                                                                                                                                                  |
+ | `RunnerOptions`                | interface | `createRunner` options — `handler` + strict Queue values: positive-safe-integer `concurrency?`, nonnegative-safe-integer `retries?`, integer `timeout?` in `0..2_147_483_647` (`0` disables), plus `entries?` / `on?` / `error?`.                                        |
+ | `RunnerEntryOptions`           | interface | The per-entry reliability overrides for one unit — `{ retries?, timeout? }`, resolved from its input via `entries`.                                                                                                                                                      |
+ | `RunnerInterface`              | interface | `emitter` / `active` / `stopped` / `paused` data members + `execute` / `spawn` / `abort` / `pause` / `resume` / `stop` / `destroy` methods.                                                                                                                              |
+@@ -1107,6 +1106,8 @@ await store.delete(definition.id) // drop it (an absent id is a no-op)
+ 
+ Both stores clone and validate on write and read, so stored snapshots never alias caller-owned data. A present database row whose snapshot id differs from the requested row key rejects with normalized `WorkflowError` code `RESTORE`; its safe context carries `requested` and `payload`. The store has NO TTL / eviction — a persisted workflow run-state is durable until an explicit `delete`.
+ 
++A `WorkflowSnapshot` written before the release that renames `run` to `behavior` carries the task registry key as `run`. `cloneWorkflowSnapshot` and every restore path — `store.get`, `createRestoredWorkflow`, `WorkflowManager.open` — refuse that snapshot with a `RESTORE` `WorkflowError`, because the exact-key validation no longer admits `run`. Rewrite the persisted key from `run` to `behavior` before restoring a snapshot written before that release.
++
+ For automatic run durability, pass the same store to `execute`:
+ 
+ ```ts
+@@ -1216,7 +1217,7 @@ await parked // resolves
+ 
+ Every one is pure and side-effect-free: the guards and predicates never throw, and the builders and synthesizers are deterministic given the same input. The throwing snapshot boundary is `cloneWorkflowSnapshot`, which owns and validates a hostile snapshot and raises a `RESTORE` `WorkflowError`.
+ 
+-**The execution substrate.** Beneath the engine sit the shipped primitives it composes. The `Scheduler` paces the host between work; the queue-backed `Runner` bounds and drives a set of units; a `Controller` is the per-unit handle a handler receives; and the `WorkflowRunner` engine composes all of it over the entity tree — with `TaskController` mirroring `Controller` one tier up, as the handle a workflow-task `WorkflowFunction` receives (its read-up `results()` is the inter-task data-flow map). The patterns below build that stack up from pacing to driving to the per-unit handle.
++**The execution substrate.** Beneath the engine sit the shipped primitives it composes. The `Scheduler` paces the host between work; the queue-backed `Runner` bounds and drives a set of units; a `ControllerInterface` is the per-unit handle a handler receives; and the `WorkflowRunner` engine composes all of it over the entity tree — with `TaskControllerInterface` mirroring `ControllerInterface` one tier up, as the handle a workflow-task `WorkflowFunction` receives (its read-up `results()` is the inter-task data-flow map). The patterns below build that stack up from pacing to driving to the per-unit handle.
+ 
+ ### Pacing with the scheduler — a cooperative loop
+ 
+@@ -1282,7 +1283,7 @@ async function pump(work: () => void, signal: AbortSignal): Promise<void> {
+ import { createRunner } from '@orkestrel/workflow'
+ 
+ // Ordered (concurrency defaults to 1): each unit runs to completion before the next.
+-const runner = createRunner<Job, Output>({ handler: (controller) => run(controller.input) })
++const runner = createRunner<Job, Output>({ handler: (controller) => compile(controller.input) })
+ 
+ const outputs = await runner.execute(jobs) // results in input order
+ ```
+@@ -1306,7 +1307,7 @@ const responses = await runner.execute(urls)
+ // (its result is a RunnerEntryOptions — { retries?, timeout? }). An omitted field falls back.
+ const runner = createRunner<Job, Output>({
+ 	retries: 0, // the default for every unit…
+-	handler: (controller) => run(controller.input, controller.signal),
++	handler: (controller) => compile(controller.input, controller.signal),
+ 	entries: (job) => (job.flaky ? { retries: 3 } : {}), // …overridden per input
+ })
+ ```
+@@ -1336,9 +1337,9 @@ const results = await runner.execute(roots) // every declared root first, then e
+ 
+ `spawn` returns the sibling's result promise, but the run drains it whether or not you await it — so fan out and return. All declared inputs are reserved before `start` is emitted, so even a public `spawn()` from a start listener is ordered after the complete declared list; Queue dispatch remains asynchronous, so `start` still precedes handler execution. On a bounded runner, awaiting a spawn _inline_ from a slot-holding handler can deadlock; let the runner drain the closure instead.
+ 
+-### The per-unit `Controller` handle — `wait` / `spawn` / `abort`
++### The per-unit `ControllerInterface` handle — `wait` / `spawn` / `abort`
+ 
+-A `Runner` handler receives a `Controller` — the per-unit handle: its `id` / `input` / `signal` data plus `wait` (park until this unit is cancelled), `spawn` (fan out a sibling), and `abort` (cancel THIS unit, firing its signal with an optional reason).
++A `Runner` handler receives a `ControllerInterface` — the per-unit handle: its `id` / `input` / `signal` data plus `wait` (park until this unit is cancelled), `spawn` (fan out a sibling), and `abort` (cancel THIS unit, firing its signal with an optional reason).
+ 
+ ```ts
+ import { createRunner } from '@orkestrel/workflow'
+@@ -1349,7 +1350,7 @@ const runner = createRunner<Job, Output>({
+ 		for (const child of discover(controller.input)) {
+ 			void controller.spawn(child) // fan out a sibling unit through the same queue
+ 		}
+-		const work = run(controller.input, controller.signal) // honour the signal
++		const work = compile(controller.input, controller.signal) // honour the signal
+ 		await Promise.race([work, controller.wait()]) // wait() parks until cancelled — never a timer
+ 		if (overBudget(controller.input)) controller.abort(new Error('over budget')) // cancel THIS unit
+ 		return work
+@@ -1364,7 +1365,7 @@ A handler observes its `controller.signal` (pass it to `fetch` / child aborts) a
+ ```ts
+ const runner = createRunner<Job, Output>({
+ 	concurrency: 4,
+-	handler: (controller) => run(controller.input, controller.signal),
++	handler: (controller) => compile(controller.input, controller.signal),
+ })
+ const run = runner.execute(jobs)
+ 
+@@ -1387,7 +1388,7 @@ The `Runner` exposes a typed `emitter` (AGENTS §13) carrying its run lifecycle
+ import { createRunner } from '@orkestrel/workflow'
+ 
+ const runner = createRunner<Job, Output>({
+-	handler: (controller) => run(controller.input),
++	handler: (controller) => compile(controller.input),
+ 	on: { finish: (results) => console.log(`done: ${results.length}`) }, // initial listener
+ })
+ 
+diff --git a/src/browser/IdleScheduler.ts b/src/browser/IdleScheduler.ts
+index d347908..741c233 100644
+--- a/src/browser/IdleScheduler.ts
++++ b/src/browser/IdleScheduler.ts
+@@ -43,9 +43,9 @@ export class IdleScheduler implements SchedulerInterface {
+ 	 * `signal.reason`.
+ 	 */
+ 	yield(options?: SchedulerOptions): Promise<void> {
+-		const idle = this.#idle()
++		const idle = this.#idleCallback()
+ 		if (idle === undefined) return delayHost(0, options?.signal)
+-		return this.#schedule(idle, options?.signal)
++		return this.#idle(idle, options?.signal)
+ 	}
+ 
+ 	/**
+@@ -66,7 +66,7 @@ export class IdleScheduler implements SchedulerInterface {
+ 	// Feature-detect `requestIdleCallback` / `cancelIdleCallback` off `globalThis` through
+ 	// guards (no `as`): both must be callable. Returns the narrowed pair, or `undefined`
+ 	// when the API is absent (the macrotask fallback).
+-	#idle(): IdleInterface | undefined {
++	#idleCallback(): IdleInterface | undefined {
+ 		const request: unknown = Reflect.get(globalThis, 'requestIdleCallback')
+ 		const cancel: unknown = Reflect.get(globalThis, 'cancelIdleCallback')
+ 		if (!isFunction(request) || !isFunction(cancel)) return undefined
+@@ -76,8 +76,8 @@ export class IdleScheduler implements SchedulerInterface {
+ 		}
+ 	}
+ 
+-	// The idle callback boundary; `scheduleHost` owns cancellation lifecycle.
+-	#schedule(idle: IdleInterface, signal?: AbortSignal): Promise<void> {
++	// The idle yield boundary; `scheduleHost` owns cancellation lifecycle.
++	#idle(idle: IdleInterface, signal?: AbortSignal): Promise<void> {
+ 		return scheduleHost((complete) => {
+ 			const handle = idle.request(complete)
+ 			return () => idle.cancel(handle)
+diff --git a/src/core/RunHolder.ts b/src/core/RunHolder.ts
+index d039bea..38f9f24 100644
+--- a/src/core/RunHolder.ts
++++ b/src/core/RunHolder.ts
+@@ -15,17 +15,6 @@ import type { RunHolderInterface, RunnerInterface, TaskInterface } from './types
+  *   fires, so it reaches whichever phase runner is live at that moment rather than the one that
+  *   was live when the listener was armed.
+  * - **Event-free.** A plain cell — no emitter, no lifecycle of its own.
+- *
+- * @example
+- * ```ts
+- * import { createRunner, RunHolder } from '@orkestrel/workflow'
+- *
+- * const holder = new RunHolder()
+- * holder.hold(createRunner({ handler: (controller) => void controller.input }))
+- * holder.runner?.stopped // false — the phase runner this run is driving
+- * holder.hold() // the phase settled
+- * holder.runner // undefined
+- * ```
+  */
+ export class RunHolder implements RunHolderInterface {
+ 	#runner: RunnerInterface<TaskInterface, void> | undefined
+@@ -40,10 +29,12 @@ export class RunHolder implements RunHolderInterface {
+ 	 * @param runner - The phase runner to hold; omitted releases the held runner
+ 	 * @example
+ 	 * ```ts
+-	 * import { createRunner, RunHolder } from '@orkestrel/workflow'
++	 * import type { TaskInterface } from '@orkestrel/workflow'
++	 * import { createRunner } from '@orkestrel/workflow'
++	 * import { RunHolder } from './RunHolder.js'
+ 	 *
+ 	 * const holder = new RunHolder()
+-	 * holder.hold(createRunner({ handler: (controller) => void controller.input }))
++	 * holder.hold(createRunner<TaskInterface, void>({ handler: () => undefined }))
+ 	 * holder.hold() // released — `runner` reads `undefined` again
+ 	 * ```
+ 	 */
+diff --git a/src/core/WorkflowManager.ts b/src/core/WorkflowManager.ts
+index 58a6ba9..86f1b9e 100644
+--- a/src/core/WorkflowManager.ts
++++ b/src/core/WorkflowManager.ts
+@@ -200,7 +200,7 @@ export class WorkflowManager implements WorkflowManagerInterface {
+ 	// runner also take, so a minted workflow can never drift from a directly built one.
+ 	#build(definition: WorkflowDefinition): WorkflowInterface {
+ 		const captured = this.#captured()
+-		return createWorkflowTree(definition, captured.bail, captured)
++		return createWorkflowTree(definition, captured)
+ 	}
+ 
+ 	// Rebuild the live tree from an already-owned snapshot exactly as `createRestoredWorkflow`
+diff --git a/src/core/WorkflowRunner.ts b/src/core/WorkflowRunner.ts
+index b9f61d3..e71abf1 100644
+--- a/src/core/WorkflowRunner.ts
++++ b/src/core/WorkflowRunner.ts
+@@ -224,7 +224,7 @@ export class WorkflowRunner implements WorkflowRunnerInterface {
+ 		// bounds (signal/timeout/budget) feed the fold in `#execute`. The tree goes through the one
+ 		// shared `createWorkflowTree` path `createWorkflow` and `WorkflowManager` also take, so a
+ 		// definition run and a hand-built tree can never diverge.
+-		const workflow = createWorkflowTree(target, captured.bail, captured)
++		const workflow = createWorkflowTree(target, captured)
+ 		this.#acquire(workflow)
+ 		return this.#execute(workflow, signal, timeout, budget, store)
+ 	}
+diff --git a/src/core/cloners.ts b/src/core/cloners.ts
+index e46a1aa..ac1f9c3 100644
+--- a/src/core/cloners.ts
++++ b/src/core/cloners.ts
+@@ -1,7 +1,7 @@
+ import type { TaskActivity, WorkflowSnapshot } from './types.js'
+ import { cloneJSONValue, isArray, isContractError, isRecord } from '@orkestrel/contract'
+ import { WorkflowError, isWorkflowError } from './errors.js'
+-import { locateSnapshotContext } from './helpers.js'
++import { scanSnapshotContext } from './helpers.js'
+ import { isOwnedWorkflowSnapshot, isTaskActivity } from './validators.js'
+ 
+ /**
+@@ -30,7 +30,7 @@ export function cloneWorkflowSnapshot(input: unknown, id?: string): WorkflowSnap
+ 		throw new WorkflowError(
+ 			'RESTORE',
+ 			'workflow snapshot is inconsistent',
+-			locateSnapshotContext(cloned),
++			scanSnapshotContext(cloned),
+ 		)
+ 	}
+ 	if (id !== undefined && cloned.id !== id) {
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 66d3cd2..db7ed6b 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -124,7 +124,7 @@ export function createWorkflow(
+ 	options?: WorkflowOptions,
+ ): WorkflowInterface {
+ 	const captured = captureWorkflowOptions(options)
+-	return createWorkflowTree(definition, captured.bail, captured)
++	return createWorkflowTree(definition, captured)
+ }
+ 
+ /**
+@@ -148,8 +148,8 @@ export function createWorkflow(
+  * without re-capturing.
+  *
+  * @param definition - The workflow definition to bring to life
+- * @param bail - The caller's failure-policy override, or `undefined` to take the definition's
+- * @param captured - The already-owned {@link WorkflowOptions} bag the entity is constructed with
++ * @param captured - The already-owned {@link WorkflowOptions} bag the entity is constructed with,
++ * whose `bail` is the caller's failure-policy override, or `undefined` to take the definition's
+  * @returns The live {@link WorkflowInterface} root
+  *
+  * @example
+@@ -157,16 +157,15 @@ export function createWorkflow(
+  * import { captureWorkflowOptions, createWorkflowTree } from '@orkestrel/workflow'
+  *
+  * const captured = captureWorkflowOptions({ bail: true })
+- * const workflow = createWorkflowTree(definition, captured.bail, captured)
++ * const workflow = createWorkflowTree(definition, captured)
+  * workflow.bail // true — the override reached the workflow and every inheriting phase
+  * ```
+  */
+ export function createWorkflowTree(
+ 	definition: WorkflowDefinition,
+-	bail: boolean | undefined,
+ 	captured: WorkflowOptions,
+ ): WorkflowInterface {
+-	return new Workflow(definitionToSnapshot(definition, bail), captured)
++	return new Workflow(definitionToSnapshot(definition, captured.bail), captured)
+ }
+ 
+ /**
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 166f361..78dd2d7 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -905,9 +905,7 @@ export function hasWorkflowHandlers(
+ }
+ 
+ /** Locates the nearest identifiable node for an inconsistent owned snapshot. */
+-export function locateSnapshotContext(
+-	value: unknown,
+-): Readonly<Record<string, unknown>> | undefined {
++export function scanSnapshotContext(value: unknown): Readonly<Record<string, unknown>> | undefined {
+ 	if (!isRecord(value) || !isArray(value.phases)) return undefined
+ 	for (const phase of value.phases) {
+ 		if (!isRecord(phase)) continue
+diff --git a/src/core/index.ts b/src/core/index.ts
+index 20b00ef..9826bc7 100644
+--- a/src/core/index.ts
++++ b/src/core/index.ts
+@@ -17,4 +17,3 @@ export * from './WorkflowPersistence.js'
+ export * from './phases/PhaseManager.js'
+ export * from './tasks/TaskManager.js'
+ export * from './Runner.js'
+-export * from './RunHolder.js'
+diff --git a/src/core/phases/Phase.ts b/src/core/phases/Phase.ts
+index 55198da..aa70b94 100644
+--- a/src/core/phases/Phase.ts
++++ b/src/core/phases/Phase.ts
+@@ -161,7 +161,7 @@ export class Phase implements PhaseInterface {
+ 			...(error === undefined ? {} : { error }),
+ 		})
+ 		// Build the live tasks positionally from the snapshot — each wired to recompute THIS phase
+-		// on a transition, carrying its own restore state and the once-captured handler for its run.
++		// on a transition, carrying its own restore state and the once-captured handler for its `behavior`.
+ 		for (const task of snapshot.tasks) {
+ 			const taskOptions = tasks?.[task.id]
+ 			const handler = task.behavior === undefined ? undefined : handlers.get(task.behavior)
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 94297b2..e5e3de1 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -903,7 +903,7 @@ export interface TaskInterface {
+ 	/**
+ 	 * The RESOLVED runtime handler — RUNTIME-ONLY, NEVER persisted in a {@link TaskSnapshot}.
+ 	 * Resolved ONCE at construction (build, restore, or a live mint) by looking `behavior` up in the
+-	 * workflow-level {@link WorkflowOptions.functions} registry: `functions?.[run]` when `behavior`
++	 * workflow-level {@link WorkflowOptions.functions} registry: `functions?.[behavior]` when `behavior`
+ 	 * is defined, else `undefined`. An omitted `behavior` is the deliberate no-op form. A present,
+ 	 * unresolved `behavior` remains visible on exact restore, but the runner rejects it before
+ 	 * dispatch instead of falsely completing named work.
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index dbf2668..79a1e19 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -43,6 +43,7 @@ const MODULES = Object.freeze({
+ const INTERNAL: readonly string[] = Object.freeze([
+ 	'class Controller',
+ 	'class Phase',
++	'class RunHolder',
+ 	'class Task',
+ 	'class TaskController',
+ ])
+diff --git a/tests/src/browser/IdleScheduler.test.ts b/tests/src/browser/IdleScheduler.test.ts
+index b63a2d3..82f05b2 100644
+--- a/tests/src/browser/IdleScheduler.test.ts
++++ b/tests/src/browser/IdleScheduler.test.ts
+@@ -7,7 +7,7 @@ import { instrumentSignal } from '../../setup.js'
+ // IdleScheduler — the idle-time browser cooperative-yield backend, run in REAL headless
+ // Chromium where `requestIdleCallback` exists, so `yield` exercises the NATIVE idle path here
+ // (AGENTS §16.2: do not fake a browser API the browser has). The `setTimeout(0)` fallback (for
+-// engines without rIC, e.g. Safari) is covered by the guard logic in `#idle` + this note —
++// engines without rIC, e.g. Safari) is covered by the guard logic in `#idleCallback` + this note —
+ // we never fake away the native API to force it. abort cancels the pending idle callback and
+ // rejects with the verbatim `signal.reason`.
+ 
+diff --git a/tests/src/core/RunHolder.test.ts b/tests/src/core/RunHolder.test.ts
+index 0706377..eedfa64 100644
+--- a/tests/src/core/RunHolder.test.ts
++++ b/tests/src/core/RunHolder.test.ts
+@@ -1,7 +1,7 @@
+ import type { RunnerInterface, TaskInterface } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { createRunner } from '@src/core'
+-import { RunHolder } from '@src/core'
++import { RunHolder } from '../../../src/core/RunHolder.js'
+ 
+ /** A substrate runner over live tasks — the exact shape a phase hands the holder. */
+ function buildPhaseRunner(): RunnerInterface<TaskInterface, void> {
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index a707d1c..0cb3a98 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -216,7 +216,7 @@ describe('createWorkflowTree — the shared construction path', () => {
+ 		const definition = localDefinition()
+ 		const captured = captureWorkflowOptions({ functions: RESTORE_FUNCTIONS })
+ 
+-		const direct = createWorkflowTree(definition, captured.bail, captured)
++		const direct = createWorkflowTree(definition, captured)
+ 		const through = createWorkflow(definition, { functions: RESTORE_FUNCTIONS })
+ 
+ 		// The `created` / `updated` stamps are wall-clock, so the structural payload is what the two
+@@ -233,8 +233,8 @@ describe('createWorkflowTree — the shared construction path', () => {
+ 	it('takes the definition policy when the override is undefined', () => {
+ 		const captured = captureWorkflowOptions({})
+ 
+-		const graceful = createWorkflowTree(localDefinition({ bail: false }), captured.bail, captured)
+-		const halting = createWorkflowTree(localDefinition({ bail: true }), captured.bail, captured)
++		const graceful = createWorkflowTree(localDefinition({ bail: false }), captured)
++		const halting = createWorkflowTree(localDefinition({ bail: true }), captured)
+ 
+ 		expect(graceful.bail).toBe(false)
+ 		expect(halting.bail).toBe(true)
+@@ -243,7 +243,7 @@ describe('createWorkflowTree — the shared construction path', () => {
+ 	it('seeds the override onto the workflow and every inheriting phase', () => {
+ 		const captured = captureWorkflowOptions({ bail: true })
+ 
+-		const workflow = createWorkflowTree(localDefinition({ bail: false }), captured.bail, captured)
++		const workflow = createWorkflowTree(localDefinition({ bail: false }), captured)
+ 
+ 		expect(workflow.bail).toBe(true)
+ 		expect(workflow.phases.phases().map((phase) => phase.bail)).toEqual([true, true])
+@@ -259,7 +259,7 @@ describe('createWorkflowTree — the shared construction path', () => {
+ 			],
+ 		})
+ 
+-		const workflow = createWorkflowTree(definition, captured.bail, captured)
++		const workflow = createWorkflowTree(definition, captured)
+ 
+ 		expect(workflow.phases.phases().map((phase) => phase.bail)).toEqual([true, false])
+ 	})
+@@ -267,7 +267,7 @@ describe('createWorkflowTree — the shared construction path', () => {
+ 	it('resolves each task handler from the bag it is handed', () => {
+ 		const captured = captureWorkflowOptions({ functions: RESTORE_FUNCTIONS })
+ 
+-		const workflow = createWorkflowTree(localDefinition(), captured.bail, captured)
++		const workflow = createWorkflowTree(localDefinition(), captured)
+ 
+ 		expect(workflow.phase('phase-build')?.task('task-compile')?.handler).toBe(
+ 			RESTORE_FUNCTIONS.compile,
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 1e29a3c..b5b3405 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -685,7 +685,7 @@ describe('taskDefinitionToSnapshot — the declarative trio copies verbatim, omi
+ 
+ 	it('omits behavior/retries/timeout when the definition declares none (no undefined keys)', () => {
+ 		const snapshot = taskDefinitionToSnapshot({ id: 't', name: 'T' })
+-		expect('run' in snapshot).toBe(false)
++		expect('behavior' in snapshot).toBe(false)
+ 		expect('retries' in snapshot).toBe(false)
+ 		expect('timeout' in snapshot).toBe(false)
+ 	})
+@@ -1358,8 +1358,8 @@ describe('workflow recovery', () => {
+ 
+ 	it('captures each unique initial behavior once and retains the registry for later live additions', () => {
+ 		const definition: WorkflowDefinition = {
+-			id: 'captured-runs',
+-			name: 'Captured runs',
++			id: 'captured-behaviors',
++			name: 'Captured behaviors',
+ 			phases: [
+ 				{
+ 					id: 'phase',
+diff --git a/tests/src/core/shapers.test.ts b/tests/src/core/shapers.test.ts
+index fe0d11d..114204e 100644
+--- a/tests/src/core/shapers.test.ts
++++ b/tests/src/core/shapers.test.ts
+@@ -183,18 +183,18 @@ describe('the new optional fields flow through the compiled contract', () => {
+ 	})
+ 
+ 	it('accepts an omitted run (no handler), and rejects an empty-string run', () => {
+-		const noRun: WorkflowDefinition = {
++		const noBehavior: WorkflowDefinition = {
+ 			id: 'w',
+ 			name: 'W',
+ 			phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T' }] }],
+ 		}
+-		expect(contract.is(noRun)).toBe(true)
+-		const emptyRun: WorkflowDefinition = {
++		expect(contract.is(noBehavior)).toBe(true)
++		const emptyBehavior: WorkflowDefinition = {
+ 			id: 'w',
+ 			name: 'W',
+ 			phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: '' }] }],
+ 		}
+-		expect(contract.is(emptyRun)).toBe(false)
++		expect(contract.is(emptyBehavior)).toBe(false)
+ 	})
+ 
+ 	it('rejects the old object-form behavior ({ via, name }) — behavior is now a plain string', () => {
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index eb0f231..d873a16 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -11,7 +11,7 @@ import {
+ 	isWorkflowSnapshot,
+ 	matchesDescription,
+ 	recoverWorkflowSnapshot,
+-	locateSnapshotContext,
++	scanSnapshotContext,
+ } from '@src/core'
+ import { INVALID_TASK_ACTIVITIES } from '../../setup.js'
+ import { describe, expect, it } from 'vitest'
+@@ -430,15 +430,15 @@ describe('snapshot logical leaves', () => {
+ 		const task = phase?.tasks[0]
+ 		if (phase === undefined || task === undefined) throw new Error('expected context task')
+ 
+-		expect(locateSnapshotContext(snapshot)).toBeUndefined()
++		expect(scanSnapshotContext(snapshot)).toBeUndefined()
+ 		expect(
+-			locateSnapshotContext({
++			scanSnapshotContext({
+ 				...snapshot,
+ 				phases: [{ ...phase, concurrency: 0 }],
+ 			}),
+ 		).toEqual({ phase: 'phase' })
+ 		expect(
+-			locateSnapshotContext({
++			scanSnapshotContext({
+ 				...snapshot,
+ 				phases: [
+ 					{
+@@ -448,7 +448,7 @@ describe('snapshot logical leaves', () => {
+ 				],
+ 			}),
+ 		).toEqual({ phase: 'phase', task: 'task' })
+-		expect(locateSnapshotContext(null)).toBeUndefined()
++		expect(scanSnapshotContext(null)).toBeUndefined()
+ 	})
+ 
+ 	it('projects retryable and exhausted running work directly', () => {
