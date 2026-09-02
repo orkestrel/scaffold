@@ -1,0 +1,870 @@
+### git show --stat a206fb0
+a206fb0 Apply the verified src-audit fixes
+
+ guides/queue.md                     |  69 ++++++++----
+ src/core/Queue.ts                   | 218 ++++++++++++++++++------------------
+ src/core/helpers.ts                 |  67 +++++++++++
+ src/core/index.ts                   |   1 +
+ src/core/stores/MemoryQueueStore.ts |  11 +-
+ src/core/types.ts                   |  17 ++-
+ src/core/validators.ts              |  33 +++++-
+ tests/src/core/helpers.test.ts      | 105 +++++++++++++++++
+ tests/src/core/validators.test.ts   |  58 ++++++++++
+ 9 files changed, 437 insertions(+), 142 deletions(-)
+
+### git show a206fb0
+a206fb0 Apply the verified src-audit fixes
+
+diff --git a/guides/queue.md b/guides/queue.md
+index d264a23..c6b46e9 100644
+--- a/guides/queue.md
++++ b/guides/queue.md
+@@ -69,37 +69,62 @@ const status = await queue.enqueue('https://example.com')
+ 
+ ### Types
+ 
+-| Type                  | Kind      | Shape                                                                                                                              |
+-| --------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+-| `QueueExecution`      | interface | The per-attempt handle a handler receives — a stable `id` (idempotency key) + a `signal` (timeout / abort / entry signal).         |
+-| `QueueHandler`        | type      | `(input, execution) => Promise<TResult> \| TResult` — runs one entry's work; may reject to retry.                                  |
+-| `QueueEntryOptions`   | interface | Per-entry `enqueue` options — `id?` / `retries?` / `timeout?` / `signal?`.                                                         |
+-| `QueueOptions`        | interface | `createQueue` options — `handler` + `concurrency?` / `retries?` / `timeout?` / `store?` / `on?` / `error?`.                        |
+-| `QueueInterface`      | interface | `emitter` / `count` / `active` / `paused` / `stopped` data members + the lifecycle + `enqueue` / `restore` methods.                |
+-| `QueueEventMap`       | type      | The `Queue`'s observable events — `enqueue` / `start` / `retry` / `success` / `failure` / `abort` / `drain`.                       |
+-| `QueueCode`           | type      | Exact codes: `invalid` / `duplicate` / `stopped` / `aborted` / `destroyed` / `cleared` / `timeout` / `store` / `cleanup`.          |
+-| `QueueErrorContext`   | interface | Optional structured `id` / `option` (`id` / `concurrency` / `retries` / `timeout` / `signal`) / `operation` / `value` diagnostics. |
+-| `QueueErrorOptions`   | interface | A `QueueError`'s required `code` plus optional `context` and `cause`.                                                              |
+-| `StoredEntry`         | interface | A durably persisted, outstanding entry — `id` / `input` / `attempts` (its `readonly` data members).                                |
+-| `QueueStoreInterface` | interface | Durable backing for outstanding entries — `save` / `remove` / `load` / `clear` methods.                                            |
++| Type                  | Kind      | Shape                                                                                                                      |
++| --------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
++| `QueueExecution`      | interface | The per-attempt handle a handler receives — a stable `id` (idempotency key) + a `signal` (timeout / abort / entry signal). |
++| `QueueHandler`        | type      | `(input, execution) => Promise<TResult> \| TResult` — runs one entry's work; may reject to retry.                          |
++| `QueueEntryOptions`   | interface | Per-entry `enqueue` options — `id?` / `retries?` / `timeout?` / `signal?`.                                                 |
++| `QueueOptions`        | interface | `createQueue` options — `handler` + `concurrency?` / `retries?` / `timeout?` / `store?` / `on?` / `error?`.                |
++| `QueueInterface`      | interface | `emitter` / `count` / `active` / `paused` / `stopped` data members + the lifecycle + `enqueue` / `restore` methods.        |
++| `QueueEventMap`       | type      | The `Queue`'s observable events — `enqueue` / `start` / `retry` / `success` / `failure` / `abort` / `drain`.               |
++| `QueueCode`           | type      | Exact codes: `invalid` / `duplicate` / `stopped` / `aborted` / `destroyed` / `cleared` / `timeout` / `store` / `cleanup`.  |
++| `QueueOption`         | type      | The validated option keys: `id` / `concurrency` / `retries` / `timeout` / `signal`.                                        |
++| `QueueErrorContext`   | interface | Optional structured `id` / `option` (a `QueueOption`) / `operation` / `value` diagnostics.                                 |
++| `QueueErrorOptions`   | interface | A `QueueError`'s required `code` plus optional `context` and `cause`.                                                      |
++| `StoredEntry`         | interface | A durably persisted, outstanding entry — `id` / `input` / `attempts` (its `readonly` data members).                        |
++| `QueueStoreInterface` | interface | Durable backing for outstanding entries — `save` / `remove` / `load` / `clear` methods.                                    |
+ 
+ ### Guards
+ 
+-| API                  | Kind     | Summary                                                           |
+-| -------------------- | -------- | ----------------------------------------------------------------- |
+-| `isQueueError`       | function | Total guard for safely narrowing an unknown caught queue failure. |
+-| `isQueueConcurrency` | function | Total guard for a positive safe-integer concurrency value.        |
+-| `isQueueRetries`     | function | Total guard for a nonnegative safe-integer retry count.           |
+-| `isQueueTimeout`     | function | Total guard for integer milliseconds in the native timer range.   |
+-| `isQueueSignal`      | function | Total native-brand guard for an entry abort signal.               |
++| API                  | Kind     | Summary                                                                                   |
++| -------------------- | -------- | ----------------------------------------------------------------------------------------- |
++| `isQueueError`       | function | Total guard for safely narrowing an unknown caught queue failure.                         |
++| `isQueueConcurrency` | function | Total guard for a positive safe-integer concurrency value.                                |
++| `isQueueRetries`     | function | Total guard for a nonnegative safe-integer retry count.                                   |
++| `isQueueTimeout`     | function | Total guard for integer milliseconds in the native timer range.                           |
++| `isQueueSignal`      | function | Total native-brand guard for an entry abort signal.                                       |
++| `isStoredEntry`      | function | Total guard for a stored entry — a string `id`, an `input`, and a retry-count `attempts`. |
+ 
+ ```ts
+-import { isQueueConcurrency, isQueueRetries, isQueueSignal, isQueueTimeout } from '@orkestrel/queue'
++import {
++	isQueueConcurrency,
++	isQueueRetries,
++	isQueueSignal,
++	isQueueTimeout,
++	isStoredEntry,
++} from '@orkestrel/queue'
+ 
+ isQueueConcurrency(4) // true
+ isQueueRetries(2) // true
+ isQueueTimeout(Infinity) // false
+ isQueueSignal(new AbortController().signal) // true
++isStoredEntry({ id: 'job-1', input: 'task', attempts: 0 }) // true
++```
++
++### Helpers
++
++The two option leaves the constructor and `enqueue` share, so one read boundary and one guard boundary serve both. `readOption` reads a named property of a caller-supplied `QueueEntryOptions` exactly once and turns a throwing getter into a coded `QueueError`; `validateOption` applies a guard to an already-read value and throws the coded invalid-value failure with the option and the refused value in its context.
++
++| API              | Kind     | Summary                                                                              |
++| ---------------- | -------- | ------------------------------------------------------------------------------------ |
++| `readOption`     | function | Read one named entry option once, containing a throwing getter as a coded failure.   |
++| `validateOption` | function | Check one already-read option against its guard, or throw the coded invalid failure. |
++
++```ts
++import { isQueueRetries, readOption, validateOption } from '@orkestrel/queue'
++
++const raw = readOption({ retries: 2 }, 'retries', 'queue retries could not be read') // 2
++const retries = validateOption(raw, isQueueRetries, 'retries', 'queue retries must be an integer') // 2
+ ```
+ 
+ The `emitter` / `count` / `active` / `paused` / `stopped` members of `QueueInterface` are `readonly` data members (Surface rows, above) — `emitter` is the typed push observation surface (see [Observing](#observing)); their call-signature methods are documented under [Methods](#methods).
+@@ -301,6 +326,8 @@ await queue.destroy() // abort, clean up, then destroy the emitter last; idempot
+ - [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports) and the `QueueInterface` / `QueueStoreInterface` ↔ `Queue` / `MemoryQueueStore` / `DatabaseQueueStore` method bijection.
+ - [`tests/src/core/Queue.test.ts`](../tests/src/core/Queue.test.ts) — the canonical queue suite: FIFO/concurrency/retries/native-range timeouts, hostile-safe rejection normalization, one-read constructor normalization with undefined-only defaults, runtime-null rejection, fail-fast property access, real emitter-hook capture, one-read enqueue normalization and signal branding, demand-driven workers, runtime contracts, duplicate and serialized admissions, atomic claims and restore validation, stable reentrant lifecycle barriers, stale-restore generations, exclusive cleanup ownership and orphan retry, claimed-orphan clear isolation, active cleanup propagation, terminal-listener drain ordering, lifecycle behavior, observation safety, and real-store durability.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — construction identity/wiring only: each factory returns its concrete `Queue`, `DatabaseQueueStore`, or `MemoryQueueStore` entity; behavior stays in the concrete suites.
++- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the shared option leaves: one-read property access, throwing-getter containment with the cause preserved, guard narrowing, and the coded invalid failure's option and refused value.
++- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — `isStoredEntry` over well-formed, malformed, non-record, hostile-accessor, and cyclic values.
+ - [`tests/src/core/stores/MemoryQueueStore.test.ts`](../tests/src/core/stores/MemoryQueueStore.test.ts) — the real shape-validated memory store: immutable JSON snapshots, caller/load alias isolation, one-read field capture, hostile-access containment, upsert/remove/load/clear semantics, and scale.
+ - [`tests/src/core/stores/DatabaseQueueStore.test.ts`](../tests/src/core/stores/DatabaseQueueStore.test.ts) — over a memory-backed driver store: a `save` → `load` round-trip (value + typed `input`, including nested-object payloads), `save` upserts by id (no duplicate), `remove` drops one (absent is a no-op), `load` returns all outstanding in key order, `clear` empties it, plus scale (200 entries), upsert churn on one id, and complex / edge-value inputs (nested arrays, booleans, nullables, optionals).
+ 
+diff --git a/src/core/Queue.ts b/src/core/Queue.ts
+index c0953b5..1422b1f 100644
+--- a/src/core/Queue.ts
++++ b/src/core/Queue.ts
+@@ -16,7 +16,14 @@ import { isString, preview } from '@orkestrel/contract'
+ import { Emitter } from '@orkestrel/emitter'
+ import { createTimeout } from '@orkestrel/timeout'
+ import { isQueueError, QueueError } from './errors.js'
+-import { isQueueConcurrency, isQueueRetries, isQueueSignal, isQueueTimeout } from './validators.js'
++import { readOption, validateOption } from './helpers.js'
++import {
++	isQueueConcurrency,
++	isQueueRetries,
++	isQueueSignal,
++	isQueueTimeout,
++	isStoredEntry,
++} from './validators.js'
+ 
+ /**
+  * A concurrent, cooperative FIFO job queue with optional outstanding-work persistence.
+@@ -63,8 +70,6 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	#generation = 0
+ 	#paused = false
+ 	#stopped = false
+-	#aborted = false
+-	#destroyed = false
+ 	#drained = true
+ 
+ 	/**
+@@ -74,29 +79,26 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	 */
+ 	constructor(options: QueueOptions<TInput, TResult>) {
+ 		const configuredConcurrency = options.concurrency
+-		const concurrency = configuredConcurrency === undefined ? 1 : configuredConcurrency
+-		if (!isQueueConcurrency(concurrency)) {
+-			throw new QueueError('queue concurrency must be a positive safe integer', {
+-				code: 'invalid',
+-				context: { option: 'concurrency', value: concurrency },
+-			})
+-		}
++		const concurrency = validateOption(
++			configuredConcurrency === undefined ? 1 : configuredConcurrency,
++			isQueueConcurrency,
++			'concurrency',
++			'queue concurrency must be a positive safe integer',
++		)
+ 		const configuredRetries = options.retries
+-		const retries = configuredRetries === undefined ? 0 : configuredRetries
+-		if (!isQueueRetries(retries)) {
+-			throw new QueueError('queue retries must be a nonnegative safe integer', {
+-				code: 'invalid',
+-				context: { option: 'retries', value: retries },
+-			})
+-		}
++		const retries = validateOption(
++			configuredRetries === undefined ? 0 : configuredRetries,
++			isQueueRetries,
++			'retries',
++			'queue retries must be a nonnegative safe integer',
++		)
+ 		const configuredTimeout = options.timeout
+-		const timeout = configuredTimeout === undefined ? 0 : configuredTimeout
+-		if (!isQueueTimeout(timeout)) {
+-			throw new QueueError('queue timeout must be within the native timer range', {
+-				code: 'invalid',
+-				context: { option: 'timeout', value: timeout },
+-			})
+-		}
++		const timeout = validateOption(
++			configuredTimeout === undefined ? 0 : configuredTimeout,
++			isQueueTimeout,
++			'timeout',
++			'queue timeout must be within the native timer range',
++		)
+ 		const on = options.on
+ 		const error = options.error
+ 		this.#handler = options.handler
+@@ -127,7 +129,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	get stopped(): boolean {
+-		return this.#stopped || this.#aborted
++		return this.#stopped || this.#abortPromise !== undefined
+ 	}
+ 
+ 	/**
+@@ -139,70 +141,36 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	 * @throws {QueueError} Synchronously when an option is inaccessible or invalid
+ 	 */
+ 	enqueue(input: TInput, options?: QueueEntryOptions): Promise<TResult> {
+-		let supplied: unknown
+-		try {
+-			supplied = options?.id
+-		} catch (error: unknown) {
+-			throw new QueueError('queue entry id could not be read', {
+-				code: 'invalid',
+-				cause: error,
+-				context: { option: 'id' },
+-			})
+-		}
+-		if (supplied !== undefined && !isString(supplied)) {
+-			throw new QueueError('queue entry id must be a string', {
+-				code: 'invalid',
+-				context: { option: 'id', value: supplied },
+-			})
+-		}
+-		let retries: unknown
+-		try {
+-			retries = options?.retries
+-		} catch (error: unknown) {
+-			throw new QueueError('queue retries could not be read', {
+-				code: 'invalid',
+-				cause: error,
+-				context: { option: 'retries' },
+-			})
+-		}
+-		if (retries !== undefined && !isQueueRetries(retries)) {
+-			throw new QueueError('queue retries must be a nonnegative safe integer', {
+-				code: 'invalid',
+-				context: { option: 'retries', value: retries },
+-			})
+-		}
+-		let timeout: unknown
+-		try {
+-			timeout = options?.timeout
+-		} catch (error: unknown) {
+-			throw new QueueError('queue timeout could not be read', {
+-				code: 'invalid',
+-				cause: error,
+-				context: { option: 'timeout' },
+-			})
+-		}
+-		if (timeout !== undefined && !isQueueTimeout(timeout)) {
+-			throw new QueueError('queue timeout must be within the native timer range', {
+-				code: 'invalid',
+-				context: { option: 'timeout', value: timeout },
+-			})
+-		}
+-		let signal: unknown
+-		try {
+-			signal = options?.signal
+-		} catch (error: unknown) {
+-			throw new QueueError('queue signal could not be read', {
+-				code: 'invalid',
+-				cause: error,
+-				context: { option: 'signal' },
+-			})
+-		}
+-		if (signal !== undefined && !isQueueSignal(signal)) {
+-			throw new QueueError('queue signal must be an AbortSignal', {
+-				code: 'invalid',
+-				context: { option: 'signal', value: signal },
+-			})
+-		}
++		const rawId = readOption(options, 'id', 'queue entry id could not be read')
++		const supplied =
++			rawId === undefined
++				? undefined
++				: validateOption(rawId, isString, 'id', 'queue entry id must be a string')
++		const rawRetries = readOption(options, 'retries', 'queue retries could not be read')
++		const retries =
++			rawRetries === undefined
++				? undefined
++				: validateOption(
++						rawRetries,
++						isQueueRetries,
++						'retries',
++						'queue retries must be a nonnegative safe integer',
++					)
++		const rawTimeout = readOption(options, 'timeout', 'queue timeout could not be read')
++		const timeout =
++			rawTimeout === undefined
++				? undefined
++				: validateOption(
++						rawTimeout,
++						isQueueTimeout,
++						'timeout',
++						'queue timeout must be within the native timer range',
++					)
++		const rawSignal = readOption(options, 'signal', 'queue signal could not be read')
++		const signal =
++			rawSignal === undefined
++				? undefined
++				: validateOption(rawSignal, isQueueSignal, 'signal', 'queue signal must be an AbortSignal')
+ 		const normalized: QueueEntryOptions | undefined =
+ 			options === undefined
+ 				? undefined
+@@ -212,10 +180,10 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 						...(timeout === undefined ? {} : { timeout }),
+ 						...(signal === undefined ? {} : { signal }),
+ 					})
+-		if (this.#destroyed) {
++		if (this.#destroyPromise !== undefined) {
+ 			return Promise.reject(new QueueError('queue is destroyed', { code: 'destroyed' }))
+ 		}
+-		if (this.#aborted) {
++		if (this.#abortPromise !== undefined) {
+ 			return Promise.reject(new QueueError('queue is aborted', { code: 'aborted' }))
+ 		}
+ 		if (this.#stopped) {
+@@ -236,23 +204,26 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 		return token.promise
+ 	}
+ 
+-	/** Load and accept every outstanding stored entry from the current lifecycle generation. */
++	/**
++	 * Load and accept every outstanding stored entry from the current lifecycle generation.
++	 *
++	 * @returns A promise that settles after every loaded entry is reserved and accepted
++	 * @throws {QueueError} Thrown when the store's load fails or returns a malformed entry.
++	 */
+ 	async restore(): Promise<void> {
+-		if (this.#store === undefined || this.stopped || this.#destroyed) return
++		if (this.#store === undefined || this.stopped || this.#destroyPromise !== undefined) return
+ 		const generation = this.#generation
+ 		const entries: Array<StoredEntry<TInput>> = []
+ 		let malformed = false
+ 		try {
+ 			const loaded = await this.#store.load()
+ 			for (const stored of loaded) {
+-				const id: unknown = stored.id
+-				const input = stored.input
+-				const attempts: unknown = stored.attempts
+-				if (!isString(id) || !isQueueRetries(attempts)) {
++				const candidate = { id: stored.id, input: stored.input, attempts: stored.attempts }
++				if (!isStoredEntry(candidate)) {
+ 					malformed = true
+ 					break
+ 				}
+-				entries.push(Object.freeze({ id, input, attempts }))
++				entries.push(Object.freeze(candidate))
+ 			}
+ 		} catch (error: unknown) {
+ 			throw new QueueError('queue store load failed', {
+@@ -267,9 +238,11 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 				context: { operation: 'load' },
+ 			})
+ 		}
+-		if (generation !== this.#generation || this.stopped || this.#destroyed) return
++		if (generation !== this.#generation || this.stopped || this.#destroyPromise !== undefined)
++			return
+ 		for (const stored of entries) {
+-			if (generation !== this.#generation || this.stopped || this.#destroyed) return
++			if (generation !== this.#generation || this.stopped || this.#destroyPromise !== undefined)
++				return
+ 			if (this.#live.has(stored.id)) continue
+ 			const token = this.#reserve(stored.id, stored.input, undefined, stored.attempts)
+ 			this.#accept(token)
+@@ -279,13 +252,17 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 
+ 	/** Begin or restart worker execution unless the queue is terminal. */
+ 	start(): void {
+-		if (this.#aborted || this.#destroyed) return
++		if (this.#abortPromise !== undefined || this.#destroyPromise !== undefined) return
+ 		this.#stopped = false
+ 		this.#stopPromise = undefined
+ 		this.#spawn()
+ 	}
+ 
+-	/** Reject non-active work and await current-loop and durable cleanup quiescence. */
++	/**
++	 * Reject non-active work and await current-loop and durable cleanup quiescence.
++	 *
++	 * @returns The stable stop barrier
++	 */
+ 	stop(): Promise<void> {
+ 		if (this.#destroyPromise !== undefined) return this.#destroyPromise
+ 		if (this.#abortPromise !== undefined) return this.#abortPromise
+@@ -307,13 +284,13 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 
+ 	/** Suspend new execution while leaving active entries untouched. */
+ 	pause(): void {
+-		if (this.#paused || this.stopped || this.#destroyed) return
++		if (this.#paused || this.stopped || this.#destroyPromise !== undefined) return
+ 		this.#paused = true
+ 	}
+ 
+ 	/** Continue execution after a pause. */
+ 	resume(): void {
+-		if (!this.#paused || this.stopped || this.#destroyed) return
++		if (!this.#paused || this.stopped || this.#destroyPromise !== undefined) return
+ 		this.#paused = false
+ 		this.#wakeAll()
+ 	}
+@@ -328,7 +305,6 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 		if (this.#abortPromise !== undefined) return this.#abortPromise
+ 		const barrier = Promise.withResolvers<void>()
+ 		this.#abortPromise = barrier.promise
+-		this.#aborted = true
+ 		this.#stopped = true
+ 		this.#generation += 1
+ 		const error = new QueueError(reason instanceof Error ? reason.message : 'queue is aborted', {
+@@ -345,9 +321,13 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 		return barrier.promise
+ 	}
+ 
+-	/** Reject non-active work and await its durable cleanup. */
++	/**
++	 * Reject non-active work and await its durable cleanup.
++	 *
++	 * @returns A promise that settles after every affected removal completes
++	 */
+ 	clear(): Promise<void> {
+-		if (this.#destroyed) {
++		if (this.#destroyPromise !== undefined) {
+ 			return Promise.reject(new QueueError('queue is destroyed', { code: 'destroyed' }))
+ 		}
+ 		const existing: Array<Promise<void>> = []
+@@ -364,12 +344,15 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 		)
+ 	}
+ 
+-	/** Tear down once, destroying the emitter only after cleanup finishes. */
++	/**
++	 * Tear down once, destroying the emitter only after cleanup finishes.
++	 *
++	 * @returns The stable destroy barrier
++	 */
+ 	destroy(): Promise<void> {
+ 		if (this.#destroyPromise !== undefined) return this.#destroyPromise
+ 		const barrier = Promise.withResolvers<void>()
+ 		this.#destroyPromise = barrier.promise
+-		this.#destroyed = true
+ 		const aborting = this.abort(new QueueError('queue is destroyed', { code: 'destroyed' }))
+ 		void this.#settleDestroy(barrier, aborting)
+ 		return barrier.promise
+@@ -422,7 +405,12 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 			this.#emitDrain()
+ 			return
+ 		}
+-		if (entry.settled || this.#aborted || this.#destroyed || this.#stopped) {
++		if (
++			entry.settled ||
++			this.#abortPromise !== undefined ||
++			this.#destroyPromise !== undefined ||
++			this.#stopped
++		) {
+ 			await this.#discard(token)
+ 			return
+ 		}
+@@ -439,7 +427,8 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	#spawn(): void {
+-		if (this.#stopped || this.#aborted || this.#destroyed) return
++		if (this.#stopped || this.#abortPromise !== undefined || this.#destroyPromise !== undefined)
++			return
+ 		const demand = Math.min(this.#concurrency, this.#claims.size + this.#pending.length)
+ 		while (this.#workers.size < demand) {
+ 			const generation = this.#generation
+@@ -475,7 +464,12 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 		generation: number,
+ 		resolve: (token: PromiseWithResolvers<TResult> | undefined) => void,
+ 	): void {
+-		if (generation !== this.#generation || this.#stopped || this.#aborted || this.#destroyed) {
++		if (
++			generation !== this.#generation ||
++			this.#stopped ||
++			this.#abortPromise !== undefined ||
++			this.#destroyPromise !== undefined
++		) {
+ 			resolve(undefined)
+ 			return
+ 		}
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+new file mode 100644
+index 0000000..bac1997
+--- /dev/null
++++ b/src/core/helpers.ts
+@@ -0,0 +1,67 @@
++import type { Guard } from '@orkestrel/contract'
++import type { QueueEntryOptions, QueueOption } from './types.js'
++import { QueueError } from './errors.js'
++
++/**
++ * Reads one named option from a caller-supplied entry options object.
++ *
++ * @remarks
++ * The property is read exactly once, inside a boundary that contains a throwing
++ * getter. An absent options object reads nothing and yields `undefined`.
++ *
++ * @param options - The caller's own entry options, or `undefined`
++ * @param option - The option key to read
++ * @param message - The failure description the thrown error carries
++ * @returns The value the property held, or `undefined` when no options object was supplied
++ * @throws {QueueError} Thrown when reading the property throws, coded `invalid` with the
++ *   option in its context.
++ *
++ * @example
++ * ```ts
++ * readOption({ retries: 2 }, 'retries', 'queue retries could not be read') // 2
++ * ```
++ */
++export function readOption(
++	options: QueueEntryOptions | undefined,
++	option: keyof QueueEntryOptions,
++	message: string,
++): unknown {
++	try {
++		return options?.[option]
++	} catch (error: unknown) {
++		throw new QueueError(message, {
++			code: 'invalid',
++			cause: error,
++			context: { option },
++		})
++	}
++}
++
++/**
++ * Validates one already-read queue option against its guard.
++ *
++ * @param value - The option value to check
++ * @param guard - The total guard the value must satisfy
++ * @param option - The option key the failure context reports
++ * @param message - The failure description the thrown error carries
++ * @returns The same value, narrowed by the guard
++ * @throws {QueueError} Thrown when the guard refuses the value, coded `invalid` with the
++ *   option and the refused value in its context.
++ *
++ * @example
++ * ```ts
++ * validateOption(4, isQueueConcurrency, 'concurrency', 'queue concurrency must be positive') // 4
++ * ```
++ */
++export function validateOption<TValue>(
++	value: unknown,
++	guard: Guard<TValue>,
++	option: QueueOption,
++	message: string,
++): TValue {
++	if (guard(value)) return value
++	throw new QueueError(message, {
++		code: 'invalid',
++		context: { option, value },
++	})
++}
+diff --git a/src/core/index.ts b/src/core/index.ts
+index 208b1a0..f81d789 100644
+--- a/src/core/index.ts
++++ b/src/core/index.ts
+@@ -1,6 +1,7 @@
+ export * from './types.js'
+ export * from './errors.js'
+ export * from './validators.js'
++export * from './helpers.js'
+ export * from './Queue.js'
+ export * from './stores/DatabaseQueueStore.js'
+ export * from './stores/MemoryQueueStore.js'
+diff --git a/src/core/stores/MemoryQueueStore.ts b/src/core/stores/MemoryQueueStore.ts
+index 357e42e..ee45b28 100644
+--- a/src/core/stores/MemoryQueueStore.ts
++++ b/src/core/stores/MemoryQueueStore.ts
+@@ -1,8 +1,8 @@
+ import type { ContractInterface, ContractShape, Infer } from '@orkestrel/contract'
+ import type { QueueStoreInterface, StoredEntry } from '../types.js'
+-import { cloneJSONValue, createContract, isString } from '@orkestrel/contract'
++import { cloneJSONValue, createContract } from '@orkestrel/contract'
+ import { QueueError } from '../errors.js'
+-import { isQueueRetries } from '../validators.js'
++import { isStoredEntry } from '../validators.js'
+ 
+ /**
+  * An in-memory store owning validated, immutable JSON snapshots of outstanding entries.
+@@ -36,15 +36,14 @@ export class MemoryQueueStore<TInput extends ContractShape> implements QueueStor
+ 	/** Upsert a validated, owned snapshot under the entry's id. */
+ 	save(entry: StoredEntry<Infer<TInput>>): Promise<void> {
+ 		try {
+-			const id: unknown = entry.id
+-			const input = entry.input
+-			const attempts: unknown = entry.attempts
+-			if (!isString(id) || !isQueueRetries(attempts)) {
++			const candidate = { id: entry.id, input: entry.input, attempts: entry.attempts }
++			if (!isStoredEntry(candidate)) {
+ 				throw new QueueError('queue store entry is invalid', {
+ 					code: 'store',
+ 					context: { operation: 'save' },
+ 				})
+ 			}
++			const { id, input, attempts } = candidate
+ 			this.#entries.set(id, this.#snapshot(id, input, attempts, 'save'))
+ 			return Promise.resolve()
+ 		} catch (error: unknown) {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 1b717f3..3c9540d 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -19,6 +19,16 @@ export type QueueCode =
+ 	| 'store'
+ 	| 'cleanup'
+ 
++/**
++ * The construction and per-entry option keys a queue validates.
++ *
++ * @example
++ * ```ts
++ * const option: QueueOption = 'concurrency'
++ * ```
++ */
++export type QueueOption = 'id' | 'concurrency' | 'retries' | 'timeout' | 'signal'
++
+ /**
+  * Structured context carried by a {@link QueueError}.
+  *
+@@ -29,7 +39,7 @@ export type QueueCode =
+  */
+ export interface QueueErrorContext {
+ 	readonly id?: string
+-	readonly option?: 'id' | 'concurrency' | 'retries' | 'timeout' | 'signal'
++	readonly option?: QueueOption
+ 	readonly operation?: 'save' | 'remove' | 'load' | 'clear'
+ 	readonly value?: unknown
+ }
+@@ -204,10 +214,15 @@ export interface QueueOptions<TInput, TResult> {
+  * ```
+  */
+ export interface QueueInterface<TInput, TResult> {
++	/** The typed push observation surface carrying this queue's {@link QueueEventMap} moments. */
+ 	readonly emitter: EmitterInterface<QueueEventMap<TResult>>
++	/** The number of reserved live entries — admitting, pending, claimed, or awaiting cleanup. */
+ 	readonly count: number
++	/** The number of claimed entries in flight, never above the queue's concurrency. */
+ 	readonly active: number
++	/** True while `pause` has suspended dequeuing; false otherwise. */
+ 	readonly paused: boolean
++	/** True after `stop` or `abort` has halted the queue; false otherwise. */
+ 	readonly stopped: boolean
+ 	/** Reserve and submit one FIFO entry. */
+ 	enqueue(input: TInput, options?: QueueEntryOptions): Promise<TResult>
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index a89c1b2..0020ff2 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -1,4 +1,6 @@
+-import { isFiniteNumber, isInteger } from '@orkestrel/contract'
++import type { StoredEntry } from './types.js'
++import { isFiniteNumber, isInteger, isRecord, isString } from '@orkestrel/contract'
++import { MAX_TIMEOUT_MS } from '@orkestrel/timeout'
+ 
+ /**
+  * Determine whether a value is a valid queue concurrency.
+@@ -45,7 +47,7 @@ export function isQueueRetries(value: unknown): value is number {
+  * ```
+  */
+ export function isQueueTimeout(value: unknown): value is number {
+-	return isFiniteNumber(value) && isInteger(value) && value >= 0 && value <= 2_147_483_647
++	return isFiniteNumber(value) && isInteger(value) && value >= 0 && value <= MAX_TIMEOUT_MS
+ }
+ 
+ /**
+@@ -70,3 +72,30 @@ export function isQueueSignal(value: unknown): value is AbortSignal {
+ 		return false
+ 	}
+ }
++
++/**
++ * Checks whether a value is a valid stored queue entry.
++ *
++ * @remarks
++ * The single test for what a {@link StoredEntry} is, shared by the queue's `restore`
++ * boundary and the memory store's `save` boundary. `input` carries the caller's own
++ * payload type, so only its presence is checked.
++ *
++ * @param value - Value to inspect
++ * @returns True if the value is a record holding a string `id`, an `input` member, and a
++ *   nonnegative safe-integer `attempts`; false otherwise
++ *
++ * @example
++ * ```ts
++ * isStoredEntry({ id: 'job-1', input: 'task', attempts: 0 }) // true
++ * isStoredEntry({ id: 'job-1', input: 'task', attempts: -1 }) // false
++ * ```
++ */
++export function isStoredEntry(value: unknown): value is StoredEntry<unknown> {
++	try {
++		if (!isRecord(value)) return false
++		return isString(value.id) && 'input' in value && isQueueRetries(value.attempts)
++	} catch {
++		return false
++	}
++}
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+new file mode 100644
+index 0000000..f5d4d06
+--- /dev/null
++++ b/tests/src/core/helpers.test.ts
+@@ -0,0 +1,105 @@
++import { describe, expect, it } from 'vitest'
++import { isString } from '@orkestrel/contract'
++import { isQueueConcurrency, isQueueError, readOption, validateOption } from '@src/core'
++
++// src/core/helpers.ts — the two option leaves the constructor and `enqueue` share.
++// `readOption` owns the read boundary; `validateOption` owns the guard boundary.
++
++describe('readOption', () => {
++	it('returns the value a supplied option holds', () => {
++		expect(readOption({ retries: 2 }, 'retries', 'queue retries could not be read')).toBe(2)
++	})
++
++	it('returns undefined for an absent options object', () => {
++		expect(readOption(undefined, 'id', 'queue entry id could not be read')).toBeUndefined()
++	})
++
++	it('returns undefined for an omitted option', () => {
++		expect(readOption({}, 'timeout', 'queue timeout could not be read')).toBeUndefined()
++	})
++
++	it('reads the property exactly once', () => {
++		const reads: string[] = []
++		const options = Object.defineProperty({}, 'id', {
++			get() {
++				reads.push('id')
++				return 'job-1'
++			},
++		})
++		expect(readOption(options, 'id', 'queue entry id could not be read')).toBe('job-1')
++		expect(reads).toEqual(['id'])
++	})
++
++	it('contains a throwing getter as a coded invalid failure carrying its cause', () => {
++		const cause = new Error('hostile id getter')
++		const options = Object.defineProperty({}, 'id', {
++			get() {
++				throw cause
++			},
++		})
++		let failure: unknown
++		try {
++			readOption(options, 'id', 'queue entry id could not be read')
++		} catch (error: unknown) {
++			failure = error
++		}
++		if (!isQueueError(failure)) throw new Error('expected a QueueError')
++		expect(failure.message).toBe('queue entry id could not be read')
++		expect(failure.code).toBe('invalid')
++		expect(failure.context).toEqual({ option: 'id' })
++		expect(failure.cause).toBe(cause)
++	})
++})
++
++describe('validateOption', () => {
++	it('returns the value its guard accepts, narrowed', () => {
++		const concurrency: number = validateOption(
++			4,
++			isQueueConcurrency,
++			'concurrency',
++			'queue concurrency must be a positive safe integer',
++		)
++		expect(concurrency).toBe(4)
++	})
++
++	it('throws a coded invalid failure carrying the option and the refused value', () => {
++		let failure: unknown
++		try {
++			validateOption(0, isQueueConcurrency, 'concurrency', 'queue concurrency must be positive')
++		} catch (error: unknown) {
++			failure = error
++		}
++		if (!isQueueError(failure)) throw new Error('expected a QueueError')
++		expect(failure.message).toBe('queue concurrency must be positive')
++		expect(failure.code).toBe('invalid')
++		expect(failure.context).toEqual({ option: 'concurrency', value: 0 })
++	})
++
++	it('refuses undefined rather than treating absence as valid', () => {
++		let failure: unknown
++		try {
++			validateOption(undefined, isString, 'id', 'queue entry id must be a string')
++		} catch (error: unknown) {
++			failure = error
++		}
++		if (!isQueueError(failure)) throw new Error('expected a QueueError')
++		expect(failure.code).toBe('invalid')
++		expect(failure.context?.option).toBe('id')
++	})
++
++	it('reports a hostile refused value without dereferencing it', () => {
++		const hostile = Object.defineProperty({}, 'toString', {
++			get() {
++				throw new Error('hostile toString getter')
++			},
++		})
++		let failure: unknown
++		try {
++			validateOption(hostile, isString, 'id', 'queue entry id must be a string')
++		} catch (error: unknown) {
++			failure = error
++		}
++		if (!isQueueError(failure)) throw new Error('expected a QueueError')
++		expect(failure.context?.value).toBe(hostile)
++	})
++})
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+new file mode 100644
+index 0000000..a62cf44
+--- /dev/null
++++ b/tests/src/core/validators.test.ts
+@@ -0,0 +1,58 @@
++import { describe, expect, it } from 'vitest'
++import { isStoredEntry } from '@src/core'
++
++// src/core/validators.ts — `isStoredEntry` is the single test for what a `StoredEntry`
++// is, shared by `Queue.restore` and `MemoryQueueStore.save`. The three numeric guards
++// are exercised through the queue's own boundary suite.
++
++describe('isStoredEntry', () => {
++	it('accepts a well-formed entry', () => {
++		expect(isStoredEntry({ id: 'job-1', input: 'task', attempts: 0 })).toBe(true)
++	})
++
++	it('accepts an undefined input, which the entry type admits', () => {
++		expect(isStoredEntry({ id: 'job-1', input: undefined, attempts: 3 })).toBe(true)
++	})
++
++	it('accepts an entry carrying a member the type does not declare', () => {
++		expect(isStoredEntry({ id: 'job-1', input: 'task', attempts: 0, extra: true })).toBe(true)
++	})
++
++	it('refuses a non-string id', () => {
++		expect(isStoredEntry({ id: 1, input: 'task', attempts: 0 })).toBe(false)
++	})
++
++	it('refuses a missing input member', () => {
++		expect(isStoredEntry({ id: 'job-1', attempts: 0 })).toBe(false)
++	})
++
++	it('refuses a negative, fractional, or non-numeric attempt count', () => {
++		expect(isStoredEntry({ id: 'job-1', input: 'task', attempts: -1 })).toBe(false)
++		expect(isStoredEntry({ id: 'job-1', input: 'task', attempts: 0.5 })).toBe(false)
++		expect(isStoredEntry({ id: 'job-1', input: 'task', attempts: Number.NaN })).toBe(false)
++		expect(isStoredEntry({ id: 'job-1', input: 'task', attempts: '0' })).toBe(false)
++	})
++
++	it('refuses a value that is not a plain record', () => {
++		expect(isStoredEntry(null)).toBe(false)
++		expect(isStoredEntry(undefined)).toBe(false)
++		expect(isStoredEntry('job-1')).toBe(false)
++		expect(isStoredEntry([])).toBe(false)
++	})
++
++	it('contains a throwing accessor instead of letting it escape', () => {
++		const hostile = Object.defineProperty({ input: 'task', attempts: 0 }, 'id', {
++			get() {
++				throw new Error('hostile id getter')
++			},
++			enumerable: true,
++		})
++		expect(isStoredEntry(hostile)).toBe(false)
++	})
++
++	it('refuses a cyclic value without recursing', () => {
++		const cyclic: Record<string, unknown> = { id: 'job-1', attempts: 0 }
++		cyclic.self = cyclic
++		expect(isStoredEntry(cyclic)).toBe(false)
++	})
++})

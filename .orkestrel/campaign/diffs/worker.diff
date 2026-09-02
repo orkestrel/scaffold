@@ -1,0 +1,346 @@
+### git show --stat abfbd14
+abfbd14 Apply the verified src-audit fixes
+
+ guides/worker.md                    | 11 +++--
+ src/server/Dispatch.ts              |  2 +-
+ src/server/handlers.ts              |  2 +-
+ src/server/helpers.ts               | 26 +++++++++++-
+ src/server/index.ts                 |  1 -
+ src/server/validators.ts            | 23 ----------
+ tests/src/server/helpers.test.ts    | 83 ++++++++++++++++++++++++++++++++++++-
+ tests/src/server/validators.test.ts | 81 ------------------------------------
+ 8 files changed, 113 insertions(+), 116 deletions(-)
+
+### git show abfbd14
+abfbd14 Apply the verified src-audit fixes
+
+diff --git a/guides/worker.md b/guides/worker.md
+index 1ebf763..b397432 100644
+--- a/guides/worker.md
++++ b/guides/worker.md
+@@ -73,7 +73,7 @@ const thread = await spawnThread(new URL('./double.ts', import.meta.url), undefi
+ const controller = new AbortController()
+ try {
+ 	const result = await dispatch(thread, 21, { id: 'job-1', signal: controller.signal }, isNumber)
+-	// `isReply` is the total guard `dispatch` uses internally to filter replies by job id.
++	// `isReply` is the total predicate `dispatch` uses internally to filter replies by job id.
+ } finally {
+ 	await thread.worker.terminate()
+ }
+@@ -83,7 +83,7 @@ try {
+ | ------------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+ | `spawnThread` | function | Spawn one worker thread and resolve a live `NodeThread` once it comes `online` (a death before `online` rejects). |
+ | `dispatch`    | function | Post a job to a leased `NodeThread` and await its reply, narrowed through its result guard.                       |
+-| `isReply`     | function | Narrow an inbound message to a `Reply` for a job id (total guard) — `dispatch`'s filter.                          |
++| `isReply`     | function | Narrow an inbound message to a `Reply` for a job id (total, correlated) — `dispatch`'s filter.                    |
+ 
+ ### Entities
+ 
+@@ -498,10 +498,9 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+   rejecting without wedging the worker; `messageerror` listener attachment and settlement
+   cleanup; `destroy` with multiple threads mid-job terminating
+   all; rapid enqueue/abort churn settling every job with no thread leak; and `destroy`
+-  terminating every thread so the process exits.
+-- [`tests/src/server/validators.test.ts`](../tests/src/server/validators.test.ts) —
+-  the total `isReply` guard over valid success/failure envelopes, foreign ids, malformed
+-  or incomplete envelopes, non-records, hostile getters, and stray messages.
++  terminating every thread so the process exits. Plus the total `isReply` predicate over
++  valid success/failure envelopes, foreign ids, malformed or incomplete envelopes,
++  non-records, hostile getters, and stray messages.
+ - [`tests/src/server/handlers.test.ts`](../tests/src/server/handlers.test.ts) —
+   `serveWorker` driven MANUALLY over a raw `node:worker_threads` thread (post a run/abort
+   envelope, await the reply): reply correlation remaining distinct from the stable execution id,
+diff --git a/src/server/Dispatch.ts b/src/server/Dispatch.ts
+index dabe5a2..255b815 100644
+--- a/src/server/Dispatch.ts
++++ b/src/server/Dispatch.ts
+@@ -3,8 +3,8 @@ import type { Guard } from '@orkestrel/contract'
+ import type { NodeThread } from './types.js'
+ import type { Worker as ThreadWorker } from 'node:worker_threads'
+ import { attempt, isRecord } from '@orkestrel/contract'
++import { isReply } from './helpers.js'
+ import { Thread } from './Thread.js'
+-import { isReply } from './validators.js'
+ 
+ /**
+  * Internal lifecycle entity for one dispatched worker-thread job.
+diff --git a/src/server/handlers.ts b/src/server/handlers.ts
+index 3735617..938057a 100644
+--- a/src/server/handlers.ts
++++ b/src/server/handlers.ts
+@@ -6,7 +6,7 @@ import { parentPort } from 'node:worker_threads'
+ // `node:worker_threads` at runtime — no `@src/*`, no `.js`-relative value imports (the
+ // only non-node import is the type-only `ServeWorkerOptions`, fully erased at runtime).
+ // The inbound envelope is therefore narrowed inline rather than through a sibling guard in
+-// `validators.ts`, which would be a runtime import this module cannot make. A worker script
++// `helpers.ts`, which would be a runtime import this module cannot make. A worker script
+ // that needs the cloned `workerData` reads it directly from `node:worker_threads` (it is in
+ // a thread already).
+ 
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index fed48f6..8eaf06e 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -1,6 +1,7 @@
+ import type { QueueExecution } from '@orkestrel/queue'
+ import type { Guard } from '@orkestrel/contract'
+-import type { NodeThread } from './types.js'
++import type { NodeThread, Reply } from './types.js'
++import { attempt, isRecord } from '@orkestrel/contract'
+ import { Dispatch } from './Dispatch.js'
+ import { Thread } from './Thread.js'
+ 
+@@ -74,3 +75,26 @@ export function dispatch<TResult>(
+ ): Promise<TResult> {
+ 	return new Dispatch(thread, input, execution, result).promise
+ }
++
++/**
++ * Narrow an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
++ *
++ * @remarks
++ * A total predicate: a record whose `id` matches and whose `ok` discriminant is well-formed.
++ * Anything else is rejected so a dispatch listener can ignore foreign or malformed messages.
++ * It correlates against the `id` argument rather than narrowing one value alone, so it is a
++ * correlated predicate rather than a `Guard<Reply>` and is not accepted where a `Guard` is.
++ *
++ * @param value - The inbound message to narrow
++ * @param id - The job id a matching reply must carry
++ * @returns `true` when the value is this job's well-formed reply
++ */
++export function isReply(value: unknown, id: string): value is Reply {
++	const outcome = attempt(() => {
++		if (!isRecord(value)) return false
++		if (value.id !== id) return false
++		if (value.ok === true) return 'value' in value
++		return value.ok === false && typeof value.error === 'string'
++	})
++	return outcome.success && outcome.value
++}
+diff --git a/src/server/index.ts b/src/server/index.ts
+index 9de9b63..cf62585 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -1,5 +1,4 @@
+ export * from './types.js'
+ export * from './helpers.js'
+-export * from './validators.js'
+ export * from './handlers.js'
+ export * from './factories.js'
+diff --git a/src/server/validators.ts b/src/server/validators.ts
+deleted file mode 100644
+index 992d7b6..0000000
+--- a/src/server/validators.ts
++++ /dev/null
+@@ -1,23 +0,0 @@
+-import type { Reply } from './types.js'
+-import { attempt, isRecord } from '@orkestrel/contract'
+-
+-/**
+- * Narrow an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
+- *
+- * @remarks
+- * A total predicate: a record whose `id` matches and whose `ok` discriminant is well-formed.
+- * Anything else is rejected so a dispatch listener can ignore foreign or malformed messages.
+- *
+- * @param value - The inbound message to narrow
+- * @param id - The job id a matching reply must carry
+- * @returns `true` when the value is this job's well-formed reply
+- */
+-export function isReply(value: unknown, id: string): value is Reply {
+-	const outcome = attempt(() => {
+-		if (!isRecord(value)) return false
+-		if (value.id !== id) return false
+-		if (value.ok === true) return 'value' in value
+-		return value.ok === false && typeof value.error === 'string'
+-	})
+-	return outcome.success && outcome.value
+-}
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index e92de9b..864bb61 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -10,11 +10,11 @@ import {
+ } from '@orkestrel/contract'
+ import { MemoryQueueStore } from '@orkestrel/queue'
+ import { fileURLToPath } from 'node:url'
+-import { createNodeWorker, dispatch, spawnThread } from '@src/server'
++import { createNodeWorker, dispatch, isReply, spawnThread } from '@src/server'
+ import { createTeardown, waitForDelay } from '@orkestrel/test'
+ 
+ // src/server/helpers.ts — the main-side worker-thread machinery (`spawnThread` /
+-// `dispatch`) `createNodeWorker` composes over. The round-trip suites below
++// `dispatch` / `isReply`) `createNodeWorker` composes over. The round-trip suites below
+ // drive `createNodeWorker` over REAL worker threads (no mocking; the node `src:server`
+ // project), exercising `spawnThread` + `dispatch` END TO END — each stands up a worker
+ // against a real fixture script, drives
+@@ -720,3 +720,82 @@ describe('fixture path resolves inside a thread', () => {
+ 		expect(fileURLToPath(fixture('double.ts'))).toContain('fixtures')
+ 	})
+ })
++
++describe('isReply — the reply-envelope predicate dispatch filters on', () => {
++	const id = 'job-1'
++
++	it('accepts a well-formed success reply for the id (any value, including falsy)', () => {
++		expect(isReply({ id, ok: true, value: 42 }, id)).toBe(true)
++		expect(isReply({ id, ok: true, value: 0 }, id)).toBe(true)
++		expect(isReply({ id, ok: true, value: undefined }, id)).toBe(true)
++		expect(isReply({ id, ok: true, value: null }, id)).toBe(true)
++	})
++
++	it('accepts a well-formed failure reply for the id (string error)', () => {
++		expect(isReply({ id, ok: false, error: 'boom' }, id)).toBe(true)
++	})
++
++	it('rejects a success envelope without its required value', () => {
++		expect(isReply({ id, ok: true }, id)).toBe(false)
++	})
++
++	it('rejects a reply whose id does not match (a foreign job)', () => {
++		expect(isReply({ id: 'other', ok: true, value: 1 }, id)).toBe(false)
++		expect(isReply({ id: 'other', ok: false, error: 'x' }, id)).toBe(false)
++	})
++
++	it('rejects a failure whose error is not a string (malformed payload)', () => {
++		expect(isReply({ id, ok: false, error: 7 }, id)).toBe(false)
++		expect(isReply({ id, ok: false }, id)).toBe(false)
++	})
++
++	it('rejects a malformed ok discriminant (neither true nor false)', () => {
++		expect(isReply({ id, ok: 'yes', value: 1 }, id)).toBe(false)
++		expect(isReply({ id, value: 1 }, id)).toBe(false)
++	})
++
++	it('rejects non-records and stray messages (no id) — total, never throws', () => {
++		expect(isReply(null, id)).toBe(false)
++		expect(isReply(undefined, id)).toBe(false)
++		expect(isReply('reply', id)).toBe(false)
++		expect(isReply(42, id)).toBe(false)
++		expect(isReply([id], id)).toBe(false)
++		expect(isReply({ ok: true, value: 1 }, id)).toBe(false)
++	})
++
++	it('contains hostile property getters and returns false', () => {
++		expect(
++			isReply(
++				{
++					get id(): string {
++						throw new Error('hostile id')
++					},
++				},
++				id,
++			),
++		).toBe(false)
++		expect(
++			isReply(
++				{
++					id,
++					get ok(): boolean {
++						throw new Error('hostile ok')
++					},
++				},
++				id,
++			),
++		).toBe(false)
++		expect(
++			isReply(
++				{
++					id,
++					ok: false,
++					get error(): string {
++						throw new Error('hostile error')
++					},
++				},
++				id,
++			),
++		).toBe(false)
++	})
++})
+diff --git a/tests/src/server/validators.test.ts b/tests/src/server/validators.test.ts
+deleted file mode 100644
+index 0c177fc..0000000
+--- a/tests/src/server/validators.test.ts
++++ /dev/null
+@@ -1,81 +0,0 @@
+-import { describe, expect, it } from 'vitest'
+-import { isReply } from '@src/server'
+-
+-describe('isReply — the reply-envelope guard dispatch filters on', () => {
+-	const id = 'job-1'
+-
+-	it('accepts a well-formed success reply for the id (any value, including falsy)', () => {
+-		expect(isReply({ id, ok: true, value: 42 }, id)).toBe(true)
+-		expect(isReply({ id, ok: true, value: 0 }, id)).toBe(true)
+-		expect(isReply({ id, ok: true, value: undefined }, id)).toBe(true)
+-		expect(isReply({ id, ok: true, value: null }, id)).toBe(true)
+-	})
+-
+-	it('accepts a well-formed failure reply for the id (string error)', () => {
+-		expect(isReply({ id, ok: false, error: 'boom' }, id)).toBe(true)
+-	})
+-
+-	it('rejects a success envelope without its required value', () => {
+-		expect(isReply({ id, ok: true }, id)).toBe(false)
+-	})
+-
+-	it('rejects a reply whose id does not match (a foreign job)', () => {
+-		expect(isReply({ id: 'other', ok: true, value: 1 }, id)).toBe(false)
+-		expect(isReply({ id: 'other', ok: false, error: 'x' }, id)).toBe(false)
+-	})
+-
+-	it('rejects a failure whose error is not a string (malformed payload)', () => {
+-		expect(isReply({ id, ok: false, error: 7 }, id)).toBe(false)
+-		expect(isReply({ id, ok: false }, id)).toBe(false)
+-	})
+-
+-	it('rejects a malformed ok discriminant (neither true nor false)', () => {
+-		expect(isReply({ id, ok: 'yes', value: 1 }, id)).toBe(false)
+-		expect(isReply({ id, value: 1 }, id)).toBe(false)
+-	})
+-
+-	it('rejects non-records and stray messages (no id) — total, never throws', () => {
+-		expect(isReply(null, id)).toBe(false)
+-		expect(isReply(undefined, id)).toBe(false)
+-		expect(isReply('reply', id)).toBe(false)
+-		expect(isReply(42, id)).toBe(false)
+-		expect(isReply([id], id)).toBe(false)
+-		expect(isReply({ ok: true, value: 1 }, id)).toBe(false)
+-	})
+-
+-	it('contains hostile property getters and returns false', () => {
+-		expect(
+-			isReply(
+-				{
+-					get id(): string {
+-						throw new Error('hostile id')
+-					},
+-				},
+-				id,
+-			),
+-		).toBe(false)
+-		expect(
+-			isReply(
+-				{
+-					id,
+-					get ok(): boolean {
+-						throw new Error('hostile ok')
+-					},
+-				},
+-				id,
+-			),
+-		).toBe(false)
+-		expect(
+-			isReply(
+-				{
+-					id,
+-					ok: false,
+-					get error(): string {
+-						throw new Error('hostile error')
+-					},
+-				},
+-				id,
+-			),
+-		).toBe(false)
+-	})
+-})

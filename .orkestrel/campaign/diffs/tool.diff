@@ -1,0 +1,281 @@
+### git show --stat c266d02
+c266d02 Apply the verified src-audit fixes
+
+ guides/tool.md                           | 28 +++++++++------
+ src/core/helpers.ts                      | 37 ++++++++++++++++++++
+ src/core/index.ts                        |  1 +
+ src/core/tools/ToolManager.ts            | 21 +++---------
+ src/core/types.ts                        |  2 +-
+ tests/src/core/helpers.test.ts           | 59 ++++++++++++++++++++++++++++++++
+ tests/src/core/tools/ToolManager.test.ts | 12 ++++---
+ 7 files changed, 127 insertions(+), 33 deletions(-)
+
+### git show c266d02
+c266d02 Apply the verified src-audit fixes
+
+diff --git a/guides/tool.md b/guides/tool.md
+index af8252e..a109adb 100644
+--- a/guides/tool.md
++++ b/guides/tool.md
+@@ -56,6 +56,14 @@ The call-envelope guard, from [`validators.ts`](../src/core/validators.ts).
+ | ------------ | -------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `isToolCall` | function | `(value: unknown) => value is ToolCall` | Total guard for the envelope: a plain record with string `id` and `name` and a plain-record `arguments`. Malformed or hostile input returns `false`; it never throws. |
+ 
++### Helpers
++
++The advertised-definition projection, from [`helpers.ts`](../src/core/helpers.ts).
++
++| Name               | Kind     | Signature                                 | Behavior                                                                                                                                  |
++| ------------------ | -------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
++| `toolToDefinition` | function | `(tool: ToolInterface) => ToolDefinition` | Projects one tool onto a fresh definition, advertising its summary in place of its full description and carrying its schema by reference. |
++
+ ### Factories
+ 
+ From [`factories.ts`](../src/core/factories.ts) — the constructor-free way to reach both
+@@ -97,15 +105,15 @@ The public call-signature members of each behavioral interface, one table per in
+ 
+ #### `ToolManagerInterface`
+ 
+-| Method        | Returns                                        | Behavior                                                                                    |
+-| ------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+-| `add`         | `void`                                         | Registers one tool or a readonly batch; a repeated name overwrites in place.                |
+-| `tool`        | `ToolInterface \| undefined`                   | Finds one registered tool by name, returning the exact registered instance.                 |
+-| `tools`       | `readonly ToolInterface[]`                     | Lists the registered tools in insertion order.                                              |
+-| `definitions` | `readonly ToolDefinition[]`                    | Lists the advertised definitions, preferring each tool's summary over its full description. |
+-| `execute`     | `Promise<ToolResult \| readonly ToolResult[]>` | Executes one call or a readonly batch with per-call error isolation.                        |
+-| `remove`      | `boolean`                                      | Removes one name or a readonly batch of names and reports whether any tool was present.     |
+-| `clear`       | `void`                                         | Removes every registered tool.                                                              |
++| Method        | Returns                                        | Behavior                                                                                        |
++| ------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
++| `add`         | `void`                                         | Registers one tool or a readonly batch; a repeated name overwrites in place.                    |
++| `tool`        | `ToolInterface \| undefined`                   | Finds one registered tool by name, returning the exact registered instance.                     |
++| `tools`       | `readonly ToolInterface[]`                     | Lists the registered tools in insertion order.                                                  |
++| `definitions` | `readonly ToolDefinition[]`                    | Lists the advertised definitions, preferring each tool's summary over its full description.     |
++| `execute`     | `Promise<ToolResult \| readonly ToolResult[]>` | Executes one call or a readonly batch with per-call error isolation.                            |
++| `remove`      | `boolean`                                      | Removes one name or a readonly batch of names and reports whether every named tool was present. |
++| `clear`       | `void`                                         | Removes every registered tool.                                                                  |
+ 
+ ## Anatomy of a tool
+ 
+@@ -168,7 +176,7 @@ tools.tools() // a fresh readonly array, in insertion order
+ tools.definitions() // the same order, projected to plain ToolDefinition values
+ 
+ tools.remove('echo') // true — the tool was present
+-tools.remove(['now', 'ghost']) // true — any one removal counts
++tools.remove(['now', 'ghost']) // false — 'ghost' was never registered, so not every name succeeded
+ tools.clear() // back to empty
+ ```
+ 
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+new file mode 100644
+index 0000000..2d69d85
+--- /dev/null
++++ b/src/core/helpers.ts
+@@ -0,0 +1,37 @@
++import type { ToolDefinition, ToolInterface } from './types.js'
++
++/**
++ * Projects a tool onto the plain definition advertised to a caller.
++ *
++ * @remarks
++ * The projection is a fresh object carrying `name`, then `description` only when the
++ * tool authored a summary or a description, then `parameters` only when the tool
++ * authored a schema. An authored `summary` is advertised in place of the full
++ * `description`, which stays on the tool for direct lookup. The parameter schema is
++ * copied by reference and never cloned, so the definition is never a live handle on
++ * the tool's handler.
++ *
++ * @param tool - The tool to project
++ * @returns A fresh definition carrying only the fields the tool authored
++ *
++ * @example
++ * ```ts
++ * import { Tool, toolToDefinition } from '@orkestrel/tool'
++ *
++ * const echo = new Tool({ name: 'echo', summary: 'Echo a value.', execute: (args) => args.value })
++ * toolToDefinition(echo) // { name: 'echo', description: 'Echo a value.' }
++ * ```
++ */
++export function toolToDefinition(tool: ToolInterface): ToolDefinition {
++	const definition: {
++		name: string
++		description?: string
++		parameters?: Readonly<Record<string, unknown>>
++	} = {
++		name: tool.name,
++	}
++	const description = tool.summary ?? tool.description
++	if (description !== undefined) definition.description = description
++	if (tool.parameters !== undefined) definition.parameters = tool.parameters
++	return definition
++}
+diff --git a/src/core/index.ts b/src/core/index.ts
+index 7994657..d0f3e07 100644
+--- a/src/core/index.ts
++++ b/src/core/index.ts
+@@ -1,4 +1,5 @@
+ export * from './types.js'
++export * from './helpers.js'
+ export * from './validators.js'
+ export * from './factories.js'
+ export * from './tools/Tool.js'
+diff --git a/src/core/tools/ToolManager.ts b/src/core/tools/ToolManager.ts
+index 44c35b2..70fcfd0 100644
+--- a/src/core/tools/ToolManager.ts
++++ b/src/core/tools/ToolManager.ts
+@@ -6,6 +6,7 @@ import type {
+ 	ToolResult,
+ } from '../types.js'
+ import { attempt, isArray } from '@orkestrel/contract'
++import { toolToDefinition } from '../helpers.js'
+ 
+ /**
+  * An insertion-ordered tool registry with per-call error isolation.
+@@ -56,7 +57,7 @@ export class ToolManager implements ToolManagerInterface {
+ 	}
+ 
+ 	definitions(): readonly ToolDefinition[] {
+-		return [...this.#tools.values()].map((tool) => this.#definition(tool))
++		return [...this.#tools.values()].map((tool) => toolToDefinition(tool))
+ 	}
+ 
+ 	execute(call: ToolCall): Promise<ToolResult>
+@@ -70,9 +71,9 @@ export class ToolManager implements ToolManagerInterface {
+ 	remove(names: readonly string[]): boolean
+ 	remove(names: string | readonly string[]): boolean {
+ 		if (isArray(names)) {
+-			let removed = false
++			let removed = true
+ 			for (const name of names) {
+-				if (this.#tools.delete(name)) removed = true
++				if (!this.#tools.delete(name)) removed = false
+ 			}
+ 			return removed
+ 		}
+@@ -111,18 +112,4 @@ export class ToolManager implements ToolManagerInterface {
+ 			}
+ 		}
+ 	}
+-
+-	#definition(tool: ToolInterface): ToolDefinition {
+-		const definition: {
+-			name: string
+-			description?: string
+-			parameters?: Readonly<Record<string, unknown>>
+-		} = {
+-			name: tool.name,
+-		}
+-		const description = tool.summary ?? tool.description
+-		if (description !== undefined) definition.description = description
+-		if (tool.parameters !== undefined) definition.parameters = tool.parameters
+-		return definition
+-	}
+ }
+diff --git a/src/core/types.ts b/src/core/types.ts
+index a2c2bb7..c23eaba 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -192,7 +192,7 @@ export interface ToolManagerInterface {
+ 	 * Remove a batch of registered tools.
+ 	 *
+ 	 * @param names - The tool names to remove
+-	 * @returns Whether any named tool was present
++	 * @returns True if every named tool was present; false otherwise
+ 	 */
+ 	remove(names: readonly string[]): boolean
+ 	/**
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+new file mode 100644
+index 0000000..6011b32
+--- /dev/null
++++ b/tests/src/core/helpers.test.ts
+@@ -0,0 +1,59 @@
++import { Tool, toolToDefinition } from '@src/core'
++import { describe, expect, it } from 'vitest'
++
++describe('toolToDefinition', () => {
++	it('projects the name alone when nothing else was authored', () => {
++		const tool = new Tool({ name: 'echo', execute: (args) => args.value })
++
++		const definition = toolToDefinition(tool)
++
++		expect(definition).toEqual({ name: 'echo' })
++		expect(Object.keys(definition)).toEqual(['name'])
++	})
++
++	it('advertises the summary in place of the full description', () => {
++		const tool = new Tool({
++			name: 'add',
++			description: 'Add two numeric values and return their sum.',
++			summary: 'Add two numbers.',
++			execute: () => 0,
++		})
++
++		expect(toolToDefinition(tool)).toEqual({ name: 'add', description: 'Add two numbers.' })
++		expect(tool.description).toBe('Add two numeric values and return their sum.')
++	})
++
++	it('advertises the full description when no summary was authored', () => {
++		const tool = new Tool({
++			name: 'now',
++			description: 'Current epoch milliseconds.',
++			execute: () => 0,
++		})
++
++		expect(toolToDefinition(tool)).toEqual({
++			name: 'now',
++			description: 'Current epoch milliseconds.',
++		})
++	})
++
++	it('carries the parameter schema by reference and orders the projected keys', () => {
++		const parameters = { type: 'object', properties: { value: { type: 'string' } } }
++		const tool = new Tool({
++			name: 'echo',
++			description: 'Echo a value.',
++			parameters,
++			execute: (args) => args.value,
++		})
++
++		const definition = toolToDefinition(tool)
++
++		expect(Object.keys(definition)).toEqual(['name', 'description', 'parameters'])
++		expect(definition.parameters).toBe(parameters)
++	})
++
++	it('projects a fresh object on every call', () => {
++		const tool = new Tool({ name: 'echo', execute: (args) => args.value })
++
++		expect(toolToDefinition(tool)).not.toBe(toolToDefinition(tool))
++	})
++})
+diff --git a/tests/src/core/tools/ToolManager.test.ts b/tests/src/core/tools/ToolManager.test.ts
+index a084243..737198d 100644
+--- a/tests/src/core/tools/ToolManager.test.ts
++++ b/tests/src/core/tools/ToolManager.test.ts
+@@ -621,18 +621,20 @@ describe('ToolManager removal', () => {
+ 		expect(manager.count).toBe(0)
+ 	})
+ 
+-	it('removes a batch when any named tool is present', () => {
++	it('removes a batch and reports true only when every named tool was present', () => {
+ 		const manager = new ToolManager()
+ 		manager.add([
+ 			new Tool({ name: 'a', execute: () => 0 }),
+ 			new Tool({ name: 'b', execute: () => 0 }),
++			new Tool({ name: 'c', execute: () => 0 }),
+ 		])
+ 
+-		expect(manager.remove(['a', 'missing'])).toBe(true)
++		expect(manager.remove(['a', 'missing'])).toBe(false)
+ 		expect(manager.remove(['absent'])).toBe(false)
+-		expect(manager.remove([])).toBe(false)
+-		expect(manager.tools().map((tool) => tool.name)).toEqual(['b'])
+-		expect(manager.definitions().map((definition) => definition.name)).toEqual(['b'])
++		expect(manager.remove(['b', 'c'])).toBe(true)
++		expect(manager.remove([])).toBe(true)
++		expect(manager.tools().map((tool) => tool.name)).toEqual([])
++		expect(manager.definitions().map((definition) => definition.name)).toEqual([])
+ 	})
+ 
+ 	it('executes a removed tool as not found and re-adds it at the end', async () => {

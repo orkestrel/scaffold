@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+import sys
+sys.path.insert(0, '/home/user/scaffold/tmp/units/voice/edits')
+from apply import apply
+P = '/home/user/fleet/terminal/src/core/helpers.ts'
+pairs = [
+ ("/** Whether a single character is a printable (non-control) character — used by {@link parseKey}'s char fallback. */",
+  "/** Checks whether a single character is a printable (non-control) character — used by {@link parseKey}'s char fallback. */"),
+ (" * Build a complete {@link PromptTheme} by merging a partial one over\n",
+  " * Builds a complete {@link PromptTheme} by merging a partial one over\n"),
+ (" * Sanitize text for one single-line display slot. Composes console's ANSI {@link strip} and C0\n",
+  " * Sanitizes text for one single-line display slot. Composes console's ANSI {@link strip} and C0\n"),
+ (" * Sanitize every terminal-readable string in a parsed form schema.\n",
+  " * Sanitizes every terminal-readable string in a parsed form schema.\n"),
+ (" * Sanitize every glyph a wire-supplied {@link PromptThemeOptions} carries for a single-line display\n",
+  " * Sanitizes every glyph a wire-supplied {@link PromptThemeOptions} carries for a single-line display\n"),
+ (" * Build the initial text-field key state.\n", " * Builds the initial text-field key state.\n"),
+ (" * Advance an input prompt by one {@link KeyEvent}",
+  " * Advances an input prompt by one {@link KeyEvent}"),
+ (" * Build the initial password-field key state.\n", " * Builds the initial password-field key state.\n"),
+ (" * Advance a password prompt by one {@link KeyEvent}", " * Advances a password prompt by one {@link KeyEvent}"),
+ (" * Build the initial confirm-field key state.\n", " * Builds the initial confirm-field key state.\n"),
+ (" * Advance a confirm prompt by one {@link KeyEvent}", " * Advances a confirm prompt by one {@link KeyEvent}"),
+ (" * Build the initial select-field key state.\n", " * Builds the initial select-field key state.\n"),
+ (" * Advance a select prompt by one {@link KeyEvent}", " * Advances a select prompt by one {@link KeyEvent}"),
+ (" * Build the initial checkbox-field key state.\n", " * Builds the initial checkbox-field key state.\n"),
+ (" * Advance a checkbox prompt by one {@link KeyEvent}", " * Advances a checkbox prompt by one {@link KeyEvent}"),
+ ("/** Toggle `index` in a readonly index list — copy-on-write, returning the new sorted-by-insertion list. */",
+  "/** Toggles `index` in a readonly index list — copy-on-write, returning the new sorted-by-insertion list. */"),
+ (" * Build the initial editor-field key state.\n", " * Builds the initial editor-field key state.\n"),
+ (" * Advance an editor prompt by one {@link KeyEvent}", " * Advances an editor prompt by one {@link KeyEvent}"),
+ (" * The default {@link import('./types.js').TimerHandler} — a thin host `setTimeout` / `clearTimeout`\n",
+  " * Provides the default {@link import('./types.js').TimerHandler} — a thin host `setTimeout` / `clearTimeout`\n"),
+ ("/** The default {@link import('./types.js').FetchHandler} — the global `fetch`, adapted to the minimal injected shape the {@link import('./PromptClient.js').PromptClient} uses. */",
+  "/** Provides the default {@link import('./types.js').FetchHandler} — the global `fetch`, adapted to the minimal injected shape the {@link import('./PromptClient.js').PromptClient} uses. */"),
+ (" * Whether a caught value is an `AbortError` — the {@link import('./PromptClient.js').PromptClient}\n",
+  " * Checks whether a caught value is an `AbortError` — the {@link import('./PromptClient.js').PromptClient}\n"),
+ (" * Whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a\n",
+  " * Checks whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a\n"),
+ (" * @returns `true` when `url` is a non-loopback `http://` endpoint\n",
+  " * @returns True if `url` is a non-loopback `http://` endpoint; false otherwise\n"),
+ ("/** Serialize a parked {@link PendingForm} into a {@link WireEvent}. */",
+  "/** Serializes a parked {@link PendingForm} into a {@link WireEvent}. */"),
+ ("/** Serialize a parked prompt's expiry or release into a {@link WireEvent} — event `'expire'`, `data` the JSON-stringified `{ id }` payload. */",
+  "/** Serializes a parked prompt's expiry or release into a {@link WireEvent} — event `'expire'`, `data` the JSON-stringified `{ id }` payload. */"),
+]
+apply(P, pairs)

@@ -1,0 +1,2547 @@
+diff --git a/guides/toolbox.md b/guides/toolbox.md
+index c4b09bc..49ec947 100644
+--- a/guides/toolbox.md
++++ b/guides/toolbox.md
+@@ -2,7 +2,7 @@
+ 
+ > Concrete, LLM-callable **tools** for the `@orkestrel` line — workflow authoring, workspace editing, sub-agent delegation, terminal-mediated prompting, database and relation access, and schema inference / endpoint wrapping — over the [`@orkestrel/tool`](tool.md) runtime, with pluggable stores. The runtime supplies `ToolInterface`, registry execution, and result isolation; see [`tool.md`](tool.md). This package supplies the concrete behavior through one factory per tool.
+ 
+-`createWorkflowTool` and `createWorkspaceTool` own their full handler logic (the workflow authoring surface and the workspace editing surface respectively). The workflow tool composes opaque host `functions` plus raw live `agents` through `createWorkflowFunctions`, then forwards that frozen target registry and the optional `store` to `@orkestrel/workflow` 0.0.8, whose runner owns named-run drivability, checkpoint persistence, and `durable` / `fault`; the workspace tool retains its distinct manager/store composition. `createAgentTool` (sub-agent delegation over an `AgentRegistryInterface`) has its own `ConversationStoreInterface` persistence slot. All three tools additionally advertise a lean `summary` (`@orkestrel/tool`'s `ToolInterface.summary` / `ToolManagerInterface.definitions()` projection) in place of their full teaching `description`; `createDescribeTool` is the on-demand expansion seam. `createToolFunction` adapts an ordinary registered runtime tool, while `createAgentFunction` returns a frozen metadata-bearing adapter and uses Agent-owned `agentResultToJSON` for the exact result projection. The authoring umbrella (`WorkflowSteps` / `WorkflowDraft` shapes, `createWorkflowDraftContract`, lineage helpers, `expandSteps` / `completeDraft`, `workflowToolSummary`, `MAX_WORKFLOW_DEPTH`) lets a small model author a whole recursion-safe tree in one call.
++`createWorkflowTool` and `createWorkspaceTool` own their full handler logic (the workflow authoring surface and the workspace editing surface respectively). The workflow tool composes opaque host `functions` plus raw live `agents` through `createWorkflowFunctions`, then forwards that frozen target registry and the optional `store` to `@orkestrel/workflow` 0.0.8, whose runner owns named-run drivability, checkpoint persistence, and `durable` / `fault`; the workspace tool retains its distinct manager/store composition. `createAgentTool` (sub-agent delegation over an `AgentRegistryInterface`) has its own `ConversationStoreInterface` persistence slot. All three tools additionally advertise a lean `summary` (`@orkestrel/tool`'s `ToolInterface.summary` / `ToolManagerInterface.definitions()` projection) in place of their full teaching `description`; `createDescribeTool` is the on-demand expansion seam. `createToolFunction` adapts an ordinary registered runtime tool, while `createAgentFunction` returns a frozen metadata-bearing adapter and uses Agent-owned `agentResultToJSON` for the exact result projection. The authoring umbrella (`WorkflowSteps` / `WorkflowDraft` shapes, `createWorkflowDraftContract`, lineage helpers, `expandSteps` / `completeDraft`, `summarizeWorkflow`, `MAX_WORKFLOW_CHAIN`) lets a small model author a whole recursion-safe tree in one call.
+ 
+ `createPromptTool` / `createAnswerTool` are the ASK / ANSWER halves of a terminal-mediated human-in-the-loop seam over a live `TerminalManagerInterface` (`@orkestrel/terminal`). One call asks a whole multi-field FORM, not a single question. `createPromptTool` takes `{ to, schema }` per call, parses the model-supplied `schema` with `@orkestrel/form`'s `parseForm`, constructs the live form with `createForm`, and BLOCKS the calling agent turn until the addressed terminal answers (`from` FIXED at construction) — resolving with one `FormValues` record keyed by field name, re-surfacing a prompt cycle as `DEADLOCK` and an unanswered expiry as `EXPIRE`. `createAnswerTool` lists the forms addressed to a FIXED `to` terminal as `{ id, from, schema }` records and answers one by `{ id, values }`, narrowing the model-supplied `values` with `@orkestrel/form`'s `isFormValues` before applying it, re-surfacing a failed apply as `ANSWER`. `createTerminalRoutes` ([`src/server`](../src/server), the `@src/server` barrel) is the wire bridge for the SAME manager — two structural `{ method, path, handler }` route records (GET SSE stream + POST answer, one shared `:name`-templated path), carrying NO dependency on `@orkestrel/router`'s own `Route` type so a consumer mounts them against any router accepting that two-arg handler shape, and byte-compatible with `@orkestrel/terminal`'s own `PromptClient` (same GET url streams, same POST url answers, same `{ id, values }` body, same JSON answer `Result` body, same `x-orkestrel-token` header).
+ 
+@@ -50,7 +50,7 @@ The factories `createDatabaseTool` and `createTerminalRoutes` remain the compact
+ | API                | Kind  | Summary                                                                                                                        |
+ | ------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------ |
+ | `DatabaseResolver` | class | Resolve and cache a database handle from the tool's live handles, stored definitions, driver registry, and optional generator. |
+-| `TerminalRoutes`   | class | Own the shared terminal-route options and bound GET/POST handlers projected by `createTerminalRoutes`.                         |
++| `TerminalBridge`   | class | Own the shared terminal-route options and bound GET/POST handlers projected by `createTerminalRoutes`.                         |
+ 
+ ### Errors
+ 
+@@ -75,29 +75,36 @@ The total `(value: unknown) => value is T` guards this package applies at its un
+ 
+ Pure, side-effect-free, exhaustively unit-tested under AGENTS' export-and-test-reusable-logic law and narrow-untrusted-input-with-guards rule — the lenient-authoring synthesis path and the ancestry tags shared by both delegating tools.
+ 
+-| API                   | Kind     | Behavior                                                                                                                                                                                                                               |
+-| --------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `workflowTag`         | function | The ancestry identifier of a workflow in a run chain — `workflow:<id>`.                                                                                                                                                                |
+-| `agentTag`            | function | The ancestry identifier of an agent in a run chain — `agent:<name>`.                                                                                                                                                                   |
+-| `workflowToolSummary` | function | Project a native workflow result into `{ status, count, durable?, fault? }`, preserving optional durability fields only when present.                                                                                                  |
+-| `extendLineage`       | function | Append one workflow or agent tag and return a validated frozen lineage copy.                                                                                                                                                           |
+-| `lineageOf`           | function | Build a validated, copied, and frozen alternating unique workflow/agent lineage; malformed configured input throws `ToolboxError('TOOL')`.                                                                                             |
+-| `deriveWorkflowDepth` | function | Derive zero-based workflow depth from workflow-tag count: empty/root is `0`, then one per nested workflow.                                                                                                                             |
+-| `completeDraft`       | function | Complete a `WorkflowDraft` into a strict `WorkflowDefinition` — synthesize missing ids positionally, default missing names to their id.                                                                                                |
+-| `completePhaseDraft`  | function | Complete one `PhaseDraft` into a strict phase definition — the per-phase step of `completeDraft`.                                                                                                                                      |
+-| `completeTaskDraft`   | function | Complete one `TaskDraft` into a strict task definition — the per-task leaf step of `completeDraft`.                                                                                                                                    |
+-| `expandSteps`         | function | Expand a flat `WorkflowSteps` blob into a strict `WorkflowDefinition` — each step becomes a one-task phase, in order.                                                                                                                  |
+-| `terminalToolCode`    | function | Classify a caught error into a `ToolboxErrorCode` for `createPromptTool` / `createAnswerTool` — `TerminalError('DEADLOCK'\|'EXPIRE')` maps 1:1, every other `TerminalError` maps to `TOOL`, a non-`TerminalError` returns `undefined`. |
+-| `expandTables`        | function | Compile a `TableSpec` into the `@orkestrel/database` `TableMap` it configures — each `ColumnSpec` maps to its primitive shaper, wrapped in `optionalShape` when `optional: true`.                                                      |
+-| `columnShape`         | function | Compile one `ColumnSpec` into its `@orkestrel/database` column shape — the per-column leaf `expandTables` maps over.                                                                                                                   |
+-| `kindShape`           | function | Map one `ColumnKind` to its primitive `@orkestrel/database` shape — the leaf `columnShape` wraps.                                                                                                                                      |
+-| `databaseToolCode`    | function | Map a caught error to the granular `DatabaseErrorCode`, or `undefined` if `error` is not a `DatabaseError` — the classification step `createDatabaseTool` / `createRelationTool` throw a `DATABASE` `ToolboxError` from.               |
+-| `relationToolCode`    | function | Map a caught error to the granular `RelationErrorCode`, or `undefined` if `error` is not a `RelationError` — the classification step `createRelationTool` throws a `RELATION` `ToolboxError` from.                                     |
+-| `expandInclude`       | function | Expand a flat dot-path `include` list into a live `@orkestrel/relation` `Include` tree; an empty segment or a path exceeding `depth` throws a typed `TOOL` `ToolboxError`.                                                             |
+-| `relationManagerOf`   | function | Resolve which registered `RelationManagerInterface` a relation-tool call addresses — an explicit `name` miss, or an omitted `name` with more/less than one registered manager, throws a typed `TOOL` `ToolboxError`.                   |
+-| `relationModelOf`     | function | Resolve a `model` name against a live `RelationManagerInterface` — an unknown model throws a typed `TOOL` `ToolboxError`.                                                                                                              |
+-| `clampQuery`          | function | Clamp a `'records'` call's query to a row cap, and build the PROBE query (`limit` bumped by one) used to detect truncation without a separate `count` round trip.                                                                      |
+-| `queryOf`             | function | Normalize the database tool's parsed SERIALIZED query into a live `@orkestrel/database` `QueryInput` — defaults each condition's omitted `connector` to `'and'`.                                                                       |
++| API                      | Kind     | Behavior                                                                                                                                                                                                                               |
++| ------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `tagWorkflow`            | function | The ancestry identifier of a workflow in a run chain — `workflow:<id>`.                                                                                                                                                                |
++| `tagAgent`               | function | The ancestry identifier of an agent in a run chain — `agent:<name>`.                                                                                                                                                                   |
++| `summarizeWorkflow`      | function | Project a native workflow result into `{ status, count, durable?, fault? }`, preserving optional durability fields only when present.                                                                                                  |
++| `extendLineage`          | function | Append one workflow or agent tag and return a validated frozen lineage copy.                                                                                                                                                           |
++| `normalizeLineage`       | function | Build a validated, copied, and frozen alternating unique workflow/agent lineage; malformed configured input throws `ToolboxError('TOOL')`.                                                                                             |
++| `deriveWorkflowDepth`    | function | Derive zero-based workflow depth from workflow-tag count: empty/root is `0`, then one per nested workflow.                                                                                                                             |
++| `completeDraft`          | function | Complete a `WorkflowDraft` into a strict `WorkflowDefinition` — synthesize missing ids positionally, default missing names to their id.                                                                                                |
++| `completePhaseDraft`     | function | Complete one `PhaseDraft` into a strict phase definition — the per-phase step of `completeDraft`.                                                                                                                                      |
++| `completeTaskDraft`      | function | Complete one `TaskDraft` into a strict task definition — the per-task leaf step of `completeDraft`.                                                                                                                                    |
++| `expandSteps`            | function | Expand a flat `WorkflowSteps` blob into a strict `WorkflowDefinition` — each step becomes a one-task phase, in order.                                                                                                                  |
++| `inferTerminalCode`      | function | Classify a caught error into a `ToolboxErrorCode` for `createPromptTool` / `createAnswerTool` — `TerminalError('DEADLOCK'\|'EXPIRE')` maps 1:1, every other `TerminalError` maps to `TOOL`, a non-`TerminalError` returns `undefined`. |
++| `databaseToolCode`       | function | Map a caught error to the granular `DatabaseErrorCode`, or `undefined` if `error` is not a `DatabaseError` — the classification step `createDatabaseTool` / `createRelationTool` throw a `DATABASE` `ToolboxError` from.               |
++| `relationToolCode`       | function | Map a caught error to the granular `RelationErrorCode`, or `undefined` if `error` is not a `RelationError` — the classification step `createRelationTool` throws a `RELATION` `ToolboxError` from.                                     |
++| `expandInclude`          | function | Expand a flat dot-path `include` list into a live `@orkestrel/relation` `Include` tree; an empty segment or a path exceeding `depth` throws a typed `TOOL` `ToolboxError`.                                                             |
++| `resolveRelationManager` | function | Resolve which registered `RelationManagerInterface` a relation-tool call addresses — an explicit `name` miss, or an omitted `name` with more/less than one registered manager, throws a typed `TOOL` `ToolboxError`.                   |
++| `resolveRelationModel`   | function | Resolve a `model` name against a live `RelationManagerInterface` — an unknown model throws a typed `TOOL` `ToolboxError`.                                                                                                              |
++| `clampQuery`             | function | Clamp a `'records'` call's query to a row cap, and build the PROBE query (`limit` bumped by one) used to detect truncation without a separate `count` round trip.                                                                      |
++| `normalizeQuery`         | function | Normalize the database tool's parsed SERIALIZED query into a live `@orkestrel/database` `QueryInput` — defaults each condition's omitted `connector` to `'and'`.                                                                       |
++
++### Compilers
++
++The `TableSpec` column DSL compiled into the live `@orkestrel/database` `TableMap` a `createDatabase` call accepts — one composite walk over the spec, and the two leaves it maps with.
++
++| API                 | Kind     | Behavior                                                                                                                                                                          |
++| ------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `expandTables`      | function | Compile a `TableSpec` into the `@orkestrel/database` `TableMap` it configures — each `ColumnSpec` maps to its primitive shaper, wrapped in `optionalShape` when `optional: true`. |
++| `compileColumn`     | function | Compile one `ColumnSpec` into its `@orkestrel/database` column shape — the per-column leaf `expandTables` maps over.                                                              |
++| `compileColumnKind` | function | Compile one `ColumnKind` into its primitive `@orkestrel/database` shape — the leaf `compileColumn` wraps.                                                                         |
+ 
+ ### Shapes
+ 
+@@ -137,10 +144,10 @@ The shape VALUES each `create*Tool` factory (and `createWorkflowDraftContract`)
+ | Constant                       | Kind  | Value                                                                                                                                                                                    |
+ | ------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `AGENT_TOOL_NAME`              | const | The name (`'agent'`) `createAgentTool` advertises by default.                                                                                                                            |
+-| `AGENT_TOOL_DEPTH`             | const | The maximum sub-agent delegation nesting depth (`8`) — deliberately a SEPARATE constant from `MAX_WORKFLOW_DEPTH`.                                                                       |
++| `AGENT_TOOL_DEPTH`             | const | The maximum sub-agent delegation nesting depth (`8`) — deliberately a SEPARATE constant from `MAX_WORKFLOW_CHAIN`.                                                                       |
+ | `AGENT_TOOL_DESCRIPTION`       | const | The multi-line description `createAgentTool` advertises — `task` required, `provider`/`tools`/`system` per-call overrides.                                                               |
+ | `AGENT_TOOL_SUMMARY`           | const | The lean one-sentence `summary` `createAgentTool` advertises in place of `AGENT_TOOL_DESCRIPTION` (`ToolInterface.summary`).                                                             |
+-| `MAX_WORKFLOW_DEPTH`           | const | The maximum zero-based workflow nesting depth (`8`): root plus eight nested workflows is allowed; a ninth nested workflow is rejected.                                                   |
++| `MAX_WORKFLOW_CHAIN`           | const | The maximum zero-based workflow nesting depth (`8`): root plus eight nested workflows is allowed; a ninth nested workflow is rejected.                                                   |
+ | `WORKFLOW_TOOL_NAME`           | const | The name (`'workflow'`) `createWorkflowTool` advertises by default, and the key `createAgentFunction` binds a nested tool under.                                                         |
+ | `WORKFLOW_TOOL_FLAT_EXAMPLE`   | const | A complete FLAT authoring example (`{ name, steps: [{ name }] }`) embedded verbatim in `WORKFLOW_TOOL_DESCRIPTION`.                                                                      |
+ | `WORKFLOW_TOOL_NESTED_EXAMPLE` | const | A minimal NESTED authoring example (a full `WorkflowDefinition`) — the advanced-form example in the description.                                                                         |
+@@ -177,10 +184,10 @@ The shape VALUES each `create*Tool` factory (and `createWorkflowDraftContract`)
+ 
+ | Type                       | Kind      | Shape                                                                                                                                                                                                                                                                                                                              |
+ | -------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `TaskDraft`                | interface | `{ id?, name?, description?, run?, retries?, timeout? }` — a `TaskDefinition` (`@orkestrel/workflow`) with OPTIONAL id/name.                                                                                                                                                                                                       |
++| `TaskDraft`                | interface | `{ id?, name?, description?, behavior?, retries?, timeout? }` — a `TaskDefinition` (`@orkestrel/workflow`) with OPTIONAL id/name.                                                                                                                                                                                                  |
+ | `PhaseDraft`               | interface | `{ id?, name?, description?, tasks, concurrency?, bail? }` — a `PhaseDefinition` with OPTIONAL id/name + `TaskDraft` tasks.                                                                                                                                                                                                        |
+ | `WorkflowDraft`            | interface | `{ id?, name?, description?, phases, bail? }` — a `WorkflowDefinition` with OPTIONAL id/name at all three levels.                                                                                                                                                                                                                  |
+-| `WorkflowStep`             | interface | `{ name }` — one flat step; `name` is a REGISTERED behavior name (becomes the task's `run`, not a human label).                                                                                                                                                                                                                    |
++| `WorkflowStep`             | interface | `{ name }` — one flat step; `name` is a REGISTERED behavior name (becomes the task's `behavior`, not a human label).                                                                                                                                                                                                               |
+ | `WorkflowSteps`            | interface | `{ name?, steps }` — the FLAT authoring blob `createWorkflowTool` advertises; `name` is also the deterministic workflow id, and each step → a one-task phase via `expandSteps`.                                                                                                                                                    |
+ | `WorkflowToolResult`       | interface | `{ status, count, durable?, fault? }` — the exact JSON-safe summary returned by `createWorkflowTool`; optional native persistence outcome fields appear only when the runner supplies them.                                                                                                                                        |
+ | `WorkflowLineage`          | type      | `readonly string[]` — an immutable alternating chain of unique `workflow:` / `agent:` tags beginning with a workflow.                                                                                                                                                                                                              |
+@@ -202,7 +209,7 @@ The shape VALUES each `create*Tool` factory (and `createWorkflowDraftContract`)
+ | `DatabaseDefinition`       | interface | `{ id, driver, tables, primary?, indexes?, version? }` — a database's CONFIG-ONLY definition (never a live handle); the durable blueprint `createDatabaseTool` builds a live database from and a `DefinitionStoreInterface` persists.                                                                                              |
+ | `DatabaseDefinitionRow`    | interface | `{ id, definition }` — one opaque persisted row (`definition: unknown`, narrowed with `isDatabaseDefinition` on read) — the shape `DatabaseDefinitionStore`'s backing table reads/writes.                                                                                                                                          |
+ | `DefinitionStoreInterface` | interface | `{ get, set, delete }` — the point-access persistence seam for `DatabaseDefinition` configs under AGENTS' Stores rule; every primitive async, `delete` of an absent id a no-op.                                                                                                                                                    |
+-| `DatabaseQueryInput`       | interface | `{ conditions?, order?, limit?, offset? }` — the SERIALIZED wire query a database-tool call carries (`values` always an array, `connector` optional on the last condition); `queryOf` normalizes it into a live `@orkestrel/database` `QueryInput`.                                                                                |
++| `DatabaseQueryInput`       | interface | `{ conditions?, order?, limit?, offset? }` — the SERIALIZED wire query a database-tool call carries (`values` always an array, `connector` optional on the last condition); `normalizeQuery` normalizes it into a live `@orkestrel/database` `QueryInput`.                                                                         |
+ | `ClampedQuery`             | interface | `{ query, limit }` — the PROBE query (`limit` bumped by one) and effective row ceiling `clampQuery` returns.                                                                                                                                                                                                                       |
+ | `DatabaseToolOptions`      | interface | `{ name?, description?, databases?, store?, drivers?, generator?, limit?, timeout?, readonly? }` — seed handles, store, drivers, generator, row cap, validated table-operation signal timeout, and mutation lock.                                                                                                                  |
+ | `RelationToolOptions`      | interface | `{ name?, description?, managers, limit?, depth? }` — `createRelationTool`'s REQUIRED live `RelationManagerInterface` registry, row cap, and `include` depth cap.                                                                                                                                                                  |
+@@ -220,10 +227,10 @@ The POST endpoint takes `{ id, values }`, admits the body only when `id` is a no
+ | API                     | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+ | ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+ | `createTerminalRoutes`  | function  | Build the two `TerminalRoute` records (GET SSE form stream, POST `{ id, values }` answer) bridging a `TerminalManagerInterface`'s endpoints onto the wire, byte-compatible with `PromptClient`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `Method`                | type      | The HTTP method literal a `TerminalRoute` declares — the same union `@orkestrel/router`'s `Method` accepts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
++| `TerminalRouteMethod`   | type      | The HTTP method literal a `TerminalRoute` declares — the same union `@orkestrel/router`'s `Method` type accepts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+ | `TerminalRouteContext`  | interface | `{ params }` — the minimal route-dispatch context a `TerminalRoute` handler reads (the frozen, URL-decoded `:name` path param).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+ | `TerminalRoute`         | interface | `{ method, path, handler }` — one structural route record `createTerminalRoutes` returns.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `TerminalRoutesOptions` | interface | `{ path?, token?, keepalive?, timer?, limit? }` — the shared mount path, optional `TerminalToken` gate, SSE keepalive interval, injected `TimerHandler`, and POST body byte cap (defaults to `@orkestrel/server`'s `DEFAULT_BODY_LIMIT`, 1 MiB; a non-finite limit also defaults, a negative limit clamps to zero, and over-limit input is `413`, ignoring any `Content-Length` header).                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
++| `TerminalBridgeOptions` | interface | `{ path?, token?, keepalive?, timer?, limit? }` — the shared mount path, optional `TerminalToken` gate, SSE keepalive interval, injected `TimerHandler`, and POST body byte cap (defaults to `@orkestrel/server`'s `DEFAULT_BODY_LIMIT`, 1 MiB; a non-finite limit also defaults, a negative limit clamps to zero, and over-limit input is `413`, ignoring any `Content-Length` header).                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+ | `TerminalToken`         | type      | `string \| ((value: string \| undefined) => boolean)` — the `token` gate: a string is compared for equality against the `x-orkestrel-token` header; a function is a consumer-controlled validator (JWT `exp` checks, revocation lookups, anything time-varying), letting a token expire or rotate mid-stream. Validated at GET connect, on every POST, and RE-VALIDATED on every SSE keepalive tick — a stream whose presented token stops validating is torn down through the same abort/self-heal teardown path (no `shutdown` frame; the client reconnects and re-authenticates). Because re-validation only happens on the keepalive tick, the revocation window equals the keepalive interval — a rejected/expired token keeps streaming until the next tick — and a throwing validator is treated as rejection (fail-closed) at every call site. |
+ | `TERMINAL_ROUTES_PATH`  | const     | The default `:name`-templated path (`/terminals/:name`) `createTerminalRoutes` mounts its routes under.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+ | `TERMINAL_KEEPALIVE_MS` | const     | The default SSE keepalive interval in milliseconds (`15_000`) `createTerminalRoutes` arms per open connection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+@@ -254,7 +261,7 @@ Every `create*Tool` factory returns a plain `ToolInterface` (`@orkestrel/tool`'s
+ | `delete`  | `void`                           | Remove a cached live database by id.                                    |
+ | `resolve` | `Promise<DatabaseInterface>`     | Return a cached live database, or construct one from its stored config. |
+ 
+-#### `TerminalRoutes`
++#### `TerminalBridge`
+ 
+ | Method   | Returns                    | Behavior                                                    |
+ | -------- | -------------------------- | ----------------------------------------------------------- |
+@@ -281,11 +288,11 @@ await resolver.resolve('shop')
+ 
+ ```ts
+ import type { TerminalManagerInterface } from '@orkestrel/terminal'
+-import { TerminalRoutes } from '@orkestrel/toolbox/server'
++import { TerminalBridge } from '@orkestrel/toolbox/server'
+ 
+ declare const manager: TerminalManagerInterface
+ 
+-const routes = new TerminalRoutes(manager).routes()
++const routes = new TerminalBridge(manager).routes()
+ ```
+ 
+ ## Contract
+@@ -322,9 +329,9 @@ Before shape branching or property reads, the handler snapshots untrusted `args`
+ 
+ 14. **`createDatabaseTool` and `createRelationTool` are single-tool-many-operations, matching `createWorkspaceTool`'s shape.** `createDatabaseTool` dispatches 11 operations (`create` / `tables` / `get` / `records` / `count` / `aggregate` / `add` / `set` / `update` / `remove` / `destroy`) off `databaseToolShape`; `createRelationTool` dispatches 5 (`load` / `find` / `link` / `unlink` / `links`) off `relationToolShape`. Both set `ToolInterface.summary` (`DATABASE_TOOL_SUMMARY` / `RELATION_TOOL_SUMMARY`) alongside their full teaching `description`, retrievable via `createDescribeTool`, per invariant 13. Every `'get'` / `'add'` / `'set'` / `'update'` / `'remove'` and `'load'` operation's `key` field takes EITHER a single key OR an array of keys (AGENTS' batch overload mold, with the array form resolving first); a single-key call returns a singular result field (`row` / `key` / `updated` / `removed`), an array-key call returns the plural (`rows` / `keys` / `updated` / `removed` as arrays).
+ 
+-15. **The database tool's query form is SERIALIZED, never fluent.** `databaseToolShape`'s `query` is a flat object — `{ conditions?: [{ column, operator, values, connector? }], order?, limit?, offset? }` — where `values` is ALWAYS an array, even for a single-value operator (`{ column: 'age', operator: 'from', values: [18] }`), so a small model never chains method calls or guesses arity. `queryOf` normalizes the parsed form into a live `@orkestrel/database` `QueryInput`, defaulting an omitted condition `connector` to `'and'` (the wire form lets a caller drop `connector` on the LAST condition, since it joins nothing forward).
++15. **The database tool's query form is SERIALIZED, never fluent.** `databaseToolShape`'s `query` is a flat object — `{ conditions?: [{ column, operator, values, connector? }], order?, limit?, offset? }` — where `values` is ALWAYS an array, even for a single-value operator (`{ column: 'age', operator: 'from', values: [18] }`), so a small model never chains method calls or guesses arity. `normalizeQuery` normalizes the parsed form into a live `@orkestrel/database` `QueryInput`, defaulting an omitted condition `connector` to `'and'` (the wire form lets a caller drop `connector` on the LAST condition, since it joins nothing forward).
+ 
+-16. **The `TableSpec` column DSL is bounded to four primitive kinds.** A `ColumnSpec` is either a bare `ColumnKind` shorthand (`'string'` / `'integer'` / `'number'` / `'boolean'`) or `{ type, optional? }`; `expandTables` compiles a `TableSpec` into the `@orkestrel/database` `TableMap` `createDatabase` accepts via `columnShape` / `kindShape`, wrapping an `optional: true` column in `optionalShape`. There is no nested/composite column kind — a table's shape is a flat map of column name to `ColumnSpec`, never an object/array column.
++16. **The `TableSpec` column DSL is bounded to four primitive kinds.** A `ColumnSpec` is either a bare `ColumnKind` shorthand (`'string'` / `'integer'` / `'number'` / `'boolean'`) or `{ type, optional? }`; `expandTables` compiles a `TableSpec` into the `@orkestrel/database` `TableMap` `createDatabase` accepts via `compileColumn` / `compileColumnKind`, wrapping an `optional: true` column in `optionalShape`. There is no nested/composite column kind — a table's shape is a flat map of column name to `ColumnSpec`, never an object/array column.
+ 
+ 17. **`'records'` / `'find'` / `'links'` truncate against a configured cap, never silently.** `createDatabaseTool`'s `'records'` (cap: `DatabaseToolOptions.limit`, default `DATABASE_TOOL_LIMIT`) and `createRelationTool`'s `'find'` / `'links'` (cap: `RelationToolOptions.limit`, default `RELATION_TOOL_LIMIT`) each PROBE one row past the effective limit (`clampQuery` for the database tool; the same idiom inline for `'find'`) to detect truncation without a separate count round trip, returning `{ rows, count, truncated, limit }` (`'links'`: `{ keys, count, truncated, limit }`) — `truncated` is `true` exactly when storage held more than `limit` matching rows/keys. A caller's own `query.limit` / `limit` can only LOWER the effective cap, never raise it past the configured ceiling.
+ 
+@@ -332,9 +339,9 @@ Before shape branching or property reads, the handler snapshots untrusted `args`
+ 
+ 19. **`DatabaseToolOptions.readonly` gates every mutating operation up front.** When `true`, `createDatabaseTool` throws a typed `TOOL` `ToolboxError` for `'create'` / `'add'` / `'set'` / `'update'` / `'remove'` / `'destroy'` BEFORE resolving a database or touching storage — the non-mutating operations (`'tables'` / `'get'` / `'records'` / `'count'` / `'aggregate'`) are unaffected. The exported `DATABASE_TOOL_MUTATIONS` membership list is a runtime-frozen readonly array, so a consumer cannot mutate it to bypass this gate. There is no equivalent gate on `createRelationTool` — its `'link'` / `'unlink'` writes are ungated (relation-tool callers rely on the underlying database's own access controls, if any).
+ 
+-20. **A `DatabaseDefinition` is CONFIG-ONLY and round-trips through a `DefinitionStoreInterface` — never a live handle.** `createDatabaseTool`'s `'create'` persists `{ id, driver, tables, primary?, indexes?, version? }` (never the constructed `DatabaseInterface`) when `options.store` is supplied, and publishes the new live handle to its resolver only after persistence succeeds. Every other operation lazily `resolve`s an uncached id by reading the definition back and reconstructing a live database from it (`createDatabase` + `expandTables`) — the live handle itself is cached only in-process (`Map<string, DatabaseInterface>`), reconstructed fresh on the next process from the stored config. `primary` and `indexes` are paired schema metadata, while `version` is the target stamp a versioning driver writes after first use when it implements paired `metadata` / `stamp` capabilities. `isDatabaseDefinition` is the boundary guard a `DefinitionStoreInterface` applies to an untrusted persisted blob before trusting it. `MemoryDefinitionStore` structured-clones definitions on copy-in and copy-out; `DatabaseDefinitionStore` stores one opaque JSON column in a `@orkestrel/database` table and narrows it back with `isDatabaseDefinition` on read, reporting `undefined` for a malformed blob. They implement the same `get` / `set` / `delete` contract; only the memory store prevents caller mutation from aliasing stored state on its own, since the table-backed store's isolation follows from its driver.
++20. **A `DatabaseDefinition` is CONFIG-ONLY and round-trips through a `DefinitionStoreInterface` — never a live handle.** `createDatabaseTool`'s `'create'` persists `{ id, driver, tables, primary?, indexes?, version? }` (never the constructed `DatabaseInterface`) when `options.store` is supplied, and publishes the new live handle to its resolver only after persistence succeeds. Every other operation lazily `resolve`s an uncached id by reading the definition back and reconstructing a live database from it (`createDatabase` + `expandTables`) — the live handle itself is cached only in-process (`Map<string, DatabaseInterface>`), reconstructed fresh on the next process from the stored config. `primary` and `indexes` are paired schema metadata, while `version` is the target stamp a versioning driver writes after first use when it implements paired `metadata` / `stamp` capabilities. `isDatabaseDefinition` is the boundary guard a `DefinitionStoreInterface` applies to an untrusted persisted blob before trusting it. `MemoryDefinitionStore` structured-clones definitions on copy-in and copy-out; `DatabaseDefinitionStore` stores one opaque JSON column in a `@orkestrel/database` table and narrows it back with `isDatabaseDefinition` on read, reporting `undefined` for a malformed blob. They implement the same `get` / `set` / `delete` contract; only the memory store prevents caller mutation from aliasing stored state on its own, because the table-backed store's isolation follows from its driver.
+ 
+-21. **The relation tool's `include` is a FLAT dot-path list, capped by `RelationToolOptions.depth`.** `'load'` / `'find'` accept `include?: string[]` — each path a dot-separated chain of relation names (`'contacts.account'`) — expanded by `expandInclude` into a live `@orkestrel/relation` `Include` tree; a longer path SUBSUMES a shorter sibling's bare `true` (`['contacts', 'contacts.account']` → `{ contacts: { account: true } }`). A path exceeding `depth` segments (default `RELATION_TOOL_DEPTH`), or carrying an empty segment (a leading/trailing/doubled `.`), throws a typed `TOOL` `ToolboxError` before any query runs. `relationManagerOf` resolves which registered `RelationManagerInterface` a call addresses (an explicit `manager` miss, or an omitted one with other-than-exactly-one registered, throws typed `TOOL`); `relationModelOf` resolves `model` against it the same way.
++21. **The relation tool's `include` is a FLAT dot-path list, capped by `RelationToolOptions.depth`.** `'load'` / `'find'` accept `include?: string[]` — each path a dot-separated chain of relation names (`'contacts.account'`) — expanded by `expandInclude` into a live `@orkestrel/relation` `Include` tree; a longer path SUBSUMES a shorter sibling's bare `true` (`['contacts', 'contacts.account']` → `{ contacts: { account: true } }`). A path exceeding `depth` segments (default `RELATION_TOOL_DEPTH`), or carrying an empty segment (a leading/trailing/doubled `.`), throws a typed `TOOL` `ToolboxError` before any query runs. `resolveRelationManager` resolves which registered `RelationManagerInterface` a call addresses (an explicit `manager` miss, or an omitted one with other-than-exactly-one registered, throws typed `TOOL`); `resolveRelationModel` resolves `model` against it the same way.
+ 
+ 22. **`createDatabaseTool` durability and ownership are narrower than they look.** A lazily re-minted database over the DEFAULT in-memory driver yields an EMPTY database — only the `DatabaseDefinition` schema persists in `store`, never rows; durable rows need a persistent driver factory registered in `DatabaseToolOptions.drivers`. A cached live database is never evolved in place. To adopt a new target `version`, create a new database id backed by a versioned persistent driver, or close the old tool lifecycle and construct a new tool whose stored definition carries the new schema metadata and stamp. `'destroy'` closes whatever handle is cached for the id, INCLUDING an embedder-supplied `DatabaseToolOptions.databases` handle — the embedder relinquishes that handle's lifecycle to this tool for any id it wires in. `timeout`, when present, must be a nonnegative safe integer and is validated when the tool is constructed. Its fresh abort signal is passed only to `records`, `count`, `aggregate`, `add`, `set`, `update`, and `remove`, whose current table APIs accept operation options; it does not bound store resolution, construction, schema inspection, `get`, or `close`, and is not an outer deadline. The tool assumes the single-writer, non-reentrant model `@orkestrel/database` itself assumes — concurrent tool calls against one id are NOT serialized by this tool. Unlike `'records'` / `'find'` / `'links'`, `'get'` is UNCAPPED by `DatabaseToolOptions.limit` (bounded only by the caller's `key` array size).
+ 
+@@ -517,8 +524,8 @@ const definition: WorkflowDefinition = {
+ 	id: 'ship',
+ 	name: 'Ship',
+ 	phases: [
+-		{ id: 'review', name: 'Review', tasks: [{ id: 'r', name: 'Review', run: 'review' }] },
+-		{ id: 'publish', name: 'Publish', tasks: [{ id: 'p', name: 'Publish', run: 'publish' }] },
++		{ id: 'review', name: 'Review', tasks: [{ id: 'r', name: 'Review', behavior: 'review' }] },
++		{ id: 'publish', name: 'Publish', tasks: [{ id: 'p', name: 'Publish', behavior: 'publish' }] },
+ 	],
+ }
+ const runner = createWorkflowRunner()
+@@ -536,41 +543,41 @@ createWorkflowTool(definition, runner, { functions: leaves, agents })
+ 
+ ```ts
+ import {
+-	agentTag,
+ 	completeDraft,
+ 	completePhaseDraft,
+ 	completeTaskDraft,
+ 	createWorkflowDraftContract,
+ 	deriveWorkflowDepth,
+-	extendLineage,
+ 	expandSteps,
++	extendLineage,
+ 	isAgentFunction,
+ 	isWorkflowLineage,
+-	lineageOf,
+-	workflowTag,
+-	workflowToolSummary,
++	normalizeLineage,
++	summarizeWorkflow,
++	tagAgent,
++	tagWorkflow,
+ } from '@orkestrel/toolbox'
+ 
+-workflowTag('release') // 'workflow:release'
+-agentTag('reviewer') // 'agent:reviewer'
++tagWorkflow('release') // 'workflow:release'
++tagAgent('reviewer') // 'agent:reviewer'
+ 
+-const root = lineageOf(['workflow:release'])
+-const agent = extendLineage(root, agentTag('reviewer'))
++const root = normalizeLineage(['workflow:release'])
++const agent = extendLineage(root, tagAgent('reviewer'))
+ isWorkflowLineage(agent) // true
+ deriveWorkflowDepth(root) // 0
+ isAgentFunction(() => 'opaque') // false
+ 
+-createWorkflowDraftContract().parse({ phases: [{ tasks: [{ run: 'compile' }] }] })
++createWorkflowDraftContract().parse({ phases: [{ tasks: [{ behavior: 'compile' }] }] })
+ 
+-completeTaskDraft({ run: 'compile' }, 'phase-0', 0) // { id: 'phase-0-task-0', name: 'phase-0-task-0', run: 'compile' }
+-completePhaseDraft({ tasks: [{ run: 'compile' }] }, 0) // { id: 'phase-0', name: 'phase-0', tasks: [...] }
+-completeDraft({ phases: [{ tasks: [{ run: 'compile' }] }] }) // a complete WorkflowDefinition, ids/names filled positionally
++completeTaskDraft({ behavior: 'compile' }, 'phase-0', 0) // { id: 'phase-0-task-0', name: 'phase-0-task-0', behavior: 'compile' }
++completePhaseDraft({ tasks: [{ behavior: 'compile' }] }, 0) // { id: 'phase-0', name: 'phase-0', tasks: [...] }
++completeDraft({ phases: [{ tasks: [{ behavior: 'compile' }] }] }) // a complete WorkflowDefinition, ids/names filled positionally
+ 
+-expandSteps({ steps: [{ name: 'compile' }] }) // one one-task phase whose task's `run` is 'compile'
++expandSteps({ steps: [{ name: 'compile' }] }) // one one-task phase whose task's `behavior` is 'compile'
+ 
+-// workflowToolSummary preserves the runner's optional durability/fault fields exactly:
+-declare const result: Parameters<typeof workflowToolSummary>[0]
+-workflowToolSummary(result) // { status, count, durable?, fault? }
++// summarizeWorkflow preserves the runner's optional durability/fault fields exactly:
++declare const result: Parameters<typeof summarizeWorkflow>[0]
++summarizeWorkflow(result) // { status, count, durable?, fault? }
+ ```
+ 
+ ### Recovering a typed `ToolboxError`
+@@ -647,13 +654,13 @@ result.value // { approved: true, notes: 'Ship it.' } — one record keyed by fi
+ ### The terminal error-classification helper, standalone
+ 
+ ```ts
+-import { terminalToolCode } from '@orkestrel/toolbox'
++import { inferTerminalCode } from '@orkestrel/toolbox'
+ import { TerminalError } from '@orkestrel/terminal'
+ 
+-terminalToolCode(new TerminalError('DEADLOCK', 'cycle')) // 'DEADLOCK'
+-terminalToolCode(new TerminalError('EXPIRE', 'timed out')) // 'EXPIRE'
+-terminalToolCode(new TerminalError('TARGET', 'unknown')) // 'TOOL'
+-terminalToolCode(new Error('not a terminal error')) // undefined
++inferTerminalCode(new TerminalError('DEADLOCK', 'cycle')) // 'DEADLOCK'
++inferTerminalCode(new TerminalError('EXPIRE', 'timed out')) // 'EXPIRE'
++inferTerminalCode(new TerminalError('TARGET', 'unknown')) // 'TOOL'
++inferTerminalCode(new Error('not a terminal error')) // undefined
+ ```
+ 
+ ### Bridging a `TerminalManagerInterface` onto the wire
+@@ -815,17 +822,17 @@ linked.value // { keys: ['rep1'], count: 1, truncated: false, limit: 1000 }
+ 
+ ```ts
+ import {
+-	columnShape,
++	compileColumn,
++	compileColumnKind,
+ 	databaseToolCode,
+ 	expandTables,
+ 	isColumnKind,
+ 	isColumnSpec,
+ 	isDatabaseDefinition,
+-	kindShape,
+-	queryOf,
+-	relationManagerOf,
+-	relationModelOf,
++	normalizeQuery,
+ 	relationToolCode,
++	resolveRelationManager,
++	resolveRelationModel,
+ } from '@orkestrel/toolbox'
+ import { DatabaseError } from '@orkestrel/database'
+ import { RelationError } from '@orkestrel/relation'
+@@ -836,22 +843,22 @@ isColumnSpec({ type: 'string', optional: true }) // true
+ const shapes = expandTables({
+ 	products: { columns: { name: 'string', price: { type: 'number', optional: true } } },
+ })
+-columnShape('integer') // the integerShape() ContractShape
+-kindShape('boolean') // the booleanShape() ContractShape
++compileColumn('integer') // the integerShape() ContractShape
++compileColumnKind('boolean') // the booleanShape() ContractShape
+ 
+ isDatabaseDefinition({ id: 'shop', driver: 'memory', tables: {} }) // true
+ 
+ databaseToolCode(new DatabaseError('NOT_FOUND', 'row not found')) // 'NOT_FOUND'
+ relationToolCode(new RelationError('UNKNOWN_RELATION', 'unknown relation')) // 'UNKNOWN_RELATION'
+ 
+-queryOf({ conditions: [{ column: 'age', operator: 'from', values: [18] }] })
++normalizeQuery({ conditions: [{ column: 'age', operator: 'from', values: [18] }] })
+ // { conditions: [{ column: 'age', operator: 'from', values: [18], connector: 'and' }] }
+ 
+ declare const managers: Readonly<
+ 	Record<string, import('@orkestrel/relation').RelationManagerInterface>
+ >
+-const resolved = relationManagerOf(managers, undefined) // the sole registered manager, or throws
+-relationModelOf(resolved, 'accounts') // the resolved model, or throws on an unknown name
++const resolved = resolveRelationManager(managers, undefined) // the sole registered manager, or throws
++resolveRelationModel(resolved, 'accounts') // the resolved model, or throws on an unknown name
+ ```
+ 
+ ### Inferring a JSON Schema from example values, via a real `ToolManager`
+@@ -954,7 +961,8 @@ const result = await tools.execute({
+ - [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` + `src/server` bijection (value + type exports, spanning both barrels), and this guide's `## Patterns` fences resolving to real exports (per-specifier) with resolving imports.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — every factory returning a working instance or value; workflow coverage composes real runners, agents, tools, stores, and scripted providers across direct roots, top-level authoring tools, opaque-leaf propagation, frozen null-prototype registry isolation/collisions, inherited-name `TRANSITION` refusals, explicitly registered dangerous own keys, depth 8/9 boundaries, repeated workflow ids, bound no-arg cycle refusal, self-recursion, A→B→A, same-agent concurrency, native per-run cancellation (including already-aborted provider exclusion), hostile argument containment before runner/store entry, Agent-owned projection, malformed structural results, genuine error identity, and deterministic named-store replacement. Database coverage includes all 11 operations, frozen readonly-mutation membership, persistence-before-cache publication through a real failing database store, timeout validation, query truncation, and typed failures. Creation and resolver coverage prove `primary` / `indexes` reach real memory-driver metadata and `version` is stamped after first use. Terminal coverage drives a real `TerminalManagerInterface` through the ask/answer pair: a multi-field schema parking once and settling into one values record, the pending listing carrying `{ id, from, schema }`, a schema `parseForm` refuses (an unknown control, duplicate field names, missing or non-array choices) throwing typed `TOOL` with nothing parked, the fixed `from` surviving a spoofing attempt, and the `DEADLOCK` / `EXPIRE` (injected timer) / unknown-terminal / unknown-id classifications.
+ - [`tests/src/core/databases/DatabaseResolver.test.ts`](../tests/src/core/databases/DatabaseResolver.test.ts) — caller-map isolation, explicit cache operations, stored-definition construction and reuse, and the typed unknown-database failure.
+-- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the reusable workflow, terminal, database, and relation helpers; lineage coverage proves alternating/nonempty/unique validation, hostile-boundary totality, copy/freeze isolation, extension, zero-based depth derivation, and `AgentFunction` metadata narrowing. Database coverage includes `TableSpec` expansion, strict `DatabaseDefinition` validation for `primary` / `indexes` / finite `version`, obsolete-field rejection, `queryOf` connector defaults, and `clampQuery` probe limits.
++- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the reusable workflow, terminal, database, and relation helpers; lineage coverage proves alternating/nonempty/unique validation, hostile-boundary totality, copy/freeze isolation, extension, zero-based depth derivation, and `AgentFunction` metadata narrowing. Database coverage includes strict `DatabaseDefinition` validation for `primary` / `indexes` / finite `version`, obsolete-field rejection, `normalizeQuery` connector defaults, and `clampQuery` probe limits.
++- [`tests/src/core/compilers.test.ts`](../tests/src/core/compilers.test.ts) — the `TableSpec` column DSL compiled through a real `createContract` gate: every `ColumnKind` accepting its own values and rejecting the others, `optional: true` admitting an absent column, `optional: false` staying required, integer separated from number, and multiple tables compiled independently.
+ - [`tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) — every advertised shape, including valid samples of all 11 database operation arms, create-time `primary` / `indexes` / `version`, query inputs, single/array row-key forms, and malformed metadata rejection.
+ - [`tests/src/core/errors.test.ts`](../tests/src/core/errors.test.ts) — `ToolboxError` carrying its `code` + optional `context`, and `isToolboxError` narrowing a caught value (accepting a real instance, rejecting a plain `Error` / non-error value).
+ - [`tests/src/core/stores/MemoryDefinitionStore.test.ts`](../tests/src/core/stores/MemoryDefinitionStore.test.ts) — the memory twin against the shared `DefinitionStoreInterface` contract: round-trip, replacement, deletion, absent-id no-op, optional-metadata, and nested copy-isolation scenarios.
+diff --git a/src/core/compilers.ts b/src/core/compilers.ts
+new file mode 100644
+index 0000000..349b959
+--- /dev/null
++++ b/src/core/compilers.ts
+@@ -0,0 +1,52 @@
++import type { TableMap } from '@orkestrel/database'
++import type { ContractShape } from '@orkestrel/contract'
++import type { ColumnKind, ColumnSpec, TableSpec } from './types.js'
++import {
++	booleanShape,
++	integerShape,
++	isString,
++	numberShape,
++	optionalShape,
++	stringShape,
++} from '@orkestrel/contract'
++
++// Toolbox compilers — the config-only `TableSpec` column DSL compiled into the live
++// `@orkestrel/database` `TableMap` a `createDatabase` call accepts. Pure and total: one composite
++// walk over the spec, and the two leaves it maps with.
++
++/**
++ * Compiles a {@link TableSpec} into the `@orkestrel/database` {@link TableMap} it configures —
++ * each {@link ColumnSpec} maps to the matching primitive shaper (`'string'` → `stringShape()`,
++ * `'integer'` → `integerShape()`, `'number'` → `numberShape()`, `'boolean'` → `booleanShape()`),
++ * wrapped in `optionalShape` when the column declares `optional: true`. Total, pure.
++ *
++ * @param spec - The small-model-facing table layout
++ * @returns The compiled `TableMap` a `@orkestrel/database` `createDatabase` call accepts
++ */
++export function expandTables(spec: TableSpec): TableMap {
++	const tables: Record<string, Readonly<Record<string, ContractShape>>> = {}
++	for (const [table, definition] of Object.entries(spec)) {
++		const columns: Record<string, ContractShape> = {}
++		for (const [column, columnSpec] of Object.entries(definition.columns)) {
++			columns[column] = compileColumn(columnSpec)
++		}
++		tables[table] = columns
++	}
++	return tables
++}
++
++/** Compiles one {@link ColumnSpec} into its `@orkestrel/database` column shape — the per-column leaf {@link expandTables} maps over. */
++export function compileColumn(spec: ColumnSpec): ContractShape {
++	const kind = isString(spec) ? spec : spec.type
++	const optional = !isString(spec) && spec.optional === true
++	const shape = compileColumnKind(kind)
++	return optional ? optionalShape(shape) : shape
++}
++
++/** Compiles one {@link import('./types.js').ColumnKind} into its primitive `@orkestrel/database` shape — the leaf {@link compileColumn} wraps. */
++export function compileColumnKind(kind: ColumnKind): ContractShape {
++	if (kind === 'string') return stringShape()
++	if (kind === 'integer') return integerShape()
++	if (kind === 'number') return numberShape()
++	return booleanShape()
++}
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index c9ee25d..8ac18c5 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -19,7 +19,7 @@ export const AGENT_TOOL_NAME = 'agent'
+  * enforces.
+  *
+  * @remarks
+- * Deliberately a SEPARATE constant from {@link MAX_WORKFLOW_DEPTH} (rather than the two guards
++ * Deliberately a SEPARATE constant from {@link MAX_WORKFLOW_CHAIN} (rather than the two guards
+  * sharing one reference): the two guards bound DIFFERENT chains (workflow nesting vs. agent
+  * delegation) that happen to share a value today, and keeping this bound decoupled means a
+  * future change to one never silently shifts the other. Same numeric value by convention, not
+@@ -66,7 +66,7 @@ export const AGENT_TOOL_DESCRIPTION = [
+  * workflows is allowed, while a ninth nested workflow is rejected with this package's typed
+  * `DEPTH` `ToolboxError`.
+  */
+-export const MAX_WORKFLOW_DEPTH = 8
++export const MAX_WORKFLOW_CHAIN = 8
+ 
+ /**
+  * The name {@link import('./factories.js').createWorkflowTool} advertises by default — the key a
+@@ -78,7 +78,7 @@ export const MAX_WORKFLOW_DEPTH = 8
+  * The propagation seam's well-known key: when
+  * `createAgentFunction`'s `runner` option is supplied, it adds a `createWorkflowTool`-built tool
+  * under this name to the agent's `context.tools`, so it can author + run a NESTED workflow
+- * (bounded by {@link MAX_WORKFLOW_DEPTH}).
++ * (bounded by {@link MAX_WORKFLOW_CHAIN}).
+  */
+ export const WORKFLOW_TOOL_NAME = 'workflow'
+ 
+@@ -89,7 +89,7 @@ export const WORKFLOW_TOOL_NAME = 'workflow'
+  * @remarks
+  * Each step becomes a one-task phase, in
+  * order; a step's `name` is a REGISTERED behavior name (not a label) — the registry key its
+- * task's `run` resolves against. The tool expands this
++ * task's `behavior` resolves against. The tool expands this
+  * ({@link import('./helpers.js').expandSteps}) into a valid `WorkflowDefinition`
+  * (`@orkestrel/workflow`). It is embedded VERBATIM in {@link WORKFLOW_TOOL_DESCRIPTION}.
+  */
+@@ -117,7 +117,7 @@ export const WORKFLOW_TOOL_NESTED_EXAMPLE: WorkflowDefinition = Object.freeze({
+ 				Object.freeze({
+ 					id: 'compile',
+ 					name: 'Compile',
+-					run: 'compile',
++					behavior: 'compile',
+ 				}),
+ 			]),
+ 		}),
+@@ -149,7 +149,7 @@ export const WORKFLOW_TOOL_DESCRIPTION = [
+ 	'Example:',
+ 	JSON.stringify(WORKFLOW_TOOL_FLAT_EXAMPLE),
+ 	'',
+-	'ADVANCED — the full nested form, for multi-task phases or explicit ids. A workflow has phases; a phase has tasks; a task may have a "run" (a registered behavior name); omitting it creates a JSON-null no-op:',
++	'ADVANCED — the full nested form, for multi-task phases or explicit ids. A workflow has phases; a phase has tasks; a task may have a "behavior" (a registered behavior name); omitting it creates a JSON-null no-op:',
+ 	JSON.stringify(WORKFLOW_TOOL_NESTED_EXAMPLE),
+ 	'In the nested form you may omit any "id"/"name" and they are filled in positionally; a provided one is kept.',
+ ].join('\n')
+@@ -320,7 +320,7 @@ export const ANSWER_TOOL_DESCRIPTION = [
+  * @remarks
+  * SRC-1 of a 3-unit spine: this unit lands the persistence + schema foundation
+  * ({@link import('./types.js').DatabaseDefinition}, {@link import('./types.js').DefinitionStoreInterface},
+- * {@link import('./helpers.js').expandTables}); `createDatabaseTool` itself is built in a later unit.
++ * {@link import('./compilers.js').expandTables}); `createDatabaseTool` itself is built in a later unit.
+  */
+ export const DATABASE_TOOL_NAME = 'database'
+ 
+diff --git a/src/core/databases/DatabaseResolver.ts b/src/core/databases/DatabaseResolver.ts
+index 218c76d..c84a7d0 100644
+--- a/src/core/databases/DatabaseResolver.ts
++++ b/src/core/databases/DatabaseResolver.ts
+@@ -2,7 +2,7 @@ import type { DatabaseInterface, DriverInterface, KeyFunction } from '@orkestrel
+ import type { DefinitionStoreInterface } from '../types.js'
+ import { createDatabase } from '@orkestrel/database'
+ import { ToolboxError } from '../errors.js'
+-import { expandTables } from '../helpers.js'
++import { expandTables } from '../compilers.js'
+ 
+ /**
+  * Resolve database definitions into cached live handles for database tools.
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 4c6fb08..0fa0d4a 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -73,7 +73,7 @@ import {
+ 	INFER_TOOL_DESCRIPTION,
+ 	INFER_TOOL_NAME,
+ 	INFER_TOOL_SUMMARY,
+-	MAX_WORKFLOW_DEPTH,
++	MAX_WORKFLOW_CHAIN,
+ 	PROMPT_TOOL_DESCRIPTION,
+ 	PROMPT_TOOL_NAME,
+ 	PROMPT_TOOL_SUMMARY,
+@@ -91,24 +91,24 @@ import {
+ } from './constants.js'
+ import { ToolboxError, isToolboxError } from './errors.js'
+ import {
+-	agentTag,
+ 	clampQuery,
+ 	completeDraft,
+-	deriveWorkflowDepth,
+-	extendLineage,
+-	lineageOf,
+-	queryOf,
+ 	databaseToolCode,
++	deriveWorkflowDepth,
+ 	expandInclude,
+ 	expandSteps,
+-	expandTables,
+-	relationManagerOf,
+-	relationModelOf,
++	extendLineage,
++	inferTerminalCode,
++	normalizeLineage,
++	normalizeQuery,
+ 	relationToolCode,
+-	terminalToolCode,
+-	workflowTag,
+-	workflowToolSummary,
++	resolveRelationManager,
++	resolveRelationModel,
++	summarizeWorkflow,
++	tagAgent,
++	tagWorkflow,
+ } from './helpers.js'
++import { expandTables } from './compilers.js'
+ import { isAgentFunction } from './validators.js'
+ import {
+ 	agentToolShape,
+@@ -185,7 +185,7 @@ export function createToolFunction(tools: ToolManagerInterface, name: string): W
+  * Composes into a caller's registry like any other behavior; the pure workflow runner has no
+  * knowledge of agents itself. A root adapter derives its workflow lineage from the controller,
+  * while a contextual adapter requires an exact match. Repeated agents, repeated workflows, and
+- * targets deeper than {@link import('./constants.js').MAX_WORKFLOW_DEPTH} are rejected before
++ * targets deeper than {@link import('./constants.js').MAX_WORKFLOW_CHAIN} are rejected before
+  * agent or runner activity. When {@link import('./types.js').AgentFunctionOptions.runner} is
+  * supplied, the adapter binds a recursion-safe {@link createWorkflowTool} onto the agent's
+  * `context.tools`, propagating opaque leaves, raw agents, lineage, and the native store. The
+@@ -216,7 +216,7 @@ export function createAgentFunction(
+ 	agent: AgentInterface,
+ 	options?: AgentFunctionOptions,
+ ): AgentFunction {
+-	const lineage = lineageOf(options?.lineage)
++	const lineage = normalizeLineage(options?.lineage)
+ 	if (lineage.length > 0 && !lineage.at(-1)?.startsWith('workflow:')) {
+ 		throw new ToolboxError('TOOL', 'agent function lineage must end with a workflow tag')
+ 	}
+@@ -229,7 +229,7 @@ export function createAgentFunction(
+ 	}
+ 	return Object.freeze(
+ 		Object.assign(async (controller: TaskControllerInterface) => {
+-			const workflow = workflowTag(controller.task.phase.workflow.id)
++			const workflow = tagWorkflow(controller.task.phase.workflow.id)
+ 			const current = lineage.length === 0 ? extendLineage(lineage, workflow) : lineage
+ 			if (current.at(-1) !== workflow) {
+ 				throw new ToolboxError('DEPTH', 'agent function workflow does not match its lineage', {
+@@ -239,14 +239,14 @@ export function createAgentFunction(
+ 			}
+ 			const depth = deriveWorkflowDepth(current)
+ 			// Reject over-depth or re-entry before the agent, tool registry, or runner becomes active.
+-			if (depth > MAX_WORKFLOW_DEPTH) {
++			if (depth > MAX_WORKFLOW_CHAIN) {
+ 				throw new ToolboxError('DEPTH', `agent '${agent.id}' exceeds max workflow depth`, {
+ 					agent: agent.id,
+ 					depth,
+-					max: MAX_WORKFLOW_DEPTH,
++					max: MAX_WORKFLOW_CHAIN,
+ 				})
+ 			}
+-			const tag = agentTag(agent.id)
++			const tag = tagAgent(agent.id)
+ 			if (current.includes(tag)) {
+ 				throw new ToolboxError('DEPTH', `agent '${agent.id}' is already an ancestor (cycle)`, {
+ 					agent: agent.id,
+@@ -318,7 +318,7 @@ export function createWorkflowFunctions(
+ 	runner: WorkflowRunnerInterface,
+ 	options?: WorkflowToolOptions,
+ ): WorkflowFunctions {
+-	const lineage = lineageOf(options?.lineage)
++	const lineage = normalizeLineage(options?.lineage)
+ 	if (lineage.length > 0 && !lineage.at(-1)?.startsWith('workflow:')) {
+ 		throw new ToolboxError('TOOL', 'workflow functions lineage must end with a workflow tag')
+ 	}
+@@ -431,7 +431,7 @@ export function createWorkflowTool(
+ 	const strict = createWorkflowContract()
+ 	const draft = createWorkflowDraftContract()
+ 	const steps: ContractInterface<WorkflowSteps> = createContract(workflowStepsShape)
+-	const lineage = lineageOf(options?.lineage)
++	const lineage = normalizeLineage(options?.lineage)
+ 	if (lineage.length > 0 && !lineage.at(-1)?.startsWith('agent:')) {
+ 		throw new ToolboxError('TOOL', 'workflow tool lineage must end with an agent tag')
+ 	}
+@@ -474,7 +474,7 @@ export function createWorkflowTool(
+ 					workflow: definition.id,
+ 				})
+ 			}
+-			const tag = workflowTag(target.id)
++			const tag = tagWorkflow(target.id)
+ 			if (lineage.includes(tag)) {
+ 				throw new ToolboxError('DEPTH', `workflow '${target.id}' is already an ancestor (cycle)`, {
+ 					workflow: target.id,
+@@ -483,11 +483,11 @@ export function createWorkflowTool(
+ 			}
+ 			const targetLineage = extendLineage(lineage, tag)
+ 			const depth = deriveWorkflowDepth(targetLineage)
+-			if (depth > MAX_WORKFLOW_DEPTH) {
+-				throw new ToolboxError('DEPTH', `nested workflow exceeds max depth ${MAX_WORKFLOW_DEPTH}`, {
++			if (depth > MAX_WORKFLOW_CHAIN) {
++				throw new ToolboxError('DEPTH', `nested workflow exceeds max depth ${MAX_WORKFLOW_CHAIN}`, {
+ 					workflow: target.id,
+ 					depth,
+-					max: MAX_WORKFLOW_DEPTH,
++					max: MAX_WORKFLOW_CHAIN,
+ 				})
+ 			}
+ 			const registry =
+@@ -503,7 +503,7 @@ export function createWorkflowTool(
+ 				...(registry === undefined ? {} : { functions: registry }),
+ 				...(store === undefined ? {} : { store }),
+ 			})
+-			return workflowToolSummary(result)
++			return summarizeWorkflow(result)
+ 		},
+ 	})
+ }
+@@ -730,7 +730,7 @@ export function createAgentTool(
+ 					max: AGENT_TOOL_DEPTH,
+ 				})
+ 			}
+-			const tag = agentTag(provider)
++			const tag = tagAgent(provider)
+ 			if (ancestry.includes(tag)) {
+ 				throw new ToolboxError('DEPTH', `agent '${provider}' is already an ancestor (cycle)`, {
+ 					provider,
+@@ -825,7 +825,7 @@ export function createDescribeTool(tools: ToolManagerInterface): ToolInterface {
+  * `TerminalError('DEADLOCK')`, re-surfaced as a typed `DEADLOCK`
+  * {@link import('./errors.js').ToolboxError}; an expired form re-surfaces as `EXPIRE`; an
+  * unknown `to` (or any other `TerminalError`) re-surfaces as `TOOL`, naming the unknown terminal
+- * plus the known ones (`manager.terminals()`).
++ * and how many brokers the manager holds (`manager.count`).
+  *
+  * @param options - The live manager, the fixed `from` identity, and advertised overrides (see
+  *   {@link import('./types.js').PromptToolOptions})
+@@ -882,7 +882,7 @@ export function createPromptTool(options: PromptToolOptions): ToolInterface {
+ 						to: call.to,
+ 					})
+ 				}
+-				const code = terminalToolCode(error)
++				const code = inferTerminalCode(error)
+ 				if (code === undefined) throw error
+ 				if (code === 'DEADLOCK') {
+ 					throw new ToolboxError(
+@@ -899,7 +899,7 @@ export function createPromptTool(options: PromptToolOptions): ToolInterface {
+ 				if (isTerminalError(error) && error.code === 'TARGET') {
+ 					throw new ToolboxError('TOOL', `unknown terminal '${call.to}'`, {
+ 						to: call.to,
+-						known: options.manager.terminals(),
++						count: options.manager.count,
+ 					})
+ 				}
+ 				throw new ToolboxError('TOOL', `asking '${call.to}' failed`, { to: call.to })
+@@ -1048,7 +1048,7 @@ export function createDatabaseDefinitionStore(
+  * The universal tool-handler contract: validates the call args against
+  * {@link import('./shapers.js').databaseToolShape}, dispatches to the matching operation, and
+  * RETURNS a plain result on success. A database is resolved lazily and cached for the tool's
+- * lifetime — `'create'` mints one from `tables` ({@link import('./helpers.js').expandTables}) and
++ * lifetime — `'create'` mints one from `tables` ({@link import('./compilers.js').expandTables}) and
+  * a registered `driver` key ({@link import('./types.js').DatabaseToolOptions.drivers}, default
+  * `{ memory: () => createMemoryDriver() }`); any other operation addressing an uncached id falls
+  * back to {@link import('./types.js').DatabaseToolOptions.store} (an unknown id throws a typed
+@@ -1060,7 +1060,7 @@ export function createDatabaseDefinitionStore(
+  * {@link import('./constants.js').DATABASE_TOOL_LIMIT}) via
+  * {@link import('./helpers.js').clampQuery}, reporting `truncated` when storage held more rows
+  * than the cap. Every operation's `query` is normalized via
+- * {@link import('./helpers.js').queryOf} (defaults an omitted condition `connector` to `'and'`).
++ * {@link import('./helpers.js').normalizeQuery} (defaults an omitted condition `connector` to `'and'`).
+  * When {@link import('./types.js').DatabaseToolOptions.readonly} is `true`, every mutating
+  * operation throws a typed `TOOL` `ToolboxError` before doing anything. A configured
+  * {@link import('./types.js').DatabaseToolOptions.timeout} is passed as a fresh
+@@ -1202,7 +1202,7 @@ export function createDatabaseTool(options: DatabaseToolOptions = {}): ToolInter
+ 					case 'records': {
+ 						const handle = await resolver.resolve(call.id)
+ 						const table = handle.table(call.table)
+-						const { query: probe, limit } = clampQuery(queryOf(call.query), cap)
++						const { query: probe, limit } = clampQuery(normalizeQuery(call.query), cap)
+ 						const rows = await table.records(probe, read)
+ 						const truncated = rows.length > limit
+ 						const sliced = rows.slice(0, limit)
+@@ -1211,7 +1211,7 @@ export function createDatabaseTool(options: DatabaseToolOptions = {}): ToolInter
+ 					case 'count': {
+ 						const handle = await resolver.resolve(call.id)
+ 						const table = handle.table(call.table)
+-						const count = await table.count(queryOf(call.query), read)
++						const count = await table.count(normalizeQuery(call.query), read)
+ 						return { count }
+ 					}
+ 					case 'aggregate': {
+@@ -1220,7 +1220,7 @@ export function createDatabaseTool(options: DatabaseToolOptions = {}): ToolInter
+ 						const value = await table.aggregate(
+ 							call.function,
+ 							call.column,
+-							queryOf(call.query),
++							normalizeQuery(call.query),
+ 							read,
+ 						)
+ 						return { value }
+@@ -1301,8 +1301,8 @@ export function createDatabaseTool(options: DatabaseToolOptions = {}): ToolInter
+  * must match a key of {@link import('./types.js').RelationToolOptions.managers}, an OMITTED one
+  * resolves to the SOLE registered manager, either miss throwing a typed `TOOL`
+  * {@link import('./errors.js').ToolboxError}
+- * ({@link import('./helpers.js').relationManagerOf}) — then resolves `model` against it
+- * ({@link import('./helpers.js').relationModelOf}, same typed-`TOOL`-on-miss shape), and
++ * ({@link import('./helpers.js').resolveRelationManager}) — then resolves `model` against it
++ * ({@link import('./helpers.js').resolveRelationModel}, same typed-`TOOL`-on-miss shape), and
+  * dispatches to the matched operation, RETURNING a plain result on success.
+  *
+  * `'load'` / `'find'` expand the call's FLAT dot-path `include` list into a live
+@@ -1353,8 +1353,8 @@ export function createRelationTool(options: RelationToolOptions): ToolInterface
+ 				throw new ToolboxError('TOOL', 'malformed relation call', { args })
+ 			}
+ 			try {
+-				const manager = relationManagerOf(options.managers, call.manager)
+-				const model = relationModelOf(manager, call.model)
++				const manager = resolveRelationManager(options.managers, call.manager)
++				const model = resolveRelationModel(manager, call.model)
+ 				switch (call.operation) {
+ 					case 'load': {
+ 						const include = expandInclude(call.include, depth)
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 85c6222..d51ce26 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1,5 +1,4 @@
+ import type { WorkflowDefinition, WorkflowResult } from '@orkestrel/workflow'
+-import type { TableMap } from '@orkestrel/database'
+ import type { DatabaseErrorCode } from '@orkestrel/database'
+ import type {
+ 	Include,
+@@ -8,14 +7,10 @@ import type {
+ 	RelationManagerInterface,
+ } from '@orkestrel/relation'
+ import type { QueryInput } from '@orkestrel/database'
+-import type { ContractShape } from '@orkestrel/contract'
+ import type {
+ 	ToolboxErrorCode,
+ 	ClampedQuery,
+-	ColumnKind,
+-	ColumnSpec,
+ 	DatabaseQueryInput,
+-	TableSpec,
+ 	WorkflowToolResult,
+ 	WorkflowLineage,
+ } from './types.js'
+@@ -25,39 +20,31 @@ import { isDatabaseError } from '@orkestrel/database'
+ import { isRelationError } from '@orkestrel/relation'
+ import { ToolboxError } from './errors.js'
+ import { isWorkflowLineage } from './validators.js'
+-import {
+-	booleanShape,
+-	integerShape,
+-	isString,
+-	numberShape,
+-	optionalShape,
+-	stringShape,
+-} from '@orkestrel/contract'
+ 
+ // Toolbox owns the workflow tool's lenient-authoring completion, ancestry tags, and boundary
+ // projections. Runtime scheduling, named-function resolution, and persistence remain native
+ // `@orkestrel/workflow` responsibilities.
+ 
+ /**
+- * The ancestry identifier of a workflow in a run chain — `workflow:<id>`.
++ * Returns the ancestry identifier of a workflow in a run chain — `workflow:<id>`.
+  *
+  * @remarks
+- * Namespacing keeps a workflow id and an {@link agentTag} agent name in ONE set without
++ * Namespacing keeps a workflow id and a {@link tagAgent} agent name in ONE set without
+  * collision, so re-entering a workflow OR an agent already in the chain is a single `includes`
+  * check.
+  *
+  * @param id - The workflow definition's `id`
+  * @returns The namespaced ancestry tag (`workflow:<id>`)
+  */
+-export function workflowTag(id: string): string {
++export function tagWorkflow(id: string): string {
+ 	return `workflow:${id}`
+ }
+ 
+ /**
+- * The ancestry identifier of an agent in a run chain — `agent:<name>`.
++ * Returns the ancestry identifier of an agent in a run chain — `agent:<name>`.
+  *
+  * @remarks
+- * The agent counterpart of {@link workflowTag}: {@link import('./factories.js').createAgentFunction}
++ * The agent counterpart of {@link tagWorkflow}: {@link import('./factories.js').createAgentFunction}
+  * / {@link import('./factories.js').createWorkflowTool} guard against re-entering an agent or
+  * workflow already in the chain (this package's typed `DEPTH` `ToolboxError`). The
+  * `agent:` namespace keeps it distinct from a same-string workflow id.
+@@ -65,17 +52,17 @@ export function workflowTag(id: string): string {
+  * @param name - The agent's identifier / registry name
+  * @returns The namespaced ancestry tag (`agent:<name>`)
+  */
+-export function agentTag(name: string): string {
++export function tagAgent(name: string): string {
+ 	return `agent:${name}`
+ }
+ 
+ /**
+- * Build a validated, copied, and frozen workflow lineage value.
++ * Returns the canonical workflow lineage — validated, copied, and frozen.
+  *
+  * @param lineage - The configured chain; omitted means a direct root
+  * @returns An immutable caller-isolated lineage
+  */
+-export function lineageOf(lineage: WorkflowLineage = []): WorkflowLineage {
++export function normalizeLineage(lineage: WorkflowLineage = []): WorkflowLineage {
+ 	if (!isWorkflowLineage(lineage)) {
+ 		throw new ToolboxError('TOOL', 'workflow lineage must alternate unique workflow and agent tags')
+ 	}
+@@ -83,24 +70,24 @@ export function lineageOf(lineage: WorkflowLineage = []): WorkflowLineage {
+ }
+ 
+ /**
+- * Append one tag to a workflow lineage and return a frozen copy.
++ * Appends one tag to a workflow lineage and returns a frozen copy.
+  *
+  * @param lineage - The valid chain to extend
+  * @param tag - The workflow or agent tag to append
+  * @returns The validated immutable extension
+  */
+ export function extendLineage(lineage: WorkflowLineage, tag: string): WorkflowLineage {
+-	return lineageOf([...lineage, tag])
++	return normalizeLineage([...lineage, tag])
+ }
+ 
+ /**
+- * Derive the zero-based workflow nesting depth from a valid lineage.
++ * Derives the zero-based workflow nesting depth from a valid lineage.
+  *
+  * @param lineage - The workflow/agent chain
+  * @returns Zero for an empty/root lineage, then one per nested workflow
+  */
+ export function deriveWorkflowDepth(lineage: WorkflowLineage): number {
+-	const current = lineageOf(lineage)
++	const current = normalizeLineage(lineage)
+ 	const workflows = current.filter((tag) => tag.startsWith('workflow:')).length
+ 	return Math.max(0, workflows - 1)
+ }
+@@ -118,7 +105,7 @@ export function deriveWorkflowDepth(lineage: WorkflowLineage): number {
+  * @param result - The terminal `WorkflowResult` (`@orkestrel/workflow`) the run produced
+  * @returns The plain success summary — `{ status, count, durable?, fault? }`
+  */
+-export function workflowToolSummary(result: WorkflowResult): WorkflowToolResult {
++export function summarizeWorkflow(result: WorkflowResult): WorkflowToolResult {
+ 	return {
+ 		status: result.status,
+ 		count: result.results.length,
+@@ -146,7 +133,7 @@ export function workflowToolSummary(result: WorkflowResult): WorkflowToolResult
+  * `phase-<i>`, and task `j` of that phase is `<phaseId>-task-<j>` (so a provided phase id flows
+  * into its tasks' synthesized ids). A PROVIDED `id` / `name` at any level is kept VERBATIM —
+  * synthesis touches only the omitted ones. A missing `name` defaults to the resolved `id` (never
+- * the other way round), so the result always has both. `run`, `description`, the per-phase
++ * the other way round), so the result always has both. `behavior`, `description`, the per-phase
+  * `concurrency` / `bail`, the per-task `retries` / `timeout`, and the workflow `bail` carry over
+  * unchanged. The result is a complete {@link WorkflowDefinition}; the caller still validates it
+  * against the STRICT contract.
+@@ -208,7 +195,7 @@ export function completeTaskDraft(
+ 		id,
+ 		name: task.name ?? id,
+ 		...(task.description === undefined ? {} : { description: task.description }),
+-		...(task.run === undefined ? {} : { run: task.run }),
++		...(task.behavior === undefined ? {} : { behavior: task.behavior }),
+ 		...(task.retries === undefined ? {} : { retries: task.retries }),
+ 		...(task.timeout === undefined ? {} : { timeout: task.timeout }),
+ 	}
+@@ -221,7 +208,7 @@ export function completeTaskDraft(
+  * @remarks
+  * The expansion of the tool's ADVERTISED surface: the deliberately-reduced flat form. Each
+  * {@link import('./types.js').WorkflowStep} maps to a phase holding exactly one task: the step's
+- * `name` becomes the task's `run` (the behavior-registry key). Ids/names are auto-filled
++ * `name` becomes the task's `behavior` (the behavior-registry key). Ids/names are auto-filled
+  * positionally — it builds an ids-omitted {@link WorkflowDraft} and delegates to
+  * {@link completeDraft}, so the two lenient surfaces share ONE synthesis path (step `i` → phase
+  * `phase-<i>`, its task `phase-<i>-task-0`). The optional `name` becomes both the workflow's
+@@ -236,7 +223,7 @@ export function expandSteps(flat: WorkflowSteps): WorkflowDefinition {
+ 	return completeDraft({
+ 		...(flat.name === undefined ? {} : { id: flat.name, name: flat.name }),
+ 		phases: flat.steps.map((step) => ({
+-			tasks: [{ run: step.name }],
++			tasks: [{ behavior: step.name }],
+ 		})),
+ 	})
+ }
+@@ -256,58 +243,20 @@ export function expandSteps(flat: WorkflowSteps): WorkflowDefinition {
+  * @param error - The value caught from a terminal-manager operation (`ask` / `answer` / …)
+  * @returns The mapped {@link ToolboxErrorCode}, or `undefined` if `error` is not a `TerminalError`
+  */
+-export function terminalToolCode(error: unknown): ToolboxErrorCode | undefined {
++export function inferTerminalCode(error: unknown): ToolboxErrorCode | undefined {
+ 	if (!isTerminalError(error)) return undefined
+ 	if (error.code === 'DEADLOCK') return 'DEADLOCK'
+ 	if (error.code === 'EXPIRE') return 'EXPIRE'
+ 	return 'TOOL'
+ }
+ 
+-// === Database-tool foundation — the config-only `DatabaseDefinition` compiles into a live
+-// `@orkestrel/database` `TableMap`, and its store twins narrow an untrusted persisted blob back to
+-// the type.
+-
+-/**
+- * Compile a {@link TableSpec} into the `@orkestrel/database` {@link TableMap} it configures —
+- * each {@link ColumnSpec} maps to the matching primitive shaper (`'string'` → `stringShape()`,
+- * `'integer'` → `integerShape()`, `'number'` → `numberShape()`, `'boolean'` → `booleanShape()`),
+- * wrapped in `optionalShape` when the column declares `optional: true`. Total, pure.
+- *
+- * @param spec - The small-model-facing table layout
+- * @returns The compiled `TableMap` a `@orkestrel/database` `createDatabase` call accepts
+- */
+-export function expandTables(spec: TableSpec): TableMap {
+-	const tables: Record<string, Readonly<Record<string, ContractShape>>> = {}
+-	for (const [table, definition] of Object.entries(spec)) {
+-		const columns: Record<string, ContractShape> = {}
+-		for (const [column, columnSpec] of Object.entries(definition.columns)) {
+-			columns[column] = columnShape(columnSpec)
+-		}
+-		tables[table] = columns
+-	}
+-	return tables
+-}
+-
+-/** Compile one {@link ColumnSpec} into its `@orkestrel/database` column shape — the per-column leaf {@link expandTables} maps over. */
+-export function columnShape(spec: ColumnSpec): ContractShape {
+-	const kind = isString(spec) ? spec : spec.type
+-	const optional = !isString(spec) && spec.optional === true
+-	const shape = kindShape(kind)
+-	return optional ? optionalShape(shape) : shape
+-}
+-
+-/** Map one {@link import('./types.js').ColumnKind} to its primitive `@orkestrel/database` shape — the leaf {@link columnShape} wraps. */
+-export function kindShape(kind: ColumnKind): ContractShape {
+-	if (kind === 'string') return stringShape()
+-	if (kind === 'integer') return integerShape()
+-	if (kind === 'number') return numberShape()
+-	return booleanShape()
+-}
++// === Database- and relation-tool error classification — a caught upstream error maps to the
++// code the owning factory re-throws with.
+ 
+ /**
+  * Maps a caught error to the granular {@link DatabaseErrorCode} (`@orkestrel/database`) the code
+  * {@link import('./factories.js').createDatabaseTool} throws with — the pure classification step
+- * of that factory's error handling, mirroring {@link terminalToolCode}'s idiom for
++ * of that factory's error handling, mirroring {@link inferTerminalCode}'s idiom for
+  * `@orkestrel/database`.
+  *
+  * @param error - The value caught from a `@orkestrel/database` table operation
+@@ -320,7 +269,7 @@ export function databaseToolCode(error: unknown): DatabaseErrorCode | undefined
+ /**
+  * Maps a caught error to the granular {@link RelationErrorCode} (`@orkestrel/relation`) the code
+  * {@link import('./factories.js').createRelationTool} throws with — the pure classification step
+- * of that factory's error handling, mirroring {@link terminalToolCode}'s idiom for
++ * of that factory's error handling, mirroring {@link inferTerminalCode}'s idiom for
+  * `@orkestrel/relation`.
+  *
+  * @param error - The value caught from a `@orkestrel/relation` operation
+@@ -396,7 +345,7 @@ export function expandInclude(paths: readonly string[] | undefined, depth: numbe
+ }
+ 
+ /**
+- * Resolve which registered {@link RelationManagerInterface} a relation-tool call addresses — the
++ * Resolves which registered {@link RelationManagerInterface} a relation-tool call addresses — the
+  * pure manager-resolution leaf {@link import('./factories.js').createRelationTool} calls on
+  * every operation.
+  *
+@@ -409,7 +358,7 @@ export function expandInclude(paths: readonly string[] | undefined, depth: numbe
+  * @param name - The call's optional `manager` field
+  * @returns The resolved {@link RelationManagerInterface}
+  */
+-export function relationManagerOf(
++export function resolveRelationManager(
+ 	managers: Readonly<Record<string, RelationManagerInterface>>,
+ 	name: string | undefined,
+ ): RelationManagerInterface {
+@@ -435,19 +384,22 @@ export function relationManagerOf(
+ }
+ 
+ /**
+- * Resolve a `model` name against a live {@link RelationManagerInterface} — the pure model-lookup
++ * Resolves a `model` name against a live {@link RelationManagerInterface} — the pure model-lookup
+  * leaf {@link import('./factories.js').createRelationTool} calls on every operation, mirroring
+- * {@link relationManagerOf}'s guard shape.
++ * {@link resolveRelationManager}'s guard shape.
+  *
+  * @param manager - The resolved {@link RelationManagerInterface}
+  * @param name - The call's `model` field
+  * @returns The model's {@link ModelInterface}
+  */
+-export function relationModelOf(manager: RelationManagerInterface, name: string): ModelInterface {
++export function resolveRelationModel(
++	manager: RelationManagerInterface,
++	name: string,
++): ModelInterface {
+ 	if (!manager.has(name)) {
+ 		throw new ToolboxError('TOOL', `unknown model '${name}'`, {
+ 			model: name,
+-			models: manager.models(),
++			models: manager.names(),
+ 		})
+ 	}
+ 	return manager.model(name)
+@@ -456,8 +408,8 @@ export function relationModelOf(manager: RelationManagerInterface, name: string)
+ // === Database-tool operation leaves (SRC-2 — `createDatabaseTool` itself)
+ 
+ /**
+- * Normalize the database tool's parsed SERIALIZED query into a live `@orkestrel/database`
+- * {@link QueryInput} — default each condition's OMITTED `connector` to `'and'`.
++ * Returns the canonical live `@orkestrel/database` {@link QueryInput} for the database tool's
++ * parsed SERIALIZED query — each condition's OMITTED `connector` defaults to `'and'`.
+  *
+  * @remarks
+  * The wire form ({@link import('./shapers.js').databaseToolShape}) lets a caller drop `connector`
+@@ -468,7 +420,7 @@ export function relationModelOf(manager: RelationManagerInterface, name: string)
+  * @param query - The parsed query (or `undefined`)
+  * @returns The equivalent live `QueryInput`, or `undefined` when `query` is `undefined`
+  */
+-export function queryOf(query: DatabaseQueryInput | undefined): QueryInput | undefined {
++export function normalizeQuery(query: DatabaseQueryInput | undefined): QueryInput | undefined {
+ 	if (query === undefined) return undefined
+ 	const conditions = query.conditions?.map((condition) => ({
+ 		...condition,
+diff --git a/src/core/index.ts b/src/core/index.ts
+index e47ea6e..67bf883 100644
+--- a/src/core/index.ts
++++ b/src/core/index.ts
+@@ -4,6 +4,7 @@ export * from './errors.js'
+ export * from './validators.js'
+ export * from './shapers.js'
+ export * from './helpers.js'
++export * from './compilers.js'
+ export * from './factories.js'
+ export * from './databases/DatabaseResolver.js'
+ export * from './stores/MemoryDefinitionStore.js'
+diff --git a/src/core/shapers.ts b/src/core/shapers.ts
+index 41a43a6..9280618 100644
+--- a/src/core/shapers.ts
++++ b/src/core/shapers.ts
+@@ -119,7 +119,7 @@ export const taskDraftShape = objectShape({
+ 		stringShape({ min: 1, description: 'Task name; defaults to the id when omitted.' }),
+ 	),
+ 	description: optionalShape(stringShape({ description: 'Optional task description.' })),
+-	run: optionalShape(
++	behavior: optionalShape(
+ 		stringShape({
+ 			min: 1,
+ 			description:
+@@ -174,7 +174,7 @@ export const phaseDraftShape = objectShape({
+  *
+  * @remarks
+  * The lenient counterpart {@link import('./factories.js').createWorkflowDraftContract} compiles.
+- * `run` stays optional like the strict form; omission is the deliberate JSON `null` no-op. A
++ * `behavior` stays optional like the strict form; omission is the deliberate JSON `null` no-op. A
+  * provided `id` / `name` still has `minLength: 1` (so
+  * an explicitly-empty `id: ''` is REJECTED, not auto-filled). After
+  * {@link import('./helpers.js').completeDraft} fills the missing ids/names, the result is
+@@ -202,13 +202,13 @@ export const workflowDraftShape = objectShape({
+  * The shape of ONE flat step — `{ name }` — the building block of {@link workflowStepsShape}.
+  *
+  * @remarks
+- * `name` is the REGISTERED behavior name the step runs (it becomes the task's `run`). The tool
++ * `name` is the REGISTERED behavior name the step runs (it becomes the task's `behavior`). The tool
+  * expands each step into a one-task phase, in order ({@link import('./helpers.js').expandSteps}).
+  */
+ export const stepShape = objectShape({
+ 	name: stringShape({
+ 		min: 1,
+-		description: 'The registered behavior name this step runs (becomes the task run).',
++		description: 'The registered behavior name this step runs (becomes the task behavior).',
+ 	}),
+ })
+ 
+@@ -487,7 +487,7 @@ export const queryShape = objectShape({
+  * @remarks
+  * Every arm carries `id` (the database id). `'create'` carries `tables` (the
+  * {@link import('./types.js').TableSpec} column DSL, compiled via
+- * {@link import('./helpers.js').expandTables}); `'get'` / `'update'` / `'remove'` carry `key`
++ * {@link import('./compilers.js').expandTables}); `'get'` / `'update'` / `'remove'` carry `key`
+  * (one key or an array of keys, positional); `'add'` / `'set'` carry `row` (one row or an array of
+  * rows); `'update'` also carries `changes` (a loose partial row); `'records'` / `'count'` /
+  * `'aggregate'` carry an optional `query` (the SERIALIZED form — `values` is ALWAYS an array,
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 2c9aebf..30d5e94 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -38,7 +38,7 @@ import type { RelationManagerInterface } from '@orkestrel/relation'
+ // id/name still has `minLength: 1`, so an explicitly-empty `id: ''` is REJECTED, not "absent"),
+ // and `completeDraft` synthesizes any MISSING id positionally + defaults a missing name to its
+ // id, yielding a strict `WorkflowDefinition` that is THEN re-validated against the strict
+-// contract before running (soundness preserved). `run` stays optional (a plain name string),
++// contract before running (soundness preserved). `behavior` stays optional (a plain name string),
+ // mirroring the definition family.
+ 
+ /**
+@@ -54,7 +54,7 @@ export interface TaskDraft {
+ 	readonly name?: string
+ 	readonly description?: string
+ 	/** The behavior reference — a registry key resolved against a workflow's functions registry at construction; omitted ⇒ a deliberate JSON `null` no-op. */
+-	readonly run?: string
++	readonly behavior?: string
+ 	/** Extra attempts after the first on failure (a non-negative integer); persisted with the workflow. */
+ 	readonly retries?: number
+ 	/** The per-attempt deadline in milliseconds (`0..MAX_TIMER_MS`); persisted with the workflow. */
+@@ -80,7 +80,7 @@ export interface PhaseDraft {
+  * @remarks
+  * The lenient authoring form {@link import('./factories.js').createWorkflowDraftContract}
+  * validates and {@link import('./helpers.js').completeDraft} completes into a strict
+- * `WorkflowDefinition`. `run` stays optional (a plain name string); the `bail` policy carries
++ * `WorkflowDefinition`. `behavior` stays optional (a plain name string); the `bail` policy carries
+  * over.
+  */
+ export interface WorkflowDraft {
+@@ -98,11 +98,11 @@ export interface WorkflowDraft {
+  * One flat step — `{ name }` — the building block of a {@link WorkflowSteps} blob.
+  *
+  * @remarks
+- * `name` is the REGISTERED behavior name the step runs (it becomes the task's `run`, NOT a
++ * `name` is the REGISTERED behavior name the step runs (it becomes the task's `behavior`, NOT a
+  * human label) — resolved against a workflow-level functions registry at construction.
+  */
+ export interface WorkflowStep {
+-	/** The registered behavior name this step runs (becomes the task's `run`). */
++	/** The registered behavior name this step runs (becomes the task's `behavior`). */
+ 	readonly name: string
+ }
+ 
+@@ -462,7 +462,7 @@ export type ColumnSpec = ColumnKind | Readonly<{ type: ColumnKind; optional?: bo
+ 
+ /**
+  * A database's table layout — one entry per table, each a flat map of column name to
+- * {@link ColumnSpec}. The small-model-facing DSL {@link import('./helpers.js').expandTables}
++ * {@link ColumnSpec}. The small-model-facing DSL {@link import('./compilers.js').expandTables}
+  * compiles into an `@orkestrel/database` `TableMap`.
+  */
+ export type TableSpec = Readonly<
+@@ -476,7 +476,7 @@ export type TableSpec = Readonly<
+  * @remarks
+  * A `DatabaseDefinition` is NEVER a live handle — it is the durable, serializable config a
+  * {@link DefinitionStoreInterface} persists and a tool factory turns into a real
+- * `@orkestrel/database` `DatabaseInterface` (via `createDatabase` + {@link import('./helpers.js').expandTables})
++ * `@orkestrel/database` `DatabaseInterface` (via `createDatabase` + {@link import('./compilers.js').expandTables})
+  * on demand. `primary` maps table names to primary-key columns; `indexes` maps table names to
+  * index column groups; `version` opts a capable driver into open-time schema reconciliation.
+  */
+@@ -509,12 +509,12 @@ export interface DefinitionStoreInterface {
+ /**
+  * The SERIALIZED wire query a database-tool call carries — the parsed form of
+  * {@link import('./shapers.js').queryShape}, which
+- * {@link import('./helpers.js').queryOf} normalizes into a live `@orkestrel/database`
++ * {@link import('./helpers.js').normalizeQuery} normalizes into a live `@orkestrel/database`
+  * {@link QueryInput}.
+  *
+  * @remarks
+  * Every condition is FLAT and its `values` is ALWAYS an array, even for a single-value operator.
+- * `connector` is optional because the LAST condition joins nothing forward; `queryOf` defaults an
++ * `connector` is optional because the LAST condition joins nothing forward; `normalizeQuery` defaults an
+  * omitted one to `'and'`. `order` / `limit` / `offset` carry over to the live query unchanged.
+  */
+ export interface DatabaseQueryInput {
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 6cdd46c..980bcbc 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -1,9 +1,9 @@
+ import type { TerminalManagerInterface } from '@orkestrel/terminal'
+-import type { TerminalRoute, TerminalRoutesOptions } from './types.js'
+-import { TerminalRoutes } from './terminals/TerminalRoutes.js'
++import type { TerminalBridgeOptions, TerminalRoute } from './types.js'
++import { TerminalBridge } from './terminals/TerminalBridge.js'
+ 
+ /**
+- * Build the GET SSE stream and POST answer routes that bridge a terminal manager onto the wire.
++ * Builds the GET SSE stream and POST answer routes that bridge a terminal manager onto the wire.
+  *
+  * @remarks
+  * Both routes share the configured `:name` path and optional token gate. The GET route replays
+@@ -26,7 +26,7 @@ import { TerminalRoutes } from './terminals/TerminalRoutes.js'
+  */
+ export function createTerminalRoutes(
+ 	manager: TerminalManagerInterface,
+-	options?: TerminalRoutesOptions,
++	options?: TerminalBridgeOptions,
+ ): readonly TerminalRoute[] {
+-	return new TerminalRoutes(manager, options).routes()
++	return new TerminalBridge(manager, options).routes()
+ }
+diff --git a/src/server/index.ts b/src/server/index.ts
+index a84bbee..716cb1f 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -1,4 +1,4 @@
+ export * from './types.js'
+ export * from './constants.js'
+ export * from './factories.js'
+-export * from './terminals/TerminalRoutes.js'
++export * from './terminals/TerminalBridge.js'
+diff --git a/src/server/terminals/TerminalBridge.ts b/src/server/terminals/TerminalBridge.ts
+index 12a76c5..97cef75 100644
+--- a/src/server/terminals/TerminalBridge.ts
++++ b/src/server/terminals/TerminalBridge.ts
+@@ -1,8 +1,8 @@
+ import type { TerminalManagerInterface, TimerHandler } from '@orkestrel/terminal'
+ import type {
++	TerminalBridgeOptions,
+ 	TerminalRoute,
+ 	TerminalRouteContext,
+-	TerminalRoutesOptions,
+ 	TerminalToken,
+ } from '../types.js'
+ import { defaultTimer, HEADER_TOKEN } from '@orkestrel/terminal'
+@@ -11,23 +11,24 @@ import { isNonEmptyString, isRecord } from '@orkestrel/contract'
+ import {
+ 	collectRequestBody,
+ 	ContentTooLargeError,
++	createStream,
+ 	DEFAULT_BODY_LIMIT,
+-	openStream,
+ } from '@orkestrel/server'
+ import { TERMINAL_KEEPALIVE_MS, TERMINAL_ROUTES_PATH } from '../constants.js'
+ import { TerminalConnection } from './TerminalConnection.js'
+ 
+ /**
+- * Build and serve the terminal manager's GET stream and POST answer routes.
++ * Bridges a terminal manager onto the wire — owns the shared route options, the token gate, and
++ * the bound GET stream and POST answer handlers.
+  *
+  * @example
+  * ```ts
+- * import { TerminalRoutes } from '@orkestrel/toolbox/server'
++ * import { TerminalBridge } from '@orkestrel/toolbox/server'
+  *
+- * const routes = new TerminalRoutes(manager).routes()
++ * const routes = new TerminalBridge(manager).routes()
+  * ```
+  */
+-export class TerminalRoutes {
++export class TerminalBridge {
+ 	readonly #manager: TerminalManagerInterface
+ 	readonly #path: string
+ 	readonly #token: TerminalToken | undefined
+@@ -39,12 +40,12 @@ export class TerminalRoutes {
+ 	readonly #post: TerminalRoute['handler']
+ 
+ 	/**
+-	 * Create a terminal route owner.
++	 * Creates a terminal bridge.
+ 	 *
+ 	 * @param manager - Terminal manager bridged onto HTTP
+ 	 * @param options - Shared route, authorization, keepalive, timer, and body-limit options
+ 	 */
+-	constructor(manager: TerminalManagerInterface, options?: TerminalRoutesOptions) {
++	constructor(manager: TerminalManagerInterface, options?: TerminalBridgeOptions) {
+ 		this.#manager = manager
+ 		this.#path = options?.path ?? TERMINAL_ROUTES_PATH
+ 		this.#token = options?.token
+@@ -61,7 +62,7 @@ export class TerminalRoutes {
+ 	}
+ 
+ 	/**
+-	 * Project the bound GET and POST route records.
++	 * Projects the bound GET and POST route records.
+ 	 *
+ 	 * @returns The GET stream route followed by the POST answer route
+ 	 */
+@@ -95,7 +96,7 @@ export class TerminalRoutes {
+ 			this.#manager,
+ 			name,
+ 			request,
+-			openStream(),
++			createStream(),
+ 			this.#accepts,
+ 			this.#timer,
+ 			this.#keepalive,
+diff --git a/src/server/terminals/TerminalConnection.ts b/src/server/terminals/TerminalConnection.ts
+index 20998a9..451863d 100644
+--- a/src/server/terminals/TerminalConnection.ts
++++ b/src/server/terminals/TerminalConnection.ts
+@@ -1,7 +1,7 @@
+ import type {
+ 	PendingForm,
+ 	TerminalManagerInterface,
+-	TimerCancel,
++	TimerCancelFunction,
+ 	TimerHandler,
+ 	WireEvent,
+ } from '@orkestrel/terminal'
+@@ -23,7 +23,7 @@ export class TerminalConnection {
+ 	readonly #timer: TimerHandler
+ 	readonly #keepalive: number
+ 	readonly #presented: string | undefined
+-	#cancel: TimerCancel | undefined
++	#cancel: TimerCancelFunction | undefined
+ 	readonly #destroyHandler: () => void
+ 	readonly #pendingHandler: (form: PendingForm) => void
+ 	readonly #expireHandler: (to: string, id: string) => void
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 8d3e891..e634824 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -4,8 +4,8 @@ import type { TimerHandler } from '@orkestrel/terminal'
+ // imports `@orkestrel/router`) so a consumer mounts the two returned routes against ANY router
+ // that accepts this shape; these types are the source of truth.
+ 
+-/** The HTTP method literal a {@link TerminalRoute} declares — the same union `@orkestrel/router`'s `Method` accepts. */
+-export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
++/** The HTTP method literal a {@link TerminalRoute} declares — the same union `@orkestrel/router`'s `Method` type accepts. */
++export type TerminalRouteMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
+ 
+ /**
+  * The minimal route-dispatch context a {@link TerminalRoute} handler reads — exactly the frozen,
+@@ -22,7 +22,7 @@ export interface TerminalRouteContext {
+  * `(request, context) => Response | Promise<Response>` handler keyed by `method` + `path`.
+  */
+ export interface TerminalRoute {
+-	readonly method: Method
++	readonly method: TerminalRouteMethod
+ 	readonly path: string
+ 	readonly handler: (
+ 		request: Request,
+@@ -31,7 +31,7 @@ export interface TerminalRoute {
+ }
+ 
+ /**
+- * The `token` gate a {@link TerminalRoutesOptions} may configure — a plain string compared for
++ * The `token` gate {@link TerminalBridgeOptions} may configure — a plain string compared for
+  * equality against the `x-orkestrel-token` header, OR a validator function the consumer fully
+  * controls, enabling expiry/rotation (a JWT `exp` check, a revocation-list lookup, anything
+  * time-varying) that a fixed string cannot express. `undefined` disables the auth check entirely.
+@@ -39,7 +39,8 @@ export interface TerminalRoute {
+ export type TerminalToken = string | ((value: string | undefined) => boolean)
+ 
+ /**
+- * Options for {@link import('./factories.js').createTerminalRoutes}.
++ * Options for a {@link import('./terminals/TerminalBridge.js').TerminalBridge} and for the
++ * {@link import('./factories.js').createTerminalRoutes} factory that projects its routes.
+  *
+  * @remarks
+  * - `path` — the shared `:name`-templated path both the GET (SSE) and POST (answer) routes
+@@ -63,7 +64,7 @@ export type TerminalToken = string | ((value: string | undefined) => boolean)
+  *   a body exceeding it is rejected `413` and `manager.answer` is never called. Defaults to
+  *   `@orkestrel/server`'s own `DEFAULT_BODY_LIMIT` (1 MiB).
+  */
+-export interface TerminalRoutesOptions {
++export interface TerminalBridgeOptions {
+ 	readonly path?: string
+ 	readonly token?: TerminalToken
+ 	readonly keepalive?: number
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 48b0429..bc62c58 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -6,11 +6,14 @@ import {
+ 	createTestTaskController,
+ 	MalformedAgent,
+ 	RecordingWorkflowStore,
++	releaseTestTaskControllers,
+ 	ScriptedProvider,
+ } from './setup.js'
+-import { describe, expect, it } from 'vitest'
++import { afterEach, describe, expect, it } from 'vitest'
+ 
+ describe('setup', () => {
++	afterEach(releaseTestTaskControllers)
++
+ 	it('createTestDatabase returns a fresh, closable live database on every call', async () => {
+ 		const first = createTestDatabase()
+ 		const second = createTestDatabase()
+@@ -58,8 +61,8 @@ describe('setup', () => {
+ 		})
+ 	})
+ 
+-	it('createTestTaskController wires a real controller over a p/t workflow with defaults', () => {
+-		const controller = createTestTaskController()
++	it('createTestTaskController wires a real controller over a p/t workflow with defaults', async () => {
++		const controller = await createTestTaskController()
+ 
+ 		expect(controller.input).toEqual({})
+ 		expect(controller.aborted).toBe(false)
+@@ -69,7 +72,7 @@ describe('setup', () => {
+ 
+ 	it('createTestTaskController threads a caller signal and input into the real controller', async () => {
+ 		const abortController = new AbortController()
+-		const controller = createTestTaskController({
++		const controller = await createTestTaskController({
+ 			signal: abortController.signal,
+ 			input: { path: '/repo' },
+ 		})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 398e779..f11559b 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,7 +1,7 @@
+ import type {
+-	MessageInterface,
+ 	AgentInterface,
+ 	AgentResult,
++	Message,
+ 	ProviderDelta,
+ 	ProviderInterface,
+ 	ProviderResult,
+@@ -16,7 +16,7 @@ import type {
+ } from '@orkestrel/workflow'
+ import { createAgent, ProviderAbortError } from '@orkestrel/agent'
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+-import { createWorkflow, TaskController } from '@orkestrel/workflow'
++import { createWorkflowRunner } from '@orkestrel/workflow'
+ import { waitForDelay } from '@orkestrel/test'
+ 
+ /**
+@@ -59,7 +59,7 @@ export function createTestDefinition(id = 'shop'): DatabaseDefinition {
+ 	}
+ }
+ 
+-/** Options for a real workflow {@link TaskController} test handle. */
++/** Options for a live workflow task controller captured mid-run. */
+ export interface TestTaskControllerOptions {
+ 	readonly signal?: AbortSignal
+ 	readonly input?: JSONRecord
+@@ -67,33 +67,59 @@ export interface TestTaskControllerOptions {
+ 	readonly task?: string
+ }
+ 
++// The workflow package publishes `TaskControllerInterface` but not the class behind it, so a live
++// handle comes from a real run: a one-task workflow whose behavior captures its own controller and
++// parks. The run stays open — and the handle stays valid — until `releaseTestTaskControllers`
++// settles every parked task, which each suite does after every test.
++const releases: Array<() => void> = []
++
+ /**
+- * Build a real exported workflow task and its native {@link TaskController} handle.
++ * Captures a live {@link TaskControllerInterface} from a real one-task workflow run.
++ *
++ * @remarks
++ * The task parks after capture, so the returned handle keeps the non-aborted, owning state a
++ * `WorkflowFunction` sees mid-run. `signal` folds into the controller's own signal through the
++ * run's cancellation, `input` arrives as the task's metadata bag, and `workflow` / `task` name the
++ * lineage `controller.task.phase.workflow.id` and `controller.task.id` report.
+  *
+  * @param options - Optional signal, input, and lineage identities
+- * @returns A native controller over a real workflow task
++ * @returns The live controller of a parked task in a real run
+  */
+-export function createTestTaskController(
++export async function createTestTaskController(
+ 	options?: TestTaskControllerOptions,
+-): TaskControllerInterface {
++): Promise<TaskControllerInterface> {
+ 	const workflowId = options?.workflow ?? 'wf'
+ 	const taskId = options?.task ?? 't'
+-	const workflow = createWorkflow({
+-		id: workflowId,
+-		name: workflowId,
+-		phases: [{ id: 'p', name: 'P', tasks: [{ id: taskId, name: taskId }] }],
+-	})
+-	const task = workflow.phase('p')?.task(taskId)
+-	if (task === undefined) throw new Error(`test task '${taskId}' was not constructed`)
+-	return new TaskController(
+-		options?.signal ?? new AbortController().signal,
+-		options?.input ?? {},
+-		task,
+-		1,
+-		() => workflow.results(),
+-		(input) => task.report(input),
+-		() => task.pulse(),
++	const captured = Promise.withResolvers<TaskControllerInterface>()
++	const parked = Promise.withResolvers<null>()
++	releases.push(() => parked.resolve(null))
++	const run = createWorkflowRunner().execute(
++		{
++			id: workflowId,
++			name: workflowId,
++			phases: [{ id: 'p', name: 'P', tasks: [{ id: taskId, name: taskId, behavior: 'park' }] }],
++		},
++		{
++			functions: {
++				park: (controller) => {
++					captured.resolve(controller)
++					return parked.promise
++				},
++			},
++			phases: { p: { tasks: { [taskId]: { metadata: options?.input ?? {} } } } },
++			...(options?.signal === undefined ? {} : { signal: options.signal }),
++		},
+ 	)
++	// A cancelled run settles through its result rather than a rejection, and no caller here reads
++	// that result; the catch keeps an engine-level rejection from surfacing as an unhandled one.
++	run.catch(() => {})
++	return captured.promise
++}
++
++/** Settles every task parked by {@link createTestTaskController}, closing its run. */
++export function releaseTestTaskControllers(): void {
++	for (const release of releases) release()
++	releases.length = 0
+ }
+ 
+ /** A protocol-faithful workflow store that records checkpoints and rejects a controlled prefix. */
+@@ -142,7 +168,7 @@ export class RecordingWorkflowStore implements WorkflowStoreInterface {
+ 
+ /** One recorded `generate` / `stream` call on a {@link ScriptedProvider}. */
+ export interface ScriptedCall {
+-	readonly messages: readonly MessageInterface[]
++	readonly messages: readonly Message[]
+ }
+ 
+ /**
+@@ -206,7 +232,7 @@ export class ScriptedProvider implements ScriptedProviderInterface {
+ 	}
+ 
+ 	async *stream(
+-		messages: readonly MessageInterface[],
++		messages: readonly Message[],
+ 		signal: AbortSignal,
+ 	): AsyncGenerator<ProviderDelta, ProviderResult> {
+ 		this.#calls.push({ messages: [...messages] })
+@@ -220,16 +246,13 @@ export class ScriptedProvider implements ScriptedProviderInterface {
+ 		for (const delta of [turn.content]) {
+ 			if (signal.aborted) throw new ProviderAbortError({ content: streamed })
+ 			streamed += delta
+-			if (delta.length > 0) yield { type: 'content', text: delta }
++			if (delta.length > 0) yield { channel: 'content', text: delta }
+ 		}
+ 		if (signal.aborted) throw new ProviderAbortError({ content: streamed })
+ 		return turn
+ 	}
+ 
+-	async generate(
+-		messages: readonly MessageInterface[],
+-		signal: AbortSignal,
+-	): Promise<ProviderResult> {
++	async generate(messages: readonly Message[], signal: AbortSignal): Promise<ProviderResult> {
+ 		const generator = this.stream(messages, signal)
+ 		let step = await generator.next()
+ 		while (!step.done) step = await generator.next()
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+new file mode 100644
+index 0000000..dfbc6fe
+--- /dev/null
++++ b/tests/src/core/compilers.test.ts
+@@ -0,0 +1,103 @@
++import { compileColumn, compileColumnKind, expandTables } from '@src/core'
++import { createContract, objectShape } from '@orkestrel/contract'
++import { describe, expect, it } from 'vitest'
++
++// tests/src/core/compilers.test.ts — mirrors src/core/compilers.ts. The config-only TableSpec
++// column DSL compiled into a live `@orkestrel/database` TableMap: the composite walk and the two
++// leaves it maps with, each asserted through a real compiled contract rather than shape identity.
++
++describe('expandTables — compile a TableSpec into a @orkestrel/database TableMap', () => {
++	it('maps each ColumnKind to the matching primitive shaper (guards good/bad values)', () => {
++		const tables = expandTables({
++			widgets: {
++				columns: { name: 'string', count: 'integer', weight: 'number', active: 'boolean' },
++			},
++		})
++		const widgets = tables.widgets
++		if (widgets === undefined) throw new Error('expected widgets table')
++		const contract = createContract(objectShape(widgets))
++		expect(contract.is({ name: 'w', count: 1, weight: 1.5, active: true })).toBe(true)
++		expect(contract.is({ name: 42, count: 1, weight: 1.5, active: true })).toBe(false)
++		expect(contract.is({ name: 'w', count: 1.5, weight: 1.5, active: true })).toBe(false)
++		expect(contract.is({ name: 'w', count: 1, weight: 'x', active: true })).toBe(false)
++		expect(contract.is({ name: 'w', count: 1, weight: 1.5, active: 'yes' })).toBe(false)
++	})
++
++	it('optional:true wraps so an absent column passes and a wrong-typed present column fails', () => {
++		const tables = expandTables({
++			widgets: { columns: { nickname: { type: 'string', optional: true } } },
++		})
++		const widgets = tables.widgets
++		if (widgets === undefined) throw new Error('expected widgets table')
++		const contract = createContract(objectShape(widgets))
++		expect(contract.is({})).toBe(true)
++		expect(contract.is({ nickname: 'w' })).toBe(true)
++		expect(contract.is({ nickname: 42 })).toBe(false)
++	})
++
++	it('compiles multiple tables independently', () => {
++		const tables = expandTables({
++			a: { columns: { x: 'string' } },
++			b: { columns: { y: 'integer' } },
++		})
++		expect(Object.keys(tables).sort()).toEqual(['a', 'b'])
++		const a = tables.a
++		const b = tables.b
++		if (a === undefined || b === undefined) throw new Error('expected both tables')
++		expect(createContract(objectShape(a)).is({ x: 's' })).toBe(true)
++		expect(createContract(objectShape(b)).is({ y: 1 })).toBe(true)
++	})
++})
++
++describe('compileColumn — compile one ColumnSpec into its column shape', () => {
++	it('compiles a bare ColumnKind shorthand into the required primitive shape', () => {
++		const contract = createContract(objectShape({ value: compileColumn('integer') }))
++		expect(contract.is({ value: 3 })).toBe(true)
++		expect(contract.is({ value: 3.5 })).toBe(false)
++		expect(contract.is({})).toBe(false)
++	})
++
++	it('compiles { type } without optional into the same required shape as the shorthand', () => {
++		const contract = createContract(objectShape({ value: compileColumn({ type: 'string' }) }))
++		expect(contract.is({ value: 'x' })).toBe(true)
++		expect(contract.is({})).toBe(false)
++	})
++
++	it('wraps an optional:true column so an absent value passes and a wrong-typed one fails', () => {
++		const contract = createContract(
++			objectShape({ value: compileColumn({ type: 'number', optional: true }) }),
++		)
++		expect(contract.is({})).toBe(true)
++		expect(contract.is({ value: 1.5 })).toBe(true)
++		expect(contract.is({ value: 'x' })).toBe(false)
++	})
++
++	it('treats optional:false as required, matching the shorthand', () => {
++		const contract = createContract(
++			objectShape({ value: compileColumn({ type: 'boolean', optional: false }) }),
++		)
++		expect(contract.is({ value: false })).toBe(true)
++		expect(contract.is({})).toBe(false)
++	})
++})
++
++describe('compileColumnKind — compile one ColumnKind into its primitive shape', () => {
++	it('maps every kind to a shape accepting its own value and rejecting a record', () => {
++		const samples = { string: 'x', integer: 3, number: 1.5, boolean: true } as const
++		const kinds = ['string', 'integer', 'number', 'boolean'] as const
++		for (const kind of kinds) {
++			const contract = createContract(objectShape({ value: compileColumnKind(kind) }))
++			expect(contract.is({ value: samples[kind] })).toBe(true)
++			expect(contract.is({ value: { nested: true } })).toBe(false)
++			expect(contract.is({})).toBe(false)
++		}
++	})
++
++	it('separates integer from number: a fractional value fails the integer shape alone', () => {
++		const integer = createContract(objectShape({ value: compileColumnKind('integer') }))
++		const number = createContract(objectShape({ value: compileColumnKind('number') }))
++		expect(integer.is({ value: 1.5 })).toBe(false)
++		expect(number.is({ value: 1.5 })).toBe(true)
++		expect(integer.is({ value: 2 })).toBe(true)
++	})
++})
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 6828871..bbae97a 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -4,7 +4,11 @@ import type { ToolResult } from '@orkestrel/tool'
+ import type { WorkflowDraft } from '@src/core'
+ import type { DatabaseInterface } from '@orkestrel/database'
+ import type { WorkflowDefinition, WorkflowFunction, WorkflowFunctions } from '@orkestrel/workflow'
+-import type { TerminalManagerInterface, TimerCancel, TimerHandler } from '@orkestrel/terminal'
++import type {
++	TerminalManagerInterface,
++	TimerCancelFunction,
++	TimerHandler,
++} from '@orkestrel/terminal'
+ import type { FieldControl, FormSchema, FormValues } from '@orkestrel/form'
+ import type { RelationManagerInterface } from '@orkestrel/relation'
+ import { createAgent, createAgentRegistry, createMemoryConversationStore } from '@orkestrel/agent'
+@@ -43,7 +47,7 @@ import {
+ 	DESCRIBE_TOOL_NAME,
+ 	INFER_TOOL_NAME,
+ 	isToolboxError,
+-	MAX_WORKFLOW_DEPTH,
++	MAX_WORKFLOW_CHAIN,
+ 	PROMPT_TOOL_NAME,
+ 	RELATION_TOOL_NAME,
+ 	WORKFLOW_TOOL_DESCRIPTION,
+@@ -55,21 +59,24 @@ import {
+ import { createTerminalManager, TerminalError } from '@orkestrel/terminal'
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { belongsTo, createRelationManager, hasMany, hasThrough } from '@orkestrel/relation'
+-import { describe, expect, it } from 'vitest'
+-import { createRecorder, waitForDelay } from '@orkestrel/test'
++import { afterEach, describe, expect, it } from 'vitest'
++import { createRecorder, waitForAbort, waitForDelay } from '@orkestrel/test'
+ import {
+ 	createTestTaskController,
+ 	MalformedAgent,
+ 	RecordingWorkflowStore,
++	releaseTestTaskControllers,
+ 	ScriptedProvider,
+ } from '../../setup.js'
+ 
++afterEach(releaseTestTaskControllers)
++
+ // tests/src/core/factories.test.ts — mirrors src/core/factories.ts with real
+ // handlers, stores, workflow runners, agents, and scripted protocol providers throughout.
+ 
+ // ── Shared fixtures ──────────────────────────────────────────────────────────
+ 
+-// A one-task definition whose `run` is omitted, so Workflow performs the deliberate JSON-null
++// A one-task definition whose `behavior` is omitted, so Workflow performs the deliberate JSON-null
+ // no-op and the run completes without a functions registry.
+ function simpleDefinition(id = 'nested'): WorkflowDefinition {
+ 	return {
+@@ -139,7 +146,7 @@ function buildToolLineageFixture(depth: number): readonly string[] {
+ 	return lineage
+ }
+ 
+-function createWorkflowProviderCall(id: string, run: string): ProviderResult {
++function createWorkflowProviderCall(id: string, behavior: string): ProviderResult {
+ 	return {
+ 		content: '',
+ 		tools: [
+@@ -154,7 +161,7 @@ function createWorkflowProviderCall(id: string, run: string): ProviderResult {
+ 						{
+ 							id: 'p',
+ 							name: 'P',
+-							tasks: [{ id: 't', name: 'T', run }],
++							tasks: [{ id: 't', name: 'T', behavior }],
+ 						},
+ 					],
+ 				},
+@@ -230,7 +237,7 @@ describe('createToolFunction — wraps a registered tool as a WorkflowFunction',
+ 			}),
+ 		)
+ 		const fn = createToolFunction(tools, 'scan')
+-		const value = await fn(createTestTaskController({ input: { path: '/repo' } }))
++		const value = await fn(await createTestTaskController({ input: { path: '/repo' } }))
+ 		expect(value).toBe('scanned')
+ 		expect(seen.calls[0]?.[0]).toEqual({ path: '/repo' })
+ 	})
+@@ -247,14 +254,14 @@ describe('createToolFunction — wraps a registered tool as a WorkflowFunction',
+ 			}),
+ 		)
+ 		const fn = createToolFunction(tools, 'boom')
+-		const error = await rejectionOf(fn(createTestTaskController()))
++		const error = await rejectionOf(fn(await createTestTaskController()))
+ 		expect(error).toBe(thrown)
+ 	})
+ 
+ 	it('an UNREGISTERED tool name throws a typed TOOL ToolboxError', async () => {
+ 		const tools = createToolManager()
+ 		const fn = createToolFunction(tools, 'missing')
+-		const error = await rejectionOf(fn(createTestTaskController()))
++		const error = await rejectionOf(fn(await createTestTaskController()))
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('TOOL')
+ 	})
+ 
+@@ -283,11 +290,13 @@ describe('createToolFunction — wraps a registered tool as a WorkflowFunction',
+ 			new Date(0),
+ 		]
+ 		tools.add(createTool({ name: 'json', execute: () => json }))
+-		expect(await createToolFunction(tools, 'json')(createTestTaskController())).toBe(json)
++		expect(await createToolFunction(tools, 'json')(await createTestTaskController())).toBe(json)
+ 		for (const [index, value] of invalid.entries()) {
+ 			const name = `invalid-${index}`
+ 			tools.add(createTool({ name, execute: () => value }))
+-			const error = await rejectionOf(createToolFunction(tools, name)(createTestTaskController()))
++			const error = await rejectionOf(
++				createToolFunction(tools, name)(await createTestTaskController()),
++			)
+ 			expect(isToolboxError(error) ? error.code : undefined).toBe('TOOL')
+ 		}
+ 	})
+@@ -298,7 +307,7 @@ describe('createToolFunction — wraps a registered tool as a WorkflowFunction',
+ 		const definition: WorkflowDefinition = {
+ 			id: 'wf',
+ 			name: 'WF',
+-			phases: [{ id: 'a', name: 'A', tasks: [{ id: 't', name: 'T', run: 'scan' }] }],
++			phases: [{ id: 'a', name: 'A', tasks: [{ id: 't', name: 'T', behavior: 'scan' }] }],
+ 		}
+ 		const result = await createWorkflowRunner().execute(definition, {
+ 			functions: { scan: createToolFunction(tools, 'scan') },
+@@ -325,7 +334,7 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 			]),
+ 		)
+ 		const fn = createAgentFunction(agent)
+-		const value = await fn(createTestTaskController())
++		const value = await fn(await createTestTaskController())
+ 		expect(value).toEqual({
+ 			content: 'audited',
+ 			thinking: 'checked evidence',
+@@ -339,7 +348,7 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 		const agent = createAgent(provider)
+ 		const controller = new AbortController()
+ 		const fn = createAgentFunction(agent)
+-		const running = fn(createTestTaskController({ signal: controller.signal }))
++		const running = fn(await createTestTaskController({ signal: controller.signal }))
+ 		await waitForDelay(20)
+ 		controller.abort(new Error('cancelled mid-generate'))
+ 		const value = await running
+@@ -348,11 +357,11 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 
+ 	it('native per-run signal: an already-aborted controller never starts the provider', async () => {
+ 		const provider = new ScriptedProvider([{ content: 'unreached' }])
+-		const controller = new AbortController()
+-		controller.abort(new Error('cancelled before generate'))
+-		const value = await createAgentFunction(createAgent(provider))(
+-			createTestTaskController({ signal: controller.signal }),
+-		)
++		const abort = new AbortController()
++		const controller = await createTestTaskController({ signal: abort.signal })
++		abort.abort(new Error('cancelled before generate'))
++		await waitForAbort(controller.signal)
++		const value = await createAgentFunction(createAgent(provider))(controller)
+ 		expect(isRecord(value) ? value.partial : undefined).toBe(true)
+ 		expect(provider.started).toBe(0)
+ 	})
+@@ -361,10 +370,10 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 		const provider = new ScriptedProvider([{ content: 'x' }])
+ 		const agent = createAgent(provider)
+ 		const fn = createAgentFunction(agent, {
+-			lineage: buildWorkflowLineageFixture(MAX_WORKFLOW_DEPTH + 1),
++			lineage: buildWorkflowLineageFixture(MAX_WORKFLOW_CHAIN + 1),
+ 		})
+ 		const error = await rejectionOf(
+-			fn(createTestTaskController({ workflow: `w${MAX_WORKFLOW_DEPTH + 1}` })),
++			fn(await createTestTaskController({ workflow: `w${MAX_WORKFLOW_CHAIN + 1}` })),
+ 		)
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('DEPTH')
+ 		expect(provider.started).toBe(0)
+@@ -376,7 +385,7 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 		const fn = createAgentFunction(agent, {
+ 			lineage: ['workflow:w0', `agent:${agent.id}`, 'workflow:w1'],
+ 		})
+-		const error = await rejectionOf(fn(createTestTaskController({ workflow: 'w1' })))
++		const error = await rejectionOf(fn(await createTestTaskController({ workflow: 'w1' })))
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('DEPTH')
+ 		expect(provider.started).toBe(0)
+ 	})
+@@ -390,7 +399,7 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 			functions: { nested: () => 'nested-result' },
+ 			store,
+ 		})
+-		await fn(createTestTaskController())
++		await fn(await createTestTaskController())
+ 		expect(agent.context.tools.count).toBe(1)
+ 		const tool = agent.context.tools.tool(WORKFLOW_TOOL_NAME)
+ 		if (tool === undefined) throw new Error('workflow tool was not bound')
+@@ -408,7 +417,7 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 	it('a bound nested workflow tool refuses its no-arg containing-workflow target as a cycle', async () => {
+ 		const agent = createAgent(new ScriptedProvider([{ content: 'bound' }]))
+ 		await createAgentFunction(agent, { runner: createWorkflowRunner() })(
+-			createTestTaskController({ workflow: 'containing' }),
++			await createTestTaskController({ workflow: 'containing' }),
+ 		)
+ 		const tool = agent.context.tools.tool(WORKFLOW_TOOL_NAME)
+ 		if (tool === undefined) throw new Error('workflow tool was not bound')
+@@ -422,7 +431,7 @@ describe('createAgentFunction — wraps a live AgentInterface as a WorkflowFunct
+ 		const definition: WorkflowDefinition = {
+ 			id: 'wf',
+ 			name: 'WF',
+-			phases: [{ id: 'a', name: 'A', tasks: [{ id: 't', name: 'T', run: 'auditor' }] }],
++			phases: [{ id: 'a', name: 'A', tasks: [{ id: 't', name: 'T', behavior: 'auditor' }] }],
+ 		}
+ 		const result = await createWorkflowRunner().execute(definition, {
+ 			functions: { auditor: createAgentFunction(agent) },
+@@ -453,14 +462,14 @@ describe('createAgentFunction — contextual metadata and lifecycle guards', ()
+ 	it('rejects a contextual workflow mismatch before agent activity', async () => {
+ 		const provider = new ScriptedProvider([{ content: 'unreached' }])
+ 		const fn = createAgentFunction(createAgent(provider), { lineage: ['workflow:expected'] })
+-		const error = await rejectionOf(fn(createTestTaskController({ workflow: 'actual' })))
++		const error = await rejectionOf(fn(await createTestTaskController({ workflow: 'actual' })))
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('DEPTH')
+ 		expect(provider.started).toBe(0)
+ 	})
+ 
+ 	it('uses Agent-owned full projection and maps a malformed structural result to TOOL', async () => {
+ 		const error = await rejectionOf(
+-			createAgentFunction(new MalformedAgent())(createTestTaskController()),
++			createAgentFunction(new MalformedAgent())(await createTestTaskController()),
+ 		)
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('TOOL')
+ 	})
+@@ -468,7 +477,7 @@ describe('createAgentFunction — contextual metadata and lifecycle guards', ()
+ 	it('preserves a genuine provider error by identity', async () => {
+ 		const failure = new Error('provider refused')
+ 		const agent = createAgent(new ScriptedProvider([{ content: 'unreached' }], { failure }))
+-		const error = await rejectionOf(createAgentFunction(agent)(createTestTaskController()))
++		const error = await rejectionOf(createAgentFunction(agent)(await createTestTaskController()))
+ 		expect(error).toBe(failure)
+ 		expect(agent.status).toBe('error')
+ 	})
+@@ -476,9 +485,9 @@ describe('createAgentFunction — contextual metadata and lifecycle guards', ()
+ 	it('a concurrent same-agent loser rejects before replacing the bound workflow tool', async () => {
+ 		const agent = createAgent(new ScriptedProvider([{ content: 'slow' }], { delay: 40 }))
+ 		const fn = createAgentFunction(agent, { runner: createWorkflowRunner() })
+-		const first = fn(createTestTaskController({ workflow: 'first' }))
++		const first = fn(await createTestTaskController({ workflow: 'first' }))
+ 		const bound = agent.context.tools.tool(WORKFLOW_TOOL_NAME)
+-		const error = await rejectionOf(fn(createTestTaskController({ workflow: 'second' })))
++		const error = await rejectionOf(fn(await createTestTaskController({ workflow: 'second' })))
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('TOOL')
+ 		expect(agent.context.tools.tool(WORKFLOW_TOOL_NAME)).toBe(bound)
+ 		await first
+@@ -492,7 +501,7 @@ describe('createWorkflowFunctions — recursion-safe registry composition', () =
+ 		const definition: WorkflowDefinition = {
+ 			id: 'root',
+ 			name: 'Root',
+-			phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'review' }] }],
++			phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'review' }] }],
+ 		}
+ 		const functions = createWorkflowFunctions(runner, { agents: { review: agent } })
+ 		const result = await runner.execute(definition, { functions })
+@@ -535,7 +544,7 @@ describe('createWorkflowFunctions — recursion-safe registry composition', () =
+ 					{
+ 						id: `inherited-${name}`,
+ 						name,
+-						phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: name }] }],
++						phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: name }] }],
+ 					},
+ 					{ functions },
+ 				),
+@@ -560,7 +569,7 @@ describe('createWorkflowFunctions — recursion-safe registry composition', () =
+ 				{
+ 					id: `registered-${name}`,
+ 					name,
+-					phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: name }] }],
++					phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: name }] }],
+ 				},
+ 				{ functions },
+ 			)
+@@ -615,7 +624,7 @@ describe('createWorkflowFunctions — recursion-safe registry composition', () =
+ 	})
+ 
+ 	it('allows depth eight and rejects depth nine for a direct registry consumer', async () => {
+-		for (const depth of [MAX_WORKFLOW_DEPTH, MAX_WORKFLOW_DEPTH + 1]) {
++		for (const depth of [MAX_WORKFLOW_CHAIN, MAX_WORKFLOW_CHAIN + 1]) {
+ 			const provider = new ScriptedProvider([{ content: `depth-${depth}` }])
+ 			const agent = createAgent(provider)
+ 			const id = `w${depth}`
+@@ -628,12 +637,12 @@ describe('createWorkflowFunctions — recursion-safe registry composition', () =
+ 					id,
+ 					name: id,
+ 					bail: true,
+-					phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'review' }] }],
++					phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'review' }] }],
+ 				},
+ 				{ functions },
+ 			)
+-			expect(result.status).toBe(depth === MAX_WORKFLOW_DEPTH ? 'completed' : 'failed')
+-			expect(provider.started).toBe(depth === MAX_WORKFLOW_DEPTH ? 1 : 0)
++			expect(result.status).toBe(depth === MAX_WORKFLOW_CHAIN ? 'completed' : 'failed')
++			expect(provider.started).toBe(depth === MAX_WORKFLOW_CHAIN ? 1 : 0)
+ 		}
+ 	})
+ })
+@@ -655,7 +664,7 @@ describe('workflow/agent recursion through real providers and runners', () => {
+ 			{
+ 				id: 'root',
+ 				name: 'Root',
+-				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'a' }] }],
++				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'a' }] }],
+ 			},
+ 			{ functions },
+ 		)
+@@ -686,7 +695,7 @@ describe('workflow/agent recursion through real providers and runners', () => {
+ 			{
+ 				id: 'root',
+ 				name: 'Root',
+-				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'a' }] }],
++				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'a' }] }],
+ 			},
+ 			{ functions },
+ 		)
+@@ -712,7 +721,7 @@ describe('workflow/agent recursion through real providers and runners', () => {
+ 			{
+ 				id: 'root',
+ 				name: 'Root',
+-				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'a' }] }],
++				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'a' }] }],
+ 			},
+ 			{ functions },
+ 		)
+@@ -755,7 +764,7 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 		expect(readSummary(await tool.execute({}))).toEqual({ status: 'completed', count: 1 })
+ 	})
+ 
+-	it('an omitted run completes with native JSON null', async () => {
++	it('an omitted behavior completes with native JSON null', async () => {
+ 		const store = createMemoryWorkflowStore()
+ 		const tool = createWorkflowTool(simpleDefinition('omitted'), createWorkflowRunner(), { store })
+ 		expect(await tool.execute({})).toEqual({ status: 'completed', count: 1, durable: true })
+@@ -766,12 +775,12 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 		})
+ 	})
+ 
+-	it('an unresolved named run preserves the native TRANSITION WorkflowError', async () => {
++	it('an unresolved named behavior preserves the native TRANSITION WorkflowError', async () => {
+ 		const store = new RecordingWorkflowStore()
+ 		const definition: WorkflowDefinition = {
+ 			id: 'unresolved',
+ 			name: 'Unresolved',
+-			phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'missing' }] }],
++			phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'missing' }] }],
+ 		}
+ 		const error = await rejectionOf(
+ 			createWorkflowTool(definition, createWorkflowRunner(), { store }).execute({}),
+@@ -803,7 +812,7 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 			{
+ 				id: 'wrapped',
+ 				name: 'Wrapped',
+-				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'entered' }] }],
++				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'entered' }] }],
+ 			},
+ 			createWorkflowRunner(),
+ 			{
+@@ -831,7 +840,7 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 
+ 	it('an over-deep call throws a typed DEPTH ToolboxError without running', async () => {
+ 		const tool = createWorkflowTool(simpleDefinition(), createWorkflowRunner(), {
+-			lineage: buildToolLineageFixture(MAX_WORKFLOW_DEPTH + 1),
++			lineage: buildToolLineageFixture(MAX_WORKFLOW_CHAIN + 1),
+ 		})
+ 		const error = await rejectionOf(tool.execute({ ...simpleDefinition('deep') }))
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('DEPTH')
+@@ -849,7 +858,7 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 
+ 	it('the draft contract accepts an ids-omitted blob but the tool rejects an explicitly-empty id', () => {
+ 		const draft = createWorkflowDraftContract()
+-		const omitted: WorkflowDraft = { phases: [{ tasks: [{ run: 'a' }] }] }
++		const omitted: WorkflowDraft = { phases: [{ tasks: [{ behavior: 'a' }] }] }
+ 		expect(draft.is(omitted)).toBe(true)
+ 		expect(draft.parse({ id: '', phases: [] })).toBeUndefined()
+ 	})
+@@ -859,7 +868,9 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 			functions: { x: () => 'x', y: () => 'y' },
+ 		})
+ 		const summary = readSummary(
+-			await tool.execute({ phases: [{ tasks: [{ run: 'x' }] }, { tasks: [{ run: 'y' }] }] }),
++			await tool.execute({
++				phases: [{ tasks: [{ behavior: 'x' }] }, { tasks: [{ behavior: 'y' }] }],
++			}),
+ 		)
+ 		expect(summary).toEqual({ status: 'completed', count: 2 })
+ 	})
+@@ -893,18 +904,18 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 
+ 	it('allows depth eight and rejects depth nine from a top-level-tool entry path', async () => {
+ 		const allowed = createWorkflowTool(simpleDefinition('wrapped'), createWorkflowRunner(), {
+-			lineage: buildToolLineageFixture(MAX_WORKFLOW_DEPTH),
++			lineage: buildToolLineageFixture(MAX_WORKFLOW_CHAIN),
+ 		})
+-		expect(await allowed.execute({ ...simpleDefinition(`w${MAX_WORKFLOW_DEPTH}`) })).toEqual({
++		expect(await allowed.execute({ ...simpleDefinition(`w${MAX_WORKFLOW_CHAIN}`) })).toEqual({
+ 			status: 'completed',
+ 			count: 1,
+ 		})
+ 
+ 		const rejected = createWorkflowTool(simpleDefinition('wrapped'), createWorkflowRunner(), {
+-			lineage: buildToolLineageFixture(MAX_WORKFLOW_DEPTH + 1),
++			lineage: buildToolLineageFixture(MAX_WORKFLOW_CHAIN + 1),
+ 		})
+ 		const error = await rejectionOf(
+-			rejected.execute({ ...simpleDefinition(`w${MAX_WORKFLOW_DEPTH + 1}`) }),
++			rejected.execute({ ...simpleDefinition(`w${MAX_WORKFLOW_CHAIN + 1}`) }),
+ 		)
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('DEPTH')
+ 	})
+@@ -918,9 +929,9 @@ describe('createWorkflowTool — authoring forms (flat / draft / full / preceden
+ 				name: 'precedence',
+ 				steps: [{ name: 'a' }, { name: 'b' }],
+ 				phases: [
+-					{ id: 'x', name: 'X', tasks: [{ id: 'x0', name: 'X0', run: 'p' }] },
+-					{ id: 'y', name: 'Y', tasks: [{ id: 'y0', name: 'Y0', run: 'q' }] },
+-					{ id: 'z', name: 'Z', tasks: [{ id: 'z0', name: 'Z0', run: 'r' }] },
++					{ id: 'x', name: 'X', tasks: [{ id: 'x0', name: 'X0', behavior: 'p' }] },
++					{ id: 'y', name: 'Y', tasks: [{ id: 'y0', name: 'Y0', behavior: 'q' }] },
++					{ id: 'z', name: 'Z', tasks: [{ id: 'z0', name: 'Z0', behavior: 'r' }] },
+ 				],
+ 			}),
+ 		)
+@@ -941,7 +952,7 @@ describe('createWorkflowTool — tool-through-manager execution', () => {
+ 
+ 	it('a FAILURE maps to a SINGLE-LEVEL ToolResult — a TOP-LEVEL error, no value', async () => {
+ 		const tool = createWorkflowTool(simpleDefinition('wrapped'), createWorkflowRunner(), {
+-			lineage: buildToolLineageFixture(MAX_WORKFLOW_DEPTH + 1),
++			lineage: buildToolLineageFixture(MAX_WORKFLOW_CHAIN + 1),
+ 		})
+ 		const result = await executeThroughManager(tool)
+ 		if (result.success) throw new Error('expected the depth guard to fail')
+@@ -951,7 +962,7 @@ describe('createWorkflowTool — tool-through-manager execution', () => {
+ 
+ 	it('the manager constructs the expected success-discriminated ToolResult shapes directly', async () => {
+ 		const failing = createWorkflowTool(simpleDefinition('wrapped'), createWorkflowRunner(), {
+-			lineage: buildToolLineageFixture(MAX_WORKFLOW_DEPTH + 1),
++			lineage: buildToolLineageFixture(MAX_WORKFLOW_CHAIN + 1),
+ 		})
+ 		const failure = await executeThroughManager(failing)
+ 		expect(failure).toEqual({
+@@ -1023,7 +1034,7 @@ describe('createWorkflowTool — optional native durable store', () => {
+ 		const store = createMemoryWorkflowStore()
+ 		const tool = createWorkflowTool(simpleDefinition('wrapped'), createWorkflowRunner(), {
+ 			store,
+-			lineage: buildToolLineageFixture(MAX_WORKFLOW_DEPTH + 1),
++			lineage: buildToolLineageFixture(MAX_WORKFLOW_CHAIN + 1),
+ 		})
+ 		await rejectionOf(tool.execute({ ...simpleDefinition('unreached') }))
+ 		expect(await store.get('unreached')).toBeUndefined()
+@@ -1049,7 +1060,7 @@ describe('createWorkflowTool — optional native durable store', () => {
+ 		}).execute({})
+ 		expect(result).toMatchObject({
+ 			durable: false,
+-			fault: { origin: 'persistence', message: 'checkpoint refused' },
++			fault: { message: 'checkpoint refused' },
+ 		})
+ 	})
+ 
+@@ -1060,7 +1071,7 @@ describe('createWorkflowTool — optional native durable store', () => {
+ 		}).execute({})
+ 		expect(result).toMatchObject({
+ 			durable: true,
+-			fault: { origin: 'persistence', checkpoint: 'initial', message: 'checkpoint refused' },
++			fault: { checkpoint: 'initial', message: 'checkpoint refused' },
+ 		})
+ 		expect(await store.get('fail-once')).toBeDefined()
+ 	})
+@@ -1472,7 +1483,7 @@ function createFakeTimer(): {
+ 	const timer: TimerHandler = (callback, _ms) => {
+ 		const entry = { callback, cancelled: false }
+ 		armed.push(entry)
+-		const cancel: TimerCancel = () => {
++		const cancel: TimerCancelFunction = () => {
+ 			entry.cancelled = true
+ 		}
+ 		return cancel
+@@ -1529,14 +1540,14 @@ describe('createPromptTool / createAnswerTool — the terminal ask/answer seam',
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('DEADLOCK')
+ 	})
+ 
+-	it('unknown target maps to a typed TOOL ToolboxError listing known terminals', async () => {
++	it('unknown target maps to a typed TOOL ToolboxError naming the target and the broker tally', async () => {
+ 		const manager = createTerminalManager()
+ 		manager.add('agent')
+ 		const askTool = createPromptTool({ manager, from: 'agent' })
+ 		const error = await rejectionOf(askTool.execute(createAskCall('ghost', 'text', 'name?')))
+ 		expect(isToolboxError(error) ? error.code : undefined).toBe('TOOL')
+-		const known = isToolboxError(error) ? error.context?.known : undefined
+-		expect(known).toEqual(['agent'])
++		expect(isToolboxError(error) ? error.context?.to : undefined).toBe('ghost')
++		expect(isToolboxError(error) ? error.context?.count : undefined).toBe(1)
+ 	})
+ 
+ 	it('EXPIRE: an injected-timer expiry maps to a typed EXPIRE ToolboxError', async () => {
+@@ -1769,7 +1780,7 @@ describe('createPromptTool / createAnswerTool — the terminal ask/answer seam',
+ 			emitter,
+ 			count: 0,
+ 			terminal: () => undefined,
+-			terminals: () => ['b'],
++			terminals: () => [],
+ 			add: () => {
+ 				throw new Error('not implemented')
+ 			},
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 0a7296c..04f36d8 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -7,7 +7,7 @@ import type {
+ 	WorkflowResult,
+ } from '@orkestrel/workflow'
+ import {
+-	agentTag,
++	tagAgent,
+ 	ToolboxError,
+ 	clampQuery,
+ 	completeDraft,
+@@ -16,12 +16,11 @@ import {
+ 	createAgentFunction,
+ 	deriveWorkflowDepth,
+ 	extendLineage,
+-	lineageOf,
+-	queryOf,
++	normalizeLineage,
++	normalizeQuery,
+ 	databaseToolCode,
+ 	expandInclude,
+ 	expandSteps,
+-	expandTables,
+ 	isAgentFunction,
+ 	isToolboxError,
+ 	isColumnKind,
+@@ -29,9 +28,9 @@ import {
+ 	isDatabaseDefinition,
+ 	isWorkflowLineage,
+ 	relationToolCode,
+-	terminalToolCode,
+-	workflowTag,
+-	workflowToolSummary,
++	inferTerminalCode,
++	tagWorkflow,
++	summarizeWorkflow,
+ } from '@src/core'
+ import { createAgent } from '@orkestrel/agent'
+ import { TerminalError } from '@orkestrel/terminal'
+@@ -44,7 +43,6 @@ import {
+ } from '@orkestrel/workflow'
+ import { DatabaseError } from '@orkestrel/database'
+ import { RelationError } from '@orkestrel/relation'
+-import { createContract, objectShape } from '@orkestrel/contract'
+ import { describe, expect, it } from 'vitest'
+ import { ScriptedProvider } from '../../setup.js'
+ 
+@@ -54,16 +52,16 @@ import { ScriptedProvider } from '../../setup.js'
+ // that turns the tool's LENIENT authoring surfaces into a strict WorkflowDefinition
+ // (`@orkestrel/workflow`).
+ 
+-describe('ancestry tags — workflowTag / agentTag (depth/cycle chain identifiers)', () => {
++describe('ancestry tags — tagWorkflow / tagAgent (depth/cycle chain identifiers)', () => {
+ 	it('namespaces a workflow id and an agent name distinctly (no collision)', () => {
+-		expect(workflowTag('x')).toBe('workflow:x')
+-		expect(agentTag('x')).toBe('agent:x')
+-		expect(workflowTag('x')).not.toBe(agentTag('x'))
++		expect(tagWorkflow('x')).toBe('workflow:x')
++		expect(tagAgent('x')).toBe('agent:x')
++		expect(tagWorkflow('x')).not.toBe(tagAgent('x'))
+ 	})
+ 
+ 	it('is a pure function of its input id/name', () => {
+-		expect(workflowTag('release')).toBe('workflow:release')
+-		expect(agentTag('reviewer')).toBe('agent:reviewer')
++		expect(tagWorkflow('release')).toBe('workflow:release')
++		expect(tagAgent('reviewer')).toBe('agent:reviewer')
+ 	})
+ })
+ 
+@@ -87,7 +85,7 @@ describe('workflow lineage helpers', () => {
+ 
+ 	it('copies and freezes construction and extension without aliasing caller arrays', () => {
+ 		const source = ['workflow:root']
+-		const root = lineageOf(source)
++		const root = normalizeLineage(source)
+ 		source.push('agent:later')
+ 		const nested = extendLineage(root, 'agent:a')
+ 		expect(root).toEqual(['workflow:root'])
+@@ -104,7 +102,7 @@ describe('workflow lineage helpers', () => {
+ 		]) {
+ 			let error: unknown
+ 			try {
+-				lineageOf(lineage)
++				normalizeLineage(lineage)
+ 			} catch (caught) {
+ 				error = caught
+ 			}
+@@ -147,7 +145,7 @@ describe('workflow lineage helpers', () => {
+ 	})
+ })
+ 
+-describe('workflowToolSummary — WorkflowResult → the plain handler summary', () => {
++describe('summarizeWorkflow — WorkflowResult → the plain handler summary', () => {
+ 	it('summarizes a run as the terminal status + the result count', () => {
+ 		const workflowContext = buildWorkflowContext({ id: 'wf-1', name: 'WF' })
+ 		const phaseContext = buildPhaseContext(workflowContext, { id: 'p', name: 'P' })
+@@ -165,17 +163,15 @@ describe('workflowToolSummary — WorkflowResult → the plain handler summary',
+ 			results,
+ 			durable: true,
+ 			fault: {
+-				origin: 'persistence',
+ 				checkpoint: 'settlement',
+ 				message: 'temporary refusal',
+ 			},
+ 		}
+-		expect(workflowToolSummary(result)).toEqual({
++		expect(summarizeWorkflow(result)).toEqual({
+ 			status: 'completed',
+ 			count: 2,
+ 			durable: true,
+ 			fault: {
+-				origin: 'persistence',
+ 				checkpoint: 'settlement',
+ 				message: 'temporary refusal',
+ 			},
+@@ -188,14 +184,14 @@ describe('workflowToolSummary — WorkflowResult → the plain handler summary',
+ 			status: 'completed',
+ 			results: [],
+ 		}
+-		expect(workflowToolSummary(result)).toEqual({ status: 'completed', count: 0 })
++		expect(summarizeWorkflow(result)).toEqual({ status: 'completed', count: 0 })
+ 	})
+ })
+ 
+ describe('completeDraft — synthesize omitted ids/names into a strict definition', () => {
+ 	it('fills EVERY missing id positionally + defaults each name to its (resolved) id', () => {
+ 		const draft: WorkflowDraft = {
+-			phases: [{ tasks: [{ run: 'a' }, { run: 'b' }] }, { tasks: [{ run: 'c' }] }],
++			phases: [{ tasks: [{ behavior: 'a' }, { behavior: 'b' }] }, { tasks: [{ behavior: 'c' }] }],
+ 		}
+ 		const definition = completeDraft(draft)
+ 		expect(createWorkflowContract().is(definition)).toBe(true)
+@@ -209,14 +205,14 @@ describe('completeDraft — synthesize omitted ids/names into a strict definitio
+ 		])
+ 		expect(definition.phases[0]?.tasks[0]?.name).toBe('phase-0-task-0')
+ 		expect(definition.phases[1]?.tasks[0]?.id).toBe('phase-1-task-0')
+-		expect(definition.phases[0]?.tasks[0]?.run).toBe('a')
+-		expect(definition.phases[1]?.tasks[0]?.run).toBe('c')
++		expect(definition.phases[0]?.tasks[0]?.behavior).toBe('a')
++		expect(definition.phases[1]?.tasks[0]?.behavior).toBe('c')
+ 	})
+ 
+ 	it('PRESERVES a provided id/name verbatim and nests synthesized task ids under a provided phase id', () => {
+ 		const definition = completeDraft({
+ 			id: 'mine',
+-			phases: [{ id: 'p', name: 'Phase', tasks: [{ name: 'T', run: 'f' }] }],
++			phases: [{ id: 'p', name: 'Phase', tasks: [{ name: 'T', behavior: 'f' }] }],
+ 		})
+ 		expect(definition.id).toBe('mine')
+ 		expect(definition.name).toBe('mine')
+@@ -235,7 +231,7 @@ describe('completeDraft — synthesize omitted ids/names into a strict definitio
+ 					description: 'pd',
+ 					concurrency: 3,
+ 					bail: false,
+-					tasks: [{ run: 'x', retries: 2, timeout: 500, description: 'leaf' }],
++					tasks: [{ behavior: 'x', retries: 2, timeout: 500, description: 'leaf' }],
+ 				},
+ 			],
+ 		})
+@@ -249,16 +245,16 @@ describe('completeDraft — synthesize omitted ids/names into a strict definitio
+ 		expect(definition.phases[0]?.tasks[0]?.description).toBe('leaf')
+ 	})
+ 
+-	it('omits run/retries/timeout when the draft task declares none (no undefined keys)', () => {
++	it('omits behavior/retries/timeout when the draft task declares none (no undefined keys)', () => {
+ 		const definition = completeDraft({ phases: [{ tasks: [{}] }] })
+ 		const task = definition.phases[0]?.tasks[0]
+-		expect(task && 'run' in task).toBe(false)
++		expect(task && 'behavior' in task).toBe(false)
+ 		expect(task && 'retries' in task).toBe(false)
+ 		expect(task && 'timeout' in task).toBe(false)
+ 	})
+ 
+ 	it('is deterministic — the same draft always yields the same definition', () => {
+-		const draft: WorkflowDraft = { phases: [{ tasks: [{ run: 'x' }] }] }
++		const draft: WorkflowDraft = { phases: [{ tasks: [{ behavior: 'x' }] }] }
+ 		expect(completeDraft(draft)).toEqual(completeDraft(draft))
+ 	})
+ 
+@@ -270,7 +266,7 @@ describe('completeDraft — synthesize omitted ids/names into a strict definitio
+ 
+ 	it('completePhaseDraft / completeTaskDraft synthesize at their own positional index', () => {
+ 		expect(completePhaseDraft({ tasks: [] }, 2).id).toBe('phase-2')
+-		expect(completeTaskDraft({ run: 't' }, 'phase-2', 5).id).toBe('phase-2-task-5')
++		expect(completeTaskDraft({ behavior: 't' }, 'phase-2', 5).id).toBe('phase-2-task-5')
+ 	})
+ 
+ 	it('completePhaseDraft preserves a provided phase id/name and its concurrency/bail', () => {
+@@ -285,14 +281,14 @@ describe('completeDraft — synthesize omitted ids/names into a strict definitio
+ 	})
+ 
+ 	it('completeTaskDraft preserves a provided task id/name', () => {
+-		const task = completeTaskDraft({ id: 'fixed', name: 'Fixed', run: 'f' }, 'phase-0', 0)
++		const task = completeTaskDraft({ id: 'fixed', name: 'Fixed', behavior: 'f' }, 'phase-0', 0)
+ 		expect(task.id).toBe('fixed')
+ 		expect(task.name).toBe('Fixed')
+ 	})
+ })
+ 
+ describe('expandSteps — flatten a steps blob into a one-task-phase-per-step definition', () => {
+-	it('maps each step to a one-task phase IN ORDER (a step`s name becomes the task`s run)', () => {
++	it('maps each step to a one-task phase IN ORDER (a step`s name becomes the task`s behavior)', () => {
+ 		const flat: WorkflowSteps = {
+ 			name: 'pipeline',
+ 			steps: [{ name: 'fetch' }, { name: 'scan' }, { name: 'audit' }],
+@@ -305,9 +301,9 @@ describe('expandSteps — flatten a steps blob into a one-task-phase-per-step de
+ 		expect(definition.phases.map((phase) => phase.tasks.length)).toEqual([1, 1, 1])
+ 		expect(definition.phases.map((phase) => phase.id)).toEqual(['phase-0', 'phase-1', 'phase-2'])
+ 		expect(definition.phases[0]?.tasks[0]?.id).toBe('phase-0-task-0')
+-		expect(definition.phases[0]?.tasks[0]?.run).toBe('fetch')
+-		expect(definition.phases[1]?.tasks[0]?.run).toBe('scan')
+-		expect(definition.phases[2]?.tasks[0]?.run).toBe('audit')
++		expect(definition.phases[0]?.tasks[0]?.behavior).toBe('fetch')
++		expect(definition.phases[1]?.tasks[0]?.behavior).toBe('scan')
++		expect(definition.phases[2]?.tasks[0]?.behavior).toBe('audit')
+ 	})
+ 
+ 	it('defaults the workflow id (and name) when no name is supplied', () => {
+@@ -323,22 +319,22 @@ describe('expandSteps — flatten a steps blob into a one-task-phase-per-step de
+ 	})
+ })
+ 
+-describe('terminalToolCode — classify a caught error into a ToolboxErrorCode', () => {
++describe('inferTerminalCode — classify a caught error into a ToolboxErrorCode', () => {
+ 	it('maps DEADLOCK and EXPIRE to their own code', () => {
+-		expect(terminalToolCode(new TerminalError('DEADLOCK', 'cycle'))).toBe('DEADLOCK')
+-		expect(terminalToolCode(new TerminalError('EXPIRE', 'timed out'))).toBe('EXPIRE')
++		expect(inferTerminalCode(new TerminalError('DEADLOCK', 'cycle'))).toBe('DEADLOCK')
++		expect(inferTerminalCode(new TerminalError('EXPIRE', 'timed out'))).toBe('EXPIRE')
+ 	})
+ 
+ 	it('maps every other TerminalErrorCode to the generic TOOL code', () => {
+-		expect(terminalToolCode(new TerminalError('TARGET', 'unknown terminal'))).toBe('TOOL')
+-		expect(terminalToolCode(new TerminalError('CANCEL', 'aborted'))).toBe('TOOL')
+-		expect(terminalToolCode(new TerminalError('DRIVER', 'io failure'))).toBe('TOOL')
++		expect(inferTerminalCode(new TerminalError('TARGET', 'unknown terminal'))).toBe('TOOL')
++		expect(inferTerminalCode(new TerminalError('CANCEL', 'aborted'))).toBe('TOOL')
++		expect(inferTerminalCode(new TerminalError('DRIVER', 'io failure'))).toBe('TOOL')
+ 	})
+ 
+ 	it('returns undefined for a non-TerminalError value', () => {
+-		expect(terminalToolCode(new Error('plain'))).toBeUndefined()
+-		expect(terminalToolCode('nope')).toBeUndefined()
+-		expect(terminalToolCode(undefined)).toBeUndefined()
++		expect(inferTerminalCode(new Error('plain'))).toBeUndefined()
++		expect(inferTerminalCode('nope')).toBeUndefined()
++		expect(inferTerminalCode(undefined)).toBeUndefined()
+ 	})
+ })
+ 
+@@ -385,49 +381,6 @@ describe('isColumnSpec — narrow to a bare ColumnKind or an { type, optional }
+ 	})
+ })
+ 
+-describe('expandTables — compile a TableSpec into a @orkestrel/database TableMap', () => {
+-	it('maps each ColumnKind to the matching primitive shaper (guards good/bad values)', () => {
+-		const tables = expandTables({
+-			widgets: {
+-				columns: { name: 'string', count: 'integer', weight: 'number', active: 'boolean' },
+-			},
+-		})
+-		const widgets = tables.widgets
+-		if (widgets === undefined) throw new Error('expected widgets table')
+-		const contract = createContract(objectShape(widgets))
+-		expect(contract.is({ name: 'w', count: 1, weight: 1.5, active: true })).toBe(true)
+-		expect(contract.is({ name: 42, count: 1, weight: 1.5, active: true })).toBe(false)
+-		expect(contract.is({ name: 'w', count: 1.5, weight: 1.5, active: true })).toBe(false)
+-		expect(contract.is({ name: 'w', count: 1, weight: 'x', active: true })).toBe(false)
+-		expect(contract.is({ name: 'w', count: 1, weight: 1.5, active: 'yes' })).toBe(false)
+-	})
+-
+-	it('optional:true wraps so an absent column passes and a wrong-typed present column fails', () => {
+-		const tables = expandTables({
+-			widgets: { columns: { nickname: { type: 'string', optional: true } } },
+-		})
+-		const widgets = tables.widgets
+-		if (widgets === undefined) throw new Error('expected widgets table')
+-		const contract = createContract(objectShape(widgets))
+-		expect(contract.is({})).toBe(true)
+-		expect(contract.is({ nickname: 'w' })).toBe(true)
+-		expect(contract.is({ nickname: 42 })).toBe(false)
+-	})
+-
+-	it('compiles multiple tables independently', () => {
+-		const tables = expandTables({
+-			a: { columns: { x: 'string' } },
+-			b: { columns: { y: 'integer' } },
+-		})
+-		expect(Object.keys(tables).sort()).toEqual(['a', 'b'])
+-		const a = tables.a
+-		const b = tables.b
+-		if (a === undefined || b === undefined) throw new Error('expected both tables')
+-		expect(createContract(objectShape(a)).is({ x: 's' })).toBe(true)
+-		expect(createContract(objectShape(b)).is({ y: 1 })).toBe(true)
+-	})
+-})
+-
+ describe('isDatabaseDefinition — narrow an untrusted value to a DatabaseDefinition', () => {
+ 	const valid = {
+ 		id: 'db-1',
+@@ -557,13 +510,13 @@ describe('clampQuery — clamp a records call to a row cap + build the probe que
+ 	})
+ })
+ 
+-describe('queryOf — normalize a parsed wire query into a live QueryInput', () => {
++describe('normalizeQuery — normalize a parsed wire query into a live QueryInput', () => {
+ 	it('returns undefined when the input is undefined', () => {
+-		expect(queryOf(undefined)).toBeUndefined()
++		expect(normalizeQuery(undefined)).toBeUndefined()
+ 	})
+ 
+ 	it('defaults an omitted condition connector to "and", preserving an explicit one', () => {
+-		const result = queryOf({
++		const result = normalizeQuery({
+ 			conditions: [
+ 				{ column: 'a', operator: 'equals', values: [1] },
+ 				{ column: 'b', operator: 'equals', values: [2], connector: 'or' },
+@@ -576,7 +529,7 @@ describe('queryOf — normalize a parsed wire query into a live QueryInput', ()
+ 	})
+ 
+ 	it('passes order / limit / offset through unchanged, omitting fields not supplied', () => {
+-		const result = queryOf({
++		const result = normalizeQuery({
+ 			order: [{ column: 'a', direction: 'descending' }],
+ 			limit: 5,
+ 			offset: 2,
+@@ -590,7 +543,7 @@ describe('queryOf — normalize a parsed wire query into a live QueryInput', ()
+ 	})
+ 
+ 	it('an empty query object yields an empty (no-key) result', () => {
+-		expect(queryOf({})).toEqual({})
++		expect(normalizeQuery({})).toEqual({})
+ 	})
+ })
+ 
+diff --git a/tests/src/core/shapers.test.ts b/tests/src/core/shapers.test.ts
+index 8e8d41b..5b174a1 100644
+--- a/tests/src/core/shapers.test.ts
++++ b/tests/src/core/shapers.test.ts
+@@ -187,7 +187,7 @@ describe('workflowDraftShape — the lenient draft (ids/names optional at every
+ 	const contract = createContract(workflowDraftShape)
+ 
+ 	it('is() accepts an ids-omitted draft', () => {
+-		expect(contract.is({ phases: [{ tasks: [{ run: 'a' }] }] })).toBe(true)
++		expect(contract.is({ phases: [{ tasks: [{ behavior: 'a' }] }] })).toBe(true)
+ 		expect(contract.is({ phases: [] })).toBe(true)
+ 	})
+ 
+@@ -196,7 +196,7 @@ describe('workflowDraftShape — the lenient draft (ids/names optional at every
+ 			contract.is({
+ 				id: 'w',
+ 				name: 'W',
+-				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', run: 'f' }] }],
++				phases: [{ id: 'p', name: 'P', tasks: [{ id: 't', name: 'T', behavior: 'f' }] }],
+ 			}),
+ 		).toBe(true)
+ 	})
+@@ -212,8 +212,8 @@ describe('workflowDraftShape — the lenient draft (ids/names optional at every
+ 		expect(contract.is({ phases: 'nope' })).toBe(false)
+ 	})
+ 
+-	it('is() rejects a task with an empty run, or a sub-1 concurrency', () => {
+-		expect(contract.is({ phases: [{ tasks: [{ run: '' }] }] })).toBe(false)
++	it('is() rejects a task with an empty behavior, or a sub-1 concurrency', () => {
++		expect(contract.is({ phases: [{ tasks: [{ behavior: '' }] }] })).toBe(false)
+ 		expect(contract.is({ phases: [{ tasks: [], concurrency: 0 }] })).toBe(false)
+ 	})
+ 
+diff --git a/tests/src/server/terminals/TerminalConnection.test.ts b/tests/src/server/terminals/TerminalConnection.test.ts
+index e48031b..1ed691a 100644
+--- a/tests/src/server/terminals/TerminalConnection.test.ts
++++ b/tests/src/server/terminals/TerminalConnection.test.ts
+@@ -1,4 +1,4 @@
+-import { openStream } from '@orkestrel/server'
++import { createStream } from '@orkestrel/server'
+ import { createTerminalManager } from '@orkestrel/terminal'
+ // `TerminalConnection` is internal: it is not exported from the `@orkestrel/toolbox/server`
+ // barrel, so the test reaches it by its real path.
+@@ -21,7 +21,7 @@ describe('TerminalConnection', () => {
+ 			manager,
+ 			'assistant',
+ 			request,
+-			openStream(),
++			createStream(),
+ 			() => true,
+ 			timer.timer,
+ 			1000,
+@@ -54,7 +54,7 @@ describe('TerminalConnection', () => {
+ 			manager,
+ 			'assistant',
+ 			new Request('http://x/terminals/assistant', { signal: controller.signal }),
+-			openStream(),
++			createStream(),
+ 			() => true,
+ 			timer.timer,
+ 			1000,
+@@ -77,7 +77,7 @@ describe('TerminalConnection', () => {
+ 			manager,
+ 			'assistant',
+ 			new Request('http://x/terminals/assistant'),
+-			openStream(),
++			createStream(),
+ 			() => {
+ 				throw new Error('invalid token')
+ 			},
