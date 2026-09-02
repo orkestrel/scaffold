@@ -305,3 +305,7 @@ re-stages agent before agent's own audit, as mcp re-staged on server's fix-up ti
 `@orkestrel/agent` landed at `df12fab` (re-staged on `workflow-9f00455.tgz`) with its audit lanes
 running; ollama's and toolbox's closures stage that checkpoint so the L6 implementers start in
 parallel with the audit. An agent fix-up re-stages both before their own audits.
+- `mirror-refresh`: after the fleet publishes and each package re-pins, `npx @orkestrel/scaffold
+  catalog` refreshes every vendored `guides/<dependency>.md` mirror from the published bytes; the
+  fleet gate sweep then proves each package green on its refreshed mirrors. Blocked while
+  publishing is held; recorded, not scheduled.

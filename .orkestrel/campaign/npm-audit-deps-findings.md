@@ -652,3 +652,17 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
 - **L4 closed.** brief `bc0f767`, program `7ef860d`, workflow `9f00455` accepted with verdicts;
   worker, queue, lsp adopted clean; probe adopt-clean on `check` with its standing container
   failure. Agent (L5) re-stages on `workflow-9f00455.tgz` after its implementer exits.
+- **Agent lanes.** Objective `FAIL 2, 8` (the `createAgent` example still read `chunk.type`; the
+  report claimed it moved), subjective `FAIL 5` (seven guide and TSDoc residues), checker PASS,
+  verifier GREEN (606 src). Rulings of record: `attachUserImages`, `#trim(messages, latch)`, the
+  deleted duplicate hydrate tests, and `InstructionManagerInterface.format` beside the option
+  and the per-item string stand; the `RunOutcome` remark stops calling a published type internal;
+  the seeded `RunOutcome` in `#pump` is recorded as a masked-not-surfaced guard for a future drive
+  change; `InstructionInterface.format` as a string beside the object-shaped manager members is a
+  successor row. The fix-up carries every residue; the retained report carries the corrections.
+- **Vendored guide mirrors are stale against the staged closure fleet-wide** (agent's
+  `guides/workflow.md` and `guides/budget.md`, brief's `guides/interpret.md`, program's
+  `guides/qualifier.md` and `guides/reason.md`, mcp's `guides/server.md`, and every other mirror
+  of a package that moved). A mirror is fetched from published bytes and never edited, so the
+  refresh runs at the re-pin after the fleet publishes; accepted on the record for this wave and
+  carried as the W-END `mirror-refresh` row, which cannot run while publishing is held.

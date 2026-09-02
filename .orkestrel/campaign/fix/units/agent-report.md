@@ -104,3 +104,16 @@ Built `dist/` moves: yes
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/agent.diff`,
 `tmp/units/breaking/agent.status`.
+
+## Corrections by the Orchestrator (after the objective lane)
+
+The s08-12 row claims "the factories.ts `@example`" moved; the `createAgent` example at
+`src/core/factories.ts:393` still read `chunk.type` at `df12fab` (no diff hunk reached that
+block), so acceptance criterion 1 was unmet over TSDoc `@example` bodies, a surface no gate
+reads; the fix-up closes it and the sweep now names `@example` bodies as a population. The carry
+row names workflow (through the standing condition's `createDeferred`), workspace, and budget, and
+omits database and the workflow renames the Carry ruling listed; each omitted carrier is a no-op
+here (the package imports only `DriverInterface`, `TableInterface`, `createDatabase`,
+`createMemoryDriver` from database and `SchedulerInterface`, `ControllerInterface`,
+`RunnerInterface`, `createRunner` from workflow), recorded so a reader can tell no-op from
+unexamined.
