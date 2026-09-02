@@ -44,9 +44,12 @@ Verified by the Orchestrator directly, not taken from a writer's report:
 
 ## Review evidence
 
-Code change: `git diff f453f00..HEAD --stat` and `git status --porcelain` in scaffold;
-`git diff 95fcf3a..ce75175` in test; `git diff 7779e6b..2f07735` in form; `git diff` and
-`git status --porcelain` in terrain. The Orchestrator pastes each into the lane's dispatch.
+Code change: the diffs are on disk under `tmp/units/diffs/` in the scaffold checkout —
+`scaffold.patch` and `scaffold.stat` (`f453f00..HEAD`, skills, bridges, roadmap, inventory),
+`test.patch` and `test.stat` (`95fcf3a..ce75175`), `form.patch` and `form.stat`
+(`7779e6b..2f07735`), and `terrain.patch` and `terrain.status` (the working tree). Read the
+patch, then the file in the tree where the patch needs context. A lane with no shell reads these
+files; a lane with a shell may also run `git diff` itself.
 Rendered surface: the terrain capture portfolio under `terrain/tmp/capture/` for every declared
 variant, produced by the Orchestrator's capture runs, is the primary evidence for claims about
 what terrain renders; source corroborates.
@@ -140,6 +143,24 @@ cannot decide is `UNRESOLVED`; say what would settle it. Do not hedge toward an 
 22. No refusal was widened into a regression: no rule the skills stated before the campaign was
     dropped without a recorded ruling. Attack: diff each skill against its snapshot at
     `tmp/skill-workspace/snapshot/` and name a dropped law.
+
+23. Every resolver in `test/src/browser/helpers.ts` returns an element whose exact accessible name
+    sits beside an `aria-hidden` glyph that paints `::before` content, and the two refusal voices
+    stay distinct: a hidden target reads `Interactive target "X" is not visible and
+    focus-reachable`, an absent one `No interactive element has the accessible name "X"`. Attack:
+    a hidden glyph-bearing button, `Add` against `Add building`, a dialog labelled through a
+    glyph-bearing heading; read `tmp/units/resolve-hidden-report.md` for the red-then-green and
+    re-run its command.
+24. `test` and `form` sit at the catalog on every `@orkestrel/*` range except `form`'s runtime
+    contract range, held at `^0.0.13` because contract 0.0.15 has no published dependent; each
+    `npx scaffold audit` exits 0 with the TypeScript-major question alone; `terrain` follows the
+    same procedure with `--dirty` and its report names every path the overwrite wrote. Attack: a
+    range the catalog names that the manifest does not carry, an overwrite deletion the report
+    omits, a duplicate contract copy in `npm ls` for a published package.
+25. `enterprise-bootstrap/SKILL.md` binds every check the deliverable lists to a population, a
+    negative control, and a coverage statement, and names an uncontrolled check as open, in both
+    the Mechanical proof paragraph and the checklist (`5bea858`). Attack: a reading of the
+    checklist under which a keyboard or motion check may be listed without a control.
 
 ## Unknowns
 
