@@ -152,3 +152,9 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
 - Carried to the user as product observations, not campaign fixes: terrain's armed Delete is
   `btn-outline-danger` against the bootstrap skill's solid-variant rule (readings per variant
   arrive with FX3); the contract 0.0.15 cascade; scaffold 0.0.60 ships the current probe floor.
+- FX2 returned: committed in test at `ba6303a`. F6 closed with `<name>: build refused` and the
+  refusal as `cause` (ruling: no inlined message, because it would need a second rendering site
+  or a new export); F1 renamed; F5 sentence recorded. G2 falsified on evidence: the fence is routed
+  through `ROUTED_FENCES` to the browser helpers test, which asserts every printed value. Tarball
+  rebuilt at 18:27 (core entry carries the new voice); re-stage into terrain after FX3 exits.
+  Full chain dispatched to `verifier` (`gates-fx2-brief.md`).
