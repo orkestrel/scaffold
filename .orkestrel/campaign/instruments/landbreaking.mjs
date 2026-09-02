@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process'
 const [pkg, reportPath] = process.argv.slice(2)
 if (!pkg || !reportPath) throw new Error('usage: landbreaking.mjs <package> <report.json> [--wide]')
 const wide = process.argv.includes('--wide')
+const reportOnly = process.argv.includes('--report-only')
 const baseArg = process.argv.find((arg) => arg.startsWith('--base='))
 const base = baseArg ? baseArg.slice('--base='.length) : undefined
 const FIX = '/home/user/scaffold/.orkestrel/campaign/fix'
@@ -18,14 +19,14 @@ mkdirSync(UNITS, { recursive: true })
 const report = JSON.parse(readFileSync(reportPath, 'utf8'))
 const rulings = JSON.parse(readFileSync(`${FIX}/rulings.json`, 'utf8'))[pkg] || []
 const git = (args) => execFileSync('git', ['-C', repo, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-if (!base) {
+if (!base && !reportOnly) {
 	const untracked = git(['ls-files', '--others', '--exclude-standard']).split('\n').filter(Boolean)
 	if (untracked.length > 0) git(['add', '-N', '--', ...untracked])
 }
-const diff = git(base ? ['diff', base] : ['diff'])
-const status = base ? git(['diff', '--name-status', base]) : git(['status', '--short'])
-writeFileSync(`${UNITS}/${pkg}.diff`, diff)
-writeFileSync(`${UNITS}/${pkg}.status`, status)
+const diff = reportOnly ? readFileSync(`${UNITS}/${pkg}.diff`, 'utf8') : git(base ? ['diff', base] : ['diff'])
+const status = reportOnly ? readFileSync(`${UNITS}/${pkg}.status`, 'utf8') : base ? git(['diff', '--name-status', base]) : git(['status', '--short'])
+if (!reportOnly) writeFileSync(`${UNITS}/${pkg}.diff`, diff)
+if (!reportOnly) writeFileSync(`${UNITS}/${pkg}.status`, status)
 
 const rows = (report.rows || []).map((row) => `- **${row.id}** — ${row.state}: ${row.note}`).join('\n')
 const gates = (report.gates || []).map((gate) => `- \`${gate.command}\` → exit ${gate.exit}${gate.excerpt ? ` — ${gate.excerpt.slice(0, 400)}` : ''}`).join('\n')
@@ -83,6 +84,10 @@ Actual diff and status rendered by the Orchestrator: \`tmp/units/breaking/${pkg}
 \`tmp/units/breaking/${pkg}.status\`.
 `
 writeFileSync(`${UNITS}/${pkg}-report.md`, md)
+if (reportOnly) {
+	console.log(`${pkg}: report re-rendered only`)
+	process.exit(0)
+}
 
 const claims = [
 	`Every row the brief lists ends in the report as applied, refused, or stopped, and every refused row quotes the rule text that refuses it.`,
