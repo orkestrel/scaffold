@@ -56,3 +56,19 @@ for the voice wave.
 Gates: format 0 to converge (lint:check was clean); format:check 0 (115 files), lint:check 0,
 check 0, build 0, test 0 (src 515, policy 111, config 46, setup 42, guides 68). Dist probe:
 `function function function`. Owned files only; no shared-file patch.
+
+## Corrections by the Orchestrator (after the objective lane on the fix-up)
+
+The `format` converge pass shifted lines after the writer took its handles. Resolved at
+`9563556`: the `#expected` field is `src/core/CDPClient.ts:65`; the `#close()` set is `:248`; the
+`connect()` reset is `:93`; the guard is `:272`; the stub's `close()` is `tests/setup.ts:121-128`;
+`validateBrowserInputOptions`'s signature is `src/core/helpers.ts:508` with the import at `:18`;
+the `Performance.disable` assertion is `tests/src/core/BrowserDiagnostics.test.ts:212-215` and the
+failed-read case is `:233-248`.
+
+Refusal record the ruling required: the websocket and download half of s04-10 (removing
+`receive`, `transmit`, `fail`, `close` from `BrowserWebSocketInterface` and `update` from
+`BrowserDownloadInterface`) is refused under the same rule text the frame half quotes,
+`documentation.md:46`: "Each implementing class exposes exactly its interface methods—no missing
+or extra public behavior." The members are restored at `src/core/types.ts:864-876` and
+`:1029-1042`.
