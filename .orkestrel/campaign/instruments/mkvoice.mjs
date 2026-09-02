@@ -49,6 +49,20 @@ imperative=${s.imperative ?? '?'}, verbless=${s.verbless ?? '?'}, boolean \`@ret
   rename a symbol, and never touch a guide or a test.
 - \`lsp\` and \`test\` already open every first sentence in the third person; if this package's scan
   shows zero in a bucket, that bucket needs no sweep.
+- The rule file: read \`.claude/rules/typescript.md\` in the checkout where it exists; a target
+  checkout carries no \`.claude/rules/\`, so read the vendored copy at
+  \`node_modules/@orkestrel/scaffold/dist/host/claude/rules/typescript.md\`. That is not a
+  deviation.
+- Lessons the pilot slice's audits ruled, binding here: when a rewrite drops a noun phrase, keep
+  every referent a later clause depends on (a pronoun such as \`it\` must still resolve to the
+  same noun); add no quantifier the sentence did not carry (\`each\`, \`every\`, \`all\`); keep a
+  possessive on the noun it modified (the emitter's handler stays the emitter's handler); where
+  a constant's sentence names the symbol's own identifier as a code token, drop the token only
+  when the sentence still names the value (\`the null byte\` for \`NUL\`), and keep a domain term
+  that is the value's own name (a wire field, a byte's name); a boolean \`@returns\` rewrite
+  drops the backticked \`true\`/\`false\` tokens by design.
+- The scan's buckets are a population estimate: \`Options for …\` and \`Whether …\` openers sit
+  in the wrong bucket, so sweep every block and rule by reading, not by the bucket.
 
 ## Unknowns
 
@@ -161,7 +175,11 @@ Rule on the diff, the status, and the tree, never on the report's self-assessmen
 1. Every hunk in the diff changes comment text only: no \`-\`/\`+\` line pair differs outside a
    \`/** … */\` block or a \`//\` comment. Quote any hunk that touches a code token.
 2. Every backtick token, \`{@link …}\`, and URL in a rewritten block is byte-identical to the
-   removed line; quote any that changed.
+   removed line, except the backticked \`true\`/\`false\` tokens of a boolean \`@returns\` line
+   rewritten to \`True if …; false otherwise\` (the rule mandates that form) and a code token
+   that repeated the symbol's own identifier and was dropped under the name clause (report it
+   as an observation with the sentence that replaced it, not as a break); quote any other
+   token that changed.
 3. The status lists only files under \`src/\` or \`app/\`; nothing under \`tests/\`, \`guides/\`,
    \`README.md\`, \`package.json\`, \`package-lock.json\`, \`.claude/\`, \`configs/\`,
    \`tests/setupPolicy.ts\`, or \`tests/policy.test.ts\`.
@@ -173,8 +191,8 @@ Rule on the diff, the status, and the tree, never on the report's self-assessmen
    \`Extract\`, \`Collect\`, \`Report\`, \`Describe\`, \`Infer\`, \`Derive\`, \`Compute\`, \`Map\`,
    \`Filter\`, \`Select\`, \`Match\`, \`Find\`, \`List\`, \`Count\`, \`Measure\`, \`Trim\`, \`Split\`,
    \`Join\`, \`Serialize\`, \`Deserialize\`, \`Handle\`, \"Ensure\") followed by a space or a
-   backtick, and for \`@returns\` followed by \`Whether\`, \`\\\`true\\\`\`, or \`true \`; the sweep
-   returns no hit.
+   backtick (case-insensitively, so \`create\` and \`Create\` both count), and for \`@returns\`
+   followed by \`Whether\`, \`\\\`true\\\`\`, or \`true \`; the sweep returns no hit.
 5. Gates: rule UNRESOLVED unless the report quotes the exact command and exit code for every
    gate, in which case CONFIRMED on the quoted evidence; the Orchestrator's landing chain is the
    authoritative run.

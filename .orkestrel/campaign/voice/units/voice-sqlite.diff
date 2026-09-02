@@ -1,0 +1,203 @@
+diff --git a/src/server/SQLiteDatabase.ts b/src/server/SQLiteDatabase.ts
+index 76691e6..e6e76ce 100644
+--- a/src/server/SQLiteDatabase.ts
++++ b/src/server/SQLiteDatabase.ts
+@@ -11,7 +11,7 @@ import { wrapError } from './helpers.js'
+ import { SQLiteStatement } from './SQLiteStatement.js'
+ 
+ /**
+- * A synchronous SQLite database over `node:sqlite`'s `DatabaseSync`.
++ * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync`.
+  *
+  * @remarks
+  * Created by `createSQLiteDatabase`. It connects lazily (`connect` opens the
+@@ -71,7 +71,7 @@ export class SQLiteDatabase implements SQLiteDatabaseInterface {
+ 		this.#database = undefined
+ 	}
+ 
+-	/** Close the connection — enables `using db = createSQLiteDatabase(...)`. */
++	/** Closes the connection — enables `using db = createSQLiteDatabase(...)`. */
+ 	[Symbol.dispose](): void {
+ 		this.close()
+ 	}
+diff --git a/src/server/SQLiteStatement.ts b/src/server/SQLiteStatement.ts
+index fcdbce5..283f055 100644
+--- a/src/server/SQLiteStatement.ts
++++ b/src/server/SQLiteStatement.ts
+@@ -9,7 +9,7 @@ import { SQLiteError } from './errors.js'
+ import { bindParameters, wrapError } from './helpers.js'
+ 
+ /**
+- * A prepared statement over `node:sqlite`'s `StatementSync` — the only way the
++ * Represents a prepared statement over `node:sqlite`'s `StatementSync` — the only way the
+  * wrapper runs SQL.
+  *
+  * @remarks
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 40954d5..07f8821 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -1,7 +1,7 @@
+ // The wrapper's numeric SQLite result codes (AGENTS §5 constants file).
+ 
+ /**
+- * SQLite result code for a constraint violation (`SQLITE_CONSTRAINT`).
++ * Names the SQLite result code for a constraint violation.
+  *
+  * @remarks
+  * A native `errcode` packs the primary result in its low byte, with extended codes
+@@ -11,7 +11,7 @@
+ export const SQLITE_CONSTRAINT = 19
+ 
+ /**
+- * SQLite result code for a locked-database fault (`SQLITE_BUSY`).
++ * Names the SQLite result code for a locked-database fault.
+  *
+  * @remarks
+  * A native `errcode` packs the primary result in its low byte, with extended codes
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 0823719..fd5b9ae 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -9,7 +9,7 @@ import type { SQLiteErrorCode } from './types.js'
+ // wrapper-lifecycle fault, and everything else is `UNKNOWN` (AGENTS §12).
+ 
+ /**
+- * An error thrown by the SQLite wrapper.
++ * Represents an error thrown by the SQLite wrapper.
+  *
+  * @remarks
+  * Carries a {@link SQLiteErrorCode} and an optional `context` record (e.g. the
+@@ -42,10 +42,10 @@ export class SQLiteError extends Error {
+ }
+ 
+ /**
+- * Whether a value is a {@link SQLiteError}.
++ * Checks whether a value is a {@link SQLiteError}.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a `SQLiteError`
++ * @returns True if `value` is a `SQLiteError`; false otherwise
+  */
+ export function isSQLiteError(value: unknown): value is SQLiteError {
+ 	return value instanceof SQLiteError
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 57269ed..10c783f 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -11,7 +11,7 @@ import { SQLiteError } from './errors.js'
+ // named record). Both are pure.
+ 
+ /**
+- * Convert a thrown native `node:sqlite` error into a typed {@link SQLiteError}.
++ * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError}.
+  *
+  * @remarks
+  * The single boundary mapping for the wrapper. The thrown value arrives as
+@@ -44,7 +44,7 @@ export function wrapError(error: unknown): SQLiteError {
+ }
+ 
+ /**
+- * Normalize {@link SQLiteParameters} to the binding shape a native `StatementSync`
++ * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync`
+  * call expects.
+  *
+  * @remarks
+diff --git a/src/server/types.ts b/src/server/types.ts
+index d0ec4f6..5251004 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -11,7 +11,7 @@
+ // driver) through a contract, never re-narrowed here (AGENTS §14).
+ 
+ /**
+- * A value SQLite stores and returns natively — the SQL ↔ JS bridge.
++ * Represents a value SQLite stores and returns natively — the SQL ↔ JS bridge.
+  *
+  * @remarks
+  * `node:sqlite` maps `NULL` / `INTEGER` / `REAL` / `TEXT` / `BLOB` to exactly
+@@ -19,17 +19,17 @@
+  */
+ export type SQLiteValue = null | number | bigint | string | Uint8Array
+ 
+-/** A result row — a record of column name to {@link SQLiteValue}. */
++/** Represents a result row — a record of column name to {@link SQLiteValue}. */
+ export type SQLiteRow = Record<string, SQLiteValue>
+ 
+ /**
+- * Bind parameters for a prepared statement — positional (an array, bound to `?`)
++ * Represents the bind parameters for a prepared statement — positional (an array, bound to `?`)
+  * or named (a record, bound to bare `:name` placeholders).
+  */
+ export type SQLiteParameters = readonly SQLiteValue[] | Readonly<Record<string, SQLiteValue>>
+ 
+ /**
+- * The normalized binding shape a native `StatementSync` call expects — what
++ * Represents the normalized binding shape a native `StatementSync` call expects — what
+  * {@link SQLiteParameters} become on the way into `node:sqlite`.
+  *
+  * @remarks
+@@ -43,14 +43,14 @@ export type SQLiteBinding =
+ 	| { readonly positional: readonly SQLiteValue[] }
+ 	| { readonly named: Readonly<Record<string, SQLiteValue>> }
+ 
+-/** The outcome of a non-query statement (`INSERT` / `UPDATE` / `DELETE` / DDL). */
++/** Represents the outcome of a non-query statement (`INSERT` / `UPDATE` / `DELETE` / DDL). */
+ export interface SQLiteRunResult {
+ 	readonly changes: number
+ 	readonly rowid: number
+ }
+ 
+ /**
+- * A machine-readable {@link SQLiteError} code.
++ * Represents a machine-readable {@link SQLiteError} code.
+  *
+  * @remarks
+  * `'BUSY'` is retryable — it means a locked database was still held by another
+@@ -60,7 +60,7 @@ export interface SQLiteRunResult {
+ export type SQLiteErrorCode = 'CLOSED' | 'CONSTRAINT' | 'BUSY' | 'UNKNOWN'
+ 
+ /**
+- * Options for `createSQLiteDatabase`.
++ * Represents the options for `createSQLiteDatabase`.
+  *
+  * @remarks
+  * `path` is the database file path, or the special name `':memory:'` for an
+@@ -88,7 +88,7 @@ export interface SQLiteDatabaseOptions {
+ }
+ 
+ /**
+- * A prepared statement — the only way the wrapper runs SQL (no query DSL; the
++ * Represents a prepared statement — the only way the wrapper runs SQL (no query DSL; the
+  * core database layer owns querying, exactly as the IndexedDB wrapper does).
+  *
+  * @remarks
+@@ -106,7 +106,7 @@ export interface SQLiteStatementInterface {
+ }
+ 
+ /**
+- * A synchronous SQLite database over `node:sqlite`'s `DatabaseSync` — a lean,
++ * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync` — a lean,
+  * typed, zero-dependency layer exposing prepared statements, transactions, and
+  * pragmas. Synchronous because `node:sqlite` is; the SQLite *driver* (Chunk 3)
+  * adapts it to the async `DriverInterface`.
+@@ -140,16 +140,16 @@ export interface SQLiteDatabaseInterface {
+ 	prepare(sql: string): SQLiteStatementInterface
+ 	transaction<R>(scope: () => R): R
+ 	/**
+-	 * Open a transaction (`BEGIN`). Throws the native fault — including a
++	 * Opens a transaction (`BEGIN`). Throws the native fault — including a
+ 	 * nested `BEGIN` while one is already open — as a {@link SQLiteError}; a
+ 	 * caller composing its own transaction alongside others should branch on
+ 	 * {@link SQLiteDatabaseInterface.transacting} first rather than catch this
+ 	 * (see the Practices section in `guides/sqlite.md`).
+ 	 */
+ 	begin(): void
+-	/** Commit the currently open transaction (`COMMIT`); throws the native fault as a {@link SQLiteError} when none is open. */
++	/** Commits the currently open transaction (`COMMIT`); throws the native fault as a {@link SQLiteError} when none is open. */
+ 	commit(): void
+-	/** Roll back the currently open transaction (`ROLLBACK`); throws the native fault as a {@link SQLiteError} when none is open. */
++	/** Rolls back the currently open transaction (`ROLLBACK`); throws the native fault as a {@link SQLiteError} when none is open. */
+ 	rollback(): void
+ 	pragma(name: string, value?: string | number): SQLiteValue | undefined
+ 	[Symbol.dispose](): void

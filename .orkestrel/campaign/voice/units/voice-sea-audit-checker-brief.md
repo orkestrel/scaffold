@@ -17,7 +17,11 @@ Rule on the diff, the status, and the tree, never on the report's self-assessmen
 1. Every hunk in the diff changes comment text only: no `-`/`+` line pair differs outside a
    `/** … */` block or a `//` comment. Quote any hunk that touches a code token.
 2. Every backtick token, `{@link …}`, and URL in a rewritten block is byte-identical to the
-   removed line; quote any that changed.
+   removed line, except the backticked `true`/`false` tokens of a boolean `@returns` line
+   rewritten to `True if …; false otherwise` (the rule mandates that form) and a code token
+   that repeated the symbol's own identifier and was dropped under the name clause (report it
+   as an observation with the sentence that replaced it, not as a break); quote any other
+   token that changed.
 3. The status lists only files under `src/` or `app/`; nothing under `tests/`, `guides/`,
    `README.md`, `package.json`, `package-lock.json`, `.claude/`, `configs/`,
    `tests/setupPolicy.ts`, or `tests/policy.test.ts`.
@@ -29,8 +33,8 @@ Rule on the diff, the status, and the tree, never on the report's self-assessmen
    `Extract`, `Collect`, `Report`, `Describe`, `Infer`, `Derive`, `Compute`, `Map`,
    `Filter`, `Select`, `Match`, `Find`, `List`, `Count`, `Measure`, `Trim`, `Split`,
    `Join`, `Serialize`, `Deserialize`, `Handle`, "Ensure") followed by a space or a
-   backtick, and for `@returns` followed by `Whether`, `\`true\``, or `true `; the sweep
-   returns no hit.
+   backtick (case-insensitively, so `create` and `Create` both count), and for `@returns`
+   followed by `Whether`, `\`true\``, or `true `; the sweep returns no hit.
 5. Gates: rule UNRESOLVED unless the report quotes the exact command and exit code for every
    gate, in which case CONFIRMED on the quoted evidence; the Orchestrator's landing chain is the
    authoritative run.
