@@ -121,4 +121,26 @@ sentence or a message.
 
 ## Objective findings
 
-(appended by the Orchestrator when the objective lane returns)
+Each with its ruling; these are part of this unit's scope and acceptance.
+
+9. **`pinMembers` guide row** (`guides/contract.md`, the row saying "Every exported class calls it
+   from a `static` block"): `SchemaShaper`, `ValueInferer`, and `SampleInferer` are `export class`
+   declarations that call no `pinMembers` and are barrelled by nothing. Ruling: the sentence
+   narrows to the classes the barrel publishes ("Every published class calls it from a `static`
+   block"); the interned engines stay as they are.
+10. **`SampleMemo`, `buildSampleMemo`, `readSampleMemo`** remain exported while no door accepts a
+    caller-supplied memo. Ruling: they stay exported as the walk's own memo and its leaves (export
+    and test reusable logic); finding 2's rewrite of the `readSampleMemo` row extends to the
+    `SampleMemo` and `buildSampleMemo` rows so all three describe the memo `SampleInferer` builds
+    for its own walk, and none describes a caller handing one in.
+11. **s03-01 `canonicalizeValue`**: the objective lane corroborates that the fold is
+    behavior-preserving (same stack machine, memo, refusals, and key sort; only the caller-supplied
+    `ancestors` parameter and its restoring `finally` disappear). Ratified as an amendment in the
+    ruling record by the Orchestrator; no code change (finding 6 stands).
+12. **s03-22 radius** under-scopes the moved key set (the radius file lists only `describe`,
+    `define`, `prototype`, `declare`, `parent`; `read`, `write`, `members`, `present`, `apply`,
+    `construct` moved too). The Orchestrator's concern, not this unit's: every consumer brief names
+    the full moved set and the compiler against the staged tarball is the scope.
+
+Acceptance criteria 7 and 8 follow: 7. the `pinMembers` row names published classes; 8. the three
+memo rows describe the walk's own memo.

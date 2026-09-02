@@ -4,7 +4,8 @@
   "s03-06: group under `limits`: `ValueToSchemaOptions.limits.depth` and `limits.properties`, matching the `MultipartLimits` precedent; `breadth` is refused.",
   "s03-23: the `build*` names as the ledger has them.",
   "s03-13: `expansion` is `number | undefined`; the guide row and its fence transcription move to the new behavior.",
-  "s03-01: the traversal spines become `#` methods and no published signature carries a state parameter; the doors keep their signatures."
+  "s03-01: the traversal spines become `#` methods and no published signature carries a state parameter; the doors keep their signatures.",
+  "s03-01 amendment (ratified after the audit): `canonicalizeValue` folded into `canonicalStringify` as a pure leaf with call-local state rather than a `#` method; the published door and diagnostic are unchanged and no state parameter survives on any published signature."
  ],
  "msg": [
   "s13-02 and s13-03: `category` on the field-data interfaces and on the directory entry; `MSG_CATEGORY_*` replaces `MSG_TYPE_*`. The external-mirror rule never licenses `type`. The guide fence that constructs `type: 5` moves with its transcription in tests/guides.test.ts."
