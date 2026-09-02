@@ -43,3 +43,15 @@ ratified; round 2 follows.
 in flight: the fix round changes guide prose, two private method names, raw error prefixes, and
 an import order, and no published symbol or signature, so the staged surface the L1 units compile
 against is the accepted one. The L1 checkouts re-stage the fix-round tip at the L2 boundary.
+
+## Round 2 (fix round `contract-fixup`)
+
+Subject: the five-file diff closing findings 1-5, 9, 10. Orchestrator verification in place of a
+lane, on the auditors' own "what right looks like": `guides/contract.md:425` names the interned
+walk and no exported spine; `:244` narrows `pinMembers` to published classes; the sweep for
+`inferRecords|SampleInferer:|ValueInferer:|SchemaShaper:` is clean; `#walkRecords` is the
+container branch in `SampleInferer`; two failing-first tests pin the door-named causes; the
+writer's gate chain exits 0. Verdict: PASS. The contract unit closes **applied** for s03-01 (with
+the ratified fold), s03-06, s03-10, s03-13, s03-22, s03-23, the s03-07 rename half, the s03-24
+siblings, and the s03-02 guide row. Findings for the next change: the shared per-sample
+classifier's cause prefix; the remaining out-of-order import members.

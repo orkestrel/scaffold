@@ -133,3 +133,18 @@ Built `dist/` moves: true
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/contract.diff`,
 `tmp/units/breaking/contract.status`.
+
+## Fix-up (contract-fixup, implementer on Opus 5; commit follows `d24e79c`)
+
+Findings 1-5, 9, and 10 closed: the guide's `schemaToShape` sentence names the interned walk
+(`:425`), the `readSampleMemo`, `SampleMemo`, and `buildSampleMemo` rows describe the walk's own
+memo (`:548,549,557`), the `pinMembers` row narrows to published classes with `ContractError`'s
+inlined body noted (`:244`); `SampleInferer.#inferRecords` → `#walkRecords`; the raw refusals name
+their doors (`samplesToSchema:`, `valueToSchema:`) with two failing-first tests (`inferers.test.ts:304,409`;
+2 failed before, 2 passed after); `matchesISOInstant` sorted in `tests/setup.ts` and
+`inferers.test.ts`. Findings 6, 7, 8, 11 ruled as no change; 12 is the Orchestrator's. Sweep for
+`inferRecords|SampleInferer:|ValueInferer:|SchemaShaper:` clean. Gates: `format:check` 0,
+`lint:check` 0, `check` 0, `build` 0, `test` 0 (1307 src, 111 policy, 46 config, 61 setup, 65
+guides). Observations for the next change: a hostile nested value inside a sample row yields a
+`cause` naming `valueToSchema` under a `samplesToSchema` refusal (the classifier is shared); other
+pre-existing out-of-order import members in `tests/setup.ts` and `inferers.test.ts`.
