@@ -461,3 +461,14 @@ governed the touched block).
   count; csv's tests-mirror drift (leaf describes in `parsers.test.ts`); csv's
   `test:distribution` must run after the registry restore before any publish (module-init proof
   of the parsers ↔ inferers cycle); html's `HTML.ts` import-order residue.
+
+## Breaking phase — L1 closing, L2 opened early (2026-09-02)
+
+- **Accepted in L1:** budget, html (with the index sentence fix), csv (after the executed
+  contract-comparison tests), ndjson (with two README fixes). indexeddb and sqlite writers in
+  flight; the form fix-ups landed.
+- **L2 opened for the eight units whose closures do not depend on indexeddb or sqlite** (console,
+  markdown, middleware, process, reason, table, template, websocket), each staged against contract
+  `2c15840` and the accepted L1 tips and verified before launch; `database` waits for indexeddb
+  and sqlite. The layer order exists for the publish cascade; a unit's own staged closure is what
+  its typecheck needs, and every closure the eight units compile against is accepted.
