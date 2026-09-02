@@ -5,6 +5,7 @@ export const meta = {
 }
 const UNITS = '/home/user/scaffold/tmp/units/voice'
 const repoOf = (pkg) => (pkg === 'scaffold' ? '/home/user/scaffold' : `/home/user/fleet/${pkg}`)
+const briefOf = (pkg) => ((args.briefs && args.briefs[pkg]) || `${UNITS}/voice-${pkg}-brief.md`)
 const REPORT = {
   type: 'object',
   properties: {
@@ -23,7 +24,7 @@ const VERDICT = {
   required: ['verdicts', 'findings', 'terminal', 'failing'],
 }
 const implement = (pkg) => agent(
-  `You are the \`implementer\` role on Claude Opus 5, a native subagent. Read ${UNITS}/voice-${pkg}-brief.md in full, then the shared brief it succeeds, /home/user/scaffold/.orkestrel/campaign/fix/tsdoc-wave-brief.md, in full. Perform the unit exactly as written in ${repoOf(pkg)}, directly and spawning nothing. Before editing, read ${repoOf(pkg)}/AGENTS.md and the "Comments and API documentation" section of ${repoOf(pkg)}/.claude/rules/typescript.md. Do not commit, stage, push, install, or run any discarding git command (git checkout, git restore, git stash, git reset, git clean). After the gate chain, write the two evidence files the brief names, write your report as Markdown to ${UNITS}/voice-${pkg}-report.md (the same content as your structured return: counts by kind, files touched, each gate command with its exit code and any failure excerpt, evidence paths, deviations), then return the structured output.`,
+  `You are the \`implementer\` role on Claude Opus 5, a native subagent. Read ${briefOf(pkg)} in full (and, where that file names a brief it supersedes, that brief too), then the shared brief they succeed, /home/user/scaffold/.orkestrel/campaign/fix/tsdoc-wave-brief.md, in full. Perform the unit exactly as written in ${repoOf(pkg)}, directly and spawning nothing. Before editing, read ${repoOf(pkg)}/AGENTS.md and the "Comments and API documentation" section of ${repoOf(pkg)}/.claude/rules/typescript.md. Do not commit, stage, push, install, or run any discarding git command (git checkout, git restore, git stash, git reset, git clean). After the gate chain, write the two evidence files the brief names, write your report as Markdown to ${UNITS}/voice-${pkg}-report.md (the same content as your structured return: counts by kind, files touched, each gate command with its exit code and any failure excerpt, evidence paths, deviations), then return the structured output.`,
   { label: `implement:${pkg}`, phase: 'Implement', model: 'opus', agentType: 'implementer', schema: REPORT },
 )
 const audit = (report, pkg) => parallel([

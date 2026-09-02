@@ -746,3 +746,9 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   `voice/plan.md`; briefs under `voice/units/` (per package: unit, subjective, checker).
 - **Tests pinning TSDoc.** brief, probe, and process compare `@example` fences and backticked
   names against the guide and barrel; none pins a first sentence.
+- **Pilot slice killed by a container restart** (2026-09-02). The workflow's journal recorded two
+  implementers started (ndjson, codec) and no result. Disk survived: every checkout, the staged
+  closures, the tarballs, and the briefs. codec's tree was untouched; ndjson's carried a partial
+  comment-only sweep over three files, kept and carried by the successor brief
+  `voice/units/voice-ndjson-brief-2.md`. The slice relaunches from the same script with that
+  brief substituted; nothing else changed.
