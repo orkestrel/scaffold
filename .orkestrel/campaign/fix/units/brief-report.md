@@ -82,3 +82,16 @@ Built `dist/` moves: yes: dist/src/core/index.d.ts declares readonly count and g
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/brief.diff`,
 `tmp/units/breaking/brief.status`.
+
+## Corrections by the Orchestrator (after the objective lane)
+
+The sweep observation ran over the hand-authored files (`src`, `tests`, `guides/brief.md`,
+`guides/README.md`, `README.md`) and not over the vendored mirrors; over `guides/interpret.md:113,739`
+(`ManagerAddOptions`) and `:122-124,483,486,493,517` (`size`) the old names survive, so
+acceptance criterion 1 as written is unmet over `guides/`, and the Orchestrator narrows it to the
+hand-authored files: a vendored mirror is refreshed at the re-pin, never edited. The mirror
+collision is a deviation the report did not file: expected the mirror to agree with the staged
+`@orkestrel/interpret`; found it stale; evidence the lines named; not done, carried by the
+re-pin. The s13-30 refusal cites no rule text that refuses the row; it stands as an Orchestrator
+engineering ruling on its two verified grounds. The baseline `format:check` claim is confirmed:
+`oxfmt --check` on `3b94bdb~1:tests/guides.test.ts` reports format issues.
