@@ -1,0 +1,1654 @@
+diff --git a/src/core/Table.ts b/src/core/Table.ts
+index 0bf48e3..3ce1187 100644
+--- a/src/core/Table.ts
++++ b/src/core/Table.ts
+@@ -30,7 +30,7 @@ import { SelectionManager } from './tables/SelectionManager.js'
+ import { SortManager } from './tables/SortManager.js'
+ import { isStructuralTableSchema } from './validators.js'
+ 
+-/** A schema, its rows, and the lens through which they are read. */
++/** Holds a schema, its rows, and the lens through which they are read. */
+ export class Table implements TableInterface {
+ 	readonly #emitter: Emitter<TableEventMap>
+ 	readonly #schema: TableSchema
+@@ -53,7 +53,7 @@ export class Table implements TableInterface {
+ 	readonly #pagination: PaginationManager
+ 
+ 	/**
+-	 * Open a table against a schema.
++	 * Opens a table against a schema.
+ 	 *
+ 	 * @param schema - The table declaration to own.
+ 	 * @param options - Initial rows, lens overrides, pagination, and emitter wiring.
+@@ -152,47 +152,47 @@ export class Table implements TableInterface {
+ 		)
+ 	}
+ 
+-	/** The table's event emitter. */
++	/** Holds the table's event emitter. */
+ 	get emitter(): EmitterInterface<TableEventMap> {
+ 		return this.#emitter
+ 	}
+ 
+-	/** The owned frozen schema. */
++	/** Holds the owned frozen schema. */
+ 	get schema(): TableSchema {
+ 		return this.#schema
+ 	}
+ 
+-	/** The rows the table holds. */
++	/** Manages the rows the table holds. */
+ 	get rows(): RowManagerInterface {
+ 		return this.#rows
+ 	}
+ 
+-	/** The ordered sort terms. */
++	/** Manages the ordered sort terms. */
+ 	get sort(): SortManagerInterface {
+ 		return this.#sort
+ 	}
+ 
+-	/** The filters applied with and-only composition. */
++	/** Manages the filters applied with and-only composition. */
+ 	get filter(): FilterManagerInterface {
+ 		return this.#filter
+ 	}
+ 
+-	/** The selected row keys. */
++	/** Manages the selected row keys. */
+ 	get selection(): SelectionManagerInterface {
+ 		return this.#selection
+ 	}
+ 
+-	/** The expanded row keys. */
++	/** Manages the expanded row keys. */
+ 	get expansion(): ExpansionManagerInterface {
+ 		return this.#expansion
+ 	}
+ 
+-	/** The page arithmetic. */
++	/** Manages the page arithmetic. */
+ 	get pagination(): PaginationManagerInterface {
+ 		return this.#pagination
+ 	}
+ 
+-	/** The filtered, sorted, and paged rows as owned frozen snapshots. */
++	/** Returns the filtered, sorted, and paged rows as owned frozen snapshots. */
+ 	get view(): readonly TableRow[] {
+ 		const ordered = sortRows(this.#schema, this.#filtered(), this.#orderStore, this.#comparators)
+ 		const limit = this.#limit
+@@ -203,17 +203,17 @@ export class Table implements TableInterface {
+ 		return Object.freeze(page.map((row) => cloneRow(row)))
+ 	}
+ 
+-	/** The number of rows admitted by the filters. */
++	/** Returns the number of rows admitted by the filters. */
+ 	get count(): number {
+ 		return this.#filtered().length
+ 	}
+ 
+-	/** Whether the table has been torn down. */
++	/** Reports whether the table has been torn down. */
+ 	get destroyed(): boolean {
+ 		return this.#destroyed
+ 	}
+ 
+-	/** Reset every moving axis to its opening state. */
++	/** Resets every moving axis to its opening state. */
+ 	clear(): void {
+ 		this.#gate()
+ 		const changed =
+@@ -236,7 +236,7 @@ export class Table implements TableInterface {
+ 		this.#emitter.emit('clear')
+ 	}
+ 
+-	/** Tear the table down while leaving every getter readable. */
++	/** Tears the table down while leaving every getter readable. */
+ 	destroy(): void {
+ 		if (this.#destroyed) return
+ 		this.#destroyed = true
+diff --git a/src/core/cloners.ts b/src/core/cloners.ts
+index 93a58ee..2385c56 100644
+--- a/src/core/cloners.ts
++++ b/src/core/cloners.ts
+@@ -4,7 +4,7 @@ import { cloneJSONRecord, isContractError } from '@orkestrel/contract'
+ import { TableError } from './errors.js'
+ 
+ /**
+- * Clone one row into an owned frozen snapshot.
++ * Clones one row into an owned frozen snapshot.
+  *
+  * @param row - The row to own.
+  * @returns A frozen copy of the row's cells.
+@@ -14,7 +14,7 @@ export function cloneRow(row: TableRow): TableRow {
+ }
+ 
+ /**
+- * Clone a table schema into an owned frozen snapshot.
++ * Clones a table schema into an owned frozen snapshot.
+  *
+  * @param schema - The schema to own.
+  * @returns A frozen schema with every nested column, choice, list, and metadata record owned.
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index c40d722..04649c6 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -1,6 +1,6 @@
+ import type { ColumnCell } from './types.js'
+ 
+-/** Every column cell, in the order declared by the public contract. */
++/** Lists every column cell, in the order declared by the public contract. */
+ export const COLUMN_CELLS: readonly ColumnCell[] = Object.freeze([
+ 	'text',
+ 	'number',
+@@ -8,20 +8,20 @@ export const COLUMN_CELLS: readonly ColumnCell[] = Object.freeze([
+ 	'choice',
+ ])
+ 
+-/** The maximum number of columns one schema may declare. */
++/** Names the maximum number of columns one schema may declare. */
+ export const COLUMN_LIMIT = 256
+ 
+-/** The maximum number of choices one `choice` column may offer. */
++/** Names the maximum number of choices one `choice` column may offer. */
+ export const CHOICE_LIMIT = 1024
+ 
+-/** The maximum length, in UTF-16 code units, of a schema name or column key. */
++/** Names the maximum length, in UTF-16 code units, of a schema name or column key. */
+ export const NAME_LIMIT = 128
+ 
+-/** The maximum length, in UTF-16 code units, of any single retained string. */
++/** Names the maximum length, in UTF-16 code units, of any single retained string. */
+ export const STRING_LIMIT = 65536
+ 
+-/** The maximum total length, in UTF-16 code units, of every string one schema retains. */
++/** Names the maximum total length, in UTF-16 code units, of every string one schema retains. */
+ export const TEXT_LIMIT = 1048576
+ 
+-/** The maximum total number of records, arrays, and leaves one schema retains. */
++/** Names the maximum total number of records, arrays, and leaves one schema retains. */
+ export const NODE_LIMIT = 16384
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 515729f..4aebd55 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -1,16 +1,16 @@
+ import type { JSONRecord } from '@orkestrel/contract'
+ import type { TableErrorCode } from './types.js'
+ 
+-/** An error raised by the table domain. */
++/** Represents an error raised by the table domain. */
+ export class TableError extends Error {
+-	/** The machine-readable reason for this failure. */
++	/** Holds the machine-readable reason for this failure. */
+ 	readonly code: TableErrorCode
+ 
+-	/** Structured values that locate or explain this failure. */
++	/** Holds structured values that locate or explain this failure. */
+ 	readonly context?: JSONRecord
+ 
+ 	/**
+-	 * Create a table error.
++	 * Creates a table error.
+ 	 *
+ 	 * @param code - The machine-readable reason.
+ 	 * @param message - The human-readable failure text.
+@@ -25,10 +25,10 @@ export class TableError extends Error {
+ }
+ 
+ /**
+- * Determine whether an unknown value is a table error.
++ * Determines whether an unknown value is a table error.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether the value is a {@link TableError} instance.
++ * @returns True if the value is a {@link TableError} instance; false otherwise.
+  */
+ export function isTableError(input: unknown): input is TableError {
+ 	return input instanceof TableError
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 6c85c59..d3a8eff 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,7 +2,7 @@ import type { TableInterface, TableOptions, TableSchema } from './types.js'
+ import { Table } from './Table.js'
+ 
+ /**
+- * Open a table against a schema.
++ * Opens a table against a schema.
+  *
+  * @param schema - The table declaration to own.
+  * @param options - Initial rows, lens overrides, pagination, and emitter wiring.
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 340dc31..0f4d8fa 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -33,7 +33,7 @@ import {
+ import { TableError } from './errors.js'
+ 
+ /**
+- * Find one column by key.
++ * Finds one column by key.
+  *
+  * @param schema - The schema whose columns to search.
+  * @param key - The column key to find.
+@@ -44,7 +44,7 @@ export function extractColumn(schema: TableSchema, key: string): TableColumn | u
+ }
+ 
+ /**
+- * Read one row's declared identity.
++ * Reads one row's declared identity.
+  *
+  * @param schema - The schema that names the identity column.
+  * @param row - The row whose identity to read.
+@@ -57,7 +57,7 @@ export function extractKey(schema: TableSchema, row: TableRow): TableKey | undef
+ }
+ 
+ /**
+- * Compute one atomic 0/1/N membership change over known keys.
++ * Computes one atomic 0/1/N membership change over known keys.
+  *
+  * @param known - Every key the caller may change.
+  * @param current - The current key set.
+@@ -148,11 +148,11 @@ export function matchesTerms<Term extends TableTerm>(
+ }
+ 
+ /**
+- * Check whether a value has the shape required by one column cell.
++ * Checks whether a value has the shape required by one column cell.
+  *
+  * @param column - The column that owns the cell.
+  * @param value - The unknown value to inspect.
+- * @returns Whether the column can hold the value.
++ * @returns True if the column can hold the value; false otherwise.
+  */
+ export function matchesCell(column: TableColumn, value: unknown): value is TableCell {
+ 	if (isString(value) && value.length > STRING_LIMIT) return false
+@@ -170,7 +170,7 @@ export function matchesCell(column: TableColumn, value: unknown): value is Table
+ }
+ 
+ /**
+- * Compare two cells in ascending order according to one column.
++ * Compares two cells in ascending order according to one column.
+  *
+  * @param column - The column that fixes the comparison.
+  * @param left - The first cell, or absence.
+@@ -205,11 +205,11 @@ export function compareCells(
+ }
+ 
+ /**
+- * Check whether one column admits a filter and all its operands.
++ * Checks whether one column admits a filter and all its operands.
+  *
+  * @param column - The column that fixes the accepted operators and cell shapes.
+  * @param filter - The filter to inspect.
+- * @returns Whether the filter belongs to the column and the column can apply it.
++ * @returns True if the filter belongs to the column and the column can apply it; false otherwise.
+  */
+ export function admitsFilter(column: TableColumn, filter: TableFilter): boolean {
+ 	if (filter.column !== column.key) return false
+@@ -231,12 +231,12 @@ export function admitsFilter(column: TableColumn, filter: TableFilter): boolean
+ }
+ 
+ /**
+- * Test one cell against a filter according to its column.
++ * Tests one cell against a filter according to its column.
+  *
+  * @param column - The column that fixes the accepted operators.
+  * @param cell - The cell to test, or absence.
+  * @param filter - The filter to apply.
+- * @returns Whether the filter accepts the cell.
++ * @returns True if the filter accepts the cell; false otherwise.
+  */
+ export function matchesFilter(
+ 	column: TableColumn,
+@@ -260,7 +260,7 @@ export function matchesFilter(
+ }
+ 
+ /**
+- * Keep the rows accepted by every filter.
++ * Keeps the rows accepted by every filter.
+  *
+  * @param schema - The schema that declares the filtered columns.
+  * @param rows - The rows to filter.
+@@ -291,7 +291,7 @@ export function filterRows(
+ }
+ 
+ /**
+- * Order rows stably by a sequence of terms.
++ * Orders rows stably by a sequence of terms.
+  *
+  * @param schema - The schema that declares the sorted columns.
+  * @param rows - The rows to order.
+@@ -333,7 +333,7 @@ export function sortRows(
+ }
+ 
+ /**
+- * Audit a structurally valid schema for domain and budget faults.
++ * Audits a structurally valid schema for domain and budget faults.
+  *
+  * @param schema - The table schema to audit.
+  * @returns Frozen human-readable diagnostics, or an empty list when the schema is sound.
+@@ -470,7 +470,7 @@ export function auditTable(schema: TableSchema): readonly string[] {
+ }
+ 
+ /**
+- * Project a schema into declaration-ordered JSON.
++ * Projects a schema into declaration-ordered JSON.
+  *
+  * @param schema - The schema to project.
+  * @returns A deeply owned JSON record with absent members omitted.
+@@ -510,7 +510,7 @@ export function serializeTable(schema: TableSchema): JSONRecord {
+ }
+ 
+ /**
+- * Project rows into schema-column-ordered JSON.
++ * Projects rows into schema-column-ordered JSON.
+  *
+  * @param schema - The schema that fixes cell order.
+  * @param rows - The rows to project.
+diff --git a/src/core/parsers.ts b/src/core/parsers.ts
+index 3ca509c..aeb4b30 100644
+--- a/src/core/parsers.ts
++++ b/src/core/parsers.ts
+@@ -13,7 +13,7 @@ import { extractColumn, extractKey, matchesCell, serializeTable } from './helper
+ import { isTableSchema } from './validators.js'
+ 
+ /**
+- * Parse unknown wire data into an owned, semantically sound table schema.
++ * Parses unknown wire data into an owned, semantically sound table schema.
+  *
+  * @param input - The unknown schema value to parse.
+  * @returns An owned table schema, or `undefined` on refusal.
+@@ -29,7 +29,7 @@ export function parseTable(input: unknown): TableSchema | undefined {
+ }
+ 
+ /**
+- * Parse unknown wire rows against one table schema.
++ * Parses unknown wire rows against one table schema.
+  *
+  * @param schema - The schema that declares the accepted keys and cell shapes.
+  * @param input - The unknown row-list value to parse.
+diff --git a/src/core/tables/ExpansionManager.ts b/src/core/tables/ExpansionManager.ts
+index 3db9eb6..857efcc 100644
+--- a/src/core/tables/ExpansionManager.ts
++++ b/src/core/tables/ExpansionManager.ts
+@@ -2,7 +2,7 @@ import type { Emitter } from '@orkestrel/emitter'
+ import type { ExpansionManagerInterface, TableEventMap, TableKey } from '../types.js'
+ import { KeyManager } from './KeyManager.js'
+ 
+-/** The keys of the rows somebody has opened. */
++/** Manages the keys of the rows somebody has opened. */
+ export class ExpansionManager implements ExpansionManagerInterface {
+ 	readonly #keys: KeyManager
+ 
+@@ -25,38 +25,38 @@ export class ExpansionManager implements ExpansionManagerInterface {
+ 		this.#keys = new KeyManager(emitter, 'expand', gate, rows, read, write)
+ 	}
+ 
+-	/** The keys of the rows opened right now. */
++	/** Returns the keys of the rows opened right now. */
+ 	get keys(): ReadonlySet<TableKey> {
+ 		return this.#keys.keys
+ 	}
+ 
+-	/** Open every row the table holds. */
++	/** Opens every row the table holds. */
+ 	expand(): void
+-	/** Open one row. */
++	/** Opens one row. */
+ 	expand(key: TableKey): boolean
+-	/** Open several rows. */
++	/** Opens several rows. */
+ 	expand(keys: readonly TableKey[]): boolean
+-	/** Open one or more rows. */
++	/** Opens one or more rows. */
+ 	expand(input?: TableKey | readonly TableKey[]): void | boolean {
+ 		return this.#keys.change(input, () => true)
+ 	}
+ 
+-	/** Close every row. */
++	/** Closes every row. */
+ 	clear(): void
+-	/** Close one row. */
++	/** Closes one row. */
+ 	clear(key: TableKey): boolean
+-	/** Close several rows. */
++	/** Closes several rows. */
+ 	clear(keys: readonly TableKey[]): boolean
+-	/** Close one or more rows. */
++	/** Closes one or more rows. */
+ 	clear(input?: TableKey | readonly TableKey[]): void | boolean {
+ 		return this.#keys.change(input, () => false)
+ 	}
+ 
+-	/** Open one row or close it when already open. */
++	/** Opens one row or closes it when already open. */
+ 	toggle(key: TableKey): boolean
+-	/** Turn several rows around independently. */
++	/** Turns several rows around independently. */
+ 	toggle(keys: readonly TableKey[]): boolean
+-	/** Turn one or more rows around independently. */
++	/** Turns one or more rows around independently. */
+ 	toggle(input: TableKey | readonly TableKey[]): boolean {
+ 		return this.#keys.change(input, (included) => !included) === true
+ 	}
+diff --git a/src/core/tables/FilterManager.ts b/src/core/tables/FilterManager.ts
+index 4436780..c0f0b72 100644
+--- a/src/core/tables/FilterManager.ts
++++ b/src/core/tables/FilterManager.ts
+@@ -3,7 +3,7 @@ import type { FilterManagerInterface, TableEventMap, TableFilter, TableSchema }
+ import { TableError } from '../errors.js'
+ import { admitsFilter, extractColumn, matchesTerms, mergeTerms, removeTerms } from '../helpers.js'
+ 
+-/** The filters one table applies with and-only composition. */
++/** Manages the filters one table applies with and-only composition. */
+ export class FilterManager implements FilterManagerInterface {
+ 	readonly #schema: TableSchema
+ 	readonly #emitter: Emitter<TableEventMap>
+@@ -13,7 +13,7 @@ export class FilterManager implements FilterManagerInterface {
+ 	readonly #clamp: () => number | undefined
+ 
+ 	/**
+-	 * Create a filter manager over one table's private filter store.
++	 * Creates a filter manager over one table's private filter store.
+ 	 *
+ 	 * @param schema - The table schema.
+ 	 * @param emitter - The table's event emitter.
+@@ -38,22 +38,22 @@ export class FilterManager implements FilterManagerInterface {
+ 		this.#clamp = clamp
+ 	}
+ 
+-	/** Find one column's filter. */
++	/** Finds one column's filter. */
+ 	filter(column: string): TableFilter | undefined {
+ 		const filter = this.#read().find((candidate) => candidate.column === column)
+ 		return filter === undefined ? undefined : Object.freeze({ ...filter })
+ 	}
+ 
+-	/** Read every filter as an owned frozen snapshot. */
++	/** Reads every filter as an owned frozen snapshot. */
+ 	filters(): readonly TableFilter[] {
+ 		return Object.freeze(this.#read().map((filter) => Object.freeze({ ...filter })))
+ 	}
+ 
+-	/** Filter several columns. */
++	/** Filters several columns. */
+ 	set(filters: readonly TableFilter[]): void
+-	/** Filter one column. */
++	/** Filters one column. */
+ 	set(filter: TableFilter): void
+-	/** Filter one column or several. */
++	/** Filters one column or several. */
+ 	set(input: TableFilter | readonly TableFilter[]): void {
+ 		this.#gate()
+ 		const requested = Array.isArray(input) ? input : [input]
+@@ -67,13 +67,13 @@ export class FilterManager implements FilterManagerInterface {
+ 		if (page !== undefined) this.#emitter.emit('paginate', page)
+ 	}
+ 
+-	/** Stop filtering by every column. */
++	/** Stops filtering by every column. */
+ 	remove(): void
+-	/** Stop filtering by one column. */
++	/** Stops filtering by one column. */
+ 	remove(column: string): boolean
+-	/** Stop filtering by several columns. */
++	/** Stops filtering by several columns. */
+ 	remove(columns: readonly string[]): boolean
+-	/** Stop filtering by one or more columns. */
++	/** Stops filtering by one or more columns. */
+ 	remove(input?: string | readonly string[]): void | boolean {
+ 		this.#gate()
+ 		const columns =
+diff --git a/src/core/tables/KeyManager.ts b/src/core/tables/KeyManager.ts
+index 6f5ed3d..03d0238 100644
+--- a/src/core/tables/KeyManager.ts
++++ b/src/core/tables/KeyManager.ts
+@@ -2,7 +2,7 @@ import type { Emitter } from '@orkestrel/emitter'
+ import type { TableEventMap, TableKey } from '../types.js'
+ import { computeKeys } from '../helpers.js'
+ 
+-/** The key set one table axis holds, and the event it announces when that set moves. */
++/** Manages the key set one table axis holds, and the event it announces when that set moves. */
+ export class KeyManager {
+ 	readonly #emitter: Emitter<TableEventMap>
+ 	readonly #event: 'select' | 'expand'
+@@ -37,7 +37,7 @@ export class KeyManager {
+ 		this.#write = write
+ 	}
+ 
+-	/** The keys held right now. */
++	/** Returns the keys held right now. */
+ 	get keys(): ReadonlySet<TableKey> {
+ 		return new Set(this.#read())
+ 	}
+diff --git a/src/core/tables/PaginationManager.ts b/src/core/tables/PaginationManager.ts
+index 643117c..fb0043c 100644
+--- a/src/core/tables/PaginationManager.ts
++++ b/src/core/tables/PaginationManager.ts
+@@ -1,7 +1,7 @@
+ import type { Emitter } from '@orkestrel/emitter'
+ import type { PaginationManagerInterface, TableEventMap } from '../types.js'
+ 
+-/** The page arithmetic over one table's filtered rows. */
++/** Manages the page arithmetic over one table's filtered rows. */
+ export class PaginationManager implements PaginationManagerInterface {
+ 	readonly #emitter: Emitter<TableEventMap>
+ 	readonly #gate: () => void
+@@ -12,7 +12,7 @@ export class PaginationManager implements PaginationManagerInterface {
+ 	readonly #writeLimit: (limit: number | undefined) => void
+ 
+ 	/**
+-	 * Create a pagination manager over one table's private stores.
++	 * Creates a pagination manager over one table's private stores.
+ 	 *
+ 	 * @param emitter - The table's event emitter.
+ 	 * @param gate - The table lifecycle gate.
+@@ -43,29 +43,29 @@ export class PaginationManager implements PaginationManagerInterface {
+ 		if (limit !== undefined) this.#writeLimit(this.#normalize(limit))
+ 	}
+ 
+-	/** The page shown, counted from one. */
++	/** Returns the page shown, counted from one. */
+ 	get page(): number {
+ 		return this.#readLimit() === undefined ? 1 : this.#readPage()
+ 	}
+ 
+-	/** The number of rows one page holds. */
++	/** Returns the number of rows one page holds. */
+ 	get limit(): number | undefined {
+ 		return this.#readLimit()
+ 	}
+ 
+-	/** The number of filtered rows skipped before this page. */
++	/** Returns the number of filtered rows skipped before this page. */
+ 	get offset(): number {
+ 		const limit = this.#readLimit()
+ 		return limit === undefined ? 0 : (this.#readPage() - 1) * limit
+ 	}
+ 
+-	/** The number of pages filled by the filtered rows. */
++	/** Returns the number of pages filled by the filtered rows. */
+ 	get count(): number {
+ 		const limit = this.#readLimit()
+ 		return limit === undefined ? 1 : Math.max(1, Math.ceil(this.#rows() / limit))
+ 	}
+ 
+-	/** Show another page, clamped to the pages that exist. */
++	/** Shows another page, clamped to the pages that exist. */
+ 	move(page: number): void {
+ 		this.#gate()
+ 		const next = this.#readLimit() === undefined ? 1 : Math.min(this.count, this.#normalize(page))
+@@ -74,7 +74,7 @@ export class PaginationManager implements PaginationManagerInterface {
+ 		this.#emitter.emit('paginate', next)
+ 	}
+ 
+-	/** Change the page size while keeping the first row previously shown. */
++	/** Changes the page size while keeping the first row previously shown. */
+ 	resize(limit?: number): void {
+ 		this.#gate()
+ 		const previous = this.#readLimit()
+diff --git a/src/core/tables/RowManager.ts b/src/core/tables/RowManager.ts
+index 5e741a7..1b26d94 100644
+--- a/src/core/tables/RowManager.ts
++++ b/src/core/tables/RowManager.ts
+@@ -11,7 +11,7 @@ import { TableError } from '../errors.js'
+ import { extractColumn, extractKey, matchesCell } from '../helpers.js'
+ import { isTableRow } from '../validators.js'
+ 
+-/** The rows one table holds in its own order. */
++/** Manages the rows one table holds in its own order. */
+ export class RowManager implements RowManagerInterface {
+ 	readonly #schema: TableSchema
+ 	readonly #emitter: Emitter<TableEventMap>
+@@ -21,7 +21,7 @@ export class RowManager implements RowManagerInterface {
+ 	readonly #settle: (removed: readonly TableKey[], announce: () => void) => void
+ 
+ 	/**
+-	 * Create a row manager over one table's private row store.
++	 * Creates a row manager over one table's private row store.
+ 	 *
+ 	 * @param schema - The table schema.
+ 	 * @param emitter - The table's event emitter.
+@@ -51,22 +51,22 @@ export class RowManager implements RowManagerInterface {
+ 		if (seeded.length > 0) this.#write(Object.freeze(seeded))
+ 	}
+ 
+-	/** Find one row by key as an owned frozen snapshot. */
++	/** Finds one row by key as an owned frozen snapshot. */
+ 	row(key: TableKey): TableRow | undefined {
+ 		const row = this.#read().find((candidate) => extractKey(this.#schema, candidate) === key)
+ 		return row === undefined ? undefined : cloneRow(row)
+ 	}
+ 
+-	/** Read every row as owned frozen snapshots in table order. */
++	/** Reads every row as owned frozen snapshots in table order. */
+ 	rows(): readonly TableRow[] {
+ 		return Object.freeze(this.#read().map((row) => cloneRow(row)))
+ 	}
+ 
+-	/** Append several rows. */
++	/** Appends several rows. */
+ 	add(rows: readonly TableRow[]): void
+-	/** Append one row. */
++	/** Appends one row. */
+ 	add(row: TableRow): void
+-	/** Append one row or several. */
++	/** Appends one row or several. */
+ 	add(input: TableRow | readonly TableRow[]): void {
+ 		this.#gate()
+ 		const rows = Array.isArray(input) ? input : [input]
+@@ -87,11 +87,11 @@ export class RowManager implements RowManagerInterface {
+ 		})
+ 	}
+ 
+-	/** Merge several rows into the rows their keys name. */
++	/** Merges several rows into the rows their keys name. */
+ 	update(rows: readonly TableRow[]): boolean
+-	/** Merge one row into the row its key names. */
++	/** Merges one row into the row its key names. */
+ 	update(row: TableRow): boolean
+-	/** Merge one row or several into the rows their keys name. */
++	/** Merges one row or several into the rows their keys name. */
+ 	update(input: TableRow | readonly TableRow[]): boolean {
+ 		this.#gate()
+ 		const updates = (Array.isArray(input) ? input : [input]).map((row) => cloneRow(row))
+@@ -131,7 +131,7 @@ export class RowManager implements RowManagerInterface {
+ 		return true
+ 	}
+ 
+-	/** Move one row to a clamped index in table order. */
++	/** Moves one row to a clamped index in table order. */
+ 	move(key: TableKey, index: number): boolean {
+ 		this.#gate()
+ 		const current = this.#read()
+@@ -153,13 +153,13 @@ export class RowManager implements RowManagerInterface {
+ 		return true
+ 	}
+ 
+-	/** Remove every row. */
++	/** Removes every row. */
+ 	remove(): void
+-	/** Remove one row. */
++	/** Removes one row. */
+ 	remove(key: TableKey): boolean
+-	/** Remove several rows. */
++	/** Removes several rows. */
+ 	remove(keys: readonly TableKey[]): boolean
+-	/** Remove one or more rows. */
++	/** Removes one or more rows. */
+ 	remove(input?: TableKey | readonly TableKey[]): void | boolean {
+ 		this.#gate()
+ 		const current = this.#read()
+diff --git a/src/core/tables/SelectionManager.ts b/src/core/tables/SelectionManager.ts
+index 92ea5fe..6021382 100644
+--- a/src/core/tables/SelectionManager.ts
++++ b/src/core/tables/SelectionManager.ts
+@@ -2,7 +2,7 @@ import type { Emitter } from '@orkestrel/emitter'
+ import type { SelectionManagerInterface, TableEventMap, TableKey } from '../types.js'
+ import { KeyManager } from './KeyManager.js'
+ 
+-/** The keys of the rows somebody has picked. */
++/** Manages the keys of the rows somebody has picked. */
+ export class SelectionManager implements SelectionManagerInterface {
+ 	readonly #keys: KeyManager
+ 
+@@ -25,38 +25,38 @@ export class SelectionManager implements SelectionManagerInterface {
+ 		this.#keys = new KeyManager(emitter, 'select', gate, rows, read, write)
+ 	}
+ 
+-	/** The keys of the rows picked right now. */
++	/** Returns the keys of the rows picked right now. */
+ 	get keys(): ReadonlySet<TableKey> {
+ 		return this.#keys.keys
+ 	}
+ 
+-	/** Pick every row the table holds. */
++	/** Picks every row the table holds. */
+ 	select(): void
+-	/** Pick one row. */
++	/** Picks one row. */
+ 	select(key: TableKey): boolean
+-	/** Pick several rows. */
++	/** Picks several rows. */
+ 	select(keys: readonly TableKey[]): boolean
+-	/** Pick one or more rows. */
++	/** Picks one or more rows. */
+ 	select(input?: TableKey | readonly TableKey[]): void | boolean {
+ 		return this.#keys.change(input, () => true)
+ 	}
+ 
+-	/** Drop every pick. */
++	/** Drops every pick. */
+ 	clear(): void
+-	/** Drop one pick. */
++	/** Drops one pick. */
+ 	clear(key: TableKey): boolean
+-	/** Drop several picks. */
++	/** Drops several picks. */
+ 	clear(keys: readonly TableKey[]): boolean
+-	/** Drop one or more picks. */
++	/** Drops one or more picks. */
+ 	clear(input?: TableKey | readonly TableKey[]): void | boolean {
+ 		return this.#keys.change(input, () => false)
+ 	}
+ 
+-	/** Pick one row or drop it when already picked. */
++	/** Picks one row or drops it when already picked. */
+ 	toggle(key: TableKey): boolean
+-	/** Turn several rows around independently. */
++	/** Turns several rows around independently. */
+ 	toggle(keys: readonly TableKey[]): boolean
+-	/** Turn one or more rows around independently. */
++	/** Turns one or more rows around independently. */
+ 	toggle(input: TableKey | readonly TableKey[]): boolean {
+ 		return this.#keys.change(input, (included) => !included) === true
+ 	}
+diff --git a/src/core/tables/SortManager.ts b/src/core/tables/SortManager.ts
+index c3810e9..8de3d84 100644
+--- a/src/core/tables/SortManager.ts
++++ b/src/core/tables/SortManager.ts
+@@ -3,7 +3,7 @@ import type { SortManagerInterface, TableEventMap, TableOrder, TableSchema } fro
+ import { TableError } from '../errors.js'
+ import { extractColumn, matchesTerms, mergeTerms, removeTerms } from '../helpers.js'
+ 
+-/** The ordered sort terms of one table. */
++/** Manages the ordered sort terms of one table. */
+ export class SortManager implements SortManagerInterface {
+ 	readonly #schema: TableSchema
+ 	readonly #emitter: Emitter<TableEventMap>
+@@ -12,7 +12,7 @@ export class SortManager implements SortManagerInterface {
+ 	readonly #write: (orders: readonly TableOrder[]) => void
+ 
+ 	/**
+-	 * Create a sort manager over one table's private term store.
++	 * Creates a sort manager over one table's private term store.
+ 	 *
+ 	 * @param schema - The table schema.
+ 	 * @param emitter - The table's event emitter.
+@@ -34,22 +34,22 @@ export class SortManager implements SortManagerInterface {
+ 		this.#write = write
+ 	}
+ 
+-	/** Find one column's sort term. */
++	/** Finds one column's sort term. */
+ 	order(column: string): TableOrder | undefined {
+ 		const order = this.#read().find((candidate) => candidate.column === column)
+ 		return order === undefined ? undefined : Object.freeze({ ...order })
+ 	}
+ 
+-	/** Read every sort term as an owned frozen snapshot. */
++	/** Reads every sort term as an owned frozen snapshot. */
+ 	orders(): readonly TableOrder[] {
+ 		return Object.freeze(this.#read().map((order) => Object.freeze({ ...order })))
+ 	}
+ 
+-	/** Sort by several columns. */
++	/** Sorts by several columns. */
+ 	set(orders: readonly TableOrder[]): void
+-	/** Sort by one column. */
++	/** Sorts by one column. */
+ 	set(order: TableOrder): void
+-	/** Sort by one column or several. */
++	/** Sorts by one column or several. */
+ 	set(input: TableOrder | readonly TableOrder[]): void {
+ 		this.#gate()
+ 		const requested = Array.isArray(input) ? input : [input]
+@@ -64,13 +64,13 @@ export class SortManager implements SortManagerInterface {
+ 		this.#emitter.emit('sort', this.orders())
+ 	}
+ 
+-	/** Stop sorting by every column. */
++	/** Stops sorting by every column. */
+ 	remove(): void
+-	/** Stop sorting by one column. */
++	/** Stops sorting by one column. */
+ 	remove(column: string): boolean
+-	/** Stop sorting by several columns. */
++	/** Stops sorting by several columns. */
+ 	remove(columns: readonly string[]): boolean
+-	/** Stop sorting by one or more columns. */
++	/** Stops sorting by one or more columns. */
+ 	remove(input?: string | readonly string[]): void | boolean {
+ 		this.#gate()
+ 		const columns =
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 4316cfd..679fc99 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -2,7 +2,7 @@ import type { JSONRecord } from '@orkestrel/contract'
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ 
+ /**
+- * A row's identity.
++ * Represents a row's identity.
+  *
+  * @remarks
+  * Every row carries its own identity in the cell named by {@link TableSchema.key}, as a non-empty
+@@ -17,7 +17,7 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ export type TableKey = string
+ 
+ /**
+- * Every value a cell can hold.
++ * Represents every value a cell can hold.
+  *
+  * @remarks
+  * The variant follows the column: `text` and `choice` hold a `string`, `number` holds a `number`,
+@@ -27,7 +27,7 @@ export type TableKey = string
+ export type TableCell = string | number | boolean
+ 
+ /**
+- * One row, keyed by column.
++ * Represents one row, keyed by column.
+  *
+  * @remarks
+  * A row declares a cell for the columns it carries and omits the rest. It carries no key the
+@@ -42,7 +42,7 @@ export type TableCell = string | number | boolean
+ export type TableRow = Readonly<Record<string, TableCell>>
+ 
+ /**
+- * What a column's cells hold.
++ * Names what a column's cells hold.
+  *
+  * @remarks
+  * The cell is the discriminant of every {@link TableColumn} variant, so choosing it fixes what the
+@@ -60,7 +60,7 @@ export type TableRow = Readonly<Record<string, TableCell>>
+ export type ColumnCell = 'text' | 'number' | 'flag' | 'choice'
+ 
+ /**
+- * One value a `choice` column offers.
++ * Represents one value a `choice` column offers.
+  *
+  * @remarks
+  * `value` is what the cell holds and `label` is what a reader sees. `help` explains the choice.
+@@ -74,7 +74,7 @@ export interface ColumnChoice {
+ }
+ 
+ /**
+- * What every column carries, whatever its cells hold.
++ * Describes what every column carries, whatever its cells hold.
+  *
+  * @remarks
+  * `key` names the column, and it is the name a row uses for that column's cell. `label` is the
+@@ -98,23 +98,23 @@ export interface ColumnBase {
+ 	readonly meta?: JSONRecord
+ }
+ 
+-/** A column of text, compared lexically. */
++/** Represents a column of text, compared lexically. */
+ export interface TextColumn extends ColumnBase {
+ 	readonly cell: 'text'
+ }
+ 
+-/** A column of numbers, compared by magnitude. */
++/** Represents a column of numbers, compared by magnitude. */
+ export interface NumberColumn extends ColumnBase {
+ 	readonly cell: 'number'
+ }
+ 
+-/** A column of yes-or-no answers, compared false before true. */
++/** Represents a column of yes-or-no answers, compared false before true. */
+ export interface FlagColumn extends ColumnBase {
+ 	readonly cell: 'flag'
+ }
+ 
+ /**
+- * A column drawn from a declared list, compared by the order that list declares.
++ * Represents a column drawn from a declared list, compared by the order that list declares.
+  *
+  * @remarks
+  * A cell holding a value the list does not offer is refused at admission.
+@@ -125,7 +125,7 @@ export interface ChoiceColumn extends ColumnBase {
+ }
+ 
+ /**
+- * Any column a schema can declare.
++ * Represents any column a schema can declare.
+  *
+  * @remarks
+  * The union discriminates on `cell`, so narrowing on that member reaches each variant's own
+@@ -141,7 +141,7 @@ export interface ChoiceColumn extends ColumnBase {
+ export type TableColumn = TextColumn | NumberColumn | FlagColumn | ChoiceColumn
+ 
+ /**
+- * Everything a table declares about itself.
++ * Holds everything a table declares about itself.
+  *
+  * @remarks
+  * The schema is data. It carries no function, so all of it crosses a wire and nothing is dropped
+@@ -177,7 +177,7 @@ export interface TableSchema {
+ }
+ 
+ /**
+- * One entry of a lens list, held against one declared column.
++ * Represents one entry of a lens list, held against one declared column.
+  *
+  * @remarks
+  * A table holds at most one sort term and at most one filter per column, so `column` is what
+@@ -190,7 +190,7 @@ export interface TableTerm {
+ }
+ 
+ /**
+- * Which way a column sorts.
++ * Names which way a column sorts.
+  *
+  * @remarks
+  * A column nobody has sorted has no {@link TableOrder} at all, so there is no third member
+@@ -199,7 +199,7 @@ export interface TableTerm {
+ export type TableDirection = 'ascending' | 'descending'
+ 
+ /**
+- * One column's place in the sort.
++ * Represents one column's place in the sort.
+  *
+  * @remarks
+  * The order list is read left to right: the first term decides, and each later term breaks the
+@@ -216,7 +216,7 @@ export interface TableOrder {
+ }
+ 
+ /**
+- * How a filter tests a cell.
++ * Names how a filter tests a cell.
+  *
+  * @remarks
+  * `contains` looks for text inside a `text` or `choice` cell. `between` accepts a cell inside a
+@@ -228,7 +228,7 @@ export interface TableOrder {
+  */
+ export type FilterOperator = 'contains' | 'between' | 'equals'
+ 
+-/** Keep the rows whose cell holds this text somewhere inside it. */
++/** Keeps the rows whose cell holds this text somewhere inside it. */
+ export interface ContainsFilter {
+ 	readonly column: string
+ 	readonly operator: 'contains'
+@@ -236,7 +236,7 @@ export interface ContainsFilter {
+ }
+ 
+ /**
+- * Keep the rows whose cell falls between these bounds, both included.
++ * Keeps the rows whose cell falls between these bounds, both included.
+  *
+  * @remarks
+  * The bounds compare the way the column compares, so a `text` column holding ISO strings takes a
+@@ -249,7 +249,7 @@ export interface BetweenFilter {
+ 	readonly maximum: string | number
+ }
+ 
+-/** Keep the rows whose cell holds exactly this value. */
++/** Keeps the rows whose cell holds exactly this value. */
+ export interface EqualsFilter {
+ 	readonly column: string
+ 	readonly operator: 'equals'
+@@ -257,7 +257,7 @@ export interface EqualsFilter {
+ }
+ 
+ /**
+- * Any filter a table can hold.
++ * Represents any filter a table can hold.
+  *
+  * @remarks
+  * The union discriminates on `operator`, so each operator carries only the operands it uses and a
+@@ -274,7 +274,7 @@ export interface EqualsFilter {
+ export type TableFilter = ContainsFilter | BetweenFilter | EqualsFilter
+ 
+ /**
+- * Compare two cells of one column.
++ * Compares two cells of one column.
+  *
+  * @remarks
+  * It replaces the comparison the column's {@link ColumnCell} fixes, for that column alone, and it
+@@ -294,7 +294,7 @@ export type TableFilter = ContainsFilter | BetweenFilter | EqualsFilter
+ export type CellComparator = (left: TableCell | undefined, right: TableCell | undefined) => number
+ 
+ /**
+- * Test one column's cell against a filter.
++ * Tests one column's cell against a filter.
+  *
+  * @remarks
+  * It replaces the test the column's {@link ColumnCell} fixes, for that column alone, and it
+@@ -302,7 +302,7 @@ export type CellComparator = (left: TableCell | undefined, right: TableCell | un
+  *
+  * @param cell - The row's cell, or `undefined` when it carries none.
+  * @param filter - The filter the table is applying.
+- * @returns `true` to keep the row.
++ * @returns True if the filter accepts the cell; false otherwise.
+  * @example
+  * ```ts
+  * const loose: CellMatcher = (cell, filter) =>
+@@ -312,7 +312,7 @@ export type CellComparator = (left: TableCell | undefined, right: TableCell | un
+ export type CellMatcher = (cell: TableCell | undefined, filter: TableFilter) => boolean
+ 
+ /**
+- * The machine-readable code a table error carries.
++ * Names the machine-readable code a table error carries.
+  *
+  * @remarks
+  * `SCHEMA` rejects a malformed schema, including a `key` naming no declared column. `COLUMN`
+@@ -323,7 +323,7 @@ export type CellMatcher = (cell: TableCell | undefined, filter: TableFilter) =>
+ export type TableErrorCode = 'SCHEMA' | 'COLUMN' | 'KEY' | 'CELL' | 'DESTROYED'
+ 
+ /**
+- * Everything a table announces.
++ * Lists everything a table announces.
+  *
+  * @remarks
+  * Every event fires after the state it reports is committed, and only when something actually
+@@ -353,7 +353,7 @@ export type TableEventMap = {
+ }
+ 
+ /**
+- * How to open a table.
++ * Describes how to open a table.
+  *
+  * @param options - The table's settings.
+  * @remarks
+@@ -388,7 +388,7 @@ export interface TableOptions {
+ }
+ 
+ /**
+- * The rows a table holds, in the order it holds them.
++ * Manages the rows a table holds, in the order it holds them.
+  *
+  * @remarks
+  * This order is the table's own, and it is what the view shows when no sort term separates two
+@@ -402,20 +402,20 @@ export interface TableOptions {
+  */
+ export interface RowManagerInterface {
+ 	/**
+-	 * Find one row by key.
++	 * Finds one row by key.
+ 	 *
+ 	 * @param key - The row's key.
+ 	 * @returns The row, or `undefined` when the table holds no such key.
+ 	 */
+ 	row(key: TableKey): TableRow | undefined
+ 	/**
+-	 * Every row the table holds, in its own order.
++	 * Reads every row the table holds, in its own order.
+ 	 *
+ 	 * @returns The rows, unfiltered, unsorted, and unpaged.
+ 	 */
+ 	rows(): readonly TableRow[]
+ 	/**
+-	 * Take in several rows, appending them in the order given.
++	 * Takes in several rows, appending them in the order given.
+ 	 *
+ 	 * @param rows - The rows to admit.
+ 	 * @throws A {@link TableError} coded `KEY` when a row's key is missing, unusable, already
+@@ -424,7 +424,7 @@ export interface RowManagerInterface {
+ 	 */
+ 	add(rows: readonly TableRow[]): void
+ 	/**
+-	 * Take in one row, appending it.
++	 * Takes in one row, appending it.
+ 	 *
+ 	 * @param row - The row to admit.
+ 	 * @throws A {@link TableError} coded `KEY` when the row's key is missing, unusable, or already
+@@ -432,60 +432,60 @@ export interface RowManagerInterface {
+ 	 */
+ 	add(row: TableRow): void
+ 	/**
+-	 * Write over several rows, each found by the key it carries.
++	 * Writes over several rows, each found by the key it carries.
+ 	 *
+ 	 * @param rows - The rows to write, each carrying the key of the row it writes over.
+-	 * @returns `true` when every key named a row the table holds.
++	 * @returns True if every key named a row the table holds; false otherwise.
+ 	 * @throws A {@link TableError} coded `CELL` when a cell is one its column cannot hold. Every
+ 	 *   row is checked before any is written, so one refusal writes none of them.
+ 	 */
+ 	update(rows: readonly TableRow[]): boolean
+ 	/**
+-	 * Write over one row, found by the key it carries.
++	 * Writes over one row, found by the key it carries.
+ 	 *
+ 	 * @remarks
+ 	 * The cells given replace the cells held; the cells left out stay as they are. A row's key
+ 	 * therefore cannot move, because a different key names a different row.
+ 	 *
+ 	 * @param row - The cells to write, carrying the key of the row they belong to.
+-	 * @returns `true` when the key named a row the table holds.
++	 * @returns True if the key named a row the table holds; false otherwise.
+ 	 * @throws A {@link TableError} coded `CELL` when a cell is one its column cannot hold.
+ 	 */
+ 	update(row: TableRow): boolean
+ 	/**
+-	 * Move one row to another place in the table's own order.
++	 * Moves one row to another place in the table's own order.
+ 	 *
+ 	 * @param key - The row's key.
+ 	 * @param index - Where to put it, counted from zero and clamped to the rows that exist.
+-	 * @returns `true` when the key named a row the table holds.
++	 * @returns True if the key named a row the table holds; false otherwise.
+ 	 */
+ 	move(key: TableKey, index: number): boolean
+ 	/**
+-	 * Take out every row.
++	 * Takes out every row.
+ 	 *
+ 	 * @remarks
+ 	 * Selection and expansion drop the keys they held, because those rows are gone.
+ 	 */
+ 	remove(): void
+ 	/**
+-	 * Take out one row.
++	 * Takes out one row.
+ 	 *
+ 	 * @param key - The row's key.
+-	 * @returns `true` when the key named a row the table holds.
++	 * @returns True if the key named a row the table holds; false otherwise.
+ 	 */
+ 	remove(key: TableKey): boolean
+ 	/**
+-	 * Take out several rows.
++	 * Takes out several rows.
+ 	 *
+ 	 * @param keys - The rows' keys.
+-	 * @returns `true` when every key named a row the table holds. Every key is checked before any
+-	 *   row goes, so one unknown key leaves the whole call undone.
++	 * @returns True if every key named a row the table holds; false otherwise. Every key is
++	 *   checked before any row goes, so one unknown key leaves the whole call undone.
+ 	 */
+ 	remove(keys: readonly TableKey[]): boolean
+ }
+ 
+ /**
+- * The order a table reads its rows in.
++ * Manages the order a table reads its rows in.
+  *
+  * @remarks
+  * The table holds one term per column and applies them in the order they were set. Which
+@@ -500,20 +500,20 @@ export interface RowManagerInterface {
+  */
+ export interface SortManagerInterface {
+ 	/**
+-	 * Find one column's term.
++	 * Finds one column's term.
+ 	 *
+ 	 * @param column - The column's key.
+ 	 * @returns The term, or `undefined` when nothing sorts that column.
+ 	 */
+ 	order(column: string): TableOrder | undefined
+ 	/**
+-	 * Every term the table sorts by.
++	 * Reads every term the table sorts by.
+ 	 *
+ 	 * @returns The terms, first to last, in the order they decide.
+ 	 */
+ 	orders(): readonly TableOrder[]
+ 	/**
+-	 * Sort by several columns.
++	 * Sorts by several columns.
+ 	 *
+ 	 * @param orders - The terms to set. A term for a column already sorted replaces that column's
+ 	 *   direction in place; every other term joins the end of the list.
+@@ -522,34 +522,34 @@ export interface SortManagerInterface {
+ 	 */
+ 	set(orders: readonly TableOrder[]): void
+ 	/**
+-	 * Sort by one column.
++	 * Sorts by one column.
+ 	 *
+ 	 * @param order - The term to set.
+ 	 * @throws A {@link TableError} coded `COLUMN` when the term names a column the schema does not
+ 	 *   declare.
+ 	 */
+ 	set(order: TableOrder): void
+-	/** Stop sorting by anything. */
++	/** Stops sorting by anything. */
+ 	remove(): void
+ 	/**
+-	 * Stop sorting by one column.
++	 * Stops sorting by one column.
+ 	 *
+ 	 * @param column - The column's key.
+-	 * @returns `true` when the schema declares that column.
++	 * @returns True if the schema declares that column; false otherwise.
+ 	 */
+ 	remove(column: string): boolean
+ 	/**
+-	 * Stop sorting by several columns.
++	 * Stops sorting by several columns.
+ 	 *
+ 	 * @param columns - The columns' keys.
+-	 * @returns `true` when the schema declares every one of them. Every key is checked before any
+-	 *   term goes.
++	 * @returns True if the schema declares every one of them; false otherwise. Every key is
++	 *   checked before any term goes.
+ 	 */
+ 	remove(columns: readonly string[]): boolean
+ }
+ 
+ /**
+- * Which rows a table keeps.
++ * Manages which rows a table keeps.
+  *
+  * @remarks
+  * The table holds at most one filter per column and keeps the rows every filter accepts.
+@@ -562,20 +562,20 @@ export interface SortManagerInterface {
+  */
+ export interface FilterManagerInterface {
+ 	/**
+-	 * Find one column's filter.
++	 * Finds one column's filter.
+ 	 *
+ 	 * @param column - The column's key.
+ 	 * @returns The filter, or `undefined` when nothing filters that column.
+ 	 */
+ 	filter(column: string): TableFilter | undefined
+ 	/**
+-	 * Every filter the table keeps rows by.
++	 * Reads every filter the table keeps rows by.
+ 	 *
+ 	 * @returns The filters, in the order they were set.
+ 	 */
+ 	filters(): readonly TableFilter[]
+ 	/**
+-	 * Filter several columns.
++	 * Filters several columns.
+ 	 *
+ 	 * @param filters - The filters to set. A filter for a column already filtered replaces that
+ 	 *   column's filter; every other one joins the end of the list.
+@@ -585,34 +585,34 @@ export interface FilterManagerInterface {
+ 	 */
+ 	set(filters: readonly TableFilter[]): void
+ 	/**
+-	 * Filter one column.
++	 * Filters one column.
+ 	 *
+ 	 * @param filter - The filter to set.
+ 	 * @throws A {@link TableError} coded `COLUMN` when the filter names a column the schema does
+ 	 *   not declare, and `CELL` when an operand is one the column cannot hold.
+ 	 */
+ 	set(filter: TableFilter): void
+-	/** Stop filtering by anything. */
++	/** Stops filtering by anything. */
+ 	remove(): void
+ 	/**
+-	 * Stop filtering one column.
++	 * Stops filtering one column.
+ 	 *
+ 	 * @param column - The column's key.
+-	 * @returns `true` when the schema declares that column.
++	 * @returns True if the schema declares that column; false otherwise.
+ 	 */
+ 	remove(column: string): boolean
+ 	/**
+-	 * Stop filtering several columns.
++	 * Stops filtering several columns.
+ 	 *
+ 	 * @param columns - The columns' keys.
+-	 * @returns `true` when the schema declares every one of them. Every key is checked before any
+-	 *   filter goes.
++	 * @returns True if the schema declares every one of them; false otherwise. Every key is
++	 *   checked before any filter goes.
+ 	 */
+ 	remove(columns: readonly string[]): boolean
+ }
+ 
+ /**
+- * The rows somebody has picked.
++ * Manages the rows somebody has picked.
+  *
+  * @remarks
+  * Selection holds keys, never rows or positions, so a pick survives a sort, a filter, and a page
+@@ -625,10 +625,10 @@ export interface FilterManagerInterface {
+  * ```
+  */
+ export interface SelectionManagerInterface {
+-	/** The keys of the rows picked right now. */
++	/** Holds the keys of the rows picked right now. */
+ 	readonly keys: ReadonlySet<TableKey>
+ 	/**
+-	 * Pick every row the table holds.
++	 * Picks every row the table holds.
+ 	 *
+ 	 * @remarks
+ 	 * Every row, not every visible one. A host picking one page hands that page's keys over
+@@ -636,56 +636,57 @@ export interface SelectionManagerInterface {
+ 	 */
+ 	select(): void
+ 	/**
+-	 * Pick one row.
++	 * Picks one row.
+ 	 *
+ 	 * @param key - The row's key.
+-	 * @returns `true` when the key named a row the table holds.
++	 * @returns True if the key named a row the table holds; false otherwise.
+ 	 */
+ 	select(key: TableKey): boolean
+ 	/**
+-	 * Pick several rows.
++	 * Picks several rows.
+ 	 *
+ 	 * @param keys - The rows' keys.
+-	 * @returns `true` when every key named a row the table holds. Every key is checked before any
+-	 *   row is picked.
++	 * @returns True if every key named a row the table holds; false otherwise. Every key is
++	 *   checked before any row is picked.
+ 	 */
+ 	select(keys: readonly TableKey[]): boolean
+-	/** Drop every pick. */
++	/** Drops every pick. */
+ 	clear(): void
+ 	/**
+-	 * Drop one pick.
++	 * Drops one pick.
+ 	 *
+ 	 * @param key - The row's key.
+-	 * @returns `true` when the key named a row the table holds, whether or not it was picked.
++	 * @returns True if the key named a row the table holds, whether or not it was
++	 *   picked; false otherwise.
+ 	 */
+ 	clear(key: TableKey): boolean
+ 	/**
+-	 * Drop several picks.
++	 * Drops several picks.
+ 	 *
+ 	 * @param keys - The rows' keys.
+-	 * @returns `true` when every key named a row the table holds. Every key is checked before any
+-	 *   pick is dropped.
++	 * @returns True if every key named a row the table holds; false otherwise. Every key is
++	 *   checked before any pick is dropped.
+ 	 */
+ 	clear(keys: readonly TableKey[]): boolean
+ 	/**
+-	 * Pick one row, or drop it when it is already picked.
++	 * Picks one row, or drops it when it is already picked.
+ 	 *
+ 	 * @param key - The row's key.
+-	 * @returns `true` when the key named a row the table holds.
++	 * @returns True if the key named a row the table holds; false otherwise.
+ 	 */
+ 	toggle(key: TableKey): boolean
+ 	/**
+-	 * Turn several rows around, each on its own.
++	 * Turns several rows around, each on its own.
+ 	 *
+ 	 * @param keys - The rows' keys.
+-	 * @returns `true` when every key named a row the table holds. Every key is checked before any
+-	 *   row turns.
++	 * @returns True if every key named a row the table holds; false otherwise. Every key is
++	 *   checked before any row turns.
+ 	 */
+ 	toggle(keys: readonly TableKey[]): boolean
+ }
+ 
+ /**
+- * The rows somebody has opened up.
++ * Manages the rows somebody has opened up.
+  *
+  * @remarks
+  * Expansion holds keys exactly as selection does, and what an opened row shows beside it is the
+@@ -698,61 +699,62 @@ export interface SelectionManagerInterface {
+  * ```
+  */
+ export interface ExpansionManagerInterface {
+-	/** The keys of the rows opened right now. */
++	/** Holds the keys of the rows opened right now. */
+ 	readonly keys: ReadonlySet<TableKey>
+-	/** Open every row the table holds. */
++	/** Opens every row the table holds. */
+ 	expand(): void
+ 	/**
+-	 * Open one row.
++	 * Opens one row.
+ 	 *
+ 	 * @param key - The row's key.
+-	 * @returns `true` when the key named a row the table holds.
++	 * @returns True if the key named a row the table holds; false otherwise.
+ 	 */
+ 	expand(key: TableKey): boolean
+ 	/**
+-	 * Open several rows.
++	 * Opens several rows.
+ 	 *
+ 	 * @param keys - The rows' keys.
+-	 * @returns `true` when every key named a row the table holds. Every key is checked before any
+-	 *   row opens.
++	 * @returns True if every key named a row the table holds; false otherwise. Every key is
++	 *   checked before any row opens.
+ 	 */
+ 	expand(keys: readonly TableKey[]): boolean
+-	/** Close every row. */
++	/** Closes every row. */
+ 	clear(): void
+ 	/**
+-	 * Close one row.
++	 * Closes one row.
+ 	 *
+ 	 * @param key - The row's key.
+-	 * @returns `true` when the key named a row the table holds, whether or not it was open.
++	 * @returns True if the key named a row the table holds, whether or not it was
++	 *   open; false otherwise.
+ 	 */
+ 	clear(key: TableKey): boolean
+ 	/**
+-	 * Close several rows.
++	 * Closes several rows.
+ 	 *
+ 	 * @param keys - The rows' keys.
+-	 * @returns `true` when every key named a row the table holds. Every key is checked before any
+-	 *   row closes.
++	 * @returns True if every key named a row the table holds; false otherwise. Every key is
++	 *   checked before any row closes.
+ 	 */
+ 	clear(keys: readonly TableKey[]): boolean
+ 	/**
+-	 * Open one row, or close it when it is already open.
++	 * Opens one row, or closes it when it is already open.
+ 	 *
+ 	 * @param key - The row's key.
+-	 * @returns `true` when the key named a row the table holds.
++	 * @returns True if the key named a row the table holds; false otherwise.
+ 	 */
+ 	toggle(key: TableKey): boolean
+ 	/**
+-	 * Turn several rows around, each on its own.
++	 * Turns several rows around, each on its own.
+ 	 *
+ 	 * @param keys - The rows' keys.
+-	 * @returns `true` when every key named a row the table holds. Every key is checked before any
+-	 *   row turns.
++	 * @returns True if every key named a row the table holds; false otherwise. Every key is
++	 *   checked before any row turns.
+ 	 */
+ 	toggle(keys: readonly TableKey[]): boolean
+ }
+ 
+ /**
+- * Which stretch of the filtered rows the view shows.
++ * Manages which stretch of the filtered rows the view shows.
+  *
+  * @remarks
+  * `page` is the state, counted from one. `offset` and `count` are worked out from it and from the
+@@ -769,22 +771,22 @@ export interface ExpansionManagerInterface {
+  * ```
+  */
+ export interface PaginationManagerInterface {
+-	/** The page the view shows, counted from one, and `1` when the table is not paged. */
++	/** Holds the page the view shows, counted from one, and `1` when the table is not paged. */
+ 	readonly page: number
+-	/** How many rows a page holds, or `undefined` when the table is not paged. */
++	/** Holds the number of rows one page shows, or `undefined` when the table is not paged. */
+ 	readonly limit: number | undefined
+-	/** How many rows the view skips before the page it shows, counted from zero. */
++	/** Holds the number of rows the view skips before the page it shows, counted from zero. */
+ 	readonly offset: number
+-	/** How many pages the rows admitted by the filter fill, and `1` when the table is not paged. */
++	/** Counts the pages the rows admitted by the filter fill, and `1` when the table is not paged. */
+ 	readonly count: number
+ 	/**
+-	 * Show another page.
++	 * Shows another page.
+ 	 *
+ 	 * @param page - The page to show, counted from one and clamped to the pages that exist.
+ 	 */
+ 	move(page: number): void
+ 	/**
+-	 * Say how many rows a page holds.
++	 * Sets how many rows a page holds.
+ 	 *
+ 	 * @remarks
+ 	 * The view keeps showing the first of the rows it was showing, so the page moves to wherever
+@@ -797,7 +799,7 @@ export interface PaginationManagerInterface {
+ }
+ 
+ /**
+- * A table: what it declares, the rows it holds, and the lens it reads them through.
++ * Represents a table: what it declares, the rows it holds, and the lens it reads them through.
+  *
+  * @remarks
+  * The table owns values, not pixels. It renders nothing, reads no document, and names no host
+@@ -817,35 +819,35 @@ export interface PaginationManagerInterface {
+  * ```
+  */
+ export interface TableInterface {
+-	/** The table's event emitter. */
++	/** Holds the table's event emitter. */
+ 	readonly emitter: EmitterInterface<TableEventMap>
+-	/** What this table declares. */
++	/** Holds what this table declares. */
+ 	readonly schema: TableSchema
+-	/** The rows the table holds. */
++	/** Manages the rows the table holds. */
+ 	readonly rows: RowManagerInterface
+-	/** The order the table reads them in. */
++	/** Manages the order the table reads them in. */
+ 	readonly sort: SortManagerInterface
+-	/** Which of them the table keeps. */
++	/** Manages which of them the table keeps. */
+ 	readonly filter: FilterManagerInterface
+-	/** The ones somebody has picked. */
++	/** Manages the ones somebody has picked. */
+ 	readonly selection: SelectionManagerInterface
+-	/** The ones somebody has opened up. */
++	/** Manages the ones somebody has opened up. */
+ 	readonly expansion: ExpansionManagerInterface
+-	/** Which stretch of them the view shows. */
++	/** Manages which stretch of them the view shows. */
+ 	readonly pagination: PaginationManagerInterface
+ 	/**
+-	 * The rows to draw right now: filtered, then sorted, then paged.
++	 * Returns the rows to draw right now: filtered, then sorted, then paged.
+ 	 *
+ 	 * @remarks
+ 	 * It is worked out on every read and never stored, so it is right the instant anything moves.
+ 	 */
+ 	readonly view: readonly TableRow[]
+-	/** How many rows the filter admits, before the page narrows them. */
++	/** Counts the rows the filter admits, before the page narrows them. */
+ 	readonly count: number
+-	/** Whether the table has been torn down. */
++	/** Reports whether the table has been torn down. */
+ 	readonly destroyed: boolean
+ 	/**
+-	 * Put the table back the way it opened, holding nothing.
++	 * Puts the table back the way it opened, holding nothing.
+ 	 *
+ 	 * @remarks
+ 	 * Every row goes, and sort, filter, selection, expansion, and the page all reset. The table
+@@ -853,7 +855,7 @@ export interface TableInterface {
+ 	 */
+ 	clear(): void
+ 	/**
+-	 * Tear the table down.
++	 * Tears the table down.
+ 	 *
+ 	 * @remarks
+ 	 * Calling it twice does what calling it once did. Afterwards every write throws a
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 20843d7..7d5fd4f 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -22,20 +22,20 @@ import { COLUMN_CELLS } from './constants.js'
+ import { auditTable } from './helpers.js'
+ 
+ /**
+- * Determine whether an unknown value has a table cell shape.
++ * Determines whether an unknown value has a table cell shape.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether the value is a string, finite number, or boolean.
++ * @returns True if the value is a string, finite number, or boolean; false otherwise.
+  */
+ export function isTableCell(input: unknown): input is TableCell {
+ 	return unionOf(isString, isFiniteNumber, isBoolean)(input)
+ }
+ 
+ /**
+- * Determine whether an unknown value is a record of table cells.
++ * Determines whether an unknown value is a record of table cells.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether every own key is a string and every value is a table cell.
++ * @returns True if every own key is a string and every value is a table cell; false otherwise.
+  */
+ export function isTableRow(input: unknown): input is TableRow {
+ 	const outcome = attempt(() => {
+@@ -49,20 +49,20 @@ export function isTableRow(input: unknown): input is TableRow {
+ }
+ 
+ /**
+- * Determine whether an unknown value is a declared column cell.
++ * Determines whether an unknown value is a declared column cell.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether the value is one of the four column cells.
++ * @returns True if the value is one of the four column cells; false otherwise.
+  */
+ export function isColumnCell(input: unknown): input is ColumnCell {
+ 	return COLUMN_CELLS.some((cell) => cell === input)
+ }
+ 
+ /**
+- * Determine whether an unknown value is one exact column choice record.
++ * Determines whether an unknown value is one exact column choice record.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether the value is a column choice.
++ * @returns True if the value is a column choice; false otherwise.
+  */
+ export function isColumnChoice(input: unknown): input is ColumnChoice {
+ 	const outcome = attempt(() => {
+@@ -74,10 +74,10 @@ export function isColumnChoice(input: unknown): input is ColumnChoice {
+ }
+ 
+ /**
+- * Determine whether an unknown value is one exact discriminated table column.
++ * Determines whether an unknown value is one exact discriminated table column.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether the value is a structurally valid table column.
++ * @returns True if the value is a structurally valid table column; false otherwise.
+  */
+ export function isTableColumn(input: unknown): input is TableColumn {
+ 	const outcome = attempt(() => {
+@@ -127,10 +127,10 @@ export function isTableColumn(input: unknown): input is TableColumn {
+ }
+ 
+ /**
+- * Determine whether an unknown value has one exact structural table-schema shape.
++ * Determines whether an unknown value has one exact structural table-schema shape.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether the value has the exact structure of a table schema.
++ * @returns True if the value has the exact structure of a table schema; false otherwise.
+  */
+ export function isStructuralTableSchema(input: unknown): input is TableSchema {
+ 	const outcome = attempt(() => {
+@@ -151,10 +151,11 @@ export function isStructuralTableSchema(input: unknown): input is TableSchema {
+ }
+ 
+ /**
+- * Determine whether an unknown value is one semantically sound table schema.
++ * Determines whether an unknown value is one semantically sound table schema.
+  *
+  * @param input - The value to inspect.
+- * @returns Whether the value has valid structure, domain relationships, and budgets.
++ * @returns True if the value has valid structure, domain relationships, and
++ *   budgets; false otherwise.
+  */
+ export function isTableSchema(input: unknown): input is TableSchema {
+ 	const outcome = attempt(() => isStructuralTableSchema(input) && auditTable(input).length === 0)
