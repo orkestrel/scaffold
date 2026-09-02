@@ -175,3 +175,10 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   the layer's reader, and moves its census and escape negative controls through the read root
   (claim 3 alignment). Product observation for the user: the armed Delete reads 4.045 against the
   dark themes, under the 4.5 text bar, on `btn-outline-danger`.
+- FX2b returned: committed in test at `df4a0b6` (7 files with the two returned patches applied by
+  the Orchestrator as serial integration: the factories case that asserted the viewport leak, and
+  the `CAPTURE_PANE` doc). Measured: `releasePane` never restored the viewport (414x896 to 390x844
+  and back only on an explicit set); a 1600 px document in an 844 px pane painted white from the
+  fold. Both proved red then green; browser project 240 passed. Tarball rebuilt and re-staged in
+  terrain (digest `66b98aae9bf8043e`). FX3b dispatched; verifier dispatched
+  (`gates-fx2b-brief.md`).
