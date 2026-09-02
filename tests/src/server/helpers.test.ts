@@ -88,7 +88,7 @@ import {
 	STORAGE_PATH_CASES,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
-import { createScratch } from '@orkestrel/test/server'
+import { createScratch, supportsFileLinks } from '@orkestrel/test/server'
 
 describe('matchesMissingPath', () => {
 	it('reads only an ENOENT error as absence', () => {
@@ -908,25 +908,30 @@ describe('listCanonPaths', () => {
 		}
 	})
 
-	it('lists a canon path a target really holds and not one it redirects to', () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		try {
-			const real = workspace.write('kept/orchestration.md', 'contract\n')
-			workspace.ensure('.agents')
-			workspace.link('.agents/orchestration.md', real)
-			expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([])
-			// The control: the same bytes written at the same path rather than linked
-			// to it are listed, so the omission is the redirection and not an unread
-			// member.
-			workspace.remove('.agents/orchestration.md')
-			workspace.write('.agents/orchestration.md', 'contract\n')
-			expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([
-				'.agents/orchestration.md',
-			])
-		} finally {
-			workspace.destroy()
-		}
-	})
+	// A file symbolic link needs the symbolic-link privilege on Windows, and the junction fallback
+	// points only at a directory, so the case runs where supportsFileLinks reports the host grants it.
+	it.skipIf(!supportsFileLinks())(
+		'lists a canon path a target really holds and not one it redirects to',
+		() => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const real = workspace.write('kept/orchestration.md', 'contract\n')
+				workspace.ensure('.agents')
+				workspace.link('.agents/orchestration.md', real)
+				expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([])
+				// The control: the same bytes written at the same path rather than linked
+				// to it are listed, so the omission is the redirection and not an unread
+				// member.
+				workspace.remove('.agents/orchestration.md')
+				workspace.write('.agents/orchestration.md', 'contract\n')
+				expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([
+					'.agents/orchestration.md',
+				])
+			} finally {
+				workspace.destroy()
+			}
+		},
+	)
 })
 
 describe('pruneEmptiedDirectories', () => {
