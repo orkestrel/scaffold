@@ -1,0 +1,12 @@
+ M guides/brief.md
+ M src/core/BriefCompiler.ts
+ M src/core/BriefManager.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/src/core/BriefManager.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
