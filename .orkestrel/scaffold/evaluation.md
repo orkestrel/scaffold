@@ -35,9 +35,8 @@ Assertions live in `tmp/skill-workspace/evals/evals.json` and each run's `eval_m
 | Eval | Configuration | Pass | Tokens | Duration |
 | --- | --- | --- | --- | --- |
 | 2 | old_skill run-1 | 8 / 9 | 163158 | 294.5 s |
+| 3 | old_skill run-1 | 8 / 9 | 290759 | 1377.5 s |
 
-The eval-2 miss under the old skill: the review names a population for most checks but never
-states what a check does not cover. The grader also flagged two unverified claims in the old-skill
-output: a closing sentence that every instrument carries a population floor, contradicted by most
-of its own checks, and `--bs-card-spacer-*` attributed to `.card-body` where Bootstrap declares it
-on `.card`.
+The eval-2 miss under the old skill: the review names a population for most checks but never states what a check does not cover. The grader also flagged two unverified claims in the old-skill output: a closing sentence that every instrument carries a population floor, contradicted by most of its own checks, and `--bs-card-spacer-*` attributed to `.card-body` where Bootstrap declares it on `.card`.
+
+The eval-3 miss under the old skill: the test measures contrast through neither `contrast`, `readRing`, `measureContrast`, nor `readBackdrop`. Correction taken after this baseline: terrain's Delete control carries the accessible name `Delete selected buildings` through its `aria-label` and its add control `Add new building`, so the asserted refusal voice had named the wrong element; the assertion, the grader, and the terrain brief now name the real accessible names, and the grader admits `measureContrast` and `readBackdrop` beside `contrast` and `readRing`. Both graders still read zero on their planted controls after the change.

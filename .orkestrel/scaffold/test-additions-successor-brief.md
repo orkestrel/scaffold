@@ -47,7 +47,11 @@ none.
 
 **Owned.** The same files U1 owned: `src/core/{types,constants,helpers,index}.ts`,
 `src/browser/{types,helpers,index}.ts`, `tests/src/core/helpers.test.ts`,
-`tests/src/browser/helpers.test.ts`, `guides/test.md`, `README.md` where it lists the surface.
+`tests/src/browser/helpers.test.ts`, `guides/test.md`, `README.md` where it lists the surface —
+plus, granted to this successor because U1's report shows `test:guides` cannot go green without
+them: `tests/setup.ts` (the `ROUTED_FENCES` registration) and `tests/guides.test.ts` (the fence
+transcription and the four `src/core` inventory listings). Apply U1's patches A and B from its
+report as the starting point, re-derived against the tree as it stands.
 
 **Shared (report-only).** none.
 
@@ -63,10 +67,25 @@ commits, no installs, no `git checkout`/`restore`/`stash`.
 
 A native subagent reading this brief: perform the assignment directly and spawn nothing.
 
+## Rulings on U1's deviations, carried here
+
+- The runner names `executeScenario` and `executeScenarios` are accepted; `run` is the banned
+  synonym under `.claude/rules/names.md` § Fixed lifecycle vocabulary. Keep them.
+- The `README.md` corrections to the `readInventory` examples are accepted: they replace measured
+  false readings, which `.claude/rules/documentation.md` § Parity requires.
+- U1's patches A and B close the two `test:guides` failures and are yours to land, with the
+  heading rename below applied to them.
+
 ## The amendments
 
+0. Land U1's patches A and B: register the browser fence in `ROUTED_FENCES`, transcribe the
+   `Drive a statechart table` fence in `tests/guides.test.ts` with the disclosure fixture and the
+   failing-row assertion, and correct the four `src/core` inventory listings. Then run
+   `npm run test:guides` and read it green.
 1. Rename `extractEscapes` to `extractStyles` everywhere: declaration, TSDoc, tests, guide tables,
-   guide patterns, and the § Limits row. The TSDoc's first sentence names what it returns: the
+   guide patterns, the § Limits row, and the Patterns heading `Read the classes and escapes the
+   markup carries`, which becomes `Read the classes and styles the markup carries` in the guide, in
+   the routed-fence key, and in the browser test's marker comment. The TSDoc's first sentence names what it returns: the
    markup of every element carrying a non-empty `style` attribute and of every `<style>` element,
    in document order, `root` included in both populations when it is an `Element`.
 2. Make the implementation count `root` in both populations, and add the test case: a `<style>`

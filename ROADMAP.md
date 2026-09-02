@@ -25,7 +25,22 @@ recoverable from git history by hash; no campaign folder is the plan of record.
 - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
-  host — the bin suite passes complete with no skipped case.
+  host — the bin suite passes complete with no skipped case. Two defects reproduced 2026-09-02
+  in `terrain` (Vitest 4.1.11, Playwright Chromium) keep `prove` off every browser project: the
+  runtime stage matches the inferred project name exactly while Vitest names a browser instance
+  `<label> (<browser>)`, and it creates the specification on the `threads` pool, so with the name
+  patched the browser project's setup file ran in a Node worker and died at `document is not
+defined`. The trigger is the first campaign that needs a receipt on a rendered claim; until then
+  `orkestrel-prove-journey` routes rendered questions to a written browser-run artifact.
+- **test**: successor seams from the skills campaign accepted 2026-09-02. A winning-declaration
+  reader (`readOrigin`: which rule won a property and which authored rules it beat) has no
+  platform door; the probe is whether the Vitest Playwright provider exposes a CDP session a
+  custom command can drive `CSS.getMatchedStylesForNode` through, and the reader ships only if
+  that probe lands. `elements` and `veneer` still declare the statechart contract locally;
+  `veneer` registers `describe`/`it.each` inside its `runScenarios(label, create, scenarios)`,
+  so adopting the published `executeScenarios` rewrites its call sites; the trigger is each
+  repository's next hardening visit. A glyph-to-meaning registry stays skill prose until a fleet
+  surface ships a status glyph set.
 - **contract**: successor seams from the memoization campaign accepted 2026-09-01 (contract
   950a241). Working-state churn: `ShapeValidator` constructs fresh collections per `validate` call
   through its `#clear` method, and `ShapeCloner` and `SchemaCloner` keep per-instance `#empty*`
