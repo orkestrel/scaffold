@@ -23,9 +23,9 @@ for (const [n, d] of Object.entries(dirs).sort()) {
 	const tip = execFileSync('git', ['-C', d, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim()
 	rows.push({ name: n, version: pkg.version, layer: layerOf.get(n), tip, distMoved: dist.moved, added: dist.added?.length ?? 0, removed: dist.removed?.length ?? 0, changed: dist.changed?.length ?? 0, readmeMoved, error: dist.error })
 }
-const lines = ['# Second distributable inventory', '', `Taken ${new Date().toISOString().slice(0, 10)} against each package's declared published version; dist compared by material content (no sourcemaps, whitespace ignored); README compared byte for byte. The layer is the runtime-dependency publish round from layers.mjs; scaffold publishes on its own account.`, '', '| Package | Version | Layer | Tip | dist moved | added | removed | changed | README moved |', '| --- | --- | --- | --- | --- | --- | --- | --- | --- |']
+const lines = [`# ${process.env.INVENTORY_TITLE || 'Second'} distributable inventory`, '', `Taken ${new Date().toISOString().slice(0, 10)} against each package's declared published version; dist compared by material content (no sourcemaps, whitespace ignored); README compared byte for byte. The layer is the runtime-dependency publish round from layers.mjs; scaffold publishes on its own account.`, '', '| Package | Version | Layer | Tip | dist moved | added | removed | changed | README moved |', '| --- | --- | --- | --- | --- | --- | --- | --- | --- |']
 for (const r of rows) lines.push(`| ${r.name} | ${r.version} | ${r.layer ?? '—'} | ${r.tip} | ${r.distMoved}${r.error ? ' (' + r.error + ')' : ''} | ${r.added} | ${r.removed} | ${r.changed} | ${r.readmeMoved} |`)
 lines.push('', '## Republish order', '', 'Every package whose dist moved bumps and publishes in layer order; a package whose dist stands but whose README moved publishes on its next release. Layers:', '')
 for (const line of layers) lines.push(`- ${line}`)
-writeFileSync('/home/user/scaffold/.orkestrel/campaign/inventory-2.md', lines.join('\n') + '\n')
+writeFileSync(process.env.INVENTORY_OUT || '/home/user/scaffold/.orkestrel/campaign/inventory-2.md', lines.join('\n') + '\n')
 console.log(JSON.stringify(rows.map((r) => ({ name: r.name, layer: r.layer, distMoved: r.distMoved, readmeMoved: r.readmeMoved }))))
