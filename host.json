@@ -310,7 +310,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "0407d93b169c93d695ad950629b018abeb13e3598b42fba090cdaca2f3cc8166"
+			"digest": "6bd24c0a4bd379555c15e843566dbba7ec8dffb719e03cebd8862e884bfea666"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -376,7 +376,7 @@
 			"storage": "claude/rules/names.md",
 			"destination": ".claude/rules/names.md",
 			"executable": false,
-			"digest": "36bbdb426fe20a4ac66972582476d3ee082ae6f7990afbda30381101ad67fbb1"
+			"digest": "74d73cb999ef087569ceaa5676bbfa686729c9d5befc9e95d0168dd1692d32bd"
 		},
 		{
 			"storage": "claude/rules/patterns.md",
@@ -406,7 +406,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "2f8658425bc48b8751a5526300827c90f22226d4605514ec866891b5be4fabfb"
+			"digest": "f3cdbfca50c00628e2a8ed43e259c587df93c74f06a6ccaa81e40f4daa6623f3"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -742,5 +742,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "eea6a1df49c6077d9b95e8310d6a312264b3ddfa2d0ee6480f09d6ebd26e20aa"
+	"digest": "1325a9ac8c9776f5e1f4f086e9ccf296168330c607ad8811ba405b064cbe3c12"
 }
