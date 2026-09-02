@@ -649,3 +649,6 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   persisting section; the version bump is taken at release. The cycle probe is retained with its
   recorded output. Agent, staged on `workflow-bcf8ab4.tgz`, re-stages on the fix-up tip before its
   audit; agent's own tree names none of the moved symbols.
+- **L4 closed.** brief `bc0f767`, program `7ef860d`, workflow `9f00455` accepted with verdicts;
+  worker, queue, lsp adopted clean; probe adopt-clean on `check` with its standing container
+  failure. Agent (L5) re-stages on `workflow-9f00455.tgz` after its implementer exits.

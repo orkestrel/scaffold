@@ -5,7 +5,9 @@ at `src/core/helpers.ts:908`, `src/core/cloners.ts:4,33`, `tests/src/core/valida
 guide row, barrel example, and call example. 2: `src/core/types.ts:906` `functions?.[behavior]`.
 3: `src/core/phases/Phase.ts:164` "for its `behavior`". 4: `tests/src/core/helpers.test.ts:688`
 `expect('behavior' in snapshot).toBe(false)` — plant: `taskDefinitionToSnapshot` emitted
-`behavior` unconditionally for one line; red 1 failed | 159 passed (`expected true to be false`
+`behavior` unconditionally for one line; command
+`npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts`;
+red 1 failed | 159 passed (`expected true to be false`
 at `:688`); plant restored; green 160 passed; `git diff --stat src/core/helpers.ts` afterwards
 carries only the rename. 5: `'captured-behaviors'`, `'Captured behaviors'`, `noBehavior`,
 `emptyBehavior`. 6: one paragraph under "Persisting & restoring" naming the `run`-keyed
