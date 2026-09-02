@@ -15,7 +15,7 @@ for (const [name, root] of Object.entries(roots)) {
 	const r = { name, files: files.length, blocks: 0, imperative: 0, verbless: 0, returnsBad: 0 }
 	for (const f of files) {
 		const text = readFileSync(f, 'utf8')
-		for (const m of text.matchAll(/\/\*\*([\s\S]*?)\*\//g)) {
+		for (const m of text.matchAll(/(?<=^[ \t]*)\/\*\*([\s\S]*?)\*\//gm)) {
 			const body = m[1].split('\n').map((l) => l.replace(/^\s*\*\s?/, '')).join('\n').trim()
 			if (!body) continue
 			const first = body.split(/\n\s*\n|\n@/)[0].trim().split('\n')[0].trim()
