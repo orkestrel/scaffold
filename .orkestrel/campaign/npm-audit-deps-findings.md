@@ -635,3 +635,17 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   `initialize` and `tools/list` replies match their expected shapes. Probe closes as adopt-clean
   with the standing environment failure carried by the fleet gate sweep (#3).
 - **L4 accepted:** program `7ef860d`, brief `bc0f767`; workflow in flight.
+- **Workflow lanes.** Objective `FAIL 2, 3, 8` and subjective `FAIL 5`; checker PASS; verifier
+  GREEN (861 src). Rulings of record: `Workflow.description` derives from the frozen `#context`
+  (the derive-state law governs where the value already lives; both lanes recommend it); the
+  s06-16 name is amended to `scanSnapshotContext` (`locate*` is not a table prefix and the helper
+  walks the snapshot and returns the first inconsistent node's context); the s06-17 carrier's
+  shape is amended to `createWorkflowTree(definition, captured)` reading `captured.bail`; the
+  `RunHolder` class is interned with `RunHolderInterface` published; the `IdleScheduler` privates
+  take the family form (`#idle` the boundary, `#idleCallback` the detector); the guide names the
+  handle interfaces where a reader reaches for the handle and keeps `Phase` and `Task` as tier
+  nouns; the sample handler `run(...)` in the Runner fences takes its domain verb. The
+  stored-snapshot break (`run` refused by the exact-key check) is stated in the guide's
+  persisting section; the version bump is taken at release. The cycle probe is retained with its
+  recorded output. Agent, staged on `workflow-bcf8ab4.tgz`, re-stages on the fix-up tip before its
+  audit; agent's own tree names none of the moved symbols.
