@@ -1,0 +1,1472 @@
+diff --git a/guides/database.md b/guides/database.md
+index 7054205..30e9250 100644
+--- a/guides/database.md
++++ b/guides/database.md
+@@ -108,14 +108,13 @@ None of these import a SQLite package; they speak strings and values only.
+ 
+ | API                       | Kind     | Summary                                                                                                                                  |
+ | ------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+-| `escapeLike`              | function | Escape `\` / `%` / `_` so an operand matches literally under a caller-assembled `LIKE … ESCAPE '\'` clause; no compile here emits one.   |
+ | `findColumnStorage`       | function | The declared `ColumnStorage` of a flat column, read from the schema.                                                                     |
+ | `inferValueStorage`       | function | The `ColumnStorage` a nested (`json_extract`) operand encodes as, derived from its runtime value.                                        |
+ | `compileJSONTypeSQL`      | function | Compile a nested `FieldPath` to its `json_type(<col>, <path>)` SQL expression — disambiguates a present JSON `null` from an absent path. |
+ | `compileConditionSQL`     | function | Compile one `Condition` to its parameterized SQL fragment plus bound values.                                                             |
+-| `compileWhere`            | function | Fold conditions into one `WHERE …` clause, parenthesized left-to-right to match the engine's fold.                                       |
+-| `compileOrder`            | function | Compile the `ORDER BY …` clause, always ending with the primary key as tie-breaker.                                                      |
+-| `compilePage`             | function | Compile the `LIMIT` / `OFFSET` clause.                                                                                                   |
++| `compileWhereSQL`         | function | Fold conditions into one `WHERE …` clause, parenthesized left-to-right to match the engine's fold.                                       |
++| `compileOrderSQL`         | function | Compile the `ORDER BY …` clause, always ending with the primary key as tie-breaker.                                                      |
++| `compilePageSQL`          | function | Compile the `LIMIT` / `OFFSET` clause.                                                                                                   |
+ | `compileQuerySQL`         | function | Compile a `QueryInput` into the full SQL clause (`WHERE` + `ORDER BY` + `LIMIT`) plus bound parameters.                                  |
+ | `quoteIdentifier`         | function | Quote a SQL identifier (table / column name), doubling an embedded quote.                                                                |
+ | `compileFieldSQL`         | function | Compile a `FieldPath` to the SQL expression that reads it (a column, or a `json_extract` path).                                          |
+@@ -142,7 +141,7 @@ lossy.
+ | -------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `selectPlan`               | function  | Plan an IndexedDB read for a `QueryInput` — pick the index (or primary store) and `IDBKeyRange` to narrow by, falling back to a full scan.                    |
+ | `conditionToRange`         | function  | The `IDBKeyRange` one `Condition` maps to when its operator is an exact key comparison over a scalar operand, else `undefined`.                               |
+-| `INDEXABLE_STORAGE`        | const     | The `ColumnStorage`s that are valid, orderable IndexedDB keys (`text` / `integer` / `real`).                                                                  |
++| `INDEXABLE_STORAGE`        | const     | The declared `ColumnStorage`s that are valid, orderable IndexedDB keys (`text` / `integer` / `real`), as a frozen array.                                      |
+ | `METADATA_STORE`           | const     | The reserved out-of-line store name (`__metadata__`) `IndexedDBDriver` stamps its `DriverMetadata` into — a user table named `__metadata__` collides with it. |
+ | `QueryPlan`                | interface | `{ index?, range? }` — the optional index and `IDBKeyRange`; an empty object selects a full store scan.                                                       |
+ | `mapIndexedDBError`        | function  | Map a backend `IndexedDBError` fault to its `DatabaseError` equivalent — no raw wrapper error crosses `IndexedDBDriver`'s `DriverInterface` surface.          |
+@@ -202,11 +201,11 @@ transform. Versioning drivers persist reconciliation metadata through the paired
+ 
+ ### Conformance
+ 
+-| API              | Kind     | Behavior                                                                                                                                                                    |
+-| ---------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `conformDriver`  | function | Run the framework-agnostic driver-conformance battery against a fresh `DriverInterface` per phase — throws a `CONFORMANCE` `DatabaseError` on the first violated invariant. |
+-| `driverFindings` | function | Lazy `AsyncIterable` over the same battery, one phase per yield (17 phases) — a fresh factory-minted driver per phase; an unexpected phase crash is captured as a finding.  |
+-| `auditDriver`    | function | Drain `driverFindings` to completion and collect every violation — `[]` means the driver is fully conformant.                                                               |
++| API             | Kind     | Behavior                                                                                                                                                                    |
++| --------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `conformDriver` | function | Run the framework-agnostic driver-conformance battery against a fresh `DriverInterface` per phase — throws a `CONFORMANCE` `DatabaseError` on the first violated invariant. |
++| `scanDriver`    | function | Lazy `AsyncIterable` over the same battery, one phase per yield — a fresh factory-minted driver per phase; an unexpected phase crash is captured as a finding.              |
++| `auditDriver`   | function | Drain `scanDriver` to completion and collect every violation — `[]` means the driver is fully conformant.                                                                   |
+ 
+ ### Helpers & guards
+ 
+@@ -215,7 +214,6 @@ Pure helpers behind the query engine's pattern matching.
+ | API                      | Kind     | Behavior                                                                                                                                                                                                                   |
+ | ------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `cloneDriverMetadata`    | function | Own and validate unknown metadata as a deeply frozen `DriverMetadata`; malformed or hostile input throws `VALIDATION` at `context.path === 'metadata'`, never a raw Contract or caller error.                              |
+-| `matchesFuzzy`           | function | Match a case-folded query as an ordered, possibly non-contiguous subsequence of a candidate; an empty query matches every candidate.                                                                                       |
+ | `matchesWildcardPattern` | function | Match a value against a wildcard pattern in LINEAR time (greedy two-pointer, no backtracking) — the ReDoS-safe engine; injected `any` run + `single` char + case-fold flag; throws `VALIDATION` over `MAX_PATTERN_LENGTH`. |
+ | `matchesLikePattern`     | function | Match a value against a SQL `LIKE` pattern via `matchesWildcardPattern` (case-INSENSITIVE; `%` → any run, `_` → any char).                                                                                                 |
+ | `matchesGlobPattern`     | function | Match a value against a `GLOB` pattern via `matchesWildcardPattern` (case-SENSITIVE; `*` → any run, `?` → any char).                                                                                                       |
+@@ -258,7 +256,7 @@ Pure helpers behind the query engine's pattern matching.
+ | `DatabaseStatus`           | type      | `'idle' \| 'open' \| 'closed'`.                                                                                                                                                                                                                                                                                                  |
+ | `AdmissionInterface`       | interface | `{ accepting, track }` — the admission boundary a scoped operation enters; the root context and a transaction scope both expose it.                                                                                                                                                                                              |
+ | `DatabaseErrorCode`        | type      | `'CLOSED' \| 'NOT_FOUND' \| 'CONFLICT' \| 'VALIDATION' \| 'ABORTED' \| 'MIGRATION' \| 'CONFORMANCE' \| 'DRIVER'`.                                                                                                                                                                                                                |
+-| `ConformanceFinding`       | interface | `{ check, message, context }` — one violated invariant yielded by `driverFindings` / collected by `auditDriver`.                                                                                                                                                                                                                 |
++| `ConformanceFinding`       | interface | `{ check, message, context }` — one violated invariant yielded by `scanDriver` / collected by `auditDriver`.                                                                                                                                                                                                                     |
+ | `DatabaseEventMap`         | type      | The database's push observation surface (§13) — `open` · `close` · `transaction` · `commit` · `rollback(error)` · `migrate(migration)`.                                                                                                                                                                                          |
+ | `TableEventMap`            | type      | A table's push observation surface (§13) — `write(key)` · `remove(key)` · `clear` (key only, no value).                                                                                                                                                                                                                          |
+ | `ColumnMap`                | type      | `Readonly<Record<string, ContractShape>>` — one table's `column → shape` map (an `objectShape`'s properties).                                                                                                                                                                                                                    |
+@@ -320,13 +318,28 @@ rolls back when it rejects, and invalidates the capability afterward.
+ 
+ The complete backend extends `StorageInterface` with lifecycle, the
+ snapshot floor, and an optional native transaction callback. The inherited
+-storage/query/migration/metadata methods are documented above.
+-
+-| Method     | Returns                        | Behavior                                                                                                                |
+-| ---------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+-| `open`     | `Promise<void>`                | Ready the tables from a derived `TableSchema[]` (a native backend builds tables/indexes; a scan-only one reads `name`). |
+-| `close`    | `Promise<void>`                | Release the backend.                                                                                                    |
+-| `snapshot` | `Promise<() => Promise<void>>` | Capture state; omitted tables means the whole store, while a list scopes capture/restore to those tables.               |
++storage/query/migration/metadata methods carry the same contract they carry on
++`StorageInterface`, addressed against the whole backend rather than one
++transaction scope.
++
++| Method      | Returns                                | Behavior                                                                                                                |
++| ----------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
++| `open`      | `Promise<void>`                        | Ready the tables from a derived `TableSchema[]` (a native backend builds tables/indexes; a scan-only one reads `name`). |
++| `close`     | `Promise<void>`                        | Release the backend.                                                                                                    |
++| `snapshot`  | `Promise<() => Promise<void>>`         | Capture state; omitted tables means the whole store, while a list scopes capture/restore to those tables.               |
++| `read`      | `Promise<Row \| undefined>`            | Read one row by key.                                                                                                    |
++| `write`     | `Promise<void>`                        | Write one row at a key.                                                                                                 |
++| `insert`    | `Promise<void>`                        | Atomically insert one row; reject `CONFLICT` if its key exists.                                                         |
++| `delete`    | `Promise<boolean>`                     | Delete one row by key.                                                                                                  |
++| `keys`      | `Promise<readonly Key[]>`              | List a table's keys.                                                                                                    |
++| `scan`      | `AsyncIterable<Row>`                   | Iterate a table's rows in ascending key order.                                                                          |
++| `clear`     | `Promise<void>`                        | Empty a table.                                                                                                          |
++| `records`   | `Promise<readonly Row[]>`              | Optional native filtered read; the core engine answers over `scan` without it.                                          |
++| `aggregate` | `Promise<number \| undefined>`         | Optional native aggregate; the core engine answers over `scan` without it.                                              |
++| `stream`    | `AsyncIterable<Row>`                   | Optional natively filtered lazy iteration.                                                                              |
++| `migrate`   | `Promise<void>`                        | Optionally apply one atomic `MigrationInput`.                                                                           |
++| `metadata`  | `Promise<DriverMetadata \| undefined>` | Optional read of the persisted `DriverMetadata`, as a deeply frozen copy.                                               |
++| `stamp`     | `Promise<void>`                        | Optional write of the persisted `DriverMetadata`, snapshot at entry.                                                    |
+ 
+ Its optional generic `transaction?<R>(scope)` callback is documented in
+ [Native transactions](#native-transactions); the installed guide parser does
+@@ -546,7 +559,7 @@ These invariants hold across the core database source tree ↔ this guide:
+    SQLite transaction (`stepToSQL` projects each step's DDL), while a migration
+    invoked inside an existing callback transaction uses one fixed internal
+    savepoint SQL literal. The published `@orkestrel/sqlite` wrapper
+-   intentionally exposes raw `exec` but no savepoint manager; the savepoint
++   intentionally exposes raw `execute` but no savepoint manager; the savepoint
+    contains a caught inner migration so it cannot leak partial DDL and the
+    outer transaction remains active for unrelated work.
+    `IndexedDBDriver` performs a non-empty plan in one versionchange transaction,
+@@ -1728,8 +1741,8 @@ const findings = await auditDriver(() => createMemoryDriver())
+ for (const finding of findings) console.log(`${finding.check}: ${finding.message}`)
+ 
+ // The lower-level generator these two build on — one phase per yield, lazy:
+-import { driverFindings } from '@orkestrel/database'
+-for await (const finding of driverFindings(() => createMemoryDriver())) {
++import { scanDriver } from '@orkestrel/database'
++for await (const finding of scanDriver(() => createMemoryDriver())) {
+ 	console.log(finding.check, finding.context)
+ }
+ ```
+@@ -1960,7 +1973,6 @@ import {
+ 	equalsValue,
+ 	extractKey,
+ 	filterRows,
+-	matchesFuzzy,
+ 	matchesGlobPattern,
+ 	matchesLikePattern,
+ 	matchesCondition,
+@@ -1972,7 +1984,6 @@ import {
+ } from '@orkestrel/database'
+ 
+ compareValues(1, 2) // -1 — a total order over mixed types
+-matchesFuzzy('database', 'dbe') // true — case-folded, ordered, non-contiguous
+ matchesWildcardPattern('hello', 'h%o', '%', '_', true) // true — the shared LIKE/GLOB engine
+ matchesLikePattern('hello', 'h%o') // true — case-insensitive
+ matchesGlobPattern('hello', 'h*o') // true — case-sensitive
+@@ -2219,7 +2230,7 @@ corrupting metadata. `open()` creates only `_metadata` first, reads
+ `Database` reconciles it with the declaration. A root
+ `migrate({ plan, metadata })` uses one native transaction for DDL, row changes, and
+ metadata. The same call inside a callback transaction uses a SQLite savepoint:
+-the wrapper deliberately provides raw `exec`, not a savepoint manager, so the
++the wrapper deliberately provides raw `execute`, not a savepoint manager, so the
+ driver owns one guarded fixed internal SQL literal. If caller code catches its
+ failure, the failed inner migration is rolled back to that savepoint while the
+ surrounding transaction remains active and may continue safely. Snapshot
+@@ -2383,8 +2394,8 @@ mapMigrationError(fault) // → the same, but an UPGRADE fault becomes 'MIGRATIO
+ 
+ - [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ compiler-resolved public-entry bijection across `src/core`, `src/server`, and `src/browser`, including fail-closed temporary-project coverage for barrel resolution and unsupported exports, plus each interface ↔ implementing-class method bijection.
+ - [`tests/src/core/cloners.test.ts`](../tests/src/core/cloners.test.ts) — `cloneDriverMetadata` ownership: normalized deeply frozen distinct output, caller-mutation isolation, and `VALIDATION` translation for malformed, cyclic, functional, accessor, and hostile/revoked-proxy inputs without leaking raw Contract or caller errors.
+-- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — total boundary guards for keys, columns, tables, driver schemas, migrations, inputs, and metadata, plus the strict page matrix, deterministic field order, exact non-finite diagnostics, and legal zero.
+-- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the query engine: `compareValues` total order, `matchesFuzzy` ordered case-folded subsequences and Unicode lowercasing boundaries, every `matchesCondition` operator (the equality family — `equals` / `not` / `any` / `none` — via `equalsValue`, including `NaN`-equals-`NaN`; the range family via `compareValues`), `matchesQuery` folding, `filterRows`, `sortRows`, `applyQuery`, `computeAggregate`, `extractKey`, `shapeToColumnStorage`'s shape → portable-type mapping (scalars, `json` for object/array/union/raw, optional/nullable unwrap, literal-by-values), total `isDriverMetadata` rejection of malformed and hostile getter/proxy input, `equalsValue`'s structural equality, `planMigration`'s `MIGRATION` throw on a shared column's storage/nullability drift, and `conformDriver`'s battery against `MemoryDriver` and a deliberately-broken driver (each check fails with a `CONFORMANCE` `DatabaseError`), including the deepened `write-read` nested-field checks and the `snapshot-nested` phase (a shallow-copying driver fails it).
++- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — total boundary guards for keys, columns, tables, driver schemas, migrations, inputs, and metadata.
++- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the query engine: `validatePage`'s strict page matrix, deterministic field order, exact non-finite diagnostics, and legal zero; `findColumn`'s flat-column lookup and its `undefined` miss; `resolvePrimary`'s declared-or-default key and `resolveColumns`'s typed map lookup with its `NOT_FOUND` throw; `compareValues` total order, every `matchesCondition` operator (the equality family — `equals` / `not` / `any` / `none` — via `equalsValue`, including `NaN`-equals-`NaN`; the range family via `compareValues`), `matchesQuery` folding, `filterRows`, `sortRows`, `applyQuery`, `computeAggregate`, `extractKey`, `shapeToColumnStorage`'s shape → portable-type mapping (scalars, `json` for object/array/union/raw, optional/nullable unwrap, literal-by-values), total `isDriverMetadata` rejection of malformed and hostile getter/proxy input, `equalsValue`'s structural equality, `planMigration`'s `MIGRATION` throw on a shared column's storage/nullability drift, and the `scanDriver` / `conformDriver` / `auditDriver` battery against `MemoryDriver` and a deliberately-broken driver (each check fails with a `CONFORMANCE` `DatabaseError`), including the deepened `write-read` nested-field checks and the `snapshot-nested` phase (a shallow-copying driver fails it).
+ - [`tests/src/core/drivers/MemoryDriver.test.ts`](../tests/src/core/drivers/MemoryDriver.test.ts) — the driver primitive: `open(schema)` readies tables, read/write/atomic-insert/delete/keys/scan/clear + `snapshot` rollback, duplicate-insert `CONFLICT`, non-JSON row isolation via native `structuredClone`, metadata stamp/migrate/copy-out ownership through `cloneDriverMetadata`, strict stream paging, and pre-aborted point mutations rejecting `ABORTED` without changing rows.
+ - [`tests/src/core/Database.test.ts`](../tests/src/core/Database.test.ts) — declared tables, lazy connect, typed CRUD, custom keys, indexes, import/export, and callback transactions: whole accepted-operation drain, synchronous-throw and asynchronous-rejection reason identity, caught-operation rejection still rolling back, callback-over-drain error precedence, root/import/lifecycle/nesting barriers, stale scoped table/query/cursor/stream invalidation, and truthful successful-rollback-only events. It also covers explicit migration and versioned open: deployed-schema-first reconciliation, fresh stamp, same-version no-op, atomic upgrade input, higher-version rejection, paired-hook enforcement (metadata-only and stamp-only are inert), and migrate-event behavior.
+ - [`tests/src/core/ScopedIterator.test.ts`](../tests/src/core/ScopedIterator.test.ts) — direct internal continuation-lifetime coverage: tracked `next` / `return` / `throw`, the readiness thunk running before every advance and its failure preempting the source, synchronous source throws, missing methods, concurrent accepted continuations, idle iterators, late conflicts, and exactly-once rejected cleanup.
+@@ -2397,6 +2408,7 @@ mapMigrationError(fault) // → the same, but an UPGRADE fault becomes 'MIGRATIO
+ - [`tests/src/server/drivers/SQLiteDriver.test.ts`](../tests/src/server/drivers/SQLiteDriver.test.ts) — `SQLiteDriver`'s native surface: deployed-metadata-first open and reconciliation; fail-closed malformed metadata, physical schema disagreement, and persisted-table loss before DDL, including deterministic first-loss evidence, physical non-recreation, external repair, and same-driver retry; root/scoped stamp/migration ownership and distinct deeply frozen copy-out; atomic insert/duplicate `CONFLICT`; point-mutation abort boundaries; strict direct records/aggregate/stream paging; native exact-or-refine query and aggregate paths; repeatable schema-aware snapshot capture/replay plus real dropped-table and exclusive-lock failure containment/recovery; atomic `MigrationInput` schema/rows/metadata at the root; fixed-literal savepoint containment for a caught migration failure while its callback transaction remains active; candidate-schema publication only after commit; callback transaction barriers/invalidation including root continuation cleanup; payload-safe rejection; post-native-rollback rejection replacement; backend-fault mapping; and engine parity.
+ - [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — the SQLite bridge: `quoteIdentifier`, codecs, row extraction, `deriveSQLiteIndexName` exact bytes, and the `matchesConditionExactly` / `matchesOrderExactly` / `matchesQueryExactly` / `matchesAggregateExactly` / `matchesSQLiteAffinity` predicates.
+ - [`tests/src/server/compilers.test.ts`](../tests/src/server/compilers.test.ts) — the coherent SQL-emitter cluster: column/field/aggregate compilation, table/index/migration DDL, and the strict-page `QueryInput` → SQL pipeline with exact statements and parameters.
++- [`tests/src/server/inferers.test.ts`](../tests/src/server/inferers.test.ts) — `inferValueStorage`'s nested-operand storage inference: the `ColumnStorage` a `json_extract` operand must encode as, over booleans, integral and fractional numbers, bigints, objects and arrays, strings, `null`, and `undefined`.
+ - [`tests/src/server/integration.test.ts`](../tests/src/server/integration.test.ts) — cross-backend behavioral parity: the same `QueryInput` set run against `MemoryDriver` and `SQLiteDriver` (both exact-path and refine-path queries) produce identical rows/counts/aggregates.
+ - [`tests/src/browser/drivers/IndexedDBDriver.test.ts`](../tests/src/browser/drivers/IndexedDBDriver.test.ts) — `IndexedDBDriver` against real IndexedDB: metadata-only bootstrap and deployed-schema-first reopen, one-transaction `has`/`get` absence discrimination, fail-closed malformed-metadata preservation (including stored `undefined`) and persisted-store loss with deterministic first-loss evidence, physical non-recreation, extra-store retention, external repair, and same-driver retry; bootstrap-lifetime store/version capture and a competing versionchange proving the persisted final open is pinned and retryable; payload-safe errors and table rejection, closed failed state, reserved-store validation, atomic `add` insertion and duplicate `CONFLICT`, active/pre-dispatch/late abort boundaries, strict direct records/stream paging, native narrow-then-refine queries, snapshot capture-replay, schema/rows/metadata in one versionchange migration, metadata-only migration input, failed-upgrade reconnection to the old schema, metadata persistence, backend-fault mapping, and confirmation that callback `transaction` / native `aggregate` are absent.
+ - [`tests/src/browser/helpers.test.ts`](../tests/src/browser/helpers.test.ts) — the pushdown planner: `conditionToRange` over every comparison operator, `selectPlan` index/primary selection and lossless fallbacks, backend-error mapping, and exact `deriveIndexedDBIndexName` bytes.
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index 1718655..9602b9a 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -8,9 +8,11 @@ import type { ColumnStorage } from '@src/core'
+  * column declared with one of them can back a store or index range read.
+  * `boolean` / `json` / `blob` are not valid `IDBValidKey`s and a range over one
+  * would silently miss rows, so `selectPlan` never pushes a condition down on
+- * them and the core engine answers the read instead.
++ * them and the core engine answers the read instead. A frozen array, matching
++ * `EXACT_COLUMN_STORAGE` in `src/server`: a consumer holding it reads the
++ * membership with `some` and cannot change the driver's pushdown behavior.
+  */
+-export const INDEXABLE_STORAGE: ReadonlySet<ColumnStorage> = new Set<ColumnStorage>([
++export const INDEXABLE_STORAGE: readonly ColumnStorage[] = Object.freeze([
+ 	'text',
+ 	'integer',
+ 	'real',
+diff --git a/src/browser/drivers/IndexedDBDriver.ts b/src/browser/drivers/IndexedDBDriver.ts
+index 36277fd..4f08e01 100644
+--- a/src/browser/drivers/IndexedDBDriver.ts
++++ b/src/browser/drivers/IndexedDBDriver.ts
+@@ -92,11 +92,12 @@ import { METADATA_STORE } from '../constants.js'
+  * @remarks
+  * This unit deliberately OMITS `aggregate` / `transaction`. There is no native
+  * `aggregate` (IndexedDB has no native SUM/AVG); the engine over the narrowed
+- * `records` covers it. `transaction` is impossible here: the wrapper auto-commits
+- * an `IDBTransaction` when control yields outside its request chain, so arbitrary
+- * callback awaits cannot remain inside one native transaction. Every atomic
+- * multi-operation sequence in this driver
+- * (`snapshot`'s rollback) instead runs entirely inside ONE `db.write(...)` scope.
++ * `records` covers it. `transaction` is impossible here: the wrapper
++ * auto-commits an `IDBTransaction` when control yields outside its request
++ * chain, so arbitrary callback awaits cannot remain inside one native
++ * transaction. Every atomic multi-operation sequence in this driver
++ * (`snapshot`'s rollback) instead runs entirely inside ONE `db.write(...)`
++ * scope.
+  */
+ export class IndexedDBDriver implements DriverInterface {
+ 	readonly #name: string
+@@ -721,39 +722,45 @@ export class IndexedDBDriver implements DriverInterface {
+ 		context: IndexedDBUpgradeContext,
+ 	): Promise<void> {
+ 		for (const name of added) {
+-			if (name !== METADATA_STORE && context.stores.includes(name)) {
+-				context.drop(name)
++			if (name !== METADATA_STORE && context.stores.names.includes(name)) {
++				context.stores.drop(name)
+ 			}
+ 		}
+ 		for (const step of input.plan.steps) {
+ 			switch (step.operation) {
+ 				case 'table.add':
+-					context.create(step.table.name, schemaToStore(step.table))
++					context.stores.create(step.table.name, schemaToStore(step.table))
+ 					break
+ 				case 'table.remove':
+-					context.drop(step.table)
++					context.stores.drop(step.table)
+ 					break
+ 				case 'index.add': {
+ 					const name = deriveIndexedDBIndexName(step.index)
+ 					const [column] = step.index
+ 					const path = step.index.length === 1 && column !== undefined ? column : [...step.index]
+-					context.index(step.table, { name, path })
++					context.indexes.create(step.table, { name, path })
+ 					break
+ 				}
+ 				case 'index.remove':
+-					context.deindex(step.table, deriveIndexedDBIndexName(step.index))
++					context.indexes.drop(step.table, deriveIndexedDBIndexName(step.index))
+ 					break
+ 				case 'column.remove': {
+-					const store = context.store(step.table)
++					const store = context.stores.open(step.table)
+ 					let cursor = await store.cursor()
+ 					while (cursor !== null) {
+-						const [migrated] = migrateRows([cursor.value], [step])
+-						if (migrated === undefined) {
+-							throw new DatabaseError('MIGRATION', 'migrate: transformed row is missing', {
+-								table: step.table,
+-							})
++						// A cursor reports `undefined` where the stored value is not a
++						// record. Such a value carries no column to drop, so the step
++						// advances past it rather than rewriting it.
++						const row = cursor.value
++						if (row !== undefined) {
++							const [migrated] = migrateRows([row], [step])
++							if (migrated === undefined) {
++								throw new DatabaseError('MIGRATION', 'migrate: transformed row is missing', {
++									table: step.table,
++								})
++							}
++							await cursor.update(migrated)
+ 						}
+-						await cursor.update(migrated)
+ 						cursor = await cursor.continue()
+ 					}
+ 					break
+@@ -763,7 +770,7 @@ export class IndexedDBDriver implements DriverInterface {
+ 			}
+ 		}
+ 		if (input.metadata !== undefined) {
+-			await context.store(METADATA_STORE).set(
++			await context.stores.open(METADATA_STORE).set(
+ 				{
+ 					version: input.metadata.version,
+ 					schema: input.metadata.schema,
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 57bd841..dc47055 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -3,14 +3,7 @@ import type { IndexedDBError } from '@orkestrel/indexeddb'
+ import type { StoreDefinition } from '@orkestrel/indexeddb'
+ import type { QueryPlan } from './types.js'
+ import { compareValues, DatabaseError, findColumn, isKey } from '@src/core'
+-import {
+-	rangeAboveKey,
+-	rangeBelowKey,
+-	rangeBetweenKeys,
+-	rangeExactKey,
+-	rangeFromKey,
+-	rangeToKey,
+-} from '@orkestrel/indexeddb'
++import { rangeAboveKey, rangeBelowKey, rangeFromKey, rangeToKey } from '@orkestrel/indexeddb'
+ import { INDEXABLE_STORAGE } from './constants.js'
+ 
+ // The IndexedDB driver's pushdown planner. A pure function over the portable
+@@ -55,7 +48,7 @@ export function conditionToRange(condition: Condition): IDBKeyRange | undefined
+ 	const second = condition.values[1]
+ 	switch (condition.operator) {
+ 		case 'equals':
+-			return isKey(first) ? rangeExactKey(first) : undefined
++			return isKey(first) ? IDBKeyRange.only(first) : undefined
+ 		case 'above':
+ 			return isKey(first) ? rangeAboveKey(first) : undefined
+ 		case 'below':
+@@ -71,7 +64,7 @@ export function conditionToRange(condition: Condition): IDBKeyRange | undefined
+ 			// the correct, empty result over `compareValues(value, first) >= 0 &&
+ 			// compareValues(value, second) <= 0`, which no row can satisfy).
+ 			return isKey(first) && isKey(second) && compareValues(first, second) <= 0
+-				? rangeBetweenKeys(first, second)
++				? IDBKeyRange.bound(first, second)
+ 				: undefined
+ 		case 'not':
+ 		case 'like':
+@@ -170,7 +163,9 @@ export function selectPlan(
+ 		// An array column is a nested FieldPath into a json value — not a key.
+ 		if (typeof condition.column !== 'string') continue
+ 		const column = findColumn(condition.column, schema)
+-		if (column === undefined || !INDEXABLE_STORAGE.has(column.storage)) continue
++		if (column === undefined || !INDEXABLE_STORAGE.some((storage) => storage === column.storage)) {
++			continue
++		}
+ 		const range = conditionToRange(condition)
+ 		if (range === undefined) continue
+ 		if (condition.column === schema.primary) return { range }
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 763c5ef..fc07727 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -1,7 +1,7 @@
+ // The IndexedDB driver's own module types. Types are the source of truth:
+ // implementation and tests conform to them. The shared database vocabulary
+-// (`QueryInput`, `TableSchema`, `Row`,
+-// …) lives in `@orkestrel/database`; only this driver's pushdown-planning shape is local.
++// (`QueryInput`, `TableSchema`, `Row`, …) lives in `@orkestrel/database`; only
++// this driver's pushdown-planning shape is local.
+ 
+ /**
+  * A pushdown plan — an optional index and optional `IDBKeyRange` used to narrow
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index e19f7d4..5bd9f7c 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -212,38 +212,6 @@ export function equalsValue(left: unknown, right: unknown): boolean {
+ 
+ // === Pattern matching
+ 
+-/**
+- * Match a query against a value as a case-insensitive ordered subsequence.
+- *
+- * @remarks
+- * Every query character must appear in order in the value, but the characters
+- * do not need to be contiguous. Query characters are literal, including
+- * whitespace. Matching applies JavaScript `toLowerCase()` to both inputs
+- * without locale-specific folding or Unicode normalization. An empty query
+- * matches every value.
+- *
+- * @param value - The text searched for the query's characters
+- * @param query - The characters that must all appear in order
+- * @returns Whether the case-folded query is a subsequence of the case-folded value
+- *
+- * @example
+- * ```ts
+- * matchesFuzzy('Database', 'dbe') // true
+- * matchesFuzzy('Database', 'abd') // false
+- * ```
+- */
+-export function matchesFuzzy(value: string, query: string): boolean {
+-	const folded = value.toLowerCase()
+-	const wanted = query.toLowerCase()
+-	let cursor = 0
+-	for (const char of wanted) {
+-		const found = folded.indexOf(char, cursor)
+-		if (found === -1) return false
+-		cursor = found + 1
+-	}
+-	return true
+-}
+-
+ /**
+  * Match a value against a wildcard pattern in LINEAR time — the shared, ReDoS-SAFE
+  * engine behind {@link matchesLikePattern} and {@link matchesGlobPattern}.
+@@ -808,13 +776,12 @@ export function checkAbort(signal: AbortSignal | undefined): void {
+  *
+  * A column present in BOTH schemas under the same name but with a different
+  * `storage`, `optional`, or `nullable` value throws a `MIGRATION`
+- * {@link DatabaseError} naming the
+- * table, the column, and the from→to difference — a name-only diff would
+- * otherwise silently produce NO step for the drift, and versioned
+- * reconciliation would stamp over it. There is no automatic in-place
+- * type-change step: the manual path is to add a new column, copy/convert the
+- * data at the application layer, then remove the old column — two separate
+- * plans, never a single implicit "alter" step.
++ * {@link DatabaseError} naming the table, the column, and the from→to
++ * difference — a name-only diff would otherwise silently produce NO step for
++ * the drift, and versioned reconciliation would stamp over it. There is no
++ * automatic in-place type-change step: the manual path is to add a new column,
++ * copy/convert the data at the application layer, then remove the old column —
++ * two separate plans, never a single implicit "alter" step.
+  *
+  * @param deployed - The table schemas currently applied
+  * @param declared - The table schemas the caller wants applied
+@@ -1133,7 +1100,7 @@ export function migrateRows(rows: readonly Row[], steps: readonly MigrationStep[
+ // === Conformance
+ 
+ /**
+- * Run the driver-conformance battery against a fresh {@link DriverInterface}
++ * Walks the driver-conformance battery against a fresh {@link DriverInterface}
+  * per phase, yielding one {@link ConformanceFinding} per violated invariant —
+  * the shared invariant suite every backend (in-memory, SQLite, IndexedDB)
+  * must uphold to be a drop-in {@link DriverInterface}.
+@@ -1144,26 +1111,26 @@ export function migrateRows(rows: readonly Row[], steps: readonly MigrationStep[
+  * driver's own README. Opens a fixed two-table schema (`users` keyed by the
+  * default `id`, `posts` keyed by a non-id `slug`) and, calling `factory()`
+  * fresh for each phase so failures stay isolated, verifies: `open`/`close`;
+- * `read` of a missing key returns `undefined`; `write`/`read` round-trip with
+- * DEEP copy-in/copy-out isolation (mutating the caller's row — including a
+- * NESTED field — after `write`, or a row `read` returns, never perturbs
+- * stored state) and upsert-overwrite; simultaneous same-key `insert` calls
+- * produce exactly one commit and one `CONFLICT`; pre-aborted `write`,
+- * `insert`, and `delete` calls leave storage unchanged; `delete` returns
+- * `true` then `false`;
+- * `keys`/`scan` yield in ascending key order; `clear` empties only its target
+- * table; `snapshot`'s rollback thunk restores pre-snapshot state, including a
+- * NESTED field mutated in place on a read-back row between capture and
+- * restore; a scoped `snapshot(['users'])` rolls back only the named table,
+- * leaving a concurrent mutation to another table intact; a
+- * non-`id` primary key (`posts.slug`) round-trips; a nested-object row
+- * round-trips structurally (via {@link equalsValue}). The optional surface is
+- * presence-gated: when `migrate` exists, a `column.remove` plan strips the
+- * column from stored rows and a plan referencing an unknown table throws
+- * `DatabaseError` `MIGRATION`; when `stream` exists, it yields only
+- * condition-matching rows and honors `offset`/`limit`; when `transaction`
+- * exists, `commit` persists and `rollback` restores; when both `metadata` and
+- * `stamp` exist, a fresh store's `metadata()` is `undefined`, and after
++ * `read` of a missing key returns `undefined`; `write`/`read` round-trip
++ * with DEEP copy-in/copy-out isolation (mutating the caller's row —
++ * including a NESTED field — after `write`, or a row `read` returns, never
++ * perturbs stored state) and upsert-overwrite; simultaneous same-key
++ * `insert` calls produce exactly one commit and one `CONFLICT`; pre-aborted
++ * `write`, `insert`, and `delete` calls leave storage unchanged; `delete`
++ * returns `true` then `false`; `keys`/`scan` yield in ascending key order;
++ * `clear` empties only its target table; `snapshot`'s rollback thunk
++ * restores pre-snapshot state, including a NESTED field mutated in place on
++ * a read-back row between capture and restore; a scoped
++ * `snapshot(['users'])` rolls back only the named table, leaving a
++ * concurrent mutation to another table intact; a non-`id` primary key
++ * (`posts.slug`) round-trips; a nested-object row round-trips structurally
++ * (via {@link equalsValue}). The optional surface is presence-gated: when
++ * `migrate` exists, a `column.remove` plan strips the column from stored
++ * rows and a plan referencing an unknown table throws `DatabaseError`
++ * `MIGRATION`; when `stream` exists, it yields only condition-matching rows
++ * and honors `offset`/`limit`; when `transaction` exists, `commit` persists
++ * and `rollback` restores; when both `metadata` and `stamp` exist, a fresh
++ * store's `metadata()` is `undefined`, and after
+  * `stamp({ version, schema })`, `metadata()` returns the exact stamped value.
+  *
+  * Each phase runs within a `try`/`catch`: an EXPECTED mismatch yields a
+@@ -1182,14 +1149,14 @@ export function migrateRows(rows: readonly Row[], steps: readonly MigrationStep[
+  *
+  * @example
+  * ```ts
+- * import { createMemoryDriver, driverFindings } from '@orkestrel/database'
++ * import { createMemoryDriver, scanDriver } from '@orkestrel/database'
+  *
+- * for await (const finding of driverFindings(() => createMemoryDriver())) {
++ * for await (const finding of scanDriver(() => createMemoryDriver())) {
+  * 	console.log(finding.check, finding.message)
+  * }
+  * ```
+  */
+-export async function* driverFindings(
++export async function* scanDriver(
+ 	factory: () => DriverInterface,
+ ): AsyncIterable<ConformanceFinding> {
+ 	// a. open with the shared two-table schema, then close cleanly.
+@@ -1860,12 +1827,12 @@ export async function* driverFindings(
+ }
+ 
+ /**
+- * Run the driver-conformance battery, throwing on the first violated
++ * Runs the driver-conformance battery, throwing on the first violated
+  * invariant — the fail-fast entry point most callers (test setup, CI smoke
+  * checks) want.
+  *
+  * @remarks
+- * A thin driver over {@link driverFindings}: because that generator is
++ * A thin driver over {@link scanDriver}: because that generator is
+  * lazy, consuming only its first yielded value means every LATER phase
+  * never runs — true fail-fast, not merely "report only the first". The
+  * thrown error is byte-compatible with the historical shape: a
+@@ -1884,7 +1851,7 @@ export async function* driverFindings(
+  * ```
+  */
+ export async function conformDriver(factory: () => DriverInterface): Promise<void> {
+-	for await (const finding of driverFindings(factory)) {
++	for await (const finding of scanDriver(factory)) {
+ 		throw new DatabaseError('CONFORMANCE', finding.message, {
+ 			check: finding.check,
+ 			...finding.context,
+@@ -1893,12 +1860,12 @@ export async function conformDriver(factory: () => DriverInterface): Promise<voi
+ }
+ 
+ /**
+- * Run the FULL driver-conformance battery and collect every violation — the
++ * Runs the FULL driver-conformance battery and collects every violation — the
+  * audit entry point for a driver author who wants a complete report rather
+  * than a single fail-fast throw.
+  *
+  * @remarks
+- * Drains {@link driverFindings} to completion: every phase runs regardless
++ * Drains {@link scanDriver} to completion: every phase runs regardless
+  * of earlier violations, so a driver breaking two independent invariants
+  * reports both. An empty array means the driver is fully conformant.
+  *
+@@ -1917,6 +1884,6 @@ export async function auditDriver(
+ 	factory: () => DriverInterface,
+ ): Promise<readonly ConformanceFinding[]> {
+ 	const findings: ConformanceFinding[] = []
+-	for await (const finding of driverFindings(factory)) findings.push(finding)
++	for await (const finding of scanDriver(factory)) findings.push(finding)
+ 	return findings
+ }
+diff --git a/src/core/types.ts b/src/core/types.ts
+index c376798..2f414a3 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -384,21 +384,20 @@ export interface StorageInterface {
+  *
+  * @remarks
+  * The REQUIRED surface is deliberately minimal: keyed read / write / atomic
+- * insert / delete, an ordered `scan`, a key listing, and a `snapshot` that backs
+- * transactions — the irreducible primitive. There is **no** required query,
+- * count, or aggregate
+- * here: all of that is one query engine in the core (`helpers.ts`) running over
+- * `scan`, so a new backend implements a handful of tiny methods rather than
+- * re-deriving WHERE compilation. `open` now receives a derived
+- * {@link TableSchema}`[]` (columns, types, primary, indexes) so a native backend
+- * can build real tables and indexes; a scan-only backend reads only `name`. The
+- * optional `records?` / `aggregate?` are native overrides the engine
+- * falls back from. The API is async (Promises) because IndexedDB is; synchronous
+- * backends resolve immediately. Lookups that may miss return `undefined` /
+- * `false` rather than throwing. Metadata has the same ownership
++ * insert / delete, an ordered `scan`, a key listing, and a `snapshot` that
++ * backs transactions — the irreducible primitive. There is **no** required
++ * query, count, or aggregate here: all of that is one query engine in the core
++ * (`helpers.ts`) running over `scan`, so a new backend implements a handful of
++ * tiny methods rather than re-deriving WHERE compilation. `open` receives a
++ * derived {@link TableSchema}`[]` (columns, types, primary, indexes) so a
++ * native backend can build real tables and indexes; a scan-only backend reads
++ * only `name`. The optional `records?` / `aggregate?` are native overrides the
++ * engine falls back from. The API is async (Promises) because IndexedDB is;
++ * synchronous backends resolve immediately. Lookups that may miss return
++ * `undefined` / `false` rather than throwing. Metadata has the same ownership
+  * boundary across every implementation: `stamp` and `migrate` snapshot
+- * {@link DriverMetadata} at entry, while `metadata` returns a distinct deeply frozen
+- * snapshot. A durable driver returns `undefined` only when it proves the
++ * {@link DriverMetadata} at entry, while `metadata` returns a distinct deeply
++ * frozen snapshot. A durable driver returns `undefined` only when it proves the
+  * metadata record or durable store is absent. Existing unreadable or malformed
+  * durable state fails `open` / `metadata` closed; it is never treated as fresh,
+  * rewritten, or repaired automatically.
+@@ -522,9 +521,9 @@ export interface DatabaseOptions<T extends TableMap = TableMap> {
+ 	 * @remarks
+ 	 * Omit it to use global `crypto.randomUUID()`. A numeric primary requires a
+ 	 * custom generator. Explicit primary values never invoke this function. A
+-	 * custom generator throw is `VALIDATION`; a host
+-	 * `crypto.randomUUID()` failure is `DRIVER`. An invalid returned key is
+-	 * `VALIDATION`; neither branch falls back or retries.
++	 * custom generator throw is `VALIDATION`; a host `crypto.randomUUID()` failure
++	 * is `DRIVER`. An invalid returned key is `VALIDATION`; neither branch falls
++	 * back or retries.
+ 	 */
+ 	readonly generator?: KeyFunction
+ 	/**
+@@ -534,12 +533,12 @@ export interface DatabaseOptions<T extends TableMap = TableMap> {
+ 	 * Only meaningful when the driver implements BOTH {@link DriverInterface.metadata}
+ 	 * and {@link DriverInterface.stamp} (a versioning driver); unset, or a
+ 	 * non-versioning driver, leaves `open()` unchanged from today's behavior.
+-	 * When set and the driver versions, `open()` reconciles against the
+-	 * driver's persisted {@link DriverMetadata}:
++	 * When set and the driver versions, `open()` reconciles against the driver's
++	 * persisted {@link DriverMetadata}:
+ 	 * - **Fresh store** (`metadata()` returns `undefined` after the durable
+ 	 *   driver proves absence) — no migration is possible (there is nothing
+-	 *   deployed to diff against), so `open()` simply `stamp`s
+-	 *   `{ version, schema }` for next time.
++	 *   deployed to diff against), so `open()` stamps `{ version, schema }` for
++	 *   next time.
+ 	 * - **Stored version < `version`** — `planMigration(stored.schema, declared
+ 	 *   schema)` computes the upgrade plan, applied via the driver's optional
+ 	 *   `migrate` hook. If `migrate` is absent and the plan is non-empty,
+@@ -818,10 +817,9 @@ export interface TableInterface<T = Row> {
+  * `condition` appends one portable condition and `order` appends one portable
+  * ordering term. `filter` adds a post-fetch JavaScript predicate (applied after
+  * the backend read, before paging). The terminals (`collect` / `find` / `count`
+- * / `aggregate`) execute against the table; each
+- * call mutates and returns the same builder, so a chain reads as one statement.
+- * Every `column` is a {@link FieldPath} — a string is one column, an array
+- * descends a nested value.
++ * / `aggregate`) execute against the table; each call mutates and returns the
++ * same builder, so a chain reads as one statement. Every `column` is a
++ * {@link FieldPath} — a string is one column, an array descends a nested value.
+  */
+ export interface QueryInterface<T = Row> {
+ 	condition(input: Condition): QueryInterface<T>
+diff --git a/src/server/compilers.ts b/src/server/compilers.ts
+index 69a2176..6776241 100644
+--- a/src/server/compilers.ts
++++ b/src/server/compilers.ts
+@@ -108,28 +108,6 @@ export function compileJSONTypeSQL(path: readonly string[]): string {
+ // This module speaks pure strings/values only. Its SQLiteValue import is
+ // type-only and cannot couple the emitted JavaScript to the native package.
+ 
+-/**
+- * Escapes `\`, `%`, and `_` (each with a leading `\`) so an operand is matched
+- * literally under a `LIKE … ESCAPE '\'` clause.
+- *
+- * @remarks
+- * No compile in this module emits `LIKE … ESCAPE '\'` — `starts` / `ends`
+- * compile through `substr`, and `like` binds the caller's pattern verbatim so
+- * its wildcards stay live. This escaper is for a consumer assembling its own
+- * `LIKE` clause over a literal operand.
+- *
+- * @param text - The raw operand text
+- * @returns The text with LIKE metacharacters escaped
+- *
+- * @example
+- * ```ts
+- * escapeLike('50%_off') // '50\\%\\_off'
+- * ```
+- */
+-export function escapeLike(text: string): string {
+-	return text.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')
+-}
+-
+ /**
+  * Compile one condition to its `<column> <operator>` SQL fragment and the parameters
+  * it binds — engine-exact under SQL's three-valued NULL logic.
+@@ -324,7 +302,7 @@ export function compileConditionSQL(condition: Condition, schema: TableSchema):
+ }
+ 
+ /**
+- * Fold the conditions into one WHERE clause, parenthesizing progressively
++ * Folds the conditions into one WHERE clause, parenthesizing progressively
+  * left-to-right so the grouping matches the engine's `matchesQuery` fold.
+  *
+  * @remarks
+@@ -340,11 +318,14 @@ export function compileConditionSQL(condition: Condition, schema: TableSchema):
+  *
+  * @example
+  * ```ts
+- * compileWhere([{ column: 'age', operator: 'from', values: [18], connector: 'and' }], schema)
++ * compileWhereSQL([{ column: 'age', operator: 'from', values: [18], connector: 'and' }], schema)
+  * // { sql: 'WHERE "age" >= ?', parameters: [18] }
+  * ```
+  */
+-export function compileWhere(conditions: readonly Condition[], schema: TableSchema): CompiledSQL {
++export function compileWhereSQL(
++	conditions: readonly Condition[],
++	schema: TableSchema,
++): CompiledSQL {
+ 	const [first, ...remaining] = conditions
+ 	if (first === undefined) return { sql: '', parameters: [] }
+ 	const head = compileConditionSQL(first, schema)
+@@ -360,7 +341,7 @@ export function compileWhere(conditions: readonly Condition[], schema: TableSche
+ }
+ 
+ /**
+- * Compile the ORDER BY clause from the order terms, always ending with the
++ * Compiles the ORDER BY clause from the order terms, always ending with the
+  * primary key as the final determinant.
+  *
+  * @remarks
+@@ -381,11 +362,11 @@ export function compileWhere(conditions: readonly Condition[], schema: TableSche
+  *
+  * @example
+  * ```ts
+- * compileOrder([{ column: 'age', direction: 'descending' }], schema)
++ * compileOrderSQL([{ column: 'age', direction: 'descending' }], schema)
+  * // 'ORDER BY "age" DESC, "id"'
+  * ```
+  */
+-export function compileOrder(order: readonly Order[] | undefined, schema: TableSchema): string {
++export function compileOrderSQL(order: readonly Order[] | undefined, schema: TableSchema): string {
+ 	const terms = (order ?? []).map(
+ 		(term) => compileFieldSQL(term.column) + (term.direction === 'descending' ? ' DESC' : ' ASC'),
+ 	)
+@@ -397,7 +378,7 @@ export function compileOrder(order: readonly Order[] | undefined, schema: TableS
+ }
+ 
+ /**
+- * Compile the LIMIT / OFFSET clause.
++ * Compiles the LIMIT / OFFSET clause.
+  *
+  * @remarks
+  * An offset without a limit uses `LIMIT -1` (SQLite's "no limit") so OFFSET is
+@@ -409,10 +390,10 @@ export function compileOrder(order: readonly Order[] | undefined, schema: TableS
+  *
+  * @example
+  * ```ts
+- * compilePage(undefined, 5) // { sql: 'LIMIT -1 OFFSET ?', parameters: [5] }
++ * compilePageSQL(undefined, 5) // { sql: 'LIMIT -1 OFFSET ?', parameters: [5] }
+  * ```
+  */
+-export function compilePage(limit: number | undefined, offset: number | undefined): CompiledSQL {
++export function compilePageSQL(limit: number | undefined, offset: number | undefined): CompiledSQL {
+ 	validatePage({
+ 		...(limit === undefined ? {} : { limit }),
+ 		...(offset === undefined ? {} : { offset }),
+@@ -458,9 +439,9 @@ export function compilePage(limit: number | undefined, offset: number | undefine
+  */
+ export function compileQuerySQL(input: QueryInput | undefined, schema: TableSchema): CompiledSQL {
+ 	validatePage(input)
+-	const where = compileWhere(input?.conditions ?? [], schema)
+-	const orderBy = compileOrder(input?.order, schema)
+-	const page = compilePage(input?.limit, input?.offset)
++	const where = compileWhereSQL(input?.conditions ?? [], schema)
++	const orderBy = compileOrderSQL(input?.order, schema)
++	const page = compilePageSQL(input?.limit, input?.offset)
+ 	const sql = [where.sql, orderBy, page.sql].filter((part) => part !== '').join(' ')
+ 	return {
+ 		sql,
+diff --git a/src/server/drivers/SQLiteDriver.ts b/src/server/drivers/SQLiteDriver.ts
+index c72108c..4322944 100644
+--- a/src/server/drivers/SQLiteDriver.ts
++++ b/src/server/drivers/SQLiteDriver.ts
+@@ -37,7 +37,7 @@ import { createSQLiteDatabase, isSQLiteError } from '@orkestrel/sqlite'
+ import {
+ 	compileAggregateSQL,
+ 	compileQuerySQL,
+-	compileWhere,
++	compileWhereSQL,
+ 	schemaToIndexes,
+ 	schemaToTable,
+ 	stepToSQL,
+@@ -70,41 +70,40 @@ import { DriverIterator } from '../../core/DriverIterator.js'
+  * reopen-safe), and readies a reserved `_metadata` single-row table `metadata()` /
+  * `stamp()` read and write — **a user table named `_metadata` collides with it**;
+  * avoid the name. Rows cross the boundary through the codecs in `helpers.ts`
+- * (`json` columns store / parse JSON text, a `boolean` stores `1` / `0`), so the
+- * typed layer above imposes the exact shape. `write` is an
++ * (`json` columns store / parse JSON text, a `boolean` stores `1` / `0`), so
++ * the typed layer above imposes the exact shape. `write` is an
+  * `INSERT OR REPLACE` upsert, while `insert` uses a plain `INSERT` and maps its
+  * atomic primary-key constraint failure to `CONFLICT`; every other backend
+  * `SQLiteError` is contained by the same `DatabaseError` boundary described
+- * below. Querying, ordering, paging, and
+- * aggregation is native: `records` / `stream` compile a `QueryInput`
+- * to SQL with `compileQuerySQL`, and `aggregate` runs a SQL
+- * `COUNT`/`SUM`/`AVG`/`MIN`/`MAX` (via `compileAggregateSQL`) over the same compiled
+- * WHERE. `transaction` runs a callback inside native `BEGIN` / `COMMIT` /
+- * `ROLLBACK`, passing a scoped storage capability that becomes invalid after
+- * settlement. `migrate` runs the plan's projected DDL
+- * ({@link import('../compilers.js').stepToSQL}) inside whichever native
+- * transaction is active: joined into the active transaction callback
+- * when one exists (the core's versioned reconcile path wraps migrate + stamp
+- * in one native `BEGIN`, and node:sqlite rejects a nested `BEGIN`), or inside
+- * its own `database.transaction` otherwise — a mid-plan failure rolls back
+- * atomically either way, an improvement over the non-atomic `MemoryDriver` /
+- * `JSONDriver` migrate; a step referencing an undeclared table throws
++ * below. Querying, ordering, paging, and aggregation is native: `records` /
++ * `stream` compile a `QueryInput` to SQL with `compileQuerySQL`, and
++ * `aggregate` runs a SQL `COUNT`/`SUM`/`AVG`/`MIN`/`MAX` (via
++ * `compileAggregateSQL`) over the same compiled WHERE. `transaction` runs a
++ * callback inside native `BEGIN` / `COMMIT` / `ROLLBACK`, passing a scoped
++ * storage capability that becomes invalid after settlement. `migrate` runs the
++ * plan's projected DDL ({@link import('../compilers.js').stepToSQL}) inside
++ * whichever native transaction is active: joined into the active transaction
++ * callback when one exists (the core's versioned reconcile path wraps migrate +
++ * stamp in one native `BEGIN`, and node:sqlite rejects a nested `BEGIN`), or
++ * inside its own `database.transaction` otherwise — a mid-plan failure rolls
++ * back atomically either way, an improvement over the non-atomic `MemoryDriver`
++ * / `JSONDriver` migrate; a step referencing an undeclared table throws
+  * `DatabaseError` `MIGRATION` before any DDL for that step runs. `snapshot` is
+- * capture-replay (SELECT the
+- * named tables' rows, replay via DELETE + INSERT OR REPLACE inside a native
+- * transaction on rollback) rather than a SQL `SAVEPOINT`, since the core
+- * `transaction` calls the rollback thunk only on failure with no commit-on-
+- * success signal — a long-lived `SAVEPOINT` would leave the connection
+- * uncommitted (lost on close). Every backend interaction runs through `#guard`,
+- * which maps a thrown backend `SQLiteError` (or any unexpected non-`SQLiteError`
+- * throw) to a typed {@link DatabaseError} — never a raw backend error escapes
+- * `DriverInterface`: `CONSTRAINT` → `CONFLICT`, the wrapper's own `CLOSED` →
+- * `CLOSED`, `BUSY` (a locked database that outlasted the configured `timeout`)
+- * → a retryable `DRIVER` (`context.retryable` is `true`), and `UNKNOWN` / any
+- * other throw → `DRIVER`. The original error is preserved as `context.cause`.
+- * A `DatabaseError` this driver throws directly (`CLOSED` from the `#require`
+- * gate, `NOT_FOUND` from `#table`, `MIGRATION` from a migration-plan fault)
+- * passes through `#guard` unchanged, never re-wrapped.
++ * capture-replay (SELECT the named tables' rows, replay via DELETE + INSERT OR
++ * REPLACE inside a native transaction on rollback) rather than a SQL
++ * `SAVEPOINT`, since the core `transaction` calls the rollback thunk only on
++ * failure with no commit-on-success signal — a long-lived `SAVEPOINT` would
++ * leave the connection uncommitted (lost on close). Every backend interaction
++ * runs through `#guard`, which maps a thrown backend `SQLiteError` (or any
++ * unexpected non-`SQLiteError` throw) to a typed {@link DatabaseError} — never
++ * a raw backend error escapes `DriverInterface`: `CONSTRAINT` → `CONFLICT`, the
++ * wrapper's own `CLOSED` → `CLOSED`, `BUSY` (a locked database that outlasted
++ * the configured `timeout`) → a retryable `DRIVER` (`context.retryable` is
++ * `true`), and `UNKNOWN` / any other throw → `DRIVER`. The original error is
++ * preserved as `context.cause`. A `DatabaseError` this driver throws directly
++ * (`CLOSED` from the `#require` gate, `NOT_FOUND` from `#table`, `MIGRATION`
++ * from a migration-plan fault) passes through `#guard` unchanged, never
++ * re-wrapped.
+  */
+ export class SQLiteDriver implements DriverInterface {
+ 	readonly #path: string
+@@ -175,13 +174,13 @@ export class SQLiteDriver implements DriverInterface {
+ 					for (const table of deployed) {
+ 						const absent = missing.get(table.name)
+ 						if (absent === undefined) {
+-							database.exec(schemaToTable(table))
+-							for (const sql of schemaToIndexes(table)) database.exec(sql)
++							database.execute(schemaToTable(table))
++							for (const sql of schemaToIndexes(table)) database.execute(sql)
+ 						} else {
+ 							for (const [index, group] of table.indexes.entries()) {
+ 								if (absent.includes(deriveSQLiteIndexName(table.name, group))) {
+ 									const sql = schemaToIndexes(table)[index]
+-									if (sql !== undefined) database.exec(sql)
++									if (sql !== undefined) database.execute(sql)
+ 								}
+ 							}
+ 						}
+@@ -244,13 +243,12 @@ export class SQLiteDriver implements DriverInterface {
+ 		await this.#clear(table)
+ 	}
+ 
+-	// A QueryInput whose compiled
+-	// SQL is PROVABLY identical to the core engine's semantics (see
+-	// `matchesConditionExactly` / `matchesOrderExactly` / `matchesQueryExactly`) runs the fast
+-	// native path; otherwise this driver fetches a full scan and refines it
+-	// through the SAME core engine `MemoryDriver` and `JSONDriver` already answer
+-	// every query with — exact → native, otherwise → refine, never a
+-	// silent semantics drift between backends.
++	// A QueryInput whose compiled SQL is PROVABLY identical to the core engine's
++	// semantics (see `matchesConditionExactly` / `matchesOrderExactly` /
++	// `matchesQueryExactly`) runs the fast native path; otherwise this driver
++	// fetches a full scan and refines it through the SAME core engine that
++	// answers every query for `MemoryDriver` and `JSONDriver` — exact → native,
++	// otherwise → refine, never a silent semantics drift between backends.
+ 	async records(table: string, input: QueryInput): Promise<readonly Row[]> {
+ 		validatePage(input)
+ 		this.#root()
+@@ -292,7 +290,7 @@ export class SQLiteDriver implements DriverInterface {
+ 			return this.#guard(() => {
+ 				// WHERE-only compile — same rationale as `count`: paging must never
+ 				// apply to the single aggregate row.
+-				const { sql, parameters } = compileWhere(conditions, schema)
++				const { sql, parameters } = compileWhereSQL(conditions, schema)
+ 				const value = this.#require()
+ 					.prepare(
+ 						'SELECT ' +
+@@ -378,19 +376,18 @@ export class SQLiteDriver implements DriverInterface {
+ 	 * ({@link import('../compilers.js').stepToSQL}).
+ 	 *
+ 	 * @remarks
+-	 * Atomicity is provided by whichever native transaction is active: when
+-	 * this driver's own `transaction()` callback is active (the
+-	 * core's versioned reconcile / migrate path joins migrate + stamp under
+-	 * one native `BEGIN`), the plan's DDL runs directly inside that enclosing
+-	 * transaction — a mid-plan failure rejects the callback and the driver
+-	 * rolls it back. node:sqlite (and SQLite
+-	 * generally) rejects a nested `BEGIN`, so this driver must never open a
++	 * Atomicity is provided by whichever native transaction is active: when this
++	 * driver's own `transaction()` callback is active (the core's versioned
++	 * reconcile / migrate path joins migrate + stamp under one native `BEGIN`),
++	 * the plan's DDL runs directly inside that enclosing transaction — a mid-plan
++	 * failure rejects the callback and the driver rolls it back. node:sqlite (and
++	 * SQLite generally) rejects a nested `BEGIN`, so this driver must never open a
+ 	 * second native transaction while one is already open. Otherwise (no
+ 	 * enclosing transaction), `migrate` wraps the plan in its own native
+ 	 * `database.transaction` — atomic on its own: a mid-plan failure rolls
+ 	 * back every DDL statement already applied by the plan. A scoped migration
+ 	 * uses one fixed internal savepoint literal because the published SQLite
+-	 * wrapper intentionally exposes raw `exec` but no savepoint manager. That
++	 * wrapper intentionally exposes raw `execute` but no savepoint manager. That
+ 	 * savepoint contains a caught inner migration so the outer callback
+ 	 * transaction remains active and may continue safely. A step referencing a
+ 	 * table not in this driver's declared schema (and that is not itself a
+@@ -520,7 +517,7 @@ export class SQLiteDriver implements DriverInterface {
+ 				const current = this.#require()
+ 				current.transaction(() => {
+ 					for (const [name, replacement] of replacements) {
+-						current.exec('DELETE FROM ' + quoteIdentifier(name))
++						current.execute('DELETE FROM ' + quoteIdentifier(name))
+ 						const statement = current.prepare(
+ 							'INSERT OR REPLACE INTO ' +
+ 								quoteIdentifier(name) +
+@@ -709,7 +706,7 @@ export class SQLiteDriver implements DriverInterface {
+ 	}
+ 
+ 	#ensureMetadataTable(database: SQLiteDatabaseInterface): void {
+-		database.exec(
++		database.execute(
+ 			'CREATE TABLE IF NOT EXISTS ' +
+ 				quoteIdentifier(METADATA_TABLE) +
+ 				' ("id" INTEGER, "version" INTEGER, "schema" TEXT, PRIMARY KEY ("id"))',
+@@ -1008,18 +1005,18 @@ export class SQLiteDriver implements DriverInterface {
+ 			})
+ 		}
+ 		this.#guard(() => {
+-			database.exec('SAVEPOINT "_orkestrel_migration"')
++			database.execute('SAVEPOINT "_orkestrel_migration"')
+ 			try {
+ 				this.#applyPlan(database, owned)
+ 				if (owned.metadata !== undefined) {
+ 					this.#writeMetadata(database, owned.metadata)
+ 				}
+-				database.exec('RELEASE SAVEPOINT "_orkestrel_migration"')
++				database.execute('RELEASE SAVEPOINT "_orkestrel_migration"')
+ 			} catch (error) {
+ 				try {
+-					database.exec('ROLLBACK TO SAVEPOINT "_orkestrel_migration"')
++					database.execute('ROLLBACK TO SAVEPOINT "_orkestrel_migration"')
+ 				} finally {
+-					database.exec('RELEASE SAVEPOINT "_orkestrel_migration"')
++					database.execute('RELEASE SAVEPOINT "_orkestrel_migration"')
+ 				}
+ 				throw error
+ 			}
+@@ -1138,7 +1135,7 @@ export class SQLiteDriver implements DriverInterface {
+ 	// (native callback active) and self-wrapped (own `database.transaction`) paths.
+ 	#applyPlan(database: SQLiteDatabaseInterface, input: MigrationInput): void {
+ 		for (const step of input.plan.steps) {
+-			for (const sql of stepToSQL(step)) database.exec(sql)
++			for (const sql of stepToSQL(step)) database.execute(sql)
+ 		}
+ 	}
+ }
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 0002765..29748f5 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -91,8 +91,8 @@ export function matchesAbsentPath(error: unknown): boolean {
+ // contract-validated write can store ("declared-type trust"). These guards
+ // decide, per condition/order/input, whether that proof holds; when it does
+ // not, the driver falls back to a full scan refined through the same core
+-// engine that `MemoryDriver` and `JSONDriver` already answer every query with —
+-// exact → native, otherwise → refine, never a silent semantics drift.
++// engine that answers every query for `MemoryDriver` and `JSONDriver` — exact →
++// native, otherwise → refine, never a silent semantics drift.
+ 
+ /**
+  * Reports whether a value's runtime type matches a column's declared exact type
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 2a085ce..29d8b7f 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -30,11 +30,11 @@ export interface CompiledSQL {
+  * {@link DatabaseError}); `timeout` is the busy-timeout in milliseconds before
+  * a locked database fails `BUSY`; `references` enables or disables foreign-key
+  * constraint enforcement, while omission retains the upstream default.
+- * `pragmas` is an ordered record of PRAGMA name to
+- * value, applied via the wrapper's `pragma()` right after `connect()`, in
+- * insertion order (e.g. `{ journal_mode: 'WAL' }`). Core rows are
+- * number-typed — this driver never surfaces a `bigint`, so a stored integer
+- * beyond `Number.MAX_SAFE_INTEGER` reads back imprecisely (the wrapper's own
++ * `pragmas` is an ordered record of PRAGMA name to value, applied via the
++ * wrapper's `pragma()` right after `connect()`, in insertion order (for
++ * example `{ journal_mode: 'WAL' }`). Core rows are number-typed — this driver
++ * never surfaces a `bigint`, so a stored integer beyond
++ * `Number.MAX_SAFE_INTEGER` reads back imprecisely (the wrapper's own
+  * `bigints` option is not exposed here).
+  */
+ export interface SQLiteDriverOptions {
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index faa4f80..1558293 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -448,8 +448,8 @@ export async function createForeignKeyFixture(
+ 	const database = createSQLiteDatabase({ path: storage.path })
+ 	try {
+ 		database.connect()
+-		database.exec('CREATE TABLE "parents" ("id" TEXT NOT NULL, PRIMARY KEY ("id"))')
+-		database.exec(
++		database.execute('CREATE TABLE "parents" ("id" TEXT NOT NULL, PRIMARY KEY ("id"))')
++		database.execute(
+ 			'CREATE TABLE "children" ("id" TEXT NOT NULL, "parent" TEXT NOT NULL, PRIMARY KEY ("id"), FOREIGN KEY ("parent") REFERENCES "parents" ("id"))',
+ 		)
+ 	} finally {
+diff --git a/tests/src/browser/drivers/IndexedDBDriver.test.ts b/tests/src/browser/drivers/IndexedDBDriver.test.ts
+index bb79caf..eda9ee1 100644
+--- a/tests/src/browser/drivers/IndexedDBDriver.test.ts
++++ b/tests/src/browser/drivers/IndexedDBDriver.test.ts
+@@ -225,8 +225,8 @@ describe('IndexedDBDriver — storage primitives over the wrapper', () => {
+ 			version: version + 1,
+ 			stores: { __metadata__: {}, users: {}, posts: {}, audit: {} },
+ 			upgrade: (context) => {
+-				context.drop('users')
+-				context.drop('posts')
++				context.stores.drop('users')
++				context.stores.drop('posts')
+ 			},
+ 		})
+ 		await damaged.connect()
+@@ -1718,7 +1718,7 @@ describe('IndexedDBDriver — schema-aware snapshot', () => {
+ 			version: version + 1,
+ 			stores: { __metadata__: {}, audit: {}, users: {} },
+ 			upgrade: (context) => {
+-				context.index('audit', {
++				context.indexes.create('audit', {
+ 					name: deriveIndexedDBIndexName(['id']),
+ 					path: 'id',
+ 				})
+@@ -1827,8 +1827,8 @@ describe('IndexedDBDriver — schema-aware snapshot', () => {
+ 			version: version + 1,
+ 			stores: { __metadata__: {}, audit: {}, users: { path: 'id' } },
+ 			upgrade: (context) => {
+-				context.drop('users')
+-				context.create('users', { path: 'id' })
++				context.stores.drop('users')
++				context.stores.create('users', { path: 'id' })
+ 			},
+ 		})
+ 		await incompatible.connect()
+@@ -1845,8 +1845,8 @@ describe('IndexedDBDriver — schema-aware snapshot', () => {
+ 			version: version + 2,
+ 			stores: { __metadata__: {}, audit: {}, users: {} },
+ 			upgrade: (context) => {
+-				context.drop('users')
+-				context.create('users', {})
++				context.stores.drop('users')
++				context.stores.create('users', {})
+ 			},
+ 		})
+ 		await repaired.connect()
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 218e1db..1d519d0 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -9,10 +9,9 @@ import {
+ 	conformDriver,
+ 	createMemoryDriver,
+ 	equalsValue,
+-	driverFindings,
++	scanDriver,
+ 	extractKey,
+ 	filterRows,
+-	matchesFuzzy,
+ 	matchesGlobPattern,
+ 	isDatabaseError,
+ 	isDriverMetadata,
+@@ -230,50 +229,6 @@ describe('matchesCondition', () => {
+ 	})
+ })
+ 
+-describe('matchesFuzzy', () => {
+-	it('matches query characters in order, including a non-contiguous subsequence', () => {
+-		expect(matchesFuzzy('database', 'data')).toBe(true)
+-		expect(matchesFuzzy('database', 'dbe')).toBe(true)
+-		expect(matchesFuzzy('database', 'abd')).toBe(false)
+-		expect(matchesFuzzy('database', 'dbz')).toBe(false)
+-	})
+-
+-	it('folds case on both the candidate and query', () => {
+-		expect(matchesFuzzy('Ada Lovelace', 'aL')).toBe(true)
+-		expect(matchesFuzzy('OpenAI Supervisor', 'OaSv')).toBe(true)
+-	})
+-
+-	it('matches an empty query against every candidate', () => {
+-		expect(matchesFuzzy('database', '')).toBe(true)
+-		expect(matchesFuzzy('', '')).toBe(true)
+-	})
+-
+-	it('does not match a non-empty query against an empty candidate', () => {
+-		expect(matchesFuzzy('', 'a')).toBe(false)
+-	})
+-
+-	it('requires repeated characters and preserves query order', () => {
+-		expect(matchesFuzzy('balloon', 'lloo')).toBe(true)
+-		expect(matchesFuzzy('balloon', 'llll')).toBe(false)
+-		expect(matchesFuzzy('balloon', 'nob')).toBe(false)
+-	})
+-
+-	it('treats pattern metacharacters as literal query characters', () => {
+-		expect(matchesFuzzy('a.*[b]', '.*[')).toBe(true)
+-		expect(matchesFuzzy('a.*[b]', '[*.')).toBe(false)
+-		expect(matchesFuzzy('alpha beta', 'a b')).toBe(true)
+-		expect(matchesFuzzy('alphabeta', 'a b')).toBe(false)
+-	})
+-
+-	it('uses JavaScript Unicode lowercasing without expansion or normalization', () => {
+-		expect(matchesFuzzy('STRAẞE', 'straße')).toBe(true)
+-		expect(matchesFuzzy('Straße', 'strasse')).toBe(false)
+-		expect(matchesFuzzy('İstanbul', 'i\u0307s')).toBe(true)
+-		expect(matchesFuzzy('Éclair', 'e\u0301')).toBe(false)
+-		expect(matchesFuzzy('A😀B', '😀b')).toBe(true)
+-	})
+-})
+-
+ describe('matchesLikePattern', () => {
+ 	it('matches % (any run) and _ (any single char), anchored', () => {
+ 		expect(matchesLikePattern('abc', 'a%')).toBe(true)
+@@ -1296,16 +1251,16 @@ function createCrashingDriver(): DriverInterface {
+ 	}
+ }
+ 
+-describe('driverFindings', () => {
++describe('scanDriver', () => {
+ 	it('yields no findings for a conformant driver (the reference memory driver)', async () => {
+ 		const findings: unknown[] = []
+-		for await (const finding of driverFindings(() => createMemoryDriver())) findings.push(finding)
++		for await (const finding of scanDriver(() => createMemoryDriver())) findings.push(finding)
+ 		expect(findings).toEqual([])
+ 	})
+ 
+ 	it('yields lazily — breaking after the first finding never throws and never drains the rest', async () => {
+ 		const collected: string[] = []
+-		for await (const finding of driverFindings(() => createDoublyBrokenDriver())) {
++		for await (const finding of scanDriver(() => createDoublyBrokenDriver())) {
+ 			collected.push(finding.check)
+ 			break
+ 		}
+@@ -1314,7 +1269,7 @@ describe('driverFindings', () => {
+ 
+ 	it('yields a finding (not an escaped throw) when a driver method throws unexpectedly', async () => {
+ 		const findings: Array<{ check: string; message: string }> = []
+-		for await (const finding of driverFindings(() => createCrashingDriver())) {
++		for await (const finding of scanDriver(() => createCrashingDriver())) {
+ 			findings.push({ check: finding.check, message: finding.message })
+ 		}
+ 		expect(findings.some((finding) => finding.message === 'scan exploded')).toBe(true)
+@@ -1322,29 +1277,27 @@ describe('driverFindings', () => {
+ 
+ 	it('runs the metadata/stamp phase for a driver that implements both hooks and finds a mismatched read', async () => {
+ 		const findings: string[] = []
+-		for await (const finding of driverFindings(() => createMismatchedMetadataDriver())) {
++		for await (const finding of scanDriver(() => createMismatchedMetadataDriver())) {
+ 			findings.push(finding.check)
+ 		}
+ 		expect(findings).toContain('metadata-fresh')
+ 
+ 		// And the reference MemoryDriver — which implements metadata/stamp — passes cleanly.
+ 		const clean: string[] = []
+-		for await (const finding of driverFindings(() => createMemoryDriver()))
+-			clean.push(finding.check)
++		for await (const finding of scanDriver(() => createMemoryDriver())) clean.push(finding.check)
+ 		expect(clean.some((check) => check.startsWith('metadata'))).toBe(false)
+ 	})
+ 
+ 	it('runs the scoped-snapshot phase and finds a violation when snapshot rolls back the whole store instead of only the named table', async () => {
+ 		const findings: string[] = []
+-		for await (const finding of driverFindings(() => createWholeSnapshotDriver())) {
++		for await (const finding of scanDriver(() => createWholeSnapshotDriver())) {
+ 			findings.push(finding.check)
+ 		}
+ 		expect(findings).toContain('snapshot-scoped-posts')
+ 
+ 		// And the reference MemoryDriver honors the scope and passes cleanly.
+ 		const clean: string[] = []
+-		for await (const finding of driverFindings(() => createMemoryDriver()))
+-			clean.push(finding.check)
++		for await (const finding of scanDriver(() => createMemoryDriver())) clean.push(finding.check)
+ 		expect(clean.some((check) => check.startsWith('snapshot-scoped'))).toBe(false)
+ 	})
+ })
+@@ -1362,7 +1315,7 @@ describe('auditDriver', () => {
+ 	})
+ })
+ 
+-describe('conformDriver (fail-fast over driverFindings)', () => {
++describe('conformDriver (fail-fast over scanDriver)', () => {
+ 	it('throws only the FIRST violation of a driver breaking two independent invariants', async () => {
+ 		const error = await conformDriver(() => createDoublyBrokenDriver()).catch(
+ 			(caught: unknown) => caught,
+diff --git a/tests/src/server/compilers.test.ts b/tests/src/server/compilers.test.ts
+index dc89c17..8e6be95 100644
+--- a/tests/src/server/compilers.test.ts
++++ b/tests/src/server/compilers.test.ts
+@@ -4,10 +4,9 @@ import {
+ 	compileColumnSQL,
+ 	compileFieldSQL,
+ 	compileQuerySQL,
+-	compileOrder,
+-	compilePage,
+-	compileWhere,
+-	escapeLike,
++	compileOrderSQL,
++	compilePageSQL,
++	compileWhereSQL,
+ 	compileConditionSQL,
+ 	schemaToIndexes,
+ 	schemaToTable,
+@@ -482,22 +481,6 @@ describe('compileQuerySQL — order and paging', () => {
+ 	})
+ })
+ 
+-describe('escapeLike', () => {
+-	it('escapes %, _, and the escape char (\\) each with a leading backslash', () => {
+-		// `\` first (so the escapes it introduces are not re-escaped), then % and _.
+-		expect(escapeLike('50%_off')).toBe('50\\%\\_off')
+-	})
+-
+-	it('escapes a leading backslash before the wildcards it precedes', () => {
+-		// `a\%` → the literal `\` doubles to `\\` and the `%` escapes to `\%`.
+-		expect(escapeLike('a\\%')).toBe('a\\\\\\%')
+-	})
+-
+-	it('returns plain text with no LIKE metacharacters unchanged', () => {
+-		expect(escapeLike('plain')).toBe('plain')
+-	})
+-})
+-
+ describe('compileConditionSQL', () => {
+ 	it('builds a flat equals compileConditionSQL encoding the operand by its declared type', () => {
+ 		// A flat `boolean` column encodes its operand to 1 / 0 via the declared type.
+@@ -551,13 +534,13 @@ describe('compileConditionSQL', () => {
+ 	})
+ })
+ 
+-describe('compileWhere', () => {
++describe('compileWhereSQL', () => {
+ 	it('returns an empty clause and no parameters for zero conditions', () => {
+-		expect(compileWhere([], SCHEMA)).toEqual({ sql: '', parameters: [] })
++		expect(compileWhereSQL([], SCHEMA)).toEqual({ sql: '', parameters: [] })
+ 	})
+ 
+ 	it('builds a single-condition WHERE with no wrapping parens', () => {
+-		expect(compileWhere([cond('age', 'from', [18])], SCHEMA)).toEqual({
++		expect(compileWhereSQL([cond('age', 'from', [18])], SCHEMA)).toEqual({
+ 			sql: 'WHERE "age" >= ?',
+ 			parameters: [18],
+ 		})
+@@ -567,7 +550,7 @@ describe('compileWhere', () => {
+ 		// Each step wraps the running clause — matching the engine's matchesQuery
+ 		// fold, NOT SQL's AND-over-OR precedence; the first connector is dropped.
+ 		expect(
+-			compileWhere(
++			compileWhereSQL(
+ 				[
+ 					cond('age', 'from', [18], 'or'),
+ 					cond('name', 'equals', ['A'], 'or'),
+@@ -582,14 +565,14 @@ describe('compileWhere', () => {
+ 	})
+ })
+ 
+-describe('compileOrder', () => {
++describe('compileOrderSQL', () => {
+ 	it('returns ORDER BY the primary key alone for an undefined order', () => {
+-		expect(compileOrder(undefined, SCHEMA)).toBe('ORDER BY "id"')
++		expect(compileOrderSQL(undefined, SCHEMA)).toBe('ORDER BY "id"')
+ 	})
+ 
+ 	it('appends the primary key (ASC) as the tie-breaker after explicit non-primary terms', () => {
+ 		expect(
+-			compileOrder(
++			compileOrderSQL(
+ 				[
+ 					{ column: 'age', direction: 'descending' },
+ 					{ column: 'name', direction: 'ascending' },
+@@ -600,41 +583,41 @@ describe('compileOrder', () => {
+ 	})
+ 
+ 	it('does not double-append when an explicit term is already the primary', () => {
+-		expect(compileOrder([{ column: 'id', direction: 'descending' }], SCHEMA)).toBe(
++		expect(compileOrderSQL([{ column: 'id', direction: 'descending' }], SCHEMA)).toBe(
+ 			'ORDER BY "id" DESC',
+ 		)
+ 	})
+ 
+ 	it('compiles a nested FieldPath order term to json_extract', () => {
+-		expect(compileOrder([{ column: ['meta', 'score'], direction: 'ascending' }], SCHEMA)).toBe(
++		expect(compileOrderSQL([{ column: ['meta', 'score'], direction: 'ascending' }], SCHEMA)).toBe(
+ 			'ORDER BY json_extract("meta", \'$.score\') ASC, "id"',
+ 		)
+ 	})
+ })
+ 
+-describe('compilePage', () => {
++describe('compilePageSQL', () => {
+ 	it('compiles LIMIT then OFFSET when both are present', () => {
+-		expect(compilePage(10, 5)).toEqual({ sql: 'LIMIT ? OFFSET ?', parameters: [10, 5] })
++		expect(compilePageSQL(10, 5)).toEqual({ sql: 'LIMIT ? OFFSET ?', parameters: [10, 5] })
+ 	})
+ 
+ 	it('compiles LIMIT alone', () => {
+-		expect(compilePage(10, undefined)).toEqual({ sql: 'LIMIT ?', parameters: [10] })
++		expect(compilePageSQL(10, undefined)).toEqual({ sql: 'LIMIT ?', parameters: [10] })
+ 	})
+ 
+ 	it('compiles an offset without a limit to LIMIT -1 OFFSET ?', () => {
+ 		// SQLite needs a LIMIT for OFFSET to apply; -1 means "no limit".
+-		expect(compilePage(undefined, 5)).toEqual({ sql: 'LIMIT -1 OFFSET ?', parameters: [5] })
++		expect(compilePageSQL(undefined, 5)).toEqual({ sql: 'LIMIT -1 OFFSET ?', parameters: [5] })
+ 	})
+ 
+ 	it('returns an empty clause when neither limit nor offset is set', () => {
+-		expect(compilePage(undefined, undefined)).toEqual({ sql: '', parameters: [] })
++		expect(compilePageSQL(undefined, undefined)).toEqual({ sql: '', parameters: [] })
+ 	})
+ 
+ 	it('rejects invalid direct page values and accepts zero', () => {
+-		expect(() => compilePage(-1, undefined)).toThrow('Query limit must be a nonnegative integer')
+-		expect(() => compilePage(undefined, Number.NaN)).toThrow(
++		expect(() => compilePageSQL(-1, undefined)).toThrow('Query limit must be a nonnegative integer')
++		expect(() => compilePageSQL(undefined, Number.NaN)).toThrow(
+ 			'Query offset must be a nonnegative integer',
+ 		)
+-		expect(compilePage(0, 0)).toEqual({ sql: 'LIMIT ? OFFSET ?', parameters: [0, 0] })
++		expect(compilePageSQL(0, 0)).toEqual({ sql: 'LIMIT ? OFFSET ?', parameters: [0, 0] })
+ 	})
+ })
+diff --git a/tests/src/server/drivers/SQLiteDriver.test.ts b/tests/src/server/drivers/SQLiteDriver.test.ts
+index c5a0ccb..3c328cc 100644
+--- a/tests/src/server/drivers/SQLiteDriver.test.ts
++++ b/tests/src/server/drivers/SQLiteDriver.test.ts
+@@ -79,7 +79,7 @@ async function rejectPhysicalOpen(
+ 	const target = createSQLiteDriver({ path: temp.path })
+ 	try {
+ 		native.connect()
+-		for (const statement of statements) native.exec(statement)
++		for (const statement of statements) native.execute(statement)
+ 		native.close()
+ 		const opened = await target.open(schema).catch((caught: unknown) => caught)
+ 		const after = await target.keys(schema[0]?.name ?? 'missing').catch((caught: unknown) => caught)
+@@ -240,7 +240,7 @@ describe('SQLiteDriver — open', () => {
+ 		const opened = createSQLiteDriver({ path: temp.path })
+ 		try {
+ 			native.connect()
+-			native.exec(
++			native.execute(
+ 				'CREATE TABLE "users" (' +
+ 					'"id" TEXT NOT NULL, "name" TEXT NOT NULL, "age" TEXT NOT NULL, ' +
+ 					'"active" INTEGER NOT NULL, "meta" TEXT, PRIMARY KEY ("id"))',
+@@ -265,7 +265,7 @@ describe('SQLiteDriver — open', () => {
+ 			await first.open(SCHEMA)
+ 			await first.close()
+ 			native.connect()
+-			native.exec(
++			native.execute(
+ 				'CREATE TRIGGER "users_guard" BEFORE INSERT ON "users" ' +
+ 					"BEGIN SELECT RAISE(ABORT, 'guarded'); END",
+ 			)
+@@ -290,8 +290,8 @@ describe('SQLiteDriver — open', () => {
+ 			await first.open(SCHEMA)
+ 			await first.close()
+ 			native.connect()
+-			native.exec('DROP INDEX "idx_5_users_4_name"')
+-			native.exec('CREATE INDEX "idx_5_users_4_name" ON "users" ("age")')
++			native.execute('DROP INDEX "idx_5_users_4_name"')
++			native.execute('CREATE INDEX "idx_5_users_4_name" ON "users" ("age")')
+ 			native.close()
+ 			const error = await reopened.open(SCHEMA).catch((caught: unknown) => caught)
+ 			expect(isDatabaseError(error) ? error.code : 'not-database').toBe('DRIVER')
+@@ -313,7 +313,7 @@ describe('SQLiteDriver — open', () => {
+ 			await first.open(SCHEMA)
+ 			await first.close()
+ 			native.connect()
+-			native.exec('DROP INDEX "idx_5_users_4_name"')
++			native.execute('DROP INDEX "idx_5_users_4_name"')
+ 			native.close()
+ 			await reopened.open(SCHEMA)
+ 			await reopened.close()
+@@ -432,10 +432,10 @@ describe('SQLiteDriver — open', () => {
+ 		const target = createSQLiteDriver({ path: temp.path })
+ 		try {
+ 			native.connect()
+-			native.exec(USERS_SQL)
+-			native.exec(POSTS_SQL)
+-			native.exec('CREATE INDEX "users_legacy_age" ON "users" ("age")')
+-			native.exec('CREATE TABLE "legacy" ("id" TEXT PRIMARY KEY)')
++			native.execute(USERS_SQL)
++			native.execute(POSTS_SQL)
++			native.execute('CREATE INDEX "users_legacy_age" ON "users" ("age")')
++			native.execute('CREATE TABLE "legacy" ("id" TEXT PRIMARY KEY)')
+ 			native.close()
+ 			await target.open(SCHEMA)
+ 			expect(await target.keys('users')).toEqual([])
+@@ -478,8 +478,8 @@ describe('SQLiteDriver — open', () => {
+ 		]
+ 		try {
+ 			native.connect()
+-			native.exec('CREATE TABLE "logs" ("id" TEXT NOT NULL, PRIMARY KEY ("id"))')
+-			native.exec('CREATE TABLE "broken" ("id" INTEGER NOT NULL, PRIMARY KEY ("id"))')
++			native.execute('CREATE TABLE "logs" ("id" TEXT NOT NULL, PRIMARY KEY ("id"))')
++			native.execute('CREATE TABLE "broken" ("id" INTEGER NOT NULL, PRIMARY KEY ("id"))')
+ 			native.close()
+ 			const error = await target.open(deployed).catch((caught: unknown) => caught)
+ 			const after = await target.keys('logs').catch((caught: unknown) => caught)
+@@ -550,7 +550,7 @@ describe('SQLiteDriver — open', () => {
+ 			await target.close()
+ 
+ 			native.connect()
+-			native.exec('DROP TABLE "users"')
++			native.execute('DROP TABLE "users"')
+ 			native.close()
+ 
+ 			const error = await target.open(SCHEMA).catch((caught: unknown) => caught)
+@@ -570,8 +570,8 @@ describe('SQLiteDriver — open', () => {
+ 				.get(['intro'])
+ 			expect(absent).toBeUndefined()
+ 			expect(preserved?.title).toBe('Preserved')
+-			native.exec(schemaToTable(users))
+-			for (const sql of schemaToIndexes(users)) native.exec(sql)
++			native.execute(schemaToTable(users))
++			for (const sql of schemaToIndexes(users)) native.execute(sql)
+ 			native.close()
+ 
+ 			await target.open(SCHEMA)
+@@ -602,8 +602,8 @@ describe('SQLiteDriver — open', () => {
+ 			await target.stamp?.({ version: 1, schema: SCHEMA })
+ 			await target.close()
+ 			native.connect()
+-			native.exec('DROP TABLE "users"')
+-			native.exec('DROP TABLE "posts"')
++			native.execute('DROP TABLE "users"')
++			native.execute('DROP TABLE "posts"')
+ 			native.close()
+ 
+ 			await expect(target.open(SCHEMA)).rejects.toMatchObject({
+@@ -627,7 +627,7 @@ describe('SQLiteDriver — open', () => {
+ 		const temp = tempDatabasePath()
+ 		const native = createSQLiteDatabase({ path: temp.path })
+ 		native.connect()
+-		native.exec(
++		native.execute(
+ 			'CREATE TABLE "_metadata" ("id" INTEGER, "version" INTEGER, "schema" TEXT, PRIMARY KEY ("id"))',
+ 		)
+ 		native.prepare('INSERT INTO "_metadata" ("id", "version", "schema") VALUES (1, ?, ?)').run([
+@@ -1270,7 +1270,7 @@ describe('SQLiteDriver — snapshot', () => {
+ 			})
+ 			await target.write('posts', 'p1', { slug: 'p1', title: 'Changed' })
+ 			native.connect()
+-			native.exec(
++			native.execute(
+ 				'CREATE TRIGGER "posts_replay_guard" BEFORE INSERT ON "posts" ' +
+ 					"BEGIN SELECT RAISE(ABORT, 'replay blocked'); END",
+ 			)
+@@ -1281,7 +1281,7 @@ describe('SQLiteDriver — snapshot', () => {
+ 			expect((await target.read('posts', 'p1'))?.title).toBe('Changed')
+ 
+ 			native.connect()
+-			native.exec('DROP TRIGGER "posts_replay_guard"')
++			native.execute('DROP TRIGGER "posts_replay_guard"')
+ 			native.close()
+ 			await rollback()
+ 			expect((await target.read('users', 'u1'))?.name).toBe('Ada')
+@@ -1300,7 +1300,7 @@ describe('SQLiteDriver — snapshot', () => {
+ 		try {
+ 			await onDisk.open(SCHEMA)
+ 			native.connect()
+-			native.exec('DROP TABLE "posts"')
++			native.execute('DROP TABLE "posts"')
+ 			const error = await onDisk.snapshot().catch((caught: unknown) => caught)
+ 			if (!isDatabaseError(error)) throw new Error('Expected a DatabaseError')
+ 			expect(error.code).toBe('DRIVER')
+@@ -1333,7 +1333,7 @@ describe('SQLiteDriver — snapshot', () => {
+ 				active: false,
+ 			})
+ 			locker.connect()
+-			locker.exec('BEGIN EXCLUSIVE')
++			locker.execute('BEGIN EXCLUSIVE')
+ 			locked = true
+ 			const error = await rollback().catch((caught: unknown) => caught)
+ 			if (!isDatabaseError(error)) throw new Error('Expected a DatabaseError')
+@@ -1445,7 +1445,7 @@ describe('SQLiteDriver — persistence across reopen (temp file)', () => {
+ 			.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?")
+ 			.get(['audit'])
+ 		const stored = native.prepare('SELECT "version" FROM "_metadata" WHERE "id" = 1').get()?.version
+-		native.exec(
++		native.execute(
+ 			'CREATE TRIGGER "block_metadata_insert" BEFORE INSERT ON "_metadata" ' +
+ 				"BEGIN SELECT RAISE(ABORT, 'metadata rewritten'); END",
+ 		)
+@@ -2271,7 +2271,7 @@ describe('SQLiteDriver — stream laziness', () => {
+ 		try {
+ 			await onDisk.open(SCHEMA)
+ 			native.connect()
+-			native.exec('DROP TABLE "users"')
++			native.execute('DROP TABLE "users"')
+ 			const stream = onDisk.stream?.('users', {})
+ 			if (stream === undefined) throw new Error('Expected stream capability')
+ 			const error = await collect(stream).catch((caught: unknown) => caught)
