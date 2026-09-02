@@ -858,3 +858,28 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   contract `7de1ef2`, agent `a1e2d49`, workflow `6f99184`, scaffold `ee872f3`; verdicts under
   `voice/units/`). Every landing chain green. Every package of the wave has landed; the closing
   sweep (`instruments/voice-wend.sh`: final scan, fleet gate sweep, third inventory) is running.
+- **Voice wave closed** (2026-09-02). The final acceptance scan (`instruments/voice-scan.mjs` over
+  every checkout's `src/`, `voice/scan-final.txt`) reads
+  `TOTAL {"blocks":7120,"imperative":0,"verbless":0,"returnsBad":1}`; the one `returnsBad` is form's
+  `FieldValidator` `true | string` return, permitted under the slice 5 ruling. The authoritative
+  serial gate sweep (`instruments/voice-wend.sh`, `voice/fleet-gates-final.txt`) reads OK for every
+  package and scaffold except `probe FAIL test`. The deciding solo re-run taken after the sweep
+  exited (`npm test` in the probe checkout, `voice/probe-test-solo-final.txt`) reads
+  `Tests 7 failed | 221 passed (228)` on the standing Oxlint arming class (`The Oxlint language
+  server exited with code 0` under `LSPError: The LSP request 'initialize' exceeded its deadline`),
+  the class ruled a container failure on pristine main on 2026-08-28; probe's voice unit `030ac69`
+  is doc-only, so the red is carried, not caused. The third distributable inventory
+  (`inventory-3.md`, `voice/inventory3.txt`) reads dist moved for every package, including codec
+  and timeout, whose dist stood at the second inventory and moved on their declaration docs, and
+  router and worker report more changed files than before; the republish order is unchanged from
+  the second inventory. Scaffold's voice commit `ee872f3` carried `voice-agent.diff`,
+  `voice-agent.status`, `voice-mcp.diff`, and `voice-mcp.status` under `voice/units/` through the
+  landing chain's `git add -A`; they are campaign records that belong there, noted so the commit's
+  scope reads correctly. Standing conditions for the next campaign: the tarball closures registered
+  in `fix/tarballs.json` were packed from the W-END tips, so every staged consumer carries
+  pre-voice declaration docs (doc-only, gates unaffected), and a re-pack from the voice tips
+  precedes any distribution proof; the dependency guide mirrors refresh only at re-pin after each
+  dependency publishes; publishing stays held per the user's ruling; the retention prune waits for
+  the user's go-ahead. Debrief questions carried: the `Configures`/`Describes` type-doc vocabulary
+  split; `Holds` on a derived getter; comment overflow past the print width where a package
+  already tolerates it; guide taglines and Surface rows keeping the noun-phrase genre by design.

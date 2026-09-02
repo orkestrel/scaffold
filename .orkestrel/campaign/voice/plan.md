@@ -67,3 +67,14 @@ together as three concurrent Workflows (each capped at two live agents by the ho
 agents run at once across disjoint checkouts; one writer per checkout still holds. A timing failure
 under that load is decided by the Orchestrator's serial landing chain, and a red there is re-run
 alone before it is read. Scaffold's brief is regenerated at its current tip before its unit runs.
+
+## Closure
+
+Closed 2026-09-02. Every unit landed and carries a verdict under `units/`; the exit criterion is
+met on the final scan (`scan-final.txt`: zero imperative and verbless openers fleet-wide, one
+permitted `true | string` return in form), the serial gate sweep (`fleet-gates-final.txt`: OK
+everywhere except probe's standing arming red, deciding solo reading in
+`probe-test-solo-final.txt`), and the third inventory (`../inventory-3.md`). The Sol bench stayed
+dark for the whole wave, so Opus held the subjective lane and Sonnet the checker lane in every
+round, recorded per verdict. Publishing, the mirror refresh at re-pin, and the retention prune
+stay held for the user.
