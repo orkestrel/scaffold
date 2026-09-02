@@ -822,3 +822,16 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   doc block involved), and server reads one: the `Negotiator.format` method block opens with
   `@remarks` and carries no summary sentence. Under the program precedent it gains one
   (`voice-server-fixup-brief.md`, builder on Sonnet).
+- **Slice 5 lanes** (middleware, form, toolbox, terminal, markdown, database, process, console):
+  subjective PASS on middleware, form, markdown; checker PASS on all but form, whose claim 4
+  sweep hit the `FieldValidator` `@returns` (`true | string`, a return the boolean form cannot
+  govern; permitted, and the scanner's one `returnsBad` for form is that line). Rulings of
+  record: the rule's boolean-parameter form (`If \`true\`, …; if \`false\`, …`) governs a boolean
+  field's first sentence (process `strict`, probe `sensitive`, and their untouched siblings), so
+  process lands unchanged; a domain term that is the value's own name stays (console's `Color`,
+  `Attribute`, `Style`, `Alignment`, `BorderStyle`). Fix rounds: toolbox (`outcome` spent on
+  `status`, `Counts` on a tally, `Sets` beside `Holds` for one `bail` concept), terminal
+  (`Provides` on the two functions that are the default handlers; `Sets` on two numeric
+  constants), database (`optional` re-anchored from the hook onto the scope; `fluent` from the
+  builder onto the read), console (the `ThemeOptions` appositive orphaned; `Implements … styler`
+  on the class without an `implements` clause; `StepPosition` restated).
