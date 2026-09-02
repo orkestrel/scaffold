@@ -8,12 +8,17 @@ Read .agents/orchestration.md first. It owns the role set, the routing, and the
 dispatch contract. `.agents/transports/claude.md` owns the Claude transport contract
 in full; read it and follow it.
 
-This route pins `--permission-mode acceptEdits`, in the main checkout, as the sole
+This route pins `--permission-mode acceptEdits`, in the checkout the unit writes, as its sole
 serial writer from a clean committed baseline.
 
 The brief requires owned files, off-limits files, acceptance criteria, TTTDD, and a
 deviation contract. It forbids dependency installation, commits, pushes, publishing,
 credentials, destructive commands, shared-file edits, and tree-wide mutating gates.
+
+Every authority the brief references exists in the tree the run is rooted in; propagate a
+missing file rather than restating it, and take the stale-authority branch in
+.agents/skills/orkestrel-falsify/references/brief.md § "What not to put in a brief" where the
+tree carries a superseded vendored copy.
 
 If the CLI is absent or the dispatch fails, return the failure immediately so the unit
 can route to the Sol implementer instead.

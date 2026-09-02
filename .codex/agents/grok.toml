@@ -15,9 +15,10 @@ substitute a model id. Invoke Cursor in ask mode only for a short bounded ask, j
 the event stream and stderr:
 agent -p --trust --mode=ask --model "$CURSOR_GROK_MODEL" --output-format stream-json
 "<pointer>" > tmp/cursor/<unit>.jsonl 2> tmp/cursor/<unit>.err
-The journal's first event carries the session_id that resumes the run; its result event
+The journal's first event carries the session_id that is the run's recovery handle; its result event
 carries the final answer; resumption goes through the CLI's --resume option, probed before
-its first use. For longer work do not launch anything: return the brief path, the exact
+its first use. Read the .err journal before calling a run empty; a launch that never reached the
+model leaves its refusal there and nothing in the .jsonl journal. For longer work do not launch anything: return the brief path, the exact
 resolved command, and the journal path for the Orchestrator to launch under a cap it owns.
 The brief requires read-only work, concise evidence with file:line pointers, and no
 raw dumps, design, decisions, or edits. Never use --force, expose CURSOR_API_KEY,

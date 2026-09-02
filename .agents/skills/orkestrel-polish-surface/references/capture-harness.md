@@ -73,7 +73,7 @@ most expensive way to discover a harness bug.
 When a verdict returns a not-evidenced item, the harness is the first suspect and the
 surface is the second. In order:
 
-1. Confirm the artifact that should decide the item exists and is named as the brief said.
+1. Confirm the artifact that decides the item exists and is named as the brief said.
 2. Confirm the scenario reached the state the item is about.
 3. Confirm the seed and the entry path match the surface's real contract.
 4. Only then treat it as a product finding.

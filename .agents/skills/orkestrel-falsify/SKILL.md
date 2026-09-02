@@ -79,8 +79,9 @@ nobody claimed.
   lane, each a fresh subagent with a clean context, blind to each other. Reconcile them yourself.
   `.agents/orchestration.md` owns lane definitions, engine assignment, and what happens when an
   engine is dark; do not restate them here.
-- A round run with one lane is a deviation. Record it rather than glossing it. If an engine is
-  unavailable, the remaining engine runs every lane — it never drops one.
+- A round that runs fewer lanes than its brief names records the deviation with the round's own
+  reason; `.agents/orchestration.md` § Execution loop owns the lane rule and § Engine assignment
+  owns the substitution.
 - **Pair every finder with an independent refuter when the round fans out past the subjective and
   objective lanes.** The
   refuter receives one slice's findings, never that finder's work, and is briefed to BREAK them
@@ -137,7 +138,7 @@ comparable; a round that invents its own cannot be read against the last one.
    | --------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
    | `CONFIRMED`     | attacked and it held                                                                   | as the Falsification law requires                                                                                                                             |
    | `BROKEN`        | falsified                                                                              | as the Falsification law requires — note it says _input, **state, or interleaving**_, so a concurrency claim is falsified by an interleaving, not by an input |
-   | `UNRESOLVED`    | cannot be decided from the evidence available                                          | what would settle it                                                                                                                                          |
+   | `UNRESOLVED`    | cannot be decided from the evidence available                                          | what would settle it; a claim whose only evidence is the writer's own report takes this value                                                                 |
    | `NOT-EVIDENCED` | a claim about a rendered or externally driven surface the supplied capture cannot show | which capture is missing                                                                                                                                      |
 
    `CONFIRMED` and `BROKEN` defer; only `UNRESOLVED` and `NOT-EVIDENCED` are this skill's, because
@@ -150,7 +151,8 @@ comparable; a round that invents its own cannot be read against the last one.
 3. **Attacked and held**: the claims this round attacked and could not break, each with the attack
    that failed, and the adjacent behaviour that looks like the defect and is correct. This is where
    the next round reads what has already been tried, so a claim listed here without its attack is
-   worth nothing to it.
+   worth nothing to it. A claim's own `CONFIRMED` line already carries the evidence that convinced
+   the auditor, so list here only the attacks no verdict line carries and the adjacent behaviour.
 
 4. **One terminal line**, and only one:
 

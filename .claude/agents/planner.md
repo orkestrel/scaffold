@@ -32,8 +32,9 @@ list:
 - `Alternatives`: at most two real alternatives and why the design wins.
 - `Constraints`: what the code and the contracts permit, each with its `file:line`.
 - `Refusals`: the options a rule forecloses, with the rule text quoted.
-- `Measurements`: the readings that bound the design, each with the command that
-  produced it.
+- `Measurements`: the readings the dispatch supplied that bound the design, each with the
+  command the Orchestrator ran. Name a reading the design needs and the dispatch did not
+  supply under `Tensions`.
 - `Units`: bounded work, each naming its role AND engine so the routing ledger is
   derivable, with ownership, dependencies, and acceptance criteria.
 - `Tensions`: the choices your lane made on judgment, named for the other lane to

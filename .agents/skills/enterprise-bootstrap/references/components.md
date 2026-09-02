@@ -949,7 +949,7 @@ const myToast = bootstrap.Toast.getOrCreateInstance('#myToast')
 myToast.show()
 ```
 
-Constructors accept elements or CSS selector strings. Full lifecycle — `getInstance`, `dispose()` on unmount, event pairs (`show.bs.*` / `shown.bs.*`), async behavior, and why SPAs should prefer framework wrappers: [bootstrap-reference.md](bootstrap-reference.md) → JavaScript lifecycle.
+Constructors accept elements or CSS selector strings. Full lifecycle — `getInstance`, `dispose()` on unmount, event pairs (`show.bs.*` / `shown.bs.*`), async behavior, and why an SPA prefers a framework wrapper: [bootstrap-reference.md](bootstrap-reference.md) → JavaScript lifecycle.
 
 ## Icons
 

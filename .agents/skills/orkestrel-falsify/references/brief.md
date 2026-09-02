@@ -39,21 +39,17 @@ a consumer finding it after publication, when the version is already spent.
 ## The read-only audit lane's brief
 
 An audit lane writes nothing and runs nothing, so its brief carries fewer rows than a writing
-unit's. Give a lane these rows:
-
-- **Role and lane.** The role, its engine, and which lane it holds.
-- **Subject.** The chain of rounds, plus the evidence § "Evidence, by subject type" requires of
-  every row the subject occupies.
-- **What the round decides.**
-- **Already established — do not re-run.**
-- **Numbered falsifiable claims.**
-- **Unknowns, named as unknowns.**
-- **Output.** The verdict shape and its single terminal line.
+unit's. Give a lane every row § Anatomy names — the subject with the evidence § "Evidence, by subject type"
+requires of each row it occupies, what the round decides, already established, the numbered
+falsifiable claims, the unknowns, and the threshold — plus two rows of its own: **Role and lane**
+(the role, its engine, and which lane it holds) and **Output** (the verdict shape and its single
+terminal line). Review evidence folds into the subject.
 
 Omit the rows a writer needs and a lane cannot use: owned, shared, and off-limits files; the
-Execution line written for a writer; and acceptance criteria stated as gate commands. A lane that
-holds no shell cannot close a gate criterion, so a brief handing it one is asking for a ruling on
-the writer's report.
+Execution line's writer form, keeping the sentence that the lane performs the assignment directly
+and spawns nothing; and acceptance criteria stated as gate commands. A lane that holds no shell
+cannot close a gate criterion, so a brief handing it one is asking for a ruling on the writer's
+report.
 
 ## The successor rule
 

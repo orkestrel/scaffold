@@ -76,8 +76,9 @@ Use only the centralized files an environment needs.
   - Right file, wrong name → **rename it in place**. An entity is a class instance whose methods
     drive its own state, as opposed to a plain value that carries data and no behaviour. A function
     returning a live entity is an entity factory and belongs in `factories.ts` whatever it is
-    called, so `restoreThing` there is misnamed, not misplaced. Renaming moves the published surface and earns a version bump; that cost is the
-    correct one to pay, and it is smaller than the alternative.
+    called, so `restoreThing` there is misnamed, not misplaced. Renaming moves the published
+    surface and earns a version bump; that cost is the correct one to pay, and it is smaller than
+    the alternative.
   - Never let the name choose. Relocating a correctly-placed function to escape a rename drags its
     dependencies with it — an entity factory moved into `helpers.ts` makes that file import an
     implementation class, and a leaf file that imports a class stops being a leaf for every module

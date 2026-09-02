@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: 'Claude Opus 5 implementation of one bounded nontrivial unit — the subjective mirror of the Sol implementer. Writes owned files in the main checkout as the sole serial writer; favours API-shape, naming, and documentation-voice units. Never accepts its own output.'
+description: 'Claude Opus 5 implementation of one bounded nontrivial unit — the subjective mirror of the Sol implementer. Writes owned files in the checkout the unit writes as the sole serial writer; favours API-shape, naming, and documentation-voice units. Never accepts its own output.'
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: opus
 effort: high

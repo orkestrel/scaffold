@@ -119,7 +119,7 @@ skill owns the value set and the terminal line. Point the brief at both; restate
 
 ## Implementer route
 
-Sandbox `workspace-write`, main checkout, sole serial writer from a clean committed
+Sandbox `workspace-write`, the checkout the route writes in, its sole serial writer from a clean committed
 baseline, with owned files, off-limits files, and a deviation contract. The brief forbids
 dependency installation, commits, pushes, publishing, credentials, destructive commands,
 shared-file edits, and tree-wide mutating gates.

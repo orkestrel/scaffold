@@ -35,8 +35,7 @@ One workflow runs across all providers. Each engine has one job and never takes 
 - Route each nontrivial implementation unit to Opus or Sol. Objective, constraint-heavy,
   mechanical-precision work goes to Sol. API-shape, naming, and documentation-voice work goes to
   Opus. Cursor Composer is not an implementation route, and no `composer` role exists.
-- Design runs the adversarial pass. An audit runs the lanes its round names, with at least one whose
-  engine did not write the work.
+- Design runs the adversarial pass. § Execution loop step 5 fixes which lanes an audit runs.
 
 ## Orchestration by harness
 
@@ -255,9 +254,8 @@ Every role honours this floor. No dispatch may widen it.
 Concurrent executors share a filesystem unless isolated. Follow these rules to prevent clobbered
 edits, formatter and build races, cache phantoms, and validation cross-talk.
 
-1. Run one writing executor per checkout and keep the checkouts disjoint; in a single checkout that
-   is one writer at a time. Commit a checkpoint before each writing dispatch so git is the rollback
-   mechanism.
+1. Serialize writers as § Permission floor states: one per checkout, checkouts disjoint. Commit a
+   checkpoint before each writing dispatch so git is the rollback mechanism.
 2. Assign disjoint owned files plus explicit shared and off-limits files.
 3. Keep shared files report-only. Executors return exact patches for serial integration.
 4. Restrict concurrent executors to read-only, scoped validation. A tree-wide result may contain a
@@ -333,7 +331,7 @@ longer holds.
      ends the campaign, each to end implemented, repaired, retained, or intentionally excluded on
      evidence. A plan that names work but not its end can only be abandoned, never finished.
 3. **Implement.** Route each nontrivial objective unit to the Sol `implementer` and each nontrivial
-   subjective unit to the Opus `implementer`, in the main checkout, one writer at a time. Route a
+   subjective unit to the Opus `implementer`, in the checkout the unit writes, one writer per checkout. Route a
    fully specified taste-free unit to `builder`. Never route implementation to an engine the unit's
    judgment load exceeds.
 4. **Integrate.** Evaluate each distillate against its acceptance criteria, apply shared-file
@@ -345,8 +343,9 @@ longer holds.
    subjective lane — `analyst` and `reviewer`, the way step 2 names its lanes — at least one of them
    on an engine that did not write the work. Dispatch `checker` in addition when the acceptance
    criteria are mechanical — counts, paths, parity rows, scope honesty — never in place of a lane. A
-   round that runs fewer lanes than its brief names records the deviation in its verdict file with
-   that round's own reason, never a template sentence.
+   round that runs fewer lanes than its brief names, or omits the checker its criteria call for,
+   records the deviation in its verdict file with that round's own reason, never a template
+   sentence.
    - State the audit's subject as numbered falsifiable claims and require per-claim verdicts with
      evidence, per the Falsification law in `.claude/rules/quality.md` and the `orkestrel-falsify`
      value set, unless the dispatch names a different skill that fixes another.
@@ -786,9 +785,7 @@ release, and follow it there rather than reconstructing the procedure here. What
 section binds an executor who is not publishing.
 
 A wave over unpublished tips derives its order per run from the graph and records only the round
-each package landed in, never the order itself. It runs one unit per checkout, at that checkout's
-catalog layer, and gives a checkout with no rows an adopt unit only when that checkout's typecheck
-against the staged closure reddens.
+each package landed in, never the order itself.
 
 ### Fixing a dependency before it publishes
 
@@ -808,6 +805,8 @@ Build the dependency from source, pack it, and **install the tarball** into the 
 - **Rebuild and repack whenever the source moves.** A stale tarball is the same defect as a stale
   `dist/`, and it is worse for being invisible: the consumer's gates go green against a fix that no
   longer exists in the dependency's tree.
+- **Run one unit per checkout, at that checkout's catalog layer.** Give a checkout with no rows an
+  adopt unit only when its typecheck against the staged closure reddens.
 - **Fetch and merge the dependency's default branch before packing it**, wherever another session
   can move that branch. A pack from a stale tip ships the consumer a dependency the dependency's own
   repository no longer has.

@@ -13,8 +13,10 @@ This route pins `--permission-mode plan`.
 The brief asks the subjective lane for coherent API shape, vocabulary, and
 ergonomics, and at most two alternatives; it asks the objective lane for the
 constraints the code and the contracts permit with their file:line, the refusals a
-rule forecloses with the rule text quoted, and the measurements that bound the
-design. It asks whichever lane runs for bounded units that each name their role and
+rule forecloses with the rule text quoted, and the measurements the dispatch supplied that
+bound the design, each with the command the Orchestrator ran, naming under tensions a reading
+the design needs and the dispatch did not supply. It asks whichever lane runs for bounded
+units that each name their role and
 engine; tensions named for the other lane to challenge, or for the Orchestrator to
 rule when one engine holds every lane; and risks. A lane files its work under the
 sections that name it. A dispatch may name a skill that fixes a different return
