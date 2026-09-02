@@ -158,3 +158,10 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   through `ROUTED_FENCES` to the browser helpers test, which asserts every printed value. Tarball
   rebuilt at 18:27 (core entry carries the new voice); re-stage into terrain after FX3 exits.
   Full chain dispatched to `verifier` (`gates-fx2-brief.md`).
+- FX1 returned: committed in scaffold at `4fb7ff2` (13 files; duplicate-sweep instrument with its
+  own negative control retained in the report). Orchestrator closed the one count it left
+  ("both viewports and both themes") in the same commit. Verifier dispatched
+  (`gates-fx1-brief.md`).
+- Iteration 2 evaluation: form eval 17/17 (agent-graded), toolbar eval 9/9 (one mechanical row
+  overridden on evidence); old skill 82.5%, new skill 100.0%. Static viewer sent to the user;
+  benchmarks retained as `benchmark-iteration-{1,2}.md`. The eval worktree was removed.
