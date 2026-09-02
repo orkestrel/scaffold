@@ -443,3 +443,21 @@ governed the touched block).
 - Findings for the next change: the s03-22 radius under-scopes the moved Reflect keys (the
   compiler is the scope); the shared per-sample classifier's cause prefix; `SampleMemo` trio kept
   as the walk's own memo.
+
+## Breaking phase — contract main reconciled; L1 in progress (2026-09-02)
+
+- **contract `origin/main` moved** by three unpublished commits (`c13cfae`: canonical array copy,
+  refusal-only read diagnostics, compile-time string refinement patterns); unit `contract-merge`
+  (Opus) reconciled them into the branch as `2c15840` keeping both intents (main's `pattern`
+  argument on `buildStringFaults`, `INTRINSICS.reflect.members` in main's fast path, the derived
+  composition test replacing the branch's census literal); objective lane PASS, verifier GREEN
+  (`units/contract-merge-audit-verdict.md`). Merge base is now `c13cfae`; consumers re-stage
+  `2c15840` at the L2 boundary.
+- **L1 so far:** budget applied and accepted (`ff2659b`); html applied and accepted (`1cec0f4` +
+  the index sentence fix `bc53632`); csv applied (`f73364d`), objective PASS, checker `FAIL 5`
+  (contract comparisons without executed assertions) → fix round in flight; form fix-ups applied
+  (`d51fac8`). indexeddb, ndjson, sqlite writers in flight.
+- Findings for the next change: contract's `buildStringFaults` guide row carries a pre-existing
+  count; csv's tests-mirror drift (leaf describes in `parsers.test.ts`); csv's
+  `test:distribution` must run after the registry restore before any publish (module-init proof
+  of the parsers ↔ inferers cycle); html's `HTML.ts` import-order residue.
