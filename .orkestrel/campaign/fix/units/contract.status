@@ -1,0 +1,29 @@
+ M guides/contract.md
+ M src/core/ContractCompiler.ts
+ M src/core/JSONCloner.ts
+ M src/core/SchemaCloner.ts
+ M src/core/ShapeCloner.ts
+ M src/core/ShapeValidator.ts
+ M src/core/combinators.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/helpers.ts
+ M src/core/inferers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+ M tests/src/core/ContractCompiler.test.ts
+ M tests/src/core/ShapeCloner.test.ts
+ M tests/src/core/ShapeValidator.test.ts
+ M tests/src/core/cloners.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/inferers.test.ts
+ M tests/src/core/integration.test.ts
+ M tests/src/core/shapers.test.ts
+?? src/core/SampleInferer.ts
+?? src/core/SchemaShaper.ts
+?? src/core/ValueInferer.ts

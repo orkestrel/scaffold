@@ -1,0 +1,426 @@
+diff --git a/README.md b/README.md
+index 38c8474..cd1247e 100644
+--- a/README.md
++++ b/README.md
+@@ -40,11 +40,11 @@ parser.retry // undefined - sticky reconnection time, until a retry: field arriv
+ try {
+ 	parser.parse('x'.repeat(2_000_000))
+ } catch (error) {
+-	if (isSSEError(error) && error.code === 'OVERFLOW') parser.reset()
++	if (isSSEError(error) && error.code === 'OVERFLOW') parser.clear()
+ }
+ 
+ parser.flush() // force out a trailing unterminated event at end-of-stream
+-parser.reset() // full reset - drops buffered state and sticky id/retry
++parser.clear() // drops buffered state and sticky id/retry
+ ```
+ 
+ Pair it with a `TextDecoder({ stream: true })` when reading a byte stream so
+diff --git a/guides/sse.md b/guides/sse.md
+index 331bad8..f10dd5c 100644
+--- a/guides/sse.md
++++ b/guides/sse.md
+@@ -9,7 +9,7 @@
+ > non-empty. A trailing partial line or in-progress event split across chunk
+ > boundaries is buffered until the rest arrives. The `id` / `retry` fields are
+ > also persisted as sticky connection state (WHATWG last-event-id semantics) —
+-> surfaced through the `id` / `retry` getters, cleared only by `reset()`. An
++> surfaced through the `id` / `retry` getters, dropped only by `clear()`. An
+ > optional `limit` bounds total buffered characters, throwing a typed
+ > `SSEError('OVERFLOW')` instead of growing unbounded; `flush()` forces out any
+ > trailing unterminated event at end-of-stream. A pure functional primitive —
+@@ -31,7 +31,7 @@ const parser = createSSEParser()
+ parser.parse('data: a\ndata: b\n\n') // [{ data: 'a\nb' }] - the two data lines joined
+ parser.parse('event: ping\ndata: 1') // [] - the event is buffered until its blank line
+ parser.parse('\n\n') // [{ data: '1', event: 'ping' }]
+-parser.reset() // drop any buffered partial line / event - ready for a fresh stream
++parser.clear() // drop any buffered partial line / event - ready for a fresh stream
+ ```
+ 
+ ### Types
+@@ -39,7 +39,7 @@ parser.reset() // drop any buffered partial line / event - ready for a fresh str
+ | Type                 | Kind      | Shape                                                                                                                         |
+ | -------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------- |
+ | `SSEEvent`           | interface | `{ data, event?, id?, retry? }` — one dispatched event; `data` is every `data:` field joined by `\n`, no trailing newline.    |
+-| `SSEParserInterface` | interface | The stateful stream-parser contract — `parse` / `flush` / `reset` + the sticky `id` / `retry` getters.                        |
++| `SSEParserInterface` | interface | The stateful stream-parser contract — `parse` / `flush` / `clear` + the sticky `id` / `retry` getters.                        |
+ | `SSEParserOptions`   | interface | `{ limit? }` — caps total buffered characters (un-consumed line buffer + in-progress event field lengths); unset → unbounded. |
+ | `SSEErrorCode`       | type      | `'OVERFLOW'` — the sole `SSEError` code, thrown when a configured `limit` would be exceeded.                                  |
+ 
+@@ -116,7 +116,7 @@ state) stay off the method table below and are documented afterward.
+ | ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `parse` | `readonly SSEEvent[]` | Append `chunk`, then return every event a blank line has dispatched so far; a trailing partial line / in-progress event is buffered for the next call. Throws `SSEError('OVERFLOW')` when a configured `limit` would be exceeded — state left unchanged. |
+ | `flush` | `readonly SSEEvent[]` | Treat any remaining buffered partial line as terminated, then dispatch the in-progress event if its data buffer is non-empty. Returns a single-element array, or `[]` when nothing was pending.                                                          |
+-| `reset` | `void`                | Drop any buffered partial line, in-progress event, and persisted `id` / `retry` — full reset for a fresh stream.                                                                                                                                         |
++| `clear` | `void`                | Drop any buffered partial line, in-progress event, and persisted `id` / `retry`, leaving the parser ready for a fresh stream.                                                                                                                            |
+ 
+ ```ts
+ import { SSEParser } from '@orkestrel/sse'
+@@ -125,7 +125,7 @@ const parser = new SSEParser()
+ parser.parse('data: a\ndata: b\n\n') // [{ data: 'a\nb' }] - the two data lines joined
+ parser.parse('event: ping\ndata: 1') // [] - the event is buffered until its blank line
+ parser.parse('\n\n') // [{ data: '1', event: 'ping' }]
+-parser.reset() // drop any buffered partial line / event / persisted id/retry - ready for a fresh stream
++parser.clear() // drop any buffered partial line / event / persisted id/retry - ready for a fresh stream
+ parser.parse('data: fresh\n\n') // [{ data: 'fresh' }]
+ ```
+ 
+@@ -143,7 +143,7 @@ parser.flush() // [{ data: 'incomplete' }] - forced out at end-of-stream
+ 
+ `id` / `retry` are sticky connection state (WHATWG last-event-id semantics):
+ each valid `id:` / `retry:` field updates them, dispatch does NOT clear them,
+-and only `reset()` does — useful for reconnection (`Last-Event-ID` header):
++and only `clear()` does — useful for reconnection (`Last-Event-ID` header):
+ 
+ ```ts
+ import { SSEParser } from '@orkestrel/sse'
+@@ -153,8 +153,8 @@ parser.id // undefined - no id: field seen yet
+ parser.parse('id: 42\nretry: 3000\ndata: x\n\n') // [{ data: 'x', id: '42', retry: 3000 }]
+ parser.id // '42' - persisted, survives dispatch
+ parser.retry // 3000 - persisted, survives dispatch
+-parser.reset()
+-parser.id // undefined - reset() clears sticky state
++parser.clear()
++parser.id // undefined - clear() drops sticky state
+ ```
+ 
+ A configured `limit` throws a typed `SSEError` instead of growing the buffer
+@@ -167,6 +167,6 @@ const parser = new SSEParser({ limit: 10 })
+ try {
+ 	parser.parse('x'.repeat(20))
+ } catch (error) {
+-	if (isSSEError(error) && error.code === 'OVERFLOW') parser.reset()
++	if (isSSEError(error) && error.code === 'OVERFLOW') parser.clear()
+ }
+ ```
+diff --git a/src/core/SSEParser.ts b/src/core/SSEParser.ts
+index 9b1f7ae..17f7cae 100644
+--- a/src/core/SSEParser.ts
++++ b/src/core/SSEParser.ts
+@@ -19,14 +19,14 @@ import { SSEError } from './errors.js'
+  * - **Blank-line dispatch.** A blank line flushes the accumulated event: an
+  *   {@link SSEEvent} is emitted ONLY when the data buffer is non-empty (a dispatch with
+  *   an empty data buffer emits nothing - a comment-only or field-only "event" produces
+- *   no event), and the data buffer + event type reset for the next event afterwards.
++ *   no event), and the data buffer + event type are cleared for the next event afterwards.
+  *   `id` / `retry` ride on the emitted event for the consumer to track per-event - the
+  *   emitted event's shape is unchanged - AND are separately persisted as connection
+  *   state, exposed via the sticky `id` / `retry` getters (see below).
+  * - **Sticky connection state.** Each valid `id:` field updates a persisted
+  *   last-event-id, exposed via the `id` getter; each valid `retry:` field updates a
+  *   persisted reconnection time, exposed via the `retry` getter. Neither is cleared
+- *   when an event dispatches - only `reset()` clears them - matching WHATWG
++ *   when an event dispatches - only `clear()` drops them - matching WHATWG
+  *   last-event-id semantics. A NUL-voided `id` field does not alter the persisted
+  *   value.
+  * - **Cross-chunk reassembly.** `parse(chunk)` appends `chunk` to an internal buffer,
+@@ -67,7 +67,7 @@ export class SSEParser implements SSEParserInterface {
+ 	// Read cursor into `#buffer` for the current `parse()` call - lines are consumed
+ 	// by advancing this offset, never by front-slicing `#buffer` per line. The
+ 	// invariant `#offset === 0` holds BETWEEN calls: `parse()` compacts `#buffer` to
+-	// its unconsumed tail (and resets `#offset` to 0) once, at the end of the call.
++	// its unconsumed tail (and rewinds `#offset` to 0) once, at the end of the call.
+ 	#offset = 0
+ 	#started = false
+ 	// True when the last consumed line was terminated by a `\r`: a `\n` arriving next
+@@ -75,14 +75,14 @@ export class SSEParser implements SSEParserInterface {
+ 	// fresh blank line. This lets a bare-`\r` terminator flush immediately AND keeps a
+ 	// CRLF straddling a chunk boundary as one terminator.
+ 	#carriage = false
+-	// The in-progress event accumulator, reset after each blank-line dispatch.
++	// The in-progress event accumulator, cleared after each blank-line dispatch.
+ 	#data: string[] = []
+ 	#event: string | undefined = undefined
+ 	#id: string | undefined = undefined
+ 	#retry: number | undefined = undefined
+ 	// Persisted connection state (WHATWG last-event-id / reconnection time) - updated
+-	// by every valid `id:` / `retry:` field, never cleared on dispatch; only `reset()`
+-	// clears them.
++	// by every valid `id:` / `retry:` field, never cleared on dispatch; only `clear()`
++	// drops them.
+ 	#lastId: string | undefined = undefined
+ 	#lastRetry: number | undefined = undefined
+ 
+@@ -124,7 +124,7 @@ export class SSEParser implements SSEParserInterface {
+ 			if (line === undefined) break
+ 			this.#process(line, events)
+ 		}
+-		// Compact once per call: drop the consumed prefix and reset the cursor.
++		// Compact once per call: drop the consumed prefix and rewind the cursor.
+ 		if (this.#offset > 0) {
+ 			this.#buffer = this.#buffer.slice(this.#offset)
+ 			this.#offset = 0
+@@ -144,7 +144,7 @@ export class SSEParser implements SSEParserInterface {
+ 		return events
+ 	}
+ 
+-	reset(): void {
++	clear(): void {
+ 		this.#buffer = ''
+ 		this.#offset = 0
+ 		this.#started = false
+@@ -231,7 +231,7 @@ export class SSEParser implements SSEParserInterface {
+ 	}
+ 
+ 	// Dispatch the accumulated event on a blank line (or on `flush()`): emit ONLY when
+-	// data was buffered (the spec's empty-data rule), then reset the accumulator for
++	// data was buffered (the spec's empty-data rule), then clear the accumulator for
+ 	// the next event. Persisted `id` / `retry` state is untouched.
+ 	#dispatch(events: SSEEvent[]): void {
+ 		if (this.#data.length > 0) {
+@@ -246,7 +246,7 @@ export class SSEParser implements SSEParserInterface {
+ 		this.#clear()
+ 	}
+ 
+-	// Reset the in-progress event accumulator (data buffer + last-seen fields).
++	// Clear the in-progress event accumulator (data buffer + last-seen fields).
+ 	#clear(): void {
+ 		this.#data = []
+ 		this.#event = undefined
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index ec43b2a..5639552 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -14,7 +14,7 @@ import type { SSEErrorCode } from './types.js'
+  * line buffer + accumulated per-event field lengths + the incoming chunk) would
+  * exceed a configured {@link import('./types.js').SSEParserOptions.limit}
+  * (`OVERFLOW`). The parser's state is left UNCHANGED by the throwing call - the
+- * chunk is not appended - so a consumer may `reset()` and continue. `context`
++ * chunk is not appended - so a consumer may `clear()` and continue. `context`
+  * carries at least `{ limit, size }`: the configured limit and the size the
+  * buffer would have reached.
+  *
+@@ -28,7 +28,7 @@ import type { SSEErrorCode } from './types.js'
+  * } catch (error) {
+  * 	if (isSSEError(error) && error.code === 'OVERFLOW') {
+  * 		error.context // { limit: 10, size: 20 }
+- * 		parser.reset()
++ * 		parser.clear()
+  * 	}
+  * }
+  * ```
+@@ -53,7 +53,7 @@ export class SSEError extends Error {
+ }
+ 
+ /**
+- * Narrow an unknown caught value to an {@link SSEError}.
++ * Narrows an unknown caught value to an {@link SSEError}.
+  *
+  * @param value - The value to test (typically a `catch` binding)
+  * @returns `true` when `value` is an {@link SSEError}
+@@ -65,7 +65,7 @@ export class SSEError extends Error {
+  * try {
+  * 	parser.parse(chunk)
+  * } catch (error) {
+- * 	if (isSSEError(error) && error.code === 'OVERFLOW') parser.reset()
++ * 	if (isSSEError(error) && error.code === 'OVERFLOW') parser.clear()
+  * }
+  * ```
+  */
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index c05411b..bf68a40 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,7 +2,7 @@ import type { SSEParserInterface, SSEParserOptions } from './types.js'
+ import { SSEParser } from './SSEParser.js'
+ 
+ /**
+- * Create a Server-Sent-Events (SSE) stream parser - a stateful handle that turns
++ * Creates a Server-Sent-Events (SSE) stream parser - a stateful handle that turns
+  * string chunks into the complete events dispatched so far.
+  *
+  * @param options - See {@link SSEParserOptions}.
+@@ -14,7 +14,7 @@ import { SSEParser } from './SSEParser.js'
+  * `retry:`), and an in-progress event split across chunk boundaries is buffered until
+  * its blank line arrives (or `flush()` forces it out at end-of-stream). The `id` /
+  * `retry` getters expose the persisted last-event-id / reconnection time, which
+- * survive dispatch and only clear on `reset()`. Generic and event-free - no
++ * survive dispatch and are dropped only by `clear()`. Generic and event-free - no
+  * server / agent coupling; never throws on malformed input, only on a configured
+  * `limit` being exceeded (an {@link import('./errors.js').SSEError} with code
+  * `'OVERFLOW'`). Pair it with a `TextDecoder({ stream: true })` to also handle
+@@ -33,7 +33,7 @@ import { SSEParser } from './SSEParser.js'
+  * try {
+  * 	parser.parse('x'.repeat(2_000_000))
+  * } catch (error) {
+- * 	if (isSSEError(error) && error.code === 'OVERFLOW') parser.reset()
++ * 	if (isSSEError(error) && error.code === 'OVERFLOW') parser.clear()
+  * }
+  * ```
+  */
+diff --git a/src/core/types.ts b/src/core/types.ts
+index fb231be..fabd0e3 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -79,12 +79,12 @@ export interface SSEParserInterface {
+ 	flush(): readonly SSEEvent[]
+ 	/** The persisted last-event-id (WHATWG last-event-id): set by each valid `id:`
+ 	 * field and NOT cleared when an event dispatches; `undefined` until the first
+-	 * valid `id:` field arrives, or after `reset()`. */
++	 * valid `id:` field arrives, or after `clear()`. */
+ 	readonly id: string | undefined
+ 	/** The last valid `retry:` reconnection time seen, in ms; `undefined` until the
+-	 * first valid `retry:` field arrives, or after `reset()`. */
++	 * first valid `retry:` field arrives, or after `clear()`. */
+ 	readonly retry: number | undefined
+-	/** Drop any buffered partial line, in-progress event, and persisted id/retry -
+-	 * reset for a fresh stream. */
+-	reset(): void
++	/** Drops any buffered partial line, in-progress event, and persisted id/retry,
++	 * leaving the parser ready for a fresh stream. */
++	clear(): void
+ }
+diff --git a/tests/src/core/SSEParser.test.ts b/tests/src/core/SSEParser.test.ts
+index 721057d..6e7ba7d 100644
+--- a/tests/src/core/SSEParser.test.ts
++++ b/tests/src/core/SSEParser.test.ts
+@@ -145,7 +145,7 @@ describe('SSEParser — blank-line dispatch and multiple events', () => {
+ 		expect(parser.parse('data: 1\n\ndata: 2\n\n')).toEqual([{ data: '1' }, { data: '2' }])
+ 	})
+ 
+-	it('resets the accumulator between events (event type does not bleed across)', () => {
++	it('clears the accumulator between events (event type does not bleed across)', () => {
+ 		const parser = new SSEParser()
+ 
+ 		// The first event carries `event: a`; the second, with no event field, must not
+@@ -389,13 +389,13 @@ describe('SSEParser — buffered final event (no trailing blank line)', () => {
+ 	})
+ })
+ 
+-describe('SSEParser — reset', () => {
++describe('SSEParser — clear', () => {
+ 	it('drops a buffered partial event so a later parse starts fresh', () => {
+ 		const parser = new SSEParser()
+ 
+-		// Accumulate a data line (no blank line yet), then reset before it dispatches.
++		// Accumulate a data line (no blank line yet), then clear before it dispatches.
+ 		expect(parser.parse('data: gone\n')).toEqual([])
+-		parser.reset()
++		parser.clear()
+ 
+ 		// The old data is discarded — a fresh event dispatches without it.
+ 		expect(parser.parse('data: fresh\n\n')).toEqual([{ data: 'fresh' }])
+@@ -405,26 +405,26 @@ describe('SSEParser — reset', () => {
+ 		const parser = new SSEParser()
+ 
+ 		expect(parser.parse('data: par')).toEqual([])
+-		parser.reset()
++		parser.clear()
+ 
+ 		// The partial `data: par` line is gone; the tail is now its own fresh stream.
+ 		expect(parser.parse('data: x\n\n')).toEqual([{ data: 'x' }])
+ 	})
+ 
+-	it('re-arms BOM stripping after reset (next parse is a fresh first chunk)', () => {
++	it('re-arms BOM stripping after clear (next parse is a fresh first chunk)', () => {
+ 		const parser = new SSEParser()
+ 
+ 		expect(parser.parse(BOM + 'data: a\n\n')).toEqual([{ data: 'a' }])
+-		parser.reset()
+-		// After reset the next chunk is again a "first chunk" — its leading BOM strips.
++		parser.clear()
++		// After clear() the next chunk is again a "first chunk" — its leading BOM strips.
+ 		expect(parser.parse(BOM + 'data: b\n\n')).toEqual([{ data: 'b' }])
+ 	})
+ 
+ 	it('is a safe no-op on an empty buffer', () => {
+ 		const parser = new SSEParser()
+ 
+-		parser.reset()
+-		parser.reset()
++		parser.clear()
++		parser.clear()
+ 
+ 		expect(parser.parse('data: x\n\n')).toEqual([{ data: 'x' }])
+ 	})
+@@ -509,7 +509,7 @@ describe('SSEParser — (A) spec conformance', () => {
+ 		expect(parser.parse('data:second event\nid\n\n')).toEqual([{ data: 'second event', id: '' }])
+ 	})
+ 
+-	it('A2 sticky last-event-id getter persists across dispatches, updates, and reset', () => {
++	it('A2 sticky last-event-id getter persists across dispatches, updates, and clear', () => {
+ 		const parser = new SSEParser()
+ 
+ 		expect(parser.parse('id: 1\ndata: a\n\ndata: b\n\n')).toEqual([
+@@ -526,7 +526,7 @@ describe('SSEParser — (A) spec conformance', () => {
+ 		expect(parser.parse('id: 2\ndata: d\n\n')).toEqual([{ data: 'd', id: '2' }])
+ 		expect(parser.id).toBe('2')
+ 
+-		parser.reset()
++		parser.clear()
+ 		expect(parser.id).toBeUndefined()
+ 	})
+ 
+@@ -538,7 +538,7 @@ describe('SSEParser — (A) spec conformance', () => {
+ 		expect(parser.id).toBe('1')
+ 	})
+ 
+-	it('A2c sticky retry getter persists, ignores invalid retry, and clears on reset', () => {
++	it('A2c sticky retry getter persists, ignores invalid retry, and is dropped by clear', () => {
+ 		const parser = new SSEParser()
+ 
+ 		expect(parser.parse('retry: 100\ndata: a\n\ndata: b\n\n')).toEqual([
+@@ -550,7 +550,7 @@ describe('SSEParser — (A) spec conformance', () => {
+ 		expect(parser.parse('retry: x\ndata: c\n\n')).toEqual([{ data: 'c' }])
+ 		expect(parser.retry).toBe(100)
+ 
+-		parser.reset()
++		parser.clear()
+ 		expect(parser.retry).toBeUndefined()
+ 	})
+ 
+@@ -845,7 +845,7 @@ describe('SSEParser — (E) limits & volume (CI-fast, deterministic)', () => {
+ 			expect(() => overLimit.parse('123456')).toThrow(/exceed the configured limit/)
+ 		})
+ 
+-		it('(d) the throwing call leaves prior state intact and reset() makes the parser reusable', () => {
++		it('(d) the throwing call leaves prior state intact and clear() makes the parser reusable', () => {
+ 			const parser = createSSEParser({ limit: 20 })
+ 
+ 			expect(parser.parse('data: ab\n')).toEqual([])
+@@ -863,7 +863,7 @@ describe('SSEParser — (E) limits & volume (CI-fast, deterministic)', () => {
+ 			// The offending chunk was not appended — the prior 'ab' data is intact.
+ 			expect(parser.parse('\n\n')).toEqual([{ data: 'ab' }])
+ 
+-			parser.reset()
++			parser.clear()
+ 			expect(parser.parse('data: fresh\n\n')).toEqual([{ data: 'fresh' }])
+ 		})
+ 
+@@ -943,14 +943,14 @@ describe('SSEParser — (E) limits & volume (CI-fast, deterministic)', () => {
+ })
+ 
+ describe('SSEParser — (F) API contract', () => {
+-	it('F3 reset() mid-CRLF clears the carriage hold — a following \\n is a fresh blank line', () => {
++	it('F3 clear() mid-CRLF drops the carriage hold — a following \\n is a fresh blank line', () => {
+ 		const parser = new SSEParser()
+ 
+ 		expect(parser.parse('data: x\r')).toEqual([])
+-		parser.reset()
++		parser.clear()
+ 
+-		// After reset, the leading '\n' is NOT swallowed as the second half of the
+-		// pre-reset CRLF — it is read as a fresh (no-op) blank line, then normal
++		// After clear(), the leading '\n' is NOT swallowed as the second half of the
++		// pre-clear CRLF — it is read as a fresh (no-op) blank line, then normal
+ 		// parsing resumes.
+ 		expect(parser.parse('\ndata: y\n\n')).toEqual([{ data: 'y' }])
+ 	})
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index c2c4050..3984a58 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -20,11 +20,11 @@ describe('createSSEParser', () => {
+ 		expect(parser.parse('lo\n\n')).toEqual([{ data: 'hello' }])
+ 	})
+ 
+-	it('clears the buffer on reset', () => {
++	it('clears the buffer', () => {
+ 		const parser = createSSEParser()
+ 
+ 		expect(parser.parse('data: partial\n')).toEqual([])
+-		parser.reset()
++		parser.clear()
+ 
+ 		expect(parser.parse('data: fresh\n\n')).toEqual([{ data: 'fresh' }])
+ 	})
