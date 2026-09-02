@@ -1,0 +1,9 @@
+ M README.md
+ M guides/csv.md
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/core/inferers.ts
+ M src/core/parsers.ts
+ M src/core/types.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/parsers.test.ts
