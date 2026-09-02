@@ -181,8 +181,13 @@ consumer staged against a superseded contract tip is re-staged at its next bound
 main ahead of the merge base by nothing. Second reading, after the contract fix-up: `origin/main`
 at `c13cfae` (three unpublished commits: canonical array copy, read diagnostics on refusal,
 string refinement patterns at compile time), every one touching files the branch changed; unit
-`contract-merge` (Opus implementer) reconciles them into the branch, the Orchestrator commits the
-merge, repacks, and re-stages contract's consumers.
+`contract-merge` (Opus implementer) reconciled them into the branch as `2c15840` (objective lane
+PASS, verifier GREEN), the tarball `contract-2c15840.tgz` is packed, and contract's consumers
+re-stage it at the L2 boundary. On 2026-09-02 the user finished their contract work (all of it
+in `origin/main` at `c13cfae`, unpublished) and handed contract's authority to this campaign: the
+campaign branch is contract's line of development from here, `origin/main` stays at `c13cfae`
+until the publish wave merges the branch and publishes, and the publish itself waits on the
+user's standing hold.
 
 ## Wave schedule and routing ledger
 
