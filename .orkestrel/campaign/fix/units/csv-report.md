@@ -87,3 +87,13 @@ Built `dist/` moves: true
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/csv.diff`,
 `tmp/units/breaking/csv.status`.
+
+## Fix-up (csv-fixup, builder on Sonnet; commit follows `f73364d`)
+
+A `describe` in `tests/src/core/parsers.test.ts` imports `parseInteger`, `parseNumber`, and
+`parseBoolean` from `@orkestrel/contract` (staged at the campaign tip) and asserts each comparison
+the Parsers table and the parser TSDoc state; the measured values match the prose (`7`, `7.5`,
+`true`/`false` from contract; `undefined` from this package). The `DEFAULT_PARSE_OPTIONS` row
+states the `comment` exception; the helpers test header names what the file covers. Gates after
+one format convergence: `format:check` 0, `lint:check` 0, `check` 0, `build` 0, `test` 0 (231
+src, 111 policy, 46 config, 15 setup, 18 guides).

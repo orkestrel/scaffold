@@ -26,3 +26,11 @@ for the W-END handoff.
 
 Terminal lines: objective PASS; checker `FAIL 5`; verifier GREEN. Fix round `csv-fixup` (builder)
 carries claim 5 and the two prose findings; round 2 follows.
+
+## Round 2 (fix round `csv-fixup`)
+
+Subject: the three-file diff. Orchestrator verification in place of a lane: the new `describe`
+imports the three parsers from `@orkestrel/contract` and asserts the stated comparisons with the
+measured values quoted; the constants row states the `comment` exception; the helpers test
+header names its coverage; the builder's chain exits 0. Verdict: PASS. The csv unit closes
+**applied** for s16-03, s16-05, and the s16-01 principal and guide-mirror carriers.
