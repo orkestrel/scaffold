@@ -668,3 +668,10 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   carried as the W-END `mirror-refresh` row, which cannot run while publishing is held.
 - **L5 closed.** agent `f0c4979` accepted with its verdict. Ollama landed at `6a92c05`
   (re-staged on `agent-f0c4979.tgz`) with its lanes running; toolbox in flight.
+- **W-END readme-links, first pass.** The builder replaced every `guides/src/` link target in the
+  README of each idle checkout the grep named (26 checkouts; ollama and toolbox excluded as live);
+  the Orchestrator committed and pushed each README alone (`instruments/commit-readmes.sh`, log
+  `units/readme-links-commits.log`). Every one of those 26 tips moved past its packed tarball
+  (README ships in `files`), so W-END repacks every tip and re-stages every closure once before
+  the fleet gate sweep and the second inventory. Second pass over ollama and toolbox after their
+  units land.
