@@ -797,3 +797,19 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   landing chain went red on `npm test` with the standing Oxlint arming failure, reproduced on the
   deciding run alone; its static gates and build are green and the diff is comment-only, so the
   Orchestrator committed it directly with the failure recorded in its verdict.
+- **Slice 4 lanes** (test, server, csv, guide, brief, html, interpret, msg): subjective PASS on
+  server, csv, brief, html, and interpret; checker PASS on all but csv and brief, whose claim 2
+  broke only on the backticked `true` a boolean-summary opener drops (`` `true` when … `` →
+  `Checks whether …`, the rule's own example form), carved out of every pending checker brief
+  and the generator. Fix rounds: test (a `Holds`/`Lists`/`Names`/`Expands`/`Reports` verb
+  misfit on several data members and one outcome union, plus one language for the options
+  shapes), guide (the name clause read strictly stripped domain nouns — `source directory`,
+  `tests directory`, `code body`, `head text`, `body lines`, `imported names`, the shape noun —
+  that sibling rows kept; ruled restored, with the possessor named where `its` lost its
+  referent and `Source` leading with its identity), msg (`Serves as the … comparator` → an
+  action opener). Rulings of record: a data member named for its domain noun keeps the noun and a
+  sentence that teaches nothing beyond the identifier is reworded; rewrapping a later sentence
+  keeps it word-identical and satisfies the byte-identical criterion; a title-only module
+  header (`MSG`) deleted in favour of the third-person paragraph beneath it is accepted;
+  comment overflow past the print width where the package already tolerates it is recorded for
+  the debrief, not a fix.

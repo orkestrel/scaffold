@@ -18,7 +18,8 @@ Rule on the diff, the status, and the tree, never on the report's self-assessmen
    `/** … */` block or a `//` comment. Quote any hunk that touches a code token.
 2. Every backtick token, `{@link …}`, and URL in a rewritten block is byte-identical to the
    removed line, except the backticked `true`/`false` tokens of a boolean `@returns` line
-   rewritten to `True if …; false otherwise` (the rule mandates that form) and a code token
+   rewritten to `True if …; false otherwise` (the rule mandates that form), the backticked `true` of a boolean-summary
+   opener (`` `true` when the value is … `` → `Checks whether the value is …`), and a code token
    that repeated the symbol's own identifier and was dropped under the name clause (report it
    as an observation with the sentence that replaced it, not as a break); quote any other
    token that changed.
