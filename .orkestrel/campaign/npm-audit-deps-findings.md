@@ -781,3 +781,14 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   as imperative, so the first scan after slice 2 showed one false hit each in budget and worker.
   The instrument now accepts a hyphenated `-s` verb and lists a package's residual hits with
   `--list <package>`; `scan-after-slice2.txt` is re-taken with it and reads zero for the eight.
+- **Slice 3 lanes** (indexeddb, router, workspace, probe, qualifier, queue, program, sea):
+  checker PASS on every unit; subjective PASS on indexeddb, qualifier, queue, program, and sea,
+  and FAIL on one sentence each in router (`Represents a route handler —` spelling the
+  identifier; ruled to lead with the existing predicate), probe (`Names the installed package
+  name` on the `name` member; ruled `Identifies the installed package involved …`), and
+  workspace (the snapshot type's sentence gained a member list and `one` and lost `snapshot`;
+  ruled `Represents a workspace's stored state in JSON-serializable form.`). Each is a builder
+  fix-up. Probe's aggregate `npm test` went red inside the writer's exec on the standing Oxlint
+  arming failure while every split suite passed; the landing chain is the deciding run.
+  Observations recorded for the instrument: an all-caps initialism opener (`URL-decodes`) and
+  the boolean-parameter form (`If \`true\`, …`) satisfy the rule and read as verbless in the scan.
