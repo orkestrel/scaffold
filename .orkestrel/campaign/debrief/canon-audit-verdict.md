@@ -23,3 +23,19 @@ Terminal lines: objective `FAIL 1; outside the claims: F1, F2, F3`; subjective `
 ## Round 2 (fix round `canon-fixup`)
 
 Recorded on the lanes' return.
+
+Subject: the `canon-fixup` diff at `bf24f44` (rows 1–21 of `canon-fixup-brief.md`, written by a Sonnet `builder`), audited by one Opus lane holding the objective perspective (cross-engine) and by the verifier.
+
+| Claim | Objective lane | Verifier | Orchestrator |
+| --- | --- | --- | --- |
+| 1 rows applied verbatim or stopped | CONFIRMED (the one stop, `application.md`, true: no `main checkout` clause there) | — | stands |
+| 2 each finding closed | BROKEN on row 5 (the lane-count restatement survived beside the pointer) | — | upheld; round 3 row 1 |
+| 3 one home per rule | BROKEN (the same restatement, now drifted from the contract's copy) | — | one defect with claim 2 |
+| 4 writing sweep | BROKEN (four prepositional `via` on untouched lines of `components.md`) | — | upheld; round 3 row 8 |
+| 5 status only Owned plus `host.json` | UNRESOLVED (writer-supplied evidence) | — | closed on the Orchestrator's reading: `git show --name-only bf24f44` lists the seventeen owned files, the verdict record, and `host.json` |
+| 6 every line a directive, no count | BROKEN ("plus two rows of its own") | — | upheld; round 3 row 2 |
+| gates | — | GREEN (five gates exit 0 at `bf24f44`; `host.json` regenerates identically) | stands |
+
+Findings outside the claims: F1 the checker's referral fallback can never fire → round 3 row 3; F2 `opus.toml` states the authority rule in the indicative → row 4; F3 `application.md` is the one writing charter with no checkout clause → row 5; F4 `step 5` and `step 2` name list items by number → rows 6, 7; F5 wrap drift in five places → rows 2, 7, 9, 10 (the `codex.md:122` line measures at the file's width and is left). Referrals: the writer-supplied diff and status (the Orchestrator renders both itself from this round on); this audit brief's missing threshold row (the conformance audit-brief generator gains one); claim 4's scope (ruled: the sweep covers the whole touched file, so the four `via` are repaired).
+
+Terminal line: `FAIL 2, 3, 4, 5, 6; outside the claims: F1, F2, F3, F4, F5`. Round 3 (`canon-fixup-2`, Sonnet `builder`, rows 1–10) adopts every prescription verbatim and closes on the Orchestrator's own verification of each landed string plus the verifier's chain, per `.claude/rules/quality.md` § Rounds and verdicts (a fix that adopts the auditor's prescription verbatim closes without a fresh lane); the seam's round budget is reached and the recurring class is text form with no direction, so no fourth round opens.
