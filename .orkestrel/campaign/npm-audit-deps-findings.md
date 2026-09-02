@@ -626,3 +626,12 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   rule on timing failures, the deciding re-run is the Orchestrator's on an idle host after the
   live units exit; if it stays red alone, an adopt unit reads the arming path against the staged
   `@orkestrel/process` and `@orkestrel/lsp` tips.
+- **Probe adopt reading closed, no adopt unit.** The second `test:src` reading reproduced the same
+  arming failures (eight, all "The Oxlint language server exited with code 0" or the `initialize`
+  deadline), and a hand-driven `oxlint --lsp` answers on this host. The findings file's control
+  run of 2026-08-28 already ruled probe's `npm test` red on pristine `main` at `a40ca19` in this
+  container for the same class (LSP arm deadlines), so the red predates the campaign and is not
+  an adoption defect; `npm run check` is green on the corrected closure and the received
+  `initialize` and `tools/list` replies match their expected shapes. Probe closes as adopt-clean
+  with the standing environment failure carried by the fleet gate sweep (#3).
+- **L4 accepted:** program `7ef860d`, brief `bc0f767`; workflow in flight.
