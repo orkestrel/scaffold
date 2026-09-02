@@ -135,3 +135,20 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
 - Iteration-2 `underwriting-form-inputs` with-skill: 17/17, the agent grader enumerating a control
   on every check listed, run or open. Baseline reused from iteration 1 (`old_skill/REUSED.md`).
 - U6s dispatched on `terrain-successor-brief.md`.
+
+## Audit round 1, 2026-09-02
+
+- Lanes: `reviewer` (Opus, subjective) FAIL 5 broken / 4 unresolved / 6 findings; `grok` objective
+  FAIL 9 broken / 2 findings; `grok` checker FAIL 9 broken / 0 findings. Reconciliation in
+  `campaign-audit-verdict.md`; every retained finding names one carrier.
+- Fix round dispatched in parallel across three checkouts: FX1 skills (Opus `implementer`,
+  scaffold; checker's two extra voice lines and the third `control` sense sent in flight), FX2
+  test layer (Opus standing in for Sol), FX3 terrain suite (Opus). FX4, the form guide's category
+  case, done by the Orchestrator: twelve cells recased to the catalog headings, guides test 48
+  passed, committed at form `8ef0785`.
+- Fix-round auditor: Grok, the engine that wrote none of the fixes. Then verifiers per checkout,
+  the rebuilt tarball re-staged into terrain after FX3 exits, terrain re-filmed, and the
+  toolbar eval's grading, the benchmark, and the viewer.
+- Carried to the user as product observations, not campaign fixes: terrain's armed Delete is
+  `btn-outline-danger` against the bootstrap skill's solid-variant rule (readings per variant
+  arrive with FX3); the contract 0.0.15 cascade; scaffold 0.0.60 ships the current probe floor.
