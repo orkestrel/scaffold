@@ -286,3 +286,10 @@ are staged.
 - `readme-links`: one `builder` unit, after every package unit has landed, replacing
   `guides/src/<package>.md` with `guides/<package>.md` in each `README.md` the grep names,
   committed per package with the fleet gate sweep as its proof.
+
+## Re-baseline: L4 implementer units start on complete closures
+
+The brief, program, and workflow closures consume no L3 package still under audit (mcp is
+consumed only by probe, an adopt-when-red unit), so their staging and implementer units start
+while the mcp lanes and the browser verdict close. Probe, worker, queue, and lsp stage after mcp
+is accepted. The exit criterion is unchanged.
