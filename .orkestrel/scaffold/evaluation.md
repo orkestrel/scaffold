@@ -34,9 +34,17 @@ Assertions live in `tmp/skill-workspace/evals/evals.json` and each run's `eval_m
 
 | Eval | Configuration | Pass | Tokens | Duration |
 | --- | --- | --- | --- | --- |
+| 1 | old_skill run-1 | 13 / 17 | 338334 | 2216.5 s |
 | 2 | old_skill run-1 | 8 / 9 | 163158 | 294.5 s |
+| 2 | with_skill run-1 | 9 / 9 | 196953 | 456.4 s |
 | 3 | old_skill run-1 | 8 / 9 | 290759 | 1377.5 s |
 
 The eval-2 miss under the old skill: the review names a population for most checks but never states what a check does not cover. The grader also flagged two unverified claims in the old-skill output: a closing sentence that every instrument carries a population floor, contradicted by most of its own checks, and `--bs-card-spacer-*` attributed to `.card-body` where Bootstrap declares it on `.card`.
 
 The eval-3 miss under the old skill: the test measures contrast through neither `contrast`, `readRing`, `measureContrast`, nor `readBackdrop`. Correction taken after this baseline: terrain's Delete control carries the accessible name `Delete selected buildings` through its `aria-label` and its add control `Add new building`, so the asserted refusal voice had named the wrong element; the assertion, the grader, and the terrain brief now name the real accessible names, and the grader admits `measureContrast` and `readBackdrop` beside `contrast` and `readRing`. Both graders still read zero on their planted controls after the change.
+
+The eval-1 misses under the old skill: a `<style>` element re-pointing the stock control border and focus ring after measuring them under 3:1, and four invented utility classes (`u-display`, `u-track`, `u-stamp`, `u-tabular`) absent from the Bootstrap 5.3 cascade. The measured vendor failure is the case the rewritten skill's bounded exception admits, but the exception requires a stylesheet rule over tokens, never a `<style>` block, and no invented class.
+
+Eval 2 with the rewritten skill: every finding carries property, population, reading, control, and coverage; the review names three findings the eval did not anticipate (the alert with no role or message, the missing button `type`, the missing card-body layout) and declares up front which findings it settled from source and which need the cascade. The grader recomputed the two contrast ratios it quotes (2.849:1 and 2.442:1) and the `.badge:empty` rule and found them correct. Grader feedback carried forward: the control-pairing and population assertions check presence rather than correctness, and no assertion rewards disclosing what was not run.
+
+Eval 1 baseline after the prose grader: the fifteenth check in `checks.md` carries no control, two controls expect a green run rather than a planted defect, and no inline-style escape check exists. Assertion added on the grader's feedback: every read-only field still submits (a disabled named control carries a hidden input of the same name, or the field uses `readonly`); the old-skill output passes it. The eval-1 control fixture now plants a disabled named control with no carrier and reads 1 of 17.

@@ -1,6 +1,6 @@
 ---
 name: orkestrel-prove-journey
-description: Prove a browser application the way a person uses it — real keystrokes, clicks, and Tab/Enter against only what is visible and reachable — and generate the capture portfolio from those same journeys. Use when accepting a UI build, proving an application end to end, deciding whether a surface is reachable by keyboard alone, proving what a screen refuses as well as what it does, auditing whether the interface speaks the user's vocabulary rather than the engine's, producing the screenshots a design review judges, or whenever the only evidence a screen works is a test that drove it through JavaScript instead of through the interface.
+description: Prove a browser application the way a person uses it — real keystrokes, clicks, and Tab/Enter against only what is visible and reachable — through the journey layer @orkestrel/test/browser publishes, and generate the capture portfolio, the resolved-style matrix, and the statechart outcome from those same journeys. Use when accepting a UI build, proving an application end to end, deciding whether a surface is reachable by keyboard alone, proving what a screen refuses as well as what it does, proving the styles a browser actually resolved under each theme and viewport, driving a transition table through the interface and watching it run, auditing whether the interface speaks the user's vocabulary rather than the engine's, producing the screenshots a design review judges, routing a rendered question to an artifact a model can read, or whenever the only evidence a screen works is a test that drove it through JavaScript instead of through the interface.
 ---
 
 # Prove an application through human journeys
@@ -12,13 +12,54 @@ Read the current files in this order:
 1. `AGENTS.md`.
 2. `.claude/rules/tests.md` for test law, real implementations, and shared test infrastructure;
    `.claude/rules/browser.md` for browser and Vue usage; `.claude/rules/application.md` for app
-   composition and entries; `.claude/rules/documentation.md` for parity. Those rules are the
-   contract; this skill is the workflow.
-3. [layer.md](references/layer.md) before building, extending, or debugging the journey layer.
+   composition and entries; `.claude/rules/styles.md` for style centralization;
+   `.claude/rules/quality.md` for the instrument and negative-control law;
+   `.claude/rules/documentation.md` for parity. Those rules are the contract; this skill is the
+   workflow.
+3. [layer.md](references/layer.md) before importing, extending, or debugging the journey layer.
 4. [captures.md](references/captures.md) before registering a state or placing a capture.
-5. `guides/README.md`, the governing guide for the surface, and `ROADMAP.md` when present.
-6. The `*/types.ts` of every environment the journeys drive, plus the application's root component,
+5. [styles.md](references/styles.md) before asserting anything the browser resolved.
+6. [statechart.md](references/statechart.md) before declaring a transition or building the harness.
+7. [decide.md](references/decide.md) before routing a question to an instrument.
+8. `guides/README.md`, the governing guide for the surface, and `ROADMAP.md` when present.
+9. The `*/types.ts` of every environment the journeys drive, plus the application's root component,
    route entry, and store contract.
+
+## Declare the families
+
+Declare in the browser environment's `integration.test.ts` which families that surface carries, and
+assert in the always-on proofs that every declared family is present. A declaration names which
+families a surface owes. It never switches what a declared family proves.
+
+| Family     | Declared                                                | Proves                                                                 |
+| ---------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Journey    | Always                                                  | Each user intent reaches its outcome through the interface             |
+| Refusal    | Always                                                  | Each control the surface withholds, through one exact failure voice    |
+| Matrix     | Where the surface ships more than one variant           | The values the browser resolved under each declared variant            |
+| Statechart | Where the surface declares transitions a journey drives | Each declared transition, driven through the interface where it can be |
+| Transport  | Where the surface persists or restarts                  | Persistence, restart, and storage failure through real implementations |
+| Capture    | Under the capture flag                                  | The registry times the variants, each file read back non-empty         |
+
+- Refuse a declaration that omits a family whose trigger the surface meets. Report the omission as a
+  scope finding and stop; never prove the remaining families around it.
+- Offer the statechart family where the surface is static, and require it where a journey drives a
+  control that carries state.
+- Assert the declaration itself: a family listed with no proof, and a proof belonging to no listed
+  family, each fail the run.
+
+## Read the variant once
+
+Read one `variant` value at run start, and let it choose the capture destination, the matrix row,
+and the statechart run together. Never split the theme from the viewport: a split lets a run write a
+filename describing a combination it did not render.
+
+- Declare every variant once as a published `CaptureVariant` — its `name`, its `width`, its
+  `height`, and the `apply` that switches the theme — and read that list from the capture family and
+  the matrix family alike.
+- Loop every declared variant inside one run for the matrix family
+  ([styles.md](references/styles.md) → Run per variant).
+- Render exactly one variant per run for the capture family
+  ([captures.md](references/captures.md) → Variants).
 
 ## Apply the journey laws
 
@@ -43,17 +84,17 @@ Read the current files in this order:
 7. **Type only what a person would.** Journeys carry trusted input; adversarial payloads belong to
    the transport family and the parser suites.
 
-## Build or verify the journey layer
+## Import the journey layer
 
-- Build the layer as shared browser test infrastructure under `.claude/rules/tests.md`: it lives in
-  the workspace's browser test setup module, exports every helper from there, and adds a journey
-  helper only where `@orkestrel/test` publishes none. Never declare a resolver inside a test file.
-- Give the layer every capability [layer.md](references/layer.md) fixes: the role-scoped resolver
-  and its distinct failure voices, region-scoped resolution, the input and traversal verbs, the
-  perception readers, and the capture hook.
-- Drive every step through the browser provider's user-event API, and never dispatch a constructed
-  event ([layer.md](references/layer.md) → What it drives).
-- Re-verify the layer against what the application renders now whenever markup changes
+- Import every journey verb, reader, and fixture builder from `@orkestrel/test/browser`. Write one
+  of your own only where that package publishes none for the act
+  ([layer.md](references/layer.md) → Import, never implement).
+- Place a helper you must write in the workspace's browser test setup module, name it for the act,
+  and export it from there under `.claude/rules/tests.md`. Never declare a resolver inside a test
+  file.
+- Drive every step through the published verbs, and never dispatch a constructed event
+  ([layer.md](references/layer.md) → What it drives).
+- Re-verify every target against what the application renders now whenever markup changes
   ([layer.md](references/layer.md) → Role vocabulary).
 
 ## Derive journeys from intents
@@ -86,7 +127,7 @@ placement and scope `.claude/rules/tests.md` fixes.
 - Give every surface a refusal family: the controls a person must not reach in the state the
   journey has put the surface in.
 - Assert the exact failure voice the case means. Never write an assertion that accepts more than
-  one voice.
+  one voice ([layer.md](references/layer.md) → The failure voices).
 - Cover the restrictions the interface imposes on itself: a collapsed panel's field, a verb
   belonging to another kind of object, a control disabled until its precondition lands.
 - When a refusal changes voice after a markup change, read it as a role or reachability change
@@ -103,16 +144,33 @@ placement and scope `.claude/rules/tests.md` fixes.
   that clears it.
 - Assert restart by starting a second session over the same store and polling the restored value.
 
+## Prove the styles
+
+Follow [styles.md](references/styles.md) for the resolved-value law, the per-variant run, the
+composited contrast reading and its under-bar control, the authored-class census, the escape
+reading, and the token comparison.
+
+## Prove the statechart
+
+Follow [statechart.md](references/statechart.md) for the transition table, the scenario per
+transition, the runner, the harness a person watches, and the gate that drives the harness through
+the interface.
+
 ## Generate the portfolio
 
 Follow [captures.md](references/captures.md) for the state registry and its placement rules, the
 theme-and-viewport variant matrix, the always-on filename proof, the capture-run membership proof,
 and how a state that exists only during an activation is captured.
 
-When a capture and a green suite disagree, the capture is the evidence and the fixture is the
+Where a capture and a green suite disagree, take the capture as the evidence and the fixture as the
 defect.
 
 Route review of the portfolio to the `orkestrel-polish-surface` campaign. Do not judge it here.
+
+## Route the question
+
+Follow [decide.md](references/decide.md) before spending a round on a question. It fixes which
+instrument judges which claim, what `prove` cannot serve, and what the run's written artifact holds.
 
 ## Accept
 
@@ -123,10 +181,18 @@ Completion requires all of:
 - keyboard-only reachability proven on every surface the journeys cover;
 - a refusal family per surface, each asserting one exact failure voice;
 - the transport family declared separately, driven through real implementations, and convergent;
+- the declared families each proven, and the declaration itself asserted;
+- the matrix family read once per declared variant, each style instrument carrying the control that
+  must read under its bar in the same run;
+- the authored-class census and the escape reading taken on the mounted surface, each reporting the
+  population it walked;
+- the statechart table driven to a terminal outcome with no failed row, and the harness gate green;
 - the registry-times-variants filename proof and the state-placement proof green in an ordinary run;
 - one capture run per variant writing every registered file, each read back non-empty;
+- the written artifact produced for every variant the run rendered, named by that variant;
 - perception assertions quoting rendered text, and the vocabulary sweep green on the whole page;
 - the repository gates green, under the independent-verification law in `.agents/orchestration.md`.
 
-Report each journey by the intent it proves, the refusals it establishes, the states it placed, and
-every surface finding the layer's refusals exposed.
+Report each journey by the intent it proves, the refusals it establishes, the states it placed, the
+variants it read, the statechart outcome it reached, and every surface finding the layer's refusals
+exposed.
