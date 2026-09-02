@@ -168,6 +168,18 @@ Each row closes refused with the rule text quoted in the unit's report.
 - **toolbox s10-18** (`databaseToolCode`, `relationToolCode`): stays deferred as the fix round left
   it.
 
+## Standing condition: contract's `origin/main` may move
+
+The user is working on `contract` in another session (2026-09-02), so `origin/main` there may run
+ahead of the campaign branch at any time, as it did at 0.0.15. Before every wave boundary that
+packs or stages `contract`, fetch `origin/main` in `/home/user/fleet/contract`, compare it with the
+merge base, and when it has moved: merge it into the campaign branch (the 0.0.15 precedent kept
+main's `ContractCompiler.ts` and ported main's TSDoc into the moved factory), re-run contract's
+gate chain, re-pin the fleet if the version moved, and repack before any consumer stages it. A
+consumer staged against a superseded contract tip is re-staged at its next boundary. Reading on
+2026-09-02 after L0 landed: `origin/main` at `3193da1` (Bump to 0.0.15), branch tip `d24e79c`,
+main ahead of the merge base by nothing.
+
 ## Wave schedule and routing ledger
 
 Every unit is a file before it is a launch: `tmp/units/breaking/<unit>-brief.md` and
