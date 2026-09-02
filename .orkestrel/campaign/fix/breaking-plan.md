@@ -272,3 +272,11 @@ that checkout, run `npm run check` and `npm run test:guides`, and read any red a
 list for a builder fix-up (middleware's closure carries indexeddb and sqlite; the others do not,
 so their re-stage is a no-op that the verify step proves). After database lands, repeat for every
 L2 checkout whose closure carries database (middleware) before the L2 tips are packed for L3.
+
+## Standing condition: middleware consumes server
+
+Middleware's runtime dependencies include `@orkestrel/server` (a layer-3 package) although the
+catalog places middleware in layer 2; the publish order therefore runs server before middleware
+regardless of the layer column. Middleware adopted server's renames in `units/middleware-adopt-server-brief.md`
+after the server unit landed, and re-stages against server's fix-up tip before the L4 closures
+are staged.
