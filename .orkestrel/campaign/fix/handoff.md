@@ -1,0 +1,55 @@
+# Handoff — accepted tips at W-END (2026-09-02)
+
+Every fleet checkout is committed clean on `claude/orkestrel-npm-audit-deps-14ibta` at the tip below, packed by `instruments/wend-repack-restage.sh` and staged into every consumer (`units/wend-repack-restage.log`). The layer is the publish round from `layers.mjs` over runtime `dependencies`; tooling packages publish on their own.
+
+| Package | Layer | Tip | Tarball |
+| --- | --- | --- | --- |
+| codec | L0 | `dcbeb4c` | `codec-dcbeb4c.tgz` |
+| contract | L0 | `7ffbdcc` | `contract-7ffbdcc.tgz` |
+| msg | L0 | `b6cf00e` | `msg-b6cf00e.tgz` |
+| sse | L0 | `9b183c2` | `sse-9b183c2.tgz` |
+| test | L0 | `cced24a` | `test-cced24a.tgz` |
+| abort | L1 | `79e62a8` | `abort-79e62a8.tgz` |
+| budget | L1 | `e91addf` | `budget-e91addf.tgz` |
+| csv | L1 | `51860ac` | `csv-51860ac.tgz` |
+| emitter | L1 | `22e4b0b` | `emitter-22e4b0b.tgz` |
+| html | L1 | `bc53632` | `html-bc53632.tgz` |
+| indexeddb | L1 | `10ebdb4` | `indexeddb-10ebdb4.tgz` |
+| ndjson | L1 | `73a203b` | `ndjson-73a203b.tgz` |
+| sqlite | L1 | `5a9340b` | `sqlite-5a9340b.tgz` |
+| timeout | L1 | `6f6b729` | `timeout-6f6b729.tgz` |
+| tool | L1 | `1ba9528` | `tool-1ba9528.tgz` |
+| console | L2 | `5a75c04` | `console-5a75c04.tgz` |
+| database | L2 | `4c8399a` | `database-4c8399a.tgz` |
+| form | L2 | `d51fac8` | `form-d51fac8.tgz` |
+| markdown | L2 | `7575e6d` | `markdown-7575e6d.tgz` |
+| middleware | L2 | `2928f84` | `middleware-2928f84.tgz` |
+| pool | L2 | `0c94a11` | `pool-0c94a11.tgz` |
+| process | L2 | `8aa5dce` | `process-8aa5dce.tgz` |
+| reason | L2 | `c363201` | `reason-c363201.tgz` |
+| router | L2 | `3daca9b` | `router-3daca9b.tgz` |
+| table | L2 | `e270928` | `table-e270928.tgz` |
+| template | L2 | `85bc44b` | `template-85bc44b.tgz` |
+| websocket | L2 | `ce8a22a` | `websocket-ce8a22a.tgz` |
+| browser | L3 | `35443be` | `browser-35443be.tgz` |
+| guide | L3 | `be6111e` | `guide-be6111e.tgz` |
+| interpret | L3 | `738bb5b` | `interpret-738bb5b.tgz` |
+| lsp | L3 | `262012f` | `lsp-262012f.tgz` |
+| mcp | L3 | `51775d1` | `mcp-51775d1.tgz` |
+| qualifier | L3 | `476fdc7` | `qualifier-476fdc7.tgz` |
+| queue | L3 | `38da78b` | `queue-38da78b.tgz` |
+| rater | L3 | `350608e` | `rater-350608e.tgz` |
+| relation | L3 | `e675bd0` | `relation-e675bd0.tgz` |
+| scaffold | L3 | `66c40fb` | `scaffold-66c40fb.tgz` |
+| sea | L3 | `93fd98a` | `sea-93fd98a.tgz` |
+| server | L3 | `bb68ef5` | `server-bb68ef5.tgz` |
+| terminal | L3 | `4ea17d7` | `terminal-4ea17d7.tgz` |
+| workspace | L3 | `e564c2d` | `workspace-e564c2d.tgz` |
+| brief | L4 | `bc0f767` | `brief-bc0f767.tgz` |
+| probe | L4 | `6366d1c` | `probe-6366d1c.tgz` |
+| program | L4 | `1a53925` | `program-1a53925.tgz` |
+| worker | L4 | `3944faf` | `worker-3944faf.tgz` |
+| workflow | L4 | `df98381` | `workflow-df98381.tgz` |
+| agent | L5 | `4df65d2` | `agent-4df65d2.tgz` |
+| ollama | L6 | `3d681fa` | `ollama-3d681fa.tgz` |
+| toolbox | L6 | `c13a526` | `toolbox-c13a526.tgz` |
