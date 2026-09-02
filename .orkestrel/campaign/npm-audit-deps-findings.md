@@ -472,3 +472,20 @@ governed the touched block).
   `2c15840` and the accepted L1 tips and verified before launch; `database` waits for indexeddb
   and sqlite. The layer order exists for the publish cascade; a unit's own staged closure is what
   its typecheck needs, and every closure the eight units compile against is accepted.
+
+## Breaking phase — L1 closed (2026-09-02)
+
+- **Accepted:** indexeddb (`0e5cf50`, fix-up `bf4730e` for the subjective lane's shape findings)
+  and sqlite (`02cabef`, `90d3527`, fix-up `5a9340b` for an inflected test title). Every L1 unit is
+  accepted: budget, csv, html, indexeddb, ndjson, sqlite. Tips packed: `indexeddb-bf4730e.tgz`,
+  `sqlite-5a9340b.tgz`.
+- **Process rule landed:** an old name's inflected forms hide from a bare word-boundary sweep
+  (`execs` against `\bexec\b`), so the brief template and the audit claim generator require a
+  second, case-insensitive sweep over `-s`, `-ed`, `-ing`.
+- **Findings for the next change:** indexeddb's `open` as a state boolean on the database and the
+  verb on the store manager, and `context.stores.open(name)` beside `transaction.store(name)`;
+  the database's `stores` name list against the context's `stores` manager (stated in the guide,
+  not renamed); sqlite's `SQLiteStatementInterface.run` synonym for `execute` and the guide's
+  `src/server/sqlite` directory claim.
+- **Next:** stage database's closure (contract `2c15840`, indexeddb `bf4730e`, sqlite `5a9340b`,
+  plus emitter, guide, html, markdown, test), generate its brief, launch it beside the L2 writers.
