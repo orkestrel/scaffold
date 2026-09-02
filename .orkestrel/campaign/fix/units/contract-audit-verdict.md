@@ -38,3 +38,8 @@ retargeted.
 Terminal lines: objective `FAIL 3`; subjective `FAIL 3, 5`; checker `PASS`; verifier GREEN. Fix
 round `contract-fixup` (Opus implementer) carries findings 1-5, 9, and 10 of its brief; s03-01 is
 ratified; round 2 follows.
+
+**Scheduling decision.** L1 launched against contract `d24e79c` while the contract fix round is
+in flight: the fix round changes guide prose, two private method names, raw error prefixes, and
+an import order, and no published symbol or signature, so the staged surface the L1 units compile
+against is the accepted one. The L1 checkouts re-stage the fix-round tip at the L2 boundary.
