@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "4c83aecbe7e6e849fd44243fe63f1a05b10e24d67a3e60c3a2207b090380dff3"
+			"digest": "d561d955b8f01950337aa289dbf0f2dbf2c99994d5659f61252573124ec4c99e"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -742,5 +742,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "a0f908c828b4e78354a4c7a12b033854a6af2ee3a68f358445dd2845adfd4cdc"
+	"digest": "7c06b6c7ae9ebddc4b1d417ced772d3b13080d153dd1981516f1925b89c0636e"
 }

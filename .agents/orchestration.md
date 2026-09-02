@@ -331,9 +331,9 @@ longer holds.
      ends the campaign, each to end implemented, repaired, retained, or intentionally excluded on
      evidence. A plan that names work but not its end can only be abandoned, never finished.
 3. **Implement.** Route each nontrivial objective unit to the Sol `implementer` and each nontrivial
-   subjective unit to the Opus `implementer`, in the checkout the unit writes, one writer per checkout. Route a
-   fully specified taste-free unit to `builder`. Never route implementation to an engine the unit's
-   judgment load exceeds.
+   subjective unit to the Opus `implementer`, in the checkout the unit writes, one writer per
+   checkout. Route a fully specified taste-free unit to `builder`. Never route implementation to an
+   engine the unit's judgment load exceeds.
 4. **Integrate.** Evaluate each distillate against its acceptance criteria, apply shared-file
    patches serially, and route cross-cutting findings. Integration applies exact returned patches
    and mechanical conflict resolution only. A new type, mechanism, behavior, or acceptance
