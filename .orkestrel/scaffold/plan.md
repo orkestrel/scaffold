@@ -112,3 +112,26 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   browser entry carries `computeNamePattern`. Re-stage into terrain after the visit returns, then
   dispatch U6s on `terrain-successor-brief.md`.
 - Audit claim 23 stands as written; the auditor reads `resolve-hidden-report.md`.
+
+## Terrain visit closed, 2026-09-02
+
+- Visit committed in terrain as "Bring terrain to scaffold 0.0.59 and the catalog" through
+  pathspecs that exclude the lockfile pair (135 files; 85 plan-foreign paths removed; 28
+  no-nested-functions sites repaired with tested exported helpers; app suite 916 before new tests,
+  951 with them; every gate green). Report retained as `visit-terrain-report.md`.
+- The wave's stale-catalog-body remedy run by the Orchestrator: deletion committed (`e168051`),
+  `scaffold overwrite --dirty` staged the floor copy (2 written, 0 removed), audit exit 0 with the
+  two terrain-owned questions, body identical to the floor outside the marker region, restore
+  committed (`6b20567`).
+- Rebuilt test tarball re-staged with `npm install --no-save`; installed browser entry digest
+  `24319964f0eaac64` equals the tarball's. Tree carries only the user's lockfile pair.
+- Findings carried for scaffold: the distributed probe floor in 0.0.59 reads `^0.0.10` while
+  scaffold's own manifest declares `^0.0.11`; the 0.0.60 release ships the current floor.
+  Terrain-owned questions left open on purpose: proofs for `tests/setup.ts` and
+  `tests/setupBrowser.ts`; the TypeScript major.
+- Contract duplication measured: terrain's root contract 0.0.15 beside nested 0.0.13 under every
+  published dependent typechecks clean, so an application may lead the fleet; a published package
+  still may not.
+- Iteration-2 `underwriting-form-inputs` with-skill: 17/17, the agent grader enumerating a control
+  on every check listed, run or open. Baseline reused from iteration 1 (`old_skill/REUSED.md`).
+- U6s dispatched on `terrain-successor-brief.md`.
