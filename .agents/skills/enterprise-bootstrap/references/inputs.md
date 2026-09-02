@@ -51,7 +51,7 @@ value is a set.
   so the read view and the edit view reflow against each other.
 - **Give a locked select `disabled` and a hidden input beside it.** A native select cannot be
   read-only, so `disabled` stops its value submitting and the hidden input carries that value.
-- **Give a chosen filter an accent variant, not the neutral outline.** A `btn-outline-secondary`
+- **Give a chosen filter an accent tone class, not the neutral outline.** A `btn-outline-secondary`
   label reads as chosen in light and as muted in dark, so one markup says opposite things.
 - **Give each field one visible label**, per [bootstrap-reference.md](bootstrap-reference.md) →
   Forms in production. Take labels, validation timing, and the error summary from that section, and
@@ -157,8 +157,8 @@ hand-roll: Bootstrap ships one thumb per input.
 
 ### A date
 
-**Default.** An `input[type=date].form-control`, at rung 1. The platform brings the calendar, the
-keyboard model, and the locale format.
+**Default.** An `input[type=date].form-control`, at rung 1. Take the calendar, the keyboard model,
+and the locale format from the platform rather than authoring any of them.
 
 ```html
 <label for="starts" class="form-label">Starts</label>
@@ -258,8 +258,8 @@ flight, and reverts visibly when it fails.
 **Alternates.** Take a segmented `.btn-group` of `.btn-check` radios, at rung 2, when the choice
 sits in a toolbar or a filter bar and every option fits on one row without wrapping; give the group
 `role="radiogroup"` and one accessible name. A radio group and a segmented group draw the same
-question, and the list size decides between them. Give a chosen filter an accent variant rather than
-`btn-outline-secondary`.
+question, and the list size decides between them. Give a chosen filter an accent tone class rather
+than `btn-outline-secondary`.
 
 **States.** The fixed set, applied to the group rather than to one option. Mark the group invalid,
 name it in the message, and keep the error under the last row.
@@ -318,7 +318,7 @@ re-target every test and journey that finds this field by role.
 ```
 
 **Alternates.** Take `.form-check-inline` when the options are short words and the row has space.
-Bootstrap ships no `.form-check` color variant, so an accent or danger box is an authored rule over
+Bootstrap ships no `.form-check` color class, so an accent or danger box is an authored rule over
 tokens — take it only under the exception in [inspection.md](inspection.md) → When an authored rule
 is already earned.
 
@@ -474,9 +474,9 @@ contract over tokens. Take the rules for the sequence itself, including validati
 and where the answers are held, from [bootstrap-reference.md](bootstrap-reference.md) → Wizards &
 multi-step forms.
 
-**States.** The fixed set applies to the controls that move between steps, not to the indicator. Give
-the indicator `rest` and a current mark that survives both themes, and never make position the only
-signal that a step failed.
+**States.** The fixed set, drawn on the controls that move between steps. The indicator holds no
+value and is not a field, so it carries its own set instead: `rest` and a current mark that survives
+every theme the surface ships. Never make position the only signal that a step failed.
 
 ## Where Bootstrap ships no component
 

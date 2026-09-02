@@ -5,7 +5,7 @@ instrument here answers as open, and never answer it with the nearest instrument
 
 | The claim is judged by                 | Route it to                                  |
 | -------------------------------------- | -------------------------------------------- |
-| A compiler, a linter, or a Node runner | The `prove` tool, with its control           |
+| A compiler, a linter, or a Node runner | The `prove` tool, with its negative control  |
 | A person's eye                         | The run's written artifact, named by variant |
 | A person watching a widget move        | A statechart harness deep link               |
 | The browser's own resolved value       | The matrix family ([styles.md](styles.md))   |
@@ -15,12 +15,12 @@ Never ask `prove` about pixels, and never ask a screenshot about types.
 ## The receipt half
 
 A claim a compiler, a linter, or a Node runner judges goes to `prove`. Supply its workspace project,
-its case, its control, and the stage the control must break at.
+its case, its negative control, and the stage that control must break at.
 `.claude/rules/quality.md` § Instruments owns that rule and the receipt line every report quotes;
 follow it there rather than restating it here.
 
-- Route the control-to-affordance table, the declared class allowlist, the variant expansion, and
-  the glyph registry here. Each supplies a project, a case, and a control.
+- Route the control-to-affordance table, the declared class allowlist's own declaration, the variant
+  expansion, and the glyph registry here. Each supplies a project, a case, and a negative control.
 - Read a `no receipt` line as the claim unproved, and report the stage that refused.
 
 ## The limit that decides the split

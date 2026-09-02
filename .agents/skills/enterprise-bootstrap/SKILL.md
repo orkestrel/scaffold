@@ -39,7 +39,7 @@ one.
 | Inputs         | [inputs.md](references/inputs.md)                           | Affordance per input category, its alternates, its rung, its states               |
 | Utilities      | [utilities.md](references/utilities.md)                     | Class index, helpers, composition notes                                           |
 | Bootstrap deep | [bootstrap-reference.md](references/bootstrap-reference.md) | Color modes, theming/tokens, forms, JS lifecycle, a11y depth, enterprise patterns |
-| Instruments    | [inspection.md](references/inspection.md)                   | Property, population, reading, control, and coverage per instrument               |
+| Instruments    | [inspection.md](references/inspection.md)                   | Property, population, reading, negative control, and coverage per instrument      |
 
 ---
 
@@ -78,23 +78,23 @@ this loop:
 4. **Build** — compose Bootstrap components and utilities; map the plan's tokens onto theme variables or a thin skin, with no scattered one-off hex ([bootstrap-reference.md](references/bootstrap-reference.md) → Theming & design tokens). Watch selector specificity: a utility and a custom rule that cancel each other show up as padding and margin bugs.
 5. **Critique the render** — remove one accessory. Check contrast, focus, `prefers-reduced-motion`, mobile, and every data state. Critique what rendered, not the markup.
 
-Brainstorm privately; show a direction only when it satisfies the brief and the quality floor
-([frontend-design.md](references/frontend-design.md) → Process).
+Show a direction only after it satisfies the brief and the quality floor, and keep every earlier
+draft private ([frontend-design.md](references/frontend-design.md) → Process).
 
 **Rendered proof.** Settle every claim about a screen from a capture, never from source alone;
-`.agents/orchestration.md` owns this law where it is present. Take captures at both viewports and
-both themes plus an accessibility snapshot as the review input, and use source only to corroborate
+`.agents/orchestration.md` owns this law where it is present. Take captures at every viewport and
+every theme the surface declares, plus an accessibility snapshot, as the review input, and use source only to corroborate
 the mechanism. For a full review-round campaign built on that evidence, use the
 `orkestrel-polish-surface` skill instead of improvising one here.
 
 **Mechanical proof.** Run every instrument in [inspection.md](references/inspection.md) with the
-negative control it names, and treat an instrument whose control passes as broken;
+negative control it names, and treat an instrument whose negative control passes as broken;
 `.claude/rules/quality.md` owns that law where it is present. Those instruments settle what a capture
 cannot: composited contrast, authored classes against the shipped cascade, declared class
 combinations, style escapes, token discipline, a custom rule doing a utility's job, and one glyph per
 meaning. Hold every check the deliverable lists to that shape, whether or not inspection.md names
 it: each states its population, its negative control, and its coverage, and a check that cannot
-name a control is recorded as open rather than listed as a check.
+name a negative control is recorded as open rather than listed as a check.
 
 ---
 
@@ -111,19 +111,17 @@ name a control is recorded as open rather than listed as a check.
 
 Work down these rungs in order. Reach a rung only when the preceding one cannot express the need.
 
-1. **The component's own classes, in its documented structure.** Use the right elements, nesting, class names, and required ARIA: a card is `.card` wrapping `.card-body` wrapping `.card-title`, not a `div` with borrowed padding. Variants, states, color modes, and responsive behavior all hang off that structure.
+1. **The component's own classes, in its documented structure.** Use the right elements, nesting, class names, and required ARIA: a card is `.card` wrapping `.card-body` wrapping `.card-title`, not a `div` with borrowed padding. Modifier classes, affordance states, color modes, and responsive behavior all hang off that structure.
 2. **Bootstrap utilities, for refinement.** Spacing, flex, display, sizing, text, borders, color. Compose utilities rather than reaching past them, and use only classes that exist in [utilities.md](references/utilities.md).
 3. **Bootstrap's own extension points.** Component `--bs-{component}-*` variables and the utilities API, when a real gap remains after the component-class and utility tiers.
-4. **Leave anything beyond Bootstrap's conventions to the developer.** Stop at rung 3 and say plainly what rung 4 would require.
+4. **Leave anything beyond Bootstrap's conventions to the developer.** Stop at rung 3 and say plainly what rung 4 would require. Take rung 4 unasked only where [inspection.md](references/inspection.md) → When an authored rule is already earned opens it.
 
-Never open at rung 4. Never reach first for:
+Never reach first for any of these, because each ends the cascade for that element and then survives
+no `--bs-*` retheming, no breakpoint change, and no color-mode change:
 
 - a `style="..."` attribute;
 - a `<style>` block in a page or component;
 - a new stylesheet rule for something a utility already does.
-
-Each ends the cascade for that element: it outranks the utilities, it ignores `--bs-*` retheming, and
-it does not change across breakpoints or color modes.
 
 ### Hierarchy & actions
 
@@ -135,13 +133,13 @@ it does not change across breakpoints or color modes.
 | Tertiary    | `btn-link` or text links                                            |
 | Status      | `badge` / `alert` / `*-emphasis` — **icon + color + word**          |
 
-**Give any action that carries information or consequence the solid variant, and keep outline buttons
-decorative.** An outline button paints no background of its own, so it borrows whatever surface it
-sits on and its contrast is surface- and theme-dependent by construction: against stock Bootstrap the
-whole `btn-outline-*` family misses 4.5:1 across the dark theme and on light tinted surfaces — cards,
-subtle alerts. A solid variant paints its own background and measures identically on every surface,
-and the stock fills sit at the 4.5:1 bar with nothing to spare, so re-measure a solid variant
-whenever anything layers over it — an `opacity-*` utility, a translucent overlay, a skin's own tint.
+**Give any action that carries information or consequence a solid `btn-*` class, and keep outline
+buttons decorative.** Against stock Bootstrap the whole `btn-outline-*` family misses 4.5:1 across
+the dark theme and on light tinted surfaces — cards, subtle alerts — because an outline button
+paints no background of its own and borrows the surface it sits on.
+
+**Re-measure a solid fill whenever anything layers over it** — an `opacity-*` utility, a translucent
+overlay, a skin's own tint — because the stock fills sit at the 4.5:1 bar with nothing to spare.
 
 Draw a status mark with **no text** as an icon glyph, never as a `badge`
 ([components.md](references/components.md) → Badge).
@@ -151,12 +149,12 @@ Draw a status mark with **no text** as an icon glyph, never as a `badge`
 - **Measure these contrast bars in both themes:** **≥ 4.5:1** for anything information-bearing — `small`, captions, and meta text included — and **≥ 3:1** for textless marks, state indicators, and the hover/focus chrome that carries state. Verify Bootstrap's own palette too; the docs admit some defaults fall short. Read both themes — a pairing that passes light routinely fails dark.
 - **Take the `-emphasis` pair for information-bearing status text.** Plain `text-success` and `text-danger` miss the bar across the dark theme and on light tinted surfaces, and `text-warning` is theme-asymmetric — unreadable on light, comfortable on dark. Never make a plain semantic color the encoding; use it only as decoration beside an encoding that already passes.
 - **Tier text a person must read `text-body-secondary` or better**, and keep `text-body-tertiary` for decorative marks: tertiary measures under 4.5:1 on every surface in both themes, so it carries no information anywhere.
-- **Inside `alert-*` and the `*-subtle` backgrounds, take `-emphasis` for information-bearing text and a solid variant for every button.** A subtle fill degrades everything inside it one notch, so outline buttons and plain semantic text fail there even in light.
+- **Inside `alert-*` and the `*-subtle` backgrounds, take `-emphasis` for information-bearing text and a solid `btn-*` class for every button.** A subtle fill degrades everything inside it one notch, so outline buttons and plain semantic text fail there even in light.
 - **Carry no tone class inside a primary fill.** On `.active`, `.bg-primary`, and `text-bg-*` surfaces every tone class measured lands under the bar in both themes, the `-emphasis` family included, because the fill supplies its own contrast color and the tone class overrides it with one tuned for a different background. Let the surface's contrast color take the text, keep the status encoded by icon and word, and verify by capturing the selected state ([components.md](references/components.md) → Selection fills).
-- Exempt a disabled control from the bars, but never leave a disabled **destructive** control at full danger saturation — at full strength it still reads as armed. Neutralize the variant while it is disabled and carry the reason on the control with `aria-describedby` (plus `title` for pointer users), never `title` alone.
+- Exempt a disabled control from the bars, but never leave a disabled **destructive** control at full danger saturation — at full strength it still reads as armed. Neutralize the danger tone while the control is disabled and carry the reason on the control with `aria-describedby` (plus `title` for pointer users), never `title` alone.
 - Prefer `bg-body`, `bg-body-secondary`, `bg-body-tertiary` over raw `bg-white` / `bg-light`, and drive custom paint from `var(--bs-…)` — they track `data-bs-theme`, a hard-coded hex does not.
 - Take pairings from `text-bg-*`, `*-subtle`, `*-emphasis`, and `text-body` / `text-body-secondary`. `text-muted` is deprecated — use `text-body-secondary`.
-- On **dark surfaces**, scope `data-bs-theme="dark"` rather than the deprecated component variants `navbar-dark`, `dropdown-menu-dark`, `btn-close-white`, and `carousel-dark`; gray-on-dark outlines often fail contrast.
+- On **dark surfaces**, scope `data-bs-theme="dark"` rather than the deprecated `*-dark` component classes `navbar-dark`, `dropdown-menu-dark`, `btn-close-white`, and `carousel-dark`; gray-on-dark outlines often fail contrast.
 - Support `data-bs-theme="light"` and `dark` when the product offers both, and take the mechanics from [bootstrap-reference.md](references/bootstrap-reference.md) → Color modes.
 
 ### Density, layout, responsive
@@ -175,7 +173,7 @@ Draw a status mark with **no text** as an icon glyph, never as a `badge`
 
 ### Forms
 
-- Choose each field's affordance in [inputs.md](references/inputs.md) → The catalog by what the person is asked for, draw every state in that file's fixed set, and obey its cross-category rules — read-only chrome, the locked select, the chosen filter's variant, the non-drag path for a file drop.
+- Choose each field's affordance in [inputs.md](references/inputs.md) → The catalog by what the person is asked for, draw every state in that file's fixed set, and obey its cross-category rules — read-only chrome, the locked select, the chosen filter's accent tone, the non-drag path for a file drop.
 - Give every field a visible label (top-aligned by default) or `.form-floating` — never placeholder-only.
 - Validate on **blur**, re-validate error fields on input, re-check everything on submit, and keep submit **enabled**. Never disable submit as a validation strategy.
 - Pair a focusable error summary with inline `.invalid-feedback` per field (`aria-describedby`, `aria-invalid`).
@@ -183,10 +181,11 @@ Draw a status mark with **no text** as an icon glyph, never as a `badge`
 
 ### When custom CSS is justified
 
-Treat custom CSS as rung 4 and the developer's decision: propose it, name what it buys, and never
-take it unprompted. Exhaust rungs 1–3 first — correct component structure, then utilities, then the
-extension points: component `--bs-{component}-*` variables for restyling, the utilities API for
-missing utility steps ([bootstrap-reference.md](references/bootstrap-reference.md) → Theming).
+Treat custom CSS as rung 4 and the developer's decision: propose it, name what it buys, and take it
+unprompted only under the exception that follows. Exhaust rungs 1–3 first — correct component
+structure, then utilities, then the extension points: component `--bs-{component}-*` variables for
+restyling, the utilities API for missing utility steps
+([bootstrap-reference.md](references/bootstrap-reference.md) → Theming).
 
 Take an authored rule without asking only where an instrument in
 [inspection.md](references/inspection.md) reports the vendor cascade failing a stated bar, the rule
@@ -228,6 +227,7 @@ Take WCAG 2.2 deltas, APG pattern contracts, reduced motion, and SPA focus recip
 
 ```
 Progress:
+- [ ] Every check that follows, inspection.md instrument or not, reports its population, names the negative control that failed, and states its coverage; a check that can name no negative control is listed as open instead
 - [ ] Project code law followed; no wrong-stack assumptions
 - [ ] Subject, audience, single job stated
 - [ ] Design plan critiqued against the AI defaults: palette, type, layout, one signature
@@ -240,7 +240,6 @@ Progress:
 - [ ] Contrast composited and measured in both themes: ≥ 4.5:1 information-bearing (small included), ≥ 3:1 marks and state chrome; meaning not color-alone
 - [ ] Tiers held: `-emphasis` for information-bearing status, solid buttons for real actions, no tone class inside a filled surface
 - [ ] Every treatment resolved in the shipped cascade, not from docs memory
-- [ ] Every check listed, inspection.md instrument or not: population reported, control failed, coverage stated; a check with no control listed as open
 - [ ] Keyboard: focus visible, not obscured, targets ≥ 24px, icon controls named
 - [ ] Reduced motion respected; every drag has a non-drag path
 - [ ] Forms: labels visible, blur validation, error summary + inline, submit enabled

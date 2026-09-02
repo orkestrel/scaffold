@@ -22,8 +22,7 @@ Apply this section to a spawned harness only.
   inside one tool call dies with that call's process group.
 - Give every child a pinned working directory. A process that resolves assets, configuration, or
   fixtures relative to the current directory dies silently when launched from elsewhere.
-- Pipe child standard error somewhere readable and print it on failure. A discarded stream turns a
-  one-line configuration refusal into a debugging round.
+- Pipe child standard error somewhere readable and print it on failure.
 - Wait on an observable readiness signal — a served response, a printed line, a health probe — never
   on a fixed sleep.
 - Tear down on every exit path, including assertion and setup failure, so a failed capture leaves no
@@ -34,8 +33,8 @@ Apply this section to a spawned harness only.
 Apply this section to a spawned harness only. In the journey run the acceptance journey is the seed,
 and `orkestrel-prove-journey` fixes how it enters and what it may reach past.
 
-- Build seed payloads from the surface's own published contract, never from memory of it. A
-  near-miss field name produces an empty screen that looks exactly like a product defect.
+- Build seed payloads from the surface's own published contract, never from memory of it; a
+  near-miss field name renders an empty screen that reads as a product defect.
 - Assert the seeded state is present before shooting: the row exists, the prompt is parked, the list
   is non-empty.
 - Drive the surface through its real entry path, so the captured state is one a person can reach.

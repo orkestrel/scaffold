@@ -31,27 +31,25 @@ Declare in the browser environment's `integration.test.ts` which families that s
 assert in the always-on proofs that every declared family is present. A declaration names which
 families a surface owes. It never switches what a declared family proves.
 
-| Family     | Declared                                                | Proves                                                                 |
-| ---------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Journey    | Always                                                  | Each user intent reaches its outcome through the interface             |
-| Refusal    | Always                                                  | Each control the surface withholds, through one exact failure voice    |
-| Matrix     | Where the surface ships more than one variant           | The values the browser resolved under each declared variant            |
-| Statechart | Where the surface declares transitions a journey drives | Each declared transition, driven through the interface where it can be |
-| Transport  | Where the surface persists or restarts                  | Persistence, restart, and storage failure through real implementations |
-| Capture    | Under the capture flag                                  | The registry times the variants, each file read back non-empty         |
+| Family     | Declared                                            | Proves                                                                 |
+| ---------- | --------------------------------------------------- | ---------------------------------------------------------------------- |
+| Journey    | Always                                              | Each user intent reaches its outcome through the interface             |
+| Refusal    | Always                                              | Each control the surface withholds, through one exact failure voice    |
+| Matrix     | Where the surface ships more than one variant       | The values the browser resolved under each declared variant            |
+| Statechart | Where a journey drives a control that carries state | Each declared transition, driven through the interface where it can be |
+| Transport  | Where the surface persists or restarts              | Persistence, restart, and storage failure through real implementations |
+| Capture    | Under the capture flag                              | The registry times the variants, each registered file written to disk  |
 
 - Refuse a declaration that omits a family whose trigger the surface meets. Report the omission as a
   scope finding and stop; never prove the remaining families around it.
-- Offer the statechart family where the surface is static, and require it where a journey drives a
-  control that carries state.
 - Assert the declaration itself: a family listed with no proof, and a proof belonging to no listed
   family, each fail the run.
 
 ## Read the variant once
 
 Read one `variant` value at run start, and let it choose the capture destination, the matrix row,
-and the statechart run together. Never split the theme from the viewport: a split lets a run write a
-filename describing a combination it did not render.
+and the statechart run together. Never split the theme from the viewport; a split writes a filename
+naming a combination the run did not render.
 
 - Declare every variant once as a published `CaptureVariant` — its `name`, its `width`, its
   `height`, and the `apply` that switches the theme — and read that list from the capture family and
@@ -63,14 +61,14 @@ filename describing a combination it did not render.
 
 ## Apply the journey laws
 
-1. **Drive only what a person can see and reach.** Target every control by its ARIA role and its
-   accessible name as rendered. Never reach into a component instance, a store, a transport, a
-   copied credential, or a test-only hook to make a step succeed. Report a step that cannot be
-   performed through the interface as a finding about the interface.
+1. **Drive only what a person can see and reach.** Resolve every interactive target by its ARIA
+   role and its accessible name as rendered. Never reach into a component instance, a store, a
+   transport, a copied credential, or a test-only hook to make a step succeed. Report a step that
+   cannot be performed through the interface as a finding about the interface.
 2. **Assert what is seen.** Quote the rendered text a person reads, which is `innerText` — a label
-   under `text-uppercase` asserts as `TRACE` where the source says `Trace`. Never let a state read
-   replace a perception assertion; it may only corroborate one, and `.claude/rules/tests.md` fixes
-   which state a test may read at all.
+   under `text-uppercase` asserts as `TRACE` where the source says `Trace`. Never let an entity
+   state read replace a perception assertion; it may only corroborate one, and
+   `.claude/rules/tests.md` fixes which entity state a test may read at all.
 3. **Assert what the interface withholds.** Assert every refusal through the resolver's exact
    failure voice, and distinguish an absent control from a present but humanly unreachable one.
 4. **Keep transport and persistence proofs in their own declared block,** never inside a journey.
@@ -147,8 +145,8 @@ placement and scope `.claude/rules/tests.md` fixes.
 ## Prove the styles
 
 Follow [styles.md](references/styles.md) for the resolved-value law, the per-variant run, the
-composited contrast reading and its under-bar control, the authored-class census, the escape
-reading, and the token comparison.
+composited contrast reading and its under-bar negative control, the authored-class census, the
+`extractStyles` reading, and the token comparison.
 
 ## Prove the statechart
 
@@ -182,13 +180,13 @@ Completion requires all of:
 - a refusal family per surface, each asserting one exact failure voice;
 - the transport family declared separately, driven through real implementations, and convergent;
 - the declared families each proven, and the declaration itself asserted;
-- the matrix family read once per declared variant, each style instrument carrying the control that
-  must read under its bar in the same run;
-- the authored-class census and the escape reading taken on the mounted surface, each reporting the
-  population it walked;
+- the matrix family read once per declared variant, each style instrument carrying the negative
+  control that must read under its bar in the same run;
+- the authored-class census and the `extractStyles` reading taken on the mounted surface, each
+  reporting the population it walked;
 - the statechart table driven to a terminal outcome with no failed row, and the harness gate green;
 - the registry-times-variants filename proof and the state-placement proof green in an ordinary run;
-- one capture run per variant writing every registered file, each read back non-empty;
+- one capture run per variant writing every registered file, and the disk-membership proof green;
 - the written artifact produced for every variant the run rendered, named by that variant;
 - perception assertions quoting rendered text, and the vocabulary sweep green on the whole page;
 - the repository gates green, under the independent-verification law in `.agents/orchestration.md`.

@@ -1,9 +1,8 @@
 # Proving what the browser resolved
 
-Prove a style from what the browser resolved on the mounted surface. Each instrument here names the
-property it proves, the population it walks, and the control that must fail, in the
-`enterprise-bootstrap` skill's
-[instruments reference](../../enterprise-bootstrap/references/inspection.md). Take the property from
+Prove a style from what the browser resolved on the mounted surface. The `enterprise-bootstrap`
+skill's [instruments reference](../../enterprise-bootstrap/references/inspection.md) names each
+instrument's property, its population, and the negative controls that must fail. Take those from
 there and the reading from here.
 
 ## Assert the resolved value
@@ -18,13 +17,14 @@ there and the reading from here.
 
 ## Run per variant
 
-Run every style assertion once per declared variant, inside one run.
+The run axis is fixed in [SKILL.md](../SKILL.md) → Read the variant once. The matrix family's own
+readings follow.
 
 - Apply each variant's `apply` and its `width` and `height` before the readings, and take every
   reading for that variant before moving to the next.
-- Name the attribute the surface actually reads in `apply`. A Bootstrap surface switches on
-  `data-bs-theme`, so an `apply` copied from an example setting another attribute leaves the run in
-  the default theme and every reading passes.
+- Name the attribute the surface actually reads in `apply`; a Bootstrap surface switches on
+  `data-bs-theme`. An `apply` that sets another attribute leaves the run in the default theme, where
+  every reading passes.
 - Assert that the run read every declared variant. A matrix that silently walked one variant reports
   a pass for the theme nobody exercised.
 - Report which variants a result covers beside it. A pairing that appears only in a state the run
@@ -43,36 +43,36 @@ Run every style assertion once per declared variant, inside one run.
   as a label. It reports `undefined` for a control not matching `:focus-visible`, for the browser's
   own automatic ring, and for a focus style that only repaints the fill — treat each as a finding
   about the surface rather than as a pass.
-- Carry a control that must read under the bar in the same run, composed in the harness rather than
-  taken from the surface. An instrument whose control passes is broken, and its readings are not
-  evidence.
+- Carry the negative controls the composited-contrast instrument names, in the same run and composed
+  in the harness rather than taken from the surface. An instrument whose negative control passes is
+  broken, and its readings are not evidence.
 - Reach for `measureContrast`, `measureLuminance`, `blendColor`, `readLayers`, and `readBackdrop`
   only where the composite itself is the subject. Never re-derive `contrast` from them.
 
 ## The authored-class census
+
+Take the property, the population, and the negative controls from the instruments reference →
+Authored class in the shipped cascade. This is the reading.
 
 - Read the census as the difference between `readClasses(root)` of the mounted surface and
   `readCascade()`. A token in the difference is a class the markup uses and no loaded stylesheet
   declares.
 - Take `root` from the mounted surface, so the census covers what rendered rather than what a
   template file spells.
-- Report the population `readClasses` walked, and fail a run that walked none. An extractor that
-  quietly matched nothing satisfies every other assertion.
-- Carry a control token no stylesheet defines, fed to the reading rather than planted in the markup.
-  It sits outside the population of authored tokens the cascade resolves, and the reading must
-  report it.
+- Report what `readClasses` walked as the population, and fail a run that walked none.
+- Append the extraction-door negative control to that same `root`, so it reaches the difference
+  through `readClasses` rather than beside it.
 
 ## Style escapes
 
-- Read escapes with `extractStyles(root)` on a freshly mounted, undriven surface. It returns the
-  markup of every element carrying a non-empty `style` attribute and of every `<style>` element.
-- Take the reading before any journey drives the surface. A reading taken after reports on the
-  framework rather than on the author.
-- Name every exemption in the instrument. A Bootstrap Modal, Offcanvas, Collapse, or Dropdown writes
-  inline styles as it runs, and a conditional-visibility directive such as `v-show` emits
-  `style="display: none"` at mount.
-- Carry a control element with an inline declaration, built in the harness rather than taken from the
-  surface, and require the reading to report it.
+Take the property, the population, the named exemptions, and the negative control from the
+instruments reference → Style escapes. This is the reading.
+
+- Read escapes with `extractStyles(root)`, which returns the markup of every hit it found.
+- Take the reading before any journey drives the surface, because the population is the undriven
+  tree.
+- Append the harness-built negative control element to that same `root`, so it reaches the reading
+  through `extractStyles`.
 - Reach for `extractOrphans` where the finding is a child element rendered outside its required
   parent, and `readRows` where the subject is a repeated row's rendered text.
 

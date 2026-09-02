@@ -20,12 +20,13 @@ to, and the flag as `enabled`.
 
 The package already refuses these, so assert none of them again:
 
-| Refusal                                                | Raised by             |
-| ------------------------------------------------------ | --------------------- |
-| `Capture variant "<name>" is not registered`           | `createPortfolio`     |
-| `Capture state "<state>" is not registered`            | `place`, when enabled |
-| `Capture state "<state>" is already placed`            | `place`, when enabled |
-| `Capture frame at <path> is not the one this run shot` | `captureFrame`        |
+| Refusal                                                              | Raised by             |
+| -------------------------------------------------------------------- | --------------------- |
+| `Capture variant "<name>" is not registered`                         | `createPortfolio`     |
+| `Capture state "<state>" is not registered`                          | `place`, when enabled |
+| `Capture state "<state>" is already placed`                          | `place`, when enabled |
+| `Capture frame at <path> is not the one this run shot`               | `captureFrame`        |
+| `Capture frame was written to <written> where <asked> was asked for` | `captureFrame`        |
 
 ## The registry
 
@@ -36,8 +37,8 @@ that declaration.
   `case-delete-confirmation`.
 - Register the states the design work actually needs, and place every registered one. Never leave a
   registered state unplaced.
-- Place a state from inside the journey that reaches it, immediately after the assertion that proves
-  the surface is in that state.
+- Place a capture state from inside the journey that reaches it, immediately after the assertion
+  that proves the surface is in the condition that state names.
 - Record each placed name in the suite's own set in the same step that calls `place`. That set, not
   `states`, is what the always-on placement proof reads.
 
@@ -47,8 +48,7 @@ The run axis is fixed in [SKILL.md](../SKILL.md) → Read the variant once, and 
 variant's `apply` performs is fixed in [styles.md](styles.md) → Run per variant. The capture family
 adds these.
 
-- Render one variant per run, and produce the portfolio — the registry times the variants — by
-  repeating the run once per variant.
+- Produce the portfolio — the registry times the variants — by repeating the run once per variant.
 - Name each variant for the theme and the viewport it renders, such as `dark-390`. The name is the
   second half of every filename the run writes, so a variant named for one alone produces a
   portfolio nobody can tell apart.
@@ -66,7 +66,6 @@ suite carries these.
 | Filename expansion   | Always         | `expandCaptures(states, variants)` has one entry per state and variant, all unique |
 | Placement membership | Always         | The suite's placed set equals the registry, as sets                                |
 | Disk membership      | Under the flag | The filenames on disk equal the expansion for this run's variant                   |
-| Read-back            | Under the flag | Every written file reads back non-empty                                            |
 
 - Keep the filename proof always-on, so a registry edit that introduces a duplicate or a collision
   fails the ordinary run. Compare `expandCaptures(states, variants)` against `files` and against a
@@ -76,9 +75,9 @@ suite carries these.
 - Read the placement proof from the suite's own set rather than from `states`. An ordinary run's
   `place` returns before it reads the registry, so `states` is empty there and an unregistered name
   reaches no refusal until a capture run. The always-on placement proof is what catches it.
-- Under the flag, assert the written filenames equal the registry expanded for the run's variant,
-  then read each file back and require non-empty contents. Never treat the path `place` returned as
-  proof that a file exists.
+- Under the flag, assert the written filenames equal the registry expanded for the run's variant.
+  `captureFrame` already reads each file back and compares its bytes against the frame it shot, so
+  the path `place` returns is proof the file exists and holds that frame.
 - Put the membership proof last in the file, after every journey that feeds its tally.
 
 ## Transient states

@@ -24,7 +24,7 @@
 
 - Typography: `.h1`–`.h6`, `.display-1`–`.display-6`, `.lead`, `.small`
 - Images: `.img-fluid`, `.img-thumbnail`, `.figure`
-- Tables: `.table` + variants — see [Tables](#tables)
+- Tables: `.table` plus its `.table-*` tone classes — see [Tables](#tables)
 - Figures: `.figure`, `.figure-img`, `.figure-caption`
 
 ### Form Components
@@ -86,7 +86,7 @@ Full form patterns and validation JS: [bootstrap-reference.md](bootstrap-referen
 </div>
 ```
 
-Variants: `.accordion-flush` (edge-to-edge, no outer borders); omit `data-bs-parent` to allow multiple items open.
+Modifier classes: `.accordion-flush` (edge-to-edge, no outer borders); omit `data-bs-parent` to allow multiple items open.
 
 ### Alerts
 
@@ -188,7 +188,7 @@ The current page is `aria-current="page"` and not a link. Use breadcrumbs only f
 
 Icon-only buttons need `aria-label` and a ≥24×24 px target (WCAG 2.2) — `btn-sm` icon clusters in toolbars are the common violation; pad rather than shrink.
 
-Choose the variant by contrast rather than by taste ([SKILL.md](../SKILL.md) → Hierarchy & actions).
+Choose the `btn-*` class by contrast rather than by taste ([SKILL.md](../SKILL.md) → Hierarchy & actions).
 
 ### Button Group
 
@@ -525,7 +525,7 @@ Bootstrap's modal enforces focus, adds `role="dialog"`/`aria-modal="true"`, clos
 <ul class="nav nav-underline">
 	…
 </ul>
-<!-- 5.3: understated bottom-border variant -->
+<!-- 5.3: understated bottom-border style -->
 <ul class="nav nav-pills nav-fill">
 	…
 </ul>
@@ -858,13 +858,13 @@ Modifiers (combine freely):
 .table-active             /* highlight a row/cell */
 .table-group-divider      /* thicker rule between <tbody> groups */
 .caption-top              /* caption above the table */
-.table-primary … .table-dark   /* variants, on table/tr/td */
+.table-primary … .table-dark   /* tone classes, on table/tr/td */
 .align-middle             /* vertical alignment, on table/tr/td */
 ```
 
 - **Responsive:** wrap in `.table-responsive{-sm|-md|-lg|-xl|-xxl}` for horizontal scroll. Caveat: the wrapper clips overflowing content — dropdown menus inside a responsive table get cut off.
-- **Dark tables:** `data-bs-theme="dark"` on the `<table>` (the `.table-dark` variant approach is superseded).
-- **Theming:** variants set CSS variables, not fixed colors — `--bs-table-bg`, `--bs-table-color`, `--bs-table-striped-bg`, `--bs-table-hover-bg`, `--bs-table-active-bg`, `--bs-table-border-color`. `--bs-table-bg` is transparent by default so striping/hover layer through.
+- **Dark tables:** `data-bs-theme="dark"` on the `<table>` (the `.table-dark` class approach is superseded).
+- **Theming:** the `.table-*` tone classes set CSS variables, not fixed colors — `--bs-table-bg`, `--bs-table-color`, `--bs-table-striped-bg`, `--bs-table-hover-bg`, `--bs-table-active-bg`, `--bs-table-border-color`. `--bs-table-bg` is transparent by default so striping/hover layer through.
 - **Sticky headers are NOT built in.** Bootstrap ships no sticky-header feature; the pattern needs a few lines of custom CSS. That, plus selection columns, `aria-sort` sorting, bulk-action bars, and responsive strategies: [bootstrap-reference.md](bootstrap-reference.md) → Dense data tables.
 
 ### Toasts
@@ -881,7 +881,7 @@ Modifiers (combine freely):
 
 <div class="toast align-items-center text-bg-primary border-0" role="status" aria-live="polite">
 	<div class="d-flex">
-		<div class="toast-body">Color variant</div>
+		<div class="toast-body">Color tone</div>
 		<button
 			type="button"
 			class="btn-close me-2 m-auto"
@@ -1005,7 +1005,7 @@ The textless mark that survives both themes — dots, ticks, rings, pulses — i
 A selected row, pill, or filter chip repaints everything inside it — marks included. These traps stay invisible until the selected state is captured in both themes:
 
 - **A mark on an active fill of the same family disappears.** `.active` on a `list-group-item`, `nav-pill`, or `page-item` sets the item's own color, and a `text-bg-primary`-family mark inside it inherits or loses to that fill — present in the markup, gone on screen. Carry no tone class inside the fill ([SKILL.md](../SKILL.md) → Surfaces, color, contrast). Verify by capturing the selected row, not by reading the class list.
-- **`btn-check` filter labels invert in dark.** A `btn-outline-secondary` label reads as "chosen" in light and as "muted" in dark, because the checked fill and the surface swap relative weight. Give chosen filters an accent variant (a real theme color) rather than the neutral outline, so "chosen" reads the same way in both modes.
+- **`btn-check` filter labels invert in dark.** A `btn-outline-secondary` label reads as "chosen" in light and as "muted" in dark, because the checked fill and the surface swap relative weight. Give chosen filters an accent tone class (a real theme color) rather than the neutral outline, so "chosen" reads the same way in both modes.
 
 Exactly one item in a selection carries `aria-current` — the visual fill and the announced state must be the same item.
 
@@ -1017,5 +1017,5 @@ Exactly one item in a selection carries `aria-current` — the visual fill and t
 
 ### Theming
 
-- Components consume CSS variables — favor `text-bg-*`, `*-subtle`, and `data-bs-theme` over one-off colors; the deprecated `*-dark` component variants (`navbar-dark`, `dropdown-menu-dark`, `btn-close-white`, `carousel-dark`) all map to `data-bs-theme="dark"`.
+- Components consume CSS variables — favor `text-bg-*`, `*-subtle`, and `data-bs-theme` over one-off colors; the deprecated `*-dark` component classes (`navbar-dark`, `dropdown-menu-dark`, `btn-close-white`, `carousel-dark`) all map to `data-bs-theme="dark"`.
 - To restyle a component, override its `--bs-{component}-*` variables in your own scope instead of writing high-specificity rules — see [bootstrap-reference.md](bootstrap-reference.md) → Theming & design tokens.

@@ -98,9 +98,9 @@ target stops resolving, and read the exposed name with `readName` and the expose
   miss immediately after such a change as this before treating the element as missing.
 - Always target a tab by its role. A tab and its panel collide on a bare name by construction,
   because the panel is labelled by its tab.
-- `<summary>` is exposed as a native disclosure rather than through a role the provider's role
-  locators accept. Drive it with `clickDisclosure`, which applies the same reachability conditions
-  and throws its own voices.
+- Drive a `<summary>` with `clickDisclosure`, which applies the same reachability conditions and
+  throws its own voices. The provider's role locators do not resolve it, because it is exposed as a
+  native disclosure rather than through a role.
 
 ## Region-scoped resolution
 
