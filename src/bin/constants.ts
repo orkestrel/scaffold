@@ -2,7 +2,7 @@ import type { ParseArgsOptionsConfig } from 'node:util'
 import type { Verb } from './types.js'
 
 /**
- * The name the executable installs as.
+ * Names the command the executable installs as.
  *
  * @remarks
  * `package.json`'s `bin` field is the authority for what the command is called;
@@ -12,7 +12,7 @@ import type { Verb } from './types.js'
 export const EXECUTABLE_NAME = 'scaffold'
 
 /**
- * The {@link Verb} values in usage order, frozen.
+ * Lists the {@link Verb} values in usage order, frozen.
  *
  * @remarks
  * The order the type declares them in, which is also the order usage lists them:
@@ -27,17 +27,17 @@ export const VERBS: readonly Verb[] = Object.freeze([
 	'overwrite',
 ])
 
-/** The exit code reporting that the target matched its plan and every step completed. */
+/** Names the exit code reporting that the target matched its plan and every step completed. */
 export const EXIT_CLEAN = 0
 
-/** The exit code reporting that the target drifted, or that a step failed. */
+/** Names the exit code reporting that the target drifted, or that a step failed. */
 export const EXIT_DRIFT = 1
 
-/** The exit code reporting that the command line was not a command. */
+/** Names the exit code reporting that the command line was not a command. */
 export const EXIT_USAGE = 2
 
 /**
- * What each exit code means, frozen.
+ * Describes what each exit code means, frozen.
  *
  * @remarks
  * Keyed by the code constants rather than by literals, so the usage block
@@ -50,7 +50,7 @@ export const EXIT_SUMMARY: Readonly<Record<number, string>> = Object.freeze({
 })
 
 /**
- * The machine-readable code a malformed command line reports.
+ * Names the machine-readable code a malformed command line reports.
  *
  * @remarks
  * The executable contributes its own codes to the failure envelope, which is why
@@ -60,14 +60,14 @@ export const EXIT_SUMMARY: Readonly<Record<number, string>> = Object.freeze({
  */
 export const USAGE_CODE = 'USAGE'
 
-/** The machine-readable code a failure carrying no code of its own reports. */
+/** Names the machine-readable code a failure carrying no code of its own reports. */
 export const FAILED_CODE = 'FAILED'
 
-/** What the failure envelope says when the raised value carried no message. */
+/** Holds what the failure envelope says when the raised value carried no message. */
 export const FAILED_MESSAGE = 'The command failed for an unrecognized reason'
 
 /**
- * The positional argument `new` alone takes, as usage writes it.
+ * Names the positional argument `new` alone takes, as usage writes it.
  *
  * @remarks
  * The workspace name is the only positional argument any verb takes, so it is
@@ -76,7 +76,7 @@ export const FAILED_MESSAGE = 'The command failed for an unrecognized reason'
 export const NAME_ARGUMENT = '<name>'
 
 /**
- * Every option the executable accepts, as `node:util` parses them, frozen.
+ * Declares every option the executable accepts, as `node:util` parses them, frozen.
  *
  * @remarks
  * One table for every verb rather than one per verb, because the verb an option
@@ -103,7 +103,7 @@ export const COMMAND_OPTIONS: ParseArgsOptionsConfig = Object.freeze({
 })
 
 /**
- * What each option does, keyed by the token usage prints, frozen.
+ * Describes what each option does, keyed by the token usage prints, frozen.
  *
  * @remarks
  * The key order is the glossary order. A key is the whole displayed token,
@@ -129,7 +129,7 @@ export const OPTION_SUMMARY: Readonly<Record<string, string>> = Object.freeze({
 })
 
 /**
- * The options each verb takes, in usage order, frozen.
+ * Lists the options each verb takes, in usage order, frozen.
  *
  * @remarks
  * The executable's half of the frozen command union: every option a branch
@@ -174,7 +174,7 @@ export const VERB_OPTIONS: Readonly<Record<Verb, readonly string[]>> = Object.fr
 })
 
 /**
- * What each verb does, in one line, frozen.
+ * Describes what each verb does, in one line, frozen.
  *
  * @remarks
  * Each line names what the verb writes, because authority is the verb's: a

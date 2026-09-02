@@ -1,7 +1,7 @@
 import { USAGE_CODE } from './constants.js'
 
 /**
- * The error raised when a command line is not a command.
+ * Represents the error raised when a command line is not a command.
  *
  * @remarks
  * Distinct from `ScaffoldError` because they answer different questions and
@@ -29,7 +29,7 @@ export class UsageError extends Error {
 	readonly code: string
 
 	/**
-	 * Construct a usage error.
+	 * Constructs a usage error.
 	 *
 	 * @param message - What was wrong with the command line, in one sentence.
 	 */
@@ -41,10 +41,10 @@ export class UsageError extends Error {
 }
 
 /**
- * Narrow a caught value to a {@link UsageError}.
+ * Narrows a caught value to a {@link UsageError}.
  *
  * @param value - The caught value to narrow.
- * @returns `true` when `value` is a {@link UsageError}.
+ * @returns True if `value` is a {@link UsageError}; false otherwise.
  *
  * @example
  * ```ts

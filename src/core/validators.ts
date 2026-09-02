@@ -53,11 +53,11 @@ import {
 } from './constants.js'
 
 /**
- * Narrow a value to a logical target-relative path.
+ * Narrows a value to a logical target-relative path.
  *
  * @param value - The candidate path.
- * @returns `true` for a bounded relative path with no traversal, empty segment,
- * control character, or reserved syntax character.
+ * @returns True if the value is a bounded relative path with no traversal, empty
+ * segment, control character, or reserved syntax character; false otherwise.
  *
  * @remarks
  * Every path this package reads or writes passes here, so one law covers a
@@ -89,7 +89,7 @@ export function isPath(value: unknown): value is string {
 }
 
 /**
- * Narrow a value to exact lowercase hexadecimal bytes within one artifact's limit.
+ * Narrows a value to exact lowercase hexadecimal bytes within one artifact's limit.
  *
  * @remarks
  * Two digits per byte, so an odd length is refused and empty content is valid.
@@ -110,7 +110,7 @@ export const isHex: Guard<string> = stringOf({
 })
 
 /**
- * Narrow a value to text this package will accept as one artifact's content.
+ * Narrows a value to text this package will accept as one artifact's content.
  *
  * @remarks
  * The bound is a code-unit ceiling rather than a byte count, because a string
@@ -122,10 +122,11 @@ export const isHex: Guard<string> = stringOf({
 export const isContent: Guard<string> = stringOf({ max: MAX_ARTIFACT_BYTES })
 
 /**
- * Narrow a value to an array within the limit one public collection accepts.
+ * Narrows a value to an array within the limit one public collection accepts.
  *
  * @param value - The candidate collection.
- * @returns `true` for an array of no more than `MAX_COLLECTION_ITEMS` items.
+ * @returns True if the value is an array of no more than
+ * `MAX_COLLECTION_ITEMS` items; false otherwise.
  *
  * @remarks
  * Compose this ahead of an element guard so the item count is settled before
@@ -145,7 +146,7 @@ export function isCollection(value: unknown): value is readonly unknown[] {
 }
 
 /**
- * Narrow a value to one {@link Environment} a workspace may select.
+ * Narrows a value to one {@link Environment} a workspace may select.
  *
  * @example
  * ```ts
@@ -158,7 +159,7 @@ export function isCollection(value: unknown): value is readonly unknown[] {
 export const isEnvironment: Guard<Environment> = literalOf(ENVIRONMENTS)
 
 /**
- * Narrow a value to one {@link Group} a plan selects over.
+ * Narrows a value to one {@link Group} a plan selects over.
  *
  * @example
  * ```ts
@@ -170,11 +171,11 @@ export const isEnvironment: Guard<Environment> = literalOf(ENVIRONMENTS)
  */
 export const isGroup: Guard<Group> = literalOf(GROUPS)
 
-/** Narrow a value to a bounded group selection. */
+/** Narrows a value to a bounded group selection. */
 export const isGroups: Guard<readonly Group[]> = andOf(isCollection, arrayOf(isGroup))
 
 /**
- * Narrow a value to the scoped package name a runtime dependency carries.
+ * Narrows a value to the scoped package name a runtime dependency carries.
  *
  * @remarks
  * A dependency name reaches a path, because a workspace's guide mirror is
@@ -197,7 +198,7 @@ export const isDependencyName: Guard<string> = stringOf({
 })
 
 /**
- * Narrow a value to a {@link Dependency}.
+ * Narrows a value to a {@link Dependency}.
  *
  * @remarks
  * Structural and bounded: which names and ranges a blueprint may declare is a
@@ -222,7 +223,7 @@ export const isDependency: Guard<Dependency> = recordOf(
 )
 
 /**
- * Narrow a value to a {@link ManifestScript}.
+ * Narrows a value to a {@link ManifestScript}.
  *
  * @remarks
  * Structural and bounded, exactly as {@link isDependency} is: a script name
@@ -245,7 +246,7 @@ export const isManifestScript: Guard<ManifestScript> = recordOf({
 })
 
 /**
- * Narrow a value to an {@link Override}.
+ * Narrows a value to an {@link Override}.
  *
  * @remarks
  * Whether the path names a planned artifact is a gate law; whether it names a
@@ -261,7 +262,7 @@ export const isManifestScript: Guard<ManifestScript> = recordOf({
 export const isOverride: Guard<Override> = recordOf({ path: isPath, content: isContent })
 
 /**
- * Narrow a value to a {@link Blueprint}.
+ * Narrows a value to a {@link Blueprint}.
  *
  * @remarks
  * The whole closed record, its literal axes, and the count and length bounds
@@ -303,7 +304,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 )
 
 /**
- * Narrow a value to an {@link Artifact}.
+ * Narrows a value to an {@link Artifact}.
  *
  * @remarks
  * One branch per way content is produced, discriminated by `origin` and
@@ -357,7 +358,7 @@ export const isArtifact: Guard<Artifact> = unionOf(
 )
 
 /**
- * Narrow a value to a {@link Plan}.
+ * Narrows a value to a {@link Plan}.
  *
  * @remarks
  * A plan reaches the writer, and the writer has no question channel, so this
@@ -383,7 +384,7 @@ export const isPlan: Guard<Plan> = andOf(
 )
 
 /**
- * Narrow a value to a {@link Question}.
+ * Narrows a value to a {@link Question}.
  *
  * @example
  * ```ts
@@ -403,7 +404,7 @@ export const isQuestion: Guard<Question> = recordOf(
 )
 
 /**
- * Narrow a value to a {@link Finding}.
+ * Narrows a value to a {@link Finding}.
  *
  * @remarks
  * `observed` is required exactly where the mutation it precedes is held to it,
@@ -449,7 +450,7 @@ export const isFinding: Guard<Finding> = unionOf(
 )
 
 /**
- * Narrow a value to an {@link Audit}.
+ * Narrows a value to an {@link Audit}.
  *
  * @remarks
  * An audit reaches the writer and the destructive verb, so it is guarded as
@@ -466,7 +467,7 @@ export const isAudit: Guard<Audit> = recordOf({
 })
 
 /**
- * Narrow a value to a {@link Mirror}.
+ * Narrows a value to a {@link Mirror}.
  *
  * @remarks
  * `content` is the fetched guide text and `observed` is the local mirror's
@@ -497,7 +498,7 @@ export const isMirror: Guard<Mirror> = unionOf(
 )
 
 /**
- * Narrow a value to a {@link CatalogEntry}.
+ * Narrows a value to a {@link CatalogEntry}.
  *
  * @remarks
  * A row that found no version carries the cause instead, and neither branch may
@@ -518,11 +519,11 @@ export const isCatalogEntry: Guard<CatalogEntry> = unionOf(
 )
 
 /**
- * Narrow a value to a {@link Snapshot}.
+ * Narrows a value to a {@link Snapshot}.
  *
  * @param value - The candidate target snapshot.
- * @returns `true` for a bounded plain record whose every key is a path and
- * whose every value is exact lowercase hexadecimal bytes.
+ * @returns True if the value is a bounded plain record whose every key is a path and
+ * whose every value is exact lowercase hexadecimal bytes; false otherwise.
  *
  * @remarks
  * Read through the shared total key lens, so a hostile `ownKeys` trap and a
@@ -551,7 +552,7 @@ export function isSnapshot(value: unknown): value is Snapshot {
 }
 
 /**
- * Narrow a value to the compiler's initial listener record.
+ * Narrows a value to the compiler's initial listener record.
  *
  * @remarks
  * Every event is optional and every declared value is a function. A key outside
@@ -570,7 +571,7 @@ export const isCompilerHooks: Guard<EmitterHooks<CompilerEventMap>> = recordOf(
 )
 
 /**
- * Narrow a value to {@link CompilerOptions}.
+ * Narrows a value to {@link CompilerOptions}.
  *
  * @example
  * ```ts

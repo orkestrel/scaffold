@@ -2,7 +2,7 @@ import type { JSONValue } from '@orkestrel/contract'
 import { attempt, cloneJSONValue } from '@orkestrel/contract'
 
 /**
- * Snapshot an untrusted value into exact JSON data the caller owns.
+ * Snapshots an untrusted value into exact JSON data the caller owns.
  *
  * @param value - The untrusted value to take ownership of.
  * @returns A deeply frozen copy sharing nothing with `value`, or `undefined`

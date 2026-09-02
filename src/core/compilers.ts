@@ -72,7 +72,7 @@ import {
 import { ARTIFACT_TEMPLATES, CONFIG_TEMPLATES } from './templates.js'
 
 /**
- * Build one `exports` condition block for a built environment.
+ * Builds one `exports` condition block for a built environment.
  *
  * @param path - The extensionless `dist` path both conditions point at.
  * @param formats - The module formats that environment builds.
@@ -103,7 +103,7 @@ export function pathToCondition(
 }
 
 /**
- * Project a published selection into the manifest's entry fields.
+ * Projects a published selection into the manifest's entry fields.
  *
  * @param src - The declared published environments.
  * @returns The `main` and `module` fields, plus `types` when one environment
@@ -138,7 +138,7 @@ export function srcToEntry(src: readonly Environment[]): {
 }
 
 /**
- * Project a published selection into the manifest's `exports` map.
+ * Projects a published selection into the manifest's `exports` map.
  *
  * @param src - The declared published environments.
  * @returns The map, keyed by subpath in `ENVIRONMENTS` order.
@@ -178,7 +178,7 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
 }
 
 /**
- * Project a blueprint into the development dependencies its manifest declares.
+ * Projects a blueprint into the development dependencies its manifest declares.
  *
  * @param blueprint - The workspace specification.
  * @returns The merged set, sorted by package name.
@@ -237,7 +237,7 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 }
 
 /**
- * Project a blueprint into the scripts its manifest declares.
+ * Projects a blueprint into the scripts its manifest declares.
  *
  * @param blueprint - The workspace specification.
  * @returns The scripts, in the order the manifest lists them.
@@ -410,7 +410,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 }
 
 /**
- * Project a blueprint into the manifest scripts a region write may replace.
+ * Projects a blueprint into the manifest scripts a region write may replace.
  *
  * @param blueprint - The workspace specification.
  * @returns One entry per writable script.
@@ -466,7 +466,7 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 }
 
 /**
- * Compile a blueprint into its `package.json` content.
+ * Compiles a blueprint into its `package.json` content.
  *
  * @param blueprint - The workspace specification.
  * @returns The manifest text, newline-terminated.
@@ -569,7 +569,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 }
 
 /**
- * Derive the host-specific machinery a generated root Vite configuration carries.
+ * Derives the host-specific machinery a generated root Vite configuration carries.
  *
  * @param blueprint - The workspace specification.
  * @returns The pipelines the generated configuration selects.
@@ -606,7 +606,7 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
 }
 
 /**
- * Compile the root TypeScript configuration for a blueprint.
+ * Compiles the root TypeScript configuration for a blueprint.
  *
  * @param blueprint - The workspace specification.
  * @returns Formatter-stable `tsconfig.json` text.
@@ -639,7 +639,7 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
 }
 
 /**
- * Compile the root Vite and Vitest configuration for a blueprint.
+ * Compiles the root Vite and Vitest configuration for a blueprint.
  *
  * @param blueprint - The workspace specification.
  * @returns Formatter-stable `vite.config.ts` text.
@@ -879,7 +879,7 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 }
 
 /**
- * Compile every artifact in the `configs` group.
+ * Compiles every artifact in the `configs` group.
  *
  * @param blueprint - The workspace specification.
  * @returns Root and selected wrapper artifacts in matrix order.
@@ -1068,7 +1068,7 @@ ${paths.join('\n')}
 }
 
 /**
- * Compile every artifact in the `source` group.
+ * Compiles every artifact in the `source` group.
  *
  * @param blueprint - The workspace specification.
  * @returns Empty published barrels, selected application entries, and the optional bin entry.
@@ -1154,7 +1154,7 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 }
 
 /**
- * Compile every artifact in the `tests` group that is not vendored from the host.
+ * Compiles every artifact in the `tests` group that is not vendored from the host.
  *
  * @param blueprint - The workspace specification.
  * @returns Shared setup modules, axis tests, and the optional integration seed.
@@ -1356,7 +1356,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 }
 
 /**
- * Compile the generated workspace's guide index.
+ * Compiles the generated workspace's guide index.
  *
  * @param blueprint - The workspace specification.
  * @returns One birth-owned guide index carrying the concept and directory views.
@@ -1404,7 +1404,7 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
 }
 
 /**
- * Compile the generated workspace's root documentation.
+ * Compiles the generated workspace's root documentation.
  *
  * @param blueprint - The workspace specification.
  * @returns The birth-owned package front page and the content-owned `AGENTS.md`
@@ -1458,7 +1458,7 @@ export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly Con
 }
 
 /**
- * Compile the blueprint-dependent orchestration artifacts.
+ * Compiles the blueprint-dependent orchestration artifacts.
  *
  * @param blueprint - The workspace specification.
  * @returns A vendor inventory script when vendors are declared, otherwise none.
@@ -1487,7 +1487,7 @@ export function blueprintToOrchestrationArtifacts(
 }
 
 /**
- * Compile the vendored host artifacts a named workspace plans.
+ * Compiles the vendored host artifacts a named workspace plans.
  *
  * @param name - The target workspace's own bare package name.
  * @returns One artifact per vendored path in `HOST_PATHS` order, then the
@@ -1533,7 +1533,7 @@ export function nameToHostArtifacts(name: string): readonly Artifact[] {
 }
 
 /**
- * Replace the content of every drafted artifact an override names.
+ * Replaces the content of every drafted artifact an override names.
  *
  * @param artifacts - The drafted artifacts.
  * @param overrides - The blueprint's overrides.
@@ -1569,7 +1569,7 @@ export function applyOverrides(
 }
 
 /**
- * Replace declared dependency ranges in package manifest text.
+ * Replaces declared dependency ranges in package manifest text.
  *
  * @param manifest - The manifest text to compile.
  * @param pins - The runtime and development names and replacement ranges.
@@ -1750,7 +1750,7 @@ export function replaceManifestRanges(
 }
 
 /**
- * Replace named script values in package manifest text.
+ * Replaces named script values in package manifest text.
  *
  * @param manifest - The manifest text to compile.
  * @param scripts - The scripts to write, each with the predecessors it accepts.
@@ -2000,7 +2000,7 @@ export function replaceManifestScripts(
 }
 
 /**
- * Replace dependency ranges in a plan's manifest and recompute its identity.
+ * Replaces dependency ranges in a plan's manifest and recomputes its identity.
  *
  * @param plan - The plan carrying the manifest artifact to compile.
  * @param pins - The runtime and development names and replacement ranges.
@@ -2040,7 +2040,7 @@ export function replacePlanRanges(plan: Plan, pins: DependencyPinSet): Plan | un
 }
 
 /**
- * Compute a plan's content identity.
+ * Computes a plan's content identity.
  *
  * @param plan - The plan to identify.
  * @returns Sixteen lowercase hexadecimal digits, or `undefined` when the plan
@@ -2080,7 +2080,7 @@ export function planToHash(plan: Plan): string | undefined {
 }
 
 /**
- * Compare a plan against a target's current content.
+ * Compares a plan against a target's current content.
  *
  * @param plan - The compiled plan.
  * @param current - The target's exact bytes, keyed by artifact-relative path.
@@ -2122,7 +2122,7 @@ export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[
 }
 
 /**
- * Measure one declared package list against the name and range syntax it accepts.
+ * Measures one declared package list against the name and range syntax it accepts.
  *
  * @param dependencies - The declared list.
  * @param field - The blueprint field the list came from, reported on each question.
@@ -2190,7 +2190,7 @@ export function dependenciesToQuestions(
 }
 
 /**
- * Measure a blueprint against every law its own fields decide.
+ * Measures a blueprint against every law its own fields decide.
  *
  * @param blueprint - The workspace specification.
  * @returns One question per rejected field, in blueprint field order, with the
@@ -2390,7 +2390,7 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 }
 
 /**
- * Measure a drafted artifact list against the laws a whole plan decides.
+ * Measures a drafted artifact list against the laws a whole plan decides.
  *
  * @param artifacts - The drafted artifacts.
  * @returns One blocking question per colliding path and per exceeded ceiling.
@@ -2461,7 +2461,7 @@ export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Q
 }
 
 /**
- * Measure a blueprint's overrides against the artifacts drafted for it.
+ * Measures a blueprint's overrides against the artifacts drafted for it.
  *
  * @param overrides - The blueprint's overrides.
  * @param artifacts - The drafted artifacts, before overrides are applied.

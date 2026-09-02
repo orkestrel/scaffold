@@ -5,7 +5,7 @@ import { ScaffoldError } from './errors.js'
 import { parseBlueprint } from './parsers.js'
 
 /**
- * Construct a {@link Blueprint} from a name and the fields that differ from the defaults.
+ * Constructs a {@link Blueprint} from a name and the fields that differ from the defaults.
  *
  * @param name - The bare workspace name.
  * @param input - The fields to set; every omitted field takes its default.

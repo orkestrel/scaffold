@@ -33,7 +33,7 @@ import {
 } from './constants.js'
 
 /**
- * Encode bytes as exact lowercase hexadecimal text.
+ * Encodes bytes as exact lowercase hexadecimal text.
  *
  * @param bytes - The bytes to encode.
  * @returns Two lowercase hexadecimal digits per input byte, and `''` for no bytes.
@@ -58,7 +58,7 @@ export function bytesToHex(bytes: Uint8Array): string {
 }
 
 /**
- * Encode text as the exact lowercase hexadecimal form of its UTF-8 bytes.
+ * Encodes text as the exact lowercase hexadecimal form of its UTF-8 bytes.
  *
  * @param content - The text to encode.
  * @returns The hexadecimal form of the text's exact UTF-8 bytes.
@@ -81,7 +81,7 @@ export function contentToHex(content: string): string {
 }
 
 /**
- * Count the UTF-8 bytes text encodes to.
+ * Counts the UTF-8 bytes text encodes to.
  *
  * @param content - The text to measure.
  * @returns The exact number of UTF-8 bytes.
@@ -110,7 +110,7 @@ export function computeBytes(content: string): number {
 }
 
 /**
- * Compute the deterministic content identity of text.
+ * Computes the deterministic content identity of text.
  *
  * @param text - The text to digest.
  * @returns Sixteen lowercase hexadecimal digits.
@@ -142,11 +142,11 @@ export function computeHash(text: string): string {
 }
 
 /**
- * Test whether a path instructs or wires an agent rather than the toolchain.
+ * Tests whether a path instructs or wires an agent rather than the toolchain.
  *
  * @param path - The target-relative path to test.
- * @returns `true` when the path is beneath a harness directory or is one of the
- * exact root filenames that wires an agent bench.
+ * @returns True if the path is beneath a harness directory or is one of the exact
+ * root filenames that wires an agent bench; false otherwise.
  *
  * @remarks
  * The one home of the orchestration membership rule. A vendored path and a
@@ -172,8 +172,8 @@ export function matchesOrchestrationPath(path: string): boolean {
  * Checks whether another surface owns the vendored bytes at a path.
  *
  * @param path - The target-relative vendored path to test.
- * @returns `true` for the catalog agent file and for a Markdown guide mirror;
- * `false` otherwise.
+ * @returns True if the path is the catalog agent file or a Markdown guide
+ * mirror; false otherwise.
  *
  * @remarks
  * The materializer keeps these paths presence-owned because the catalog or
@@ -196,8 +196,8 @@ export function isDeferredPath(path: string): boolean {
  * Checks whether a path belongs to the instruction canon a target reads rather than holds.
  *
  * @param path - The target-relative path to test.
- * @returns `true` for a {@link CANON_PATHS} member and for any path beneath a
- * member that is a directory; `false` otherwise.
+ * @returns True if the path is a {@link CANON_PATHS} member or sits beneath a
+ * member that is a directory; false otherwise.
  *
  * @remarks
  * The one reading of canon membership, so the live overlay and the executable's
@@ -251,8 +251,8 @@ export function isRetainedPath(path: string): boolean {
  * Checks whether a destination's floor bytes survive a live overlay.
  *
  * @param path - The target-relative destination to test.
- * @returns True if the path is deferred or belongs to the instruction canon;
- * false otherwise.
+ * @returns True if the path is deferred or belongs to the instruction
+ * canon; false otherwise.
  *
  * @remarks
  * The one reading of what a live fill does not replace, so the overlay assembler
@@ -275,7 +275,7 @@ export function isFloorPath(path: string): boolean {
 }
 
 /**
- * Infer the {@link Group} a path belongs to.
+ * Infers the {@link Group} a path belongs to.
  *
  * @param path - The target-relative path to classify.
  * @returns The group that owns the path.
@@ -314,7 +314,7 @@ export function inferGroup(path: string): Group {
 }
 
 /**
- * Serialize one string as a single-quoted TypeScript literal.
+ * Serializes one string as a single-quoted TypeScript literal.
  *
  * @param value - The string to serialize.
  * @returns A complete single-quoted literal with line-breaking and delimiter
@@ -358,7 +358,7 @@ export function serializeTypeScriptString(value: string): string {
 }
 
 /**
- * Derive the guide mirror path a package name answers for.
+ * Derives the guide mirror path a package name answers for.
  *
  * @param name - A bare or `@orkestrel`-scoped package name.
  * @returns The mirror path, `guides/<bare name>.md`.
@@ -384,10 +384,10 @@ export function nameToGuide(name: string): string {
 }
 
 /**
- * Test whether one emitted line fits the vendored formatter width.
+ * Tests whether one emitted line fits the vendored formatter width.
  *
  * @param line - One emitted line, leading tabs included.
- * @returns `true` when the expanded line fits.
+ * @returns True if the expanded line fits; false otherwise.
  *
  * @remarks
  * A generator writes source the formatter then reads back, so a line packed
@@ -409,7 +409,7 @@ export function matchesPrintWidth(line: string): boolean {
 }
 
 /**
- * Derive the declaration rewrite a published face's `beforeWriteFile` applies.
+ * Derives the declaration rewrite a published face's `beforeWriteFile` applies.
  *
  * @param name - The workspace's own bare package name.
  * @returns The ternary consequent an emitted `vite.{browser,server}.config.ts`
@@ -450,7 +450,7 @@ export function nameToRewrite(name: string): string {
 }
 
 /**
- * Select the single published environment a package root points at.
+ * Selects the single published environment a package root points at.
  *
  * @param src - The declared published environments.
  * @returns That environment, or `undefined` when the selection declares none or
@@ -478,7 +478,7 @@ export function srcToRoot(src: readonly Environment[]): Environment | undefined 
 }
 
 /**
- * Select the host paths a named workspace vendors.
+ * Selects the host paths a named workspace vendors.
  *
  * @param paths - The candidate host paths, in their declared order.
  * @param name - The target workspace's own bare package name.
@@ -502,7 +502,7 @@ export function selectHostPaths(paths: readonly string[], name: string): readonl
 }
 
 /**
- * Select the groups a compile covers, in plan order.
+ * Selects the groups a compile covers, in plan order.
  *
  * @param groups - The requested selection; every group when absent.
  * @returns The requested groups in `GROUPS` order, without repeats.
@@ -528,7 +528,7 @@ export function selectGroups(groups?: readonly Group[]): readonly Group[] {
 }
 
 /**
- * Project an artifact to the exact bytes it claims, as hexadecimal.
+ * Projects an artifact to the exact bytes it claims, as hexadecimal.
  *
  * @param artifact - The planned artifact to read.
  * @returns The claimed bytes, or `undefined` when the artifact claims none.
@@ -558,7 +558,7 @@ export function artifactToHex(artifact: Artifact): string | undefined {
 }
 
 /**
- * Infer how one target path compares to the artifact planned for it.
+ * Infers how one target path compares to the artifact planned for it.
  *
  * @param artifact - The planned artifact.
  * @param observed - The destination's exact bytes as hexadecimal; absent when
@@ -601,7 +601,7 @@ export function inferDrift(artifact: Artifact, observed?: string): Exclude<Drift
 }
 
 /**
- * Project one planned artifact and the bytes found at its path into a verdict.
+ * Projects one planned artifact and the bytes found at its path into a verdict.
  *
  * @param artifact - The planned artifact.
  * @param observed - The destination's exact bytes as hexadecimal; absent when
@@ -645,11 +645,12 @@ export function artifactToFinding(artifact: Artifact, observed?: string): Findin
 }
 
 /**
- * Test whether {@link inferDrift} could have produced a finding for an ownership.
+ * Tests whether {@link inferDrift} could have produced a finding for an ownership.
  *
  * @param ownership - What scaffold claims at the planned path.
  * @param finding - The audit verdict to test.
- * @returns Whether the ownership and verdict are reachable through {@link inferDrift}.
+ * @returns True if the ownership and verdict are reachable through
+ * {@link inferDrift}; false otherwise.
  *
  * @remarks
  * This predicate keeps the comparison law beside the reachability law it
@@ -663,7 +664,7 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
 }
 
 /**
- * Project a catalog into the layers it publishes in.
+ * Projects a catalog into the layers it publishes in.
  *
  * @param entries - The catalog rows to order.
  * @returns One layer per round, each holding the names publishable together,
@@ -716,7 +717,7 @@ export function catalogToLayers(
 }
 
 /**
- * Project a plan into its tally by artifact origin.
+ * Projects a plan into its tally by artifact origin.
  *
  * @param plan - The plan to summarize.
  * @returns The workspace's name, both environment axes, the covered groups, and
@@ -756,7 +757,7 @@ export function planToSummary(plan: Plan): PlanSummary {
 }
 
 /**
- * Extract the major, minor, and patch components of an exact version.
+ * Extracts the major, minor, and patch components of an exact version.
  *
  * @param version - The candidate version text.
  * @returns The major, minor, and patch numbers, or `undefined` when the text is
@@ -785,7 +786,7 @@ export function extractVersion(
 }
 
 /**
- * Extract the major component of an admitted dependency range.
+ * Extracts the major component of an admitted dependency range.
  *
  * @param range - The candidate range text.
  * @returns The major number, or `undefined` when the text is not a canonical
@@ -815,7 +816,7 @@ export function extractRangeMajor(range: string): number | undefined {
 }
 
 /**
- * Compare two versions by their numeric components.
+ * Compares two versions by their numeric components.
  *
  * @param left - The version ordered first when it compares lower.
  * @param right - The version compared against.
@@ -851,11 +852,11 @@ export function compareVersions(left: string, right: string): number {
 }
 
 /**
- * Test whether a declared range already admits a published version.
+ * Tests whether a declared range already admits a published version.
  *
  * @param range - The declared dependency range.
  * @param latest - The version the registry reported as latest.
- * @returns `true` when the range admits that version.
+ * @returns True if the range admits that version; false otherwise.
  *
  * @remarks
  * The one place this comparison is made. A `Release` records the declared range
@@ -909,11 +910,11 @@ export function matchesRange(range: string, latest: string): boolean {
 }
 
 /**
- * Test whether a declared engines floor is at or above the supported minimum.
+ * Tests whether a declared engines floor is at or above the supported minimum.
  *
  * @param engines - The declared `engines.node` range.
- * @returns `true` when the range is the accepted syntax and its floor is at or
- * above `MINIMUM_NODE_VERSION`.
+ * @returns True if the range is the accepted syntax and its floor is at or above
+ * `MINIMUM_NODE_VERSION`; false otherwise.
  *
  * @remarks
  * The declaration states a floor, so the comparison is against the oldest Node
@@ -935,7 +936,7 @@ export function matchesEngines(engines: string): boolean {
 }
 
 /**
- * Project a package manifest's text to its own name.
+ * Projects a package manifest's text to its own name.
  *
  * @param manifest - The `package.json` text.
  * @returns The declared name, or `undefined` when the text is oversized,
@@ -966,7 +967,8 @@ export function manifestToName(manifest: string): string | undefined {
 }
 
 /**
- * Project a package manifest's text to the `@orkestrel/*` packages each dependency section declares.
+ * Projects a package manifest's text to the `@orkestrel/*` packages each dependency
+ * section declares.
  *
  * @param manifest - The `package.json` text.
  * @returns The runtime, development, and peer declarations as separate lists.

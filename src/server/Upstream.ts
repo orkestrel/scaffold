@@ -69,7 +69,7 @@ import {
 } from './validators.js'
 
 /**
- * The reading spine: one bounded, unauthenticated, redirect-free request per answer.
+ * Represents the reading spine: one bounded, unauthenticated, redirect-free request per answer.
  *
  * @remarks
  * This is the package's only network reader, and it never writes. Every call
@@ -125,7 +125,7 @@ export class Upstream implements UpstreamInterface {
 	#destroyed = false
 
 	/**
-	 * Construct a reader over one raw content host and one registry.
+	 * Constructs a reader over one raw content host and one registry.
 	 *
 	 * @param options - The endpoints, the request bounds, the initial
 	 * listeners, and the listener-error handler.
@@ -172,13 +172,13 @@ export class Upstream implements UpstreamInterface {
 		this.#budget = options?.budget ?? MAX_TOTAL_REGISTRY_BYTES
 	}
 
-	/** The upstream reader's observation channel. */
+	/** Exposes the upstream reader's observation channel. */
 	get emitter(): EmitterInterface<UpstreamEventMap> {
 		return this.#emitter
 	}
 
 	/**
-	 * Look up the newest release each declared range admits.
+	 * Looks up the newest release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.
@@ -210,7 +210,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Fetch each named package's guide, beside the local mirror it answers for.
+	 * Fetches each named package's guide, beside the local mirror it answers for.
 	 *
 	 * @param names - The packages to fetch: the target's declared set, or the whole organization.
 	 * @param current - The target's local mirrors as exact bytes, keyed by mirror path.
@@ -245,7 +245,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Read each named vendored file from the repository, beside the target bytes it answers for.
+	 * Reads each named vendored file from the repository, beside the target bytes it answers for.
 	 *
 	 * @param paths - The target-relative vendored paths to read.
 	 * @param current - The target files as exact bytes, keyed by the same paths.
@@ -294,7 +294,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Catalog the published fleet from the registry's organization package list.
+	 * Catalogs the published fleet from the registry's organization package list.
 	 *
 	 * @returns One row per published package, sorted by name.
 	 * @throws {@link ScaffoldError} coded `FETCH` when the organization package
@@ -328,7 +328,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Tear the reader down, aborting every request in flight. Teardown is idempotent.
+	 * Tears the reader down, aborting every request in flight. Teardown is idempotent.
 	 *
 	 * @returns Nothing.
 	 *

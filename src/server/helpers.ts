@@ -52,10 +52,10 @@ import { isFilesystemPath, isHostManifest } from './validators.js'
 import { MANIFEST_NAME, MAX_INVENTORY_PATHS, MAX_PATH_DEPTH } from './constants.js'
 
 /**
- * Test whether a caught filesystem error reports an absent path.
+ * Tests whether a caught filesystem error reports an absent path.
  *
  * @param error - The caught value.
- * @returns `true` only for an `Error` whose `code` is exactly `ENOENT`.
+ * @returns True if `error` is an `Error` whose `code` is exactly `ENOENT`; false otherwise.
  *
  * @remarks
  * The one place absence is told apart from failure. Every read here answers
@@ -76,10 +76,10 @@ export function matchesMissingPath(error: unknown): boolean {
 }
 
 /**
- * Test whether a path addresses a target's own repository metadata.
+ * Tests whether a path addresses a target's own repository metadata.
  *
  * @param path - The path to classify; either separator is read.
- * @returns `true` for `.git` and for anything beneath it.
+ * @returns True if the path is `.git` or sits beneath it; false otherwise.
  *
  * @remarks
  * The one home of the `.git` membership rule, read in either direction. A target
@@ -102,10 +102,10 @@ export function matchesGitPath(path: string): boolean {
 }
 
 /**
- * Test whether a target-relative path is one no verb may delete.
+ * Tests whether a target-relative path is one no verb may delete.
  *
  * @param path - The target-relative path to classify.
- * @returns `true` when the path must survive every verb this package runs.
+ * @returns True if the path must survive every verb this package runs; false otherwise.
  *
  * @remarks
  * The deletion deny-list, stated as a rule over paths rather than as a list of
@@ -135,10 +135,10 @@ export function matchesProtectedPath(path: string): boolean {
 }
 
 /**
- * Test whether a path names local configuration or a credential.
+ * Tests whether a path names local configuration or a credential.
  *
  * @param path - The path to classify; either separator is read.
- * @returns `true` when the path must never be copied into a vendored host.
+ * @returns True if the path must never be copied into a vendored host; false otherwise.
  *
  * @remarks
  * The vendoring deny-list. A host root is staged from a real checkout, so the
@@ -166,10 +166,10 @@ export function matchesSensitivePath(path: string): boolean {
 }
 
 /**
- * Test whether a vendored path is one a target receives executable.
+ * Tests whether a vendored path is one a target receives executable.
  *
  * @param path - The target-relative path to classify; either separator is read.
- * @returns `true` when the path is declared in {@link EXECUTABLE_PATHS}.
+ * @returns True if the path is declared in {@link EXECUTABLE_PATHS}; false otherwise.
  *
  * @remarks
  * The declaration is the whole answer, and deliberately so. Reading the staging
@@ -193,7 +193,7 @@ export function matchesExecutablePath(path: string): boolean {
 }
 
 /**
- * Project a target-relative path to the storage name a vendored host holds it under.
+ * Projects a target-relative path to the storage name a vendored host holds it under.
  *
  * @param path - The target-relative path the file is written to.
  * @returns The storage name beneath the host root.
@@ -224,7 +224,7 @@ export function pathToStorage(path: string): string {
 }
 
 /**
- * Compute the SHA-256 digest of text.
+ * Computes the SHA-256 digest of text.
  *
  * @param content - The text to digest.
  * @returns Sixty-four lowercase hexadecimal digits.
@@ -271,7 +271,7 @@ export function hexToDigest(hex: string): string {
 }
 
 /**
- * Compute the digest of a vendored host's declared membership.
+ * Computes the digest of a vendored host's declared membership.
  *
  * @param entries - The ordered file membership declarations.
  * @param roots - The ordered directory membership declarations.
@@ -310,11 +310,11 @@ export function computeManifestDigest(
 }
 
 /**
- * Test whether a path is a physical file this package will read or replace.
+ * Tests whether a path is a physical file this package will read or replace.
  *
  * @param path - The resolved host path to inspect, without following links.
- * @returns `true` only for a regular file that is neither a link nor hard-linked
- * elsewhere.
+ * @returns True if the path is a regular file that is neither a link nor hard-linked
+ * elsewhere; false otherwise.
  *
  * @remarks
  * The link tests are the point. A symbolic link is a path pointing somewhere
@@ -340,11 +340,11 @@ export function isPhysicalFile(path: string): boolean {
 }
 
 /**
- * Test whether a path is a physical file with exact on-disk casing.
+ * Tests whether a path is a physical file with exact on-disk casing.
  *
  * @param path - The host path to inspect segment by segment.
- * @returns `true` only for a physical file whose requested segments exactly
- * match the names each parent directory stores.
+ * @returns True if the path is a physical file whose requested segments exactly match
+ * the names each parent directory stores; false otherwise.
  *
  * @remarks
  * A direct file lookup follows the host's case-folding rules on Windows and
@@ -379,10 +379,10 @@ export function isExactCaseFile(path: string): boolean {
 }
 
 /**
- * Test whether a path is a physical directory this package will read or write into.
+ * Tests whether a path is a physical directory this package will read or write into.
  *
  * @param path - The resolved host path to inspect, without following links.
- * @returns `true` only for a directory that is not a link.
+ * @returns True if the path is a directory that is not a link; false otherwise.
  *
  * @remarks
  * A junction and a directory symbolic link both report as directories after
@@ -403,7 +403,7 @@ export function isPhysicalDirectory(path: string): boolean {
 }
 
 /**
- * Compute the SHA-256 digest of one file's exact bytes.
+ * Computes the SHA-256 digest of one file's exact bytes.
  *
  * @param path - The resolved host path to digest.
  * @returns The digest, or `undefined` when the path is not a physical file, is
@@ -452,7 +452,7 @@ export function computeFileDigest(path: string): string | undefined {
 }
 
 /**
- * Resolve a path through the real filesystem, keeping the part that does not exist yet.
+ * Resolves a path through the real filesystem, keeping the part that does not exist yet.
  *
  * @param path - The absolute or relative host path to resolve.
  * @returns The lexical resolution of `path`, with its existing prefix then
@@ -530,7 +530,7 @@ export function resolveRealPath(path: string): string | undefined {
 }
 
 /**
- * Resolve a root-relative path and refuse one that leaves its root.
+ * Resolves a root-relative path and refuses one that leaves its root.
  *
  * @param root - The containing host directory.
  * @param path - The portable root-relative path.
@@ -579,11 +579,11 @@ export function resolveContainedPath(root: string, path: string): string | undef
 }
 
 /**
- * Test whether a target is safe to write a fresh workspace into.
+ * Tests whether a target is safe to write a fresh workspace into.
  *
  * @param target - The candidate target directory.
- * @returns `true` when the target is absent, empty, or holds nothing but its own
- * `.git` directory.
+ * @returns True if the target is absent, empty, or holds nothing but its own `.git`
+ * directory; false otherwise.
  *
  * @remarks
  * The green-field law. A checkout of an empty repository is where a new
@@ -618,7 +618,7 @@ export function isVacant(target: string): boolean {
 }
 
 /**
- * List a directory's files as sorted root-relative paths.
+ * Lists a directory's files as sorted root-relative paths.
  *
  * @param root - The directory to inventory.
  * @returns Every descendant file as a `/`-separated root-relative path, in
@@ -725,7 +725,7 @@ export function listFiles(root: string): readonly string[] {
 }
 
 /**
- * List a directory's descendant directories as sorted root-relative paths.
+ * Lists a directory's descendant directories as sorted root-relative paths.
  *
  * @param root - The directory to inventory.
  * @returns Every descendant directory as a `/`-separated root-relative path, in
@@ -932,7 +932,7 @@ export function pruneEmptiedDirectories(
 }
 
 /**
- * Read one contained file as its exact bytes in lowercase hexadecimal.
+ * Reads one contained file as its exact bytes in lowercase hexadecimal.
  *
  * @param root - The containing host directory.
  * @param path - The portable root-relative file path.
@@ -1008,7 +1008,7 @@ export function readFileHex(
 }
 
 /**
- * Read one contained file as bounded UTF-8 text.
+ * Reads one contained file as bounded UTF-8 text.
  *
  * @param root - The containing host directory.
  * @param path - The portable root-relative file path.
@@ -1045,7 +1045,7 @@ export function readFileText(
 }
 
 /**
- * Read a target's current bytes at the paths a plan claims.
+ * Reads a target's current bytes at the paths a plan claims.
  *
  * @param target - The target directory to read.
  * @param paths - The plan-relative paths to probe.
@@ -1121,7 +1121,7 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
 }
 
 /**
- * Read a vendored host's manifest, when it carries one.
+ * Reads a vendored host's manifest, when it carries one.
  *
  * @param host - The vendored host root to read.
  * @param name - The root-relative manifest path. Default: `manifest.json`.
@@ -1239,7 +1239,7 @@ export function readHostFloor(root?: string): Host {
 }
 
 /**
- * Derive one vendored-host manifest entry from a file in a checkout.
+ * Derives one vendored-host manifest entry from a file in a checkout.
  *
  * @param destination - The target-relative path the file is written to.
  * @param source - The resolved host path the bytes are read from.
@@ -1277,7 +1277,7 @@ export function readManifestEntry(destination: string, source: string): Manifest
 }
 
 /**
- * Assemble a whole vendored host from live files and the installed floor.
+ * Assembles a whole vendored host from live files and the installed floor.
  *
  * @param files - The host-owned vendored files read from the repository, one
  * row per path.
@@ -1347,7 +1347,7 @@ export function filesToHost(files: readonly HostFile[], floor: Host): Host | und
 }
 
 /**
- * Stage the named destinations of a value host into a private root.
+ * Stages the named destinations of a value host into a private root.
  *
  * @param host - The host whose bytes are written, keyed by destination.
  * @param root - The private directory to fill; it must already be a directory
@@ -1436,7 +1436,7 @@ export function stageBytes(
 }
 
 /**
- * Stage a vendored host root from a real checkout.
+ * Stages a vendored host root from a real checkout.
  *
  * @param checkout - The checkout the vendored paths are read from.
  * @param host - The vendored host root to fill; it must be absent or empty.
@@ -1725,7 +1725,7 @@ export function stageInventory(checkout: string, path: string): HostManifest {
 }
 
 /**
- * Capture one directory's physical identity.
+ * Captures one directory's physical identity.
  *
  * @param path - The resolved directory path to capture.
  * @returns The anchor, or `undefined` when the path is not a physical directory.
@@ -1752,11 +1752,11 @@ export function readAnchor(path: string): WriteAnchor | undefined {
 }
 
 /**
- * Test whether a captured directory is still the same directory.
+ * Tests whether a captured directory is still the same directory.
  *
  * @param anchor - The identity captured earlier.
- * @returns `true` when the path still holds a physical directory of that exact
- * device and inode.
+ * @returns True if the path still holds a physical directory of that exact device and
+ * inode; false otherwise.
  *
  * @remarks
  * This binds location rather than history. `true` means the path still resolves
@@ -1781,7 +1781,7 @@ export function matchesAnchor(anchor: WriteAnchor): boolean {
 }
 
 /**
- * Capture what one destination holds before a write.
+ * Captures what one destination holds before a write.
  *
  * @param path - The resolved destination path to capture.
  * @returns The expectation, or `undefined` when the destination is a link or a
@@ -1832,10 +1832,10 @@ export function readExpectation(path: string): WriteExpectation | undefined {
 }
 
 /**
- * Test whether a destination still holds what was captured of it.
+ * Tests whether a destination still holds what was captured of it.
  *
  * @param expectation - The state captured earlier.
- * @returns `true` when re-reading the destination produces that same state.
+ * @returns True if re-reading the destination produces that same state; false otherwise.
  *
  * @remarks
  * Compared field for field against a fresh {@link readExpectation}, so an
@@ -1865,11 +1865,11 @@ export function matchesExpectation(expectation: WriteExpectation): boolean {
 }
 
 /**
- * Test whether a destination still matches the narrower state a caller observed.
+ * Tests whether a destination still matches the narrower state a caller observed.
  *
  * @param precondition - The caller-observed state the write is held to.
- * @returns `true` when the destination is absent as stated, or holds a physical
- * file whose bytes digest to the stated value.
+ * @returns True if the destination is absent as stated, or holds a physical file whose
+ * bytes digest to the stated value; false otherwise.
  *
  * @remarks
  * Narrower than {@link matchesExpectation} on purpose. A caller observed bytes,

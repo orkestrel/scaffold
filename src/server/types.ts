@@ -13,7 +13,7 @@ import type {
 } from '@src/core'
 
 /**
- * The outcome of one mutation of a target.
+ * Reports the outcome of one mutation of a target.
  *
  * @remarks
  * `written` names every path this call created or replaced. `skipped` names
@@ -28,7 +28,7 @@ export interface MaterializeResult {
 	readonly removed: readonly string[]
 }
 
-/** The materializer's observation channel. */
+/** Represents the materializer's observation channel. */
 export type MaterializerEventMap = {
 	readonly write: readonly [path: string]
 	readonly remove: readonly [path: string]
@@ -38,7 +38,7 @@ export type MaterializerEventMap = {
 }
 
 /**
- * Options for the materializer.
+ * Represents the options for the materializer.
  *
  * @remarks
  * `host` is the vendored data root host-origin artifacts are copied from, in
@@ -56,7 +56,7 @@ export interface MaterializerOptions {
 }
 
 /**
- * One file record of the vendored host's manifest.
+ * Represents one file record of the vendored host's manifest.
  *
  * @remarks
  * `digest` is the SHA-256 of the file's exact bytes. A live read compares it
@@ -71,7 +71,7 @@ export interface ManifestEntry {
 }
 
 /**
- * The complete vendored-host inventory.
+ * Represents the complete vendored-host inventory.
  *
  * @remarks
  * `roots` is the sorted directory inventory, which is what distinguishes a
@@ -88,7 +88,7 @@ export interface HostManifest {
 }
 
 /**
- * A whole vendored host supplied as a value: the membership beside the bytes filling it.
+ * Represents a whole vendored host supplied as a value: the membership beside the bytes filling it.
  *
  * @remarks
  * `manifest` carries the membership, the roots, and the executable declarations
@@ -109,7 +109,7 @@ export interface Host {
 }
 
 /**
- * What git reports about a target's working tree.
+ * Describes what git reports about a target's working tree.
  *
  * @remarks
  * `tracked` is the only set a deletion may draw from: git does not report the
@@ -128,7 +128,7 @@ export interface Worktree {
 }
 
 /**
- * One destination snapshot captured before a write and required to survive it.
+ * Represents one destination snapshot captured before a write and required to survive it.
  *
  * @remarks
  * `device`, `inode`, `modified`, `size`, and `digest` are present only where
@@ -144,7 +144,10 @@ export interface WriteExpectation {
 	readonly digest?: string
 }
 
-/** The narrower caller-observed destination state a write transaction must still match. */
+/**
+ * Describes the narrower caller-observed destination state a write transaction must
+ * still match.
+ */
 export interface WritePrecondition {
 	readonly path: string
 	readonly shape: 'absent' | 'file'
@@ -152,7 +155,7 @@ export interface WritePrecondition {
 }
 
 /**
- * One physical directory identity captured across a write transaction.
+ * Represents one physical directory identity captured across a write transaction.
  *
  * @remarks
  * Device and inode locate the directory and do not date it. Two directories
@@ -165,14 +168,14 @@ export interface WriteAnchor {
 	readonly inode: number
 }
 
-/** The final directory anchor of a write transaction and the subset one call created. */
+/** Reports the final directory anchor of a write transaction and the subset one call created. */
 export interface WriteDirectoryResult {
 	readonly anchor: WriteAnchor
 	readonly created: readonly WriteAnchor[]
 }
 
 /**
- * The mutation contract: the package's only filesystem writer.
+ * Describes the mutation contract: the package's only filesystem writer.
  *
  * @remarks
  * Every method binds to the observation it was given. It re-derives what it is
@@ -183,7 +186,7 @@ export interface WriteDirectoryResult {
 export interface MaterializerInterface {
 	readonly emitter: EmitterInterface<MaterializerEventMap>
 	/**
-	 * Compare a plan with a target through the vendored host that will repair it.
+	 * Compares a plan with a target through the vendored host that will repair it.
 	 *
 	 * @param plan - The compiled plan to compare.
 	 * @param target - The directory to inspect.
@@ -191,7 +194,7 @@ export interface MaterializerInterface {
 	 */
 	audit(plan: Plan, target: string): Audit
 	/**
-	 * Write a plan into a vacant target.
+	 * Writes a plan into a vacant target.
 	 *
 	 * @param plan - The compiled plan to write.
 	 * @param target - The directory to write into; it must hold nothing the plan would collide with.
@@ -199,7 +202,7 @@ export interface MaterializerInterface {
 	 */
 	materialize(plan: Plan, target: string): MaterializeResult
 	/**
-	 * Write a plan into an existing target, guided by an audit of it.
+	 * Writes a plan into an existing target, guided by an audit of it.
 	 *
 	 * @param plan - The compiled plan to write.
 	 * @param audit - The preview returned by this materializer's `audit` method.
@@ -222,7 +225,7 @@ export interface MaterializerInterface {
 	 */
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
 	/**
-	 * Write fetched dependency guides to their local mirrors.
+	 * Writes fetched dependency guides to their local mirrors.
 	 *
 	 * @param mirrors - The fetched guides; each carries the local bytes its write is held to.
 	 * @param target - The directory to write into.
@@ -230,7 +233,7 @@ export interface MaterializerInterface {
 	 */
 	mirror(mirrors: readonly Mirror[], target: string): MaterializeResult
 	/**
-	 * Rewrite the marker-bounded package table in the target's catalog agent file.
+	 * Rewrites the marker-bounded package table in the target's catalog agent file.
 	 *
 	 * @param entries - The published packages the table must list.
 	 * @param target - The directory to write into.
@@ -238,7 +241,7 @@ export interface MaterializerInterface {
 	 */
 	catalog(entries: readonly CatalogEntry[], target: string): MaterializeResult
 	/**
-	 * Rewrite the manifest regions the caller names in the target's manifest.
+	 * Rewrites the manifest regions the caller names in the target's manifest.
 	 *
 	 * @param regions - The dependency ranges and script values the manifest must declare.
 	 * @param target - The directory to write into.
@@ -252,7 +255,7 @@ export interface MaterializerInterface {
 	 */
 	declare(regions: ManifestRegionSet, target: string): MaterializeResult
 	/**
-	 * Re-derive and delete the tracked files the plan does not own.
+	 * Re-derives and deletes the tracked files the plan does not own.
 	 *
 	 * @param plan - The compiled plan that decides which paths are foreign.
 	 * @param audit - The preview returned by this materializer's `audit` method; it must agree with the candidate set this call re-derives.
@@ -281,7 +284,7 @@ export interface MaterializerInterface {
 	 */
 	remove(plan: Plan, audit: Audit, worktree: Worktree, target: string): MaterializeResult
 	/**
-	 * Tear the materializer down. Every later call throws, and teardown is idempotent.
+	 * Tears the materializer down. Every later call throws, and teardown is idempotent.
 	 *
 	 * @returns Nothing.
 	 */
@@ -289,7 +292,7 @@ export interface MaterializerInterface {
 }
 
 /**
- * The upstream reader's observation channel.
+ * Represents the upstream reader's observation channel.
  *
  * @remarks
  * Each verdict is published whole rather than as a name beside a summary, so a
@@ -306,7 +309,7 @@ export type UpstreamEventMap = {
 }
 
 /**
- * Options for the upstream reader.
+ * Represents the options for the upstream reader.
  *
  * @remarks
  * The endpoints are grouped under the entity each configures: `repository`
@@ -339,7 +342,7 @@ export interface UpstreamOptions {
 }
 
 /**
- * The byte allowance one whole upstream call spends across every read it makes.
+ * Represents the byte allowance one whole upstream call spends across every read it makes.
  *
  * @remarks
  * `remaining` is deliberately mutable, and it is the one member of this module's
@@ -354,7 +357,7 @@ export interface ReadAllowance {
 }
 
 /**
- * The committed vendored-file inventory as one call's reads are decided against.
+ * Represents the committed vendored-file inventory as one call's reads are decided against.
  *
  * @remarks
  * `lookup` is the verdict of the inventory read itself, and every row of the
@@ -371,7 +374,7 @@ export interface HostInventory {
 }
 
 /**
- * The outcome of one bounded read whose body is taken as text.
+ * Reports the outcome of one bounded read whose body is taken as text.
  *
  * @remarks
  * `content` carries the body only when `lookup` is `found`; otherwise it is
@@ -385,7 +388,7 @@ export interface TextReadResult {
 }
 
 /**
- * The outcome of one bounded read whose body is taken as exact bytes.
+ * Reports the outcome of one bounded read whose body is taken as exact bytes.
  *
  * @remarks
  * `hex` carries the body as lowercase hexadecimal, and only when `lookup` is
@@ -400,7 +403,7 @@ export interface BytesReadResult {
 }
 
 /**
- * The upstream contract: the package's only network reader, and it never writes.
+ * Describes the upstream contract: the package's only network reader, and it never writes.
  *
  * @remarks
  * A per-package failure is collected as a verdict carrying its cause, not
@@ -416,14 +419,14 @@ export interface BytesReadResult {
 export interface UpstreamInterface {
 	readonly emitter: EmitterInterface<UpstreamEventMap>
 	/**
-	 * Look up the newest release each declared range admits.
+	 * Looks up the newest release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.
 	 */
 	lookup(dependencies: readonly Dependency[]): Promise<readonly Release[]>
 	/**
-	 * Fetch each named package's guide, beside the local mirror it answers for.
+	 * Fetches each named package's guide, beside the local mirror it answers for.
 	 *
 	 * @param names - The packages to fetch: the target's declared set, or the whole organization.
 	 * @param current - The target's local mirrors as exact bytes, keyed by mirror path.
@@ -431,7 +434,7 @@ export interface UpstreamInterface {
 	 */
 	fetch(names: readonly string[], current: Snapshot): Promise<readonly Mirror[]>
 	/**
-	 * Read each named vendored file from the repository, beside the target bytes it answers for.
+	 * Reads each named vendored file from the repository, beside the target bytes it answers for.
 	 *
 	 * @param paths - The target-relative vendored paths to read.
 	 * @param current - The target files as exact bytes, keyed by the same paths.
@@ -439,13 +442,13 @@ export interface UpstreamInterface {
 	 */
 	read(paths: readonly string[], current: Snapshot): Promise<readonly HostFile[]>
 	/**
-	 * Catalog the published fleet from the registry's organization package list.
+	 * Catalogs the published fleet from the registry's organization package list.
 	 *
 	 * @returns One row per published package, sorted by name.
 	 */
 	catalog(): Promise<readonly CatalogEntry[]>
 	/**
-	 * Tear the reader down, aborting every request in flight. Teardown is idempotent.
+	 * Tears the reader down, aborting every request in flight. Teardown is idempotent.
 	 *
 	 * @returns Nothing.
 	 */

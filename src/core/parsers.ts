@@ -2,7 +2,7 @@ import type { Blueprint, CompilerOptions, Group, Snapshot } from './types.js'
 import { isBlueprint, isCompilerOptions, isGroups, isSnapshot } from './validators.js'
 
 /**
- * Coerce an untrusted value to a {@link Blueprint}.
+ * Coerces an untrusted value to a {@link Blueprint}.
  *
  * @param value - The value to parse.
  * @returns The blueprint, or `undefined` when the value is not one.
@@ -25,7 +25,7 @@ export function parseBlueprint(value: unknown): Blueprint | undefined {
 }
 
 /**
- * Coerce an untrusted value to a group selection.
+ * Coerces an untrusted value to a group selection.
  *
  * @param value - The value to parse.
  * @returns The selection, or `undefined` when the value is not one.
@@ -48,7 +48,7 @@ export function parseGroups(value: unknown): readonly Group[] | undefined {
 }
 
 /**
- * Coerce an untrusted value to a {@link Snapshot}.
+ * Coerces an untrusted value to a {@link Snapshot}.
  *
  * @param value - The value to parse.
  * @returns The snapshot, or `undefined` when the value is not one.
@@ -69,7 +69,7 @@ export function parseSnapshot(value: unknown): Snapshot | undefined {
 }
 
 /**
- * Coerce an untrusted value to {@link CompilerOptions}.
+ * Coerces an untrusted value to {@link CompilerOptions}.
  *
  * @param value - The value to parse.
  * @returns The options, or `undefined` when the value is not an option bag.

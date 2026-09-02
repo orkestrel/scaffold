@@ -1,5 +1,5 @@
 /**
- * The drive prefix a Windows host path may open with.
+ * Matches the drive prefix a Windows host path may open with.
  *
  * @remarks
  * The one segment allowed to carry a colon. Every other segment is measured by
@@ -9,7 +9,7 @@
 export const DRIVE_PATTERN = /^[A-Za-z]:$/
 
 /**
- * Visible characters no host path segment may carry.
+ * Matches the visible characters no host path segment may carry.
  *
  * @remarks
  * Narrower than the core path law by exactly one character: a backslash is a
@@ -19,7 +19,7 @@ export const DRIVE_PATTERN = /^[A-Za-z]:$/
 export const INVALID_SEGMENT_CHARACTER_PATTERN = /[<>:"|?*]/
 
 /**
- * The Windows device names that stay reserved even when an extension follows.
+ * Matches the Windows device names that stay reserved even when an extension follows.
  *
  * @remarks
  * Refused on every host rather than only on Windows. A generated workspace is
@@ -30,7 +30,7 @@ export const RESERVED_SEGMENT_PATTERN =
 	/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9]|conin\$|conout\$)(?:\..*)?$/i
 
 /**
- * The exact SHA-256 syntax a digest is stated in: sixty-four lowercase hexadecimal digits.
+ * Matches the exact SHA-256 syntax a digest is stated in: sixty-four lowercase hexadecimal digits.
  *
  * @remarks
  * Fixed length, unlike the core byte encoding, because a digest is one value of
@@ -40,7 +40,7 @@ export const RESERVED_SEGMENT_PATTERN =
 export const DIGEST_PATTERN = /^[0-9a-f]{64}$/
 
 /**
- * The Git branch syntax the repository endpoint accepts.
+ * Matches the Git branch syntax the repository endpoint accepts.
  *
  * @remarks
  * A branch is caller-supplied and reaches a URL path, so it is closed to
@@ -51,7 +51,7 @@ export const DIGEST_PATTERN = /^[0-9a-f]{64}$/
 export const BRANCH_PATTERN = /^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._/-]*$/
 
 /**
- * Maximum UTF-8 bytes one host path segment may encode to.
+ * Caps the UTF-8 bytes one host path segment may encode to.
  *
  * @remarks
  * The limit every supported filesystem shares for a single name. It is a byte
@@ -61,7 +61,7 @@ export const BRANCH_PATTERN = /^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._/-]*$/
 export const MAX_PATH_SEGMENT_BYTES = 255
 
 /**
- * Maximum segments one host path may carry.
+ * Caps the segments one host path may carry.
  *
  * @remarks
  * Bounds the work a path decision costs before any filesystem call is made. With
@@ -71,7 +71,7 @@ export const MAX_PATH_SEGMENT_BYTES = 255
 export const MAX_PATH_DEPTH = 64
 
 /**
- * Maximum paths one target's working-tree inventory may report.
+ * Caps the paths one target's working-tree inventory may report.
  *
  * @remarks
  * Far above the core collection ceiling, and deliberately so. A tracked or dirty
@@ -82,14 +82,14 @@ export const MAX_PATH_DEPTH = 64
  */
 export const MAX_INVENTORY_PATHS = 100_000
 
-/** Maximum characters one caller-supplied upstream endpoint may carry. */
+/** Caps the characters one caller-supplied upstream endpoint may carry. */
 export const MAX_ENDPOINT_LENGTH = 2_048
 
-/** Maximum characters one repository branch may carry. */
+/** Caps the characters one repository branch may carry. */
 export const MAX_BRANCH_LENGTH = 255
 
 /**
- * Maximum simultaneous upstream requests.
+ * Caps the simultaneous upstream requests.
  *
  * @remarks
  * A ceiling rather than a default: the reader picks what it opens by, and this
@@ -97,14 +97,14 @@ export const MAX_BRANCH_LENGTH = 255
  */
 export const MAX_UPSTREAM_CONCURRENCY = 64
 
-/** Maximum retries one upstream request may be given after a transport fault. */
+/** Caps the retries one upstream request may be given after a transport fault. */
 export const MAX_UPSTREAM_RETRIES = 5
 
-/** Maximum timeout one upstream request may be given, in milliseconds. */
+/** Caps the timeout one upstream request may be given, in milliseconds. */
 export const MAX_UPSTREAM_TIMEOUT = 300_000
 
 /**
- * The reserved metadata name a staged vendored host writes at its own root.
+ * Reserves the metadata name a staged vendored host writes at its own root.
  *
  * @remarks
  * The one name a vendored file may never claim, because the staged root holds
@@ -114,17 +114,17 @@ export const MAX_UPSTREAM_TIMEOUT = 300_000
  */
 export const MANIFEST_NAME = 'manifest.json'
 
-/** The raw content host a repository read addresses when a caller names none. */
+/** Holds the raw content host a repository read addresses when a caller names none. */
 export const DEFAULT_REPOSITORY_BASE = 'https://raw.githubusercontent.com'
 
-/** The registry a version read addresses when a caller names none. */
+/** Holds the registry a version read addresses when a caller names none. */
 export const DEFAULT_REGISTRY_BASE = 'https://registry.npmjs.org'
 
-/** The repository branch a raw content read addresses when a caller names none. */
+/** Holds the repository branch a raw content read addresses when a caller names none. */
 export const DEFAULT_BRANCH = 'main'
 
 /**
- * The timeout one upstream request is given when a caller names none, in milliseconds.
+ * Sets the timeout one upstream request is given when a caller names none, in milliseconds.
  *
  * @remarks
  * Both endpoints open at this value; a caller raises either one on its own up to
@@ -132,11 +132,14 @@ export const DEFAULT_BRANCH = 'main'
  */
 export const DEFAULT_UPSTREAM_TIMEOUT = 10_000
 
-/** The simultaneous upstream requests a reader opens with, under {@link MAX_UPSTREAM_CONCURRENCY}. */
+/**
+ * Sets the simultaneous upstream requests a reader opens with, under
+ * {@link MAX_UPSTREAM_CONCURRENCY}.
+ */
 export const DEFAULT_UPSTREAM_CONCURRENCY = 6
 
 /**
- * The retries one upstream request is given when a caller names none.
+ * Sets the retries one upstream request is given when a caller names none.
  *
  * @remarks
  * A read is attempted once by default. Retrying is the caller's decision because
@@ -144,11 +147,14 @@ export const DEFAULT_UPSTREAM_CONCURRENCY = 6
  */
 export const DEFAULT_UPSTREAM_RETRIES = 0
 
-/** The npm scope and repository owner the fleet's packages and sources are published under. */
+/**
+ * Names the npm scope and repository owner the fleet's packages and sources are
+ * published under.
+ */
 export const ORKESTREL_SCOPE = 'orkestrel'
 
 /**
- * The repository this package's own vendored files are served from.
+ * Names the repository this package's own vendored files are served from.
  *
  * @remarks
  * This package's bare name, stated rather than derived, because the reader has no
@@ -157,11 +163,11 @@ export const ORKESTREL_SCOPE = 'orkestrel'
  */
 export const SCAFFOLD_REPOSITORY = 'scaffold'
 
-/** The note a release carries when its packument names no readable latest version. */
+/** Holds the note a release carries when its packument names no readable latest version. */
 export const UNREADABLE_VERSION_NOTE = 'the answer carries no readable latest version'
 
 /**
- * The media type that selects the registry's abbreviated packument.
+ * Names the media type that selects the registry's abbreviated packument.
  *
  * @remarks
  * Sent on exactly the reads that want a version, so the registry answers with the

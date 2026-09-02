@@ -1,7 +1,7 @@
 import type { ScaffoldErrorCode } from './types.js'
 
 /**
- * The one error this package throws, carrying the coded reason it was raised.
+ * Represents the one error this package throws, carrying the coded reason it was raised.
  *
  * @remarks
  * Each code names one cause: `INVALID` for off-contract input, `DESTROYED` for
@@ -39,7 +39,7 @@ export class ScaffoldError extends Error {
 	readonly context?: unknown
 
 	/**
-	 * Construct a coded scaffold error.
+	 * Constructs a coded scaffold error.
 	 *
 	 * @param code - The coded reason the error is raised.
 	 * @param message - What went wrong, in one sentence.
@@ -54,10 +54,10 @@ export class ScaffoldError extends Error {
 }
 
 /**
- * Narrow a caught value to a {@link ScaffoldError}.
+ * Narrows a caught value to a {@link ScaffoldError}.
  *
  * @param value - The caught value to narrow.
- * @returns `true` when `value` is a {@link ScaffoldError}.
+ * @returns True if `value` is a {@link ScaffoldError}; false otherwise.
  *
  * @example
  * ```ts

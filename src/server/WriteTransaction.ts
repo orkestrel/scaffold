@@ -35,7 +35,7 @@ import { isFilesystemPath } from './validators.js'
 import { MAX_PATH_DEPTH } from './constants.js'
 
 /**
- * One staged, reversible mutation of one target directory.
+ * Represents one staged, reversible mutation of one target directory.
  *
  * @remarks
  * The transaction owns a private root beside the target — a sibling directory on
@@ -112,7 +112,7 @@ export class WriteTransaction {
 	#open = true
 
 	/**
-	 * Open a transaction over one target directory.
+	 * Opens a transaction over one target directory.
 	 *
 	 * @param target - The directory every path is written beneath.
 	 * @param paths - Every target-relative path this transaction may touch.
@@ -208,23 +208,23 @@ export class WriteTransaction {
 		}
 	}
 
-	/** The resolved directory every path is written beneath. */
+	/** Names the resolved directory every path is written beneath. */
 	get target(): string {
 		return this.#target
 	}
 
-	/** What each destination held when the transaction opened, in path order. */
+	/** Reports what each destination held when the transaction opened, in path order. */
 	get expectations(): readonly WriteExpectation[] {
 		return [...this.#expectations.values()]
 	}
 
-	/** Whether the transaction can still be committed or discarded. */
+	/** Reports whether the transaction can still be committed or discarded. */
 	get open(): boolean {
 		return this.#open
 	}
 
 	/**
-	 * Stage one text file.
+	 * Stages one text file.
 	 *
 	 * @param path - The target-relative path to write.
 	 * @param content - The exact UTF-8 text the destination must hold.
@@ -262,7 +262,7 @@ export class WriteTransaction {
 	}
 
 	/**
-	 * Stage one byte-for-byte copy of a file that already exists on this host.
+	 * Stages one byte-for-byte copy of a file that already exists on this host.
 	 *
 	 * @param path - The target-relative path to write.
 	 * @param source - The resolved absolute path to copy the bytes from.
@@ -315,7 +315,7 @@ export class WriteTransaction {
 	}
 
 	/**
-	 * Establish one directory inside the target, one segment at a time.
+	 * Establishes one directory inside the target, one segment at a time.
 	 *
 	 * @param path - The target-relative directory to establish.
 	 * @returns The directory's identity and every segment this call created.
@@ -349,7 +349,7 @@ export class WriteTransaction {
 	}
 
 	/**
-	 * Mark one file for deletion at commit.
+	 * Marks one file for deletion at commit.
 	 *
 	 * @param path - The target-relative file to delete.
 	 * @returns Nothing.
@@ -372,7 +372,7 @@ export class WriteTransaction {
 	}
 
 	/**
-	 * Promote every staged file and take every marked file, or roll the whole call back.
+	 * Promotes every staged file and takes every marked file, or rolls the whole call back.
 	 *
 	 * @returns Every target-relative path whose destination changed: the files
 	 * promoted, then the directories established, then the files taken.
@@ -425,7 +425,7 @@ export class WriteTransaction {
 	}
 
 	/**
-	 * Abandon the transaction and remove everything it created.
+	 * Abandons the transaction and removes everything it created.
 	 *
 	 * @returns Nothing.
 	 * @throws {@link ScaffoldError} coded `WRITE` when residue could not be

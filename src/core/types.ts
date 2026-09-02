@@ -1,13 +1,13 @@
 import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
 
-/** One environment a generated workspace selects on its `src` or `app` axis. */
+/** Names one environment a generated workspace selects on its `src` or `app` axis. */
 export type Environment = 'core' | 'browser' | 'server'
 
-/** One module format a published library environment builds. */
+/** Names one module format a published library environment builds. */
 export type BuildFormat = 'es' | 'cjs'
 
 /**
- * How an artifact's content is produced.
+ * Names how an artifact's content is produced.
  *
  * @remarks
  * `host` is byte-copied from this package's vendored data root. `template` is
@@ -18,7 +18,7 @@ export type BuildFormat = 'es' | 'cjs'
 export type Origin = 'host' | 'template' | 'computed'
 
 /**
- * What scaffold claims at an artifact's path.
+ * Names what scaffold claims at an artifact's path.
  *
  * @remarks
  * `content` claims the bytes: audit compares them, and a write restores a
@@ -30,7 +30,7 @@ export type Origin = 'host' | 'template' | 'computed'
  */
 export type Ownership = 'content' | 'presence' | 'birth'
 
-/** The artifact group a plan selects over. */
+/** Names the artifact group a plan selects over. */
 export type Group =
 	| 'manifest'
 	| 'configs'
@@ -41,7 +41,7 @@ export type Group =
 	| 'orchestration'
 
 /**
- * How one target path compares to the artifact planned for it.
+ * Names how one target path compares to the artifact planned for it.
  *
  * @remarks
  * `foreign` is a path the plan does not own at all. It is also the set
@@ -51,7 +51,7 @@ export type Group =
 export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
 
 /**
- * Whether an upstream lookup produced an answer.
+ * Names whether an upstream lookup produced an answer.
  *
  * @remarks
  * `found` carries the answer. `missing` is an upstream `404`, which is a
@@ -64,13 +64,13 @@ export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
  */
 export type Lookup = 'found' | 'missing' | 'unmatched' | 'failed'
 
-/** The compile phases, in the order they run. */
+/** Names the compile phases, in the order they run. */
 export type CompileStage = 'draft' | 'gate' | 'pin'
 
-/** The coded reasons a scaffold error is raised. */
+/** Names the coded reasons a scaffold error is raised. */
 export type ScaffoldErrorCode = 'INVALID' | 'BLOCKED' | 'DESTROYED' | 'TARGET' | 'WRITE' | 'FETCH'
 
-/** The build and export settings one published `src` environment contributes. */
+/** Describes the build and export settings one published `src` environment contributes. */
 export interface SrcDefinition {
 	readonly configs: readonly string[]
 	readonly project: string
@@ -78,7 +78,10 @@ export interface SrcDefinition {
 	readonly formats: readonly BuildFormat[]
 }
 
-/** The configuration and runtime-entry settings one private `app` environment contributes. */
+/**
+ * Describes the configuration and runtime-entry settings one private `app` environment
+ * contributes.
+ */
 export interface AppDefinition {
 	readonly configs: readonly string[]
 	readonly project: string
@@ -86,7 +89,7 @@ export interface AppDefinition {
 }
 
 /**
- * Which host-specific pipelines a generated root Vite configuration carries.
+ * Names which host-specific pipelines a generated root Vite configuration carries.
  *
  * @remarks
  * Boundary guarantees never vary by blueprint, so they are not selected here:
@@ -105,7 +108,7 @@ export interface ViteMachinery {
 }
 
 /**
- * One runtime `@orkestrel/*` dependency of a generated workspace.
+ * Represents one runtime `@orkestrel/*` dependency of a generated workspace.
  *
  * @remarks
  * `optional` is meaningful only on a blueprint's `peers`, where it emits a
@@ -117,21 +120,21 @@ export interface Dependency {
 	readonly optional?: boolean
 }
 
-/** The dependency sections read from an existing package manifest. */
+/** Describes the dependency sections read from an existing package manifest. */
 export interface ManifestDependencySet {
 	readonly runtime: readonly Dependency[]
 	readonly development: readonly Dependency[]
 	readonly peer: readonly Dependency[]
 }
 
-/** The dependency sections a range-writing operation may change. */
+/** Describes the dependency sections a range-writing operation may change. */
 export interface DependencyPinSet {
 	readonly runtime: readonly Dependency[]
 	readonly development: readonly Dependency[]
 }
 
 /**
- * One manifest script a region-writing operation may replace.
+ * Represents one manifest script a region-writing operation may replace.
  *
  * @remarks
  * `command` is the value the write lands. `accepted` is the closed set of
@@ -148,7 +151,7 @@ export interface ManifestScript {
 }
 
 /**
- * The manifest regions a writing operation may change.
+ * Describes the manifest regions a writing operation may change.
  *
  * @remarks
  * Each region is written in place, so every byte outside the named ranges
@@ -161,7 +164,7 @@ export interface ManifestRegionSet {
 }
 
 /**
- * One artifact override.
+ * Represents one artifact override.
  *
  * @remarks
  * `content` replaces the rendered artifact at `path` and never partially
@@ -176,7 +179,7 @@ export interface Override {
 }
 
 /**
- * The closed, JSON-serializable workspace specification.
+ * Represents the closed, JSON-serializable workspace specification.
  *
  * @remarks
  * `src` selects published library environments and `app` selects private
@@ -225,7 +228,7 @@ export interface Blueprint {
 }
 
 /**
- * One package row of the fleet catalog.
+ * Represents one package row of the fleet catalog.
  *
  * @remarks
  * A row whose lookup did not find a version carries the cause instead. It is
@@ -258,7 +261,7 @@ export type CatalogEntry =
 	  }
 
 /**
- * One declared dependency range measured against a registry release.
+ * Represents one declared dependency range measured against a registry release.
  *
  * @remarks
  * `range` is the declared range, and `latest` is the version the producer
@@ -285,7 +288,7 @@ export type Release =
 	  }
 
 /**
- * One vendored file read from the repository, beside the target bytes it answers for.
+ * Represents one vendored file read from the repository, beside the target bytes it answers for.
  *
  * @remarks
  * `path` is the target-relative path, which is also the checkout-relative path
@@ -317,7 +320,7 @@ export type HostFile =
 	  }
 
 /**
- * One dependency guide fetched from upstream, beside the local mirror it answers for.
+ * Represents one dependency guide fetched from upstream, beside the local mirror it answers for.
  *
  * @remarks
  * A found lookup carries the fetched bytes; one that produced no answer carries
@@ -348,7 +351,7 @@ export type Mirror =
 			readonly content?: never
 	  }
 
-/** The fields every planned file carries. */
+/** Describes the fields every planned file carries. */
 export interface ArtifactBase {
 	readonly path: string
 	readonly group: Group
@@ -357,7 +360,7 @@ export interface ArtifactBase {
 }
 
 /**
- * A file byte-copied from the vendored data root, planned before its bytes are read.
+ * Represents a file byte-copied from the vendored data root, planned before its bytes are read.
  *
  * @remarks
  * `source` falls back to `path` when absent. The pure core face cannot read the
@@ -378,7 +381,7 @@ export interface HostArtifact extends ArtifactBase {
 }
 
 /**
- * A vendored file whose exact bytes have been read, so its content can be compared.
+ * Represents a vendored file whose exact bytes have been read, so its content can be compared.
  *
  * @remarks
  * `hex` is the canonical lowercase byte pairs of the vendored source. It is
@@ -395,7 +398,7 @@ export interface HydratedArtifact extends ArtifactBase {
 	readonly content?: never
 }
 
-/** A text file produced by the template or computed compilation path. */
+/** Represents a text file produced by the template or computed compilation path. */
 export interface ContentArtifact extends ArtifactBase {
 	readonly origin: 'template' | 'computed'
 	readonly content: string
@@ -404,7 +407,8 @@ export interface ContentArtifact extends ArtifactBase {
 }
 
 /**
- * One file in a plan, discriminated by how its content is produced and what scaffold claims of it.
+ * Represents one file in a plan, discriminated by how its content is produced and what
+ * scaffold claims of it.
  *
  * @remarks
  * Every branch that claims `content` ownership carries the bytes to back it:
@@ -413,11 +417,11 @@ export interface ContentArtifact extends ArtifactBase {
  */
 export type Artifact = HostArtifact | HydratedArtifact | ContentArtifact
 
-/** Exact lowercase hexadecimal target bytes keyed by artifact-relative path. */
+/** Holds exact lowercase hexadecimal target bytes keyed by artifact-relative path. */
 export type Snapshot = Readonly<Record<string, string>>
 
 /**
- * The compiled, ordered artifact list and the selection it covers.
+ * Holds the compiled, ordered artifact list and the selection it covers.
  *
  * @remarks
  * `hash` is the plan's content identity and is absent until the pin stage
@@ -433,7 +437,7 @@ export interface Plan {
 }
 
 /**
- * One drift verdict against a target path.
+ * Represents one drift verdict against a target path.
  *
  * @remarks
  * `observed` carries the destination's exact bytes and is the precondition the
@@ -492,7 +496,7 @@ export type Finding =
 	  }
 
 /**
- * The whole comparison of a plan against a target's current content.
+ * Represents the whole comparison of a plan against a target's current content.
  *
  * @remarks
  * A blocking question means the gate refused the blueprint, so `findings` is
@@ -506,7 +510,7 @@ export interface Audit {
 }
 
 /**
- * One validation issue raised against a blueprint or a plan.
+ * Represents one validation issue raised against a blueprint or a plan.
  *
  * @remarks
  * A blocking question fails the gate closed. A non-blocking question is an
@@ -520,7 +524,7 @@ export interface Question {
 	readonly candidates?: readonly string[]
 }
 
-/** The tally of one plan by artifact origin. */
+/** Represents the tally of one plan by artifact origin. */
 export interface PlanSummary {
 	readonly name: string
 	readonly src: readonly Environment[]
@@ -531,14 +535,14 @@ export interface PlanSummary {
 	readonly computed: number
 }
 
-/** The coded reason one compile stage failed. */
+/** Represents the coded reason one compile stage failed. */
 export interface CompileFailure {
 	readonly code: ScaffoldErrorCode
 	readonly message: string
 }
 
 /**
- * The input and output snapshot of one compile stage.
+ * Holds the input and output snapshot of one compile stage.
  *
  * @remarks
  * `failure` is present exactly when the stage failed.
@@ -551,7 +555,7 @@ export interface CompileRecord {
 }
 
 /**
- * The replayable outcome of one compile.
+ * Represents the replayable outcome of one compile.
  *
  * @remarks
  * `plan` is present exactly when the compile completed, so it is also the
@@ -567,7 +571,7 @@ export interface Scaffolding {
 	readonly stages: readonly CompileRecord[]
 }
 
-/** The compiler's observation channel. */
+/** Represents the compiler's observation channel. */
 export type CompilerEventMap = {
 	readonly compile: readonly [scaffolding: Scaffolding]
 	readonly audit: readonly [audit: Audit]
@@ -576,17 +580,17 @@ export type CompilerEventMap = {
 	readonly destroy: readonly []
 }
 
-/** Options for the compiler. */
+/** Represents the options for the compiler. */
 export interface CompilerOptions {
 	readonly on?: EmitterHooks<CompilerEventMap>
 	readonly error?: EmitterErrorHandler
 }
 
-/** The compilation contract: pure, synchronous, and host-independent. */
+/** Describes the compilation contract: pure, synchronous, and host-independent. */
 export interface CompilerInterface {
 	readonly emitter: EmitterInterface<CompilerEventMap>
 	/**
-	 * Compile a blueprint into a plan through the draft, gate, and pin stages.
+	 * Compiles a blueprint into a plan through the draft, gate, and pin stages.
 	 *
 	 * @param blueprint - The workspace specification to compile.
 	 * @param groups - The artifact groups to cover; every group when absent.
@@ -594,7 +598,7 @@ export interface CompilerInterface {
 	 */
 	compile(blueprint: Blueprint, groups?: readonly Group[]): Scaffolding
 	/**
-	 * Compile a blueprint and compare its plan to a target's current content.
+	 * Compiles a blueprint and compares its plan to a target's current content.
 	 *
 	 * @param blueprint - The workspace specification to compile.
 	 * @param current - The target's exact bytes, keyed by artifact-relative path.
@@ -603,7 +607,7 @@ export interface CompilerInterface {
 	 */
 	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly Group[]): Audit
 	/**
-	 * Tear the compiler down. Every later call throws, and teardown is idempotent.
+	 * Tears the compiler down. Every later call throws, and teardown is idempotent.
 	 *
 	 * @returns Nothing.
 	 */

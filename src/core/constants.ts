@@ -2,7 +2,7 @@ import type { AppDefinition, BuildFormat, Environment, Group, SrcDefinition } fr
 import manifest from '../../package.json' with { type: 'json' }
 
 /**
- * The `Environment` values, frozen.
+ * Lists the `Environment` values, frozen.
  *
  * @remarks
  * A blueprint's `src` and `app` axes are caller-supplied, so the gate measures
@@ -13,7 +13,7 @@ import manifest from '../../package.json' with { type: 'json' }
 export const ENVIRONMENTS: readonly Environment[] = Object.freeze(['core', 'browser', 'server'])
 
 /**
- * The `Group` values in plan order, frozen.
+ * Lists the `Group` values in plan order, frozen.
  *
  * @remarks
  * A compile that names no groups covers every one of them, so this list is the
@@ -31,7 +31,7 @@ export const GROUPS: readonly Group[] = Object.freeze([
 ])
 
 /**
- * The build and export settings each published `src` environment contributes, frozen.
+ * Holds the build and export settings each published `src` environment contributes, frozen.
  *
  * @remarks
  * Per environment: the thin configuration files it adds under `configs/src`,
@@ -68,7 +68,8 @@ export const SRC_MATRIX: Readonly<Record<Environment, SrcDefinition>> = Object.f
 })
 
 /**
- * The configuration and runtime-entry settings each private `app` environment contributes, frozen.
+ * Holds the configuration and runtime-entry settings each private `app` environment
+ * contributes, frozen.
  *
  * @remarks
  * An application environment declares no exports, so it carries a runtime
@@ -98,17 +99,17 @@ export const APP_MATRIX: Readonly<Record<Environment, AppDefinition>> = Object.f
 	}),
 })
 
-/** The configuration files a workspace that ships its own executable adds, frozen. */
+/** Lists the configuration files a workspace that ships its own executable adds, frozen. */
 export const BIN_CONFIGS: readonly string[] = Object.freeze([
 	'configs/src/vite.bin.config.ts',
 	'configs/src/tsconfig.bin.json',
 ])
 
-/** The executable entry whose presence makes a workspace `bin`. */
+/** Names the executable entry whose presence makes a workspace `bin`. */
 export const BIN_ENTRY_PATH = 'src/bin/main.ts'
 
 /**
- * The paths a target receives from the vendored data root, frozen.
+ * Lists the paths a target receives from the vendored data root, frozen.
  *
  * @remarks
  * These are the files the fleet shares verbatim and every target holds a copy
@@ -151,7 +152,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 ])
 
 /**
- * The instruction-canon paths staged for reading rather than for a target, frozen.
+ * Lists the instruction-canon paths staged for reading rather than for a target, frozen.
  *
  * @remarks
  * The root instruction documents, the orchestration contract every harness
@@ -198,11 +199,11 @@ export const CANON_PATHS: readonly string[] = Object.freeze([
 	'.cursor/rules',
 ])
 
-/** The repository-relative path where the committed vendored-file inventory is served. */
+/** Names the repository-relative path where the committed vendored-file inventory is served. */
 export const HOST_INVENTORY_PATH = 'host.json'
 
 /**
- * The vendored paths whose present bytes belong to each workspace, frozen.
+ * Lists the vendored paths whose present bytes belong to each workspace, frozen.
  *
  * @remarks
  * These paths are copied into a workspace when absent and are never compared
@@ -213,7 +214,7 @@ export const HOST_INVENTORY_PATH = 'host.json'
 export const WORKSPACE_OWNED_PATHS: readonly string[] = Object.freeze(['.gitignore'])
 
 /**
- * The vendored paths a target receives with its executable bit set, frozen.
+ * Lists the vendored paths a target receives with its executable bit set, frozen.
  *
  * @remarks
  * Declared rather than read from the staging host's filesystem, because that
@@ -233,7 +234,7 @@ export const EXECUTABLE_PATHS: readonly string[] = Object.freeze([
 ])
 
 /**
- * The path prefixes whose contents instruct or wire an agent, frozen.
+ * Lists the path prefixes whose contents instruct or wire an agent, frozen.
  *
  * @remarks
  * A path is grouped by what it governs rather than by where it sits: anything
@@ -252,7 +253,7 @@ export const ORCHESTRATION_PATH_PREFIXES: readonly string[] = Object.freeze([
 ])
 
 /**
- * The exact root filenames that wire an agent bench rather than the toolchain, frozen.
+ * Lists the exact root filenames that wire an agent bench rather than the toolchain, frozen.
  *
  * @remarks
  * `.mcp.json` registers MCP servers for the harness. It sits among the root
@@ -261,7 +262,7 @@ export const ORCHESTRATION_PATH_PREFIXES: readonly string[] = Object.freeze([
 export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.json'])
 
 /**
- * The agent file whose marker-bounded package table the catalog verb alone owns.
+ * Names the agent file whose marker-bounded package table the catalog verb alone owns.
  *
  * @remarks
  * A plan claims it at a canon path, because the catalog verb refuses a target
@@ -277,7 +278,7 @@ export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.
 export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
 
 /**
- * The marker opening the package table inside {@link CATALOG_AGENT_PATH}.
+ * Names the marker opening the package table inside {@link CATALOG_AGENT_PATH}.
  *
  * @remarks
  * The catalog verb rewrites the region between this marker and
@@ -288,7 +289,7 @@ export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
 export const CATALOG_OPENING_MARKER = '<!-- orkestrel:catalog -->'
 
 /**
- * The marker closing the package table inside {@link CATALOG_AGENT_PATH}.
+ * Names the marker closing the package table inside {@link CATALOG_AGENT_PATH}.
  *
  * @remarks
  * It pairs with {@link CATALOG_OPENING_MARKER}; a file missing either marker is
@@ -296,20 +297,20 @@ export const CATALOG_OPENING_MARKER = '<!-- orkestrel:catalog -->'
  */
 export const CATALOG_CLOSING_MARKER = '<!-- /orkestrel:catalog -->'
 
-/** The provisioner skeleton a workspace with declared service vendors is given once. */
+/** Names the provisioner skeleton a workspace with declared service vendors is given once. */
 export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 
-/** The shared Vitest global-setup module whose presence makes a workspace `global`. */
+/** Names the shared Vitest global-setup module whose presence makes a workspace `global`. */
 export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 
-/** The guide-parity proof whose presence selects the planned `guides` project. */
+/** Names the guide-parity proof whose presence selects the planned `guides` project. */
 export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 
-/** The generated packed-package proof every publishing workspace is planned at. */
+/** Names the generated packed-package proof every publishing workspace is planned at. */
 export const DISTRIBUTION_TEST_PATH = 'tests/distribution.test.ts'
 
 /**
- * The `prepublishOnly` row that runs the packed-package proof against a real registry.
+ * Names the `prepublishOnly` row that runs the packed-package proof against a real registry.
  *
  * @remarks
  * The proof reads `import.meta.env.MODE`, so without `--mode release` it passes
@@ -318,29 +319,35 @@ export const DISTRIBUTION_TEST_PATH = 'tests/distribution.test.ts'
  */
 export const RELEASE_PROOF_COMMAND = 'npm run test:distribution -- --mode release'
 
-/** The cross-environment composition proof whose presence makes a workspace `integration`. */
+/**
+ * Names the cross-environment composition proof whose presence makes a workspace
+ * `integration`.
+ */
 export const INTEGRATION_TEST_PATH = 'tests/integration.test.ts'
 
-/** The manifest path every compiler plan emits with birth ownership. */
+/** Names the manifest path every compiler plan emits with birth ownership. */
 export const MANIFEST_PATH = 'package.json'
 
-/** The official-tooling drift proof whose presence makes a workspace `conformance`. */
+/** Names the official-tooling drift proof whose presence makes a workspace `conformance`. */
 export const CONFORMANCE_TEST_PATH = 'tests/conformance.test.ts'
 
-/** The live-service readiness module whose presence makes a workspace `service`. */
+/** Names the live-service readiness module whose presence makes a workspace `service`. */
 export const SERVICE_SETUP_PATH = 'tests/setupService.ts'
 
-/** The include the live-service project covers, which is a directory rather than one proof. */
+/**
+ * Names the include the live-service project covers, which is a directory rather than
+ * one proof.
+ */
 export const SERVICE_TEST_INCLUDE = 'tests/service/**/*.test.ts'
 
-/** The Vite wrapper whose presence makes a workspace `showcase`. */
+/** Names the Vite wrapper whose presence makes a workspace `showcase`. */
 export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
 
-/** The bare workspace name syntax: lowercase alphanumeric with hyphens, letter first. */
+/** Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 
 /**
- * The runtime dependency name syntax: the `@orkestrel` scope and a bare name.
+ * Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.
  *
  * @remarks
  * A dependency name reaches a path, because a workspace's guide mirror is
@@ -351,7 +358,7 @@ export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
 
 /**
- * The package name syntax for a dependency this package does not publish.
+ * Matches the package name syntax for a dependency this package does not publish.
  *
  * @remarks
  * A foreign package is one this package does not publish, so its name reaches
@@ -362,11 +369,11 @@ export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
  */
 export const FOREIGN_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/
 
-/** The exact `major.minor.patch` version syntax a blueprint declares. */
+/** Matches the exact `major.minor.patch` version syntax a blueprint declares. */
 export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
 
 /**
- * The exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.
+ * Matches the exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.
  *
  * @remarks
  * Pre-1.0 means any `0.x`, not `0.0.x`. The narrower form would refuse the first
@@ -376,12 +383,12 @@ export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$
  */
 export const ORKESTREL_RANGE_PATTERN = /^\^0\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
 
-/** The registry-only semver subset accepted for a development extra's range. */
+/** Matches the registry-only semver subset accepted for a development extra's range. */
 export const EXTRA_RANGE_PATTERN =
 	/^(?:\^|~)?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$/
 
 /**
- * The exact `major.minor.patch` floor accepted for a foreign peer's range.
+ * Matches the exact `major.minor.patch` floor accepted for a foreign peer's range.
  *
  * @remarks
  * This is independent from {@link ENGINES_PATTERN}. An engine floors the Node
@@ -390,20 +397,23 @@ export const EXTRA_RANGE_PATTERN =
  */
 export const FLOOR_RANGE_PATTERN = /^>=(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
 
-/** The minimum-Node engine syntax a blueprint declares. */
+/** Matches the minimum-Node engine syntax a blueprint declares. */
 export const ENGINES_PATTERN = /^>=(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
 
-/** Exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid. */
+/** Matches exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid. */
 export const HEX_PATTERN = /^(?:[0-9a-f]{2})*$/
 
-/** Unicode controls, formatting controls, and line and paragraph separators rejected in text. */
+/**
+ * Matches the Unicode controls, formatting controls, and line and paragraph separators
+ * rejected in text.
+ */
 export const CONTROL_CHARACTER_PATTERN = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u
 
-/** Visible characters a target-relative path and a Markdown path cell both forbid. */
+/** Matches the visible characters a target-relative path and a Markdown path cell both forbid. */
 export const INVALID_PATH_CHARACTER_PATTERN = /[<>:"|?*\\]/
 
 /**
- * Maximum bare workspace name length.
+ * Caps the bare workspace name length.
  *
  * @remarks
  * The registry caps a whole package name at 214 characters and the generated
@@ -411,38 +421,38 @@ export const INVALID_PATH_CHARACTER_PATTERN = /[<>:"|?*\\]/
  */
 export const MAX_NAME_LENGTH = 203
 
-/** Maximum dependency package name length, scope included, as the registry caps it. */
+/** Sets the maximum dependency package name length, scope included, as the registry caps it. */
 export const MAX_DEPENDENCY_NAME_LENGTH = 214
 
-/** Maximum length of one declared package range. */
+/** Caps the length of one declared package range. */
 export const MAX_RANGE_LENGTH = 2_048
 
-/** Maximum length of one manifest script name or command. */
+/** Caps the length of one manifest script name or command. */
 export const MAX_SCRIPT_LENGTH = 4_096
 
-/** Maximum length of one path, matching the longest a supported filesystem accepts. */
+/** Caps the length of one path, matching the longest a supported filesystem accepts. */
 export const MAX_PATH_LENGTH = 32_767
 
-/** Maximum items accepted in one public collection. */
+/** Caps the items accepted in one public collection. */
 export const MAX_COLLECTION_ITEMS = 1_000
 
-/** Columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`. */
+/** Caps the columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`. */
 export const PRINT_WIDTH = 100
 
-/** Columns one tab occupies when the formatter measures a line, matching `tabWidth`. */
+/** Sets the columns one tab occupies when the formatter measures a line, matching `tabWidth`. */
 export const TAB_WIDTH = 2
 
-/** Maximum findings one audit can produce from a bounded plan and snapshot. */
+/** Caps the findings one audit can produce from a bounded plan and snapshot. */
 export const MAX_AUDIT_FINDINGS = MAX_COLLECTION_ITEMS * 2
 
-/** Maximum bytes accepted for one artifact. */
+/** Caps the bytes accepted for one artifact. */
 export const MAX_ARTIFACT_BYTES = 5_242_880
 
-/** Maximum length of the hexadecimal string carrying one artifact's bytes. */
+/** Caps the length of the hexadecimal string carrying one artifact's bytes. */
 export const MAX_ARTIFACT_HEX_LENGTH = MAX_ARTIFACT_BYTES * 2
 
 /**
- * Maximum decoded bytes accepted from one registry response.
+ * Caps the decoded bytes accepted from one registry response.
  *
  * @remarks
  * The 2026-08-21 abbreviated-packument measurements were 8,647,138 bytes for
@@ -453,7 +463,7 @@ export const MAX_ARTIFACT_HEX_LENGTH = MAX_ARTIFACT_BYTES * 2
 export const MAX_REGISTRY_BYTES = 33_554_432
 
 /**
- * Maximum decoded bytes accepted across one registry-reading call.
+ * Caps the decoded bytes accepted across one registry-reading call.
  *
  * @remarks
  * The 2026-08-21 browser-workspace registry set measured about 24 MiB. The
@@ -461,22 +471,22 @@ export const MAX_REGISTRY_BYTES = 33_554_432
  */
 export const MAX_TOTAL_REGISTRY_BYTES = 100_663_296
 
-/** Maximum bytes accepted for one package or vendored-host manifest. */
+/** Caps the bytes accepted for one package or vendored-host manifest. */
 export const MAX_MANIFEST_BYTES = 1_048_576
 
-/** Maximum bytes retained across one whole plan or audit. */
+/** Caps the bytes retained across one whole plan or audit. */
 export const MAX_TOTAL_ARTIFACT_BYTES = 104_857_600
 
-/** The oldest Node version the generated toolchain supports. */
+/** Names the oldest Node version the generated toolchain supports. */
 export const MINIMUM_NODE_VERSION = '22.12.0'
 
-/** The version a workspace starts at. */
+/** Names the version a workspace starts at. */
 export const DEFAULT_VERSION = '0.0.1'
 
-/** The `engines.node` range a workspace starts with. */
+/** Names the `engines.node` range a workspace starts with. */
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
-/** The tooling versions scaffold and every generated workspace share. */
+/** Holds the tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/guide': manifest.devDependencies['@orkestrel/guide'],
 	'@orkestrel/probe': manifest.devDependencies['@orkestrel/probe'],
@@ -490,24 +500,27 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 	vitest: manifest.devDependencies.vitest,
 })
 
-/** The development dependencies that emit declarations for published source or an executable. */
+/**
+ * Lists the development dependencies that emit declarations for published source or an
+ * executable.
+ */
 export const DECLARATION_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@microsoft/api-extractor': manifest.devDependencies['@microsoft/api-extractor'],
 	'vite-plugin-dts': manifest.devDependencies['vite-plugin-dts'],
 })
 
-/** The development dependencies a published browser `src` environment adds. */
+/** Lists the development dependencies a published browser `src` environment adds. */
 export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@vitest/browser-playwright': manifest.devDependencies['@vitest/browser-playwright'],
 	playwright: manifest.devDependencies.playwright,
 })
 
-/** The development dependency every private `app` environment adds. */
+/** Names the development dependency every private `app` environment adds. */
 export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/contract': manifest.dependencies['@orkestrel/contract'],
 })
 
-/** The development dependencies a private Vue browser application adds. */
+/** Lists the development dependencies a private Vue browser application adds. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	...SOURCE_BROWSER_DEV_DEPENDENCIES,
 	'@orkestrel/html': manifest.devDependencies['@orkestrel/html'],
@@ -517,7 +530,7 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
 })
 
 /**
- * The development dependency used only by the optional single-file showcase build.
+ * Names the development dependency used only by the optional single-file showcase build.
  *
  * @example
  * ```ts
@@ -530,7 +543,7 @@ export const SHOWCASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Objec
 	'vite-plugin-singlefile': '^2.3.3',
 })
 
-/** The development dependencies a private server application adds. */
+/** Lists the development dependencies a private server application adds. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/emitter': manifest.dependencies['@orkestrel/emitter'],
 	'@orkestrel/middleware': '^0.0.16',

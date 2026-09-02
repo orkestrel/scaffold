@@ -57,11 +57,11 @@ import {
 } from './constants.js'
 
 /**
- * Narrow a value to a path naming a location on this host.
+ * Narrows a value to a path naming a location on this host.
  *
  * @param value - The candidate host path.
- * @returns `true` for a bounded absolute or relative path whose every segment is
- * portable across the supported filesystems.
+ * @returns True if the value is a bounded absolute or relative path whose every segment
+ * is portable across the supported filesystems; false otherwise.
  *
  * @remarks
  * The counterpart to the core path law, not a copy of it. A target directory and
@@ -129,7 +129,7 @@ export function isFilesystemPath(value: unknown): value is string {
 }
 
 /**
- * Narrow a value to one exact SHA-256 digest.
+ * Narrows a value to one exact SHA-256 digest.
  *
  * @remarks
  * The identity a vendored host manifest and a write precondition are both stated
@@ -147,10 +147,11 @@ export function isFilesystemPath(value: unknown): value is string {
 export const isDigest: Guard<string> = stringOf({ pattern: DIGEST_PATTERN })
 
 /**
- * Narrow a value to a working-tree inventory within the limit one target may report.
+ * Narrows a value to a working-tree inventory within the limit one target may report.
  *
  * @param value - The candidate inventory.
- * @returns `true` for an array of no more than `MAX_INVENTORY_PATHS` items.
+ * @returns True if the value is an array of no more than
+ * `MAX_INVENTORY_PATHS` items; false otherwise.
  *
  * @remarks
  * Compose this ahead of an element guard exactly as the core collection guard is
@@ -173,7 +174,7 @@ export function isInventory(value: unknown): value is readonly unknown[] {
 }
 
 /**
- * Narrow a value to a bounded upstream endpoint.
+ * Narrows a value to a bounded upstream endpoint.
  *
  * @remarks
  * Length only. Which schemes and hosts an endpoint may name is the reader's law,
@@ -183,7 +184,7 @@ export function isInventory(value: unknown): value is readonly unknown[] {
 export const isEndpoint: Guard<string> = stringOf({ min: 1, max: MAX_ENDPOINT_LENGTH })
 
 /**
- * Narrow a value to a Git branch the repository endpoint accepts.
+ * Narrows a value to a Git branch the repository endpoint accepts.
  *
  * @remarks
  * A branch reaches the repository URL's path, so the syntax is closed rather than
@@ -204,7 +205,7 @@ export const isBranch: Guard<string> = stringOf({
 })
 
 /**
- * Narrow a value to a per-request timeout in milliseconds.
+ * Narrows a value to a per-request timeout in milliseconds.
  *
  * @remarks
  * A whole number of milliseconds, at least one and no more than
@@ -214,7 +215,7 @@ export const isBranch: Guard<string> = stringOf({
 export const isTimeout: Guard<number> = andOf(isInteger, boundsOf(1, MAX_UPSTREAM_TIMEOUT))
 
 /**
- * Narrow a value to a bounded list of `@orkestrel` package names.
+ * Narrows a value to a bounded list of `@orkestrel` package names.
  *
  * @remarks
  * Composed from the core collection and dependency-name guards rather than
@@ -235,7 +236,7 @@ export const isDependencyNames: Guard<readonly string[]> = andOf(
 )
 
 /**
- * Narrow a value to a bounded list of target-relative paths.
+ * Narrows a value to a bounded list of target-relative paths.
  *
  * @remarks
  * Composed from the core collection and path guards rather than restated, so
@@ -253,14 +254,14 @@ export const isDependencyNames: Guard<readonly string[]> = andOf(
  */
 export const isPaths: Guard<readonly string[]> = andOf(isCollection, arrayOf(isPath))
 
-/** Narrow a value to a bounded list of declared runtime dependencies. */
+/** Narrows a value to a bounded list of declared runtime dependencies. */
 export const isDependencies: Guard<readonly Dependency[]> = andOf(
 	isCollection,
 	arrayOf(isDependency),
 )
 
 /**
- * Narrow a value to one {@link ManifestRegionSet}.
+ * Narrows a value to one {@link ManifestRegionSet}.
  *
  * @remarks
  * The whole closed record a manifest-writing method accepts, so a caller
@@ -280,17 +281,17 @@ export const isManifestRegionSet: Guard<ManifestRegionSet> = recordOf({
 	scripts: andOf(isCollection, arrayOf(isManifestScript)),
 })
 
-/** Narrow a value to a bounded list of fetched guide mirrors. */
+/** Narrows a value to a bounded list of fetched guide mirrors. */
 export const isMirrors: Guard<readonly Mirror[]> = andOf(isCollection, arrayOf(isMirror))
 
-/** Narrow a value to a bounded list of fleet catalog rows. */
+/** Narrows a value to a bounded list of fleet catalog rows. */
 export const isCatalogEntries: Guard<readonly CatalogEntry[]> = andOf(
 	isCollection,
 	arrayOf(isCatalogEntry),
 )
 
 /**
- * Narrow a value to one {@link ManifestEntry}.
+ * Narrows a value to one {@link ManifestEntry}.
  *
  * @remarks
  * Both paths are measured by the core path law, because a vendored host's
@@ -318,7 +319,7 @@ export const isManifestEntry: Guard<ManifestEntry> = recordOf({
 })
 
 /**
- * Narrow a value to one {@link HostManifest}.
+ * Narrows a value to one {@link HostManifest}.
  *
  * @remarks
  * The manifest is read from a directory a caller named, so it is the least
@@ -332,7 +333,7 @@ export const isHostManifest: Guard<HostManifest> = recordOf({
 })
 
 /**
- * Narrow a value to one {@link Host}.
+ * Narrows a value to one {@link Host}.
  *
  * @remarks
  * A whole vendored host handed in as a value is as untrusted as one read from a
@@ -356,7 +357,7 @@ export const isHostManifest: Guard<HostManifest> = recordOf({
 export const isHost: Guard<Host> = recordOf({ manifest: isHostManifest, bytes: isSnapshot })
 
 /**
- * Narrow a value to a {@link Worktree}.
+ * Narrows a value to a {@link Worktree}.
  *
  * @remarks
  * Both path lists are target-relative, so both are measured by the core path
@@ -378,7 +379,7 @@ export const isWorktree: Guard<Worktree> = recordOf({
 })
 
 /**
- * Narrow a value to the materializer's initial listener record.
+ * Narrows a value to the materializer's initial listener record.
  *
  * @remarks
  * Every event is optional and every declared value is a function. A key outside
@@ -397,7 +398,7 @@ export const isMaterializerHooks: Guard<EmitterHooks<MaterializerEventMap>> = re
 )
 
 /**
- * Narrow a value to {@link MaterializerOptions}.
+ * Narrows a value to {@link MaterializerOptions}.
  *
  * @remarks
  * `host` admits both representations of one vendored root: a directory path and
@@ -419,7 +420,7 @@ export const isMaterializerOptions: Guard<MaterializerOptions> = recordOf(
 )
 
 /**
- * Narrow a value to the upstream reader's initial listener record.
+ * Narrows a value to the upstream reader's initial listener record.
  *
  * @remarks
  * Closed to the reader's own events for the same reason the materializer's
@@ -437,7 +438,7 @@ export const isUpstreamHooks: Guard<EmitterHooks<UpstreamEventMap>> = recordOf(
 )
 
 /**
- * Narrow a value to {@link UpstreamOptions}.
+ * Narrows a value to {@link UpstreamOptions}.
  *
  * @remarks
  * Each grouped endpoint is closed to its own leaves, so a setting written under

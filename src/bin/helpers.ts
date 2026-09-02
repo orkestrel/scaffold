@@ -55,7 +55,7 @@ import {
 import { isUsageError, UsageError } from './errors.js'
 
 /**
- * Read the option name out of the token usage displays it as.
+ * Reads the option name out of the token usage displays it as.
  *
  * @param option - The displayed token, such as `--from <path>`.
  * @returns The bare name `node:util` parses the option under.
@@ -79,7 +79,7 @@ export function optionToName(option: string): string {
 }
 
 /**
- * Project process environment endpoints into upstream reader options.
+ * Projects process environment endpoints into upstream reader options.
  *
  * @param environment - The process environment to read.
  * @returns The configured endpoint groups, or `undefined` when neither endpoint
@@ -98,7 +98,7 @@ export function environmentToUpstream(
 }
 
 /**
- * Render one verb's synopsis.
+ * Renders one verb's synopsis.
  *
  * @param verb - The verb to describe.
  * @returns The command line this verb accepts, with every option bracketed.
@@ -122,7 +122,7 @@ export function verbToSyntax(verb: Verb): string {
 }
 
 /**
- * Render the whole command reference.
+ * Renders the whole command reference.
  *
  * @returns One line per output call: the synopsis, every verb, the option glossary, and the exit codes.
  *
@@ -150,7 +150,7 @@ export function renderUsage(): readonly string[] {
 }
 
 /**
- * Read one command out of the arguments following the executable's own name.
+ * Reads one command out of the arguments following the executable's own name.
  *
  * @param argv - The arguments the executable was given.
  * @returns The command the arguments denote.
@@ -269,7 +269,7 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 }
 
 /**
- * Read the exit code an audit reports.
+ * Reads the exit code an audit reports.
  *
  * @param audit - The comparison of a plan against a target.
  * @returns `EXIT_CLEAN` when the target matched the plan, `EXIT_DRIFT` otherwise.
@@ -297,7 +297,7 @@ export function auditToExit(audit: Audit): number {
 }
 
 /**
- * Read the runtime and development rows a writing verb may raise.
+ * Reads the runtime and development rows a writing verb may raise.
  *
  * @param manifest - The target manifest text.
  * @param blueprint - The workspace shape that supplies the planned tool set.
@@ -328,7 +328,7 @@ export function manifestToWritableDependencies(
 }
 
 /**
- * Keep only dependencies published by the Orkestrel fleet.
+ * Keeps only dependencies published by the Orkestrel fleet.
  *
  * @param dependencies - The declared dependencies to inspect.
  * @returns The fleet declarations in their original order.
@@ -338,7 +338,7 @@ export function dependenciesToFleet(dependencies: readonly Dependency[]): readon
 }
 
 /**
- * Project declared concrete ranges to their distributed release floors.
+ * Projects declared concrete ranges to their distributed release floors.
  *
  * @param dependencies - The declarations whose floor versions to read.
  * @returns One found floor per declaration, or `undefined` when any range names
@@ -360,7 +360,7 @@ export function dependenciesToFloors(
 }
 
 /**
- * Read the exit code registry release evidence earns.
+ * Reads the exit code registry release evidence earns.
  *
  * @param releases - The release verdicts to measure.
  * @returns `EXIT_DRIFT` for a failed lookup or an exact fleet mismatch; `EXIT_CLEAN` otherwise.
@@ -376,7 +376,7 @@ export function releasesToExit(releases: readonly Release[]): number {
 }
 
 /**
- * Project foreign floor and supported-major drift into audit questions.
+ * Projects foreign floor and supported-major drift into audit questions.
  *
  * @param releases - The release verdicts to measure.
  * @param served - Alternate release verdicts used to detect a newer served major.
@@ -427,7 +427,7 @@ export function releasesToQuestions(
 }
 
 /**
- * Project an audit into the human summary of its outcome.
+ * Projects an audit into the human summary of its outcome.
  *
  * @param audit - The comparison to summarize.
  * @returns The refusal, or the planned-path outcome, its grounds, and any foreign-path count.
@@ -477,7 +477,7 @@ export function auditToSummary(audit: Audit): string {
 }
 
 /**
- * Project a raised value into the machine-readable failure envelope.
+ * Projects a raised value into the machine-readable failure envelope.
  *
  * @param error - The value a command raised.
  * @returns The envelope naming the coded reason and what went wrong.

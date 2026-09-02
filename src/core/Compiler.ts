@@ -39,7 +39,7 @@ import { selectGroups } from './helpers.js'
 import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from './parsers.js'
 
 /**
- * The compile spine: draft, gate, pin, run in that order over a blueprint.
+ * Represents the compile spine: draft, gate, pin, run in that order over a blueprint.
  *
  * @remarks
  * The draft stage assembles the artifacts the selected groups cover. The gate
@@ -84,7 +84,7 @@ export class Compiler implements CompilerInterface {
 	#destroyed = false
 
 	/**
-	 * Construct a compiler.
+	 * Constructs a compiler.
 	 *
 	 * @param options - The initial listeners and the listener-error handler.
 	 * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but
@@ -111,13 +111,13 @@ export class Compiler implements CompilerInterface {
 		})
 	}
 
-	/** The compiler's observation channel. */
+	/** Exposes the compiler's observation channel. */
 	get emitter(): EmitterInterface<CompilerEventMap> {
 		return this.#emitter
 	}
 
 	/**
-	 * Compile a blueprint into a plan through the draft, gate, and pin stages.
+	 * Compiles a blueprint into a plan through the draft, gate, and pin stages.
 	 *
 	 * @param blueprint - The workspace specification to compile.
 	 * @param groups - The artifact groups to cover; every group when absent.
@@ -157,7 +157,7 @@ export class Compiler implements CompilerInterface {
 	}
 
 	/**
-	 * Compile a blueprint and compare its plan to a target's current content.
+	 * Compiles a blueprint and compares its plan to a target's current content.
 	 *
 	 * @param blueprint - The workspace specification to compile.
 	 * @param current - The target's exact bytes, keyed by artifact-relative path.
@@ -201,7 +201,7 @@ export class Compiler implements CompilerInterface {
 	}
 
 	/**
-	 * Tear the compiler down. Every later call throws, and teardown is idempotent.
+	 * Tears the compiler down. Every later call throws, and teardown is idempotent.
 	 *
 	 * @returns Nothing.
 	 *

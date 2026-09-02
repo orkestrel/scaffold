@@ -82,7 +82,7 @@ import {
 import { WriteTransaction } from './WriteTransaction.js'
 
 /**
- * The mutation spine: read the vendored host, re-derive the target, stage, swap.
+ * Represents the mutation spine: read the vendored host, re-derive the target, stage, swap.
  *
  * @remarks
  * Every verb runs the same steps. It snapshots each caller-supplied value
@@ -135,7 +135,7 @@ export class Materializer implements MaterializerInterface {
 	#destroyed = false
 
 	/**
-	 * Construct a materializer over one vendored host root.
+	 * Constructs a materializer over one vendored host root.
 	 *
 	 * @param options - The vendored host, in either representation, the initial
 	 * listeners, and the listener-error handler.
@@ -202,13 +202,13 @@ export class Materializer implements MaterializerInterface {
 		}
 	}
 
-	/** The materializer's observation channel. */
+	/** Exposes the materializer's observation channel. */
 	get emitter(): EmitterInterface<MaterializerEventMap> {
 		return this.#emitter
 	}
 
 	/**
-	 * Compare a plan with a target through the vendored host that will repair it.
+	 * Compares a plan with a target through the vendored host that will repair it.
 	 *
 	 * @param plan - The compiled plan to compare.
 	 * @param target - The directory to inspect.
@@ -240,7 +240,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Write a plan into a vacant target.
+	 * Writes a plan into a vacant target.
 	 *
 	 * @param plan - The compiled plan to write.
 	 * @param target - The directory to write into; it must hold nothing the plan would collide with.
@@ -272,7 +272,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Write a plan into an existing target, guided by an audit of it.
+	 * Writes a plan into an existing target, guided by an audit of it.
 	 *
 	 * @param plan - The compiled plan to write.
 	 * @param audit - The preview returned by this materializer's `audit` method.
@@ -321,7 +321,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Write fetched dependency guides to their local mirrors.
+	 * Writes fetched dependency guides to their local mirrors.
 	 *
 	 * @param mirrors - The fetched guides; each carries the local bytes its write is held to.
 	 * @param target - The directory to write into.
@@ -367,7 +367,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Rewrite the marker-bounded package table in the target's catalog agent file.
+	 * Rewrites the marker-bounded package table in the target's catalog agent file.
 	 *
 	 * @param entries - The published packages the table must list.
 	 * @param target - The directory to write into.
@@ -396,7 +396,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Rewrite the manifest regions the caller names in the target's manifest.
+	 * Rewrites the manifest regions the caller names in the target's manifest.
 	 *
 	 * @param regions - The dependency ranges and script values the manifest must declare.
 	 * @param target - The directory to write into.
@@ -427,7 +427,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Re-derive and delete the tracked files the plan does not own.
+	 * Re-derives and deletes the tracked files the plan does not own.
 	 *
 	 * @param plan - The compiled plan that decides which paths are foreign.
 	 * @param audit - The preview returned by this materializer's `audit` method; it must agree with the candidate set this call re-derives.
@@ -494,7 +494,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Tear the materializer down. Every later call throws, and teardown is idempotent.
+	 * Tears the materializer down. Every later call throws, and teardown is idempotent.
 	 *
 	 * @returns Nothing.
 	 *

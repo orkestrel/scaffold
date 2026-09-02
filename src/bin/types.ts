@@ -10,7 +10,7 @@ import type {
 import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '@src/server'
 
 /**
- * The executable's closed command vocabulary.
+ * Names the executable's closed command vocabulary.
  *
  * @remarks
  * Authority is carried by the verb. Every verb writes when it is typed, and
@@ -26,11 +26,11 @@ import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '
  */
 export type Verb = 'new' | 'audit' | 'repair' | 'catalog' | 'overwrite'
 
-/** The baseline one upstream-backed command surface used. */
+/** Names the baseline one upstream-backed command surface used. */
 export type Baseline = 'live' | 'floor'
 
 /**
- * The baselines one command used for the upstream-backed surfaces it read.
+ * Reports the baselines one command used for the upstream-backed surfaces it read.
  *
  * @remarks
  * An absent property means the command did not read that surface. A local
@@ -43,7 +43,7 @@ export interface Provenance {
 }
 
 /**
- * The options every verb accepts.
+ * Represents the options every verb accepts.
  *
  * @remarks
  * `target` is the directory the verb operates on. `json` emits one
@@ -56,7 +56,7 @@ export interface CommandBase {
 }
 
 /**
- * Scaffold a workspace.
+ * Scaffolds a workspace.
  *
  * @remarks
  * `name` is the workspace name, and is the only positional argument any verb
@@ -79,7 +79,7 @@ export interface NewCommand extends CommandBase {
 }
 
 /**
- * Report how a target compares to its plan, writing nothing.
+ * Reports how a target compares to its plan, writing nothing.
  *
  * @remarks
  * `groups` scopes the comparison to artifact groups.
@@ -98,7 +98,7 @@ export interface AuditCommand extends CommandBase {
 	readonly dirty?: never
 }
 
-/** Write each planned path the target is missing or has let drift. */
+/** Writes each planned path the target is missing or has let drift. */
 export interface RepairCommand extends CommandBase {
 	readonly verb: 'repair'
 	readonly groups?: string
@@ -114,7 +114,7 @@ export interface RepairCommand extends CommandBase {
 }
 
 /**
- * Regenerate the package table and refresh the guide mirrors.
+ * Regenerates the package table and refreshes the guide mirrors.
  *
  * @remarks
  * `all` widens the guides fetched from the target's declared dependencies to
@@ -136,7 +136,7 @@ export interface CatalogCommand extends CommandBase {
 }
 
 /**
- * Do everything repair and catalog do, then delete and re-declare.
+ * Does everything repair and catalog do, then deletes and re-declares.
  *
  * @remarks
  * `dirty` waives the refusal to delete from a tree carrying uncommitted
@@ -158,7 +158,7 @@ export interface OverwriteCommand extends CommandBase {
 }
 
 /**
- * One resolved command line.
+ * Represents one resolved command line.
  *
  * @remarks
  * Each verb admits only the options that verb has, so a combination the domain
@@ -176,11 +176,11 @@ export type CLICommand =
 	| CatalogCommand
 	| OverwriteCommand
 
-/** One line written to a destination the executable does not own. */
+/** Writes one line to a destination the executable does not own. */
 export type OutputHandler = (line: string) => void
 
 /**
- * Options for the executable.
+ * Represents the options for the executable.
  *
  * @remarks
  * `output` receives the report and `diagnostic` receives everything that must
@@ -208,14 +208,14 @@ export interface CLIOptions {
 	readonly upstream?: UpstreamOptions | undefined
 }
 
-/** One resolved host baseline beside the materializer constructed over it. */
+/** Represents one resolved host baseline beside the materializer constructed over it. */
 export interface HostResolution {
 	readonly materializer: MaterializerInterface
 	readonly baseline?: Baseline
 	readonly forced: boolean
 }
 
-/** One resolved version baseline beside its evidence and writable ranges. */
+/** Represents one resolved version baseline beside its evidence and writable ranges. */
 export interface VersionResolution {
 	readonly releases: readonly Release[]
 	readonly pins: DependencyPinSet
@@ -225,7 +225,7 @@ export interface VersionResolution {
 }
 
 /**
- * The literal Vitest projects and npm run scripts one shell command invokes.
+ * Lists the literal Vitest projects and npm run scripts one shell command invokes.
  *
  * @remarks
  * Literal only: a token whose value a shell expansion decides is unresolved, so
@@ -236,15 +236,15 @@ export interface ScriptInvocations {
 	readonly scripts: readonly string[]
 }
 
-/** One target question beside the artifact groups that make it relevant. */
+/** Represents one target question beside the artifact groups that make it relevant. */
 export interface TargetQuestion extends Question {
 	readonly groups: readonly Group[]
 }
 
-/** The executable's boundary. */
+/** Describes the executable's boundary. */
 export interface CLIInterface {
 	/**
-	 * Run one command line to completion and report through the configured output.
+	 * Runs one command line to completion and reports through the configured output.
 	 *
 	 * @param argv - The arguments following the executable's own name.
 	 * @returns The exit code: `0` clean, `1` drift or failure, `2` a usage error.
@@ -257,19 +257,19 @@ export interface CLIInterface {
 	execute(argv: readonly string[]): Promise<number>
 }
 
-/** The machine-readable outcome of `new`. */
+/** Reports the machine-readable outcome of `new`. */
 export interface NewResult extends MaterializeResult {
 	readonly provenance: Provenance
 }
 
-/** The machine-readable outcome of `audit`. */
+/** Reports the machine-readable outcome of `audit`. */
 export interface AuditResult extends Audit {
 	readonly releases: readonly Release[]
 	readonly provenance: Provenance
 }
 
 /**
- * The machine-readable outcome of `repair`.
+ * Reports the machine-readable outcome of `repair`.
  *
  * @remarks
  * `audit` is the terminal audit taken after the write, so a path still listed
@@ -282,7 +282,7 @@ export interface RepairResult extends MaterializeResult {
 }
 
 /**
- * The machine-readable outcome of `catalog`.
+ * Reports the machine-readable outcome of `catalog`.
  *
  * @remarks
  * `entries` is the table as it stands and `mirrors` is one verdict per
@@ -299,7 +299,7 @@ export interface CatalogResult extends MaterializeResult {
 }
 
 /**
- * The machine-readable outcome of `overwrite`.
+ * Reports the machine-readable outcome of `overwrite`.
  *
  * @remarks
  * `overwrite` carries everything `repair` and `catalog` report, plus
@@ -316,7 +316,7 @@ export interface OverwriteResult extends CatalogResult {
 	readonly note?: string
 }
 
-/** The single machine-readable failure value every verb reports through. */
+/** Represents the single machine-readable failure value every verb reports through. */
 export interface ErrorEnvelope {
 	readonly error: {
 		readonly code: string

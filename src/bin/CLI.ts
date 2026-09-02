@@ -110,7 +110,7 @@ import {
 } from './helpers.js'
 
 /**
- * The executable: one command line in, one exit code out.
+ * Represents the executable: one command line in, one exit code out.
  *
  * @remarks
  * Every destination this class writes to is a handler it was given, and the run
@@ -152,7 +152,7 @@ export class CLI implements CLIInterface {
 	readonly #upstream: UpstreamOptions | undefined
 
 	/**
-	 * Construct the executable over the destinations it writes to.
+	 * Constructs the executable over the destinations it writes to.
 	 *
 	 * @param options - The report and diagnostic handlers and the upstream
 	 * endpoints; the process streams and the published endpoints when absent.
@@ -167,7 +167,7 @@ export class CLI implements CLIInterface {
 	}
 
 	/**
-	 * Run one command line to completion and report through the configured output.
+	 * Runs one command line to completion and reports through the configured output.
 	 *
 	 * @param argv - The arguments following the executable's own name.
 	 * @returns The exit code: `0` clean, `1` drift or failure, `2` a usage error.
