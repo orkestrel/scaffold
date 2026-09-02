@@ -1,0 +1,1352 @@
+diff --git a/README.md b/README.md
+index 7686f36..5a271a4 100644
+--- a/README.md
++++ b/README.md
+@@ -24,15 +24,19 @@ npm install @orkestrel/rater
+ 
+ ```ts
+ import { createRater, lineDefinition } from '@orkestrel/rater'
+-import { factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createQuantitativeDefinition,
++	createStaticFactor,
++} from '@orkestrel/reason'
+ 
+ const rater = createRater()
+ 
+ const base = lineDefinition(
+ 	'base',
+ 	'Base Amount',
+-	quantitativeDefinition('base', 'Base', [
+-		factorGroup('amount', 'sum', [staticFactor('flat', 100)]),
++	createQuantitativeDefinition('base', 'Base', [
++		createFactorGroup('amount', 'sum', [createStaticFactor('flat', 100)]),
+ 	]),
+ )
+ 
+diff --git a/guides/rater.md b/guides/rater.md
+index 234bd43..d361f60 100644
+--- a/guides/rater.md
++++ b/guides/rater.md
+@@ -21,15 +21,19 @@ definition), read the derived total:
+ 
+ ```ts
+ import { createRater, lineDefinition } from '@orkestrel/rater'
+-import { factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createQuantitativeDefinition,
++	createStaticFactor,
++} from '@orkestrel/reason'
+ 
+ const rater = createRater()
+ 
+ const base = lineDefinition(
+ 	'base',
+ 	'Base Amount',
+-	quantitativeDefinition('base', 'Base', [
+-		factorGroup('amount', 'sum', [staticFactor('flat', 100)]),
++	createQuantitativeDefinition('base', 'Base', [
++		createFactorGroup('amount', 'sum', [createStaticFactor('flat', 100)]),
+ 	]),
+ )
+ 
+@@ -49,7 +53,7 @@ overload, and the subject must be a plain record or `rate` throws `RaterError`
+ `'MISMATCH'`; an input that is neither an array of lines nor a `RatingDefinition`
+ throws `RaterError` `'DEFINITION'`. A line that fails to resolve (a missing lookup
+ entry, a failed required factor) is a rating FAILURE reported on its own `LineResult`
+-(`success: false`, no `amount`, a populated `worksheet.errors`) — the caller decides
++(`worksheet.success: false`, no `amount`, a populated `worksheet.errors`) — the caller decides
+ what to do with a failed line; `Rater` only reports exactly what each line resolved
+ to. `total` is derived from every line's `amount` by a `TotalHandler` (default
+ `sumAmounts`, overridable through `RaterOptions.total`) and counts only the lines
+@@ -69,8 +73,8 @@ that succeeded.
+ | `WorksheetGroup`   | interface | `{ id, name?, description?, applied, value, factors }` — a resolved quantitative group joined to its authored metadata.                                         |
+ | `Step`             | interface | `{ stage, id?, name?, value, expression? }` — a display-neutral worksheet derivation step.                                                                      |
+ | `Worksheet`        | interface | `{ id, name, aggregation, precision?, value, groups, steps, trace, errors, success }` — a quantitative definition joined to its result, the rating audit trail. |
+-| `LineResult`       | interface | `{ id, name, amount?, worksheet, success }` — one line's rating outcome; `amount` is present ONLY when `success` is `true`.                                     |
+-| `RatingResult`     | interface | `{ lines, total?, success }` — a rated outcome across every line of one `rate` call; `success` is `true` only when every line succeeded.                        |
++| `LineResult`       | interface | `{ id, name, amount?, worksheet }` — one line's rating outcome; `amount` is present ONLY when `worksheet.success` is `true`.                                    |
++| `RatingResult`     | interface | `{ lines, total?, success }` — a rated outcome across every line of one `rate` call; `success` is `true` only when every line's `worksheet.success` is `true`.  |
+ | `RaterEventMap`    | type      | `Rater`'s push observation surface — `rate(subject, result)`.                                                                                                   |
+ | `RaterOptions`     | interface | `{ on?, error?, engine?, total?, labels? }` — input to `createRater`.                                                                                           |
+ | `RaterInterface`   | interface | The rating orchestrator over the shared engine — `emitter` + `rate` (array overload declared FIRST) + `destroy`.                                                |
+@@ -104,28 +108,28 @@ or extra members. `isRatingResult` is the borrowed-engine boundary: it and its n
+ result guards reject arrays and check every published typed member without narrowing
+ plain numbers, strings, or unknown values.
+ 
+-| API                  | Kind     | Checks                                                                                                                                                                      | Leaves unchecked and why                                                                                                      |
+-| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+-| `isStage`            | const    | One of the three `Stage` literals.                                                                                                                                          | Nothing; a scalar union has no open/exact axis.                                                                               |
+-| `isLineDefinition`   | function | Every `LineDefinition` member, including its quantitative definition.                                                                                                       | Nothing; this package owns the authored input record, so extra keys fail.                                                     |
+-| `isRatingDefinition` | function | Every `RatingDefinition` member and nested line definition.                                                                                                                 | Nothing; this package owns the authored input record, so extra keys fail.                                                     |
+-| `isEvidence`         | function | Optional `field` as `FieldPath`, `label` as string, `comparison` as `Comparison`, and `met` as boolean when defined.                                                        | `expected`, `actual`, and unknown members; their published type is `unknown`, and borrowed results must not be narrowed.      |
+-| `isWorksheetFactor`  | function | `id`, optional authored text, `applied`, optional plain-number `value`, and each `Evidence` entry.                                                                          | Unknown members; borrowed result implementations may add them.                                                                |
+-| `isWorksheetGroup`   | function | `id`, optional authored text, `applied`, plain-number `value`, and each `WorksheetFactor` entry.                                                                            | Unknown members; borrowed result implementations may add them.                                                                |
+-| `isStep`             | function | `stage` through `isStage`, optional `id` / `name` / `expression`, and plain-number `value`.                                                                                 | Unknown members; borrowed result implementations may add them.                                                                |
+-| `isWorksheet`        | function | Identity, `aggregation` through reason's `isAggregation`, optional plain-number `precision`, plain-number `value`, nested groups and steps, trace, `errors`, and `success`. | Unknown members; borrowed result implementations may add them.                                                                |
+-| `isLineResult`       | function | Identity, optional plain-number `amount`, nested `Worksheet`, and boolean `success`.                                                                                        | Unknown members and the relationship between `amount` and `success`; the published interface types them independently.        |
+-| `isRatingResult`     | function | Every nested `LineResult`, optional plain-number `total`, and boolean `success`.                                                                                            | Unknown members and relationships among totals, lines, and success; the borrowed interface publishes only their member types. |
++| API                  | Kind     | Checks                                                                                                                                                                      | Leaves unchecked and why                                                                                                         |
++| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
++| `isStage`            | const    | One of the three `Stage` literals.                                                                                                                                          | Nothing; a scalar union has no open/exact axis.                                                                                  |
++| `isLineDefinition`   | function | Every `LineDefinition` member, including its quantitative definition.                                                                                                       | Nothing; this package owns the authored input record, so extra keys fail.                                                        |
++| `isRatingDefinition` | function | Every `RatingDefinition` member and nested line definition.                                                                                                                 | Nothing; this package owns the authored input record, so extra keys fail.                                                        |
++| `isEvidence`         | function | Optional `field` as `FieldPath`, `label` as string, `comparison` as `Comparison`, and `met` as boolean when defined.                                                        | `expected`, `actual`, and unknown members; their published type is `unknown`, and borrowed results must not be narrowed.         |
++| `isWorksheetFactor`  | function | `id`, optional authored text, `applied`, optional plain-number `value`, and each `Evidence` entry.                                                                          | Unknown members; borrowed result implementations may add them.                                                                   |
++| `isWorksheetGroup`   | function | `id`, optional authored text, `applied`, plain-number `value`, and each `WorksheetFactor` entry.                                                                            | Unknown members; borrowed result implementations may add them.                                                                   |
++| `isStep`             | function | `stage` through `isStage`, optional `id` / `name` / `expression`, and plain-number `value`.                                                                                 | Unknown members; borrowed result implementations may add them.                                                                   |
++| `isWorksheet`        | function | Identity, `aggregation` through reason's `isAggregation`, optional plain-number `precision`, plain-number `value`, nested groups and steps, trace, `errors`, and `success`. | Unknown members; borrowed result implementations may add them.                                                                   |
++| `isLineResult`       | function | Identity, optional plain-number `amount`, and the nested `Worksheet` that carries the line's outcome.                                                                       | Unknown members and the relationship between `amount` and `worksheet.success`; the published interface types them independently. |
++| `isRatingResult`     | function | Every nested `LineResult`, optional plain-number `total`, and boolean `success`.                                                                                            | Unknown members and relationships among totals, lines, and success; the borrowed interface publishes only their member types.    |
+ 
+ ```ts
+ import { isLineDefinition, isRatingDefinition, isStage } from '@orkestrel/rater'
+-import { quantitativeDefinition } from '@orkestrel/reason'
++import { createQuantitativeDefinition } from '@orkestrel/reason'
+ 
+ isStage('group') // true
+ isLineDefinition({
+ 	id: 'base',
+ 	name: 'Base Amount',
+-	rate: quantitativeDefinition('base', 'Base', []),
++	rate: createQuantitativeDefinition('base', 'Base', []),
+ }) // true
+ isRatingDefinition({ id: 'r1', name: 'Rating', lines: [] }) // true
+ ```
+@@ -135,28 +139,28 @@ isRatingDefinition({ id: 'r1', name: 'Rating', lines: [] }) // true
+ Pure, exported utility functions — the definition builders, the evidence construction,
+ and the worksheet-joining behind `Rater`'s `rate` projection.
+ 
+-| API                | Kind     | Summary                                                                                                   |
+-| ------------------ | -------- | --------------------------------------------------------------------------------------------------------- |
+-| `lineDefinition`   | function | Build a `LineDefinition` from id / name / rate (`overrides` merged over the defaults).                    |
+-| `ratingDefinition` | function | Build a `RatingDefinition` from id / name / lines (`overrides` merged over the defaults).                 |
+-| `evidenceCheck`    | function | Build an `Evidence` row from an evaluated `Check`.                                                        |
+-| `checkEvidence`    | function | Build evidence rows from a quantitative factor's authored checks and evaluated check results.             |
+-| `worksheetFactor`  | function | Join one authored quantitative factor to its evaluated `FactorResult`.                                    |
+-| `worksheetGroup`   | function | Join one authored quantitative group to its evaluated `GroupResult`.                                      |
+-| `worksheetStep`    | function | Build one display-neutral `Step` row.                                                                     |
+-| `worksheetSteps`   | function | Build the ordered `Step` rows for a resolved `Worksheet`.                                                 |
+-| `resultsWorksheet` | function | Join a `QuantitativeDefinition` and its `QuantitativeResult` into a `Worksheet` — the rating audit trail. |
+-| `ratedLine`        | function | Build a rated `LineResult` from a line's evaluated `QuantitativeResult`.                                  |
+-| `sumAmounts`       | function | Sum defined line amounts.                                                                                 |
++| API                    | Kind     | Summary                                                                                                   |
++| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
++| `lineDefinition`       | function | Build a `LineDefinition` from id / name / rate (`overrides` merged over the defaults).                    |
++| `ratingDefinition`     | function | Build a `RatingDefinition` from id / name / lines (`overrides` merged over the defaults).                 |
++| `buildEvidence`        | function | Build an `Evidence` row from an evaluated `Check`.                                                        |
++| `buildEvidenceRows`    | function | Build one evidence row per authored check of a quantitative factor, joined to its result.                 |
++| `buildWorksheetFactor` | function | Join one authored quantitative factor to its evaluated `FactorResult`.                                    |
++| `buildWorksheetGroup`  | function | Join one authored quantitative group to its evaluated `GroupResult`.                                      |
++| `worksheetStep`        | function | Build one display-neutral `Step` row.                                                                     |
++| `worksheetSteps`       | function | Build the ordered `Step` rows for a resolved `Worksheet`.                                                 |
++| `buildWorksheet`       | function | Join a `QuantitativeDefinition` and its `QuantitativeResult` into a `Worksheet` — the rating audit trail. |
++| `buildLineResult`      | function | Build a rated `LineResult` from a line's evaluated `QuantitativeResult`.                                  |
++| `sumAmounts`           | function | Sum defined line amounts.                                                                                 |
+ 
+ Definition building — `id`, `name`, and the required member, with `overrides` merged over
+ them; each returns a fresh object and omits absent optional keys entirely:
+ 
+ ```ts
+ import { lineDefinition, ratingDefinition } from '@orkestrel/rater'
+-import { quantitativeDefinition } from '@orkestrel/reason'
++import { createQuantitativeDefinition } from '@orkestrel/reason'
+ 
+-const base = lineDefinition('base', 'Base Amount', quantitativeDefinition('base', 'Base', []))
++const base = lineDefinition('base', 'Base Amount', createQuantitativeDefinition('base', 'Base', []))
+ ratingDefinition('r1', 'Rating', [base])
+ ratingDefinition('r1', 'Rating', [base], { description: 'A rating' }) // overrides merged over the defaults
+ ```
+@@ -166,13 +170,13 @@ display-neutral `Evidence` row; `labels` (keyed by dot-joined field) override th
+ `label`:
+ 
+ ```ts
+-import { checkEvidence, evidenceCheck } from '@orkestrel/rater'
+-import { check } from '@orkestrel/reason'
++import { buildEvidence, buildEvidenceRows } from '@orkestrel/rater'
++import { createCheck } from '@orkestrel/reason'
+ 
+-const evaluated = check('age', 'above', 18)
+-evidenceCheck(evaluated, 25, true) // { field: 'age', comparison: 'above', expected: 18, actual: 25, met: true }
+-evidenceCheck(evaluated, 25, true, { age: 'Age' }) // labels override → adds { label: 'Age' }
+-checkEvidence([evaluated], [{ field: 'age', met: true, actual: 25 }])
++const evaluated = createCheck('age', 'above', 18)
++buildEvidence(evaluated, 25, true) // { field: 'age', comparison: 'above', expected: 18, actual: 25, met: true }
++buildEvidence(evaluated, 25, true, { age: 'Age' }) // labels override → adds { label: 'Age' }
++buildEvidenceRows([evaluated], [{ field: 'age', met: true, actual: 25 }])
+ ```
+ 
+ Worksheet joining and line assembly — one authored quantitative definition and its
+@@ -181,25 +185,25 @@ rated `LineResult`:
+ 
+ ```ts
+ import {
++	buildLineResult,
++	buildWorksheet,
++	buildWorksheetFactor,
++	buildWorksheetGroup,
+ 	lineDefinition,
+-	ratedLine,
+-	resultsWorksheet,
+ 	sumAmounts,
+-	worksheetFactor,
+-	worksheetGroup,
+ 	worksheetStep,
+ 	worksheetSteps,
+ } from '@orkestrel/rater'
+ import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
+ 	createQuantitativeReasoner,
+ 	createReason,
+-	factorGroup,
+-	fieldFactor,
+-	quantitativeDefinition,
+ } from '@orkestrel/reason'
+ 
+-const definition = quantitativeDefinition('risk', 'Risk', [
+-	factorGroup('drivers', 'sum', [fieldFactor('age', 'age')]),
++const definition = createQuantitativeDefinition('risk', 'Risk', [
++	createFactorGroup('drivers', 'sum', [createFieldFactor('age', 'age')]),
+ ])
+ const engine = createReason({ reasoners: [createQuantitativeReasoner()] })
+ const result = engine.reason({ age: 25 }, definition)
+@@ -209,15 +213,15 @@ if (result.reasoning === 'quantitative') {
+ 	const groupResult = result.groups[0]
+ 	if (group !== undefined && groupResult !== undefined) {
+ 		const factor = group.factors[0]
+-		if (factor !== undefined) worksheetFactor(factor, groupResult.factors) // one factor joined to its result
+-		worksheetGroup(group, result.groups) // one group joined to its result
++		if (factor !== undefined) buildWorksheetFactor(factor, groupResult.factors) // one factor joined to its result
++		buildWorksheetGroup(group, result.groups) // one group joined to its result
+ 	}
+ 	worksheetStep('total', definition.id, definition.name, result.value, `sum = ${result.value}`)
+ 	worksheetSteps(definition, result, []) // the full ordered step list: factors, groups, then the total
+-	resultsWorksheet(definition, result) // the whole worksheet — groups, steps, trace, errors, success
++	buildWorksheet(definition, result) // the whole worksheet — groups, steps, trace, errors, success
+ 
+ 	const line = lineDefinition('risk', 'Risk', definition)
+-	ratedLine(line, result) // the line's rated LineResult — amount present only when success
++	buildLineResult(line, result) // the line's rated LineResult — amount present only on a successful worksheet
+ }
+ 
+ sumAmounts([]) // undefined — no line carries an amount
+@@ -266,10 +270,10 @@ every other method throws `RaterError` `'DESTROYED'`.
+ 
+ ```ts
+ import { createRater, lineDefinition } from '@orkestrel/rater'
+-import { quantitativeDefinition } from '@orkestrel/reason'
++import { createQuantitativeDefinition } from '@orkestrel/reason'
+ 
+ const rater = createRater()
+-const base = lineDefinition('base', 'Base Amount', quantitativeDefinition('base', 'Base', []))
++const base = lineDefinition('base', 'Base Amount', createQuantitativeDefinition('base', 'Base', []))
+ 
+ rater.rate([base], { id: 'subject-1' }) // the array-of-lines overload
+ rater.rate({ id: 'r1', name: 'Rating', lines: [base] }, { id: 'subject-1' }) // the RatingDefinition overload
+diff --git a/src/core/Rater.ts b/src/core/Rater.ts
+index b15cc16..2ae27d5 100644
+--- a/src/core/Rater.ts
++++ b/src/core/Rater.ts
+@@ -16,15 +16,10 @@ import type {
+ 	TotalHandler,
+ } from './types.js'
+ import { Emitter } from '@orkestrel/emitter'
+-import { arrayOf, isArray } from '@orkestrel/contract'
+-import {
+-	buildErrorResult,
+-	createQuantitativeReasoner,
+-	createReason,
+-	isSubject,
+-} from '@orkestrel/reason'
++import { arrayOf, isArray, isRecord } from '@orkestrel/contract'
++import { buildErrorResult, createQuantitativeReasoner, createReason } from '@orkestrel/reason'
+ import { RaterError } from './errors.js'
+-import { ratedLine, sumAmounts } from './helpers.js'
++import { buildLineResult, sumAmounts } from './helpers.js'
+ import { isLineDefinition, isRatingDefinition } from './validators.js'
+ 
+ /**
+@@ -83,10 +78,10 @@ export class Rater implements RaterInterface {
+ 	rate(input: readonly LineDefinition[] | RatingDefinition, subject: Subject): RatingResult {
+ 		this.#ensureAlive()
+ 		const lines = this.#normalize(input)
+-		if (!isSubject(subject)) throw new RaterError('MISMATCH', 'Subject must be a record')
++		if (!isRecord(subject)) throw new RaterError('MISMATCH', 'Subject must be a record')
+ 		const results = lines.map((line) => this.#rateLine(line, subject))
+ 		const total = (this.#total ?? sumAmounts)(results)
+-		const success = results.every((entry) => entry.success)
++		const success = results.every((entry) => entry.worksheet.success)
+ 		const result: RatingResult = {
+ 			lines: results,
+ 			...(total === undefined ? {} : { total }),
+@@ -114,7 +109,7 @@ export class Rater implements RaterInterface {
+ 
+ 	#rateLine(line: LineDefinition, subject: Subject): LineResult {
+ 		const result = this.#reasonQuantitative(subject, line.rate)
+-		return ratedLine(line, result, this.#labels)
++		return buildLineResult(line, result, this.#labels)
+ 	}
+ 
+ 	// Narrows the engine's tagged ReasonResult union down to a QuantitativeResult
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index a2a4ca4..e366ca1 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -21,7 +21,7 @@ import type {
+ import { formatField } from '@orkestrel/reason'
+ 
+ /**
+- * Build a {@link LineDefinition}.
++ * Builds a {@link LineDefinition}.
+  *
+  * @param id - The line id
+  * @param name - The display name
+@@ -31,10 +31,10 @@ import { formatField } from '@orkestrel/reason'
+  *
+  * @example
+  * ```ts
+- * import { quantitativeDefinition } from '@orkestrel/reason'
++ * import { createQuantitativeDefinition } from '@orkestrel/reason'
+  * import { lineDefinition } from '@orkestrel/rater'
+  *
+- * lineDefinition('base', 'Base Amount', quantitativeDefinition('base', 'Base', []))
++ * lineDefinition('base', 'Base Amount', createQuantitativeDefinition('base', 'Base', []))
+  * ```
+  */
+ export function lineDefinition(
+@@ -47,7 +47,7 @@ export function lineDefinition(
+ }
+ 
+ /**
+- * Build a {@link RatingDefinition}.
++ * Builds a {@link RatingDefinition}.
+  *
+  * @param id - The rating id
+  * @param name - The display name
+@@ -58,10 +58,10 @@ export function lineDefinition(
+  * @example
+  * ```ts
+  * import { lineDefinition, ratingDefinition } from '@orkestrel/rater'
+- * import { quantitativeDefinition } from '@orkestrel/reason'
++ * import { createQuantitativeDefinition } from '@orkestrel/reason'
+  *
+  * ratingDefinition('r1', 'Rating', [
+- * 	lineDefinition('base', 'Base Amount', quantitativeDefinition('base', 'Base', [])),
++ * 	lineDefinition('base', 'Base Amount', createQuantitativeDefinition('base', 'Base', [])),
+  * ])
+  * ```
+  */
+@@ -75,7 +75,7 @@ export function ratingDefinition(
+ }
+ 
+ /**
+- * Build an {@link Evidence} row from an evaluated {@link Check}.
++ * Builds an {@link Evidence} row from an evaluated {@link Check}.
+  *
+  * @param check - The authored check
+  * @param actual - The resolved subject value
+@@ -85,14 +85,14 @@ export function ratingDefinition(
+  *
+  * @example
+  * ```ts
+- * import { check } from '@orkestrel/reason'
+- * import { evidenceCheck } from '@orkestrel/rater'
++ * import { createCheck } from '@orkestrel/reason'
++ * import { buildEvidence } from '@orkestrel/rater'
+  *
+- * const entry = check('age', 'above', 18)
+- * evidenceCheck(entry, 25, true) // { field: 'age', comparison: 'above', expected: 18, actual: 25, met: true }
++ * const entry = createCheck('age', 'above', 18)
++ * buildEvidence(entry, 25, true) // { field: 'age', comparison: 'above', expected: 18, actual: 25, met: true }
+  * ```
+  */
+-export function evidenceCheck(
++export function buildEvidence(
+ 	check: Check,
+ 	actual: unknown,
+ 	met: boolean | undefined,
+@@ -110,8 +110,8 @@ export function evidenceCheck(
+ }
+ 
+ /**
+- * Build evidence rows from a quantitative factor's authored checks and
+- * evaluated check results.
++ * Builds one evidence row per authored check of a quantitative factor, joined
++ * to that check's evaluated result.
+  *
+  * @param checks - The factor's authored checks
+  * @param results - The corresponding {@link CheckResult}s, in the same order
+@@ -120,26 +120,26 @@ export function evidenceCheck(
+  *
+  * @example
+  * ```ts
+- * import { check } from '@orkestrel/reason'
+- * import { checkEvidence } from '@orkestrel/rater'
++ * import { createCheck } from '@orkestrel/reason'
++ * import { buildEvidenceRows } from '@orkestrel/rater'
+  *
+- * const checks = [check('age', 'above', 18)]
+- * checkEvidence(checks, [{ field: 'age', met: true, actual: 25 }])
++ * const checks = [createCheck('age', 'above', 18)]
++ * buildEvidenceRows(checks, [{ field: 'age', met: true, actual: 25 }])
+  * ```
+  */
+-export function checkEvidence(
++export function buildEvidenceRows(
+ 	checks: readonly Check[] | undefined,
+ 	results: readonly CheckResult[] | undefined,
+ 	labels?: Readonly<Record<string, string>>,
+ ): readonly Evidence[] {
+ 	return (checks ?? []).map((check, index) => {
+ 		const result = results?.[index]
+-		return evidenceCheck(check, result?.actual, result?.met, labels)
++		return buildEvidence(check, result?.actual, result?.met, labels)
+ 	})
+ }
+ 
+ /**
+- * Join one authored quantitative factor to its evaluated {@link FactorResult}.
++ * Joins one authored quantitative factor to its evaluated {@link FactorResult}.
+  *
+  * @param definition - The authored factor
+  * @param results - The group's factor results
+@@ -148,14 +148,14 @@ export function checkEvidence(
+  *
+  * @example
+  * ```ts
+- * import { fieldFactor } from '@orkestrel/reason'
+- * import { worksheetFactor } from '@orkestrel/rater'
++ * import { createFieldFactor } from '@orkestrel/reason'
++ * import { buildWorksheetFactor } from '@orkestrel/rater'
+  *
+- * const factor = fieldFactor('seats', 'seats')
+- * worksheetFactor(factor, [{ id: 'seats', applied: true, value: 10 }])
++ * const factor = createFieldFactor('seats', 'seats')
++ * buildWorksheetFactor(factor, [{ id: 'seats', applied: true, value: 10 }])
+  * ```
+  */
+-export function worksheetFactor(
++export function buildWorksheetFactor(
+ 	definition: Factor,
+ 	results: readonly FactorResult[],
+ 	labels?: Readonly<Record<string, string>>,
+@@ -167,12 +167,12 @@ export function worksheetFactor(
+ 		...(definition.description === undefined ? {} : { description: definition.description }),
+ 		applied: result?.applied ?? false,
+ 		...(result?.value === undefined ? {} : { value: result.value }),
+-		evidence: checkEvidence(definition.checks, result?.checks, labels),
++		evidence: buildEvidenceRows(definition.checks, result?.checks, labels),
+ 	}
+ }
+ 
+ /**
+- * Join one authored quantitative group to its evaluated {@link GroupResult}.
++ * Joins one authored quantitative group to its evaluated {@link GroupResult}.
+  *
+  * @param definition - The authored group
+  * @param results - The definition's group results
+@@ -181,14 +181,14 @@ export function worksheetFactor(
+  *
+  * @example
+  * ```ts
+- * import { factorGroup, staticFactor } from '@orkestrel/reason'
+- * import { worksheetGroup } from '@orkestrel/rater'
++ * import { createFactorGroup, createStaticFactor } from '@orkestrel/reason'
++ * import { buildWorksheetGroup } from '@orkestrel/rater'
+  *
+- * const group = factorGroup('charge', 'sum', [staticFactor('base', 100)])
+- * worksheetGroup(group, [{ id: 'charge', applied: true, value: 100, factors: [] }])
++ * const group = createFactorGroup('charge', 'sum', [createStaticFactor('base', 100)])
++ * buildWorksheetGroup(group, [{ id: 'charge', applied: true, value: 100, factors: [] }])
+  * ```
+  */
+-export function worksheetGroup(
++export function buildWorksheetGroup(
+ 	definition: QuantitativeDefinition['groups'][number],
+ 	results: readonly GroupResult[],
+ 	labels?: Readonly<Record<string, string>>,
+@@ -201,7 +201,7 @@ export function worksheetGroup(
+ 		applied: result?.applied ?? false,
+ 		value: result?.value ?? 0,
+ 		factors: definition.factors.map((factor) =>
+-			worksheetFactor(factor, result?.factors ?? [], labels),
++			buildWorksheetFactor(factor, result?.factors ?? [], labels),
+ 		),
+ 	}
+ }
+@@ -241,7 +241,7 @@ export function worksheetStep(
+ }
+ 
+ /**
+- * Build the ordered {@link Step} rows for a resolved {@link Worksheet}.
++ * Builds the ordered {@link Step} rows for a resolved {@link Worksheet}.
+  *
+  * @param definition - The authored quantitative definition
+  * @param result - The evaluated quantitative result
+@@ -250,13 +250,13 @@ export function worksheetStep(
+  *
+  * @example
+  * ```ts
+- * import { createQuantitativeReasoner, createReason, factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
+- * import { worksheetGroup, worksheetSteps } from '@orkestrel/rater'
++ * import { createFactorGroup, createQuantitativeDefinition, createQuantitativeReasoner, createReason, createStaticFactor } from '@orkestrel/reason'
++ * import { buildWorksheetGroup, worksheetSteps } from '@orkestrel/rater'
+  *
+- * const definition = quantitativeDefinition('base', 'Base', [factorGroup('g', 'sum', [staticFactor('flat', 100)])])
++ * const definition = createQuantitativeDefinition('base', 'Base', [createFactorGroup('g', 'sum', [createStaticFactor('flat', 100)])])
+  * const result = createReason({ reasoners: [createQuantitativeReasoner()] }).reason({}, definition)
+  * if (result.reasoning === 'quantitative') {
+- * 	worksheetSteps(definition, result, definition.groups.map((group) => worksheetGroup(group, result.groups)))
++ * 	worksheetSteps(definition, result, definition.groups.map((group) => buildWorksheetGroup(group, result.groups)))
+  * }
+  * ```
+  */
+@@ -297,7 +297,7 @@ export function worksheetSteps(
+ }
+ 
+ /**
+- * Join a {@link QuantitativeDefinition} and its {@link QuantitativeResult} into
++ * Joins a {@link QuantitativeDefinition} and its {@link QuantitativeResult} into
+  * a {@link Worksheet} — the rating audit trail.
+  *
+  * @param definition - The authored quantitative definition
+@@ -307,20 +307,20 @@ export function worksheetSteps(
+  *
+  * @example
+  * ```ts
+- * import { createQuantitativeReasoner, createReason, factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
+- * import { resultsWorksheet } from '@orkestrel/rater'
++ * import { createFactorGroup, createQuantitativeDefinition, createQuantitativeReasoner, createReason, createStaticFactor } from '@orkestrel/reason'
++ * import { buildWorksheet } from '@orkestrel/rater'
+  *
+- * const definition = quantitativeDefinition('base', 'Base', [factorGroup('g', 'sum', [staticFactor('flat', 100)])])
++ * const definition = createQuantitativeDefinition('base', 'Base', [createFactorGroup('g', 'sum', [createStaticFactor('flat', 100)])])
+  * const result = createReason({ reasoners: [createQuantitativeReasoner()] }).reason({}, definition)
+- * if (result.reasoning === 'quantitative') resultsWorksheet(definition, result) // the full audit trail
++ * if (result.reasoning === 'quantitative') buildWorksheet(definition, result) // the full audit trail
+  * ```
+  */
+-export function resultsWorksheet(
++export function buildWorksheet(
+ 	definition: QuantitativeDefinition,
+ 	result: QuantitativeResult,
+ 	labels?: Readonly<Record<string, string>>,
+ ): Worksheet {
+-	const groups = definition.groups.map((group) => worksheetGroup(group, result.groups, labels))
++	const groups = definition.groups.map((group) => buildWorksheetGroup(group, result.groups, labels))
+ 	return {
+ 		id: definition.id,
+ 		name: definition.name,
+@@ -336,7 +336,7 @@ export function resultsWorksheet(
+ }
+ 
+ /**
+- * Build a rated {@link LineResult} from a line's evaluated
++ * Builds a rated {@link LineResult} from a line's evaluated
+  * {@link QuantitativeResult}.
+  *
+  * @param definition - The authored line definition
+@@ -346,15 +346,15 @@ export function resultsWorksheet(
+  *
+  * @example
+  * ```ts
+- * import { createQuantitativeReasoner, createReason, quantitativeDefinition } from '@orkestrel/reason'
+- * import { lineDefinition, ratedLine } from '@orkestrel/rater'
++ * import { createQuantitativeDefinition, createQuantitativeReasoner, createReason } from '@orkestrel/reason'
++ * import { buildLineResult, lineDefinition } from '@orkestrel/rater'
+  *
+- * const line = lineDefinition('base', 'Base', quantitativeDefinition('base', 'Base', []))
++ * const line = lineDefinition('base', 'Base', createQuantitativeDefinition('base', 'Base', []))
+  * const result = createReason({ reasoners: [createQuantitativeReasoner()] }).reason({}, line.rate)
+- * if (result.reasoning === 'quantitative') ratedLine(line, result) // amount present only when success
++ * if (result.reasoning === 'quantitative') buildLineResult(line, result) // amount present only on a successful worksheet
+  * ```
+  */
+-export function ratedLine(
++export function buildLineResult(
+ 	definition: LineDefinition,
+ 	result: QuantitativeResult,
+ 	labels?: Readonly<Record<string, string>>,
+@@ -363,26 +363,25 @@ export function ratedLine(
+ 		id: definition.id,
+ 		name: definition.name,
+ 		...(result.success ? { amount: result.value } : {}),
+-		worksheet: resultsWorksheet(definition.rate, result, labels),
+-		success: result.success,
++		worksheet: buildWorksheet(definition.rate, result, labels),
+ 	}
+ }
+ 
+ /**
+- * Sum defined line amounts.
++ * Sums defined line amounts.
+  *
+  * @param lines - The rated lines
+  * @returns The sum of every line's `amount`, or `undefined` when no line has one
+  *
+  * @example
+  * ```ts
+- * import { createQuantitativeReasoner, createReason, factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
+- * import { lineDefinition, ratedLine, sumAmounts } from '@orkestrel/rater'
++ * import { createFactorGroup, createQuantitativeDefinition, createQuantitativeReasoner, createReason, createStaticFactor } from '@orkestrel/reason'
++ * import { buildLineResult, lineDefinition, sumAmounts } from '@orkestrel/rater'
+  *
+- * const rate = quantitativeDefinition('base', 'Base', [factorGroup('g', 'sum', [staticFactor('flat', 100)])])
++ * const rate = createQuantitativeDefinition('base', 'Base', [createFactorGroup('g', 'sum', [createStaticFactor('flat', 100)])])
+  * const line = lineDefinition('base', 'Base', rate)
+  * const result = createReason({ reasoners: [createQuantitativeReasoner()] }).reason({}, rate)
+- * if (result.reasoning === 'quantitative') sumAmounts([ratedLine(line, result)]) // 100
++ * if (result.reasoning === 'quantitative') sumAmounts([buildLineResult(line, result)]) // 100
+  * ```
+  */
+ export function sumAmounts(lines: readonly LineResult[]): number | undefined {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index d0fc7d2..b5ea759 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -107,14 +107,14 @@ export interface Worksheet {
+  * @remarks
+  * `worksheet` is always present — even a failed evaluation resolves to a
+  * type-shaped failure worksheet, so a `LineResult` is always constructible.
+- * `amount` is present ONLY when `success` is `true`.
++ * The worksheet also carries the line's outcome: `amount` is present ONLY
++ * when `worksheet.success` is `true`.
+  */
+ export interface LineResult {
+ 	readonly id: string
+ 	readonly name: string
+ 	readonly amount?: number
+ 	readonly worksheet: Worksheet
+-	readonly success: boolean
+ }
+ 
+ /**
+@@ -123,7 +123,7 @@ export interface LineResult {
+  * @remarks
+  * `total` is derived by the {@link TotalHandler} (default {@link sumAmounts})
+  * over `lines` — only successfully rated lines carry an `amount`. `success`
+- * is `true` only when every line succeeded.
++ * is `true` only when every line's `worksheet.success` is `true`.
+  */
+ export interface RatingResult {
+ 	readonly lines: readonly LineResult[]
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index ec87ed5..8bed278 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -45,7 +45,7 @@ import {
+ export const isStage: Guard<Stage> = literalOf('factor', 'group', 'total')
+ 
+ /**
+- * Determine whether a value is an exact {@link LineDefinition} record.
++ * Determines whether a value is an exact {@link LineDefinition} record.
+  *
+  * @remarks
+  * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+@@ -56,10 +56,10 @@ export const isStage: Guard<Stage> = literalOf('factor', 'group', 'total')
+  *
+  * @example
+  * ```ts
+- * import { quantitativeDefinition } from '@orkestrel/reason'
++ * import { createQuantitativeDefinition } from '@orkestrel/reason'
+  * import { isLineDefinition } from '@orkestrel/rater'
+  *
+- * isLineDefinition({ id: 'base', name: 'Base', rate: quantitativeDefinition('base', 'Base', []) }) // true
++ * isLineDefinition({ id: 'base', name: 'Base', rate: createQuantitativeDefinition('base', 'Base', []) }) // true
+  * ```
+  */
+ export function isLineDefinition(value: unknown): value is LineDefinition {
+@@ -264,12 +264,13 @@ export function isWorksheet(value: unknown): value is Worksheet {
+ }
+ 
+ /**
+- * Determine whether a value is an open {@link LineResult} object.
++ * Determines whether a value is an open {@link LineResult} object.
+  *
+  * @remarks
+  * Unknown members, prototypes, and class instances are admitted. Arrays are
+  * refused. `amount` may be absent or read as `undefined`; when present it stays
+- * a plain JavaScript `number` without a finite or range refinement.
++ * a plain JavaScript `number` without a finite or range refinement. The line's
++ * outcome lives on `worksheet`, so `worksheet.success` carries it.
+  *
+  * @param value - The value to test
+  * @returns `true` when every published line-result member conforms
+@@ -278,7 +279,7 @@ export function isWorksheet(value: unknown): value is Worksheet {
+  * ```ts
+  * import { isLineResult } from '@orkestrel/rater'
+  *
+- * isLineResult({ id: 'base', name: 'Base', worksheet: { id: 'base', name: 'Base', aggregation: 'sum', value: 0, groups: [], steps: [], trace: [], errors: [], success: false }, success: false }) // true
++ * isLineResult({ id: 'base', name: 'Base', worksheet: { id: 'base', name: 'Base', aggregation: 'sum', value: 0, groups: [], steps: [], trace: [], errors: [], success: false } }) // true
+  * ```
+  */
+ export function isLineResult(value: unknown): value is LineResult {
+@@ -288,7 +289,6 @@ export function isLineResult(value: unknown): value is LineResult {
+ 			name: isString,
+ 			amount: isNumber,
+ 			worksheet: isWorksheet,
+-			success: isBoolean,
+ 		},
+ 		['amount'],
+ 	)(value)
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index e016605..a4db4d6 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -188,11 +188,11 @@ describe('setup — result stubs', () => {
+ 		expect([overridden.value, overridden.success, overridden.id]).toEqual([3, false, 'worksheet'])
+ 	})
+ 
+-	it('derives line-result success from the presence of an amount', () => {
++	it('derives the stub worksheet success from the presence of an amount', () => {
+ 		const rated = createLineResult('rated', 5)
+ 		const unrated = createLineResult('unrated')
+-		expect([rated.amount, rated.success]).toEqual([5, true])
++		expect([rated.amount, rated.worksheet.success]).toEqual([5, true])
+ 		expect('amount' in unrated).toBe(false)
+-		expect(unrated.success).toBe(false)
++		expect(unrated.worksheet.success).toBe(false)
+ 	})
+ })
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 90c6aea..0387d0e 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -16,15 +16,15 @@ import type { LineDefinition, LineResult, TotalHandler, Worksheet } from '@src/c
+ import { createEmitter } from '@orkestrel/emitter'
+ import { isArray, isRecord } from '@orkestrel/contract'
+ import {
+-	check,
++	createCheck,
++	createFactorGroup,
++	createFieldFactor,
+ 	createLogicalReasoner,
++	createLookupFactor,
++	createQuantitativeDefinition,
+ 	createQuantitativeReasoner,
+ 	createReason,
+-	factorGroup,
+-	fieldFactor,
+-	lookupFactor,
+-	quantitativeDefinition,
+-	staticFactor,
++	createStaticFactor,
+ } from '@orkestrel/reason'
+ import { lineDefinition } from '@src/core'
+ 
+@@ -88,8 +88,8 @@ export function createSubject(overrides?: Readonly<Record<string, unknown>>): Su
+ 
+ /** A quantitative definition that always resolves to `value`, regardless of the subject. */
+ export function createStaticRate(id: string, value: number): QuantitativeDefinition {
+-	return quantitativeDefinition(id, id, [
+-		factorGroup('group', 'sum', [staticFactor('value', value)]),
++	return createQuantitativeDefinition(id, id, [
++		createFactorGroup('group', 'sum', [createStaticFactor('value', value)]),
+ 	])
+ }
+ 
+@@ -100,10 +100,13 @@ export function createLine(id: string, value: number): LineDefinition {
+ 
+ /** A quantitative definition rating `base` (100) plus `seats`, with a checked field factor. */
+ export function createQuoteRate(): QuantitativeDefinition {
+-	return quantitativeDefinition('quote', 'Quote', [
+-		factorGroup('charge', 'sum', [
+-			staticFactor('base', 100),
+-			fieldFactor('seats', 'seats', { fallback: 0, checks: [check('seats', 'above', 0)] }),
++	return createQuantitativeDefinition('quote', 'Quote', [
++		createFactorGroup('charge', 'sum', [
++			createStaticFactor('base', 100),
++			createFieldFactor('seats', 'seats', {
++				fallback: 0,
++				checks: [createCheck('seats', 'above', 0)],
++			}),
+ 		]),
+ 	])
+ }
+@@ -113,9 +116,9 @@ export function createLookupFailureLine(id: string): LineDefinition {
+ 	return lineDefinition(
+ 		id,
+ 		id,
+-		quantitativeDefinition(id, id, [
+-			factorGroup('group', 'sum', [
+-				lookupFactor('region', 'region', { east: 10, west: 20 }, { required: true }),
++		createQuantitativeDefinition(id, id, [
++			createFactorGroup('group', 'sum', [
++				createLookupFactor('region', 'region', { east: 10, west: 20 }, { required: true }),
+ 			]),
+ 		]),
+ 	)
+@@ -126,9 +129,12 @@ export function createCheckFailureLine(id: string): LineDefinition {
+ 	return lineDefinition(
+ 		id,
+ 		id,
+-		quantitativeDefinition(id, id, [
+-			factorGroup('group', 'sum', [
+-				staticFactor('flag', 5, { checks: [check('age', 'above', 65)], required: true }),
++		createQuantitativeDefinition(id, id, [
++			createFactorGroup('group', 'sum', [
++				createStaticFactor('flag', 5, {
++					checks: [createCheck('age', 'above', 65)],
++					required: true,
++				}),
+ 			]),
+ 		]),
+ 	)
+@@ -184,13 +190,16 @@ export function createWorksheet(overrides?: Partial<Worksheet>): Worksheet {
+ 	}
+ }
+ 
+-/** A minimal `LineResult` carrying only `amount` — for `sumAmounts` edge cases. */
++/**
++ * A minimal `LineResult` carrying only `amount` — for `sumAmounts` edge cases. Its
++ * worksheet mirrors the real rating path: `worksheet.success` is `true` exactly when
++ * an `amount` is supplied.
++ */
+ export function createLineResult(id: string, amount?: number): LineResult {
+ 	return {
+ 		id,
+ 		name: id,
+ 		...(amount === undefined ? {} : { amount }),
+-		worksheet: createWorksheet(),
+-		success: amount !== undefined,
++		worksheet: createWorksheet({ success: amount !== undefined }),
+ 	}
+ }
+diff --git a/tests/src/core/Rater.test.ts b/tests/src/core/Rater.test.ts
+index f62cb9a..1330cf3 100644
+--- a/tests/src/core/Rater.test.ts
++++ b/tests/src/core/Rater.test.ts
+@@ -2,11 +2,11 @@ import type { LogicalResult, ReasonEventMap } from '@orkestrel/reason'
+ import type { RaterEventMap } from '@src/core'
+ import { isRecord } from '@orkestrel/contract'
+ import {
+-	check,
+-	factorGroup,
+-	fieldFactor,
+-	quantitativeDefinition,
+-	staticFactor,
++	createCheck,
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++	createStaticFactor,
+ } from '@orkestrel/reason'
+ import * as core from '@src/core'
+ import { createRater, isRaterError, lineDefinition, ratingDefinition } from '@src/core'
+@@ -64,7 +64,7 @@ describe('Rater — line selection', () => {
+ })
+ 
+ describe('Rater — result shape', () => {
+-	it('LineResult carries exactly id, name, worksheet, success — amount only on success', () => {
++	it('LineResult carries exactly id, name, worksheet — amount only on a successful worksheet', () => {
+ 		const rater = createRater()
+ 		const result = rater.rate(
+ 			[createLine('ok', 10), createLookupFailureLine('bad')],
+@@ -73,8 +73,8 @@ describe('Rater — result shape', () => {
+ 		const ok = result.lines.find((line) => line.id === 'ok')
+ 		const bad = result.lines.find((line) => line.id === 'bad')
+ 		if (ok === undefined || bad === undefined) throw new Error('expected both line results')
+-		expect(Object.keys(ok)).toEqual(['id', 'name', 'amount', 'worksheet', 'success'])
+-		expect(Object.keys(bad)).toEqual(['id', 'name', 'worksheet', 'success'])
++		expect(Object.keys(ok)).toEqual(['id', 'name', 'amount', 'worksheet'])
++		expect(Object.keys(bad)).toEqual(['id', 'name', 'worksheet'])
+ 		rater.destroy()
+ 	})
+ 
+@@ -171,7 +171,7 @@ describe('Rater — rating failures', () => {
+ 		const result = rater.rate([createLookupFailureLine('line')], createSubject({ region: 'north' }))
+ 		const line = result.lines[0]
+ 		if (line === undefined) throw new Error('expected a line result')
+-		expect(line.success).toBe(false)
++		expect(line.worksheet.success).toBe(false)
+ 		expect(line.amount).toBeUndefined()
+ 		expect(line.worksheet.errors.length).toBeGreaterThan(0)
+ 		expect(result.success).toBe(false)
+@@ -183,7 +183,7 @@ describe('Rater — rating failures', () => {
+ 		const result = rater.rate([createCheckFailureLine('line')], createSubject({ age: 25 }))
+ 		const line = result.lines[0]
+ 		if (line === undefined) throw new Error('expected a line result')
+-		expect(line.success).toBe(false)
++		expect(line.worksheet.success).toBe(false)
+ 		expect(line.amount).toBeUndefined()
+ 		expect(line.worksheet.errors.length).toBeGreaterThan(0)
+ 		expect(result.success).toBe(false)
+@@ -349,9 +349,9 @@ describe('Rater — labels', () => {
+ 		const line = lineDefinition(
+ 			'line',
+ 			'Line',
+-			quantitativeDefinition('quote', 'Quote', [
+-				factorGroup('group', 'sum', [
+-					staticFactor('flag', 10, { checks: [check('age', 'above', 18)] }),
++			createQuantitativeDefinition('quote', 'Quote', [
++				createFactorGroup('group', 'sum', [
++					createStaticFactor('flag', 10, { checks: [createCheck('age', 'above', 18)] }),
+ 				]),
+ 			]),
+ 		)
+@@ -379,7 +379,7 @@ describe('Rater — defensive engine contract', () => {
+ 		const result = rater.rate([createLine('a', 10)], createSubject())
+ 		const line = result.lines[0]
+ 		if (line === undefined) throw new Error('expected a line result')
+-		expect(line.success).toBe(false)
++		expect(line.worksheet.success).toBe(false)
+ 		expect(Object.hasOwn(line, 'amount')).toBe(false)
+ 		expect(line.worksheet.errors).toContain('e')
+ 		expect(
+@@ -398,7 +398,7 @@ describe('Rater — defensive engine contract', () => {
+ 		const result = rater.rate([createLine('a', 10)], createSubject())
+ 		const line = result.lines[0]
+ 		if (line === undefined) throw new Error('expected a line result')
+-		expect(line.success).toBe(false)
++		expect(line.worksheet.success).toBe(false)
+ 		expect(Object.hasOwn(line, 'amount')).toBe(false)
+ 		expect(
+ 			line.worksheet.errors.some((message) => message.includes('Expected quantitative result')),
+@@ -414,10 +414,10 @@ describe('Rater — finite guarantees', () => {
+ 		const line = lineDefinition(
+ 			'line',
+ 			'Line',
+-			quantitativeDefinition('line', 'Line', [
+-				factorGroup('g', 'sum', [
+-					staticFactor('a', Number.MAX_VALUE),
+-					staticFactor('b', Number.MAX_VALUE),
++			createQuantitativeDefinition('line', 'Line', [
++				createFactorGroup('g', 'sum', [
++					createStaticFactor('a', Number.MAX_VALUE),
++					createStaticFactor('b', Number.MAX_VALUE),
+ 				]),
+ 			]),
+ 		)
+@@ -425,7 +425,7 @@ describe('Rater — finite guarantees', () => {
+ 		const result = rater.rate([line], createSubject())
+ 		const lineResult = result.lines[0]
+ 		if (lineResult === undefined) throw new Error('expected a line result')
+-		expect(lineResult.success).toBe(false)
++		expect(lineResult.worksheet.success).toBe(false)
+ 		expect(Object.hasOwn(lineResult, 'amount')).toBe(false)
+ 		expect(lineResult.worksheet.value).toBe(Number.POSITIVE_INFINITY)
+ 		rater.destroy()
+@@ -435,7 +435,7 @@ describe('Rater — finite guarantees', () => {
+ 		const line = lineDefinition(
+ 			'line',
+ 			'Line',
+-			quantitativeDefinition('line', 'Line', [factorGroup('g', 'sum', [])], {
++			createQuantitativeDefinition('line', 'Line', [createFactorGroup('g', 'sum', [])], {
+ 				aggregation: 'minimum',
+ 			}),
+ 		)
+@@ -444,7 +444,7 @@ describe('Rater — finite guarantees', () => {
+ 		const lineResult = result.lines[0]
+ 		if (lineResult === undefined) throw new Error('expected a line result')
+ 		expect(Number.isNaN(lineResult.worksheet.value)).toBe(true)
+-		expect(lineResult.success).toBe(false)
++		expect(lineResult.worksheet.success).toBe(false)
+ 		expect(Object.hasOwn(lineResult, 'amount')).toBe(false)
+ 		expect(
+ 			lineResult.worksheet.errors.some((message) => message.toLowerCase().includes('nan')),
+@@ -460,20 +460,20 @@ describe('Rater — finite guarantees', () => {
+ 			lineDefinition(
+ 				'a',
+ 				'A',
+-				quantitativeDefinition(
++				createQuantitativeDefinition(
+ 					'a',
+ 					'A',
+-					[factorGroup('g', 'sum', [staticFactor('a', Number.MAX_VALUE)])],
++					[createFactorGroup('g', 'sum', [createStaticFactor('a', Number.MAX_VALUE)])],
+ 					{ precision: 0 },
+ 				),
+ 			),
+ 			lineDefinition(
+ 				'b',
+ 				'B',
+-				quantitativeDefinition(
++				createQuantitativeDefinition(
+ 					'b',
+ 					'B',
+-					[factorGroup('g', 'sum', [staticFactor('b', Number.MAX_VALUE)])],
++					[createFactorGroup('g', 'sum', [createStaticFactor('b', Number.MAX_VALUE)])],
+ 					{ precision: 0 },
+ 				),
+ 			),
+@@ -481,7 +481,7 @@ describe('Rater — finite guarantees', () => {
+ 		const rater = createRater()
+ 		const result = rater.rate(lines, createSubject())
+ 		for (const lineResult of result.lines) {
+-			expect(lineResult.success).toBe(true)
++			expect(lineResult.worksheet.success).toBe(true)
+ 			expect(lineResult.amount).toBe(Number.MAX_VALUE)
+ 		}
+ 		expect(result.success).toBe(true)
+@@ -538,8 +538,8 @@ describe('Rater — hostile subject', () => {
+ 		const line = lineDefinition(
+ 			'line',
+ 			'Line',
+-			quantitativeDefinition('line', 'Line', [
+-				factorGroup('g', 'sum', [fieldFactor('amount', 'amount')]),
++			createQuantitativeDefinition('line', 'Line', [
++				createFactorGroup('g', 'sum', [createFieldFactor('amount', 'amount')]),
+ 			]),
+ 		)
+ 		const rater = createRater()
+@@ -552,13 +552,13 @@ describe('Rater — hostile subject', () => {
+ })
+ 
+ describe('Rater — aggregation edges', () => {
+-	it('an empty-groups definition rates to amount 0, success true', () => {
+-		const line = lineDefinition('line', 'Line', quantitativeDefinition('line', 'Line', []))
++	it('an empty-groups definition rates to amount 0 on a successful worksheet', () => {
++		const line = lineDefinition('line', 'Line', createQuantitativeDefinition('line', 'Line', []))
+ 		const rater = createRater()
+ 		const result = rater.rate([line], createSubject())
+ 		const lineResult = result.lines[0]
+ 		if (lineResult === undefined) throw new Error('expected a line result')
+-		expect(lineResult.success).toBe(true)
++		expect(lineResult.worksheet.success).toBe(true)
+ 		expect(lineResult.amount).toBe(0)
+ 		expect(result.total).toBe(0)
+ 		rater.destroy()
+@@ -568,10 +568,10 @@ describe('Rater — aggregation edges', () => {
+ 		const line = lineDefinition(
+ 			'line',
+ 			'Line',
+-			quantitativeDefinition('line', 'Line', [
+-				factorGroup('g', 'average', [
+-					staticFactor('a', 5, { weight: 0 }),
+-					staticFactor('b', 10, { weight: 0 }),
++			createQuantitativeDefinition('line', 'Line', [
++				createFactorGroup('g', 'average', [
++					createStaticFactor('a', 5, { weight: 0 }),
++					createStaticFactor('b', 10, { weight: 0 }),
+ 				]),
+ 			]),
+ 		)
+@@ -581,7 +581,7 @@ describe('Rater — aggregation edges', () => {
+ 		if (lineResult === undefined) throw new Error('expected a line result')
+ 		expect(lineResult.worksheet.groups[0]?.value).toBe(0)
+ 		expect(lineResult.amount).toBe(0)
+-		expect(lineResult.success).toBe(true)
++		expect(lineResult.worksheet.success).toBe(true)
+ 		rater.destroy()
+ 	})
+ })
+@@ -618,10 +618,15 @@ describe('Rater — precision', () => {
+ 		const line = lineDefinition(
+ 			'line',
+ 			'Line',
+-			quantitativeDefinition(
++			createQuantitativeDefinition(
+ 				'line',
+ 				'Line',
+-				[factorGroup('g', 'sum', [staticFactor('a', 0.1), staticFactor('b', 0.2)])],
++				[
++					createFactorGroup('g', 'sum', [
++						createStaticFactor('a', 0.1),
++						createStaticFactor('b', 0.2),
++					]),
++				],
+ 				{ precision: 2 },
+ 			),
+ 		)
+@@ -638,10 +643,15 @@ describe('Rater — precision', () => {
+ 		const line = lineDefinition(
+ 			'line',
+ 			'Line',
+-			quantitativeDefinition(
++			createQuantitativeDefinition(
+ 				'line',
+ 				'Line',
+-				[factorGroup('g', 'sum', [staticFactor('a', 0.1), staticFactor('b', 0.2)])],
++				[
++					createFactorGroup('g', 'sum', [
++						createStaticFactor('a', 0.1),
++						createStaticFactor('b', 0.2),
++					]),
++				],
+ 				{ precision: 2 },
+ 			),
+ 		)
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 4f4d2eb..6e01516 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,16 +1,21 @@
+-import { check, factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
+ import {
+-	checkEvidence,
+-	evidenceCheck,
++	createCheck,
++	createFactorGroup,
++	createQuantitativeDefinition,
++	createStaticFactor,
++} from '@orkestrel/reason'
++import {
++	buildEvidence,
++	buildEvidenceRows,
++	buildLineResult,
++	buildWorksheet,
++	buildWorksheetFactor,
++	buildWorksheetGroup,
+ 	isLineDefinition,
+ 	isRatingDefinition,
+ 	lineDefinition,
+-	ratedLine,
+ 	ratingDefinition,
+-	resultsWorksheet,
+ 	sumAmounts,
+-	worksheetFactor,
+-	worksheetGroup,
+ 	worksheetStep,
+ 	worksheetSteps,
+ } from '@src/core'
+@@ -25,22 +30,22 @@ import {
+ 	createSubject,
+ } from '../../setup.js'
+ 
+-describe('helpers — evidenceCheck and checkEvidence', () => {
++describe('helpers — buildEvidence and buildEvidenceRows', () => {
+ 	it('builds one evidence row from a check, applying a label when provided', () => {
+-		const entry = check('age', 'above', 18)
+-		expect(evidenceCheck(entry, 25, true)).toEqual({
++		const entry = createCheck('age', 'above', 18)
++		expect(buildEvidence(entry, 25, true)).toEqual({
+ 			field: 'age',
+ 			comparison: 'above',
+ 			expected: 18,
+ 			actual: 25,
+ 			met: true,
+ 		})
+-		expect(evidenceCheck(entry, 25, true, { age: 'Age' }).label).toBe('Age')
++		expect(buildEvidence(entry, 25, true, { age: 'Age' }).label).toBe('Age')
+ 	})
+ 
+ 	it('omits met when undefined and label when unmapped', () => {
+-		const entry = check('age', 'above', 18)
+-		const evidence = evidenceCheck(entry, undefined, undefined)
++		const entry = createCheck('age', 'above', 18)
++		const evidence = buildEvidence(entry, undefined, undefined)
+ 		expect(evidence).toEqual({
+ 			field: 'age',
+ 			comparison: 'above',
+@@ -52,16 +57,16 @@ describe('helpers — evidenceCheck and checkEvidence', () => {
+ 	})
+ 
+ 	it('joins checks and results by index, tolerating a shorter results list', () => {
+-		const checks = [check('age', 'above', 18), check('state', 'equals', 'CA')]
++		const checks = [createCheck('age', 'above', 18), createCheck('state', 'equals', 'CA')]
+ 		const results = [{ field: 'age', met: true, actual: 25 }]
+-		const evidence = checkEvidence(checks, results)
++		const evidence = buildEvidenceRows(checks, results)
+ 		expect(evidence).toHaveLength(2)
+ 		expect(evidence[0]?.met).toBe(true)
+ 		expect(evidence[1]?.met).toBeUndefined()
+ 	})
+ 
+ 	it('returns an empty list for absent checks', () => {
+-		expect(checkEvidence(undefined, undefined)).toEqual([])
++		expect(buildEvidenceRows(undefined, undefined)).toEqual([])
+ 	})
+ })
+ 
+@@ -75,12 +80,12 @@ describe('helpers — worksheet joins', () => {
+ 		if (group === undefined) throw new Error('expected a group')
+ 		const factor = group.factors[1]
+ 		if (factor === undefined) throw new Error('expected a factor')
+-		expect(worksheetFactor(factor, result.groups[0]?.factors ?? [])).toMatchObject({
++		expect(buildWorksheetFactor(factor, result.groups[0]?.factors ?? [])).toMatchObject({
+ 			id: 'seats',
+ 			applied: true,
+ 			value: 10,
+ 		})
+-		expect(worksheetGroup(group, result.groups)).toMatchObject({
++		expect(buildWorksheetGroup(group, result.groups)).toMatchObject({
+ 			id: 'charge',
+ 			applied: true,
+ 			value: 110,
+@@ -96,14 +101,14 @@ describe('helpers — worksheet joins', () => {
+ 		const group = definition.groups[0]
+ 		const factor = group?.factors[1]
+ 		if (factor === undefined) throw new Error('expected a factor')
+-		const joined = worksheetFactor(factor, result.groups[0]?.factors ?? [], { seats: 'Seats' })
++		const joined = buildWorksheetFactor(factor, result.groups[0]?.factors ?? [], { seats: 'Seats' })
+ 		expect(joined.evidence[0]?.label).toBe('Seats')
+ 		engine.destroy()
+ 	})
+ 
+ 	it('defaults a group with no matching result', () => {
+-		const group = factorGroup('empty', 'sum', [])
+-		const joined = worksheetGroup(group, [])
++		const group = createFactorGroup('empty', 'sum', [])
++		const joined = buildWorksheetGroup(group, [])
+ 		expect(joined.applied).toBe(false)
+ 		expect(joined.value).toBe(0)
+ 		expect(joined.factors).toEqual([])
+@@ -114,7 +119,7 @@ describe('helpers — worksheet joins', () => {
+ 		const group = definition.groups[0]
+ 		const factor = group?.factors[1]
+ 		if (factor === undefined) throw new Error('expected a factor')
+-		const joined = worksheetFactor(factor, [])
++		const joined = buildWorksheetFactor(factor, [])
+ 		expect(joined.applied).toBe(false)
+ 		expect('value' in joined).toBe(false)
+ 		expect(joined.evidence).toHaveLength(1)
+@@ -138,7 +143,7 @@ describe('helpers — worksheetStep and worksheetSteps', () => {
+ 		const definition = createQuoteRate()
+ 		const result = engine.reason(createSubject({ seats: 10 }), definition)
+ 		if (result.reasoning !== 'quantitative') throw new Error('expected a quantitative result')
+-		const groups = definition.groups.map((group) => worksheetGroup(group, result.groups))
++		const groups = definition.groups.map((group) => buildWorksheetGroup(group, result.groups))
+ 		const steps = worksheetSteps(definition, result, groups)
+ 		expect(steps.map((step) => step.stage)).toEqual(['factor', 'factor', 'group', 'total'])
+ 		expect(steps.at(-1)).toMatchObject({ stage: 'total', value: 110 })
+@@ -146,10 +151,13 @@ describe('helpers — worksheetStep and worksheetSteps', () => {
+ 	})
+ 
+ 	it('emits factor rows only for applied, valued factors', () => {
+-		const definition = quantitativeDefinition('quote', 'Quote', [
+-			factorGroup('charge', 'sum', [staticFactor('base', 100)]),
++		const definition = createQuantitativeDefinition('quote', 'Quote', [
++			createFactorGroup('charge', 'sum', [createStaticFactor('base', 100)]),
+ 		])
+-		const group = worksheetGroup(definition.groups[0] ?? factorGroup('charge', 'sum', []), [])
++		const group = buildWorksheetGroup(
++			definition.groups[0] ?? createFactorGroup('charge', 'sum', []),
++			[],
++		)
+ 		const result = {
+ 			reasoning: 'quantitative' as const,
+ 			value: 0,
+@@ -165,13 +173,13 @@ describe('helpers — worksheetStep and worksheetSteps', () => {
+ 	})
+ })
+ 
+-describe('helpers — resultsWorksheet', () => {
++describe('helpers — buildWorksheet', () => {
+ 	it('joins a definition and its result into the full audit trail, passing through trace/errors/success', () => {
+ 		const engine = createEngine()
+ 		const definition = createQuoteRate()
+ 		const result = engine.reason(createSubject({ seats: 10 }), definition)
+ 		if (result.reasoning !== 'quantitative') throw new Error('expected a quantitative result')
+-		const worksheet = resultsWorksheet(definition, result)
++		const worksheet = buildWorksheet(definition, result)
+ 		expect(worksheet.id).toBe('quote')
+ 		expect(worksheet.value).toBe(110)
+ 		expect(worksheet.groups).toHaveLength(1)
+@@ -183,35 +191,35 @@ describe('helpers — resultsWorksheet', () => {
+ 
+ 	it('surfaces precision only when the definition sets it', () => {
+ 		const engine = createEngine()
+-		const withPrecision = quantitativeDefinition(
++		const withPrecision = createQuantitativeDefinition(
+ 			'quote',
+ 			'Quote',
+-			[factorGroup('charge', 'sum', [staticFactor('base', 100)])],
++			[createFactorGroup('charge', 'sum', [createStaticFactor('base', 100)])],
+ 			{ precision: 2 },
+ 		)
+-		const withoutPrecision = quantitativeDefinition('quote', 'Quote', [
+-			factorGroup('charge', 'sum', [staticFactor('base', 100)]),
++		const withoutPrecision = createQuantitativeDefinition('quote', 'Quote', [
++			createFactorGroup('charge', 'sum', [createStaticFactor('base', 100)]),
+ 		])
+ 		const withResult = engine.reason(createSubject(), withPrecision)
+ 		const withoutResult = engine.reason(createSubject(), withoutPrecision)
+ 		if (withResult.reasoning !== 'quantitative') throw new Error('expected a quantitative result')
+ 		if (withoutResult.reasoning !== 'quantitative')
+ 			throw new Error('expected a quantitative result')
+-		expect('precision' in resultsWorksheet(withPrecision, withResult)).toBe(true)
+-		expect('precision' in resultsWorksheet(withoutPrecision, withoutResult)).toBe(false)
++		expect('precision' in buildWorksheet(withPrecision, withResult)).toBe(true)
++		expect('precision' in buildWorksheet(withoutPrecision, withoutResult)).toBe(false)
+ 		engine.destroy()
+ 	})
+ })
+ 
+-describe('helpers — ratedLine', () => {
++describe('helpers — buildLineResult', () => {
+ 	it('carries an amount only when the evaluation succeeds', () => {
+ 		const engine = createEngine()
+ 		const definition = createQuoteRate()
+ 		const line = lineDefinition('line', 'Line', definition)
+ 		const result = engine.reason(createSubject({ seats: 10 }), definition)
+ 		if (result.reasoning !== 'quantitative') throw new Error('expected a quantitative result')
+-		const rated = ratedLine(line, result)
+-		expect(rated).toMatchObject({ id: 'line', name: 'Line', amount: 110, success: true })
++		const rated = buildLineResult(line, result)
++		expect(rated).toMatchObject({ id: 'line', name: 'Line', amount: 110 })
+ 		expect(rated.worksheet.success).toBe(true)
+ 		engine.destroy()
+ 	})
+@@ -221,8 +229,8 @@ describe('helpers — ratedLine', () => {
+ 		const line = createLookupFailureLine('line')
+ 		const result = engine.reason(createSubject({ region: 'north' }), line.rate)
+ 		if (result.reasoning !== 'quantitative') throw new Error('expected a quantitative result')
+-		const rated = ratedLine(line, result)
+-		expect(rated.success).toBe(false)
++		const rated = buildLineResult(line, result)
++		expect(rated.worksheet.success).toBe(false)
+ 		expect('amount' in rated).toBe(false)
+ 		engine.destroy()
+ 	})
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index 655abc7..7f56f4d 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -1,4 +1,4 @@
+-import { logicalDefinition } from '@orkestrel/reason'
++import { createLogicalDefinition } from '@orkestrel/reason'
+ import { createHostileValues } from '@orkestrel/test'
+ import {
+ 	createRater,
+@@ -80,7 +80,7 @@ describe('validators — isLineDefinition', () => {
+ 	it('rejects wrong-typed fields', () => {
+ 		expect(isLineDefinition({ id: 1, name: 'Line', rate })).toBe(false)
+ 		expect(
+-			isLineDefinition({ id: 'line', name: 'Line', rate: logicalDefinition('l', 'L', []) }),
++			isLineDefinition({ id: 'line', name: 'Line', rate: createLogicalDefinition('l', 'L', []) }),
+ 		).toBe(false)
+ 		expect(isLineDefinition({ id: 'line', name: 'Line', rate, description: 5 })).toBe(false)
+ 	})
+@@ -555,7 +555,7 @@ describe('validators — isLineResult', () => {
+ 		errors: [],
+ 		success: true,
+ 	}
+-	const line = { id: 'quote', name: 'Quote', worksheet, success: true }
++	const line = { id: 'quote', name: 'Quote', worksheet }
+ 
+ 	it('admits unknown members and prototypes and keeps amount as a plain number', () => {
+ 		const candidate = Object.assign(Object.create(null), line, {
+@@ -582,10 +582,6 @@ describe('validators — isLineResult', () => {
+ 			get worksheet(): unknown {
+ 				return worksheet
+ 			}
+-
+-			get success(): boolean {
+-				return true
+-			}
+ 		})()
+ 		expect(isLineResult(candidate)).toBe(true)
+ 	})
+@@ -600,7 +596,6 @@ describe('validators — isLineResult', () => {
+ 		expect(isLineResult({ ...line, name: 1 })).toBe(false)
+ 		expect(isLineResult({ ...line, amount: '110' })).toBe(false)
+ 		expect(isLineResult({ ...line, worksheet: {} })).toBe(false)
+-		expect(isLineResult({ ...line, success: 'yes' })).toBe(false)
+ 	})
+ 
+ 	it('refuses every hostile value without throwing', () => {
+@@ -647,10 +642,6 @@ describe('validators — isRatingResult closure', () => {
+ 								success: true,
+ 							}
+ 						}
+-
+-						get success(): boolean {
+-							return true
+-						}
+ 					})(),
+ 				]
+ 			}

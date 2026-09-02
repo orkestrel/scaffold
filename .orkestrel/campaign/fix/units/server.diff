@@ -1,0 +1,1677 @@
+diff --git a/README.md b/README.md
+index d73502c..84d10d4 100644
+--- a/README.md
++++ b/README.md
+@@ -58,7 +58,7 @@ composed onion terminates in the dispatcher, so there is no second plumbing
+ layer between the middleware seam and the router. The package also exports
+ `HTTPError` and its subclasses, the `compose` middleware primitive,
+ cookie/token/body helpers, `Negotiator` for content negotiation, and
+-`openStream` for Server-Sent Events.
++`createStream` for Server-Sent Events.
+ 
+ ## Guide
+ 
+diff --git a/guides/server.md b/guides/server.md
+index 264f2d2..0a70b19 100644
+--- a/guides/server.md
++++ b/guides/server.md
+@@ -61,6 +61,7 @@ Cross-face and substrate usage appear under [Patterns](#patterns).
+ | ------------------ | -------- | ------------------------------------------------------------------------- |
+ | `createNegotiator` | function | Create a `NegotiatorInterface` — the content-negotiation machine.         |
+ | `createServer`     | function | Create a `ServerInterface<TState>` over a consumed `DispatcherInterface`. |
++| `createStream`     | function | Create a `StreamInterface` — an open Server-Sent-Events stream.           |
+ 
+ ### Constants
+ 
+@@ -69,7 +70,7 @@ Cross-face and substrate usage appear under [Patterns](#patterns).
+ | `DEFAULT_DRAIN_MS`           | const | Default graceful-stop deadline (ms) `stop()` gives in-flight requests and claimed upgraded sockets.                                            |
+ | `DEFAULT_BODY_LIMIT`         | const | Default maximum request body size (bytes) `readBody` accepts before a 413.                                                                     |
+ | `DEFAULT_DECOMPRESSED_LIMIT` | const | Default maximum DECOMPRESSED body size (bytes) — the zip-bomb cap.                                                                             |
+-| `SSE_HEADERS`                | const | The response headers `openStream` always sets for an SSE stream.                                                                               |
++| `SSE_HEADERS`                | const | The response headers a `Stream` always sets on its SSE response.                                                                               |
+ | `REQUEST_ID_PATTERN`         | const | The strict charset `isValidRequestId` requires an `X-Request-ID` to match.                                                                     |
+ | `COMPRESSIBLE_TYPES`         | const | The bare `Content-Type`s `isCompressibleType` treats as compressible.                                                                          |
+ | `HTTP_ERROR_BRAND`           | const | The `Symbol.for`-interned brand `HTTPError` carries so `isHTTPError` recognizes an instance across package copies. Not a field to set by hand. |
+@@ -77,53 +78,52 @@ Cross-face and substrate usage appear under [Patterns](#patterns).
+ 
+ ### Helpers
+ 
+-| API                     | Kind     | Summary                                                                                                                                     |
+-| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `compose`               | function | Compose an ordered middleware chain around a `terminal` handler (the frozen seam).                                                          |
+-| `wrapMiddleware`        | function | Wrap one middleware layer around its downstream handler while enforcing the one-call `next` invariant.                                      |
+-| `parseCookies`          | function | Parse a raw `Cookie:` header into a `name → value` lookup.                                                                                  |
+-| `isCookieName`          | function | Whether a string is a valid RFC 6265 cookie name (no whitespace).                                                                           |
+-| `decodeCookieValue`     | function | Decode a cookie value, falling back to raw text on malformed escapes.                                                                       |
+-| `isCookieAttribute`     | function | Whether a string is safe to interpolate as a `Domain`/`Path` attribute value.                                                               |
+-| `serializeCookie`       | function | Serialize a cookie into a `Set-Cookie` header value with its attributes.                                                                    |
+-| `resolveSecure`         | function | Resolve a cookie's effective `Secure` flag from its setting + the TLS fact.                                                                 |
+-| `appendCookie`          | function | Append a `Set-Cookie` header onto `Headers` without clobbering a prior one.                                                                 |
+-| `writeSignedCookie`     | function | Write a SIGNED cookie (`signToken` + `Set-Cookie`).                                                                                         |
+-| `readSignedCookie`      | function | Read + verify a SIGNED cookie off a request — total, returns `undefined` on any failure.                                                    |
+-| `clearCookie`           | function | Clear a cookie via an immediately-expiring `Set-Cookie`.                                                                                    |
+-| `signToken`             | function | Sign a value into a stateless, HMAC-SHA256 token.                                                                                           |
+-| `verifyToken`           | function | Verify a stateless token and return its embedded value — total, never throws.                                                               |
+-| `decodeTokenPayload`    | function | Decode + narrow a signed token's payload, honoring its expiry.                                                                              |
+-| `normalizeSecret`       | function | Normalize a `TokenSecret` to a concrete list of usable secrets.                                                                             |
+-| `parseAcceptHeader`     | function | Parse a weighted `Accept`-family header into its q-sorted entries.                                                                          |
+-| `codingQuality`         | function | The client's quality for one content-coding from parsed `Accept-Encoding` entries.                                                          |
+-| `negotiateEncoding`     | function | Select the best content-coding for an `Accept-Encoding` header.                                                                             |
+-| `matchMediaType`        | function | Rank + quality of one candidate media type against parsed `Accept` entries.                                                                 |
+-| `languageQuality`       | function | The client's quality for one candidate language from parsed `Accept-Language` entries.                                                      |
+-| `isCompressibleType`    | function | Whether a `Content-Type` is worth compressing.                                                                                              |
+-| `computeBodyETag`       | function | Compute a content `ETag` over a fully-buffered response body via WebCrypto.                                                                 |
+-| `unwrapETag`            | function | Strip the weak indicator (`W/`) from an entity-tag.                                                                                         |
+-| `matchesETag`           | function | Whether a request's `If-None-Match` matches a resource's current `ETag` (RFC 7232 weak comparison).                                         |
+-| `parseRange`            | function | Parse an HTTP `Range` header against a known resource size — total.                                                                         |
+-| `resolveOrigin`         | function | Resolve the `Access-Control-Allow-Origin` value for a request.                                                                              |
+-| `mergeVary`             | function | Merge a `Vary` value into an existing `Vary` header without duplication.                                                                    |
+-| `resolveSecurityHeader` | function | Resolve one opt-out, value-bearing security header.                                                                                         |
+-| `isValidRequestId`      | function | Whether a client-supplied `X-Request-ID` is safe to echo back.                                                                              |
+-| `ipv6Network`           | function | Compute the `/64` network of a full IPv6 address, or `undefined`.                                                                           |
+-| `clientRateKey`         | function | Collapse a client IP into its rate-limit bucket key (IPv6 `/64`, IPv4 unchanged).                                                           |
+-| `serializeEvent`        | function | Serialize one `SSEMessage` to the SSE wire.                                                                                                 |
+-| `enqueueStreamText`     | function | Enqueue encoded text into an open byte stream, safely ignoring closed or unstarted streams.                                                 |
+-| `openStream`            | function | Open a generic Server-Sent-Events stream whose producer can observe and await process-local queue backpressure.                             |
+-| `isDangerousKey`        | function | Whether a key is a prototype-pollution vector (`__proto__`/`constructor`/`prototype`).                                                      |
+-| `scrubPrototype`        | function | Recursively strip prototype-pollution keys from a parsed value in place.                                                                    |
+-| `collectRequestBody`    | function | Collect a `Request` body into one `Uint8Array`, enforcing a size limit.                                                                     |
+-| `requestEncoding`       | function | Narrow a raw `Content-Encoding` header to a decompressible `Encoding`.                                                                      |
+-| `decompressRequestBody` | function | Transparently decompress a collected body, capping decompressed output (the zip-bomb defense).                                              |
+-| `readBody`              | function | Collect + decode a `Request` body — the pipeline behind `context.body()`.                                                                   |
+-| `isHTTPError`           | function | Narrow an unknown caught value to an `HTTPError` (including subclasses) — recognized across package copies via a structural brand fallback. |
+-| `isAddressInfo`         | function | Whether a `node:net` address is the structured `AddressInfo` shape.                                                                         |
+-| `probePort`             | function | Bind and close one throwaway TCP server to resolve an available port.                                                                       |
+-| `discoverPort`          | function | Find a free TCP port — try a `preferred` one first, else an ephemeral port.                                                                 |
++| API                      | Kind     | Summary                                                                                                                                     |
++| ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
++| `compose`                | function | Compose an ordered middleware chain around a `terminal` handler (the frozen seam).                                                          |
++| `wrapMiddleware`         | function | Wrap one middleware layer around its downstream handler while enforcing the one-call `next` invariant.                                      |
++| `parseCookies`           | function | Parse a raw `Cookie:` header into a `name → value` lookup.                                                                                  |
++| `isCookieName`           | function | Whether a string is a valid RFC 6265 cookie name (no whitespace).                                                                           |
++| `decodeCookieValue`      | function | Decode a cookie value, falling back to raw text on malformed escapes.                                                                       |
++| `isCookieAttribute`      | function | Whether a string is safe to interpolate as a `Domain`/`Path` attribute value.                                                               |
++| `serializeCookie`        | function | Serialize a cookie into a `Set-Cookie` header value with its attributes.                                                                    |
++| `resolveSecure`          | function | Resolve a cookie's effective `Secure` flag from its setting + the TLS fact.                                                                 |
++| `writeSignedCookie`      | function | Write a SIGNED cookie (`signToken` + `Set-Cookie`).                                                                                         |
++| `readSignedCookie`       | function | Read + verify a SIGNED cookie off a request — total, returns `undefined` on any failure.                                                    |
++| `clearCookie`            | function | Clear a cookie via an immediately-expiring `Set-Cookie`.                                                                                    |
++| `signToken`              | function | Sign a value into a stateless, HMAC-SHA256 token.                                                                                           |
++| `verifyToken`            | function | Verify a stateless token and return its embedded value — total, never throws.                                                               |
++| `decodeTokenPayload`     | function | Decode + narrow a signed token's payload, honoring its expiry.                                                                              |
++| `normalizeSecret`        | function | Normalize a `TokenSecret` to a concrete list of usable secrets.                                                                             |
++| `parseAcceptHeader`      | function | Parse a weighted `Accept`-family header into its q-sorted entries.                                                                          |
++| `computeCodingQuality`   | function | The client's quality for one content-coding from parsed `Accept-Encoding` entries.                                                          |
++| `pickCoding`             | function | Pick the highest-scoring offered coding from parsed entries — the leaf both encoding doors run.                                             |
++| `negotiateEncoding`      | function | Select the best content-coding for a raw `Accept-Encoding` header.                                                                          |
++| `matchMediaType`         | function | Rank + quality of one candidate media type against parsed `Accept` entries.                                                                 |
++| `computeLanguageQuality` | function | The client's quality for one candidate language from parsed `Accept-Language` entries.                                                      |
++| `isCompressibleType`     | function | Whether a `Content-Type` is worth compressing.                                                                                              |
++| `computeBodyETag`        | function | Compute a content `ETag` over a fully-buffered response body via WebCrypto.                                                                 |
++| `unwrapETag`             | function | Strip the weak indicator (`W/`) from an entity-tag.                                                                                         |
++| `matchesETag`            | function | Whether a request's `If-None-Match` matches a resource's current `ETag` (RFC 7232 weak comparison).                                         |
++| `parseRange`             | function | Parse an HTTP `Range` header against a known resource size — total.                                                                         |
++| `resolveOrigin`          | function | Resolve the `Access-Control-Allow-Origin` value for a request.                                                                              |
++| `mergeVary`              | function | Merge a `Vary` value into an existing `Vary` header without duplication.                                                                    |
++| `resolveSecurityHeader`  | function | Resolve one opt-out, value-bearing security header.                                                                                         |
++| `isValidRequestId`       | function | Whether a client-supplied `X-Request-ID` is safe to echo back.                                                                              |
++| `computeIPv6Network`     | function | Compute the `/64` network of a full IPv6 address, or `undefined`.                                                                           |
++| `computeClientKey`       | function | Collapse a client IP into its rate-limit bucket key (IPv6 `/64`, IPv4 unchanged).                                                           |
++| `serializeEvent`         | function | Serialize one `SSEMessage` to the SSE wire.                                                                                                 |
++| `isDangerousKey`         | function | Whether a key is a prototype-pollution vector (`__proto__`/`constructor`/`prototype`).                                                      |
++| `scrubPrototype`         | function | Recursively strip prototype-pollution keys from a parsed value in place.                                                                    |
++| `collectRequestBody`     | function | Collect a `Request` body into one `Uint8Array`, enforcing a size limit.                                                                     |
++| `requestEncoding`        | function | Narrow a raw `Content-Encoding` header to a decompressible `Encoding`.                                                                      |
++| `decompressRequestBody`  | function | Transparently decompress a collected body, capping decompressed output (the zip-bomb defense).                                              |
++| `readBody`               | function | Collect + decode a `Request` body — the pipeline behind `context.body()`.                                                                   |
++| `isHTTPError`            | function | Narrow an unknown caught value to an `HTTPError` (including subclasses) — recognized across package copies via a structural brand fallback. |
++| `isServerError`          | function | Narrow an unknown caught value to a `ServerError` — the code-bearing lifecycle refusal.                                                     |
++| `isAddressInfo`          | function | Whether a `node:net` address is the structured `AddressInfo` shape.                                                                         |
++| `probePort`              | function | Bind and close one throwaway TCP server to resolve an available port.                                                                       |
++| `discoverPort`           | function | Find a free TCP port — try a `preferred` one first, else an ephemeral port.                                                                 |
+ 
+ ### Entities
+ 
+@@ -131,8 +131,10 @@ Cross-face and substrate usage appear under [Patterns](#patterns).
+ | ---------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------- |
+ | `HTTPError`            | class | An error a handler throws to produce an HTTP response of a specific status.                                                 |
+ | `ContentTooLargeError` | class | The `HTTPError` (413) thrown when a request body exceeds its size limit.                                                    |
++| `ServerError`          | class | The code-bearing error a `Server` raises when its status forbids a lifecycle call.                                          |
+ | `Negotiator`           | class | The content-negotiation machine over the weighted `Accept` family; implements `NegotiatorInterface`.                        |
+ | `Server`               | class | The `node:http` lifecycle entity composing the middleware onion around a consumed dispatcher; implements `ServerInterface`. |
++| `Stream`               | class | The Server-Sent-Events handle over a streaming `Response`; implements `StreamInterface`.                                    |
+ 
+ ### Types
+ 
+@@ -141,7 +143,7 @@ Cross-face and substrate usage appear under [Patterns](#patterns).
+ | `MiddlewareContext`       | interface | `{ url; method; state; body() }` — the per-request composition context.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+ | `NextFunction`            | type      | `(request?) => Promise<Response>` — the double-`next`-guarded continuation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+ | `MiddlewareHandler`       | type      | `(request, context, next) => Response \| Promise<Response>` — one onion link.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+-| `ConnectionInfo`          | interface | `{ ip?; encrypted }` — the adapter-injected per-request connection facts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `Connection`              | interface | `{ ip?; encrypted }` — the adapter-injected per-request connection facts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+ | `TokenSecret`             | type      | `string \| readonly string[]` — a secret or `[current, ...older]` rotation list.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+ | `TokenOptions`            | interface | `{ secret; ttl? }` — options for `signToken`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+ | `CookieOptions`           | interface | `{ path?; domain?; maxAge?; httpOnly?; secure?; sameSite? }` — `Set-Cookie` attributes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+@@ -151,16 +153,17 @@ Cross-face and substrate usage appear under [Patterns](#patterns).
+ | `FormatHandlerMap`        | type      | Media type → responder table for `NegotiatorInterface.format`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+ | `NegotiatorInterface`     | interface | `negotiate` / `encoding` / `language` / `format` — the content-negotiation contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+ | `SSEMessage`              | interface | `{ data; event?; id?; retry? }` — one Server-Sent Event.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `StreamOptions`           | interface | `{ status?; headers? }` — options for `openStream`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
++| `StreamOptions`           | interface | `{ status?; headers? }` — options for `createStream`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+ | `StreamInterface`         | interface | `response` / `closed` data members + `write` / `comment` / `drain` / `end`; `write` returns local queue readiness and `drain` parks until capacity or closure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+ | `RangeSpec`               | type      | `{ satisfiable: true; start; end } \| { satisfiable: false }` — a parsed `Range`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+ | `BodyOptions`             | interface | `{ limit?; decompression? }` — caps for `readBody`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+ | `ServerStatus`            | type      | `'idle' \| 'starting' \| 'listening' \| 'stopping' \| 'stopped'` — the lifecycle states.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
++| `ServerErrorCode`         | type      | `'status'` — the machine-readable category a `ServerError` carries.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+ | `RequestLine`             | interface | `{ method; url }` — the request a server-level fault came from.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+ | `ResponseRecord`          | interface | `{ method; pathname; status; ms }` — one finished request, the `response` event's payload.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+ | `ServerEventMap`          | type      | `{ start; request; upgrade; error; stop; drain; response }` — the `Server`'s event map. `error`'s second element and `report`'s second parameter are an OPTIONAL `RequestLine` — present for a request-pipeline fault, `undefined` for an upgrade-path fault (no fetch `Request` exists there). `response` fires with one `ResponseRecord` for every request reaching the middleware pipeline (success or outer-boundary error path) — not for one rejected at the inner `buildRequest` boundary (plain `400`, no parsed `Request` to derive facts from). `drain` carries `(pending, upgraded)` — the requests still in flight and the upgraded sockets still attached when the drain settled; both `0` means the close that followed was clean, either non-zero means it was forced. |
+ | `UpgradeHandler`          | type      | `(request, socket, head) => boolean` — a raw protocol-upgrade claimant. A claimed socket is tracked until it closes, so `stop()` can drain and then cut it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+-| `ConnectionStateFunction` | type      | `(connection: ConnectionInfo) => TState` — derives a request's `TState`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
++| `ConnectionStateFunction` | type      | `(connection: Connection) => TState` — derives a request's `TState`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+ | `ServerOptions`           | interface | `{ dispatcher; state; middleware?; host?; port?; drain?; limit?; expose?; report?; timeouts?; sockets?; on?; error? }` — `timeouts.start` bounds listener startup; `sockets.{connections,headers,requests}` maps to node's `maxConnections` / `maxHeadersCount` / `maxRequestsPerSocket`; `report?: (error, request?) => void`, `request` present only for a request-pipeline fault.                                                                                                                                                                                                                                                                                                                                                                                                  |
+ | `ServerInterface`         | interface | `id` / `status` / `port` / `address` / `dispatcher` / `emitter` data members + `use` / `upgrade` / `start` / `stop` / `destroy`. `address` is the bound node `AddressInfo` while the listener is active and `undefined` otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+ 
+@@ -175,8 +178,8 @@ above) — the call-signature methods of `NegotiatorInterface`,
+ 
+ The public methods of `NegotiatorInterface`, `StreamInterface`, and
+ `ServerInterface` — every call-signature member listed (their `readonly` data
+-members stay Surface rows). `Negotiator` and `Server` implement their
+-interfaces exactly, so their tables also double as each class's
++members stay Surface rows). `Negotiator`, `Server`, and `Stream` implement
++their interfaces exactly, so their tables also double as each class's
+ instance-method surface.
+ 
+ #### `NegotiatorInterface`
+@@ -241,12 +244,14 @@ These invariants hold across `src/server` ↔ `server.md`.
+    source directory, and every export appears as a Surface row — exhaustive,
+    both directions.
+ 2. **DOC ↔ SOURCE method bijection.** The `## Methods` tables list exactly
+-   `NegotiatorInterface`'s and `ServerInterface`'s public methods — exhaustive,
+-   both directions — and `Negotiator` / `Server` expose the same public
+-   methods, no more.
++   `NegotiatorInterface`'s, `StreamInterface`'s, and `ServerInterface`'s public
++   methods — exhaustive, both directions — and `Negotiator` / `Stream` /
++   `Server` expose the same public methods, no more.
+ 3. **Status machine + bound address + restart-fresh-abort.** `idle → starting → listening →
+ stopping → stopped`; `start()` from `listening`/`starting`/`stopping`
+-   rejects; each `start()` mints a FRESH stop signal, so a restarted server is
++   rejects with a `ServerError` of code `'status'`, carrying that status in its
++   `context` and narrowed by `isServerError`; each `start()` mints a FRESH stop
++   signal, so a restarted server is
+    never born aborted; `address` is the real bound `AddressInfo` after a
+    successful start and `undefined` before start and after stop or destroy;
+    `stop()`/`destroy()` are idempotent no-ops from a state with nothing to tear
+@@ -350,7 +355,7 @@ stopping → stopped`; `start()` from `listening`/`starting`/`stopping`
+     exact object every middleware wrote into `context.state` is what a route
+     handler reads as `RouteContext.state`. No second plumbing.
+ 12. **Connection facts are injected once, at the adapter boundary.**
+-    `ConnectionInfo` (`ip`, `encrypted`) is built per-request from the raw
++    `Connection` (`ip`, `encrypted`) is built per-request from the raw
+     socket and handed to `ServerOptions.state` — `X-Forwarded-For` is NEVER
+     implicitly trusted; a deployment behind a trusted proxy derives its own
+     client key explicitly in `state` or in middleware.
+@@ -494,7 +499,7 @@ const withUser: MiddlewareHandler<State> = async (_request, context, next) => ne
+ 
+ ```ts
+ import type { StreamInterface } from '@orkestrel/server'
+-import { openStream } from '@orkestrel/server'
++import { createStream } from '@orkestrel/server'
+ 
+ async function pumpStream(stream: StreamInterface): Promise<void> {
+ 	if (!stream.write({ event: 'token', data: 'hello' })) await stream.drain()
+@@ -503,7 +508,7 @@ async function pumpStream(stream: StreamInterface): Promise<void> {
+ }
+ 
+ function streamHandler(): Response {
+-	const stream = openStream()
++	const stream = createStream()
+ 	void pumpStream(stream)
+ 	return stream.response
+ }
+@@ -639,7 +644,7 @@ await decompressRequestBody(gzipped, 'gzip', 1_048_576) // capped decompression
+ - **Thread `request.signal` into downstream work** — it fires on EITHER
+   client disconnect or server `stop()`.
+ - **Never derive a rate key from `X-Forwarded-For`** — use the injected
+-  `ConnectionInfo.ip` (or your own trusted-proxy derivation).
++  `Connection.ip` (or your own trusted-proxy derivation).
+ - **Publish a state-slice interface per middleware family** — intersect the
+   slices a consumer mounts into one `TState`, never a generic-accumulating
+   chain.
+@@ -656,19 +661,26 @@ await decompressRequestBody(gzipped, 'gzip', 1_048_576) // capped decompression
+ - [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) —
+   `compose` (outer-first ordering, double-`next` rejection, short-circuit,
+   request substitution, response transformation), cookie parse/serialize/
+-  attribute-injection guards, `resolveSecure`, `appendCookie`/`clearCookie`,
+-  `isAddressInfo` narrowing, `openStream` readiness/drain and
+-  ignore-the-signal behavior, and `discoverPort` (default, preferred, and
++  attribute-injection guards, `resolveSecure`, `clearCookie` (expiry and
++  accumulation), `computeCodingQuality`/`pickCoding`/`negotiateEncoding`,
++  `isAddressInfo` narrowing, and `discoverPort` (default, preferred, and
+   taken-preferred-falls-back cases).
+ - [`tests/src/server/Negotiator.test.ts`](../tests/src/server/Negotiator.test.ts) —
+   `negotiate`/`encoding`/`language`/`format`: exact vs subtype-wildcard vs
+   any-range precedence, `;q=0` rejection semantics, q-tie server-order
+-  break, `format`'s 406 fallback and handler dispatch.
++  break, `format`'s 406 fallback and handler dispatch, and the proof that
++  `encoding` and `negotiateEncoding` agree because they run one selection leaf.
++- [`tests/src/server/Stream.test.ts`](../tests/src/server/Stream.test.ts) —
++  the opened SSE response and its header merge order, the serialized wire for
++  events and comments, readiness/drain and ignore-the-signal behavior, and the
++  two ways the handle closes (`end`, and a consumer cancelling).
+ - [`tests/src/server/errors.test.ts`](../tests/src/server/errors.test.ts) —
+-  `HTTPError`/`ContentTooLargeError` shape and `isHTTPError` narrowing.
++  `HTTPError`/`ContentTooLargeError` shape and `isHTTPError` narrowing, and
++  `ServerError` shape with `isServerError` narrowing.
+ - [`tests/src/server/factories.test.ts`](../tests/src/server/factories.test.ts) —
+-  `createNegotiator` round-trip + factory return-type assertion, and
+-  `createServer` round-trip, option threading, and construction guards.
++  `createNegotiator`, `createServer`, and `createStream` round-trips + factory
++  return-type assertions, `createServer` option threading and construction
++  guards, and `createStream` option threading.
+ - [`tests/src/server/Server.test.ts`](../tests/src/server/Server.test.ts) —
+   the status matrix, restart-fresh-abort, caller-cancelled / timed-out / clean
+   bounded startup, `EADDRINUSE` honesty, host/port binds, ephemeral default,
+diff --git a/src/server/Negotiator.ts b/src/server/Negotiator.ts
+index 5d0fbfb..bd140c8 100644
+--- a/src/server/Negotiator.ts
++++ b/src/server/Negotiator.ts
+@@ -1,5 +1,5 @@
+ import type { Encoding, FormatHandlerMap, MiddlewareContext, NegotiatorInterface } from './types.js'
+-import { codingQuality, languageQuality, matchMediaType, parseAcceptHeader } from './helpers.js'
++import { computeLanguageQuality, matchMediaType, parseAcceptHeader, pickCoding } from './helpers.js'
+ 
+ /**
+  * The content-negotiation machine over the weighted `Accept` family — a
+@@ -44,17 +44,7 @@ export class Negotiator implements NegotiatorInterface {
+ 
+ 	encoding(header: string, available: readonly Encoding[]): Encoding | undefined {
+ 		if (available.length === 0) return undefined
+-		const entries = parseAcceptHeader(header)
+-		let best: Encoding | undefined
+-		let bestQuality = 0
+-		for (const candidate of available) {
+-			const quality = codingQuality(entries, candidate)
+-			if (quality > bestQuality) {
+-				best = candidate
+-				bestQuality = quality
+-			}
+-		}
+-		return best
++		return pickCoding(parseAcceptHeader(header), available)
+ 	}
+ 
+ 	language(header: string, available: readonly string[]): string | undefined {
+@@ -64,7 +54,7 @@ export class Negotiator implements NegotiatorInterface {
+ 		let best: string | undefined
+ 		let bestQuality = 0
+ 		for (const candidate of available) {
+-			const quality = languageQuality(entries, candidate)
++			const quality = computeLanguageQuality(entries, candidate)
+ 			if (quality > bestQuality) {
+ 				best = candidate
+ 				bestQuality = quality
+diff --git a/src/server/Server.ts b/src/server/Server.ts
+index 19b0a6f..2d34fcf 100644
+--- a/src/server/Server.ts
++++ b/src/server/Server.ts
+@@ -25,7 +25,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { isFiniteNumber, isFunction, isInteger } from '@orkestrel/contract'
+ import { compose, isAddressInfo, readBody } from './helpers.js'
+ import { DEFAULT_BODY_LIMIT, DEFAULT_DRAIN_MS } from './constants.js'
+-import { HTTPError, isHTTPError } from './errors.js'
++import { HTTPError, isHTTPError, ServerError } from './errors.js'
+ 
+ /**
+  * The HTTP server facade — an observable `node:http` lifecycle composing this
+@@ -189,7 +189,11 @@ export class Server<TState> implements ServerInterface<TState> {
+ 
+ 	start(signal?: AbortSignal): Promise<number> {
+ 		if (this.#status !== 'idle' && this.#status !== 'stopped') {
+-			return Promise.reject(new Error(`server cannot start from '${this.#status}'`))
++			return Promise.reject(
++				new ServerError('status', `server cannot start from '${this.#status}'`, {
++					status: this.#status,
++				}),
++			)
+ 		}
+ 		this.#status = 'starting'
+ 		// A fresh stop signal per run, so a restarted server is not born aborted.
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 70d89e9..40182c6 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -48,15 +48,16 @@ export const DEFAULT_BODY_LIMIT = 1_048_576
+ export const DEFAULT_DECOMPRESSED_LIMIT = 16_777_216
+ 
+ /**
+- * The SSE response headers the `openStream` seam always sets.
++ * The SSE response headers a `Stream` always sets on its response.
+  *
+  * @remarks
+  * `text/event-stream` is the media type browsers dispatch as SSE; `no-cache`
+  * keeps a proxy from caching the stream; `keep-alive` holds the connection
+  * open; `X-Accel-Buffering: no` opts a buffering reverse proxy (nginx) out so
+  * events flush promptly rather than batching. Frozen so a consumer can read
+- * but never mutate the shared default; `openStream` merges any
+- * {@link import('./types.js').StreamOptions.headers} UNDER these.
++ * but never mutate the shared default; a `Stream` merges any
++ * {@link import('./types.js').StreamOptions.headers} OVER these, so a caller
++ * repeating one of these exact keys replaces its value.
+  */
+ export const SSE_HEADERS: Readonly<Record<string, string>> = Object.freeze({
+ 	'Content-Type': 'text/event-stream; charset=utf-8',
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 003c9a4..2d0ffff 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -16,7 +16,14 @@
+ // fields the server's boundary reads off a recognized error (`status`,
+ // `message`) — so a foreign-copy instance the guard accepts can never crash
+ // the boundary that trusts it.
++//
++// `ServerError` is the other half of the vocabulary and never reaches that
++// boundary: it reports a lifecycle call the CALLER programmed wrong, so it
++// keys on a `ServerErrorCode` rather than a `status`, and `isServerError`
++// narrows it with a plain `instanceof`. No error boundary consumes it across
++// package copies, so it carries no cross-copy brand.
+ 
++import type { ServerErrorCode } from './types.js'
+ import { isNumber, isString } from '@orkestrel/contract'
+ import { HTTP_ERROR_BRAND } from './constants.js'
+ 
+@@ -124,3 +131,68 @@ export function isHTTPError(value: unknown): value is HTTPError {
+ 	if (!('status' in value) || !('message' in value)) return false
+ 	return isNumber(value.status) && isString(value.message)
+ }
++
++/**
++ * The error the `Server` raises when a lifecycle call cannot run from the
++ * status the entity is in.
++ *
++ * @remarks
++ * Carries a machine-readable {@link ServerErrorCode} and an optional `context`
++ * record naming the offending facts. This is a PROGRAMMER error — the caller
++ * asked for a transition the status machine forbids — so it never reaches the
++ * request error boundary and never carries an HTTP `status`; throw an
++ * {@link HTTPError} for a client-facing fault instead. Narrow a caught value
++ * with {@link isServerError}.
++ *
++ * @example
++ * ```ts
++ * import { ServerError } from '@src/server'
++ *
++ * const error = new ServerError('status', "server cannot start from 'listening'", {
++ * 	status: 'listening',
++ * })
++ * error.code // 'status'
++ * ```
++ */
++export class ServerError extends Error {
++	readonly code: ServerErrorCode
++	readonly context?: Readonly<Record<string, unknown>>
++
++	constructor(code: ServerErrorCode, message: string, context?: Readonly<Record<string, unknown>>) {
++		super(message)
++		this.name = 'ServerError'
++		this.code = code
++		if (context !== undefined) this.context = context
++	}
++}
++
++/**
++ * Narrows an unknown caught value to a {@link ServerError}.
++ *
++ * @param value - The value to test (typically a `catch` binding)
++ * @returns True if `value` is a {@link ServerError}; false otherwise
++ *
++ * @remarks
++ * Recognizes an instance built by THIS copy of the package. A `ServerError`
++ * is raised by a `Server` to the caller that just invoked it, so both sides
++ * hold the same copy and the cross-copy brand {@link isHTTPError} needs has no
++ * consumer here.
++ *
++ * @example
++ * ```ts
++ * import { createServer, isServerError } from '@src/server'
++ * import { createDispatcher } from '@orkestrel/router'
++ *
++ * const server = createServer({ dispatcher: createDispatcher(), state: () => ({}) })
++ * await server.start()
++ * try {
++ * 	await server.start()
++ * } catch (error) {
++ * 	if (isServerError(error)) console.log(error.code) // 'status'
++ * }
++ * await server.stop()
++ * ```
++ */
++export function isServerError(value: unknown): value is ServerError {
++	return value instanceof ServerError
++}
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index bc28697..b31d4fe 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -1,6 +1,13 @@
+-import type { NegotiatorInterface, ServerInterface, ServerOptions } from './types.js'
++import type {
++	NegotiatorInterface,
++	ServerInterface,
++	ServerOptions,
++	StreamInterface,
++	StreamOptions,
++} from './types.js'
+ import { Negotiator } from './Negotiator.js'
+ import { Server } from './Server.js'
++import { Stream } from './Stream.js'
+ 
+ /**
+  * Create a {@link NegotiatorInterface} — the reusable content-negotiation
+@@ -48,3 +55,27 @@ export function createNegotiator(): NegotiatorInterface {
+ export function createServer<TState>(options: ServerOptions<TState>): ServerInterface<TState> {
+ 	return new Server(options)
+ }
++
++/**
++ * Creates a {@link StreamInterface} — a generic Server-Sent-Events stream whose
++ * `response` is a fetch-standard streaming `Response` a route returns.
++ *
++ * @param options - {@link StreamOptions}
++ * @returns A {@link StreamInterface} whose stream is open
++ *
++ * @example
++ * ```ts
++ * import { createStream } from '@src/server'
++ *
++ * const stream = createStream()
++ * void Promise.resolve().then(async () => {
++ * 	if (!stream.write({ event: 'token', data: 'hello' })) await stream.drain()
++ * 	stream.comment('keep-alive')
++ * 	stream.end()
++ * })
++ * // return stream.response from the route handler
++ * ```
++ */
++export function createStream(options?: StreamOptions): StreamInterface {
++	return new Stream(options)
++}
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index ac4194b..f0d6515 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -9,8 +9,6 @@ import type {
+ 	MiddlewareHandler,
+ 	RangeSpec,
+ 	SSEMessage,
+-	StreamInterface,
+-	StreamOptions,
+ 	TokenOptions,
+ 	TokenSecret,
+ } from './types.js'
+@@ -23,7 +21,6 @@ import {
+ 	DEFAULT_BODY_LIMIT,
+ 	DEFAULT_DECOMPRESSED_LIMIT,
+ 	REQUEST_ID_PATTERN,
+-	SSE_HEADERS,
+ } from './constants.js'
+ import { ContentTooLargeError, HTTPError } from './errors.js'
+ 
+@@ -290,7 +287,7 @@ export function serializeCookie(name: string, value: string, options?: CookieOpt
+  * gets `Secure` automatically while local-dev HTTP still works.
+  *
+  * @param secure - The {@link CookieOptions} `secure` setting
+- * @param encrypted - The connection's TLS flag ({@link import('./types.js').ConnectionInfo.encrypted})
++ * @param encrypted - The connection's TLS flag ({@link import('./types.js').Connection.encrypted})
+  * @returns The concrete `Secure` flag to emit
+  *
+  * @example
+@@ -306,40 +303,15 @@ export function resolveSecure(secure: boolean | undefined, encrypted: boolean):
+ }
+ 
+ /**
+- * Append a `Set-Cookie` header onto a fetch-standard `Headers` WITHOUT
+- * clobbering a prior one.
+- *
+- * @remarks
+- * `Headers.append` already accumulates repeated headers (unlike node's
+- * `setHeader`), so this is a thin, self-documenting wrapper naming the
+- * cookie-append intent — the primitive {@link writeSignedCookie} /
+- * {@link clearCookie} use.
+- *
+- * @param headers - The response `Headers` to write into
+- * @param cookie - The fully-serialized `Set-Cookie` value (from {@link serializeCookie})
+- *
+- * @example
+- * ```ts
+- * const headers = new Headers()
+- * appendCookie(headers, serializeCookie('a', '1'))
+- * appendCookie(headers, serializeCookie('b', '2'))
+- * headers.get('set-cookie') // 'a=1; Path=/; HttpOnly; SameSite=Lax, b=2; …'
+- * ```
+- */
+-export function appendCookie(headers: Headers, cookie: string): void {
+-	headers.append('set-cookie', cookie)
+-}
+-
+-/**
+- * Write a SIGNED cookie — HMAC-sign `value` with {@link signToken} and append
+- * it as a `Set-Cookie` (the inverse of {@link readSignedCookie}).
++ * Writes a SIGNED cookie — HMAC-signs `value` with {@link signToken} and
++ * appends it as a `Set-Cookie` (the inverse of {@link readSignedCookie}).
+  *
+  * @remarks
+  * The cookie value is `await signToken(value, { secret })`
+  * (`<payload>.<signature>`), so a signed cookie is a stateless token in a
+  * cookie — the same secret rotation and tamper rejection, no second HMAC
+- * scheme. Appends (never clobbers) via {@link appendCookie}. Async — WebCrypto
+- * signing is asynchronous.
++ * scheme. Appends (never clobbers) through `Headers.append`, which accumulates
++ * repeated headers. Async — WebCrypto signing is asynchronous.
+  *
+  * @param headers - The response `Headers` to write into
+  * @param name - The cookie name
+@@ -360,7 +332,7 @@ export async function writeSignedCookie(
+ 	secret: TokenSecret,
+ 	options?: CookieOptions,
+ ): Promise<void> {
+-	appendCookie(headers, serializeCookie(name, await signToken(value, { secret }), options))
++	headers.append('set-cookie', serializeCookie(name, await signToken(value, { secret }), options))
+ }
+ 
+ /**
+@@ -393,7 +365,7 @@ export async function readSignedCookie(
+ }
+ 
+ /**
+- * Clear a cookie — append a `Set-Cookie` that expires it immediately (`Max-Age=0`).
++ * Clears a cookie — appends a `Set-Cookie` that expires it immediately (`Max-Age=0`).
+  *
+  * @remarks
+  * Writes an empty-valued cookie of the same `name` with `Max-Age=0` plus the
+@@ -411,7 +383,7 @@ export async function readSignedCookie(
+  * ```
+  */
+ export function clearCookie(headers: Headers, name: string, options?: CookieOptions): void {
+-	appendCookie(headers, serializeCookie(name, '', { ...options, maxAge: 0 }))
++	headers.append('set-cookie', serializeCookie(name, '', { ...options, maxAge: 0 }))
+ }
+ 
+ // The stateless signed-token primitives over WebCrypto (module-scope
+@@ -629,9 +601,9 @@ export function parseAcceptHeader(header: string): readonly AcceptEntry[] {
+ }
+ 
+ /**
+- * The client's quality (q) for one content-coding from the parsed
+- * `Accept-Encoding` entries — backs {@link negotiateEncoding}'s
+- * server-preference selection.
++ * Computes the client's quality (q) for one content-coding from the parsed
++ * `Accept-Encoding` entries — the scoring leaf {@link pickCoding} runs over
++ * each offered coding.
+  *
+  * @remarks
+  * Prefers an EXACT named match (including an explicit `;q=0` rejection);
+@@ -645,11 +617,11 @@ export function parseAcceptHeader(header: string): readonly AcceptEntry[] {
+  *
+  * @example
+  * ```ts
+- * codingQuality(parseAcceptHeader('gzip;q=0.5, *;q=0.1'), 'gzip') // 0.5
+- * codingQuality(parseAcceptHeader('gzip;q=0.5, *;q=0.1'), 'br') // 0.1
++ * computeCodingQuality(parseAcceptHeader('gzip;q=0.5, *;q=0.1'), 'gzip') // 0.5
++ * computeCodingQuality(parseAcceptHeader('gzip;q=0.5, *;q=0.1'), 'br') // 0.1
+  * ```
+  */
+-export function codingQuality(entries: readonly AcceptEntry[], coding: string): number {
++export function computeCodingQuality(entries: readonly AcceptEntry[], coding: string): number {
+ 	const named = entries.find((entry) => entry.value === coding)
+ 	if (named !== undefined) return named.q
+ 	const wildcard = entries.find((entry) => entry.value === '*')
+@@ -657,36 +629,38 @@ export function codingQuality(entries: readonly AcceptEntry[], coding: string):
+ }
+ 
+ /**
+- * Select the best content-coding for an `Accept-Encoding` header from the
+- * codings the server offers.
++ * Picks the highest-scoring content-coding the server offers against already
++ * parsed `Accept-Encoding` entries.
+  *
+  * @remarks
+- * Parses the header ({@link parseAcceptHeader}) and scores each `available`
+- * coding in the SERVER's preference order ({@link codingQuality}), keeping
+- * the highest-scoring one (a strict `>` keeps the earlier-offered coding on a
+- * client-side tie). Returns `undefined` when the client accepts none of
+- * `available` (identity — no compression). TOTAL on hostile input.
++ * The single selection leaf behind both doors onto this axis —
++ * {@link negotiateEncoding} for a raw header, and `Negotiator.encoding` for the
++ * entity — so the scoring loop has one implementation. Scores each `available`
++ * coding with {@link computeCodingQuality} and keeps the highest; a strict `>`
++ * keeps the earlier-offered coding on a client-side tie, which is what makes
++ * `available` the SERVER's preference order. An empty `available` list, and a
++ * list the client rejects outright, both yield `undefined` (identity — no
++ * compression). TOTAL on hostile input.
+  *
+  * @typeParam T - The coding string type (so a `readonly Encoding[]` returns an `Encoding`)
+- * @param header - The raw `Accept-Encoding` header value
++ * @param entries - The parsed {@link AcceptEntry} list
+  * @param available - The codings the server offers, in preference (tie-break) order
+- * @returns The negotiated coding, or `undefined` when none of `available` is acceptable
++ * @returns The winning coding, or `undefined` when none of `available` is acceptable
+  *
+  * @example
+  * ```ts
+- * negotiateEncoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'
++ * pickCoding(parseAcceptHeader('gzip;q=1.0, deflate;q=0.8'), ['gzip', 'deflate']) // 'gzip'
++ * pickCoding(parseAcceptHeader('br;q=1.0'), ['gzip']) // undefined
+  * ```
+  */
+-export function negotiateEncoding<T extends string>(
+-	header: string,
++export function pickCoding<T extends string>(
++	entries: readonly AcceptEntry[],
+ 	available: readonly T[],
+ ): T | undefined {
+-	if (available.length === 0) return undefined
+-	const entries = parseAcceptHeader(header)
+ 	let best: T | undefined
+ 	let bestQuality = 0
+ 	for (const coding of available) {
+-		const quality = codingQuality(entries, coding)
++		const quality = computeCodingQuality(entries, coding)
+ 		if (quality > bestQuality) {
+ 			best = coding
+ 			bestQuality = quality
+@@ -695,6 +669,35 @@ export function negotiateEncoding<T extends string>(
+ 	return best
+ }
+ 
++/**
++ * Selects the best content-coding for a raw `Accept-Encoding` header from the
++ * codings the server offers.
++ *
++ * @remarks
++ * Parses the header ({@link parseAcceptHeader}) and hands the entries to
++ * {@link pickCoding}, the same selection leaf `Negotiator.encoding` runs, so
++ * the two doors onto this axis cannot drift. Returns `undefined` when the
++ * client accepts none of `available` (identity — no compression). TOTAL on
++ * hostile input.
++ *
++ * @typeParam T - The coding string type (so a `readonly Encoding[]` returns an `Encoding`)
++ * @param header - The raw `Accept-Encoding` header value
++ * @param available - The codings the server offers, in preference (tie-break) order
++ * @returns The negotiated coding, or `undefined` when none of `available` is acceptable
++ *
++ * @example
++ * ```ts
++ * negotiateEncoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'
++ * ```
++ */
++export function negotiateEncoding<T extends string>(
++	header: string,
++	available: readonly T[],
++): T | undefined {
++	if (available.length === 0) return undefined
++	return pickCoding(parseAcceptHeader(header), available)
++}
++
+ /**
+  * Rank + quality of one `candidate` media type against the parsed `Accept`
+  * entries — the generic media-type primitive the `Negotiator`'s `negotiate`
+@@ -749,8 +752,9 @@ export function matchMediaType(
+ }
+ 
+ /**
+- * The client's quality for one `candidate` language from the parsed
+- * `Accept-Language` entries — backs the `Negotiator`'s `language` axis.
++ * Computes the client's quality for one `candidate` language from the parsed
++ * `Accept-Language` entries — the scoring leaf the `Negotiator`'s `language`
++ * axis runs over each offered tag.
+  *
+  * @remarks
+  * Prefers an exact match, then a primary-tag prefix match (`en` accepts
+@@ -763,12 +767,12 @@ export function matchMediaType(
+  *
+  * @example
+  * ```ts
+- * languageQuality(parseAcceptHeader('en-US, en;q=0.8'), 'en-US') // 1
+- * languageQuality(parseAcceptHeader('en;q=0.8'), 'en-US') // 0.8 — primary-tag prefix
+- * languageQuality(parseAcceptHeader('*;q=0.5'), 'fr') // 0.5 — wildcard
++ * computeLanguageQuality(parseAcceptHeader('en-US, en;q=0.8'), 'en-US') // 1
++ * computeLanguageQuality(parseAcceptHeader('en;q=0.8'), 'en-US') // 0.8 — primary-tag prefix
++ * computeLanguageQuality(parseAcceptHeader('*;q=0.5'), 'fr') // 0.5 — wildcard
+  * ```
+  */
+-export function languageQuality(entries: readonly AcceptEntry[], candidate: string): number {
++export function computeLanguageQuality(entries: readonly AcceptEntry[], candidate: string): number {
+ 	const lower = candidate.toLowerCase()
+ 	const primary = lower.split('-')[0]
+ 	let named: number | undefined
+@@ -1070,7 +1074,7 @@ export function isValidRequestId(value: string): boolean {
+ }
+ 
+ /**
+- * Compute the `/64` network of a full IPv6 address, or `undefined` when the
++ * Computes the `/64` network of a full IPv6 address, or `undefined` when the
+  * input is not a plain IPv6 address to collapse.
+  *
+  * @remarks
+@@ -1086,11 +1090,11 @@ export function isValidRequestId(value: string): boolean {
+  *
+  * @example
+  * ```ts
+- * ipv6Network('2001:db8:1:2::1') // '2001:db8:1:2::/64'
+- * ipv6Network('192.0.2.1') // undefined — IPv4, not collapsed
++ * computeIPv6Network('2001:db8:1:2::1') // '2001:db8:1:2::/64'
++ * computeIPv6Network('192.0.2.1') // undefined — IPv4, not collapsed
+  * ```
+  */
+-export function ipv6Network(address: string): string | undefined {
++export function computeIPv6Network(address: string): string | undefined {
+ 	if (/^::ffff:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/i.test(address)) return undefined
+ 	const percent = address.indexOf('%')
+ 	const bare = percent === -1 ? address : address.slice(0, percent)
+@@ -1120,33 +1124,33 @@ export function ipv6Network(address: string): string | undefined {
+ }
+ 
+ /**
+- * Collapse a client IP into its rate-limit BUCKET key — an IPv6 address to
++ * Collapses a client IP into its rate-limit BUCKET key — an IPv6 address to
+  * its `/64` network, an IPv4 (or IPv4-mapped) address unchanged.
+  *
+  * @remarks
+  * A residential/mobile IPv6 user is routinely handed a WHOLE `/64`, so a
+  * per-`/128` rate limit is trivially bypassed by rotating host bits — the
+  * real identity is the `/64` network. Delegates the IPv6 collapse to
+- * {@link ipv6Network}; anything it returns `undefined` for (an IPv4 address,
++ * {@link computeIPv6Network}; anything it returns `undefined` for (an IPv4 address,
+  * a malformed string) is kept unchanged.
+  *
+- * @param address - The raw connection peer address ({@link import('./types.js').ConnectionInfo.ip})
++ * @param address - The raw connection peer address ({@link import('./types.js').Connection.ip})
+  * @returns The bucket key — the `/64` network for an IPv6 address, else the address unchanged
+  *
+  * @example
+  * ```ts
+- * clientRateKey('2001:db8:1:2:dead:beef:0:9') // '2001:db8:1:2::/64'
+- * clientRateKey('192.0.2.1') // '192.0.2.1'
++ * computeClientKey('2001:db8:1:2:dead:beef:0:9') // '2001:db8:1:2::/64'
++ * computeClientKey('192.0.2.1') // '192.0.2.1'
+  * ```
+  */
+-export function clientRateKey(address: string): string {
+-	return ipv6Network(address) ?? address
++export function computeClientKey(address: string): string {
++	return computeIPv6Network(address) ?? address
+ }
+ 
+ // The Server-Sent-Events seam (module-scope) — `serializeEvent` is the wire
+-// encoder (the exact inverse of a consuming SSE parser); `openStream` is the
+-// generic `Response`-returning stream handle any streaming route opens over a
+-// `ReadableStream`.
++// encoder (the exact inverse of a consuming SSE parser). The stream handle
++// that writes those events over a `ReadableStream` is the `Stream` entity,
++// reached through `createStream`.
+ 
+ /**
+  * Serialize one {@link SSEMessage} to the SSE wire.
+@@ -1176,127 +1180,6 @@ export function serializeEvent(message: SSEMessage): string {
+ 	return `${lines.join('\n')}\n\n`
+ }
+ 
+-/**
+- * Enqueue encoded text into an open byte stream.
+- *
+- * @param controller - The stream controller, when the stream has started
+- * @param encoder - The encoder used for the stream's byte representation
+- * @param closed - Whether the stream has already ended or been cancelled
+- * @param text - The text to encode and enqueue
+- * @returns Nothing
+- *
+- * @example
+- * ```ts
+- * const body = new ReadableStream<Uint8Array>({
+- * 	start(controller) {
+- * 		enqueueStreamText(controller, new TextEncoder(), false, 'hello')
+- * 	},
+- * })
+- * ```
+- */
+-export function enqueueStreamText(
+-	controller: ReadableStreamDefaultController<Uint8Array> | undefined,
+-	encoder: TextEncoder,
+-	closed: boolean,
+-	text: string,
+-): void {
+-	if (closed || controller === undefined) return
+-	controller.enqueue(encoder.encode(text))
+-}
+-
+-/**
+- * Open a generic Server-Sent-Events stream — a fetch-standard `Response`
+- * whose body is a `ReadableStream` a caller writes {@link SSEMessage}s into.
+- *
+- * @remarks
+- * Builds the `Response` immediately with {@link import('./constants.js').SSE_HEADERS}
+- * merged under any `options.headers` (a seam-owned key is never overridden),
+- * at `options.status` (default `200`). The returned {@link StreamInterface}'s
+- * `write` serializes one message ({@link serializeEvent}), enqueues it, and
+- * returns whether the controller still has positive desired size. A producer
+- * receiving `false` can await `drain()`; its event-driven promise resolves on
+- * the next consumer pull that restores capacity, or on stream closure.
+- * `comment` writes a `: text` keep-alive line a conforming parser ignores;
+- * `end` closes the stream. Every method is a SAFE NO-OP once `closed` (ended
+- * by `end()`, or the consumer cancelled the stream), so a late write never
+- * throws.
+- *
+- * This readiness reflects only the process-local `ReadableStream` queue — it
+- * is not proof that a remote peer consumed bytes. When the response pump
+- * honors its socket sink's drain state, socket pressure stops body pulls and
+- * therefore keeps this queue full, allowing a cooperative producer to bound
+- * buffering. Ignoring the return value preserves the prior unconditional-
+- * enqueue behavior. The default stream strategy counts chunks rather than
+- * their byte length, so a byte-bounded producer must also cap each message.
+- * Return `response` before awaiting a `false` write, because the consumer
+- * cannot pull until it receives the response.
+- *
+- * @param options - Optional `status` + extra `headers`; see {@link StreamOptions}
+- * @returns The {@link StreamInterface} handle
+- *
+- * @example
+- * ```ts
+- * const stream = openStream()
+- * void Promise.resolve().then(async () => {
+- * 	if (!stream.write({ event: 'token', data: 'hello' })) await stream.drain()
+- * 	stream.end()
+- * })
+- * // return stream.response from the route handler
+- * ```
+- */
+-export function openStream(options?: StreamOptions): StreamInterface {
+-	const encoder = new TextEncoder()
+-	let closed = false
+-	let controller: ReadableStreamDefaultController<Uint8Array> | undefined
+-	let wakeup: PromiseWithResolvers<void> | undefined
+-	const body = new ReadableStream<Uint8Array>({
+-		start(streamController) {
+-			controller = streamController
+-		},
+-		pull(streamController) {
+-			if (streamController.desiredSize === null || streamController.desiredSize <= 0) return
+-			wakeup?.resolve()
+-			wakeup = undefined
+-		},
+-		cancel() {
+-			closed = true
+-			wakeup?.resolve()
+-			wakeup = undefined
+-		},
+-	})
+-	const headers = new Headers({ ...SSE_HEADERS, ...options?.headers })
+-	const response = new Response(body, { status: options?.status ?? 200, headers })
+-	return {
+-		response,
+-		get closed(): boolean {
+-			return closed
+-		},
+-		write(message: SSEMessage): boolean {
+-			if (closed || controller === undefined) return false
+-			enqueueStreamText(controller, encoder, closed, serializeEvent(message))
+-			return controller.desiredSize !== null && controller.desiredSize > 0
+-		},
+-		comment(text: string): void {
+-			enqueueStreamText(controller, encoder, closed, `: ${text}\n\n`)
+-		},
+-		drain(): Promise<void> {
+-			const desired = controller?.desiredSize
+-			if (closed || (desired !== undefined && desired !== null && desired > 0)) {
+-				return Promise.resolve()
+-			}
+-			wakeup ??= Promise.withResolvers<void>()
+-			return wakeup.promise
+-		},
+-		end(): void {
+-			if (closed) return
+-			closed = true
+-			controller?.close()
+-			wakeup?.resolve()
+-			wakeup = undefined
+-		},
+-	}
+-}
+-
+ // The body pipeline (module-scope) —
+ // `readBody` collects a request body capped at `limit` bytes (413 over),
+ // transparently decompresses a `gzip`/`deflate` `Content-Encoding` body
+diff --git a/src/server/index.ts b/src/server/index.ts
+index 4734cd8..db02045 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -5,3 +5,4 @@ export * from './helpers.js'
+ export * from './factories.js'
+ export * from './Negotiator.js'
+ export * from './Server.js'
++export * from './Stream.js'
+diff --git a/src/server/types.ts b/src/server/types.ts
+index b9a9295..908e952 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -6,7 +6,7 @@
+ //    1. The middleware seam — {@link MiddlewareContext}, {@link NextFunction},
+ //       {@link MiddlewareHandler} — the frozen contract `compose` wires
+ //       together and the `@orkestrel/middleware` package peer-depends on.
+-//       {@link ConnectionInfo} is the adapter-injected per-request fact
++//       {@link Connection} is the adapter-injected per-request fact
+ //       slice a consumer's `state` function turns into its `TState`.
+ //    2. The shared substrate's data shapes — cookies ({@link CookieOptions}),
+ //       tokens ({@link TokenSecret} / {@link TokenOptions}), negotiation
+@@ -105,7 +105,7 @@ export type MiddlewareHandler<TState> = (
+  * - `encrypted` — whether the connection is TLS, for an auto-`Secure` cookie
+  *   decision ({@link CookieOptions.secure} left `undefined`).
+  */
+-export interface ConnectionInfo {
++export interface Connection {
+ 	readonly ip?: string
+ 	readonly encrypted: boolean
+ }
+@@ -152,7 +152,7 @@ export interface TokenOptions {
+  *   suppresses it, and omitted/`undefined` (the default) derives it from the
+  *   connection via {@link import('./helpers.js').resolveSecure} — `Secure` on
+  *   a TLS connection, off over plaintext HTTP ({@link
+- *   ConnectionInfo.encrypted}). A `sameSite: 'None'` cookie is ALWAYS
++ *   Connection.encrypted}). A `sameSite: 'None'` cookie is ALWAYS
+  *   `Secure` regardless (the spec requires it).
+  * @param sameSite - The `SameSite` directive; defaults to `'Lax'`.
+  */
+@@ -326,13 +326,17 @@ export interface SSEMessage {
+ }
+ 
+ /**
+- * Options for the `openStream` seam.
++ * Options for a {@link StreamInterface} — how `createStream` opens the
++ * streaming response.
+  *
+  * @param status - The HTTP status the streaming response is opened with;
+  *   defaults to `200`.
+- * @param headers - Extra response headers merged with the SSE headers the
+- *   seam always sets ({@link SSE_HEADERS}) — a key the seam owns is never
+- *   overridden.
++ * @param headers - Extra response headers merged OVER the SSE headers the
++ *   seam always sets ({@link SSE_HEADERS}), so a caller repeating one of those
++ *   keys replaces the seam's value. Repeating it under a different casing
++ *   appends instead, because `Headers` accumulates both spellings into one
++ *   comma-joined value — spell a key exactly as {@link SSE_HEADERS} spells it
++ *   when the intent is to replace it.
+  */
+ export interface StreamOptions {
+ 	readonly status?: number
+@@ -341,7 +345,7 @@ export interface StreamOptions {
+ 
+ /**
+  * A handle to write Server-Sent Events to an open, fetch-standard streaming
+- * `Response` — the generic streaming surface `openStream` returns over a
++ * `Response` — the generic streaming surface `createStream` returns over a
+  * `ReadableStream`.
+  *
+  * @remarks
+@@ -471,6 +475,21 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+  */
+ export type ServerStatus = 'idle' | 'starting' | 'listening' | 'stopping' | 'stopped'
+ 
++/**
++ * The machine-readable category a
++ * {@link import('./errors.js').ServerError} carries.
++ *
++ * @remarks
++ * A `ServerError` reports a lifecycle refusal the caller programmed, not a
++ * client-facing fault — {@link import('./errors.js').HTTPError} owns the
++ * latter and keys on `status` instead. The categories are disjoint, so a
++ * `catch` narrowed by {@link import('./errors.js').isServerError} reads `code`
++ * to tell them apart.
++ */
++export type ServerErrorCode =
++	/** Identifies a lifecycle call the current {@link ServerStatus} forbids. */
++	'status'
++
+ /**
+  * Identifies the request a server-level fault came from — its method and its
+  * parsed URL.
+@@ -577,12 +596,12 @@ export type UpgradeHandler = (request: IncomingMessage, socket: Duplex, head: Bu
+ 
+ /**
+  * Derives a consumer's per-request `TState` from the adapter-injected
+- * {@link ConnectionInfo} — `ServerOptions.state`, invoked once per request
++ * {@link Connection} — `ServerOptions.state`, invoked once per request
+  * before the middleware onion runs.
+  *
+  * @typeParam TState - The consumer's opaque per-request state type
+  */
+-export type ConnectionStateFunction<TState> = (connection: ConnectionInfo) => TState
++export type ConnectionStateFunction<TState> = (connection: Connection) => TState
+ 
+ /**
+  * Options for `createServer`.
+@@ -702,11 +721,17 @@ export interface ServerInterface<TState> {
+ 	use(middleware: ReadonlyArray<MiddlewareHandler<TState>>): void
+ 	upgrade(handler: UpgradeHandler): void
+ 	/**
+-	 * Bind the configured listener and resolve its actually-bound port.
++	 * Binds the configured listener and resolves its actually-bound port.
+ 	 *
+ 	 * @param signal - Optional caller cancellation observed only while startup
+ 	 *   is pending; aborting after this method resolves does not stop the server.
+ 	 * @returns The actually-bound TCP port
++	 *
++	 * @remarks
++	 * Rejects with a {@link import('./errors.js').ServerError} of code
++	 * `'status'` when the current {@link ServerStatus} is neither `'idle'` nor
++	 * `'stopped'`, carrying that status in its `context`. Narrow it with
++	 * {@link import('./errors.js').isServerError}.
+ 	 */
+ 	start(signal?: AbortSignal): Promise<number>
+ 	/**
+diff --git a/tests/setup.ts b/tests/setup.ts
+index e7684f9..e4d6c5b 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,6 +1,6 @@
+ import { afterEach, vi } from 'vitest'
+ 
+-// ── Environment-agnostic base setup (AGENTS §16.1) ────────────────────────────
++// ── Environment-agnostic base setup ───────────────────────────────────────────
+ //
+ // Loaded first by every test project (`vite.config.ts` `setupFiles[0]`). Holds
+ // ONLY helpers with no `node:*` / DOM / Vue dependency, so it is safe for
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 482599e..bbaaf3a 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -4,10 +4,10 @@ import net from 'node:net'
+ import { fileURLToPath } from 'node:url'
+ import { resolveRoot } from '@orkestrel/test'
+ 
+-// ── Server-only setup (AGENTS §16.1 / §17.6) ─────────────────────────────────
++// ── Server-only setup ────────────────────────────────────────────────────────
+ //
+ // Loaded after `setup.ts` for the `src:server` test project. Holds `node:*`
+-// helpers for the server face's real-socket tests (§8/§16: no mocks — a real
++// helpers for the server face's real-socket tests (no mocks — a real
+ // `node:http` server on an ephemeral port, closed by every caller).
+ 
+ /** The workspace root, anchored from this setup file's own location. */
+@@ -23,7 +23,7 @@ export interface UpgradeOutcomeInterface {
+  * Send a raw, hand-written HTTP request over a bare `node:net` socket and
+  * resolve with whatever bytes come back — the real-socket probe for
+  * malformed-request vectors (a bad `Host` header) that `fetch` would refuse
+- * to send (§16: no mocks, a genuinely raw wire payload).
++ * to send (no mocks, a genuinely raw wire payload).
+  *
+  * @param port - The target server's bound port (assumed `127.0.0.1`)
+  * @param raw - The complete raw HTTP request text (including the trailing
+@@ -185,7 +185,7 @@ export interface HeldUpgradeInterface {
+  * @remarks
+  * The sibling of {@link upgradeRequest}, which ends the socket the moment the
+  * `101` lands and so can never hold the server's stop path open. Real client
+- * sockets throughout (§16: no mocks); `closed` resolves when the server cuts
++ * sockets throughout (no mocks); `closed` resolves when the server cuts
+  * the connection, which is how a test proves the force-close reached the peer
+  * rather than only the server's own bookkeeping.
+  *
+@@ -227,7 +227,7 @@ export async function holdUpgrade(port: number, path = '/'): Promise<HeldUpgrade
+ 
+ /**
+  * Drives a raw `node:http` protocol-upgrade request against a running server —
+- * the real-socket probe the server face's upgrade-seam tests use (§16: no
++ * the real-socket probe the server face's upgrade-seam tests use (no
+  * mocks). Resolves after the outcome is known: a `101` upgrade response means a
+  * registered handler CLAIMED the socket, and an ordinary HTTP response or a
+  * connection error from a destroyed socket means none did.
+diff --git a/tests/src/server/Negotiator.test.ts b/tests/src/server/Negotiator.test.ts
+index 20b05cd..2dc80d4 100644
+--- a/tests/src/server/Negotiator.test.ts
++++ b/tests/src/server/Negotiator.test.ts
+@@ -1,8 +1,8 @@
+ import { describe, expect, it } from 'vitest'
+-import type { MiddlewareContext } from '@src/server'
+-import { HTTPError, Negotiator } from '@src/server'
++import type { Encoding, MiddlewareContext } from '@src/server'
++import { HTTPError, negotiateEncoding, Negotiator } from '@src/server'
+ 
+-// §16 mirror of `src/server/Negotiator.ts` — the content-negotiation matrix
++// Mirror of `src/server/Negotiator.ts` — the content-negotiation matrix
+ // (media-type precedence, wildcard, q-ties broken by server order, `406`
+ // path, `format` dispatch).
+ 
+@@ -93,6 +93,21 @@ describe('Negotiator#encoding', () => {
+ 		const negotiator = new Negotiator()
+ 		expect(negotiator.encoding('br', ['gzip', 'deflate'])).toBeUndefined()
+ 	})
++
++	it('agrees with the standalone negotiateEncoding door on every axis it shares', () => {
++		const negotiator = new Negotiator()
++		const offers: readonly Encoding[] = ['gzip', 'deflate', 'identity']
++		for (const header of [
++			'gzip;q=0.4, deflate;q=0.8, *;q=0.1',
++			'gzip;q=1.0, deflate;q=1.0',
++			'br;q=1.0',
++			'*;q=0.5',
++			'',
++		]) {
++			expect(negotiator.encoding(header, offers)).toBe(negotiateEncoding(header, offers))
++		}
++		expect(negotiator.encoding('gzip;q=0.4, deflate;q=0.8, *;q=0.1', offers)).toBe('deflate')
++	})
+ })
+ 
+ describe('Negotiator#language', () => {
+diff --git a/tests/src/server/Server.test.ts b/tests/src/server/Server.test.ts
+index ba09e5b..e99c835 100644
+--- a/tests/src/server/Server.test.ts
++++ b/tests/src/server/Server.test.ts
+@@ -7,7 +7,7 @@ import { once } from 'node:events'
+ import http from 'node:http'
+ import { afterEach, describe, expect, expectTypeOf, it } from 'vitest'
+ import { createDispatcher } from '@orkestrel/router'
+-import { createServer, HTTPError, openStream } from '@src/server'
++import { createServer, createStream, HTTPError, isServerError } from '@src/server'
+ import { createRecorder, waitForDelay } from '@orkestrel/test'
+ import {
+ 	holdUpgrade,
+@@ -24,7 +24,7 @@ const BINDS_IPV6 = await probeLoopback('::1')
+ 
+ // src/server/Server.ts — the lifecycle facade over REAL node:http (no mocks,
+ // the node src:server project). Routing outcomes themselves are the router's
+-// own tests (PROPOSAL §9) — this suite covers what the server face OWNS:
++// own tests — this suite covers what the server face OWNS:
+ // lifecycle, drain, upgrade fan-out, the built-in boundary, connection facts,
+ // and observability.
+ 
+@@ -104,6 +104,18 @@ describe('Server — lifecycle', () => {
+ 		expect(server.status).toBe('listening')
+ 	})
+ 
++	it('refuses a wrong-status start with a ServerError naming the status it refused from', async () => {
++		const server = track(createServer({ dispatcher: pingDispatcher(), state: () => undefined }))
++		await server.start()
++		const refusal: unknown = await server.start().catch((error: unknown) => error)
++		expect(isServerError(refusal)).toBe(true)
++		if (!isServerError(refusal)) return
++		expect(refusal.code).toBe('status')
++		expect(refusal.name).toBe('ServerError')
++		expect(refusal.context).toEqual({ status: 'listening' })
++		expect(server.status).toBe('listening')
++	})
++
+ 	it('starts cleanly within its configured deadline and ignores caller abort after binding', async () => {
+ 		const controller = new AbortController()
+ 		const server = track(
+@@ -393,7 +405,7 @@ describe('Server — the client disconnect signal reaches streaming handlers', (
+ 			method: 'GET',
+ 			path: '/events',
+ 			handler: (request) => {
+-				const stream = openStream()
++				const stream = createStream()
+ 				request.signal.addEventListener('abort', () => aborted.resolve(), { once: true })
+ 				stream.write({ data: 'ready' })
+ 				void aborted.promise.then(() => stream.end())
+@@ -506,7 +518,7 @@ describe('Server — context.body() caching', () => {
+ 	it('caches the body so multiple middleware reads return the same value, read exactly once', async () => {
+ 		// `body()` is a MiddlewareContext concern — the terminal
+ 		// `dispatcher.handle(request, context.state)` only threads `state`, not
+-		// `context` itself (PROPOSAL §5.1), so only middleware can read the body.
++		// `context` itself, so only middleware can read the body.
+ 		const dispatcher = createDispatcher<undefined>()
+ 		dispatcher.add({ method: 'POST', path: '/echo', handler: () => new Response('ok') })
+ 		let firstRead: unknown
+@@ -1126,7 +1138,7 @@ describe('Server — stream backpressure', () => {
+ 			method: 'GET',
+ 			path: '/events',
+ 			handler: () => {
+-				const stream = openStream()
++				const stream = createStream()
+ 				void waitForDelay(10).then(async () => {
+ 					const payload = 'x'.repeat(65_536)
+ 					let bytes = 0
+@@ -1200,7 +1212,7 @@ describe('Server — stream backpressure', () => {
+ 			method: 'GET',
+ 			path: '/events',
+ 			handler: () => {
+-				const stream = openStream()
++				const stream = createStream()
+ 				const payload = 'y'.repeat(32_768)
+ 				let unavailable = 0
+ 				for (let index = 0; index < 32; index += 1) {
+@@ -1331,13 +1343,13 @@ describe('Server — capstone', () => {
+ 		expect(await response.text()).toBe('user not found')
+ 	})
+ 
+-	it('an SSE route via openStream is consumed incrementally by fetch', async () => {
++	it('an SSE route via createStream is consumed incrementally by fetch', async () => {
+ 		const dispatcher = createDispatcher<AppState>()
+ 		dispatcher.add({
+ 			method: 'GET',
+ 			path: '/events',
+ 			handler: () => {
+-				const stream = openStream()
++				const stream = createStream()
+ 				stream.write({ event: 'greeting', data: 'hello' })
+ 				void waitForDelay(30).then(() => {
+ 					stream.write({ event: 'greeting', data: 'world' })
+diff --git a/tests/src/server/errors.test.ts b/tests/src/server/errors.test.ts
+index 11c3689..a61130f 100644
+--- a/tests/src/server/errors.test.ts
++++ b/tests/src/server/errors.test.ts
+@@ -1,5 +1,12 @@
+ import { describe, expect, it } from 'vitest'
+-import { ContentTooLargeError, HTTP_ERROR_BRAND, HTTPError, isHTTPError } from '@src/server'
++import {
++	ContentTooLargeError,
++	HTTP_ERROR_BRAND,
++	HTTPError,
++	isHTTPError,
++	isServerError,
++	ServerError,
++} from '@src/server'
+ 
+ describe('HTTPError', () => {
+ 	it('carries the status and message', () => {
+@@ -81,3 +88,43 @@ describe('isHTTPError', () => {
+ 		expect(isHTTPError(foreignSubclass)).toBe(true)
+ 	})
+ })
++
++describe('ServerError', () => {
++	it('carries the code, the message, and its name', () => {
++		const error = new ServerError('status', "server cannot start from 'listening'")
++		expect(error.code).toBe('status')
++		expect(error.message).toBe("server cannot start from 'listening'")
++		expect(error.name).toBe('ServerError')
++		expect(error.context).toBeUndefined()
++	})
++
++	it('carries an optional context record', () => {
++		const error = new ServerError('status', 'refused', { status: 'stopping' })
++		expect(error.context).toEqual({ status: 'stopping' })
++	})
++
++	it('is a real Error instance and not an HTTPError', () => {
++		const error = new ServerError('status', 'refused')
++		expect(error).toBeInstanceOf(Error)
++		expect(error).not.toBeInstanceOf(HTTPError)
++		expect(isHTTPError(error)).toBe(false)
++	})
++})
++
++describe('isServerError', () => {
++	it('narrows a ServerError', () => {
++		expect(isServerError(new ServerError('status', 'refused'))).toBe(true)
++	})
++
++	it('rejects a generic Error and an HTTPError', () => {
++		expect(isServerError(new Error('plain'))).toBe(false)
++		expect(isServerError(new HTTPError(404, 'not found'))).toBe(false)
++	})
++
++	it('rejects non-error values and a bare code-carrying lookalike', () => {
++		expect(isServerError(undefined)).toBe(false)
++		expect(isServerError(null)).toBe(false)
++		expect(isServerError('ServerError')).toBe(false)
++		expect(isServerError({ code: 'status', message: 'refused' })).toBe(false)
++	})
++})
+diff --git a/tests/src/server/factories.test.ts b/tests/src/server/factories.test.ts
+index d8107d5..6a2445a 100644
+--- a/tests/src/server/factories.test.ts
++++ b/tests/src/server/factories.test.ts
+@@ -1,12 +1,19 @@
+ import { describe, expect, expectTypeOf, it } from 'vitest'
+-import type { NegotiatorInterface, ServerInterface } from '@src/server'
++import type { NegotiatorInterface, ServerInterface, StreamInterface } from '@src/server'
+ import { createDispatcher } from '@orkestrel/router'
+-import { createNegotiator, createServer, Negotiator, Server } from '@src/server'
++import {
++	createNegotiator,
++	createServer,
++	createStream,
++	Negotiator,
++	Server,
++	Stream,
++} from '@src/server'
+ 
+-// §16 mirror of `src/server/factories.ts` — `createNegotiator` round-trip
+-// (instance satisfies the interface) plus its return-type assertion, and
+-// `createServer` round-trip (instance satisfies the interface), option
+-// threading, and construction guards firing through the factory.
++// Mirror of `src/server/factories.ts` — each factory's round-trip (the instance
++// it returns satisfies the interface it declares) plus its return-type
++// assertion, `createServer`'s option threading, and the construction guards
++// firing through the factory.
+ 
+ describe('createNegotiator — round-trip', () => {
+ 	it('returns a Negotiator instance implementing NegotiatorInterface', () => {
+@@ -90,3 +97,35 @@ describe('createServer — round-trip', () => {
+ 		>()
+ 	})
+ })
++
++describe('createStream — round-trip', () => {
++	it('returns a Stream instance implementing StreamInterface, open and writable', () => {
++		const stream = createStream()
++		expect(stream).toBeInstanceOf(Stream)
++		const check: StreamInterface = stream
++		expect(check).toBe(stream)
++		expect(stream.closed).toBe(false)
++		stream.end()
++	})
++
++	it('threads the status and header options through to the response', () => {
++		const stream = createStream({ status: 202, headers: { 'X-Trace': 'abc' } })
++		expect(stream.response.status).toBe(202)
++		expect(stream.response.headers.get('x-trace')).toBe('abc')
++		stream.end()
++	})
++
++	it('is independently usable — writes events a consumer reads off the response body', async () => {
++		const stream = createStream()
++		stream.write({ event: 'token', data: 'hello' })
++		stream.comment('keep-alive')
++		stream.end()
++		await expect(new Response(stream.response.body).text()).resolves.toBe(
++			'event: token\ndata: hello\n\n: keep-alive\n\n',
++		)
++	})
++
++	it('returns StreamInterface — a factory return type assertion', () => {
++		expectTypeOf(createStream()).toEqualTypeOf<StreamInterface>()
++	})
++})
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 9c88ecb..e7d6d35 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -1,21 +1,16 @@
+ import net from 'node:net'
+ import { describe, expect, expectTypeOf, it } from 'vitest'
+-import type {
+-	ConnectionInfo,
+-	MiddlewareContext,
+-	MiddlewareHandler,
+-	NextFunction,
+-	StreamInterface,
+-} from '@src/server'
++import type { Connection, MiddlewareContext, MiddlewareHandler, NextFunction } from '@src/server'
+ import { decodeBase64URL, encodeBase64URL } from '@orkestrel/codec'
+ import { createDispatcher } from '@orkestrel/router'
+ import {
+-	appendCookie,
+ 	clearCookie,
+-	clientRateKey,
+-	codingQuality,
+ 	compose,
+ 	computeBodyETag,
++	computeClientKey,
++	computeCodingQuality,
++	computeIPv6Network,
++	computeLanguageQuality,
+ 	ContentTooLargeError,
+ 	decodeCookieValue,
+ 	decompressRequestBody,
+@@ -27,17 +22,15 @@ import {
+ 	isCookieName,
+ 	isDangerousKey,
+ 	isValidRequestId,
+-	ipv6Network,
+-	languageQuality,
+ 	matchesETag,
+ 	matchMediaType,
+ 	mergeVary,
+ 	negotiateEncoding,
+ 	normalizeSecret,
+-	openStream,
+ 	parseAcceptHeader,
+ 	parseCookies,
+ 	parseRange,
++	pickCoding,
+ 	readBody,
+ 	readSignedCookie,
+ 	requestEncoding,
+@@ -287,13 +280,13 @@ describe('MiddlewareContext<TState> / NextFunction / MiddlewareHandler<TState> 
+ 	})
+ })
+ 
+-describe('ConnectionInfo — shape', () => {
++describe('Connection — shape', () => {
+ 	it('exposes an optional ip and a required encrypted boolean', () => {
+-		expectTypeOf<ConnectionInfo>().toHaveProperty('ip')
+-		expectTypeOf<ConnectionInfo['ip']>().toEqualTypeOf<string | undefined>()
+-		expectTypeOf<ConnectionInfo['encrypted']>().toEqualTypeOf<boolean>()
+-		const connection: ConnectionInfo = { encrypted: false }
+-		expectTypeOf(connection).toEqualTypeOf<ConnectionInfo>()
++		expectTypeOf<Connection>().toHaveProperty('ip')
++		expectTypeOf<Connection['ip']>().toEqualTypeOf<string | undefined>()
++		expectTypeOf<Connection['encrypted']>().toEqualTypeOf<boolean>()
++		const connection: Connection = { encrypted: false }
++		expectTypeOf(connection).toEqualTypeOf<Connection>()
+ 	})
+ })
+ 
+@@ -386,20 +379,20 @@ describe('resolveSecure', () => {
+ 	})
+ })
+ 
+-describe('appendCookie / clearCookie', () => {
+-	it('appends without clobbering a prior Set-Cookie', () => {
++describe('clearCookie', () => {
++	it('writes a Max-Age=0 expiry', () => {
+ 		const headers = new Headers()
+-		appendCookie(headers, serializeCookie('a', '1'))
+-		appendCookie(headers, serializeCookie('b', '2'))
+-		const value = headers.get('set-cookie') ?? ''
+-		expect(value).toContain('a=1')
+-		expect(value).toContain('b=2')
++		clearCookie(headers, 'session')
++		expect(headers.get('set-cookie')).toContain('Max-Age=0')
+ 	})
+ 
+-	it('clearCookie writes a Max-Age=0 expiry', () => {
++	it('accumulates onto a prior Set-Cookie rather than clobbering it', async () => {
+ 		const headers = new Headers()
+-		clearCookie(headers, 'session')
+-		expect(headers.get('set-cookie')).toContain('Max-Age=0')
++		await writeSignedCookie(headers, 'session', 'user-1', 'shh')
++		clearCookie(headers, 'legacy')
++		const value = headers.get('set-cookie') ?? ''
++		expect(value).toContain('session=')
++		expect(value).toContain('legacy=')
+ 	})
+ })
+ 
+@@ -552,16 +545,32 @@ describe('parseAcceptHeader', () => {
+ 	})
+ })
+ 
+-describe('codingQuality / negotiateEncoding', () => {
++describe('computeCodingQuality / pickCoding / negotiateEncoding', () => {
+ 	it('scores an exact match over a wildcard', () => {
+ 		const entries = parseAcceptHeader('gzip;q=0.5, *;q=0.1')
+-		expect(codingQuality(entries, 'gzip')).toBe(0.5)
+-		expect(codingQuality(entries, 'br')).toBe(0.1)
++		expect(computeCodingQuality(entries, 'gzip')).toBe(0.5)
++		expect(computeCodingQuality(entries, 'br')).toBe(0.1)
+ 	})
+ 
+ 	it('an explicit ;q=0 rejects even with a wildcard present', () => {
+ 		const entries = parseAcceptHeader('gzip;q=0, *;q=1')
+-		expect(codingQuality(entries, 'gzip')).toBe(0)
++		expect(computeCodingQuality(entries, 'gzip')).toBe(0)
++	})
++
++	it('picks the highest-scoring offer from already parsed entries', () => {
++		const entries = parseAcceptHeader('gzip;q=0.5, deflate;q=0.9')
++		expect(pickCoding(entries, ['gzip', 'deflate'])).toBe('deflate')
++	})
++
++	it('picks in server preference order on a client tie', () => {
++		const entries = parseAcceptHeader('gzip;q=1.0, deflate;q=1.0')
++		expect(pickCoding(entries, ['deflate', 'gzip'])).toBe('deflate')
++	})
++
++	it('picks nothing from an empty offer list or an unacceptable one', () => {
++		const entries = parseAcceptHeader('br;q=1.0')
++		expect(pickCoding(entries, [])).toBeUndefined()
++		expect(pickCoding(entries, ['gzip', 'deflate'])).toBeUndefined()
+ 	})
+ 
+ 	it('negotiates in server preference order on a client tie', () => {
+@@ -606,30 +615,30 @@ describe('matchMediaType', () => {
+ 	})
+ })
+ 
+-describe('languageQuality', () => {
++describe('computeLanguageQuality', () => {
+ 	it('exact match', () => {
+ 		const entries = parseAcceptHeader('en-US, en;q=0.8')
+-		expect(languageQuality(entries, 'en-US')).toBe(1)
++		expect(computeLanguageQuality(entries, 'en-US')).toBe(1)
+ 	})
+ 
+ 	it('primary-tag prefix match', () => {
+ 		const entries = parseAcceptHeader('en;q=0.8')
+-		expect(languageQuality(entries, 'en-US')).toBe(0.8)
++		expect(computeLanguageQuality(entries, 'en-US')).toBe(0.8)
+ 	})
+ 
+ 	it('wildcard match', () => {
+ 		const entries = parseAcceptHeader('*;q=0.5')
+-		expect(languageQuality(entries, 'fr')).toBe(0.5)
++		expect(computeLanguageQuality(entries, 'fr')).toBe(0.5)
+ 	})
+ 
+ 	it('is 0 on a ;q=0 rejection', () => {
+ 		const entries = parseAcceptHeader('en;q=0')
+-		expect(languageQuality(entries, 'en')).toBe(0)
++		expect(computeLanguageQuality(entries, 'en')).toBe(0)
+ 	})
+ 
+ 	it('is 0 when nothing matches', () => {
+ 		const entries = parseAcceptHeader('fr')
+-		expect(languageQuality(entries, 'en')).toBe(0)
++		expect(computeLanguageQuality(entries, 'en')).toBe(0)
+ 	})
+ })
+ 
+@@ -803,27 +812,27 @@ describe('isValidRequestId', () => {
+ 	})
+ })
+ 
+-describe('ipv6Network / clientRateKey', () => {
++describe('computeIPv6Network / computeClientKey', () => {
+ 	it('collapses a full IPv6 address to its /64 network', () => {
+-		expect(ipv6Network('2001:db8:1:2::1')).toBe('2001:db8:1:2::/64')
+-		expect(ipv6Network('2001:db8:1:2:dead:beef:0:9')).toBe('2001:db8:1:2::/64')
++		expect(computeIPv6Network('2001:db8:1:2::1')).toBe('2001:db8:1:2::/64')
++		expect(computeIPv6Network('2001:db8:1:2:dead:beef:0:9')).toBe('2001:db8:1:2::/64')
+ 	})
+ 
+ 	it('strips a zone id before expanding', () => {
+-		expect(ipv6Network('fe80::1%eth0')).toBe('fe80:0:0:0::/64')
++		expect(computeIPv6Network('fe80::1%eth0')).toBe('fe80:0:0:0::/64')
+ 	})
+ 
+ 	it('does not collapse an IPv4-mapped address', () => {
+-		expect(ipv6Network('::ffff:192.0.2.1')).toBeUndefined()
++		expect(computeIPv6Network('::ffff:192.0.2.1')).toBeUndefined()
+ 	})
+ 
+ 	it('is undefined for a plain IPv4 address', () => {
+-		expect(ipv6Network('192.0.2.1')).toBeUndefined()
++		expect(computeIPv6Network('192.0.2.1')).toBeUndefined()
+ 	})
+ 
+-	it('clientRateKey collapses IPv6 but leaves IPv4 unchanged', () => {
+-		expect(clientRateKey('2001:db8:1:2::1')).toBe('2001:db8:1:2::/64')
+-		expect(clientRateKey('192.0.2.1')).toBe('192.0.2.1')
++	it('computeClientKey collapses IPv6 but leaves IPv4 unchanged', () => {
++		expect(computeClientKey('2001:db8:1:2::1')).toBe('2001:db8:1:2::/64')
++		expect(computeClientKey('192.0.2.1')).toBe('192.0.2.1')
+ 	})
+ })
+ 
+@@ -851,79 +860,6 @@ describe('serializeEvent', () => {
+ 	})
+ })
+ 
+-describe('openStream', () => {
+-	it('exposes boolean write readiness and an asynchronous drain wakeup', () => {
+-		expectTypeOf<StreamInterface['write']>().returns.toEqualTypeOf<boolean>()
+-		expectTypeOf<StreamInterface['drain']>().returns.toEqualTypeOf<Promise<void>>()
+-	})
+-
+-	it('opens a Response with the SSE headers', () => {
+-		const stream = openStream()
+-		expect(stream.response.headers.get('content-type')).toContain('text/event-stream')
+-		expect(stream.closed).toBe(false)
+-	})
+-
+-	it('is a safe no-op once ended', async () => {
+-		const stream = openStream()
+-		stream.end()
+-		expect(stream.closed).toBe(true)
+-		expect(stream.write({ data: 'late' })).toBe(false)
+-		expect(() => stream.comment('late')).not.toThrow()
+-		await expect(stream.drain()).resolves.toBeUndefined()
+-		expect(() => stream.end()).not.toThrow()
+-	})
+-
+-	it('keeps accepting events when a caller ignores the readiness signal', async () => {
+-		const stream = openStream()
+-		expect(stream.write({ event: 'token', data: 'first' })).toBe(false)
+-		expect(stream.write({ event: 'token', data: 'second' })).toBe(false)
+-		stream.end()
+-		const text = await new Response(stream.response.body).text()
+-		expect(text).toBe('event: token\ndata: first\n\nevent: token\ndata: second\n\n')
+-	})
+-
+-	it('parks at the stream high-water mark and wakes on the next consumer pull', async () => {
+-		const stream = openStream()
+-		expect(stream.write({ data: 'queued' })).toBe(false)
+-		let drained = false
+-		const draining = stream.drain().then(() => {
+-			drained = true
+-		})
+-		await Promise.resolve()
+-		expect(drained).toBe(false)
+-		const body = stream.response.body
+-		expect(body).not.toBeNull()
+-		if (body === null) return
+-		const reader = body.getReader()
+-		const first = await reader.read()
+-		await draining
+-		expect(drained).toBe(true)
+-		expect(new TextDecoder().decode(first.value)).toBe('data: queued\n\n')
+-		stream.end()
+-		await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
+-	})
+-
+-	it('settles a parked producer when the stream ends', async () => {
+-		const stream = openStream()
+-		expect(stream.write({ data: 'queued' })).toBe(false)
+-		const draining = stream.drain()
+-		stream.end()
+-		await expect(draining).resolves.toBeUndefined()
+-	})
+-
+-	it('flips closed and becomes a safe no-op when the CONSUMER cancels the stream', async () => {
+-		const stream = openStream()
+-		const body = stream.response.body
+-		expect(body).not.toBeNull()
+-		if (body === null) return
+-		const reader = body.getReader()
+-		await reader.cancel()
+-		expect(stream.closed).toBe(true)
+-		expect(stream.write({ data: 'after-cancel' })).toBe(false)
+-		await expect(stream.drain()).resolves.toBeUndefined()
+-	})
+-})
+-
+ // ── Prototype-pollution scrub ────────────────────────────────────────────────────
+ 
+ describe('isDangerousKey / scrubPrototype', () => {

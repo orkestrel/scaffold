@@ -1,0 +1,3618 @@
+diff --git a/README.md b/README.md
+index 525b666..c5091e8 100644
+--- a/README.md
++++ b/README.md
+@@ -28,17 +28,18 @@ npm install @orkestrel/interpret
+ ## Usage
+ 
+ ```ts
+-import { createInterpret } from '@orkestrel/interpret'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import { createExtractor, createInterpret } from '@orkestrel/interpret'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ 
+ const interpret = createInterpret({
+-	extractor: {
+-		extract: () => ({
+-			intent: { action: 'calculate', domain: 'arithmetic', confidence: 1 },
+-			numbers: [42],
+-			complete: true,
+-		}),
+-	},
++	extractor: createExtractor({
++		actions: { calculate: 'calculate' },
++		domains: { arithmetic: ['arithmetic'] },
++	}),
+ 	templates: [
+ 		{
+ 			id: 't1',
+@@ -48,8 +49,8 @@ const interpret = createInterpret({
+ 			mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+ 			defaults: [],
+ 			computations: [],
+-			definition: quantitativeDefinition('t1', 'Arithmetic', [
+-				factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++			definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++				createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 			]),
+ 		},
+ 	],
+diff --git a/guides/interpret.md b/guides/interpret.md
+index bb672ac..c72d963 100644
+--- a/guides/interpret.md
++++ b/guides/interpret.md
+@@ -20,12 +20,16 @@
+ 
+ ## Surface
+ 
+-Register a template, interpret text through the five-stage pipeline, then
++Add a template, interpret text through the five-stage pipeline, then
+ render the result back to prose:
+ 
+ ```ts
+ import { createExtractor, createInterpret } from '@orkestrel/interpret'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ 
+ const interpret = createInterpret({
+ 	extractor: createExtractor({
+@@ -41,8 +45,8 @@ const interpret = createInterpret({
+ 			mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+ 			defaults: [],
+ 			computations: [],
+-			definition: quantitativeDefinition('t1', 'Arithmetic', [
+-				factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++			definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++				createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 			]),
+ 		},
+ 	],
+@@ -53,7 +57,7 @@ result.subject // { value: 42 }
+ result.complete // true
+ 
+ interpret.emitter.on('interpret', (interpretation) => interpretation.digest)
+-interpret.describe(result.definition ?? quantitativeDefinition('t1', 'Arithmetic', []))
++interpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))
+ interpret.destroy()
+ ```
+ 
+@@ -65,67 +69,66 @@ than throwing.
+ 
+ ### Types
+ 
+-| Type                         | Kind      | Shape                                                                                                                                                                                                            |
+-| ---------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `ProvenanceCategory`         | type      | `'extracted' \| 'carried' \| 'default' \| 'computed' \| 'subject'` — how one value was obtained.                                                                                                                 |
+-| `InterpretStage`             | type      | `'normalize' \| 'extract' \| 'clarify' \| 'format' \| 'generate'` — the five fixed pipeline phases, in order.                                                                                                    |
+-| `InterpretErrorCode`         | type      | `'NORMALIZE_FAILED' \| 'EXTRACT_FAILED' \| 'CLARIFY_FAILED' \| 'FORMAT_FAILED' \| 'GENERATE_FAILED' \| 'NO_TEMPLATE' \| 'LOW_CONFIDENCE' \| 'INVALID_TEMPLATE' \| 'DESTROYED'` — coded `InterpretError` reasons. |
+-| `EntityMapping`              | interface | `{ entity, aliases, field, required? }` — one entity-extraction rule pointing at a subject field.                                                                                                                |
+-| `FieldDefault`               | interface | `{ field, value }` — a fallback value filled onto an unresolved field.                                                                                                                                           |
+-| `ComputedField`              | interface | `{ field, expression }` — a declaratively computed field over a reasons `SymbolicExpression` tree.                                                                                                               |
+-| `Template`                   | interface | `{ id, name, domain, intents, mappings, defaults, computations, definition }` — a named, versionable interpretation template.                                                                                    |
+-| `Provenance`                 | interface | `{ category, detail? }` — how one value landed, with an optional strategy detail.                                                                                                                                |
+-| `Intent`                     | interface | `{ action, domain, confidence }` — the classified action + domain for one interpretation.                                                                                                                        |
+-| `Entity`                     | interface | `{ name, value, provenance, confidence }` — one value assigned to a template's entity mapping.                                                                                                                   |
+-| `Ambiguity`                  | interface | `{ field, question, candidates, required }` — an unresolved field surfaced as a human-readable question.                                                                                                         |
+-| `FieldMapping`               | interface | `{ field, entity?, value, provenance, confidence }` — one audited field of the built subject.                                                                                                                    |
+-| `TextChange`                 | interface | `{ from, to }` — one normalization substitution applied to the raw text.                                                                                                                                         |
+-| `StageRecord`                | interface | `{ stage, input, output, failed, error? }` — a structured input/output snapshot of one pipeline phase.                                                                                                           |
+-| `StageFailure`               | interface | `{ stage, code, message }` — a visible marker for a stage that threw.                                                                                                                                            |
+-| `NormalizeResult`            | interface | `{ text, changes }` — the `Normalizer` stage's output.                                                                                                                                                           |
+-| `ExtractResult`              | interface | `{ intent, numbers, complete }` — the `Extractor` stage's output.                                                                                                                                                |
+-| `ClarifyResult`              | interface | `{ entities, ambiguities, complete }` — the `Clarifier` stage's output.                                                                                                                                          |
+-| `FormatResult`               | interface | `{ prompt }` — the `Formatter` stage's output.                                                                                                                                                                   |
+-| `GenerateResult`             | interface | `{ subject, definition, mappings, confidence }` — the `Generator` stage's output.                                                                                                                                |
+-| `Interpretation`             | interface | `{ text, normalized, intent, entities, subject?, definition?, mappings, ambiguities, prompt, stages, failures, complete, confidence, digest }` — the full, replayable outcome of one `interpret()` call.         |
+-| `TemplateRecord`             | interface | `{ id, template, version, hash }` — a versioned, content-hashed `Template`.                                                                                                                                      |
+-| `SubjectRecord`              | interface | `{ id, subject, version, hash }` — a versioned, content-hashed `Subject`.                                                                                                                                        |
+-| `DefinitionRecord`           | interface | `{ id, definition, version, hash }` — a versioned, content-hashed `Definition`.                                                                                                                                  |
+-| `InterpretEventMap`          | type      | `Interpret`'s push observation surface — `interpret(result)` · `register(templateId)` · `error(error)` · `destroy()`.                                                                                            |
+-| `RecordEventMap`             | type      | The push observation surface every record registry shares — `add(id)` · `remove(id)` · `destroy()`.                                                                                                              |
+-| `TemplateManagerEventMap`    | type      | `TemplateManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                           |
+-| `SubjectManagerEventMap`     | type      | `SubjectManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                            |
+-| `DefinitionManagerEventMap`  | type      | `DefinitionManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                         |
+-| `InterpretContextEventMap`   | type      | `InterpretContext`'s push observation surface — `add(digest)` · `clear()` · `destroy()`.                                                                                                                         |
+-| `NarratorFormatter`          | type      | `(value: unknown) => string` — a pure formatting function for one lexicon `value()` unit.                                                                                                                        |
+-| `Lexicon`                    | interface | `{ phrases?, labels?, templates? }` — caller-injected wording data for the reverse direction.                                                                                                                    |
+-| `NarratorOptions`            | interface | `{ lexicon?, formatters? }` — input to `createNarrator`.                                                                                                                                                         |
+-| `NormalizerOptions`          | interface | `{ contractions?, abbreviations?, corrections? }` — input to `createNormalizer`.                                                                                                                                 |
+-| `ExtractorOptions`           | interface | `{ actions?, domains? }` — input to `createExtractor`.                                                                                                                                                           |
+-| `ClarifierOptions`           | interface | `{ floor?, narrator? }` — input to `createClarifier`; `narrator` is the wording seam for the `ambiguity.entity` question.                                                                                        |
+-| `FormatterOptions`           | interface | `{ verbs?, narrator? }` — input to `createFormatter`; `narrator` is the wording seam for the `prompt.*` clauses.                                                                                                 |
+-| `GeneratorOptions`           | interface | `{}` — input to `createGenerator`; an empty extension seam today.                                                                                                                                                |
+-| `TemplateManagerOptions`     | interface | `{ templates?, on?, error? }` — input to `createTemplateManager`.                                                                                                                                                |
+-| `SubjectManagerOptions`      | interface | `{ subjects?, on?, error? }` — input to `createSubjectManager`.                                                                                                                                                  |
+-| `DefinitionManagerOptions`   | interface | `{ definitions?, on?, error? }` — input to `createDefinitionManager`.                                                                                                                                            |
+-| `RecordStamp`                | interface | `{ id, version, hash }` — the identity, version, and content hash a `RecordManager` derives before a record's concrete shape is built.                                                                           |
+-| `RecordFunction`             | type      | `(stamp: RecordStamp, value: TValue) => TRecord` — builds one concrete record from its stamp and the value it holds.                                                                                             |
+-| `RecordManagerOptions`       | interface | `{ entity, on?, error? }` — input to the `RecordManager` constructor; `entity` names what the registry holds.                                                                                                    |
+-| `RecordManagerInterface`     | interface | The shared registry-engine contract — `emitter` / `size` + `has` / `record` / `records` / `add` / `remove` / `destroy`.                                                                                          |
+-| `ManagerAddOptions`          | interface | `{ id? }` — per-call options shared by every manager's `add` method.                                                                                                                                             |
+-| `InterpretContextOptions`    | interface | `{ session?, history?, on?, error? }` — input to `createInterpretContext`.                                                                                                                                       |
+-| `InterpretOptions`           | interface | `{ templates?, context?, normalizer?, extractor?, clarifier?, formatter?, generator?, similarity?, floor?, history?, lexicon?, formatters?, on?, error? }` — input to `createInterpret`.                         |
+-| `NormalizerInterface`        | interface | The `Normalizer` stage contract — `normalize`.                                                                                                                                                                   |
+-| `ExtractorInterface`         | interface | The `Extractor` stage contract — `extract`.                                                                                                                                                                      |
+-| `ClarifierInterface`         | interface | The `Clarifier` stage contract — `clarify`.                                                                                                                                                                      |
+-| `FormatterInterface`         | interface | The `Formatter` stage contract — `format`.                                                                                                                                                                       |
+-| `GeneratorInterface`         | interface | The `Generator` stage contract — `generate`.                                                                                                                                                                     |
+-| `NarratorInterface`          | interface | The lexicon-driven reverse-rendering contract — `phrase` / `label` / `line` / `value` / `describe` / `narrate`.                                                                                                  |
+-| `TemplateManagerInterface`   | interface | The template registry contract — `emitter` / `size` + `has` / `template` / `templates` / `add` / `remove` / `destroy`.                                                                                           |
+-| `SubjectManagerInterface`    | interface | The subject registry contract — `emitter` / `size` + `has` / `subject` / `subjects` / `add` / `remove` / `destroy`.                                                                                              |
+-| `DefinitionManagerInterface` | interface | The definition registry contract — `emitter` / `size` + `has` / `definition` / `definitions` / `add` / `remove` / `destroy`.                                                                                     |
+-| `InterpretContextInterface`  | interface | The cross-turn context contract — `emitter` / `session` (`string \| undefined`) / `subjects` / `definitions` + `previous` / `entities` / `add` / `clear` / `destroy`.                                            |
+-| `InterpretInterface`         | interface | The interpretation orchestrator contract — `emitter` + `interpret` / `register` / `unregister` / `template` / `templates` / `describe` / `narrate` / `destroy`.                                                  |
++| Type                         | Kind      | Shape                                                                                                                                                                                                    |
++| ---------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `ProvenanceCategory`         | type      | `'extracted' \| 'carried' \| 'default' \| 'computed' \| 'subject'` — how one value was obtained.                                                                                                         |
++| `InterpretStage`             | type      | `'normalize' \| 'extract' \| 'clarify' \| 'format' \| 'generate'` — the five fixed pipeline phases, in order.                                                                                            |
++| `InterpretErrorCode`         | type      | `'NORMALIZE_FAILED' \| 'EXTRACT_FAILED' \| 'CLARIFY_FAILED' \| 'FORMAT_FAILED' \| 'GENERATE_FAILED' \| 'NO_TEMPLATE' \| 'LOW_CONFIDENCE' \| 'DESTROYED'` — coded `InterpretError` reasons.               |
++| `EntityMapping`              | interface | `{ entity, aliases, field, required? }` — one entity-extraction rule pointing at a subject field.                                                                                                        |
++| `FieldDefault`               | interface | `{ field, value }` — a fallback value filled onto an unresolved field.                                                                                                                                   |
++| `ComputedField`              | interface | `{ field, expression }` — a declaratively computed field over a reasons `SymbolicExpression` tree.                                                                                                       |
++| `Template`                   | interface | `{ id, name, domain, intents, mappings, defaults, computations, definition }` — a named, versionable interpretation template.                                                                            |
++| `Provenance`                 | interface | `{ category, detail? }` — how one value landed, with an optional strategy detail.                                                                                                                        |
++| `Intent`                     | interface | `{ action?, domain?, confidence }` — the classified action + domain for one interpretation; an unmatched axis is absent.                                                                                 |
++| `Entity`                     | interface | `{ name, value, provenance, confidence }` — one value assigned to a template's entity mapping.                                                                                                           |
++| `Ambiguity`                  | interface | `{ field, question, candidates, required }` — an unresolved field surfaced as a human-readable question.                                                                                                 |
++| `FieldMapping`               | interface | `{ field, entity?, value, provenance, confidence }` — one audited field of the built subject.                                                                                                            |
++| `TextChange`                 | interface | `{ from, to }` — one normalization substitution applied to the raw text.                                                                                                                                 |
++| `StageRecord`                | interface | `{ stage, input, output, failed, error? }` — a structured input/output snapshot of one pipeline phase.                                                                                                   |
++| `StageFailure`               | interface | `{ stage, code, message }` — a visible marker for a stage that threw.                                                                                                                                    |
++| `NormalizeResult`            | interface | `{ text, changes }` — the `Normalizer` stage's output.                                                                                                                                                   |
++| `ExtractResult`              | interface | `{ intent, numbers, complete }` — the `Extractor` stage's output.                                                                                                                                        |
++| `ClarifyResult`              | interface | `{ entities, ambiguities, complete }` — the `Clarifier` stage's output.                                                                                                                                  |
++| `FormatResult`               | interface | `{ prompt }` — the `Formatter` stage's output.                                                                                                                                                           |
++| `GenerateResult`             | interface | `{ subject, definition, mappings, confidence }` — the `Generator` stage's output.                                                                                                                        |
++| `Interpretation`             | interface | `{ text, normalized, intent, entities, subject?, definition?, mappings, ambiguities, prompt, stages, failures, complete, confidence, digest }` — the full, replayable outcome of one `interpret()` call. |
++| `TemplateRecord`             | interface | `{ id, template, version, hash }` — a versioned, content-hashed `Template`.                                                                                                                              |
++| `SubjectRecord`              | interface | `{ id, subject, version, hash }` — a versioned, content-hashed `Subject`.                                                                                                                                |
++| `DefinitionRecord`           | interface | `{ id, definition, version, hash }` — a versioned, content-hashed `Definition`.                                                                                                                          |
++| `InterpretEventMap`          | type      | `Interpret`'s push observation surface — `interpret(result)` · `add(templateId)` · `error(error)` · `destroy()`.                                                                                         |
++| `RecordEventMap`             | type      | The push observation surface every record registry shares — `add(id)` · `remove(id)` · `destroy()`.                                                                                                      |
++| `TemplateManagerEventMap`    | type      | `TemplateManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                   |
++| `SubjectManagerEventMap`     | type      | `SubjectManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                    |
++| `DefinitionManagerEventMap`  | type      | `DefinitionManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                 |
++| `InterpretContextEventMap`   | type      | `InterpretContext`'s push observation surface — `add(digest)` · `clear()` · `destroy()`.                                                                                                                 |
++| `NarratorFormatter`          | type      | `(value: unknown) => string` — a pure formatting function for one lexicon `value()` unit.                                                                                                                |
++| `Lexicon`                    | interface | `{ phrases?, labels?, templates? }` — caller-injected wording data for the reverse direction.                                                                                                            |
++| `NarratorOptions`            | interface | `{ lexicon?, formatters? }` — input to `createNarrator`.                                                                                                                                                 |
++| `NormalizerOptions`          | interface | `{ contractions?, abbreviations?, corrections? }` — input to `createNormalizer`.                                                                                                                         |
++| `ExtractorOptions`           | interface | `{ actions?, domains? }` — input to `createExtractor`.                                                                                                                                                   |
++| `ClarifierOptions`           | interface | `{ floor?, narrator? }` — input to `createClarifier`; `narrator` is the wording seam for the `ambiguity.entity` question.                                                                                |
++| `FormatterOptions`           | interface | `{ verbs?, narrator? }` — input to `createFormatter`; `narrator` is the wording seam for the `prompt.*` clauses.                                                                                         |
++| `TemplateManagerOptions`     | interface | `{ templates?, on?, error? }` — input to `createTemplateManager`.                                                                                                                                        |
++| `SubjectManagerOptions`      | interface | `{ subjects?, on?, error? }` — input to `createSubjectManager`.                                                                                                                                          |
++| `DefinitionManagerOptions`   | interface | `{ definitions?, on?, error? }` — input to `createDefinitionManager`.                                                                                                                                    |
++| `RecordStamp`                | interface | `{ id, version, hash }` — the identity, version, and content hash a `RecordManager` derives before a record's concrete shape is built.                                                                   |
++| `RecordFunction`             | type      | `(stamp: RecordStamp, value: TValue) => TRecord` — builds one concrete record from its stamp and the value it holds.                                                                                     |
++| `RecordManagerOptions`       | interface | `{ entity, on?, error? }` — input to the `RecordManager` constructor; `entity` names what the registry holds.                                                                                            |
++| `RecordManagerInterface`     | interface | The shared registry-engine contract — `emitter` / `count` + `has` / `record` / `records` / `add` / `remove` / `destroy`.                                                                                 |
++| `RecordOptions`              | interface | `{ id? }` — per-call options for the record every manager's `add` method holds.                                                                                                                          |
++| `InterpretContextOptions`    | interface | `{ session?, history?, on?, error? }` — input to `createInterpretContext`.                                                                                                                               |
++| `InterpretOptions`           | interface | `{ templates?, context?, normalizer?, extractor?, clarifier?, formatter?, generator?, similarity?, floor?, history?, narrator?, on?, error? }` — input to `createInterpret`.                             |
++| `NormalizerInterface`        | interface | The `Normalizer` stage contract — `normalize`.                                                                                                                                                           |
++| `ExtractorInterface`         | interface | The `Extractor` stage contract — `extract`.                                                                                                                                                              |
++| `ClarifierInterface`         | interface | The `Clarifier` stage contract — `clarify`.                                                                                                                                                              |
++| `FormatterInterface`         | interface | The `Formatter` stage contract — `format`.                                                                                                                                                               |
++| `GeneratorInterface`         | interface | The `Generator` stage contract — `generate`.                                                                                                                                                             |
++| `NarratorInterface`          | interface | The lexicon-driven reverse-rendering contract — `phrase` / `label` / `line` / `value` / `describe` / `narrate`.                                                                                          |
++| `TemplateManagerInterface`   | interface | The template registry contract — `emitter` / `count` + `has` / `template` / `templates` / `add` / `remove` / `destroy`.                                                                                  |
++| `SubjectManagerInterface`    | interface | The subject registry contract — `emitter` / `count` + `has` / `subject` / `subjects` / `add` / `remove` / `destroy`.                                                                                     |
++| `DefinitionManagerInterface` | interface | The definition registry contract — `emitter` / `count` + `has` / `definition` / `definitions` / `add` / `remove` / `destroy`.                                                                            |
++| `InterpretContextInterface`  | interface | The cross-turn context contract — `emitter` / `session` (`string \| undefined`) / `subjects` / `definitions` + `previous` / `entities` / `add` / `clear` / `destroy`.                                    |
++| `InterpretInterface`         | interface | The interpretation orchestrator contract — `emitter` + `interpret` / `add` / `remove` / `template` / `templates` / `describe` / `narrate` / `destroy`.                                                   |
+ 
+ ### Constants
+ 
+@@ -134,7 +137,6 @@ than throwing.
+ | `DEFAULT_INTERPRET_SIMILARITY` | const | `0.8` — default fuzzy alias-match score threshold for `createInterpret` / `matchAlias`.                                                             |
+ | `DEFAULT_INTERPRET_FLOOR`      | const | `0.3` — default minimum intent confidence a template match must clear.                                                                              |
+ | `DEFAULT_INTERPRET_HISTORY`    | const | `16` — default `history` cap for an `InterpretContext`'s `previous()` ring buffer.                                                                  |
+-| `INTERPRET_ID`                 | const | `'interpret'` — default id for an `Interpret` orchestrator.                                                                                         |
+ | `PROVENANCE_CATEGORIES`        | const | Every `ProvenanceCategory` literal, frozen — the one home `isProvenance` checks the union from.                                                     |
+ | `INTERPRET_STAGES`             | const | Every `InterpretStage` literal in pipeline order, frozen — the one home the stage guards check from.                                                |
+ | `INTERPRET_ERROR_CODES`        | const | Every `InterpretErrorCode` literal, frozen — the one home `isStageFailure` checks the union from.                                                   |
+@@ -148,11 +150,6 @@ than throwing.
+ | `NUMBER_PATTERN`               | const | The shared numeric-entity extraction `RegExp` — leading `$`, thousands commas, decimal, `%`.                                                        |
+ | `UNSAFE_FIELD_SEGMENTS`        | const | `['__proto__', 'prototype', 'constructor']` — prototype-pollution-unsafe field-path segments.                                                       |
+ | `DEFAULT_CONTRACTIONS`         | const | Neutral built-in contraction expansions for `Normalizer`.                                                                                           |
+-| `DEFAULT_ABBREVIATIONS`        | const | Neutral built-in abbreviation expansions for `Normalizer` — empty by default.                                                                       |
+-| `DEFAULT_CORRECTIONS`          | const | Neutral built-in misspelling corrections for `Normalizer` — empty by default.                                                                       |
+-| `DEFAULT_ACTIONS`              | const | Neutral built-in action-verb vocabulary for `Extractor#extract` — empty by default.                                                                 |
+-| `DEFAULT_DOMAINS`              | const | Neutral built-in domain-keyword vocabulary for `Extractor#extract` — empty by default.                                                              |
+-| `DEFAULT_VERBS`                | const | Neutral built-in intent-verb phrasing for `Formatter#format` — empty by default.                                                                    |
+ | `DEFAULT_LEXICON`              | const | The neutral default `Lexicon` a `Narrator` merges caller data over — the reverse-direction lines plus the forward `prompt.*` / `ambiguity.*` lines. |
+ 
+ ```ts
+@@ -164,17 +161,11 @@ import {
+ 	CONFIDENCE_DEFAULT,
+ 	CONFIDENCE_EXACT,
+ 	CONFIDENCE_POSITIONAL,
+-	DEFAULT_ABBREVIATIONS,
+-	DEFAULT_ACTIONS,
+ 	DEFAULT_CONTRACTIONS,
+-	DEFAULT_CORRECTIONS,
+-	DEFAULT_DOMAINS,
+ 	DEFAULT_INTERPRET_FLOOR,
+ 	DEFAULT_INTERPRET_HISTORY,
+ 	DEFAULT_INTERPRET_SIMILARITY,
+ 	DEFAULT_LEXICON,
+-	DEFAULT_VERBS,
+-	INTERPRET_ID,
+ 	NUMBER_PATTERN,
+ 	UNSAFE_FIELD_SEGMENTS,
+ } from '@orkestrel/interpret'
+@@ -182,7 +173,6 @@ import {
+ DEFAULT_INTERPRET_SIMILARITY // 0.8
+ DEFAULT_INTERPRET_FLOOR // 0.3
+ DEFAULT_INTERPRET_HISTORY // 16
+-INTERPRET_ID // 'interpret'
+ CONFIDENCE_EXACT // 1
+ CONFIDENCE_ALIAS // 0.9
+ CONFIDENCE_COLLECT // 0.9
+@@ -193,11 +183,6 @@ CONFIDENCE_COMPUTED // 0.9
+ NUMBER_PATTERN.source // the numeric-entity pattern
+ UNSAFE_FIELD_SEGMENTS // ['__proto__', 'prototype', 'constructor']
+ DEFAULT_CONTRACTIONS["can't"] // 'cannot'
+-DEFAULT_ABBREVIATIONS // {}
+-DEFAULT_CORRECTIONS // {}
+-DEFAULT_ACTIONS // {}
+-DEFAULT_DOMAINS // {}
+-DEFAULT_VERBS // {}
+ DEFAULT_LEXICON.templates?.['subject.empty'] // 'with no fields'
+ DEFAULT_LEXICON.templates?.['prompt.base'] // '{{verb}} {{name}}'
+ DEFAULT_LEXICON.templates?.['ambiguity.entity'] // 'What is your {{entity}}?'
+@@ -267,7 +252,11 @@ import {
+ 	isStageRecord,
+ 	isTemplate,
+ } from '@orkestrel/interpret'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ 
+ isEntityMapping({ entity: 'age', aliases: ['years old'], field: 'age' }) // true
+ isFieldDefault({ field: 'term', value: 12 }) // true
+@@ -288,8 +277,8 @@ isTemplate({
+ 	mappings: [],
+ 	defaults: [],
+ 	computations: [],
+-	definition: quantitativeDefinition('t1', 'Arithmetic', [
+-		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++	definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 	]),
+ }) // true
+ isProvenance({ category: 'extracted', detail: 'alias', metadata: true }) // true — open
+@@ -310,32 +299,31 @@ guardEngine.destroy()
+ Pure, exported utility functions — the referentially-transparent leaves
+ behind the `Interpret` orchestrator and its stages.
+ 
+-| API                    | Kind     | Summary                                                                                                                                     |
+-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `escapeRegExp`         | function | Escape every regex metacharacter so text matches literally when compiled into a `RegExp`.                                                   |
+-| `setField`             | function | Copy-on-write write a value at a (possibly nested) field path — prototype-pollution-safe.                                                   |
+-| `deriveAggregateField` | function | Derive the sibling field path for a computed aggregate of a field — nests beside an array `FieldPath`, stays flat for a plain string field. |
+-| `applyReplacements`    | function | Replace every whole-word occurrence of a map's keys with their values.                                                                      |
+-| `collapseWhitespace`   | function | Collapse every run of whitespace to a single space and trim the ends.                                                                       |
+-| `tokenize`             | function | Split text into lowercase tokens, stripping punctuation outside a numeric/currency-safe allowlist.                                          |
+-| `extractNumbers`       | function | Mine every numeric literal from text.                                                                                                       |
+-| `assignEntities`       | function | Assign already-extracted numbers to a matched template's entity mappings.                                                                   |
+-| `classifyIntent`       | function | Classify the action + domain intent of text against caller-supplied vocabularies.                                                           |
+-| `scoreSimilarity`      | function | Bigram (Dice coefficient) string similarity, case-insensitive.                                                                              |
+-| `matchAlias`           | function | The best `scoreSimilarity` a token achieves against a list of aliases, gated by a threshold.                                                |
+-| `canonicalize`         | function | Render a value into a canonical, key-order-stable string.                                                                                   |
+-| `digestValue`          | function | Compute a canonical structural digest (FNV-1a, 8-hex-digit) of a pure-JSON value.                                                           |
+-| `scoreTemplate`        | function | Score how well a classified intent matches one template's domain + action.                                                                  |
+-| `matchTemplate`        | function | Find the best-scoring registered template for a classified intent, gated by a confidence floor.                                             |
+-| `variablesOf`          | function | Collect every variable name referenced by a symbolic expression tree.                                                                       |
+-| `resolveExpression`    | function | Evaluate a symbolic expression tree against resolved bindings.                                                                              |
+-| `describeSubject`      | function | Render a one-line, display-neutral description of a reasons `Subject`, through an injected `Narrator`.                                      |
++| API                  | Kind     | Summary                                                                                                                                |
++| -------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
++| `escapeRegExp`       | function | Escape every regex metacharacter so text matches literally when compiled into a `RegExp`.                                              |
++| `setField`           | function | Copy-on-write write a value at a (possibly nested) field path — prototype-pollution-safe.                                              |
++| `applyReplacements`  | function | Replace every whole-word occurrence of a map's keys with their values.                                                                 |
++| `collapseWhitespace` | function | Collapse every run of whitespace to a single space and trim the ends.                                                                  |
++| `tokenize`           | function | Split text into lowercase tokens, stripping punctuation outside a numeric/currency-safe allowlist.                                     |
++| `extractNumbers`     | function | Mine every numeric literal from text.                                                                                                  |
++| `assignEntities`     | function | Assign already-extracted numbers to a matched template's entity mappings.                                                              |
++| `classifyIntent`     | function | Classify the action + domain intent of text against caller-supplied vocabularies.                                                      |
++| `scoreSimilarity`    | function | Bigram (Dice coefficient) string similarity, case-insensitive.                                                                         |
++| `matchAlias`         | function | The best `scoreSimilarity` a token achieves against a list of aliases, gated by a threshold.                                           |
++| `canonicalize`       | function | Render a value into a canonical, key-order-stable string.                                                                              |
++| `canonicalizeNode`   | function | Render one node into its canonical string against the object ancestors already on the recursion path — the leaf behind `canonicalize`. |
++| `digestValue`        | function | Compute a canonical structural digest (FNV-1a, 8-hex-digit) of a pure-JSON value.                                                      |
++| `scoreTemplate`      | function | Score how well a classified intent matches one template's domain + action.                                                             |
++| `matchTemplate`      | function | Find the best-scoring registered template for a classified intent, gated by a confidence floor.                                        |
++| `variablesOf`        | function | Collect every variable name referenced by a symbolic expression tree.                                                                  |
++| `resolveExpression`  | function | Evaluate a symbolic expression tree against resolved bindings.                                                                         |
++| `describeSubject`    | function | Render a one-line, display-neutral description of a reasons `Subject`, through an injected `Narrator`.                                 |
+ 
+ ```ts
+ import {
+ 	applyReplacements,
+ 	collapseWhitespace,
+-	deriveAggregateField,
+ 	escapeRegExp,
+ 	setField,
+ 	tokenize,
+@@ -344,8 +332,6 @@ import {
+ escapeRegExp('a.b*c') // 'a\\.b\\*c'
+ setField({ age: 25 }, 'age', 30) // { age: 30 }
+ setField({}, ['address', 'city'], 'Reno') // { address: { city: 'Reno' } }
+-deriveAggregateField(['address', 'amounts'], 'Sum') // ['address', 'amountsSum']
+-deriveAggregateField('amounts', 'Sum') // 'amountsSum'
+ applyReplacements("can't stop", { "can't": 'cannot' }) // 'cannot stop'
+ collapseWhitespace('  a   b\t c ') // 'a b c'
+ tokenize('The rate is 85%.') // ['the', 'rate', 'is', '85%']
+@@ -380,6 +366,7 @@ direction:
+ ```ts
+ import {
+ 	canonicalize,
++	canonicalizeNode,
+ 	createNarrator,
+ 	describeSubject,
+ 	digestValue,
+@@ -390,8 +377,9 @@ import {
+ } from '@orkestrel/interpret'
+ 
+ canonicalize({ b: 1, a: 2 }) === canonicalize({ a: 2, b: 1 }) // true
++canonicalizeNode({ b: 1, a: 2 }, new Set()) // '{"a":2,"b":1}'
+ digestValue({ a: 1 }) === digestValue({ a: 1 }) // true — deterministic
+-matchTemplate({ action: '', domain: '', confidence: 0 }, [], 0.3) // undefined — empty registry
++matchTemplate({ confidence: 0 }, [], 0.3) // undefined — empty registry
+ variablesOf({
+ 	form: 'operation',
+ 	operator: 'divide',
+@@ -426,7 +414,8 @@ scoreTemplate(gate, template) // 1
+ ### Parsers
+ 
+ Coercers — each returns its type or `undefined` off-shape, and never throws.
+-`createTemplate` is the throwing half of the template-intake pair.
++Template intake is total: an off-shape template returns `undefined`, and a
++caller who wants a throw raises its own error from that `undefined`.
+ 
+ | API             | Kind     | Summary                                                                                                   |
+ | --------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+@@ -440,20 +429,19 @@ parseTemplate('not json') // undefined
+ 
+ ### Factories
+ 
+-| API                       | Kind     | Builds…                                                                                                       |
+-| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+-| `createInterpret`         | function | An `InterpretInterface` — the interpretation orchestrator, seeded from `InterpretOptions`.                    |
+-| `createNormalizer`        | function | A stateless `NormalizerInterface`.                                                                            |
+-| `createExtractor`         | function | A stateless `ExtractorInterface`.                                                                             |
+-| `createClarifier`         | function | A stateless `ClarifierInterface`.                                                                             |
+-| `createFormatter`         | function | A stateless `FormatterInterface`.                                                                             |
+-| `createGenerator`         | function | A stateless `GeneratorInterface`.                                                                             |
+-| `createTemplateManager`   | function | A working `TemplateManagerInterface`.                                                                         |
+-| `createSubjectManager`    | function | A working `SubjectManagerInterface`.                                                                          |
+-| `createDefinitionManager` | function | A working `DefinitionManagerInterface`.                                                                       |
+-| `createInterpretContext`  | function | A working `InterpretContextInterface`.                                                                        |
+-| `createTemplate`          | function | Validate and return a `Template` from plain data — throws `InterpretError('INVALID_TEMPLATE', …)` on failure. |
+-| `createNarrator`          | function | A stateless `NarratorInterface`.                                                                              |
++| API                       | Kind     | Builds…                                                                                    |
++| ------------------------- | -------- | ------------------------------------------------------------------------------------------ |
++| `createInterpret`         | function | An `InterpretInterface` — the interpretation orchestrator, seeded from `InterpretOptions`. |
++| `createNormalizer`        | function | A stateless `NormalizerInterface`.                                                         |
++| `createExtractor`         | function | A stateless `ExtractorInterface`.                                                          |
++| `createClarifier`         | function | A stateless `ClarifierInterface`.                                                          |
++| `createFormatter`         | function | A stateless `FormatterInterface`.                                                          |
++| `createGenerator`         | function | A stateless `GeneratorInterface`.                                                          |
++| `createTemplateManager`   | function | A working `TemplateManagerInterface`.                                                      |
++| `createSubjectManager`    | function | A working `SubjectManagerInterface`.                                                       |
++| `createDefinitionManager` | function | A working `DefinitionManagerInterface`.                                                    |
++| `createInterpretContext`  | function | A working `InterpretContextInterface`.                                                     |
++| `createNarrator`          | function | A stateless `NarratorInterface`.                                                           |
+ 
+ ```ts
+ import {
+@@ -467,10 +455,13 @@ import {
+ 	createNarrator,
+ 	createNormalizer,
+ 	createSubjectManager,
+-	createTemplate,
+ 	createTemplateManager,
+ } from '@orkestrel/interpret'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ 
+ const interpret = createInterpret()
+ interpret.destroy()
+@@ -483,30 +474,33 @@ createGenerator()
+ createInterpretContext({ session: 'turn-1', history: 4 })
+ createNarrator({ lexicon: { templates: { 'subject.empty': 'nothing here' } } })
+ 
+-const template = createTemplate({
+-	id: 't1',
+-	name: 'Arithmetic',
+-	domain: 'arithmetic',
+-	intents: ['calculate'],
+-	mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+-	defaults: [],
+-	computations: [],
+-	definition: quantitativeDefinition('t1', 'Arithmetic', [
+-		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
+-	]),
++const templates = createTemplateManager({
++	templates: [
++		{
++			id: 't1',
++			name: 'Arithmetic',
++			domain: 'arithmetic',
++			intents: ['calculate'],
++			mappings: [{ entity: 'value', aliases: [], field: 'value' }],
++			defaults: [],
++			computations: [],
++			definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++				createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
++			]),
++		},
++	],
+ })
+-const templates = createTemplateManager({ templates: [template] })
+-templates.size // 1
++templates.count // 1
+ templates.destroy()
+ 
+-createSubjectManager({ subjects: [{ value: 1 }] }).size // 1
++createSubjectManager({ subjects: [{ value: 1 }] }).count // 1
+ createDefinitionManager({
+ 	definitions: [
+-		quantitativeDefinition('d1', 'D1', [
+-			factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++		createQuantitativeDefinition('d1', 'D1', [
++			createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 		]),
+ 	],
+-}).size // 1
++}).count // 1
+ ```
+ 
+ ### Entities
+@@ -531,7 +525,7 @@ createDefinitionManager({
+ The public methods of each behavioral interface — one table per type, keyed
+ by its backticked name, every call-signature member listed (the `readonly`
+ data members — `emitter` on every stage-adjacent manager and `Interpret`;
+-`size` on every record registry; `session` / `subjects` / `definitions` on
++`count` on every record registry; `session` / `subjects` / `definitions` on
+ `InterpretContext` — stay off the method tables). Each implementing class
+ exposes exactly its interface's methods, so this doubles as the per-instance
+ method surface.
+@@ -634,9 +628,9 @@ formatter.format(
+ 
+ #### `GeneratorInterface`
+ 
+-| Method     | Returns          | Behavior                                                               |
+-| ---------- | ---------------- | ---------------------------------------------------------------------- |
+-| `generate` | `GenerateResult` | Build the final subject/definition pair plus its complete field audit. |
++| Method     | Returns          | Behavior                                                                                                               |
++| ---------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
++| `generate` | `GenerateResult` | Build the final subject/definition pair plus its complete field audit, deriving no field the template did not declare. |
+ 
+ ```ts
+ import { createGenerator } from '@orkestrel/interpret'
+@@ -686,7 +680,7 @@ documented fallback, because wording is mechanism rather than policy.
+ 
+ ```ts
+ import { createNarrator } from '@orkestrel/interpret'
+-import { quantitativeDefinition } from '@orkestrel/reason'
++import { createQuantitativeDefinition } from '@orkestrel/reason'
+ 
+ const narrator = createNarrator({
+ 	lexicon: { phrases: { comparison: { equals: 'is' } } },
+@@ -696,7 +690,7 @@ narrator.phrase('comparison', 'equals', 'equals') // 'is'
+ narrator.label('age') // 'age'
+ narrator.line('subject.empty', {}) // 'with no fields'
+ narrator.value('money', 5) // '$5'
+-narrator.describe(quantitativeDefinition('risk', 'Risk', []))
++narrator.describe(createQuantitativeDefinition('risk', 'Risk', []))
+ narrator.narrate({
+ 	reasoning: 'quantitative',
+ 	value: 5,
+@@ -714,8 +708,9 @@ The shared registry engine every record manager composes. `add` derives each
+ record's `hash` from the value's CONTENT and bumps `version` only when that
+ hash changes at a reused id; the concrete record shape comes from the
+ `RecordFunction` the caller passes, which is where a manager names its own
+-value field. `remove`'s array form is all-or-nothing. A call after `destroy()`
+-throws `InterpretError('DESTROYED', …)` naming the configured `entity`.
++value field. `count` is the registry's lone tally. `remove`'s array form is
++all-or-nothing. A call after `destroy()` throws
++`InterpretError('DESTROYED', …)` naming the configured `entity`.
+ 
+ | Method    | Returns                | Behavior                                                                                          |
+ | --------- | ---------------------- | ------------------------------------------------------------------------------------------------- |
+@@ -744,6 +739,7 @@ const note = notes.add('n1', 'first', (stamp, value) => ({
+ 	hash: stamp.hash,
+ }))
+ note.version // 1
++notes.count // 1
+ notes.has('n1') // true
+ notes.record('n1') // the NoteRecord, or undefined
+ notes.records() // every held record
+@@ -763,13 +759,17 @@ after `destroy()` throws `InterpretError('DESTROYED', …)`.
+ | `has`       | `boolean`                     | Whether a template with the given id is registered.                                                 |
+ | `template`  | `TemplateRecord \| undefined` | Look up ONE registered template record by id — the singular accessor.                               |
+ | `templates` | `readonly TemplateRecord[]`   | List ALL registered template records — the plural accessor.                                         |
+-| `add`       | `TemplateRecord`              | Register (or re-register) one template from its data; emits `add`.                                  |
++| `add`       | `TemplateRecord`              | Add (or re-add) one template from its data; emits `add`.                                            |
+ | `remove`    | `boolean` (or `void`)         | Remove LISTED templates by id, ONE template by id, or ALL templates; emits `remove` per removed id. |
+ | `destroy`   | `void`                        | Idempotent teardown — clears the collection, emits `destroy`, then destroys the emitter LAST.       |
+ 
+ ```ts
+ import { createTemplateManager } from '@orkestrel/interpret'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ 
+ const templates = createTemplateManager()
+ const record = templates.add({
+@@ -780,11 +780,12 @@ const record = templates.add({
+ 	mappings: [],
+ 	defaults: [],
+ 	computations: [],
+-	definition: quantitativeDefinition('t1', 'Arithmetic', [
+-		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++	definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 	]),
+ })
+ record.version // 1
++templates.count // 1
+ templates.has('t1') // true
+ templates.template('t1') // the TemplateRecord, or undefined
+ templates.templates() // every registered record
+@@ -795,15 +796,15 @@ templates.destroy()
+ #### `SubjectManagerInterface`
+ 
+ Mirrors `TemplateManagerInterface`, minting its own record ids (a `Subject`
+-carries no `id` field of its own) unless the caller overrides via
+-`ManagerAddOptions.id`.
++carries no `id` field of its own) unless the caller overrides through
++`RecordOptions.id`.
+ 
+ | Method     | Returns                      | Behavior                                                                                         |
+ | ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
+ | `has`      | `boolean`                    | Whether a subject with the given id is registered.                                               |
+ | `subject`  | `SubjectRecord \| undefined` | Look up ONE registered subject record by id.                                                     |
+ | `subjects` | `readonly SubjectRecord[]`   | List ALL registered subject records.                                                             |
+-| `add`      | `SubjectRecord`              | Register one subject, minting a fresh id when none supplied; emits `add`.                        |
++| `add`      | `SubjectRecord`              | Add one subject, minting a fresh id when none supplied; emits `add`.                             |
+ | `remove`   | `boolean` (or `void`)        | Remove LISTED subjects by id, ONE subject by id, or ALL subjects; emits `remove` per removed id. |
+ | `destroy`  | `void`                       | Idempotent teardown — clears the collection, emits `destroy`, then destroys the emitter LAST.    |
+ 
+@@ -812,6 +813,7 @@ import { createSubjectManager } from '@orkestrel/interpret'
+ 
+ const subjects = createSubjectManager()
+ const first = subjects.add({ age: 25 })
++subjects.count // 1
+ subjects.has(first.id) // true
+ subjects.subject(first.id) // the SubjectRecord
+ subjects.subjects() // every registered record
+@@ -829,20 +831,25 @@ definition's own `id`.
+ | `has`         | `boolean`                       | Whether a definition with the given id is registered.                                                     |
+ | `definition`  | `DefinitionRecord \| undefined` | Look up ONE registered definition record by id.                                                           |
+ | `definitions` | `readonly DefinitionRecord[]`   | List ALL registered definition records.                                                                   |
+-| `add`         | `DefinitionRecord`              | Register (or re-register) one definition; emits `add`.                                                    |
++| `add`         | `DefinitionRecord`              | Add (or re-add) one definition; emits `add`.                                                              |
+ | `remove`      | `boolean` (or `void`)           | Remove LISTED definitions by id, ONE definition by id, or ALL definitions; emits `remove` per removed id. |
+ | `destroy`     | `void`                          | Idempotent teardown — clears the collection, emits `destroy`, then destroys the emitter LAST.             |
+ 
+ ```ts
+ import { createDefinitionManager } from '@orkestrel/interpret'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ 
+ const definitions = createDefinitionManager()
+ const record = definitions.add(
+-	quantitativeDefinition('d1', 'D1', [
+-		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++	createQuantitativeDefinition('d1', 'D1', [
++		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 	]),
+ )
++definitions.count // 1
+ definitions.has(record.id) // true
+ definitions.definition(record.id) // the DefinitionRecord
+ definitions.definitions() // every registered record
+@@ -874,7 +881,7 @@ context.entities() // []
+ context.add({
+ 	text: '42',
+ 	normalized: '42',
+-	intent: { action: '', domain: '', confidence: 0 },
++	intent: { confidence: 0 },
+ 	entities: [],
+ 	mappings: [],
+ 	ambiguities: [],
+@@ -891,26 +898,32 @@ context.destroy()
+ 
+ #### `InterpretInterface`
+ 
+-`interpret` is genuinely SYNCHRONOUS. `register` / `unregister` / `template`
+-/ `templates` delegate to an internal `TemplateManagerInterface`. `describe`
+-/ `narrate` are the reverse direction. After `destroy()` every method except
+-the `emitter` getter and `destroy` itself throws `InterpretError('DESTROYED', …)`;
+-`destroy()` is idempotent and tears the emitter down LAST.
+-
+-| Method       | Returns                 | Behavior                                                                                      |
+-| ------------ | ----------------------- | --------------------------------------------------------------------------------------------- |
+-| `interpret`  | `Interpretation`        | Run the five-stage pipeline over raw text, returning a complete or visible-incomplete result. |
+-| `register`   | `void`                  | Register one template; emits `register`.                                                      |
+-| `unregister` | `boolean`               | Remove one registered template by id.                                                         |
+-| `template`   | `Template \| undefined` | Look up ONE registered template's plain data by id.                                           |
+-| `templates`  | `readonly Template[]`   | List ALL registered templates' plain data.                                                    |
+-| `describe`   | `string`                | Render a reasons `Definition` to a one-line, display-neutral description.                     |
+-| `narrate`    | `string`                | Render a reasons `ReasonResult` to a one-line, display-neutral description.                   |
+-| `destroy`    | `void`                  | Idempotent teardown — the template registry, then the context, then the emitter LAST.         |
++`interpret` is genuinely SYNCHRONOUS. `add` / `remove` / `template` /
++`templates` name the same acts as the internal `TemplateManagerInterface` they
++delegate to, and `add` returns `void` where the manager returns the record it
++minted. `describe` / `narrate` are the reverse direction. After `destroy()`
++every method except the `emitter` getter and `destroy` itself throws
++`InterpretError('DESTROYED', …)`; `destroy()` is idempotent, leaves a `context`
++the caller supplied alive, and tears the emitter down LAST.
++
++| Method      | Returns                 | Behavior                                                                                               |
++| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
++| `interpret` | `Interpretation`        | Run the five-stage pipeline over raw text, returning a complete or visible-incomplete result.          |
++| `add`       | `void`                  | Add one template; emits `add`.                                                                         |
++| `remove`    | `boolean` (or `void`)   | Remove LISTED templates by id, ONE template by id, or ALL templates.                                   |
++| `template`  | `Template \| undefined` | Look up ONE added template's plain data by id.                                                         |
++| `templates` | `readonly Template[]`   | List ALL added templates' plain data.                                                                  |
++| `describe`  | `string`                | Render a reasons `Definition` to a one-line, display-neutral description.                              |
++| `narrate`   | `string`                | Render a reasons `ReasonResult` to a one-line, display-neutral description.                            |
++| `destroy`   | `void`                  | Idempotent teardown — the template registry, the context it constructed itself, then the emitter LAST. |
+ 
+ ```ts
+ import { createExtractor, createInterpret } from '@orkestrel/interpret'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ 
+ const interpret = createInterpret({
+ 	extractor: createExtractor({
+@@ -918,7 +931,7 @@ const interpret = createInterpret({
+ 		domains: { arithmetic: ['arithmetic'] },
+ 	}),
+ })
+-interpret.register({
++interpret.add({
+ 	id: 't1',
+ 	name: 'Arithmetic',
+ 	domain: 'arithmetic',
+@@ -926,15 +939,15 @@ interpret.register({
+ 	mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+ 	defaults: [],
+ 	computations: [],
+-	definition: quantitativeDefinition('t1', 'Arithmetic', [
+-		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++	definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 	]),
+ })
+ const result = interpret.interpret('calculate arithmetic 42')
+ result.subject // { value: 42 }
+ interpret.template('t1') // the plain Template data
+-interpret.templates() // every registered template
+-interpret.describe(quantitativeDefinition('t1', 'Arithmetic', []))
++interpret.templates() // every added template
++interpret.describe(createQuantitativeDefinition('t1', 'Arithmetic', []))
+ interpret.narrate({
+ 	reasoning: 'symbolic',
+ 	solutions: {},
+@@ -943,6 +956,6 @@ interpret.narrate({
+ 	errors: [],
+ 	success: true,
+ })
+-interpret.unregister('t1') // true
++interpret.remove('t1') // true
+ interpret.destroy()
+ ```
+diff --git a/src/core/Interpret.ts b/src/core/Interpret.ts
+index 4e77bc9..52da7b7 100644
+--- a/src/core/Interpret.ts
++++ b/src/core/Interpret.ts
+@@ -62,13 +62,14 @@ import { Normalizer } from './stages/Normalizer.js'
+  * so re-running the same text against the same template version reproduces the
+  * same digest (the replay contract). `describe` / `narrate` are the reverse
+  * direction (structure → prose). `destroy()` is idempotent, tears down the
+- * registry and context, then destroys the emitter LAST; every
+- * method afterwards except the {@link emitter} getter throws
+- * `InterpretError('DESTROYED', …)`.
++ * registry and the context it constructed itself — a context supplied through
++ * `options.context` is shared, so it stays alive for whoever else holds it —
++ * then destroys the emitter LAST; every method afterwards except the
++ * {@link emitter} getter throws `InterpretError('DESTROYED', …)`.
+  *
+  * @example
+  * ```ts
+- * import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++ * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+  * import { Interpret, Extractor } from '@src/core'
+  *
+  * const interpret = new Interpret({
+@@ -82,8 +83,8 @@ import { Normalizer } from './stages/Normalizer.js'
+  * 			mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+  * 			defaults: [],
+  * 			computations: [],
+- * 			definition: quantitativeDefinition('t1', 'Arithmetic', [
+- * 				factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++ * 			definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++ * 				createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+  * 			]),
+  * 		},
+  * 	],
+@@ -94,6 +95,7 @@ import { Normalizer } from './stages/Normalizer.js'
+ export class Interpret implements InterpretInterface {
+ 	readonly #templates: TemplateManager
+ 	readonly #context: InterpretContextInterface
++	readonly #ownsContext: boolean
+ 	readonly #normalizer: NormalizerInterface
+ 	readonly #extractor: ExtractorInterface
+ 	readonly #clarifier: ClarifierInterface
+@@ -111,15 +113,13 @@ export class Interpret implements InterpretInterface {
+ 		this.#templates = new TemplateManager({
+ 			...(options?.templates === undefined ? {} : { templates: options.templates }),
+ 		})
++		this.#ownsContext = options?.context === undefined
+ 		this.#context =
+ 			options?.context ??
+ 			new InterpretContext(
+ 				options?.history === undefined ? undefined : { history: options.history },
+ 			)
+-		this.#narrator = new Narrator({
+-			...(options?.lexicon === undefined ? {} : { lexicon: options.lexicon }),
+-			...(options?.formatters === undefined ? {} : { formatters: options.formatters }),
+-		})
++		this.#narrator = new Narrator(options?.narrator)
+ 		this.#normalizer = options?.normalizer ?? new Normalizer()
+ 		this.#extractor = options?.extractor ?? new Extractor()
+ 		this.#clarifier =
+@@ -147,7 +147,7 @@ export class Interpret implements InterpretInterface {
+ 			return this.#fail(
+ 				text,
+ 				text,
+-				{ action: '', domain: '', confidence: 0 },
++				{ confidence: 0 },
+ 				[],
+ 				[],
+ 				stages,
+@@ -169,7 +169,7 @@ export class Interpret implements InterpretInterface {
+ 			return this.#fail(
+ 				text,
+ 				normalized.text,
+-				{ action: '', domain: '', confidence: 0 },
++				{ confidence: 0 },
+ 				[],
+ 				[],
+ 				stages,
+@@ -321,15 +321,20 @@ export class Interpret implements InterpretInterface {
+ 		return result
+ 	}
+ 
+-	register(template: Template): void {
++	add(template: Template): void {
+ 		this.#ensureAlive()
+ 		this.#templates.add(template, { id: template.id })
+-		this.#emitter.emit('register', template.id)
++		this.#emitter.emit('add', template.id)
+ 	}
+ 
+-	unregister(id: string): boolean {
++	remove(ids: readonly string[]): boolean
++	remove(id: string): boolean
++	remove(): void
++	remove(target?: string | readonly string[]): boolean | void {
+ 		this.#ensureAlive()
+-		return this.#templates.remove(id)
++		if (target === undefined) return this.#templates.remove()
++		if (typeof target === 'string') return this.#templates.remove(target)
++		return this.#templates.remove(target)
+ 	}
+ 
+ 	template(id: string): Template | undefined {
+@@ -355,7 +360,7 @@ export class Interpret implements InterpretInterface {
+ 	destroy(): void {
+ 		if (this.#destroyed) return
+ 		this.#templates.destroy()
+-		this.#context.destroy()
++		if (this.#ownsContext) this.#context.destroy()
+ 		this.#destroyed = true
+ 		this.#emitter.emit('destroy')
+ 		this.#emitter.destroy()
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 32c2f82..df5a3a7 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -27,9 +27,6 @@ export const DEFAULT_INTERPRET_FLOOR = 0.3
+ /** Default `history` cap for an `InterpretContext`'s `previous()` ring buffer. */
+ export const DEFAULT_INTERPRET_HISTORY = 16
+ 
+-/** Default `id` for an `Interpret` orchestrator. */
+-export const INTERPRET_ID = 'interpret'
+-
+ /** Confidence assigned to an exact keyword-proximity entity match. */
+ export const CONFIDENCE_EXACT = 1
+ 
+@@ -84,21 +81,6 @@ export const DEFAULT_CONTRACTIONS: Readonly<Record<string, string>> = Object.fre
+ 	"don't": 'do not',
+ })
+ 
+-/** Neutral built-in abbreviation expansions for `Normalizer` — empty by default. */
+-export const DEFAULT_ABBREVIATIONS: Readonly<Record<string, string>> = Object.freeze({})
+-
+-/** Neutral built-in misspelling corrections for `Normalizer` — empty by default. */
+-export const DEFAULT_CORRECTIONS: Readonly<Record<string, string>> = Object.freeze({})
+-
+-/** Neutral built-in action-verb vocabulary for `Extractor#extract`'s intent classification — empty by default. */
+-export const DEFAULT_ACTIONS: Readonly<Record<string, string>> = Object.freeze({})
+-
+-/** Neutral built-in domain-keyword vocabulary for `Extractor#extract`'s intent classification — empty by default. */
+-export const DEFAULT_DOMAINS: Readonly<Record<string, readonly string[]>> = Object.freeze({})
+-
+-/** Neutral built-in intent-verb phrasing for `Formatter#format` — empty by default. */
+-export const DEFAULT_VERBS: Readonly<Record<string, string>> = Object.freeze({})
+-
+ /**
+  * The neutral default `Lexicon` a `Narrator` merges caller data over.
+  *
+@@ -179,6 +161,5 @@ export const INTERPRET_ERROR_CODES: readonly InterpretErrorCode[] = Object.freez
+ 	'GENERATE_FAILED',
+ 	'NO_TEMPLATE',
+ 	'LOW_CONFIDENCE',
+-	'INVALID_TEMPLATE',
+ 	'DESTROYED',
+ ])
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 51e3290..4c71741 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -7,15 +7,13 @@ import type { InterpretErrorCode } from './types.js'
+  * An error thrown by the interprets layer.
+  *
+  * @remarks
+- * Two codes throw: `INVALID_TEMPLATE`, when `createTemplate` is handed data
+- * that fails `isTemplate`, and `DESTROYED`, on any use of a destroyed
+- * `Interpret` / manager / context. Every other {@link InterpretErrorCode}
+- * reaches a caller as data rather than as a throw — `NO_TEMPLATE` and
+- * `LOW_CONFIDENCE` on a visible incomplete {@link Interpretation}, and the
+- * five per-stage `*_FAILED` codes on that result's `failures`, beside the
+- * raw thrown value re-emitted as `error`. `context` carries structured
+- * detail when a throw site supplies one; the throw sites in this package
+- * supply none.
++ * `DESTROYED` is the code that throws, on any use of a destroyed `Interpret`
++ * / manager / context. Every other {@link InterpretErrorCode} reaches a caller
++ * as data rather than as a throw — `NO_TEMPLATE` and `LOW_CONFIDENCE` on a
++ * visible incomplete {@link Interpretation}, and the per-stage `*_FAILED`
++ * codes on that result's `failures`, beside the raw thrown value re-emitted
++ * as `error`. `context` carries structured detail when a throw site supplies
++ * one; the throw sites in this package supply none.
+  */
+ export class InterpretError extends Error {
+ 	readonly code: InterpretErrorCode
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 96ab779..acfb2c2 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -8,7 +8,6 @@ import type {
+ 	FormatterInterface,
+ 	FormatterOptions,
+ 	GeneratorInterface,
+-	GeneratorOptions,
+ 	InterpretContextInterface,
+ 	InterpretContextOptions,
+ 	InterpretInterface,
+@@ -19,12 +18,9 @@ import type {
+ 	NormalizerOptions,
+ 	SubjectManagerInterface,
+ 	SubjectManagerOptions,
+-	Template,
+ 	TemplateManagerInterface,
+ 	TemplateManagerOptions,
+ } from './types.js'
+-import { InterpretError } from './errors.js'
+-import { isTemplate } from './validators.js'
+ import { Interpret } from './Interpret.js'
+ import { Narrator } from './Narrator.js'
+ import { InterpretContext } from './InterpretContext.js'
+@@ -56,7 +52,7 @@ import { Normalizer } from './stages/Normalizer.js'
+  *
+  * @example
+  * ```ts
+- * import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++ * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+  * import { createExtractor, createInterpret } from '@src/core'
+  *
+  * const interpret = createInterpret({
+@@ -70,8 +66,8 @@ import { Normalizer } from './stages/Normalizer.js'
+  * 			mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+  * 			defaults: [],
+  * 			computations: [],
+- * 			definition: quantitativeDefinition('t1', 'Arithmetic', [
+- * 				factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++ * 			definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++ * 				createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+  * 			]),
+  * 		},
+  * 	],
+@@ -160,7 +156,6 @@ export function createFormatter(options?: FormatterOptions): FormatterInterface
+ /**
+  * Create a subject/definition generator.
+  *
+- * @param options - Currently an empty extension seam
+  * @returns A stateless {@link GeneratorInterface}
+  *
+  * @example
+@@ -170,7 +165,7 @@ export function createFormatter(options?: FormatterOptions): FormatterInterface
+  * const generator = createGenerator()
+  * ```
+  */
+-export function createGenerator(_options?: GeneratorOptions): GeneratorInterface {
++export function createGenerator(): GeneratorInterface {
+ 	return new Generator()
+ }
+ 
+@@ -182,16 +177,17 @@ export function createGenerator(_options?: GeneratorOptions): GeneratorInterface
+  *
+  * @example
+  * ```ts
+- * import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
+- * import { createTemplate, createTemplateManager } from '@src/core'
+- *
+- * const template = createTemplate({
+- * 	id: 't1', name: 'Arithmetic', domain: 'arithmetic', intents: ['calculate'],
+- * 	mappings: [{ entity: 'value', aliases: [], field: 'value' }], defaults: [], computations: [],
+- * 	definition: quantitativeDefinition('t1', 'Arithmetic', [factorGroup('total', 'sum', [fieldFactor('value', 'value')])]),
++ * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
++ * import { createTemplateManager } from '@src/core'
++ *
++ * const templates = createTemplateManager({
++ * 	templates: [{
++ * 		id: 't1', name: 'Arithmetic', domain: 'arithmetic', intents: ['calculate'],
++ * 		mappings: [{ entity: 'value', aliases: [], field: 'value' }], defaults: [], computations: [],
++ * 		definition: createQuantitativeDefinition('t1', 'Arithmetic', [createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')])]),
++ * 	}],
+  * })
+- * const templates = createTemplateManager({ templates: [template] })
+- * templates.size // 1
++ * templates.count // 1
+  * ```
+  */
+ export function createTemplateManager(options?: TemplateManagerOptions): TemplateManagerInterface {
+@@ -213,7 +209,7 @@ export function createTemplateManager(options?: TemplateManagerOptions): Templat
+  * import { createSubjectManager } from '@src/core'
+  *
+  * const subjects = createSubjectManager({ subjects: [{ value: 1 }] })
+- * subjects.size // 1
++ * subjects.count // 1
+  * ```
+  */
+ export function createSubjectManager(options?: SubjectManagerOptions): SubjectManagerInterface {
+@@ -228,13 +224,13 @@ export function createSubjectManager(options?: SubjectManagerOptions): SubjectMa
+  *
+  * @example
+  * ```ts
+- * import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++ * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+  * import { createDefinitionManager } from '@src/core'
+  *
+  * const definitions = createDefinitionManager({
+- * 	definitions: [quantitativeDefinition('d1', 'D1', [factorGroup('total', 'sum', [fieldFactor('value', 'value')])])],
++ * 	definitions: [createQuantitativeDefinition('d1', 'D1', [createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')])])],
+  * })
+- * definitions.size // 1
++ * definitions.count // 1
+  * ```
+  */
+ export function createDefinitionManager(
+@@ -263,38 +259,6 @@ export function createInterpretContext(
+ 	return new InterpretContext(options)
+ }
+ 
+-/**
+- * Build and validate one interpretation template from plain data.
+- *
+- * @remarks
+- * The throwing half of the template-intake pair: this throws on malformed
+- * data, while the `parseTemplate` coercer returns `undefined`. Data failing
+- * {@link isTemplate} throws `InterpretError('INVALID_TEMPLATE', …)`.
+- *
+- * @param data - The candidate template data
+- * @returns The same data, now known to satisfy {@link Template}
+- * @throws {@link InterpretError} `INVALID_TEMPLATE` when `data` fails validation
+- *
+- * @example
+- * ```ts
+- * import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
+- * import { createTemplate } from '@src/core'
+- *
+- * const template = createTemplate({
+- * 	id: 't1', name: 'Arithmetic', domain: 'arithmetic', intents: ['calculate'],
+- * 	mappings: [{ entity: 'value', aliases: [], field: 'value' }], defaults: [], computations: [],
+- * 	definition: quantitativeDefinition('t1', 'Arithmetic', [factorGroup('total', 'sum', [fieldFactor('value', 'value')])]),
+- * })
+- * template.id // 't1'
+- * ```
+- */
+-export function createTemplate(data: Template): Template {
+-	if (!isTemplate(data)) {
+-		throw new InterpretError('INVALID_TEMPLATE', 'Template data failed validation')
+-	}
+-	return data
+-}
+-
+ /**
+  * Create a lexicon-driven reverse-direction rendering engine.
+  *
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index f67bfe4..91630e2 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -41,37 +41,6 @@ export function escapeRegExp(text: string): string {
+ 
+ // === Field paths — safe copy-on-write writes
+ 
+-/**
+- * Derive the sibling field path for a computed aggregate of `field` — the
+- * suffix is appended to `field`'s OWN last segment, so the aggregate nests
+- * beside the source field rather than flattening past it.
+- *
+- * @remarks
+- * For an array {@link FieldPath} (e.g. `['address', 'amounts']`) with suffix
+- * `'Sum'` the result is `['address', 'amountsSum']` — nested beside
+- * `address.amounts`. For a plain string field the result stays a flat string
+- * (`'amounts'` → `'amountsSum'`), matching the existing single-key behavior.
+- *
+- * @param field - The source field path
+- * @param suffix - The aggregate suffix (`'Sum'`, `'Count'`, `'Average'`, `'Minimum'`, `'Maximum'`)
+- * @returns The sibling field path for the aggregate
+- *
+- * @example
+- * ```ts
+- * import { deriveAggregateField } from '@src/core'
+- *
+- * deriveAggregateField(['address', 'amounts'], 'Sum') // ['address', 'amountsSum']
+- * deriveAggregateField('amounts', 'Sum')               // 'amountsSum'
+- * ```
+- */
+-export function deriveAggregateField(field: FieldPath, suffix: string): FieldPath {
+-	if (Array.isArray(field)) {
+-		const last = field[field.length - 1]
+-		return [...field.slice(0, -1), `${last}${suffix}`]
+-	}
+-	return `${field}${suffix}`
+-}
+-
+ /**
+  * Copy-on-write write a value at a (possibly nested) field path on a subject.
+  *
+@@ -198,8 +167,9 @@ export function tokenize(text: string): readonly string[] {
+  * commas, an optional decimal fraction, an optional trailing `%`.
+  *
+  * @remarks
+- * Numbers-only: this is the module's entire extraction contract (AGENTS
+- * §21 mechanism-never-policy) — no date, text-entity, or negation parsing.
++ * Numbers-only: this is the module's entire extraction contract — no date,
++ * text-entity, or negation parsing. Mining a domain's own entity vocabulary is
++ * the caller's business, supplied through a `Template`.
+  *
+  * @param text - The text to scan
+  * @returns Every extracted number, in left-to-right order
+@@ -409,18 +379,20 @@ export function assignEntities(
+  * `actions` maps a token to an action name — the first matching token in
+  * `text` (left to right) wins, at `CONFIDENCE_EXACT`. `domains` maps a domain
+  * name to its keyword list — the domain with the most matching tokens wins
+- * (ties keep the earliest-declared domain), also at `CONFIDENCE_EXACT`.
+- * Combined confidence (PINNED): both fire → their average; exactly one fires
+- * → its value times `0.5`; neither → `0`. There is no built-in worldview and
+- * no auto-classification from a registered template's own `domain` name — a
+- * caller MUST list a template's domain among `domains` for it to classify.
+- * No `floor` parameter: the confidence floor gate lives at the orchestrator's
+- * `matchTemplate` step, never inside classification itself.
++ * (ties keep the earliest-declared domain), also at `CONFIDENCE_EXACT`. An
++ * unmatched axis is left `undefined` rather than an empty string, so an
++ * unclassified intent is visibly absent. Combined confidence (PINNED): both
++ * fire → their average; exactly one fires → its value times `0.5`; neither →
++ * `0`. There is no built-in worldview and no auto-classification from a
++ * registered template's own `domain` name — a caller MUST list a template's
++ * domain among `domains` for it to classify. No `floor` parameter: the
++ * confidence floor gate lives at the orchestrator's `matchTemplate` step,
++ * never inside classification itself.
+  *
+  * @param text - The (normalized) text to classify
+  * @param actions - The caller's token → action-name vocabulary
+  * @param domains - The caller's domain-name → keyword-list vocabulary
+- * @returns The classified intent
++ * @returns The classified intent, each unmatched axis absent
+  *
+  * @example
+  * ```ts
+@@ -428,7 +400,7 @@ export function assignEntities(
+  *
+  * classifyIntent('calculate my rate', { calculate: 'compute' }, { rating: ['rate'] })
+  * // { action: 'compute', domain: 'rating', confidence: 1 }
+- * classifyIntent('hello', {}, {}) // { action: '', domain: '', confidence: 0 }
++ * classifyIntent('hello', {}, {}) // { confidence: 0 } — neither axis matched
+  * ```
+  */
+ export function classifyIntent(
+@@ -438,7 +410,7 @@ export function classifyIntent(
+ ): Intent {
+ 	const tokens = tokenize(text)
+ 
+-	let action = ''
++	let action: string | undefined
+ 	let actionConfidence = 0
+ 	for (const token of tokens) {
+ 		const mapped = actions[token]
+@@ -449,7 +421,7 @@ export function classifyIntent(
+ 		}
+ 	}
+ 
+-	let domain = ''
++	let domain: string | undefined
+ 	let domainConfidence = 0
+ 	let bestMatches = 0
+ 	for (const [name, keywords] of Object.entries(domains)) {
+@@ -470,7 +442,11 @@ export function classifyIntent(
+ 			? (actionConfidence + domainConfidence) / 2
+ 			: Math.max(actionConfidence, domainConfidence) * 0.5
+ 
+-	return { action, domain, confidence }
++	return {
++		...(action === undefined ? {} : { action }),
++		...(domain === undefined ? {} : { domain }),
++		confidence,
++	}
+ }
+ 
+ // === Fuzzy matching
+@@ -545,48 +521,76 @@ export function matchAlias(token: string, aliases: readonly string[], threshold:
+ // === Digest
+ 
+ /**
+- * Render a value into a canonical, key-order-stable string — the pre-image
+- * of `digestValue`.
++ * Render one node of a value into its canonical, key-order-stable string,
++ * against the object ancestors already on the recursion path.
+  *
+  * @remarks
+- * Ported from the app's `raters` digest machinery (`app/core/raters/helpers.ts`)
+- * — record keys sort before serialization so a re-ordered object canonicalizes
+- * identically; arrays keep position order (position is meaningful).
+- * Cycle-safe and total: `visited` tracks the object ancestors
+- * along the CURRENT recursion path (not a global "seen" set, so the same
+- * object reachable twice via non-cyclic sibling branches still canonicalizes
+- * normally); revisiting an ancestor renders that node as the literal string
+- * `'[cycle]'` instead of recursing — deterministic, never throws, never
+- * overflows the call stack.
++ * The recursive leaf behind {@link canonicalize} and {@link digestValue}, and
++ * the one place `ancestors` is a real parameter rather than a seeded default.
++ * Record keys sort before serialization, so a re-ordered object canonicalizes
++ * identically; arrays keep position order, because position is meaningful.
++ * `ancestors` tracks the objects along the CURRENT recursion path rather than
++ * a global "seen" set, so the same object reachable twice through non-cyclic
++ * sibling branches still canonicalizes normally; a node already on the path
++ * renders as the literal string `'[cycle]'` instead of recursing —
++ * deterministic, never throws, never overflows the call stack. Seeding
++ * `ancestors` with a node makes that node render as `'[cycle]'`, so a caller
++ * digesting a whole value passes an empty set.
+  *
+  * @param value - The value to canonicalize
+- * @param visited - The object ancestors along the current recursion path (internal; omit at the call site)
+- * @returns The canonical string form
++ * @param ancestors - The objects already on the current recursion path
++ * @returns The canonical string form of `value`
+  *
+  * @example
+  * ```ts
+- * import { canonicalize } from '@src/core'
++ * import { canonicalizeNode } from '@src/core'
+  *
+- * canonicalize({ b: 1, a: 2 }) === canonicalize({ a: 2, b: 1 }) // true
++ * canonicalizeNode({ b: 1, a: 2 }, new Set()) // '{"a":2,"b":1}'
++ * const cyclic = { name: 'root' }
++ * canonicalizeNode(cyclic, new Set([cyclic])) // '"[cycle]"'
+  * ```
+  */
+-export function canonicalize(value: unknown, visited: ReadonlySet<object> = new Set()): string {
++export function canonicalizeNode(value: unknown, ancestors: ReadonlySet<object>): string {
+ 	if (Array.isArray(value)) {
+-		if (visited.has(value)) return JSON.stringify('[cycle]')
+-		const nextVisited = new Set(visited)
+-		nextVisited.add(value)
+-		return `[${value.map((entry) => canonicalize(entry, nextVisited)).join(',')}]`
++		if (ancestors.has(value)) return JSON.stringify('[cycle]')
++		const nested = new Set(ancestors)
++		nested.add(value)
++		return `[${value.map((entry) => canonicalizeNode(entry, nested)).join(',')}]`
+ 	}
+ 	if (isRecord(value)) {
+-		if (visited.has(value)) return JSON.stringify('[cycle]')
+-		const nextVisited = new Set(visited)
+-		nextVisited.add(value)
++		if (ancestors.has(value)) return JSON.stringify('[cycle]')
++		const nested = new Set(ancestors)
++		nested.add(value)
+ 		const keys = Object.keys(value).sort()
+-		return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalize(value[key], nextVisited)}`).join(',')}}`
++		return `{${keys.map((key) => `${JSON.stringify(key)}:${canonicalizeNode(value[key], nested)}`).join(',')}}`
+ 	}
+ 	return JSON.stringify(value) ?? 'null'
+ }
+ 
++/**
++ * Render a value into a canonical, key-order-stable string — the pre-image
++ * of `digestValue`.
++ *
++ * @remarks
++ * The public entry point: it starts {@link canonicalizeNode} from an empty
++ * ancestor path, so the whole value canonicalizes and only a genuine cycle
++ * renders as `'[cycle]'`. Total and cycle-safe — it never throws and never
++ * overflows the call stack.
++ *
++ * @param value - The value to canonicalize
++ * @returns The canonical string form
++ *
++ * @example
++ * ```ts
++ * import { canonicalize } from '@src/core'
++ *
++ * canonicalize({ b: 1, a: 2 }) === canonicalize({ a: 2, b: 1 }) // true
++ * ```
++ */
++export function canonicalize(value: unknown): string {
++	return canonicalizeNode(value, new Set())
++}
++
+ /**
+  * Compute a canonical structural digest of a pure-JSON value — a key-order-
+  * stable FNV-1a hash rendered as an 8-hex-digit string.
+@@ -607,7 +611,7 @@ export function canonicalize(value: unknown, visited: ReadonlySet<object> = new
+  * ```
+  */
+ export function digestValue(value: unknown): string {
+-	const canonical = canonicalize(value)
++	const canonical = canonicalizeNode(value, new Set())
+ 	let hash = 0x811c9dc5
+ 	for (let index = 0; index < canonical.length; index += 1) {
+ 		hash ^= canonical.charCodeAt(index)
+@@ -621,6 +625,10 @@ export function digestValue(value: unknown): string {
+ /**
+  * Score how well a classified intent matches one template's domain + action.
+  *
++ * @remarks
++ * An absent axis scores `0` for that half — an unclassified intent matches no
++ * template on the axis it never carried.
++ *
+  * @param intent - The classified intent
+  * @param template - The candidate template
+  * @returns A score in `[0, 1]` — the mean of the domain match (`1`/`0`) and
+@@ -637,12 +645,15 @@ export function digestValue(value: unknown): string {
+  * ```
+  */
+ export function scoreTemplate(intent: Intent, template: Template): number {
+-	const domainScore = template.domain.toLowerCase() === intent.domain.toLowerCase() ? 1 : 0
+-	const actionScore = template.intents.some(
+-		(candidate) => candidate.toLowerCase() === intent.action.toLowerCase(),
+-	)
+-		? 1
+-		: 0
++	const domain = intent.domain
++	const action = intent.action
++	const domainScore =
++		domain !== undefined && template.domain.toLowerCase() === domain.toLowerCase() ? 1 : 0
++	const actionScore =
++		action !== undefined &&
++		template.intents.some((candidate) => candidate.toLowerCase() === action.toLowerCase())
++			? 1
++			: 0
+ 	return (domainScore + actionScore) / 2
+ }
+ 
+@@ -663,7 +674,7 @@ export function scoreTemplate(intent: Intent, template: Template): number {
+  * ```ts
+  * import { matchTemplate } from '@src/core'
+  *
+- * matchTemplate({ action: '', domain: '', confidence: 0 }, [], 0.3) // undefined — empty registry
++ * matchTemplate({ confidence: 0 }, [], 0.3) // undefined — empty registry
+  * ```
+  */
+ export function matchTemplate(
+@@ -694,10 +705,10 @@ export function matchTemplate(
+  *
+  * @example
+  * ```ts
+- * import { constant, operation, variable } from '@orkestrel/reason'
++ * import { createConstant, createOperation, createVariable } from '@orkestrel/reason'
+  * import { variablesOf } from '@src/core'
+  *
+- * variablesOf(operation('divide', variable('deductible'), constant(12))) // ['deductible']
++ * variablesOf(createOperation('divide', createVariable('deductible'), createConstant(12))) // ['deductible']
+  * ```
+  */
+ export function variablesOf(expression: SymbolicExpression): readonly string[] {
+@@ -743,12 +754,12 @@ export function variablesOf(expression: SymbolicExpression): readonly string[] {
+  *
+  * @example
+  * ```ts
+- * import { constant, operation, variable } from '@orkestrel/reason'
++ * import { createConstant, createOperation, createVariable } from '@orkestrel/reason'
+  * import { resolveExpression } from '@src/core'
+  *
+- * resolveExpression(operation('divide', variable('deductible'), constant(12)), { deductible: 6000 }) // 500
+- * resolveExpression(operation('divide', constant(1), constant(0)), {}) // undefined — NaN gap
+- * resolveExpression(variable('missing'), {}) // undefined — unresolved input
++ * resolveExpression(createOperation('divide', createVariable('deductible'), createConstant(12)), { deductible: 6000 }) // 500
++ * resolveExpression(createOperation('divide', createConstant(1), createConstant(0)), {}) // undefined — NaN gap
++ * resolveExpression(createVariable('missing'), {}) // undefined — unresolved input
+  * ```
+  */
+ export function resolveExpression(
+diff --git a/src/core/managers/DefinitionManager.ts b/src/core/managers/DefinitionManager.ts
+index 8f57b03..12fd403 100644
+--- a/src/core/managers/DefinitionManager.ts
++++ b/src/core/managers/DefinitionManager.ts
+@@ -5,7 +5,7 @@ import type {
+ 	DefinitionManagerInterface,
+ 	DefinitionManagerOptions,
+ 	DefinitionRecord,
+-	ManagerAddOptions,
++	RecordOptions,
+ } from '../types.js'
+ import { RecordManager } from './RecordManager.js'
+ 
+@@ -24,13 +24,13 @@ import { RecordManager } from './RecordManager.js'
+  *
+  * @example
+  * ```ts
+- * import { symbolicDefinition } from '@orkestrel/reason'
++ * import { createSymbolicDefinition } from '@orkestrel/reason'
+  * import { DefinitionManager } from '@src/core'
+  *
+  * const manager = new DefinitionManager()
+- * const record = manager.add(symbolicDefinition('rate', 'Rate', []))
++ * const record = manager.add(createSymbolicDefinition('rate', 'Rate', []))
+  * record.id // 'rate'
+- * manager.add(symbolicDefinition('rate', 'Rate', [])).version // 1 — identical re-add, no bump
++ * manager.add(createSymbolicDefinition('rate', 'Rate', [])).version // 1 — identical re-add, no bump
+  * ```
+  */
+ export class DefinitionManager implements DefinitionManagerInterface {
+@@ -49,8 +49,8 @@ export class DefinitionManager implements DefinitionManagerInterface {
+ 		return this.#records.emitter
+ 	}
+ 
+-	get size(): number {
+-		return this.#records.size
++	get count(): number {
++		return this.#records.count
+ 	}
+ 
+ 	has(id: string): boolean {
+@@ -65,7 +65,7 @@ export class DefinitionManager implements DefinitionManagerInterface {
+ 		return this.#records.records()
+ 	}
+ 
+-	add(definition: Definition, options?: ManagerAddOptions): DefinitionRecord {
++	add(definition: Definition, options?: RecordOptions): DefinitionRecord {
+ 		return this.#records.add(options?.id ?? definition.id, definition, (stamp, value) => ({
+ 			id: stamp.id,
+ 			definition: value,
+diff --git a/src/core/managers/RecordManager.ts b/src/core/managers/RecordManager.ts
+index 0ba8ce4..b304e90 100644
+--- a/src/core/managers/RecordManager.ts
++++ b/src/core/managers/RecordManager.ts
+@@ -48,7 +48,7 @@ import { digestValue } from '../helpers.js'
+  * 	hash: stamp.hash,
+  * }))
+  * record.version // 1
+- * notes.size // 1
++ * notes.count // 1
+  * ```
+  */
+ export class RecordManager<TValue, TRecord extends RecordStamp> implements RecordManagerInterface<
+@@ -72,7 +72,7 @@ export class RecordManager<TValue, TRecord extends RecordStamp> implements Recor
+ 		return this.#emitter
+ 	}
+ 
+-	get size(): number {
++	get count(): number {
+ 		this.#ensureAlive()
+ 		return this.#records.size
+ 	}
+diff --git a/src/core/managers/SubjectManager.ts b/src/core/managers/SubjectManager.ts
+index eabc7e9..ec89484 100644
+--- a/src/core/managers/SubjectManager.ts
++++ b/src/core/managers/SubjectManager.ts
+@@ -1,7 +1,7 @@
+ import type { EmitterInterface } from '@orkestrel/emitter'
+ import type { Subject } from '@orkestrel/reason'
+ import type {
+-	ManagerAddOptions,
++	RecordOptions,
+ 	SubjectManagerEventMap,
+ 	SubjectManagerInterface,
+ 	SubjectManagerOptions,
+@@ -17,7 +17,7 @@ import { RecordManager } from './RecordManager.js'
+  * @remarks
+  * Each `add` mints a fresh `subject-{n}` id (deterministic per instance, no
+  * host randomness) unless the caller overrides it through
+- * `ManagerAddOptions.id`, so successive same-domain turns never overwrite one
++ * `RecordOptions.id`, so successive same-domain turns never overwrite one
+  * shared subject. A composed {@link RecordManager} owns the collection, the
+  * content-derived `hash` (id-independent), and the version rule, so `version`
+  * bumps ONLY when the hash changes at a reused id and the batch `remove(ids)`
+@@ -51,8 +51,8 @@ export class SubjectManager implements SubjectManagerInterface {
+ 		return this.#records.emitter
+ 	}
+ 
+-	get size(): number {
+-		return this.#records.size
++	get count(): number {
++		return this.#records.count
+ 	}
+ 
+ 	has(id: string): boolean {
+@@ -67,7 +67,7 @@ export class SubjectManager implements SubjectManagerInterface {
+ 		return this.#records.records()
+ 	}
+ 
+-	add(subject: Subject, options?: ManagerAddOptions): SubjectRecord {
++	add(subject: Subject, options?: RecordOptions): SubjectRecord {
+ 		return this.#records.add(options?.id ?? this.#mint(), subject, (stamp, value) => ({
+ 			id: stamp.id,
+ 			subject: value,
+diff --git a/src/core/managers/TemplateManager.ts b/src/core/managers/TemplateManager.ts
+index a78002d..3fa3e1a 100644
+--- a/src/core/managers/TemplateManager.ts
++++ b/src/core/managers/TemplateManager.ts
+@@ -1,6 +1,6 @@
+ import type { EmitterInterface } from '@orkestrel/emitter'
+ import type {
+-	ManagerAddOptions,
++	RecordOptions,
+ 	Template,
+ 	TemplateManagerEventMap,
+ 	TemplateManagerInterface,
+@@ -15,8 +15,8 @@ import { RecordManager } from './RecordManager.js'
+  * against.
+  *
+  * @remarks
+- * `size` (never `count` — the sole tally in scope) plus the singular/plural
+- * accessor pair (`template` / `templates`) and the batch `remove` overloads.
++ * `count` — the registry's lone tally — plus the singular/plural accessor
++ * pair (`template` / `templates`) and the batch `remove` overloads.
+  * A composed {@link RecordManager} owns the collection, the content-derived
+  * `hash`, and the version rule, so an identical re-add keeps its version and
+  * the batch `remove(ids)` form stays ALL-OR-NOTHING. This class adds what is
+@@ -26,7 +26,7 @@ import { RecordManager } from './RecordManager.js'
+  *
+  * @example
+  * ```ts
+- * import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++ * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+  * import { TemplateManager } from '@src/core'
+  *
+  * const manager = new TemplateManager()
+@@ -38,12 +38,12 @@ import { RecordManager } from './RecordManager.js'
+  * 	mappings: [],
+  * 	defaults: [],
+  * 	computations: [],
+- * 	definition: quantitativeDefinition('t1', 'Arithmetic', [
+- * 		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++ * 	definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++ * 		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+  * 	]),
+  * })
+  * record.version // 1
+- * manager.size // 1
++ * manager.count // 1
+  * ```
+  */
+ export class TemplateManager implements TemplateManagerInterface {
+@@ -62,8 +62,8 @@ export class TemplateManager implements TemplateManagerInterface {
+ 		return this.#records.emitter
+ 	}
+ 
+-	get size(): number {
+-		return this.#records.size
++	get count(): number {
++		return this.#records.count
+ 	}
+ 
+ 	has(id: string): boolean {
+@@ -78,7 +78,7 @@ export class TemplateManager implements TemplateManagerInterface {
+ 		return this.#records.records()
+ 	}
+ 
+-	add(template: Template, options?: ManagerAddOptions): TemplateRecord {
++	add(template: Template, options?: RecordOptions): TemplateRecord {
+ 		return this.#records.add(options?.id ?? template.id, template, (stamp, value) => ({
+ 			id: stamp.id,
+ 			template: value,
+diff --git a/src/core/parsers.ts b/src/core/parsers.ts
+index f1774a7..eac6d94 100644
+--- a/src/core/parsers.ts
++++ b/src/core/parsers.ts
+@@ -12,8 +12,9 @@ import { isTemplate } from './validators.js'
+  * @remarks
+  * The module's sole JSON boundary — an `Interpretation` and the versioned
+  * records are produced internally, never deserialized from untrusted JSON;
+- * replay re-runs `interpret`, it does not deserialize a stored result. The
+- * throwing half of the pair is `createTemplate`.
++ * replay re-runs `interpret`, it does not deserialize a stored result. Intake
++ * is total: an off-shape template returns `undefined` here, and a caller who
++ * wants a throw raises its own error from that `undefined`.
+  *
+  * @param value - The JSON text to parse
+  * @returns The parsed template, or `undefined`
+diff --git a/src/core/stages/Clarifier.ts b/src/core/stages/Clarifier.ts
+index c83f7f3..3b4111a 100644
+--- a/src/core/stages/Clarifier.ts
++++ b/src/core/stages/Clarifier.ts
+@@ -34,11 +34,15 @@ import { Narrator } from '../Narrator.js'
+  * value; template defaults fill any field still unresolved after carry-over;
+  * computed fields resolve in dependency (topological) order via
+  * `resolveExpression` — an unresolved input, a non-finite result, or a
+- * dependency cycle leaves the field a gap, never landing an entity. `floor`
+- * comes from {@link ClarifierOptions} rather than a hardcoded constant, and
+- * gates whether a resolved entity's confidence counts as "resolved enough"
+- * when raising ambiguities — a field with a value below `floor` still raises
+- * its ambiguity. Every question is rendered through the injected
++ * dependency cycle leaves the field a gap, never landing an entity. A
++ * computation reads every resolved numeric field by name, and each numeric
++ * element of an array-valued field under `{field}.{index}`, so an aggregate
++ * over collected numbers is a computation the template author declares rather
++ * than a field the pipeline invents. `floor` comes from
++ * {@link ClarifierOptions} rather than a hardcoded constant, and gates whether
++ * a resolved entity's confidence counts as "resolved enough" when raising
++ * ambiguities — a field with a value below `floor` still raises its
++ * ambiguity. Every question is rendered through the injected
+  * {@link NarratorInterface}'s `ambiguity.entity` line rather than minted from
+  * a literal here, so wording stays caller data.
+  *
+@@ -145,15 +149,25 @@ export class Clarifier implements ClarifierInterface {
+ 		}
+ 	}
+ 
+-	// Resolves computed fields in dependency order, seeding bindings from
+-	// every already-resolved numeric field (extracted/carried/default), then
++	// Resolves computed fields in dependency order, seeding bindings from every
++	// already-resolved numeric field (extracted/carried/default) and from each
++	// numeric element of an array-valued field under `{field}.{index}`, then
+ 	// growing bindings as each computed field lands.
+ 	#resolveComputations(template: Template, filledFields: Set<string>, resolved: Entity[]): void {
+ 		const bindings: Record<string, number> = {}
+ 		for (const entity of resolved) {
+ 			const mapping = template.mappings.find((candidate) => candidate.entity === entity.name)
+ 			const field = mapping === undefined ? entity.name : formatField(mapping.field)
+-			if (isFiniteNumber(entity.value)) bindings[field] = entity.value
++			const value = entity.value
++			if (isFiniteNumber(value)) {
++				bindings[field] = value
++				continue
++			}
++			if (!Array.isArray(value)) continue
++			for (let index = 0; index < value.length; index += 1) {
++				const item = value[index]
++				if (isFiniteNumber(item)) bindings[`${field}.${index}`] = item
++			}
+ 		}
+ 
+ 		for (const computation of this.#orderComputations(template.computations)) {
+diff --git a/src/core/stages/Extractor.ts b/src/core/stages/Extractor.ts
+index 57f89c3..e45956e 100644
+--- a/src/core/stages/Extractor.ts
++++ b/src/core/stages/Extractor.ts
+@@ -1,5 +1,4 @@
+ import type { ExtractorInterface, ExtractorOptions, ExtractResult } from '../types.js'
+-import { DEFAULT_ACTIONS, DEFAULT_DOMAINS } from '../constants.js'
+ import { classifyIntent, extractNumbers } from '../helpers.js'
+ 
+ /**
+@@ -31,8 +30,8 @@ export class Extractor implements ExtractorInterface {
+ 	readonly #domains: Readonly<Record<string, readonly string[]>>
+ 
+ 	constructor(options?: ExtractorOptions) {
+-		this.#actions = { ...DEFAULT_ACTIONS, ...options?.actions }
+-		this.#domains = { ...DEFAULT_DOMAINS, ...options?.domains }
++		this.#actions = { ...options?.actions }
++		this.#domains = { ...options?.domains }
+ 	}
+ 
+ 	extract(text: string): ExtractResult {
+diff --git a/src/core/stages/Formatter.ts b/src/core/stages/Formatter.ts
+index 815eea8..99b815e 100644
+--- a/src/core/stages/Formatter.ts
++++ b/src/core/stages/Formatter.ts
+@@ -9,7 +9,6 @@ import type {
+ 	Template,
+ } from '../types.js'
+ import { formatField } from '@orkestrel/reason'
+-import { DEFAULT_VERBS } from '../constants.js'
+ import { Narrator } from '../Narrator.js'
+ 
+ /**
+@@ -26,8 +25,9 @@ import { Narrator } from '../Narrator.js'
+  * `prompt.*` line rather than minted from a literal here, so a caller rewords
+  * the assembly by overriding those keys in a `Lexicon`. `verbs` maps
+  * `intent.action` to its display verb; an action absent from the map falls
+- * back to the action string itself. Every parameter is read — the signature
+- * carries no argument the body ignores.
++ * back to the action string itself, and an intent carrying no action at all
++ * renders an empty verb. Every parameter is read — the signature carries no
++ * argument the body ignores.
+  *
+  * @example
+  * ```ts
+@@ -56,7 +56,7 @@ export class Formatter implements FormatterInterface {
+ 	readonly #narrator: NarratorInterface
+ 
+ 	constructor(options?: FormatterOptions) {
+-		this.#verbs = { ...DEFAULT_VERBS, ...options?.verbs }
++		this.#verbs = { ...options?.verbs }
+ 		this.#narrator = options?.narrator ?? new Narrator()
+ 	}
+ 
+@@ -66,7 +66,8 @@ export class Formatter implements FormatterInterface {
+ 		entities: readonly Entity[],
+ 		ambiguities: readonly Ambiguity[],
+ 	): FormatResult {
+-		const verb = this.#verbs[intent.action] ?? intent.action
++		const action = intent.action
++		const verb = action === undefined ? '' : (this.#verbs[action] ?? action)
+ 		const resolved: string[] = []
+ 		const defaults: string[] = []
+ 		for (const entity of entities) {
+diff --git a/src/core/stages/Generator.ts b/src/core/stages/Generator.ts
+index da22eae..a60cb4c 100644
+--- a/src/core/stages/Generator.ts
++++ b/src/core/stages/Generator.ts
+@@ -1,4 +1,3 @@
+-import type { FieldPath } from '@orkestrel/contract'
+ import type { Subject } from '@orkestrel/reason'
+ import type {
+ 	Entity,
+@@ -7,9 +6,7 @@ import type {
+ 	GeneratorInterface,
+ 	Template,
+ } from '../types.js'
+-import { isFiniteNumber } from '@orkestrel/contract'
+-import { CONFIDENCE_COMPUTED } from '../constants.js'
+-import { deriveAggregateField, setField } from '../helpers.js'
++import { setField } from '../helpers.js'
+ 
+ /**
+  * The `Generator` stage: builds the final `Subject` from a fully resolved
+@@ -21,19 +18,14 @@ import { deriveAggregateField, setField } from '../helpers.js'
+  * by its OWN `name` — the shape `Clarifier` uses for its synthesized
+  * default/computed entities, so one lookup rule serves both extraction-
+  * mapped and template-data-derived fields. A single-element array value
+- * unwraps to its scalar; a multi-element, ALL-numeric array value stays an
+- * array AND additionally emits five aggregate fields (`Sum` / `Count` /
+- * `Average` / `Minimum` / `Maximum`, provenance `computed`), each derived as
+- * a SIBLING path beside the source field via `deriveAggregateField` — for an
+- * array `FieldPath` (e.g. `['address', 'amounts']`) the aggregates nest
+- * (`['address', 'amountsSum']`, ...); for a plain string field they stay
+- * flat (`'amountsSum'`), matching the source field's own shape.
++ * unwraps to its scalar; every other value lands as it stands, so a
++ * multi-element array stays an array. The stage derives no field of its own:
++ * an aggregate over an array-valued entity is a `ComputedField` the template
++ * author declares, resolved by `Clarifier` before this stage runs.
+  * `confidence` is the mean of the input entities' own confidences (`0` for
+  * an empty entity set). A `FieldMapping` is emitted for EVERY field that
+- * lands on the subject, including defaults, computed fields, and aggregates.
+- * `GeneratorOptions` is a reserved extension seam — the
+- * stage has no knobs yet, so construction takes no arguments until one
+- * exists.
++ * lands on the subject, including defaults and computed fields. The stage
++ * takes no options, so construction takes no arguments.
+  *
+  * @example
+  * ```ts
+@@ -85,46 +77,6 @@ export class Generator implements GeneratorInterface {
+ 				continue
+ 			}
+ 
+-			if (Array.isArray(value) && value.length > 1) {
+-				const numeric: number[] = []
+-				for (const item of value) {
+-					if (!isFiniteNumber(item)) break
+-					numeric.push(item)
+-				}
+-				if (numeric.length === value.length) {
+-					subject = setField(subject, field, value)
+-					mappings.push({
+-						field,
+-						entity: entity.name,
+-						value,
+-						provenance: entity.provenance,
+-						confidence: entity.confidence,
+-					})
+-					const sum = numeric.reduce((total, item) => total + item, 0)
+-					const first = numeric[0]
+-					if (first === undefined) continue
+-					const minimum = numeric.reduce((min, item) => (item < min ? item : min), first)
+-					const maximum = numeric.reduce((max, item) => (item > max ? item : max), first)
+-					const aggregates: ReadonlyArray<readonly [FieldPath, number]> = [
+-						[deriveAggregateField(field, 'Sum'), sum],
+-						[deriveAggregateField(field, 'Count'), numeric.length],
+-						[deriveAggregateField(field, 'Average'), sum / numeric.length],
+-						[deriveAggregateField(field, 'Minimum'), minimum],
+-						[deriveAggregateField(field, 'Maximum'), maximum],
+-					]
+-					for (const [aggregateField, aggregateValue] of aggregates) {
+-						subject = setField(subject, aggregateField, aggregateValue)
+-						mappings.push({
+-							field: aggregateField,
+-							value: aggregateValue,
+-							provenance: { category: 'computed' },
+-							confidence: CONFIDENCE_COMPUTED,
+-						})
+-					}
+-					continue
+-				}
+-			}
+-
+ 			subject = setField(subject, field, value)
+ 			mappings.push({
+ 				field,
+diff --git a/src/core/stages/Normalizer.ts b/src/core/stages/Normalizer.ts
+index cf11fd3..dc714dc 100644
+--- a/src/core/stages/Normalizer.ts
++++ b/src/core/stages/Normalizer.ts
+@@ -4,7 +4,7 @@ import type {
+ 	NormalizerOptions,
+ 	TextChange,
+ } from '../types.js'
+-import { DEFAULT_ABBREVIATIONS, DEFAULT_CONTRACTIONS, DEFAULT_CORRECTIONS } from '../constants.js'
++import { DEFAULT_CONTRACTIONS } from '../constants.js'
+ import { applyReplacements, collapseWhitespace, escapeRegExp } from '../helpers.js'
+ 
+ /**
+@@ -12,8 +12,10 @@ import { applyReplacements, collapseWhitespace, escapeRegExp } from '../helpers.
+  * substitutions in order, then collapses whitespace.
+  *
+  * @remarks
+- * Each caller map is merged OVER the neutral built-in default for its slot,
+- * and `text` is never mutated. Every substitution actually applied
++ * The caller's `contractions` map is merged OVER `DEFAULT_CONTRACTIONS`;
++ * `abbreviations` and `corrections` carry no built-in vocabulary, so each is
++ * exactly what the caller supplied. `text` is never mutated, and every
++ * substitution actually applied
+  * (one entry per matching map KEY, not per occurrence) is recorded on the
+  * result's `changes`, in `contractions → abbreviations → corrections` order,
+  * so the audit trail explains every character difference between `text` and
+@@ -36,8 +38,8 @@ export class Normalizer implements NormalizerInterface {
+ 
+ 	constructor(options?: NormalizerOptions) {
+ 		this.#contractions = { ...DEFAULT_CONTRACTIONS, ...options?.contractions }
+-		this.#abbreviations = { ...DEFAULT_ABBREVIATIONS, ...options?.abbreviations }
+-		this.#corrections = { ...DEFAULT_CORRECTIONS, ...options?.corrections }
++		this.#abbreviations = { ...options?.abbreviations }
++		this.#corrections = { ...options?.corrections }
+ 	}
+ 
+ 	normalize(text: string): NormalizeResult {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 5704788..2d56efe 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -12,10 +12,9 @@ import type { Definition, ReasonResult, Subject, SymbolicExpression } from '@ork
+ // `Subject` / `ReasonResult` render to display-neutral prose, complementing
+ // (never duplicating) raters' `describe*` family. Nothing here is an LLM,
+ // provider, or agent — the `prompt` a result carries is FOR an external
+-// model, never consumed internally. Types are the source of truth
+-// (`AGENTS.md` § Design laws); every discriminant names its axis, never
+-// `kind` / `type`: `stage` splits pipeline phases, `category` splits
+-// provenance, `code` splits coded errors.
++// model, never consumed internally. Types are the source of truth, and every
++// discriminant names its axis, never `kind` / `type`: `stage` splits pipeline
++// phases, `category` splits provenance, `code` splits coded errors.
+ 
+ // === Vocabulary
+ 
+@@ -53,8 +52,7 @@ export type InterpretStage = 'normalize' | 'extract' | 'clarify' | 'format' | 'g
+  * phase. `NO_TEMPLATE` — no registered {@link Template} scored at or above
+  * the confidence floor (or the registry is empty). `LOW_CONFIDENCE` — a
+  * template matched but the classified {@link Intent}'s confidence fell below
+- * the floor. `INVALID_TEMPLATE` — `createTemplate` was handed data that
+- * fails `isTemplate`. `DESTROYED` — any use of a destroyed entity.
++ * the floor. `DESTROYED` — any use of a destroyed entity.
+  */
+ export type InterpretErrorCode =
+ 	| 'NORMALIZE_FAILED'
+@@ -64,7 +62,6 @@ export type InterpretErrorCode =
+ 	| 'GENERATE_FAILED'
+ 	| 'NO_TEMPLATE'
+ 	| 'LOW_CONFIDENCE'
+-	| 'INVALID_TEMPLATE'
+ 	| 'DESTROYED'
+ 
+ // === Template data model — pure JSON-serializable, versionable, diffable, hashable
+@@ -102,7 +99,9 @@ export interface FieldDefault {
+  * / `Operation`), evaluated by the pure `resolveExpression` helper rather
+  * than a closure, so a `Template` stays JSON-serializable end to end. A
+  * `ComputedField` declares no dependency list of its own — `variablesOf`
+- * derives every dependency from the tree.
++ * derives every dependency from the tree. A `Variable` names a resolved field,
++ * or one numeric element of an array-valued field as `{field}.{index}`, which
++ * is how a template author declares an aggregate over collected numbers.
+  */
+ export interface ComputedField {
+ 	readonly field: FieldPath
+@@ -147,11 +146,13 @@ export interface Provenance {
+  * @remarks
+  * Produced by `classifyIntent` against caller-supplied `actions` / `domains`
+  * vocabularies only — there is no built-in en-US worldview and no
+- * auto-classification from a registered template's own `domain` name.
++ * auto-classification from a registered template's own `domain` name. An axis
++ * the vocabularies leave unmatched is absent (`undefined`), never an empty
++ * string, so a reader tells "unclassified" from "classified as `''`".
+  */
+ export interface Intent {
+-	readonly action: string
+-	readonly domain: string
++	readonly action?: string
++	readonly domain?: string
+ 	readonly confidence: number
+ }
+ 
+@@ -340,16 +341,17 @@ export interface DefinitionRecord {
+  *
+  * @remarks
+  * `interpret` fires once per completed `interpret()` call, complete OR
+- * incomplete — visibility is the point. `register` fires when a template is
+- * registered, carrying its id. `error` fires with the raw thrown value when
+- * an injected stage implementation throws. `destroy` fires once on teardown.
++ * incomplete — visibility is the point. `add` fires when a template is added,
++ * carrying its id, and names the same act as the {@link RecordEventMap} row
++ * the call forwards to. `error` fires with the raw thrown value when an
++ * injected stage implementation throws. `destroy` fires once on teardown.
+  * Listener isolation is the emitter's own — never routed onto this map.
+  */
+ export type InterpretEventMap = {
+ 	/** An `interpret()` call completed — carries the full result. */
+ 	readonly interpret: readonly [result: Interpretation]
+-	/** A template was registered — carries its id. */
+-	readonly register: readonly [templateId: string]
++	/** A template was added — carries its id. */
++	readonly add: readonly [templateId: string]
+ 	/** An injected stage implementation threw — carries the raw thrown value. */
+ 	readonly error: readonly [error: unknown]
+ 	/** The orchestrator was destroyed. */
+@@ -442,8 +444,11 @@ export interface NarratorOptions {
+  * Options for `createNormalizer` / the `Normalizer` constructor.
+  *
+  * @remarks
+- * Each map is merged OVER the neutral built-in defaults, applied in order
+- * contractions → abbreviations → corrections, before whitespace collapse.
++ * The maps apply in order — contractions → abbreviations → corrections —
++ * before whitespace collapse. `contractions` merges OVER
++ * `DEFAULT_CONTRACTIONS`; `abbreviations` and `corrections` carry no built-in
++ * vocabulary, because an abbreviation or a misspelling set is domain worldview
++ * rather than mechanism.
+  */
+ export interface NormalizerOptions {
+ 	readonly contractions?: Readonly<Record<string, string>>
+@@ -496,16 +501,6 @@ export interface FormatterOptions {
+ 	readonly narrator?: NarratorInterface
+ }
+ 
+-/**
+- * Options for `createGenerator` / the `Generator` constructor.
+- *
+- * @remarks
+- * Currently an empty extension seam — the `Generator` stage takes no
+- * configuration today, but keeps its own options type so a future knob
+- * never has to change the `GeneratorInterface#generate` call signature.
+- */
+-export interface GeneratorOptions {}
+-
+ /** Options for `createTemplateManager` / the `TemplateManager` constructor — the initial seed collection. */
+ export interface TemplateManagerOptions {
+ 	readonly templates?: readonly Template[]
+@@ -589,7 +584,7 @@ export interface RecordManagerOptions {
+  */
+ export interface RecordManagerInterface<TValue, TRecord extends RecordStamp> {
+ 	readonly emitter: EmitterInterface<RecordEventMap>
+-	readonly size: number
++	readonly count: number
+ 	has(id: string): boolean
+ 	record(id: string): TRecord | undefined
+ 	records(): readonly TRecord[]
+@@ -601,7 +596,7 @@ export interface RecordManagerInterface<TValue, TRecord extends RecordStamp> {
+ }
+ 
+ /**
+- * Per-call options shared by every manager's `add` method.
++ * Per-call options for the record every manager's `add` method holds.
+  *
+  * @remarks
+  * `id` overrides the minted record id. `TemplateManagerInterface#add` /
+@@ -609,7 +604,7 @@ export interface RecordManagerInterface<TValue, TRecord extends RecordStamp> {
+  * field when omitted; `SubjectManagerInterface#add` mints a fresh id when
+  * omitted, since a `Subject` carries no `id` field of its own.
+  */
+-export interface ManagerAddOptions {
++export interface RecordOptions {
+ 	readonly id?: string
+ }
+ 
+@@ -627,7 +622,9 @@ export interface InterpretContextOptions {
+  * @remarks
+  * `templates` seeds the registry. `context` supplies a shared
+  * {@link InterpretContextInterface} (a fresh one is constructed when
+- * omitted). Each stage slot is BRING-YOUR-OWN — a supplied implementation is
++ * omitted); a supplied context stays the caller's to tear down, and
++ * `destroy()` leaves it alive for the other orchestrators sharing it. Each
++ * stage slot is BRING-YOUR-OWN — a supplied implementation is
+  * used as-is, else the built-in stage is constructed with its own defaults,
+  * so a caller who wants a configured stage constructs that stage and supplies
+  * the instance. There are no per-stage option keys here: `floor` is the one
+@@ -636,8 +633,10 @@ export interface InterpretContextOptions {
+  * `DEFAULT_INTERPRET_SIMILARITY`) and `floor` (intent confidence floor,
+  * default `DEFAULT_INTERPRET_FLOOR`) are two distinct, clearly named axes —
+  * each honored wherever it applies, never a single overloaded `threshold`.
+- * `history` caps the context's `previous()` ring buffer. `on` — initial event
+- * listeners. `error` — the emitter's listener-error handler.
++ * `history` caps the context's `previous()` ring buffer. `narrator` groups the
++ * wording settings the orchestrator builds its own {@link NarratorInterface}
++ * from, keeping them clear of the `formatter` stage slot beside them. `on` —
++ * initial event listeners. `error` — the emitter's listener-error handler.
+  */
+ export interface InterpretOptions {
+ 	readonly templates?: readonly Template[]
+@@ -650,8 +649,7 @@ export interface InterpretOptions {
+ 	readonly similarity?: number
+ 	readonly floor?: number
+ 	readonly history?: number
+-	readonly lexicon?: Lexicon
+-	readonly formatters?: Readonly<Record<string, NarratorFormatter>>
++	readonly narrator?: NarratorOptions
+ 	readonly on?: EmitterHooks<InterpretEventMap>
+ 	readonly error?: EmitterErrorHandler
+ }
+@@ -692,7 +690,16 @@ export interface FormatterInterface {
+ 	): FormatResult
+ }
+ 
+-/** The `Generator` stage contract: build the final subject/definition pair plus its field audit. */
++/**
++ * The `Generator` stage contract: build the final subject/definition pair plus
++ * its field audit.
++ *
++ * @remarks
++ * Every field the built subject carries comes from an entity the caller's own
++ * {@link Template} declared — a mapping, a default, or a
++ * {@link ComputedField}. The stage derives no field of its own, so a subject
++ * never gains a sibling the template author did not ask for.
++ */
+ export interface GeneratorInterface {
+ 	generate(entities: readonly Entity[], template: Template): GenerateResult
+ }
+@@ -729,18 +736,17 @@ export interface NarratorInterface {
+  * the singular/plural accessor pair and the batch `remove` overloads.
+  *
+  * @remarks
+- * `size` (never `count` — this is the sole tally in scope) mirrors the
+- * raters `ProgramManagerInterface` registry precedent. `remove`'s batch form
+- * is all-or-nothing: any missing id in the list leaves the collection
+- * untouched and returns `false`.
++ * `count` is the registry's lone tally. `remove`'s batch form is
++ * all-or-nothing: any missing id in the list leaves the collection untouched
++ * and returns `false`.
+  */
+ export interface TemplateManagerInterface {
+ 	readonly emitter: EmitterInterface<TemplateManagerEventMap>
+-	readonly size: number
++	readonly count: number
+ 	has(id: string): boolean
+ 	template(id: string): TemplateRecord | undefined
+ 	templates(): readonly TemplateRecord[]
+-	add(template: Template, options?: ManagerAddOptions): TemplateRecord
++	add(template: Template, options?: RecordOptions): TemplateRecord
+ 	remove(ids: readonly string[]): boolean
+ 	remove(id: string): boolean
+ 	remove(): void
+@@ -753,11 +759,11 @@ export interface TemplateManagerInterface {
+  */
+ export interface SubjectManagerInterface {
+ 	readonly emitter: EmitterInterface<SubjectManagerEventMap>
+-	readonly size: number
++	readonly count: number
+ 	has(id: string): boolean
+ 	subject(id: string): SubjectRecord | undefined
+ 	subjects(): readonly SubjectRecord[]
+-	add(subject: Subject, options?: ManagerAddOptions): SubjectRecord
++	add(subject: Subject, options?: RecordOptions): SubjectRecord
+ 	remove(ids: readonly string[]): boolean
+ 	remove(id: string): boolean
+ 	remove(): void
+@@ -767,11 +773,11 @@ export interface SubjectManagerInterface {
+ /** The definition registry — a self-owning, versioned/hashed record-holder. */
+ export interface DefinitionManagerInterface {
+ 	readonly emitter: EmitterInterface<DefinitionManagerEventMap>
+-	readonly size: number
++	readonly count: number
+ 	has(id: string): boolean
+ 	definition(id: string): DefinitionRecord | undefined
+ 	definitions(): readonly DefinitionRecord[]
+-	add(definition: Definition, options?: ManagerAddOptions): DefinitionRecord
++	add(definition: Definition, options?: RecordOptions): DefinitionRecord
+ 	remove(ids: readonly string[]): boolean
+ 	remove(id: string): boolean
+ 	remove(): void
+@@ -807,21 +813,28 @@ export interface InterpretContextInterface {
+  *
+  * @remarks
+  * `interpret` is genuinely SYNCHRONOUS — it returns its
+- * {@link Interpretation} directly, never a `Promise`. `register` /
+- * `unregister` / `template` / `templates`
+- * delegate to an internal {@link TemplateManagerInterface} but expose plain
+- * {@link Template} data, not the richer versioned record. `describe` /
++ * {@link Interpretation} directly, never a `Promise`. `add` / `remove` /
++ * `template` / `templates` name the same acts as the
++ * {@link TemplateManagerInterface} they delegate to, and expose plain
++ * {@link Template} data rather than the richer versioned record — which is why
++ * `add` returns `void` where `TemplateManagerInterface#add` returns the record
++ * it minted. `remove` carries the same batch overloads as that delegate, so
++ * the shared verb promises no form the orchestrator lacks. `describe` /
+  * `narrate` are the reverse direction — structure-to-prose, complementing
+  * (never duplicating) raters' `describe*` family. After `destroy()` every
+  * method except the `emitter` getter and `destroy` itself throws
+- * `InterpretError('DESTROYED', …)`; `destroy()` is idempotent and tears the
++ * `InterpretError('DESTROYED', …)`; `destroy()` is idempotent, tears down the
++ * template registry and the context it constructed itself — never a `context`
++ * the caller supplied, which outlives this orchestrator — and tears the
+  * emitter down LAST.
+  */
+ export interface InterpretInterface {
+ 	readonly emitter: EmitterInterface<InterpretEventMap>
+ 	interpret(text: string): Interpretation
+-	register(template: Template): void
+-	unregister(id: string): boolean
++	add(template: Template): void
++	remove(ids: readonly string[]): boolean
++	remove(id: string): boolean
++	remove(): void
+ 	template(id: string): Template | undefined
+ 	templates(): readonly Template[]
+ 	describe(definition: Definition): string
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index b85c309..c49e71a 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -98,12 +98,12 @@ export function isFieldDefault(value: unknown): value is FieldDefault {
+  *
+  * @example
+  * ```ts
+- * import { constant, operation, variable } from '@orkestrel/reason'
++ * import { createConstant, createOperation, createVariable } from '@orkestrel/reason'
+  * import { isComputedField } from '@src/core'
+  *
+  * isComputedField({
+  * 	field: 'monthly',
+- * 	expression: operation('divide', variable('deductible'), constant(12)),
++ * 	expression: createOperation('divide', createVariable('deductible'), createConstant(12)),
+  * }) // true
+  * isComputedField({ field: 'monthly', expression: { form: 'variable' } }) // false — name missing
+  * ```
+@@ -126,7 +126,7 @@ export function isComputedField(value: unknown): value is ComputedField {
+  *
+  * @example
+  * ```ts
+- * import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++ * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+  * import { isTemplate } from '@src/core'
+  *
+  * isTemplate({
+@@ -137,8 +137,8 @@ export function isComputedField(value: unknown): value is ComputedField {
+  * 	mappings: [],
+  * 	defaults: [],
+  * 	computations: [],
+- * 	definition: quantitativeDefinition('t1', 'Arithmetic', [
+- * 		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++ * 	definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++ * 		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+  * 	]),
+  * }) // true
+  * isTemplate({ id: 't1' }) // false — most fields missing
+@@ -187,16 +187,24 @@ export function isProvenance(value: unknown): value is Provenance {
+  * @param value - The value to test
+  * @returns `true` when the published intent members conform
+  *
++ * @remarks
++ * `action` and `domain` are optional, because `classifyIntent` leaves an
++ * unmatched axis absent — an intent carrying neither still conforms.
++ *
+  * @example
+  * ```ts
+  * import { isIntent } from '@src/core'
+  *
+  * isIntent({ action: 'calculate', domain: 'arithmetic', confidence: 1, metadata: true }) // true
++ * isIntent({ confidence: 0 })                                                            // true
+  * isIntent({ action: 'calculate', domain: 'arithmetic', confidence: 'high' })             // false
+  * ```
+  */
+ export function isIntent(value: unknown): value is Intent {
+-	return objectOf({ action: isString, domain: isString, confidence: isNumber })(value)
++	return objectOf({ action: isString, domain: isString, confidence: isNumber }, [
++		'action',
++		'domain',
++	])(value)
+ }
+ 
+ /**
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 3f7c975..8dcc469 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -16,15 +16,15 @@
+ import type { Template } from '@src/core'
+ import { resolveField } from '@orkestrel/contract'
+ import {
+-	constant,
++	createConstant,
+ 	createLogicalReasoner,
+ 	createReason,
+ 	createSymbolicReasoner,
+-	equation,
+-	logicalDefinition,
+-	operation,
+-	symbolicDefinition,
+-	variable,
++	createEquation,
++	createLogicalDefinition,
++	createOperation,
++	createSymbolicDefinition,
++	createVariable,
+ } from '@orkestrel/reason'
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -46,11 +46,18 @@ import {
+  * A one-equation symbolic definition solving `total = x + 1` from a seeded `x`, so a real
+  * engine run yields a real `SymbolicResult` for the narrower to accept.
+  */
+-function buildSolvedDefinition(): ReturnType<typeof symbolicDefinition> {
+-	return symbolicDefinition(
++function buildSolvedDefinition(): ReturnType<typeof createSymbolicDefinition> {
++	return createSymbolicDefinition(
+ 		'proof',
+ 		'Proof',
+-		[equation('e1', constant(0), operation('add', variable('x'), constant(1)), 'total')],
++		[
++			createEquation(
++				'e1',
++				createConstant(0),
++				createOperation('add', createVariable('x'), createConstant(1)),
++				'total',
++			),
++		],
+ 		{ variables: { x: 5 } },
+ 	)
+ }
+@@ -83,7 +90,7 @@ describe('expectSymbolic', () => {
+ 	})
+ 
+ 	it('refuses a result of another reasoning, naming the reasoning it got', () => {
+-		const result = createLogicalReasoner().reason({}, logicalDefinition('gate', 'Gate', []))
++		const result = createLogicalReasoner().reason({}, createLogicalDefinition('gate', 'Gate', []))
+ 
+ 		expect(() => expectSymbolic(result)).toThrow('Expected a symbolic result, got "logical"')
+ 	})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 8e1be14..c25720e 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -15,14 +15,14 @@ import type { ReasonResult, SymbolicResult } from '@orkestrel/reason'
+ import type { Interpretation, Template } from '@src/core'
+ import { isArray } from '@orkestrel/contract'
+ import {
+-	constant,
+-	factorGroup,
+-	fieldFactor,
+-	logicalDefinition,
+-	operation,
+-	quantitativeDefinition,
+-	staticFactor,
+-	variable,
++	createConstant,
++	createFactorGroup,
++	createFieldFactor,
++	createLogicalDefinition,
++	createOperation,
++	createQuantitativeDefinition,
++	createStaticFactor,
++	createVariable,
+ } from '@orkestrel/reason'
+ import { InterpretContext } from '@src/core'
+ import { afterEach, vi } from 'vitest'
+@@ -117,8 +117,8 @@ export function buildInterpretTemplate(overrides?: Partial<Template>): Template
+ 		mappings: [{ entity: 'value', aliases: ['amount', 'number'], field: 'value' }],
+ 		defaults: [],
+ 		computations: [],
+-		definition: quantitativeDefinition('template-1', 'Arithmetic', [
+-			factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++		definition: createQuantitativeDefinition('template-1', 'Arithmetic', [
++			createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 		]),
+ 		...overrides,
+ 	}
+@@ -155,7 +155,7 @@ export const INTERPRET_DOMAINS: Readonly<Record<string, readonly string[]>> = Ob
+  * Build the auto-insurance corpus template — the redesign's terrain-vocabulary
+  * analog of scsr's `DEFAULT_TEMPLATES` insurance fixture: a required `age`
+  * mapping, `accidents`/`coverage`/`deductible` defaults, and a declarative
+- * `monthly = deductible / 12` computation (`operation('divide', …)` — the
++ * `monthly = deductible / 12` computation (`createOperation('divide', …)` — the
+  * closure-free `ComputedField` replacing scsr's `InferenceRule.compute`).
+  *
+  * @param overrides - Fields merged over the corpus defaults
+@@ -178,10 +178,13 @@ export function buildInsuranceTemplate(overrides?: Partial<Template>): Template
+ 			{ field: 'deductible', value: 500 },
+ 		],
+ 		computations: [
+-			{ field: 'monthly', expression: operation('divide', variable('deductible'), constant(12)) },
++			{
++				field: 'monthly',
++				expression: createOperation('divide', createVariable('deductible'), createConstant(12)),
++			},
+ 		],
+-		definition: quantitativeDefinition('insurance-auto', 'Auto Insurance Rate', [
+-			factorGroup('age-group', 'product', [staticFactor('age-factor', 1)]),
++		definition: createQuantitativeDefinition('insurance-auto', 'Auto Insurance Rate', [
++			createFactorGroup('age-group', 'product', [createStaticFactor('age-factor', 1)]),
+ 		]),
+ 		...overrides,
+ 	}
+@@ -207,7 +210,7 @@ export function buildEligibilityTemplate(overrides?: Partial<Template>): Templat
+ 		],
+ 		defaults: [],
+ 		computations: [],
+-		definition: logicalDefinition('eligibility', 'Eligibility', []),
++		definition: createLogicalDefinition('eligibility', 'Eligibility', []),
+ 		...overrides,
+ 	}
+ }
+@@ -229,8 +232,8 @@ export function buildLoanTemplate(overrides?: Partial<Template>): Template {
+ 		mappings: [{ entity: 'amount', aliases: [], field: 'amount' }],
+ 		defaults: [],
+ 		computations: [],
+-		definition: quantitativeDefinition('loan-personal', 'Personal Loan', [
+-			factorGroup('total', 'sum', [fieldFactor('amount', 'amount')]),
++		definition: createQuantitativeDefinition('loan-personal', 'Personal Loan', [
++			createFactorGroup('total', 'sum', [createFieldFactor('amount', 'amount')]),
+ 		]),
+ 		...overrides,
+ 	}
+@@ -239,7 +242,8 @@ export function buildLoanTemplate(overrides?: Partial<Template>): Template {
+ /**
+  * Build the statistics corpus template — a SINGLE `value` mapping so extraction
+  * collects every number: one number lands as a scalar, several as an array the
+- * `Generator` keeps AND augments with `Sum`/`Count`/`Average`/`Minimum`/`Maximum`.
++ * `Generator` keeps as it stands. An aggregate over that array is a
++ * `ComputedField` the caller declares through `overrides`.
+  *
+  * @param overrides - Fields merged over the corpus defaults
+  * @returns The built template
+@@ -253,8 +257,8 @@ export function buildStatisticsTemplate(overrides?: Partial<Template>): Template
+ 		mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+ 		defaults: [],
+ 		computations: [],
+-		definition: quantitativeDefinition('statistics', 'Statistics', [
+-			factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++		definition: createQuantitativeDefinition('statistics', 'Statistics', [
++			createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 		]),
+ 		...overrides,
+ 	}
+@@ -283,8 +287,8 @@ export function buildInterpretation(overrides?: Partial<Interpretation>): Interp
+ 			},
+ 		],
+ 		subject: { age: 25 },
+-		definition: quantitativeDefinition('insurance-auto', 'Auto Insurance', [
+-			factorGroup('total', 'sum', [fieldFactor('age', 'age')]),
++		definition: createQuantitativeDefinition('insurance-auto', 'Auto Insurance', [
++			createFactorGroup('total', 'sum', [createFieldFactor('age', 'age')]),
+ 		]),
+ 		mappings: [
+ 			{
+diff --git a/tests/src/core/Interpret.test.ts b/tests/src/core/Interpret.test.ts
+index 93118d0..d61617f 100644
+--- a/tests/src/core/Interpret.test.ts
++++ b/tests/src/core/Interpret.test.ts
+@@ -9,14 +9,14 @@ import type {
+ } from '@src/core'
+ import { isRecord, isString } from '@orkestrel/contract'
+ import {
+-	constant,
++	createConstant,
+ 	createReason,
+ 	createSymbolicReasoner,
+-	equation,
+-	symbolicDefinition,
+-	variable,
++	createEquation,
++	createSymbolicDefinition,
++	createVariable,
+ } from '@orkestrel/reason'
+-import { createNarrator, Extractor, Interpret, isInterpretError } from '@src/core'
++import { createNarrator, Extractor, Interpret, InterpretContext, isInterpretError } from '@src/core'
+ import { captureError, createRecorders } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -36,22 +36,36 @@ function corpusExtractor(): ExtractorInterface {
+ 
+ describe('Interpret', () => {
+ 	describe('registry', () => {
+-		it('registers, looks up, lists, and unregisters templates as plain data', () => {
++		it('adds, looks up, lists, and removes templates as plain data', () => {
+ 			const interpret = new Interpret()
+ 			const template = buildInterpretTemplate()
+-			interpret.register(template)
++			interpret.add(template)
+ 			expect(interpret.template('template-1')).toEqual(template)
+ 			expect(interpret.templates()).toEqual([template])
+-			expect(interpret.unregister('template-1')).toBe(true)
++			expect(interpret.remove('template-1')).toBe(true)
+ 			expect(interpret.template('template-1')).toBeUndefined()
+ 			interpret.destroy()
+ 		})
+ 
+-		it('emits register with the template id', () => {
++		it('removes a listed batch all-or-nothing, and every template with no argument', () => {
+ 			const interpret = new Interpret()
+-			const events = createRecorders<InterpretEventMap, 'register'>(interpret.emitter, ['register'])
+-			interpret.register(buildInterpretTemplate())
+-			expect(events.register.calls).toEqual([['template-1']])
++			interpret.add(buildInterpretTemplate())
++			interpret.add(buildInsuranceTemplate())
++			expect(interpret.remove(['template-1', 'absent'])).toBe(false)
++			expect(interpret.templates()).toHaveLength(2)
++			expect(interpret.remove(['template-1', 'insurance-auto'])).toBe(true)
++			expect(interpret.templates()).toEqual([])
++			interpret.add(buildInterpretTemplate())
++			expect(interpret.remove()).toBeUndefined()
++			expect(interpret.templates()).toEqual([])
++			interpret.destroy()
++		})
++
++		it('emits add with the template id', () => {
++			const interpret = new Interpret()
++			const events = createRecorders<InterpretEventMap, 'add'>(interpret.emitter, ['add'])
++			interpret.add(buildInterpretTemplate())
++			expect(events.add.calls).toEqual([['template-1']])
+ 			interpret.destroy()
+ 		})
+ 	})
+@@ -137,7 +151,7 @@ describe('Interpret', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+ 				extractor: corpusExtractor(),
+-				lexicon: { templates: { 'ambiguity.intent': 'Which domain?' } },
++				narrator: { lexicon: { templates: { 'ambiguity.intent': 'Which domain?' } } },
+ 			})
+ 			const result = interpret.interpret('what is the meaning of life')
+ 			expect(result.ambiguities[0]?.question).toBe('Which domain?')
+@@ -301,16 +315,20 @@ describe('Interpret', () => {
+ 			const reason = createReason({ reasoners: [createSymbolicReasoner()] })
+ 			const result = reason.reason(
+ 				{},
+-				symbolicDefinition('r', 'R', [equation('e1', variable('x'), constant(5), 'x')]),
++				createSymbolicDefinition('r', 'R', [
++					createEquation('e1', createVariable('x'), createConstant(5), 'x'),
++				]),
+ 			)
+ 			expect(interpret.narrate(result)).toBe(createNarrator().narrate(result))
+ 			reason.destroy()
+ 			interpret.destroy()
+ 		})
+ 
+-		it('honors a lexicon override supplied through InterpretOptions', () => {
++		it('honors a lexicon override supplied through the narrator option group', () => {
+ 			const interpret = new Interpret({
+-				lexicon: { templates: { 'definition.quantitative': '{{name}} has {{count}} group(s)' } },
++				narrator: {
++					lexicon: { templates: { 'definition.quantitative': '{{name}} has {{count}} group(s)' } },
++				},
+ 			})
+ 			const definition = buildInterpretTemplate().definition
+ 			expect(interpret.describe(definition)).toBe('Arithmetic has 1 group(s)')
+@@ -329,5 +347,27 @@ describe('Interpret', () => {
+ 			const error = captureError(() => interpret.interpret('x'))
+ 			expect(isInterpretError(error) && error.code === 'DESTROYED').toBe(true)
+ 		})
++
++		it('leaves a caller-supplied context alive, and a second orchestrator keeps using it', () => {
++			const context = new InterpretContext({ session: 'shared' })
++			const first = new Interpret({ context })
++			const second = new Interpret({ context })
++			first.destroy()
++			expect(context.session).toBe('shared')
++			expect(context.previous()).toEqual([])
++			second.interpret('calculate arithmetic 42')
++			expect(context.previous()).toHaveLength(1)
++			second.destroy()
++			expect(context.session).toBe('shared')
++			context.destroy()
++			const error = captureError(() => context.previous())
++			expect(isInterpretError(error) && error.code === 'DESTROYED').toBe(true)
++		})
++
++		// The teardown of a context the orchestrator constructed itself has no
++		// public observer: `Interpret` publishes no context accessor, so nothing
++		// outside can read that context's state or subscribe to its emitter. The
++		// supplied-context case above is the half a caller can drive, and it is the
++		// half that matters — a shared context outliving one orchestrator.
+ 	})
+ })
+diff --git a/tests/src/core/InterpretContext.test.ts b/tests/src/core/InterpretContext.test.ts
+index 68e0b8f..8017bf6 100644
+--- a/tests/src/core/InterpretContext.test.ts
++++ b/tests/src/core/InterpretContext.test.ts
+@@ -12,8 +12,8 @@ describe('InterpretContext', () => {
+ 	it('exposes the session and its own subject/definition registries', () => {
+ 		const context = new InterpretContext({ session: 's1' })
+ 		expect(context.session).toBe('s1')
+-		expect(context.subjects.size).toBe(0)
+-		expect(context.definitions.size).toBe(0)
++		expect(context.subjects.count).toBe(0)
++		expect(context.definitions.count).toBe(0)
+ 		expect(context.previous()).toEqual([])
+ 		expect(context.entities()).toEqual([])
+ 	})
+@@ -92,7 +92,7 @@ describe('InterpretContext', () => {
+ 		context.subjects.add({ age: 25 })
+ 		context.clear()
+ 		expect(context.previous()).toEqual([])
+-		expect(context.subjects.size).toBe(0)
++		expect(context.subjects.count).toBe(0)
+ 		expect(context.session).toBe('s1')
+ 		context.add(buildInterpretation({ text: 'again' }))
+ 		expect(context.previous()).toHaveLength(1)
+diff --git a/tests/src/core/Narrator.test.ts b/tests/src/core/Narrator.test.ts
+index 6fe725a..adb1aeb 100644
+--- a/tests/src/core/Narrator.test.ts
++++ b/tests/src/core/Narrator.test.ts
+@@ -1,18 +1,18 @@
+ import type { Lexicon, NarratorOptions } from '@src/core'
+ import {
+-	atom,
+-	constant,
+-	equation,
+-	fact,
+-	factorGroup,
+-	fieldFactor,
+-	inference,
+-	inferentialDefinition,
+-	logicalDefinition,
+-	quantitativeDefinition,
+-	rule,
+-	symbolicDefinition,
+-	variable,
++	createAtom,
++	createConstant,
++	createEquation,
++	createFact,
++	createFactorGroup,
++	createFieldFactor,
++	createInference,
++	createInferentialDefinition,
++	createLogicalDefinition,
++	createQuantitativeDefinition,
++	createRule,
++	createSymbolicDefinition,
++	createVariable,
+ } from '@orkestrel/reason'
+ import { Narrator } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+@@ -23,20 +23,26 @@ import { TRICKY_KEYS } from '../../setup.js'
+ // supplied via the lexicon/formatters seam, mirroring the forward
+ // `Formatter`'s `verbs` option.
+ 
+-const QUANTITATIVE = quantitativeDefinition('premium', 'Premium', [
+-	factorGroup('g', 'sum', [fieldFactor('v', 'value')]),
++const QUANTITATIVE = createQuantitativeDefinition('premium', 'Premium', [
++	createFactorGroup('g', 'sum', [createFieldFactor('v', 'value')]),
+ ])
+-const LOGICAL = logicalDefinition('eligibility', 'Eligibility', [
+-	rule('adult', [atom('age', 'from', 18)], atom('adult', 'equals', true)),
++const LOGICAL = createLogicalDefinition('eligibility', 'Eligibility', [
++	createRule('adult', [createAtom('age', 'from', 18)], createAtom('adult', 'equals', true)),
+ ])
+-const SYMBOLIC = symbolicDefinition('s1', 'Solve', [
+-	equation('e1', variable('x'), constant(5), 'x'),
++const SYMBOLIC = createSymbolicDefinition('s1', 'Solve', [
++	createEquation('e1', createVariable('x'), createConstant(5), 'x'),
+ ])
+-const INFERENTIAL = inferentialDefinition(
++const INFERENTIAL = createInferentialDefinition(
+ 	'mortality',
+ 	'Mortality',
+-	[fact('f1', 'human', ['socrates'])],
+-	[inference('mortal', [fact('p1', 'human', ['?x'])], fact('c1', 'mortal', ['?x']))],
++	[createFact('f1', 'human', ['socrates'])],
++	[
++		createInference(
++			'mortal',
++			[createFact('p1', 'human', ['?x'])],
++			createFact('c1', 'mortal', ['?x']),
++		),
++	],
+ )
+ 
+ describe('Narrator', () => {
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 4005e2d..3a0ed05 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -1,5 +1,9 @@
+-import type { InterpretEventMap, Template } from '@src/core'
+-import { factorGroup, fieldFactor, quantitativeDefinition } from '@orkestrel/reason'
++import type { InterpretEventMap } from '@src/core'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
+ import {
+ 	Clarifier,
+ 	createClarifier,
+@@ -11,7 +15,6 @@ import {
+ 	createInterpretContext,
+ 	createNormalizer,
+ 	createSubjectManager,
+-	createTemplate,
+ 	createTemplateManager,
+ 	DEFAULT_INTERPRET_FLOOR,
+ 	DEFAULT_INTERPRET_HISTORY,
+@@ -28,7 +31,7 @@ import {
+ 	SubjectManager,
+ 	TemplateManager,
+ } from '@src/core'
+-import { captureError, createRecorder, createRecorders, invokeUnchecked } from '@orkestrel/test'
++import { createRecorder, createRecorders } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	buildInterpretTemplate,
+@@ -54,7 +57,6 @@ describe('interprets barrel — value-space sample resolves', () => {
+ 		expect(createSubjectManager).toBeDefined()
+ 		expect(createDefinitionManager).toBeDefined()
+ 		expect(createInterpretContext).toBeDefined()
+-		expect(createTemplate).toBeDefined()
+ 		expect(isInterpretError).toBeDefined()
+ 		expect(InterpretError).toBeDefined()
+ 		expect(DEFAULT_INTERPRET_FLOOR).toBeDefined()
+@@ -92,9 +94,9 @@ describe('createInterpret', () => {
+ 			extractor: createExtractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS }),
+ 			on: { interpret: interpretEvents.handler },
+ 		})
+-		const events = createRecorders<InterpretEventMap, 'interpret' | 'register' | 'destroy'>(
++		const events = createRecorders<InterpretEventMap, 'interpret' | 'add' | 'destroy'>(
+ 			interpret.emitter,
+-			['interpret', 'register', 'destroy'],
++			['interpret', 'add', 'destroy'],
+ 		)
+ 		interpret.interpret('calculate arithmetic 42')
+ 		expect(interpretEvents.count).toBe(1)
+@@ -174,7 +176,7 @@ describe('createGenerator', () => {
+ describe('createTemplateManager', () => {
+ 	it('wires a working registry seeded from options', () => {
+ 		const manager = createTemplateManager({ templates: [buildInterpretTemplate()] })
+-		expect(manager.size).toBe(1)
++		expect(manager.count).toBe(1)
+ 		expect(manager.has('template-1')).toBe(true)
+ 	})
+ 
+@@ -190,7 +192,7 @@ describe('createTemplateManager', () => {
+ describe('createSubjectManager', () => {
+ 	it('wires a working registry seeded from options', () => {
+ 		const manager = createSubjectManager({ subjects: [{ value: 1 }] })
+-		expect(manager.size).toBe(1)
++		expect(manager.count).toBe(1)
+ 	})
+ 
+ 	it('honors a custom id via add options', () => {
+@@ -202,13 +204,13 @@ describe('createSubjectManager', () => {
+ })
+ 
+ describe('createDefinitionManager', () => {
+-	const definition = quantitativeDefinition('d1', 'D1', [
+-		factorGroup('total', 'sum', [fieldFactor('value', 'value')]),
++	const definition = createQuantitativeDefinition('d1', 'D1', [
++		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
+ 	])
+ 
+ 	it('wires a working registry seeded from options', () => {
+ 		const manager = createDefinitionManager({ definitions: [definition] })
+-		expect(manager.size).toBe(1)
++		expect(manager.count).toBe(1)
+ 		expect(manager.has('d1')).toBe(true)
+ 	})
+ 
+@@ -232,17 +234,3 @@ describe('createInterpretContext', () => {
+ 		expect(context.previous()).toHaveLength(2)
+ 	})
+ })
+-
+-describe('createTemplate — validation', () => {
+-	it('returns valid template data unchanged', () => {
+-		const template = createTemplate(buildInterpretTemplate())
+-		expect(template.id).toBe('template-1')
+-	})
+-
+-	it('throws InterpretError INVALID_TEMPLATE for malformed data', () => {
+-		const bad: unknown = { ...buildInterpretTemplate(), mappings: 'not-an-array' }
+-		const error = captureError(() => invokeUnchecked<Template>(undefined, createTemplate, [bad]))
+-		if (!isInterpretError(error)) throw new Error('expected an InterpretError')
+-		expect(error.code).toBe('INVALID_TEMPLATE')
+-	})
+-})
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 31d3521..3b74923 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,15 +1,16 @@
+ import {
+-	constant,
++	createConstant,
+ 	createSymbolicReasoner,
+-	equation,
+-	operation,
+-	symbolicDefinition,
+-	variable,
++	createEquation,
++	createOperation,
++	createSymbolicDefinition,
++	createVariable,
+ } from '@orkestrel/reason'
+ import {
+ 	applyReplacements,
+ 	assignEntities,
+ 	canonicalize,
++	canonicalizeNode,
+ 	classifyIntent,
+ 	collapseWhitespace,
+ 	createNarrator,
+@@ -234,23 +235,28 @@ describe('classifyIntent', () => {
+ 		})
+ 		expect(classifyIntent('calculate something', actions, {})).toEqual({
+ 			action: 'compute',
+-			domain: '',
+ 			confidence: 0.5,
+ 		})
+ 		expect(classifyIntent('the rate please', {}, domains)).toEqual({
+-			action: '',
+ 			domain: 'rating',
+ 			confidence: 0.5,
+ 		})
+-		expect(classifyIntent('hello there', {}, {})).toEqual({ action: '', domain: '', confidence: 0 })
++		expect(classifyIntent('hello there', {}, {})).toEqual({ confidence: 0 })
++	})
++
++	it('leaves an unmatched axis absent rather than an empty string', () => {
++		const unclassified = classifyIntent('hello there', {}, {})
++		expect(unclassified.action).toBeUndefined()
++		expect(unclassified.domain).toBeUndefined()
++		expect(Object.hasOwn(unclassified, 'action')).toBe(false)
++		expect(Object.hasOwn(unclassified, 'domain')).toBe(false)
++		const halfClassified = classifyIntent('calculate something', { calculate: 'compute' }, {})
++		expect(halfClassified.action).toBe('compute')
++		expect(Object.hasOwn(halfClassified, 'domain')).toBe(false)
+ 	})
+ 
+ 	it('never auto-classifies from a domain name absent from the caller vocabulary (ledger 18)', () => {
+-		expect(classifyIntent('arithmetic please', {}, {})).toEqual({
+-			action: '',
+-			domain: '',
+-			confidence: 0,
+-		})
++		expect(classifyIntent('arithmetic please', {}, {})).toEqual({ confidence: 0 })
+ 	})
+ 
+ 	it('is deterministic across repeated calls', () => {
+@@ -274,11 +280,31 @@ describe('scoreSimilarity / matchAlias', () => {
+ 	})
+ })
+ 
+-describe('canonicalize / digestValue', () => {
++describe('canonicalize / canonicalizeNode / digestValue', () => {
+ 	it('canonicalize is key-order independent for records', () => {
+ 		expect(canonicalize({ b: 1, a: 2 })).toBe(canonicalize({ a: 2, b: 1 }))
+ 	})
+ 
++	it('canonicalize starts the leaf from an empty ancestor path', () => {
++		const subject = { b: 1, a: 2 }
++		expect(canonicalize(subject)).toBe('{"a":2,"b":1}')
++		expect(canonicalize(subject)).toBe(canonicalizeNode(subject, new Set()))
++	})
++
++	it('canonicalizeNode renders a node already on the ancestor path as the cycle marker', () => {
++		const subject = { age: 25 }
++		expect(canonicalizeNode(subject, new Set([subject]))).toBe('"[cycle]"')
++		const items = [1, 2]
++		expect(canonicalizeNode(items, new Set([items]))).toBe('"[cycle]"')
++	})
++
++	it('canonicalizeNode keeps a sibling repeat of one object out of the cycle branch', () => {
++		const shared = { a: 1 }
++		expect(canonicalizeNode({ left: shared, right: shared }, new Set())).toBe(
++			'{"left":{"a":1},"right":{"a":1}}',
++		)
++	})
++
+ 	it('digestValue is key-order independent and deterministic', () => {
+ 		const a = digestValue({ subject: { age: 25, income: 50000 }, template: 't1' })
+ 		const b = digestValue({ template: 't1', subject: { income: 50000, age: 25 } })
+@@ -374,8 +400,19 @@ describe('scoreTemplate / matchTemplate', () => {
+ 		expect(scoreTemplate({ action: 'nope', domain: 'other', confidence: 1 }, template)).toBe(0)
+ 	})
+ 
++	it('scores an absent axis as no match on that half', () => {
++		const template = buildInterpretTemplate()
++		expect(scoreTemplate({ domain: 'arithmetic', confidence: 0.5 }, template)).toBe(0.5)
++		expect(scoreTemplate({ action: 'calculate', confidence: 0.5 }, template)).toBe(0.5)
++		expect(scoreTemplate({ confidence: 0 }, template)).toBe(0)
++	})
++
+ 	it('matchTemplate returns undefined on an empty registry (explicit no-match, never templates[0])', () => {
+-		expect(matchTemplate({ action: '', domain: '', confidence: 0 }, [], 0.3)).toBeUndefined()
++		expect(matchTemplate({ confidence: 0 }, [], 0.3)).toBeUndefined()
++	})
++
++	it('matchTemplate refuses an unclassified intent against a real template', () => {
++		expect(matchTemplate({ confidence: 0 }, [buildInterpretTemplate()], 0.3)).toBeUndefined()
+ 	})
+ 
+ 	it('matchTemplate returns undefined when the best score is below floor', () => {
+@@ -395,46 +432,51 @@ describe('scoreTemplate / matchTemplate', () => {
+ 
+ describe('variablesOf', () => {
+ 	it('collects variable names in first-occurrence order, deduplicated', () => {
+-		const tree = operation(
++		const tree = createOperation(
+ 			'add',
+-			variable('x'),
+-			operation('multiply', variable('y'), variable('x')),
++			createVariable('x'),
++			createOperation('multiply', createVariable('y'), createVariable('x')),
+ 		)
+ 		expect(variablesOf(tree)).toEqual(['x', 'y'])
+ 	})
+ 
+ 	it('returns empty for a tree with no variables', () => {
+-		expect(variablesOf(constant(1))).toEqual([])
++		expect(variablesOf(createConstant(1))).toEqual([])
+ 	})
+ })
+ 
+ describe('resolveExpression', () => {
+ 	it('resolves a simple division (deductible/12)', () => {
+ 		expect(
+-			resolveExpression(operation('divide', variable('deductible'), constant(12)), {
+-				deductible: 6000,
+-			}),
++			resolveExpression(
++				createOperation('divide', createVariable('deductible'), createConstant(12)),
++				{
++					deductible: 6000,
++				},
++			),
+ 		).toBeCloseTo(500, 10)
+ 	})
+ 
+ 	it('divide-by-zero becomes a gap (undefined), never NaN on the subject', () => {
+-		expect(resolveExpression(operation('divide', constant(1), constant(0)), {})).toBeUndefined()
++		expect(
++			resolveExpression(createOperation('divide', createConstant(1), createConstant(0)), {}),
++		).toBeUndefined()
+ 	})
+ 
+ 	it('an unresolved input variable is a gap', () => {
+-		expect(resolveExpression(variable('missing'), {})).toBeUndefined()
++		expect(resolveExpression(createVariable('missing'), {})).toBeUndefined()
+ 		expect(
+-			resolveExpression(operation('add', variable('missing'), constant(1)), {}),
++			resolveExpression(createOperation('add', createVariable('missing'), createConstant(1)), {}),
+ 		).toBeUndefined()
+ 	})
+ 
+ 	it('unary operations (round/ceil/floor/abs) ignore the absent right operand', () => {
+-		expect(resolveExpression(operation('floor', constant(2.7)), {})).toBe(2)
+-		expect(resolveExpression(operation('abs', constant(-4)), {})).toBe(4)
++		expect(resolveExpression(createOperation('floor', createConstant(2.7)), {})).toBe(2)
++		expect(resolveExpression(createOperation('abs', createConstant(-4)), {})).toBe(4)
+ 	})
+ 
+ 	it('is deterministic across repeated calls', () => {
+-		const tree = operation('divide', variable('deductible'), constant(12))
++		const tree = createOperation('divide', createVariable('deductible'), createConstant(12))
+ 		expect(resolveExpression(tree, { deductible: 6000 })).toBe(
+ 			resolveExpression(tree, { deductible: 6000 }),
+ 		)
+@@ -443,7 +485,7 @@ describe('resolveExpression', () => {
+ 	describe('EXTREME_NUMBERS through a computed expression', () => {
+ 		it('adding 0 to every extreme value returns it unchanged (finite stays finite)', () => {
+ 			for (const value of EXTREME_NUMBERS) {
+-				const tree = operation('add', variable('x'), constant(0))
++				const tree = createOperation('add', createVariable('x'), createConstant(0))
+ 				// `-0 + 0` is `+0` by IEEE-754 addition (not `Object.is`-equal to `-0`), so this
+ 				// probes numeric EQUALITY, not bitwise identity — the one EXTREME_NUMBERS entry
+ 				// that legitimately changes representation under `+0` addition.
+@@ -452,22 +494,30 @@ describe('resolveExpression', () => {
+ 		})
+ 
+ 		it('an overflowing multiply (MAX_VALUE * MAX_VALUE) becomes a gap, not Infinity', () => {
+-			const tree = operation('multiply', constant(Number.MAX_VALUE), constant(Number.MAX_VALUE))
++			const tree = createOperation(
++				'multiply',
++				createConstant(Number.MAX_VALUE),
++				createConstant(Number.MAX_VALUE),
++			)
+ 			expect(resolveExpression(tree, {})).toBeUndefined()
+ 		})
+ 
+ 		it('dividing the smallest EXTREME_NUMBERS value by a huge constant stays finite', () => {
+-			const tree = operation('divide', constant(Number.MIN_VALUE), constant(Number.MAX_VALUE))
++			const tree = createOperation(
++				'divide',
++				createConstant(Number.MIN_VALUE),
++				createConstant(Number.MAX_VALUE),
++			)
+ 			const result = resolveExpression(tree, {})
+ 			expect(result).toBeDefined()
+ 			expect(Number.isFinite(result)).toBe(true)
+ 		})
+ 
+ 		it('EPSILON survives an add/subtract round trip through the tree', () => {
+-			const tree = operation(
++			const tree = createOperation(
+ 				'subtract',
+-				operation('add', variable('base'), constant(Number.EPSILON)),
+-				constant(Number.EPSILON),
++				createOperation('add', createVariable('base'), createConstant(Number.EPSILON)),
++				createConstant(Number.EPSILON),
+ 			)
+ 			expect(resolveExpression(tree, { base: 1 })).toBeCloseTo(1, 15)
+ 		})
+@@ -475,12 +525,12 @@ describe('resolveExpression', () => {
+ 
+ 	describe('absent-operand parity with the engine (SymbolicReasoner)', () => {
+ 		it('add with absent right defaults to 0 in both resolveExpression and the engine', () => {
+-			const node = operation('add', variable('x'))
++			const node = createOperation('add', createVariable('x'))
+ 			const viaHelper = resolveExpression(node, { x: 5 })
+-			const definition = symbolicDefinition(
++			const definition = createSymbolicDefinition(
+ 				'd',
+ 				'D',
+-				[equation('e1', constant(0), node, 'result')],
++				[createEquation('e1', createConstant(0), node, 'result')],
+ 				{
+ 					variables: { x: 5 },
+ 				},
+@@ -490,12 +540,12 @@ describe('resolveExpression', () => {
+ 		})
+ 
+ 		it('multiply with absent right is 0 (engine-pinned, NOT Transform default 1) in both paths', () => {
+-			const node = operation('multiply', variable('x'))
++			const node = createOperation('multiply', createVariable('x'))
+ 			const viaHelper = resolveExpression(node, { x: 5 })
+-			const definition = symbolicDefinition(
++			const definition = createSymbolicDefinition(
+ 				'd',
+ 				'D',
+-				[equation('e1', constant(0), node, 'result')],
++				[createEquation('e1', createConstant(0), node, 'result')],
+ 				{
+ 					variables: { x: 5 },
+ 				},
+@@ -506,12 +556,12 @@ describe('resolveExpression', () => {
+ 		})
+ 
+ 		it('divide with absent right is a gap here and NaN→gap in the engine (both non-finite)', () => {
+-			const node = operation('divide', variable('x'))
++			const node = createOperation('divide', createVariable('x'))
+ 			const viaHelper = resolveExpression(node, { x: 5 })
+-			const definition = symbolicDefinition(
++			const definition = createSymbolicDefinition(
+ 				'd',
+ 				'D',
+-				[equation('e1', constant(0), node, 'result')],
++				[createEquation('e1', createConstant(0), node, 'result')],
+ 				{
+ 					variables: { x: 5 },
+ 				},
+diff --git a/tests/src/core/integration.test.ts b/tests/src/core/integration.test.ts
+index 37954f2..b47bfd7 100644
+--- a/tests/src/core/integration.test.ts
++++ b/tests/src/core/integration.test.ts
+@@ -1,4 +1,5 @@
+ import type { InterpretEventMap } from '@src/core'
++import { createOperation, createVariable } from '@orkestrel/reason'
+ import { Extractor, Interpret } from '@src/core'
+ import { createRecorders } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+@@ -15,7 +16,7 @@ import {
+ // The interprets integration corpus — the terrain-vocabulary redesign of scsr's
+ // 49-case suite (sync API; no-match is auditable-incomplete, never templates[0];
+ // no durations): forward NL → subject/definition, cross-turn carry-over,
+-// multi-template best-match, register-after-miss, computed fields, the numeric
++// multi-template best-match, add-after-miss, computed fields, the numeric
+ // corpus pins, full provenance, and determinism + digest-replay (design §8).
+ 
+ function build(templates = [buildInsuranceTemplate()]): Interpret {
+@@ -54,14 +55,14 @@ describe('interprets integration', () => {
+ 		interpret.destroy()
+ 	})
+ 
+-	it('register-after-miss: an unmatched turn is incomplete, a later registration completes it', () => {
++	it('add-after-miss: an unmatched turn is incomplete, a later add completes it', () => {
+ 		const interpret = new Interpret({
+ 			extractor: new Extractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS }),
+ 		})
+ 		const first = interpret.interpret('calculate insurance age 25')
+ 		expect(first.complete).toBe(false)
+ 		expect(first.failures[0]?.code).toBe('NO_TEMPLATE')
+-		interpret.register(buildInsuranceTemplate())
++		interpret.add(buildInsuranceTemplate())
+ 		const second = interpret.interpret('calculate insurance age 25')
+ 		expect(second.complete).toBe(true)
+ 		expect(second.definition?.id).toBe('insurance-auto')
+@@ -102,18 +103,33 @@ describe('interprets integration', () => {
+ 		interpret.destroy()
+ 	})
+ 
+-	it('numeric corpus: statistics scalar 42 vs array with Sum/Count/Average/Minimum/Maximum', () => {
++	it('numeric corpus: a statistics turn keeps its collected array and derives no field of its own', () => {
+ 		const interpret = build([buildStatisticsTemplate()])
+ 		expect(interpret.interpret('compute statistics 42').subject?.value).toBe(42)
+ 		const many = interpret.interpret('compute statistics 10 20 30')
+-		expect(many.subject).toMatchObject({
+-			value: [10, 20, 30],
+-			valueSum: 60,
+-			valueCount: 3,
+-			valueAverage: 20,
+-			valueMinimum: 10,
+-			valueMaximum: 30,
+-		})
++		expect(many.subject).toEqual({ value: [10, 20, 30] })
++		interpret.destroy()
++	})
++
++	it('numeric corpus: a declared computation aggregates the collected array by element', () => {
++		const interpret = build([
++			buildStatisticsTemplate({
++				computations: [
++					{
++						field: 'total',
++						expression: createOperation(
++							'add',
++							createOperation('add', createVariable('value.0'), createVariable('value.1')),
++							createVariable('value.2'),
++						),
++					},
++				],
++			}),
++		])
++		const result = interpret.interpret('compute statistics 10 20 30')
++		expect(result.subject).toEqual({ value: [10, 20, 30], total: 60 })
++		const computed = result.mappings.find((mapping) => mapping.field === 'total')
++		expect(computed?.provenance.category).toBe('computed')
+ 		interpret.destroy()
+ 	})
+ 
+@@ -148,7 +164,7 @@ describe('interprets integration', () => {
+ 	it('replay: a template content change bumps the version and changes the digest', () => {
+ 		const interpret = build()
+ 		const before = interpret.interpret('calculate insurance age 25').digest
+-		interpret.register(buildInsuranceTemplate({ name: 'Renamed' }))
++		interpret.add(buildInsuranceTemplate({ name: 'Renamed' }))
+ 		const after = interpret.interpret('calculate insurance age 25').digest
+ 		expect(after).not.toBe(before)
+ 		interpret.destroy()
+diff --git a/tests/src/core/managers/DefinitionManager.test.ts b/tests/src/core/managers/DefinitionManager.test.ts
+index e2fcc86..ef728af 100644
+--- a/tests/src/core/managers/DefinitionManager.test.ts
++++ b/tests/src/core/managers/DefinitionManager.test.ts
+@@ -1,5 +1,5 @@
+ import type { DefinitionManagerEventMap } from '@src/core'
+-import { symbolicDefinition } from '@orkestrel/reason'
++import { createSymbolicDefinition } from '@orkestrel/reason'
+ import { DefinitionManager, isInterpretError } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { captureError, createRecorders } from '@orkestrel/test'
+@@ -11,7 +11,7 @@ import { captureError, createRecorders } from '@orkestrel/test'
+ describe('DefinitionManager', () => {
+ 	it('adds a definition keyed by its own id as a versioned, hashed record', () => {
+ 		const manager = new DefinitionManager()
+-		const record = manager.add(symbolicDefinition('rate', 'Rate', []))
++		const record = manager.add(createSymbolicDefinition('rate', 'Rate', []))
+ 		expect(record.id).toBe('rate')
+ 		expect(record.version).toBe(1)
+ 		expect(manager.definition('rate')).toBe(record)
+@@ -19,14 +19,14 @@ describe('DefinitionManager', () => {
+ 
+ 	it('keeps the version on an identical re-add — bumps only on a content change', () => {
+ 		const manager = new DefinitionManager()
+-		manager.add(symbolicDefinition('rate', 'Rate', []))
+-		expect(manager.add(symbolicDefinition('rate', 'Rate', [])).version).toBe(1)
+-		expect(manager.add(symbolicDefinition('rate', 'Renamed', [])).version).toBe(2)
++		manager.add(createSymbolicDefinition('rate', 'Rate', []))
++		expect(manager.add(createSymbolicDefinition('rate', 'Rate', [])).version).toBe(1)
++		expect(manager.add(createSymbolicDefinition('rate', 'Renamed', [])).version).toBe(2)
+ 	})
+ 
+ 	it('seeds from options and lists in insertion order', () => {
+ 		const manager = new DefinitionManager({
+-			definitions: [symbolicDefinition('a', 'A', []), symbolicDefinition('b', 'B', [])],
++			definitions: [createSymbolicDefinition('a', 'A', []), createSymbolicDefinition('b', 'B', [])],
+ 		})
+ 		expect(manager.definitions().map((record) => record.id)).toEqual(['a', 'b'])
+ 	})
+@@ -34,16 +34,16 @@ describe('DefinitionManager', () => {
+ 	it('removes one, all-or-nothing batch, and all', () => {
+ 		const manager = new DefinitionManager({
+ 			definitions: [
+-				symbolicDefinition('a', 'A', []),
+-				symbolicDefinition('b', 'B', []),
+-				symbolicDefinition('c', 'C', []),
++				createSymbolicDefinition('a', 'A', []),
++				createSymbolicDefinition('b', 'B', []),
++				createSymbolicDefinition('c', 'C', []),
+ 			],
+ 		})
+ 		expect(manager.remove('a')).toBe(true)
+ 		expect(manager.remove(['b', 'absent'])).toBe(false)
+-		expect(manager.size).toBe(2)
++		expect(manager.count).toBe(2)
+ 		manager.remove()
+-		expect(manager.size).toBe(0)
++		expect(manager.count).toBe(0)
+ 	})
+ 
+ 	it('throws DESTROYED after destroy, idempotently', () => {
+@@ -58,14 +58,17 @@ describe('DefinitionManager', () => {
+ 		it('fires add with the record id, once per add call', () => {
+ 			const manager = new DefinitionManager()
+ 			const events = createRecorders<DefinitionManagerEventMap, 'add'>(manager.emitter, ['add'])
+-			manager.add(symbolicDefinition('a', 'A', []))
+-			manager.add(symbolicDefinition('b', 'B', []))
++			manager.add(createSymbolicDefinition('a', 'A', []))
++			manager.add(createSymbolicDefinition('b', 'B', []))
+ 			expect(events.add.calls).toEqual([['a'], ['b']])
+ 		})
+ 
+ 		it('fires remove with the record id for a single remove, and per id for a batch remove', () => {
+ 			const manager = new DefinitionManager({
+-				definitions: [symbolicDefinition('a', 'A', []), symbolicDefinition('b', 'B', [])],
++				definitions: [
++					createSymbolicDefinition('a', 'A', []),
++					createSymbolicDefinition('b', 'B', []),
++				],
+ 			})
+ 			const events = createRecorders<DefinitionManagerEventMap, 'remove'>(manager.emitter, [
+ 				'remove',
+@@ -84,7 +87,7 @@ describe('DefinitionManager', () => {
+ 			manager.destroy()
+ 			manager.destroy()
+ 			expect(events.destroy.calls).toEqual([[]])
+-			const error = captureError(() => manager.add(symbolicDefinition('c', 'C', [])))
++			const error = captureError(() => manager.add(createSymbolicDefinition('c', 'C', [])))
+ 			expect(isInterpretError(error) && error.code === 'DESTROYED').toBe(true)
+ 		})
+ 	})
+diff --git a/tests/src/core/managers/RecordManager.test.ts b/tests/src/core/managers/RecordManager.test.ts
+index e3a9114..0874fcb 100644
+--- a/tests/src/core/managers/RecordManager.test.ts
++++ b/tests/src/core/managers/RecordManager.test.ts
+@@ -30,7 +30,7 @@ describe('RecordManager', () => {
+ 		const record = addNote(notes, 'n1', 'first')
+ 		expect(record).toEqual({ id: 'n1', note: 'first', version: 1, hash: record.hash })
+ 		expect(record.hash.length).toBeGreaterThan(0)
+-		expect(notes.size).toBe(1)
++		expect(notes.count).toBe(1)
+ 		expect(notes.has('n1')).toBe(true)
+ 		expect(notes.record('n1')).toBe(record)
+ 		expect(notes.records()).toEqual([record])
+@@ -42,7 +42,7 @@ describe('RecordManager', () => {
+ 		expect(addNote(notes, 'n1', 'first').version).toBe(1)
+ 		expect(addNote(notes, 'n1', 'second').version).toBe(2)
+ 		expect(addNote(notes, 'n1', 'second').version).toBe(2)
+-		expect(notes.size).toBe(1)
++		expect(notes.count).toBe(1)
+ 	})
+ 
+ 	it('derives the hash from the value alone — the same value hashes identically across ids', () => {
+@@ -58,23 +58,23 @@ describe('RecordManager', () => {
+ 		expect(notes.remove('a')).toBe(true)
+ 		expect(notes.remove('missing')).toBe(false)
+ 		expect(notes.remove(['b', 'absent'])).toBe(false)
+-		expect(notes.size).toBe(2)
++		expect(notes.count).toBe(2)
+ 		expect(notes.remove(['b', 'c'])).toBe(true)
+-		expect(notes.size).toBe(0)
++		expect(notes.count).toBe(0)
+ 	})
+ 
+ 	it('remove() with no argument clears the collection', () => {
+ 		const notes = buildNotes()
+ 		addNote(notes, 'a', '1')
+ 		notes.remove()
+-		expect(notes.size).toBe(0)
++		expect(notes.count).toBe(0)
+ 	})
+ 
+ 	it('names the configured entity in its DESTROYED throw, idempotently', () => {
+ 		const notes = buildNotes()
+ 		notes.destroy()
+ 		notes.destroy()
+-		const error = captureError(() => notes.size)
++		const error = captureError(() => notes.count)
+ 		expect(isInterpretError(error) && error.code === 'DESTROYED').toBe(true)
+ 		expect(isInterpretError(error) && error.message).toBe('Note manager has been destroyed')
+ 	})
+diff --git a/tests/src/core/managers/SubjectManager.test.ts b/tests/src/core/managers/SubjectManager.test.ts
+index 3af207f..1308aa5 100644
+--- a/tests/src/core/managers/SubjectManager.test.ts
++++ b/tests/src/core/managers/SubjectManager.test.ts
+@@ -13,7 +13,7 @@ describe('SubjectManager', () => {
+ 		const first = manager.add({ age: 25 })
+ 		const second = manager.add({ age: 30 })
+ 		expect(first.id).not.toBe(second.id)
+-		expect(manager.size).toBe(2)
++		expect(manager.count).toBe(2)
+ 		expect(manager.subject(first.id)?.subject).toEqual({ age: 25 })
+ 		expect(manager.subject(second.id)?.subject).toEqual({ age: 30 })
+ 	})
+@@ -23,12 +23,12 @@ describe('SubjectManager', () => {
+ 		expect(manager.add({ age: 25 }, { id: 'fixed' }).version).toBe(1)
+ 		expect(manager.add({ age: 25 }, { id: 'fixed' }).version).toBe(1)
+ 		expect(manager.add({ age: 40 }, { id: 'fixed' }).version).toBe(2)
+-		expect(manager.size).toBe(1)
++		expect(manager.count).toBe(1)
+ 	})
+ 
+ 	it('seeds from options, minting an id per seed subject', () => {
+ 		const manager = new SubjectManager({ subjects: [{ a: 1 }, { b: 2 }] })
+-		expect(manager.size).toBe(2)
++		expect(manager.count).toBe(2)
+ 		expect(manager.subjects().map((record) => record.subject)).toEqual([{ a: 1 }, { b: 2 }])
+ 	})
+ 
+@@ -39,9 +39,9 @@ describe('SubjectManager', () => {
+ 		manager.add({ v: 3 }, { id: 'c' })
+ 		expect(manager.remove(a.id)).toBe(true)
+ 		expect(manager.remove(['b', 'absent'])).toBe(false)
+-		expect(manager.size).toBe(2)
++		expect(manager.count).toBe(2)
+ 		expect(manager.remove(['b', 'c'])).toBe(true)
+-		expect(manager.size).toBe(0)
++		expect(manager.count).toBe(0)
+ 	})
+ 
+ 	it('throws DESTROYED after destroy, idempotently', () => {
+diff --git a/tests/src/core/managers/TemplateManager.test.ts b/tests/src/core/managers/TemplateManager.test.ts
+index 85f81e1..b9f19ff 100644
+--- a/tests/src/core/managers/TemplateManager.test.ts
++++ b/tests/src/core/managers/TemplateManager.test.ts
+@@ -15,7 +15,7 @@ describe('TemplateManager', () => {
+ 		expect(record.id).toBe('template-1')
+ 		expect(record.version).toBe(1)
+ 		expect(record.hash.length).toBeGreaterThan(0)
+-		expect(manager.size).toBe(1)
++		expect(manager.count).toBe(1)
+ 		expect(manager.has('template-1')).toBe(true)
+ 		expect(manager.template('template-1')).toBe(record)
+ 	})
+@@ -24,7 +24,7 @@ describe('TemplateManager', () => {
+ 		const manager = new TemplateManager({
+ 			templates: [buildInterpretTemplate({ id: 'a' }), buildInterpretTemplate({ id: 'b' })],
+ 		})
+-		expect(manager.size).toBe(2)
++		expect(manager.count).toBe(2)
+ 		expect(manager.templates().map((record) => record.id)).toEqual(['a', 'b'])
+ 	})
+ 
+@@ -57,22 +57,22 @@ describe('TemplateManager', () => {
+ 		expect(manager.remove('a')).toBe(true)
+ 		expect(manager.remove('missing')).toBe(false)
+ 		expect(manager.remove(['b', 'absent'])).toBe(false)
+-		expect(manager.size).toBe(2)
++		expect(manager.count).toBe(2)
+ 		expect(manager.remove(['b', 'c'])).toBe(true)
+-		expect(manager.size).toBe(0)
++		expect(manager.count).toBe(0)
+ 	})
+ 
+ 	it('remove() with no argument clears the registry', () => {
+ 		const manager = new TemplateManager({ templates: [buildInterpretTemplate()] })
+ 		manager.remove()
+-		expect(manager.size).toBe(0)
++		expect(manager.count).toBe(0)
+ 	})
+ 
+ 	it('throws DESTROYED after destroy, idempotently', () => {
+ 		const manager = new TemplateManager({ templates: [buildInterpretTemplate()] })
+ 		manager.destroy()
+ 		manager.destroy()
+-		const error = captureError(() => manager.size)
++		const error = captureError(() => manager.count)
+ 		expect(isInterpretError(error) && error.code === 'DESTROYED').toBe(true)
+ 	})
+ 
+diff --git a/tests/src/core/stages/Clarifier.test.ts b/tests/src/core/stages/Clarifier.test.ts
+index 428573b..a1919ef 100644
+--- a/tests/src/core/stages/Clarifier.test.ts
++++ b/tests/src/core/stages/Clarifier.test.ts
+@@ -1,5 +1,5 @@
+ import type { Entity, Intent } from '@src/core'
+-import { constant, operation, variable } from '@orkestrel/reason'
++import { createConstant, createOperation, createVariable } from '@orkestrel/reason'
+ import { Clarifier, Narrator } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -115,7 +115,7 @@ describe('Clarifier', () => {
+ 				computations: [
+ 					{
+ 						field: 'monthly',
+-						expression: operation('divide', variable('deductible'), constant(12)),
++						expression: createOperation('divide', createVariable('deductible'), createConstant(12)),
+ 					},
+ 				],
+ 			})
+@@ -132,14 +132,74 @@ describe('Clarifier', () => {
+ 			})
+ 		})
+ 
++		it('binds each numeric element of an array-valued field under its index', () => {
++			const clarifier = new Clarifier()
++			const template = buildInterpretTemplate({
++				mappings: [{ entity: 'value', aliases: [], field: 'value' }],
++				computations: [
++					{
++						field: 'total',
++						expression: createOperation(
++							'add',
++							createOperation('add', createVariable('value.0'), createVariable('value.1')),
++							createVariable('value.2'),
++						),
++					},
++				],
++			})
++			const fresh: readonly Entity[] = [
++				{
++					name: 'value',
++					value: [10, 20, 30],
++					provenance: { category: 'extracted', detail: 'collect' },
++					confidence: 0.9,
++				},
++			]
++			const result = clarifier.clarify(fresh, template, undefined, intent)
++			expect(result.entities.find((entity) => entity.name === 'total')?.value).toBe(60)
++		})
++
++		it('leaves a computation over a non-numeric array element a gap', () => {
++			const clarifier = new Clarifier()
++			const template = buildInterpretTemplate({
++				mappings: [{ entity: 'value', aliases: [], field: 'value' }],
++				computations: [
++					{
++						field: 'total',
++						expression: createOperation(
++							'add',
++							createVariable('value.0'),
++							createVariable('value.1'),
++						),
++					},
++				],
++			})
++			const fresh: readonly Entity[] = [
++				{
++					name: 'value',
++					value: [10, 'twenty'],
++					provenance: { category: 'extracted', detail: 'collect' },
++					confidence: 0.9,
++				},
++			]
++			const result = clarifier.clarify(fresh, template, undefined, intent)
++			expect(result.entities.find((entity) => entity.name === 'total')).toBeUndefined()
++		})
++
+ 		it('resolves multi-step computed fields in dependency (topological) order', () => {
+ 			const clarifier = new Clarifier()
+ 			const template = buildInterpretTemplate({
+ 				mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+ 				computations: [
+ 					// 'yearly' depends on 'monthly', which depends on the fresh 'value'
+-					{ field: 'yearly', expression: operation('multiply', variable('monthly'), constant(12)) },
+-					{ field: 'monthly', expression: operation('divide', variable('value'), constant(12)) },
++					{
++						field: 'yearly',
++						expression: createOperation('multiply', createVariable('monthly'), createConstant(12)),
++					},
++					{
++						field: 'monthly',
++						expression: createOperation('divide', createVariable('value'), createConstant(12)),
++					},
+ 				],
+ 			})
+ 			const fresh: readonly Entity[] = [
+@@ -157,7 +217,7 @@ describe('Clarifier', () => {
+ 				computations: [
+ 					{
+ 						field: 'monthly',
+-						expression: operation('divide', variable('deductible'), constant(12)),
++						expression: createOperation('divide', createVariable('deductible'), createConstant(12)),
+ 					},
+ 				],
+ 			})
+@@ -170,7 +230,10 @@ describe('Clarifier', () => {
+ 			const template = buildInterpretTemplate({
+ 				mappings: [{ entity: 'value', aliases: [], field: 'value' }],
+ 				computations: [
+-					{ field: 'ratio', expression: operation('divide', variable('value'), constant(0)) },
++					{
++						field: 'ratio',
++						expression: createOperation('divide', createVariable('value'), createConstant(0)),
++					},
+ 				],
+ 			})
+ 			const fresh: readonly Entity[] = [
+@@ -185,8 +248,14 @@ describe('Clarifier', () => {
+ 			const template = buildInterpretTemplate({
+ 				mappings: [],
+ 				computations: [
+-					{ field: 'a', expression: operation('add', variable('b'), constant(1)) },
+-					{ field: 'b', expression: operation('add', variable('a'), constant(1)) },
++					{
++						field: 'a',
++						expression: createOperation('add', createVariable('b'), createConstant(1)),
++					},
++					{
++						field: 'b',
++						expression: createOperation('add', createVariable('a'), createConstant(1)),
++					},
+ 				],
+ 			})
+ 			const result = clarifier.clarify([], template, undefined, intent)
+diff --git a/tests/src/core/stages/Extractor.test.ts b/tests/src/core/stages/Extractor.test.ts
+index f145abc..e751293 100644
+--- a/tests/src/core/stages/Extractor.test.ts
++++ b/tests/src/core/stages/Extractor.test.ts
+@@ -23,10 +23,10 @@ describe('Extractor', () => {
+ 		expect(Object.keys(result)).not.toContain('entities')
+ 	})
+ 
+-	it('never auto-classifies from an unregistered vocabulary (empty defaults)', () => {
++	it('never auto-classifies from a vocabulary the caller never supplied', () => {
+ 		const extractor = new Extractor()
+ 		const result = extractor.extract('calculate my rate at 85')
+-		expect(result.intent).toEqual({ action: '', domain: '', confidence: 0 })
++		expect(result.intent).toEqual({ confidence: 0 })
+ 	})
+ 
+ 	it('complete requires BOTH numbers present and a positive-confidence intent', () => {
+diff --git a/tests/src/core/stages/Formatter.test.ts b/tests/src/core/stages/Formatter.test.ts
+index 93fe15f..e7d000f 100644
+--- a/tests/src/core/stages/Formatter.test.ts
++++ b/tests/src/core/stages/Formatter.test.ts
+@@ -20,6 +20,14 @@ describe('Formatter', () => {
+ 		expect(formatter.format(intent, template, [], []).prompt).toBe('calculate Arithmetic')
+ 	})
+ 
++	it('renders an empty verb when the intent carries no action', () => {
++		const formatter = new Formatter({ verbs: { calculate: 'Calculate' } })
++		const template = buildInterpretTemplate()
++		expect(
++			formatter.format({ domain: 'arithmetic', confidence: 0.5 }, template, [], []).prompt,
++		).toBe(' Arithmetic')
++	})
++
+ 	it('appends a `with {label}: {value}` clause for non-default entities', () => {
+ 		const formatter = new Formatter({ verbs: { calculate: 'Calculate' } })
+ 		const template = buildInterpretTemplate()
+diff --git a/tests/src/core/stages/Generator.test.ts b/tests/src/core/stages/Generator.test.ts
+index bc8fa48..1e51578 100644
+--- a/tests/src/core/stages/Generator.test.ts
++++ b/tests/src/core/stages/Generator.test.ts
+@@ -2,8 +2,8 @@ import { Generator } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { buildInterpretTemplate, TRICKY_KEYS } from '../../../setup.js'
+ 
+-// The `Generator` stage — entity → field, array unwrap/aggregate, mean
+-// confidence, and a `FieldMapping` for EVERY subject field (design §8).
++// The `Generator` stage — entity → field, single-element array unwrap, mean
++// confidence, and a `FieldMapping` for EVERY subject field.
+ 
+ describe('Generator', () => {
+ 	const generator = new Generator()
+@@ -52,7 +52,7 @@ describe('Generator', () => {
+ 		expect(result.subject.value).toBe(42)
+ 	})
+ 
+-	it('keeps a multi-element numeric array AND emits Sum/Count/Average/Minimum/Maximum aggregates', () => {
++	it('keeps a multi-element numeric array as it stands, deriving no sibling field', () => {
+ 		const template = buildInterpretTemplate()
+ 		const entities = [
+ 			{
+@@ -63,27 +63,12 @@ describe('Generator', () => {
+ 			},
+ 		]
+ 		const result = generator.generate(entities, template)
+-		expect(result.subject).toEqual({
+-			value: [10, 20, 30],
+-			valueSum: 60,
+-			valueCount: 3,
+-			valueAverage: 20,
+-			valueMinimum: 10,
+-			valueMaximum: 30,
+-		})
+-		const aggregateFields = result.mappings
+-			.filter((mapping) => mapping.provenance.category === 'computed')
+-			.map((mapping) => mapping.field)
+-		expect(aggregateFields).toEqual([
+-			'valueSum',
+-			'valueCount',
+-			'valueAverage',
+-			'valueMinimum',
+-			'valueMaximum',
+-		])
++		expect(result.subject).toEqual({ value: [10, 20, 30] })
++		expect(result.mappings).toHaveLength(1)
++		expect(result.mappings[0]?.provenance.category).toBe('extracted')
+ 	})
+ 
+-	it('a nested array mapping produces nested sibling aggregates (subject.address.amountsSum, ...)', () => {
++	it('writes a nested array mapping at its own path, deriving no sibling field', () => {
+ 		const template = buildInterpretTemplate({
+ 			mappings: [{ entity: 'value', aliases: [], field: ['address', 'amounts'] }],
+ 		})
+@@ -96,29 +81,11 @@ describe('Generator', () => {
+ 			},
+ 		]
+ 		const result = generator.generate(entities, template)
+-		expect(result.subject).toEqual({
+-			address: {
+-				amounts: [10, 20, 30],
+-				amountsSum: 60,
+-				amountsCount: 3,
+-				amountsAverage: 20,
+-				amountsMinimum: 10,
+-				amountsMaximum: 30,
+-			},
+-		})
+-		const aggregateMappings = result.mappings.filter(
+-			(mapping) => mapping.provenance.category === 'computed',
+-		)
+-		expect(aggregateMappings.map((mapping) => mapping.field)).toEqual([
+-			['address', 'amountsSum'],
+-			['address', 'amountsCount'],
+-			['address', 'amountsAverage'],
+-			['address', 'amountsMinimum'],
+-			['address', 'amountsMaximum'],
+-		])
++		expect(result.subject).toEqual({ address: { amounts: [10, 20, 30] } })
++		expect(result.mappings.map((mapping) => mapping.field)).toEqual([['address', 'amounts']])
+ 	})
+ 
+-	it('leaves a multi-element NON-numeric array untouched — no aggregates', () => {
++	it('leaves a multi-element NON-numeric array untouched', () => {
+ 		const template = buildInterpretTemplate()
+ 		const entities = [
+ 			{
+@@ -231,7 +198,7 @@ describe('Generator', () => {
+ 			expect(result.subject).not.toBe(entities)
+ 		})
+ 
+-		it('never mutates a multi-element array entity value while building aggregates', () => {
++		it('never mutates a multi-element array entity value while building the subject', () => {
+ 			const template = buildInterpretTemplate()
+ 			const value = Object.freeze([10, 20, 30])
+ 			const entities = [
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index 20cedf3..1d27f58 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -1,10 +1,10 @@
+ import {
+-	constant,
+-	factorGroup,
+-	fieldFactor,
+-	operation,
+-	quantitativeDefinition,
+-	variable,
++	createConstant,
++	createFactorGroup,
++	createFieldFactor,
++	createOperation,
++	createQuantitativeDefinition,
++	createVariable,
+ } from '@orkestrel/reason'
+ import {
+ 	createInterpret,
+@@ -119,14 +119,14 @@ describe('isComputedField', () => {
+ 		expect(
+ 			isComputedField({
+ 				field: 'monthly',
+-				expression: operation('divide', variable('deductible'), constant(12)),
++				expression: createOperation('divide', createVariable('deductible'), createConstant(12)),
+ 			}),
+ 		).toBe(true)
+ 	})
+ 
+ 	it('rejects a malformed expression tree and a missing field', () => {
+ 		expect(isComputedField({ field: 'monthly', expression: { form: 'variable' } })).toBe(false)
+-		expect(isComputedField({ expression: constant(1) })).toBe(false)
++		expect(isComputedField({ expression: createConstant(1) })).toBe(false)
+ 	})
+ 
+ 	it('rejects adversarial junk, including a cyclic expression', () => {
+@@ -146,7 +146,10 @@ describe('isTemplate', () => {
+ 		const template = buildInterpretTemplate({
+ 			defaults: [{ field: 'term', value: 12 }],
+ 			computations: [
+-				{ field: 'monthly', expression: operation('divide', variable('value'), constant(12)) },
++				{
++					field: 'monthly',
++					expression: createOperation('divide', createVariable('value'), createConstant(12)),
++				},
+ 			],
+ 		})
+ 		expect(isTemplate(template)).toBe(true)
+@@ -171,8 +174,8 @@ describe('isTemplate', () => {
+ 	})
+ 
+ 	it('round-trips against a definition built with reasons factories', () => {
+-		const definition = quantitativeDefinition('t2', 'Two', [
+-			factorGroup('g', 'sum', [fieldFactor('v', 'value')]),
++		const definition = createQuantitativeDefinition('t2', 'Two', [
++			createFactorGroup('g', 'sum', [createFieldFactor('v', 'value')]),
+ 		])
+ 		const template = buildInterpretTemplate({ id: 't2', name: 'Two', definition })
+ 		expect(isTemplate(template)).toBe(true)
+@@ -251,10 +254,17 @@ describe('isIntent', () => {
+ 		).toBe(true)
+ 	})
+ 
++	it('accepts an unclassified intent carrying neither axis', () => {
++		expect(isIntent({ confidence: 0 })).toBe(true)
++		expect(isIntent({ action: 'calculate', confidence: 0.5 })).toBe(true)
++		expect(isIntent({ domain: 'arithmetic', confidence: 0.5 })).toBe(true)
++	})
++
+ 	it('rejects each wrongly typed member and arrays', () => {
+ 		expect(isIntent({ action: 1, domain: 'arithmetic', confidence: 1 })).toBe(false)
+ 		expect(isIntent({ action: 'calculate', domain: 1, confidence: 1 })).toBe(false)
+ 		expect(isIntent({ action: 'calculate', domain: 'arithmetic', confidence: 'high' })).toBe(false)
++		expect(isIntent({})).toBe(false)
+ 		expect(isIntent([])).toBe(false)
+ 	})
+ })

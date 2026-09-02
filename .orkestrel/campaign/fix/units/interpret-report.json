@@ -1,0 +1,202 @@
+{
+ "unit": "breaking-interpret",
+ "rows": [
+  {
+   "id": "s12-25",
+   "state": "applied",
+   "note": "GeneratorOptions deleted from types.ts with its \"reserved extension seam\" TSDoc; createGenerator(_options?) is createGenerator(): GeneratorInterface; the Generator class TSDoc seam sentence and the guide Types row are gone."
+  },
+  {
+   "id": "s12-26",
+   "state": "applied",
+   "note": "createTemplate deleted outright per the ruling (no throwing twin beside the parser); parseTemplate's pairing note now states total intake; its factories test block and guide rows removed. Consequence recorded in deviations: INVALID_TEMPLATE lost its only producer and was removed with it."
+  },
+  {
+   "id": "s12-29",
+   "state": "applied",
+   "note": "InterpretInterface.register/unregister are add/remove with the remove(ids)/remove(id)/remove() overload set; InterpretEventMap.register is add; Interpret implements both; types.ts documents why add returns void where TemplateManagerInterface#add returns the record."
+  },
+  {
+   "id": "s12-30",
+   "state": "applied",
+   "note": "Intent.action and Intent.domain are optional; classifyIntent omits an unmatched axis; scoreTemplate and Formatter.format guard the reads; the two inline { action: '', domain: '', confidence: 0 } sites in Interpret are { confidence: 0 }; isIntent marks both axes optional. The private -1 accumulator clause was dropped as the ruling directs."
+  },
+  {
+   "id": "s12-34",
+   "state": "applied",
+   "note": "InterpretOptions.lexicon and .formatters are replaced by one narrator?: NarratorOptions group; Interpret constructs its Narrator from options?.narrator."
+  },
+  {
+   "id": "s12-35",
+   "state": "applied",
+   "note": "Interpret records #ownsContext at construction and destroy() tears down only a context it constructed; a supplied options.context survives, proven by a test where a second orchestrator keeps using the shared context after the first is destroyed."
+  },
+  {
+   "id": "s12-37",
+   "state": "applied",
+   "note": "The unconditional Sum/Count/Average/Minimum/Maximum emission is deleted from Generator.generate; Clarifier#resolveComputations now binds each numeric element of an array-valued field under {field}.{index}, so an aggregate is a Template.computations entry the author declares. No aggregate-name list was added (refused as a behavior-selecting magic string). deriveAggregateField went with the emission it served."
+  },
+  {
+   "id": "s12-38",
+   "state": "applied",
+   "note": "DEFAULT_ABBREVIATIONS, DEFAULT_CORRECTIONS, DEFAULT_ACTIONS, DEFAULT_DOMAINS and DEFAULT_VERBS deleted with their spreads in Normalizer, Extractor and Formatter; DEFAULT_CONTRACTIONS kept; each options type's TSDoc keeps its neutrality statement."
+  },
+  {
+   "id": "s12-39",
+   "state": "applied",
+   "note": "INTERPRET_ID deleted with its guide row and constants fence line."
+  },
+  {
+   "id": "s12-42",
+   "state": "applied",
+   "note": "size is count on RecordManagerInterface, TemplateManagerInterface, SubjectManagerInterface and DefinitionManagerInterface, on all four classes, in the guide, and in the tests. The \"never count\" rationale in the TSDoc was deleted."
+  },
+  {
+   "id": "s12-43",
+   "state": "applied",
+   "note": "ManagerAddOptions is RecordOptions across types.ts and the three manager imports and signatures. This is the interpret half only: @orkestrel/brief renames the same import in the same wave, per the ruling."
+  },
+  {
+   "id": "s12-45",
+   "state": "applied",
+   "note": "canonicalize(value) takes one parameter; canonicalizeNode(value, ancestors) is the exported recursive leaf that canonicalize and digestValue call, documented with what an explicit seed does, and tested for the cycle marker and for a non-cyclic sibling repeat."
+  },
+  {
+   "id": "s12-21",
+   "state": "applied",
+   "note": "The ordinal citation at helpers.ts:201-202 is gone, and so is the one remaining `AGENTS.md § Design laws` citation in the types.ts header comment, because the carrier requires a wrap-tolerant sweep for AGENTS and for the section sign to return no hit under src. Both sweeps are clean, including a whitespace-flattened one."
+  }
+ ],
+ "symbols": [
+  "GeneratorOptions → removed",
+  "createGenerator(_options?: GeneratorOptions) → createGenerator()",
+  "createTemplate → removed",
+  "InterpretErrorCode member 'INVALID_TEMPLATE' → removed (with its INTERPRET_ERROR_CODES entry)",
+  "InterpretInterface.register → InterpretInterface.add",
+  "InterpretInterface.unregister → InterpretInterface.remove (remove(ids) / remove(id) / remove())",
+  "Interpret.register → Interpret.add",
+  "Interpret.unregister → Interpret.remove",
+  "InterpretEventMap.register → InterpretEventMap.add",
+  "Intent.action: string → Intent.action?: string",
+  "Intent.domain: string → Intent.domain?: string",
+  "InterpretOptions.lexicon + InterpretOptions.formatters → InterpretOptions.narrator?: NarratorOptions",
+  "RecordManagerInterface.size → RecordManagerInterface.count",
+  "TemplateManagerInterface.size → TemplateManagerInterface.count",
+  "SubjectManagerInterface.size → SubjectManagerInterface.count",
+  "DefinitionManagerInterface.size → DefinitionManagerInterface.count",
+  "RecordManager.size / TemplateManager.size / SubjectManager.size / DefinitionManager.size → .count",
+  "ManagerAddOptions → RecordOptions",
+  "canonicalize(value, visited?) → canonicalize(value)",
+  "canonicalizeNode(value, ancestors) → added, exported",
+  "deriveAggregateField → removed",
+  "DEFAULT_ABBREVIATIONS → removed",
+  "DEFAULT_CORRECTIONS → removed",
+  "DEFAULT_ACTIONS → removed",
+  "DEFAULT_DOMAINS → removed",
+  "DEFAULT_VERBS → removed",
+  "INTERPRET_ID → removed",
+  "upstream adoption: @orkestrel/reason constant/variable/operation/atom/fact/rule/check/equation/inference/staticFactor/fieldFactor/factorGroup/quantitativeDefinition/logicalDefinition/symbolicDefinition/inferentialDefinition → create* in every test, TSDoc example, guide fence and the README fence"
+ ],
+ "files": [
+  "/home/user/fleet/interpret/README.md",
+  "/home/user/fleet/interpret/guides/interpret.md",
+  "/home/user/fleet/interpret/src/core/Interpret.ts",
+  "/home/user/fleet/interpret/src/core/constants.ts",
+  "/home/user/fleet/interpret/src/core/errors.ts",
+  "/home/user/fleet/interpret/src/core/factories.ts",
+  "/home/user/fleet/interpret/src/core/helpers.ts",
+  "/home/user/fleet/interpret/src/core/managers/DefinitionManager.ts",
+  "/home/user/fleet/interpret/src/core/managers/RecordManager.ts",
+  "/home/user/fleet/interpret/src/core/managers/SubjectManager.ts",
+  "/home/user/fleet/interpret/src/core/managers/TemplateManager.ts",
+  "/home/user/fleet/interpret/src/core/parsers.ts",
+  "/home/user/fleet/interpret/src/core/stages/Clarifier.ts",
+  "/home/user/fleet/interpret/src/core/stages/Extractor.ts",
+  "/home/user/fleet/interpret/src/core/stages/Formatter.ts",
+  "/home/user/fleet/interpret/src/core/stages/Generator.ts",
+  "/home/user/fleet/interpret/src/core/stages/Normalizer.ts",
+  "/home/user/fleet/interpret/src/core/types.ts",
+  "/home/user/fleet/interpret/src/core/validators.ts",
+  "/home/user/fleet/interpret/tests/setup.ts",
+  "/home/user/fleet/interpret/tests/setup.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/Interpret.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/InterpretContext.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/Narrator.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/factories.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/helpers.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/integration.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/managers/DefinitionManager.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/managers/RecordManager.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/managers/SubjectManager.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/managers/TemplateManager.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/stages/Clarifier.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/stages/Extractor.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/stages/Formatter.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/stages/Generator.test.ts",
+  "/home/user/fleet/interpret/tests/src/core/validators.test.ts"
+ ],
+ "tests": [
+  "added tests/src/core/Interpret.test.ts 'adds, looks up, lists, and removes templates as plain data' (was 'registers, looks up, lists, and unregisters …')",
+  "added tests/src/core/Interpret.test.ts 'removes a listed batch all-or-nothing, and every template with no argument' — the new remove overload set",
+  "added tests/src/core/Interpret.test.ts 'emits add with the template id' (was 'emits register …')",
+  "added tests/src/core/Interpret.test.ts 'leaves a caller-supplied context alive, and a second orchestrator keeps using it' — the s12-35 proof",
+  "changed tests/src/core/Interpret.test.ts 'honors a lexicon override supplied through the narrator option group' and the gate-question test to the narrator group",
+  "added tests/src/core/helpers.test.ts 'leaves an unmatched axis absent rather than an empty string' (Object.hasOwn on both axes)",
+  "added tests/src/core/helpers.test.ts 'canonicalize starts the leaf from an empty ancestor path', 'canonicalizeNode renders a node already on the ancestor path as the cycle marker', 'canonicalizeNode keeps a sibling repeat of one object out of the cycle branch'",
+  "added tests/src/core/helpers.test.ts 'scores an absent axis as no match on that half' and 'matchTemplate refuses an unclassified intent against a real template'",
+  "added tests/src/core/validators.test.ts 'accepts an unclassified intent carrying neither axis'; the rejection test now pins isIntent({}) false",
+  "added tests/src/core/stages/Clarifier.test.ts 'binds each numeric element of an array-valued field under its index' and 'leaves a computation over a non-numeric array element a gap'",
+  "added tests/src/core/stages/Formatter.test.ts 'renders an empty verb when the intent carries no action'",
+  "rewrote tests/src/core/stages/Generator.test.ts 'keeps a multi-element numeric array as it stands, deriving no sibling field' and 'writes a nested array mapping at its own path, deriving no sibling field' (were the two aggregate-emission tests)",
+  "rewrote tests/src/core/integration.test.ts numeric corpus into 'a statistics turn keeps its collected array and derives no field of its own' plus 'a declared computation aggregates the collected array by element'",
+  "deleted tests/src/core/factories.test.ts describe('createTemplate — validation') with both its cases, and the createTemplate barrel-sample assertion",
+  "renamed .size assertions to .count across factories, RecordManager, TemplateManager, SubjectManager, DefinitionManager and InterpretContext tests"
+ ],
+ "gates": [
+  {
+   "command": "npm run format:check",
+   "exit": 0,
+   "excerpt": "All matched files use the correct format. Finished in 2418ms on 69 files using 4 threads."
+  },
+  {
+   "command": "npm run lint:check",
+   "exit": 0,
+   "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostics"
+  },
+  {
+   "command": "npm run check",
+   "exit": 0,
+   "excerpt": "tsc --noEmit --project tsconfig.json && tsc --noEmit -p configs/src/tsconfig.core.json — no diagnostics"
+  },
+  {
+   "command": "npm run build",
+   "exit": 0,
+   "excerpt": "vite build (configs/src/vite.core.config.ts) then Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+  },
+  {
+   "command": "npm test",
+   "exit": 0,
+   "excerpt": "src:core 17 files / 281 tests passed; policy 111; config 46; setup 30; guides 73 — all passed"
+  }
+ ],
+ "diffstat": "36 files changed, 926 insertions(+), 795 deletions(-)",
+ "status": "All thirteen rows closed applied; none refused, none stopped. The gate chain runs green in order on /home/user/fleet/interpret at branch claude/orkestrel-npm-audit-deps-14ibta, working tree modified in 36 tracked files and nothing untracked (dist/ is gitignored). Nothing committed, staged, installed or pushed.",
+ "distMoves": true,
+ "observations": [
+  "dist/ moves, as every rename does: the built dist/src/core/index.d.ts now declares readonly count on the four registry interfaces, RecordOptions, and canonicalizeNode, and carries no ManagerAddOptions, GeneratorOptions, INTERPRET_ID or createTemplate.",
+  "Prose sweeps run and classified: word-boundary greps over src, tests, guides and README for GeneratorOptions, createTemplate, ManagerAddOptions, INTERPRET_ID, deriveAggregateField, INVALID_TEMPLATE and the five deleted DEFAULT_* names return no hit; the case-insensitive inflected re-run adds only two hits, both in the vendored off-limits tests/setupPolicy.ts where 'unregistered' means absent from the fleet register.",
+  "The register/registry sweep returns many hits that are the English noun for the collection ('the template registry', 'a registered template record'); those stand. The four that named the renamed act were rewritten: the guide's Surface intro, and the add rows of the three manager Methods tables, plus the fence comment 'every added template'.",
+  "The size sweep found only Map.size and Set.size after the rename; RecordManager.count reads this.#records.size on its own Map, which is the platform member and not the renamed one.",
+  "The reason-constructor adoption was applied by a scripted rename, and the sweep afterwards caught four places where it had hit an English word rather than a call: the DEFAULT_LEXICON template strings ('rule(s)', 'fact(s)'), a Narrator test's expected strings, four test titles, and the { form: 'variable' } literal in a validators case. Each was restored, and the final sweep for create[A-Z] outside a call or an import list is clean.",
+  "The whole suite finished in about 10s wall clock on this host across its five projects, with no timing-suspect failure to carry to the Orchestrator's re-run.",
+  "npm run test:distribution was not run: the brief excludes it while a dependency tarball is staged, and it is not part of npm test.",
+  "Outside this unit's rows, for the next change: ordinal citations of the coding contract survive in tests/setup.ts, tests/setup.test.ts and guides/README.md (the s12-21 carrier bounds its sweep to src, so they were left); README.md links guides/src/interpret.md, a path this repository does not have."
+ ],
+ "deviations": [
+  "s12-26 removes one symbol the ledger did not name. Deleting createTemplate left 'INVALID_TEMPLATE' with no producer anywhere in src — its TSDoc defined it as what createTemplate throws — so the union member and its INTERPRET_ERROR_CODES entry went with it, on the same reasoning s12-39 applies to INTERPRET_ID. breaking-radius.json records no external consumer for s12-26, and grep finds no reference to the code outside the deleted call site. If the Orchestrator wants the code retained, the restore is three lines plus a guide row.",
+  "s12-37 removes deriveAggregateField, which the ledger did not name. Its only consumer was the deleted aggregate emission, and its documented purpose ('the aggregate suffix Sum/Count/Average/Minimum/Maximum') was that emission; nothing else in src, tests or the fleet radius calls it. Its guide row, fence lines and tests went with it.",
+  "s12-37's binding mechanism is my reading of 'bind through the existing Template.computations'. resolveExpression takes Record<string, number> and @orkestrel/reason's applyOperation is scalar, so an array-valued entity could not reach a computation at all. Clarifier#resolveComputations therefore binds each numeric element under {field}.{index} — the same dotted addressing FieldPath already uses — and the integration test drives the first real consumer end to end (a declared 'total' computation summing value.0 + value.1 + value.2). No aggregate-name list was introduced.",
+  "s12-35 has one half no test can drive. The teardown of a context the orchestrator constructed itself has no public observer, because Interpret publishes no context accessor. Rather than write a test whose name overclaims what its assertions check, the gap is recorded as a comment beside the supplied-context test in tests/src/core/Interpret.test.ts.",
+  "README.md carries an edit beyond a pure rename: its Usage fence built the orchestrator with a hand-rolled { extract: () => … } stage stub. That is the s12-47 finding, whose repair already landed in the guide and in the createInterpret example, and the README is the copy the campaign missed; the fence now uses createExtractor, matching them. The rest of the README change is the reason-constructor adoption."
+ ]
+}

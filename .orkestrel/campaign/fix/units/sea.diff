@@ -1,0 +1,567 @@
+diff --git a/guides/sea.md b/guides/sea.md
+index 623730f..19b7626 100644
+--- a/guides/sea.md
++++ b/guides/sea.md
+@@ -101,13 +101,13 @@ On Windows, `SEAOptions.windows.sign` is OPTIONAL Authenticode signing. When pre
+ | `ensureExists`        | function | Assert that a path exists, throwing with a descriptive message if not.          |
+ | `isCompressible`      | function | Check if a file should be Brotli-compressed based on its extension.             |
+ | `walkDirectory`       | function | Recursively walk a directory and return all file paths.                         |
+-| `runShell`            | function | Run a command synchronously and return stdout; throws `ShellError`.             |
++| `executeShell`        | function | Execute a command synchronously and return stdout; throws `ShellError`.         |
+ | `redactCommand`       | function | Redact a shell command's arguments for safe inclusion in error messages.        |
+ | `computeSize`         | function | Compute a size comparison between original and compressed byte counts.          |
+ | `compressFile`        | function | Brotli-compress a single file, writing the output alongside it.                 |
+ | `compressDirectory`   | function | Compress all compressible files in a directory tree.                            |
+ | `alignTo`             | function | Round a value up to the next multiple of an alignment boundary.                 |
+-| `parsePEOffset`       | function | Parse the PE header offset from a Windows executable.                           |
++| `readPEOffset`        | function | Read the PE header offset from a Windows executable.                            |
+ | `readU16`             | function | Read a 16-bit unsigned integer from a file descriptor.                          |
+ | `readU32`             | function | Read a 32-bit unsigned little-endian integer from a file descriptor.            |
+ | `readU64`             | function | Read a 64-bit unsigned little-endian integer from a file descriptor.            |
+@@ -135,7 +135,7 @@ On Windows, `SEAOptions.windows.sign` is OPTIONAL Authenticode signing. When pre
+ | `openBrowser`         | function | Launch the system default browser at an http(s) URL.                            |
+ | `SEAError`            | class    | The coded base error for every failure raised by the seal build.                |
+ | `isSEAError`          | function | Whether a value is a `SEAError`.                                                |
+-| `ShellError`          | class    | Error thrown when a shell command run via `runShell` exits non-zero.            |
++| `ShellError`          | class    | Error `executeShell` throws when a command exits non-zero.                      |
+ | `isShellError`        | function | Whether a value is a `ShellError`.                                              |
+ 
+ ### Types
+@@ -147,11 +147,12 @@ On Windows, `SEAOptions.windows.sign` is OPTIONAL Authenticode signing. When pre
+ | `SEACompressionResult`   | interface | Result of compressing a single file.                                         |
+ | `SEACompressionManifest` | interface | Manifest summarizing all compressed assets.                                  |
+ | `SEAProgress`            | interface | Progress reported while compressing a directory (`path`/`current`/`total`).  |
+-| `SEAProgressHandler`     | type      | Callback invoked by the framework after each file is compressed.             |
++| `SEACompressionHandler`  | type      | Callback `compressDirectory` invokes after each file it compresses.          |
+ | `SEACompressionOptions`  | interface | Options controlling Brotli compression of one or more directories.           |
+ | `SEAPlatform`            | interface | Platform-specific SEA build configuration.                                   |
+-| `SEAShellOptions`        | interface | Options for running a shell command.                                         |
++| `SEAShellOptions`        | interface | Options for executing a shell command.                                       |
+ | `ExecutableFormat`       | type      | Executable binary format detected from file header magic bytes.              |
++| `ELFNoteHeader`          | interface | An ELF `PT_NOTE` entry's header bytes and the entry's on-disk size.          |
+ | `InjectorOptions`        | interface | Options for injecting a resource into an executable.                         |
+ | `InjectorMachOOptions`   | interface | Mach-O specific injector options.                                            |
+ | `InjectorInterface`      | interface | Cross-platform binary resource injector contract.                            |
+@@ -249,7 +250,7 @@ manager.destroy()
+ 
+ ```ts
+ import {
+-	runShell,
++	executeShell,
+ 	redactCommand,
+ 	isShellError,
+ 	platformConfig,
+@@ -262,7 +263,7 @@ import {
+ 	compressDirectory,
+ 	formatSize,
+ 	isExecutableFormat,
+-	parsePEOffset,
++	readPEOffset,
+ 	readU16,
+ 	readU32,
+ 	readU64,
+@@ -286,7 +287,7 @@ import {
+ } from '@orkestrel/sea'
+ 
+ try {
+-	runShell(['node', '--version'])
++	executeShell(['node', '--version'])
+ } catch (error) {
+ 	if (isShellError(error)) {
+ 		error.stdout // captured stdout Buffer
+@@ -310,7 +311,7 @@ formatSize(size.compressed) // '400 B'
+ isExecutableFormat('elf') // true
+ 
+ const fd = 0 // an open file descriptor from openSync in real usage
+-// parsePEOffset(fd) / readU16(fd, offset) / writeU16(fd, offset, value)
++// readPEOffset(fd) / readU16(fd, offset) / writeU16(fd, offset, value)
+ // readU32(fd, offset) / readU64(fd, offset) — 32- and 64-bit little-endian reads
+ // writeU32(fd, offset, value) / writeU64(fd, offset, value) — the matching writes
+ // isPEExecutable(path) / patchPESubsystem(path, subsystem) / stripPESignature(path)
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index bf95efa..c66fb78 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -3,7 +3,7 @@ import type { SEAErrorCode } from './types.js'
+ // Error surface for the seal build. `SEAError` is the coded base every
+ // domain failure throws through, so a caller can branch on `code` rather
+ // than parsing a message string. `ShellError` specializes it for the shell
+-// boundary — `runShell` maps a failed `executeSync` invocation to a
++// boundary — `executeShell` maps a failed `executeSync` invocation to a
+ // `ShellError` carrying the captured stdout/stderr, so a caller can inspect
+ // the process output rather than parsing the thrown message.
+ 
+@@ -57,7 +57,7 @@ export function isSEAError(value: unknown): value is SEAError {
+ }
+ 
+ /**
+- * An error thrown when a shell command run via `runShell` exits non-zero.
++ * An error thrown when a shell command executed through `executeShell` exits non-zero.
+  *
+  * @remarks
+  * Carries the captured `stdout` and `stderr` buffers from the failed process.
+@@ -67,7 +67,7 @@ export function isSEAError(value: unknown): value is SEAError {
+  * @example
+  * ```ts
+  * try {
+- *     runShell(['codesign', '--sign', '-', path])
++ *     executeShell(['codesign', '--sign', '-', path])
+  * } catch (error) {
+  *     if (isShellError(error)) {
+  *         console.error(error.stderr.toString())
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 9d17b0a..d6c035f 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -1,5 +1,7 @@
+ import type {
++	ELFNoteHeader,
+ 	SEABlobOptions,
++	SEACompressionHandler,
+ 	SEACompressionManifest,
+ 	SEACompressionOptions,
+ 	SEACompressionResult,
+@@ -7,7 +9,6 @@ import type {
+ 	SEAEntryOptions,
+ 	SEAErrorCode,
+ 	SEAPlatform,
+-	SEAProgressHandler,
+ 	SEAShellOptions,
+ 	SEAWindowsSignOptions,
+ } from './types.js'
+@@ -140,7 +141,7 @@ export function redactCommand(command: readonly string[]): readonly string[] {
+ }
+ 
+ /**
+- * Run a command synchronously and return stdout.
++ * Executes a command synchronously and returns stdout.
+  *
+  * @param command - Command to execute (first element is the binary)
+  * @param options - Shell options (cwd, env, timeout, signal)
+@@ -150,7 +151,7 @@ export function redactCommand(command: readonly string[]): readonly string[] {
+  * @throws SEAError with code `'TIMEOUT'` when the command exceeds `options.timeout`
+  * @throws ShellError when the command exits with non-zero status
+  */
+-export function runShell(command: readonly string[], options?: SEAShellOptions): Buffer {
++export function executeShell(command: readonly string[], options?: SEAShellOptions): Buffer {
+ 	const [cmd, ...args] = command
+ 	if (cmd === undefined) {
+ 		throw new SEAError('STATE', 'Command array must not be empty')
+@@ -264,7 +265,7 @@ export function compressFile(
+ export function compressDirectory(
+ 	directory: string,
+ 	options?: SEACompressionOptions,
+-	progress?: SEAProgressHandler,
++	progress?: SEACompressionHandler,
+ ): SEACompressionManifest {
+ 	const files = walkDirectory(directory)
+ 	const results: SEACompressionResult[] = []
+@@ -466,12 +467,12 @@ export function isPowerOfTwo(value: number): boolean {
+ }
+ 
+ /**
+- * Parse the PE header offset from a Windows executable.
++ * Reads the PE header offset from a Windows executable.
+  *
+  * @param fd - Open file descriptor
+  * @returns The offset to the PE signature
+  */
+-export function parsePEOffset(fd: number): number {
++export function readPEOffset(fd: number): number {
+ 	const buf = Buffer.alloc(4)
+ 	readSync(fd, buf, 0, 4, 0x3c)
+ 	return buf.readUInt32LE(0)
+@@ -513,7 +514,7 @@ export function isPEExecutable(path: string): boolean {
+ 	let fd: number | undefined
+ 	try {
+ 		fd = openSync(path, 'r')
+-		const peOffset = parsePEOffset(fd)
++		const peOffset = readPEOffset(fd)
+ 		const sig = Buffer.alloc(4)
+ 		readSync(fd, sig, 0, 4, peOffset)
+ 		return sig.toString('ascii') === 'PE\0\0'
+@@ -533,7 +534,7 @@ export function isPEExecutable(path: string): boolean {
+ export function patchPESubsystem(path: string, subsystem: number): void {
+ 	const fd = openSync(path, 'r+')
+ 	try {
+-		const peOffset = parsePEOffset(fd)
++		const peOffset = readPEOffset(fd)
+ 		// Subsystem field is at PE offset + 0x5C (in the Optional Header)
+ 		writeU16(fd, peOffset + 0x5c, subsystem)
+ 	} finally {
+@@ -559,7 +560,7 @@ export function patchPESubsystem(path: string, subsystem: number): void {
+ export function stripPESignature(path: string): void {
+ 	const fd = openSync(path, 'r+')
+ 	try {
+-		const peOffset = parsePEOffset(fd)
++		const peOffset = readPEOffset(fd)
+ 		// COFF header: 24 bytes from PE signature
+ 		// Optional header magic at peOffset + 24
+ 		const magic = readU16(fd, peOffset + 24)
+@@ -597,14 +598,14 @@ export function stripPESignature(path: string): void {
+  * file, paired with `sign.password` when present) XOR `sign.thumbprint` (a
+  * certificate already installed in the Windows store). When `sign.timestamp`
+  * is set it is parsed with the `URL` constructor and must be an `http:` or
+- * `https:` URL. The returned argv is passed directly to `runShell` — never
++ * `https:` URL. The returned argv is passed directly to `executeShell` — never
+  * through a shell — so nothing in `sign` can be interpreted as a flag or
+  * injected into a command line. `sign.password` is NEVER included in a
+  * thrown error's message or `context`.
+  *
+  * @param sign - Windows signing options
+  * @param target - Absolute path to the executable to sign
+- * @returns The `signtool` argv, ready for `runShell`
++ * @returns The `signtool` argv, ready for `executeShell`
+  * @throws SEAError with code `'SIGN'` when neither `file` nor `thumbprint` is set
+  * @throws SEAError with code `'SIGN'` when both `file` and `thumbprint` are set
+  * @throws SEAError with code `'SIGN'` when `timestamp` is not a parseable http(s) URL
+@@ -957,7 +958,7 @@ export function alignELFNoteSize(value: number): number {
+ }
+ 
+ /**
+- * Build an ELF `PT_NOTE` entry's header bytes (namesz/descsz/type + padded
++ * Builds an ELF `PT_NOTE` entry's header bytes (namesz/descsz/type + padded
+  * name) for the SEA blob note, without the blob body itself.
+  *
+  * @remarks
+@@ -976,13 +977,10 @@ export function alignELFNoteSize(value: number): number {
+  *
+  * @example
+  * ```ts
+- * const { header, entryTotal } = buildELFNoteHeader('NODE_SEA_BLOB', 4096)
++ * const { header, total } = buildELFNoteHeader('NODE_SEA_BLOB', 4096)
+  * ```
+  */
+-export function buildELFNoteHeader(
+-	resource: string,
+-	blobSize: number,
+-): { readonly header: Buffer; readonly entryTotal: number } {
++export function buildELFNoteHeader(resource: string, blobSize: number): ELFNoteHeader {
+ 	const nameBytes = Buffer.from(`${resource}\0`, 'utf-8')
+ 	const alignedNameSize = alignELFNoteSize(nameBytes.length)
+ 
+@@ -993,7 +991,7 @@ export function buildELFNoteHeader(
+ 	nameBytes.copy(header, 12)
+ 
+ 	const alignedDescSize = alignELFNoteSize(blobSize)
+-	return { header, entryTotal: header.length + alignedDescSize }
++	return { header, total: header.length + alignedDescSize }
+ }
+ 
+ /**
+diff --git a/src/server/injectors/Injector.ts b/src/server/injectors/Injector.ts
+index 11843e0..9ba1625 100644
+--- a/src/server/injectors/Injector.ts
++++ b/src/server/injectors/Injector.ts
+@@ -1125,11 +1125,8 @@ export class Injector implements InjectorInterface {
+ 		const regionVaddr = alignTo(maxVaddrEnd, PAGE)
+ 
+ 		const blobSize = statSync(this.#options.blob).size
+-		const { header: noteHeader, entryTotal: noteEntryTotal } = buildELFNoteHeader(
+-			resource,
+-			blobSize,
+-		)
+-		const noteAreaSize = alignTo(noteEntryTotal, 8)
++		const { header: noteHeader, total: noteTotal } = buildELFNoteHeader(resource, blobSize)
++		const noteAreaSize = alignTo(noteTotal, 8)
+ 
+ 		const newEntryCount = headers.length + 2
+ 		const phtSize = newEntryCount * phdrEntrySize
+@@ -1155,8 +1152,8 @@ export class Injector implements InjectorInterface {
+ 			offset: regionStart,
+ 			vaddr: regionVaddr,
+ 			paddr: regionVaddr,
+-			filesz: noteEntryTotal,
+-			memsz: noteEntryTotal,
++			filesz: noteTotal,
++			memsz: noteTotal,
+ 			align: 4,
+ 		}
+ 
+@@ -1202,7 +1199,7 @@ export class Injector implements InjectorInterface {
+ 			appendFileSync(exePath, Buffer.alloc(descPadding))
+ 		}
+ 
+-		const trailingPad = noteAreaSize - noteEntryTotal
++		const trailingPad = noteAreaSize - noteTotal
+ 		if (trailingPad > 0) {
+ 			appendFileSync(exePath, Buffer.alloc(trailingPad))
+ 		}
+diff --git a/src/server/seals/SEA.ts b/src/server/seals/SEA.ts
+index 97abca7..2063017 100644
+--- a/src/server/seals/SEA.ts
++++ b/src/server/seals/SEA.ts
+@@ -33,12 +33,12 @@ import {
+ 	ensureExists,
+ 	ensureSafeKey,
+ 	ensureSafeName,
++	executeShell,
+ 	finalizeExecutable,
+ 	isCompressible,
+ 	isPEExecutable,
+ 	patchPESubsystem,
+ 	platformConfig,
+-	runShell,
+ 	stripPESignature,
+ 	walkDirectory,
+ } from '../helpers.js'
+@@ -242,7 +242,7 @@ export class SEA implements SEAInterface {
+ 		)
+ 
+ 		writeFileSync(configPath, JSON.stringify(config, null, 2))
+-		runShell([process.execPath, '--experimental-sea-config', configPath], {
++		executeShell([process.execPath, '--experimental-sea-config', configPath], {
+ 			cwd: output,
+ 			...(this.#options.signal === undefined ? {} : { signal: this.#options.signal }),
+ 			...(this.#options.timeout === undefined ? {} : { timeout: this.#options.timeout }),
+@@ -294,7 +294,7 @@ export class SEA implements SEAInterface {
+ 				if (platform.remove !== undefined) {
+ 					this.#check()
+ 					try {
+-						runShell([...platform.remove, temp], shell)
++						executeShell([...platform.remove, temp], shell)
+ 					} catch (thrown: unknown) {
+ 						throw new SEAError('SIGN', 'Failed to strip existing signature', {
+ 							cause: thrown instanceof Error ? thrown.message : String(thrown),
+@@ -316,7 +316,7 @@ export class SEA implements SEAInterface {
+ 				if (platform.sign !== undefined) {
+ 					this.#check()
+ 					try {
+-						runShell([...platform.sign, temp], shell)
++						executeShell([...platform.sign, temp], shell)
+ 					} catch (thrown: unknown) {
+ 						throw new SEAError('SIGN', 'Failed to sign executable', {
+ 							cause: thrown instanceof Error ? thrown.message : String(thrown),
+@@ -326,7 +326,7 @@ export class SEA implements SEAInterface {
+ 					if (platform.verify !== undefined) {
+ 						this.#check()
+ 						try {
+-							runShell([...platform.verify, temp], shell)
++							executeShell([...platform.verify, temp], shell)
+ 						} catch (thrown: unknown) {
+ 							throw new SEAError('SIGN', 'Signature verification failed', {
+ 								cause: thrown instanceof Error ? thrown.message : String(thrown),
+@@ -363,13 +363,13 @@ export class SEA implements SEAInterface {
+ 					this.#check()
+ 					// Resolve the certificate file against the SAME base #validate
+ 					// checked existence against — createSignCommand's argv is passed
+-					// through runShell without a cwd, so a relative sign.file would
++					// through executeShell without a cwd, so a relative sign.file would
+ 					// otherwise resolve against process.cwd(), a different file.
+ 					const signInput =
+ 						sign.file !== undefined ? { ...sign, file: resolve(root, sign.file) } : sign
+ 					const signArgs = createSignCommand(signInput, temp)
+ 					try {
+-						runShell(signArgs, shell)
++						executeShell(signArgs, shell)
+ 					} catch {
+ 						throw new SEAError('SIGN', 'Windows signing failed', { executable: temp })
+ 					}
+@@ -378,7 +378,7 @@ export class SEA implements SEAInterface {
+ 					if (platform.verify !== undefined) {
+ 						this.#check()
+ 						try {
+-							runShell([...platform.verify, temp], shell)
++							executeShell([...platform.verify, temp], shell)
+ 						} catch {
+ 							throw new SEAError('SIGN', 'Signature verification failed', { executable: temp })
+ 						}
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 5af51c1..3012b86 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -61,9 +61,9 @@ export interface SEAProgress {
+ }
+ 
+ /**
+- * Callback invoked by the framework after each file is compressed.
++ * Callback `compressDirectory` invokes after each file it compresses.
+  */
+-export type SEAProgressHandler = (result: SEACompressionResult) => void
++export type SEACompressionHandler = (result: SEACompressionResult) => void
+ 
+ /**
+  * Options controlling Brotli compression of one or more directories.
+@@ -97,7 +97,7 @@ export interface SEAPlatform {
+ // === Shell
+ 
+ /**
+- * Options for running a shell command.
++ * Options for executing a shell command.
+  *
+  * @remarks
+  * `cwd` — working directory. Default: `process.cwd()`.
+@@ -117,6 +117,20 @@ export interface SEAShellOptions {
+  */
+ export type ExecutableFormat = 'pe' | 'elf' | 'macho'
+ 
++/**
++ * An ELF `PT_NOTE` entry's header bytes and the on-disk size of the whole entry.
++ *
++ * @remarks
++ * `header` — the namesz/descsz/type words followed by the NUL-terminated,
++ * four-byte-padded note name.
++ * `total`  — bytes the complete entry occupies on disk: `header` plus the
++ * four-byte-padded blob written after it.
++ */
++export interface ELFNoteHeader {
++	readonly header: Buffer
++	readonly total: number
++}
++
+ /**
+  * Options for injecting a resource into an executable.
+  *
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index dce641a..7522cdf 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -15,6 +15,7 @@ import {
+ 	ensureContained,
+ 	ensureSafeKey,
+ 	ensureSafeName,
++	executeShell,
+ 	finalizeExecutable,
+ 	formatSize,
+ 	isPEExecutable,
+@@ -23,15 +24,14 @@ import {
+ 	isSEAError,
+ 	isShellError,
+ 	openBrowser,
+-	parsePEOffset,
+ 	platformConfig,
+ 	patchPESubsystem,
+ 	patchSentinelFuse,
++	readPEOffset,
+ 	readU16,
+ 	readU32,
+ 	readU64,
+ 	redactCommand,
+-	runShell,
+ 	stripPESignature,
+ 	stripTrailingNulls,
+ 	syncDirectory,
+@@ -72,16 +72,16 @@ describe('helpers', () => {
+ 		})
+ 	})
+ 
+-	describe('runShell', () => {
++	describe('executeShell', () => {
+ 		it('returns stdout on success', () => {
+-			const stdout = runShell([process.execPath, '-e', "process.stdout.write('ok')"])
++			const stdout = executeShell([process.execPath, '-e', "process.stdout.write('ok')"])
+ 
+ 			expect(stdout.toString('utf-8')).toBe('ok')
+ 		})
+ 
+ 		it('throws SEAError code STATE for an empty command array', () => {
+ 			const error = captureError(() => {
+-				return runShell([])
++				return executeShell([])
+ 			})
+ 
+ 			expect(isSEAError(error) && error.code === 'STATE').toBe(true)
+@@ -89,7 +89,7 @@ describe('helpers', () => {
+ 
+ 		it('enforces a timeout', () => {
+ 			const error = captureError(() => {
+-				return runShell([process.execPath, '-e', 'setInterval(()=>{},1000)'], { timeout: 50 })
++				return executeShell([process.execPath, '-e', 'setInterval(()=>{},1000)'], { timeout: 50 })
+ 			})
+ 
+ 			expect(isSEAError(error) && error.code === 'TIMEOUT').toBe(true)
+@@ -100,7 +100,7 @@ describe('helpers', () => {
+ 			controller.abort()
+ 
+ 			const error = captureError(() => {
+-				return runShell(['this-command-does-not-exist'], { signal: controller.signal })
++				return executeShell(['this-command-does-not-exist'], { signal: controller.signal })
+ 			})
+ 
+ 			expect(isSEAError(error) && error.code === 'ABORT').toBe(true)
+@@ -108,7 +108,7 @@ describe('helpers', () => {
+ 
+ 		it('maps a non-zero exit to a ShellError', () => {
+ 			const error = captureError(() => {
+-				return runShell([process.execPath, '-e', 'process.exit(3)'])
++				return executeShell([process.execPath, '-e', 'process.exit(3)'])
+ 			})
+ 
+ 			expect(isShellError(error) && error.code === 'SHELL').toBe(true)
+@@ -117,7 +117,7 @@ describe('helpers', () => {
+ 
+ 		it('redacts a /p secret from a ShellError message on a non-zero exit', () => {
+ 			const error = captureError(() => {
+-				return runShell([process.execPath, '-e', 'process.exit(3)', '/p', 'SECRETVALUE'])
++				return executeShell([process.execPath, '-e', 'process.exit(3)', '/p', 'SECRETVALUE'])
+ 			})
+ 
+ 			expect(isShellError(error) && error.message.includes('SECRETVALUE')).toBe(false)
+@@ -129,7 +129,7 @@ describe('helpers', () => {
+ 			controller.abort()
+ 
+ 			const error = captureError(() => {
+-				return runShell(['signtool', '/p', 'SECRETVALUE'], { signal: controller.signal })
++				return executeShell(['signtool', '/p', 'SECRETVALUE'], { signal: controller.signal })
+ 			})
+ 
+ 			const context = isSEAError(error) ? error.context : undefined
+@@ -688,8 +688,8 @@ describe('helpers', () => {
+ 		})
+ 	})
+ 
+-	describe('parsePEOffset / readU16 / writeU16 / isPEExecutable', () => {
+-		it('parses the PE header offset from a valid PE fixture', async () => {
++	describe('readPEOffset / readU16 / writeU16 / isPEExecutable', () => {
++		it('reads the PE header offset from a valid PE fixture', async () => {
+ 			await withTestDir({}, (scratch) => {
+ 				const path = join(scratch.path, 'app.exe')
+ 				const buf = buildPeFixture()
+@@ -697,7 +697,7 @@ describe('helpers', () => {
+ 
+ 				const fd = openSync(path, 'r')
+ 				try {
+-					expect(parsePEOffset(fd)).toBe(buf.readUInt32LE(0x3c))
++					expect(readPEOffset(fd)).toBe(buf.readUInt32LE(0x3c))
+ 				} finally {
+ 					closeSync(fd)
+ 				}
+@@ -711,7 +711,7 @@ describe('helpers', () => {
+ 
+ 				const fd = openSync(path, 'r')
+ 				try {
+-					expect(parsePEOffset(fd)).toBe(0)
++					expect(readPEOffset(fd)).toBe(0)
+ 				} finally {
+ 					closeSync(fd)
+ 				}
+@@ -1009,7 +1009,7 @@ describe('helpers', () => {
+ 
+ 	describe('buildELFNoteHeader', () => {
+ 		it('encodes namesz/descsz/type and the 4-padded name', () => {
+-			const { header, entryTotal } = buildELFNoteHeader('NODE_SEA_BLOB', 4096)
++			const { header, total } = buildELFNoteHeader('NODE_SEA_BLOB', 4096)
+ 
+ 			expect(header.readUInt32LE(0)).toBe('NODE_SEA_BLOB'.length + 1) // namesz includes NUL
+ 			expect(header.readUInt32LE(4)).toBe(4096) // descsz
+@@ -1017,16 +1017,16 @@ describe('helpers', () => {
+ 			expect(header.toString('utf-8', 12, 12 + 'NODE_SEA_BLOB'.length + 1)).toBe('NODE_SEA_BLOB\0')
+ 			// name region is 4-byte-padded: namesz=14 aligns up to 16
+ 			expect(header.length).toBe(12 + 16)
+-			expect(entryTotal).toBe(header.length + 4096)
++			expect(total).toBe(header.length + 4096)
+ 		})
+ 
+-		it('4-byte-pads the blob size in entryTotal when it is not aligned', () => {
+-			const { header, entryTotal } = buildELFNoteHeader('X', 10)
++		it('4-byte-pads the blob size in total when it is not aligned', () => {
++			const { header, total } = buildELFNoteHeader('X', 10)
+ 
+ 			// namesz = 2 ('X\0'), aligned to 4
+ 			expect(header.length).toBe(12 + 4)
+ 			// blobSize 10 aligns up to 12
+-			expect(entryTotal).toBe(header.length + 12)
++			expect(total).toBe(header.length + 12)
+ 		})
+ 	})
+ 

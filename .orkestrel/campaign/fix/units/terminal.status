@@ -1,0 +1,16 @@
+ M guides/terminal.md
+ M src/core/Prompt.ts
+ M src/core/PromptClient.ts
+ M src/core/TerminalManager.ts
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/server/Terminal.ts
+ M src/server/helpers.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/src/core/PromptClient.test.ts
+ M tests/src/core/TerminalManager.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/server/helpers.test.ts

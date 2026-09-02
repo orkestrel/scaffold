@@ -1,0 +1,92 @@
+# Unit breaking-sea — report (2026-09-02)
+
+Writer: `implementer` on Opus 5 (native; Sol dark, substitution recorded). Returned report:
+
+## Rows
+
+- **s12-03** — applied: parsePEOffset renamed to readPEOffset at src/server/helpers.ts:474 (now :473). names.md § Standalone helpers: `read*` obtains a value from a live host object, a stream position, or a byte layout, returns it or throws, and never coerces; the function reads four bytes at 0x3c from a file descriptor and returns them, so `parse*` (coercion producing `T | undefined`) was wrong. In-package consumers updated: isPEExecutable, patchPESubsystem, stripPESignature. TSDoc first sentence rewritten to `Reads the PE header offset from a Windows executable.` Guide Surface row and summary verb moved, guide fence import and fence comment moved, test import, describe title, and case title moved.
+- **s12-05** — applied: runShell renamed to executeShell at src/server/helpers.ts:153. names.md § Fixed lifecycle vocabulary: `execute` runs primary work to completion, and `run` is a banned synonym for it. In-package consumers updated: SEA.#blob, SEA.#assemble's strip/sign/verify paths, and the Windows signing path in src/server/seals/SEA.ts, plus the prose carriers in createSignCommand's @remarks and @returns, the errors.ts file comment, and ShellError's TSDoc and @example. TSDoc first sentence rewritten to `Executes a command synchronously and returns stdout.` Guide Surface row, ShellError row, fence import, and fence call moved.
+- **s12-07** — applied: ELFNoteHeader declared in src/server/types.ts with `readonly header: Buffer` and `readonly total: number`; buildELFNoteHeader now returns it in place of the inline object type, and the returned member entryTotal is total. Types changed first per TTTDD. The Injector's ELF path destructures `total: noteTotal` and reads noteTotal at the segment sizing, the PT_NOTE filesz/memsz, and the trailing pad. TSDoc first sentence rewritten to `Builds an ELF...` and its @example reads `{ header, total }`. Guide gained an ELFNoteHeader Types row in the position matching its declaration; the barrel star-exports types.ts, so the parity suite required that row.
+- **s12-17** — applied: SEAProgressHandler renamed to SEACompressionHandler at src/server/types.ts:66. No collision: the package declares SEACompressionSize, SEACompressionMode, SEACompressionResult, SEACompressionManifest, and SEACompressionOptions, and no SEACompressionHandler existed. helpers.ts updated at the type import and at compressDirectory's progress parameter. Guide Types row moved. The declaration keeps its position in the Compression section, so the guide table stays aligned with declaration order.
+- **carry-ProcessChildInterface** — applied: No adoption edit was owed. `npm run check` was run first against the staged closure and exited 0, so the red adoption list was empty. sea imports detach and executeSync from @orkestrel/process/server and references ProcessChild nowhere in src or tests; the only ProcessChild text is guides/process.md, a vendored dependency guide mirror the brief places off-limits. The other staged renames (contract, emitter, guide, html, markdown, test) touch no symbol sea imports.
+
+## Symbols moved
+
+- parsePEOffset → readPEOffset (src/server/helpers.ts)
+- runShell → executeShell (src/server/helpers.ts)
+- SEAProgressHandler → SEACompressionHandler (src/server/types.ts)
+- buildELFNoteHeader returned member entryTotal → total (src/server/helpers.ts)
+- buildELFNoteHeader return type: inline `{ readonly header: Buffer; readonly entryTotal: number }` → declared ELFNoteHeader
+- ELFNoteHeader added (src/server/types.ts), barrelled through `export * from './types.js'`
+- Injector ELF local noteEntryTotal → noteTotal (src/server/injectors/Injector.ts)
+
+## Files touched
+
+- /home/user/fleet/sea/src/server/types.ts
+- /home/user/fleet/sea/src/server/helpers.ts
+- /home/user/fleet/sea/src/server/errors.ts
+- /home/user/fleet/sea/src/server/seals/SEA.ts
+- /home/user/fleet/sea/src/server/injectors/Injector.ts
+- /home/user/fleet/sea/tests/src/server/helpers.test.ts
+- /home/user/fleet/sea/guides/sea.md
+
+## Tests changed
+
+- tests/src/server/helpers.test.ts — describe `runShell` renamed to `executeShell`; its cases (returns stdout on success, throws SEAError code STATE for an empty command array, enforces a timeout, aborts on a pre-aborted signal, maps a non-zero exit to a ShellError, redacts a /p secret from a ShellError message, redacts the /p secret from the ABORT context) retargeted to executeShell
+- tests/src/server/helpers.test.ts — describe `parsePEOffset / readU16 / writeU16 / isPEExecutable` renamed to `readPEOffset / readU16 / writeU16 / isPEExecutable`; case title `parses the PE header offset from a valid PE fixture` renamed to `reads the PE header offset from a valid PE fixture`; both readPEOffset assertions retargeted
+- tests/src/server/helpers.test.ts — describe `buildELFNoteHeader`: both cases destructure `total`; case title `4-byte-pads the blob size in entryTotal when it is not aligned` renamed to `4-byte-pads the blob size in total when it is not aligned`
+- tests/src/server/helpers.test.ts — barrel import list: executeShell and readPEOffset moved into their alphabetical positions, parsePEOffset and runShell removed
+
+## Gates
+
+- `npm run check   (run first, to read the red as the adoption list)` → exit 0 — tsc --noEmit --project tsconfig.json && npm run check:src ; tsc --noEmit -p configs/src/tsconfig.server.json — no diagnostics. The adoption list from the staged closure is empty.
+- `npm run lint   (mutating converge)` → exit 0 — oxlint --config .oxlintrc.json --fix --deny-warnings . — no output.
+- `npm run format   (mutating converge, after lint --fix)` → exit 0 — oxfmt --config .oxfmtrc.json --write . ; Finished in 3129ms on 52 files using 4 threads.
+- `npm run format:check` → exit 0 — Checking formatting... All matched files use the correct format. Finished in 2264ms on 52 files using 4 threads.
+- `npm run lint:check` → exit 0 — oxlint --config .oxlintrc.json --deny-warnings . — no output.
+- `npm run build` → exit 0 — vite v8.2.2 ... 12 modules transformed. [unplugin:dts] Declaration files built in 2306ms. dist/src/server/index.js 90.00 kB | gzip: 24.63 kB ; dist/src/server/index.cjs 93.99 kB | gzip: 25.05 kB ; Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+- `npm test` → exit 0 — test:src — Test Files 7 passed (7), Tests 179 passed (179). test:policy — Test Files 1 passed (1), Tests 111 passed (111). test:config — Test Files 1 passed (1), Tests 46 passed (46). test:setup — Test Files 2 passed (2), Tests 18 passed (18). test:guides — Test Files 1 passed (1), Tests 28 passed (28). test:integration — Test Files 1 passed (1), Tests 4 passed (4).
+- `npm run format:check && npm run lint:check && npm run check && npm run build && npm test` → exit 0 — The brief's chain re-run end to end after every edit. All matched files use the correct format ; oxlint silent ; tsc silent for the root project and configs/src/tsconfig.server.json ; built in 2.86s ; every test project green, ending test:integration — Test Files 1 passed (1), Tests 4 passed (4).
+- `grep -rnw -e parsePEOffset -e runShell -e entryTotal -e SEAProgressHandler src tests guides README.md   (acceptance criterion 1, word boundary)` → exit 1 — no hit for any of the four old names.
+- `grep -rniE '\b(parsepeoffsets?|parsepeoffset(ed|ing)|runshells?|runshell(ed|ing)|entrytotals?|seaprogresshandlers?)\b' src tests guides README.md   (case-insensitive inflected pass)` → exit 1 — no hit.
+- `git diff --check` → exit 0 — no whitespace error on any added line.
+
+## Diff stat
+
+```text
+guides/sea.md                    | 19 ++++++++++---------
+ src/server/errors.ts             |  6 +++---
+ src/server/helpers.ts            | 34 ++++++++++++++++------------------
+ src/server/injectors/Injector.ts | 13 +++++--------
+ src/server/seals/SEA.ts          | 16 ++++++++--------
+ src/server/types.ts              | 20 +++++++++++++++++---
+ tests/src/server/helpers.test.ts | 38 +++++++++++++++++++-------------------
+ 7 files changed, 78 insertions(+), 68 deletions(-)
+```
+
+Status at return (writer's reading): `Every assigned row applied; none refused, none stopped. The package's own gate chain — npm run format:check, npm run lint:check, npm run check, npm run build, npm test — exits 0 against the new surface, run both stepwise and as the single chain. No compatibility alias, re-export, or shim was added. git status --short reports exactly the seven modified files and no untracked file; the checkout carries no tmp/ directory and every throwaway instrument was written under /tmp/sea-unit.`
+Built `dist/` moves: true
+
+## Observations
+
+- dist/ moves, as it must for a rename. The rebuilt declaration carries `export declare function readPEOffset(fd: number): number;`, `export declare function executeShell(command: readonly string[], options?: SEAShellOptions): Buffer;`, `export declare type SEACompressionHandler = (result: SEACompressionResult) => void;`, `export declare interface ELFNoteHeader { readonly header: Buffer; readonly total: number; }`, and `export declare function buildELFNoteHeader(resource: string, blobSize: number): ELFNoteHeader;`. grep over dist/src/server/index.js and dist/src/server/index.d.ts finds no occurrence of any old name.
+- npm test timing on this host was unremarkable: the src project reported 1.32s to 2.02s per project and every project reported green, so there is no timing-suspect failure to carry to the Orchestrator's authoritative re-run.
+- guides/sea.md describes SEAInterface.execute with the banned lifecycle synonym `run` in the overview sentence, the SEA Entities row, the Methods lead sentence, and the `execute` Methods row. That is a different symbol than any row here names, so it is recorded against the change that owns SEA.execute rather than repaired now.
+- tests/setupServer.ts names its PE, ELF, and Mach-O fixture readers with the `parse*` form — parsePeResourceLeaves and its siblings — though they read a byte layout rather than coerce to `T | undefined`, and that name lowercases the PE acronym as `Pe`. The vocabulary this unit applied would move them to `read*`, but no ledger row names them.
+- src/server/helpers.ts and src/server/types.ts carry `e.g.` in TSDoc, which .claude/rules/writing.md replaces with `for example`. Outside the rows, so left in place.
+- src/server/helpers.ts keeps createSignCommand and createBlobConfig outside factories.ts. Both assemble argv and config data rather than an entity, which .claude/rules/architecture.md § Kind purity permits — placement follows what the function is, and the name form follows placement.
+- Centralization sweep over the touched files: each of SEA.ts and Injector.ts declares exactly one class and no module-scope interface, type, constant, or free function; types.ts, helpers.ts, and errors.ts carry no non-exported module declaration; no exported `parse*` remains anywhere in src, so no parser-form name is stranded in helpers.ts; every touched file is valid UTF-8 with no replacement character, no unintended control character, and no CRLF.
+- The parity INTERNAL list in tests/guides.test.ts stays empty: ELFNoteHeader reaches the barrel through `export * from './types.js'` and is documented, so it is not stranded.
+
+## Deviations
+
+- Recorded ancillary decision (placement of a moved block): ELFNoteHeader sits in the `// === Injector` section of types.ts immediately after ExecutableFormat, grouping it with the binary-format data that precedes the injector options and interface, and its guide Types row sits in the matching position so the table keeps mirroring declaration order.
+- Recorded ancillary decision (placement): SEACompressionHandler keeps the renamed type's existing declaration position between SEAProgress and SEACompressionOptions rather than being resorted into the SEACompression* run, so the guide Types table stays aligned with declaration order and the diff stays a rename.
+- Recorded ancillary decision (TSDoc wording): the third-person `-s` form was applied to the function blocks these rows opened — readPEOffset, executeShell, buildELFNoteHeader — and the noun-phrase summaries were kept on the type, interface, and error-class declarations, because every other declaration in types.ts and errors.ts uses that form and restyling them belongs to no row here.
+- Recorded ancillary decision (wording): the ShellError guide row reads `Error `executeShell` throws when a command exits non-zero.` The sentence carried in the TSDoc exceeded the table's summary column width, and the shorter active-voice form names the actor.
+- Recorded ancillary decision (in-scope prose carrier): SEAShellOptions' TSDoc and its guide row read `Options for executing a shell command.` in place of `running`. Those options are executeShell's second parameter and the sentence describes exactly the operation the rename renamed, so leaving `running` would alternate the term the ruling fixed.
+- Recorded ancillary decision (local name): the Injector's destructuring alias noteEntryTotal became noteTotal, and its reads at the note-area sizing, the PT_NOTE filesz and memsz, and the trailing pad followed. The alias literally spelled the removed member name, so renaming it is part of applying the member rename atomically.
+- No stop-and-report condition arose: no target name collided with an existing export (executeShell, readPEOffset, SEACompressionHandler, and ELFNoteHeader were each absent before the change), no two rows moved the same symbol differently, no rename required an edit in an off-limits file, and no gate failed.
+
+Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/sea.diff`,
+`tmp/units/breaking/sea.status`.

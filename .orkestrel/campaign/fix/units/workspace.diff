@@ -1,0 +1,393 @@
+diff --git a/guides/workspace.md b/guides/workspace.md
+index 84d565b..06712d4 100644
+--- a/guides/workspace.md
++++ b/guides/workspace.md
+@@ -35,7 +35,7 @@ absent optional field is simply absent.
+ | Name                        | Kind      | Shape / Purpose                                                                                                                                      |
+ | --------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `BinaryMIME`                | type      | The MIME labels a binary arm may carry: `image/png`, `image/jpeg`, `image/gif`, `image/webp`.                                                        |
+-| `FileContent`               | type      | `{ text, language } \| { data, mime }` — the tagless text-or-binary union, narrowed by guard rather than by a discriminant field.                    |
++| `FileContent`               | type      | `{ text, language } \| { base64, mime }` — the tagless text-or-binary union, narrowed by guard rather than by a discriminant field.                  |
+ | `FileState`                 | type      | `created \| modified` — whether the value was minted for a new path or changed from an existing one.                                                 |
+ | `FileInput`                 | interface | `{ path, content, state? }` — what `createFile` needs; size and line counts are derived, never supplied.                                             |
+ | `FileInterface`             | interface | `{ path, content, state, size, lines }` — one frozen file value.                                                                                     |
+@@ -76,22 +76,22 @@ package can answer, it answers with a value.
+ The pure leaves, from [`helpers.ts`](../src/core/helpers.ts). Each one is exported and tested
+ on its own, and the classes compose them rather than hiding them.
+ 
+-| Name            | Kind     | Signature                                                     | Behavior                                                                       |
+-| --------------- | -------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+-| `inferLanguage` | function | `(path: string) => string`                                    | Maps the final extension to a language tag, falling back to `text`.            |
+-| `isText`        | function | `(content: FileContent) => boolean`                           | Narrows content to its text arm.                                               |
+-| `isBinary`      | function | `(content: FileContent) => boolean`                           | Narrows content to its binary arm.                                             |
+-| `computeSize`   | function | `(content: FileContent) => number`                            | UTF-8 bytes for text, decoded bytes for binary.                                |
+-| `countLines`    | function | `(content: FileContent) => number`                            | Text lines; zero for empty text and for binary content.                        |
+-| `decodedSize`   | function | `(base64: string) => number`                                  | The decoded length of base64, computed arithmetically rather than by decoding. |
+-| `isValidRange`  | function | `(range: Range) => boolean`                                   | Whether both positions are positive and ordered.                               |
+-| `clampPosition` | function | `(text: string, position: Position) => Position`              | Pulls a position inside the text's bounds.                                     |
+-| `clampRange`    | function | `(text: string, range: Range) => Range`                       | Clamps both endpoints.                                                         |
+-| `offsetAt`      | function | `(text: string, position: Position) => number`                | Converts a 1-based position to a bounded string offset.                        |
+-| `sliceRange`    | function | `(text: string, range: Range) => string`                      | Reads a clamped half-open span.                                                |
+-| `spliceRange`   | function | `(text: string, range: Range, replacement: string) => string` | Replaces a clamped half-open span.                                             |
+-| `rangeOf`       | function | `(fromLine, fromColumn, toLine, toColumn) => Range`           | Builds a range from four flat coordinates, without validating it.              |
+-| `escapeRegExp`  | function | `(value: string) => string`                                   | Escapes metacharacters so literal text can be used as pattern source.          |
++| Name                 | Kind     | Signature                                                     | Behavior                                                                       |
++| -------------------- | -------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
++| `inferLanguage`      | function | `(path: string) => string`                                    | Maps the final extension to a language tag, falling back to `text`.            |
++| `isText`             | function | `(content: FileContent) => boolean`                           | Narrows content to its text arm.                                               |
++| `isBinary`           | function | `(content: FileContent) => boolean`                           | Narrows content to its binary arm.                                             |
++| `computeSize`        | function | `(content: FileContent) => number`                            | UTF-8 bytes for text, decoded bytes for binary.                                |
++| `countLines`         | function | `(content: FileContent) => number`                            | Text lines; zero for empty text and for binary content.                        |
++| `computeDecodedSize` | function | `(base64: string) => number`                                  | The decoded length of base64, computed arithmetically rather than by decoding. |
++| `isValidRange`       | function | `(range: Range) => boolean`                                   | Whether both positions are positive and ordered.                               |
++| `clampPosition`      | function | `(text: string, position: Position) => Position`              | Pulls a position inside the text's bounds.                                     |
++| `clampRange`         | function | `(text: string, range: Range) => Range`                       | Clamps both endpoints.                                                         |
++| `offsetAt`           | function | `(text: string, position: Position) => number`                | Converts a 1-based position to a bounded string offset.                        |
++| `sliceRange`         | function | `(text: string, range: Range) => string`                      | Reads a clamped half-open span.                                                |
++| `spliceRange`        | function | `(text: string, range: Range, replacement: string) => string` | Replaces a clamped half-open span.                                             |
++| `rangeOf`            | function | `(fromLine, fromColumn, toLine, toColumn) => Range`           | Builds a range from four flat coordinates, without validating it.              |
++| `escapeRegExp`       | function | `(value: string) => string`                                   | Escapes metacharacters so literal text can be used as pattern source.          |
+ 
+ ### Validators
+ 
+@@ -112,7 +112,7 @@ class. Each returns the interface, not the class.
+ | ------------------------------ | -------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+ | `createFile`                   | function | `(input: FileInput) => FileInterface`                              | Freezes a file value and derives its `size` and `lines`.                                 |
+ | `createTextContent`            | function | `(text: string, language: string) => FileContent`                  | Builds the text arm.                                                                     |
+-| `createBinaryContent`          | function | `(data: string, mime: BinaryMIME) => FileContent`                  | Builds the binary arm.                                                                   |
++| `createBinaryContent`          | function | `(base64: string, mime: BinaryMIME) => FileContent`                | Builds the binary arm.                                                                   |
+ | `createWorkspace`              | function | `(options?: WorkspaceOptions) => WorkspaceInterface`               | Creates a workspace with the same identity, emitter, and seed reach as the constructor.  |
+ | `createMemoryWorkspaceStore`   | function | `() => WorkspaceStoreInterface`                                    | Creates a process-local snapshot store.                                                  |
+ | `createDatabaseWorkspaceStore` | function | `(driver?: DriverInterface) => WorkspaceStoreInterface`            | Creates a snapshot store over a database table; the driver defaults to an in-memory one. |
+@@ -205,7 +205,7 @@ Nothing mutates it. An edit replaces the value stored at a path, so a reference
+ edit still describes exactly what was there.
+ 
+ `FileContent` is a tagless union — text carries `{ text, language }`, binary carries
+-`{ data, mime }` — and callers narrow it with a guard instead of reading a discriminant that could
++`{ base64, mime }` — and callers narrow it with a guard instead of reading a discriminant that could
+ disagree with the payload:
+ 
+ ```ts
+@@ -232,7 +232,7 @@ isText(note.content) // true
+ 
+ const icon = createFile({ path: 'icon.png', content: createBinaryContent('AAAA', 'image/png') })
+ isBinary(icon.content) // true
+-icon.size // 3 — decoded base64 bytes, via decodedSize
++icon.size // 3 — decoded base64 bytes, via computeDecodedSize
+ ```
+ 
+ Language is inferred once, from the final path extension through `EXTENSION_LANGUAGES`, and an
+@@ -357,8 +357,10 @@ returns `false`, preserves the value and order, and emits nothing.
+ `remove` mirrors that leniency, answering with a value rather than throwing over an absent path.
+ Each batch form — `has(paths)`, `move(mapping)`, and `remove(paths)` — applies to every entry it
+ can and reports `true` only when all of them succeeded, so one absent path turns the batch's answer
+-`false` while the present paths still move or drop. `clear()` owns emptying the workspace and sends
+-one canonical `clear` event, never a burst of per-path removals.
++`false` while the present paths still move or drop. An empty batch has no entry that can fail, so
++`has([])`, `move({})`, `remove([])`, and the registry's `remove([])` each report `true` and change
++nothing. `clear()` owns emptying the workspace and sends one canonical `clear` event, never a burst
++of per-path removals.
+ 
+ `snapshot()` is the boundary between the live surface and everything durable: an id and a flat file
+ list, holding the same frozen values the map holds. Feed those files back through a workspace's
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index aa182a6..11de2e2 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -61,9 +61,9 @@ export function createTextContent(text: string, language: string): FileContent {
+ }
+ 
+ /**
+- * Create the binary arm of {@link FileContent}.
++ * Creates the binary arm of {@link FileContent}.
+  *
+- * @param data - The base64 payload
++ * @param base64 - The base64 payload
+  * @param mime - The binary MIME
+  * @returns Binary file content
+  *
+@@ -74,8 +74,8 @@ export function createTextContent(text: string, language: string): FileContent {
+  * createBinaryContent('AAAA', 'image/png')
+  * ```
+  */
+-export function createBinaryContent(data: string, mime: BinaryMIME): FileContent {
+-	return { data, mime }
++export function createBinaryContent(base64: string, mime: BinaryMIME): FileContent {
++	return { base64, mime }
+ }
+ 
+ /**
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index e2566fc..9c6dcc8 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -37,20 +37,20 @@ export function isText(
+ }
+ 
+ /**
+- * Determine whether content is the binary arm.
++ * Checks whether content is the binary arm.
+  *
+  * @param content - The file content
+- * @returns Whether the content carries base64 data and a MIME
++ * @returns True if the content carries a base64 string and a MIME; false otherwise
+  *
+  * @example
+  * ```ts
+- * isBinary({ data: 'AAAA', mime: 'image/png' }) // true
++ * isBinary({ base64: 'AAAA', mime: 'image/png' }) // true
+  * ```
+  */
+ export function isBinary(
+ 	content: FileContent,
+-): content is { readonly data: string; readonly mime: BinaryMIME } {
+-	return 'data' in content
++): content is { readonly base64: string; readonly mime: BinaryMIME } {
++	return 'base64' in content
+ }
+ 
+ /**
+@@ -66,7 +66,7 @@ export function isBinary(
+  */
+ export function computeSize(content: FileContent): number {
+ 	if (isText(content)) return new TextEncoder().encode(content.text).length
+-	return decodedSize(content.data)
++	return computeDecodedSize(content.base64)
+ }
+ 
+ /**
+@@ -89,17 +89,17 @@ export function countLines(content: FileContent): number {
+ }
+ 
+ /**
+- * Compute the decoded byte length of a base64 string.
++ * Computes the decoded byte length of a base64 string.
+  *
+- * @param base64 - The base64 data
++ * @param base64 - The base64 string
+  * @returns The decoded byte count
+  *
+  * @example
+  * ```ts
+- * decodedSize('AAAA') // 3
++ * computeDecodedSize('AAAA') // 3
+  * ```
+  */
+-export function decodedSize(base64: string): number {
++export function computeDecodedSize(base64: string): number {
+ 	let padding = 0
+ 	if (base64.endsWith('==')) padding = 2
+ 	else if (base64.endsWith('=')) padding = 1
+diff --git a/src/core/types.ts b/src/core/types.ts
+index d144084..b90c05f 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -4,16 +4,16 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ export type BinaryMIME = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
+ 
+ /**
+- * The immutable content of a file: either text with a language tag or base64 data with a MIME.
++ * The immutable content of a file: either text with a language tag or a base64 string with a MIME.
+  */
+ export type FileContent =
+ 	| { readonly text: string; readonly language: string }
+-	| { readonly data: string; readonly mime: BinaryMIME }
++	| { readonly base64: string; readonly mime: BinaryMIME }
+ 
+ /** The edit state of an immutable file value. */
+ export type FileState = 'created' | 'modified'
+ 
+-/** The caller-supplied data used to create an immutable file. */
++/** The caller-supplied values used to create an immutable file. */
+ export interface FileInput {
+ 	readonly path: string
+ 	readonly content: FileContent
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 3f9e539..87ff353 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -20,7 +20,7 @@ export function isFile(value: unknown): value is FileInterface {
+ 		if (!isRecord(value.content)) return false
+ 		const text = isString(value.content.text) && isString(value.content.language)
+ 		const binary =
+-			isString(value.content.data) &&
++			isString(value.content.base64) &&
+ 			literalOf('image/png', 'image/jpeg', 'image/gif', 'image/webp')(value.content.mime)
+ 		return text || binary
+ 	})
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 5f66fb1..fbf1dd7 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -101,7 +101,7 @@ describe('buildWorkspaceSnapshot', () => {
+ 
+ 		expect(snapshot.files.map((file) => file.path)).toEqual(['src/main.ts', 'icon.png'])
+ 		expect(text?.content).toHaveProperty('text', 'const x = 1')
+-		expect(binary?.content).toEqual({ data: 'AAAA', mime: 'image/png' })
++		expect(binary?.content).toEqual({ base64: 'AAAA', mime: 'image/png' })
+ 	})
+ 
+ 	it('is pure JSON, which is what the driver-swap parity proofs rest on', () => {
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 46e3a4d..3579d35 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -66,7 +66,7 @@ describe('content factories', () => {
+ 
+ 	it('creates the binary arm', () => {
+ 		const content = createBinaryContent('<base64>', 'image/jpeg')
+-		expect(content).toEqual({ data: '<base64>', mime: 'image/jpeg' })
++		expect(content).toEqual({ base64: '<base64>', mime: 'image/jpeg' })
+ 		expect(isBinary(content)).toBe(true)
+ 		expect(isText(content)).toBe(false)
+ 	})
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 68f9f2c..eb40994 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,11 +1,11 @@
+ import {
+ 	clampPosition,
+ 	clampRange,
++	computeDecodedSize,
+ 	computeSize,
+ 	countLines,
+ 	createBinaryContent,
+ 	createTextContent,
+-	decodedSize,
+ 	escapeRegExp,
+ 	EXTENSION_LANGUAGES,
+ 	inferLanguage,
+@@ -51,8 +51,8 @@ describe('content derivation', () => {
+ 		expect(computeSize({ text: 'abc', language: 'text' })).toBe(3)
+ 		expect(computeSize({ text: 'café', language: 'text' })).toBe(5)
+ 		expect(computeSize({ text: '😀', language: 'text' })).toBe(4)
+-		expect(computeSize({ data: 'AAAA', mime: 'image/png' })).toBe(3)
+-		expect(computeSize({ data: '', mime: 'image/png' })).toBe(0)
++		expect(computeSize({ base64: 'AAAA', mime: 'image/png' })).toBe(3)
++		expect(computeSize({ base64: '', mime: 'image/png' })).toBe(0)
+ 	})
+ 
+ 	it('counts text lines and no binary lines', () => {
+@@ -61,18 +61,18 @@ describe('content derivation', () => {
+ 		expect(countLines({ text: 'a\nb\nc', language: 'text' })).toBe(3)
+ 		expect(countLines({ text: 'a\n', language: 'text' })).toBe(2)
+ 		expect(countLines({ text: 'a\nb\n', language: 'text' })).toBe(3)
+-		expect(countLines({ data: 'AAAA', mime: 'image/png' })).toBe(0)
++		expect(countLines({ base64: 'AAAA', mime: 'image/png' })).toBe(0)
+ 	})
+ 
+ 	it('handles all base64 padding cases and runtime-encoded values', () => {
+-		expect(decodedSize('')).toBe(0)
+-		expect(decodedSize('AA')).toBe(1)
+-		expect(decodedSize('AAA')).toBe(2)
+-		expect(decodedSize('AAAA')).toBe(3)
+-		expect(decodedSize('AAA=')).toBe(2)
+-		expect(decodedSize('AA==')).toBe(1)
++		expect(computeDecodedSize('')).toBe(0)
++		expect(computeDecodedSize('AA')).toBe(1)
++		expect(computeDecodedSize('AAA')).toBe(2)
++		expect(computeDecodedSize('AAAA')).toBe(3)
++		expect(computeDecodedSize('AAA=')).toBe(2)
++		expect(computeDecodedSize('AA==')).toBe(1)
+ 		for (const payload of ['', 'a', 'ab', 'abc', 'abcd', 'abcde', 'abcdef']) {
+-			expect(decodedSize(btoa(payload))).toBe(payload.length)
++			expect(computeDecodedSize(btoa(payload))).toBe(payload.length)
+ 		}
+ 	})
+ })
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index b59a7fe..ad286b7 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -47,7 +47,7 @@ describe('persistence guards', () => {
+ 		for (const mime of ['application/pdf', 'image/avif', 'arbitrary']) {
+ 			const file = {
+ 				path: 'a.bin',
+-				content: { data: 'AA==', mime },
++				content: { base64: 'AA==', mime },
+ 				state: 'created',
+ 				size: 1,
+ 				lines: 0,
+diff --git a/tests/src/core/workspaces/Workspace.test.ts b/tests/src/core/workspaces/Workspace.test.ts
+index 11cb0ff..d6ce5f4 100644
+--- a/tests/src/core/workspaces/Workspace.test.ts
++++ b/tests/src/core/workspaces/Workspace.test.ts
+@@ -454,6 +454,27 @@ describe('Workspace — remove / clear', () => {
+ 	})
+ })
+ 
++describe('Workspace — empty batch forms', () => {
++	it('reports true for an empty batch while changing and emitting nothing', () => {
++		const workspace = createWorkspace()
++		workspace.write('a.ts', 'A')
++		const events = createRecorders<WorkspaceEventMap, 'write' | 'remove' | 'move'>(
++			workspace.emitter,
++			['write', 'remove', 'move'],
++		)
++
++		expect(workspace.has([])).toBe(true) // no entry is present to fail the batch
++		expect(workspace.move({})).toBe(true)
++		expect(workspace.remove([])).toBe(true)
++
++		expect(workspace.count).toBe(1)
++		expect(workspace.read('a.ts')).toBe('A')
++		expect(events.write.count).toBe(0)
++		expect(events.move.count).toBe(0)
++		expect(events.remove.count).toBe(0)
++	})
++})
++
+ describe('Workspace — count + insertion order', () => {
+ 	it('tracks count and lists files in insertion order', () => {
+ 		const workspace = createWorkspace()
+diff --git a/tests/src/core/workspaces/WorkspaceManager.test.ts b/tests/src/core/workspaces/WorkspaceManager.test.ts
+index 9dcf1ec..53bbaa3 100644
+--- a/tests/src/core/workspaces/WorkspaceManager.test.ts
++++ b/tests/src/core/workspaces/WorkspaceManager.test.ts
+@@ -174,6 +174,15 @@ describe('WorkspaceManager — remove (§9.2) / clear', () => {
+ 		expect(manager.count).toBe(1)
+ 	})
+ 
++	it('remove(ids[]) of an empty batch returns true and drops nothing', () => {
++		const manager = new WorkspaceManager()
++		manager.add({ id: 'a' })
++
++		expect(manager.remove([])).toBe(true) // no id is present to fail the batch
++		expect(manager.count).toBe(1)
++		expect(manager.workspace('a')).toBeDefined()
++	})
++
+ 	it('removing the ACTIVE workspace clears active', () => {
+ 		const manager = new WorkspaceManager()
+ 		manager.add({ id: 'a' }) // auto-active
+@@ -341,7 +350,7 @@ describe('WorkspaceManager — open / save over a real store (W-d hydration seam
+ 		// The hydrated workspace's files EQUAL the originals (text + binary survived).
+ 		expect(opened.files()).toEqual(seeded.files())
+ 		expect(opened.read('src/main.ts')).toBe('const x = 1')
+-		expect(opened.file('icon.png')?.content).toEqual({ data: 'AAAA', mime: 'image/png' })
++		expect(opened.file('icon.png')?.content).toEqual({ base64: 'AAAA', mime: 'image/png' })
+ 	})
+ 
+ 	it('open(id) on a store MISS (id never persisted) returns undefined', async () => {
+diff --git a/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts b/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts
+index 645b1cf..ef909a8 100644
+--- a/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts
++++ b/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts
+@@ -76,14 +76,14 @@ describe('DatabaseWorkspaceStore — invalid stored rows', () => {
+ 			},
+ 			{
+ 				path: 'a.bin',
+-				content: { data: 'AA==', mime: 'application/pdf' },
++				content: { base64: 'AA==', mime: 'application/pdf' },
+ 				state: 'created',
+ 				size: 1,
+ 				lines: 0,
+ 			},
+ 			{
+ 				path: 'a.bin',
+-				content: { data: 'AA==', mime: 'arbitrary' },
++				content: { base64: 'AA==', mime: 'arbitrary' },
+ 				state: 'created',
+ 				size: 1,
+ 				lines: 0,

@@ -1,0 +1,64 @@
+ M README.md
+ M guides/browser.md
+ M src/core/BrowserAccessibility.ts
+ M src/core/BrowserClock.ts
+ M src/core/BrowserCodegen.ts
+ M src/core/BrowserContext.ts
+ M src/core/BrowserCookieManager.ts
+ M src/core/BrowserCoverage.ts
+ M src/core/BrowserDiagnostics.ts
+ M src/core/BrowserEmulationManager.ts
+ M src/core/BrowserFrame.ts
+ M src/core/BrowserHARManager.ts
+ M src/core/BrowserHandle.ts
+ M src/core/BrowserKeyboard.ts
+ M src/core/BrowserLocator.ts
+ M src/core/BrowserMouse.ts
+ M src/core/BrowserNavigationManager.ts
+ M src/core/BrowserNetworkManager.ts
+ M src/core/BrowserPage.ts
+ M src/core/BrowserPerformance.ts
+ M src/core/BrowserPermissionManager.ts
+ M src/core/BrowserScriptManager.ts
+ M src/core/BrowserSelectorManager.ts
+ M src/core/BrowserSnapshot.ts
+ M src/core/BrowserStorageManager.ts
+ M src/core/BrowserTouch.ts
+ M src/core/BrowserTracing.ts
+RM src/core/BrowserFlight.ts -> src/core/BrowserTransition.ts
+ M src/core/BrowserWebSocket.ts
+ M src/core/BrowserWorker.ts
+ M src/core/CDPClient.ts
+ M src/core/compilers.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/index.ts
+ M src/core/types.ts
+ M src/server/Browser.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/transports/WebSocketCDPTransport.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/src/core/BrowserContext.test.ts
+ M tests/src/core/BrowserCookieManager.test.ts
+ M tests/src/core/BrowserDiagnostics.test.ts
+ M tests/src/core/BrowserEmulationManager.test.ts
+ M tests/src/core/BrowserFrame.test.ts
+ M tests/src/core/BrowserHARManager.test.ts
+ M tests/src/core/BrowserHandle.test.ts
+ M tests/src/core/BrowserLocator.test.ts
+ M tests/src/core/BrowserPage.test.ts
+ M tests/src/core/BrowserSnapshot.test.ts
+RM tests/src/core/BrowserFlight.test.ts -> tests/src/core/BrowserTransition.test.ts
+ M tests/src/core/CDPClient.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/server/Browser.test.ts
+ M tests/src/server/factories.test.ts
+ M tests/src/server/helpers.test.ts
+?? src/core/BrowserProfiler.ts
+?? src/core/parsers.ts
+?? tests/src/core/parsers.test.ts

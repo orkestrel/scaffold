@@ -1,0 +1,1681 @@
+diff --git a/README.md b/README.md
+index 13c3705..e94cafb 100644
+--- a/README.md
++++ b/README.md
+@@ -24,10 +24,14 @@ npm install @orkestrel/qualifier
+ 
+ ```ts
+ import { createQualifier, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
+-import { atom, logicalDefinition, rule } from '@orkestrel/reason'
+-
+-const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
++
++const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+ 
+ const definition = qualificationDefinition('standard', 'Standard eligibility', [gates], {
+diff --git a/guides/qualifier.md b/guides/qualifier.md
+index 52e1b98..637cfce 100644
+--- a/guides/qualifier.md
++++ b/guides/qualifier.md
+@@ -33,10 +33,14 @@ Create a qualifier, author a definition, and qualify a subject:
+ 
+ ```ts
+ import { createQualifier, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
+-import { atom, logicalDefinition, rule } from '@orkestrel/reason'
+-
+-const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
++
++const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+ 
+ const definition = qualificationDefinition('standard', 'Standard eligibility', [gates], {
+@@ -63,32 +67,33 @@ per subject.
+ 
+ ### Types
+ 
+-| Type                            | Kind      | Shape                                                                                                                                                                                                             |
+-| ------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Eligibility`                   | type      | `'eligible' \| 'ineligible' \| 'referral'` — the eligibility outcome axis.                                                                                                                                        |
+-| `QualificationEffect`           | type      | `'restriction' \| 'referral' \| 'condition'` — an authored ruling's eligibility impact.                                                                                                                           |
+-| `QualificationPass`             | type      | `QuantitativeDefinition \| LogicalDefinition` — one ordered derivation or rule pass.                                                                                                                              |
+-| `QualificationProjection`       | type      | `number \| boolean \| Readonly<Record<string, unknown>>` — one pass's internal working projection.                                                                                                                |
+-| `QualificationContext`          | type      | `Readonly<Record<string, QualificationProjection>>` — the internal projection record stored under `QUALIFICATION_KEY`.                                                                                            |
+-| `RulingInput`                   | interface | `{ scope?, message? }` — optional fields accepted by `rulingDefinition`.                                                                                                                                          |
+-| `QualificationInput`            | interface | `{ description?, rulings?, metadata? }` — optional fields accepted by `qualificationDefinition`.                                                                                                                  |
+-| `Ruling`                        | interface | `{ id, pass, rule, effect, scope?, message? }` — an authored consequence for one rule in one logical pass.                                                                                                        |
+-| `Premise`                       | interface | `{ field?, label?, description?, comparison?, expected?, actual?, met? }` — display-neutral evidence, checked when `field` and `comparison` are both present (then `description` is unused), described otherwise. |
+-| `Finding`                       | interface | `{ id, pass, rule, effect, scope?, applied, message?, premises }` — one resolved ruling.                                                                                                                          |
+-| `Derivation`                    | interface | `{ id, value, success, trace, errors }` — one quantitative pass's audit result.                                                                                                                                   |
+-| `QualificationDefinition`       | interface | `{ id, name, description?, passes, rulings?, metadata? }` — a pure authored qualification definition.                                                                                                             |
+-| `QualificationResult`           | interface | `{ id, name, eligibility, scopes, findings, derivations, success, trace, errors }` — one subject's complete qualification outcome.                                                                                |
+-| `QualificationValidationResult` | type      | `{ valid, errors, warnings }` — semantic definition validation.                                                                                                                                                   |
+-| `QualifierErrorCode`            | type      | `'DEFINITION' \| 'MISMATCH' \| 'DESTROYED' \| 'ENGINE'` — programmer-error codes.                                                                                                                                 |
+-| `QualifierEventMap`             | type      | `derive(derivation)` · `finding(finding)` · `qualify(result)` · `destroy()`.                                                                                                                                      |
+-| `QualifierOptions`              | interface | `{ engine?, validate?, labels?, on?, error? }` — input to `createQualifier`.                                                                                                                                      |
+-| `QualifierInterface`            | interface | `emitter` + `qualify` (one subject) + `validate` + `destroy`.                                                                                                                                                     |
++| Type                      | Kind      | Shape                                                                                                                                                                                                             |
++| ------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Eligibility`             | type      | `'eligible' \| 'ineligible' \| 'referral'` — the eligibility outcome axis.                                                                                                                                        |
++| `QualificationEffect`     | type      | `'restriction' \| 'referral' \| 'condition'` — an authored ruling's eligibility impact.                                                                                                                           |
++| `QualificationPass`       | type      | `QuantitativeDefinition \| LogicalDefinition` — one ordered derivation or rule pass.                                                                                                                              |
++| `QualificationProjection` | type      | `number \| boolean \| Readonly<Record<string, unknown>>` — one pass's internal working projection.                                                                                                                |
++| `QualificationContext`    | type      | `Readonly<Record<string, QualificationProjection>>` — the internal projection record stored under `QUALIFICATION_KEY`.                                                                                            |
++| `RulingInput`             | interface | `{ scope?, message? }` — optional fields accepted by `rulingDefinition`.                                                                                                                                          |
++| `QualificationInput`      | interface | `{ description?, rulings?, metadata? }` — optional fields accepted by `qualificationDefinition`.                                                                                                                  |
++| `Ruling`                  | interface | `{ id, pass, rule, effect, scope?, message? }` — an authored consequence for one rule in one logical pass.                                                                                                        |
++| `Premise`                 | interface | `{ field?, label?, description?, comparison?, expected?, actual?, met? }` — display-neutral evidence, checked when `field` and `comparison` are both present (then `description` is unused), described otherwise. |
++| `Finding`                 | interface | `{ id, pass, rule, effect, scope?, applied, message?, premises }` — one resolved ruling.                                                                                                                          |
++| `Derivation`              | interface | `{ id, value, success, trace, errors }` — one quantitative pass's audit result.                                                                                                                                   |
++| `QualificationDefinition` | interface | `{ id, name, description?, passes, rulings?, metadata? }` — a pure authored qualification definition.                                                                                                             |
++| `QualificationResult`     | interface | `{ id, name, eligibility, scopes, findings, derivations, success, trace, errors }` — one subject's complete qualification outcome.                                                                                |
++| `QualifierErrorCode`      | type      | `'DEFINITION' \| 'MISMATCH' \| 'DESTROYED' \| 'ENGINE'` — programmer-error codes.                                                                                                                                 |
++| `QualifierErrorContext`   | interface | `{ pass?, definition?, cause? }` — the structured payload a `QualifierError` carries.                                                                                                                             |
++| `QualifierEventMap`       | type      | `derive(derivation)` · `finding(finding)` · `qualify(result)` · `destroy()`.                                                                                                                                      |
++| `QualifierOptions`        | interface | `{ engine?, validate?, labels?, on?, error? }` — input to `createQualifier`.                                                                                                                                      |
++| `QualifierInterface`      | interface | `emitter` + `qualify` (one subject) + `validate` + `destroy`.                                                                                                                                                     |
+ 
+ Every public data member is `readonly`, every optional key is omitted rather than
+ `undefined`, and each name is single-word within its entity (AGENTS §4.1). Reason
+ supplies the pass primitives (`QuantitativeDefinition`, `LogicalDefinition`,
+-`Subject`, `Comparison`); contract supplies `FieldPath` and `JSONValue`; the emitter
+-supplies the observation types.
++`Subject`, `Comparison`) and the `ReasonValidationResult` type `validate` returns;
++contract supplies `FieldPath` and `JSONValue`; the emitter supplies the observation
++types.
+ 
+ ### Constants
+ 
+@@ -106,14 +111,17 @@ condition never blocks its subject — and `ELIGIBILITY_PRECEDENCE` orders sever
+ 
+ ### Errors
+ 
+-| API                | Kind     | Summary                                              |
+-| ------------------ | -------- | ---------------------------------------------------- |
+-| `QualifierError`   | class    | Carries a `QualifierErrorCode` and optional context. |
+-| `isQualifierError` | function | Safely narrows a caught value to `QualifierError`.   |
++| API                | Kind     | Summary                                                        |
++| ------------------ | -------- | -------------------------------------------------------------- |
++| `QualifierError`   | class    | Carries a `QualifierErrorCode` and an optional context record. |
++| `isQualifierError` | function | Safely narrows a caught value to `QualifierError`.             |
+ 
+-`ENGINE` marks an underlying reason engine throw that fits no other code (e.g. a
+-missing reasoner) — the original throw is preserved as `context.cause`. A
+-`DEFINITION`/`INVALID` or `DESTROYED` engine throw maps to the matching code instead.
++`context` is a `QualifierErrorContext` or `undefined`, so a caught error's payload
++needs no narrowing of its own. `ENGINE` marks an underlying reason engine throw that
++fits no other code (for example, a missing reasoner) — `context.pass` names the pass
++and `context.cause` preserves the original throw. A `DEFINITION`/`INVALID` or
++`DESTROYED` engine throw maps to the matching code instead, and a `DEFINITION` throw
++raised by `qualify`'s own validation carries `context.definition`.
+ 
+ ```ts
+ import { isQualifierError, QualifierError } from '@orkestrel/qualifier'
+@@ -121,8 +129,14 @@ import { isQualifierError, QualifierError } from '@orkestrel/qualifier'
+ try {
+ 	throw new QualifierError('DESTROYED', 'Qualifier has been destroyed')
+ } catch (error) {
+-	if (isQualifierError(error)) error.code // 'DESTROYED'
++	if (isQualifierError(error)) {
++		error.code // 'DESTROYED'
++		error.context // undefined
++	}
+ }
++
++const engine = new QualifierError('ENGINE', "Pass 'gates' engine failure", { pass: 'gates' })
++engine.context?.pass // 'gates'
+ ```
+ 
+ ### Validators
+@@ -131,23 +145,23 @@ Validators have two postures, split by who produces the value. Authored-input gu
+ they reject unknown keys because this package owns the stored record. Result guards are open: they
+ admit unknown members, prototypes, and class instances while checking every published member this
+ package reads. This matters when a package borrows a `QualifierInterface`; the implementation that
+-produces `qualify` and `validate` results may live outside this package. Every validator remains
+-total, refuses arrays where a record is required, returns `false` for hostile reads, and never
+-throws.
+-
+-| API                               | Kind     | Posture | Checks                                                                                                                             | Leaves unchecked and why                                                                                              |
+-| --------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+-| `isEligibility`                   | const    | total   | Membership in `Eligibility`.                                                                                                       | Nothing; a scalar union has no open/exact axis.                                                                       |
+-| `isQualificationEffect`           | const    | total   | Membership in `QualificationEffect`.                                                                                               | Nothing; a scalar union has no open/exact axis.                                                                       |
+-| `isEligibilityRecord`             | function | open    | Every own string-named value, including non-enumerable values, through `isEligibility`.                                            | Inherited and symbol-named members; they are outside the own string-keyed record the guard certifies.                 |
+-| `isPremise`                       | function | open    | Optional `field`, `label`, `description`, `comparison`, and `met` members when defined.                                            | `expected`, `actual`, and unknown members; the first two are published as `unknown`, and open results admit the rest. |
+-| `isFinding`                       | function | open    | Every published member, including optional strings and each nested `Premise`.                                                      | Unknown members; a foreign result implementation may add them without changing the published contract.                |
+-| `isDerivation`                    | function | open    | Every published member; `value` accepts every JavaScript `number`, and trace/errors are strings.                                   | Unknown members; a foreign result implementation may add them without changing the published contract.                |
+-| `isQualificationResult`           | function | open    | The full result closure: eligibility, scope values, findings, derivations, success, and audit.                                     | Unknown members; a borrowed `QualifierInterface` implementation may add them beyond the published contract.           |
+-| `isQualificationValidationResult` | const    | open    | `valid` plus every string in `errors` and `warnings` — reasons' published result guard by delegation, since the type is its alias. | Unknown members; a borrowed `QualifierInterface` implementation may add them beyond the published contract.           |
+-| `isRuling`                        | function | exact   | Every authored `Ruling` member and the complete key set.                                                                           | Nothing; this package owns the authored input record.                                                                 |
+-| `isQualificationPass`             | function | exact   | Either complete reason quantitative-definition or logical-definition shape.                                                        | Nothing; the reason package owns both authored input shapes.                                                          |
+-| `isQualificationDefinition`       | function | exact   | Every authored definition member, nested pass/ruling shapes, and the complete key set.                                             | Nothing; this package owns the authored input record.                                                                 |
++produces `qualify` results may live outside this package. Every validator remains total, refuses
++arrays where a record is required, returns `false` for hostile reads, and never throws. A `validate`
++result belongs to `@orkestrel/reason`, so narrow one with the `isReasonValidationResult` guard from
++that package.
++
++| API                         | Kind     | Posture | Checks                                                                                           | Leaves unchecked and why                                                                                              |
++| --------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
++| `isEligibility`             | const    | total   | Membership in `Eligibility`.                                                                     | Nothing; a scalar union has no open/exact axis.                                                                       |
++| `isQualificationEffect`     | const    | total   | Membership in `QualificationEffect`.                                                             | Nothing; a scalar union has no open/exact axis.                                                                       |
++| `isEligibilityRecord`       | function | open    | Every own string-named value, including non-enumerable values, through `isEligibility`.          | Inherited and symbol-named members; they are outside the own string-keyed record the guard certifies.                 |
++| `isPremise`                 | function | open    | Optional `field`, `label`, `description`, `comparison`, and `met` members when defined.          | `expected`, `actual`, and unknown members; the first two are published as `unknown`, and open results admit the rest. |
++| `isFinding`                 | function | open    | Every published member, including optional strings and each nested `Premise`.                    | Unknown members; a foreign result implementation may add them without changing the published contract.                |
++| `isDerivation`              | function | open    | Every published member; `value` accepts every JavaScript `number`, and trace/errors are strings. | Unknown members; a foreign result implementation may add them without changing the published contract.                |
++| `isQualificationResult`     | function | open    | The full result closure: eligibility, scope values, findings, derivations, success, and audit.   | Unknown members; a borrowed `QualifierInterface` implementation may add them beyond the published contract.           |
++| `isRuling`                  | function | exact   | Every authored `Ruling` member and the complete key set.                                         | Nothing; this package owns the authored input record.                                                                 |
++| `isQualificationPass`       | function | exact   | Either complete reason quantitative-definition or logical-definition shape.                      | Nothing; the reason package owns both authored input shapes.                                                          |
++| `isQualificationDefinition` | function | exact   | Every authored definition member, nested pass/ruling shapes, and the complete key set.           | Nothing; this package owns the authored input record.                                                                 |
+ 
+ ```ts
+ import {
+@@ -160,10 +174,9 @@ import {
+ 	isQualificationEffect,
+ 	isQualificationPass,
+ 	isQualificationResult,
+-	isQualificationValidationResult,
+ 	isRuling,
+ } from '@orkestrel/qualifier'
+-import { logicalDefinition } from '@orkestrel/reason'
++import { createLogicalDefinition } from '@orkestrel/reason'
+ 
+ isEligibility('referral') // true
+ isQualificationEffect('condition') // true
+@@ -189,8 +202,7 @@ isQualificationResult({
+ 	trace: [],
+ 	errors: [],
+ }) // true
+-isQualificationValidationResult({ valid: true, errors: [], warnings: [] }) // true
+-isQualificationPass(logicalDefinition('gates', 'Gates', [])) // true
++isQualificationPass(createLogicalDefinition('gates', 'Gates', [])) // true
+ isRuling({ id: 'r', pass: 'gates', rule: 'licensed', effect: 'restriction' }) // true
+ isQualificationDefinition({ id: 'd', name: 'D', passes: [] }) // true
+ ```
+@@ -217,12 +229,12 @@ orchestration and ownership lifecycle.
+ | `deriveFindingEligibility`       | function | Derive eligibility from applied findings.                            |
+ | `combineEligibilities`           | function | Return the most severe eligibility in a list.                        |
+ | `deriveScopeEligibilities`       | function | Derive one eligibility per finding scope.                            |
+-| `findMissingReferences`          | function | Find rulings whose pass or rule does not exist.                      |
++| `describeMissingReferences`      | function | Describe each ruling whose pass or rule does not exist.              |
+ | `hasReservedKey`                 | function | Whether a subject already owns `QUALIFICATION_KEY`.                  |
+ | `assertSubject`                  | function | Narrow and reject malformed or reserved-key subjects.                |
+ | `mapEngineError`                 | function | Map an engine throw to a typed `QualifierError`.                     |
+-| `findEmptyLogicalPasses`         | function | Find logical passes carrying no rulings.                             |
+-| `findUnreadDerivations`          | function | Find quantitative passes never read by a later pass.                 |
++| `describeEmptyLogicalPasses`     | function | Describe each logical pass carrying no rulings.                      |
++| `describeUnreadDerivations`      | function | Describe each quantitative pass never read by a later pass.          |
+ | `qualificationDefinition`        | function | Build a fresh `QualificationDefinition`.                             |
+ | `rulingDefinition`               | function | Build a fresh `Ruling`.                                              |
+ 
+@@ -247,16 +259,16 @@ import {
+ 	rulingToFinding,
+ } from '@orkestrel/qualifier'
+ import {
+-	atom,
++	createAtom,
+ 	createEvaluator,
++	createFactorGroup,
++	createLogicalDefinition,
+ 	createLogicalReasoner,
++	createQuantitativeDefinition,
+ 	createQuantitativeReasoner,
+ 	createReason,
+-	factorGroup,
+-	logicalDefinition,
+-	quantitativeDefinition,
+-	rule,
+-	staticFactor,
++	createRule,
++	createStaticFactor,
+ } from '@orkestrel/reason'
+ 
+ const engine = createReason({
+@@ -265,11 +277,15 @@ const engine = createReason({
+ })
+ const evaluator = createEvaluator()
+ 
+-const cap = quantitativeDefinition('cap', 'TIV cap', [
+-	factorGroup('limit', 'sum', [staticFactor('base', 500_000)]),
++const cap = createQuantitativeDefinition('cap', 'TIV cap', [
++	createFactorGroup('limit', 'sum', [createStaticFactor('base', 500_000)]),
+ ])
+-const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+ 
+ const subject = { licensed: false }
+@@ -293,27 +309,31 @@ if (gatesResult.reasoning === 'logical') {
+ ```
+ 
+ The projections stay inside the qualification namespace and the working subject is
+-discarded after each call. The reference-scan and subject-guard helpers back
++discarded after each call. The reference-describing and subject-guard helpers back
+ `validate` and the reserved-key rejection:
+ 
+ ```ts
+ import {
+ 	assertSubject,
+-	findMissingReferences,
++	describeMissingReferences,
+ 	hasReservedKey,
+ 	qualificationDefinition,
+ 	rulingDefinition,
+ } from '@orkestrel/qualifier'
+-import { atom, logicalDefinition, rule } from '@orkestrel/reason'
+-
+-const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
++
++const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+ const definition = qualificationDefinition('standard', 'Standard', [gates], {
+ 	rulings: [rulingDefinition('license', 'gates', 'absent', 'restriction')],
+ })
+ 
+-findMissingReferences(definition)
++describeMissingReferences(definition)
+ // ["Ruling 'license' references missing rule 'absent' in pass 'gates'"]
+ hasReservedKey({ id: 's1', qualification: {} }) // true
+ assertSubject({ id: 's1' }) // narrows to Subject; throws QualifierError('MISMATCH') on a reserved key
+@@ -327,10 +347,14 @@ assertSubject({ id: 's1' }) // narrows to Subject; throws QualifierError('MISMAT
+ 
+ ```ts
+ import { createQualifier, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
+-import { atom, logicalDefinition, rule } from '@orkestrel/reason'
+-
+-const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
++
++const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+ 
+ const definition = qualificationDefinition('standard', 'Standard eligibility', [gates], {
+@@ -358,18 +382,22 @@ batch-of-subjects overload. `destroy` destroys the reason engine only when the
+ qualifier created it; an injected engine remains caller-owned. The emitter is
+ destroyed last.
+ 
+-| Method     | Returns                         | Behavior                                                                                                   |
+-| ---------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+-| `qualify`  | `QualificationResult`           | Qualify one subject against one definition.                                                                |
+-| `validate` | `QualificationValidationResult` | Validate pass ids, ruling ids, pass references, logical rule references, and suspicious empty definitions. |
+-| `destroy`  | `void`                          | Idempotent teardown.                                                                                       |
++| Method     | Returns                  | Behavior                                                                                                   |
++| ---------- | ------------------------ | ---------------------------------------------------------------------------------------------------------- |
++| `qualify`  | `QualificationResult`    | Qualify one subject against one definition.                                                                |
++| `validate` | `ReasonValidationResult` | Validate pass ids, ruling ids, pass references, logical rule references, and suspicious empty definitions. |
++| `destroy`  | `void`                   | Idempotent teardown.                                                                                       |
+ 
+ ```ts
+ import { createQualifier, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
+-import { atom, logicalDefinition, rule } from '@orkestrel/reason'
+-
+-const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
++
++const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+ const definition = qualificationDefinition('standard', 'Standard eligibility', [gates], {
+ 	rulings: [rulingDefinition('license', 'gates', 'licensed', 'restriction')],
+@@ -414,7 +442,7 @@ Author qualification conclusion fields as flat string keys. `reason` formats an
+ Nested reads use `FieldPath` arrays:
+ 
+ ```ts
+-atom(['qualification', 'cap'], 'below', 1_000_000)
++createAtom(['qualification', 'cap'], 'below', 1_000_000)
+ ```
+ 
+ A dotted string remains one literal field key and is not equivalent.
+@@ -504,31 +532,35 @@ The derived values remain inside the qualifier namespace.
+ ```ts
+ import { createQualifier, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
+ import {
+-	atom,
+-	factorGroup,
+-	fieldFactor,
+-	logicalDefinition,
+-	quantitativeDefinition,
+-	rule,
+-	staticFactor,
+-	transform,
++	createAtom,
++	createFactorGroup,
++	createFieldFactor,
++	createLogicalDefinition,
++	createQuantitativeDefinition,
++	createRule,
++	createStaticFactor,
++	createTransform,
+ } from '@orkestrel/reason'
+ 
+-const cap = quantitativeDefinition('cap', 'TIV cap', [
+-	factorGroup('limit', 'sum', [staticFactor('base', 1_000_000)]),
++const cap = createQuantitativeDefinition('cap', 'TIV cap', [
++	createFactorGroup('limit', 'sum', [createStaticFactor('base', 1_000_000)]),
+ ])
+ 
+-const excess = quantitativeDefinition('excess', 'TIV excess', [
+-	factorGroup('amount', 'sum', [
+-		fieldFactor('total', 'total'),
+-		fieldFactor('cap', ['qualification', 'cap'], {
+-			transforms: [transform('multiply', -1)],
++const excess = createQuantitativeDefinition('excess', 'TIV excess', [
++	createFactorGroup('amount', 'sum', [
++		createFieldFactor('total', 'total'),
++		createFieldFactor('cap', ['qualification', 'cap'], {
++			transforms: [createTransform('multiply', -1)],
+ 		}),
+ 	]),
+ ])
+ 
+-const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	rule('tiv', [atom(['qualification', 'excess'], 'above', 0)], atom('blocked', 'equals', true)),
++const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	createRule(
++		'tiv',
++		[createAtom(['qualification', 'excess'], 'above', 0)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+ 
+ const definition = qualificationDefinition(
+@@ -561,8 +593,8 @@ A scope is an opaque string to the qualifier. The caller is responsible for
+ matching scope ids to whatever it selects for downstream work.
+ 
+ ```ts
+-const wind = logicalDefinition('wind', 'Wind eligibility', [
+-	rule('coastal', [atom('distance', 'to', 2)], atom('blocked', 'equals', true)),
++const wind = createLogicalDefinition('wind', 'Wind eligibility', [
++	createRule('coastal', [createAtom('distance', 'to', 2)], createAtom('blocked', 'equals', true)),
+ ])
+ 
+ const definition = qualificationDefinition('property', 'Property eligibility', [wind], {
+diff --git a/src/core/Qualifier.ts b/src/core/Qualifier.ts
+index 5659b81..6a93564 100644
+--- a/src/core/Qualifier.ts
++++ b/src/core/Qualifier.ts
+@@ -4,22 +4,27 @@ import type {
+ 	QualificationContext,
+ 	QualificationDefinition,
+ 	QualificationResult,
+-	QualificationValidationResult,
+ 	QualifierEventMap,
+ 	QualifierInterface,
+ 	QualifierOptions,
+ } from './types.js'
+ import type { EmitterInterface } from '@orkestrel/emitter'
+-import type { EvaluatorInterface, ReasonInterface, ReasonResult, Subject } from '@orkestrel/reason'
++import type {
++	EvaluatorInterface,
++	ReasonInterface,
++	ReasonResult,
++	ReasonValidationResult,
++	Subject,
++} from '@orkestrel/reason'
+ import { DEFAULT_QUALIFIER_VALIDATE } from './constants.js'
+ import { QualifierError } from './errors.js'
+ import {
+ 	assertSubject,
++	describeEmptyLogicalPasses,
++	describeMissingReferences,
++	describeUnreadDerivations,
+ 	deriveFindingEligibility,
+ 	deriveScopeEligibilities,
+-	findEmptyLogicalPasses,
+-	findMissingReferences,
+-	findUnreadDerivations,
+ 	mapEngineError,
+ 	mergeQualificationContext,
+ 	qualificationToRecord,
+@@ -117,10 +122,10 @@ export class Qualifier implements QualifierInterface {
+ 	 * @example
+ 	 * ```ts
+ 	 * import { qualificationDefinition, Qualifier, rulingDefinition } from '@orkestrel/qualifier'
+-	 * import { atom, logicalDefinition, rule } from '@orkestrel/reason'
++	 * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+ 	 *
+-	 * const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	 *   rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++	 * const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	 *   createRule('licensed', [createAtom('licensed', 'equals', false)], createAtom('blocked', 'equals', true)),
+ 	 * ])
+ 	 * const definition = qualificationDefinition('standard', 'Standard eligibility', [gates], {
+ 	 *   rulings: [rulingDefinition('license', 'gates', 'licensed', 'restriction')],
+@@ -139,7 +144,7 @@ export class Qualifier implements QualifierInterface {
+ 				throw new QualifierError(
+ 					'DEFINITION',
+ 					`Qualification definition is invalid: ${validation.errors.join(', ')}`,
+-					definition.id,
++					{ definition: definition.id },
+ 				)
+ 			}
+ 		}
+@@ -170,7 +175,7 @@ export class Qualifier implements QualifierInterface {
+ 	 * qualifier.destroy()
+ 	 * ```
+ 	 */
+-	validate(definition: QualificationDefinition): QualificationValidationResult {
++	validate(definition: QualificationDefinition): ReasonValidationResult {
+ 		this.#alive()
+ 		const errors: string[] = []
+ 		const warnings: string[] = []
+@@ -188,10 +193,10 @@ export class Qualifier implements QualifierInterface {
+ 		for (const id of findDuplicates(definition.rulings ?? [])) {
+ 			errors.push(`Duplicate ruling id '${id}'`)
+ 		}
+-		for (const reference of findMissingReferences(definition)) errors.push(reference)
++		for (const reference of describeMissingReferences(definition)) errors.push(reference)
+ 		if (definition.passes.length === 0) warnings.push('Definition has no passes')
+-		for (const warning of findEmptyLogicalPasses(definition)) warnings.push(warning)
+-		for (const warning of findUnreadDerivations(definition)) warnings.push(warning)
++		for (const warning of describeEmptyLogicalPasses(definition)) warnings.push(warning)
++		for (const warning of describeUnreadDerivations(definition)) warnings.push(warning)
+ 		return { valid: errors.length === 0, errors, warnings }
+ 	}
+ 
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 99be84e..9429dd1 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -1,20 +1,21 @@
+-import type { QualifierErrorCode } from './types.js'
++import type { QualifierErrorCode, QualifierErrorContext } from './types.js'
+ 
+ /**
+  * A coded programmer error thrown by the qualifier layer.
+  *
+  * @remarks
+- * `DEFINITION` — a qualification definition failed semantic validation.
+- * `MISMATCH` — a subject is not a record or already carries the reserved
+- * `qualification` key. `DESTROYED` — use of a destroyed qualifier.
+- * `ENGINE` — the underlying reason engine threw while running a pass (the
+- * original throw is preserved as `context.cause`).
++ * `DEFINITION` — a qualification definition failed semantic validation, and
++ * `context.definition` names it. `MISMATCH` — a subject is not a record or already
++ * carries the reserved `qualification` key. `DESTROYED` — use of a destroyed
++ * qualifier. `ENGINE` — the underlying reason engine threw while running a pass;
++ * `context.pass` names the pass and `context.cause` preserves the original throw.
++ * `context` is absent for a throw that carries no payload.
+  */
+ export class QualifierError extends Error {
+ 	readonly code: QualifierErrorCode
+-	readonly context: unknown
++	readonly context: QualifierErrorContext | undefined
+ 
+-	constructor(code: QualifierErrorCode, message: string, context?: unknown) {
++	constructor(code: QualifierErrorCode, message: string, context?: QualifierErrorContext) {
+ 		super(message)
+ 		this.name = 'QualifierError'
+ 		this.code = code
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index c1b3752..43fd2b0 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -186,9 +186,9 @@ export function describePremise(entry: Premise, labels?: Readonly<Record<string,
+  * @example
+  * ```ts
+  * import { premiseCheck } from '@orkestrel/qualifier'
+- * import { check } from '@orkestrel/reason'
++ * import { createCheck } from '@orkestrel/reason'
+  *
+- * const authored = check('age', 'above', 18)
++ * const authored = createCheck('age', 'above', 18)
+  * premiseCheck(authored, { field: 'age', actual: 25, met: true })
+  * // { field: 'age', comparison: 'above', expected: 18, actual: 25, met: true }
+  * ```
+@@ -229,10 +229,10 @@ export function premiseCheck(
+  * @example
+  * ```ts
+  * import { logicalPremises } from '@orkestrel/qualifier'
+- * import { atom, createEvaluator, logicalDefinition, rule } from '@orkestrel/reason'
++ * import { createAtom, createEvaluator, createLogicalDefinition, createRule } from '@orkestrel/reason'
+  *
+- * const gates = logicalDefinition('gates', 'Gates', [
+- *   rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++ * const gates = createLogicalDefinition('gates', 'Gates', [
++ *   createRule('licensed', [createAtom('licensed', 'equals', false)], createAtom('blocked', 'equals', true)),
+  * ])
+  * const evaluator = createEvaluator()
+  * const premises = logicalPremises(gates.rules[0], { licensed: false }, evaluator)
+@@ -273,10 +273,10 @@ export function logicalPremises(
+  * @example
+  * ```ts
+  * import { findRule } from '@orkestrel/qualifier'
+- * import { atom, logicalDefinition, rule } from '@orkestrel/reason'
++ * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+  *
+- * const gates = logicalDefinition('gates', 'Gates', [
+- *   rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++ * const gates = createLogicalDefinition('gates', 'Gates', [
++ *   createRule('licensed', [createAtom('licensed', 'equals', false)], createAtom('blocked', 'equals', true)),
+  * ])
+  *
+  * findRule(gates, 'licensed')?.id // 'licensed'
+@@ -302,10 +302,10 @@ export function findRule(definition: LogicalDefinition, id: string): Rule | unde
+  * @example
+  * ```ts
+  * import { reasonResultToProjection } from '@orkestrel/qualifier'
+- * import { factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
++ * import { createFactorGroup, createQuantitativeDefinition, createStaticFactor } from '@orkestrel/reason'
+  *
+- * const cap = quantitativeDefinition('cap', 'TIV cap', [
+- *   factorGroup('limit', 'sum', [staticFactor('base', 500_000)]),
++ * const cap = createQuantitativeDefinition('cap', 'TIV cap', [
++ *   createFactorGroup('limit', 'sum', [createStaticFactor('base', 500_000)]),
+  * ])
+  * const result = {
+  *   reasoning: 'quantitative' as const,
+@@ -428,10 +428,10 @@ export function mergeQualificationContext(
+  * @example
+  * ```ts
+  * import { rulingToFinding } from '@orkestrel/qualifier'
+- * import { atom, createEvaluator, logicalDefinition, rule } from '@orkestrel/reason'
++ * import { createAtom, createEvaluator, createLogicalDefinition, createRule } from '@orkestrel/reason'
+  *
+- * const gates = logicalDefinition('gates', 'Gates', [
+- *   rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++ * const gates = createLogicalDefinition('gates', 'Gates', [
++ *   createRule('licensed', [createAtom('licensed', 'equals', false)], createAtom('blocked', 'equals', true)),
+  * ])
+  * const ruling = { id: 'license', pass: 'gates', rule: 'licensed', effect: 'restriction' as const }
+  * const result = { reasoning: 'logical' as const, conclusion: true, rules: [{ id: 'licensed', applied: true, premises: [true], conclusion: true }], count: 1, success: true, trace: [], errors: [] }
+@@ -553,29 +553,29 @@ export function deriveScopeEligibilities(
+ }
+ 
+ /**
+- * Find rulings whose pass or rule does not exist, whose pass is not logical, or
+- * a pass id shadowing the reserved {@link QUALIFICATION_KEY}.
++ * Describes each ruling whose pass or rule does not exist or whose pass is not
++ * logical, and each pass id shadowing the reserved {@link QUALIFICATION_KEY}.
+  *
+  * @param definition - The qualification definition to check
+  * @returns A fresh list of reference-error messages
+  *
+  * @example
+  * ```ts
+- * import { findMissingReferences, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
+- * import { atom, logicalDefinition, rule } from '@orkestrel/reason'
++ * import { describeMissingReferences, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
++ * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+  *
+- * const gates = logicalDefinition('gates', 'Gates', [
+- *   rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++ * const gates = createLogicalDefinition('gates', 'Gates', [
++ *   createRule('licensed', [createAtom('licensed', 'equals', false)], createAtom('blocked', 'equals', true)),
+  * ])
+  * const definition = qualificationDefinition('standard', 'Standard', [gates], {
+  *   rulings: [rulingDefinition('license', 'gates', 'absent', 'restriction')],
+  * })
+  *
+- * findMissingReferences(definition)
++ * describeMissingReferences(definition)
+  * // ["Ruling 'license' references missing rule 'absent' in pass 'gates'"]
+  * ```
+  */
+-export function findMissingReferences(definition: QualificationDefinition): readonly string[] {
++export function describeMissingReferences(definition: QualificationDefinition): readonly string[] {
+ 	const errors: string[] = []
+ 	const passes = new Map(definition.passes.map((pass) => [pass.id, pass]))
+ 	for (const pass of definition.passes) {
+@@ -696,7 +696,7 @@ export function mapEngineError(error: unknown, pass: string): QualifierError {
+ }
+ 
+ /**
+- * Find logical passes carrying no rulings.
++ * Describes each logical pass carrying no rulings.
+  *
+  * @remarks
+  * A logical pass with no matching ruling can never contribute a finding, so its
+@@ -708,18 +708,18 @@ export function mapEngineError(error: unknown, pass: string): QualifierError {
+  *
+  * @example
+  * ```ts
+- * import { findEmptyLogicalPasses, qualificationDefinition } from '@orkestrel/qualifier'
+- * import { atom, logicalDefinition, rule } from '@orkestrel/reason'
++ * import { describeEmptyLogicalPasses, qualificationDefinition } from '@orkestrel/qualifier'
++ * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+  *
+- * const gates = logicalDefinition('gates', 'Gates', [
+- *   rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++ * const gates = createLogicalDefinition('gates', 'Gates', [
++ *   createRule('licensed', [createAtom('licensed', 'equals', false)], createAtom('blocked', 'equals', true)),
+  * ])
+  * const definition = qualificationDefinition('standard', 'Standard', [gates])
+  *
+- * findEmptyLogicalPasses(definition) // ["Logical pass 'gates' has no rulings"]
++ * describeEmptyLogicalPasses(definition) // ["Logical pass 'gates' has no rulings"]
+  * ```
+  */
+-export function findEmptyLogicalPasses(definition: QualificationDefinition): readonly string[] {
++export function describeEmptyLogicalPasses(definition: QualificationDefinition): readonly string[] {
+ 	const warnings: string[] = []
+ 	for (const pass of definition.passes) {
+ 		if (pass.reasoning !== 'logical') continue
+@@ -730,7 +730,7 @@ export function findEmptyLogicalPasses(definition: QualificationDefinition): rea
+ }
+ 
+ /**
+- * Find quantitative passes never read by a later pass.
++ * Describes each quantitative pass never read by a later pass.
+  *
+  * @remarks
+  * A quantitative pass's projected value lives under `qualification.<id>` — if no
+@@ -744,18 +744,18 @@ export function findEmptyLogicalPasses(definition: QualificationDefinition): rea
+  *
+  * @example
+  * ```ts
+- * import { findUnreadDerivations, qualificationDefinition } from '@orkestrel/qualifier'
+- * import { factorGroup, quantitativeDefinition, staticFactor } from '@orkestrel/reason'
++ * import { describeUnreadDerivations, qualificationDefinition } from '@orkestrel/qualifier'
++ * import { createFactorGroup, createQuantitativeDefinition, createStaticFactor } from '@orkestrel/reason'
+  *
+- * const cap = quantitativeDefinition('cap', 'TIV cap', [
+- *   factorGroup('limit', 'sum', [staticFactor('base', 500_000)]),
++ * const cap = createQuantitativeDefinition('cap', 'TIV cap', [
++ *   createFactorGroup('limit', 'sum', [createStaticFactor('base', 500_000)]),
+  * ])
+  * const definition = qualificationDefinition('standard', 'Standard', [cap])
+  *
+- * findUnreadDerivations(definition) // ["Quantitative pass 'cap' is never read by a later pass"]
++ * describeUnreadDerivations(definition) // ["Quantitative pass 'cap' is never read by a later pass"]
+  * ```
+  */
+-export function findUnreadDerivations(definition: QualificationDefinition): readonly string[] {
++export function describeUnreadDerivations(definition: QualificationDefinition): readonly string[] {
+ 	const warnings: string[] = []
+ 	definition.passes.forEach((pass, index) => {
+ 		if (pass.reasoning !== 'quantitative') return
+diff --git a/src/core/types.ts b/src/core/types.ts
+index d97ed2a..790a499 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -110,12 +110,24 @@ export interface QualificationResult {
+ 	readonly errors: readonly string[]
+ }
+ 
+-/** Semantic definition validation. */
+-export type QualificationValidationResult = ReasonValidationResult
+-
+ /** A coded {@link QualifierError} programmer-error code. */
+ export type QualifierErrorCode = 'DEFINITION' | 'MISMATCH' | 'DESTROYED' | 'ENGINE'
+ 
++/**
++ * The structured payload a {@link QualifierError} carries.
++ *
++ * @remarks
++ * `pass` names the pass that was running when the engine threw. `definition` names the
++ * qualification definition that failed semantic validation. `cause` is the original throw
++ * an engine failure wrapped, and stays `unknown` because a thrown value can be anything.
++ * Every member is absent rather than `undefined` when the throw does not carry it.
++ */
++export interface QualifierErrorContext {
++	readonly pass?: string
++	readonly definition?: string
++	readonly cause?: unknown
++}
++
+ /** The push observation surface of a {@link QualifierInterface} (AGENTS §13). */
+ export type QualifierEventMap = {
+ 	readonly derive: readonly [derivation: Derivation]
+@@ -158,10 +170,10 @@ export interface QualifierInterface {
+ 	 * @example
+ 	 * ```ts
+ 	 * import { createQualifier, qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
+-	 * import { atom, logicalDefinition, rule } from '@orkestrel/reason'
++	 * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+ 	 *
+-	 * const gates = logicalDefinition('gates', 'Eligibility gates', [
+-	 *   rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++	 * const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++	 *   createRule('licensed', [createAtom('licensed', 'equals', false)], createAtom('blocked', 'equals', true)),
+ 	 * ])
+ 	 * const definition = qualificationDefinition('standard', 'Standard eligibility', [gates], {
+ 	 *   rulings: [rulingDefinition('license', 'gates', 'licensed', 'restriction')],
+@@ -197,7 +209,7 @@ export interface QualifierInterface {
+ 	 * qualifier.destroy()
+ 	 * ```
+ 	 */
+-	validate(definition: QualificationDefinition): QualificationValidationResult
++	validate(definition: QualificationDefinition): ReasonValidationResult
+ 	/**
+ 	 * Destroys this qualifier, idempotently.
+ 	 *
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 3c19e53..b762e70 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -6,10 +6,8 @@ import type {
+ 	QualificationDefinition,
+ 	QualificationPass,
+ 	QualificationResult,
+-	QualificationValidationResult,
+ 	Ruling,
+ } from './types.js'
+-import type { Guard } from '@orkestrel/contract'
+ import {
+ 	arrayOf,
+ 	isBoolean,
+@@ -26,7 +24,6 @@ import {
+ 	isFieldPath,
+ 	isLogicalDefinition,
+ 	isQuantitativeDefinition,
+-	isReasonValidationResult,
+ } from '@orkestrel/reason'
+ 
+ /**
+@@ -157,21 +154,6 @@ export function isQualificationResult(value: unknown): value is QualificationRes
+ 	})(value)
+ }
+ 
+-/**
+- * Determine whether a value is an open {@link QualificationValidationResult} returned by a qualifier.
+- *
+- * @remarks
+- * `QualificationValidationResult` is an alias of reasons' validation-result type, so this IS
+- * reasons' published open result guard by delegation — the alias tracks reasons' shape
+- * automatically, and a hand-written member list here would silently stop checking a member a
+- * later reason release adds.
+- *
+- * @param value - The value to test
+- * @returns `true` when every published qualification-validation-result member is valid
+- */
+-export const isQualificationValidationResult: Guard<QualificationValidationResult> =
+-	isReasonValidationResult
+-
+ /**
+  * Determine whether a value is a {@link QualificationPass} (a quantitative or logical definition).
+  *
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 587443a..815290b 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -10,14 +10,14 @@ import type {
+ import { qualificationDefinition, rulingDefinition } from '@src/core'
+ import { Emitter } from '@orkestrel/emitter'
+ import {
+-	atom,
+-	factorGroup,
+-	fieldFactor,
+-	logicalDefinition,
+-	quantitativeDefinition,
+-	rule,
+-	staticFactor,
+-	transform,
++	createAtom,
++	createFactorGroup,
++	createFieldFactor,
++	createLogicalDefinition,
++	createQuantitativeDefinition,
++	createRule,
++	createStaticFactor,
++	createTransform,
+ } from '@orkestrel/reason'
+ 
+ /** Build a cyclic record for adversarial guard tests. */
+@@ -52,8 +52,12 @@ export function buildHostileRecord(): Record<string, unknown> {
+ 
+ /** Licensed-gate logical pass with an unscoped restriction ruling. */
+ export function buildGatesDefinition(): QualificationDefinition {
+-	const gates = logicalDefinition('gates', 'Eligibility gates', [
+-		rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++	const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++		createRule(
++			'licensed',
++			[createAtom('licensed', 'equals', false)],
++			createAtom('blocked', 'equals', true),
++		),
+ 	])
+ 	return qualificationDefinition('standard', 'Standard eligibility', [gates], {
+ 		rulings: [
+@@ -66,8 +70,12 @@ export function buildGatesDefinition(): QualificationDefinition {
+ 
+ /** Coastal referral ruling with seat-count message interpolation. */
+ export function buildReferralDefinition(): QualificationDefinition {
+-	const gates = logicalDefinition('gates', 'Coastal gates', [
+-		rule('coastal', [atom('coastal', 'equals', true)], atom('flagged', 'equals', true)),
++	const gates = createLogicalDefinition('gates', 'Coastal gates', [
++		createRule(
++			'coastal',
++			[createAtom('coastal', 'equals', true)],
++			createAtom('flagged', 'equals', true),
++		),
+ 	])
+ 	return qualificationDefinition('referral', 'Referral program', [gates], {
+ 		rulings: [
+@@ -80,19 +88,23 @@ export function buildReferralDefinition(): QualificationDefinition {
+ 
+ /** Quantitative cap and excess passes followed by a logical TIV gate. */
+ export function buildCapExcessGatesDefinition(): QualificationDefinition {
+-	const cap = quantitativeDefinition('cap', 'TIV cap', [
+-		factorGroup('limit', 'sum', [staticFactor('base', 1_010_000)]),
++	const cap = createQuantitativeDefinition('cap', 'TIV cap', [
++		createFactorGroup('limit', 'sum', [createStaticFactor('base', 1_010_000)]),
+ 	])
+-	const excess = quantitativeDefinition('excess', 'TIV excess', [
+-		factorGroup('excess', 'sum', [
+-			fieldFactor('total', 'total'),
+-			fieldFactor('cap', ['qualification', 'cap'], {
+-				transforms: [transform('multiply', -1)],
++	const excess = createQuantitativeDefinition('excess', 'TIV excess', [
++		createFactorGroup('excess', 'sum', [
++			createFieldFactor('total', 'total'),
++			createFieldFactor('cap', ['qualification', 'cap'], {
++				transforms: [createTransform('multiply', -1)],
+ 			}),
+ 		]),
+ 	])
+-	const gates = logicalDefinition('gates', 'Eligibility gates', [
+-		rule('tiv', [atom(['qualification', 'excess'], 'above', 0)], atom('blocked', 'equals', true)),
++	const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++		createRule(
++			'tiv',
++			[createAtom(['qualification', 'excess'], 'above', 0)],
++			createAtom('blocked', 'equals', true),
++		),
+ 	])
+ 	return qualificationDefinition('property', 'Property eligibility', [cap, excess, gates], {
+ 		rulings: [
+@@ -105,8 +117,8 @@ export function buildCapExcessGatesDefinition(): QualificationDefinition {
+ 
+ /** Scoped wind restriction leaving global eligibility eligible. */
+ export function buildScopedWindDefinition(): QualificationDefinition {
+-	const wind = logicalDefinition('wind', 'Wind eligibility', [
+-		rule('coastal', [atom('distance', 'to', 2)], atom('blocked', 'equals', true)),
++	const wind = createLogicalDefinition('wind', 'Wind eligibility', [
++		createRule('coastal', [createAtom('distance', 'to', 2)], createAtom('blocked', 'equals', true)),
+ 	])
+ 	return qualificationDefinition('property', 'Property eligibility', [wind], {
+ 		rulings: [
+@@ -120,8 +132,12 @@ export function buildScopedWindDefinition(): QualificationDefinition {
+ 
+ /** Scoped condition ruling that keeps the scope eligible. */
+ export function buildConditionDefinition(): QualificationDefinition {
+-	const gates = logicalDefinition('gates', 'Eligibility gates', [
+-		rule('vacant', [atom('vacant', 'equals', true)], atom('noted', 'equals', true)),
++	const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++		createRule(
++			'vacant',
++			[createAtom('vacant', 'equals', true)],
++			createAtom('noted', 'equals', true),
++		),
+ 	])
+ 	return qualificationDefinition('property', 'Property eligibility', [gates], {
+ 		rulings: [
+@@ -135,15 +151,19 @@ export function buildConditionDefinition(): QualificationDefinition {
+ 
+ /** Multi-pass definition proving evidence snapshots for cross-pass and same-pass premises. */
+ export function buildEvidenceSnapshotDefinition(): QualificationDefinition {
+-	const p1 = quantitativeDefinition('p1', 'Pass 1', [
+-		factorGroup('value', 'sum', [staticFactor('base', 42)]),
++	const p1 = createQuantitativeDefinition('p1', 'Pass 1', [
++		createFactorGroup('value', 'sum', [createStaticFactor('base', 42)]),
+ 	])
+-	const p2 = logicalDefinition('p2', 'Pass 2', [
+-		rule('r1', [atom(['qualification', 'p1'], 'equals', 42)], atom('ready', 'equals', true)),
+-		rule(
++	const p2 = createLogicalDefinition('p2', 'Pass 2', [
++		createRule(
++			'r1',
++			[createAtom(['qualification', 'p1'], 'equals', 42)],
++			createAtom('ready', 'equals', true),
++		),
++		createRule(
+ 			'r2',
+-			[atom(['qualification', 'p2', 'ready'], 'equals', true)],
+-			atom('blocked', 'equals', true),
++			[createAtom(['qualification', 'p2', 'ready'], 'equals', true)],
++			createAtom('blocked', 'equals', true),
+ 		),
+ 	])
+ 	return qualificationDefinition('snapshot', 'Snapshot', [p1, p2], {
+@@ -156,11 +176,11 @@ export function buildEvidenceSnapshotDefinition(): QualificationDefinition {
+ 
+ /** Logical `gates` pass with a continuing condition ruling, followed by a quantitative `after` pass. */
+ export function buildContinuingLogicalDefinition(): QualificationDefinition {
+-	const gates = logicalDefinition('gates', 'Gates', [
+-		rule('flag', [atom('flag', 'equals', true)], atom('noted', 'equals', true)),
++	const gates = createLogicalDefinition('gates', 'Gates', [
++		createRule('flag', [createAtom('flag', 'equals', true)], createAtom('noted', 'equals', true)),
+ 	])
+-	const after = quantitativeDefinition('after', 'After', [
+-		factorGroup('total', 'sum', [staticFactor('base', 1)]),
++	const after = createQuantitativeDefinition('after', 'After', [
++		createFactorGroup('total', 'sum', [createStaticFactor('base', 1)]),
+ 	])
+ 	return qualificationDefinition('continuing', 'Continuing', [gates, after], {
+ 		rulings: [rulingDefinition('note', 'gates', 'flag', 'condition')],
+diff --git a/tests/src/core/Qualifier.test.ts b/tests/src/core/Qualifier.test.ts
+index 9e97048..f351fa0 100644
+--- a/tests/src/core/Qualifier.test.ts
++++ b/tests/src/core/Qualifier.test.ts
+@@ -8,18 +8,18 @@ import {
+ 	rulingDefinition,
+ } from '@src/core'
+ import {
+-	atom,
++	createAtom,
+ 	createEvaluator,
++	createFactorGroup,
++	createFieldFactor,
++	createLogicalDefinition,
+ 	createLogicalReasoner,
++	createQuantitativeDefinition,
+ 	createQuantitativeReasoner,
+ 	createReason,
+-	factorGroup,
+-	fieldFactor,
+-	logicalDefinition,
+-	quantitativeDefinition,
+-	rule,
+-	staticFactor,
+-	transform,
++	createRule,
++	createStaticFactor,
++	createTransform,
+ } from '@orkestrel/reason'
+ import { createRecorder } from '@orkestrel/test'
+ import {
+@@ -84,14 +84,14 @@ describe('Qualifier', () => {
+ 	describe('quantitative pre-pass projection', () => {
+ 		it('lands under qualification, surfaces in derivations, and feeds later logical passes', () => {
+ 			const qualifier = createQualifier()
+-			const cap = quantitativeDefinition('cap', 'Cap', [
+-				factorGroup('limit', 'sum', [staticFactor('base', 750_000)]),
++			const cap = createQuantitativeDefinition('cap', 'Cap', [
++				createFactorGroup('limit', 'sum', [createStaticFactor('base', 750_000)]),
+ 			])
+-			const gates = logicalDefinition('gates', 'Gates', [
+-				rule(
++			const gates = createLogicalDefinition('gates', 'Gates', [
++				createRule(
+ 					'cap-check',
+-					[atom(['qualification', 'cap'], 'above', 500_000)],
+-					atom('blocked', 'equals', true),
++					[createAtom(['qualification', 'cap'], 'above', 500_000)],
++					createAtom('blocked', 'equals', true),
+ 				),
+ 			])
+ 			const definition = qualificationDefinition('property', 'Property', [cap, gates], {
+@@ -143,8 +143,12 @@ describe('Qualifier', () => {
+ 				'condition',
+ 				'Condition',
+ 				[
+-					logicalDefinition('gates', 'Gates', [
+-						rule('note', [atom('note', 'equals', true)], atom('flagged', 'equals', true)),
++					createLogicalDefinition('gates', 'Gates', [
++						createRule(
++							'note',
++							[createAtom('note', 'equals', true)],
++							createAtom('flagged', 'equals', true),
++						),
+ 					]),
+ 				],
+ 				{
+@@ -189,10 +193,14 @@ describe('Qualifier', () => {
+ 	})
+ 
+ 	describe('semantic validation', () => {
+-		const gates = logicalDefinition('gates', 'Gates', [
+-			rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++		const gates = createLogicalDefinition('gates', 'Gates', [
++			createRule(
++				'licensed',
++				[createAtom('licensed', 'equals', false)],
++				createAtom('blocked', 'equals', true),
++			),
+ 		])
+-		const cap = quantitativeDefinition('cap', 'Cap', [])
++		const cap = createQuantitativeDefinition('cap', 'Cap', [])
+ 
+ 		it('reports missing pass, non-logical pass, missing rule, reserved pass id, and duplicate ids', () => {
+ 			const qualifier = createQualifier()
+@@ -206,7 +214,7 @@ describe('Qualifier', () => {
+ 				],
+ 			})
+ 			const reserved = qualificationDefinition('reserved', 'Reserved', [
+-				quantitativeDefinition(QUALIFICATION_KEY, 'Reserved', []),
++				createQuantitativeDefinition(QUALIFICATION_KEY, 'Reserved', []),
+ 			])
+ 
+ 			const badValidation = qualifier.validate(definition)
+@@ -238,13 +246,28 @@ describe('Qualifier', () => {
+ 			expect(() => qualifier.qualify({ id: 'a' }, definition)).toThrow(
+ 				expect.objectContaining({
+ 					code: 'DEFINITION',
+-					context: 'bad',
++					context: { definition: 'bad' },
+ 					name: 'QualifierError',
+ 				}),
+ 			)
+ 
+ 			qualifier.destroy()
+ 		})
++
++		it('carries no context on a throw with no payload', () => {
++			const qualifier = createQualifier()
++			qualifier.destroy()
++
++			expect(() =>
++				qualifier.qualify({ id: 'a' }, qualificationDefinition('empty', 'Empty', [])),
++			).toThrow(
++				expect.objectContaining({
++					code: 'DESTROYED',
++					context: undefined,
++					name: 'QualifierError',
++				}),
++			)
++		})
+ 	})
+ 
+ 	describe('determinism and non-mutation', () => {
+@@ -274,7 +297,7 @@ describe('Qualifier', () => {
+ 			const injected = createQualifier({ engine })
+ 			injected.destroy()
+ 			expect(() =>
+-				engine.reason({ id: 'a', total: 1 }, quantitativeDefinition('cap', 'Cap', [])),
++				engine.reason({ id: 'a', total: 1 }, createQuantitativeDefinition('cap', 'Cap', [])),
+ 			).not.toThrow()
+ 			engine.destroy()
+ 
+@@ -310,14 +333,22 @@ describe('Qualifier', () => {
+ 
+ 	describe('terminal-global proofs', () => {
+ 		it('stops after an unscoped restriction, continues after referral, and lets later restrictions outrank referral', () => {
+-			const referralFirst = logicalDefinition('referral-gates', 'Referral gates', [
+-				rule('roof', [atom('roof', 'equals', true)], atom('flagged', 'equals', true)),
++			const referralFirst = createLogicalDefinition('referral-gates', 'Referral gates', [
++				createRule(
++					'roof',
++					[createAtom('roof', 'equals', true)],
++					createAtom('flagged', 'equals', true),
++				),
+ 			])
+-			const restrictionSecond = logicalDefinition('restriction-gates', 'Restriction gates', [
+-				rule('frame', [atom('frame', 'equals', true)], atom('blocked', 'equals', true)),
++			const restrictionSecond = createLogicalDefinition('restriction-gates', 'Restriction gates', [
++				createRule(
++					'frame',
++					[createAtom('frame', 'equals', true)],
++					createAtom('blocked', 'equals', true),
++				),
+ 			])
+-			const trailing = quantitativeDefinition('trailing', 'Trailing', [
+-				factorGroup('value', 'sum', [staticFactor('one', 1)]),
++			const trailing = createQuantitativeDefinition('trailing', 'Trailing', [
++				createFactorGroup('value', 'sum', [createStaticFactor('one', 1)]),
+ 			])
+ 
+ 			const referralDefinition = qualificationDefinition(
+@@ -336,8 +367,12 @@ describe('Qualifier', () => {
+ 				'terminal',
+ 				'Terminal',
+ 				[
+-					logicalDefinition('stop', 'Stop', [
+-						rule('stop', [atom('stop', 'equals', true)], atom('blocked', 'equals', true)),
++					createLogicalDefinition('stop', 'Stop', [
++						createRule(
++							'stop',
++							[createAtom('stop', 'equals', true)],
++							createAtom('blocked', 'equals', true),
++						),
+ 					]),
+ 					trailing,
+ 				],
+@@ -376,11 +411,19 @@ describe('Qualifier', () => {
+ 
+ 	describe('scoped-only proofs', () => {
+ 		it('keeps global eligibility eligible and scopes independent', () => {
+-			const wind = logicalDefinition('wind', 'Wind', [
+-				rule('coastal', [atom('distance', 'to', 2)], atom('blocked', 'equals', true)),
++			const wind = createLogicalDefinition('wind', 'Wind', [
++				createRule(
++					'coastal',
++					[createAtom('distance', 'to', 2)],
++					createAtom('blocked', 'equals', true),
++				),
+ 			])
+-			const frame = logicalDefinition('frame', 'Frame', [
+-				rule('frame', [atom('construction', 'equals', 'Frame')], atom('blocked', 'equals', true)),
++			const frame = createLogicalDefinition('frame', 'Frame', [
++				createRule(
++					'frame',
++					[createAtom('construction', 'equals', 'Frame')],
++					createAtom('blocked', 'equals', true),
++				),
+ 			])
+ 			const definition = qualificationDefinition('property', 'Property', [wind, frame], {
+ 				rulings: [
+@@ -415,14 +458,14 @@ describe('Qualifier', () => {
+ 
+ 	describe('projection proof', () => {
+ 		it('never projects derived values onto the caller subject root or other pass keys', () => {
+-			const cap = quantitativeDefinition('cap', 'Cap', [
+-				factorGroup('limit', 'sum', [staticFactor('base', 500_000)]),
++			const cap = createQuantitativeDefinition('cap', 'Cap', [
++				createFactorGroup('limit', 'sum', [createStaticFactor('base', 500_000)]),
+ 			])
+-			const excess = quantitativeDefinition('excess', 'Excess', [
+-				factorGroup('excess', 'sum', [
+-					fieldFactor('total', 'total'),
+-					fieldFactor('cap', ['qualification', 'cap'], {
+-						transforms: [transform('multiply', -1)],
++			const excess = createQuantitativeDefinition('excess', 'Excess', [
++				createFactorGroup('excess', 'sum', [
++					createFieldFactor('total', 'total'),
++					createFieldFactor('cap', ['qualification', 'cap'], {
++						transforms: [createTransform('multiply', -1)],
+ 					}),
+ 				]),
+ 			])
+@@ -584,8 +627,12 @@ describe('Qualifier', () => {
+ 				bail: false,
+ 			})
+ 			const qualifier = createQualifier({ engine })
+-			const gates = logicalDefinition('gates', 'Gates', [
+-				rule('flag', [atom('flag', 'equals', true)], atom('noted', 'equals', true)),
++			const gates = createLogicalDefinition('gates', 'Gates', [
++				createRule(
++					'flag',
++					[createAtom('flag', 'equals', true)],
++					createAtom('noted', 'equals', true),
++				),
+ 			])
+ 			const definition = qualificationDefinition('bad', 'Bad', [gates])
+ 
+@@ -612,11 +659,11 @@ describe('Qualifier', () => {
+ 
+ 	describe('fail-closed on operational failure', () => {
+ 		it('stops after the first pass, prefixes trace/errors with the pass id, and reports referral', () => {
+-			const cap = quantitativeDefinition('cap', 'Cap', [
+-				factorGroup('limit', 'sum', [staticFactor('base', 1)]),
++			const cap = createQuantitativeDefinition('cap', 'Cap', [
++				createFactorGroup('limit', 'sum', [createStaticFactor('base', 1)]),
+ 			])
+-			const excess = quantitativeDefinition('excess', 'Excess', [
+-				factorGroup('excess', 'sum', [staticFactor('base', 1)]),
++			const excess = createQuantitativeDefinition('excess', 'Excess', [
++				createFactorGroup('excess', 'sum', [createStaticFactor('base', 1)]),
+ 			])
+ 			const definition = qualificationDefinition('property', 'Property', [cap, excess])
+ 			const qualifier = createQualifier({ engine: createFailingEngine() })
+@@ -687,8 +734,12 @@ describe('Qualifier', () => {
+ 	describe('validate — new warnings', () => {
+ 		it('warns on a logical pass with no rulings', () => {
+ 			const qualifier = createQualifier()
+-			const gates = logicalDefinition('gates', 'Gates', [
+-				rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++			const gates = createLogicalDefinition('gates', 'Gates', [
++				createRule(
++					'licensed',
++					[createAtom('licensed', 'equals', false)],
++					createAtom('blocked', 'equals', true),
++				),
+ 			])
+ 			const definition = qualificationDefinition('standard', 'Standard', [gates])
+ 
+@@ -701,8 +752,8 @@ describe('Qualifier', () => {
+ 
+ 		it('warns on a quantitative pass never read by a later pass', () => {
+ 			const qualifier = createQualifier()
+-			const cap = quantitativeDefinition('cap', 'Cap', [
+-				factorGroup('limit', 'sum', [staticFactor('base', 1)]),
++			const cap = createQuantitativeDefinition('cap', 'Cap', [
++				createFactorGroup('limit', 'sum', [createStaticFactor('base', 1)]),
+ 			])
+ 			const definition = qualificationDefinition('standard', 'Standard', [cap])
+ 
+@@ -735,6 +786,20 @@ describe('Qualifier', () => {
+ 		})
+ 	})
+ 
++	describe('QualifierError context', () => {
++		it('reads each context member off a caught error without narrowing', () => {
++			const cause = new Error('engine')
++			const definition = new QualifierError('DEFINITION', 'invalid', { definition: 'bad' })
++			const engine = new QualifierError('ENGINE', 'failed', { pass: 'gates', cause })
++
++			expect(definition.context?.definition).toBe('bad')
++			expect(definition.context?.pass).toBeUndefined()
++			expect(engine.context?.pass).toBe('gates')
++			expect(engine.context?.cause).toBe(cause)
++			expect(new QualifierError('MISMATCH', 'm').context).toBeUndefined()
++		})
++	})
++
+ 	describe('isQualifierError guard', () => {
+ 		it('narrows QualifierError and rejects everything else', () => {
+ 			expect(isQualifierError(new QualifierError('MISMATCH', 'm'))).toBe(true)
+@@ -771,11 +836,15 @@ function matchesFieldPath(
+ }
+ 
+ function qualitativeDefinitionWithDottedField() {
+-	const cap = quantitativeDefinition('cap', 'Cap', [
+-		factorGroup('limit', 'sum', [fieldFactor('total', 'total')]),
++	const cap = createQuantitativeDefinition('cap', 'Cap', [
++		createFactorGroup('limit', 'sum', [createFieldFactor('total', 'total')]),
+ 	])
+-	const gates = logicalDefinition('gates', 'Gates', [
+-		rule('cap-check', [atom('qualification.cap', 'above', 50)], atom('blocked', 'equals', true)),
++	const gates = createLogicalDefinition('gates', 'Gates', [
++		createRule(
++			'cap-check',
++			[createAtom('qualification.cap', 'above', 50)],
++			createAtom('blocked', 'equals', true),
++		),
+ 	])
+ 	return qualificationDefinition('property', 'Property', [cap, gates])
+ }
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 07dab30..7471f4c 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -3,15 +3,15 @@ import type { Finding } from '@src/core'
+ import {
+ 	assertSubject,
+ 	combineEligibilities,
+-	deriveFindingEligibility,
+-	deriveScopeEligibilities,
+ 	describeComparison,
++	describeEmptyLogicalPasses,
++	describeMissingReferences,
+ 	describePremise,
++	describeUnreadDerivations,
+ 	describeValue,
+-	findEmptyLogicalPasses,
+-	findMissingReferences,
++	deriveFindingEligibility,
++	deriveScopeEligibilities,
+ 	findRule,
+-	findUnreadDerivations,
+ 	hasReservedKey,
+ 	interpolateMessage,
+ 	logicalPremises,
+@@ -28,22 +28,26 @@ import {
+ } from '@src/core'
+ import type { Comparison } from '@orkestrel/reason'
+ import {
+-	atom,
+-	check,
++	createAtom,
++	createCheck,
+ 	createEvaluator,
+-	factorGroup,
+-	fieldFactor,
+-	logicalDefinition,
+-	quantitativeDefinition,
++	createFactorGroup,
++	createFieldFactor,
++	createLogicalDefinition,
++	createQuantitativeDefinition,
++	createRule,
++	createStaticFactor,
+ 	ReasonError,
+-	rule,
+-	staticFactor,
+ } from '@orkestrel/reason'
+ 
+-const gatesPass = logicalDefinition('gates', 'Gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++const gatesPass = createLogicalDefinition('gates', 'Gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+-const capPass = quantitativeDefinition('cap', 'Cap', [])
++const capPass = createQuantitativeDefinition('cap', 'Cap', [])
+ 
+ function finding(
+ 	overrides: Partial<Finding> & Pick<Finding, 'id' | 'pass' | 'rule' | 'effect' | 'applied'>,
+@@ -250,7 +254,7 @@ describe('helpers', () => {
+ 		})
+ 	})
+ 
+-	describe('findMissingReferences', () => {
++	describe('describeMissingReferences', () => {
+ 		it('reports missing pass, non-logical pass, missing rule, and reserved pass id', () => {
+ 			const definition = qualificationDefinition('bad', 'Bad', [capPass, gatesPass], {
+ 				rulings: [
+@@ -260,15 +264,15 @@ describe('helpers', () => {
+ 				],
+ 			})
+ 			const reserved = qualificationDefinition('reserved', 'Reserved', [
+-				quantitativeDefinition(QUALIFICATION_KEY, 'Reserved', []),
++				createQuantitativeDefinition(QUALIFICATION_KEY, 'Reserved', []),
+ 			])
+-			const errors = findMissingReferences(definition)
++			const errors = describeMissingReferences(definition)
+ 			expect(errors).toContain("Ruling 'missing-pass' references missing pass 'absent'")
+ 			expect(errors).toContain("Ruling 'quant-pass' references non-logical pass 'cap'")
+ 			expect(errors).toContain(
+ 				"Ruling 'missing-rule' references missing rule 'absent' in pass 'gates'",
+ 			)
+-			expect(findMissingReferences(reserved)).toContain(
++			expect(describeMissingReferences(reserved)).toContain(
+ 				`Pass id must not equal reserved key '${QUALIFICATION_KEY}'`,
+ 			)
+ 		})
+@@ -337,11 +341,11 @@ describe('helpers', () => {
+ 		})
+ 
+ 		it('never pollutes Object.prototype through hostile conclusion keys', () => {
+-			const polluted = logicalDefinition('pollute', 'Pollute', [
+-				rule(
++			const polluted = createLogicalDefinition('pollute', 'Pollute', [
++				createRule(
+ 					'proto',
+-					[atom('licensed', 'equals', false)],
+-					atom(['__proto__', 'polluted'], 'equals', true),
++					[createAtom('licensed', 'equals', false)],
++					createAtom(['__proto__', 'polluted'], 'equals', true),
+ 				),
+ 			])
+ 			const before = Object.prototype
+@@ -525,8 +529,12 @@ describe('helpers', () => {
+ 
+ 	describe('logicalPremises / premiseCheck / rulingToFinding', () => {
+ 		it('returns 0 premises for an empty membership value', () => {
+-			const gates = logicalDefinition('gates', 'Gates', [
+-				rule('membership', [atom('tag', 'any', [])], atom('flagged', 'equals', true)),
++			const gates = createLogicalDefinition('gates', 'Gates', [
++				createRule(
++					'membership',
++					[createAtom('tag', 'any', [])],
++					createAtom('flagged', 'equals', true),
++				),
+ 			])
+ 			const evaluator = createEvaluator()
+ 			const membership = findRule(gates, 'membership')
+@@ -537,8 +545,12 @@ describe('helpers', () => {
+ 		})
+ 
+ 		it('returns 1 premise for a non-empty membership check, met via a real evaluator', () => {
+-			const gates = logicalDefinition('gates', 'Gates', [
+-				rule('membership', [atom('tag', 'any', ['coastal'])], atom('flagged', 'equals', true)),
++			const gates = createLogicalDefinition('gates', 'Gates', [
++				createRule(
++					'membership',
++					[createAtom('tag', 'any', ['coastal'])],
++					createAtom('flagged', 'equals', true),
++				),
+ 			])
+ 			const evaluator = createEvaluator()
+ 			const membership = findRule(gates, 'membership')
+@@ -551,7 +563,7 @@ describe('helpers', () => {
+ 
+ 		it('premiseCheck includes label only when labels[field] is set', () => {
+ 			const evaluator = createEvaluator()
+-			const authored = check('age', 'above', 18)
++			const authored = createCheck('age', 'above', 18)
+ 			const withoutLabel = premiseCheck(authored, evaluator.evaluate(authored, { age: 25 }))
+ 			expect('label' in withoutLabel).toBe(false)
+ 			const withLabel = premiseCheck(authored, evaluator.evaluate(authored, { age: 25 }), {
+@@ -562,7 +574,7 @@ describe('helpers', () => {
+ 
+ 		it('premiseCheck carries met and actual through for an unmet check', () => {
+ 			const evaluator = createEvaluator()
+-			const authored = check('age', 'above', 18)
++			const authored = createCheck('age', 'above', 18)
+ 			const premise = premiseCheck(authored, evaluator.evaluate(authored, { age: 12 }))
+ 			expect(premise.met).toBe(false)
+ 			expect(premise.actual).toBe(12)
+@@ -626,17 +638,15 @@ describe('helpers', () => {
+ 			const original = new ReasonError('INVALID', 'v')
+ 			const mapped = mapEngineError(original, 'p')
+ 			expect(mapped.code).toBe('DEFINITION')
+-			const { context } = mapped
+-			const cause =
+-				typeof context === 'object' && context !== null && 'cause' in context
+-					? context.cause
+-					: undefined
+-			expect(cause).toBe(original)
++			expect(mapped.context?.cause).toBe(original)
++			expect(mapped.context?.pass).toBe('p')
+ 		})
+ 
+ 		it('maps ReasonError DESTROYED to DESTROYED', () => {
+-			const mapped = mapEngineError(new ReasonError('DESTROYED', 'd'), 'p')
++			const original = new ReasonError('DESTROYED', 'd')
++			const mapped = mapEngineError(original, 'p')
+ 			expect(mapped.code).toBe('DESTROYED')
++			expect(mapped.context).toEqual({ pass: 'p', cause: original })
+ 		})
+ 
+ 		it('maps ReasonError MISSING to ENGINE', () => {
+@@ -654,58 +664,61 @@ describe('helpers', () => {
+ 			const mapped = mapEngineError('oops', 'p')
+ 			expect(mapped.code).toBe('ENGINE')
+ 			expect(mapped.message).toContain('oops')
++			expect(mapped.context).toEqual({ pass: 'p', cause: 'oops' })
+ 		})
+ 	})
+ 
+-	describe('findEmptyLogicalPasses', () => {
++	describe('describeEmptyLogicalPasses', () => {
+ 		it('warns for a logical pass carrying no ruling', () => {
+ 			const definition = qualificationDefinition('standard', 'Standard', [gatesPass])
+-			expect(findEmptyLogicalPasses(definition)).toEqual(["Logical pass 'gates' has no rulings"])
++			expect(describeEmptyLogicalPasses(definition)).toEqual([
++				"Logical pass 'gates' has no rulings",
++			])
+ 		})
+ 
+ 		it('returns [] when every logical pass has a ruling', () => {
+ 			const definition = qualificationDefinition('standard', 'Standard', [gatesPass], {
+ 				rulings: [rulingDefinition('license', 'gates', 'licensed', 'restriction')],
+ 			})
+-			expect(findEmptyLogicalPasses(definition)).toEqual([])
++			expect(describeEmptyLogicalPasses(definition)).toEqual([])
+ 		})
+ 	})
+ 
+-	describe('findUnreadDerivations', () => {
++	describe('describeUnreadDerivations', () => {
+ 		it('returns [] when a quantitative pass is read by a later logical pass', () => {
+-			const cap = quantitativeDefinition('cap', 'Cap', [
+-				factorGroup('limit', 'sum', [staticFactor('base', 100)]),
++			const cap = createQuantitativeDefinition('cap', 'Cap', [
++				createFactorGroup('limit', 'sum', [createStaticFactor('base', 100)]),
+ 			])
+-			const gates = logicalDefinition('gates', 'Gates', [
+-				rule(
++			const gates = createLogicalDefinition('gates', 'Gates', [
++				createRule(
+ 					'over',
+-					[atom(['qualification', 'cap'], 'above', 50)],
+-					atom('blocked', 'equals', true),
++					[createAtom(['qualification', 'cap'], 'above', 50)],
++					createAtom('blocked', 'equals', true),
+ 				),
+ 			])
+ 			const definition = qualificationDefinition('standard', 'Standard', [cap, gates])
+-			expect(findUnreadDerivations(definition)).toEqual([])
++			expect(describeUnreadDerivations(definition)).toEqual([])
+ 		})
+ 
+ 		it('does not warn for a quantitative pass read by a later quantitative pass factor field', () => {
+-			const cap = quantitativeDefinition('cap', 'Cap', [
+-				factorGroup('limit', 'sum', [staticFactor('base', 100)]),
++			const cap = createQuantitativeDefinition('cap', 'Cap', [
++				createFactorGroup('limit', 'sum', [createStaticFactor('base', 100)]),
+ 			])
+-			const excess = quantitativeDefinition('excess', 'Excess', [
+-				factorGroup('excess', 'sum', [fieldFactor('cap', ['qualification', 'cap'])]),
++			const excess = createQuantitativeDefinition('excess', 'Excess', [
++				createFactorGroup('excess', 'sum', [createFieldFactor('cap', ['qualification', 'cap'])]),
+ 			])
+ 			const definition = qualificationDefinition('standard', 'Standard', [cap, excess])
+-			expect(findUnreadDerivations(definition)).not.toContain(
++			expect(describeUnreadDerivations(definition)).not.toContain(
+ 				"Quantitative pass 'cap' is never read by a later pass",
+ 			)
+ 		})
+ 
+ 		it('warns for a trailing quantitative pass read by nobody', () => {
+-			const cap = quantitativeDefinition('cap', 'Cap', [
+-				factorGroup('limit', 'sum', [staticFactor('base', 100)]),
++			const cap = createQuantitativeDefinition('cap', 'Cap', [
++				createFactorGroup('limit', 'sum', [createStaticFactor('base', 100)]),
+ 			])
+ 			const definition = qualificationDefinition('standard', 'Standard', [cap])
+-			expect(findUnreadDerivations(definition)).toEqual([
++			expect(describeUnreadDerivations(definition)).toEqual([
+ 				"Quantitative pass 'cap' is never read by a later pass",
+ 			])
+ 		})
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index 8db3a92..a774946 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -10,11 +10,14 @@ import {
+ 	isQualificationEffect,
+ 	isQualificationPass,
+ 	isQualificationResult,
+-	isQualificationValidationResult,
+ 	isRuling,
+-	qualificationDefinition,
+ } from '@src/core'
+-import { logicalDefinition, quantitativeDefinition, rule, atom } from '@orkestrel/reason'
++import {
++	createAtom,
++	createLogicalDefinition,
++	createQuantitativeDefinition,
++	createRule,
++} from '@orkestrel/reason'
+ import {
+ 	buildCyclicRecord,
+ 	buildCapExcessGatesDefinition,
+@@ -23,10 +26,14 @@ import {
+ 	buildGatesDefinition,
+ } from '../../setup.js'
+ 
+-const gatesPass = logicalDefinition('gates', 'Gates', [
+-	rule('licensed', [atom('licensed', 'equals', false)], atom('blocked', 'equals', true)),
++const gatesPass = createLogicalDefinition('gates', 'Gates', [
++	createRule(
++		'licensed',
++		[createAtom('licensed', 'equals', false)],
++		createAtom('blocked', 'equals', true),
++	),
+ ])
+-const capPass = quantitativeDefinition('cap', 'Cap', [])
++const capPass = createQuantitativeDefinition('cap', 'Cap', [])
+ 
+ describe('validators', () => {
+ 	describe('isEligibility', () => {
+@@ -456,78 +463,6 @@ describe('validators', () => {
+ 		})
+ 	})
+ 
+-	describe('isQualificationValidationResult', () => {
+-		const valid = { valid: true, errors: [], warnings: ['Definition has no passes'] }
+-
+-		it('accepts extra members', () => {
+-			expect(isQualificationValidationResult({ ...valid, extra: true })).toBe(true)
+-		})
+-
+-		it('accepts a class instance', () => {
+-			const value = new (class {
+-				readonly valid = true
+-				readonly errors = ['error']
+-				readonly warnings = ['warning']
+-			})()
+-			expect(isQualificationValidationResult(value)).toBe(true)
+-		})
+-
+-		it('rejects each wrong member', () => {
+-			expect(isQualificationValidationResult({ ...valid, valid: 1 })).toBe(false)
+-			expect(isQualificationValidationResult({ ...valid, errors: [false] })).toBe(false)
+-			expect(isQualificationValidationResult({ ...valid, warnings: [1] })).toBe(false)
+-		})
+-
+-		it('rejects arrays', () => {
+-			expect(isQualificationValidationResult([])).toBe(false)
+-		})
+-
+-		it('returns false without throwing on adversarial objects', () => {
+-			const cyclic: Record<string, unknown> = { valid: 1 }
+-			cyclic.self = cyclic
+-			const nullPrototype = Object.assign(Object.create(null), { valid: 1 })
+-			const throwing = Object.defineProperty({}, 'valid', {
+-				get() {
+-					throw new Error('blocked read')
+-				},
+-			})
+-			const revocable = Proxy.revocable({}, {})
+-			revocable.revoke()
+-
+-			for (const value of [cyclic, nullPrototype, throwing, revocable.proxy]) {
+-				expect(() => isQualificationValidationResult(value)).not.toThrow()
+-				expect(isQualificationValidationResult(value)).toBe(false)
+-			}
+-		})
+-
+-		it('accepts the package engine populated validation result', () => {
+-			const instance = createQualifier()
+-			try {
+-				const result = instance.validate(qualificationDefinition('empty', 'Empty definition', []))
+-				expect(result.warnings.length).toBeGreaterThan(0)
+-				expect(isQualificationValidationResult(result)).toBe(true)
+-			} finally {
+-				instance.destroy()
+-			}
+-		})
+-
+-		it('rejects qualification results outside the validation-result membership rule', () => {
+-			expect(
+-				isQualificationValidationResult({
+-					id: 'standard',
+-					name: 'Standard',
+-					eligibility: 'eligible',
+-					scopes: {},
+-					findings: [],
+-					derivations: [],
+-					success: true,
+-					trace: [],
+-					errors: [],
+-				}),
+-			).toBe(false)
+-		})
+-	})
+-
+ 	describe('isRuling', () => {
+ 		const valid = {
+ 			id: 'license',

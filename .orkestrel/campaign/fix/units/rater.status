@@ -1,0 +1,11 @@
+ M README.md
+ M guides/rater.md
+ M src/core/Rater.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/src/core/Rater.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/validators.test.ts
