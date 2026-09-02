@@ -854,3 +854,7 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   a utility type whose identifier is its whole description (contract's `Guard`, `AnyFunction`,
   and kin) keeps that description; workflow's three summary-less definition members gain a
   `Sets …` first sentence; scaffold's swept template-literal doc blocks stand.
+- **Slice 6 closed** (table `079fc2c`, reason `80151ce`, browser `c25c36b`, mcp `249299f`,
+  contract `7de1ef2`, agent `a1e2d49`, workflow `6f99184`, scaffold `ee872f3`; verdicts under
+  `voice/units/`). Every landing chain green. Every package of the wave has landed; the closing
+  sweep (`instruments/voice-wend.sh`: final scan, fleet gate sweep, third inventory) is running.
