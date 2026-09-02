@@ -29,8 +29,8 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   in `terrain` (Vitest 4.1.11, Playwright Chromium) keep `prove` off every browser project: the
   runtime stage matches the inferred project name exactly while Vitest names a browser instance
   `<label> (<browser>)`, and it creates the specification on the `threads` pool, so with the name
-  patched the browser project's setup file ran in a Node worker and died at `document is not
-defined`. The trigger is the first campaign that needs a receipt on a rendered claim; until then
+  patched the browser project's setup file ran in a Node worker and died at
+  `document is not defined`. The trigger is the first campaign that needs a receipt on a rendered claim; until then
   `orkestrel-prove-journey` routes rendered questions to a written browser-run artifact.
 - **test**: successor seams from the skills campaign accepted 2026-09-02. A winning-declaration
   reader (`readOrigin`: which rule won a property and which authored rules it beat) has no
