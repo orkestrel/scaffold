@@ -617,3 +617,12 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   adopt-when-red reading.
 - **L4 adopt-when-red readings on the accepted tips.** worker: check 0, test 0 (106 src). queue:
   check 0, test 0 (151 src). lsp: check 0, test 0 (159 src). probe: pending the re-stage.
+- **Probe after the corrected closure.** stage 0 (server-522ed4c.tgz and router staged as mcp's
+  peers), verify 0, check 0, test 1: the eight failures in `tests/src/bin/main.test.ts` and
+  `tests/src/server/Probe.test.ts` all carry "The probe could not arm: The Oxlint language server
+  exited with code 0" or "The LSP request 'initialize' exceeded its deadline" — a child-process
+  arming failure, not an old-name or shape mismatch (`npm run check` is green and the received
+  `initialize` and `tools/list` replies match the expected shapes). Per the writing-concurrency
+  rule on timing failures, the deciding re-run is the Orchestrator's on an idle host after the
+  live units exit; if it stays red alone, an adopt unit reads the arming path against the staged
+  `@orkestrel/process` and `@orkestrel/lsp` tips.
