@@ -752,3 +752,14 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   comment-only sweep over three files, kept and carried by the successor brief
   `voice/units/voice-ndjson-brief-2.md`. The slice relaunches from the same script with that
   brief substituted; nothing else changed.
+- **Pilot slice closed** (abort `968549c`, timeout `53117b7`, sqlite `1ede0ae`, ollama `6a6342d`,
+  ndjson `293ed4a`, codec `8adc908`, emitter `fdb2e36`, sse landed after its fix-up; verdicts under
+  `voice/units/`). Every unit's gates ran green on the writer's chain and again on the
+  Orchestrator's landing chain; `voice/scan-after-pilot.txt` reads zero in every bucket for the
+  eight. Rulings of record: the subjective lane broke claim 1 on one sentence in four units
+  (a dropped referent, an added quantifier, a moved possessive, a symbol name kept as a code
+  token), each closed by a one-line builder fix-up; the checker's claim 2 broke in four units on
+  the mandated boolean `@returns` form dropping its backticked tokens, a brief defect carved out
+  of every later checker brief; sqlite's disclosed drop of the `SQLITE_*` code tokens under the
+  name clause stands. The unit briefs for every later slice carry those rulings as standing
+  conditions, and the vendored rule path replaces the checkout path the pilot briefs named.
