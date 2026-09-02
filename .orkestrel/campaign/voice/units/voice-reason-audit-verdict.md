@@ -1,0 +1,64 @@
+# Audit verdict — unit voice-reason
+
+Bench: Sol dark; subjective lane on the writer's engine (Opus 5) in a clean context, told so;
+`checker` on Sonnet; the objective lane did not run (the subjective lane held meaning and the checker found no code token moved). Subject: the uncommitted tree audited in place, then landed at `80151ce`
+(`units/voice-reason.diff`, `units/voice-reason.status`, `units/voice-reason-report.md`).
+Rewritten per the writer: imperative 97, verbless 146, name 25, returns 47. Writer's gates: format:check 0, lint:check 0, check 0, build 0, npm test 0.
+
+## Subjective lane (FAIL 1)
+
+Lane held: SUBJECTIVE (voice, wording, meaning kept, guide voice). The Sol bench is dark, so this lane ran on the writer's engine (Claude Opus 5) in a clean context, told so. Ruled on `/home/user/scaffold/tmp/units/voice/voice-reason.diff`, `/home/user/scaffold/tmp/units/voice/voice-reason.status`, and the tree at `/home/user/fleet/reason`; the writer's report was read only to test its own stated decisions against the artifact, never as evidence.
+
+1. BROKEN — one hunk of the diff changes meaning. Every other rewritten first sentence keeps the action, the subject, and the qualifiers of the sentence it replaced; I read every hunk in the diff, not a sample. The counterexample is `/home/user/fleet/reason/src/core/reasoners/QuantitativeReasoner.ts:25`:
+   - was: `The quantitative reasoner — factor-based numeric scoring.`
+   - is: `Scores a definition's factors into one number.`
+   The rewrite adds two qualifiers the replaced sentence did not carry — a scope (`a definition's`) and an output arity (`into one number`) — and drops the phrase `factor-based numeric scoring`. The block's own `@remarks` at lines 31-34 describe a two-level aggregation ("a group's value is its `base` plus the weighted aggregation of its APPLIED factors … the definition's value is its `base` plus the unweighted aggregation of the APPLIED groups' values"), so the added arity claim flattens what the same block goes on to say, and the result also carries per-group and per-factor detail. The three sibling reasoners in the same hunk set show what faithful looks like: `SymbolicReasoner.ts:25` `Solves algebraic equations by variable isolation.`, `InferentialReasoner.ts:36` `Derives facts with unification variables and proof trees.`, `LogicalReasoner.ts:29` `Deduces booleans from rules with forward or backward chaining.` — each keeps its phrase intact and drops only the name-echoing label.
+
+2. CONFIRMED — every rewritten first sentence opens with a third-person `-s` verb that fits its symbol, and the verb vocabulary is a single deliberate language rather than a per-file improvisation: `Implements` for a class (`src/core/Reason.ts:20`, `src/core/builders/managers/EquationManager.ts`), `Declares` for a behavioral interface (`src/core/types.ts:850`), `Represents` for a data shape or union (`src/core/types.ts:472`), `Defines` for a definition arm (`src/core/types.ts:274`), `Names` for a literal union or an id constant (`src/core/constants.ts:212` region, `src/core/types.ts:1238`), `Holds` for a value constant (`src/core/constants.ts:8`), `Lists` for the frozen operation set (`src/core/constants.ts:202` region), `Fires when …` for an event-map member (`src/core/types.ts:1299`), and `Configures` for an options interface (`src/core/types.ts` `*Options` blocks). No rewritten sentence spells its own symbol's identifier back. Two borderline retentions are correct rather than breaks, because dropping the token would strand the referent and the brief's pilot lesson permits a domain term that is the value's own name: `src/core/builders/managers/Collection.ts:5` `Holds the id-keyed collection state …` and `src/core/constants.ts:241` region `Holds the `DefinitionBuilder` entity brand …`, where the backticked token names the branded class, a different symbol.
+
+3. CONFIRMED — every rewritten boolean `@returns` reads `True if …; false otherwise` with the condition carried over verbatim. Spot-checked against the diff: `src/core/errors.ts:40`, `src/core/helpers.ts:275`, `src/core/helpers.ts:735`, and the validators run at `src/core/validators.ts:92-1273`, including the parenthetical kept whole at `src/core/validators.ts:314` (`… a well-formed bounds record (both sides optional); false otherwise`). A sweep of every `@returns` under `src/` returns no surviving boolean return in another wording, and `src/core/helpers.ts:105` shows the launch tree's already-conforming line untouched.
+
+4. CONFIRMED — a pattern over the diff for a removed line opening on a third-person `-s` verb returns no match, so no already-conforming first sentence was rewritten; `src/core/factories.ts` and `src/core/operators/*.ts`, whose blocks already open `Creates …` / `Applies …` / `Evaluates …` / `Reduces …`, appear in neither the diff nor `voice-reason.status`. A pattern over the diff for a changed line carrying `@param`, `@remarks`, `@throws`, `@example`, or `@deprecated` returns no match; the only tag lines changed are `@returns`. Every other changed line belongs to a first sentence, including the three multi-line rewraps (`InferentialReasoner`, `LogicalReasoner`, and the `Check` block at `src/core/types.ts:113-114`), where the rewrap stays inside the first sentence and the following sentences remain context lines.
+
+Findings outside the claims:
+
+REQUIRED CHANGE (carries claim 1)
+
+`/home/user/fleet/reason/src/core/reasoners/QuantitativeReasoner.ts:25`.
+- What is wrong: the first sentence reads `Scores a definition's factors into one number.` It adds an output-arity claim and a scope the replaced sentence did not carry, and it discards the phrase `factor-based numeric scoring`.
+- Why it matters: the wave's contract is voice only, so a meaning-bearing rewrite is outside it. It also splits one concept across three terms in the shipped package. `guides/reason.md:67` still reads `Factor-based numeric scoring: per-factor pipeline → group aggregation → definition aggregation.`, `src/core/factories.ts:142` still reads `Creates the quantitative reasoner — factor-based numeric scoring.`, and the definition arm the same unit rewrote keeps the phrase at `src/core/types.ts:274` (`Defines factor-based numeric scoring.`). The class alone now says something else, and the guide is off-limits to this unit, so the drift can only be closed in the TSDoc. The writer's own recorded decision states the reasoner rewrites each keep the descriptive phrase that carried the fact and names `factor-based numeric scoring` as one of them; this sentence is where that decision was not applied.
+- What right looks like: `Applies factor-based numeric scoring.` — third-person `-s` verb, no symbol-name repeat, phrase preserved, and parallel to `Defines factor-based numeric scoring.` on the definition arm. Change the first sentence only; leave the `@remarks` block untouched.
+
+OBSERVATIONS (no change required; recorded so a later round does not re-open them)
+
+- `src/core/types.ts:113` — `Represents a single field predicate: resolves `field` from the subject and compares it to `value` with `operator`.` Conjugating the colon clause makes a data interface the grammatical actor of runtime work. The meaning is intact and the choice sits inside the brief's grant of wording judgment, so this is not a defect. If the sentence is ever reopened, the appositive form carries the same facts without the actor problem: `Represents a single field predicate — `field` resolved from the subject and compared to `value` with `operator`.`
+- Verb-family coherence is strong across the diff. The one seam a reader may notice is the `Definition` family: the four arms take `Defines` (`src/core/types.ts:274` and siblings) while the union takes `Represents` (`src/core/types.ts:472`). Both readings are defensible — an arm defines a strategy, the union represents a shape — and no change is warranted.
+- `src/core/builders/SubjectBuilder.ts:15` and `src/core/types.ts` keep the cryptic `taverna `Workspace`-shaped` reference inside the rewritten first sentence. Keeping it was correct under this unit's meaning-preservation contract. Whether a published package's first sentence should reference another package's shape at all is a successor question for the guide-voice owner, not this unit's defect.
+
+REFERRAL (objective lane; the Sol bench is dark, so it is addressed to the Orchestrator)
+
+The rewrites pushed two comment lines past the repository's declared width: `src/core/constants.ts:29` at 101 columns and `src/core/types.ts:1227` at 105 columns, against `printWidth: 100` in `/home/user/fleet/reason/.oxfmtrc.json:7`. The formatter does not reflow comment text, so `format:check` is unaffected, and the launch tree already carried longer comment lines (`src/core/helpers.ts:431`), so this is precedented rather than new in kind. Whether the declared width binds comment prose is a tooling-and-constraints question outside my lane; I return it evidenced rather than ruling on it.
+
+## Checker lane (PASS)
+
+Per-claim verdicts for unit voice-reason (`@orkestrel/reason` TSDoc voice migration), audited against `/home/user/scaffold/tmp/units/voice/voice-reason.diff`, `.status`, and the live tree at `/home/user/fleet/reason`.
+
+1. CONFIRMED — every hunk in the diff changes only lines inside `/** … */` or `//` comment text. Every `-`/`+` pair reviewed (diff.txt lines 1-2376) begins with `*`, `/**`, or is confined to a JSDoc block; no hunk touches a code token, an import, a signature, or a body statement (for example `voice-reason.diff:5-11`, `:1743-1756`). No counter-example found.
+
+2. CONFIRMED — every backtick token, `{@link …}`, and URL in a rewritten block is byte-identical to the removed line, with only the sanctioned changes present: (a) boolean `@returns` lines rewritten `` `true` when … `` → `True if …; false otherwise` with every other backtick token in the line preserved, verified across `voice-reason.diff:276`, `:1756`, `:1769`, `:1782`, `:1795`, `:1808`, `:1821`, `:1835`, `:1849`, and the full `validators.ts` run at `:1747-2376`; (b) four reasoner-class and four definition-arm openers dropped a plain-English label with no backtick token present in the original (`voice-reason.diff:782-784, 796-798, 809-811, 823-824, 1000-1001`), so the identity constraint is vacuous there, not violated; no other token substitution found.
+
+3. CONFIRMED — `voice-reason.status` lists 21 files, every line ` M src/core/…`; no line lists `tests/`, `guides/`, `README.md`, `package.json`, `package-lock.json`, `.claude/`, `configs/`, `tests/setupPolicy.ts`, or `tests/policy.test.ts`.
+
+4. CONFIRMED — grep of `/home/user/fleet/reason/src` for the imperative-verb and bad-`@returns` patterns returns 8 lines (`types.ts:133`, `types.ts:206`, `constants.ts:100`, `helpers.ts:992`, `helpers.ts:2017`, `helpers.ts:2142`, `FactorManager.ts:21`, `validators.ts:1270`); every hit is a mid-`@remarks` sentence, not a doc block's first line (confirmed by reading each in context, for example `types.ts:127-134`, `FactorManager.ts:14-28`, `validators.ts:1262-1273`). The `@returns` pattern (`Whether|` `true`` |true `) returns no matches. `app/` does not exist in this package (`Glob` returned no files), so the sweep's `app/` half is vacuously satisfied. Sweep returns no genuine hit.
+
+5. CONFIRMED — the report's Gates table (`voice-reason-report.md:89-98`) quotes the exact command and exit code 0 for `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run build`, and `npm test`, each with an excerpt, satisfying the rule's CONFIRMED condition on quoted evidence; the report itself notes the Orchestrator's landing chain remains authoritative for `npm test` timing, consistent with the claim's own caveat.
+
+Findings outside the claims: none material. The report's counts and taxonomy tables (blocks by kind, verb taxonomy) are descriptive summary and were not independently re-tallied; they are not among the five audited claims.
+
+Findings outside the claims:
+
+All five claims CONFIRMED on file:line evidence from the diff, status, report, and the live tree. The diff touches only TSDoc comment text (claim 1), preserves every backtick token/`{@link}`/URL except the two sanctioned rewrite forms (claim 2), stays scoped to `src/core/` (claim 3), leaves no imperative-opening or badly-worded-`@returns` doc block in `src/` (`app/` does not exist in this package) (claim 4), and the report quotes exact command/exit-code evidence for every gate (claim 5). No deviation, scope violation, or token drift found.
+
+## Orchestrator
+
+Subjective claim 1 broke on the `QuantitativeReasoner` summary, which added a scope and an arity and dropped the original phrase. Ruled: `Performs factor-based numeric scoring.` (fix-up brief `voice-reason-fixup-brief.md`, implementer on Opus). Landed by the Orchestrator's chain, every gate 0. **Verdict: PASS.**

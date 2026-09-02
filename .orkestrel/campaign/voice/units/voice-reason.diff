@@ -1,0 +1,2375 @@
+diff --git a/src/core/Reason.ts b/src/core/Reason.ts
+index 2c6e056..1c6cf95 100644
+--- a/src/core/Reason.ts
++++ b/src/core/Reason.ts
+@@ -17,7 +17,7 @@ import { DEFAULT_REASON_BAIL, DEFAULT_VALIDATE } from './constants.js'
+ import { ReasonError } from './errors.js'
+ 
+ /**
+- * The reasoning orchestrator — a thin router over registered
++ * Implements the reasoning orchestrator — a thin router over registered
+  * {@link ReasonerInterface}s.
+  *
+  * @remarks
+diff --git a/src/core/builders/DefinitionBuilder.ts b/src/core/builders/DefinitionBuilder.ts
+index 1927529..458a404 100644
+--- a/src/core/builders/DefinitionBuilder.ts
++++ b/src/core/builders/DefinitionBuilder.ts
+@@ -43,7 +43,7 @@ import { RuleManager } from './managers/RuleManager.js'
+ import { VariableManager } from './managers/VariableManager.js'
+ 
+ /**
+- * A stateful workspace builder accumulating a {@link Definition} through seven
++ * Implements a stateful workspace builder accumulating a {@link Definition} through seven
+  * always-present self-owning manager properties, shaped like `AgentContext`: a
+  * private SCALAR ENVELOPE (reasoning / id / name plus the kind's scalars)
+  * composed with each collection read from its manager.
+diff --git a/src/core/builders/SubjectBuilder.ts b/src/core/builders/SubjectBuilder.ts
+index e9b1114..e72aa59 100644
+--- a/src/core/builders/SubjectBuilder.ts
++++ b/src/core/builders/SubjectBuilder.ts
+@@ -12,7 +12,7 @@ import { SUBJECT_BUILDER_BRAND } from '../constants.js'
+ import { ReasonError } from '../errors.js'
+ 
+ /**
+- * A stateful workspace builder accumulating a {@link Subject}, taverna
++ * Implements a stateful workspace builder accumulating a {@link Subject}, taverna
+  * `Workspace`-shaped: a single flat collection, no managers —
+  * a flat sibling of `Reason.ts`.
+  *
+diff --git a/src/core/builders/managers/Collection.ts b/src/core/builders/managers/Collection.ts
+index 61073d3..7efb3c3 100644
+--- a/src/core/builders/managers/Collection.ts
++++ b/src/core/builders/managers/Collection.ts
+@@ -2,7 +2,7 @@ import { appendById, prependById, removeById, replaceById } from '../../helpers.
+ import { ReasonError } from '../../errors.js'
+ 
+ /**
+- * The id-keyed collection state five of the `DefinitionBuilder`'s managers
++ * Holds the id-keyed collection state five of the `DefinitionBuilder`'s managers
+  * share — the array, the four placement verbs, the silent re-seat, and the
+  * destroyed flag.
+  *
+diff --git a/src/core/builders/managers/EquationManager.ts b/src/core/builders/managers/EquationManager.ts
+index e2b85be..ec21bdd 100644
+--- a/src/core/builders/managers/EquationManager.ts
++++ b/src/core/builders/managers/EquationManager.ts
+@@ -9,7 +9,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { Collection } from './Collection.js'
+ 
+ /**
+- * The {@link EquationManagerInterface} implementation — a self-owning,
++ * Implements the {@link EquationManagerInterface} — a self-owning,
+  * kind-free manager over a symbolic definition's `equations`.
+  *
+  * @remarks
+diff --git a/src/core/builders/managers/FactManager.ts b/src/core/builders/managers/FactManager.ts
+index efa2ec4..e3428ef 100644
+--- a/src/core/builders/managers/FactManager.ts
++++ b/src/core/builders/managers/FactManager.ts
+@@ -9,7 +9,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { Collection } from './Collection.js'
+ 
+ /**
+- * The {@link FactManagerInterface} implementation — a self-owning, kind-free
++ * Implements the {@link FactManagerInterface} — a self-owning, kind-free
+  * manager over an inferential definition's `facts`.
+  *
+  * @remarks
+diff --git a/src/core/builders/managers/FactorManager.ts b/src/core/builders/managers/FactorManager.ts
+index 9dbf61f..dde8eb4 100644
+--- a/src/core/builders/managers/FactorManager.ts
++++ b/src/core/builders/managers/FactorManager.ts
+@@ -12,7 +12,7 @@ import { appendFactor, prependFactor, removeFactor, replaceFactor } from '../../
+ import { ReasonError } from '../../errors.js'
+ 
+ /**
+- * The {@link FactorManagerInterface} implementation — the sole DIVERGENT
++ * Implements the {@link FactorManagerInterface} — the sole DIVERGENT
+  * manager: factors nest inside groups, so it holds NO collection state of its
+  * own and threads a required `groupId` locator.
+  *
+diff --git a/src/core/builders/managers/GroupManager.ts b/src/core/builders/managers/GroupManager.ts
+index babaff7..e3f7cd6 100644
+--- a/src/core/builders/managers/GroupManager.ts
++++ b/src/core/builders/managers/GroupManager.ts
+@@ -9,7 +9,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { Collection } from './Collection.js'
+ 
+ /**
+- * The {@link GroupManagerInterface} implementation — a self-owning, kind-free
++ * Implements the {@link GroupManagerInterface} — a self-owning, kind-free
+  * manager over a quantitative definition's `groups`.
+  *
+  * @remarks
+diff --git a/src/core/builders/managers/InferenceManager.ts b/src/core/builders/managers/InferenceManager.ts
+index 731f9e6..e90383e 100644
+--- a/src/core/builders/managers/InferenceManager.ts
++++ b/src/core/builders/managers/InferenceManager.ts
+@@ -9,7 +9,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { Collection } from './Collection.js'
+ 
+ /**
+- * The {@link InferenceManagerInterface} implementation — a self-owning,
++ * Implements the {@link InferenceManagerInterface} — a self-owning,
+  * kind-free manager over an inferential definition's `inferences`.
+  *
+  * @remarks
+diff --git a/src/core/builders/managers/RuleManager.ts b/src/core/builders/managers/RuleManager.ts
+index 7d40aca..9aca4e1 100644
+--- a/src/core/builders/managers/RuleManager.ts
++++ b/src/core/builders/managers/RuleManager.ts
+@@ -9,7 +9,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { Collection } from './Collection.js'
+ 
+ /**
+- * The {@link RuleManagerInterface} implementation — a self-owning, kind-free
++ * Implements the {@link RuleManagerInterface} — a self-owning, kind-free
+  * manager over a logical definition's `rules`.
+  *
+  * @remarks
+diff --git a/src/core/builders/managers/VariableManager.ts b/src/core/builders/managers/VariableManager.ts
+index 1798e2d..358883b 100644
+--- a/src/core/builders/managers/VariableManager.ts
++++ b/src/core/builders/managers/VariableManager.ts
+@@ -8,7 +8,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { ReasonError } from '../../errors.js'
+ 
+ /**
+- * The {@link VariableManagerInterface} implementation — a self-owning,
++ * Implements the {@link VariableManagerInterface} — a self-owning,
+  * kind-free manager over a symbolic definition's `variables`, a name-keyed
+  * unordered record.
+  *
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index abf1a4e..5142c5e 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -5,7 +5,7 @@ import type { MathOperation } from './types.js'
+ // defaults.
+ 
+ /**
+- * Default `bail` for the `Reason` orchestrator — a reasoner throw is rethrown
++ * Holds the default `bail` for the `Reason` orchestrator — a reasoner throw is rethrown
+  * after the `error` emit.
+  *
+  * @remarks
+@@ -14,32 +14,32 @@ import type { MathOperation } from './types.js'
+  */
+ export const DEFAULT_REASON_BAIL = true
+ 
+-/** Default `validate` for the `Reason` orchestrator — per-call validation is skipped. */
++/** Holds the default `validate` for the `Reason` orchestrator — per-call validation is skipped. */
+ export const DEFAULT_VALIDATE = false
+ 
+ /**
+- * Default `depth` for chaining definitions — the forward-iteration /
++ * Holds the default `depth` for chaining definitions — the forward-iteration /
+  * backward-recursion cap of the logical and inferential reasoners.
+  */
+ export const DEFAULT_DEPTH = 10
+ 
+-/** Default `base` added before aggregation, at both group and definition level. */
++/** Holds the default `base` added before aggregation, at both group and definition level. */
+ export const DEFAULT_BASE = 0
+ 
+-/** Default `precision` (decimal places) for quantitative values and symbolic solutions. */
++/** Holds the default `precision` (decimal places) for quantitative values and symbolic solutions. */
+ export const DEFAULT_PRECISION = 4
+ 
+-/** Default `confidence` for facts, inferences, and injected subject facts. */
++/** Holds the default `confidence` for facts, inferences, and injected subject facts. */
+ export const DEFAULT_CONFIDENCE = 1
+ 
+-/** Default factor `weight` at group aggregation. */
++/** Holds the default factor `weight` at group aggregation. */
+ export const DEFAULT_WEIGHT = 1
+ 
+-/** Default factor / rule `priority` — evaluation order is ascending and stable. */
++/** Holds the default factor / rule `priority` — evaluation order is ascending and stable. */
+ export const DEFAULT_PRIORITY = 0
+ 
+ /**
+- * Decimal places a derived fact's confidence is rounded to during forward
++ * Holds the decimal places a derived fact's confidence is rounded to during forward
+  * inferential chaining.
+  *
+  * @remarks
+@@ -49,7 +49,7 @@ export const DEFAULT_PRIORITY = 0
+ export const CONFIDENCE_PRECISION = 4
+ 
+ /**
+- * The math operations the symbolic reasoner can invert while isolating a
++ * Lists the math operations the symbolic reasoner can invert while isolating a
+  * target variable — anything else (a `power`, an `abs`) fails the equation
+  * with a non-invertible error.
+  */
+@@ -57,29 +57,29 @@ export const INVERTIBLE_OPERATIONS: ReadonlySet<MathOperation> = Object.freeze(
+ 	new Set<MathOperation>(['add', 'subtract', 'multiply', 'divide']),
+ )
+ 
+-/** Default `id` for an `Evaluator`. */
++/** Names the default `id` for an `Evaluator`. */
+ export const EVALUATOR_ID = 'evaluator'
+ 
+-/** Default `id` for a `Transformer`. */
++/** Names the default `id` for a `Transformer`. */
+ export const TRANSFORMER_ID = 'transformer'
+ 
+-/** Default `id` for an `Aggregator`. */
++/** Names the default `id` for an `Aggregator`. */
+ export const AGGREGATOR_ID = 'aggregator'
+ 
+-/** Default `id` for a `QuantitativeReasoner`. */
++/** Names the default `id` for a `QuantitativeReasoner`. */
+ export const QUANTITATIVE_ID = 'quantitative'
+ 
+-/** Default `id` for a `LogicalReasoner`. */
++/** Names the default `id` for a `LogicalReasoner`. */
+ export const LOGICAL_ID = 'logical'
+ 
+-/** Default `id` for a `SymbolicReasoner`. */
++/** Names the default `id` for a `SymbolicReasoner`. */
+ export const SYMBOLIC_ID = 'symbolic'
+ 
+-/** Default `id` for an `InferentialReasoner`. */
++/** Names the default `id` for an `InferentialReasoner`. */
+ export const INFERENTIAL_ID = 'inferential'
+ 
+ /**
+- * The `DefinitionBuilder` entity brand — a `unique symbol` key carrying
++ * Holds the `DefinitionBuilder` entity brand — a `unique symbol` key carrying
+  * `readonly true` on every `DefinitionBuilderInterface` instance.
+  *
+  * @remarks
+@@ -91,7 +91,7 @@ export const INFERENTIAL_ID = 'inferential'
+ export const DEFINITION_BUILDER_BRAND: unique symbol = Symbol('reasons.definitionBuilder')
+ 
+ /**
+- * The `SubjectBuilder` entity brand — a `unique symbol` key carrying
++ * Holds the `SubjectBuilder` entity brand — a `unique symbol` key carrying
+  * `readonly true` on every `SubjectBuilderInterface` instance.
+  *
+  * @remarks
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 1dec227..4ba3554 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -4,7 +4,7 @@ import type { ReasonErrorCode } from './types.js'
+ // machine-readable `code`, so a `catch` branches on `error.code`.
+ 
+ /**
+- * An error thrown by the reasons layer.
++ * Represents an error thrown by the reasons layer.
+  *
+  * @remarks
+  * Thrown for: dispatching a definition no registered reasoner handles
+@@ -34,10 +34,10 @@ export class ReasonError extends Error {
+ }
+ 
+ /**
+- * Narrow an unknown caught value to a {@link ReasonError}.
++ * Narrows an unknown caught value to a {@link ReasonError}.
+  *
+  * @param value - The value to test (typically a `catch` binding)
+- * @returns `true` when `value` is a {@link ReasonError}
++ * @returns True if `value` is a {@link ReasonError}; false otherwise
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index f50b565..209d02a 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -41,7 +41,7 @@ import { ReasonError } from './errors.js'
+ // === Field display
+ 
+ /**
+- * Format a {@link FieldPath} for display — the single string key itself, or the
++ * Formats a {@link FieldPath} for display — the single string key itself, or the
+  * array segments joined with `.`.
+  *
+  * @remarks
+@@ -64,7 +64,7 @@ export function formatField(field: FieldPath): string {
+ // === Numeric helpers
+ 
+ /**
+- * Clamp a number to inclusive {@link Bounds}.
++ * Clamps a number to inclusive {@link Bounds}.
+  *
+  * @remarks
+  * An absent bound (or absent `bounds` entirely) never constrains that side.
+@@ -225,7 +225,7 @@ export function resolveSource(
+ }
+ 
+ /**
+- * Round a number to a fixed count of decimal places.
++ * Rounds a number to a fixed count of decimal places.
+  *
+  * @remarks
+  * `Math.round` semantics — halves round toward `+∞` (`2.5` → `3`, `-2.5` → `-2`).
+@@ -259,7 +259,7 @@ export function roundTo(value: number, precision = 0): number {
+ // === Equality, ordering & uniqueness
+ 
+ /**
+- * Determine whether two values are SameValueZero-equal — strict `===` with
++ * Determines whether two values are SameValueZero-equal — strict `===` with
+  * `NaN` equal to itself (and, unlike `Object.is`, `+0` equal to `-0`).
+  *
+  * @remarks
+@@ -272,7 +272,7 @@ export function roundTo(value: number, precision = 0): number {
+  *
+  * @param left - The first value
+  * @param right - The second value
+- * @returns `true` when the values are SameValueZero-equal
++ * @returns True if the values are SameValueZero-equal; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -288,7 +288,7 @@ export function equalValues(left: unknown, right: unknown): boolean {
+ }
+ 
+ /**
+- * Sort items ascending by `priority ?? DEFAULT_PRIORITY` — a stable copy sort.
++ * Sorts items ascending by `priority ?? DEFAULT_PRIORITY` — a stable copy sort.
+  *
+  * @remarks
+  * The shared evaluation-order helper of the quantitative (factors) and logical
+@@ -322,7 +322,7 @@ export function sortByPriority<T extends { readonly priority?: number }>(
+ }
+ 
+ /**
+- * Collect the ids that appear MORE THAN ONCE in an id-carrying list — each
++ * Collects the ids that appear MORE THAN ONCE in an id-carrying list — each
+  * duplicated id reported once, in first-occurrence order.
+  *
+  * @remarks
+@@ -350,7 +350,7 @@ export function findDuplicates(items: ReadonlyArray<{ readonly id: string }>): r
+ // === Inferential fact machinery
+ 
+ /**
+- * Derive a fact's predicate+arity bucket key — length-prefixed so the
++ * Derives a fact's predicate+arity bucket key — length-prefixed so the
+  * delimiter cannot be forged.
+  *
+  * @remarks
+@@ -381,7 +381,7 @@ export function factToArityKey(source: Fact): string {
+ }
+ 
+ /**
+- * Bucket facts by predicate+arity, preserving append order within each bucket.
++ * Buckets facts by predicate+arity, preserving append order within each bucket.
+  *
+  * @remarks
+  * The index behind the inferential reasoner's same-predicate-and-arity join
+@@ -415,7 +415,7 @@ export function indexByArity(facts: readonly Fact[]): Map<string, Fact[]> {
+ }
+ 
+ /**
+- * Derive one fact term's contribution to a dedup key — reference identity for
++ * Derives one fact term's contribution to a dedup key — reference identity for
+  * non-null objects / functions, a SameValueZero value string for primitives.
+  *
+  * @remarks
+@@ -452,7 +452,7 @@ export function termToKey(term: unknown, identities: Map<object, number>): strin
+ }
+ 
+ /**
+- * Derive a fact's canonical dedup key — predicate + arity + per-term
++ * Derives a fact's canonical dedup key — predicate + arity + per-term
+  * SameValueZero identity (confidence is NOT part of it).
+  *
+  * @remarks
+@@ -490,7 +490,7 @@ export function factToKey(source: Fact, identities: Map<object, number>): string
+ }
+ 
+ /**
+- * Positionally unify a pattern fact against a candidate fact — returning the
++ * Unifies a pattern fact positionally against a candidate fact — returning the
+  * variable bindings on success, `undefined` on mismatch.
+  *
+  * @remarks
+@@ -545,7 +545,7 @@ export function matchFacts(pattern: Fact, candidate: Fact): Record<string, unkno
+ }
+ 
+ /**
+- * Substitute a fact's bound `'?'`-variables with their values — a fresh fact
++ * Substitutes a fact's bound `'?'`-variables with their values — a fresh fact
+  * with unbound terms passed through unchanged.
+  *
+  * @remarks
+@@ -624,7 +624,7 @@ export function computePremiseConfidence(
+ }
+ 
+ /**
+- * Project a subject's scalar fields into `has(key, value)` base facts — the
++ * Projects a subject's scalar fields into `has(key, value)` base facts — the
+  * inferential reasoner's subject-injection step.
+  *
+  * @remarks
+@@ -717,7 +717,7 @@ export function findUnboundVariables(source: Inference): readonly string[] {
+ // === Symbolic algebra machinery
+ 
+ /**
+- * Determine whether a symbolic expression contains an UNBOUND occurrence of a
++ * Determines whether a symbolic expression contains an UNBOUND occurrence of a
+  * target variable.
+  *
+  * @remarks
+@@ -732,7 +732,7 @@ export function findUnboundVariables(source: Inference): readonly string[] {
+  * @param expression - The expression to probe
+  * @param target - The variable name being sought
+  * @param bindings - The known bindings (a bound target does NOT count as present)
+- * @returns `true` when an unbound `target` occurs in the expression
++ * @returns True if an unbound `target` occurs in the expression; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -764,7 +764,7 @@ export function containsVariable(
+ }
+ 
+ /**
+- * Invert a `x op right = value` step, solving for the LEFT operand `x`.
++ * Inverts a `x op right = value` step, solving for the LEFT operand `x`.
+  *
+  * @remarks
+  * The left-operand inverse of the symbolic reasoner's isolation: `add` inverts
+@@ -810,7 +810,7 @@ export function invertLeft(operator: MathOperation, value: number, rightValue: n
+ }
+ 
+ /**
+- * Invert a `left op x = value` step, solving for the RIGHT operand `x`.
++ * Inverts a `left op x = value` step, solving for the RIGHT operand `x`.
+  *
+  * @remarks
+  * The right-operand inverse of the symbolic reasoner's isolation: `add` inverts
+@@ -852,7 +852,7 @@ export function invertRight(operator: MathOperation, value: number, leftValue: n
+ }
+ 
+ /**
+- * Apply one binary/unary math operation to already-evaluated operands.
++ * Applies one binary/unary math operation to already-evaluated operands.
+  *
+  * @remarks
+  * The arithmetic core of the symbolic reasoner's expression evaluation: the full
+@@ -914,7 +914,7 @@ export function applyOperation(operator: string, left: number, right: number): n
+ // === Logical conclusion extraction & error results
+ 
+ /**
+- * Return every atom leaf of an expression tree, depth-first, left-to-right.
++ * Returns every atom leaf of an expression tree, depth-first, left-to-right.
+  *
+  * @remarks
+  * The shared atom-walk behind both {@link extractConclusions} and the raters'
+@@ -957,7 +957,7 @@ export function extractAtoms(expression: Expression): readonly Atom[] {
+ }
+ 
+ /**
+- * Flatten a logical conclusion expression into its asserted `field = value`
++ * Flattens a logical conclusion expression into its asserted `field = value`
+  * pairs — connectives IGNORED.
+  *
+  * @remarks
+@@ -1048,7 +1048,7 @@ export function findOverlayMismatches(rules: readonly Rule[]): readonly string[]
+ }
+ 
+ /**
+- * Build the empty, type-shaped failure {@link ReasonResult} matching a
++ * Builds the empty, type-shaped failure {@link ReasonResult} matching a
+  * definition's reasoning.
+  *
+  * @remarks
+@@ -1167,7 +1167,7 @@ export function definitionToEnvelope(definition: Definition): DefinitionEnvelope
+ // mutated, and a fresh array is always returned.
+ 
+ /**
+- * Insert `item` into an id-keyed collection, deduping any existing element
++ * Inserts `item` into an id-keyed collection, deduping any existing element
+  * sharing its id, then placing it at the END (or immediately AFTER `target`).
+  *
+  * @remarks
+@@ -1212,7 +1212,7 @@ export function appendById<T extends { readonly id: string }>(
+ }
+ 
+ /**
+- * Insert `item` into an id-keyed collection, deduping any existing element
++ * Inserts `item` into an id-keyed collection, deduping any existing element
+  * sharing its id, then placing it at the START (or immediately BEFORE `target`).
+  *
+  * @remarks
+@@ -1255,7 +1255,7 @@ export function prependById<T extends { readonly id: string }>(
+ }
+ 
+ /**
+- * Swap the element sharing `item.id` IN PLACE, preserving its position.
++ * Swaps the element sharing `item.id` IN PLACE, preserving its position.
+  *
+  * @remarks
+  * The position-preserving update primitive — unlike {@link appendById}, which
+@@ -1285,7 +1285,7 @@ export function replaceById<T extends { readonly id: string }>(
+ }
+ 
+ /**
+- * Filter every element sharing `id` out of an id-keyed collection.
++ * Filters every element sharing `id` out of an id-keyed collection.
+  *
+  * @remarks
+  * An absent `id` yields a same-length fresh copy — a no-op, never a throw.
+@@ -1311,7 +1311,7 @@ export function removeById<T extends { readonly id: string }>(
+ }
+ 
+ /**
+- * Reconcile two id-keyed collections — an incoming-order upsert with
++ * Reconciles two id-keyed collections — an incoming-order upsert with
+  * base-only survivors appended after.
+  *
+  * @remarks
+@@ -1363,7 +1363,7 @@ export function mergeById<T extends { readonly id: string }>(
+ // === Quantitative change/extend helpers
+ 
+ /**
+- * Insert `group` into a {@link QuantitativeDefinition}'s `groups` — dedup-then-
++ * Inserts `group` into a {@link QuantitativeDefinition}'s `groups` — dedup-then-
+  * insert at the end, or immediately after `target`.
+  *
+  * @remarks
+@@ -1393,7 +1393,7 @@ export function appendGroup(
+ }
+ 
+ /**
+- * Insert `group` into a {@link QuantitativeDefinition}'s `groups` — dedup-then-
++ * Inserts `group` into a {@link QuantitativeDefinition}'s `groups` — dedup-then-
+  * insert at the start, or immediately before `target`.
+  *
+  * @param definition - The definition to insert into
+@@ -1418,7 +1418,7 @@ export function prependGroup(
+ }
+ 
+ /**
+- * Swap the group sharing `group.id` in a {@link QuantitativeDefinition} IN
++ * Swaps the group sharing `group.id` in a {@link QuantitativeDefinition} IN
+  * PLACE, preserving its position (appends when absent).
+  *
+  * @param definition - The definition to update
+@@ -1441,7 +1441,7 @@ export function replaceGroup(
+ }
+ 
+ /**
+- * Remove every group sharing `id` from a {@link QuantitativeDefinition}
++ * Removes every group sharing `id` from a {@link QuantitativeDefinition}
+  * (no-op when absent).
+  *
+  * @param definition - The definition to update
+@@ -1464,7 +1464,7 @@ export function removeGroup(
+ }
+ 
+ /**
+- * Insert `factor` into a {@link FactorGroup}'s `factors` — dedup-then-insert
++ * Inserts `factor` into a {@link FactorGroup}'s `factors` — dedup-then-insert
+  * at the end, or immediately after `target`.
+  *
+  * @remarks
+@@ -1491,7 +1491,7 @@ export function appendFactor(group: FactorGroup, factor: Factor, target?: string
+ }
+ 
+ /**
+- * Insert `factor` into a {@link FactorGroup}'s `factors` — dedup-then-insert
++ * Inserts `factor` into a {@link FactorGroup}'s `factors` — dedup-then-insert
+  * at the start, or immediately before `target`.
+  *
+  * @param group - The group to insert into
+@@ -1512,7 +1512,7 @@ export function prependFactor(group: FactorGroup, factor: Factor, target?: strin
+ }
+ 
+ /**
+- * Swap the factor sharing `factor.id` in a {@link FactorGroup} IN PLACE,
++ * Swaps the factor sharing `factor.id` in a {@link FactorGroup} IN PLACE,
+  * preserving its position (appends when absent).
+  *
+  * @param group - The group to update
+@@ -1532,7 +1532,7 @@ export function replaceFactor(group: FactorGroup, factor: Factor): FactorGroup {
+ }
+ 
+ /**
+- * Remove every factor sharing `id` from a {@link FactorGroup} (no-op when
++ * Removes every factor sharing `id` from a {@link FactorGroup} (no-op when
+  * absent).
+  *
+  * @param group - The group to update
+@@ -1628,7 +1628,7 @@ export function replaceRule(definition: LogicalDefinition, rule: Rule): LogicalD
+ }
+ 
+ /**
+- * Remove every rule sharing `id` from a {@link LogicalDefinition} (no-op when
++ * Removes every rule sharing `id` from a {@link LogicalDefinition} (no-op when
+  * absent).
+  *
+  * @param definition - The definition to update
+@@ -1727,7 +1727,7 @@ export function replaceEquation(
+ }
+ 
+ /**
+- * Remove every equation sharing `id` from a {@link SymbolicDefinition} (no-op
++ * Removes every equation sharing `id` from a {@link SymbolicDefinition} (no-op
+  * when absent).
+  *
+  * @param definition - The definition to update
+@@ -1747,7 +1747,7 @@ export function removeEquation(definition: SymbolicDefinition, id: string): Symb
+ }
+ 
+ /**
+- * Upsert one entry of a {@link SymbolicDefinition}'s `variables`.
++ * Upserts one entry of a {@link SymbolicDefinition}'s `variables`.
+  *
+  * @remarks
+  * `variables` is a name-keyed unordered record, so `add`/`remove` (no
+@@ -1774,7 +1774,7 @@ export function addVariable(
+ }
+ 
+ /**
+- * Remove one entry of a {@link SymbolicDefinition}'s `variables`.
++ * Removes one entry of a {@link SymbolicDefinition}'s `variables`.
+  *
+  * @remarks
+  * The destructure-rest form OMITS the key entirely (never sets it to
+@@ -1875,7 +1875,7 @@ export function replaceFact(definition: InferentialDefinition, fact: Fact): Infe
+ }
+ 
+ /**
+- * Remove every fact sharing `id` from an {@link InferentialDefinition} (no-op
++ * Removes every fact sharing `id` from an {@link InferentialDefinition} (no-op
+  * when absent).
+  *
+  * @param definition - The definition to update
+@@ -1979,7 +1979,7 @@ export function replaceInference(
+ }
+ 
+ /**
+- * Remove every inference sharing `id` from an {@link InferentialDefinition}
++ * Removes every inference sharing `id` from an {@link InferentialDefinition}
+  * (no-op when absent).
+  *
+  * @param definition - The definition to update
+@@ -2009,7 +2009,7 @@ export function removeInference(
+ // kept — merge NEVER clears, which is what the `clear*` helpers are for.
+ 
+ /**
+- * Reconcile two {@link QuantitativeDefinition}s onto `base`'s id.
++ * Reconciles two {@link QuantitativeDefinition}s onto `base`'s id.
+  *
+  * @remarks
+  * The merge is ADDITIVE: a base-only group survives into the result and is
+@@ -2054,7 +2054,7 @@ export function mergeQuantitativeDefinition(
+ }
+ 
+ /**
+- * Reconcile two {@link LogicalDefinition}s onto `base`'s id.
++ * Reconciles two {@link LogicalDefinition}s onto `base`'s id.
+  *
+  * @remarks
+  * The merge is ADDITIVE: a base-only rule survives into the result and is never
+@@ -2091,7 +2091,7 @@ export function mergeLogicalDefinition(
+ }
+ 
+ /**
+- * Reconcile two {@link SymbolicDefinition}s onto `base`'s id.
++ * Reconciles two {@link SymbolicDefinition}s onto `base`'s id.
+  *
+  * @remarks
+  * The merge is ADDITIVE: a base-only equation or variable survives into the
+@@ -2132,7 +2132,7 @@ export function mergeSymbolicDefinition(
+ }
+ 
+ /**
+- * Reconcile two {@link InferentialDefinition}s onto `base`'s id.
++ * Reconciles two {@link InferentialDefinition}s onto `base`'s id.
+  *
+  * @remarks
+  * The merge is ADDITIVE: a base-only inference or fact survives into the result
+@@ -2178,7 +2178,7 @@ export function mergeInferentialDefinition(
+ // definition exact-record valid.
+ 
+ /**
+- * Delete one optional field of a {@link QuantitativeDefinition}.
++ * Deletes one optional field of a {@link QuantitativeDefinition}.
+  *
+  * @param definition - The definition to update
+  * @param key - The optional field to clear
+@@ -2201,7 +2201,7 @@ export function clearQuantitativeDefinition(
+ }
+ 
+ /**
+- * Delete one optional field of a {@link LogicalDefinition}.
++ * Deletes one optional field of a {@link LogicalDefinition}.
+  *
+  * @param definition - The definition to update
+  * @param key - The optional field to clear
+@@ -2224,7 +2224,7 @@ export function clearLogicalDefinition(
+ }
+ 
+ /**
+- * Delete one optional field of a {@link SymbolicDefinition}.
++ * Deletes one optional field of a {@link SymbolicDefinition}.
+  *
+  * @param definition - The definition to update
+  * @param key - The optional field to clear
+@@ -2247,7 +2247,7 @@ export function clearSymbolicDefinition(
+ }
+ 
+ /**
+- * Delete one optional field of an {@link InferentialDefinition}.
++ * Deletes one optional field of an {@link InferentialDefinition}.
+  *
+  * @param definition - The definition to update
+  * @param key - The optional field to clear
+@@ -2276,7 +2276,7 @@ export function clearInferentialDefinition(
+ // (mirrors the `addVariable`/`removeVariable` note).
+ 
+ /**
+- * Upsert one field of a {@link Subject} — copy-on-write spread.
++ * Upserts one field of a {@link Subject} — copy-on-write spread.
+  *
+  * @remarks
+  * Named `assignField` rather than `setField` because it RETURNS a fresh subject
+@@ -2301,7 +2301,7 @@ export function assignField(subject: Subject, key: string, value: unknown): Subj
+ }
+ 
+ /**
+- * Delete one field of a {@link Subject} — destructure-rest omit.
++ * Deletes one field of a {@link Subject} — destructure-rest omit.
+  *
+  * @remarks
+  * The key is DELETED entirely (never set to `undefined`), keeping the result
+@@ -2324,7 +2324,7 @@ export function removeField(subject: Subject, key: string): Subject {
+ }
+ 
+ /**
+- * Reconcile two {@link Subject}s — incoming-wins spread, with the base `id`
++ * Reconciles two {@link Subject}s — incoming-wins spread, with the base `id`
+  * preserved when present.
+  *
+  * @remarks
+@@ -2349,7 +2349,7 @@ export function mergeSubjects(base: Subject, incoming: Subject): Subject {
+ }
+ 
+ /**
+- * Produce `count` deterministic clones of a {@link Subject}.
++ * Produces `count` deterministic clones of a {@link Subject}.
+  *
+  * @remarks
+  * When `subject.id` is a string, each clone's id is minted
+diff --git a/src/core/parsers.ts b/src/core/parsers.ts
+index 9548a10..868b895 100644
+--- a/src/core/parsers.ts
++++ b/src/core/parsers.ts
+@@ -6,7 +6,7 @@ import { isDefinition } from './validators.js'
+ // surface. Every parser here returns `T | undefined` and never throws.
+ 
+ /**
+- * Parse a JSON string into a {@link Definition}, failing safe to `undefined`.
++ * Parses a JSON string into a {@link Definition}, failing safe to `undefined`.
+  *
+  * @remarks
+  * The safe inverse of the builders: `parseJSONAs` composed with the data guard
+diff --git a/src/core/reasoners/InferentialReasoner.ts b/src/core/reasoners/InferentialReasoner.ts
+index f4cc305..b88a790 100644
+--- a/src/core/reasoners/InferentialReasoner.ts
++++ b/src/core/reasoners/InferentialReasoner.ts
+@@ -33,8 +33,7 @@ import {
+ import { ReasonError } from '../errors.js'
+ 
+ /**
+- * The inferential reasoner — fact derivation with unification variables and
+- * proof trees.
++ * Derives facts with unification variables and proof trees.
+  *
+  * @remarks
+  * A string term starting with `?` is a unification variable — matching is
+diff --git a/src/core/reasoners/LogicalReasoner.ts b/src/core/reasoners/LogicalReasoner.ts
+index 75b00a1..562cf00 100644
+--- a/src/core/reasoners/LogicalReasoner.ts
++++ b/src/core/reasoners/LogicalReasoner.ts
+@@ -26,8 +26,7 @@ import { ReasonError } from '../errors.js'
+ import { Evaluator } from '../operators/Evaluator.js'
+ 
+ /**
+- * The logical reasoner — rule-based boolean deduction with forward or backward
+- * chaining.
++ * Deduces booleans from rules with forward or backward chaining.
+  *
+  * @remarks
+  * Forward chaining is a naive fixpoint capped at `depth` iterations: rules run
+diff --git a/src/core/reasoners/QuantitativeReasoner.ts b/src/core/reasoners/QuantitativeReasoner.ts
+index 0fd5a19..a10b1e5 100644
+--- a/src/core/reasoners/QuantitativeReasoner.ts
++++ b/src/core/reasoners/QuantitativeReasoner.ts
+@@ -22,7 +22,7 @@ import { Transformer } from '../operators/Transformer.js'
+ import { Aggregator } from '../operators/Aggregator.js'
+ 
+ /**
+- * The quantitative reasoner — factor-based numeric scoring.
++ * Performs factor-based numeric scoring.
+  *
+  * @remarks
+  * Each factor runs a fixed pipeline: checks gate (ALL met) → source resolve
+diff --git a/src/core/reasoners/SymbolicReasoner.ts b/src/core/reasoners/SymbolicReasoner.ts
+index 2233627..2849ba0 100644
+--- a/src/core/reasoners/SymbolicReasoner.ts
++++ b/src/core/reasoners/SymbolicReasoner.ts
+@@ -22,7 +22,7 @@ import { DEFAULT_PRECISION, INVERTIBLE_OPERATIONS, SYMBOLIC_ID } from '../consta
+ import { ReasonError } from '../errors.js'
+ 
+ /**
+- * The symbolic reasoner — algebraic equation solving by variable isolation.
++ * Solves algebraic equations by variable isolation.
+  *
+  * @remarks
+  * Bindings seed from `definition.variables`, then numeric subject fields (a
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 37a8479..2314e96 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -16,7 +16,7 @@ import type { DEFINITION_BUILDER_BRAND, SUBJECT_BUILDER_BRAND } from './constant
+ // === Vocabulary
+ 
+ /**
+- * The four reasoning strategies — the axis a {@link Definition} /
++ * Names the four reasoning strategies — the axis a {@link Definition} /
+  * {@link ReasonResult} discriminates on.
+  *
+  * @remarks
+@@ -28,13 +28,13 @@ import type { DEFINITION_BUILDER_BRAND, SUBJECT_BUILDER_BRAND } from './constant
+ export type Reasoning = 'quantitative' | 'logical' | 'symbolic' | 'inferential'
+ 
+ /**
+- * How a chaining reasoner walks its rules: `forward` (data-driven fixpoint) or
++ * Names how a chaining reasoner walks its rules: `forward` (data-driven fixpoint) or
+  * `backward` (goal-driven proving).
+  */
+ export type ChainingStrategy = 'forward' | 'backward'
+ 
+ /**
+- * A math operation applied by the {@link TransformerInterface} and inside
++ * Names a math operation applied by the {@link TransformerInterface} and inside
+  * {@link SymbolicExpression} trees.
+  *
+  * @remarks
+@@ -57,7 +57,7 @@ export type MathOperation =
+ 	| 'abs'
+ 
+ /**
+- * How the {@link AggregatorInterface} reduces a list of numbers to one.
++ * Names how the {@link AggregatorInterface} reduces a list of numbers to one.
+  *
+  * @remarks
+  * When weights apply: `sum` multiplies each value by its weight, `product`
+@@ -67,7 +67,7 @@ export type MathOperation =
+ export type Aggregation = 'sum' | 'product' | 'average' | 'minimum' | 'maximum'
+ 
+ /**
+- * The comparison a {@link Check} applies between a resolved subject field and
++ * Names the comparison a {@link Check} applies between a resolved subject field and
+  * its expected value.
+  *
+  * @remarks
+@@ -92,7 +92,7 @@ export type Comparison =
+ 	| 'outside'
+ 
+ /**
+- * A logical connective inside a compound {@link Expression}.
++ * Names a logical connective inside a compound {@link Expression}.
+  *
+  * @remarks
+  * `not` reads only its first operand (empty operands are vacuously true);
+@@ -102,7 +102,7 @@ export type Comparison =
+ export type LogicalOperator = 'and' | 'or' | 'not' | 'implies' | 'xor'
+ 
+ /**
+- * The data record being reasoned about — a plain readonly bag of fields, read
++ * Represents the data record being reasoned about — a plain readonly bag of fields, read
+  * by {@link FieldPath}.
+  */
+ export type Subject = Readonly<Record<string, unknown>>
+@@ -110,8 +110,8 @@ export type Subject = Readonly<Record<string, unknown>>
+ // === Checks, transforms & bounds
+ 
+ /**
+- * A single field predicate: resolve `field` from the subject and compare it to
+- * `value` with `operator`.
++ * Represents a single field predicate: resolves `field` from the subject and compares it
++ * to `value` with `operator`.
+  *
+  * @remarks
+  * `field` follows the {@link FieldPath} idiom — a string is ONE key (never
+@@ -125,7 +125,7 @@ export interface Check {
+ }
+ 
+ /**
+- * The outcome of one {@link Check} evaluation.
++ * Represents the outcome of one {@link Check} evaluation.
+  *
+  * @remarks
+  * `actual` is the resolved subject value (possibly `undefined`); `error` is set
+@@ -140,7 +140,7 @@ export interface CheckResult {
+ }
+ 
+ /**
+- * One math step applied to a number by the {@link TransformerInterface}.
++ * Represents one math step applied to a number by the {@link TransformerInterface}.
+  *
+  * @remarks
+  * The absent-`operand` default is operation-specific: `1` for `multiply` /
+@@ -153,7 +153,7 @@ export interface Transform {
+ }
+ 
+ /**
+- * An inclusive numeric clamp — either side may be absent (unbounded).
++ * Represents an inclusive numeric clamp — either side may be absent (unbounded).
+  */
+ export interface Bounds {
+ 	readonly minimum?: number
+@@ -162,14 +162,14 @@ export interface Bounds {
+ 
+ // === Quantitative definitions
+ 
+-/** A factor source yielding a fixed number. */
++/** Represents a factor source yielding a fixed number. */
+ export interface StaticSource {
+ 	readonly origin: 'static'
+ 	readonly value: number
+ }
+ 
+ /**
+- * A factor source reading a subject field as a number.
++ * Represents a factor source reading a subject field as a number.
+  *
+  * @remarks
+  * The field is coerced with the contracts `parseNumber` — a finite number
+@@ -183,7 +183,7 @@ export interface FieldSource {
+ }
+ 
+ /**
+- * A factor source mapping a subject field through a lookup table.
++ * Represents a factor source mapping a subject field through a lookup table.
+  *
+  * @remarks
+  * A missing or `null` field takes the factor's `fallback` directly (never the
+@@ -198,7 +198,7 @@ export interface LookupSource {
+ }
+ 
+ /**
+- * A factor source banding a numeric subject field through ordered ranges.
++ * Represents a factor source banding a numeric subject field through ordered ranges.
+  *
+  * @remarks
+  * Ranges are scanned in order and the FIRST match wins. A range without
+@@ -211,17 +211,17 @@ export interface RangeSource {
+ 	readonly ranges: readonly FactorRange[]
+ }
+ 
+-/** The four factor sources, discriminated by `origin`. */
++/** Represents the four factor sources, discriminated by `origin`. */
+ export type Source = StaticSource | FieldSource | LookupSource | RangeSource
+ 
+-/** One band of a {@link RangeSource} — an optional inclusive bounds test and the value it yields. */
++/** Represents one band of a {@link RangeSource} — an optional inclusive bounds test and the value it yields. */
+ export interface FactorRange {
+ 	readonly bounds?: Bounds
+ 	readonly value: number
+ }
+ 
+ /**
+- * One scored input of a quantitative group.
++ * Represents one scored input of a quantitative group.
+  *
+  * @remarks
+  * Evaluated as a pipeline: `checks` gate (ALL must be met) → `source` resolve
+@@ -248,7 +248,7 @@ export interface Factor {
+ }
+ 
+ /**
+- * A group of factors aggregated into one value.
++ * Represents a group of factors aggregated into one value.
+  *
+  * @remarks
+  * The group value is `base` (default `0`) plus the aggregation of its APPLIED
+@@ -271,7 +271,7 @@ export interface FactorGroup {
+ }
+ 
+ /**
+- * A quantitative (factor-based numeric scoring) definition.
++ * Defines factor-based numeric scoring.
+  *
+  * @remarks
+  * The final value is `base` (default `0`) plus the aggregation of the applied
+@@ -292,24 +292,24 @@ export interface QuantitativeDefinition {
+ 
+ // === Logical definitions
+ 
+-/** A leaf boolean expression — one {@link Check} against the subject. */
++/** Represents a leaf boolean expression — one {@link Check} against the subject. */
+ export interface Atom {
+ 	readonly form: 'atom'
+ 	readonly check: Check
+ }
+ 
+-/** A compound boolean expression — a {@link LogicalOperator} over nested operands. */
++/** Represents a compound boolean expression — a {@link LogicalOperator} over nested operands. */
+ export interface Compound {
+ 	readonly form: 'compound'
+ 	readonly operator: LogicalOperator
+ 	readonly operands: readonly Expression[]
+ }
+ 
+-/** A boolean expression tree, discriminated by `form`. */
++/** Represents a boolean expression tree, discriminated by `form`. */
+ export type Expression = Atom | Compound
+ 
+ /**
+- * One deduction rule: when ALL `premises` hold, the `conclusion`'s atoms are
++ * Represents one deduction rule: when ALL `premises` hold, the `conclusion`'s atoms are
+  * asserted as derived facts.
+  *
+  * @remarks
+@@ -329,7 +329,7 @@ export interface Rule {
+ }
+ 
+ /**
+- * A logical (rule-based deduction) definition.
++ * Defines rule-based deduction.
+  *
+  * @remarks
+  * `strategy` picks forward fixpoint chaining or backward goal-driven proving;
+@@ -347,20 +347,20 @@ export interface LogicalDefinition {
+ 
+ // === Symbolic definitions
+ 
+-/** A symbolic expression leaf naming a variable. */
++/** Represents a symbolic expression leaf naming a variable. */
+ export interface Variable {
+ 	readonly form: 'variable'
+ 	readonly name: string
+ }
+ 
+-/** A symbolic expression leaf holding a fixed number. */
++/** Represents a symbolic expression leaf holding a fixed number. */
+ export interface Constant {
+ 	readonly form: 'constant'
+ 	readonly value: number
+ }
+ 
+ /**
+- * A symbolic operation node.
++ * Represents a symbolic operation node.
+  *
+  * @remarks
+  * `right` is absent for unary operators (`round` / `ceil` / `floor` / `abs`)
+@@ -373,11 +373,11 @@ export interface Operation {
+ 	readonly right?: SymbolicExpression
+ }
+ 
+-/** An algebraic expression tree, discriminated by `form`. */
++/** Represents an algebraic expression tree, discriminated by `form`. */
+ export type SymbolicExpression = Variable | Constant | Operation
+ 
+ /**
+- * One equation `left = right`, solved for the `target` variable.
++ * Represents one equation `left = right`, solved for the `target` variable.
+  *
+  * @remarks
+  * When `target` is unbound and appears on exactly one side, it is isolated
+@@ -394,7 +394,7 @@ export interface Equation {
+ }
+ 
+ /**
+- * A symbolic (equation-solving) definition.
++ * Defines equation-solving.
+  *
+  * @remarks
+  * `variables` seeds the bindings; numeric subject fields OVERRIDE same-named
+@@ -415,7 +415,7 @@ export interface SymbolicDefinition {
+ // === Inferential definitions
+ 
+ /**
+- * One fact: a `predicate` over positional `terms`.
++ * Represents one fact: a `predicate` over positional `terms`.
+  *
+  * @remarks
+  * A string term starting with `?` is a unification variable (the prefix is
+@@ -430,7 +430,7 @@ export interface Fact {
+ }
+ 
+ /**
+- * One inference rule: when every premise pattern unifies against known facts
++ * Represents one inference rule: when every premise pattern unifies against known facts
+  * (with consistent variable bindings), the instantiated `conclusion` is
+  * derived.
+  *
+@@ -450,7 +450,7 @@ export interface Inference {
+ }
+ 
+ /**
+- * An inferential (fact-derivation) definition.
++ * Defines fact-derivation.
+  *
+  * @remarks
+  * `facts` is the base knowledge; scalar subject fields are additionally
+@@ -469,7 +469,7 @@ export interface InferentialDefinition {
+ 	readonly depth?: number
+ }
+ 
+-/** Any reasoning definition, discriminated by `reasoning`. */
++/** Represents any reasoning definition, discriminated by `reasoning`. */
+ export type Definition =
+ 	| QuantitativeDefinition
+ 	| LogicalDefinition
+@@ -479,7 +479,7 @@ export type Definition =
+ // === Results
+ 
+ /**
+- * One factor's evaluation outcome.
++ * Represents one factor's evaluation outcome.
+  *
+  * @remarks
+  * `raw` is the resolved source value before transforms / clamping (absent when
+@@ -496,7 +496,7 @@ export interface FactorResult {
+ }
+ 
+ /**
+- * One group's evaluation outcome — its clamped value and the per-factor
++ * Represents one group's evaluation outcome — its clamped value and the per-factor
+  * results (disabled factors omitted entirely).
+  *
+  * @remarks
+@@ -513,7 +513,7 @@ export interface GroupResult {
+ }
+ 
+ /**
+- * The outcome of quantitative reasoning.
++ * Represents the outcome of quantitative reasoning.
+  *
+  * @remarks
+  * `count` tallies the applied groups. `success` is `false` whenever any error
+@@ -531,7 +531,7 @@ export interface QuantitativeResult {
+ }
+ 
+ /**
+- * One rule's evaluation outcome.
++ * Represents one rule's evaluation outcome.
+  *
+  * @remarks
+  * `applied` and `conclusion` are always equal — both mean "all premises held".
+@@ -545,7 +545,7 @@ export interface RuleResult {
+ }
+ 
+ /**
+- * The outcome of logical reasoning.
++ * Represents the outcome of logical reasoning.
+  *
+  * @remarks
+  * `conclusion` is the LAST evaluated rule's conclusion (`false` when no rule
+@@ -563,7 +563,7 @@ export interface LogicalResult {
+ }
+ 
+ /**
+- * The outcome of symbolic reasoning — final bindings keyed by each equation's
++ * Represents the outcome of symbolic reasoning — final bindings keyed by each equation's
+  * `target` (a failed equation's target still appears when bound elsewhere).
+  */
+ export interface SymbolicResult {
+@@ -575,7 +575,7 @@ export interface SymbolicResult {
+ }
+ 
+ /**
+- * One node of a backward-chaining proof tree.
++ * Represents one node of a backward-chaining proof tree.
+  *
+  * @remarks
+  * `fact` is the proved fact's / goal's id; `inference` is set when the node was
+@@ -591,7 +591,7 @@ export interface ProofNode {
+ }
+ 
+ /**
+- * The outcome of inferential reasoning.
++ * Represents the outcome of inferential reasoning.
+  *
+  * @remarks
+  * `derived` lists the newly derived facts (deriving nothing is still success);
+@@ -607,11 +607,11 @@ export interface InferentialResult {
+ 	readonly errors: readonly string[]
+ }
+ 
+-/** Any reasoning result, discriminated by `reasoning`. */
++/** Represents any reasoning result, discriminated by `reasoning`. */
+ export type ReasonResult = QuantitativeResult | LogicalResult | SymbolicResult | InferentialResult
+ 
+ /**
+- * The outcome of validating a definition — hard `errors` (definition unusable)
++ * Represents the outcome of validating a definition — hard `errors` (definition unusable)
+  * and soft `warnings` (suspicious but runnable). `valid` is `true` exactly when
+  * `errors` is empty.
+  *
+@@ -632,7 +632,7 @@ export interface ReasonValidationResult {
+ // === Operator options
+ 
+ /**
+- * Options for `createEvaluator` / the `Evaluator` constructor.
++ * Configures `createEvaluator` / the `Evaluator` constructor.
+  *
+  * @remarks
+  * `id` — the evaluator's identity string (defaults to `EVALUATOR_ID`).
+@@ -642,7 +642,7 @@ export interface EvaluatorOptions {
+ }
+ 
+ /**
+- * Options for `createTransformer` / the `Transformer` constructor.
++ * Configures `createTransformer` / the `Transformer` constructor.
+  *
+  * @remarks
+  * `id` — the transformer's identity string (defaults to `TRANSFORMER_ID`).
+@@ -652,7 +652,7 @@ export interface TransformerOptions {
+ }
+ 
+ /**
+- * Options for `createAggregator` / the `Aggregator` constructor.
++ * Configures `createAggregator` / the `Aggregator` constructor.
+  *
+  * @remarks
+  * `id` — the aggregator's identity string (defaults to `AGGREGATOR_ID`).
+@@ -664,7 +664,7 @@ export interface AggregatorOptions {
+ // === Reasoner options
+ 
+ /**
+- * Options for `createQuantitativeReasoner` / the `QuantitativeReasoner`
++ * Configures `createQuantitativeReasoner` / the `QuantitativeReasoner`
+  * constructor.
+  *
+  * @remarks
+@@ -680,7 +680,7 @@ export interface QuantitativeReasonerOptions {
+ }
+ 
+ /**
+- * Options for `createLogicalReasoner` / the `LogicalReasoner` constructor.
++ * Configures `createLogicalReasoner` / the `LogicalReasoner` constructor.
+  *
+  * @remarks
+  * `id` — the reasoner's identity string (defaults to `LOGICAL_ID`).
+@@ -693,7 +693,7 @@ export interface LogicalReasonerOptions {
+ }
+ 
+ /**
+- * Options for `createSymbolicReasoner` / the `SymbolicReasoner` constructor.
++ * Configures `createSymbolicReasoner` / the `SymbolicReasoner` constructor.
+  *
+  * @remarks
+  * `id` — the reasoner's identity string (defaults to `SYMBOLIC_ID`).
+@@ -703,7 +703,7 @@ export interface SymbolicReasonerOptions {
+ }
+ 
+ /**
+- * Options for `createInferentialReasoner` / the `InferentialReasoner`
++ * Configures `createInferentialReasoner` / the `InferentialReasoner`
+  * constructor.
+  *
+  * @remarks
+@@ -761,7 +761,7 @@ export interface AggregatorInterface {
+ }
+ 
+ /**
+- * A reasoning strategy adapter — one per {@link Reasoning}.
++ * Declares a reasoning strategy adapter — one per {@link Reasoning}.
+  *
+  * @remarks
+  * `reason` throws a `ReasonError` (`MISMATCH`) when handed a definition of a
+@@ -780,7 +780,7 @@ export interface ReasonerInterface {
+ }
+ 
+ /**
+- * A machine-readable `ReasonError` code.
++ * Names a machine-readable `ReasonError` code.
+  *
+  * @remarks
+  * `MISSING` — no reasoner registered for the definition's reasoning.
+@@ -806,7 +806,7 @@ export type ReasonErrorCode =
+ 	| 'OPERATOR'
+ 
+ /**
+- * The push observation surface of a {@link ReasonInterface}.
++ * Represents the push observation surface of a {@link ReasonInterface}.
+  *
+  * @remarks
+  * `register` fires when a reasoner is registered (carrying its reasoning);
+@@ -817,18 +817,18 @@ export type ReasonErrorCode =
+  * listener routes to the `error` OPTION handler, never onto this map.
+  */
+ export type ReasonEventMap = {
+-	/** A reasoner was registered — carries its reasoning. */
++	/** Fires when a reasoner is registered — carries its reasoning. */
+ 	readonly register: readonly [reasoning: Reasoning]
+-	/** A reasoning run succeeded — carries the produced result. */
++	/** Fires when a reasoning run succeeds — carries the produced result. */
+ 	readonly reason: readonly [result: ReasonResult]
+-	/** A reasoner threw — carries the raw thrown value. */
++	/** Fires when a reasoner throws — carries the raw thrown value. */
+ 	readonly error: readonly [error: unknown]
+-	/** The orchestrator was destroyed. */
++	/** Fires when the orchestrator is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createReason` / the `Reason` constructor.
++ * Configures `createReason` / the `Reason` constructor.
+  *
+  * @remarks
+  * `reasoners` — the initial registry (a later entry of the same reasoning
+@@ -847,7 +847,7 @@ export interface ReasonOptions {
+ }
+ 
+ /**
+- * The reasoning orchestrator — a thin router over registered
++ * Declares the reasoning orchestrator — a thin router over registered
+  * {@link ReasonerInterface}s.
+  *
+  * @remarks
+@@ -892,7 +892,7 @@ export interface ReasonInterface {
+ // call (no per-element events).
+ 
+ /**
+- * The {@link DefinitionBuilderInterface} manager over a quantitative
++ * Declares the {@link DefinitionBuilderInterface} manager over a quantitative
+  * definition's `groups` — a self-owning, kind-free collection manager.
+  *
+  * @remarks
+@@ -912,22 +912,22 @@ export interface GroupManagerInterface {
+ 	destroy(): void
+ }
+ 
+-/** The push observation surface of a {@link GroupManagerInterface}. */
++/** Represents the push observation surface of a {@link GroupManagerInterface}. */
+ export type GroupManagerEventMap = {
+-	/** A group was appended — carries its id. */
++	/** Fires when a group is appended — carries its id. */
+ 	readonly append: readonly [id: string]
+-	/** A group was prepended — carries its id. */
++	/** Fires when a group is prepended — carries its id. */
+ 	readonly prepend: readonly [id: string]
+-	/** A group was replaced in place — carries its id. */
++	/** Fires when a group is replaced in place — carries its id. */
+ 	readonly replace: readonly [id: string]
+-	/** A group was removed — carries its id. */
++	/** Fires when a group is removed — carries its id. */
+ 	readonly remove: readonly [id: string]
+-	/** The manager was destroyed. */
++	/** Fires when the manager is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createGroupManager` / the `GroupManager` constructor.
++ * Configures `createGroupManager` / the `GroupManager` constructor.
+  *
+  * @remarks
+  * `groups` — the initial collection (defaults to empty). `on` — initial event
+@@ -940,7 +940,7 @@ export interface GroupManagerOptions {
+ }
+ 
+ /**
+- * The {@link DefinitionBuilderInterface} manager over a `FactorGroup`'s
++ * Declares the {@link DefinitionBuilderInterface} manager over a `FactorGroup`'s
+  * `factors`, threaded through the required `groupId` locator (a factor lives
+  * inside its group).
+  *
+@@ -965,22 +965,22 @@ export interface FactorManagerInterface {
+ 	destroy(): void
+ }
+ 
+-/** The push observation surface of a {@link FactorManagerInterface}. */
++/** Represents the push observation surface of a {@link FactorManagerInterface}. */
+ export type FactorManagerEventMap = {
+-	/** A factor was appended — carries its id. */
++	/** Fires when a factor is appended — carries its id. */
+ 	readonly append: readonly [id: string]
+-	/** A factor was prepended — carries its id. */
++	/** Fires when a factor is prepended — carries its id. */
+ 	readonly prepend: readonly [id: string]
+-	/** A factor was replaced in place — carries its id. */
++	/** Fires when a factor is replaced in place — carries its id. */
+ 	readonly replace: readonly [id: string]
+-	/** A factor was removed — carries its id. */
++	/** Fires when a factor is removed — carries its id. */
+ 	readonly remove: readonly [id: string]
+-	/** The manager was destroyed. */
++	/** Fires when the manager is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createFactorManager` / the `FactorManager` constructor.
++ * Configures `createFactorManager` / the `FactorManager` constructor.
+  *
+  * @remarks
+  * The sibling `GroupManagerInterface` reference is a constructor argument, not
+@@ -993,7 +993,7 @@ export interface FactorManagerOptions {
+ }
+ 
+ /**
+- * The {@link DefinitionBuilderInterface} manager over a logical definition's
++ * Declares the {@link DefinitionBuilderInterface} manager over a logical definition's
+  * `rules` — a self-owning, kind-free collection manager.
+  *
+  * @remarks
+@@ -1013,22 +1013,22 @@ export interface RuleManagerInterface {
+ 	destroy(): void
+ }
+ 
+-/** The push observation surface of a {@link RuleManagerInterface}. */
++/** Represents the push observation surface of a {@link RuleManagerInterface}. */
+ export type RuleManagerEventMap = {
+-	/** A rule was appended — carries its id. */
++	/** Fires when a rule is appended — carries its id. */
+ 	readonly append: readonly [id: string]
+-	/** A rule was prepended — carries its id. */
++	/** Fires when a rule is prepended — carries its id. */
+ 	readonly prepend: readonly [id: string]
+-	/** A rule was replaced in place — carries its id. */
++	/** Fires when a rule is replaced in place — carries its id. */
+ 	readonly replace: readonly [id: string]
+-	/** A rule was removed — carries its id. */
++	/** Fires when a rule is removed — carries its id. */
+ 	readonly remove: readonly [id: string]
+-	/** The manager was destroyed. */
++	/** Fires when the manager is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createRuleManager` / the `RuleManager` constructor.
++ * Configures `createRuleManager` / the `RuleManager` constructor.
+  *
+  * @remarks
+  * `rules` — the initial collection (defaults to empty). `on` — initial event
+@@ -1041,7 +1041,7 @@ export interface RuleManagerOptions {
+ }
+ 
+ /**
+- * The {@link DefinitionBuilderInterface} manager over a symbolic definition's
++ * Declares the {@link DefinitionBuilderInterface} manager over a symbolic definition's
+  * `equations` — a self-owning, kind-free collection manager.
+  *
+  * @remarks
+@@ -1060,22 +1060,22 @@ export interface EquationManagerInterface {
+ 	destroy(): void
+ }
+ 
+-/** The push observation surface of an {@link EquationManagerInterface}. */
++/** Represents the push observation surface of an {@link EquationManagerInterface}. */
+ export type EquationManagerEventMap = {
+-	/** An equation was appended — carries its id. */
++	/** Fires when an equation is appended — carries its id. */
+ 	readonly append: readonly [id: string]
+-	/** An equation was prepended — carries its id. */
++	/** Fires when an equation is prepended — carries its id. */
+ 	readonly prepend: readonly [id: string]
+-	/** An equation was replaced in place — carries its id. */
++	/** Fires when an equation is replaced in place — carries its id. */
+ 	readonly replace: readonly [id: string]
+-	/** An equation was removed — carries its id. */
++	/** Fires when an equation is removed — carries its id. */
+ 	readonly remove: readonly [id: string]
+-	/** The manager was destroyed. */
++	/** Fires when the manager is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createEquationManager` / the `EquationManager` constructor.
++ * Configures `createEquationManager` / the `EquationManager` constructor.
+  *
+  * @remarks
+  * `equations` — the initial collection (defaults to empty). `on` — initial
+@@ -1088,7 +1088,7 @@ export interface EquationManagerOptions {
+ }
+ 
+ /**
+- * The {@link DefinitionBuilderInterface} manager over an inferential
++ * Declares the {@link DefinitionBuilderInterface} manager over an inferential
+  * definition's `facts` — a self-owning, kind-free collection manager.
+  */
+ export interface FactManagerInterface {
+@@ -1103,22 +1103,22 @@ export interface FactManagerInterface {
+ 	destroy(): void
+ }
+ 
+-/** The push observation surface of a {@link FactManagerInterface}. */
++/** Represents the push observation surface of a {@link FactManagerInterface}. */
+ export type FactManagerEventMap = {
+-	/** A fact was appended — carries its id. */
++	/** Fires when a fact is appended — carries its id. */
+ 	readonly append: readonly [id: string]
+-	/** A fact was prepended — carries its id. */
++	/** Fires when a fact is prepended — carries its id. */
+ 	readonly prepend: readonly [id: string]
+-	/** A fact was replaced in place — carries its id. */
++	/** Fires when a fact is replaced in place — carries its id. */
+ 	readonly replace: readonly [id: string]
+-	/** A fact was removed — carries its id. */
++	/** Fires when a fact is removed — carries its id. */
+ 	readonly remove: readonly [id: string]
+-	/** The manager was destroyed. */
++	/** Fires when the manager is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createFactManager` / the `FactManager` constructor.
++ * Configures `createFactManager` / the `FactManager` constructor.
+  *
+  * @remarks
+  * `facts` — the initial collection (defaults to empty). `on` — initial event
+@@ -1131,7 +1131,7 @@ export interface FactManagerOptions {
+ }
+ 
+ /**
+- * The {@link DefinitionBuilderInterface} manager over an inferential
++ * Declares the {@link DefinitionBuilderInterface} manager over an inferential
+  * definition's `inferences` — a self-owning, kind-free collection manager.
+  *
+  * @remarks
+@@ -1150,22 +1150,22 @@ export interface InferenceManagerInterface {
+ 	destroy(): void
+ }
+ 
+-/** The push observation surface of an {@link InferenceManagerInterface}. */
++/** Represents the push observation surface of an {@link InferenceManagerInterface}. */
+ export type InferenceManagerEventMap = {
+-	/** An inference was appended — carries its id. */
++	/** Fires when an inference is appended — carries its id. */
+ 	readonly append: readonly [id: string]
+-	/** An inference was prepended — carries its id. */
++	/** Fires when an inference is prepended — carries its id. */
+ 	readonly prepend: readonly [id: string]
+-	/** An inference was replaced in place — carries its id. */
++	/** Fires when an inference is replaced in place — carries its id. */
+ 	readonly replace: readonly [id: string]
+-	/** An inference was removed — carries its id. */
++	/** Fires when an inference is removed — carries its id. */
+ 	readonly remove: readonly [id: string]
+-	/** The manager was destroyed. */
++	/** Fires when the manager is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createInferenceManager` / the `InferenceManager` constructor.
++ * Configures `createInferenceManager` / the `InferenceManager` constructor.
+  *
+  * @remarks
+  * `inferences` — the initial collection (defaults to empty). `on` — initial
+@@ -1178,7 +1178,7 @@ export interface InferenceManagerOptions {
+ }
+ 
+ /**
+- * The {@link DefinitionBuilderInterface} manager over a symbolic definition's
++ * Declares the {@link DefinitionBuilderInterface} manager over a symbolic definition's
+  * `variables` — a name-keyed unordered record, so `add` / `remove` are the
+  * only write verbs (no placement). A self-owning, kind-free manager.
+  */
+@@ -1193,23 +1193,23 @@ export interface VariableManagerInterface {
+ }
+ 
+ /**
+- * The push observation surface of a {@link VariableManagerInterface}.
++ * Represents the push observation surface of a {@link VariableManagerInterface}.
+  *
+  * @remarks
+  * `variables` is a name-keyed record with no placement, so the honest verbs
+  * are `add` / `remove` — each carries the variable NAME.
+  */
+ export type VariableManagerEventMap = {
+-	/** A variable was upserted — carries its name. */
++	/** Fires when a variable is upserted — carries its name. */
+ 	readonly add: readonly [name: string]
+-	/** A variable was removed — carries its name. */
++	/** Fires when a variable is removed — carries its name. */
+ 	readonly remove: readonly [name: string]
+-	/** The manager was destroyed. */
++	/** Fires when the manager is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * Options for `createVariableManager` / the `VariableManager` constructor.
++ * Configures `createVariableManager` / the `VariableManager` constructor.
+  *
+  * @remarks
+  * `variables` — the initial record (defaults to empty). `on` — initial event
+@@ -1224,7 +1224,7 @@ export interface VariableManagerOptions {
+ // === Definitions & subjects capability layer — entities
+ 
+ /**
+- * The scalar-only projection of each definition kind — the {@link DefinitionBuilderInterface}
++ * Represents the scalar-only projection of each definition kind — the {@link DefinitionBuilderInterface}
+  * implementation's private envelope holds the non-collection fields; `build()` re-composes
+  * the kind's collections from the managers' plural accessors.
+  */
+@@ -1235,32 +1235,32 @@ export type DefinitionEnvelope =
+ 	| Omit<InferentialDefinition, 'facts' | 'inferences'>
+ 
+ /**
+- * The optional {@link QuantitativeDefinition} fields `clearQuantitativeDefinition`
++ * Names the optional {@link QuantitativeDefinition} fields `clearQuantitativeDefinition`
+  * (and a quantitative {@link DefinitionBuilderInterface}'s `clear`) can delete.
+  */
+ export type QuantitativeClearKey = 'description' | 'base' | 'bounds' | 'precision'
+ 
+ /**
+- * The optional {@link LogicalDefinition} fields `clearLogicalDefinition` (and a
++ * Names the optional {@link LogicalDefinition} fields `clearLogicalDefinition` (and a
+  * logical {@link DefinitionBuilderInterface}'s `clear`) can delete.
+  */
+ export type LogicalClearKey = 'description' | 'depth'
+ 
+ /**
+- * The optional {@link SymbolicDefinition} fields `clearSymbolicDefinition` (and
++ * Names the optional {@link SymbolicDefinition} fields `clearSymbolicDefinition` (and
+  * a symbolic {@link DefinitionBuilderInterface}'s `clear`) can delete.
+  */
+ export type SymbolicClearKey = 'description' | 'precision'
+ 
+ /**
+- * The optional {@link InferentialDefinition} fields
++ * Names the optional {@link InferentialDefinition} fields
+  * `clearInferentialDefinition` (and an inferential
+  * {@link DefinitionBuilderInterface}'s `clear`) can delete.
+  */
+ export type InferentialClearKey = 'description' | 'depth'
+ 
+ /**
+- * One chaining pass of the `LogicalReasoner` — the overall `conclusion` plus
++ * Represents one chaining pass of the `LogicalReasoner` — the overall `conclusion` plus
+  * the per-rule results the pass produced.
+  *
+  * @remarks
+@@ -1273,7 +1273,7 @@ export interface LogicalChainingOutcome {
+ }
+ 
+ /**
+- * One chaining pass of the `InferentialReasoner` — the facts the pass derived
++ * Represents one chaining pass of the `InferentialReasoner` — the facts the pass derived
+  * plus the proof tree, when the pass produced one.
+  *
+  * @remarks
+@@ -1287,7 +1287,7 @@ export interface InferentialChainingOutcome {
+ }
+ 
+ /**
+- * The push observation surface of a {@link DefinitionBuilderInterface} — the
++ * Represents the push observation surface of a {@link DefinitionBuilderInterface} — the
+  * builder-level lifecycle events; per-element mutation
+  * events live on the individual managers' own emitters.
+  *
+@@ -1296,16 +1296,16 @@ export interface InferentialChainingOutcome {
+  * key; `destroy` fires once on teardown.
+  */
+ export type DefinitionBuilderEventMap = {
+-	/** The definition was reconciled with an incoming definition — carries the reasoning. */
++	/** Fires when the definition is reconciled with an incoming definition — carries the reasoning. */
+ 	readonly merge: readonly [reasoning: Reasoning]
+-	/** An optional field was cleared — carries the field key. */
++	/** Fires when an optional field is cleared — carries the field key. */
+ 	readonly clear: readonly [key: string]
+-	/** The entity was destroyed. */
++	/** Fires when the entity is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * A stateful workspace builder accumulating a {@link Definition} through seven
++ * Declares a stateful workspace builder accumulating a {@link Definition} through seven
+  * always-present self-owning manager properties, taverna `AgentContext`-shaped:
+  * a private scalar envelope plus one manager per collection.
+  *
+@@ -1344,7 +1344,7 @@ export interface DefinitionBuilderInterface {
+ }
+ 
+ /**
+- * Options for `createDefinitionBuilder` / the `DefinitionBuilder` constructor.
++ * Configures `createDefinitionBuilder` / the `DefinitionBuilder` constructor.
+  *
+  * @remarks
+  * `id` — overrides the seed definition's `id` (defaults to `seed.id`). Each of
+@@ -1367,24 +1367,24 @@ export interface DefinitionBuilderOptions {
+ }
+ 
+ /**
+- * The push observation surface of a {@link SubjectBuilderInterface} — five
++ * Represents the push observation surface of a {@link SubjectBuilderInterface} — five
+  * verb-named events, no generic `change` / `status`.
+  */
+ export type SubjectBuilderEventMap = {
+-	/** A field was upserted — carries its key and new value. */
++	/** Fires when a field is upserted — carries its key and new value. */
+ 	readonly set: readonly [key: string, value: unknown]
+-	/** A field was removed — carries its key. */
++	/** Fires when a field is removed — carries its key. */
+ 	readonly remove: readonly [key: string]
+-	/** The subject was reconciled with an incoming subject — carries the incoming record. */
++	/** Fires when the subject is reconciled with an incoming subject — carries the incoming record. */
+ 	readonly merge: readonly [incoming: Subject]
+-	/** Every non-id field was removed. */
++	/** Fires when every non-id field is removed. */
+ 	readonly clear: readonly []
+-	/** The entity was destroyed. */
++	/** Fires when the entity is destroyed. */
+ 	readonly destroy: readonly []
+ }
+ 
+ /**
+- * A stateful workspace builder accumulating a {@link Subject}, taverna
++ * Declares a stateful workspace builder accumulating a {@link Subject}, taverna
+  * `Workspace`-shaped: a single flat collection, no managers.
+  *
+  * @remarks
+@@ -1424,7 +1424,7 @@ export interface SubjectBuilderInterface {
+ }
+ 
+ /**
+- * Options for `createSubjectBuilder` / the `SubjectBuilder` constructor.
++ * Configures `createSubjectBuilder` / the `SubjectBuilder` constructor.
+  *
+  * @remarks
+  * `id` — overrides the seed subject's `id` (defaults to `seed.id`); OPTIONAL
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index be113c3..aebe3b3 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -86,10 +86,10 @@ import { DEFINITION_BUILDER_BRAND, SUBJECT_BUILDER_BRAND } from './constants.js'
+ // call so no non-exported member lingers.
+ 
+ /**
+- * Determine whether a value is a {@link Reasoning} literal.
++ * Determines whether a value is a {@link Reasoning} literal.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is one of the four reasoning strategies
++ * @returns True if `value` is one of the four reasoning strategies; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -107,10 +107,10 @@ export const isReasoning: Guard<Reasoning> = literalOf(
+ )
+ 
+ /**
+- * Determine whether a value is a {@link ChainingStrategy} literal.
++ * Determines whether a value is a {@link ChainingStrategy} literal.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is `'forward'` or `'backward'`
++ * @returns True if `value` is `'forward'` or `'backward'`; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -123,10 +123,10 @@ export const isReasoning: Guard<Reasoning> = literalOf(
+ export const isChainingStrategy: Guard<ChainingStrategy> = literalOf('forward', 'backward')
+ 
+ /**
+- * Determine whether a value is a {@link MathOperation} literal.
++ * Determines whether a value is a {@link MathOperation} literal.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is one of the thirteen math operations
++ * @returns True if `value` is one of the thirteen math operations; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -153,10 +153,10 @@ export const isMathOperation: Guard<MathOperation> = literalOf(
+ )
+ 
+ /**
+- * Determine whether a value is an {@link Aggregation} literal.
++ * Determines whether a value is an {@link Aggregation} literal.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is one of the five aggregations
++ * @returns True if `value` is one of the five aggregations; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -175,10 +175,10 @@ export const isAggregation: Guard<Aggregation> = literalOf(
+ )
+ 
+ /**
+- * Determine whether a value is a {@link Comparison} literal.
++ * Determines whether a value is a {@link Comparison} literal.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is one of the ten comparison operators
++ * @returns True if `value` is one of the ten comparison operators; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -202,10 +202,10 @@ export const isComparison: Guard<Comparison> = literalOf(
+ )
+ 
+ /**
+- * Determine whether a value is a {@link LogicalOperator} literal.
++ * Determines whether a value is a {@link LogicalOperator} literal.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is one of the five logical connectives
++ * @returns True if `value` is one of the five logical connectives; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -224,11 +224,11 @@ export const isLogicalOperator: Guard<LogicalOperator> = literalOf(
+ )
+ 
+ /**
+- * Determine whether a value is a {@link FieldPath} — a single string key or an
++ * Determines whether a value is a {@link FieldPath} — a single string key or an
+  * array of keys descending into nested objects.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a string or an array of strings
++ * @returns True if `value` is a string or an array of strings; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -242,11 +242,11 @@ export const isLogicalOperator: Guard<LogicalOperator> = literalOf(
+ export const isFieldPath: Guard<FieldPath> = orOf(isString, arrayOf(isString))
+ 
+ /**
+- * Determine whether a value is a record whose every value is a finite number —
++ * Determines whether a value is a record whose every value is a finite number —
+  * the shape of a `LookupSource.table` and a `SymbolicDefinition.variables`.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a plain record of finite numbers
++ * @returns True if `value` is a plain record of finite numbers; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -262,7 +262,7 @@ export const isNumberRecord: Guard<Readonly<Record<string, number>>> = whereOf(
+ )
+ 
+ /**
+- * Determine whether a value is a {@link Check} — a field / operator / value
++ * Determines whether a value is a {@link Check} — a field / operator / value
+  * predicate.
+  *
+  * @remarks
+@@ -270,7 +270,7 @@ export const isNumberRecord: Guard<Readonly<Record<string, number>>> = whereOf(
+  * PRESENT — exact-record semantics reject a check that lost its `value` key.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed check
++ * @returns True if `value` is a well-formed check; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -289,10 +289,10 @@ export function isCheck(value: unknown): value is Check {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link Transform} — one math step.
++ * Determines whether a value is a {@link Transform} — one math step.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed transform
++ * @returns True if `value` is a well-formed transform; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -308,10 +308,10 @@ export function isTransform(value: unknown): value is Transform {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link Bounds} — an inclusive numeric clamp.
++ * Determines whether a value is a {@link Bounds} — an inclusive numeric clamp.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed bounds record (both sides optional)
++ * @returns True if `value` is a well-formed bounds record (both sides optional); false otherwise
+  *
+  * @example
+  * ```ts
+@@ -327,11 +327,11 @@ export function isBounds(value: unknown): value is Bounds {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link FactorRange} — one band of a range
++ * Determines whether a value is a {@link FactorRange} — one band of a range
+  * source.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed factor range
++ * @returns True if `value` is a well-formed factor range; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -346,11 +346,11 @@ export function isFactorRange(value: unknown): value is FactorRange {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link Source} — any of the four factor
++ * Determines whether a value is a {@link Source} — any of the four factor
+  * sources, discriminated by `origin`.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed static / field / lookup / range source
++ * @returns True if `value` is a well-formed static / field / lookup / range source; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -371,11 +371,11 @@ export function isSource(value: unknown): value is Source {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link Factor} — one scored input of a
++ * Determines whether a value is a {@link Factor} — one scored input of a
+  * quantitative group.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed factor
++ * @returns True if `value` is a well-formed factor; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -416,11 +416,11 @@ export function isFactor(value: unknown): value is Factor {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link FactorGroup} — a group of factors
++ * Determines whether a value is a {@link FactorGroup} — a group of factors
+  * aggregated into one value.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed factor group
++ * @returns True if `value` is a well-formed factor group; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -448,7 +448,7 @@ export function isFactorGroup(value: unknown): value is FactorGroup {
+ }
+ 
+ /**
+- * Determine whether a value is an {@link Expression} — a boolean expression
++ * Determines whether a value is an {@link Expression} — a boolean expression
+  * tree of atoms and compounds, discriminated by `form`.
+  *
+  * @remarks
+@@ -458,7 +458,7 @@ export function isFactorGroup(value: unknown): value is FactorGroup {
+  * bound is rejected, not validated.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed expression tree
++ * @returns True if `value` is a well-formed expression tree; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -481,10 +481,10 @@ export function isExpression(value: unknown): value is Expression {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link Rule} — premises and a conclusion.
++ * Determines whether a value is a {@link Rule} — premises and a conclusion.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed rule
++ * @returns True if `value` is a well-formed rule; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -510,7 +510,7 @@ export function isRule(value: unknown): value is Rule {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link SymbolicExpression} — an algebraic
++ * Determines whether a value is a {@link SymbolicExpression} — an algebraic
+  * expression tree of variables, constants, and operations, discriminated by
+  * `form`.
+  *
+@@ -521,7 +521,7 @@ export function isRule(value: unknown): value is Rule {
+  * bound is rejected, not validated.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed symbolic expression tree
++ * @returns True if `value` is a well-formed symbolic expression tree; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -548,11 +548,11 @@ export function isSymbolicExpression(value: unknown): value is SymbolicExpressio
+ }
+ 
+ /**
+- * Determine whether a value is an {@link Equation} — `left = right`, solved for
++ * Determines whether a value is an {@link Equation} — `left = right`, solved for
+  * `target`.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed equation
++ * @returns True if `value` is a well-formed equation; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -577,7 +577,7 @@ export function isEquation(value: unknown): value is Equation {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link Fact} — a predicate over positional
++ * Determines whether a value is a {@link Fact} — a predicate over positional
+  * terms.
+  *
+  * @remarks
+@@ -585,7 +585,7 @@ export function isEquation(value: unknown): value is Equation {
+  * is a unification variable, anything else a constant.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed fact
++ * @returns True if `value` is a well-formed fact; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -603,11 +603,11 @@ export function isFact(value: unknown): value is Fact {
+ }
+ 
+ /**
+- * Determine whether a value is an {@link Inference} — premise patterns and a
++ * Determines whether a value is an {@link Inference} — premise patterns and a
+  * conclusion pattern.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed inference
++ * @returns True if `value` is a well-formed inference; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -633,10 +633,10 @@ export function isInference(value: unknown): value is Inference {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link QuantitativeDefinition}.
++ * Determines whether a value is a {@link QuantitativeDefinition}.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed quantitative definition
++ * @returns True if `value` is a well-formed quantitative definition; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -664,10 +664,10 @@ export function isQuantitativeDefinition(value: unknown): value is QuantitativeD
+ }
+ 
+ /**
+- * Determine whether a value is a {@link LogicalDefinition}.
++ * Determines whether a value is a {@link LogicalDefinition}.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed logical definition
++ * @returns True if `value` is a well-formed logical definition; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -693,10 +693,10 @@ export function isLogicalDefinition(value: unknown): value is LogicalDefinition
+ }
+ 
+ /**
+- * Determine whether a value is a {@link SymbolicDefinition}.
++ * Determines whether a value is a {@link SymbolicDefinition}.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed symbolic definition
++ * @returns True if `value` is a well-formed symbolic definition; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -722,10 +722,10 @@ export function isSymbolicDefinition(value: unknown): value is SymbolicDefinitio
+ }
+ 
+ /**
+- * Determine whether a value is an {@link InferentialDefinition}.
++ * Determines whether a value is an {@link InferentialDefinition}.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed inferential definition
++ * @returns True if `value` is a well-formed inferential definition; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -752,11 +752,11 @@ export function isInferentialDefinition(value: unknown): value is InferentialDef
+ }
+ 
+ /**
+- * Determine whether a value is a {@link Definition} — any of the four
++ * Determines whether a value is a {@link Definition} — any of the four
+  * definition shapes, discriminated by `reasoning`.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed definition of any reasoning
++ * @returns True if `value` is a well-formed definition of any reasoning; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -776,11 +776,11 @@ export function isDefinition(value: unknown): value is Definition {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link QuantitativeClearKey} — an optional
++ * Determines whether a value is a {@link QuantitativeClearKey} — an optional
+  * field `clearQuantitativeDefinition` can delete.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` names a clearable quantitative field
++ * @returns True if `value` names a clearable quantitative field; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -798,11 +798,11 @@ export const isQuantitativeClearKey: Guard<QuantitativeClearKey> = literalOf(
+ )
+ 
+ /**
+- * Determine whether a value is a {@link LogicalClearKey} — an optional field
++ * Determines whether a value is a {@link LogicalClearKey} — an optional field
+  * `clearLogicalDefinition` can delete.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` names a clearable logical field
++ * @returns True if `value` names a clearable logical field; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -815,11 +815,11 @@ export const isQuantitativeClearKey: Guard<QuantitativeClearKey> = literalOf(
+ export const isLogicalClearKey: Guard<LogicalClearKey> = literalOf('description', 'depth')
+ 
+ /**
+- * Determine whether a value is a {@link SymbolicClearKey} — an optional field
++ * Determines whether a value is a {@link SymbolicClearKey} — an optional field
+  * `clearSymbolicDefinition` can delete.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` names a clearable symbolic field
++ * @returns True if `value` names a clearable symbolic field; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -832,11 +832,11 @@ export const isLogicalClearKey: Guard<LogicalClearKey> = literalOf('description'
+ export const isSymbolicClearKey: Guard<SymbolicClearKey> = literalOf('description', 'precision')
+ 
+ /**
+- * Determine whether a value is an {@link InferentialClearKey} — an optional
++ * Determines whether a value is an {@link InferentialClearKey} — an optional
+  * field `clearInferentialDefinition` can delete.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` names a clearable inferential field
++ * @returns True if `value` names a clearable inferential field; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -849,14 +849,14 @@ export const isSymbolicClearKey: Guard<SymbolicClearKey> = literalOf('descriptio
+ export const isInferentialClearKey: Guard<InferentialClearKey> = literalOf('description', 'depth')
+ 
+ /**
+- * Determine whether a value is a result-side {@link Fact}.
++ * Determines whether a value is a result-side {@link Fact}.
+  *
+  * @remarks
+  * Unlike the exact input guard {@link isFact}, this guard accepts unknown
+  * members, class instances, and every JavaScript `number` confidence.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published fact member is valid for a result
++ * @returns True if every published fact member is valid for a result; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -880,10 +880,10 @@ export function isResultFact(value: unknown): value is Fact {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link CheckResult}.
++ * Determines whether a value is a {@link CheckResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published check-result member is valid
++ * @returns True if every published check-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -907,10 +907,10 @@ export function isCheckResult(value: unknown): value is CheckResult {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link FactorResult}.
++ * Determines whether a value is a {@link FactorResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published factor-result member is valid
++ * @returns True if every published factor-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -936,10 +936,10 @@ export function isFactorResult(value: unknown): value is FactorResult {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link GroupResult}.
++ * Determines whether a value is a {@link GroupResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published group-result member is valid
++ * @returns True if every published group-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -962,10 +962,10 @@ export function isGroupResult(value: unknown): value is GroupResult {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link RuleResult}.
++ * Determines whether a value is a {@link RuleResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published rule-result member is valid
++ * @returns True if every published rule-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -988,7 +988,7 @@ export function isRuleResult(value: unknown): value is RuleResult {
+ }
+ 
+ /**
+- * Determine whether a value is a depth-bounded, acyclic {@link ProofNode} tree.
++ * Determines whether a value is a depth-bounded, acyclic {@link ProofNode} tree.
+  *
+  * @remarks
+  * Traversal is iterative and reuses `GUARD_DEPTH_LIMIT`. Active ancestors refuse cycles, and a
+@@ -999,7 +999,7 @@ export function isRuleResult(value: unknown): value is RuleResult {
+  * and sibling order do not affect the verdict.
+  *
+  * @param value - The value to test
+- * @returns `true` when every proof node is valid within the runtime guard bound
++ * @returns True if every proof node is valid within the runtime guard bound; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1055,10 +1055,10 @@ export function isProofNode(value: unknown): value is ProofNode {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link QuantitativeResult}.
++ * Determines whether a value is a {@link QuantitativeResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published quantitative-result member is valid
++ * @returns True if every published quantitative-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1084,10 +1084,10 @@ export function isQuantitativeResult(value: unknown): value is QuantitativeResul
+ }
+ 
+ /**
+- * Determine whether a value is a {@link LogicalResult}.
++ * Determines whether a value is a {@link LogicalResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published logical-result member is valid
++ * @returns True if every published logical-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1113,7 +1113,7 @@ export function isLogicalResult(value: unknown): value is LogicalResult {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link SymbolicResult}.
++ * Determines whether a value is a {@link SymbolicResult}.
+  *
+  * @remarks
+  * `solutions` is checked across its OWN string-named members, enumerable or
+@@ -1121,7 +1121,7 @@ export function isLogicalResult(value: unknown): value is LogicalResult {
+  * accepted-prototype property, not to the record this guard certifies.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published symbolic-result member is valid
++ * @returns True if every published symbolic-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1152,10 +1152,10 @@ export function isSymbolicResult(value: unknown): value is SymbolicResult {
+ }
+ 
+ /**
+- * Determine whether a value is an {@link InferentialResult}.
++ * Determines whether a value is an {@link InferentialResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published inferential-result member is valid
++ * @returns True if every published inferential-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1181,10 +1181,10 @@ export function isInferentialResult(value: unknown): value is InferentialResult
+ }
+ 
+ /**
+- * Determine whether a value is any {@link ReasonResult} arm.
++ * Determines whether a value is any {@link ReasonResult} arm.
+  *
+  * @param value - The value to test
+- * @returns `true` when one complete reasoning-result guard accepts the value
++ * @returns True if one complete reasoning-result guard accepts the value; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1204,10 +1204,10 @@ export function isReasonResult(value: unknown): value is ReasonResult {
+ }
+ 
+ /**
+- * Determine whether a value is a {@link ReasonValidationResult}.
++ * Determines whether a value is a {@link ReasonValidationResult}.
+  *
+  * @param value - The value to test
+- * @returns `true` when every published validation-result member is valid
++ * @returns True if every published validation-result member is valid; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1229,7 +1229,7 @@ export function isReasonValidationResult(value: unknown): value is ReasonValidat
+ }
+ 
+ /**
+- * Determine whether a value is a `DefinitionBuilder` ENTITY — the brand-guarded
++ * Determines whether a value is a `DefinitionBuilder` ENTITY — the brand-guarded
+  * stateful workspace, not the plain {@link Definition} data union.
+  *
+  * @remarks
+@@ -1243,7 +1243,7 @@ export function isReasonValidationResult(value: unknown): value is ReasonValidat
+  * never throw.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` carries the `DefinitionBuilder` entity brand
++ * @returns True if `value` carries the `DefinitionBuilder` entity brand; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -1260,7 +1260,7 @@ export function isDefinitionBuilder(value: unknown): value is DefinitionBuilderI
+ }
+ 
+ /**
+- * Determine whether a value is a `SubjectBuilder` ENTITY — the brand-guarded
++ * Determines whether a value is a `SubjectBuilder` ENTITY — the brand-guarded
+  * stateful workspace, not the plain {@link Subject} data record.
+  *
+  * @remarks
+@@ -1270,7 +1270,7 @@ export function isDefinitionBuilder(value: unknown): value is DefinitionBuilderI
+  * return `false`, never throw.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` carries the `SubjectBuilder` entity brand
++ * @returns True if `value` carries the `SubjectBuilder` entity brand; false otherwise
+  *
+  * @example
+  * ```ts
