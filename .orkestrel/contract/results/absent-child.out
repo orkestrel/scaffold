@@ -1,3 +1,0 @@
-REFUSED raw literal with undefined child: structure validateShapeDepth: every structural child must be a shape
-REFUSED objectShape builder with undefined child: structure validateShapeDepth: every structural child must be a shape
-REFUSED raw literal, key present via prototype: structure validateShapeDepth: properties must be a plain property map

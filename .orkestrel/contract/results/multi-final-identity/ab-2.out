@@ -1,3 +1,0 @@
-is-medium: A 1903 ns/op  B 1878 ns/op  B/A median 0.985 CI95 [0.967, 1.001] wilcoxon z -1.88 p 6.08e-2 (ratio p25 0.952 p75 1.012)
-audit-medium: A 3359 ns/op  B 3259 ns/op  B/A median 0.972 CI95 [0.962, 0.986] wilcoxon z -3.80 p 1.42e-4 (ratio p25 0.953 p75 0.999)
-audit-deep: A 12526 ns/op  B 12702 ns/op  B/A median 1.021 CI95 [1.007, 1.033] wilcoxon z 2.01 p 4.40e-2 (ratio p25 0.983 p75 1.046)

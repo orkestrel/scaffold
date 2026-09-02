@@ -1,4 +1,0 @@
-audit-medium: A 3588 ns/op  B 3505 ns/op  B/A median 0.967 (ratio p25 0.927 p75 1.014)
-explain-medium: A 3680 ns/op  B 3524 ns/op  B/A median 0.980 (ratio p25 0.948 p75 1.014)
-audit-deep: A 13891 ns/op  B 12092 ns/op  B/A median 0.866 (ratio p25 0.847 p75 0.889)
-explain-deep: A 9291 ns/op  B 7775 ns/op  B/A median 0.838 (ratio p25 0.810 p75 0.872)

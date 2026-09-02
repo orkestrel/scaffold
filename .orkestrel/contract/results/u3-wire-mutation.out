@@ -1,6 +1,0 @@
-== mutation proof (2026-09-01): drop the captured pattern at both compiled leaves
-sites still wired: 0
- Test Files  2 passed (2)
-      Tests  493 passed (493)
-sites wired after restore: 2
-bb0b5dcf8184229cd6eafabbf464b56220b2d674001f758744d899fc193cb869  src/core/ContractCompiler.ts

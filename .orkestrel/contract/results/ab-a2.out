@@ -1,8 +1,0 @@
-is-medium: A 1869 ns/op  B 1905 ns/op  B/A median 1.015 (ratio p25 0.979 p75 1.064)
-parse-medium: A 2125 ns/op  B 1995 ns/op  B/A median 0.948 (ratio p25 0.916 p75 0.971)
-audit-medium: A 3615 ns/op  B 2962 ns/op  B/A median 0.821 (ratio p25 0.798 p75 0.844)
-explain-medium: A 3405 ns/op  B 3314 ns/op  B/A median 0.980 (ratio p25 0.935 p75 1.016)
-is-deep: A 6386 ns/op  B 6452 ns/op  B/A median 1.013 (ratio p25 0.963 p75 1.074)
-audit-deep: A 13160 ns/op  B 10808 ns/op  B/A median 0.811 (ratio p25 0.770 p75 0.846)
-is-list48: A 12113 ns/op  B 12048 ns/op  B/A median 0.994 (ratio p25 0.973 p75 1.030)
-audit-list48: A 21200 ns/op  B 18119 ns/op  B/A median 0.870 (ratio p25 0.786 p75 0.914)

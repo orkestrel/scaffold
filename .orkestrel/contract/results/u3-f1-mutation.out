@@ -1,9 +1,0 @@
-== F1 mutation proof (2026-09-01): eager rebuild on the supplied path
-35bb1232d22ce02c6e795347b446f4f045c219902cfa90c9ea3f18dbb2602ff1  src/core/helpers.ts
-mutated: eager rebuild in place
-1999:			const rebuilt = shape.pattern === undefined ? undefined : readPattern(shape.pattern)
- Test Files  2 passed (2)
-      Tests  493 passed (493)
-restored
-35bb1232d22ce02c6e795347b446f4f045c219902cfa90c9ea3f18dbb2602ff1  src/core/helpers.ts
- 1 file changed, 63 insertions(+), 6 deletions(-)

@@ -1,3 +1,0 @@
-audit-medium: median 0.913 min 0.881 max 0.977 replicates ab-1=0.881 ab-2=0.977 ab-3=0.889 ba-1=0.899 ba-2=0.917 ba-3=0.913
-audit-deep: median 0.911 min 0.888 max 1.033 replicates ab-1=0.911 ab-2=1.033 ab-3=0.916 ba-1=0.888 ba-2=0.903 ba-3=0.894
-parse-medium: median 0.953 min 0.928 max 1.028 replicates ab-1=0.953 ab-2=1.028 ab-3=0.944 ba-1=0.950 ba-2=0.978 ba-3=0.928
