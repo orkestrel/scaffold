@@ -74,7 +74,7 @@ writeFileSync(`${UNITS}/${pkg}-report.md`, md)
 
 const claims = [
 	`Every row the brief lists ends in the report as applied, refused, or stopped, and every refused row quotes the rule text that refuses it.`,
-	`For every applied rename or removal, no old name survives under \`src\`, \`tests\`, and \`guides\` of ${repo} (grep with word boundaries; the diff and the tree are the evidence), and every new published symbol is declared in the owning \`types.ts\` where it is a contract.`,
+	`For every applied rename or removal, no old name survives under \`src\`, \`tests\`, and \`guides\` of ${repo} (grep with word boundaries, then again case-insensitively for the inflected forms `-s`, `-ed`, `-ing` so a test title or sentence that used the old name as an English verb or plural is caught; the diff and the tree are the evidence), and every new published symbol is declared in the owning \`types.ts\` where it is a contract.`,
 	`Each applied row lands in the ruled form, not a variant: ${rulings.length ? rulings.map((r) => r.split(':')[0]).join('; ') : 'see rulings.json'} (the rulings are quoted in the brief's Rulings section).`,
 	`No compatibility alias, re-export shim, deprecated twin, or old-name fallback was added anywhere in the diff.`,
 	`Every guide row, fence, and \`@example\` that spelled a moved symbol moved with it, the parity \`INTERNAL\` list matches the barrel where the package keeps one, and a prose claim about changed behavior has an executed assertion rather than a substring check.`,

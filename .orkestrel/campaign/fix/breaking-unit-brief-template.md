@@ -93,7 +93,7 @@ A native subagent: perform the assignment directly and spawn nothing. Work row b
 listed order (a row's `prerequisite` rows first). For each: re-verify the symbol at its ledger
 location, apply the rename or removal with every in-package consumer, rewrite the TSDoc first
 sentence in the third-person form where you touch a block, move the guide row and every fence,
-and update or remove the tests that named the old surface. Sweep prose too: a renamed interface member or helper also appears in backticks, in `{@link}` targets, and in guide sentences, and the parity test resolves only exports, so run a word-boundary search for every old name over `src`, `tests`, and `guides` after the rename and classify every hit before you report. TTTDD binds: change `types.ts` first
+and update or remove the tests that named the old surface. Sweep prose too: a renamed interface member or helper also appears in backticks, in `{@link}` targets, and in guide sentences, and the parity test resolves only exports, so run a word-boundary search for every old name over `src`, `tests`, and `guides` after the rename, run it again case-insensitively for the name's inflected forms (`-s`, `-ed`, `-ing`, and the noun a verb becomes), because a test title or a sentence that used the old name as an English verb or plural hides from the bare boundary, and classify every hit before you report. TTTDD binds: change `types.ts` first
 where the row moves a contract. Where a row removes a capability, delete its tests and guide
 rows with it. After the last row, run the centralization sweep from `references/centralization.md`
 over the files you touched, then the gate chain:
