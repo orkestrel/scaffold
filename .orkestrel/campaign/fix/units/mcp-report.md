@@ -89,3 +89,15 @@ Built `dist/` moves: yes — every barrel's declarations changed; dist/src/brows
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/mcp.diff`,
 `tmp/units/breaking/mcp.status`.
+
+## Corrections by the Orchestrator (after the objective lane)
+
+The files-touched inventory omitted modified test files the status records:
+`tests/fixtures/browserServer.ts`, `tests/setup.ts`, `tests/setup.test.ts`, `tests/setupBrowser.ts`,
+`tests/setupServer.ts`, `tests/setupConformance.test.ts`, `tests/src/core/MCPClient.test.ts`,
+`tests/src/core/MCPLegacyClientTransport.test.ts`, `tests/src/server/HTTPDisconnect.test.ts`,
+`tests/src/server/MCPSession.test.ts`, `tests/src/server/factories.test.ts`,
+`tests/src/server/handlers.test.ts`, `tests/src/server/transports/StdioServerTransport.test.ts`,
+`tests/src/server/transports/WebSocketClientTransport.test.ts`,
+`tests/src/server/transports/WebSocketServerTransport.test.ts`. `units/mcp.status` is the full
+inventory.

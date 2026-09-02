@@ -4473,5 +4473,17 @@
   "id": "s12-37/deriveAggregateField",
   "kind": "remove",
   "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-01/wire-headers-left-server-face",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-03/serveMCP-merge",
+  "kind": "mixed",
+  "consumers": {}
  }
 ]
