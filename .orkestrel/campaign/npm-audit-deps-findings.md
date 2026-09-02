@@ -839,3 +839,18 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   toolbox `0ec520f`, terminal `c0947ba`, database `42c0235`, console `ed4e280`; verdicts under
   `voice/units/`). Every landing chain green; `voice/scan-after-slice5.txt` reads zero in every
   bucket for the eight except form's one permitted `true | string` return.
+- **Slice 6 lanes** (table, agent, reason, browser, workflow, mcp, contract, scaffold): checker
+  PASS on all but agent and mcp; subjective FAIL on every unit, each on a handful of sentences
+  in the wave's largest trees (a dropped subject orphaning a pronoun in agent's `Conversation`
+  and contract's flagship `ContractShape`; `Sets` on read-only snapshot and interface members in
+  workflow; `Counts` on a page size and an invented `@returns` condition in table; a re-named
+  concept (`channel` → `stream`) in agent; `each` added and a qualifier moved in browser;
+  `modern` and `all` dropped in mcp; an added scope and arity in reason; compound sentences
+  conjugated on the first verb only in scaffold). Each is an Opus `implementer` fix-up briefed
+  with the lane's own wording and the Orchestrator's rulings (`voice-<package>-fixup-brief.md`,
+  lane outputs retained as `voice-<package>-audit-subjective.md` and `-checker.md`). Rulings of
+  record: agent's checker claim 2 (a new `false` token inside the rule's boolean-parameter form)
+  and mcp's (`Flags a failed tool …` on `isError` dropping its backticked `true`) are permitted;
+  a utility type whose identifier is its whole description (contract's `Guard`, `AnyFunction`,
+  and kin) keeps that description; workflow's three summary-less definition members gain a
+  `Sets …` first sentence; scaffold's swept template-literal doc blocks stand.
