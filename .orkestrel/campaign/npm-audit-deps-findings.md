@@ -734,3 +734,15 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
 - **Held and next.** Publishing is the user's decision and nothing published. `mirror-refresh`
   runs at the re-pin after each layer publishes. The TSDoc voice wave (#12) runs last, as ruled,
   and opens next. The campaign folder's retention prune waits for the user's go-ahead.
+
+## TSDoc voice wave opened (2026-09-02)
+
+- **Population measured** (`instruments/voice-scan.mjs`, `voice/scan-before.txt`): across the
+  fleet's `src/` and `app/` doc blocks, the imperative first sentence and the verbless first
+  sentence together outnumber the third-person form; `lsp` and `test` open every first sentence
+  in the third person, and `lsp` has nothing to rewrite. The classifier over-approximates the
+  verbless bucket, so each hit is read before it is rewritten.
+- **Bench.** Grok live (`READY` round trip); Sol dark. Plan and routing ledger in
+  `voice/plan.md`; briefs under `voice/units/` (per package: unit, subjective, checker).
+- **Tests pinning TSDoc.** brief, probe, and process compare `@example` fences and backticked
+  names against the guide and barrel; none pins a first sentence.

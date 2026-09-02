@@ -23,8 +23,10 @@ for (const arg of process.argv.slice(2)) {
 	const unit = process.env.UNIT || `${pkg}-fixup`
 	for (const [ext, args] of [['diff', ['diff']], ['status', ['status', '--short']]]) {
 		const text = execFileSync('git', ['-C', dir, ...args]).toString()
-		writeFileSync(`/home/user/scaffold/tmp/units/breaking/${unit}.${ext}`, text)
-		copyFileSync(`/home/user/scaffold/tmp/units/breaking/${unit}.${ext}`, `/home/user/scaffold/.orkestrel/campaign/fix/units/${unit}.${ext}`)
+		const unitsDir = process.env.UNITS_DIR || '/home/user/scaffold/tmp/units/breaking'
+		const retainDir = process.env.RETAIN_DIR || '/home/user/scaffold/.orkestrel/campaign/fix/units'
+		writeFileSync(`${unitsDir}/${unit}.${ext}`, text)
+		copyFileSync(`${unitsDir}/${unit}.${ext}`, `${retainDir}/${unit}.${ext}`)
 	}
 	execFileSync('git', ['-C', dir, 'add', '-A'])
 	execFileSync('git', ['-C', dir, '-c', 'user.name=Claude', '-c', 'user.email=noreply@anthropic.com', 'commit', '-q', '-F', msg])
@@ -35,7 +37,10 @@ for (const arg of process.argv.slice(2)) {
 	}
 	const sha = execFileSync('git', ['-C', dir, 'rev-parse', '--short', 'HEAD']).toString().trim()
 	say(`${pkg} committed ${sha} pushed=${pushed}`)
-	const pack = spawnSync('/home/user/work/pack-dep.sh', [pkg], { encoding: 'utf8' })
-	say(`${pkg} pack exit=${pack.status} ${pack.stdout.trim()} ${pack.stderr.trim()}`)
+	if (process.env.PACK === '0') say(`${pkg} pack skipped (PACK=0)`)
+	else {
+		const pack = spawnSync('/home/user/work/pack-dep.sh', [pkg], { encoding: 'utf8' })
+		say(`${pkg} pack exit=${pack.status} ${pack.stdout.trim()} ${pack.stderr.trim()}`)
+	}
 }
 say('LAND-FIXUP-DONE')
