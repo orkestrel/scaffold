@@ -519,3 +519,25 @@ governed the touched block).
   test mapping no `@orkestrel/console/server` specifier, the `AGENTS §N` citations across guides
   and tests, and the stale vendored mirrors (`guides/indexeddb.md`, `guides/sqlite.md`) that the
   re-pin after publish refreshes.
+
+## Breaking phase — L2 closed, L3 open (2026-09-02)
+
+- **Accepted in L2:** console (`a35c93f`, fix-up `77ab53f`), database (`c7baae0`, `2ded05a`),
+  markdown (`9c0dfc7`), middleware (`453f794`, `ec186e4`, `ea723c4`), process (`93555dd`,
+  `8aa5dce`), reason (`a42bd0f`, `c363201`), table (`bdd1d7b`, `e270928`), template (`50da0d2`,
+  `2eccc62`), websocket (`1f06c29`, `abcf675`). Every tip packed. Middleware re-staged against the
+  accepted database, indexeddb, and sqlite tips with no adoption debt.
+- **Rulings reversed or reshaped by audit:** template's s17-18 refused under the batch rule (the
+  user question on `clear` versus `remove()` stands); websocket's codes name the fault (`LIMIT`,
+  `CLOSE`) and its coercers and guards moved to their kind files with the surface unchanged;
+  middleware's session store takes its rebuild step by injection, `SessionSnapshot.state`,
+  `transferSessionState`, `buildClient`, grouped multipart defaults; database's IndexedDB
+  migration fails closed on a non-record value.
+- **scaffold-adopt** closed (`4ccd61d`): the fixture pin and the regenerated host digests; no
+  console adoption arose. **queue-fixup** satisfied by the earlier prose fix-up.
+- **L3 opened:** every L3 closure staged from the accepted tips and verified; nine units running
+  (server first; mcp follows server).
+- **Findings for the next change** (beyond those in the verdicts): console's `createCaptureResult`
+  naming; the guides test mapping no `@orkestrel/console/server`; reason's fences do not execute;
+  `AGENTS §N` citations across guides and tests; stale vendored mirrors until the re-pin after
+  publish; the voice wave's `@returns` form.
