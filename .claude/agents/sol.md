@@ -35,7 +35,9 @@ Everything `.agents/orchestration.md`'s dispatch contract requires, plus:
   external delegate carries no exemption.
 - **Every authority the brief references must exist in the tree the exec is rooted in.** Check
   before dispatch. A brief citing a file the executor cannot find delivers nothing while looking
-  like authority, and it fails silently.
+  like authority, and it fails silently. Take the stale-authority branch in
+  `.agents/skills/orkestrel-falsify/references/brief.md` § "What not to put in a brief" where the
+  exec's tree carries a superseded vendored copy.
 - The deviation contract, scoped: a conflict with the primary objective stops the unit; an
   ancillary conflict is the executor's to decide, record, and carry on from.
 

@@ -35,7 +35,7 @@ Include:
 
 - public and internal behavior needed by real consumers;
 - official upstream capabilities that fit the requested scope;
-- architectural limitations that cannot or should not be copied;
+- architectural limitations that cannot or must not be copied;
 - legacy features worth salvaging;
 - every `TODO`, deferred branch, placeholder, or documented omission in scope.
 

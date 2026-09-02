@@ -64,11 +64,14 @@ the execution loop's audit step names, on the same clean-context terms.
 
 | Lane           | Argues                                                                      |
 | -------------- | --------------------------------------------------------------------------- |
-| **Subjective** | Shape, taste, naming, ergonomics, design fit, what the API should feel like |
+| **Subjective** | Shape, taste, naming, ergonomics, design fit, the feel the API must present |
 | **Objective**  | Correctness, constraints, and what the code and contracts actually permit   |
 
 **A required lane always runs.** Never collapse required lanes into one. Never let an engine's
 absence stand in for a required lane.
+
+Call a lane the round did not dispatch **not run**. `dark` names a bench that cannot round-trip and
+names nothing else, so never write it of a lane. A verdict file's recorded reason uses those words.
 
 ### Clean contexts
 
@@ -134,6 +137,9 @@ Fall back in this order and record the substitution:
   nothing, and returns the required distillate.
 - Work directly on a typo, a one-line fix, or a single lookup. Orchestrate when isolation,
   parallelism, independent review, or substantial context justifies it.
+- Dispatch staging, packing, gate-chain invocation, and instrument authorship as units — `builder`
+  for a fully specified script, `verifier` for its evidence — each with a brief and an audit like
+  any other unit. Only the commit and the push stay with the Orchestrator.
 
 ## Roles
 
@@ -196,8 +202,8 @@ Every role honours this floor. No dispatch may widen it.
   those roles cannot inspect the tree by writing to it, the Orchestrator supplies the actual diff
   and status evidence in every review dispatch.
 - `verifier` has no edit or write tools and never fixes a failure.
-- Run writing roles in the main checkout, strictly serialized: one writer at a time, dispatched
-  from a clean committed baseline, each owning disjoint files.
+- Run one writing role per checkout, on disjoint checkouts, each dispatched from a clean committed
+  baseline and each owning disjoint files. In a single checkout that is one writer at a time.
 - Treat every shared file as report-only.
 - No role commits, pushes, tags, publishes, installs dependencies, or runs a destructive command.
 - No role runs `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Each discards
@@ -249,8 +255,9 @@ Every role honours this floor. No dispatch may widen it.
 Concurrent executors share a filesystem unless isolated. Follow these rules to prevent clobbered
 edits, formatter and build races, cache phantoms, and validation cross-talk.
 
-1. Serialize writing executors in the main checkout. Commit a checkpoint before each writing
-   dispatch so git is the rollback mechanism.
+1. Run one writing executor per checkout and keep the checkouts disjoint; in a single checkout that
+   is one writer at a time. Commit a checkpoint before each writing dispatch so git is the rollback
+   mechanism.
 2. Assign disjoint owned files plus explicit shared and off-limits files.
 3. Keep shared files report-only. Executors return exact patches for serial integration.
 4. Restrict concurrent executors to read-only, scoped validation. A tree-wide result may contain a
@@ -272,8 +279,8 @@ edits, formatter and build races, cache phantoms, and validation cross-talk.
    and a flake makes that look like it worked. Refuse the failed row, name it, and re-run it alone
    before deciding what it was.
 9. Run a fleet pass in slices that report as they finish, never as one block. A block hides its first
-   failure behind every target that follows, so the failure surfaces after the work it should have
-   stopped. A slice hands control back while most of the fleet is still unstarted.
+   failure behind every target that follows, so the failure surfaces after the work it exists to
+   stop. A slice hands control back while most of the fleet is still unstarted.
 10. Re-run a timing or resource failure alone before believing it. Concurrent slices, builds, and
     suites make a container miss deadlines it meets when idle, so a red result under load is a
     question rather than an answer. A unit re-running the file alone is not alone: its own exec,
@@ -334,13 +341,12 @@ longer holds.
    and mechanical conflict resolution only. A new type, mechanism, behavior, or acceptance
    criterion discovered at integration is a successor brief routed to a writer, never an
    integration edit.
-5. **Audit adversarially.** Audit every nontrivial implementation with at least one lane whose
-   engine did not write it: `reviewer` for the subjective lane and `analyst` for the objective lane,
-   the way step 2 names its lanes. Run the second lane when the first returns FAIL, when the subject
-   is a rendered or externally driven surface, or when the unit's claims span both correctness and
-   shape. Dispatch `checker` in addition when the acceptance criteria are mechanical — counts,
-   paths, parity rows, scope honesty — never in place of a lane. Record in the round's verdict file
-   when a lane or the checker did not run.
+5. **Audit adversarially.** Audit every nontrivial implementation with the objective lane and the
+   subjective lane — `analyst` and `reviewer`, the way step 2 names its lanes — at least one of them
+   on an engine that did not write the work. Dispatch `checker` in addition when the acceptance
+   criteria are mechanical — counts, paths, parity rows, scope honesty — never in place of a lane. A
+   round that runs fewer lanes than its brief names records the deviation in its verdict file with
+   that round's own reason, never a template sentence.
    - State the audit's subject as numbered falsifiable claims and require per-claim verdicts with
      evidence, per the Falsification law in `.claude/rules/quality.md` and the `orkestrel-falsify`
      value set, unless the dispatch names a different skill that fixes another.
@@ -461,6 +467,8 @@ The harness bridge names the concrete mechanism for each of these.
   wave's plan, routing ledger, and verdicts sit together rather than split across the packages they
   rule on.
 - Never put them in the package they are about. A published package's tree is its product.
+- Where the orchestrator's repository is itself a subject package, keep `.orkestrel/` as the
+  artifact home and stage every landing chain by path, never with `git add -A`.
 - Claim nothing outside `.orkestrel/` unless Orkestrel scaffold mandates it. Everything Orkestrel
   owns in a consumer's tree lives beneath that folder, so a convention can be settled there without
   colliding with a convention that is not Orkestrel's.
@@ -747,6 +755,8 @@ transport.
 
 ### Recovering a dark bench
 
+- A probe that finds no bench binary records the bench dark and, in the same turn, names to the user
+  the install command and the bench it unblocks. Re-probe when the user answers.
 - A probe that finds a bench binary present but authentication unavailable starts recovery in the
   same turn. Do not record the bench dark and wait.
 - Background the login command with its output captured under `tmp/<bench>/`, surface the
@@ -775,6 +785,11 @@ five-minute upload window in `references/window.md`. Load the skill when the use
 release, and follow it there rather than reconstructing the procedure here. What remains in this
 section binds an executor who is not publishing.
 
+A wave over unpublished tips derives its order per run from the graph and records only the round
+each package landed in, never the order itself. It runs one unit per checkout, at that checkout's
+catalog layer, and gives a checkout with no rows an adopt unit only when that checkout's typecheck
+against the staged closure reddens.
+
 ### Fixing a dependency before it publishes
 
 A defect a consumer meets sometimes lives in a package the consumer only has from the registry.
@@ -793,6 +808,9 @@ Build the dependency from source, pack it, and **install the tarball** into the 
 - **Rebuild and repack whenever the source moves.** A stale tarball is the same defect as a stale
   `dist/`, and it is worse for being invisible: the consumer's gates go green against a fix that no
   longer exists in the dependency's tree.
+- **Fetch and merge the dependency's default branch before packing it**, wherever another session
+  can move that branch. A pack from a stale tip ships the consumer a dependency the dependency's own
+  repository no longer has.
 - **Restore the registry copy before any gate that must prove the published artifact, and before
   publishing anything.** A distribution proof run against a local tarball proves the local tarball.
   The release still follows layer order: the dependency publishes first, then the consumer re-pins to

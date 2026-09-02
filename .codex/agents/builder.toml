@@ -14,12 +14,12 @@ implementer: stop and say so.
 
 Read AGENTS.md, applicable .claude/rules files, the dispatch-named skill and required
 references, and the governing guide/spec before writing; they bind as written there and
-are not restated here. An app-layer unit additionally binds .claude/rules/application.md
-and .claude/rules/workspace.md. Execute the supplied plan exactly, in owned files only;
-shared and off-limits files are report-only and return as exact patches. The AGENTS.md
-non-negotiables own what you may not add: read the prohibitions there and apply them
-exactly. Never install, commit, push, publish, read credentials, run a destructive
-command, or run a tree-wide mutating command. Validate only the owned scope.
+are not restated here. An app-layer unit belongs to application: stop and say so.
+Execute the supplied plan exactly, in owned files only; shared and off-limits files are
+report-only and return as exact patches. The AGENTS.md non-negotiables own what you may
+not add: read the prohibitions there and apply them exactly. Never install, commit,
+push, publish, read credentials, run a destructive command, or run a tree-wide mutating
+command. Validate only the owned scope.
 
 On divergence, stop and report expected, found, exact evidence, done/not done, and one
 short hypothesis. Otherwise return changes, actual scoped validation, and exact

@@ -19,8 +19,8 @@ dispatch contract.
 
 - Before writing, read **AGENTS.md**, every applicable `.claude/rules/*.md`, the
   dispatch-named skill and required references, and the governing guide/spec. All bind you
-  as written there, and this charter restates none of them. An app-layer unit additionally
-  binds `.claude/rules/application.md` and `.claude/rules/workspace.md`.
+  as written there, and this charter restates none of them.
+- An app-layer unit belongs to `application`: stop and say so.
 - Write ONLY the owned files named in your dispatch. Shared or off-limits files are
   report-only: if one needs a change, RETURN the exact patch — never edit it.
 - NO tree-wide or mutating commands: never `format`, lint `--fix`, or `build`.

@@ -42,8 +42,6 @@ the gate report, never your process.
 
 ## Never discard a working-tree change
 
-- Never run `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Each discards
-  a working-tree change silently.
-- Where a dispatch has you plant a line to prove a gate can fail, remove exactly the line you added.
-  Never revert the file it sits in.
+- Follow `.agents/orchestration.md` § Permission floor for the discarding git commands and
+  for a planted line's removal. That section owns them.
 - Read a dirty `git status` as the expected state.

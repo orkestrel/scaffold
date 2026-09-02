@@ -5,7 +5,7 @@ paths:
 
 # Naming and API-shape rules
 
-Names are public API. A consumer should be able to predict them without documentation.
+Names are public API. A consumer can predict them without documentation.
 
 ## Entity-scoped names: one word
 
@@ -100,6 +100,7 @@ Module helpers have no owning entity at the call site, so default to `{verb}{Nou
   - `describe*` takes a finding and returns the human-readable message that names it.
   - `normalize*` returns the canonical form of a value of the same type.
   - `collect*` gathers members into a collection.
+  - `filter*` returns the members of a collection that satisfy a predicate, in order, and never mutates its input.
   - `render*` produces text or markup from a value that is not a finding.
   - `supports*` is a capability predicate and narrows no type.
 - When a helper family grows around one shape, promote it to a class with entity-scoped one-word methods.
@@ -118,6 +119,7 @@ The root design laws in `AGENTS.md` — one term per concept, boolean behavior s
 - A binary switch is a boolean such as `bail`, never `'continue' | 'halt'`; genuine discriminants, multi-state lifecycles, conventional value pairs (`ascending`/`descending`, `and`/`or`), and external-spec literals remain unions.
 - An option key, constant, or member that transliterates an external protocol field, format field, or engine pragma keeps the external wording in this project's casing, and its TSDoc names the source it mirrors: the `foreignKeys` key mirrors the `PRAGMA foreign_keys` statement, and the `keepAlive` key mirrors the Ollama `keep_alive` field.
 - Mirror no banned word: a mirrored name never uses `kind` or `type` as a member name, and never uses a word § Rejected naming lists. A Compound File Binary (CFB) directory entry's object-type byte takes a named discriminant.
+- A declared wire body — a type whose members transliterate an external wire format field for field — keeps the external field names, `type` and `kind` included, and its TSDoc names the format it transliterates. The package's own domain type carries neither word, and the package owns the projection between the wire body and the domain type.
 
 ## Acronyms
 
@@ -178,7 +180,7 @@ Keep canonical case:
 For `_` bindings:
 
 - Use only for genuine callback/signature conformance, rest omission, swallowed catches, or intentionally unused loop variables.
-- Verify each use is intentional; remove `_` and wire the value if it should be consumed.
+- Verify each use is intentional; remove `_` and wire the value the code must consume.
 - Remove the parameter when signature compatibility does not require it.
 - Prefer a short justification for each rare `_` in `src/`.
 

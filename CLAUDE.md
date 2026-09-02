@@ -9,7 +9,8 @@ follows it. This file adds only what Claude Code does differently, and cannot we
 ## Dispatch mechanism
 
 - Use the Agent tool for a single dispatch, including when later control flow depends on its result.
-- Use a Workflow for a deterministic fan-out, staged pipeline, or loop. Serialize writing nodes.
+- Use a Workflow for a deterministic fan-out, staged pipeline, or loop. Serialize writing nodes, and
+  name each node's model alias per § Models.
 - Recover an interrupted Workflow with `resumeFromRunId`.
 - Foreground Bash is hard-capped at 10 minutes regardless of its timeout parameter. Launch anything
   that can exceed it as a harness-tracked background command.
@@ -20,6 +21,9 @@ follows it. This file adds only what Claude Code does differently, and cannot we
 
 - Use the aliases `opus` and `sonnet`. Never use a fixed Claude model ID and never use `inherit`.
 - Never set `CLAUDE_CODE_SUBAGENT_MODEL`. It flattens the engine split.
+- Every Workflow `agent()` node names its model alias explicitly. The Workflow custom-agent path
+  does not apply a role file's `model:` pin, so a node that omits the alias runs on the session
+  model and the lane reads normal on the wrong engine.
 - Run the main session on `opus` at high effort, set by `/model opus` or `"model": "opus"`. Opus 5
   is the Orchestrator in this harness. Its Orchestrator duties are unchanged if it is configured
   otherwise.

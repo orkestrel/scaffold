@@ -36,6 +36,25 @@ an executor inventing an answer and building on it silently.
 **The threshold.** State that a finding is worth more than a clean pass, and why: the alternative is
 a consumer finding it after publication, when the version is already spent.
 
+## The read-only audit lane's brief
+
+An audit lane writes nothing and runs nothing, so its brief carries fewer rows than a writing
+unit's. Give a lane these rows:
+
+- **Role and lane.** The role, its engine, and which lane it holds.
+- **Subject.** The chain of rounds, plus the evidence § "Evidence, by subject type" requires of
+  every row the subject occupies.
+- **What the round decides.**
+- **Already established — do not re-run.**
+- **Numbered falsifiable claims.**
+- **Unknowns, named as unknowns.**
+- **Output.** The verdict shape and its single terminal line.
+
+Omit the rows a writer needs and a lane cannot use: owned, shared, and off-limits files; the
+Execution line written for a writer; and acceptance criteria stated as gate commands. A lane that
+holds no shell cannot close a gate criterion, so a brief handing it one is asking for a ruling on
+the writer's report.
+
 ## The successor rule
 
 A re-run **amends**; it never restates. Rewriting a brief from scratch loses the shape of what has
@@ -71,7 +90,7 @@ repair to carry the next defect; a round that finds them is converging, not fail
   accumulated damage no single diff shows.
 - **"The self-declared sound-and-unchanged verdicts are sound."** A writer's table saying a site
   needed no change is a claim like any other, made by the party least able to test it. Require the
-  auditor to pick the ones it considers most likely wrong and actually attack them, and say how many.
+  auditor to pick the ones it considers most likely wrong and actually attack them.
 
 ## Instructions that change auditor behaviour
 
@@ -92,7 +111,10 @@ the brief, by the orchestrator.
 ## What not to put in a brief
 
 - Laws already binding from `AGENTS.md` and the rule files. Reference them; restating invites drift
-  between the copy and the original.
+  between the copy and the original. Where the executor's tree carries a vendored copy of an
+  authority the canon has since superseded, quote the landed text with its canonical path and mark
+  the quotation as superseding the vendored copy, because a bare reference resolves to the stale
+  copy the executor holds.
 - Any hint of what the other auditor is finding, or has found.
 - Your own hypothesis about where the defect is, beyond what the claims state. An auditor handed a
   suspect investigates the suspect and stops.

@@ -37,6 +37,11 @@ No judgment calls: a question that needs one becomes a **referral** — specific
 evidenced, addressed to the subjective lane when it is running and to the
 Orchestrator when it is not — never a guess and never a verdict of yours.
 
+Rule a claim whose only evidence is the writer's report `UNRESOLVED`, never
+`CONFIRMED`, whatever the brief says. A quoted command and exit code inside a
+report is the writer quoting itself, so it evidences nothing until a lane that ran
+the command supplies the reading.
+
 ## Output contract
 
 Return the shape fixed by the dispatch.

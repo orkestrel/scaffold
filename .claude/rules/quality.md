@@ -105,7 +105,7 @@ The root laws on inspecting declared `@orkestrel/*` capabilities, reusing a matc
 - Translate "enterprise-grade" or "production-ready" into an explicit risk and seam matrix covering applicable inputs, states, failures, cleanup, cancellation, concurrency, resource ownership, hostile boundaries, environment isolation, serialization and restore, and package consumption.
 - Grade that matrix on coverage, not optimization: whether every applicable seam exists, works, and stays proven. Do not grade on how many further interleavings can be invented against the one seam already proven. A surface polished past its row buys less than the next uncovered seam would have.
 - Test observable invariants at each applicable seam with real implementations.
-- Use dedicated real-service projects for external model or service behavior. Require readiness and tune each request to the smallest robust proof.
+- Use dedicated real-service projects for external model or service behavior. Require readiness and tune each request to the smallest proof that still exercises the claim.
 - Audit test discovery, counts, skipped and todo tests, cleanup, and assertion adequacy. Passing discovered tests alone is insufficient.
 - Inspect public exports, declarations, supported runtime targets, and generated outputs.
 - Treat a claim that a surface works with an external client as unproven until one representative real client of that class has driven it end to end. Protocol tests prove the protocol, not the integration.

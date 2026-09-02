@@ -10,6 +10,10 @@ copy `# Unit UNIT_ID — SHORT_SUBJECT`. Delete each italic reminder as you fill
 under, and leave no row blank: fill a row you cannot close with a named unknown label, and
 describe that label under § Unknowns with how the unit reports back on it.
 
+For a read-only audit lane, fill the rows
+`.agents/skills/orkestrel-falsify/references/brief.md` § "The read-only audit lane's brief" names
+and delete the rest of this template.
+
 ## Role and engine
 
 ROLE_NAME on ENGINE_NAME, reached as TRANSPORT.
@@ -73,7 +77,7 @@ answer around._
 _Grant a behaviour with the tests that pin it, a constant with every fixture and expectation derived
 from it, a template with the materialized copy the package generates from it, and a mechanism with
 the prose describing it: the comment beside the code it edits and the guide passage stating the
-behaviour it moves._
+behaviour it moves. A unit that moves a published symbol owns the package `README.md`._
 
 **Shared (report-only).** SHARED_FILES
 
@@ -84,21 +88,25 @@ edits nothing in this row._
 
 _Name each file the unit must not touch, and read every acceptance criterion against this row line by
 line. Grant the file a criterion needs, or strike that criterion. A file the change breaks that
-appears in no row of this section is unscoped._
+appears in no row of this section is unscoped. Never list `tmp/probe/` off-limits: it is the unit's
+probe home, and `.claude/rules/tests.md` puts every runtime probe there._
 
 **What asserts the state this change ends.** FILES_THE_RESULT_MAKES_FALSE
 
 _List every file the result makes false rather than every file that declares the thing changing: the
 test asserting the reversed behaviour, the fixture carrying the raised value, the golden digest over
 generated output, the consumer script naming the removed union member. Derive the list by running the
-suite; where you cannot run it, name the search's bound so the unit re-derives the list. End each
-entry in Owned, in Shared, or with a named carrier dispatched before this change ships._
+suite; where you cannot run it, name the search's bound so the unit re-derives the list. A rename's
+search bound is a word-boundary sweep over the old name followed by a case-insensitive sweep over
+its `-s`, `-ed`, and `-ing` inflections. End each entry in Owned, in Shared, or with a named carrier
+dispatched before this change ships._
 
 **Tools and limits.** ALLOWED_TOOLS, PERMISSION_LIMITS
 
 _Check the § Output mechanism and every acceptance criterion's verification method against this
 allowlist. A read-only lane writes no report file and runs no probe, so hand it the rendered evidence
-instead._
+instead. A rename moves the file with the shell's `mv`, never `git mv`; `git add -N` is permitted
+only to render diff evidence._
 
 ## Execution
 
@@ -138,8 +146,9 @@ criterion behind it. Where the change edits a file the repository vendors or dig
 regeneration step ahead of every gate that reads the generated artifact. Ask what the change does
 to every fact you measured, and fix each criterion to the state the unit finishes in. Close each
 criterion with owned files alone, and name the property the unit must change; record a consequence
-you expect to follow as an observation, never as a criterion. A scoped run over the unit's own
-owned files stays a legitimate criterion._
+you expect to follow as an observation, never as a criterion. A criterion that closes on an
+instrument's reading names that instrument's negative control and the class the control proves the
+instrument can see. A scoped run over the unit's own owned files stays a legitimate criterion._
 
 **Observations, not criteria.** TIMING_SENSITIVE_OR_WHOLE_SUITE_GATES
 

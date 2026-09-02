@@ -7,11 +7,12 @@ evidence-first treatment as any surface.
 ## Blind passes, one brief
 
 Run the subjective lane and the objective lane on the SAME brief, in parallel, neither
-seeing the other's answer before both return. `reviewer` holds the subjective lane and
-`analyst` holds the objective lane.
+seeing the other's answer before both return. `.agents/orchestration.md` § Engine
+assignment decides which engine and which role holds each lane, including under a dark
+bench; read the assignment there and name it in the dispatch.
 
 Each lane returns numbered findings, most severe first, and exactly one terminal line:
-`INSTRAUDIT <LANE>: <n> findings`. Each charter defaults to the `orkestrel-falsify`
+`INSTRAUDIT <LANE>: <finding ids, or none>`. Each charter defaults to the `orkestrel-falsify`
 verdict shape and takes a different shape the dispatch names, so name `orkestrel-debrief`
 in the dispatch and this shape binds.
 
@@ -25,9 +26,9 @@ record.
 
 ## The subjective lens list
 
-Held by `reviewer`. It judges coherence of the role model, charter voice, whether each
-role's job is one job, and whether the skill family reads as one system. This section is
-the lens list's only normative home, and the lane states its coverage against it.
+Held by the subjective lane. It judges coherence of the role model, charter voice, whether
+each role's job is one job, and whether the skill family reads as one system. This section
+is the lens list's only normative home, and the lane states its coverage against it.
 
 - **Role-job singularity.** Is each charter's work cohesive? A charter describing bundled
   jobs is either a role to split or a bundle no dispatch sends whole.
@@ -48,9 +49,9 @@ the lens list's only normative home, and the lane states its coverage against it
 
 ## The objective lens list
 
-Held by `analyst`. It runs evidence-only sweeps of the actual files and the campaign
-record. This section is the lens list's only normative home, and the lane states its coverage
-against it.
+Held by the objective lane. It runs evidence-only sweeps of the actual files and the
+campaign record. This section is the lens list's only normative home, and the lane states
+its coverage against it.
 
 - **Duplication diff.** Whole-line and obligation-level comparison across charters, rules,
   and skills. A charter that restates a rule drifts from it; a rule restated elsewhere has

@@ -71,8 +71,8 @@ a practice that worked so it repeats.
 4. **Process retrospective.** Walk the campaign record for both failure and success:
    dispatches that deviated and why; recoveries that worked (codify the mechanism that
    saved them); estimates versus observed durations; audit rounds that caught real
-   defects versus rounds that churned; anything the orchestrator absorbed that should
-   have been dispatched or dispatched that it should have owned.
+   defects versus rounds that churned; anything the orchestrator absorbed that a dispatch
+   owned, or dispatched that the orchestrator owned.
 5. **Instruction-set audit.** Audit the agents, rules, skills, and orchestration
    contract themselves against the campaign record, using the adversarial method in
    [instruction-audit.md](references/instruction-audit.md). What confused an executor is

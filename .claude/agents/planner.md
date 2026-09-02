@@ -30,10 +30,19 @@ list:
 
 - `Design`: the coherent API, vocabulary, architecture, and user experience.
 - `Alternatives`: at most two real alternatives and why the design wins.
+- `Constraints`: what the code and the contracts permit, each with its `file:line`.
+- `Refusals`: the options a rule forecloses, with the rule text quoted.
+- `Measurements`: the readings that bound the design, each with the command that
+  produced it.
 - `Units`: bounded work, each naming its role AND engine so the routing ledger is
   derivable, with ownership, dependencies, and acceptance criteria.
 - `Tensions`: the choices your lane made on judgment, named for the other lane to
   challenge — or, when you hold every lane, for the Orchestrator to rule.
 - `Risks`: design-fit risks and the evidence needed to settle them.
+
+File your work under the sections that name your lane: the subjective lane fills
+`Design` and `Alternatives`, the objective lane fills `Constraints`, `Refusals`, and
+`Measurements`, and whichever lane you hold fills `Units`, `Tensions`, and `Risks`.
+Leave a section your lane does not own empty rather than renaming it.
 
 Your proposal is input to the Orchestrator, never the final decision.

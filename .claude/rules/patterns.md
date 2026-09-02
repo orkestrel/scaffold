@@ -63,6 +63,7 @@ method(ids: readonly string[]): boolean
 - One id applies to one.
 - An id list applies to those items and returns true only when all succeed.
 - Never split into `methodAll`, `methodOne`, or `methodMany`.
+- A manager that owns `clear` and a batch verb keeps both: `clear` resets the entity's state and emits one `clear`, and the no-argument batch verb applies the verb to every item and emits per item. They are different observable operations.
 - When a single item type can itself be a list/open record, declare the array overload first and document how callers express one list-valued item.
 
 ## Stateful emitters

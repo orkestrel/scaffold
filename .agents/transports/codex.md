@@ -147,6 +147,9 @@ negative tests is unaffected.
 
 - Verify `codex --version` before first use. On Windows `codex` resolves in Bash through
   the extensionless npm shim; if it does not, invoke `codex.cmd`.
+- Binary absent: report it so the Orchestrator can record the bench dark and, in the same turn,
+  name to the user the install command for `@openai/codex` and the bench it unblocks. The
+  Orchestrator re-probes when the user answers. Never install it yourself.
 - Binary present but authentication unavailable: report it so the Orchestrator can start
   device-auth recovery in the same turn. It backgrounds `codex login --device-auth` with
   output captured to `tmp/codex/login.log`, surfaces the verification URL and one-time code

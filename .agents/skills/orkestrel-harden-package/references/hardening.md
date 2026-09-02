@@ -50,7 +50,7 @@ Keep live tests in a dedicated project with explicit readiness, setup, timeout, 
 - For model tests, constrain temperature/seed/options when the real API supports it, but do not claim determinism the provider does not promise.
 - Increase context or workload incrementally only when the scenario requires it.
 - Test instruction precedence, long-context behavior, summarization, tool calls, scopes, and state transitions through observable outcomes.
-- Avoid redundant expensive calls; one request should prove one primary claim.
+- Avoid redundant expensive calls; one request proves one primary claim.
 
 Keep live projects outside the fast default suite when repository policy requires it, while making their explicit command authoritative for the campaign.
 

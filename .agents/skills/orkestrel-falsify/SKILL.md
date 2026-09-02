@@ -72,7 +72,9 @@ nobody claimed.
   brief that points at a rule file, section, or guide the executor cannot find delivers nothing while
   looking like authority — and it fails silently, because an auditor does not report a heading it
   never saw. Check before dispatch; propagate the missing file rather than restating its contents in
-  the brief. This is the reason restatement felt necessary, and it is the wrong cure.
+  the brief. This is the reason restatement felt necessary, and it is the wrong cure. Where the
+  executor's tree carries a superseded vendored copy of an authority, take the stale-authority
+  branch in `references/brief.md` § "What not to put in a brief".
 - Run the **adversarial pass** on one identical brief: a subjective lane and an objective
   lane, each a fresh subagent with a clean context, blind to each other. Reconcile them yourself.
   `.agents/orchestration.md` owns lane definitions, engine assignment, and what happens when an
@@ -141,21 +143,28 @@ comparable; a round that invents its own cannot be read against the last one.
    `CONFIRMED` and `BROKEN` defer; only `UNRESOLVED` and `NOT-EVIDENCED` are this skill's, because
    the law does not name them. `BROKEN` and `UNRESOLVED` are **separate**: a claim nobody could
    decide has not been falsified, and it cannot supply the fields falsification requires.
-   `NOT-EVIDENCED` is the token the `analyst` and `reviewer` charters already require; it is kept,
-   not re-invented.
+   `NOT-EVIDENCED` is the auditing lanes' own token; it is kept, not re-invented.
 
 2. **Findings fitting no claim**, if any, each substantiated to the same standard as `BROKEN`.
 
-3. **One terminal line**, and only one:
+3. **Attacked and held**: the claims this round attacked and could not break, each with the attack
+   that failed, and the adjacent behaviour that looks like the defect and is correct. This is where
+   the next round reads what has already been tried, so a claim listed here without its attack is
+   worth nothing to it.
+
+4. **One terminal line**, and only one:
 
    ```text
-   VERDICT: PASS — <m> of <m> confirmed, no findings outside the claims
-   VERDICT: FAIL — <n> broken, <u> unresolved, <e> not-evidenced, <x> findings outside the claims
+   VERDICT: PASS
+   VERDICT: FAIL <claim numbers>; outside the claims: <finding ids>
    ```
 
-   **`PASS` requires every one of these to be true**: every claim `CONFIRMED`, nothing `UNRESOLVED`, nothing
+   The claim numbers are every claim that is not `CONFIRMED`. Write `none` in a slot the round
+   leaves empty, so a `FAIL` driven only by a finding outside the claims still names both.
+
+   **`PASS` requires all of this**: every claim `CONFIRMED`, nothing `UNRESOLVED`, nothing
    `NOT-EVIDENCED`, and no substantiated finding outside the claims. A single substantiated finding
-   forces `FAIL` no matter how the numbered claims landed — otherwise a round can report a real
+   forces `FAIL` however the numbered claims landed — otherwise a round can report a real
    defect and still emit the word that authorises the release.
 
 No process diary. No summary of what was read.

@@ -21,8 +21,10 @@ with the permission mode the route pins. Never substitute a fixed Claude model i
 
 Verify that the `claude` CLI resolves and is authenticated before first use. On either
 failure return it immediately with the fallback named, so the Sol main session records
-Opus unavailable for the round. Never install, authenticate, or substitute an API key,
-access token, or copied auth file.
+Opus unavailable for the round. Where the binary is absent, that report names the install
+command for the `claude` CLI, so the Orchestrator can put it to the user in the same turn
+it records the bench dark and re-probe when the user answers. Never install, authenticate,
+or substitute an API key, access token, or copied auth file.
 
 Journal every run: redirect --output-format stream-json to tmp/claude/<unit>.jsonl,
 which is gitignored, and record the session id. A bench unit with no journal ran on its

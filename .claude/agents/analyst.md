@@ -34,7 +34,9 @@ Everything `.agents/orchestration.md`'s dispatch contract requires, plus:
 - **Every authority the brief references must exist in the tree the exec is rooted in.** Check
   before dispatch. A brief citing a rule file or section the executor cannot find delivers nothing
   while looking like authority, and it fails silently — an auditor does not report a heading it
-  never saw. Propagate the missing file; do not restate its contents in the brief.
+  never saw. Propagate the missing file rather than restating its contents in the brief, and take
+  the stale-authority branch in `.agents/skills/orkestrel-falsify/references/brief.md` § "What not
+  to put in a brief" where the executor's tree carries a superseded vendored copy.
 - For an audit: the subject as numbered falsifiable claims, and the skill that fixes the verdict
   shape. The Falsification section of `.claude/rules/quality.md` owns the method and the evidence
   each verdict carries. The verdict shape defaults to `orkestrel-falsify`; a dispatch may name a

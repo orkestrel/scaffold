@@ -40,7 +40,8 @@ shim that answered once does not clear it, and when it does fire it leaves only 
 `SetConsoleWindowTitle` trace — which reads as a bench that returned nothing rather than as a launch
 that never happened. The versioned entry has no console dependency and no such failure mode.
 
-Read an empty shim run as a launch failure until its log is checked for that trace.
+Read an empty shim run as a launch failure until its `.err` journal is checked for that
+trace.
 
 If nothing responds the bench is dark. Stop with a deviation naming the fallback from the root
 tedious-work ladder — Luna, then Sonnet. Never hand the reading to the Orchestrator, `planner`, or
@@ -48,13 +49,20 @@ tedious-work ladder — Luna, then Sonnet. Never hand the reading to the Orchest
 
 Create `tmp/cursor/` first. Write any brief longer than a couple of sentences to
 `tmp/cursor/<unit>-brief.md` and make the prompt a pointer to it; briefs never travel as
-fragile shell arguments. Every run journals its output, so the user can tail progress live
-and an interrupted run leaves its partial distillate on disk:
+fragile shell arguments. Every run journals its event stream, so the user can tail progress
+live and an interrupted run leaves its partial distillate on disk:
 
-`<resolved-entry> -p --trust --mode=ask --model "$CURSOR_GROK_MODEL" "<brief or pointer>" | tee tmp/cursor/<unit>.log`
+`<resolved-entry> -p --trust --mode=ask --model "$CURSOR_GROK_MODEL" --output-format stream-json "<pointer>" > tmp/cursor/<unit>.jsonl 2> tmp/cursor/<unit>.err`
 
 Write that chain to `tmp/cursor/run.sh` and run the file, so the resolution, the model, and the
 journalling are one artifact the next run reuses.
+
+The journal's first event is the `init` event, and its `session_id` is the run's recovery
+handle. The journal's `result` event carries the final answer. Return the journal path and
+that session id with the result, so the Orchestrator can confirm the bench ran. Read the
+`.err` file before calling a run empty; a launch that never reached the model leaves its
+trace only there. Resume an interrupted run through the CLI's `--resume` option, probed
+before its first use.
 
 Run that yourself only for a short bounded ask finishing in about two minutes. For anything
 longer your job ends at drafting: return the brief path, the exact resolved command, and the
@@ -79,7 +87,9 @@ Return only:
 - `Question`: one line.
 - `Evidence`: concise facts with `file:line` or primary-source pointers.
 - `Distillate`: the smallest context the next engine needs.
-- `Unknowns`: unresolved facts, not recommendations.
+- `Unknowns`: unresolved facts, not recommendations, naming every input row the
+  distillate did not reach.
+- `Journal`: the journal path and the session id from its `init` event.
 - `Deviation`: unavailable CLI, model, or auth; command failure; dirty containment.
 
 Grok's output is evidence, never a decision or a verdict.

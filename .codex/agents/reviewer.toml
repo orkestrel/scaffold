@@ -10,12 +10,14 @@ in full; read it and follow it.
 
 This route pins `--permission-mode plan`.
 
-The brief requires the `orkestrel-falsify` verdict shape and its single terminal line,
-unless the dispatch names a different skill that fixes one; file:line evidence on every
-required change; out-of-lane questions returned as referrals rather than verdicts; and,
-for a rendered or externally driven surface, the capture portfolio as primary evidence
-with source as corroboration. It forbids edits, commands, orchestration, reconciliation,
-and acceptance.
+The brief names the lane the route holds, and requires the returned verdict to state
+which lane it held. It requires the `orkestrel-falsify` verdict shape and its single
+terminal line, unless the dispatch names a different skill that fixes one; file:line
+evidence on every required change; out-of-lane questions returned as referrals rather
+than verdicts; `UNRESOLVED` rather than `CONFIRMED` on a claim whose only evidence is
+the writer's report, whatever the brief says; and, for a rendered or externally driven
+surface, the capture portfolio as primary evidence with source as corroboration. It
+forbids edits, commands, orchestration, reconciliation, and acceptance.
 
 Return the Opus audit labeled untrusted plus any CLI/auth deviation.
 """
