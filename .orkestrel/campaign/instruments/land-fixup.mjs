@@ -1,7 +1,7 @@
 // Land a fix-up in one or more fleet checkouts: run the gate chain, commit with the named
 // message, push with retry, pack the tip. Usage: node land-fixup.mjs <pkg>:<msgfile> ...
 import { execFileSync, spawnSync } from 'node:child_process'
-import { appendFileSync } from 'node:fs'
+import { appendFileSync, writeFileSync, copyFileSync } from 'node:fs'
 const BRANCH = 'claude/orkestrel-npm-audit-deps-14ibta'
 const LOG = '/home/user/work/logs/land-fixup.log'
 const say = (line) => { appendFileSync(LOG, `${line}\n`); console.log(line) }
@@ -20,6 +20,12 @@ for (const arg of process.argv.slice(2)) {
 		if (run.status !== 0) { say(run.stdout.slice(-3000) + run.stderr.slice(-1500)); red = true }
 	}
 	if (red) { say(`${pkg} RED - not committed`); continue }
+	const unit = process.env.UNIT || `${pkg}-fixup`
+	for (const [ext, args] of [['diff', ['diff']], ['status', ['status', '--short']]]) {
+		const text = execFileSync('git', ['-C', dir, ...args]).toString()
+		writeFileSync(`/home/user/scaffold/tmp/units/breaking/${unit}.${ext}`, text)
+		copyFileSync(`/home/user/scaffold/tmp/units/breaking/${unit}.${ext}`, `/home/user/scaffold/.orkestrel/campaign/fix/units/${unit}.${ext}`)
+	}
 	execFileSync('git', ['-C', dir, 'add', '-A'])
 	execFileSync('git', ['-C', dir, '-c', 'user.name=Claude', '-c', 'user.email=noreply@anthropic.com', 'commit', '-q', '-F', msg])
 	let pushed = false
