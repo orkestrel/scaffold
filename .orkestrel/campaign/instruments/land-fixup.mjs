@@ -7,7 +7,7 @@ const LOG = '/home/user/work/logs/land-fixup.log'
 const say = (line) => { appendFileSync(LOG, `${line}\n`); console.log(line) }
 for (const arg of process.argv.slice(2)) {
 	const [pkg, msg] = arg.split(':')
-	const dir = `/home/user/fleet/${pkg}`
+	const dir = pkg === 'scaffold' ? '/home/user/scaffold' : `/home/user/fleet/${pkg}`
 	let red = false
 	for (const script of ['format:check', 'lint:check', 'check', 'build']) {
 		const run = spawnSync('npm', ['run', script], { cwd: dir, encoding: 'utf8' })
