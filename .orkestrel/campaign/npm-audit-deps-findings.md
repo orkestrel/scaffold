@@ -666,3 +666,5 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   of a package that moved). A mirror is fetched from published bytes and never edited, so the
   refresh runs at the re-pin after the fleet publishes; accepted on the record for this wave and
   carried as the W-END `mirror-refresh` row, which cannot run while publishing is held.
+- **L5 closed.** agent `f0c4979` accepted with its verdict. Ollama landed at `6a92c05`
+  (re-staged on `agent-f0c4979.tgz`) with its lanes running; toolbox in flight.
