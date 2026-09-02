@@ -76,6 +76,18 @@ line; `UNRESOLVED` says what would settle it.
 19. Every finding in round 1's reconciliation table names a carrier whose diff closes it or whose
     report falsifies it on evidence; none was dropped silently.
 
+20. `captureFrame` writes a frame that covers the whole document at the variant's width when the
+    document is taller than the declared pane, and `releasePane` leaves the tester at the viewport
+    it had before staging; both proved red then green in the browser suite per
+    `fix-capture-report.md`. Attack: a fixture taller than the pane; the viewport read after a
+    release.
+21. `readFrame` and `FrameReading` are exported from `@orkestrel/test/browser`, documented in the
+    guide's Surface tables with a transcribed fence where a value is printed, and tested on a
+    written frame and a missing path.
+22. Terrain's 390 variants declare an 844 px pane again, every 390 frame reads complete on the
+    surface's own floor through the layer's `readFrame`, no local frame reader remains, and the
+    census and escape negative controls enter through the read root the reading walks.
+
 ## Output
 
 The `orkestrel-falsify` verdict shape: per-claim verdict with the attack and the evidence line,
