@@ -1,0 +1,4 @@
+ M guides/terminal.md
+ M src/core/types.ts
+ M tests/src/core/TerminalManager.test.ts
+ M tests/src/core/helpers.test.ts
