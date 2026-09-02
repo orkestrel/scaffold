@@ -582,3 +582,6 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   Workspace: a snapshot persisted by 0.0.6 or earlier holding a binary file reads as absent after
   the `data → base64` rename (no shim, `AGENTS.md` § Design laws); the fix-up commit message
   records it.
+- **Middleware re-staged on `server-522ed4c.tgz`** (`instruments/restage-middleware.sh`, log
+  `restage-middleware.log`): stage exit 0 with every closure row OK, `npm run check` exit 0,
+  `npm test` exit 0. The tip `aa8646a` stands; the L4 closures read it from there.
