@@ -59,3 +59,11 @@ package, implement → (subjective, checker) in parallel; the Orchestrator lands
   leaves both untouched.
 - A tree-wide `npm test` under two concurrent writers can miss a deadline; the Orchestrator's
   landing chain is the deciding run.
+
+## Re-baseline after slice 3 (2026-09-02)
+
+The user instructed the wave to run as much as possible in parallel. Slices 4, 5, and 6 launch
+together as three concurrent Workflows (each capped at two live agents by the host), so up to six
+agents run at once across disjoint checkouts; one writer per checkout still holds. A timing failure
+under that load is decided by the Orchestrator's serial landing chain, and a red there is re-run
+alone before it is read. Scaffold's brief is regenerated at its current tip before its unit runs.

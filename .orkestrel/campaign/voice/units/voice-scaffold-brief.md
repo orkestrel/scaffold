@@ -18,7 +18,7 @@ sentence that never repeats the symbol's name, and every boolean `@returns` read
 
 ## Context
 
-**Host.** Linux, bash. Repository `/home/user/scaffold` at commit `9a69357`, branch
+**Host.** Linux, bash. Repository `/home/user/scaffold` at commit `417f127`, branch
 `claude/orkestrel-npm-audit-deps-14ibta`, committed clean at launch, `node_modules` installed
 with the fleet closure staged as tarballs. Do not run `npm install`. Run only the gate chain the
 shared brief names; `test:distribution` and any live-service suite are outside it.
@@ -29,6 +29,9 @@ backtick token, so read each hit before rewriting): files=27, blocks=462,
 imperative=236, verbless=195, boolean `@returns` in another wording=28.
 
 **Standing conditions.**
+- This checkout is the Orchestrator's own: its tip advances with campaign-record commits under
+  `.orkestrel/` while units run, so a tip later than the one named here is still the launch tip.
+  The tree stays committed clean outside your edits.
 - A guide parity test in some packages compares `@example` fences and backticked symbol names in
   TSDoc against the guide and the barrel (for example `tests/guides.test.ts`). The wave leaves
   `@example` blocks and every backtick token untouched, so those tests stay green; a test that
