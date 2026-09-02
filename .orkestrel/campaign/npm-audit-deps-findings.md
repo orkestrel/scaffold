@@ -792,3 +792,8 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   arming failure while every split suite passed; the landing chain is the deciding run.
   Observations recorded for the instrument: an all-caps initialism opener (`URL-decodes`) and
   the boolean-parameter form (`If \`true\`, …`) satisfy the rule and read as verbless in the scan.
+- **Slice 3 closed** (indexeddb `7783d6d`, qualifier `10bd46f`, queue `00d0352`, program
+  `af03b38`, sea `09fd247`, router `0302d86`, workspace `555706b`, probe `030ac69`). Probe's
+  landing chain went red on `npm test` with the standing Oxlint arming failure, reproduced on the
+  deciding run alone; its static gates and build are green and the diff is comment-only, so the
+  Orchestrator committed it directly with the failure recorded in its verdict.
