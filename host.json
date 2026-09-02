@@ -340,7 +340,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "0407d93b169c93d695ad950629b018abeb13e3598b42fba090cdaca2f3cc8166"
+			"digest": "6bd24c0a4bd379555c15e843566dbba7ec8dffb719e03cebd8862e884bfea666"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "0c83d366eb9a466e0ed6ab27248357d563934197035b07827577182a815eaa7b"
+	"digest": "bbc6b360fd3a34c30984323bef3af2e81b1652848395aa8c56c9b46394a3eeb2"
 }
