@@ -77,3 +77,24 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   installs two copies of contract in every consumer. An unpublished application may take the
   declared range, measured by its gates. The contract cascade is a fleet release wave the user
   decides; it is carried in the campaign report as a finding outside the exit criterion.
+
+## U6 terrain reference, returned 2026-09-02
+
+- Green on every acceptance gate; report retained as `terrain-reference-report.md`; tests committed
+  in terrain as "Prove the shell through the published journey layer".
+- Layer finding: `resolveRendered` and the named-region resolver pass `includeHidden: true`, and
+  the role engine's name computation then includes `aria-hidden` descendants, so an icon glyph
+  beside a control's text defeats every exact match. Measured with a glyph-free region as the
+  control. Successor unit U3s3 (`test/tmp/units/resolve-hidden-brief.md`) dispatched to the Opus
+  `implementer`, standing in for Sol (bench dark), with seven browser proof cases and the
+  red-then-green requirement. After it lands: repack the test tarball, re-stage it in terrain, and
+  dispatch a terrain successor to close the refusal family's reachable half, `readPerception` on
+  the first-run dialog, and the dialog mount by region name.
+- Terrain visit dispatched from the committed baseline on `visit-terrain-brief.md` (`--dirty`
+  allowed there alone, after a read-only audit records the deletion plan).
+- Orchestrator incident: the terrain commit was made with `git add <files>` then a bare
+  `git commit`, which swept the user's staged lockfile deletion into it. Repaired by restoring the
+  index entry from the parent, amending, and re-staging the deletion with `git rm --cached`; the
+  working-tree file was never touched. Rule for the rest of the campaign: in a tree carrying a
+  user's staged change, commit with explicit pathspecs (`git commit -- <paths>`), never a bare
+  commit over the index.
