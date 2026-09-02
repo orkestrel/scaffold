@@ -777,3 +777,7 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   pool `fe2c9f1`, worker `5d1d6df`, tool `04c0395`, template `7ffa579`; verdicts under
   `voice/units/`). Every landing chain green; `voice/scan-after-slice2.txt` reads zero in every
   bucket for the eight.
+- **Scanner correction.** The first classifier read a hyphenated verb (`Re-arms`, `Re-enqueues`)
+  as imperative, so the first scan after slice 2 showed one false hit each in budget and worker.
+  The instrument now accepts a hyphenated `-s` verb and lists a package's residual hits with
+  `--list <package>`; `scan-after-slice2.txt` is re-taken with it and reads zero for the eight.

@@ -4,8 +4,9 @@ import { join } from 'node:path'
 const roots = { scaffold: '/home/user/scaffold' }
 for (const n of readdirSync('/home/user/fleet')) roots[n] = `/home/user/fleet/${n}`
 const walk = (dir, out) => { for (const e of readdirSync(dir)) { const p = join(dir, e); const s = statSync(p); if (s.isDirectory()) walk(p, out); else if (/\.ts$/.test(e) && !/\.d\.ts$/.test(e)) out.push(p) }; return out }
-const THIRD = /^(?:[A-Z][a-z]+s|Is|Has|Does|Can)\b/
-const IMPER = /^(?:[A-Z][a-z]+)\b/
+const THIRD = /^(?:[A-Z][a-z]+(?:-[a-z]+)*s|Is|Has|Does|Can)\b/
+const IMPER = /^(?:[A-Z][a-z]+(?:-[a-z]+)*)\b/
+const LIST = process.argv[2] === '--list' ? process.argv[3] : undefined
 const rows = []
 let totals = { blocks: 0, imperative: 0, verbless: 0, returnsBad: 0 }
 for (const [name, root] of Object.entries(roots)) {
@@ -20,6 +21,7 @@ for (const [name, root] of Object.entries(roots)) {
 			const first = body.split(/\n\s*\n|\n@/)[0].trim().split('\n')[0].trim()
 			r.blocks++
 			const word = first.match(/^[`A-Za-z]+/)?.[0] ?? ''
+			if (LIST === name && !(word && THIRD.test(first))) console.error(`${f}: ${first.slice(0, 100)}`)
 			if (word && THIRD.test(first)) { /* third person */ }
 			else if (word && IMPER.test(first) && !/^(?:The|A|An|This|Each|Every|One|All|Any|No|Its|Their|Whether|If|When|How|What|Which|Where|Why|Options|Input|Output|Result|Runtime|Default|Type|Shape|Value|Name|Number|Boolean|String|True|False|Null|Undefined)$/.test(word)) r.imperative++
 			else r.verbless++
