@@ -1,0 +1,10 @@
+diff --git a/src/server/injectors/Injector.ts b/src/server/injectors/Injector.ts
+index 9ba1625..91aa71f 100644
+--- a/src/server/injectors/Injector.ts
++++ b/src/server/injectors/Injector.ts
+@@ -1,4 +1,5 @@
+ /**
++ * Names the injection strategy per executable format:
+  * PE  — adds an RT_RCDATA resource via resource directory rebuild.
+  * ELF — appends a PT_NOTE segment with the blob as note data.
+  * Mach-O — appends an LC_SEGMENT_64 load command with a section.

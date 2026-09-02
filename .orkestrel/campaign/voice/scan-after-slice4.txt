@@ -1,12 +1,9 @@
-scaffold    files= 27 blocks= 462 imperative= 236 verbless= 195 returnsBad= 28
 contract    files= 21 blocks= 446 imperative= 261 verbless= 152 returnsBad= 16
-mcp         files= 40 blocks= 598 imperative=  62 verbless= 157 returnsBad= 77
-console     files= 27 blocks= 235 imperative=  73 verbless= 120 returnsBad=  5
-guide       files= 11 blocks= 110 imperative=   0 verbless=   3 returnsBad=  0
+scaffold    files= 27 blocks= 429 imperative= 236 verbless= 162 returnsBad= 28
+mcp         files= 40 blocks= 598 imperative=  35 verbless=  68 returnsBad= 77
+console     files= 27 blocks= 235 imperative=  53 verbless=  68 returnsBad=  3
 workflow    files= 35 blocks= 375 imperative=   0 verbless=   3 returnsBad=  0
 form        files= 10 blocks= 147 imperative=   0 verbless=   0 returnsBad=  1
-sea         files= 11 blocks= 110 imperative=   0 verbless=   1 returnsBad=  0
-server      files=  9 blocks= 105 imperative=   0 verbless=   1 returnsBad=  0
 abort       files=  6 blocks=  13 imperative=   0 verbless=   0 returnsBad=  0
 agent       files= 21 blocks= 305 imperative=   0 verbless=   0 returnsBad=  0
 brief       files= 12 blocks= 123 imperative=   0 verbless=   0 returnsBad=  0
@@ -16,6 +13,7 @@ codec       files=  4 blocks=  30 imperative=   0 verbless=   0 returnsBad=  0
 csv         files= 11 blocks= 126 imperative=   0 verbless=   0 returnsBad=  0
 database    files= 33 blocks= 191 imperative=   0 verbless=   0 returnsBad=  0
 emitter     files=  5 blocks=  18 imperative=   0 verbless=   0 returnsBad=  0
+guide       files= 11 blocks= 108 imperative=   0 verbless=   0 returnsBad=  0
 html        files=  9 blocks= 156 imperative=   0 verbless=   0 returnsBad=  0
 indexeddb   files= 12 blocks=  42 imperative=   0 verbless=   0 returnsBad=  0
 interpret   files= 20 blocks= 141 imperative=   0 verbless=   0 returnsBad=  0
@@ -35,6 +33,8 @@ rater       files=  8 blocks=  42 imperative=   0 verbless=   0 returnsBad=  0
 reason      files= 26 blocks= 335 imperative=   0 verbless=   0 returnsBad=  0
 relation    files=  8 blocks=  41 imperative=   0 verbless=   0 returnsBad=  0
 router      files= 20 blocks=  61 imperative=   0 verbless=   0 returnsBad=  0
+sea         files= 11 blocks= 110 imperative=   0 verbless=   0 returnsBad=  0
+server      files=  9 blocks= 105 imperative=   0 verbless=   0 returnsBad=  0
 sqlite      files=  8 blocks=  22 imperative=   0 verbless=   0 returnsBad=  0
 sse         files=  6 blocks=  20 imperative=   0 verbless=   0 returnsBad=  0
 table       files= 17 blocks= 224 imperative=   0 verbless=   0 returnsBad=  0
@@ -47,4 +47,4 @@ toolbox     files= 18 blocks= 193 imperative=   0 verbless=   0 returnsBad=  0
 websocket   files=  9 blocks=  44 imperative=   0 verbless=   0 returnsBad=  0
 worker      files= 12 blocks=  33 imperative=   0 verbless=   0 returnsBad=  0
 workspace   files= 11 blocks=  57 imperative=   0 verbless=   0 returnsBad=  0
-TOTAL {"blocks":7155,"imperative":632,"verbless":632,"returnsBad":127}
+TOTAL {"blocks":7120,"imperative":585,"verbless":453,"returnsBad":125}

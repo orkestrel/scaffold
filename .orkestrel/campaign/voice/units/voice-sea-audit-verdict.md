@@ -56,3 +56,11 @@ Findings outside the claims: none material. The report's observation about src/s
 ## Orchestrator
 
 Both lanes PASS. Landed by the Orchestrator's chain, every gate 0. **Verdict: PASS.**
+
+## Addendum — header fix-up (`c3c36c8`)
+
+The acceptance scan after landing listed the floating format-list header at
+`src/server/injectors/Injector.ts:1-5` as summary-less. It gained the first sentence `Names the
+injection strategy per executable format:` above its three format lines
+(`voice-sea-fixup-brief.md`, builder on Sonnet; `voice-sea-fixup.diff`, `.status`). Landed by
+the Orchestrator's chain, every gate 0. Verdict stands: **PASS**.
