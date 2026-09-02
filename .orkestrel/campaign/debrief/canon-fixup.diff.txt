@@ -1,0 +1,506 @@
+diff --git a/.agents/orchestration.md b/.agents/orchestration.md
+index 744ba0e..acd70b1 100644
+--- a/.agents/orchestration.md
++++ b/.agents/orchestration.md
+@@ -35,8 +35,7 @@ One workflow runs across all providers. Each engine has one job and never takes
+ - Route each nontrivial implementation unit to Opus or Sol. Objective, constraint-heavy,
+   mechanical-precision work goes to Sol. API-shape, naming, and documentation-voice work goes to
+   Opus. Cursor Composer is not an implementation route, and no `composer` role exists.
+-- Design runs the adversarial pass. An audit runs the lanes its round names, with at least one whose
+-  engine did not write the work.
++- Design runs the adversarial pass. § Execution loop step 5 fixes which lanes an audit runs.
+ 
+ ## Orchestration by harness
+ 
+@@ -255,9 +254,8 @@ Every role honours this floor. No dispatch may widen it.
+ Concurrent executors share a filesystem unless isolated. Follow these rules to prevent clobbered
+ edits, formatter and build races, cache phantoms, and validation cross-talk.
+ 
+-1. Run one writing executor per checkout and keep the checkouts disjoint; in a single checkout that
+-   is one writer at a time. Commit a checkpoint before each writing dispatch so git is the rollback
+-   mechanism.
++1. Serialize writers as § Permission floor states: one per checkout, checkouts disjoint. Commit a
++   checkpoint before each writing dispatch so git is the rollback mechanism.
+ 2. Assign disjoint owned files plus explicit shared and off-limits files.
+ 3. Keep shared files report-only. Executors return exact patches for serial integration.
+ 4. Restrict concurrent executors to read-only, scoped validation. A tree-wide result may contain a
+@@ -333,7 +331,7 @@ longer holds.
+      ends the campaign, each to end implemented, repaired, retained, or intentionally excluded on
+      evidence. A plan that names work but not its end can only be abandoned, never finished.
+ 3. **Implement.** Route each nontrivial objective unit to the Sol `implementer` and each nontrivial
+-   subjective unit to the Opus `implementer`, in the main checkout, one writer at a time. Route a
++   subjective unit to the Opus `implementer`, in the checkout the unit writes, one writer per checkout. Route a
+    fully specified taste-free unit to `builder`. Never route implementation to an engine the unit's
+    judgment load exceeds.
+ 4. **Integrate.** Evaluate each distillate against its acceptance criteria, apply shared-file
+@@ -345,8 +343,9 @@ longer holds.
+    subjective lane — `analyst` and `reviewer`, the way step 2 names its lanes — at least one of them
+    on an engine that did not write the work. Dispatch `checker` in addition when the acceptance
+    criteria are mechanical — counts, paths, parity rows, scope honesty — never in place of a lane. A
+-   round that runs fewer lanes than its brief names records the deviation in its verdict file with
+-   that round's own reason, never a template sentence.
++   round that runs fewer lanes than its brief names, or omits the checker its criteria call for,
++   records the deviation in its verdict file with that round's own reason, never a template
++   sentence.
+    - State the audit's subject as numbered falsifiable claims and require per-claim verdicts with
+      evidence, per the Falsification law in `.claude/rules/quality.md` and the `orkestrel-falsify`
+      value set, unless the dispatch names a different skill that fixes another.
+@@ -786,9 +785,7 @@ release, and follow it there rather than reconstructing the procedure here. What
+ section binds an executor who is not publishing.
+ 
+ A wave over unpublished tips derives its order per run from the graph and records only the round
+-each package landed in, never the order itself. It runs one unit per checkout, at that checkout's
+-catalog layer, and gives a checkout with no rows an adopt unit only when that checkout's typecheck
+-against the staged closure reddens.
++each package landed in, never the order itself.
+ 
+ ### Fixing a dependency before it publishes
+ 
+@@ -808,6 +805,8 @@ Build the dependency from source, pack it, and **install the tarball** into the
+ - **Rebuild and repack whenever the source moves.** A stale tarball is the same defect as a stale
+   `dist/`, and it is worse for being invisible: the consumer's gates go green against a fix that no
+   longer exists in the dependency's tree.
++- **Run one unit per checkout, at that checkout's catalog layer.** Give a checkout with no rows an
++  adopt unit only when its typecheck against the staged closure reddens.
+ - **Fetch and merge the dependency's default branch before packing it**, wherever another session
+   can move that branch. A pack from a stale tip ships the consumer a dependency the dependency's own
+   repository no longer has.
+diff --git a/.agents/skills/enterprise-bootstrap/references/components.md b/.agents/skills/enterprise-bootstrap/references/components.md
+index 40871cb..f7dcc9b 100644
+--- a/.agents/skills/enterprise-bootstrap/references/components.md
++++ b/.agents/skills/enterprise-bootstrap/references/components.md
+@@ -949,7 +949,7 @@ const myToast = bootstrap.Toast.getOrCreateInstance('#myToast')
+ myToast.show()
+ ```
+ 
+-Constructors accept elements or CSS selector strings. Full lifecycle — `getInstance`, `dispose()` on unmount, event pairs (`show.bs.*` / `shown.bs.*`), async behavior, and why SPAs should prefer framework wrappers: [bootstrap-reference.md](bootstrap-reference.md) → JavaScript lifecycle.
++Constructors accept elements or CSS selector strings. Full lifecycle — `getInstance`, `dispose()` on unmount, event pairs (`show.bs.*` / `shown.bs.*`), async behavior, and why an SPA prefers a framework wrapper: [bootstrap-reference.md](bootstrap-reference.md) → JavaScript lifecycle.
+ 
+ ## Icons
+ 
+diff --git a/.agents/skills/orkestrel-falsify/SKILL.md b/.agents/skills/orkestrel-falsify/SKILL.md
+index 950095c..8e0b456 100644
+--- a/.agents/skills/orkestrel-falsify/SKILL.md
++++ b/.agents/skills/orkestrel-falsify/SKILL.md
+@@ -79,8 +79,9 @@ nobody claimed.
+   lane, each a fresh subagent with a clean context, blind to each other. Reconcile them yourself.
+   `.agents/orchestration.md` owns lane definitions, engine assignment, and what happens when an
+   engine is dark; do not restate them here.
+-- A round run with one lane is a deviation. Record it rather than glossing it. If an engine is
+-  unavailable, the remaining engine runs every lane — it never drops one.
++- A round that runs fewer lanes than its brief names records the deviation with the round's own
++  reason; `.agents/orchestration.md` § Execution loop owns the lane rule and § Engine assignment
++  owns the substitution.
+ - **Pair every finder with an independent refuter when the round fans out past the subjective and
+   objective lanes.** The
+   refuter receives one slice's findings, never that finder's work, and is briefed to BREAK them
+@@ -137,7 +138,7 @@ comparable; a round that invents its own cannot be read against the last one.
+    | --------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | `CONFIRMED`     | attacked and it held                                                                   | as the Falsification law requires                                                                                                                             |
+    | `BROKEN`        | falsified                                                                              | as the Falsification law requires — note it says _input, **state, or interleaving**_, so a concurrency claim is falsified by an interleaving, not by an input |
+-   | `UNRESOLVED`    | cannot be decided from the evidence available                                          | what would settle it                                                                                                                                          |
++   | `UNRESOLVED`    | cannot be decided from the evidence available                                          | what would settle it; a claim whose only evidence is the writer's own report takes this value                                                                 |
+    | `NOT-EVIDENCED` | a claim about a rendered or externally driven surface the supplied capture cannot show | which capture is missing                                                                                                                                      |
+ 
+    `CONFIRMED` and `BROKEN` defer; only `UNRESOLVED` and `NOT-EVIDENCED` are this skill's, because
+@@ -150,7 +151,8 @@ comparable; a round that invents its own cannot be read against the last one.
+ 3. **Attacked and held**: the claims this round attacked and could not break, each with the attack
+    that failed, and the adjacent behaviour that looks like the defect and is correct. This is where
+    the next round reads what has already been tried, so a claim listed here without its attack is
+-   worth nothing to it.
++   worth nothing to it. A claim's own `CONFIRMED` line already carries the evidence that convinced
++   the auditor, so list here only the attacks no verdict line carries and the adjacent behaviour.
+ 
+ 4. **One terminal line**, and only one:
+ 
+diff --git a/.agents/skills/orkestrel-falsify/references/brief.md b/.agents/skills/orkestrel-falsify/references/brief.md
+index 3f1169a..e48a148 100644
+--- a/.agents/skills/orkestrel-falsify/references/brief.md
++++ b/.agents/skills/orkestrel-falsify/references/brief.md
+@@ -39,21 +39,17 @@ a consumer finding it after publication, when the version is already spent.
+ ## The read-only audit lane's brief
+ 
+ An audit lane writes nothing and runs nothing, so its brief carries fewer rows than a writing
+-unit's. Give a lane these rows:
+-
+-- **Role and lane.** The role, its engine, and which lane it holds.
+-- **Subject.** The chain of rounds, plus the evidence § "Evidence, by subject type" requires of
+-  every row the subject occupies.
+-- **What the round decides.**
+-- **Already established — do not re-run.**
+-- **Numbered falsifiable claims.**
+-- **Unknowns, named as unknowns.**
+-- **Output.** The verdict shape and its single terminal line.
++unit's. Give a lane every row § Anatomy names — the subject with the evidence § "Evidence, by subject type"
++requires of each row it occupies, what the round decides, already established, the numbered
++falsifiable claims, the unknowns, and the threshold — plus two rows of its own: **Role and lane**
++(the role, its engine, and which lane it holds) and **Output** (the verdict shape and its single
++terminal line). Review evidence folds into the subject.
+ 
+ Omit the rows a writer needs and a lane cannot use: owned, shared, and off-limits files; the
+-Execution line written for a writer; and acceptance criteria stated as gate commands. A lane that
+-holds no shell cannot close a gate criterion, so a brief handing it one is asking for a ruling on
+-the writer's report.
++Execution line's writer form, keeping the sentence that the lane performs the assignment directly
++and spawns nothing; and acceptance criteria stated as gate commands. A lane that holds no shell
++cannot close a gate criterion, so a brief handing it one is asking for a ruling on the writer's
++report.
+ 
+ ## The successor rule
+ 
+diff --git a/.agents/skills/orkestrel-polish-surface/references/capture-harness.md b/.agents/skills/orkestrel-polish-surface/references/capture-harness.md
+index 32f7e6b..7c2df9f 100644
+--- a/.agents/skills/orkestrel-polish-surface/references/capture-harness.md
++++ b/.agents/skills/orkestrel-polish-surface/references/capture-harness.md
+@@ -73,7 +73,7 @@ most expensive way to discover a harness bug.
+ When a verdict returns a not-evidenced item, the harness is the first suspect and the
+ surface is the second. In order:
+ 
+-1. Confirm the artifact that should decide the item exists and is named as the brief said.
++1. Confirm the artifact that decides the item exists and is named as the brief said.
+ 2. Confirm the scenario reached the state the item is about.
+ 3. Confirm the seed and the entry path match the surface's real contract.
+ 4. Only then treat it as a product finding.
+diff --git a/.agents/transports/codex.md b/.agents/transports/codex.md
+index 3cd49cf..2ae339e 100644
+--- a/.agents/transports/codex.md
++++ b/.agents/transports/codex.md
+@@ -119,7 +119,7 @@ skill owns the value set and the terminal line. Point the brief at both; restate
+ 
+ ## Implementer route
+ 
+-Sandbox `workspace-write`, main checkout, sole serial writer from a clean committed
++Sandbox `workspace-write`, the checkout the route writes in, its sole serial writer from a clean committed
+ baseline, with owned files, off-limits files, and a deviation contract. The brief forbids
+ dependency installation, commits, pushes, publishing, credentials, destructive commands,
+ shared-file edits, and tree-wide mutating gates.
+diff --git a/.claude/agents/builder.md b/.claude/agents/builder.md
+index 55ebe85..ca35379 100644
+--- a/.claude/agents/builder.md
++++ b/.claude/agents/builder.md
+@@ -1,6 +1,6 @@
+ ---
+ name: builder
+-description: 'Implements one small, fully specified, taste-free unit exactly as dispatched. Writes only owned files in the main checkout as the sole serial writer, validates narrowly, and stops on any plan deviation. Nontrivial implementation belongs to GPT-5.6 Sol or Opus 5.'
++description: 'Implements one small, fully specified, taste-free unit exactly as dispatched. Writes only owned files in the checkout the unit writes as the sole serial writer, validates narrowly, and stops on any plan deviation. Nontrivial implementation belongs to GPT-5.6 Sol or Opus 5.'
+ tools: Read, Grep, Glob, Edit, Write, Bash
+ model: sonnet
+ effort: low
+diff --git a/.claude/agents/checker.md b/.claude/agents/checker.md
+index 30f3beb..7b8a206 100644
+--- a/.claude/agents/checker.md
++++ b/.claude/agents/checker.md
+@@ -35,7 +35,7 @@ Work item by item, one piece of evidence per item:
+ 
+ No judgment calls: a question that needs one becomes a **referral** — specifically
+ evidenced, addressed to the subjective lane when it is running and to the
+-Orchestrator when it is not — never a guess and never a verdict of yours.
++Orchestrator when you hold every lane it names — never a guess and never a verdict of yours.
+ 
+ Rule a claim whose only evidence is the writer's report `UNRESOLVED`, never
+ `CONFIRMED`, whatever the brief says. A quoted command and exit code inside a
+diff --git a/.claude/agents/implementer.md b/.claude/agents/implementer.md
+index 0c2ad84..b22595a 100644
+--- a/.claude/agents/implementer.md
++++ b/.claude/agents/implementer.md
+@@ -1,6 +1,6 @@
+ ---
+ name: implementer
+-description: 'Claude Opus 5 implementation of one bounded nontrivial unit — the subjective mirror of the Sol implementer. Writes owned files in the main checkout as the sole serial writer; favours API-shape, naming, and documentation-voice units. Never accepts its own output.'
++description: 'Claude Opus 5 implementation of one bounded nontrivial unit — the subjective mirror of the Sol implementer. Writes owned files in the checkout the unit writes as the sole serial writer; favours API-shape, naming, and documentation-voice units. Never accepts its own output.'
+ tools: Read, Grep, Glob, Edit, Write, Bash
+ model: opus
+ effort: high
+diff --git a/.claude/agents/planner.md b/.claude/agents/planner.md
+index 468d717..d7e1cf4 100644
+--- a/.claude/agents/planner.md
++++ b/.claude/agents/planner.md
+@@ -32,8 +32,9 @@ list:
+ - `Alternatives`: at most two real alternatives and why the design wins.
+ - `Constraints`: what the code and the contracts permit, each with its `file:line`.
+ - `Refusals`: the options a rule forecloses, with the rule text quoted.
+-- `Measurements`: the readings that bound the design, each with the command that
+-  produced it.
++- `Measurements`: the readings the dispatch supplied that bound the design, each with the
++  command the Orchestrator ran. Name a reading the design needs and the dispatch did not
++  supply under `Tensions`.
+ - `Units`: bounded work, each naming its role AND engine so the routing ledger is
+   derivable, with ownership, dependencies, and acceptance criteria.
+ - `Tensions`: the choices your lane made on judgment, named for the other lane to
+diff --git a/.claude/agents/reviewer.md b/.claude/agents/reviewer.md
+index f538706..7785fff 100644
+--- a/.claude/agents/reviewer.md
++++ b/.claude/agents/reviewer.md
+@@ -1,6 +1,6 @@
+ ---
+ name: reviewer
+-description: "Subjective design-fit review of implemented work — API feel, vocabulary, architecture shape, guide voice, and conceptual coherence. Reads the actual diff when the round's triggers name this lane. Never edits."
++description: 'Subjective design-fit review of implemented work — API feel, vocabulary, architecture shape, guide voice, and conceptual coherence. Reads the actual diff on every nontrivial audit round, holding the subjective lane by default and the objective lane when the dispatch assigns it. Never edits.'
+ tools: Read, Grep, Glob
+ model: opus
+ effort: high
+diff --git a/.claude/rules/architecture.md b/.claude/rules/architecture.md
+index f995aa6..29826fd 100644
+--- a/.claude/rules/architecture.md
++++ b/.claude/rules/architecture.md
+@@ -76,8 +76,9 @@ Use only the centralized files an environment needs.
+   - Right file, wrong name → **rename it in place**. An entity is a class instance whose methods
+     drive its own state, as opposed to a plain value that carries data and no behaviour. A function
+     returning a live entity is an entity factory and belongs in `factories.ts` whatever it is
+-    called, so `restoreThing` there is misnamed, not misplaced. Renaming moves the published surface and earns a version bump; that cost is the
+-    correct one to pay, and it is smaller than the alternative.
++    called, so `restoreThing` there is misnamed, not misplaced. Renaming moves the published
++    surface and earns a version bump; that cost is the correct one to pay, and it is smaller than
++    the alternative.
+   - Never let the name choose. Relocating a correctly-placed function to escape a rename drags its
+     dependencies with it — an entity factory moved into `helpers.ts` makes that file import an
+     implementation class, and a leaf file that imports a class stops being a leaf for every module
+diff --git a/.claude/rules/names.md b/.claude/rules/names.md
+index d934675..3e95d85 100644
+--- a/.claude/rules/names.md
++++ b/.claude/rules/names.md
+@@ -118,7 +118,7 @@ The root design laws in `AGENTS.md` — one term per concept, boolean behavior s
+ - Name the axis a discriminant varies: `relationship`, `command`, `category`, `operation`, `via`.
+ - A binary switch is a boolean such as `bail`, never `'continue' | 'halt'`; genuine discriminants, multi-state lifecycles, conventional value pairs (`ascending`/`descending`, `and`/`or`), and external-spec literals remain unions.
+ - An option key, constant, or member that transliterates an external protocol field, format field, or engine pragma keeps the external wording in this project's casing, and its TSDoc names the source it mirrors: the `foreignKeys` key mirrors the `PRAGMA foreign_keys` statement, and the `keepAlive` key mirrors the Ollama `keep_alive` field.
+-- Mirror no banned word: a mirrored name never uses `kind` or `type` as a member name, and never uses a word § Rejected naming lists. A Compound File Binary (CFB) directory entry's object-type byte takes a named discriminant.
++- Outside a declared wire body, a mirrored name never uses `kind` or `type` as a member name, and never uses a word § Rejected naming lists. A Compound File Binary (CFB) directory entry's object-type byte takes a named discriminant.
+ - A declared wire body — a type whose members transliterate an external wire format field for field — keeps the external field names, `type` and `kind` included, and its TSDoc names the format it transliterates. The package's own domain type carries neither word, and the package owns the projection between the wire body and the domain type.
+ 
+ ## Acronyms
+diff --git a/.codex/agents/grok.toml b/.codex/agents/grok.toml
+index ced0df1..05e0c5b 100644
+--- a/.codex/agents/grok.toml
++++ b/.codex/agents/grok.toml
+@@ -15,9 +15,10 @@ substitute a model id. Invoke Cursor in ask mode only for a short bounded ask, j
+ the event stream and stderr:
+ agent -p --trust --mode=ask --model "$CURSOR_GROK_MODEL" --output-format stream-json
+ "<pointer>" > tmp/cursor/<unit>.jsonl 2> tmp/cursor/<unit>.err
+-The journal's first event carries the session_id that resumes the run; its result event
++The journal's first event carries the session_id that is the run's recovery handle; its result event
+ carries the final answer; resumption goes through the CLI's --resume option, probed before
+-its first use. For longer work do not launch anything: return the brief path, the exact
++its first use. Read the .err journal before calling a run empty; a launch that never reached the
++model leaves its refusal there and nothing in the .jsonl journal. For longer work do not launch anything: return the brief path, the exact
+ resolved command, and the journal path for the Orchestrator to launch under a cap it owns.
+ The brief requires read-only work, concise evidence with file:line pointers, and no
+ raw dumps, design, decisions, or edits. Never use --force, expose CURSOR_API_KEY,
+diff --git a/.codex/agents/implementer.toml b/.codex/agents/implementer.toml
+index 6fefc83..bd48aa4 100644
+--- a/.codex/agents/implementer.toml
++++ b/.codex/agents/implementer.toml
+@@ -1,5 +1,5 @@
+ name = "implementer"
+-description = "GPT-5.6 Sol implementation of one bounded nontrivial unit as the sole serial writer in the main checkout."
++description = "GPT-5.6 Sol implementation of one bounded nontrivial unit as the sole serial writer in the checkout the unit writes."
+ model = "gpt-5.6-sol"
+ model_reasoning_effort = "high"
+ sandbox_mode = "workspace-write"
+@@ -8,7 +8,7 @@ Read .agents/orchestration.md first. It owns the role set, the routing, and the
+ dispatch contract. Then read AGENTS.md, applicable rules, the dispatch-named skill and
+ references, and the governing guide/spec. Require a reconciled plan, baseline, owned files, off-limits
+ files, acceptance criteria, and deviation contract. Implement only the bounded unit
+-in its explicitly disjoint writable scope within the main checkout. Do not add
++in its explicitly disjoint writable scope within the checkout the unit writes. Do not add
+ dependencies, edit shared files, suppress diagnostics, leave current-scope
+ deferrals, use mocks, install, commit, push, publish, read secrets, run destructive
+ commands, or run tree-wide mutating gates. Validate only owned scope. For a defect
+diff --git a/.codex/agents/opus.toml b/.codex/agents/opus.toml
+index 0f0db6b..9c2b898 100644
+--- a/.codex/agents/opus.toml
++++ b/.codex/agents/opus.toml
+@@ -8,13 +8,18 @@ Read .agents/orchestration.md first. It owns the role set, the routing, and the
+ dispatch contract. `.agents/transports/claude.md` owns the Claude transport contract
+ in full; read it and follow it.
+ 
+-This route pins `--permission-mode acceptEdits`, in the main checkout, as the sole
++This route pins `--permission-mode acceptEdits`, in the checkout the unit writes, as its sole
+ serial writer from a clean committed baseline.
+ 
+ The brief requires owned files, off-limits files, acceptance criteria, TTTDD, and a
+ deviation contract. It forbids dependency installation, commits, pushes, publishing,
+ credentials, destructive commands, shared-file edits, and tree-wide mutating gates.
+ 
++Every authority the brief references exists in the tree the run is rooted in; propagate a
++missing file rather than restating it, and take the stale-authority branch in
++.agents/skills/orkestrel-falsify/references/brief.md § "What not to put in a brief" where the
++tree carries a superseded vendored copy.
++
+ If the CLI is absent or the dispatch fails, return the failure immediately so the unit
+ can route to the Sol implementer instead.
+ 
+diff --git a/.codex/agents/planner.toml b/.codex/agents/planner.toml
+index bf19927..a79f60d 100644
+--- a/.codex/agents/planner.toml
++++ b/.codex/agents/planner.toml
+@@ -13,8 +13,10 @@ This route pins `--permission-mode plan`.
+ The brief asks the subjective lane for coherent API shape, vocabulary, and
+ ergonomics, and at most two alternatives; it asks the objective lane for the
+ constraints the code and the contracts permit with their file:line, the refusals a
+-rule forecloses with the rule text quoted, and the measurements that bound the
+-design. It asks whichever lane runs for bounded units that each name their role and
++rule forecloses with the rule text quoted, and the measurements the dispatch supplied that
++bound the design, each with the command the Orchestrator ran, naming under tensions a reading
++the design needs and the dispatch did not supply. It asks whichever lane runs for bounded
++units that each name their role and
+ engine; tensions named for the other lane to challenge, or for the Orchestrator to
+ rule when one engine holds every lane; and risks. A lane files its work under the
+ sections that name it. A dispatch may name a skill that fixes a different return
+diff --git a/host.json b/host.json
+index c3dcfb0..07e2fc9 100644
+--- a/host.json
++++ b/host.json
+@@ -22,7 +22,7 @@
+ 			"storage": "agents/orchestration.md",
+ 			"destination": ".agents/orchestration.md",
+ 			"executable": false,
+-			"digest": "9b0a43e874872a016b5c275b1fa15a0548327e7c6189bd24e21dc2e7b69d2e00"
++			"digest": "360a90ecc41efba9b1736ca69187c4867c184a5c13f565e849b5a80b868ac430"
+ 		},
+ 		{
+ 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
+@@ -46,7 +46,7 @@
+ 			"storage": "agents/skills/enterprise-bootstrap/references/components.md",
+ 			"destination": ".agents/skills/enterprise-bootstrap/references/components.md",
+ 			"executable": false,
+-			"digest": "58b1bcbed1b46fc0757f47080cd18d00e04fa79532a7168c6170ad8e9a1e9e05"
++			"digest": "9aed4328b4eb191b328d287d8c1ef2e203b3ee17081573e474f4a1a88f19e5a8"
+ 		},
+ 		{
+ 			"storage": "agents/skills/enterprise-bootstrap/references/frontend-design.md",
+@@ -130,7 +130,7 @@
+ 			"storage": "agents/skills/orkestrel-falsify/SKILL.md",
+ 			"destination": ".agents/skills/orkestrel-falsify/SKILL.md",
+ 			"executable": false,
+-			"digest": "4535cc43c17ff3c0f9ad8e5426de6afca06bb4538f75057210859e921fb9260a"
++			"digest": "bd86bebe2b3821b672638dace87c04a7291f63c98fbcf62e37f76d74ca9c3a17"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-falsify/agents/openai.yaml",
+@@ -142,7 +142,7 @@
+ 			"storage": "agents/skills/orkestrel-falsify/references/brief.md",
+ 			"destination": ".agents/skills/orkestrel-falsify/references/brief.md",
+ 			"executable": false,
+-			"digest": "3cd4eeac0a90cd6e2c0c96bc1a047580c238a6389f1bae0fd8614b9762f2c5e8"
++			"digest": "c1997cf3d1e7186b80b18c3fc58a6c8c65591b5af07e823423f10f37ade618a0"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-falsify/references/reconcile.md",
+@@ -202,7 +202,7 @@
+ 			"storage": "agents/skills/orkestrel-polish-surface/references/capture-harness.md",
+ 			"destination": ".agents/skills/orkestrel-polish-surface/references/capture-harness.md",
+ 			"executable": false,
+-			"digest": "d46b8dac92a1d8efd5d7b4cb2a45956cd804e856a4e5cccda9667685d8f7165a"
++			"digest": "71702e0d5f283a3cf198ae8ee56bd364fd71201ffc91af3987f2ca2bf54b77e6"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-prove-journey/SKILL.md",
+@@ -268,7 +268,7 @@
+ 			"storage": "agents/transports/codex.md",
+ 			"destination": ".agents/transports/codex.md",
+ 			"executable": false,
+-			"digest": "390294176be326a5f90e5e320c62669b8cc18511848fdb0a774627f0e0305f81"
++			"digest": "6dd24d9787086daf2f9642460223323a6e0ffb2d63ea67be579f06644501ac52"
+ 		},
+ 		{
+ 			"storage": "claude/agents/analyst.md",
+@@ -286,13 +286,13 @@
+ 			"storage": "claude/agents/builder.md",
+ 			"destination": ".claude/agents/builder.md",
+ 			"executable": false,
+-			"digest": "61b7e56285ed29ccf3b4a172e21f1cb0478b685400f2f998425f52c789c77b6d"
++			"digest": "217dbf9a4c6ce2d349d8d4eb40a1624c76e0afb78fd4ee95c063753159b834c2"
+ 		},
+ 		{
+ 			"storage": "claude/agents/checker.md",
+ 			"destination": ".claude/agents/checker.md",
+ 			"executable": false,
+-			"digest": "c7bdceb5999c0bc2e07c4679dd56054145953359424ee64e2f4bbcb75115ebd5"
++			"digest": "27023f1ee7e6199289e8e3d03d2aaf62eb94bfdfe0bb7bbe6f667242b22532db"
+ 		},
+ 		{
+ 			"storage": "claude/agents/grok.md",
+@@ -304,7 +304,7 @@
+ 			"storage": "claude/agents/implementer.md",
+ 			"destination": ".claude/agents/implementer.md",
+ 			"executable": false,
+-			"digest": "61ed5cf8060666e0240ee9fe7e81c76a52c3e5039278a1b4801dafead33e8d19"
++			"digest": "657f2cbe26caf1897b0959329ac4dae4189b97f064caf3833a8505ab6d63c94d"
+ 		},
+ 		{
+ 			"storage": "claude/agents/orkestrel.md",
+@@ -316,7 +316,7 @@
+ 			"storage": "claude/agents/planner.md",
+ 			"destination": ".claude/agents/planner.md",
+ 			"executable": false,
+-			"digest": "c0839defe356412037ce097b5c69872b7153d290800a43ed1e9c1f4dc2af64c1"
++			"digest": "d00f81e1169ee5497d0acd5c7a7559eeb3b35085f03ae963327dc9fa3c49171f"
+ 		},
+ 		{
+ 			"storage": "claude/agents/researcher.md",
+@@ -328,7 +328,7 @@
+ 			"storage": "claude/agents/reviewer.md",
+ 			"destination": ".claude/agents/reviewer.md",
+ 			"executable": false,
+-			"digest": "c02e2a08ed41a4e5dc8c781980f084e2ead155c6bc17bf7e23dce215793c0083"
++			"digest": "c2282266135e7797e778e0192a6a120d24137889a0150ecf4ce1a20df8013797"
+ 		},
+ 		{
+ 			"storage": "claude/agents/scout.md",
+@@ -358,7 +358,7 @@
+ 			"storage": "claude/rules/architecture.md",
+ 			"destination": ".claude/rules/architecture.md",
+ 			"executable": false,
+-			"digest": "418fadf9d890694a67e3c95e611592fd6c17a87f8ab15407d3da2013e7e0f173"
++			"digest": "2e479c2214b996901fca316d005117c5579f5064570b79bc47b99112dad569f3"
+ 		},
+ 		{
+ 			"storage": "claude/rules/browser.md",
+@@ -376,7 +376,7 @@
+ 			"storage": "claude/rules/names.md",
+ 			"destination": ".claude/rules/names.md",
+ 			"executable": false,
+-			"digest": "ba936c92990902d0e67d6d0925ab933e84a6c5518f04f75fa0f077a23b7bc021"
++			"digest": "0188561d48473e525668435262b3456a7e4292a52790fa41fe3ce50d33bfb36d"
+ 		},
+ 		{
+ 			"storage": "claude/rules/patterns.md",
+@@ -514,19 +514,19 @@
+ 			"storage": "codex/agents/grok.toml",
+ 			"destination": ".codex/agents/grok.toml",
+ 			"executable": false,
+-			"digest": "68595287903288a0b81edd9154c4e4f49c40182fcb70f1f2b989549626f30f70"
++			"digest": "15d5ad449749ce14c01290409e7992f33bcf64b4edece55d890d276d0df9f4a9"
+ 		},
+ 		{
+ 			"storage": "codex/agents/implementer.toml",
+ 			"destination": ".codex/agents/implementer.toml",
+ 			"executable": false,
+-			"digest": "0ec715c248b78615bea6fd8a0293bad36584682ff2b8c0cb4ae7b41ec872b34c"
++			"digest": "1c3a8a028e210be614b3d0fbfc8a026261887fe65419672e80447c824d318c05"
+ 		},
+ 		{
+ 			"storage": "codex/agents/opus.toml",
+ 			"destination": ".codex/agents/opus.toml",
+ 			"executable": false,
+-			"digest": "f5344489343ace7baf732a20bbec5a196c1998a9ea61fd6e8306d02b8eaafead"
++			"digest": "f2a636d6ffaaf33bc11550a8e9d09604a11128587e5a4dd5e55484a7b5fdd1bd"
+ 		},
+ 		{
+ 			"storage": "codex/agents/orkestrel.toml",
+@@ -538,7 +538,7 @@
+ 			"storage": "codex/agents/planner.toml",
+ 			"destination": ".codex/agents/planner.toml",
+ 			"executable": false,
+-			"digest": "33112d6d0eb9dbbc5e1df669d67bdbd737e81c7abefc5ece806cd6b3b0428bf5"
++			"digest": "4559dfdfe5eca2eb02f8f110ed77567bd4440909ac98f276f76859f7d4ab430e"
+ 		},
+ 		{
+ 			"storage": "codex/agents/researcher.toml",
+@@ -742,5 +742,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "f5c0ce3a602bdb05c65941ad89cea140bd39dbe5e442aed6edd0351a68ec6b90"
++	"digest": "6c5b2c82f7ccf770a08f4c89919b5b35d9b598b62911d26825369f72233dfd34"
+ }

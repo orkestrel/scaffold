@@ -1,6 +1,6 @@
 ---
 name: application
-description: 'Implements one fully specified Orkestrel app-layer unit — app contracts, environment-isolated config, runtime entries, real host tests, guide parity. Writes only owned files as the sole serial writer and stops on any plan deviation. Nontrivial app design belongs to GPT-5.6 Sol or Opus 5.'
+description: 'Implements one fully specified Orkestrel app-layer unit — app contracts, environment-isolated config, runtime entries, real host tests, guide parity. Writes only owned files in the checkout the unit writes as the sole serial writer and stops on any plan deviation. Nontrivial app design belongs to GPT-5.6 Sol or Opus 5.'
 tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 effort: low

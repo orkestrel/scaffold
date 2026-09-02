@@ -39,11 +39,11 @@ a consumer finding it after publication, when the version is already spent.
 ## The read-only audit lane's brief
 
 An audit lane writes nothing and runs nothing, so its brief carries fewer rows than a writing
-unit's. Give a lane every row § Anatomy names — the subject with the evidence § "Evidence, by subject type"
-requires of each row it occupies, what the round decides, already established, the numbered
-falsifiable claims, the unknowns, and the threshold — plus two rows of its own: **Role and lane**
-(the role, its engine, and which lane it holds) and **Output** (the verdict shape and its single
-terminal line). Review evidence folds into the subject.
+unit's. Give a lane every row § Anatomy names — the subject with the evidence
+§ "Evidence, by subject type" requires of each row it occupies, what the round decides, already
+established, the numbered falsifiable claims, the unknowns, and the threshold — plus its own
+**Role and lane** row (the role, its engine, and which lane it holds) and **Output** row (the
+verdict shape and its single terminal line). Review evidence folds into the subject.
 
 Omit the rows a writer needs and a lane cannot use: owned, shared, and off-limits files; the
 Execution line's writer form, keeping the sentence that the lane performs the assignment directly

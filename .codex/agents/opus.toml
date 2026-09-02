@@ -15,8 +15,8 @@ The brief requires owned files, off-limits files, acceptance criteria, TTTDD, an
 deviation contract. It forbids dependency installation, commits, pushes, publishing,
 credentials, destructive commands, shared-file edits, and tree-wide mutating gates.
 
-Every authority the brief references exists in the tree the run is rooted in; propagate a
-missing file rather than restating it, and take the stale-authority branch in
+Verify that every authority the brief references exists in the tree the run is rooted in;
+propagate a missing file rather than restating it, and take the stale-authority branch in
 .agents/skills/orkestrel-falsify/references/brief.md § "What not to put in a brief" where the
 tree carries a superseded vendored copy.
 

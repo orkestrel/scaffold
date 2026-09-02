@@ -79,9 +79,8 @@ nobody claimed.
   lane, each a fresh subagent with a clean context, blind to each other. Reconcile them yourself.
   `.agents/orchestration.md` owns lane definitions, engine assignment, and what happens when an
   engine is dark; do not restate them here.
-- A round that runs fewer lanes than its brief names records the deviation with the round's own
-  reason; `.agents/orchestration.md` § Execution loop owns the lane rule and § Engine assignment
-  owns the substitution.
+- `.agents/orchestration.md` § Execution loop owns which lanes a round runs and the deviation a
+  short round records; § Engine assignment owns the substitution.
 - **Pair every finder with an independent refuter when the round fans out past the subjective and
   objective lanes.** The
   refuter receives one slice's findings, never that finder's work, and is briefed to BREAK them

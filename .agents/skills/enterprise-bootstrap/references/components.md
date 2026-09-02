@@ -625,7 +625,7 @@ Real switchable tab panels (JS-driven — buttons, not scroll anchors):
 </div>
 ```
 
-**Responsive offcanvas** — the canonical sidebar-that-becomes-a-drawer: replace `.offcanvas` with `.offcanvas-{sm|md|lg|xl|xxl}`. Content renders **inline above** that breakpoint and as an **offcanvas below** it. Close buttons inside a responsive offcanvas need an explicit `data-bs-target`. Always set `aria-labelledby` (it is conceptually a dialog; `role="dialog"` is added by JS). Width/height via `--bs-offcanvas-width` (400px) / `--bs-offcanvas-height` (30vh). Full app-shell pattern: [bootstrap-reference.md](bootstrap-reference.md) → App shell.
+**Responsive offcanvas** — the canonical sidebar-that-becomes-a-drawer: replace `.offcanvas` with `.offcanvas-{sm|md|lg|xl|xxl}`. Content renders **inline above** that breakpoint and as an **offcanvas below** it. Close buttons inside a responsive offcanvas need an explicit `data-bs-target`. Always set `aria-labelledby` (it is conceptually a dialog; `role="dialog"` is added by JS). Width/height through `--bs-offcanvas-width` (400px) / `--bs-offcanvas-height` (30vh). Full app-shell pattern: [bootstrap-reference.md](bootstrap-reference.md) → App shell.
 
 ### Pagination
 
@@ -802,7 +802,7 @@ Popovers are **opt-in**: they do nothing until initialized in JS (see [JavaScrip
 </div>
 ```
 
-Gotcha: the spied element must be a scroll container (height/overflow, or focusable via `tabindex="0"`), and heading IDs must match the nav `href`s exactly. Scrollspy highlights position in one long page — it is not a substitute for real tabs.
+Gotcha: the spied element must be a scroll container (height/overflow, or focusable through `tabindex="0"`), and heading IDs must match the nav `href`s exactly. Scrollspy highlights position in one long page — it is not a substitute for real tabs.
 
 ### Spinners
 
@@ -899,7 +899,7 @@ Modifiers (combine freely):
 </div>
 ```
 
-Toasts are **opt-in** — hidden until `.show()` is called (or shown via a trigger). Keep the container in the DOM before showing so the live region announces. Use `role="status"`/`aria-live="polite"` for confirmations; reserve `role="alert"`/`assertive` for urgent messages. Errors requiring action are never toasts — see [bootstrap-reference.md](bootstrap-reference.md) → Feedback discipline.
+Toasts are **opt-in** — hidden until `.show()` is called (or shown through a trigger). Keep the container in the DOM before showing so the live region announces. Use `role="status"`/`aria-live="polite"` for confirmations; reserve `role="alert"`/`assertive` for urgent messages. Errors requiring action are never toasts — see [bootstrap-reference.md](bootstrap-reference.md) → Feedback discipline.
 
 ### Tooltip (Requires Popper.js)
 
@@ -926,7 +926,7 @@ Toasts are **opt-in** — hidden until `.show()` is called (or shown via a trigg
 </button>
 ```
 
-Tooltips are **opt-in** (JS init required, below). Only attach to focusable elements so keyboard users can trigger them; never put essential information _only_ in a tooltip, and never report form errors via tooltip. `data-bs-html` with untrusted content is an XSS vector.
+Tooltips are **opt-in** (JS init required, below). Only attach to focusable elements so keyboard users can trigger them; never put essential information _only_ in a tooltip, and never report form errors through a tooltip. `data-bs-html` with untrusted content is an XSS vector.
 
 ## JavaScript Initialization
 

@@ -35,7 +35,7 @@ One workflow runs across all providers. Each engine has one job and never takes 
 - Route each nontrivial implementation unit to Opus or Sol. Objective, constraint-heavy,
   mechanical-precision work goes to Sol. API-shape, naming, and documentation-voice work goes to
   Opus. Cursor Composer is not an implementation route, and no `composer` role exists.
-- Design runs the adversarial pass. § Execution loop step 5 fixes which lanes an audit runs.
+- Design runs the adversarial pass. § Execution loop's audit step fixes which lanes an audit runs.
 
 ## Orchestration by harness
 
@@ -340,12 +340,12 @@ longer holds.
    criterion discovered at integration is a successor brief routed to a writer, never an
    integration edit.
 5. **Audit adversarially.** Audit every nontrivial implementation with the objective lane and the
-   subjective lane — `analyst` and `reviewer`, the way step 2 names its lanes — at least one of them
-   on an engine that did not write the work. Dispatch `checker` in addition when the acceptance
-   criteria are mechanical — counts, paths, parity rows, scope honesty — never in place of a lane. A
-   round that runs fewer lanes than its brief names, or omits the checker its criteria call for,
-   records the deviation in its verdict file with that round's own reason, never a template
-   sentence.
+   subjective lane — `analyst` and `reviewer`, the way the design step names its lanes — at least
+   one of them on an engine that did not write the work. Dispatch `checker` in addition when the
+   acceptance criteria are mechanical — counts, paths, parity rows, scope honesty — never in place
+   of a lane. A round that runs fewer lanes than its brief names, or omits the checker its criteria
+   call for, records the deviation in its verdict file with that round's own reason, never a
+   template sentence.
    - State the audit's subject as numbered falsifiable claims and require per-claim verdicts with
      evidence, per the Falsification law in `.claude/rules/quality.md` and the `orkestrel-falsify`
      value set, unless the dispatch names a different skill that fixes another.
