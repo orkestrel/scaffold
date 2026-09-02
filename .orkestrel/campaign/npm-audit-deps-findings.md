@@ -427,3 +427,19 @@ governed the touched block).
 - **Harness defect fixed:** concurrent packs of one package raced on its `dist/`; `pack-dep.sh` now
   locks per package and trips on a tarball without declarations (`5db3ed0`).
 - **L0 launched:** contract, msg, sse as Opus implementer units against their staged closures.
+
+## Breaking phase — L0 closed (2026-09-02)
+
+- **contract** applied (`d24e79c` + fix-up `5b0ed57`): spines interned as engine classes,
+  `limits`, `INTRINSICS.reflect`, `validateShape`, `build*Faults`, `matchesISOInstant`,
+  `expansion: number | undefined`, the cloners' frozen empty-peer pattern; the `canonicalizeValue`
+  fold ratified as a pure leaf. Audit: objective `FAIL 3`, subjective `FAIL 3, 5`, checker PASS,
+  verifier GREEN; round 2 PASS after the fix-up (`units/contract-audit-verdict.md`).
+- **msg** applied (`f58b968`): `category` discriminants, `MSG_CATEGORY_*`, the directory-entry
+  type alias removed. All lanes PASS, verifier GREEN.
+- **sse** applied (`c6d84e1`): `clear()` replaces `reset()`. All lanes PASS, verifier GREEN.
+- **L1 launched** against contract `d24e79c` (surface-identical to the fix-up tip); the L1
+  checkouts re-stage the reconciled tip at the L2 boundary.
+- Findings for the next change: the s03-22 radius under-scopes the moved Reflect keys (the
+  compiler is the scope); the shared per-sample classifier's cause prefix; `SampleMemo` trio kept
+  as the walk's own memo.
