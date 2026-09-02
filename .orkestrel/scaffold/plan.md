@@ -52,3 +52,28 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
 - **Voice.** The user ruled that every skill line must read as a directive for an executing agent in the voice of `AGENTS.md` and the rule files. Carried into every pending brief as an acceptance criterion, into a successor unit U2b over the three files U2 produced, and into the audit round as a claim.
 - **Ecosystem reuse.** The user ruled that every addition to an `@orkestrel/*` package must be reconciled against the published line through the guide mirrors under `guides/`. The Orchestrator skipped the `orkestrel` dispatch the execution loop names at absorb; unit U1r now runs it over U1's additions while U1 is in flight, and U1 gets a successor brief if a ruling changes an export. Recorded as a dispatch deviation for the debrief.
 - **Orchestrator direct edit.** After U3 returned, the Orchestrator changed one printed path in `form/guides/form.md` from the `scaffold/`-prefixed form to the target-relative form and committed it with the unit; the audit round covers it.
+- **Latest packages.** The user ruled that every repository the campaign works on must sit on the catalog's latest `@orkestrel/*` packages, terrain first, because its scaffold pin (`^0.0.38`) trails the structural changes. Units V-test and V-form run the fleet visit (`orkestrel-publish` § Visit a repository) in parallel now; V-terrain runs after U6 returns and re-stages the packed test tarball after its full install. Each visit is a development-dependency bump: re-pin, gates green, commit, no version bump. The terrain visit precedes the terrain gates, the capture runs, and the audit round, so no finding there can come from a stale package.
+
+## Visit round, 2026-09-02
+
+- Both visit units (`test`, `form`) stopped at step 2: `scaffold overwrite` refuses a tree carrying
+  the unit's own step-1 re-pin, and the brief forbade committing and `--dirty`. Ruling: the wave's
+  commit between step 1 and step 2 is the Orchestrator's. `visit-overwrite-brief.md` supersedes
+  step 2 for every target; the Orchestrator committed each re-pin, ran the overwrite and the audit
+  from the committed baseline, installed, formatted, and dispatched `verifier` for the gates.
+- `test`: re-pins committed at `c4487af`; overwrite exit 0 (3 written, 0 removed); audit exit 0 with
+  the TypeScript-major question alone; floors raised for `@types/node`, `oxfmt`, `oxlint`,
+  `vite-plugin-dts`; install and format exit 0, format rewrote nothing.
+- `form`: scaffold re-pin committed at `eab32a5`; overwrite exit 0 (4 written, 0 removed); audit
+  exit 0 with the TypeScript-major question alone; same floors raised; the declare step moved the
+  runtime `@orkestrel/contract` range to `^0.0.15`, restored by hand to `^0.0.13`; install and
+  format exit 0; `npm ls` dedupes contract to one copy at 0.0.13 across the tree.
+- Catalog regenerated in scaffold (`node dist/bin/main.js catalog`, exit 0): contract `0.0.13` to
+  `0.0.15`, process `0.0.8` to `0.0.9`. Contract 0.0.14 and 0.0.15 published 2026-09-01; process
+  0.0.9 published 2026-08-28 and still declares contract `^0.0.13`; emitter 0.0.8, form 0.0.3, and
+  every other dependent declare `^0.0.13`. The cascade has not begun.
+- Ruling on contract: a published package's runtime range stays at `^0.0.13` in this campaign,
+  because moving one package ahead of its own runtime dependency publishes out of layer order and
+  installs two copies of contract in every consumer. An unpublished application may take the
+  declared range, measured by its gates. The contract cascade is a fleet release wave the user
+  decides; it is carried in the campaign report as a finding outside the exit criterion.

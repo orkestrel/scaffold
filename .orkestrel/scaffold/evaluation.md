@@ -35,6 +35,7 @@ Assertions live in `tmp/skill-workspace/evals/evals.json` and each run's `eval_m
 | Eval | Configuration | Pass | Tokens | Duration |
 | --- | --- | --- | --- | --- |
 | 1 | old_skill run-1 | 13 / 17 | 338334 | 2216.5 s |
+| 1 | with_skill run-1 | 16 / 17 | 299325 | 2492.3 s |
 | 2 | old_skill run-1 | 8 / 9 | 163158 | 294.5 s |
 | 2 | with_skill run-1 | 9 / 9 | 196953 | 456.4 s |
 | 3 | old_skill run-1 | 8 / 9 | 290759 | 1377.5 s |
@@ -48,3 +49,5 @@ The eval-1 misses under the old skill: a `<style>` element re-pointing the stock
 Eval 2 with the rewritten skill: every finding carries property, population, reading, control, and coverage; the review names three findings the eval did not anticipate (the alert with no role or message, the missing button `type`, the missing card-body layout) and declares up front which findings it settled from source and which need the cascade. The grader recomputed the two contrast ratios it quotes (2.849:1 and 2.442:1) and the `.badge:empty` rule and found them correct. Grader feedback carried forward: the control-pairing and population assertions check presence rather than correctness, and no assertion rewards disclosing what was not run.
 
 Eval 1 baseline after the prose grader: the fifteenth check in `checks.md` carries no control, two controls expect a green run rather than a planted defect, and no inline-style escape check exists. Assertion added on the grader's feedback: every read-only field still submits (a disabled named control carries a hidden input of the same name, or the field uses `readonly`); the old-skill output passes it. The eval-1 control fixture now plants a disabled named control with no carrier and reads 1 of 17.
+
+Eval 1 with the rewritten skill: the markup passes every mechanical assertion after the grader corrections (Bootstrap Icons tokens admitted when the page links that stylesheet; a theme set by the early-head script admitted; the `<style>` assertion sharpened to "declares only custom properties", which the old-skill output fails on `border-color`, `box-shadow`, and `font-family` rules and the new-skill output passes). The one remaining miss: `checks.md` states a negative control for the instruments the reference names but not for the extra checks the executor listed itself. Iteration-2 candidate for `enterprise-bootstrap`: state in the checklist that every check the deliverable lists carries its control, not only the instruments `inspection.md` names. Grader feedback carried: no assertion reads a `checks.md` reading back against `index.html`, which is how a population count of 91 against 90 distinct tokens went uncaught.
