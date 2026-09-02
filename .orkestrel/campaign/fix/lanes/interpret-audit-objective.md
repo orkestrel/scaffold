@@ -1,0 +1,67 @@
+<!-- task a6554791aacc74a1a.output -->
+# Verdict — breaking-interpret, OBJECTIVE lane (`reviewer`, Opus 5, clean context; Sol dark, substitution recorded)
+
+Lane held: **objective** — correctness, constraints, and what the diff and contracts actually permit. Read-only; no shell. All greps below run over `/home/user/fleet/interpret` excluding `node_modules` and `dist`.
+
+## Per-claim verdicts
+
+**1. Every listed row ends applied/refused/stopped; refused rows quote the refusing rule — CONFIRMED.**
+The brief lists s12-25, s12-26, s12-29, s12-30, s12-34, s12-35, s12-37, s12-38, s12-39, s12-42, s12-43, s12-45 and the s12-21 audit carrier. `/home/user/scaffold/tmp/units/breaking/interpret-report.md:7-19` records each as applied; none refused, none stopped, so the quote-the-rule condition is vacuous. The one refusal inside a row (the aggregate-name list under s12-37) carries its rule ground at report line 13, matching the brief's ruling at `/home/user/scaffold/tmp/units/breaking/interpret-brief.md:44`.
+
+**2. No old name survives under `src`, `tests`, `guides`; new published symbols declared in the owning `types.ts` — CONFIRMED (identifiers), with finding F1 on inflected prose.**
+- `\b(GeneratorOptions|ManagerAddOptions|INTERPRET_ID|deriveAggregateField|INVALID_TEMPLATE|DEFAULT_ABBREVIATIONS|DEFAULT_CORRECTIONS|DEFAULT_ACTIONS|DEFAULT_DOMAINS|DEFAULT_VERBS)\b` over the checkout: no match.
+- `createTemplate\b`: hits only `/home/user/fleet/interpret/guides/template.md` (the vendored `@orkestrel/template` mirror, off-limits, a different package's export).
+- `\bunregister…\b` case-insensitive: only `/home/user/fleet/interpret/tests/setupPolicy.ts:1651,2089` (vendored, "absent from the fleet register") and other vendored mirrors.
+- `\.size\b` under `src`: only `/home/user/fleet/interpret/src/core/managers/RecordManager.ts:77` (`this.#records.size`, the platform `Map` member).
+- Bare `@orkestrel/reason` constructors (`constant|variable|operation|…`) under `src`/`tests`: only lexicon strings such as `'rule(s)'` at `/home/user/fleet/interpret/src/core/constants.ts:106-114`.
+- New contracts in the owning `types.ts`: `RecordOptions` at `/home/user/fleet/interpret/src/core/types.ts:607`; `add`/`remove` overload set at `types.ts:834-837`; `InterpretEventMap.add`; `InterpretOptions.narrator`. `canonicalizeNode` is a function, declared at `/home/user/fleet/interpret/src/core/helpers.ts:553` and reaching the barrel through `/home/user/fleet/interpret/src/core/index.ts:5`; the parity `INTERNAL` list at `/home/user/fleet/interpret/tests/guides.test.ts:38` is empty, so it must be — and is — documented.
+
+**3. Each applied row lands in the ruled form, not a variant — CONFIRMED, with referral R1.**
+- s12-26: `createTemplate` deleted outright, no throwing twin (`interpret.diff:1034-1068`); parsers note rewritten (`src/core/parsers.ts:12-17`). The ruling's `NOTFOUND` clause has no subject in this package — `parseTemplate` has no class consumer and `NOTFOUND` is not an `InterpretErrorCode` — so nothing was owed there.
+- s12-37: unconditional emission deleted (`interpret.diff:1740-1783`); the binding runs through `Template.computations` (`src/core/stages/Clarifier.ts:156-176`); no aggregate-name list added. The un-ruled addressing convention is R1 and F2.
+- s12-42: `count` on `RecordManagerInterface`, `TemplateManagerInterface`, `SubjectManagerInterface`, `DefinitionManagerInterface` (`types.ts:588,745,762,776` region) and on all four classes.
+- s12-43: `RecordOptions` across `types.ts` and the three manager imports/signatures.
+- s12-45: `canonicalize(value)` single parameter at `helpers.ts:590`, `canonicalizeNode(value, ancestors)` exported at `helpers.ts:553` and pinned by three tests.
+- s12-25/29/30/34/35/38/39: `GeneratorOptions` gone and `createGenerator()` takes nothing; `add`/`remove` with the overload set on interface and class; `Intent.action`/`Intent.domain` optional with guarded reads in `scoreTemplate` (`helpers.ts:645-660`) and `Formatter.format`, and no `-1` introduced; `narrator?: NarratorOptions` replaces the two top-level keys; `#ownsContext` gates the context teardown (`src/core/Interpret.ts:98,116,363`); the five empty `DEFAULT_*` and `INTERPRET_ID` gone with `DEFAULT_CONTRACTIONS` kept.
+- s12-21 carrier: `AGENTS` and `§` over `src` both return no match.
+
+**4. No compatibility alias, re-export shim, deprecated twin, or old-name fallback — CONFIRMED.**
+`deprecat|export \{… as …\}|legacy|alias for|renamed from|back-compat|backward` over `/home/user/scaffold/tmp/units/breaking/interpret.diff`: no match. Every removal is outright; `Interpret.remove(target?)` dispatches on argument shape rather than keeping an old name, and `canonicalize` is a seeding entry point, not a rename shim.
+
+**6. Only owned files changed — CONFIRMED.**
+`/home/user/scaffold/tmp/units/breaking/interpret.status` lists 36 modified tracked files: `README.md`, `guides/interpret.md`, `src/core/**`, `tests/setup.ts`, `tests/setup.test.ts`, `tests/src/**`. Nothing under `.claude/`, `configs/`, `tests/setupPolicy.ts`, `tests/policy.test.ts`, `package.json`, `package-lock.json`, or a vendored guide mirror; no untracked entries.
+
+**7. Gate commands exit as reported — CONFIRMED as quoted; authoritative re-run belongs to `verifier`.**
+The report quotes the exact command and exit code for every gate at `interpret-report.md:111-115`: `npm run format:check` → exit 0, `npm run lint:check` → exit 0, `npm run check` → exit 0, `npm run build` → exit 0, `npm test` → exit 0 with per-project counts. The NOT-EVIDENCED trigger therefore does not fire. A read-only lane cannot re-run the chain, so this verdict rules only that the required evidence shape is present; the binding evidence is the independent `verifier` run.
+
+**8. Observations and deviations hide no criterion failure — CONFIRMED, with finding F2 on disclosure completeness.**
+No acceptance criterion failed. The residue is disclosed rather than buried: the vendored `unregistered` hits (report line 129, matching `tests/setupPolicy.ts:1651,2089`), the `register`/`registry` English hits (line 130), the scripted-rename over-reach and its repair (line 132), the out-of-`src` ordinal citations and the broken README link (line 135), and four deviations covering the two unnamed removals, the s12-37 reading, and the s12-35 gap. Timing is stated with its reading — about 10s wall clock, no timing-suspect failure — as an observation, not a criterion.
+
+## Findings outside the claims
+
+**F1 — `registered` still names the act now called `add`, in the same documents that renamed it.** Required change.
+`/home/user/fleet/interpret/guides/interpret.md:759` ("Whether a template with the given id is registered"), `:760`, `:761`, `:791`, `:804-806`, `:819`, `:831-833`, `:855`; `/home/user/fleet/interpret/src/core/Interpret.ts:402` (the runtime message `'No registered template matched the classified intent'`); `/home/user/fleet/interpret/tests/src/core/factories.test.ts:79`. The report classified these as "the English noun for the collection" (report line 130), which is wrong for the passive-verb uses: a template becomes "registered" only by calling `add`. The drift is now visible inside one file — `guides/interpret.md:914-915` says "ONE added template" for `InterpretInterface`, while `:760-761` says "ONE registered template record" for the manager it delegates to. What right looks like: keep `registry` as the collection noun, and rewrite the act to `added` in those rows and in the `Interpret.ts:402` message, so one act carries one word.
+
+**F2 — the s12-37 replacement does not preserve the documented aggregates, and the TSDoc claims it does.** Required change.
+`/home/user/fleet/interpret/src/core/types.ts:102-104` states a `Variable` naming `{field}.{index}` "is how a template author declares an aggregate over collected numbers", and `/home/user/fleet/interpret/src/core/stages/Clarifier.ts:38-41` repeats it. Both ship in `dist/src/core/index.d.ts`. The mechanism only reaches an array whose length the author already knows: `resolveExpression` (`helpers.ts:765-780`) returns `undefined` for any unbound variable, so a template declaring `value.0 + value.1 + value.2` produces no field at all on a two-number turn and a wrong total on a four-number turn — while extraction collects however many numbers the text contains. Against the five results the deleted emission produced: `Sum`, `Minimum`, `Maximum` are expressible only at fixed arity (reason's `MathOperation` carries `minimum`/`maximum`); `Count` is only a literal constant; `Average` is not the mean under pairwise chaining and needs a hardcoded divisor. Tests pin one case only — a three-element sum at `tests/src/core/Clarifier.test.ts` ('binds each numeric element of an array-valued field under its index') and `tests/src/core/integration.test.ts` ('a declared computation aggregates the collected array by element'); `Count`, `Average`, `Minimum`, `Maximum` have no test. `guides/interpret.md` never mentions the `{field}.{index}` convention at all (`aggregate|\{index\}|value\.0|element` case-insensitive over that file: no match), so a reader of the guide cannot discover how to obtain an aggregate after the emission's removal. What right looks like: narrow both TSDoc sentences to what the code earns — a computation can address one numeric element of an array-valued field as `{field}.{index}`, so an aggregate over a collection of KNOWN length is declarable — and add the convention plus that limit to the `ComputedField` row and the `ClarifierInterface` section of `guides/interpret.md`.
+
+**F3 — the s12-35 half no test can drive is stated as fact in the guide and its limit lives only in a test comment.**
+`/home/user/fleet/interpret/guides/interpret.md:906-907` and `:918`, and `/home/user/fleet/interpret/src/core/types.ts:826-829`, assert that `destroy()` tears down the context the orchestrator constructed itself. That half has no public observer — `Interpret` publishes no context accessor — and the honest limit is recorded only at `/home/user/fleet/interpret/tests/src/core/Interpret.test.ts:367-371`, a code comment no reader of the package sees. The supplied-context half is genuinely proven (`Interpret.test.ts:351-365`). What right looks like: keep the behavior sentence and add, in the guide's `InterpretInterface` prose, that a caller observes only the supplied-context half because the orchestrator exposes no context accessor — or drop the owned-context clause from the guide and leave it in the class TSDoc.
+
+**F4 — the README ships a link to a path this repository does not have.**
+`/home/user/fleet/interpret/README.md:76` links `guides/src/interpret.md`; the file is `guides/interpret.md`. `README.md` is in the unit's owned set and was already edited this round, and no gate caught it (the report discloses it at line 135 and defers it). What right looks like: `[`guides/interpret.md`](guides/interpret.md)`.
+
+**F5 — the new binding keys can collide with a real nested field path.**
+`/home/user/fleet/interpret/src/core/stages/Clarifier.ts:156-176` writes `bindings[`${field}.${index}`]`, while a scalar entity whose mapping is the `FieldPath` `['value', '0']` formats to the same key `value.0`. Last writer in the entity loop wins, silently. Low likelihood, no test. What right looks like: state the precedence in the `ComputedField` TSDoc, or refuse the collision.
+
+## Referrals — no verdict from me (both lanes are mine this round, so these go to the Orchestrator)
+
+**R1 — the `{field}.{index}` addressing is a new published convention the ruling never named.** The s12-37 ruling directed deletion of the emission and binding through `Template.computations`; it did not authorize a new addressing convention on `Variable` names, which is now contract text in `types.ts:102-104` and shipped in the `.d.ts`. The writer disclosed it as a deviation (report line 141). Accept it as ruled surface, or re-rule the row.
+
+**R2 — two published-surface removals sit outside the ledger.** My checks say both are forced by the rows that deleted their only producers, with no consumer left in the package: `INVALID_TEMPLATE` had exactly one producer, the deleted `createTemplate`, and no reference survives anywhere (`INVALID_TEMPLATE` over the checkout: no match), so keeping a code no site throws would leave a decorative union member; `deriveAggregateField` had exactly one consumer, the deleted aggregate emission (`interpret.diff:1764-1770`), and no reference survives. The external radius file `.orkestrel/campaign/fix/breaking-radius.json` was not in my evidence slice, so the downstream check and the ledger entry for both removals are yours.
+
+**R3 — the scope of s12-30's "no `-1`".** No `-1` was introduced; `classifyIntent` uses `undefined` locals. Three private `-1` accumulators predate the change and survive: `/home/user/fleet/interpret/src/core/helpers.ts:274`, `:323`, `:686`. If the ledger's "private -1 accumulator clause" named those, the row is incomplete; if it named a clause in the proposed repair text, the row landed. The ledger finding text is yours.
+
+**R4 — `InterpretEventMap` publishes `add` but no `remove`,** while the `TemplateManagerInterface` it delegates to emits both (`types.ts:352` region against the manager event maps). The asymmetry predates this change but the rename makes it visible: `add` and `remove` now name the same acts as the delegate, and only one is observable. Shape question, not correctness.
+
+PASS

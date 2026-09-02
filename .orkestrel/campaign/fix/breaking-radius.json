@@ -4449,5 +4449,29 @@
   "id": "s10-32",
   "kind": "rename",
   "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-19/validateBrowserInputOptions",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04b-12/destroy",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "interpret",
+  "id": "s12-26/INVALID_TEMPLATE",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "interpret",
+  "id": "s12-37/deriveAggregateField",
+  "kind": "remove",
+  "consumers": {}
  }
 ]

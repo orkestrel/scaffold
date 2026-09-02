@@ -280,3 +280,9 @@ catalog places middleware in layer 2; the publish order therefore runs server be
 regardless of the layer column. Middleware adopted server's renames in `units/middleware-adopt-server-brief.md`
 after the server unit landed, and re-stages against server's fix-up tip before the L4 closures
 are staged.
+
+## W-END additions (L3 fix rounds)
+
+- `readme-links`: one `builder` unit, after every package unit has landed, replacing
+  `guides/src/<package>.md` with `guides/<package>.md` in each `README.md` the grep names,
+  committed per package with the fleet gate sweep as its proof.

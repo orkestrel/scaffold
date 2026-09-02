@@ -541,3 +541,44 @@ governed the touched block).
   naming; the guides test mapping no `@orkestrel/console/server`; reason's fences do not execute;
   `AGENTS §N` citations across guides and tests; stale vendored mirrors until the re-pin after
   publish; the voice wave's `@returns` form.
+
+## L3 fix rounds
+
+Accepted this round: qualifier (`a8f71dc`), server (`522ed4c`), rater (`350608e`), sea
+(`62b6f40`), relation (`e675bd0`); verdicts under `fix/units/`. Fix-ups dispatched: browser,
+terminal, interpret (`implementer`, Opus 5), workspace (`builder`, successor brief
+`workspace-fixup-2`), and template (`builder`, `template-fixup-2`). The mcp implementer is
+running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` before its audit.
+
+- **Fleet-wide README link.** `README.md` in abort, agent, browser, budget, console, contract,
+  csv, database, emitter, indexeddb, interpret, markdown, middleware, msg, ndjson, ollama, pool,
+  program, qualifier, queue, router, sea, server, sse, template, timeout, toolbox, websocket,
+  worker, workflow, and workspace links `guides/src/<package>.md`, a path no repository has; the
+  guide is `guides/<package>.md`. Rater, interpret, browser, and workspace close theirs inside
+  their fix-ups. Carrier: the W-END `readme-links` sweep, one `builder` unit deriving its set
+  from `grep -l 'guides/src/' /home/user/fleet/*/README.md`.
+- **Template batch drift.** `@orkestrel/template`'s `remove(ids)` was all-or-nothing while
+  `.claude/rules/patterns.md` § Managers § Batch operations applies to each listed item and
+  reports `true` only when all succeed, the reading the workspace guide states. The L2 fix-round
+  row naming the template unit as carrier was never carried; `template-fixup-2` carries it now.
+  Interpret is template's only fleet dependent and re-stages after its own fix-up.
+- **Rater F1 settled.** `@orkestrel/reason` declared `isSubject` as `isRecord` retyped
+  (`src/core/validators.ts:259` at `a42bd0f~1`), so rater's swap changed identity and not
+  narrowing; the rater report's "now meets `MISMATCH`" observation is false and the verdict
+  records the correction.
+- **Policy instrument coverage.** `tests/setupPolicy.ts` walks top-level statements while the
+  oxlint policy plugin sees inside a class body, so a nested function inside a class is caught by
+  one gate and invisible to the other. Carrier: scaffold host inventory, next change.
+- **`filter*` prefix.** `.claude/rules/names.md` § Standalone helpers has no row for `filter*`;
+  terminal ships `filterEnabled` and `filterDisabled`. Carrier: scaffold `names.md`, next change.
+- **Successor rows recorded against the owning package.** Browser: `parseBrowserChord` (a
+  throwing `parse*` in `helpers.ts`), `evaluate(expression, timeout?)`'s positional timeout, the
+  driver-interface split that would let drive methods leave the consumer contract (the s04-10
+  websocket and download half is refused under `documentation.md:46` in the fix-up). Terminal:
+  `moveUp` and `redrawPrefix` naming, name enumeration on the manager. Interpret:
+  `InterpretEventMap` publishes `add` without `remove`; variable-length aggregates have no
+  declarable computation. Rater: `lineDefinition`, `ratingDefinition`, `worksheetStep`,
+  `worksheetSteps` without the `build*` prefix; the `Worksheet` row's outcome sentence.
+  Workspace: a snapshot persisted by 0.0.6 or earlier holding a binary file reads as absent after
+  the `data → base64` rename (no shim, `AGENTS.md` § Design laws); the fix-up commit message
+  records it.
