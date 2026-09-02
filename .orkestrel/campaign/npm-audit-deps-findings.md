@@ -589,3 +589,16 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   under its own seed; verdict written). Template at `8fdc167` (`template-fixup-2`; the L2 verdict
   carries an addendum). Interpret re-stages on `template-8fdc167.tgz` when its fix-up lands, and
   `l3-standing.txt` names the new template tip for any later L3 re-brief.
+- **mcp lanes.** Both lanes ratified the `serveMCP` and `serveMCPScope` merge into
+  `createScopeServer(options, scope?)` and refused the strict `createMCPTransport` form for the
+  server adapter (the slot is `createMessagePortTransport`'s and the function adapts rather than
+  constructs); the s01-11 ruling is amended to `createDuplexServerTransport`, the mirror of
+  `createDuplexClientTransport`. Successor rows recorded against mcp: publish
+  `createHTTPClientTransport` once from core and drop the two identical face delegates;
+  `createScopeMessageListener` returns a function and sits in `factories.ts` under the s01-03
+  ruling (`buildScopeMessageListener` in a restored `helpers.ts` if repaired);
+  `MCPSessionOptions` and `MCPSessionMiddlewareOptions` share `ttl` and `capacity` with different
+  meanings and only `capacity` forwards (group the entity's knobs under a `session` key); the bare
+  `ScopeInterface` beside `cacheScope`; `guides/README.md:58` names `openStream` for the vendored
+  `guides/server.md` mirror until the re-pin. Browser's, terminal's, interpret's, and workspace's
+  successor rows are in their verdicts.
