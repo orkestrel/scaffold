@@ -1,0 +1,46 @@
+diff --git a/src/core/NDJSONParser.ts b/src/core/NDJSONParser.ts
+index 704fdd3..6e5fdd4 100644
+--- a/src/core/NDJSONParser.ts
++++ b/src/core/NDJSONParser.ts
+@@ -2,8 +2,8 @@ import type { NDJSONParserInterface } from './types.js'
+ import { isRecord, parseJSONAs } from '@orkestrel/contract'
+ 
+ /**
+- * A stateful NDJSON (newline-delimited JSON) stream parser — feed it string
+- * chunks, get back the complete JSON objects decoded so far.
++ * Decodes an NDJSON (newline-delimited JSON) stream statefully — feed the handle
++ * string chunks, get back the complete JSON objects decoded so far.
+  *
+  * @remarks
+  * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to an internal
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 9b1b19e..af6a950 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,7 +2,7 @@ import type { NDJSONParserInterface } from './types.js'
+ import { NDJSONParser } from './NDJSONParser.js'
+ 
+ /**
+- * Create an NDJSON (newline-delimited JSON) stream parser - a stateful handle
++ * Creates an NDJSON (newline-delimited JSON) stream parser - a stateful handle
+  * that turns string chunks into the complete JSON objects decoded so far.
+  *
+  * @returns A working {@link NDJSONParserInterface}
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 16b7b89..125d4cc 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,11 +1,11 @@
+ /**
+- * A stateful NDJSON (newline-delimited JSON) stream parser: feed it string
++ * Represents a stateful NDJSON (newline-delimited JSON) stream parser: feed it string
+  * chunks, get back the complete JSON objects decoded so far. A trailing partial
+  * line is buffered until the rest arrives.
+  */
+ export interface NDJSONParserInterface {
+ 	/**
+-	 * Append `chunk`, then return every COMPLETE `\n`-terminated line parsed to a
++	 * Appends `chunk`, then returns every COMPLETE `\n`-terminated line parsed to a
+ 	 * record (malformed / non-object lines are skipped); a trailing partial line
+ 	 * is retained for the next call.
+ 	 *
