@@ -1,0 +1,4 @@
+ M guides/ollama.md
+ M src/server/errors.ts
+ M src/server/types.ts
+ M tests/src/server/errors.test.ts

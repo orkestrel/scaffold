@@ -29,7 +29,15 @@ writeFileSync(`${UNITS}/${pkg}.status`, status)
 
 const rows = (report.rows || []).map((row) => `- **${row.id}** — ${row.state}: ${row.note}`).join('\n')
 const gates = (report.gates || []).map((gate) => `- \`${gate.command}\` → exit ${gate.exit}${gate.excerpt ? ` — ${gate.excerpt.slice(0, 400)}` : ''}`).join('\n')
-const list = (items) => (items && items.length ? items.map((item) => `- ${item}`).join('\n') : '- none')
+const render = (value, depth) => {
+	const pad = '  '.repeat(depth)
+	if (value === undefined || value === null || value === '') return `${pad}- none`
+	if (typeof value !== 'object') return `${pad}- ${String(value)}`
+	if (Array.isArray(value)) return value.length ? value.map((item) => (typeof item === 'object' && item !== null ? `${pad}-\n${render(item, depth + 1)}` : `${pad}- ${String(item)}`)).join('\n') : `${pad}- none`
+	const entries = Object.entries(value)
+	return entries.length ? entries.map(([key, item]) => (typeof item === 'object' && item !== null ? `${pad}- **${key}**\n${render(item, depth + 1)}` : `${pad}- **${key}**: ${String(item)}`)).join('\n') : `${pad}- none`
+}
+const list = (items) => render(items, 0)
 const md = `# Unit breaking-${pkg} — report (${new Date().toISOString().slice(0, 10)})
 
 Writer: \`implementer\` on Opus 5 (native; Sol dark, substitution recorded). Returned report:
@@ -61,7 +69,7 @@ ${(report.diffstat || '').trim()}
 \`\`\`
 
 Status at return (writer's reading): \`${(report.status || '').trim().replace(/\n/g, ' | ')}\`
-Built \`dist/\` moves: ${report.distMoves}
+Built \`dist/\` moves: ${typeof report.distMoves === 'object' && report.distMoves !== null ? JSON.stringify(report.distMoves) : report.distMoves}
 
 ## Observations
 

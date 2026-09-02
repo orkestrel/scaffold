@@ -1,0 +1,71 @@
+diff --git a/guides/ollama.md b/guides/ollama.md
+index 359a60e..f02f3c1 100644
+--- a/guides/ollama.md
++++ b/guides/ollama.md
+@@ -66,7 +66,7 @@ Pass `tools` (a non-empty `ToolDefinition[]` from `@orkestrel/tool`) to advertis
+ | `WireChatRequest`          | interface | The typed `/api/chat` request body the provider sends (`{ model; messages; stream; keep_alive; think; options?; tools? }`) — asserted against the official Ollama client's `ChatRequest` by the compile-time parity test.                                                                                                                                     |
+ | `OllamaHTTPError`          | class     | Thrown at the `/api/chat` HTTP boundary — a non-OK status or a `null` response body — carrying the response `status` (`0` for the null-body case) and a message bounded to a `2048`-char body excerpt. Narrow a caught value with `isOllamaHTTPError`.                                                                                                        |
+ | `isOllamaHTTPError`        | function  | Type guard narrowing an `unknown` caught value to `OllamaHTTPError` (an `instanceof` check).                                                                                                                                                                                                                                                                  |
+-| `OllamaErrorOptions`       | interface | `{ cause?: unknown }` — the options a thrown `OllamaHTTPError` accepts beside its message and status, carrying the underlying transport or body-read rejection.                                                                                                                                                                                               |
++| `OllamaHTTPErrorOptions`   | interface | `{ cause?: unknown }` — the options a thrown `OllamaHTTPError` accepts beside its message and status, carrying the underlying transport or body-read rejection.                                                                                                                                                                                               |
+ | `MAX_ERROR_BODY_LENGTH`    | const     | The cap, in characters, on how much of a non-OK response body is incorporated into a thrown `OllamaHTTPError`'s message (`2048`).                                                                                                                                                                                                                             |
+ | `mapMessages`              | function  | Map conversation turns onto the wire's minimal `{ role, content }` message shape — `tool_calls` only on a turn that replays them, `images` only on a multimodal turn.                                                                                                                                                                                         |
+ | `assembleResult`           | function  | Assemble a `ProviderResult` from a turn's content, reasoning, tool calls, and usage, setting only the populated optionals.                                                                                                                                                                                                                                    |
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index a0beae0..38528b1 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -3,7 +3,7 @@
+ // response body both throw it — so a `catch` can branch on `error.status`
+ // rather than parsing a message (AGENTS §12).
+ 
+-import type { OllamaErrorOptions } from './types.js'
++import type { OllamaHTTPErrorOptions } from './types.js'
+ 
+ /**
+  * An error thrown when the Ollama `/api/chat` HTTP transport fails.
+@@ -29,7 +29,7 @@ import type { OllamaErrorOptions } from './types.js'
+ export class OllamaHTTPError extends Error {
+ 	readonly status: number
+ 
+-	constructor(message: string, status: number, options?: OllamaErrorOptions) {
++	constructor(message: string, status: number, options?: OllamaHTTPErrorOptions) {
+ 		super(message, options)
+ 		this.name = 'OllamaHTTPError'
+ 		this.status = status
+diff --git a/src/server/types.ts b/src/server/types.ts
+index f454fb6..1655c54 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -149,6 +149,6 @@ export interface OllamaOptions {
+  * body-read rejection the provider caught before rethrowing. It is `unknown` because a
+  * thrown value is unconstrained. Omitted ⇒ the error carries no cause.
+  */
+-export interface OllamaErrorOptions {
++export interface OllamaHTTPErrorOptions {
+ 	readonly cause?: unknown
+ }
+diff --git a/tests/src/server/errors.test.ts b/tests/src/server/errors.test.ts
+index 5a90830..50e5fce 100644
+--- a/tests/src/server/errors.test.ts
++++ b/tests/src/server/errors.test.ts
+@@ -1,15 +1,15 @@
+-import type { OllamaErrorOptions } from '@src/server'
++import type { OllamaHTTPErrorOptions } from '@src/server'
+ import { isOllamaHTTPError, OllamaHTTPError } from '@src/server'
+ import { describe, expect, it } from 'vitest'
+ 
+ describe('OllamaHTTPError', () => {
+-	// The constructor's third parameter is the named, exported `OllamaErrorOptions`, so a
++	// The constructor's third parameter is the named, exported `OllamaHTTPErrorOptions`, so a
+ 	// consumer can declare the value it passes instead of restating an anonymous shape at
+ 	// the call site. Annotating the local is the assertion: the declaration is what fails
+ 	// to compile if the type stops being exported or stops matching the parameter.
+-	it('accepts a declared OllamaErrorOptions and keeps its cause', () => {
++	it('accepts a declared OllamaHTTPErrorOptions and keeps its cause', () => {
+ 		const transport = new TypeError('fetch failed')
+-		const options: OllamaErrorOptions = { cause: transport }
++		const options: OllamaHTTPErrorOptions = { cause: transport }
+ 
+ 		const error = new OllamaHTTPError(
+ 			'Ollama API error: 500 - (error body unavailable)',

@@ -9,7 +9,8 @@ const BRANCH = 'claude/orkestrel-npm-audit-deps-14ibta'
 const report = JSON.parse(readFileSync(`/home/user/work/reports/${pkg}-report.json`, 'utf8'))
 const refused = report.rows.filter((row) => row.state === 'refused').map((row) => row.id)
 const gates = report.gates.filter((gate) => gate.command.startsWith('npm run') || gate.command === 'npm test').map((gate) => `${gate.command.replace('npm run ', '')} ${gate.exit}`).join(', ')
-const body = `${subject}\n\nSymbols moved (from the unit's returned report):\n${report.symbols.map((symbol) => `- ${symbol}`).join('\n')}${refused.length ? `\n\nRefused with the rule text quoted in the report: ${refused.join('; ')}.` : ''}\n\nGates: ${gates}.${TRAILER}`
+const symbols = Array.isArray(report.symbols) ? report.symbols : [...(report.symbols.renamed ?? []), ...(report.symbols.removed ?? []).map((symbol) => `removed: ${symbol}`)]
+const body = `${subject}\n\nSymbols moved (from the unit's returned report):\n${symbols.map((symbol) => `- ${symbol}`).join('\n')}${refused.length ? `\n\nRefused with the rule text quoted in the report: ${refused.join('; ')}.` : ''}\n\nGates: ${gates}.${TRAILER}`
 writeFileSync(`/home/user/work/msg-${pkg}.txt`, body)
 const dir = `/home/user/fleet/${pkg}`
 execFileSync('git', ['-C', dir, 'add', '-A'])
