@@ -1,12 +1,12 @@
 # Input affordances
 
-Pick an affordance from what the person is being asked for, not from the name a schema gives the
-field. One category draws several ways, and the density and the list size decide which.
+Pick an affordance from what the person is asked for, not from the name a schema gives the field.
+Where one category draws several ways, let the density and the list size decide.
 
-Read [The fixed state set](#the-fixed-state-set) before the catalog. Every affordance here handles
-that same set, and each category names only what it adds or changes. The data states a whole surface
-ships — ideal, empty, loading, partial, error — are a different subject and live in
-[bootstrap-reference.md](bootstrap-reference.md) → The data states.
+Read [The fixed state set](#the-fixed-state-set) before the catalog: every affordance handles that
+same set, and each category names only what it adds or changes. Take the data states a whole surface
+ships — ideal, empty, loading, partial, error — from
+[bootstrap-reference.md](bootstrap-reference.md) → The data states instead.
 
 ## Contents
 
@@ -33,7 +33,7 @@ value is a set.
   field checking a value against a server. Mark the region `aria-busy="true"` and show a
   `spinner-border spinner-border-sm` in the control's own chrome. Leave the control operable unless
   its value depends on the work.
-- **required** — the requirement stated in the visible label and the `required` attribute on the
+- **required** — state the requirement in the visible label and set the `required` attribute on the
   control. A `text-danger` asterisk is decoration and carries `aria-hidden="true"`; the word in the
   label is what a screen reader user gets.
 - **with help** — a `.form-text` under the control, wired with `aria-describedby` beside the error
@@ -49,18 +49,19 @@ value is a set.
   once by name — the combination is a class contract, so declare it and reuse it rather than
   retyping the utilities. Never swap to `form-control-plaintext`: it drops the horizontal padding,
   so the read view and the edit view reflow against each other.
-- **A native select cannot be read-only.** A locked select takes `disabled`, so its value stops
-  submitting; carry that value in a hidden input beside it.
+- **Give a locked select `disabled` and a hidden input beside it.** A native select cannot be
+  read-only, so `disabled` stops its value submitting and the hidden input carries that value.
 - **Give a chosen filter an accent variant, not the neutral outline.** A `btn-outline-secondary`
   label reads as chosen in light and as muted in dark, so one markup says opposite things.
-- **One visible label per field**, per [bootstrap-reference.md](bootstrap-reference.md) → Forms in
-  production. That section owns labels, validation timing, and the error summary; this file owns
-  which affordance carries them.
+- **Give each field one visible label**, per [bootstrap-reference.md](bootstrap-reference.md) →
+  Forms in production. Take labels, validation timing, and the error summary from that section, and
+  the affordance that carries them from [The catalog](#the-catalog).
 - **Match the control sizes in a row.** Take `form-control-sm`, `form-select-sm`, `input-group-sm`,
   and `btn-sm` together so a dense row shares one height.
 - **Where Bootstrap ships no component, name the APG pattern the hand-roll owes** and route the
   build-or-buy decision to [bootstrap-reference.md](bootstrap-reference.md) → When not to hand-roll.
-  The last section here lists those categories and their patterns.
+  Take those categories and their patterns from
+  [Where Bootstrap ships no component](#where-bootstrap-ships-no-component).
 
 ## The catalog
 
@@ -93,9 +94,9 @@ rung 1.
 ```
 
 **Alternates.** Take `.form-floating` when the surrounding rows use it, and set the height with a
-stylesheet rule or a component variable rather than a `style` attribute. A one-row composer that
-grows as the person types is the same control with a scripted height. A rich-text editor is a
-hand-roll; Bootstrap ships none.
+stylesheet rule or a component variable rather than a `style` attribute. Draw a one-row composer that
+grows as the person types from this same control with a scripted height. Bootstrap ships no
+rich-text editor, so treat one as a hand-roll.
 
 **States.** The fixed set, plus `full` where a character cap bounds the answer. Show the remaining
 count in the `.form-text`, and keep it out of a live region unless the cap is close.
@@ -131,7 +132,7 @@ one-time code the person must read back.
 
 **Alternates.** Take `.input-group` with `.input-group-text` for a currency symbol or a unit, so the
 unit is chrome rather than something the person must type. Where the value is an identifier rather
-than a quantity, it belongs in the one-line-of-text row instead.
+than a quantity, take the one-line-of-text category instead.
 
 **States.** The fixed set. Validate the range on blur and state the bound in the message.
 
@@ -165,7 +166,7 @@ keyboard model, and the locale format.
 ```
 
 **Alternates.** For a period, take two native inputs — a start and an end — before reaching for a
-range picker, and validate the order on blur. A calendar grid of your own is a hand-roll.
+range picker, and validate the order on blur. Treat a calendar grid of your own as a hand-roll.
 
 **States.** The fixed set. Express an unavailable day with `min`, `max`, and a stated rule in the
 help text, because a native picker takes no per-day exclusion.
@@ -180,9 +181,9 @@ value actually carries.
 <input type="time" class="form-control" id="cutoff" step="900" />
 ```
 
-**Alternates.** Segmented numeric fields are a hand-roll and owe a spinbutton contract per segment.
-Where the person picks from a fixed set of slots, this is one of many instead, and a select is the
-lighter control.
+**Alternates.** Treat segmented numeric fields as a hand-roll owing a spinbutton contract per
+segment. Where the person picks from a fixed set of slots, take the one-of-many category instead: a
+select is the lighter control.
 
 **States.** The fixed set.
 
@@ -285,7 +286,7 @@ hidden input. A select whose options are loading is `busy`.
 
 ### One of many with an unlisted value admitted
 
-**Default.** An `input.form-control` bound to a `<datalist>`, at rung 1. The list suggests, the
+**Default.** An `input.form-control` bound to a `<datalist>`, at rung 1. The list suggests; the
 person can still submit a value it does not hold.
 
 ```html
@@ -447,17 +448,17 @@ rung 4.
 </fieldset>
 ```
 
-**Alternates.** A read-only rating is not a control: draw it as a glyph row with one accessible name
-stating the value, per [components.md](components.md) → Status glyph marks. A `role="slider"`
-rating is a hand-roll and owes the APG slider contract, including its keyboard model.
+**Alternates.** Draw a read-only rating as a glyph row with one accessible name stating the value,
+per [components.md](components.md) → Status glyph marks; it is not a control. Treat a
+`role="slider"` rating as a hand-roll owing the APG slider contract, including its keyboard model.
 
 **States.** The fixed set. Keep a cleared rating reachable, and say what cleared means.
 
 ### A step in a sequence
 
-**Default.** A step indicator is not a field; it reports where the person is. Draw it from shipped
-parts at rung 1 — a `nav` or `.list-group-numbered` whose current item carries `aria-current="step"`,
-with a `.progress` bar where the count of steps is large.
+**Default.** Draw a step indicator from shipped parts at rung 1 — a `nav` or `.list-group-numbered`
+whose current item carries `aria-current="step"`, with a `.progress` bar over a long sequence. A step
+indicator reports where the person is and holds no value, so it is not a field.
 
 ```html
 <nav aria-label="Application progress">
@@ -468,10 +469,10 @@ with a `.progress` bar where the count of steps is large.
 </nav>
 ```
 
-**Alternates.** Custom stepper chrome — connectors, dots, tick marks — is an authored class contract
-over tokens. The rules for the sequence itself, including validation on leaving a step and where the
-answers are held, live in [bootstrap-reference.md](bootstrap-reference.md) → Wizards & multi-step
-forms.
+**Alternates.** Treat custom stepper chrome — connectors, dots, tick marks — as an authored class
+contract over tokens. Take the rules for the sequence itself, including validation on leaving a step
+and where the answers are held, from [bootstrap-reference.md](bootstrap-reference.md) → Wizards &
+multi-step forms.
 
 **States.** The fixed set applies to the controls that move between steps, not to the indicator. Give
 the indicator `rest` and a current mark that survives both themes, and never make position the only
@@ -479,11 +480,10 @@ signal that a step failed.
 
 ## Where Bootstrap ships no component
 
-These categories have no shipped component, so each one is a build-or-buy decision before it is a
-markup decision. Work the native-first ladder in
-[bootstrap-reference.md](bootstrap-reference.md) → When not to hand-roll first, and take the
-hand-roll only with the named pattern's contract in hand. The contracts for the patterns that file
-already carries — dialog, combobox, radio group, toolbar — are in
+Work the native-first ladder in [bootstrap-reference.md](bootstrap-reference.md) → When not to
+hand-roll before building any category in this table, and take the hand-roll only with the named
+pattern's contract in hand. Settle each row as a build-or-buy decision before it is a markup
+decision. Take the contracts for dialog, combobox, radio group, and toolbar from
 [bootstrap-reference.md](bootstrap-reference.md) → Pattern contracts.
 
 | Category                    | Pattern the hand-roll owes             |
@@ -497,5 +497,5 @@ already carries — dialog, combobox, radio group, toolbar — are in
 | A files dropzone            | The visible input as the non-drag path |
 | A data grid or a tree       | APG grid, APG tree view                |
 
-Skeletons are not in this set: Bootstrap ships them, and
-[components.md](components.md) → Placeholder (skeletons) owns the markup.
+Take skeletons from [components.md](components.md) → Placeholder (skeletons) instead; Bootstrap
+ships them, so they stay out of this table.

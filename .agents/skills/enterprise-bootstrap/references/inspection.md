@@ -1,14 +1,12 @@
 # Instruments
 
-These instruments settle what a capture cannot. Each one states a property of the surface, the
-population it walks, the reading that settles it, the negative control that proves the reading can
-fail, and the coverage it does not have.
+Reach for an instrument here where a capture cannot settle the claim. Run every one with its control,
+in the same conditions, on the real compiled cascade the page loads. Treat an instrument whose
+control passes as broken and refuse its reading as evidence; `.claude/rules/quality.md` owns that law
+where it is present.
 
-Run every instrument with its control, in the same conditions, on the real compiled cascade the page
-loads. An instrument whose control passes is broken, and its reading is not evidence;
-`.claude/rules/quality.md` owns that law where it is present.
-
-These rules bind every entry here.
+Take each entry's property, population, reading, control, and coverage as written, and hold every
+entry to these rules.
 
 - **Report the population.** A reading carries the population it walked. An empty population fails
   the run, because an extractor that quietly matched nothing satisfies every other assertion.
@@ -39,9 +37,9 @@ These rules bind every entry here.
 - **Control.** A token no stylesheet defines, fed to the reading rather than planted in the markup.
   It sits outside the population, which is authored tokens the cascade resolves, and the reading must
   report it.
-- **Coverage.** It proves authored tokens are a subset of the cascade. It says nothing about a
-  cascade rule nobody authored, a token a build step or a script adds after the read, or whether a
-  resolved rule paints what the author intended.
+- **Coverage.** The instrument proves authored tokens are a subset of the cascade. It says nothing
+  about a cascade rule nobody authored, a token a build step or a script adds after the read, or
+  whether a resolved rule paints what the author intended.
 
 ## Declared class combinations
 
@@ -53,12 +51,11 @@ These rules bind every entry here.
   fails and names the element that carries it.
 - **Control.** A string one utility away from a declared combination, fed to the reading. It sits
   outside the declared set and the reading must refuse it.
-- **Coverage.** It proves reused chrome is declared. It does not prove a declared invariant is true,
-  and it does not read a single utility used alone.
+- **Coverage.** The instrument proves reused chrome is declared. It does not prove a declared
+  invariant is true, and it does not read a single utility used alone.
 - **Never substitute a cancellation heuristic.** A rule that flags a string for its utility count, or
   for mixing categories, refuses the legitimate transparent read chrome that keeps a read view and an
-  edit view from reflowing. An instrument that flags the best existing answer gets switched off, and
-  then nothing is checked.
+  edit view from reflowing.
 
 ## Style escapes
 
@@ -67,17 +64,17 @@ These rules bind every entry here.
   any interaction drives it.
 - **Reading.** Collect every element carrying an inline declaration or an embedded style element and
   report it with its markup. Any hit fails.
-- **Exemptions, declared by name.** The framework's own runtime styles are outside the property: a
-  Bootstrap Modal, Offcanvas, Collapse, or Dropdown writes inline styles as it runs, and a
-  conditional-visibility directive such as `v-show` emits `style="display: none"` at mount. Name each
-  exemption in the instrument. Run the reading on an undriven tree, because a reading taken after a
-  journey drives the surface reports on the framework rather than on the author.
+- **Exemptions, declared by name.** Exempt the framework's own runtime styles and name each exemption
+  in the instrument: a Bootstrap Modal, Offcanvas, Collapse, or Dropdown writes inline styles as it
+  runs, and a conditional-visibility directive such as `v-show` emits `style="display: none"` at
+  mount. Run the reading on an undriven tree, because a reading taken after a journey drives the
+  surface reports on the framework rather than on the author.
 - **Control.** An element carrying an inline declaration, built in the harness rather than taken from
   the surface, fed to the reading. It sits outside the surface's own markup and the reading must
   report it.
-- **Coverage.** It reads authored markup at mount. It does not see a style a component writes after
-  the person interacts, a rule authored in a stylesheet, or an escape inside a third-party
-  component's own markup.
+- **Coverage.** The instrument reads authored markup at mount. It does not see a style a component
+  writes after the person interacts, a rule authored in a stylesheet, or an escape inside a
+  third-party component's own markup.
 
 ## Token discipline
 
@@ -91,9 +88,9 @@ These rules bind every entry here.
 - **Control.** A rule carrying a literal color, and a paint whose token the cascade does not define,
   both fed to the reading rather than authored into the surface. Each sits outside the population of
   authored rules that pass, and the reading must report both.
-- **Coverage.** It covers authored rules and the paints it was given. It does not judge whether the
-  chosen token is the right one, and it reads no vendor rule and no inline declaration — style
-  escapes covers those.
+- **Coverage.** The instrument covers authored rules and the paints it was given. It does not judge
+  whether the chosen token is the right one, and it reads no vendor rule and no inline declaration —
+  [Style escapes](#style-escapes) covers those.
 
 ## Custom rule doing a utility's job
 
@@ -105,23 +102,24 @@ These rules bind every entry here.
 - **Control.** A rule restating a shipped utility exactly — a padding declaration matching a spacing
   step — fed to the reading rather than authored into the stylesheet. It sits outside the set of
   authored selectors that pass, and the reading must report it.
-- **Coverage.** It reads declarations, not intent. A rule that does a utility's job alongside
-  something else passes it, so a person still reads the authored stylesheet.
+- **Coverage.** The instrument reads declarations, not intent. A rule that does a utility's job
+  alongside something else passes it, so a person still reads the authored stylesheet.
 
 ## Composited contrast in both themes
 
 - **Property.** Every pairing the surface paints meets its bar in every theme: 4.5:1 for anything
   information-bearing, 3:1 for textless marks and the chrome that carries state.
 - **Population.** The pairings the surface renders, read per theme on the compiled cascade, with
-  every translucent layer composited. Disabled controls are exempt, per
-  [SKILL.md](../SKILL.md) → Surfaces, color, contrast.
+  every translucent layer composited. Exempt disabled controls, per [SKILL.md](../SKILL.md) →
+  Surfaces, color, contrast.
 - **Reading.** Composite the painted layers, read the ratio, and fail anything under its bar with the
-  pairing named. Mechanics: [bootstrap-reference.md](bootstrap-reference.md) → Measuring the bars.
+  pairing named. Take the mechanics from [bootstrap-reference.md](bootstrap-reference.md) → Measuring
+  the bars.
 - **Control.** A pairing composed in the harness whose ratio is known to sit under the bar, not one
   taken from the surface. It sits outside the rendered population and the reading must fail it.
-- **Coverage.** It measures what rendered, in the themes and viewports the run entered. A pairing
-  that appears only in a state the run never reached is unmeasured, so name the states the run
-  covered beside the result.
+- **Coverage.** The instrument measures what rendered, in the themes and viewports the run entered. A
+  pairing that appears only in a state the run never reached is unmeasured, so name the states the
+  run covered beside the result.
 
 ## One glyph, one meaning
 
@@ -132,21 +130,20 @@ These rules bind every entry here.
   shipped set does not resolve fails, each named.
 - **Control.** A registry entry binding a second meaning to a glyph already registered, plus a glyph
   name the shipped set lacks. Both sit outside the registered set, and the reading must report both.
-- **Coverage.** It proves the registry is consistent and resolvable. It does not prove the markup
-  draws the registered glyph for the meaning it carries, so pair it with a capture of the states that
-  use marks.
+- **Coverage.** The instrument proves the registry is consistent and resolvable. It does not prove
+  the markup draws the registered glyph for the meaning it carries, so pair it with a capture of the
+  states that use marks.
 
 ## When an authored rule is already earned
 
-Rung 4 stays the developer's call, per [SKILL.md](../SKILL.md) → When custom CSS is justified. One
-exception stands, and a measurement rather than a judgment opens it. Write an authored rule without
-asking only when every one of these holds:
+Leave rung 4 to the developer, per [SKILL.md](../SKILL.md) → When custom CSS is justified. Write an
+authored rule without asking only when every one of these holds:
 
-- an instrument in this file reports the vendor cascade failing a stated bar — the focus ring under
-  3:1, the status text under 4.5:1, the shipped component with no variant for the state the surface
-  must show;
+- an instrument here reports the vendor cascade failing a stated bar — the focus ring under 3:1, the
+  status text under 4.5:1, the shipped component with no variant for the state the surface must
+  show;
 - the rule cites that reading beside it, naming the instrument, the bar, and the value read;
 - the rule restores the bar and does nothing else;
 - the rule is written over `--bs-*` tokens, so both color modes move with the theme.
 
-Anything wider is still a proposal: name what the rule would buy, and stop.
+Treat anything wider as a proposal: name what the rule would buy, and stop.
