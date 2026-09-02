@@ -2,7 +2,7 @@
 	"@orkestrel/contract": "^0.0.13",
 	"@orkestrel/guide": "^0.0.15",
 	"@orkestrel/html": "^0.0.7",
-	"@orkestrel/probe": "^0.0.10",
+	"@orkestrel/probe": "^0.0.11",
 	"@orkestrel/scaffold": "^0.0.59",
 	"@orkestrel/test": "^0.0.11",
 	"@types/node": "^26.4.0",
