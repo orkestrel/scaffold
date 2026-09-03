@@ -100,11 +100,16 @@ Each pattern ran over the paths named beside it. The vendored dependency mirrors
 
 | Purpose                                | Pattern and paths                                                                                                                            | Result                                                                                                            |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| server-subj-4 old name, with inflections | `grep -rniE "requestEncoding\|requestEncodings\|requestEncoded\|requestEncoding(s\|ed\|ing)?"` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md` | Empty.                                                                                                            |
+| server-subj-4 old name, with inflections | `grep -rniE '\brequestEncoding(s|ed|ing)?\b'` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md` | Empty.                                                                                                            |
 | server-subj-4 new name is reachable    | `grep -rnw "parseEncoding"` over the same paths                                                                                              | `src/server/helpers.ts` (declaration, `@example`, `readBody` call site), `tests/src/server/helpers.test.ts`, `guides/server.md` Helpers row. |
-| server-subj-6 rejected generic words   | `grep -rnwE "item\|items\|info\|thing\|obj\|cfg\|msg\|doc"` over `src`                                                                        | Empty.                                                                                                            |
+| server-subj-6 rejected generic words   | `grep -rnE '\b(item|items|info|thing|obj|cfg|msg|doc)\b'` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md` | Permitted hits: `tests/src/server/helpers.test.ts:747` is the unsupported `items` range-unit fixture; `tests/config.test.ts:2` is vendored prose outside the unit; `guides/server.md:327` refers to the numbered contract item. `tests/distribution.test.ts:177`, `:427`, and `:583` use `thing` as an English prose referent, and `tests/config.test.ts:687` calls the `console.info` API. No rejected identifier remains. |
+| server-obj-8 old continuation form     | `grep -rnE '^stopping → stopped'` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md`                                      | Empty. The contract continuation no longer starts at column zero.                                                 |
+| server-obj-11 old `readBody` return    | ``grep -rnE '@returns The parsed JSON value, the raw text, or `undefined` for an empty body'`` over the same paths                             | Empty. The return text names the empty and malformed-JSON outcomes.                                               |
+| server-obj-12 old `HTTPError` shape    | `grep -rnE 'readonly code'` over the same paths                                                                                               | `src/server/errors.ts:164` is the permitted `ServerError.code`; `HTTPError` has no `code`, and its `@remarks` records `status` as the discriminator. This additive documentation repair removed no literal wording. |
+| server-subj-8 old undocumented members | ``grep -rnE 'readonly id: string|readonly status: ServerStatus|readonly port: number \| undefined|readonly dispatcher: DispatcherInterface<TState>|readonly emitter: EmitterInterface<ServerEventMap>|use\(middleware: MiddlewareHandler<TState>\): void|upgrade\(handler: UpgradeHandler\): void'`` over the same paths | The relevant declarations are `src/server/types.ts:722`, `:724`, `:729`, `:733`, `:735`, `:745`, and `:752`; each has an immediately preceding TSDoc block. Other hits are implementation declarations at `src/server/Server.ts:185` and `:192`, another documented dispatcher member at `src/server/types.ts:671`, and a policy fixture at `tests/setupPolicy.ts:2882`. This additive repair removed no literal wording, so the sweep rules the candidate member sites. |
+| server-subj-10 old boolean tags        | ``grep -rnE '@param encrypted - The connection.s TLS flag \(\{@link.*encrypted\}\)$|@param weak - `true` for a weak'`` over the same paths   | Empty. Each tag uses the fixed `If true; if false` form.                                                          |
 | server-obj-9 `should`                  | `grep -rni "should"` over `guides/server.md`, `guides/README.md`, `README.md`, `src`, `tests/src`, `tests/setup.ts`, `tests/setup.test.ts`, `tests/guides.test.ts`, `tests/setupServer.ts` | Empty.                                                                                                            |
-| server-obj-10 sentinel removed         | `grep -rnE "resolvePort"` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md`                                            | Empty.                                                                                                            |
+| server-obj-10 sentinel removed, with inflections | `grep -rniE '\bresolvePort(s|ed|ing)?\b'` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md`                           | Empty.                                                                                                            |
 | server-obj-1 placement                 | `grep -rnE "isAddressInfo"` over `src`, `tests/src`, `README.md`, `guides/README.md`, `guides/server.md`                                     | Declared only in `src/server/validators.ts`; imported by `helpers.ts` and `Server.ts` from `./validators.js`; tested in `tests/src/server/validators.test.ts`; one Helpers row and one Tests row in the guide. |
 | server-subj-1 numbered citations       | `grep -rnE "AGENTS §\|§2[0-9]"` over the same paths                                                                                          | Empty.                                                                                                            |
 | server-obj-6 / server-obj-7 old claims | `grep -rnE "Node\.js >= 24\|ESM-only"` over the same paths                                                                                   | `tests/distribution.test.ts:60` is permitted: `ESM-only` has the declaration-file sense in a vendored file outside this unit. |
@@ -320,3 +325,25 @@ did not admit:
 ### Orchestrator integration (21:45 UTC, after fix round 3 returned)
 
 Fix round 3's sweep pattern (`§ ?[0-9]+`, the Orchestrator's own brief) reached the RFC 7232 section pointers in `src/server/helpers.ts` (the `computeBodyETag` and `matchesETag` doc lines) and `tests/src/server/helpers.test.ts:703`, which are not instruction citations; the Orchestrator restored `§2.3.2` at those sites from the fix round's before-and-after record (`npx oxfmt --check` exit 0 over both files). The `AGENTS §` removals stand.
+
+## Fix round 4
+
+Source: `/home/user/scaffold/.orkestrel/campaign/conform/units/l3/server-objective-r3-sol.md`.
+
+- **R1.** `isAddressInfo` now checks `address` and `family` with the installed
+  `isString` guard and checks `port` with `isNumber`, after `isRecord` narrows
+  the input. Its `@remarks` names the members and their published
+  `node:net` types.
+- **R2.** Moving `id` to a getter is non-breaking for this fleet under the
+  fleet-F2 precondition: no `Server` instance is spread or serialized. The
+  release bump carries the enumerable-own-property shape change for outside
+  consumers.
+- **Guard control.** With the guard planted to check `port` alone,
+  `/home/user/work/evidence/server-proofs/fix4-red.txt` reports 2 failed and
+  3 passed: the port-only and non-string-family cases fail. After restoring
+  the total guard,
+  `/home/user/work/evidence/server-proofs/fix4-green.txt` reports 5 passed.
+- **Sweep records.** § Sweeps carries the case-insensitive word-boundary and
+  inflection forms for `requestEncoding` and `resolvePort`, the full-population
+  generic-word reading, and the documentation-row readings for server-obj-8,
+  server-obj-11, server-obj-12, server-subj-8, and server-subj-10.
