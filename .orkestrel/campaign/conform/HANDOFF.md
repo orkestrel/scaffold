@@ -76,7 +76,7 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | tool | yes | complete | round 1 PASS/PASS; ACCEPT (`units/conform-tool-audit-verdict.md`) | `1f36348`, follow-on `b2111d1` |
 | timeout | yes | complete | round 1 PASS/PASS with record prescriptions applied at landing; ACCEPT (`units/conform-timeout-audit-verdict.md`) | `426420b` |
 | emitter | yes | complete, two fix rounds in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 3); `units/conform-emitter-audit-verdict.md` | 67433a5, setup-axis follow-on 22d5f4d |
-| sqlite | yes (sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`, with the audit's R1, O1, and O2 as its added rows) | complete, one fix round in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 2); `units/conform-sqlite-audit-verdict.md` | 225bb1c |
+| sqlite | yes (sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`, with the audit's R1, O1, and O2 as its added rows) | complete, one fix round in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 2); `units/conform-sqlite-audit-verdict.md` | 225bb1c, engines follow-on 87ab520 |
 | html | yes | complete; fix round 2 then the third audit round in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
 | process, reason | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`); process-obj-1 stopped for want of a move tool and is carried by `briefs/conform/conform-process-fix-obj1-brief.md` after the audit round | audit lanes queued | — |
 | console, middleware | yes | implementers in flight in `layer2.L2a` (`wf_4b849c0d-459`) | — | — |
