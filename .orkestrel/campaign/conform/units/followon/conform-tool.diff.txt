@@ -1,0 +1,106 @@
+diff --git a/guides/README.md b/guides/README.md
+index abf0c52..f003890 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -30,6 +30,12 @@ repository's guide-parity tests.
+ [`scaffold.md`](scaffold.md) — the development dependency `@orkestrel/scaffold`, which
+ maintains the repository scaffold.
+ 
++[`probe.md`](probe.md) — the development dependency `@orkestrel/probe`, which runs a
++claim's case and its negative control against this workspace.
++
++[`test.md`](test.md) — the development dependency `@orkestrel/test`, which supplies the
++shared test helpers every suite here imports.
++
+ ## See also
+ 
+ - [`AGENTS.md`](../AGENTS.md) — the repository's coding and documentation contract.
+diff --git a/guides/tool.md b/guides/tool.md
+index 9bc4056..e026ec6 100644
+--- a/guides/tool.md
++++ b/guides/tool.md
+@@ -27,9 +27,9 @@
+ 
+ `Tool` and `ToolManager` carry the runtime. A `Tool` is inert — a definition plus a handler, with
+ no lifecycle and no failure handling of its own. A `ToolManager` is the live surface a caller
+-holds: it hands `definitions()` outward, takes a `ToolCall` back, and answers with a `ToolResult`
+-that is always a result and never a throw. Everything else in this module is the plain data
+-those two exchange.
++holds: it hands `definitions()` outward, takes a `ToolCall` back, and answers with a `ToolResult`,
++a result rather than a throw for a call whose members are plain values. Everything else in this
++module is the plain data those two exchange.
+ 
+ ## Surface
+ 
+@@ -245,10 +245,11 @@ necessarily meaningful or truthy.
+ An in-process caller needing a typed error can call `tools.tool(name)`, then
+ `tool.execute(args)` inside its own `try`/`catch`.
+ 
+-A batch is dispatched concurrently and answered in input order, with each call isolated from its
+-siblings — one failure never voids the batch, and duplicate ids stay distinct positional calls
+-rather than collapsing into one. That isolation is what lets a caller feed every result back to
+-whatever produced the calls and let it react to the failures itself.
++A batch is dispatched concurrently and answered in input order, with each call whose members are
++plain values isolated from its siblings — a handler failure never voids the batch, a call whose
++`id` or `name` accessor throws when read rejects it, and duplicate ids stay distinct positional
++calls rather than collapsing into one. That isolation is what lets a caller feed every result back
++to whatever produced the calls and let it react to the failures itself.
+ 
+ ## Callers
+ 
+diff --git a/src/core/tools/ToolManager.ts b/src/core/tools/ToolManager.ts
+index 233e319..7466bc7 100644
+--- a/src/core/tools/ToolManager.ts
++++ b/src/core/tools/ToolManager.ts
+@@ -14,9 +14,10 @@ import { toolToDefinition } from '../helpers.js'
+  * @remarks
+  * A repeated name overwrites the registered tool without changing its insertion
+  * position. Definitions advertise `summary` in place of `description` when present.
+- * Unknown names and handler throws resolve to error results; batch execution preserves
+- * input order and never fails as a whole because of an individual call. Optional
+- * consumer-asserted caller context is forwarded without verification.
++ * Unknown names and handler throws resolve to error results; a call whose `id` or `name`
++ * accessor throws when read makes its call, and the batch holding it, reject. Batch
++ * execution preserves input order and isolates each call whose members are plain
++ * values. Optional consumer-asserted caller context is forwarded without verification.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 24c172d..a07f1ca 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -131,9 +131,10 @@ export interface ToolOptions {
+  *
+  * @remarks
+  * Tools are keyed by name in insertion order. Adding an existing name overwrites its
+- * value without changing its position. Every call resolves to a {@link ToolResult};
+- * missing tools and thrown handlers become error results. Batch execution preserves
+- * input order and isolates each call.
++ * value without changing its position. Every call whose members are plain values
++ * resolves to a {@link ToolResult}; missing tools and thrown handlers become error
++ * results, and a call whose `id` or `name` accessor throws when read makes `execute`
++ * reject instead. Batch execution preserves input order and isolates each such call.
+  */
+ export interface ToolManagerInterface {
+ 	/** Reports how many tools are registered. */
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index f1b33aa..96a760a 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,5 +1,5 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The four constants below are this
++// this repo's own `guides/README.md` manifest. The constants that follow are this
+ // package's own, and are the only part a sibling package changes.
+ 
+ import { Tool, createTool, createToolManager, isToolCall } from '@src/core'
+@@ -33,7 +33,7 @@ const MODULES = Object.freeze({ '@orkestrel/tool': 'src/core', '@src/core': 'src
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])

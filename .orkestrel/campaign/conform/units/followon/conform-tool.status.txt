@@ -1,0 +1,5 @@
+ M guides/README.md
+ M guides/tool.md
+ M src/core/tools/ToolManager.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
