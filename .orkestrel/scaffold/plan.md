@@ -259,3 +259,13 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   `matchesColor`) and `PortfolioInterface.states` to `placements`. The journey references follow
   at scaffold `e355d45`; terrain's suite (25 call sites) follows after T1 through a builder
   unit; the prepublish chain runs at the merge commit before the push and the publish.
+- Test main pushed at `e7739e2` (prepublish green: src 496 passed 9 skipped, distribution 11
+  passed 4 skipped). `npm publish --browser=false --ignore-scripts` from the Orchestrator's shell
+  failed `EOTP`: the one-time password prompt needs a TTY, so the upload is the operator's, as
+  `window.md` § Arm the terminal states for this host. Command handed to the user.
+- Prepares committed: taverna `441ca4e` (three rows, catalog agent removed, hooks moved to the
+  ignored local settings), lloyds `315ba62` (three rows), supervisor `8ac9712` (catalog agent
+  removed; hooks and permissions moved to the ignored local settings by the Orchestrator after
+  the builder was refused every write in that checkout by the permission classifier; MCP
+  servers `codex` and `probe` recorded for out-of-tree registration). Registry still serves
+  scaffold 0.0.59 and test 0.0.11, so every visit waits on the two uploads.
