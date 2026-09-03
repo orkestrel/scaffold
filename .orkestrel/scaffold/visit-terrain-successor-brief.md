@@ -24,10 +24,14 @@ nothing. Host: Windows 11, Git Bash; Playwright Chromium installed.
 
 1. In `package.json`, set `"@orkestrel/scaffold": "^0.0.60"` and `"@orkestrel/test": "^0.0.12"`.
    Run `npm install`. Record `npm ls @orkestrel/test @orkestrel/scaffold`.
-2. Run `npx scaffold repair`; record its summary and every file it wrote. Run `npx scaffold
-   audit`; record its exit and every line with its owner.
+2. Run `npx scaffold repair --groups manifest,source,tests,guides,docs,orchestration` (never
+   `configs`: terrain's `vite.config.ts` carries a browser-enabled `setup` project that the
+   canonical node-only template would revert, and that conflict is scaffold's to settle); record
+   its summary and every file it wrote. Run `npx scaffold audit`; record its exit and every line
+   with its owner — the `vite.config.ts` stale row is owned by scaffold, and the `test:setup`
+   script is declared.
 3. Run `npm run format` once. Then, each read bare: `npm run format:check`, `npm run lint:check`,
-   `npm run check`, `npm run build`, `npm test`. Then the four variants of the integration file
+   `npm run check`, `npm run build`, `npm test` (which now includes `test:setup`). Then the four variants of the integration file
    and two capture runs (`light-1280`, `dark-390`):
    `VITE_VARIANT=<v> npx vitest run --config vite.config.ts --no-cache --reporter=dot --project
    app:browser tests/app/browser/integration.test.ts`, with `VITE_CAPTURE=true` for the two.

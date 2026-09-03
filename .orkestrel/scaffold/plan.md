@@ -284,3 +284,10 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   pushed at `bacb639`; `npm view` reads 0.0.60. Launched in parallel: form's layer (scaffold
   re-pin, repair, chain) for the last upload; test's development re-pin to 0.0.60 with repair and
   gates; the three visits (workflow `visit-three-apps`, Opus implementers).
+- T1 returned and is committed in terrain at `bb3d18e` (13 files plus the harness page and the two
+  setup proofs; the `test:setup` script patch applied by the Orchestrator). Solid Delete at 4.990
+  in every variant; per-row names; harness on the app's table with its gate green; artifacts per
+  variant; guide index. Scaffold defect carried to `ROADMAP.md`: the canonical `setup` project is
+  node-only while the audit demands a browser proof for `tests/setupBrowser.ts`; terrain's
+  `vite.config.ts` stays browser-enabled and reads stale until the template moves, so its re-pin
+  repair skips the configs group. T2 rename dispatched.
