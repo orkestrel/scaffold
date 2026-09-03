@@ -30,6 +30,17 @@ for (const arg of process.argv.slice(2)) {
 			else red = true
 		}
 	}
+	if (!red) {
+		// The blueprint gate: `scaffold audit --offline` reads the vendored file set and the setup proofs, which no
+		// audit lane runs. Clean output is the single summary line with a zero drift count; anything else is red.
+		const run = spawnSync('npx', ['scaffold', 'audit', '--offline'], { cwd: dir, encoding: 'utf8' })
+		const out = `${run.stdout || ''}${run.stderr || ''}`
+		writeFileSync(`${RETAIN}/conform-${pkg}.audit.txt`, out)
+		const lines = out.split('\n').map((l) => l.trim()).filter(Boolean)
+		const clean = run.status === 0 && lines.length === 1 && /^0 of \d+ planned paths drifted from the plan\./.test(lines[0])
+		say(`${pkg} scaffold audit --offline exit=${run.status} ${clean ? 'clean' : 'FINDINGS'}`)
+		if (!clean) { say(out.slice(-2000)); red = true }
+	}
 	if (red) { say(`${pkg} RED - not committed`); continue }
 	// Stage by path: every changed or untracked path outside .orkestrel/ and tmp/.
 	const status = execFileSync('git', ['-C', dir, 'status', '--short']).toString()
