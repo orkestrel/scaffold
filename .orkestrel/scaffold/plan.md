@@ -191,3 +191,9 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   Committed in terrain at `7a27ee8` as the honest state; FX2c dispatched in test
   (`fix-capture-successor-brief.md`); terrain chain verifier dispatched at that commit; lane B
   runs after the layer lands and terrain re-films.
+- FX2c returned: committed in test at `e13f5d5`. `captureFrame` measures the larger of the body's
+  box rounded up and the scroll height, restages while the height grows (bound
+  `CAPTURE_STAGINGS = 3`), and refuses a document that never settles; three cases red then green
+  (209 to 212), browser project 243. Tarball 0.0.12 rebuilt and re-staged in terrain (version
+  0.0.12 in `node_modules`). Re-film and the final prepublish chain running in parallel; lane B
+  follows the re-film.
