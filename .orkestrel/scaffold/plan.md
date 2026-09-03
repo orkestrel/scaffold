@@ -204,3 +204,8 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   and the shot clips to it, so restaging may overshoot by the last growth without adding rows.
   FX2d dispatched (`fix-capture-overshoot-brief.md`). Lane B launched in parallel on claims 8,
   14, 16, 17, 19; claims 15 and 22 go to a final lane after the next re-film.
+- Lane B: claims 8, 14, 16, 17, 19 CONFIRMED. FX2d stopped (overshoot on the box reading adds
+  canvas rows; the content edge survives an oversized pane). FX2e dispatched
+  (`fix-capture-edge-brief.md`): `measureContent` over the union of element bottoms, overshoot
+  on that reading, final staging at the exact content height, refusal kept. Scaffold's own
+  prepublish chain runs in parallel at the 0.0.60 bump for early evidence.

@@ -82,3 +82,15 @@ deferred to lane B), 0 findings outside the claims. Claim 8's residue was four b
 instrument-sense `control` hits (`inspection.md` 14–15, `decide.md` 18,
 `bootstrap-reference.md` 357); closed by the Orchestrator at scaffold `1a7602e`, and claim 19
 follows. Lane B re-reads claim 8 at that commit with the terrain claims.
+
+## Fix round, lane B (Grok objective, 2026-09-02)
+
+Ruled on claims 8, 14, 16, 17, and 19 at scaffold `1a7602e`, test `e13f5d5`, terrain `7a27ee8`:
+all five CONFIRMED (the vocabulary re-read, no selector reach on any journey path, the statechart
+on rendered facts with the armed Delete measured and no `app/**` change, the transport family
+declared and proved through the store seam, every round-1 finding carried). Claims 15 and 22
+wait on the final layer build and the re-film (lane C).
+
+FX2d stopped on its deviation contract: the body's box is the larger of the content and the
+pane, so an overshoot on the box reading adds canvas rows. FX2e carries the content-edge
+mechanism.
