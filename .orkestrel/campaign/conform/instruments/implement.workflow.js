@@ -26,13 +26,13 @@ const VERDICT = {
   required: ['verdicts', 'findings', 'terminal', 'failing'],
 }
 const implement = (pkg) => agent(
-  `You are the \`implementer\` role on Claude Fable 5.1, a native subagent, the sole writer in ${repoOf(pkg)}. Read ${UNITS}/conform-${pkg}-brief.md in full and perform the unit exactly as written, directly and spawning nothing. Before editing, read /home/user/scaffold/AGENTS.md and every file under /home/user/scaffold/.claude/rules/. Do not commit, stage, push, install, or run any discarding git command. Write the report and the two evidence files the brief names, then return the structured output with the same content.`,
-  { label: `implement:${pkg}`, phase: 'Implement', model: 'fable', agentType: 'implementer', schema: REPORT },
+  `You are the \`implementer\` role on Claude Opus 5, a native subagent, the sole writer in ${repoOf(pkg)}. Read ${UNITS}/conform-${pkg}-brief.md in full and perform the unit exactly as written, directly and spawning nothing. Before editing, read /home/user/scaffold/AGENTS.md and every file under /home/user/scaffold/.claude/rules/. Do not commit, stage, push, install, or run any discarding git command. Write the report and the two evidence files the brief names, then return the structured output with the same content.`,
+  { label: `implement:${pkg}`, phase: 'Implement', model: 'opus', agentType: 'implementer', schema: REPORT },
 )
 const audit = (report, pkg) => parallel([
   () => agent(
-    `You are the \`reviewer\` role on Claude Fable 5.1 holding the OBJECTIVE lane as the recorded substitution for the dark GPT-5.6 Sol bench, a native subagent in a clean context, read-only. Your own engine wrote the subject; attack it harder for that. Read ${UNITS}/conform-${pkg}-audit-brief.md in full and perform it exactly as written. The tree is ${repoOf(pkg)} with the unit's uncommitted changes in place; the diff and status evidence are at the paths the brief names. Audit directly and spawn nothing; never edit. Return per-claim verdicts with file:line evidence, findings outside the claims, and exactly one terminal line PASS or FAIL <claim numbers>.`,
-    { label: `objective:${pkg}`, phase: 'Audit', model: 'fable', agentType: 'reviewer', schema: VERDICT },
+    `You are the \`reviewer\` role on Claude Opus 5 holding the OBJECTIVE lane as the recorded substitution for the dark GPT-5.6 Sol bench, a native subagent in a clean context, read-only. Your own engine wrote the subject; attack it harder for that. Read ${UNITS}/conform-${pkg}-audit-brief.md in full and perform it exactly as written. The tree is ${repoOf(pkg)} with the unit's uncommitted changes in place; the diff and status evidence are at the paths the brief names. Audit directly and spawn nothing; never edit. Return per-claim verdicts with file:line evidence, findings outside the claims, and exactly one terminal line PASS or FAIL <claim numbers>.`,
+    { label: `objective:${pkg}`, phase: 'Audit', model: 'opus', agentType: 'reviewer', schema: VERDICT },
   ),
   () => agent(
     `You are the \`checker\` role on Claude Sonnet, a native subagent in a clean context, read-only. Read ${UNITS}/conform-${pkg}-audit-brief.md in full and perform the checker's claims exactly as written. The tree is ${repoOf(pkg)} with the unit's uncommitted changes in place; the diff and status evidence are at the paths the brief names. Audit directly and spawn nothing; never edit. Return per-claim verdicts with file:line evidence, findings outside the claims, and exactly one terminal line PASS or FAIL <claim numbers>.`,

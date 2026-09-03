@@ -9,25 +9,28 @@ improvements we find from the debrief."* Publishing stays held: nothing publishe
 
 ## Which engine and role to use for each step
 
-The user ruled on 2026-09-03 that Fable 5.1 holds every judgment lane, because the Opus lanes were slow.
-Record this substitution in every verdict file the round writes.
+The harness is Claude Code, so Opus 5 is the Orchestrator engine and holds the subjective lane
+(`CLAUDE.md` § Models, `.agents/orchestration.md` § Orchestration by harness). The GPT-5.6 Sol bench is
+dark in this environment (`codex` absent from PATH), so Opus 5 also holds the objective lane as the
+recorded substitution; every verdict file names that substitution. The Fable 5.1 interlude of 2026-09-03
+(`ledgers/interruptions.txt`) is history: the user reverted it, and every instrument in this folder
+names `opus` again.
 
 | Step | Role file (`.claude/agents/`) | Workflow `model` alias | Notes |
 | --- | --- | --- | --- |
-| Orchestrator (this session) | — | the session model, Fable 5.1 | Commits, pushes, decides, lands. Never dispatched as a subagent role. |
-| Finder lanes (objective, subjective) | `reviewer` | `fable` | Blind, clean context, read-only. Objective lane is the recorded substitution for the dark GPT-5.6 Sol bench. |
-| Refuter lane | `reviewer` | `fable` | Objective perspective over the union of both finders' findings. |
-| Reconciliation lane | `general-purpose` | `fable` | Applies only the fixed folding rules in `instruments/layer.workflow.js`; never re-judges substance. |
-| Implementer, fix rounds | `implementer` | `fable` | Sole writer in its checkout. |
-| Objective audit lane | `reviewer` | `fable` | "Your own engine wrote the subject; attack it harder." |
+| Orchestrator (the main session) | — | run the session on `opus` at high effort (`/model opus`) | Commits, pushes, decides, lands. Never dispatched as a subagent role. |
+| Finder lanes (objective, subjective) | `reviewer` | `opus` | Blind, clean context, read-only. The objective lane is the recorded substitution for the dark Sol bench. |
+| Refuter lane | `reviewer` | `opus` | Objective perspective over the union of both finders' findings. |
+| Reconciliation lane | `general-purpose` | `opus` | Applies only the fixed folding rules in `instruments/layer.workflow.js`; never re-judges substance. |
+| Implementer, fix rounds | `implementer` | `opus` | Sole writer in its checkout. |
+| Objective audit lane | `reviewer` | `opus` | "Your own engine wrote the subject; attack it harder." |
 | Checker | `checker` | `sonnet` | Mechanical claims only. |
-| Verifier (gate evidence) | `verifier` | `sonnet` | Or run `instruments/land-conform.mjs` yourself, which is the Orchestrator's own deciding gate run. |
-| Absorption, scouting | `grok` | Cursor Grok bench (`agent` CLI, live on 2026-09-02) | Only when a reading-heavy question comes up; none is pending. |
-| Sol bench (`codex`) | `analyst`, `sol` | dark: `codex` is absent from PATH | Do not wait for it; Fable holds its lanes and the verdict records the substitution. |
-| Opus | — | not used | Superseded by the user's ruling; do not switch back without the user. |
+| Verifier (gate evidence) | `verifier` | `sonnet` | Or run `instruments/land-conform.mjs` yourself: it is the Orchestrator's own deciding gate run. |
+| Absorption, scouting | `grok` | Cursor Grok bench (`agent` CLI, live on 2026-09-02) | Only for a reading-heavy question; none is pending. Fallback ladder: Grok → Luna → Sonnet, each step recorded. |
+| Objective design or audit on Sol | `analyst`, `sol` | dark: `codex` absent from PATH | Probe once at session start (`codex --version`); if it resolves and authenticates, the objective lane moves back to Sol and the verdicts stop recording the substitution. |
 
-Never use a fixed Claude model ID in a workflow node; the aliases are `fable` and `sonnet`. Every
-`agent()` node names its alias explicitly.
+Never use a fixed Claude model ID or `inherit` in a workflow node; the aliases are `opus` and `sonnet`,
+and every `agent()` node names its alias explicitly. Never set `CLAUDE_CODE_SUBAGENT_MODEL`.
 
 ## Where things are
 
@@ -170,3 +173,10 @@ script.
 - The permission system denies discard-class git commands; undo an edit by editing.
 - Instruments run from a scratch directory, never from a checkout's `tmp/` while a writer is live there.
 - Never state a count in prose you write for the user or for a guide; name the members.
+
+## Before anything: `main` moved
+
+Read `../HANDOFF.md` § Divergence from `main` that must be resolved first. Scaffold, test, and form have
+`origin/main` ahead of the branch (scaffold 0.0.60 and test 0.0.12 were published from `main` on
+2026-09-02); merge `main` into those branches, re-pack, re-stage, and re-pin before any unit in this
+round is packed into a consumer or landed on top of a stale tip.
