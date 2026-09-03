@@ -404,3 +404,67 @@ as part of this unit's behaviour rather than as addendum bookkeeping.
 - `/home/user/work/evidence/brief-proofs/` — every runner capture named in this report.
 
 Produced with the one plain command `node /home/user/scaffold/tmp/work/evidence.mjs brief`.
+
+## Fix round 1
+
+The fix answers claim 5 in
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/brief-r1-checker-luna.result.md`.
+The executed Builders fence pins each documented value:
+
+- `tests/guides.test.ts:392` pins `draft.output.format` to `'diff'`.
+- `tests/guides.test.ts:393` pins `draft.trace` to `undefined`.
+- `tests/guides.test.ts:394` pins `buildGateDefinition().rules.length` to `7`.
+
+The failing-first command was `npm run test:guides`. With the last value planted as `0`, it
+reported `Tests 1 failed | 19 passed (20)` and received `7` at
+`/home/user/work/evidence/brief-proofs/fix1-red.txt`. After restoring the value, the same command
+reported `Tests 20 passed (20)` at
+`/home/user/work/evidence/brief-proofs/fix1-green.txt`.
+
+`guides/brief.md:352` now reads “round-trips the exact-record validators named earlier.”
+
+The sweep command was
+`grep -rnE "\b(above|below)\b" guides/brief.md guides/README.md README.md src tests`.
+Each hit has this ruling:
+
+- `guides/brief.md:208`, `:632`, `:1066`, and `:1080` are document pointers.
+- `guides/brief.md:545` compares outcome ranks, and `:1044` is the reasons operator literal
+  `'above'`; neither is a document pointer.
+- `src/core/BriefCompiler.ts:112` is a document pointer in a comment.
+- `src/core/helpers.ts:349`, `:350`, and `:355` are reasons operator literals, while `:669`
+  compares outcome ranks; none is a document pointer.
+- `tests/src/core/BriefCompiler.test.ts:547`,
+  `tests/src/core/BriefManager.test.ts:126`, `tests/src/core/parsers.test.ts:106`,
+  `tests/src/core/shapers.test.ts:115`, `:124`, `:193`, and `:241`,
+  `tests/policy.test.ts:544`, and `tests/guides.test.ts:277` are document pointers in comments.
+  GNU grep reports the parser test as binary because its hostile-text fixture contains a null byte;
+  `cat -n tests/src/core/parsers.test.ts` locates that hit.
+- `tests/setupPolicy.ts:2098` describes the path location under `tests/src` or `tests/app`; it is
+  not a document pointer.
+- `guides/README.md` and `README.md` have no hit.
+
+### Gates
+
+| Command | Exit | Evidence |
+| --- | --- | --- |
+| `npm run format:check` | 0 | `/home/user/work/evidence/brief-proofs/fix1-format-check.txt` |
+| `npm run lint:check` | 0 | `/home/user/work/evidence/brief-proofs/fix1-lint-check.txt` |
+| `npm run check` | 0 | `/home/user/work/evidence/brief-proofs/fix1-check.txt` |
+| `npm run test:guides` | 0 | `/home/user/work/evidence/brief-proofs/fix1-green.txt` |
+
+### Deviations
+
+Expected: acceptance criterion 3 says `guides/brief.md` carries no `above` or `below` document
+pointer after the owned `:352` rewrite.
+
+Found: the sweep reports document pointers at `guides/brief.md:208`, `:632`, `:1066`, and `:1080`.
+
+Exact evidence: the sweep output reads “builders below,” “Surface rows above,” “definition above,”
+and “above; both are exported,” respectively.
+
+Done or not done: the owned `guides/brief.md:352` rewrite and every requested assertion are done.
+The other guide lines and the source and test comments are outside the fix brief's owned sites, so
+they were not edited.
+
+Hypothesis: acceptance criterion 3 assumed that the owned `:352` occurrence was the guide's only
+document pointer.
