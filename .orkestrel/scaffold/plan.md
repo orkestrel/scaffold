@@ -221,3 +221,8 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   settles at 1800, static frame exactly 1600, runaway still refused; browser project 246.
   Tarball 0.0.12 rebuilt and re-staged in terrain; re-film and the prepublish re-take running in
   parallel; lane C follows the re-film.
+- Re-film on the `7ef64b8` build: every capture run 11 passed (light-1280, dark-1280,
+  light-390, dark-390); all twelve frames end on the surface's floor (`rgb(33, 39, 44)` dark,
+  `rgb(248, 249, 249)` light), the 390 frames at 1192 and 1717–1719 rows. Readings retained as
+  `terrain-frames-final.txt`. Test's prepublish chain green at `7ef64b8` (src 482 passed).
+  Lane C dispatched on claims 15, 20, 21, 22.

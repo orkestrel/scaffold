@@ -1,0 +1,12 @@
+delete-armed--dark-1280.png 1280x800 floor=rgb(33, 39, 44) trailingUniformRows=49
+delete-armed--dark-390.png 390x1718 floor=rgb(33, 39, 44) trailingUniformRows=33
+delete-armed--light-1280.png 1280x800 floor=rgb(248, 249, 249) trailingUniformRows=50
+delete-armed--light-390.png 390x1718 floor=rgb(248, 249, 249) trailingUniformRows=34
+schedule-empty--dark-1280.png 1280x800 floor=rgb(33, 39, 44) trailingUniformRows=97
+schedule-empty--dark-390.png 390x1192 floor=rgb(33, 39, 44) trailingUniformRows=34
+schedule-empty--light-1280.png 1280x800 floor=rgb(248, 249, 249) trailingUniformRows=98
+schedule-empty--light-390.png 390x1192 floor=rgb(248, 249, 249) trailingUniformRows=35
+schedule-populated--dark-1280.png 1280x800 floor=rgb(33, 39, 44) trailingUniformRows=49
+schedule-populated--dark-390.png 390x1717 floor=rgb(33, 39, 44) trailingUniformRows=33
+schedule-populated--light-1280.png 1280x800 floor=rgb(248, 249, 249) trailingUniformRows=50
+schedule-populated--light-390.png 390x1719 floor=rgb(248, 249, 249) trailingUniformRows=35
