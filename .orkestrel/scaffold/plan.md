@@ -275,3 +275,7 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   `tests/app/browser/components` reports "No test files found" (a pre-existing red the visit does
   not own; the planned single `--project app:browser` run replaces that script); supervisor
   `8ac9712`, no node_modules. Each recorded so the visits' readings are attributable.
+- `@orkestrel/test` 0.0.12 published from `e7739e2` with the user's one-time code (the publish
+  reference's sanctioned path); `npm view` reads 0.0.12. Scaffold layer preparation running
+  (re-pin to test 0.0.12, install, prepublish chain); form re-pinned to test 0.0.12 and waits for
+  scaffold 0.0.60 before its chain.
