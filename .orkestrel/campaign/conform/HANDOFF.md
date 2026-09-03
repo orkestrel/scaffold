@@ -19,15 +19,15 @@ names `opus` again.
 | Step | Role file (`.claude/agents/`) | Workflow `model` alias | Notes |
 | --- | --- | --- | --- |
 | Orchestrator (the main session) | — | run the session on `opus` at high effort (`/model opus`) | Commits, pushes, decides, lands. Never dispatched as a subagent role. |
-| Finder lanes (objective, subjective) | `reviewer` | `opus` | Blind, clean context, read-only. The objective lane is the recorded substitution for the dark Sol bench. |
+| Finder lanes (objective, subjective) | `reviewer` | `opus` | Blind, clean context, read-only. The objective lane was the recorded substitution for the dark Sol bench until 21:14 UTC on 2026-09-03; from then it runs on Sol through the Cursor bench (the following Objective audit lane row). |
 | Refuter lane | `reviewer` | `opus` | Objective perspective over the union of both finders' findings. |
 | Reconciliation lane | `general-purpose` | `opus` | Applies only the fixed folding rules in `instruments/layer.workflow.js`; never re-judges substance. |
-| Implementer, fix rounds | `implementer` | `opus` | Sole writer in its checkout. |
-| Objective audit lane | `reviewer` | `opus` | "Your own engine wrote the subject; attack it harder." |
+| Implementer, fix rounds | Sol on the Cursor bench (`instruments/sol5.sh`, model `gpt-5.6-sol-high`, `-p --trust --force` behind the npm shim) | GPT-5.6 Sol | Sole writer in its checkout, from 21:14 UTC on 2026-09-03 by the user's instruction; the Opus `implementer` is the recorded fallback when a Sol lane returns empty. Units dispatched on Opus before that time run to their return. |
+| Objective audit lane | Sol on the Cursor bench (`instruments/sol-lane.sh`, read-only `--mode=ask`, brief from `instruments/mkobjective.mjs`) | GPT-5.6 Sol | From 21:14 UTC on 2026-09-03, restoring the two-engine judgment; the Opus `reviewer` is the recorded fallback when a Sol lane returns empty. |
 | Checker | `checker` | `sonnet` | Mechanical claims only. |
 | Verifier (gate evidence) | `verifier` | `sonnet` | Or run `instruments/land-conform.mjs` yourself: it is the Orchestrator's own deciding gate run. |
-| Absorption, scouting | `grok` | Cursor Grok bench (`agent` CLI, live on 2026-09-02) | Only for a reading-heavy question; none is pending. Fallback ladder: Grok → Luna → Sonnet, each step recorded. |
-| Objective design or audit on Sol | `analyst`, `sol` | dark: `codex` absent from PATH | Probe once at session start (`codex --version`); if it resolves and authenticates, the objective lane moves back to Sol and the verdicts stop recording the substitution. |
+| Absorption, scouting | `grok` | Cursor Grok bench (`agent` CLI, `cursor-grok-4.6-high`, round-tripped 21:10 UTC on 2026-09-03) | The distill lane of every audit round, one Grok lane at a time on `.bench-grok.lock`; the checker lane runs on Luna (`gpt-5.6-luna-high`) beside it so the Grok bench is never asked for two lanes at once. Fallback ladder: Grok → Luna → Sonnet, each step recorded. |
+| Objective design or audit on Sol | `analyst`, `sol` | dark: `codex` absent from PATH; Sol is reached through the Cursor bench instead (the preceding rows) | Probe once at session start (`codex --version`); the Codex transport stays dark this session and the Cursor transport carries Sol. |
 
 Never use a fixed Claude model ID or `inherit` in a workflow node; the aliases are `opus` and `sonnet`,
 and every `agent()` node names its alias explicitly. Never set `CLAUDE_CODE_SUBAGENT_MODEL`.
