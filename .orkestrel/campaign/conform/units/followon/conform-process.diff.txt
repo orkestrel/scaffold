@@ -1,0 +1,302 @@
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 5b81ba0..b8b74d7 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1296,7 +1296,9 @@ describe('unfenced TSDoc examples', () => {
+ 	// `Supervisor`'s class block and its `deliver` member block each spawn a real child and await a
+ 	// promise, so each is its own asynchronous case instead of a row in the table, which holds
+ 	// synchronous leaves. Change either block, change the case beside it.
+-	it("returns what Supervisor's example claims", async () => {
++	// The case outlives the condition budget below it, so a condition that never holds reports its
++	// own description rather than this case's timeout.
++	it("returns what Supervisor's example claims", { timeout: 20_000 }, async () => {
+ 		const engine = new Supervisor(
+ 			{ command: { file: 'node', arguments: ['--version'] }, workspace: process.cwd() },
+ 			{
+@@ -1313,7 +1315,9 @@ describe('unfenced TSDoc examples', () => {
+ 		await engine.destroy()
+ 	})
+ 
+-	it("returns what deliver's example claims", async () => {
++	// The case outlives the condition budget below it, so a condition that never holds reports its
++	// own description rather than this case's timeout.
++	it("returns what deliver's example claims", { timeout: 20_000 }, async () => {
+ 		const engine = new Supervisor(
+ 			{
+ 				command: { file: 'node', arguments: ['-e', 'process.stdin.pipe(process.stdout)'] },
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index b303c89..5b20cc0 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -609,7 +609,7 @@ describe('stopChild', () => {
+ 	// own description rather than this case's timeout.
+ 	it.skipIf(process.platform !== 'win32')(
+ 		'reaches a detached descendant while the root is alive and leaves one whose root already exited',
+-		{ timeout: 40_000 },
++		{ timeout: 60_000 },
+ 		async () => {
+ 			const rooted = spawn(process.execPath, [resolveChildFixture(), 'tree'], {
+ 				stdio: ['ignore', 'pipe', 'ignore'],
+diff --git a/tests/src/server/processes/Process.test.ts b/tests/src/server/processes/Process.test.ts
+index d78d91a..c4217a8 100644
+--- a/tests/src/server/processes/Process.test.ts
++++ b/tests/src/server/processes/Process.test.ts
+@@ -592,6 +592,7 @@ describe('Process', () => {
+ 			expect(aloneExit.drained).toBe(true)
+ 		} finally {
+ 			holds(() => process.kill(held, 'SIGKILL'))
++			await child.destroy()
+ 		}
+ 	})
+ 
+@@ -618,6 +619,7 @@ describe('Process', () => {
+ 				expect(holds(() => process.kill(held, 0))).toBe(false)
+ 			} finally {
+ 				holds(() => process.kill(held, 'SIGKILL'))
++				await child.destroy()
+ 			}
+ 		},
+ 	)
+@@ -648,6 +650,7 @@ describe('Process', () => {
+ 				expect(settlement).toBe('closed')
+ 			} finally {
+ 				holds(() => process.kill(held, 'SIGKILL'))
++				await child.destroy()
+ 			}
+ 		},
+ 	)
+@@ -901,6 +904,7 @@ describe('Process', () => {
+ 			expect((await child.exit).drained).toBe(false)
+ 		} finally {
+ 			holds(() => process.kill(held, 'SIGKILL'))
++			await child.destroy()
+ 			await destroyScratch(scratch)
+ 		}
+ 	})
+@@ -963,6 +967,7 @@ describe('Process', () => {
+ 			expect(Buffer.from(floodLive).subarray(-24).toString('utf8')).toBe(flooded.evidence)
+ 		} finally {
+ 			holds(() => process.kill(held, 'SIGKILL'))
++			await child.destroy()
+ 			await destroyScratch(scratch)
+ 		}
+ 	})
+@@ -1012,6 +1017,7 @@ describe('Process', () => {
+ 		} finally {
+ 			holds(() => process.kill(held, 'SIGKILL'))
+ 			holds(() => process.kill(controlHeld, 'SIGKILL'))
++			await child.destroy()
+ 			await control.destroy()
+ 		}
+ 	})
+@@ -1048,6 +1054,7 @@ describe('Process', () => {
+ 			expect(naturalExit).toEqual({ code: 0, signal: null, drained: true })
+ 		} finally {
+ 			holds(() => process.kill(held, 'SIGKILL'))
++			await child.destroy()
+ 		}
+ 	})
+ 
+diff --git a/tests/src/server/processes/Supervisor.test.ts b/tests/src/server/processes/Supervisor.test.ts
+index 96ef6e9..5410358 100644
+--- a/tests/src/server/processes/Supervisor.test.ts
++++ b/tests/src/server/processes/Supervisor.test.ts
+@@ -28,21 +28,25 @@ describe('Supervisor moments', () => {
+ 			},
+ 		)
+ 
+-		const exit = await engine.exit
+-		const beforeTeardown = moments.calls.map((call) => call[0])
+-		await engine.destroy()
+-		const order = moments.calls.map((call) => call[0])
+-
+-		// The face's read pipeline ends, then the frozen state arrives, and only a `destroy` releases
+-		// the face. A teardown that ran first would leave a consumer's own surface gone while the
+-		// terminal value it describes was still being delivered.
+-		expect(beforeTeardown).not.toContain('teardown')
+-		expect(order.indexOf('close')).toBeLessThan(order.indexOf('terminal'))
+-		expect(order.indexOf('terminal')).toBeLessThan(order.indexOf('teardown'))
+-		expect(order.filter((moment) => moment === 'terminal')).toEqual(['terminal'])
+-		expect(order.filter((moment) => moment === 'teardown')).toEqual(['teardown'])
+-		expect(exits.calls.map((call) => call[0])).toEqual([exit])
+-		expect(exit).toEqual({ code: 0, signal: null, drained: true })
++		try {
++			const exit = await engine.exit
++			const beforeTeardown = moments.calls.map((call) => call[0])
++			await engine.destroy()
++			const order = moments.calls.map((call) => call[0])
++
++			// The face's read pipeline ends, then the frozen state arrives, and only a `destroy` releases
++			// the face. A teardown that ran first would leave a consumer's own surface gone while the
++			// terminal value it describes was still being delivered.
++			expect(beforeTeardown).not.toContain('teardown')
++			expect(order.indexOf('close')).toBeLessThan(order.indexOf('terminal'))
++			expect(order.indexOf('terminal')).toBeLessThan(order.indexOf('teardown'))
++			expect(order.filter((moment) => moment === 'terminal')).toEqual(['terminal'])
++			expect(order.filter((moment) => moment === 'teardown')).toEqual(['teardown'])
++			expect(exits.calls.map((call) => call[0])).toEqual([exit])
++			expect(exit).toEqual({ code: 0, signal: null, drained: true })
++		} finally {
++			await engine.destroy()
++		}
+ 	})
+ 
+ 	// A paused stdout holds the child's own write, and therefore its exit. `relieve` is the moment
+@@ -68,28 +72,32 @@ describe('Supervisor moments', () => {
+ 				},
+ 			)
+ 
+-			// No consumer is attached, so the host stream stays paused and buffers: the face is holding
+-			// this child's backpressure for real.
+-			await waitForCondition(
+-				'the flood child fills the read end no consumer is draining',
+-				() => engine.stdout.readableLength > 0,
+-				{ budget: 10_000 },
+-			)
+-
+-			const termination = engine.stop()
+-			const relieved = moments.calls.map((call) => call[0]).includes('relieve')
+-			const settledAtRelease = engine.settled
+-			engine.stdout.resume()
+-			await termination
+-			await engine.exit
+-			await engine.destroy()
+-			const order = moments.calls.map((call) => call[0])
++			try {
++				// No consumer is attached, so the host stream stays paused and buffers: the face is holding
++				// this child's backpressure for real.
++				await waitForCondition(
++					'the flood child fills the read end no consumer is draining',
++					() => engine.stdout.readableLength > 0,
++					{ budget: 10_000 },
++				)
++
++				const termination = engine.stop()
++				const relieved = moments.calls.map((call) => call[0]).includes('relieve')
++				const settledAtRelease = engine.settled
++				engine.stdout.resume()
++				await termination
++				await engine.exit
++				await engine.destroy()
++				const order = moments.calls.map((call) => call[0])
+ 
+-			expect(relieved).toBe(true)
+-			expect(settledAtRelease).toBe(false)
+-			expect(engine.stopping).toBe(true)
+-			expect(order.filter((moment) => moment === 'relieve')).toEqual(['relieve'])
+-			expect(order.indexOf('relieve')).toBeLessThan(order.indexOf('terminal'))
++				expect(relieved).toBe(true)
++				expect(settledAtRelease).toBe(false)
++				expect(engine.stopping).toBe(true)
++				expect(order.filter((moment) => moment === 'relieve')).toEqual(['relieve'])
++				expect(order.indexOf('relieve')).toBeLessThan(order.indexOf('terminal'))
++			} finally {
++				await engine.destroy()
++			}
+ 		},
+ 	)
+ 
+@@ -117,15 +125,17 @@ describe('Supervisor moments', () => {
+ 			engine.stdout.on('data', (chunk: Buffer) => {
+ 				received.push(chunk.toString('utf8'))
+ 			})
+-			await waitForCondition(
+-				'the orphan root announces the descendant holding its read ends',
+-				() => received.join('').includes('\n'),
+-				{ budget: 10_000 },
+-			)
+-			const [line = ''] = received.join('').split(/\r\n|\n/u)
+-			const held = Number.parseInt(line.replace('grandchild:', ''), 10)
+ 
++			let held: number | undefined
+ 			try {
++				await waitForCondition(
++					'the orphan root announces the descendant holding its read ends',
++					() => received.join('').includes('\n'),
++					{ budget: 10_000 },
++				)
++				const [line = ''] = received.join('').split(/\r\n|\n/u)
++				held = Number.parseInt(line.replace('grandchild:', ''), 10)
++
+ 				await engine.ending
+ 				const settlement = await Promise.race([
+ 					engine.exit.then(() => 'settled'),
+@@ -140,7 +150,8 @@ describe('Supervisor moments', () => {
+ 				expect((await engine.exit).drained).toBe(false)
+ 				expect(moments.calls.map((call) => call[0])).not.toContain('fault')
+ 			} finally {
+-				holds(() => process.kill(held, 'SIGKILL'))
++				const pid = held
++				if (pid !== undefined) holds(() => process.kill(pid, 'SIGKILL'))
+ 				await engine.destroy()
+ 			}
+ 		},
+@@ -166,17 +177,21 @@ describe('Supervisor channel', () => {
+ 			},
+ 		)
+ 
+-		const accepted = await engine.deliver(Buffer.from('before\n', 'utf8'))
+-		const termination = engine.stop()
+-		const refused = await engine.deliver(Buffer.from('after\n', 'utf8'))
+-		await termination
+-		await engine.destroy()
+-
+-		// Teardown discards the channel, so a write accepted after a stop began would claim a
+-		// delivery the package is about to throw away.
+-		expect(accepted).toBe(true)
+-		expect(refused).toBe(false)
+-		expect(moments.calls.map((call) => call[0])).not.toContain('fault')
++		try {
++			const accepted = await engine.deliver(Buffer.from('before\n', 'utf8'))
++			const termination = engine.stop()
++			const refused = await engine.deliver(Buffer.from('after\n', 'utf8'))
++			await termination
++			await engine.destroy()
++
++			// Teardown discards the channel, so a write accepted after a stop began would claim a
++			// delivery the package is about to throw away.
++			expect(accepted).toBe(true)
++			expect(refused).toBe(false)
++			expect(moments.calls.map((call) => call[0])).not.toContain('fault')
++		} finally {
++			await engine.destroy()
++		}
+ 	})
+ 
+ 	it('shares one barrier across every close of the input channel', async () => {
+@@ -197,18 +212,22 @@ describe('Supervisor channel', () => {
+ 			},
+ 		)
+ 
+-		const first = engine.end()
+-		const second = engine.end()
+-		await first
+-		const refused = await engine.deliver(Buffer.from('after\n', 'utf8'))
+-		const exit = await engine.exit
+-		await engine.destroy()
+-
+-		// The child ends itself because its input ended, so the closure terminated nothing: no signal
+-		// was sent and the exit is the child's own.
+-		expect(first).toBe(second)
+-		expect(refused).toBe(false)
+-		expect(exit).toEqual({ code: 0, signal: null, drained: true })
+-		expect(moments.calls.map((call) => call[0])).not.toContain('fault')
++		try {
++			const first = engine.end()
++			const second = engine.end()
++			await first
++			const refused = await engine.deliver(Buffer.from('after\n', 'utf8'))
++			const exit = await engine.exit
++			await engine.destroy()
++
++			// The child ends itself because its input ended, so the closure terminated nothing: no signal
++			// was sent and the exit is the child's own.
++			expect(first).toBe(second)
++			expect(refused).toBe(false)
++			expect(exit).toEqual({ code: 0, signal: null, drained: true })
++			expect(moments.calls.map((call) => call[0])).not.toContain('fault')
++		} finally {
++			await engine.destroy()
++		}
+ 	})
+ })
