@@ -1,0 +1,155 @@
+{
+  "package": "@orkestrel/emitter",
+  "rows": [
+    {
+      "id": "emitter-obj-1",
+      "disposition": "applied",
+      "note": "README.md requirements line reads `- Node.js >= 22.12.0`, matching engines.node. engines untouched."
+    },
+    {
+      "id": "emitter-obj-2",
+      "disposition": "applied",
+      "note": "README.md requirements line reads `- ESM and CommonJS builds`. The CommonJS face is untouched."
+    },
+    {
+      "id": "emitter-obj-3",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts carries a `flagship fences` block: one executed transcription of the Manage-listeners fence and one presence guard over its claim lines."
+    },
+    {
+      "id": "emitter-obj-4",
+      "disposition": "applied",
+      "note": "tests/src/core/Emitter.test.ts uses createRecorder() for the dual listener/error handler; the hand-rolled calls array and the in-body function assignment are gone."
+    },
+    {
+      "id": "emitter-obj-5",
+      "disposition": "applied",
+      "note": "tests/setup.ts no longer imports vi or registers the afterEach mock-restore hook."
+    },
+    {
+      "id": "emitter-obj-6",
+      "disposition": "applied",
+      "note": "isBrowserVuePath deleted with tests/setup.test.ts, the setup project factory and its projects entry, the test:setup script, and its segment of the test chain."
+    },
+    {
+      "id": "emitter-obj-7",
+      "disposition": "applied",
+      "note": "tests/src/core/Emitter.test.ts passes tick.handler directly; the onceHandler delegate and the unused EmitterHandler type import are gone."
+    },
+    {
+      "id": "emitter-subj-1",
+      "disposition": "applied",
+      "note": "Every `AGENTS §N` and bare `§N` citation struck from the package's own prose; See-also bullets replaced in guides/emitter.md and guides/README.md."
+    },
+    {
+      "id": "emitter-subj-3",
+      "disposition": "applied",
+      "note": "README.md names onTick before registering it and passes the same reference to off."
+    },
+    {
+      "id": "emitter-subj-5",
+      "disposition": "applied",
+      "note": "The listener-error handler's first parameter reads `error` at guides/emitter.md:26, :34, and README.md:37."
+    },
+    {
+      "id": "emitter-subj-6",
+      "disposition": "applied",
+      "note": "via to through; `(no-op once destroyed)` to `(no-op after destroy())`; above to preceding, the :97 site through the emitter-subj-10 replacement text."
+    },
+    {
+      "id": "emitter-subj-8",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts names its constants instead of counting them, and names the `names no symbol internal that the barrel already exports` assertion instead of its position."
+    },
+    {
+      "id": "emitter-subj-9",
+      "disposition": "applied",
+      "note": "tests/src/core/factories.test.ts:8 reads `// this file asserts only that the factory hands back a usable emitter and honors `on` hooks.`"
+    },
+    {
+      "id": "emitter-subj-10",
+      "disposition": "applied",
+      "note": "The `scsr precursor` reference is gone from guides/emitter.md:5 and :97; the limit is stated on the package's own terms."
+    },
+    {
+      "id": "emitter-subj-11",
+      "disposition": "applied",
+      "note": "src/core/helpers.ts walks own keys only through Object.hasOwn; the @remarks records the exclusion; the failing-first test pins it. Its control comment was reworded in fix round 2 to close finding F1."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "applied",
+      "note": "Folded into emitter-obj-6, which deletes the helper and removes the setup axis with it. No second edit made."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "src/core/Emitter.ts holds the package's only class; its first members are #destroyed, #listeners, #wrappers, #error — no public readonly id data field."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/emitter/tests/src/core/helpers.test.ts",
+    "/home/user/fleet/emitter/README.md",
+    "/home/user/fleet/emitter/guides/README.md",
+    "/home/user/fleet/emitter/guides/emitter.md",
+    "/home/user/fleet/emitter/package.json",
+    "/home/user/fleet/emitter/src/core/helpers.ts",
+    "/home/user/fleet/emitter/tests/guides.test.ts",
+    "/home/user/fleet/emitter/tests/setup.test.ts",
+    "/home/user/fleet/emitter/tests/setup.ts",
+    "/home/user/fleet/emitter/tests/src/core/Emitter.test.ts",
+    "/home/user/fleet/emitter/tests/src/core/factories.test.ts",
+    "/home/user/fleet/emitter/vite.config.ts",
+    "/home/user/scaffold/tmp/units/conform/conform-emitter-report.md",
+    "/home/user/work/evidence/conform-emitter.diff",
+    "/home/user/work/evidence/conform-emitter.status"
+  ],
+  "gates": [
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2165ms on 36 files using 4 threads."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostic printed."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json && npm run check:src; check:src:core silent."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run build",
+      "exit": 0,
+      "excerpt": "dist/src/core/index.js 6.20 kB, dist/src/core/index.cjs 6.38 kB; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter test",
+      "exit": 0,
+      "excerpt": "src:core Tests 43 passed (43); policy Tests 111 passed (111); config Tests 46 passed (46); guides Tests 20 passed (20)"
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "extractKeys (@orkestrel/emitter)",
+      "change": "Returns own enumerable keys only; an inherited enumerable key is no longer returned. The name, signature, and barrel row are unchanged.",
+      "consumers": [],
+      "edit": "None. The `extractKeys` sweep over /home/user/fleet minus **/node_modules/** finds no sibling code import; every sibling hit is the vendored guides/emitter.md mirror."
+    }
+  ],
+  "patches": [
+    "guides/emitter.md mirror refresh (no text edit; a byte copy). Copy /home/user/fleet/emitter/guides/emitter.md at this tip over the vendored copy in the checkouts agent, brief, browser, console, database, form, interpret, lsp, mcp, pool, probe, process, program, qualifier, queue, rater, reason, relation, router, sea, server, table, template, terminal, websocket, worker, workflow, and workspace, each of which still carries the pre-change copy. Per .claude/rules/documentation.md § Parity, refresh a mirror rather than rewriting it. Schedule it with the publish wave."
+  ],
+  "deviations": [
+    "Fix round 2 closed objective finding F1 with the lane's exact prescription: /home/user/fleet/emitter/tests/src/core/helpers.test.ts:22 now reads `// The control: the inherited key is reachable, so a walk that included it would collect it.` No other tree change was made this round.",
+    "Objective referral R3 closed, and deviation 4 of the previous report with it. /home/user/work/evidence/conform-emitter.diff was regenerated with `git -C /home/user/fleet/emitter diff HEAD --output=/home/user/work/evidence/conform-emitter.diff`, a git diff invocation writing git's own bytes with no shell redirect, so the artifact is byte-exact rather than transcribed.",
+    "Objective referrals R1 and R2 carried to the Orchestrator unchanged, no tree change. R1 (an unexecuted Surface fence at guides/emitter.md:29-31) would widen emitter-obj-3, which the refuter scoped to the Manage-listeners fence. R2 is the mirror refresh, which rides the publish wave.",
+    "Objective referral R4 left for the landing, as the lane directs. `git add -N .` in fix round 1 moved the tests/setup.test.ts removal into the index, so status reads `D  tests/setup.test.ts`. No discarding git command ran to undo it, per the permission floor. Fix round 2 created no untracked file and ran no `git add -N`.",
+    "The objective lane's recorded observation on the onceHandler sweep population is closed. That sweep re-ran over the whole checkout minus node_modules/**, case-insensitive and unbounded, and reads empty; the control `tick.handler` hits in tests/src/core/Emitter.test.ts and tests/src/core/factories.test.ts prove the population reachable.",
+    "One stray file was created and removed inside this round. Probing whether `git diff --stat` accepts the same --output flag wrote /home/user/work/evidence/conform-emitter.diffstat.txt, which the brief's § Output does not name; `rm` removed it in the same round and `ls -la /home/user/work/evidence/` confirms only conform-emitter.diff and conform-emitter.status remain for this unit. No other unit's file was touched.",
+    "The session carried a standing instruction to prefer Bash for reads and edits. The dispatch's narrower shell discipline governed instead — Read/Grep/Glob for reads, Write/Edit for changes, Bash only for the named commands — because it is the unit's instruction and because a heredoc or sed -i here can raise a permission prompt that interrupts the user mid-round.",
+    "The whole-suite npm test reading came from this unit's own exec and stays an observation, not a criterion. The Orchestrator takes the deciding run after the unit exits."
+  ]
+}

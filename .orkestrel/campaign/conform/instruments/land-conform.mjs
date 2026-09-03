@@ -33,15 +33,19 @@ for (const arg of process.argv.slice(2)) {
 	if (red) { say(`${pkg} RED - not committed`); continue }
 	// Stage by path: every changed or untracked path outside .orkestrel/ and tmp/.
 	const status = execFileSync('git', ['-C', dir, 'status', '--short']).toString()
-	const paths = status.split('\n').filter(Boolean).map((l) => l.slice(3).trim()).map((p) => (p.includes(' -> ') ? p.split(' -> ')[1] : p)).filter((p) => !p.startsWith('.orkestrel/') && !p.startsWith('tmp/'))
+	const entries = status.split('\n').filter(Boolean).map((l) => ({ index: l[0], work: l[1], path: l.slice(3).trim() })).map((e) => (e.path.includes(' -> ') ? { ...e, path: e.path.split(' -> ')[1] } : e)).filter((e) => !e.path.startsWith('.orkestrel/') && !e.path.startsWith('tmp/'))
+	const paths = entries.map((e) => e.path)
 	if (paths.length === 0) { say(`${pkg} nothing to commit`); continue }
-	for (const p of paths) execFileSync('git', ['-C', dir, 'add', '-N', '--', p], { stdio: 'ignore' })
+	// Intent-to-add only the untracked paths; a deletion already staged (`D `) is in the index and `git add` on its
+	// path fails with "pathspec did not match", so it is left as it is and the commit carries it.
+	for (const e of entries) if (e.index === '?') execFileSync('git', ['-C', dir, 'add', '-N', '--', e.path], { stdio: 'ignore' })
+	const addable = entries.filter((e) => !(e.index === 'D' && e.work === ' ')).map((e) => e.path)
 	const diff = execFileSync('git', ['-C', dir, 'diff', 'HEAD', '--', ...paths]).toString()
 	writeFileSync(`${EVIDENCE}/conform-${pkg}.diff`, diff)
 	writeFileSync(`${EVIDENCE}/conform-${pkg}.status`, status)
 	copyFileSync(`${EVIDENCE}/conform-${pkg}.diff`, `${RETAIN}/conform-${pkg}.diff.txt`)
 	copyFileSync(`${EVIDENCE}/conform-${pkg}.status`, `${RETAIN}/conform-${pkg}.status.txt`)
-	execFileSync('git', ['-C', dir, 'add', '--', ...paths])
+	if (addable.length > 0) execFileSync('git', ['-C', dir, 'add', '--', ...addable])
 	execFileSync('git', ['-C', dir, '-c', 'user.name=Claude', '-c', 'user.email=noreply@anthropic.com', 'commit', '-q', '-F', msg])
 	let pushed = false
 	for (const delay of [0, 2, 4, 8, 16]) {

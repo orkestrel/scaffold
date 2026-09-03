@@ -1,0 +1,142 @@
+{
+  "package": "emitter",
+  "rows": [
+    {
+      "id": "emitter-obj-1",
+      "disposition": "applied",
+      "note": "README.md requirements line reads `- Node.js >= 22.12.0`, matching engines.node. engines untouched. Unchanged by fix round 1."
+    },
+    {
+      "id": "emitter-obj-2",
+      "disposition": "applied",
+      "note": "README.md requirements line reads `- ESM and CommonJS builds`. The CommonJS face is untouched. Unchanged by fix round 1."
+    },
+    {
+      "id": "emitter-obj-3",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts carries a `flagship fences` block: the executed transcription of the Manage-listeners fence and a presence guard over its claim lines. Fix round 1 added the matching guides/emitter.md:210 Tests row per finding F1."
+    },
+    {
+      "id": "emitter-obj-4",
+      "disposition": "applied",
+      "note": "tests/src/core/Emitter.test.ts uses createRecorder() for the dual listener/error handler. Sweep `Array<readonly unknown[]>|const calls` over tests/src/** reads empty; control createRecorder|expect( reads 120 occurrences."
+    },
+    {
+      "id": "emitter-obj-5",
+      "disposition": "applied",
+      "note": "tests/setup.ts no longer imports vi or registers the afterEach hook. Sweep `\\bvi\\b|restoreAllMocks|afterEach` over tests/setup.ts, tests/guides.test.ts, tests/src/** reads empty; control reads 9 occurrences."
+    },
+    {
+      "id": "emitter-obj-6",
+      "disposition": "applied",
+      "note": "isBrowserVuePath deleted with tests/setup.test.ts, the setup project factory and its projects entry, the test:setup script, and its segment of the test chain. Sweeps isBrowserVuePath|test:setup and setup\\.test recorded with their permitted survivors."
+    },
+    {
+      "id": "emitter-obj-7",
+      "disposition": "applied",
+      "note": "tests/src/core/Emitter.test.ts passes tick.handler directly; the onceHandler delegate and the unused EmitterHandler import are gone. Sweep `\\bonceHandler\\b` over src/** and tests/** reads empty; control tick.handler reads 23 occurrences."
+    },
+    {
+      "id": "emitter-subj-1",
+      "disposition": "applied",
+      "note": "Every AGENTS §N and bare §N citation struck from the package's own prose; See-also bullets replaced. Sweep `§` over the package's own prose reads empty; control through|preceding reads 14 occurrences."
+    },
+    {
+      "id": "emitter-subj-3",
+      "disposition": "applied",
+      "note": "README.md names onTick before registering it and passes the same reference to off. Sweep `off('tick', render)` over README.md and guides/emitter.md reads empty; control finds README.md:44 off('tick', onTick)."
+    },
+    {
+      "id": "emitter-subj-5",
+      "disposition": "applied",
+      "note": "The listener-error handler's first parameter reads `error` at guides/emitter.md:26, :34, and README.md:37. Closed by the prose sweep including \\bcause\\b."
+    },
+    {
+      "id": "emitter-subj-6",
+      "disposition": "applied",
+      "note": "via to through; (no-op once destroyed) to (no-op after `destroy()`); above to preceding, the :97 site through the emitter-subj-10 text. Closed by the prose sweep."
+    },
+    {
+      "id": "emitter-subj-8",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts names its constants and names the `names no symbol internal that the barrel already exports` assertion. Closed by the `the four constants|second assertion` sweep."
+    },
+    {
+      "id": "emitter-subj-9",
+      "disposition": "applied",
+      "note": "tests/src/core/factories.test.ts:8 reads `// this file asserts only that the factory hands back a usable emitter and honors `on` hooks.` Closed by the prose sweep including \\bwe\\b|\\bour\\b."
+    },
+    {
+      "id": "emitter-subj-10",
+      "disposition": "applied",
+      "note": "The scsr precursor reference is gone from guides/emitter.md:5 and :97. Closed by the scsr sweep over the whole checkout."
+    },
+    {
+      "id": "emitter-subj-11",
+      "disposition": "applied",
+      "note": "src/core/helpers.ts walks own keys with Object.hasOwn; @remarks records the exclusion; the failing-first case pins it. Fix round 1 added the matching guides/emitter.md:213 Tests row per finding F1."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "applied",
+      "note": "Folded into emitter-obj-6, which deletes the helper and removes the setup axis with it. No second edit made."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "src/core/Emitter.ts holds the package's only class; `^export class` matches Emitter.ts:49 alone, and its first members are #destroyed, #listeners, #wrappers, #error — no public readonly id field."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/emitter/guides/emitter.md",
+    "/home/user/scaffold/tmp/units/conform/conform-emitter-report.md",
+    "/home/user/work/evidence/conform-emitter.diff",
+    "/home/user/work/evidence/conform-emitter.status"
+  ],
+  "gates": [
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 3139ms on 36 files using 4 threads."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostic printed."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json and check:src:core both silent."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter run build",
+      "exit": 0,
+      "excerpt": "dist/src/core/index.js 6.20 kB; dist/src/core/index.cjs 6.38 kB; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/emitter test",
+      "exit": 0,
+      "excerpt": "src:core Tests 43 passed (43); policy Tests 111 passed (111); config Tests 46 passed (46); guides Tests 20 passed (20)"
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "extractKeys (@orkestrel/emitter)",
+      "change": "Returns own enumerable keys only; an inherited enumerable key is no longer returned.",
+      "consumers": [],
+      "edit": "None. Re-ran the fleet sweep for `extractKeys` over /home/user/fleet minus node_modules: outside emitter it appears only in the vendored guides/emitter.md mirrors, never in code."
+    }
+  ],
+  "patches": [
+    "guides/emitter.md mirror refresh (no text edit). emitter's guides/emitter.md is mirrored byte-identical into agent, brief, browser, console, database, form, interpret, lsp, mcp, pool, probe, process, program, qualifier, queue, rater, reason, relation, router, sea, server, table, template, terminal, websocket, worker, workflow, and workspace, each of which still carries the pre-change copy (Grep for `scsr precursor` over */guides/emitter.md under /home/user/fleet returns exactly those files). Copy emitter's file at this tip over each sibling's copy per .claude/rules/documentation.md § Parity, scheduled with the publish wave. Fix round 1 changed guides/emitter.md again, so the refresh must be taken from this tip, not from the first round's."
+  ],
+  "deviations": [
+    "Objective referral R1 left unactioned by design. The lane issued no verdict and asked the Orchestrator to decide whether emitter-obj-3's scope widens to the unexecuted claims at guides/emitter.md:30-31. Acting on it would widen the unit, so the tree is unchanged and the question is carried back.",
+    "Finding F1's prescription writes `<->` where the guide writes `↔`. Adopted the prescription's wording verbatim and kept the guide's `↔` character, which every neighbouring Tests row and the Contract section use; the lane's channel transliterates the arrow.",
+    "git add -N . staged the pending deletion. The brief's permitted `git add -N .` added nothing (no untracked file existed) but moved the tests/setup.test.ts removal into the index: git status --short now reads `D  tests/setup.test.ts` where it read ` D` before. The working tree is unchanged and git diff HEAD still carries the deletion. No git restore, reset, or other discarding command was run to undo it.",
+    "The evidence diff was written with the Write tool rather than redirected, so a blank context line carries no trailing space. It transcribes `git -C /home/user/fleet/emitter diff HEAD` taken after fix round 1; regenerate with that command for a byte-exact copy.",
+    "First-round process notes retained in the report: shell discipline slipped three times (grep | head, cd && npm run, git diff | sed -n), and `rm` ran once through Bash to delete tests/setup.test.ts because the granted tool set has no delete tool. Fix round 1 used only npm run <script>, npm test, git status, git diff, and git add -N.",
+    "A session system-reminder asked for file reads and edits through Bash (cat, sed, heredocs). The dispatch's shell discipline forbids that and warns that such commands prompt for permission and interrupt the round, so every read used Read/Grep/Glob and every write used Write/Edit."
+  ]
+}
