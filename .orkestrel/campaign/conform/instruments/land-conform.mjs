@@ -59,7 +59,11 @@ for (const arg of process.argv.slice(2)) {
 		}
 		writeFileSync(`${RETAIN}/conform-${pkg}.audit.txt`, result.out)
 		say(`${pkg} scaffold audit --offline exit=${result.status} ${result.clean ? 'clean' : 'FINDINGS'}`)
-		if (!result.clean) { say(result.out.slice(-2000)); red = true }
+		// The canon checkout is the source the audit compares a target against, never a target: its full AGENTS.md
+		// and CLAUDE.md read as stale against the pointer templates and its .codex and .cursor files as foreign
+		// (scaffold, 22:12 UTC). ALLOW_CANON_AUDIT=<pkg> records that reading instead of reddening the landing.
+		if (!result.clean && process.env.ALLOW_CANON_AUDIT === pkg) { say(`${pkg} audit reading recorded, not a gate for the canon checkout`) }
+		else if (!result.clean) { say(result.out.slice(-2000)); red = true }
 	}
 	if (red) { say(`${pkg} RED - not committed`); continue }
 	// Stage by path: every changed or untracked path outside .orkestrel/ and tmp/.

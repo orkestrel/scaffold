@@ -1,3 +1,4 @@
+setup: The target at . carries test setup modules that no proof covers: tests/setup.ts, tests/setupServer.ts. Add tests/setup.test.ts, tests/setupServer.test.ts, each covering the module of the same name. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.
 ┌───────────────────────────────────────────────────────────────────────┬───────────────┬─────────┐
 │ path                                                                  │ group         │ drift   │
 ├───────────────────────────────────────────────────────────────────────┼───────────────┼─────────┤
@@ -103,4 +104,3 @@
 │ .cursor/rules/orchestration.mdc                                       │ orchestration │ foreign │
 └───────────────────────────────────────────────────────────────────────┴───────────────┴─────────┘
 2 of 42 planned paths drifted from the plan. Audit compared bytes at 27, existence at 4, and nothing at 11. The plan does not own 98 further paths beneath its groups.
-setup: The target at . carries test setup modules that no proof covers: tests/setup.ts, tests/setupServer.ts. Add tests/setup.test.ts, tests/setupServer.test.ts, each covering the module of the same name. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.
