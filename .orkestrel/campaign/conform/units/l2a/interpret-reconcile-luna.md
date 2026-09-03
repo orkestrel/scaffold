@@ -1,0 +1,1302 @@
+## Question
+
+Map every `CONFIRMED` refuter ruling against the four reconciliation rules and sweep fleet consumers of each breaking identifier.
+
+## Evidence
+
+### `interpret-obj-1`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-obj-2`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-obj-3`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-obj-4`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-obj-5`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-obj-6`
+
+- `breaking`: `false`
+- Fold candidate: `interpret-subj-1` — “Same carrier as interpret-subj-1 for README.md:3, :24-26, and types.ts:5.”
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-obj-7`
+
+- `breaking`: `false`
+- Fold candidate: `interpret-subj-10` — “Same defect and same carrier as interpret-obj-7.”
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-subj-1`
+
+- `breaking`: `false`
+- Fold candidate: `interpret-obj-6` — “Apply interpret-obj-6's repair once.”
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-subj-3`
+
+- `breaking`: `true`
+- Fold candidate: `none`
+- Off-limits repair: `/home/user/fleet/brief/package.json` — “Then, in the layer-ordered wave, re-pin @orkestrel/brief.”
+- Consumer-only repair: `none`
+- Breaking identifier: `complete`
+- Source consumers:
+  - `/home/user/fleet/brief/src/core/constants.ts:70`
+  - `/home/user/fleet/brief/tests/setup.ts:93`
+  - `/home/user/fleet/brief/tests/setup.ts:170`
+  - `/home/user/fleet/brief/tests/setup.test.ts:109`
+  - `/home/user/fleet/brief/tests/setup.test.ts:144`
+- Mirror hits:
+  - `/home/user/fleet/brief/guides/interpret.md:35`
+  - `/home/user/fleet/brief/guides/interpret.md:56`
+  - `/home/user/fleet/brief/guides/interpret.md:89`
+  - `/home/user/fleet/brief/guides/interpret.md:90`
+  - `/home/user/fleet/brief/guides/interpret.md:93`
+  - `/home/user/fleet/brief/guides/interpret.md:549`
+  - `/home/user/fleet/brief/guides/interpret.md:582`
+  - `/home/user/fleet/brief/guides/interpret.md:622`
+  - `/home/user/fleet/brief/guides/interpret.md:824`
+  - `/home/user/fleet/brief/guides/interpret.md:842`
+  - `/home/user/fleet/brief/guides/interpret.md:860`
+- Other word-boundary hits:
+  - `/home/user/fleet/brief/src/core/types.ts:352`
+  - `/home/user/fleet/brief/src/core/types.ts:361`
+  - `/home/user/fleet/brief/src/core/BriefCompiler.ts:440`
+  - `/home/user/fleet/brief/src/core/BriefCompiler.ts:455`
+  - `/home/user/fleet/brief/tests/src/core/integration.test.ts:46`
+  - `/home/user/fleet/brief/tests/src/core/shapers.test.ts:128`
+  - `/home/user/fleet/brief/tests/src/core/BriefCompiler.test.ts:198`
+  - `/home/user/fleet/brief/tests/src/core/BriefCompiler.test.ts:217`
+  - `/home/user/fleet/brief/tests/src/core/BriefCompiler.test.ts:833`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/brief/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/agent/src/core/types.ts:152`
+  - `/home/user/fleet/abort/src/core/Abort.ts:20`
+  - `/home/user/fleet/abort/src/core/types.ts:20`
+  - `/home/user/fleet/browser/src/core/types.ts:832`
+  - `/home/user/fleet/browser/src/core/types.ts:837`
+  - `/home/user/fleet/browser/src/core/parsers.ts:439`
+  - `/home/user/fleet/browser/src/core/BrowserHARManager.ts:187`
+  - `/home/user/fleet/browser/src/core/BrowserHARManager.ts:215`
+  - `/home/user/fleet/browser/src/core/BrowserDownload.ts:80`
+  - `/home/user/fleet/browser/src/core/BrowserDownload.ts:81`
+  - `/home/user/fleet/browser/src/core/BrowserDownload.ts:82`
+  - `/home/user/fleet/browser/src/core/BrowserNavigationManager.ts:21`
+  - `/home/user/fleet/console/src/core/types.ts:544`
+  - `/home/user/fleet/console/src/core/helpers.ts:712`
+  - `/home/user/fleet/console/src/core/constants.ts:248`
+  - `/home/user/fleet/contract/src/core/helpers.ts:472`
+  - `/home/user/fleet/contract/src/core/helpers.ts:885`
+  - `/home/user/fleet/contract/src/core/helpers.ts:1632`
+  - `/home/user/fleet/contract/src/core/helpers.ts:2168`
+  - `/home/user/fleet/contract/src/core/combinators.ts:51`
+  - `/home/user/fleet/contract/src/core/combinators.ts:208`
+  - `/home/user/fleet/contract/src/core/SchemaCloner.ts:119`
+  - `/home/user/fleet/contract/src/core/SchemaCloner.ts:122`
+  - `/home/user/fleet/contract/src/core/ShapeCloner.ts:157`
+  - `/home/user/fleet/contract/src/core/ShapeCloner.ts:160`
+  - `/home/user/fleet/contract/src/core/constants.ts:124`
+  - `/home/user/fleet/database/src/server/drivers/SQLiteDriver.ts:801`
+  - `/home/user/fleet/database/src/server/drivers/SQLiteDriver.ts:802`
+  - `/home/user/fleet/database/src/server/drivers/JSONDriver.ts:227`
+  - `/home/user/fleet/database/src/server/compilers.ts:456`
+  - `/home/user/fleet/database/src/core/helpers.ts:1038`
+  - `/home/user/fleet/database/src/core/helpers.ts:1864`
+  - `/home/user/fleet/database/src/core/validators.ts:26`
+  - `/home/user/fleet/database/src/core/validators.ts:58`
+  - `/home/user/fleet/database/src/core/validators.ts:101`
+  - `/home/user/fleet/database/src/core/validators.ts:121`
+  - `/home/user/fleet/database/src/core/validators.ts:190`
+  - `/home/user/fleet/database/src/core/validators.ts:217`
+  - `/home/user/fleet/database/src/core/validators.ts:240`
+  - `/home/user/fleet/database/tests/src/core/Database.test.ts:287`
+  - `/home/user/fleet/database/tests/setupServer.ts:54`
+  - `/home/user/fleet/database/tests/setupServer.ts:108`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/database/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/emitter/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/form/tests/src/core/parsers.test.ts:336`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/form/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/guide/src/core/helpers.ts:29`
+  - `/home/user/fleet/guide/src/core/helpers.ts:351`
+  - `/home/user/fleet/guide/src/core/helpers.ts:384`
+  - `/home/user/fleet/guide/src/core/types.ts:174`
+  - `/home/user/fleet/guide/src/core/sources/Source.ts:155`
+  - `/home/user/fleet/guide/tests/src/core/helpers.test.ts:98`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/guide/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/html/src/core/validators.ts:95`
+  - `/home/user/fleet/html/src/core/helpers.ts:446`
+  - `/home/user/fleet/html/src/core/helpers.ts:652`
+  - `/home/user/fleet/html/src/core/HTML.ts:167`
+  - `/home/user/fleet/html/src/core/types.ts:241`
+  - `/home/user/fleet/html/tests/setup.ts:748`
+  - `/home/user/fleet/html/tests/src/core/helpers.test.ts:250`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/html/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/indexeddb/src/browser/IndexedDBDatabase.ts:178`
+  - `/home/user/fleet/indexeddb/src/browser/helpers.ts:84`
+  - `/home/user/fleet/indexeddb/src/browser/IndexedDBTransaction.ts:49`
+  - `/home/user/fleet/indexeddb/tests/setupBrowser.ts:42`
+  - `/home/user/fleet/indexeddb/tests/src/browser/IndexedDBTransaction.test.ts:146`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/indexeddb/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/lsp/src/server/types.ts:10`
+  - `/home/user/fleet/lsp/src/core/types.ts:54`
+  - `/home/user/fleet/lsp/src/core/types.ts:83`
+  - `/home/user/fleet/lsp/src/core/types.ts:135`
+  - `/home/user/fleet/lsp/src/core/parsers.ts:13`
+  - `/home/user/fleet/lsp/src/core/parsers.ts:24`
+  - `/home/user/fleet/lsp/src/core/constants.ts:95`
+  - `/home/user/fleet/lsp/tests/setupServer.ts:113`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/lsp/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/markdown/src/core/helpers.ts:616`
+  - `/home/user/fleet/markdown/src/core/helpers.ts:917`
+  - `/home/user/fleet/markdown/src/core/helpers.ts:984`
+  - `/home/user/fleet/markdown/src/core/helpers.ts:2099`
+  - `/home/user/fleet/markdown/tests/src/core/helpers.test.ts:607`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/markdown/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/mcp/src/server/types.ts:442`
+  - `/home/user/fleet/mcp/src/server/types.ts:445`
+  - `/home/user/fleet/mcp/src/server/types.ts:486`
+  - `/home/user/fleet/mcp/src/server/types.ts:493`
+  - `/home/user/fleet/mcp/src/server/transports/StdioServerTransport.ts:24`
+  - `/home/user/fleet/mcp/src/server/transports/StdioServerTransport.ts:134`
+  - `/home/user/fleet/mcp/src/server/helpers.ts:231`
+  - `/home/user/fleet/mcp/src/server/helpers.ts:257`
+  - `/home/user/fleet/mcp/src/server/helpers.ts:279`
+  - `/home/user/fleet/mcp/src/server/helpers.ts:293`
+  - `/home/user/fleet/mcp/src/server/transports/StdioClientTransport.ts:216`
+  - `/home/user/fleet/mcp/src/core/types.ts:150`
+  - `/home/user/fleet/mcp/src/core/types.ts:163`
+  - `/home/user/fleet/mcp/src/core/types.ts:457`
+  - `/home/user/fleet/mcp/src/core/types.ts:479`
+  - `/home/user/fleet/mcp/src/core/types.ts:480`
+  - `/home/user/fleet/mcp/src/core/types.ts:850`
+  - `/home/user/fleet/mcp/src/core/types.ts:957`
+  - `/home/user/fleet/mcp/src/core/types.ts:960`
+  - `/home/user/fleet/mcp/src/core/types.ts:965`
+  - `/home/user/fleet/mcp/src/core/types.ts:1277`
+  - `/home/user/fleet/mcp/src/core/types.ts:1279`
+  - `/home/user/fleet/mcp/src/core/types.ts:1285`
+  - `/home/user/fleet/mcp/src/core/types.ts:1288`
+  - `/home/user/fleet/mcp/src/core/types.ts:1294`
+  - `/home/user/fleet/mcp/src/core/types.ts:1296`
+  - `/home/user/fleet/mcp/src/core/types.ts:1302`
+  - `/home/user/fleet/mcp/src/core/types.ts:1304`
+  - `/home/user/fleet/mcp/src/core/types.ts:1310`
+  - `/home/user/fleet/mcp/src/core/types.ts:1312`
+  - `/home/user/fleet/mcp/src/core/types.ts:1395`
+  - `/home/user/fleet/mcp/src/core/types.ts:1419`
+  - `/home/user/fleet/mcp/src/core/types.ts:1433`
+  - `/home/user/fleet/mcp/src/core/types.ts:1447`
+  - `/home/user/fleet/mcp/src/core/types.ts:1449`
+  - `/home/user/fleet/mcp/src/core/types.ts:1470`
+  - `/home/user/fleet/mcp/src/core/types.ts:1487`
+  - `/home/user/fleet/mcp/src/core/types.ts:1493`
+  - `/home/user/fleet/mcp/src/core/types.ts:1548`
+  - `/home/user/fleet/mcp/src/core/types.ts:1607`
+  - `/home/user/fleet/mcp/src/core/types.ts:2026`
+  - `/home/user/fleet/mcp/src/core/types.ts:2058`
+  - `/home/user/fleet/mcp/src/core/types.ts:2098`
+  - `/home/user/fleet/mcp/src/core/types.ts:2662`
+  - `/home/user/fleet/mcp/src/core/types.ts:2676`
+  - `/home/user/fleet/mcp/src/core/types.ts:2767`
+  - `/home/user/fleet/mcp/src/core/types.ts:2845`
+  - `/home/user/fleet/mcp/src/core/types.ts:3005`
+  - `/home/user/fleet/mcp/src/core/validators.ts:484`
+  - `/home/user/fleet/mcp/src/core/validators.ts:866`
+  - `/home/user/fleet/mcp/src/core/validators.ts:877`
+  - `/home/user/fleet/mcp/src/core/validators.ts:901`
+  - `/home/user/fleet/mcp/src/core/validators.ts:951`
+  - `/home/user/fleet/mcp/src/core/validators.ts:954`
+  - `/home/user/fleet/mcp/src/core/validators.ts:958`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1030`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1058`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1067`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1070`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1077`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1223`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1237`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1247`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1447`
+  - `/home/user/fleet/mcp/src/core/validators.ts:1451`
+  - `/home/user/fleet/mcp/src/core/validators.ts:2202`
+  - `/home/user/fleet/mcp/src/core/parsers.ts:65`
+  - `/home/user/fleet/mcp/src/core/MCPServer.ts:137`
+  - `/home/user/fleet/mcp/src/core/MCPServer.ts:354`
+  - `/home/user/fleet/mcp/src/core/MCPServer.ts:730`
+  - `/home/user/fleet/mcp/src/core/MCPServer.ts:766`
+  - `/home/user/fleet/mcp/src/core/MCPServer.ts:1510`
+  - `/home/user/fleet/mcp/src/core/MCPServer.ts:1540`
+  - `/home/user/fleet/mcp/src/core/MCPStreamController.ts:104`
+  - `/home/user/fleet/mcp/src/core/MCPStreamController.ts:118`
+  - `/home/user/fleet/mcp/src/core/MCPStreamController.ts:181`
+  - `/home/user/fleet/mcp/src/core/MCPLegacyClientTransport.ts:49`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:542`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:599`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:600`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:639`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:785`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:805`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:814`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:823`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:834`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:837`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:845`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:849`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:857`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:883`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:892`
+  - `/home/user/fleet/mcp/src/core/helpers.ts:1076`
+  - `/home/user/fleet/mcp/src/core/factories.ts:56`
+  - `/home/user/fleet/mcp/src/core/factories.ts:143`
+  - `/home/user/fleet/mcp/src/core/MCPTaskClient.ts:61`
+  - `/home/user/fleet/mcp/src/core/MCPClient.ts:83`
+  - `/home/user/fleet/mcp/src/core/MCPClient.ts:126`
+  - `/home/user/fleet/mcp/src/core/MCPClient.ts:357`
+  - `/home/user/fleet/mcp/src/core/MCPClient.ts:798`
+  - `/home/user/fleet/mcp/tests/src/server/transports/WebSocketClientTransport.test.ts:111`
+  - `/home/user/fleet/mcp/tests/src/server/transports/WebSocketClientTransport.test.ts:124`
+  - `/home/user/fleet/mcp/tests/src/server/transports/WebSocketClientTransport.test.ts:157`
+  - `/home/user/fleet/mcp/tests/src/server/transports/WebSocketClientTransport.test.ts:242`
+  - `/home/user/fleet/mcp/tests/src/server/transports/WebSocketClientTransport.test.ts:298`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioServerTransport.test.ts:13`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioServerTransport.test.ts:40`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioServerTransport.test.ts:56`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioServerTransport.test.ts:69`
+  - `/home/user/fleet/mcp/tests/src/server/middlewares.test.ts:338`
+  - `/home/user/fleet/mcp/tests/src/server/middlewares.test.ts:882`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:132`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:133`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:153`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:169`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:572`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:613`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:631`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:640`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:660`
+  - `/home/user/fleet/mcp/tests/src/server/integration.test.ts:705`
+  - `/home/user/fleet/mcp/tests/src/server/factories.test.ts:190`
+  - `/home/user/fleet/mcp/tests/src/server/factories.test.ts:529`
+  - `/home/user/fleet/mcp/tests/src/server/factories.test.ts:583`
+  - `/home/user/fleet/mcp/tests/src/server/factories.test.ts:941`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioClientTransport.test.ts:70`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioClientTransport.test.ts:471`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioClientTransport.test.ts:503`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioClientTransport.test.ts:685`
+  - `/home/user/fleet/mcp/tests/src/server/transports/StdioClientTransport.test.ts:1481`
+  - `/home/user/fleet/mcp/tests/src/server/handlers.test.ts:137`
+  - `/home/user/fleet/mcp/tests/src/server/handlers.test.ts:173`
+  - `/home/user/fleet/mcp/tests/src/server/handlers.test.ts:500`
+  - `/home/user/fleet/mcp/tests/src/server/handlers.test.ts:635`
+  - `/home/user/fleet/mcp/tests/src/server/handlers.test.ts:668`
+  - `/home/user/fleet/mcp/tests/src/server/handlers.test.ts:760`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:272`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:298`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:309`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:325`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:500`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:531`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:686`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:729`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:732`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:738`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:748`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:749`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1240`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1581`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1594`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1596`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1600`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1610`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1619`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1621`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1660`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:1962`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2013`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2022`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2044`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2054`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2061`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2148`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2435`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2437`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2439`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2441`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2446`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2449`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2450`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2452`
+  - `/home/user/fleet/mcp/tests/src/core/validators.test.ts:2538`
+  - `/home/user/fleet/mcp/tests/src/core/MCPTaskClient.test.ts:199`
+  - `/home/user/fleet/mcp/tests/src/core/MCPTaskClient.test.ts:207`
+  - `/home/user/fleet/mcp/tests/src/core/MCPTaskClient.test.ts:235`
+  - `/home/user/fleet/mcp/tests/src/core/MCPTaskClient.test.ts:244`
+  - `/home/user/fleet/mcp/tests/src/core/MCPTaskClient.test.ts:275`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:450`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:467`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:479`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:491`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:505`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:510`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:693`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:707`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:728`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:809`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:863`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:957`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1411`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1507`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1566`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1571`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1572`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1582`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1608`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1612`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1618`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1622`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1627`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1631`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:1635`
+  - `/home/user/fleet/mcp/tests/src/core/helpers.test.ts:2100`
+  - `/home/user/fleet/mcp/tests/src/core/parsers.test.ts:25`
+  - `/home/user/fleet/mcp/tests/src/core/parsers.test.ts:225`
+  - `/home/user/fleet/mcp/tests/src/core/parsers.test.ts:363`
+  - `/home/user/fleet/mcp/tests/src/core/parsers.test.ts:491`
+  - `/home/user/fleet/mcp/tests/src/core/parsers.test.ts:499`
+  - `/home/user/fleet/mcp/tests/src/core/factories.test.ts:58`
+  - `/home/user/fleet/mcp/tests/src/core/transports/HTTPClientTransport.test.ts:190`
+  - `/home/user/fleet/mcp/tests/src/core/transports/HTTPClientTransport.test.ts:234`
+  - `/home/user/fleet/mcp/tests/src/core/transports/HTTPClientTransport.test.ts:252`
+  - `/home/user/fleet/mcp/tests/src/core/transports/HTTPClientTransport.test.ts:261`
+  - `/home/user/fleet/mcp/tests/src/core/transports/HTTPClientTransport.test.ts:281`
+  - `/home/user/fleet/mcp/tests/src/core/transports/HTTPClientTransport.test.ts:323`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacyClientTransport.test.ts:255`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacyClientTransport.test.ts:307`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacyClientTransport.test.ts:372`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacyClientTransport.test.ts:424`
+  - `/home/user/fleet/mcp/tests/src/core/MCPStreamController.test.ts:249`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacy.test.ts:280`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacy.test.ts:449`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacy.test.ts:462`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacy.test.ts:464`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacy.test.ts:502`
+  - `/home/user/fleet/mcp/tests/src/core/MCPLegacy.test.ts:517`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:202`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:225`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:539`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:750`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:914`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:932`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:958`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:985`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1037`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1069`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1073`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1122`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1200`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1220`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1241`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1321`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1351`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1395`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1437`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1466`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1493`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1510`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1563`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1596`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1929`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:1979`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2264`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2299`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2343`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2356`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2378`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2396`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2413`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2426`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2443`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2459`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2578`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:2695`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:3089`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:3107`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:3190`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:3198`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:3615`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4175`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4459`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4511`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4632`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4664`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4778`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4779`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4843`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:4895`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5111`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5404`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5471`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5562`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5571`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5574`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5594`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5622`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5629`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5630`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5631`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5736`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5761`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5782`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5800`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5890`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5924`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5947`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:5995`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6011`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6079`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6157`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6613`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6622`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6665`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6820`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6968`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:6976`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7023`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7161`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7171`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7182`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7194`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7206`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7209`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7227`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7298`
+  - `/home/user/fleet/mcp/tests/src/core/MCPServer.test.ts:7299`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:310`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:669`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:956`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1234`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1294`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1339`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1383`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1386`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1391`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1402`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1467`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1468`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1469`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:1575`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2749`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2759`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2770`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2779`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2786`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2795`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2804`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2813`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2821`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2827`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2834`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2961`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2974`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:2985`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3030`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3033`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3081`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3171`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3174`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3310`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3312`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3414`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3472`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3552`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3626`
+  - `/home/user/fleet/mcp/tests/src/core/MCPClient.test.ts:3704`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:600`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:605`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:610`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:834`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:835`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:836`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:838`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:839`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:840`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:1474`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:1527`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:1534`
+  - `/home/user/fleet/mcp/tests/setupConformance.ts:1571`
+  - `/home/user/fleet/mcp/tests/integration.test.ts:251`
+  - `/home/user/fleet/mcp/tests/integration.test.ts:291`
+  - `/home/user/fleet/mcp/tests/integration.test.ts:353`
+  - `/home/user/fleet/mcp/tests/integration.test.ts:354`
+  - `/home/user/fleet/mcp/tests/mirrors/ext-tasks-2026-07-28-schema.json:50`
+  - `/home/user/fleet/mcp/tests/mirrors/ext-tasks-2026-07-28-schema.json:828`
+  - `/home/user/fleet/mcp/tests/mirrors/ext-tasks-2026-07-28-schema.json:1599`
+  - `/home/user/fleet/mcp/tests/mirrors/ext-tasks-2026-07-28-schema.json:2571`
+  - `/home/user/fleet/mcp/tests/setup.test.ts:623`
+  - `/home/user/fleet/mcp/tests/setupServer.test.ts:203`
+  - `/home/user/fleet/mcp/tests/setupConformance.test.ts:479`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/mcp/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/mcp/tests/fixtures/browserServer.ts:206`
+  - `/home/user/fleet/mcp/tests/conformance.test.ts:66`
+  - `/home/user/fleet/mcp/tests/conformance.test.ts:161`
+  - `/home/user/fleet/mcp/tests/setup.ts:470`
+  - `/home/user/fleet/mcp/tests/setup.ts:491`
+  - `/home/user/fleet/mcp/tests/setup.ts:1444`
+  - `/home/user/fleet/ndjson/src/core/NDJSONParser.ts:6`
+  - `/home/user/fleet/ndjson/src/core/NDJSONParser.ts:11`
+  - `/home/user/fleet/ndjson/src/core/NDJSONParser.ts:13`
+  - `/home/user/fleet/ndjson/src/core/factories.ts:6`
+  - `/home/user/fleet/ndjson/src/core/types.ts:3`
+  - `/home/user/fleet/ndjson/src/core/types.ts:13`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:13`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:14`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:20`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:45`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:48`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:65`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:158`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:205`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:263`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:402`
+  - `/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:426`
+  - `/home/user/fleet/ndjson/tests/src/core/factories.test.ts:10`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/ndjson/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/ollama/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/process/src/server/processes/Supervisor.ts:169`
+  - `/home/user/fleet/process/src/server/processes/Supervisor.ts:359`
+  - `/home/user/fleet/process/src/server/processes/Supervisor.ts:377`
+  - `/home/user/fleet/process/src/core/types.ts:56`
+  - `/home/user/fleet/process/src/core/types.ts:590`
+  - `/home/user/fleet/process/src/core/errors.ts:122`
+  - `/home/user/fleet/process/tests/src/server/processes/Process.test.ts:168`
+  - `/home/user/fleet/process/tests/src/server/processes/Process.test.ts:1306`
+  - `/home/user/fleet/process/tests/guides.test.ts:301`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/process/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/program/src/core/types.ts:148`
+  - `/home/user/fleet/program/src/core/validators.ts:277`
+  - `/home/user/fleet/program/src/core/helpers.ts:815`
+  - `/home/user/fleet/program/src/core/helpers.ts:838`
+  - `/home/user/fleet/program/src/core/helpers.ts:841`
+  - `/home/user/fleet/program/src/core/helpers.ts:864`
+  - `/home/user/fleet/program/tests/src/core/helpers.test.ts:846`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/program/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/probe/src/server/ProbeServer.ts:224`
+  - `/home/user/fleet/probe/src/server/ProbeServer.ts:228`
+  - `/home/user/fleet/probe/src/server/stages/LintStage.ts:251`
+  - `/home/user/fleet/probe/src/core/helpers.ts:180`
+  - `/home/user/fleet/probe/src/core/validators.ts:237`
+  - `/home/user/fleet/probe/tests/src/server/ProbeServer.test.ts:48`
+  - `/home/user/fleet/probe/tests/src/server/ProbeServer.test.ts:66`
+  - `/home/user/fleet/probe/tests/src/server/helpers.test.ts:198`
+  - `/home/user/fleet/probe/tests/src/server/helpers.test.ts:209`
+  - `/home/user/fleet/probe/tests/src/server/helpers.test.ts:210`
+  - `/home/user/fleet/probe/tests/src/server/helpers.test.ts:211`
+  - `/home/user/fleet/probe/tests/src/bin/main.test.ts:814`
+  - `/home/user/fleet/probe/tests/src/bin/main.test.ts:815`
+  - `/home/user/fleet/probe/tests/src/bin/main.test.ts:873`
+  - `/home/user/fleet/probe/tests/src/bin/main.test.ts:874`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/probe/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/qualifier/src/core/types.ts:100`
+  - `/home/user/fleet/qualifier/src/core/validators.ts:139`
+  - `/home/user/fleet/qualifier/src/core/validators.ts:162`
+  - `/home/user/fleet/qualifier/tests/src/core/validators.test.ts:534`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/qualifier/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/reason/src/core/validators.ts:1186`
+  - `/home/user/fleet/reason/tests/src/core/validators.test.ts:1228`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/reason/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/router/src/server/helpers.ts:33`
+  - `/home/user/fleet/router/src/server/helpers.ts:74`
+  - `/home/user/fleet/router/src/core/constants.ts:37`
+  - `/home/user/fleet/router/tests/src/server/helpers.test.ts:186`
+  - `/home/user/fleet/router/tests/src/server/helpers.test.ts:196`
+  - `/home/user/fleet/router/tests/src/server/helpers.test.ts:212`
+  - `/home/user/fleet/router/tests/src/server/helpers.test.ts:380`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/router/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/sea/src/server/types.ts:126`
+  - `/home/user/fleet/sea/src/server/types.ts:324`
+  - `/home/user/fleet/sea/src/server/seals/SEA.ts:121`
+  - `/home/user/fleet/sea/src/server/helpers.ts:967`
+  - `/home/user/fleet/sea/tests/integration.test.ts:40`
+  - `/home/user/fleet/sea/tests/integration.test.ts:41`
+  - `/home/user/fleet/sea/tests/integration.test.ts:60`
+  - `/home/user/fleet/sea/tests/integration.test.ts:199`
+  - `/home/user/fleet/sea/tests/integration.test.ts:217`
+  - `/home/user/fleet/sea/tests/setupServer.test.ts:88`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/sea/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/server/tests/src/server/errors.test.ts:72`
+  - `/home/user/fleet/server/tests/setupServer.test.ts:30`
+  - `/home/user/fleet/server/tests/setupServer.test.ts:44`
+  - `/home/user/fleet/server/tests/setupServer.test.ts:46`
+  - `/home/user/fleet/server/tests/setupServer.test.ts:47`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/server/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/sse/src/core/SSEParser.ts:7`
+  - `/home/user/fleet/sse/src/core/SSEParser.ts:166`
+  - `/home/user/fleet/sse/src/core/SSEParser.ts:195`
+  - `/home/user/fleet/sse/src/core/types.ts:56`
+  - `/home/user/fleet/sse/src/core/factories.ts:6`
+  - `/home/user/fleet/sse/tests/src/core/SSEParser.test.ts:205`
+  - `/home/user/fleet/sse/tests/src/core/SSEParser.test.ts:221`
+  - `/home/user/fleet/sse/tests/src/core/SSEParser.test.ts:323`
+  - `/home/user/fleet/sse/tests/src/core/SSEParser.test.ts:370`
+  - `/home/user/fleet/sse/tests/src/core/SSEParser.test.ts:550`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/sse/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/table/tests/src/core/helpers.test.ts:103`
+  - `/home/user/fleet/table/tests/setup.test.ts:105`
+  - `/home/user/fleet/table/tests/setup.ts:123`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/table/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/terminal/src/core/validators.ts:27`
+  - `/home/user/fleet/terminal/src/core/constants.ts:137`
+  - `/home/user/fleet/terminal/src/core/helpers.ts:119`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/terminal/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/test/src/browser/helpers.ts:400`
+  - `/home/user/fleet/test/src/browser/helpers.ts:2118`
+  - `/home/user/fleet/test/src/browser/helpers.ts:2126`
+  - `/home/user/fleet/test/src/browser/types.ts:104`
+  - `/home/user/fleet/test/tests/src/core/validators.test.ts:10`
+  - `/home/user/fleet/test/tests/src/core/validators.test.ts:16`
+  - `/home/user/fleet/test/tests/src/core/validators.test.ts:18`
+  - `/home/user/fleet/test/tests/src/core/validators.test.ts:19`
+  - `/home/user/fleet/test/tests/src/core/validators.test.ts:20`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/test/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/timeout/src/core/Timeout.ts:14`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/timeout/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/tool/src/core/validators.ts:13`
+  - `/home/user/fleet/tool/tests/src/core/validators.test.ts:5`
+  - `/home/user/fleet/tool/tests/src/core/validators.test.ts:80`
+  - `/home/user/fleet/tool/tests/src/core/tools/Tool.test.ts:65`
+  - `/home/user/fleet/tool/tests/src/core/tools/Tool.test.ts:80`
+  - `/home/user/fleet/tool/tests/src/core/tools/Tool.test.ts:81`
+  - `/home/user/fleet/tool/tests/src/core/tools/Tool.test.ts:82`
+  - `/home/user/fleet/tool/tests/src/core/tools/Tool.test.ts:83`
+  - `/home/user/fleet/tool/tests/setup.ts:12`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/tool/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/toolbox/src/core/types.ts:420`
+  - `/home/user/fleet/toolbox/src/core/constants.ts:86`
+  - `/home/user/fleet/toolbox/src/core/helpers.ts:122`
+  - `/home/user/fleet/toolbox/src/core/helpers.ts:138`
+  - `/home/user/fleet/toolbox/src/core/helpers.ts:142`
+  - `/home/user/fleet/toolbox/src/core/helpers.ts:161`
+  - `/home/user/fleet/toolbox/src/core/helpers.ts:186`
+  - `/home/user/fleet/toolbox/src/core/helpers.ts:216`
+  - `/home/user/fleet/toolbox/src/core/helpers.ts:220`
+  - `/home/user/fleet/toolbox/src/core/factories.ts:374`
+  - `/home/user/fleet/toolbox/src/core/shapers.ts:20`
+  - `/home/user/fleet/toolbox/src/core/shapers.ts:37`
+  - `/home/user/fleet/toolbox/tests/src/core/factories.test.ts:3313`
+  - `/home/user/fleet/toolbox/tests/src/core/factories.test.ts:3447`
+  - `/home/user/fleet/toolbox/tests/setup.ts:41`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/toolbox/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/websocket/src/server/NodeWebSocket.ts:53`
+  - `/home/user/fleet/websocket/src/server/NodeWebSocket.ts:186`
+  - `/home/user/fleet/websocket/src/server/NodeWebSocket.ts:274`
+  - `/home/user/fleet/websocket/src/server/NodeWebSocket.ts:503`
+  - `/home/user/fleet/websocket/src/server/helpers.ts:77`
+  - `/home/user/fleet/websocket/src/server/helpers.ts:124`
+  - `/home/user/fleet/websocket/tests/src/server/NodeWebSocket.test.ts:444`
+  - `/home/user/fleet/websocket/tests/src/server/NodeWebSocket.test.ts:854`
+  - `/home/user/fleet/websocket/tests/src/server/NodeWebSocket.test.ts:859`
+  - `/home/user/fleet/websocket/tests/src/server/parsers.test.ts:81`
+  - `/home/user/fleet/websocket/tests/setupServer.ts:117`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/websocket/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/workflow/src/core/types.ts:182`
+  - `/home/user/fleet/workflow/src/core/types.ts:195`
+  - `/home/user/fleet/workflow/src/core/types.ts:198`
+  - `/home/user/fleet/workflow/src/core/types.ts:218`
+  - `/home/user/fleet/workflow/src/core/types.ts:222`
+  - `/home/user/fleet/workflow/src/core/types.ts:228`
+  - `/home/user/fleet/workflow/src/core/types.ts:307`
+  - `/home/user/fleet/workflow/src/core/types.ts:438`
+  - `/home/user/fleet/workflow/src/core/types.ts:643`
+  - `/home/user/fleet/workflow/src/core/types.ts:659`
+  - `/home/user/fleet/workflow/src/core/types.ts:685`
+  - `/home/user/fleet/workflow/src/core/types.ts:700`
+  - `/home/user/fleet/workflow/src/core/types.ts:726`
+  - `/home/user/fleet/workflow/src/core/types.ts:738`
+  - `/home/user/fleet/workflow/src/core/types.ts:749`
+  - `/home/user/fleet/workflow/src/core/types.ts:874`
+  - `/home/user/fleet/workflow/src/core/types.ts:885`
+  - `/home/user/fleet/workflow/src/core/types.ts:940`
+  - `/home/user/fleet/workflow/src/core/types.ts:945`
+  - `/home/user/fleet/workflow/src/core/types.ts:947`
+  - `/home/user/fleet/workflow/src/core/types.ts:1003`
+  - `/home/user/fleet/workflow/src/core/types.ts:1202`
+  - `/home/user/fleet/workflow/src/core/types.ts:1208`
+  - `/home/user/fleet/workflow/src/core/types.ts:1265`
+  - `/home/user/fleet/workflow/src/core/types.ts:1657`
+  - `/home/user/fleet/workflow/src/core/types.ts:1709`
+  - `/home/user/fleet/workflow/src/core/types.ts:1711`
+  - `/home/user/fleet/workflow/src/core/types.ts:1924`
+  - `/home/user/fleet/workflow/src/server/NodeScheduler.ts:63`
+  - `/home/user/fleet/workflow/src/server/NodeScheduler.ts:64`
+  - `/home/user/fleet/workflow/src/core/tasks/Task.ts:41`
+  - `/home/user/fleet/workflow/src/core/tasks/Task.ts:271`
+  - `/home/user/fleet/workflow/src/core/tasks/Task.ts:291`
+  - `/home/user/fleet/workflow/src/core/tasks/Task.ts:448`
+  - `/home/user/fleet/workflow/src/core/errors.ts:46`
+  - `/home/user/fleet/workflow/src/core/Workflow.ts:64`
+  - `/home/user/fleet/workflow/src/core/Workflow.ts:243`
+  - `/home/user/fleet/workflow/src/core/Workflow.ts:431`
+  - `/home/user/fleet/workflow/src/core/Workflow.ts:439`
+  - `/home/user/fleet/workflow/src/core/Workflow.ts:443`
+  - `/home/user/fleet/workflow/src/core/constants.ts:80`
+  - `/home/user/fleet/workflow/src/core/constants.ts:132`
+  - `/home/user/fleet/workflow/src/core/constants.ts:146`
+  - `/home/user/fleet/workflow/src/core/helpers.ts:178`
+  - `/home/user/fleet/workflow/src/core/helpers.ts:321`
+  - `/home/user/fleet/workflow/src/core/helpers.ts:1061`
+  - `/home/user/fleet/workflow/src/core/helpers.ts:1146`
+  - `/home/user/fleet/workflow/src/core/helpers.ts:1147`
+  - `/home/user/fleet/workflow/src/core/factories.ts:117`
+  - `/home/user/fleet/workflow/src/core/factories.ts:350`
+  - `/home/user/fleet/workflow/src/core/phases/Phase.ts:54`
+  - `/home/user/fleet/workflow/src/core/phases/Phase.ts:422`
+  - `/home/user/fleet/workflow/src/core/phases/Phase.ts:426`
+  - `/home/user/fleet/workflow/src/core/cloners.ts:95`
+  - `/home/user/fleet/workflow/src/core/cloners.ts:104`
+  - `/home/user/fleet/workflow/src/core/WorkflowRunner.ts:42`
+  - `/home/user/fleet/workflow/src/core/WorkflowRunner.ts:350`
+  - `/home/user/fleet/workflow/src/core/WorkflowRunner.ts:423`
+  - `/home/user/fleet/workflow/src/core/WorkflowRunner.ts:509`
+  - `/home/user/fleet/workflow/src/core/WorkflowRunner.ts:510`
+  - `/home/user/fleet/workflow/src/core/WorkflowRunner.ts:535`
+  - `/home/user/fleet/workflow/src/core/WorkflowRunner.ts:732`
+  - `/home/user/fleet/workflow/src/browser/FrameScheduler.ts:59`
+  - `/home/user/fleet/workflow/src/browser/FrameScheduler.ts:60`
+  - `/home/user/fleet/workflow/src/browser/IdleScheduler.ts:81`
+  - `/home/user/fleet/workflow/src/browser/IdleScheduler.ts:82`
+  - `/home/user/fleet/workflow/src/browser/BrowserScheduler.ts:85`
+  - `/home/user/fleet/workflow/src/browser/BrowserScheduler.ts:87`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/TaskController.test.ts:25`
+  - `/home/user/fleet/workflow/tests/src/core/validators.test.ts:137`
+  - `/home/user/fleet/workflow/tests/src/core/validators.test.ts:194`
+  - `/home/user/fleet/workflow/tests/src/core/validators.test.ts:234`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:16`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:212`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:324`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:380`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:383`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:453`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:499`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:528`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:530`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:572`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:576`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:578`
+  - `/home/user/fleet/workflow/workflow/tests/src/core/tasks/Task.test.ts:579`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:615`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:622`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:623`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:624`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:626`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:631`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:632`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:633`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:634`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:639`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:642`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:643`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:647`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:648`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:759`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:794`
+  - `/home/user/fleet/workflow/tests/src/core/tasks/Task.test.ts:963`
+  - `/home/user/fleet/workflow/tests/src/core/stores/MemoryWorkflowStore.test.ts:36`
+  - `/home/user/fleet/workflow/tests/src/core/stores/MemoryWorkflowStore.test.ts:138`
+  - `/home/user/fleet/workflow/tests/src/core/stores/DatabaseWorkflowStore.test.ts:116`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowManager.test.ts:560`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowManager.test.ts:619`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:234`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:1644`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:1675`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:1701`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:2022`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:2025`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:2029`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:2035`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:2044`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:2045`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowRunner.test.ts:2046`
+  - `/home/user/fleet/workflow/tests/src/core/cloners.test.ts:12`
+  - `/home/user/fleet/workflow/tests/src/core/cloners.test.ts:146`
+  - `/home/user/fleet/workflow/tests/src/core/cloners.test.ts:172`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:49`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:791`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:792`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:800`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:802`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:810`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:812`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:831`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:832`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:942`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:947`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:962`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:964`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:978`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:983`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:998`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:1005`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:1016`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:1021`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:1036`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:1043`
+  - `/home/user/fleet/workflow/tests/src/core/helpers.test.ts:1441`
+  - `/home/user/fleet/workflow/tests/src/core/WorkflowPersistence.test.ts:252`
+  - `/home/user/fleet/workflow/tests/src/core/factories.test.ts:400`
+  - `/home/user/fleet/workflow/tests/src/core/factories.test.ts:492`
+  - `/home/user/fleet/workflow/tests/src/core/factories.test.ts:625`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:126`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:130`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:138`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:144`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:151`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:167`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:184`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:199`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:207`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:208`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:209`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:210`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:211`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:252`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:261`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:292`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:297`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:302`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:313`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:329`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:379`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:492`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:499`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:543`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:545`
+  - `/home/user/fleet/workflow/tests/src/core/phases/Phase.test.ts:548`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:59`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:268`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:291`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:302`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:303`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:304`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:328`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:348`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:403`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:410`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:413`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:420`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:449`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:458`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:462`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:466`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:470`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:484`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:487`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:509`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:520`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:716`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:718`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:852`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1152`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1184`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1249`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1263`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1298`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1310`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1325`
+  - `/home/user/fleet/workflow/tests/src/core/Workflow.test.ts:1338`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/workflow/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/workflow/tests/setup.ts:52`
+  - `/home/user/fleet/workflow/tests/setup.ts:70`
+  - `/home/user/fleet/workflow/tests/setup.ts:88`
+  - `/home/user/fleet/worker/tests/src/server/helpers.test.ts:85`
+  - `/home/user/fleet/worker/tests/src/server/helpers.test.ts:369`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/worker/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/workspace/src/core/types.ts:79`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:105`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:228`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:231`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:311`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:314`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:1201`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:1208`
+  - `/home/user/fleet/workspace/tests/setupPolicy.ts:1380`
+  - `/home/user/fleet/workspace/README.md:44`
+  - `/home/user/fleet/tool/README.md:63`
+  - `/home/user/fleet/ndjson/README.md:4`
+  - `/home/user/fleet/workspace/README.md:44`
+  - `/home/user/fleet/workflow/README.md:36`
+  - `/home/user/fleet/guide/README.md:31`
+  - `/home/user/fleet/guide/README.md:76`
+- Scaffold hits:
+  - `/home/user/scaffold/src/core/types.ts:60`
+  - `/home/user/scaffold/src/core/types.ts:517`
+  - `/home/user/scaffold/src/core/helpers.ts:320`
+  - `/home/user/scaffold/src/server/types.ts:74`
+  - `/home/user/scaffold/src/server/helpers.ts:633`
+  - `/home/user/scaffold/src/server/helpers.ts:637`
+  - `/home/user/scaffold/src/server/helpers.ts:742`
+  - `/home/user/scaffold/src/server/helpers.ts:1296`
+  - `/home/user/scaffold/src/bin/types.ts:224`
+  - `/home/user/scaffold/src/bin/types.ts:311`
+  - `/home/user/scaffold/src/bin/helpers.ts:283`
+  - `/home/user/scaffold/src/bin/helpers.ts:581`
+  - `/home/user/scaffold/src/bin/helpers.ts:591`
+  - `/home/user/scaffold/src/bin/helpers.ts:596`
+  - `/home/user/scaffold/src/bin/helpers.ts:646`
+  - `/home/user/scaffold/src/bin/helpers.ts:688`
+  - `/home/user/scaffold/src/bin/CLI.ts:454`
+  - `/home/user/scaffold/src/bin/CLI.ts:552`
+  - `/home/user/scaffold/src/bin/CLI.ts:557`
+  - `/home/user/scaffold/src/bin/CLI.ts:612`
+  - `/home/user/scaffold/src/bin/CLI.ts:626`
+  - `/home/user/scaffold/src/bin/CLI.ts:670`
+  - `/home/user/scaffold/src/bin/CLI.ts:678`
+  - `/home/user/scaffold/src/bin/CLI.ts:700`
+  - `/home/user/scaffold/src/bin/CLI.ts:708`
+  - `/home/user/scaffold/src/bin/CLI.ts:721`
+  - `/home/user/scaffold/src/bin/CLI.ts:732`
+  - `/home/user/scaffold/src/bin/CLI.ts:740`
+  - `/home/user/scaffold/src/bin/CLI.ts:748`
+  - `/home/user/scaffold/tests/src/bin/CLI.test.ts:3734`
+  - `/home/user/scaffold/tests/src/bin/CLI.test.ts:4749`
+  - `/home/user/scaffold/tests/src/bin/CLI.test.ts:4768`
+  - `/home/user/scaffold/tests/src/bin/CLI.test.ts:4780`
+  - `/home/user/scaffold/tests/src/server/helpers.test.ts:1504`
+  - `/home/user/scaffold/tests/src/bin/helpers.test.ts:552`
+  - `/home/user/scaffold/tests/src/bin/helpers.test.ts:553`
+  - `/home/user/scaffold/tests/src/bin/helpers.test.ts:564`
+  - `/home/user/scaffold/tests/src/bin/helpers.test.ts:572`
+  - `/home/user/scaffold/tests/src/bin/helpers.test.ts:578`
+  - `/home/user/scaffold/tests/setupServer.ts:1134`
+  - `/home/user/scaffold/tests/setupServer.ts:1423`
+  - `/home/user/scaffold/tests/src/server/WriteTransaction.test.ts:260`
+  - `/home/user/scaffold/tests/src/core/templates.test.ts:395`
+  - `/home/user/scaffold/tests/src/core/templates.test.ts:710`
+  - `/home/user/scaffold/tests/src/core/Compiler.test.ts:181`
+  - `/home/user/scaffold/tests/src/core/validators.test.ts:129`
+  - `/home/user/scaffold/tests/src/core/validators.test.ts:137`
+  - `/home/user/scaffold/tests/setupPolicy.ts:105`
+  - `/home/user/scaffold/tests/setupPolicy.ts:228`
+  - `/home/user/scaffold/tests/setupPolicy.ts:231`
+  - `/home/user/scaffold/tests/setupPolicy.ts:311`
+  - `/home/user/scaffold/tests/setupPolicy.ts:314`
+  - `/home/user/scaffold/tests/setupPolicy.ts:1201`
+  - `/home/user/scaffold/tests/setupPolicy.ts:1208`
+  - `/home/user/scaffold/tests/setupPolicy.ts:1380`
+
+### `interpret-subj-4`
+
+- `breaking`: `true`
+- Fold candidate: `none`
+- Off-limits repair: `/home/user/fleet/interpret/package.json` — “Bump the version.”
+- Consumer-only repair: `none`
+- Breaking identifier: `describeSubject`
+- Mirror hits:
+  - `/home/user/fleet/brief/guides/interpret.md:328`
+  - `/home/user/fleet/brief/guides/interpret.md:381`
+  - `/home/user/fleet/brief/guides/interpret.md:408`
+- Source consumer: no source consumer.
+
+### `interpret-subj-5`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-subj-6`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-subj-7`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-subj-10`
+
+- `breaking`: `false`
+- Fold candidate: `interpret-obj-7` — “Apply interpret-obj-7's repair once: change the annotation at Normalizer.ts:62 to `NormalizeResult`.”
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+### `interpret-subj-11`
+
+- `breaking`: `false`
+- Fold candidate: `none`
+- Off-limits repair: `none`
+- Consumer-only repair: `none`
+- Breaking sweep: not applicable.
+
+## Distillate
+
+- Confirmed ids: `interpret-obj-1`, `interpret-obj-2`, `interpret-obj-3`, `interpret-obj-4`, `interpret-obj-5`, `interpret-obj-6`, `interpret-obj-7`, `interpret-subj-1`, `interpret-subj-3`, `interpret-subj-4`, `interpret-subj-5`, `interpret-subj-6`, `interpret-subj-7`, `interpret-subj-10`, `interpret-subj-11`.
+- Rule 1 flagged: `interpret-obj-6` with `interpret-subj-1`; `interpret-obj-7` with `interpret-subj-10`.
+- Rule 2 flagged: `interpret-subj-3` at `/home/user/fleet/brief/package.json`; `interpret-subj-4` at `/home/user/fleet/interpret/package.json`.
+- Rule 3 flagged: none.
+- Source-consumer checkout: `/home/user/fleet/brief` for `complete`.
+- Source-consumer checkout for `describeSubject`: none.
+- Mirror checkout: `/home/user/fleet/brief`.
+- Sweep sites that could not be read: none.
+
+## Unknowns
+
+none
+
+## Journal
+
+leave for the driver
+
+## Deviation
+
+none
