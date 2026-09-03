@@ -1,0 +1,72 @@
+diff --git a/package.json b/package.json
+index 10cdedf..2e928f9 100644
+--- a/package.json
++++ b/package.json
+@@ -53,7 +53,7 @@
+ 		"format": "oxfmt --config .oxfmtrc.json --write .",
+ 		"format:check": "oxfmt --config .oxfmtrc.json --check .",
+ 		"lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+-		"test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:guides",
++		"test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+ 		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+ 		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+ 		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+@@ -66,7 +66,8 @@
+ 		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+ 		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+ 		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+-		"prepack": "npm run build"
++		"prepack": "npm run build",
++		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+ 	},
+ 	"dependencies": {
+ 		"@orkestrel/contract": "^0.0.15"
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+new file mode 100644
+index 0000000..49210d8
+--- /dev/null
++++ b/tests/setup.test.ts
+@@ -0,0 +1,13 @@
++import * as setup from './setup.js'
++import { describe, expect, it } from 'vitest'
++
++// tests/setup.test.ts — proves `tests/setup.ts`, `setupFiles[0]` for every Vitest project. The
++// module is deliberately export-free: it pins that loading it first contributes nothing to any
++// project, including the host-free `src:core`/`app:core` projects a helper landing here by
++// accident would silently leak into.
++
++describe('setup', () => {
++	it('adds no export', () => {
++		expect(Object.keys(setup)).toEqual([])
++	})
++})
+diff --git a/vite.config.ts b/vite.config.ts
+index a6d657c..ef65e84 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -72,6 +72,17 @@ export const config = (): UserConfig => ({
+ 	},
+ })
+ 
++export const setup = (): UserConfig => ({
++	resolve,
++	test: {
++		name: { label: 'setup', color: 'white' },
++		include: ['tests/setup*.test.ts'],
++		setupFiles: ['./tests/setup.ts'],
++		environment: 'node',
++		browser: { enabled: false },
++	},
++})
++
+ export const guides = (): UserConfig => ({
+ 	resolve,
+ 	test: {
+@@ -119,6 +130,6 @@ export const probe = (): UserConfig => ({
+ export default defineConfig({
+ 	resolve,
+ 	test: {
+-		projects: [srcCore, policy, config, guides, distribution, probe],
++		projects: [srcCore, policy, config, setup, guides, distribution, probe],
+ 	},
+ })

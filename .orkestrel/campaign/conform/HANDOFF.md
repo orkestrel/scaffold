@@ -68,14 +68,14 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | budget | yes | complete | three rounds, ACCEPT at landing (`units/conform-budget-audit-verdict.md`) | `e35e994`, follow-on `b8c0029` |
 | test | yes (successor) | complete | round 1 PASS/PASS, ACCEPT (`units/conform-test-audit-verdict.md`) | `ed73b78` |
 | msg | yes | complete (resumed on `1a8821a`) | three driver rounds, a targeted fix round, a checker pass; ACCEPT (`units/conform-msg-audit-verdict.md`) | `9298a32` |
-| abort | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-abort-audit-verdict.md`) | `7aee9fd` |
+| abort | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-abort-audit-verdict.md`) | `7aee9fd`, setup-axis follow-on 674b77c |
 | ndjson | yes (successor) | complete | round 1 FAIL 8 / FAIL 3 9, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-ndjson-audit-verdict.md`) | `bc96a3c` |
 | contract | yes (successor; checkpoint `01f3390`) | complete (resumed) | rounds FAIL 2 9 / FAIL 3 7, FAIL 3 4 / PASS, FAIL 6 / PASS; record prescriptions applied at landing; ACCEPT (`units/conform-contract-audit-verdict.md`) | `b3892f4` |
 | indexeddb | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-indexeddb-audit-verdict.md`) | `729ccf5` |
 | csv | yes (successor) | complete | rounds FAIL 4 8 / PASS, FAIL 4 / PASS, FAIL 4 / PASS; one header sentence applied at landing; ACCEPT (`units/conform-csv-audit-verdict.md`) | `24861c3` |
 | tool | yes | complete | round 1 PASS/PASS; ACCEPT (`units/conform-tool-audit-verdict.md`) | `1f36348`, follow-on `b2111d1` |
 | timeout | yes | complete | round 1 PASS/PASS with record prescriptions applied at landing; ACCEPT (`units/conform-timeout-audit-verdict.md`) | `426420b` |
-| emitter | yes | complete, two fix rounds in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 3); `units/conform-emitter-audit-verdict.md` | 67433a5 |
+| emitter | yes | complete, two fix rounds in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 3); `units/conform-emitter-audit-verdict.md` | 67433a5, setup-axis follow-on 22d5f4d |
 | sqlite | yes (sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`, with the audit's R1, O1, and O2 as its added rows) | complete, one fix round in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 2); `units/conform-sqlite-audit-verdict.md` | 225bb1c |
 | html | yes | complete; fix round 2 then the third audit round in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
 | process, reason | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`); process-obj-1 stopped for want of a move tool and is carried by `briefs/conform/conform-process-fix-obj1-brief.md` after the audit round | audit lanes queued | — |
