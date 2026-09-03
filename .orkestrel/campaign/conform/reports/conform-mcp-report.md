@@ -69,9 +69,9 @@ Green: `npm run check` exit 0 (`mcp-obj-3-4-green-check.txt`); `test:src:core` 9
 
 Failing-first proof — the class body planted wrong (`close` reduced to setting its own flag, and `#receive` coercing instead of guarding), the new file run alone:
 
-- red: `npx vitest run --project src:browser tests/src/browser/transports/MessagePortTransport.test.ts` exit 1, 4 failed / 3 passed of 7 (`mcp-obj-5-control-red.txt`). The named failures are the non-string-payload case, both `close` cases, and the fire-once case.
+- red: `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/transports/MessagePortTransport.test.ts` exit 1, 4 failed / 3 passed of 7 (`mcp-obj-5-control-red.txt`). The named failures are the non-string-payload case, both `close` cases, and the fire-once case.
 - plant removed by editing the two methods back; `git diff --stat src/browser/transports/MessagePortTransport.ts` reports no change against `HEAD`
-- green: `npm run test:src:browser` 3 files, 60 passed (`mcp-obj-5-green-browser.txt`) — the same case total as before the move, redistributed across one more file
+- green: `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/transports/MessagePortTransport.test.ts` exit 0, 7 passed (`mcp-obj-5-green.txt`)
 
 ### mcp-subj-1 and mcp-subj-2 — the session knobs and the unreachable clock
 
@@ -85,8 +85,8 @@ Types first. `MCPSessionOptions` gains `readonly clock?: () => number` with the 
 
 Failing-first proof for the defect subj-2 names — a new middleware test freezes the injected clock and sets a one-millisecond log lifetime, so a session left on `Date.now` sweeps the pushed events between the push and the reconnect and replays nothing:
 
-- red: the forwarding reverted to `new MCPSession(crypto.randomUUID(), { ...sessionOptions })`, `npx vitest run --project src:server tests/src/server/middlewares.test.ts` exit 1, 1 failed / 33 passed of 34, the failure named `forwards its own clock to the session it mints, so the replay log sweeps on that clock` (`mcp-subj-2-control-red.txt`)
-- green: forwarding restored, `npm run test:src:server` 372 passed, 1 skipped (`mcp-subj-1-2-green-server.txt`)
+- red: the forwarding reverted to `new MCPSession(crypto.randomUUID(), { ...sessionOptions })`, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/middlewares.test.ts` exit 1, 1 failed / 33 passed of 34, the failure named `forwards its own clock to the session it mints, so the replay log sweeps on that clock` (`mcp-subj-2-control-red.txt`)
+- green: forwarding restored, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/middlewares.test.ts` exit 0, 35 passed (`mcp-subj-2-green.txt`)
 
 The signature change reddened its consumers first: `npm run check` exit 2, 15 errors, all `tests/src/server/MCPSession.test.ts … Expected 1 arguments, but got 2` (`mcp-subj-1-2-control-red.txt`). Those cases now construct with `createManualClock` and advance it explicitly. One case was added there for the default the removal exposes: an unset `clock` must leave the sweep on the host clock rather than on an instant frozen at construction.
 
@@ -275,3 +275,107 @@ Recorded for a successor round, not edited.
 ## Deviations
 
 None. No row stopped, no repair collided with an existing name, and no row needed a file outside Owned.
+
+## Fix round 1
+
+This round closes the findings in
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l3/mcp-objective-r1-sol.md` and
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l3/mcp-r1-checker-luna.result.md`.
+
+### Capacity residue — claims 3 and 7
+
+- `src/server/constants.ts:39-40` directs the override through the `session` options group and
+  names `session.capacity`.
+- `src/server/middlewares.ts:45-47` names the `session` options group at the mint site.
+- `tests/src/server/middlewares.test.ts:89-118` removes the compatibility `capacity` parameter
+  and mapping from `startSession`.
+- `tests/src/server/middlewares.test.ts:629-652` passes `session: { capacity: 2 }` directly and
+  proves that each minted session reads the leaf.
+
+The sweep was `grep -rnE "capacity" src tests guides/mcp.md README.md`. Every hit has this ruling:
+
+- Session replay-log capacity: `src/server/constants.ts:32,40,42`;
+  `src/server/MCPSession.ts:15,31,37,41,66,73,114,125-126`;
+  `src/server/middlewares.ts:74`; `src/server/types.ts:152,156,158,172,189`;
+  `tests/src/server/MCPSession.test.ts:14,148-150,162,165`;
+  `tests/src/server/middlewares.test.ts:52,629,631`; and
+  `guides/mcp.md:2661,2663,2681,2733,5215-5216,5222`. These are the
+  `MCPSessionOptions.capacity` leaf, its reads and tests, the default constant, and the guide's
+  `session.capacity` descriptions.
+- Subscription queue capacity: `src/core/constants.ts:284`; `src/core/MCPClient.ts:177,412-413,
+  448,451,453,484,741`; `src/core/types.ts:1626,2993`; `tests/setup.ts:775,811`;
+  `tests/src/core/MCPServer.test.ts:3282,3585-3586,3701,3704,3740,3772`;
+  `tests/src/core/MCPClient.test.ts:3772,3781`; `tests/guides.test.ts:1196,1308,1316,1327,1423`;
+  and `guides/mcp.md:1055,1062,1091,1819,2179,2449,3459,4653,4829`. These hits belong to the
+  separate `MCPListenOptions.capacity` queue bound or its contained error.
+- Unrelated domain tallies: `tests/src/core/MCPServer.test.ts:6629,6981` and
+  `guides/mcp.md:4527` describe manager-page or deployment capacity. The
+  `tests/src/server/MCPSession.test.ts:25` hit describes an unbounded recording sink. None is an
+  option key or compatibility path.
+
+### Inflection sweep — claim 3
+
+The case-insensitive pattern was
+`\bisFormElicitationSupport(s|ed|ing)?\b|\bisTaskSupport(s|ed|ing)?\b|\bMCPCompletionManagerInterface(s|ed|ing)?\b|\bdefer\??:|\blisten\??:`.
+The paths were `src`, `tests`, `guides/mcp.md`, `guides/README.md`, and `README.md`.
+The sweep returned `src/core/types.ts:2347`, the required `MCPTransportInterface.listen`
+registrar, and `tests/src/core/MCPServer.test.ts:3220`, a local `listen` request binding.
+It returned no old predicate, completion-interface, `defer` option-key, or `listen` option-key
+residue.
+
+### Proof commands — claim 4
+
+| Row | Command | Red | Green |
+| --- | --- | --- | --- |
+| mcp-obj-5 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/transports/MessagePortTransport.test.ts` | exit 1; 4 failed, 3 passed; `/home/user/work/evidence/mcp-proofs/mcp-obj-5-control-red.txt` | exit 0; 7 passed; `/home/user/work/evidence/mcp-proofs/mcp-obj-5-green.txt` |
+| mcp-subj-1 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/middlewares.test.ts` | exit 1; 1 failed, 34 passed; `/home/user/work/evidence/mcp-proofs/mcp-subj-1-control-red.txt` | exit 0; 35 passed; `/home/user/work/evidence/mcp-proofs/mcp-subj-1-green.txt` |
+| mcp-subj-2 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/middlewares.test.ts` | exit 1; 1 failed, 33 passed; `/home/user/work/evidence/mcp-proofs/mcp-subj-2-control-red.txt` | exit 0; 35 passed; `/home/user/work/evidence/mcp-proofs/mcp-subj-2-green.txt` |
+
+The mcp-subj-1 control minted with `{ clock: sessionOptions.clock ?? clock }` alone. The case
+`forwards the session capacity to each session it mints` failed because the default-capacity
+session replayed event `2`; restoring `...sessionOptions` made the same command green.
+
+### Predicate placement — O1 and F-2
+
+`PUBLISHED_PREDICATES` moved to `tests/src/core/helpers.test.ts:118-121`. The
+`supportsFormElicitation` cases are at `tests/src/core/helpers.test.ts:149-160`; the
+`supportsTask` cases are at `tests/src/core/helpers.test.ts:162-179`; and the barrel-population
+and hostile-battery cases are at `tests/src/core/helpers.test.ts:181-204`.
+`tests/src/core/validators.test.ts` retains only validator cases.
+
+The scoped runs were:
+
+- `tests/src/core/helpers.test.ts`: exit 0, 183 passed,
+  `/home/user/work/evidence/mcp-proofs/fix1-helpers-green.txt`.
+- `tests/src/core/validators.test.ts`: exit 0, 164 passed,
+  `/home/user/work/evidence/mcp-proofs/fix1-validators-green.txt`.
+
+### Host-clock yield — O2
+
+`tests/src/server/MCPSession.test.ts:215-224` is asynchronous, awaits
+`waitForDelay(5)`, and asserts that the earlier event is absent after the host-clock TTL elapses.
+The scoped run exited 0 with 18 passed at
+`/home/user/work/evidence/mcp-proofs/fix1-MCPSession-green.txt`.
+
+### Writing substitutions — F-1
+
+- `tests/setup.ts:1217-1218` says a client `must` ask again and omits `simply`.
+- `tests/src/core/MCPServer.test.ts:5239` says the paragraph `must` be deleted.
+
+The scoped `tests/src/core/MCPServer.test.ts` run exited 0 with 222 passed at
+`/home/user/work/evidence/mcp-proofs/fix1-MCPServer-green.txt`.
+
+### Acceptance evidence
+
+- `npm run format:check`: exit 0; all matched files use the correct format.
+- `npm run lint:check`: exit 0; no diagnostics.
+- `npm run check`: exit 0; the root, core, browser, and server TypeScript projects passed.
+- The exact browser transport run exited 0 with 7 passed.
+- The exact server middleware run exited 0 with 35 passed.
+- The scoped helper run exited 0 with 183 passed.
+- The scoped validator run exited 0 with 164 passed.
+- The scoped session run exited 0 with 18 passed.
+- The scoped server-core run exited 0 with 222 passed.
+
+`git status --short` lists the conform-mcp unit's existing paths and no added path beyond
+`tests/src/browser/transports/MessagePortTransport.test.ts`.
