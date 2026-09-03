@@ -1,0 +1,78 @@
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index fa959e1..59380dd 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -60,7 +60,7 @@ export const METHODS: ReadonlySet<string> = Object.freeze(new Set<string>(METHOD
+  * tier, always outranking a param or wildcard segment at the same position.
+  *
+  * @remarks
+- * Consumed by `computeSpecificity` (U1 `helpers.ts`) when ranking candidate
++ * Consumed by `computeSpecificity` (the path compiler in `helpers.ts`) when ranking candidate
+  * matches left-to-right at the earliest differing segment.
+  *
+  * @example
+@@ -75,7 +75,7 @@ export const TIER_LITERAL = 2
+  * literal segment and above a wildcard segment at the same position.
+  *
+  * @remarks
+- * Consumed by `computeSpecificity` (U1 `helpers.ts`) alongside {@link TIER_LITERAL}
++ * Consumed by `computeSpecificity` (the path compiler in `helpers.ts`) alongside {@link TIER_LITERAL}
+  * and {@link TIER_WILDCARD}.
+  *
+  * @example
+@@ -91,7 +91,7 @@ export const TIER_PARAM = 1
+  * equal-specificity tie resolved by registration order).
+  *
+  * @remarks
+- * Consumed by `computeSpecificity` (U1 `helpers.ts`).
++ * Consumed by `computeSpecificity` (the path compiler in `helpers.ts`).
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 41a0b9f..b7f7bf3 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -211,7 +211,7 @@ export type PathParams<Path extends string> = {
+  * Represents a compiled route path — the anchored regex plus its ordered param names.
+  *
+  * @remarks
+- * The once-per-path compile output of `compilePath` (U1 `helpers.ts`):
++ * The once-per-path compile output of `compilePath` (the path compiler in `helpers.ts`):
+  * `regex` is anchored (`^…$`) and matches the WHOLE pathname (with an
+  * optional trailing slash), and `params` lists each captured segment's
+  * name (`:name` or the final `*name`) in order, so a `regex.exec` result's
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 0aa672e..a5e7316 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -35,7 +35,7 @@ const FENCE_LANGUAGES = Object.freeze(['ts'])
+ const EXAMPLE_LANGUAGE = 'ts'
+ /**
+  * Each import specifier this package's own guides may resolve against — the router
+- * guide spans three faces (core/browser/server), so a fence importing any of them
++ * guide spans the core, browser, and server faces, so a fence importing any of them
+  * resolves against that face's own exports rather than only the current entry's.
+  */
+ const MODULES = Object.freeze({
+diff --git a/tests/src/core/Dispatcher.test.ts b/tests/src/core/Dispatcher.test.ts
+index a69b96b..1a8a57e 100644
+--- a/tests/src/core/Dispatcher.test.ts
++++ b/tests/src/core/Dispatcher.test.ts
+@@ -12,13 +12,13 @@ import { createDispatcher } from '../../../src/core/factories.js'
+ import { Dispatcher } from '../../../src/core/Dispatcher.js'
+ import { createRecorder } from '@orkestrel/test'
+ 
+-// The net-new test mirror slice of `src/core/Dispatcher.ts` — U6-scoped: type-level
++// The net-new test mirror slice of `src/core/Dispatcher.ts` covers the type-level
+ // surfaces (RouteHandler context typing, TState generic flow, DispatcherInterface
+ // member shape, factory return type), the emitter event payload shapes, destroy
+ // idempotence, and the cross-face grammar parity fixture driven through
+ // `Dispatcher.match`. The full functional dispatch matrix (auto-HEAD, auto-
+-// OPTIONS, 404/405 responders, handler-throw propagation) is U3's own suite and
+-// out of this unit's scope.
++// OPTIONS, 404/405 responders, handler-throw propagation) is this file's own
++// suite, in the describe blocks that follow.
+ 
+ interface AppState {
+ 	readonly userId: string
