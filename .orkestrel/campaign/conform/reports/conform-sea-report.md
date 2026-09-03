@@ -1,7 +1,9 @@
 # Unit conform-sea — report
 
-Every row landed. The gate chain is green on the final tree, and `git status --short` lists only
-files under Owned.
+Every row landed. The gate chain is green on the final tree. `git status --short` lists the
+unit's Owned paths plus `package.json`, which carries the Orchestrator's hunks of 18:56 UTC: the
+`"seal"` keyword removed for sea-subj-2 and `engines.node` raised to `>=24.8.0` for sea-subj-19,
+with `README.md` the carrier of that same sea-subj-19 row.
 
 ## Rows
 
@@ -73,7 +75,7 @@ Each command was run from `/home/user/fleet/sea`. Every capture is a file under
 | sea-obj-2  | `npm run test:setup`        | 3 failed, 18 passed (21)                     | 21 passed (21)               | `sea-obj-2-red.txt`, `sea-obj-2-green.txt`        |
 | sea-obj-1  | `npm run test:src`          | 2 failed, 184 passed (186) with `sectionVA` planted as `0` at the fixup call | 186 passed (186) restored | `sea-obj-1-control-red.txt`, `sea-obj-1-green.txt` |
 | sea-obj-5  | `npm run test:guides`       | 1 failed, 33 passed (34) with `alignTo(4097, 4096)` transcribed as `8193` | 34 passed (34) with `8192` | `sea-obj-5-control-red.txt`, `sea-obj-5-green.txt` |
-| sea-subj-7 | `npm run test:src`          | not run red: the row derives an existing fact rather than changing behaviour; the added assertions pin `sea.emitter.destroyed` and `destroy` idempotence | 186 passed (186) | `sea-subj-7-green.txt` |
+| sea-subj-7 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/seas/SEA.test.ts` | 2 failed, 17 passed (19) with the `this.#emitter.destroyed` guard planted out of `src/server/seas/SEA.ts` | 19 passed (19) with the guard restored | `sea-subj-7-red.txt`, `sea-subj-7-green.txt` |
 
 Failing-first test names:
 
@@ -152,8 +154,9 @@ each change reaches only a registry consumer.
 ## Shared-file patches
 
 `package.json` is outside Owned for the `keywords` field, and the dispatch's standing conditions
-forbid editing that file, so sea-subj-2's keyword deletion is returned here rather than applied.
-The rest of sea-subj-2 landed. Apply at `/home/user/fleet/sea/package.json`:
+forbid editing that file, so sea-subj-2's keyword deletion was returned here rather than applied
+by this unit. The Orchestrator applied it at 18:56 UTC, in the same edit as sea-subj-19's
+`engines.node` raise. The diff below is the record of what was applied:
 
 ```diff
 @@
@@ -218,7 +221,7 @@ Closes the round-1 objective lane's refutations of claims 2 and 4 and findings F
   src/server/seas/SEA.ts` matches the unit's original diff (the guard reads
   `this.#emitter.destroyed` again, `#destroyed` stays deleted), then `sea-subj-7-green.txt` shows
   19 passed (19).
-- **Claim 4, the sweeps.** Recorded under the amended § Sweeps.
+- **Claim 4, the sweeps.** Recorded under § Sweeps (fix round 1).
 - **F1, F2.** `src/server/types.ts:322` "Outside SEA, `load()` reads client assets from disk." →
   "Outside SEA, `load()` reads the paths `assets` configures from disk."; `guides/sea.md:185`
   `e.g.` → "for example". `grep -rn "reads client assets from disk|e\.g\. \`format\`"
@@ -272,3 +275,27 @@ the Orchestrator's hunk.
 ### Deviations (fix round 1)
 
 None. The round ran to completion.
+
+## Fix round 2
+
+Closes the round-2 objective lane's refutation of claim 4 and findings F1 and F2
+(`units/l3/sea-objective-r2.md`).
+
+- Rewrote the sea-subj-7 row of § Failing-first controls: the command cell now names the scoped
+  `npx vitest run` command, the red cell reads `2 failed, 17 passed (19)` with the
+  `this.#emitter.destroyed` guard planted out of `src/server/seas/SEA.ts`, the green cell reads
+  `19 passed (19)` with the guard restored, and the files cell names `sea-subj-7-red.txt` and
+  `sea-subj-7-green.txt`. Read both captures to take the counts.
+- Rewrote the opening status claim to state that `git status --short` lists the unit's Owned
+  paths plus `package.json`, carrying the Orchestrator's hunks of 18:56 UTC (the `"seal"` keyword
+  removed for sea-subj-2, `engines.node` raised to `>=24.8.0` for sea-subj-19), with `README.md`
+  the same row's carrier.
+- Rewrote the § Shared-file patches paragraph to record that the Orchestrator applied the keyword
+  deletion at 18:56 UTC in the same edit as sea-subj-19, keeping the diff block as the record of
+  what was applied.
+- Rewrote the sentence at the former `report.md:221` to read "Recorded under § Sweeps (fix round
+  1)."
+
+Capture files read: `/home/user/work/evidence/sea-proofs/sea-subj-7-red.txt`,
+`/home/user/work/evidence/sea-proofs/sea-subj-7-green.txt`, and
+`/home/user/work/evidence/conform-sea.status`.

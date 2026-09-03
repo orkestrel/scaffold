@@ -1,0 +1,8 @@
+Conform sea to the fleet rules: the named binary shapes, the asset map, the short-read throws, no seal
+
+`ELFProgramHeader`, `PEResourceLeaf`, `PEResourceEntry`, and `PESection` are named types with readonly members; `SEABrotliOptions` sits under `SEACompressionOptions`; `AssetManagerOptions.assets` replaces the hard-coded client keys and `load()` reads the configured paths; the ELF constants join `constants.ts`; the PE resource walkers are exported and proved from `tests/setupServer.ts`; `readU16`, `readU32`, `readU64`, and `readPEOffset` throw `FORMAT` on a short read; `execute()` refuses after the emitter is destroyed by any route; `register` takes a readonly array; `seals/` becomes `seas/` with the `seal` word gone from the code, the guide, the README, and the manifest keywords. `platformConfig`, `createSignCommand`, and `createBlobConfig` become `resolvePlatform`, `buildSignCommand`, and `buildBlobConfig`; the `__LINKEDIT` locals read as words; every class carries its TSDoc; `guides/README.md` names every mirror. The Node floor is `>=24.8.0` in the manifest and the README because `getAssetKeys` from `node:sea` exists from that version.
+
+Audit: Grok-first round 1 (Luna distillate, Luna checker PASS, Opus objective FAIL 2, 4 closed by fix round 1) and round 2 (Luna distillate, Luna checker PASS, Opus objective FAIL 4 on the record closed by report-only fix round 2); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-sea-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

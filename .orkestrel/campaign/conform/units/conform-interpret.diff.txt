@@ -1,0 +1,2202 @@
+diff --git a/README.md b/README.md
+index 646637e..5d718f3 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,6 @@
+ # @orkestrel/interpret
+ 
+-A zero-dependency, synchronous, deterministic bidirectional bridge between
++A synchronous, deterministic bidirectional bridge between
+ natural language and the [`@orkestrel/reason`](https://github.com/orkestrel/reason)
+ engine. FORWARD: raw text is normalized, classified into an intent, matched
+ against an added `Template`, mined for numeric entities, clarified
+@@ -19,11 +19,12 @@ npm install @orkestrel/interpret
+ 
+ ## Requirements
+ 
+-- Node.js >= 22
+-- ESM-only (no CommonJS build)
++- Node.js >= 22.12.0
++- ESM and CommonJS builds, published through the `exports` map
+ - Runtime dependencies: [`@orkestrel/reason`](https://github.com/orkestrel/reason),
+   [`@orkestrel/contract`](https://github.com/orkestrel/contract),
+-  [`@orkestrel/emitter`](https://github.com/orkestrel/emitter)
++  [`@orkestrel/emitter`](https://github.com/orkestrel/emitter),
++  [`@orkestrel/template`](https://github.com/orkestrel/template)
+ 
+ ## Usage
+ 
+diff --git a/guides/README.md b/guides/README.md
+index 9d21fab..8d70c02 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -1,6 +1,6 @@
+ # Guides
+ 
+-A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).
++A dual-axis index into this repository's guides — by concept, and by directory.
+ 
+ ## By concept
+ 
+@@ -52,4 +52,4 @@ documented in [`interpret.md`](interpret.md).
+ 
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the coding contract.
+diff --git a/guides/interpret.md b/guides/interpret.md
+index c62f8e0..4bf9272 100644
+--- a/guides/interpret.md
++++ b/guides/interpret.md
+@@ -54,7 +54,8 @@ const interpret = createInterpret({
+ 
+ const result = interpret.interpret('calculate arithmetic 42')
+ result.subject // { value: 42 }
+-result.complete // true
++result.ambiguities // []
++result.failures // []
+ 
+ interpret.emitter.on('interpret', (interpretation) => interpretation.digest)
+ interpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))
+@@ -65,70 +66,71 @@ interpret.destroy()
+ `[normalize, extract, clarify, format, generate]`; a `NO_TEMPLATE` /
+ `LOW_CONFIDENCE` non-match, or a thrown stage, both yield a visible
+ INCOMPLETE `Interpretation` (never an arbitrary fallback template) rather
+-than throwing.
++than throwing. An interpretation is complete when `ambiguities` and
++`failures` are both empty; no stored flag repeats that fact.
+ 
+ ### Types
+ 
+-| Type                         | Kind      | Shape                                                                                                                                                                                                                                      |
+-| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `ProvenanceCategory`         | type      | `'extracted' \| 'carried' \| 'default' \| 'computed' \| 'subject'` — how one value was obtained.                                                                                                                                           |
+-| `InterpretStage`             | type      | `'normalize' \| 'extract' \| 'clarify' \| 'format' \| 'generate'` — the five fixed pipeline phases, in order.                                                                                                                              |
+-| `InterpretErrorCode`         | type      | `'NORMALIZE_FAILED' \| 'EXTRACT_FAILED' \| 'CLARIFY_FAILED' \| 'FORMAT_FAILED' \| 'GENERATE_FAILED' \| 'NO_TEMPLATE' \| 'LOW_CONFIDENCE' \| 'DESTROYED'` — coded `InterpretError` reasons.                                                 |
+-| `EntityMapping`              | interface | `{ entity, aliases, field, required? }` — one entity-extraction rule pointing at a subject field.                                                                                                                                          |
+-| `FieldDefault`               | interface | `{ field, value }` — a fallback value filled onto an unresolved field.                                                                                                                                                                     |
+-| `ComputedField`              | interface | `{ field, expression }` — a declaratively computed field over a reasons `SymbolicExpression` tree; `{field}.{index}` addresses one numeric element of an array-valued field, so only a KNOWN-length collection has a declarable aggregate. |
+-| `Template`                   | interface | `{ id, name, domain, intents, mappings, defaults, computations, definition }` — a named, versionable interpretation template.                                                                                                              |
+-| `Provenance`                 | interface | `{ category, detail? }` — how one value landed, with an optional strategy detail.                                                                                                                                                          |
+-| `Intent`                     | interface | `{ action?, domain?, confidence }` — the classified action + domain for one interpretation; an unmatched axis is absent.                                                                                                                   |
+-| `Entity`                     | interface | `{ name, value, provenance, confidence }` — one value assigned to a template's entity mapping.                                                                                                                                             |
+-| `Ambiguity`                  | interface | `{ field, question, candidates, required }` — an unresolved field surfaced as a human-readable question.                                                                                                                                   |
+-| `FieldMapping`               | interface | `{ field, entity?, value, provenance, confidence }` — one audited field of the built subject.                                                                                                                                              |
+-| `TextChange`                 | interface | `{ from, to }` — one normalization substitution applied to the raw text.                                                                                                                                                                   |
+-| `StageRecord`                | interface | `{ stage, input, output, failed, error? }` — a structured input/output snapshot of one pipeline phase.                                                                                                                                     |
+-| `StageFailure`               | interface | `{ stage, code, message }` — a visible marker for a stage that threw.                                                                                                                                                                      |
+-| `NormalizeResult`            | interface | `{ text, changes }` — the `Normalizer` stage's output.                                                                                                                                                                                     |
+-| `ExtractResult`              | interface | `{ intent, numbers, complete }` — the `Extractor` stage's output.                                                                                                                                                                          |
+-| `ClarifyResult`              | interface | `{ entities, ambiguities, complete }` — the `Clarifier` stage's output.                                                                                                                                                                    |
+-| `FormatResult`               | interface | `{ prompt }` — the `Formatter` stage's output.                                                                                                                                                                                             |
+-| `GenerateResult`             | interface | `{ subject, definition, mappings, confidence }` — the `Generator` stage's output.                                                                                                                                                          |
+-| `Interpretation`             | interface | `{ text, normalized, intent, entities, subject?, definition?, mappings, ambiguities, prompt, stages, failures, complete, confidence, digest }` — the full, replayable outcome of one `interpret()` call.                                   |
+-| `TemplateRecord`             | interface | `{ id, template, version, hash }` — a versioned, content-hashed `Template`.                                                                                                                                                                |
+-| `SubjectRecord`              | interface | `{ id, subject, version, hash }` — a versioned, content-hashed `Subject`.                                                                                                                                                                  |
+-| `DefinitionRecord`           | interface | `{ id, definition, version, hash }` — a versioned, content-hashed `Definition`.                                                                                                                                                            |
+-| `InterpretEventMap`          | type      | `Interpret`'s push observation surface — `interpret(result)` · `add(templateId)` · `error(error)` · `destroy()`.                                                                                                                           |
+-| `RecordEventMap`             | type      | The push observation surface every record registry shares — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                        |
+-| `TemplateManagerEventMap`    | type      | `TemplateManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                     |
+-| `SubjectManagerEventMap`     | type      | `SubjectManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                      |
+-| `DefinitionManagerEventMap`  | type      | `DefinitionManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                   |
+-| `InterpretContextEventMap`   | type      | `InterpretContext`'s push observation surface — `add(digest)` · `clear()` · `destroy()`.                                                                                                                                                   |
+-| `NarratorFormatter`          | type      | `(value: unknown) => string` — a pure formatting function for one lexicon `value()` unit.                                                                                                                                                  |
+-| `Lexicon`                    | interface | `{ phrases?, labels?, templates? }` — caller-injected wording data for the reverse direction.                                                                                                                                              |
+-| `NarratorOptions`            | interface | `{ lexicon?, formatters? }` — input to `createNarrator`.                                                                                                                                                                                   |
+-| `NormalizerOptions`          | interface | `{ contractions?, abbreviations?, corrections? }` — input to `createNormalizer`.                                                                                                                                                           |
+-| `ExtractorOptions`           | interface | `{ actions?, domains? }` — input to `createExtractor`.                                                                                                                                                                                     |
+-| `ClarifierOptions`           | interface | `{ floor?, narrator? }` — input to `createClarifier`; `narrator` is the wording seam for the `ambiguity.entity` question.                                                                                                                  |
+-| `FormatterOptions`           | interface | `{ verbs?, narrator? }` — input to `createFormatter`; `narrator` is the wording seam for the `prompt.*` clauses.                                                                                                                           |
+-| `TemplateManagerOptions`     | interface | `{ templates?, on?, error? }` — input to `createTemplateManager`.                                                                                                                                                                          |
+-| `SubjectManagerOptions`      | interface | `{ subjects?, on?, error? }` — input to `createSubjectManager`.                                                                                                                                                                            |
+-| `DefinitionManagerOptions`   | interface | `{ definitions?, on?, error? }` — input to `createDefinitionManager`.                                                                                                                                                                      |
+-| `RecordStamp`                | interface | `{ id, version, hash }` — the identity, version, and content hash a `RecordManager` derives before a record's concrete shape is built.                                                                                                     |
+-| `RecordFunction`             | type      | `(stamp: RecordStamp, value: TValue) => TRecord` — builds one concrete record from its stamp and the value it holds.                                                                                                                       |
+-| `RecordManagerOptions`       | interface | `{ entity, on?, error? }` — input to the `RecordManager` constructor; `entity` names what the registry holds.                                                                                                                              |
+-| `RecordManagerInterface`     | interface | The shared registry-engine contract — `emitter` / `count` + `has` / `record` / `records` / `add` / `remove` / `destroy`.                                                                                                                   |
+-| `RecordOptions`              | interface | `{ id? }` — per-call options for the record a manager's `add` mints.                                                                                                                                                                       |
+-| `InterpretContextOptions`    | interface | `{ session?, history?, on?, error? }` — input to `createInterpretContext`.                                                                                                                                                                 |
+-| `InterpretOptions`           | interface | `{ templates?, context?, normalizer?, extractor?, clarifier?, formatter?, generator?, similarity?, floor?, history?, narrator?, on?, error? }` — input to `createInterpret`.                                                               |
+-| `NormalizerInterface`        | interface | The `Normalizer` stage contract — `normalize`.                                                                                                                                                                                             |
+-| `ExtractorInterface`         | interface | The `Extractor` stage contract — `extract`.                                                                                                                                                                                                |
+-| `ClarifierInterface`         | interface | The `Clarifier` stage contract — `clarify`.                                                                                                                                                                                                |
+-| `FormatterInterface`         | interface | The `Formatter` stage contract — `format`.                                                                                                                                                                                                 |
+-| `GeneratorInterface`         | interface | The `Generator` stage contract — `generate`.                                                                                                                                                                                               |
+-| `NarratorInterface`          | interface | The lexicon-driven reverse-rendering contract — `phrase` / `label` / `line` / `value` / `describe` / `narrate`.                                                                                                                            |
+-| `TemplateManagerInterface`   | interface | The template registry contract — `emitter` / `count` + `has` / `template` / `templates` / `add` / `remove` / `destroy`.                                                                                                                    |
+-| `SubjectManagerInterface`    | interface | The subject registry contract — `emitter` / `count` + `has` / `subject` / `subjects` / `add` / `remove` / `destroy`.                                                                                                                       |
+-| `DefinitionManagerInterface` | interface | The definition registry contract — `emitter` / `count` + `has` / `definition` / `definitions` / `add` / `remove` / `destroy`.                                                                                                              |
+-| `InterpretContextInterface`  | interface | The cross-turn context contract — `emitter` / `session` (`string \| undefined`) / `subjects` / `definitions` + `previous` / `entities` / `add` / `clear` / `destroy`.                                                                      |
+-| `InterpretInterface`         | interface | The interpretation orchestrator contract — `emitter` + `interpret` / `add` / `remove` / `template` / `templates` / `describe` / `narrate` / `destroy`.                                                                                     |
++| Type                         | Kind      | Shape                                                                                                                                                                                                                                                     |
++| ---------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `ProvenanceCategory`         | type      | `'extracted' \| 'carried' \| 'default' \| 'computed' \| 'subject'` — how one value was obtained.                                                                                                                                                          |
++| `InterpretStage`             | type      | `'normalize' \| 'extract' \| 'clarify' \| 'format' \| 'generate'` — the five fixed pipeline phases, in order.                                                                                                                                             |
++| `InterpretErrorCode`         | type      | `'NORMALIZE_FAILED' \| 'EXTRACT_FAILED' \| 'CLARIFY_FAILED' \| 'FORMAT_FAILED' \| 'GENERATE_FAILED' \| 'NO_TEMPLATE' \| 'LOW_CONFIDENCE' \| 'DESTROYED'` — coded `InterpretError` reasons.                                                                |
++| `EntityMapping`              | interface | `{ entity, aliases, field, required? }` — one entity-extraction rule pointing at a subject field.                                                                                                                                                         |
++| `FieldDefault`               | interface | `{ field, value }` — a fallback value filled onto an unresolved field.                                                                                                                                                                                    |
++| `ComputedField`              | interface | `{ field, expression }` — a declaratively computed field over a reasons `SymbolicExpression` tree; `{field}.{index}` addresses one numeric element of an array-valued field, so only a KNOWN-length collection has a declarable aggregate.                |
++| `Template`                   | interface | `{ id, name, domain, intents, mappings, defaults, computations, definition }` — a named, versionable interpretation template.                                                                                                                             |
++| `Provenance`                 | interface | `{ category, detail? }` — how one value landed, with an optional strategy detail.                                                                                                                                                                         |
++| `Intent`                     | interface | `{ action?, domain?, confidence }` — the classified action + domain for one interpretation; an unmatched axis is absent.                                                                                                                                  |
++| `Entity`                     | interface | `{ name, value, provenance, confidence }` — one value assigned to a template's entity mapping.                                                                                                                                                            |
++| `Ambiguity`                  | interface | `{ field, question, candidates, required }` — an unresolved field surfaced as a human-readable question.                                                                                                                                                  |
++| `FieldMapping`               | interface | `{ field, entity?, value, provenance, confidence }` — one audited field of the built subject.                                                                                                                                                             |
++| `TextChange`                 | interface | `{ from, to }` — one normalization substitution applied to the raw text.                                                                                                                                                                                  |
++| `StageRecord`                | interface | `{ stage, input, output, failed, error? }` — a structured input/output snapshot of one pipeline phase.                                                                                                                                                    |
++| `StageFailure`               | interface | `{ stage, code, message }` — a visible marker for a stage that threw.                                                                                                                                                                                     |
++| `NormalizeResult`            | interface | `{ text, changes }` — the `Normalizer` stage's output.                                                                                                                                                                                                    |
++| `ExtractResult`              | interface | `{ intent, numbers }` — the `Extractor` stage's output.                                                                                                                                                                                                   |
++| `ClarifyResult`              | interface | `{ entities, ambiguities }` — the `Clarifier` stage's output.                                                                                                                                                                                             |
++| `FormatResult`               | interface | `{ prompt }` — the `Formatter` stage's output.                                                                                                                                                                                                            |
++| `GenerateResult`             | interface | `{ subject, definition, mappings, confidence }` — the `Generator` stage's output.                                                                                                                                                                         |
++| `Interpretation`             | interface | `{ text, normalized, intent, entities, subject?, definition?, mappings, ambiguities, prompt, stages, failures, confidence, digest }` — the full, replayable outcome of one `interpret()` call; complete when `ambiguities` and `failures` are both empty. |
++| `TemplateRecord`             | interface | `{ id, template, version, hash }` — a versioned, content-hashed `Template`.                                                                                                                                                                               |
++| `SubjectRecord`              | interface | `{ id, subject, version, hash }` — a versioned, content-hashed `Subject`.                                                                                                                                                                                 |
++| `DefinitionRecord`           | interface | `{ id, definition, version, hash }` — a versioned, content-hashed `Definition`.                                                                                                                                                                           |
++| `InterpretEventMap`          | type      | `Interpret`'s push observation surface — `interpret(result)` · `add(templateId)` · `error(error)` · `destroy()`.                                                                                                                                          |
++| `RecordEventMap`             | type      | The push observation surface every record registry shares — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                       |
++| `TemplateManagerEventMap`    | type      | `TemplateManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                                    |
++| `SubjectManagerEventMap`     | type      | `SubjectManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                                     |
++| `DefinitionManagerEventMap`  | type      | `DefinitionManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                                  |
++| `InterpretContextEventMap`   | type      | `InterpretContext`'s push observation surface — `add(digest)` · `clear()` · `destroy()`.                                                                                                                                                                  |
++| `NarratorFormatter`          | type      | `(value: unknown) => string` — a pure formatting function for one lexicon `value()` unit.                                                                                                                                                                 |
++| `Lexicon`                    | interface | `{ phrases?, labels?, templates? }` — caller-injected wording data for the reverse direction.                                                                                                                                                             |
++| `NarratorOptions`            | interface | `{ lexicon?, formatters? }` — input to `createNarrator`.                                                                                                                                                                                                  |
++| `NormalizerOptions`          | interface | `{ contractions?, abbreviations?, corrections? }` — input to `createNormalizer`.                                                                                                                                                                          |
++| `ExtractorOptions`           | interface | `{ actions?, domains? }` — input to `createExtractor`.                                                                                                                                                                                                    |
++| `ClarifierOptions`           | interface | `{ floor?, narrator? }` — input to `createClarifier`; `narrator` is the wording seam for the `ambiguity.entity` question.                                                                                                                                 |
++| `FormatterOptions`           | interface | `{ verbs?, narrator? }` — input to `createFormatter`; `narrator` is the wording seam for the `prompt.*` clauses.                                                                                                                                          |
++| `TemplateManagerOptions`     | interface | `{ templates?, on?, error? }` — input to `createTemplateManager`.                                                                                                                                                                                         |
++| `SubjectManagerOptions`      | interface | `{ subjects?, on?, error? }` — input to `createSubjectManager`.                                                                                                                                                                                           |
++| `DefinitionManagerOptions`   | interface | `{ definitions?, on?, error? }` — input to `createDefinitionManager`.                                                                                                                                                                                     |
++| `RecordStamp`                | interface | `{ id, version, hash }` — the identity, version, and content hash a `RecordManager` derives before a record's concrete shape is built.                                                                                                                    |
++| `RecordFunction`             | type      | `(stamp: RecordStamp, value: TValue) => TRecord` — builds one concrete record from its stamp and the value it holds.                                                                                                                                      |
++| `RecordManagerOptions`       | interface | `{ entity, on?, error? }` — input to the `RecordManager` constructor; `entity` names what the registry holds.                                                                                                                                             |
++| `RecordManagerInterface`     | interface | The shared registry-engine contract — `emitter` / `count` + `has` / `record` / `records` / `add` / `remove` / `destroy`.                                                                                                                                  |
++| `RecordOptions`              | interface | `{ id? }` — per-call options for the record a manager's `add` mints.                                                                                                                                                                                      |
++| `InterpretContextOptions`    | interface | `{ session?, history?, on?, error? }` — input to `createInterpretContext`.                                                                                                                                                                                |
++| `InterpretOptions`           | interface | `{ templates?, context?, normalizer?, extractor?, clarifier?, formatter?, generator?, similarity?, floor?, history?, narrator?, on?, error? }` — input to `createInterpret`.                                                                              |
++| `NormalizerInterface`        | interface | The `Normalizer` stage contract — `normalize`.                                                                                                                                                                                                            |
++| `ExtractorInterface`         | interface | The `Extractor` stage contract — `extract`.                                                                                                                                                                                                               |
++| `ClarifierInterface`         | interface | The `Clarifier` stage contract — `clarify`.                                                                                                                                                                                                               |
++| `FormatterInterface`         | interface | The `Formatter` stage contract — `format`.                                                                                                                                                                                                                |
++| `GeneratorInterface`         | interface | The `Generator` stage contract — `generate`.                                                                                                                                                                                                              |
++| `NarratorInterface`          | interface | The lexicon-driven reverse-rendering contract — `phrase` / `label` / `line` / `value` / `describe` / `narrate`.                                                                                                                                           |
++| `TemplateManagerInterface`   | interface | The template registry contract — `emitter` / `count` + `has` / `template` / `templates` / `add` / `remove` / `destroy`.                                                                                                                                   |
++| `SubjectManagerInterface`    | interface | The subject registry contract — `emitter` / `count` + `has` / `subject` / `subjects` / `add` / `remove` / `destroy`.                                                                                                                                      |
++| `DefinitionManagerInterface` | interface | The definition registry contract — `emitter` / `count` + `has` / `definition` / `definitions` / `add` / `remove` / `destroy`.                                                                                                                             |
++| `InterpretContextInterface`  | interface | The cross-turn context contract — `emitter` / `session` (`string \| undefined`) / `subjects` / `definitions` + `previous` / `entities` / `add` / `clear` / `destroy`.                                                                                     |
++| `InterpretInterface`         | interface | The interpretation orchestrator contract — `emitter` + `interpret` / `add` / `remove` / `template` / `templates` / `describe` / `narrate` / `destroy`.                                                                                                    |
+ 
+ ### Constants
+ 
+@@ -213,7 +215,7 @@ prototypes) returns `false`, never throws.
+ 
+ Two postures, split by who produces the value. Input-record guards are EXACT:
+ an extra key fails, because an input this package owns that drifted from its
+-declared shape should be rejected loudly. Result guards are OPEN: unknown
++declared shape is rejected loudly. Result guards are OPEN: unknown
+ members and class instances pass when every published member conforms, because
+ a foreign engine's return is not this package's to narrow — `InterpretInterface`
+ is borrowable, and a consumer holding a borrowed engine guards its `interpret`
+@@ -318,7 +320,7 @@ behind the `Interpret` orchestrator and its stages.
+ | `matchTemplate`      | function | Find the best-scoring added template for a classified intent, gated by a confidence floor.                                             |
+ | `variablesOf`        | function | Collect every variable name referenced by a symbolic expression tree.                                                                  |
+ | `resolveExpression`  | function | Evaluate a symbolic expression tree against resolved bindings.                                                                         |
+-| `describeSubject`    | function | Render a one-line, display-neutral description of a reasons `Subject`, through an injected `Narrator`.                                 |
++| `renderSubject`      | function | Render a one-line, display-neutral description of a reasons `Subject`, through an injected `Narrator`.                                 |
+ 
+ ```ts
+ import {
+@@ -334,7 +336,7 @@ setField({ age: 25 }, 'age', 30) // { age: 30 }
+ setField({}, ['address', 'city'], 'Reno') // { address: { city: 'Reno' } }
+ applyReplacements("can't stop", { "can't": 'cannot' }) // 'cannot stop'
+ collapseWhitespace('  a   b\t c ') // 'a b c'
+-tokenize('The rate is 85%.') // ['the', 'rate', 'is', '85%']
++tokenize('The rate is 85%.') // ['the', 'rate', 'is', '85%.']
+ ```
+ 
+ Extraction, classification, and fuzzy matching — the leaves behind
+@@ -368,9 +370,9 @@ import {
+ 	canonicalize,
+ 	canonicalizeNode,
+ 	createNarrator,
+-	describeSubject,
+ 	digestValue,
+ 	matchTemplate,
++	renderSubject,
+ 	resolveExpression,
+ 	scoreTemplate,
+ 	variablesOf,
+@@ -395,7 +397,7 @@ resolveExpression(
+ 	},
+ 	{ deductible: 6000 },
+ ) // 500
+-describeSubject({ age: 25, income: 50000 }, createNarrator()) // 'with age: 25, income: 50000'
++renderSubject({ age: 25, income: 50000 }, createNarrator()) // 'with age: 25, income: 50000'
+ 
+ const gate = { action: 'compute', domain: 'rating', confidence: 1 }
+ const template = {
+@@ -557,7 +559,7 @@ const extractor = createExtractor({
+ 	domains: { rating: ['rate'] },
+ })
+ extractor.extract('calculate my rate at 85')
+-// { intent: { action: 'compute', domain: 'rating', confidence: 1 }, numbers: [85], complete: true }
++// { intent: { action: 'compute', domain: 'rating', confidence: 1 }, numbers: [85] }
+ ```
+ 
+ #### `ClarifierInterface`
+@@ -590,7 +592,7 @@ clarifier.clarify(
+ 	},
+ 	undefined,
+ 	{ action: 'calculate', domain: 'arithmetic', confidence: 1 },
+-) // { entities: [], ambiguities: [{ field: 'value', ... }], complete: false }
++) // { entities: [], ambiguities: [{ field: 'value', ... }] }
+ ```
+ 
+ A computation addresses one numeric element of an array-valued field as
+@@ -632,7 +634,7 @@ clarifier.clarify(
+ 	},
+ 	undefined,
+ 	{ action: 'calculate', domain: 'arithmetic', confidence: 1 },
+-) // total lands as 5, at CONFIDENCE_COMPUTED, with complete: true
++) // total lands as 5, at CONFIDENCE_COMPUTED, with no ambiguity
+ ```
+ 
+ #### `FormatterInterface`
+@@ -930,7 +932,6 @@ context.add({
+ 	prompt: '',
+ 	stages: [],
+ 	failures: [],
+-	complete: false,
+ 	confidence: 0,
+ 	digest: 'abc',
+ })
+diff --git a/src/core/Interpret.ts b/src/core/Interpret.ts
+index 35fbdda..564512a 100644
+--- a/src/core/Interpret.ts
++++ b/src/core/Interpret.ts
+@@ -309,7 +309,6 @@ export class Interpret implements InterpretInterface {
+ 			prompt: formatted.prompt,
+ 			stages,
+ 			failures: [],
+-			complete: clarified.complete,
+ 			confidence: generated.confidence,
+ 			digest,
+ 		}
+@@ -487,7 +486,6 @@ export class Interpret implements InterpretInterface {
+ 			prompt: '',
+ 			stages,
+ 			failures: [...failures],
+-			complete: false,
+ 			confidence: 0,
+ 			digest,
+ 		}
+diff --git a/src/core/InterpretContext.ts b/src/core/InterpretContext.ts
+index 0888c05..a1f9825 100644
+--- a/src/core/InterpretContext.ts
++++ b/src/core/InterpretContext.ts
+@@ -20,7 +20,7 @@ import { SubjectManager } from './managers/SubjectManager.js'
+  * carry-over reads from.
+  *
+  * @remarks
+- * `previous()` is a capped ring buffer (newest-last, oldest dropped once the
++ * `previous()` is a capped ring buffer (newest-last, oldest dropped after the
+  * `history` cap is reached — `DEFAULT_INTERPRET_HISTORY` by default, ≥ 3
+  * preserves the carry-over pin), never an unbounded array.
+  * `entities()` flattens every entity across the buffered history, most recent
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index f8cdb43..758052e 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -91,7 +91,7 @@ export const DEFAULT_CONTRACTIONS: Readonly<Record<string, string>> = Object.fre
+  * would otherwise hardcode. The reverse direction is keyed by
+  * `{table}.{reasoning}` per reasons kind, plus `result.quantitative.failed`
+  * for the quantitative-result failure suffix and `subject.fields` /
+- * `subject.empty` for `describeSubject`. The forward direction is keyed by
++ * `subject.empty` for `renderSubject`. The forward direction is keyed by
+  * `prompt.*` for the `Formatter`'s clause assembly and `ambiguity.*` for the
+  * questions a `Clarifier` and the orchestrator's match gates raise. Every
+  * string is a plain @orkestrel/template `fillTemplate` template —
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 97c93f8..4b40594 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -87,7 +87,7 @@ export function setField(subject: Subject, field: FieldPath, value: unknown): Su
+  *
+  * @remarks
+  * Word-boundary safe (`in` never matches inside `information`) and
+- * case-insensitive; each key is regex-escaped via the core-root
++ * case-insensitive; each key is regex-escaped through the core-root
+  * `escapeRegExp` before compiling, so a caller-supplied phrase containing
+  * regex metacharacters is matched literally. Multiple keys apply in
+  * `Object.entries` order — the `Normalizer` stage sequences its three maps
+@@ -149,7 +149,7 @@ export function collapseWhitespace(text: string): string {
+  * ```ts
+  * import { tokenize } from '@src/core'
+  *
+- * tokenize('The rate is 85%.') // ['the', 'rate', 'is', '85%']
++ * tokenize('The rate is 85%.') // ['the', 'rate', 'is', '85%.']
+  * ```
+  */
+ export function tokenize(text: string): readonly string[] {
+@@ -204,7 +204,7 @@ export function extractNumbers(text: string): readonly number[] {
+  * when more than one, a scalar otherwise) at `CONFIDENCE_COLLECT`. Otherwise,
+  * per mapping, the rightmost token in the text that equals the entity name
+  * (`CONFIDENCE_EXACT`), an alias exactly (`CONFIDENCE_ALIAS`), or an alias
+- * fuzzily (via `matchAlias`, confidence = its returned score) becomes a
++ * fuzzily (through `matchAlias`, confidence = its returned score) becomes a
+  * keyword anchor; anchors sort left-to-right and each claims its nearest
+  * unused number by text position. (3) Any mapping still unfilled claims the
+  * next unused number positionally, at `CONFIDENCE_POSITIONAL`. Every entity
+@@ -213,7 +213,7 @@ export function extractNumbers(text: string): readonly number[] {
+  * Runs ONLY after a template has matched (an orchestrator-owned step, never
+  * inside `Extractor`, which stays template-agnostic).
+  *
+- * @param numbers - The numbers already extracted from `text` via `extractNumbers`
++ * @param numbers - The numbers already extracted from `text` through `extractNumbers`
+  * @param mappings - The matched template's entity mappings
+  * @param text - The same text `numbers` was extracted from (for keyword proximity)
+  * @param similarity - The fuzzy alias-match score threshold (0..1)
+@@ -228,7 +228,8 @@ export function extractNumbers(text: string): readonly number[] {
+  * 	{ entity: 'score', aliases: ['credit score'], field: 'score' },
+  * ]
+  * assignEntities([25, 720], mappings, '25 year old with score 720', 0.8)
+- * // [{ name: 'age', value: 25, ... }, { name: 'score', value: 720, ... }]
++ * // [{ name: 'score', value: 720, ... }, { name: 'age', value: 25, ... }]
++ * // — keyword anchors land first, then the positional fallback
+  * ```
+  */
+ export function assignEntities(
+@@ -277,7 +278,9 @@ export function assignEntities(
+ 		const entityToken = mapping.entity.toLowerCase()
+ 
+ 		for (const token of tokens) {
+-			const tokenPosition = lowerText.indexOf(token)
++			const tokenPattern = new RegExp(`(?<![a-z0-9])${escapeRegExp(token)}(?![a-z0-9])`, 'g')
++			let tokenPosition = -1
++			for (const found of lowerText.matchAll(tokenPattern)) tokenPosition = found.index
+ 			if (token === entityToken) {
+ 				if (tokenPosition > matchedPosition) {
+ 					matchedPosition = tokenPosition
+@@ -788,7 +791,7 @@ export function resolveExpression(
+  * @remarks
+  * Complements — never duplicates — the raters `describe*` family (which
+  * describes RATERS artifacts); this describes REASONS artifacts. Every field
+- * renders via `narrator.label` + `narrator.value` (looked up under the
++ * renders through `narrator.label` + `narrator.value` (looked up under the
+  * `'units'` phrase table, falling back to `'plain'`) — the wording is fully
+  * lexicon-driven, mechanism rather than policy; `Definition` /
+  * `ReasonResult` narration lives on `Narrator#describe` / `Narrator#narrate`
+@@ -800,12 +803,12 @@ export function resolveExpression(
+  *
+  * @example
+  * ```ts
+- * import { createNarrator, describeSubject } from '@src/core'
++ * import { createNarrator, renderSubject } from '@src/core'
+  *
+- * describeSubject({ age: 25, income: 50000 }, createNarrator()) // 'with age: 25, income: 50000'
++ * renderSubject({ age: 25, income: 50000 }, createNarrator()) // 'with age: 25, income: 50000'
+  * ```
+  */
+-export function describeSubject(subject: Subject, narrator: NarratorInterface): string {
++export function renderSubject(subject: Subject, narrator: NarratorInterface): string {
+ 	const keys = Object.keys(subject).sort()
+ 	if (keys.length === 0) return narrator.line('subject.empty', {})
+ 	const parts = keys.map((key) => {
+diff --git a/src/core/stages/Clarifier.ts b/src/core/stages/Clarifier.ts
+index 0cc4b72..b17ea7b 100644
+--- a/src/core/stages/Clarifier.ts
++++ b/src/core/stages/Clarifier.ts
+@@ -32,7 +32,7 @@ import { Narrator } from '../Narrator.js'
+  * fills a mapping only from the SAME domain's most recent prior turn (a
+  * domain change drops carry-over entirely) and never overwrites a fresh
+  * value; template defaults fill any field still unresolved after carry-over;
+- * computed fields resolve in dependency (topological) order via
++ * computed fields resolve in dependency (topological) order through
+  * `resolveExpression` — an unresolved input, a non-finite result, or a
+  * dependency cycle leaves the field a gap, never landing an entity. A
+  * computation reads every resolved numeric field by name, and can address one
+@@ -65,7 +65,7 @@ import { Narrator } from '../Narrator.js'
+  * 	},
+  * 	undefined,
+  * 	{ action: 'calculate', domain: 'arithmetic', confidence: 1 },
+- * ) // { entities: [], ambiguities: [{ field: 'value', ... }], complete: false }
++ * ) // { entities: [], ambiguities: [{ field: 'value', ... }] }
+  * ```
+  */
+ export class Clarifier implements ClarifierInterface {
+@@ -98,7 +98,7 @@ export class Clarifier implements ClarifierInterface {
+ 
+ 		const ambiguities = this.#collectAmbiguities(template, resolved)
+ 
+-		return { entities: resolved, ambiguities, complete: ambiguities.length === 0 }
++		return { entities: resolved, ambiguities }
+ 	}
+ 
+ 	// Same-domain-only carry-over — a chaining pass over `context.previous()`
+@@ -191,7 +191,7 @@ export class Clarifier implements ClarifierInterface {
+ 	}
+ 
+ 	// Kahn's-algorithm topological order over the computed fields' field-to-
+-	// field dependency graph (via `variablesOf`) — a dependency cycle simply
++	// field dependency graph (through `variablesOf`) — a dependency cycle
+ 	// excludes every field it involves from the returned order, so a cyclic
+ 	// field (and anything depending on it) resolves to a gap rather than an
+ 	// arbitrary evaluation order. A compositional graph traversal, so it stays
+diff --git a/src/core/stages/Extractor.ts b/src/core/stages/Extractor.ts
+index 4858ec9..8127de9 100644
+--- a/src/core/stages/Extractor.ts
++++ b/src/core/stages/Extractor.ts
+@@ -22,7 +22,7 @@ import { classifyIntent, extractNumbers } from '../helpers.js'
+  * 	domains: { rating: ['rate'] },
+  * })
+  * extractor.extract('calculate my rate at 85')
+- * // { intent: { action: 'compute', domain: 'rating', confidence: 1 }, numbers: [85], complete: true }
++ * // { intent: { action: 'compute', domain: 'rating', confidence: 1 }, numbers: [85] }
+  * ```
+  */
+ export class Extractor implements ExtractorInterface {
+@@ -37,6 +37,6 @@ export class Extractor implements ExtractorInterface {
+ 	extract(text: string): ExtractResult {
+ 		const numbers = extractNumbers(text)
+ 		const intent = classifyIntent(text, this.#actions, this.#domains)
+-		return { intent, numbers, complete: numbers.length > 0 && intent.confidence > 0 }
++		return { intent, numbers }
+ 	}
+ }
+diff --git a/src/core/stages/Generator.ts b/src/core/stages/Generator.ts
+index b926a4f..bac9de0 100644
+--- a/src/core/stages/Generator.ts
++++ b/src/core/stages/Generator.ts
+@@ -13,7 +13,7 @@ import { setField } from '../helpers.js'
+  * entity set, plus its complete field audit.
+  *
+  * @remarks
+- * `entity → field` via `template.mappings` (an `EntityMapping.entity` name
++ * `entity → field` through `template.mappings` (an `EntityMapping.entity` name
+  * lookup); an entity whose name matches no mapping lands on the field named
+  * by its OWN `name` — the shape `Clarifier` uses for its synthesized
+  * default/computed entities, so one lookup rule serves both extraction-
+diff --git a/src/core/stages/Normalizer.ts b/src/core/stages/Normalizer.ts
+index cb2b420..c497bb8 100644
+--- a/src/core/stages/Normalizer.ts
++++ b/src/core/stages/Normalizer.ts
+@@ -56,10 +56,7 @@ export class Normalizer implements NormalizerInterface {
+ 	// One substitution pass over `map`, recording only the keys that actually
+ 	// matched. A chaining pass over the leaf `applyReplacements`, so it stays a
+ 	// private orchestration step rather than a leaf of its own.
+-	#applyStage(
+-		text: string,
+-		map: Readonly<Record<string, string>>,
+-	): { text: string; changes: readonly TextChange[] } {
++	#applyStage(text: string, map: Readonly<Record<string, string>>): NormalizeResult {
+ 		let working = text
+ 		const changes: TextChange[] = []
+ 		for (const [from, to] of Object.entries(map)) {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 5baf2d4..ef17bb3 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -2,7 +2,7 @@ import type { FieldPath } from '@orkestrel/contract'
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ import type { Definition, ReasonResult, Subject, SymbolicExpression } from '@orkestrel/reason'
+ 
+-// Interprets — a zero-dependency, synchronous, deterministic bidirectional
++// Interprets — a synchronous, deterministic bidirectional
+ // bridge between natural language and the reasons engine, plus the manager
+ // that owns the interpretation lifecycle. FORWARD: raw text is normalized,
+ // classified into an intent, matched against an added `Template`, mined
+@@ -22,7 +22,7 @@ import type { Definition, ReasonResult, Subject, SymbolicExpression } from '@ork
+  * Names how one {@link FieldMapping} / {@link Entity} value was obtained.
+  *
+  * @remarks
+- * `extracted` — mined from the raw text via keyword / alias / positional
++ * `extracted` — mined from the raw text through keyword / alias / positional
+  * matching. `carried` — reused from a same-domain prior turn in an
+  * {@link InterpretContextInterface}. `default` — filled from a
+  * {@link Template}'s {@link FieldDefault}. `computed` — derived by evaluating
+@@ -245,14 +245,12 @@ export interface NormalizeResult {
+ export interface ExtractResult {
+ 	readonly intent: Intent
+ 	readonly numbers: readonly number[]
+-	readonly complete: boolean
+ }
+ 
+ /** Represents the `Clarifier` stage's output: resolved entities plus any remaining ambiguities. */
+ export interface ClarifyResult {
+ 	readonly entities: readonly Entity[]
+ 	readonly ambiguities: readonly Ambiguity[]
+-	readonly complete: boolean
+ }
+ 
+ /** Represents the `Formatter` stage's output: the refined natural-language prompt. */
+@@ -275,8 +273,9 @@ export interface GenerateResult {
+  *
+  * @remarks
+  * `subject` / `definition` are absent on an incomplete `NO_TEMPLATE` /
+- * `LOW_CONFIDENCE` result — there is never a fabricated fallback template.
+- * `stages` always holds
++ * `LOW_CONFIDENCE` result — there is never a fabricated fallback template. An
++ * interpretation is complete when `ambiguities` and `failures` are both empty;
++ * no stored flag repeats that fact. `stages` always holds
+  * exactly five records, `[normalize, extract, clarify, format, generate]`,
+  * in order. `digest` is `digestValue` over `{text, templateId,
+  * templateVersion, subject, definition}` — re-running the same original text
+@@ -295,7 +294,6 @@ export interface Interpretation {
+ 	readonly prompt: string
+ 	readonly stages: readonly StageRecord[]
+ 	readonly failures: readonly StageFailure[]
+-	readonly complete: boolean
+ 	readonly confidence: number
+ 	readonly digest: string
+ }
+@@ -422,9 +420,9 @@ export type NarratorFormatter = (value: unknown) => string
+  *
+  * @remarks
+  * `phrases` is a two-level lookup (`table` → `key` → phrase) for domain
+- * vocabulary swaps (e.g. `comparison.equals` → `'is'`). `labels` maps a
++ * vocabulary swaps (for example `comparison.equals` → `'is'`). `labels` maps a
+  * dotted `FieldPath` string to its display label, falling back to
+- * `formatField` when absent. `templates` maps a template id (e.g.
++ * `formatField` when absent. `templates` maps a template id (for example
+  * `'definition.quantitative'`, `'result.symbolic'`, `'subject.fields'`) to an
+  * @orkestrel/template `fillTemplate` template string — see `DEFAULT_LEXICON`
+  * for the pinned neutral key set. Token grammar (the `[^{}]` token class, the
+@@ -799,7 +797,7 @@ export interface DefinitionManagerInterface {
+  * configured `history` (default `DEFAULT_INTERPRET_HISTORY`). `entities()`
+  * flattens every entity recorded across the buffered history, most recent
+  * last — the read carry-over consults. `add` pushes one completed
+- * {@link Interpretation}, dropping the oldest entry once the cap is reached.
++ * {@link Interpretation}, dropping the oldest entry after the cap is reached.
+  */
+ export interface InterpretContextInterface {
+ 	readonly emitter: EmitterInterface<InterpretContextEventMap>
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 19cbef0..3ab8e19 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -370,7 +370,6 @@ export function isInterpretation(value: unknown): value is Interpretation {
+ 			prompt: isString,
+ 			stages: arrayOf(isStageRecord),
+ 			failures: arrayOf(isStageFailure),
+-			complete: isBoolean,
+ 			confidence: isNumber,
+ 			digest: isString,
+ 		},
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index e36d26b..7f9f198 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -2,6 +2,7 @@
+ // this repo's own `guides/README.md` manifest. The four constants below are this
+ // package's own, and are the only part a sibling package changes.
+ 
++import type { Template } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	computeSymbolKey,
+@@ -17,8 +18,73 @@ import {
+ 	parseManifest,
+ 	resolveLink,
+ } from '@orkestrel/guide'
++import {
++	createFactorGroup,
++	createFieldFactor,
++	createQuantitativeDefinition,
++} from '@orkestrel/reason'
++import {
++	applyReplacements,
++	assignEntities,
++	canonicalize,
++	canonicalizeNode,
++	CONFIDENCE_ALIAS,
++	CONFIDENCE_CARRIED,
++	CONFIDENCE_COLLECT,
++	CONFIDENCE_COMPUTED,
++	CONFIDENCE_DEFAULT,
++	CONFIDENCE_EXACT,
++	CONFIDENCE_POSITIONAL,
++	collapseWhitespace,
++	createClarifier,
++	createDefinitionManager,
++	createExtractor,
++	createFormatter,
++	createGenerator,
++	createInterpret,
++	createInterpretContext,
++	createNarrator,
++	createNormalizer,
++	createSubjectManager,
++	createTemplateManager,
++	DEFAULT_CONTRACTIONS,
++	DEFAULT_INTERPRET_FLOOR,
++	DEFAULT_INTERPRET_HISTORY,
++	DEFAULT_INTERPRET_SIMILARITY,
++	DEFAULT_LEXICON,
++	digestValue,
++	escapeRegExp,
++	extractNumbers,
++	InterpretError,
++	isAmbiguity,
++	isComputedField,
++	isEntity,
++	isEntityMapping,
++	isFieldDefault,
++	isFieldMapping,
++	isIntent,
++	isInterpretation,
++	isInterpretError,
++	isProvenance,
++	isStageFailure,
++	isStageRecord,
++	isTemplate,
++	matchAlias,
++	matchTemplate,
++	NUMBER_PATTERN,
++	parseTemplate,
++	RecordManager,
++	renderSubject,
++	resolveExpression,
++	scoreSimilarity,
++	scoreTemplate,
++	setField,
++	tokenize,
++	UNSAFE_FIELD_SEGMENTS,
++	variablesOf,
++} from '@src/core'
+ import { readFileSync } from 'node:fs'
+-import { requireValue } from '@orkestrel/test'
++import { captureError, requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+@@ -168,3 +234,498 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// ── Flagship fence transcriptions ────────────────────────────────────────────
++//
++// Each case below is one `guides/interpret.md` fence, run against the real barrel and asserting
++// the value its comment claims. Parity proves a documented name resolves; only a run proves the
++// documented value is the one the code returns. Change a fence, change the case beside it.
++
++/** The record shape the `RecordManagerInterface` fence declares for its `RecordManager` instance. */
++interface NoteRecord {
++	readonly id: string
++	readonly note: string
++	readonly version: number
++	readonly hash: string
++}
++
++/** The arithmetic template the Surface, Factories, and `InterpretInterface` fences all add. */
++const ARITHMETIC: Template = Object.freeze({
++	id: 't1',
++	name: 'Arithmetic',
++	domain: 'arithmetic',
++	intents: ['calculate'],
++	mappings: [{ entity: 'value', aliases: [], field: 'value' }],
++	defaults: [],
++	computations: [],
++	definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++		createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
++	]),
++})
++
++describe('flagship fences', () => {
++	it('Surface: interprets text against an added template', () => {
++		const interpret = createInterpret({
++			extractor: createExtractor({
++				actions: { calculate: 'calculate' },
++				domains: { arithmetic: ['arithmetic'] },
++			}),
++			templates: [ARITHMETIC],
++		})
++		const result = interpret.interpret('calculate arithmetic 42')
++
++		expect(result.subject).toEqual({ value: 42 })
++		expect(result.ambiguities).toEqual([])
++		expect(result.failures).toEqual([])
++		interpret.destroy()
++	})
++
++	it('Constants: every pinned default and lexicon line', () => {
++		expect(DEFAULT_INTERPRET_SIMILARITY).toBe(0.8)
++		expect(DEFAULT_INTERPRET_FLOOR).toBe(0.3)
++		expect(DEFAULT_INTERPRET_HISTORY).toBe(16)
++		expect(CONFIDENCE_EXACT).toBe(1)
++		expect(CONFIDENCE_ALIAS).toBe(0.9)
++		expect(CONFIDENCE_COLLECT).toBe(0.9)
++		expect(CONFIDENCE_POSITIONAL).toBe(0.7)
++		expect(CONFIDENCE_CARRIED).toBe(0.7)
++		expect(CONFIDENCE_DEFAULT).toBe(1)
++		expect(CONFIDENCE_COMPUTED).toBe(0.9)
++		expect(typeof NUMBER_PATTERN.source).toBe('string')
++		expect(UNSAFE_FIELD_SEGMENTS).toEqual(['__proto__', 'prototype', 'constructor'])
++		expect(DEFAULT_CONTRACTIONS["can't"]).toBe('cannot')
++		expect(DEFAULT_LEXICON.templates?.['subject.empty']).toBe('with no fields')
++		expect(DEFAULT_LEXICON.templates?.['prompt.base']).toBe('{{verb}} {{name}}')
++		expect(DEFAULT_LEXICON.templates?.['ambiguity.entity']).toBe('What is your {{entity}}?')
++	})
++
++	it('Errors: a caught InterpretError narrows to its code', () => {
++		const caught = captureError(() => {
++			throw new InterpretError('DESTROYED', 'Interpret has been destroyed')
++		})
++
++		expect(isInterpretError(caught)).toBe(true)
++		expect(isInterpretError(caught) ? caught.code : undefined).toBe('DESTROYED')
++	})
++
++	it('Validators: every guard accepts the record the fence hands it', () => {
++		expect(isEntityMapping({ entity: 'age', aliases: ['years old'], field: 'age' })).toBe(true)
++		expect(isFieldDefault({ field: 'term', value: 12 })).toBe(true)
++		expect(
++			isComputedField({
++				field: 'monthly',
++				expression: {
++					form: 'operation',
++					operator: 'divide',
++					left: { form: 'variable', name: 'deductible' },
++					right: { form: 'constant', value: 12 },
++				},
++			}),
++		).toBe(true)
++		expect(
++			isTemplate({
++				id: 't1',
++				name: 'Arithmetic',
++				domain: 'arithmetic',
++				intents: ['calculate'],
++				mappings: [],
++				defaults: [],
++				computations: [],
++				definition: createQuantitativeDefinition('t1', 'Arithmetic', [
++					createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
++				]),
++			}),
++		).toBe(true)
++		expect(isProvenance({ category: 'extracted', detail: 'alias', metadata: true })).toBe(true)
++		expect(isIntent({ action: 'calculate', domain: 'arithmetic', confidence: 1 })).toBe(true)
++		expect(
++			isEntity({ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 1 }),
++		).toBe(true)
++		expect(
++			isFieldMapping({ field: 'value', provenance: { category: 'extracted' }, confidence: 1 }),
++		).toBe(true)
++		expect(
++			isAmbiguity({ field: 'value', question: 'Which value?', candidates: ['42'], required: true }),
++		).toBe(true)
++		expect(
++			isStageRecord({ stage: 'normalize', input: 'raw', output: 'clean', failed: false }),
++		).toBe(true)
++		expect(isStageFailure({ stage: 'format', code: 'FORMAT_FAILED', message: 'failed' })).toBe(true)
++
++		const guardEngine = createInterpret()
++		expect(isInterpretation(guardEngine.interpret('unmatched text'))).toBe(true)
++		guardEngine.destroy()
++	})
++
++	it('Helpers: the text leaves return the strings the fence prints', () => {
++		expect(escapeRegExp('a.b*c')).toBe('a\\.b\\*c')
++		expect(setField({ age: 25 }, 'age', 30)).toEqual({ age: 30 })
++		expect(setField({}, ['address', 'city'], 'Reno')).toEqual({ address: { city: 'Reno' } })
++		expect(applyReplacements("can't stop", { "can't": 'cannot' })).toBe('cannot stop')
++		expect(collapseWhitespace('  a   b\t c ')).toBe('a b c')
++		expect(tokenize('The rate is 85%.')).toEqual(['the', 'rate', 'is', '85%.'])
++	})
++
++	it('Helpers: the extraction and matching leaves return the fence values', () => {
++		expect(extractNumbers('income was $50,000, age 25')).toEqual([50000, 25])
++		expect(scoreSimilarity('rate', 'rate')).toBe(1)
++		expect(matchAlias('valu', ['value', 'amount'], 0.6)).toBeCloseTo(0.86, 2)
++		const assigned = assignEntities(
++			[25, 720],
++			[
++				{ entity: 'age', aliases: ['years old'], field: 'age' },
++				{ entity: 'score', aliases: ['credit score'], field: 'score' },
++			],
++			'25 year old with score 720',
++			0.8,
++		)
++		expect(assigned.find((entity) => entity.name === 'age')?.value).toBe(25)
++		expect(assigned.find((entity) => entity.name === 'score')?.value).toBe(720)
++	})
++
++	it('Helpers: the digest, template, and reverse leaves return the fence values', () => {
++		expect(canonicalize({ b: 1, a: 2 }) === canonicalize({ a: 2, b: 1 })).toBe(true)
++		expect(canonicalizeNode({ b: 1, a: 2 }, new Set())).toBe('{"a":2,"b":1}')
++		expect(digestValue({ a: 1 }) === digestValue({ a: 1 })).toBe(true)
++		expect(matchTemplate({ confidence: 0 }, [], 0.3)).toBeUndefined()
++		expect(
++			variablesOf({
++				form: 'operation',
++				operator: 'divide',
++				left: { form: 'variable', name: 'deductible' },
++				right: { form: 'constant', value: 12 },
++			}),
++		).toEqual(['deductible'])
++		expect(
++			resolveExpression(
++				{
++					form: 'operation',
++					operator: 'divide',
++					left: { form: 'variable', name: 'deductible' },
++					right: { form: 'constant', value: 12 },
++				},
++				{ deductible: 6000 },
++			),
++		).toBe(500)
++		expect(renderSubject({ age: 25, income: 50000 }, createNarrator())).toBe(
++			'with age: 25, income: 50000',
++		)
++		expect(
++			scoreTemplate(
++				{ action: 'compute', domain: 'rating', confidence: 1 },
++				{
++					id: 't1',
++					name: 'T',
++					domain: 'rating',
++					intents: ['compute'],
++					mappings: [],
++					defaults: [],
++					computations: [],
++					definition: {
++						reasoning: 'symbolic',
++						id: 't1',
++						name: 'T',
++						equations: [],
++						variables: {},
++					},
++				},
++			),
++		).toBe(1)
++	})
++
++	it('Parsers: an off-shape template coerces to undefined', () => {
++		expect(parseTemplate('not json')).toBeUndefined()
++	})
++
++	it('Factories: each factory wires a working entity with the fence tally', () => {
++		expect(createNormalizer().normalize("it's  cold")).toEqual({
++			text: 'it is cold',
++			changes: [{ from: "it's", to: 'it is' }],
++		})
++
++		const templates = createTemplateManager({ templates: [ARITHMETIC] })
++		expect(templates.count).toBe(1)
++		templates.destroy()
++
++		expect(createSubjectManager({ subjects: [{ value: 1 }] }).count).toBe(1)
++		expect(
++			createDefinitionManager({
++				definitions: [
++					createQuantitativeDefinition('d1', 'D1', [
++						createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
++					]),
++				],
++			}).count,
++		).toBe(1)
++	})
++
++	it('NormalizerInterface: normalize expands the contraction and records the change', () => {
++		const normalizer = createNormalizer({ contractions: { "can't": 'cannot' } })
++
++		expect(normalizer.normalize("can't   stop")).toEqual({
++			text: 'cannot stop',
++			changes: [{ from: "can't", to: 'cannot' }],
++		})
++	})
++
++	it('ExtractorInterface: extract classifies the intent and mines the number', () => {
++		const extractor = createExtractor({
++			actions: { calculate: 'compute' },
++			domains: { rating: ['rate'] },
++		})
++
++		expect(extractor.extract('calculate my rate at 85')).toEqual({
++			intent: { action: 'compute', domain: 'rating', confidence: 1 },
++			numbers: [85],
++		})
++	})
++
++	it('ClarifierInterface: clarify raises the ambiguity the required mapping earns', () => {
++		const clarifier = createClarifier({ floor: 0.3 })
++		const template: Template = {
++			id: 't1',
++			name: 'Arithmetic',
++			domain: 'arithmetic',
++			intents: ['calculate'],
++			mappings: [{ entity: 'value', aliases: [], field: 'value', required: true }],
++			defaults: [],
++			computations: [],
++			definition: {
++				reasoning: 'symbolic',
++				id: 't1',
++				name: 'Arithmetic',
++				equations: [],
++				variables: {},
++			},
++		}
++
++		expect(
++			clarifier.clarify([], template, undefined, {
++				action: 'calculate',
++				domain: 'arithmetic',
++				confidence: 1,
++			}),
++		).toEqual({
++			entities: [],
++			ambiguities: [
++				{ field: 'value', question: 'What is your value?', candidates: [], required: true },
++			],
++		})
++	})
++
++	it('ClarifierInterface: a declared aggregate over a known-length array lands its total', () => {
++		const clarifier = createClarifier({ floor: 0.3 })
++		const template: Template = {
++			id: 't2',
++			name: 'Total',
++			domain: 'arithmetic',
++			intents: ['calculate'],
++			mappings: [{ entity: 'value', aliases: [], field: 'value' }],
++			defaults: [],
++			computations: [
++				{
++					field: 'total',
++					expression: {
++						form: 'operation',
++						operator: 'add',
++						left: { form: 'variable', name: 'value.0' },
++						right: { form: 'variable', name: 'value.1' },
++					},
++				},
++			],
++			definition: {
++				reasoning: 'symbolic',
++				id: 't2',
++				name: 'Total',
++				equations: [],
++				variables: {},
++			},
++		}
++		const result = clarifier.clarify(
++			[{ name: 'value', value: [2, 3], provenance: { category: 'extracted' }, confidence: 1 }],
++			template,
++			undefined,
++			{ action: 'calculate', domain: 'arithmetic', confidence: 1 },
++		)
++		const total = result.entities.find((entity) => entity.name === 'total')
++
++		expect(total?.value).toBe(5)
++		expect(total?.confidence).toBe(CONFIDENCE_COMPUTED)
++		expect(result.ambiguities).toEqual([])
++	})
++
++	it('FormatterInterface: format renders the verb and the template name', () => {
++		const formatter = createFormatter({ verbs: { calculate: 'Calculate' } })
++		const template: Template = {
++			id: 't1',
++			name: 'Arithmetic',
++			domain: 'arithmetic',
++			intents: ['calculate'],
++			mappings: [],
++			defaults: [],
++			computations: [],
++			definition: {
++				reasoning: 'symbolic',
++				id: 't1',
++				name: 'Arithmetic',
++				equations: [],
++				variables: {},
++			},
++		}
++
++		expect(
++			formatter.format(
++				{ action: 'calculate', domain: 'arithmetic', confidence: 1 },
++				template,
++				[],
++				[],
++			),
++		).toEqual({ prompt: 'Calculate Arithmetic' })
++	})
++
++	it('GeneratorInterface: generate builds the subject and the mean confidence', () => {
++		const generator = createGenerator()
++		const template: Template = {
++			id: 't1',
++			name: 'Arithmetic',
++			domain: 'arithmetic',
++			intents: ['calculate'],
++			mappings: [{ entity: 'value', aliases: [], field: 'value' }],
++			defaults: [],
++			computations: [],
++			definition: {
++				reasoning: 'symbolic',
++				id: 't1',
++				name: 'Arithmetic',
++				equations: [],
++				variables: {},
++			},
++		}
++		const result = generator.generate(
++			[
++				{
++					name: 'value',
++					value: 42,
++					provenance: { category: 'extracted', detail: 'collect' },
++					confidence: 0.9,
++				},
++			],
++			template,
++		)
++
++		expect(result.subject).toEqual({ value: 42 })
++		expect(result.confidence).toBe(0.9)
++	})
++
++	it('NarratorInterface: each primitive returns its documented rendering', () => {
++		const narrator = createNarrator({
++			lexicon: { phrases: { comparison: { equals: 'is' } } },
++			formatters: { money: (value) => `$${String(value)}` },
++		})
++
++		expect(narrator.phrase('comparison', 'equals', 'equals')).toBe('is')
++		expect(narrator.label('age')).toBe('age')
++		expect(narrator.line('subject.empty', {})).toBe('with no fields')
++		expect(narrator.value('money', 5)).toBe('$5')
++	})
++
++	it('RecordManagerInterface: the shared engine stamps, holds, and removes one record', () => {
++		const notes = new RecordManager<string, NoteRecord>({ entity: 'Note' })
++		const note = notes.add('n1', 'first', (stamp, value) => ({
++			id: stamp.id,
++			note: value,
++			version: stamp.version,
++			hash: stamp.hash,
++		}))
++
++		expect(note.version).toBe(1)
++		expect(notes.count).toBe(1)
++		expect(notes.has('n1')).toBe(true)
++		expect(notes.record('n1')).toEqual(note)
++		expect(notes.records()).toEqual([note])
++		expect(notes.remove('n1')).toBe(true)
++		notes.destroy()
++	})
++
++	it('TemplateManagerInterface: the registry stamps, holds, and removes one template', () => {
++		const templates = createTemplateManager()
++		const record = templates.add(ARITHMETIC)
++
++		expect(record.version).toBe(1)
++		expect(templates.count).toBe(1)
++		expect(templates.has('t1')).toBe(true)
++		expect(templates.template('t1')).toEqual(record)
++		expect(templates.templates()).toEqual([record])
++		expect(templates.remove('t1')).toBe(true)
++		templates.destroy()
++	})
++
++	it('SubjectManagerInterface: the registry mints its own record id', () => {
++		const subjects = createSubjectManager()
++		const first = subjects.add({ age: 25 })
++
++		expect(subjects.count).toBe(1)
++		expect(subjects.has(first.id)).toBe(true)
++		expect(subjects.subject(first.id)).toEqual(first)
++		expect(subjects.subjects()).toEqual([first])
++		expect(subjects.remove(first.id)).toBe(true)
++		subjects.destroy()
++	})
++
++	it('DefinitionManagerInterface: the registry defaults the record id to the definition id', () => {
++		const definitions = createDefinitionManager()
++		const record = definitions.add(
++			createQuantitativeDefinition('d1', 'D1', [
++				createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),
++			]),
++		)
++
++		expect(definitions.count).toBe(1)
++		expect(definitions.has(record.id)).toBe(true)
++		expect(definitions.definition(record.id)).toEqual(record)
++		expect(definitions.definitions()).toEqual([record])
++		expect(definitions.remove(record.id)).toBe(true)
++		definitions.destroy()
++	})
++
++	it('InterpretContextInterface: a fresh context buffers nothing', () => {
++		const context = createInterpretContext({ session: 'turn-1', history: 4 })
++
++		expect(context.previous()).toEqual([])
++		expect(context.entities()).toEqual([])
++		context.add({
++			text: '42',
++			normalized: '42',
++			intent: { confidence: 0 },
++			entities: [],
++			mappings: [],
++			ambiguities: [],
++			prompt: '',
++			stages: [],
++			failures: [],
++			confidence: 0,
++			digest: 'abc',
++		})
++		expect(context.previous()).toHaveLength(1)
++		context.clear()
++		expect(context.previous()).toEqual([])
++		context.destroy()
++	})
++
++	it('InterpretInterface: the orchestrator interprets, looks up, lists, and removes', () => {
++		const interpret = createInterpret({
++			extractor: createExtractor({
++				actions: { calculate: 'calculate' },
++				domains: { arithmetic: ['arithmetic'] },
++			}),
++		})
++		interpret.add(ARITHMETIC)
++		const result = interpret.interpret('calculate arithmetic 42')
++
++		expect(result.subject).toEqual({ value: 42 })
++		expect(interpret.template('t1')).toEqual(ARITHMETIC)
++		expect(interpret.templates()).toEqual([ARITHMETIC])
++		expect(interpret.remove('t1')).toBe(true)
++		interpret.destroy()
++	})
++})
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 2919830..1073fd2 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -14,6 +14,7 @@
+ // file drives no stage, no manager, and no narrator: it asserts only what the fixtures are.
+ 
+ import type { Template } from '@src/core'
++import { Extractor } from '@src/core'
+ import { resolveField } from '@orkestrel/contract'
+ import {
+ 	createConstant,
+@@ -34,6 +35,7 @@ import {
+ 	buildInterpretTemplate,
+ 	buildLoanTemplate,
+ 	buildStatisticsTemplate,
++	createCorpusExtractor,
+ 	EXTREME_NUMBERS,
+ 	expectSymbolic,
+ 	INTERPRET_ACTIONS,
+@@ -205,6 +207,15 @@ describe('INTERPRET_DOMAINS', () => {
+ 	})
+ })
+ 
++describe('createCorpusExtractor', () => {
++	it('returns a real Extractor, distinct per call, so one suite cannot reach another', () => {
++		const extractor = createCorpusExtractor()
++
++		expect(extractor).toBeInstanceOf(Extractor)
++		expect(extractor).not.toBe(createCorpusExtractor())
++	})
++})
++
+ describe('the interprets corpus builders', () => {
+ 	it('return a fresh graph on every call, so one suite cannot reach another', () => {
+ 		const first = buildInsuranceTemplate()
+@@ -279,7 +290,7 @@ describe('buildInterpretation', () => {
+ 	it('builds a completed turn whose entities, mappings, and subject agree', () => {
+ 		const interpretation = buildInterpretation()
+ 
+-		expect(interpretation.complete).toBe(true)
++		expect(interpretation.ambiguities).toEqual([])
+ 		expect(interpretation.failures).toEqual([])
+ 		expect(interpretation.entities.map((entity) => entity.name)).toEqual(
+ 			interpretation.mappings.map((mapping) => mapping.entity),
+@@ -292,10 +303,10 @@ describe('buildInterpretation', () => {
+ 	})
+ 
+ 	it('merges an override over the default turn and returns a fresh graph each call', () => {
+-		const overridden = buildInterpretation({ text: 'second turn', complete: false })
++		const overridden = buildInterpretation({ text: 'second turn', confidence: 0 })
+ 
+ 		expect(overridden.text).toBe('second turn')
+-		expect(overridden.complete).toBe(false)
++		expect(overridden.confidence).toBe(0)
+ 		expect(overridden.intent).toEqual(buildInterpretation().intent)
+ 		expect(buildInterpretation().entities).not.toBe(buildInterpretation().entities)
+ 	})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index c25720e..65c5a33 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -2,17 +2,18 @@
+ // Vitest project (`setupFiles[0]`). Keep this file free of `node:*` and of
+ // `document` / `window` / Vue: DOM/Vue helpers live in `setupBrowser.ts`.
+ //
+-// Scoped to the `interprets` corpus this workspace ships today (AGENTS
+-// §16.1): the interprets fixture builders and the reason-result narrower the
+-// suites actually import. Generic test infrastructure — recorders, recorder
+-// maps, error capture, unchecked invocation — comes from `@orkestrel/test`,
+-// which every suite imports directly. A dep-originating symbol
+-// (`@orkestrel/reason` / `@orkestrel/contract`) is imported from its OWN
+-// package here, never from `@src/core` — the barrel re-exports only local
+-// `interprets` modules (AGENTS §6).
++// Scoped to the `interprets` corpus this workspace ships today
++// (`.claude/rules/tests.md` § Test contract): the interprets fixture builders
++// and the reason-result narrower the suites actually import. Generic test
++// infrastructure — recorders, recorder maps, error capture, unchecked
++// invocation — comes from `@orkestrel/test`, which every suite imports
++// directly. A dep-originating symbol (`@orkestrel/reason` /
++// `@orkestrel/contract`) is imported from its OWN package here, never from
++// `@src/core` — the barrel re-exports only local `interprets` modules
++// (`.claude/rules/architecture.md` § Barrel exports).
+ 
+ import type { ReasonResult, SymbolicResult } from '@orkestrel/reason'
+-import type { Interpretation, Template } from '@src/core'
++import type { ExtractorInterface, Interpretation, Template } from '@src/core'
+ import { isArray } from '@orkestrel/contract'
+ import {
+ 	createConstant,
+@@ -24,19 +25,14 @@ import {
+ 	createStaticFactor,
+ 	createVariable,
+ } from '@orkestrel/reason'
+-import { InterpretContext } from '@src/core'
+-import { afterEach, vi } from 'vitest'
+-
+-afterEach(() => {
+-	vi.restoreAllMocks()
+-})
++import { Extractor, InterpretContext } from '@src/core'
+ 
+ // ── Reason-result narrowing (environment-agnostic) ────────────────────────────
+ 
+ /**
+  * Narrow a `reason()` return to a `SymbolicResult` — throws on a batch array
+  * or a result of another reasoning, so assertions read the narrowed result
+- * with no casts (AGENTS §14).
++ * with no casts (`.claude/rules/patterns.md` § Validation and contracts).
+  *
+  * @param result - The single-or-batch return of a `reason()` call
+  * @returns The result, narrowed to `SymbolicResult`
+@@ -103,7 +99,8 @@ export const TRICKY_KEYS: readonly string[] = Object.freeze([
+  * Build a small, neutral `Template` — a single `value` entity mapping onto a
+  * one-factor quantitative definition — the shared fixture the `interprets`
+  * validator, helper, stage, and orchestrator tests seed a registry with
+- * instead of hand-writing the same literal repeatedly (AGENTS §16.1).
++ * instead of hand-writing the same literal repeatedly
++ * (`.claude/rules/tests.md` § Test contract).
+  *
+  * @param overrides - Fields merged over the neutral defaults
+  * @returns The built template
+@@ -151,6 +148,17 @@ export const INTERPRET_DOMAINS: Readonly<Record<string, readonly string[]>> = Ob
+ 	statistics: ['statistics', 'stats'],
+ })
+ 
++/**
++ * Creates the corpus `Extractor` every suite that drives the interprets corpus
++ * wires — the one assembly of `INTERPRET_ACTIONS` and `INTERPRET_DOMAINS`, so
++ * the vocabulary pair cannot drift across the suites that consume it.
++ *
++ * @returns A fresh `Extractor` over the corpus action and domain vocabularies
++ */
++export function createCorpusExtractor(): ExtractorInterface {
++	return new Extractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS })
++}
++
+ /**
+  * Build the auto-insurance corpus template — the redesign's terrain-vocabulary
+  * analog of scsr's `DEFAULT_TEMPLATES` insurance fixture: a required `age`
+@@ -267,7 +275,8 @@ export function buildStatisticsTemplate(overrides?: Partial<Template>): Template
+ /**
+  * Build a minimal, complete-shaped {@link Interpretation} literal — the fixture
+  * the `InterpretContext` history/carry-over tests push without running the full
+- * orchestrator (AGENTS §16.1). Its single `age` entity and `intent.domain`
++ * orchestrator (`.claude/rules/tests.md` § Test contract). Its single `age`
++ * entity and `intent.domain`
+  * drive same-domain carry-over reads.
+  *
+  * @param overrides - Fields merged over the neutral defaults
+@@ -303,7 +312,6 @@ export function buildInterpretation(overrides?: Partial<Interpretation>): Interp
+ 		prompt: 'Calculate Auto Insurance with age: 25',
+ 		stages: [],
+ 		failures: [],
+-		complete: true,
+ 		confidence: 1,
+ 		digest: '00000000',
+ 		...overrides,
+@@ -313,8 +321,9 @@ export function buildInterpretation(overrides?: Partial<Interpretation>): Interp
+ /**
+  * Seed a REAL {@link InterpretContext} with `previous` — one `.add(...)` call per
+  * given {@link Interpretation}, via the class's own public API — the canonical
+- * form the `Clarifier` carry-over scenarios seed a real context with (AGENTS §16:
+- * "No mocks — use real implementations"). The real `InterpretContext` flattens
++ * form the `Clarifier` carry-over scenarios seed a real context with
++ * (`.claude/rules/tests.md` § Test contract: "Use real implementations and
++ * small scenarios"). The real `InterpretContext` flattens
+  * `previous`'s entities and exposes them the way the `Clarifier` reads them.
+  *
+  * @param previous - The prior interpretations to seed, in order
+diff --git a/tests/src/core/Interpret.test.ts b/tests/src/core/Interpret.test.ts
+index 24ee42b..5dbd4dc 100644
+--- a/tests/src/core/Interpret.test.ts
++++ b/tests/src/core/Interpret.test.ts
+@@ -16,24 +16,19 @@ import {
+ 	createSymbolicReasoner,
+ 	createVariable,
+ } from '@orkestrel/reason'
+-import { createNarrator, Extractor, Interpret, InterpretContext, isInterpretError } from '@src/core'
++import { createNarrator, Interpret, InterpretContext, isInterpretError } from '@src/core'
+ import { captureError, createRecorders } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	buildInsuranceTemplate,
+ 	buildInterpretTemplate,
+-	INTERPRET_ACTIONS,
+-	INTERPRET_DOMAINS,
++	createCorpusExtractor,
+ } from '../../setup.js'
+ 
+ // The `Interpret` orchestrator — registry, synchronous five-stage pipeline,
+ // explicit NO_TEMPLATE / LOW_CONFIDENCE gates, visible stage-throw failures,
+ // reverse passthroughs, emitter, and DESTROYED teardown (design §2/§8).
+ 
+-function corpusExtractor(): ExtractorInterface {
+-	return new Extractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS })
+-}
+-
+ describe('Interpret', () => {
+ 	describe('registry', () => {
+ 		it('adds, looks up, lists, and removes templates as plain data', () => {
+@@ -74,7 +69,7 @@ describe('Interpret', () => {
+ 		it('runs the five ordered stages and produces a complete result', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 			})
+ 			const result = interpret.interpret('calculate insurance age 25')
+ 			expect(result.stages.map((stage) => stage.stage)).toEqual([
+@@ -85,7 +80,7 @@ describe('Interpret', () => {
+ 				'generate',
+ 			])
+ 			expect(result.stages.every((stage) => !stage.failed)).toBe(true)
+-			expect(result.complete).toBe(true)
++			expect(result.ambiguities).toEqual([])
+ 			expect(result.failures).toEqual([])
+ 			expect(result.subject).toMatchObject({ age: 25, accidents: 0, coverage: 'standard' })
+ 			expect(result.text).toBe('calculate insurance age 25')
+@@ -93,10 +88,26 @@ describe('Interpret', () => {
+ 			interpret.destroy()
+ 		})
+ 
++		it('stores no completeness flag, so a reader derives it from ambiguities and failures', () => {
++			const interpret = new Interpret({
++				templates: [buildInsuranceTemplate()],
++				extractor: createCorpusExtractor(),
++			})
++			const resolved = interpret.interpret('calculate insurance age 25')
++			const unresolved = interpret.interpret('what is the meaning of life')
++
++			expect(Object.hasOwn(resolved, 'complete')).toBe(false)
++			expect(Object.hasOwn(unresolved, 'complete')).toBe(false)
++			expect(resolved.ambiguities).toEqual([])
++			expect(resolved.failures).toEqual([])
++			expect(unresolved.failures).not.toEqual([])
++			interpret.destroy()
++		})
++
+ 		it('records structured, non-blob per-stage input/output snapshots that chain across stages', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 			})
+ 			const result = interpret.interpret('calculate insurance age 25')
+ 			const normalize = result.stages[0]
+@@ -114,7 +125,7 @@ describe('Interpret', () => {
+ 		it('emits interpret once and error zero on the happy path', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 			})
+ 			const events = createRecorders<InterpretEventMap, 'interpret' | 'error'>(interpret.emitter, [
+ 				'interpret',
+@@ -131,10 +142,10 @@ describe('Interpret', () => {
+ 		it('yields an explicit incomplete result with a field:intent ambiguity, never a fallback template', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 			})
+ 			const result = interpret.interpret('what is the meaning of life')
+-			expect(result.complete).toBe(false)
++			expect(result.ambiguities).not.toEqual([])
+ 			expect(result.subject).toBeUndefined()
+ 			expect(result.definition).toBeUndefined()
+ 			expect(result.entities).toEqual([])
+@@ -150,7 +161,7 @@ describe('Interpret', () => {
+ 		it('renders the gate question through the lexicon, so a caller rewords it', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 				narrator: { lexicon: { templates: { 'ambiguity.intent': 'Which domain?' } } },
+ 			})
+ 			const result = interpret.interpret('what is the meaning of life')
+@@ -161,10 +172,10 @@ describe('Interpret', () => {
+ 		it('fires NO_TEMPLATE even against a non-empty registry (no templates[0] fallback)', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 			})
+ 			const result = interpret.interpret('compute statistics 42')
+-			expect(result.complete).toBe(false)
++			expect(result.ambiguities).not.toEqual([])
+ 			expect(result.failures[0]?.code).toBe('NO_TEMPLATE')
+ 			interpret.destroy()
+ 		})
+@@ -177,7 +188,6 @@ describe('Interpret', () => {
+ 					return {
+ 						intent: { action: 'calculate', domain: 'insurance', confidence: 0.1 },
+ 						numbers: [25],
+-						complete: true,
+ 					}
+ 				},
+ 			}
+@@ -186,7 +196,7 @@ describe('Interpret', () => {
+ 				extractor: weakExtractor,
+ 			})
+ 			const result = interpret.interpret('calculate insurance age 25')
+-			expect(result.complete).toBe(false)
++			expect(result.ambiguities).not.toEqual([])
+ 			expect(result.subject).toBeUndefined()
+ 			expect(result.failures[0]?.code).toBe('LOW_CONFIDENCE')
+ 			expect(result.ambiguities[0]?.field).toBe('intent')
+@@ -204,7 +214,7 @@ describe('Interpret', () => {
+ 			}
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 				normalizer: throwingNormalizer,
+ 			})
+ 			const events = createRecorders<InterpretEventMap, 'interpret' | 'error'>(interpret.emitter, [
+@@ -215,8 +225,7 @@ describe('Interpret', () => {
+ 			expect(result.stages[0]?.failed).toBe(true)
+ 			expect(result.stages[0]?.error).toBe('boom')
+ 			expect(result.stages).toHaveLength(5)
+-			expect(result.failures[0]?.code).toBe('NORMALIZE_FAILED')
+-			expect(result.complete).toBe(false)
++			expect(result.failures.map((failure) => failure.code)).toEqual(['NORMALIZE_FAILED'])
+ 			expect(events.error.count).toBe(1)
+ 			expect(events.interpret.count).toBe(1)
+ 			interpret.destroy()
+@@ -236,8 +245,7 @@ describe('Interpret', () => {
+ 			expect(result.stages[1]?.failed).toBe(true)
+ 			expect(result.stages[1]?.error).toBe('extract boom')
+ 			expect(result.stages).toHaveLength(5)
+-			expect(result.failures[0]?.code).toBe('EXTRACT_FAILED')
+-			expect(result.complete).toBe(false)
++			expect(result.failures.map((failure) => failure.code)).toEqual(['EXTRACT_FAILED'])
+ 			interpret.destroy()
+ 		})
+ 
+@@ -249,15 +257,14 @@ describe('Interpret', () => {
+ 			}
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 				clarifier: throwingClarifier,
+ 			})
+ 			const result = interpret.interpret('calculate insurance age 25')
+ 			expect(result.stages[2]?.failed).toBe(true)
+ 			expect(result.stages[2]?.error).toBe('clarify boom')
+ 			expect(result.stages).toHaveLength(5)
+-			expect(result.failures[0]?.code).toBe('CLARIFY_FAILED')
+-			expect(result.complete).toBe(false)
++			expect(result.failures.map((failure) => failure.code)).toEqual(['CLARIFY_FAILED'])
+ 			interpret.destroy()
+ 		})
+ 
+@@ -269,15 +276,14 @@ describe('Interpret', () => {
+ 			}
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 				formatter: throwingFormatter,
+ 			})
+ 			const result = interpret.interpret('calculate insurance age 25')
+ 			expect(result.stages[3]?.failed).toBe(true)
+ 			expect(result.stages[3]?.error).toBe('format boom')
+ 			expect(result.stages).toHaveLength(5)
+-			expect(result.failures[0]?.code).toBe('FORMAT_FAILED')
+-			expect(result.complete).toBe(false)
++			expect(result.failures.map((failure) => failure.code)).toEqual(['FORMAT_FAILED'])
+ 			interpret.destroy()
+ 		})
+ 
+@@ -289,15 +295,14 @@ describe('Interpret', () => {
+ 			}
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+-				extractor: corpusExtractor(),
++				extractor: createCorpusExtractor(),
+ 				generator: throwingGenerator,
+ 			})
+ 			const result = interpret.interpret('calculate insurance age 25')
+ 			expect(result.stages[4]?.failed).toBe(true)
+ 			expect(result.stages[4]?.error).toBe('generate boom')
+ 			expect(result.stages).toHaveLength(5)
+-			expect(result.failures[0]?.code).toBe('GENERATE_FAILED')
+-			expect(result.complete).toBe(false)
++			expect(result.failures.map((failure) => failure.code)).toEqual(['GENERATE_FAILED'])
+ 			interpret.destroy()
+ 		})
+ 	})
+diff --git a/tests/src/core/Narrator.test.ts b/tests/src/core/Narrator.test.ts
+index c69960f..f337604 100644
+--- a/tests/src/core/Narrator.test.ts
++++ b/tests/src/core/Narrator.test.ts
+@@ -1,3 +1,4 @@
++import type { LogicalResult } from '@orkestrel/reason'
+ import type { Lexicon, NarratorOptions } from '@src/core'
+ import {
+ 	createAtom,
+@@ -19,7 +20,8 @@ import { describe, expect, it } from 'vitest'
+ import { TRICKY_KEYS } from '../../setup.js'
+ 
+ // The `Narrator` — a stateless, total, lexicon-driven reverse rendering
+-// engine (AGENTS §21 mechanism-never-policy). Every wording decision is data
++// engine (`AGENTS.md` § Design laws, mechanism not product policy). Every
++// wording decision is data
+ // supplied via the lexicon/formatters seam, mirroring the forward
+ // `Formatter`'s `verbs` option.
+ 
+@@ -268,8 +270,8 @@ describe('Narrator', () => {
+ 
+ 		it('is deterministic across repeated calls', () => {
+ 			const narrator = new Narrator()
+-			const result = {
+-				reasoning: 'logical' as const,
++			const result: LogicalResult = {
++				reasoning: 'logical',
+ 				conclusion: true,
+ 				rules: [],
+ 				count: 1,
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 1c3600a..5ca1859 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -82,7 +82,8 @@ describe('createInterpret', () => {
+ 			extractor: createExtractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS }),
+ 		})
+ 		const result = interpret.interpret('calculate arithmetic 42')
+-		expect(result.complete).toBe(true)
++		expect(result.ambiguities).toEqual([])
++		expect(result.failures).toEqual([])
+ 		expect(result.subject).toEqual({ value: 42 })
+ 		expect(interpret.templates()).toHaveLength(1)
+ 	})
+@@ -136,7 +137,6 @@ describe('createClarifier', () => {
+ 			domain: 'arithmetic',
+ 			confidence: 1,
+ 		})
+-		expect(result.complete).toBe(true)
+ 		expect(result.ambiguities).toEqual([])
+ 	})
+ })
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index ae9c910..bd5dd40 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -14,12 +14,12 @@ import {
+ 	classifyIntent,
+ 	collapseWhitespace,
+ 	createNarrator,
+-	describeSubject,
+ 	digestValue,
+ 	escapeRegExp,
+ 	extractNumbers,
+ 	matchAlias,
+ 	matchTemplate,
++	renderSubject,
+ 	resolveExpression,
+ 	scoreSimilarity,
+ 	scoreTemplate,
+@@ -32,7 +32,8 @@ import { describe, expect, it } from 'vitest'
+ import { buildInterpretTemplate, EXTREME_NUMBERS, expectSymbolic } from '../../setup.js'
+ 
+ // The interprets pure leaves — every function is referentially transparent
+-// (same inputs → same outputs, AGENTS §16), so most tests double-invoke to
++// (same inputs → same outputs, `.claude/rules/tests.md` § Test contract), so
++// most tests double-invoke to
+ // pin run-twice determinism directly.
+ 
+ describe('applyReplacements / collapseWhitespace / tokenize', () => {
+@@ -205,6 +206,35 @@ describe('assignEntities', () => {
+ 		}
+ 	})
+ 
++	it('returns keyword-anchored entities before positionally filled ones', () => {
++		const mappings = [
++			{ entity: 'age', aliases: ['years old'], field: 'age' },
++			{ entity: 'score', aliases: ['credit score'], field: 'score' },
++		]
++		const entities = assignEntities([25, 720], mappings, '25 year old with score 720', 0.8)
++		expect(entities.map((entity) => entity.name)).toEqual(['score', 'age'])
++		expect(entities.map((entity) => entity.value)).toEqual([720, 25])
++		expect(entities.map((entity) => entity.provenance.detail)).toEqual(['keyword', 'positional'])
++	})
++
++	it('anchors a keyword on a whole word, never on the same letters inside a longer word', () => {
++		const mappings = [
++			{ entity: 'age', aliases: [], field: 'age' },
++			{ entity: 'value', aliases: [], field: 'value' },
++		]
++		const entities = assignEntities([50, 25], mappings, 'the average is 50 and age 25', 0.8)
++		expect(entities.find((entity) => entity.name === 'age')?.value).toBe(25)
++	})
++
++	it('anchors a repeated keyword on its rightmost occurrence, as the contract states', () => {
++		const mappings = [
++			{ entity: 'age', aliases: [], field: 'age' },
++			{ entity: 'value', aliases: [], field: 'value' },
++		]
++		const entities = assignEntities([25, 30], mappings, 'age 25 and age 30', 0.8)
++		expect(entities.find((entity) => entity.name === 'age')?.value).toBe(30)
++	})
++
+ 	it('returns empty for an empty mapping list or no numbers', () => {
+ 		expect(assignEntities([1, 2], [], 'a b', 0.8)).toEqual([])
+ 		expect(
+@@ -573,13 +603,11 @@ describe('resolveExpression', () => {
+ 	})
+ })
+ 
+-describe('describeSubject', () => {
+-	it('describes a subject with sorted fields, through a narrator', () => {
++describe('renderSubject', () => {
++	it('renders a subject with sorted fields, through a narrator', () => {
+ 		const narrator = createNarrator()
+-		expect(describeSubject({ income: 50000, age: 25 }, narrator)).toBe(
+-			'with age: 25, income: 50000',
+-		)
+-		expect(describeSubject({}, narrator)).toBe('with no fields')
++		expect(renderSubject({ income: 50000, age: 25 }, narrator)).toBe('with age: 25, income: 50000')
++		expect(renderSubject({}, narrator)).toBe('with no fields')
+ 	})
+ 
+ 	it('renders through a narrator with a labels override, a phrases.units entry, and a matching formatter', () => {
+@@ -590,12 +618,12 @@ describe('describeSubject', () => {
+ 			},
+ 			formatters: { money: (value) => `$${String(value)}` },
+ 		})
+-		expect(describeSubject({ income: 50000 }, narrator)).toBe('with Annual income: $50000')
++		expect(renderSubject({ income: 50000 }, narrator)).toBe('with Annual income: $50000')
+ 	})
+ 
+-	it('describes a subject with an array-of-fields value and a non-number value through the plain path', () => {
++	it('renders a subject with an array-of-fields value and a non-number value through the plain path', () => {
+ 		const narrator = createNarrator()
+-		expect(describeSubject({ tags: ['a', 'b'], name: 'Ada' }, narrator)).toBe(
++		expect(renderSubject({ tags: ['a', 'b'], name: 'Ada' }, narrator)).toBe(
+ 			'with name: Ada, tags: a,b',
+ 		)
+ 	})
+diff --git a/tests/src/core/integration.test.ts b/tests/src/core/integration.test.ts
+index b47bfd7..acca9c9 100644
+--- a/tests/src/core/integration.test.ts
++++ b/tests/src/core/integration.test.ts
+@@ -1,6 +1,6 @@
+ import type { InterpretEventMap } from '@src/core'
+ import { createOperation, createVariable } from '@orkestrel/reason'
+-import { Extractor, Interpret } from '@src/core'
++import { Interpret } from '@src/core'
+ import { createRecorders } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -9,8 +9,7 @@ import {
+ 	buildInterpretTemplate,
+ 	buildLoanTemplate,
+ 	buildStatisticsTemplate,
+-	INTERPRET_ACTIONS,
+-	INTERPRET_DOMAINS,
++	createCorpusExtractor,
+ } from '../../setup.js'
+ 
+ // The interprets integration corpus — the terrain-vocabulary redesign of scsr's
+@@ -20,10 +19,7 @@ import {
+ // corpus pins, full provenance, and determinism + digest-replay (design §8).
+ 
+ function build(templates = [buildInsuranceTemplate()]): Interpret {
+-	return new Interpret({
+-		templates,
+-		extractor: new Extractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS }),
+-	})
++	return new Interpret({ templates, extractor: createCorpusExtractor() })
+ }
+ 
+ describe('interprets integration', () => {
+@@ -33,7 +29,8 @@ describe('interprets integration', () => {
+ 		expect(result.intent).toEqual({ action: 'calculate', domain: 'insurance', confidence: 1 })
+ 		expect(result.definition?.id).toBe('insurance-auto')
+ 		expect(result.subject).toMatchObject({ age: 25, accidents: 0, coverage: 'standard' })
+-		expect(result.complete).toBe(true)
++		expect(result.ambiguities).toEqual([])
++		expect(result.failures).toEqual([])
+ 		expect(result.prompt.length).toBeGreaterThan(0)
+ 		interpret.destroy()
+ 	})
+@@ -56,15 +53,13 @@ describe('interprets integration', () => {
+ 	})
+ 
+ 	it('add-after-miss: an unmatched turn is incomplete, a later add completes it', () => {
+-		const interpret = new Interpret({
+-			extractor: new Extractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS }),
+-		})
++		const interpret = new Interpret({ extractor: createCorpusExtractor() })
+ 		const first = interpret.interpret('calculate insurance age 25')
+-		expect(first.complete).toBe(false)
+-		expect(first.failures[0]?.code).toBe('NO_TEMPLATE')
++		expect(first.failures.map((failure) => failure.code)).toEqual(['NO_TEMPLATE'])
+ 		interpret.add(buildInsuranceTemplate())
+ 		const second = interpret.interpret('calculate insurance age 25')
+-		expect(second.complete).toBe(true)
++		expect(second.ambiguities).toEqual([])
++		expect(second.failures).toEqual([])
+ 		expect(second.definition?.id).toBe('insurance-auto')
+ 		interpret.destroy()
+ 	})
+diff --git a/tests/src/core/stages/Clarifier.test.ts b/tests/src/core/stages/Clarifier.test.ts
+index a1919ef..103f6c5 100644
+--- a/tests/src/core/stages/Clarifier.test.ts
++++ b/tests/src/core/stages/Clarifier.test.ts
+@@ -25,7 +25,7 @@ describe('Clarifier', () => {
+ 		const result = clarifier.clarify(entities, template, undefined, intent)
+ 		expect(result.entities).toEqual(entities)
+ 		expect(result.ambiguities).toEqual([])
+-		expect(result.complete).toBe(true)
++		expect(Object.hasOwn(result, 'complete')).toBe(false)
+ 	})
+ 
+ 	describe('carry-over', () => {
+@@ -274,7 +274,6 @@ describe('Clarifier', () => {
+ 			expect(result.ambiguities).toEqual([
+ 				{ field: 'value', question: 'What is your value?', candidates: [], required: true },
+ 			])
+-			expect(result.complete).toBe(false)
+ 		})
+ 
+ 		it('renders the question through the injected narrator, so a lexicon rewords it', () => {
+@@ -311,7 +310,6 @@ describe('Clarifier', () => {
+ 			]
+ 			const result = clarifier.clarify(fresh, template, undefined, intent)
+ 			expect(result.ambiguities).toHaveLength(1)
+-			expect(result.complete).toBe(false)
+ 		})
+ 
+ 		it('a low floor accepts the same entity as resolved', () => {
+@@ -324,7 +322,6 @@ describe('Clarifier', () => {
+ 			]
+ 			const result = clarifier.clarify(fresh, template, undefined, intent)
+ 			expect(result.ambiguities).toEqual([])
+-			expect(result.complete).toBe(true)
+ 		})
+ 	})
+ 
+diff --git a/tests/src/core/stages/Extractor.test.ts b/tests/src/core/stages/Extractor.test.ts
+index e751293..b4d981e 100644
+--- a/tests/src/core/stages/Extractor.test.ts
++++ b/tests/src/core/stages/Extractor.test.ts
+@@ -13,7 +13,6 @@ describe('Extractor', () => {
+ 		const result = extractor.extract('calculate my rate at 85')
+ 		expect(result.numbers).toEqual([85])
+ 		expect(result.intent).toEqual({ action: 'compute', domain: 'rating', confidence: 1 })
+-		expect(result.complete).toBe(true)
+ 	})
+ 
+ 	it('produces NO entities — extraction never assigns numbers to a template', () => {
+@@ -29,11 +28,19 @@ describe('Extractor', () => {
+ 		expect(result.intent).toEqual({ confidence: 0 })
+ 	})
+ 
+-	it('complete requires BOTH numbers present and a positive-confidence intent', () => {
++	it('reports numbers and intent confidence separately, storing no completeness of its own', () => {
+ 		const extractor = new Extractor({ actions: { calculate: 'compute' } })
+-		expect(extractor.extract('calculate please').complete).toBe(false) // no numbers
+-		expect(extractor.extract('85').complete).toBe(false) // no intent confidence
+-		expect(extractor.extract('calculate 85').complete).toBe(true)
++		const unnumbered = extractor.extract('calculate please')
++		const unclassified = extractor.extract('85')
++		const both = extractor.extract('calculate 85')
++
++		expect(unnumbered.numbers).toEqual([])
++		expect(unnumbered.intent.confidence).toBeGreaterThan(0)
++		expect(unclassified.numbers).toEqual([85])
++		expect(unclassified.intent.confidence).toBe(0)
++		expect(both.numbers).toEqual([85])
++		expect(both.intent.confidence).toBeGreaterThan(0)
++		expect(Object.hasOwn(both, 'complete')).toBe(false)
+ 	})
+ 
+ 	it('is deterministic across repeated calls', () => {
+diff --git a/tests/src/core/stages/Formatter.test.ts b/tests/src/core/stages/Formatter.test.ts
+index e7d000f..888129d 100644
+--- a/tests/src/core/stages/Formatter.test.ts
++++ b/tests/src/core/stages/Formatter.test.ts
+@@ -1,3 +1,4 @@
++import type { Entity } from '@src/core'
+ import { Formatter, Narrator } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { buildInterpretTemplate } from '../../../setup.js'
+@@ -31,8 +32,8 @@ describe('Formatter', () => {
+ 	it('appends a `with {label}: {value}` clause for non-default entities', () => {
+ 		const formatter = new Formatter({ verbs: { calculate: 'Calculate' } })
+ 		const template = buildInterpretTemplate()
+-		const entities = [
+-			{ name: 'value', value: 42, provenance: { category: 'extracted' as const }, confidence: 0.9 },
++		const entities: readonly Entity[] = [
++			{ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 0.9 },
+ 		]
+ 		expect(formatter.format(intent, template, entities, []).prompt).toBe(
+ 			'Calculate Arithmetic with value: 42',
+@@ -42,9 +43,9 @@ describe('Formatter', () => {
+ 	it('separates default-provenance entities into a `(defaults: …)` clause', () => {
+ 		const formatter = new Formatter({ verbs: { calculate: 'Calculate' } })
+ 		const template = buildInterpretTemplate()
+-		const entities = [
+-			{ name: 'value', value: 42, provenance: { category: 'extracted' as const }, confidence: 0.9 },
+-			{ name: 'term', value: 12, provenance: { category: 'default' as const }, confidence: 1 },
++		const entities: readonly Entity[] = [
++			{ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 0.9 },
++			{ name: 'term', value: 12, provenance: { category: 'default' }, confidence: 1 },
+ 		]
+ 		expect(formatter.format(intent, template, entities, []).prompt).toBe(
+ 			'Calculate Arithmetic with value: 42 (defaults: term: 12)',
+@@ -65,9 +66,9 @@ describe('Formatter', () => {
+ 	it('composes all three clauses together', () => {
+ 		const formatter = new Formatter({ verbs: { calculate: 'Calculate' } })
+ 		const template = buildInterpretTemplate()
+-		const entities = [
+-			{ name: 'value', value: 42, provenance: { category: 'extracted' as const }, confidence: 0.9 },
+-			{ name: 'term', value: 12, provenance: { category: 'default' as const }, confidence: 1 },
++		const entities: readonly Entity[] = [
++			{ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 0.9 },
++			{ name: 'term', value: 12, provenance: { category: 'default' }, confidence: 1 },
+ 		]
+ 		const ambiguities = [
+ 			{ field: 'age', question: 'What is your age?', candidates: [], required: true },
+@@ -92,9 +93,9 @@ describe('Formatter', () => {
+ 			}),
+ 		})
+ 		const template = buildInterpretTemplate()
+-		const entities = [
+-			{ name: 'value', value: 42, provenance: { category: 'extracted' as const }, confidence: 0.9 },
+-			{ name: 'term', value: 12, provenance: { category: 'default' as const }, confidence: 1 },
++		const entities: readonly Entity[] = [
++			{ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 0.9 },
++			{ name: 'term', value: 12, provenance: { category: 'default' }, confidence: 1 },
+ 		]
+ 		const ambiguities = [
+ 			{ field: 'age', question: 'What is your age?', candidates: [], required: true },
+@@ -107,8 +108,8 @@ describe('Formatter', () => {
+ 	it('is deterministic across repeated calls', () => {
+ 		const formatter = new Formatter({ verbs: { calculate: 'Calculate' } })
+ 		const template = buildInterpretTemplate()
+-		const entities = [
+-			{ name: 'value', value: 42, provenance: { category: 'extracted' as const }, confidence: 0.9 },
++		const entities: readonly Entity[] = [
++			{ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 0.9 },
+ 		]
+ 		expect(formatter.format(intent, template, entities, [])).toEqual(
+ 			formatter.format(intent, template, entities, []),
+diff --git a/tests/src/core/stages/Generator.test.ts b/tests/src/core/stages/Generator.test.ts
+index 1e51578..9c62214 100644
+--- a/tests/src/core/stages/Generator.test.ts
++++ b/tests/src/core/stages/Generator.test.ts
+@@ -1,3 +1,4 @@
++import type { Entity } from '@src/core'
+ import { Generator } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { buildInterpretTemplate, TRICKY_KEYS } from '../../../setup.js'
+@@ -10,8 +11,8 @@ describe('Generator', () => {
+ 
+ 	it('maps an entity to its template field and builds the subject', () => {
+ 		const template = buildInterpretTemplate()
+-		const entities = [
+-			{ name: 'value', value: 42, provenance: { category: 'extracted' as const }, confidence: 0.9 },
++		const entities: readonly Entity[] = [
++			{ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 0.9 },
+ 		]
+ 		const result = generator.generate(entities, template)
+ 		expect(result.subject).toEqual({ value: 42 })
+@@ -30,8 +31,8 @@ describe('Generator', () => {
+ 
+ 	it('falls back to the entity name itself as the field when no mapping matches', () => {
+ 		const template = buildInterpretTemplate({ mappings: [] })
+-		const entities = [
+-			{ name: 'term', value: 12, provenance: { category: 'default' as const }, confidence: 1 },
++		const entities: readonly Entity[] = [
++			{ name: 'term', value: 12, provenance: { category: 'default' }, confidence: 1 },
+ 		]
+ 		const result = generator.generate(entities, template)
+ 		expect(result.subject).toEqual({ term: 12 })
+@@ -40,11 +41,11 @@ describe('Generator', () => {
+ 
+ 	it('unwraps a single-element array value to its scalar', () => {
+ 		const template = buildInterpretTemplate()
+-		const entities = [
++		const entities: readonly Entity[] = [
+ 			{
+ 				name: 'value',
+ 				value: [42],
+-				provenance: { category: 'extracted' as const, detail: 'collect' },
++				provenance: { category: 'extracted', detail: 'collect' },
+ 				confidence: 0.9,
+ 			},
+ 		]
+@@ -54,11 +55,11 @@ describe('Generator', () => {
+ 
+ 	it('keeps a multi-element numeric array as it stands, deriving no sibling field', () => {
+ 		const template = buildInterpretTemplate()
+-		const entities = [
++		const entities: readonly Entity[] = [
+ 			{
+ 				name: 'value',
+ 				value: [10, 20, 30],
+-				provenance: { category: 'extracted' as const, detail: 'collect' },
++				provenance: { category: 'extracted', detail: 'collect' },
+ 				confidence: 0.9,
+ 			},
+ 		]
+@@ -72,11 +73,11 @@ describe('Generator', () => {
+ 		const template = buildInterpretTemplate({
+ 			mappings: [{ entity: 'value', aliases: [], field: ['address', 'amounts'] }],
+ 		})
+-		const entities = [
++		const entities: readonly Entity[] = [
+ 			{
+ 				name: 'value',
+ 				value: [10, 20, 30],
+-				provenance: { category: 'extracted' as const, detail: 'collect' },
++				provenance: { category: 'extracted', detail: 'collect' },
+ 				confidence: 0.9,
+ 			},
+ 		]
+@@ -87,11 +88,11 @@ describe('Generator', () => {
+ 
+ 	it('leaves a multi-element NON-numeric array untouched', () => {
+ 		const template = buildInterpretTemplate()
+-		const entities = [
++		const entities: readonly Entity[] = [
+ 			{
+ 				name: 'value',
+ 				value: ['a', 'b'],
+-				provenance: { category: 'extracted' as const },
++				provenance: { category: 'extracted' },
+ 				confidence: 0.5,
+ 			},
+ 		]
+@@ -102,13 +103,13 @@ describe('Generator', () => {
+ 
+ 	it('emits a FieldMapping for EVERY field, including defaults and computed entries', () => {
+ 		const template = buildInterpretTemplate()
+-		const entities = [
+-			{ name: 'value', value: 42, provenance: { category: 'extracted' as const }, confidence: 0.9 },
+-			{ name: 'term', value: 12, provenance: { category: 'default' as const }, confidence: 1 },
++		const entities: readonly Entity[] = [
++			{ name: 'value', value: 42, provenance: { category: 'extracted' }, confidence: 0.9 },
++			{ name: 'term', value: 12, provenance: { category: 'default' }, confidence: 1 },
+ 			{
+ 				name: 'monthly',
+ 				value: 500,
+-				provenance: { category: 'computed' as const },
++				provenance: { category: 'computed' },
+ 				confidence: 0.9,
+ 			},
+ 		]
+@@ -124,9 +125,9 @@ describe('Generator', () => {
+ 	it('confidence is the mean of the input entities, 0 for an empty set', () => {
+ 		const template = buildInterpretTemplate()
+ 		expect(generator.generate([], template).confidence).toBe(0)
+-		const entities = [
+-			{ name: 'a', value: 1, provenance: { category: 'extracted' as const }, confidence: 1 },
+-			{ name: 'b', value: 2, provenance: { category: 'extracted' as const }, confidence: 0.5 },
++		const entities: readonly Entity[] = [
++			{ name: 'a', value: 1, provenance: { category: 'extracted' }, confidence: 1 },
++			{ name: 'b', value: 2, provenance: { category: 'extracted' }, confidence: 0.5 },
+ 		]
+ 		expect(generator.generate(entities, buildInterpretTemplate({ mappings: [] })).confidence).toBe(
+ 			0.75,
+@@ -142,11 +143,11 @@ describe('Generator', () => {
+ 			const template = buildInterpretTemplate({
+ 				mappings: [{ entity: 'value', aliases: [], field: key }],
+ 			})
+-			const entities = [
++			const entities: readonly Entity[] = [
+ 				{
+ 					name: 'value',
+ 					value: 42,
+-					provenance: { category: 'extracted' as const },
++					provenance: { category: 'extracted' },
+ 					confidence: 1,
+ 				},
+ 			]
+@@ -171,11 +172,11 @@ describe('Generator', () => {
+ 
+ 	it('is deterministic across repeated calls', () => {
+ 		const template = buildInterpretTemplate()
+-		const entities = [
++		const entities: readonly Entity[] = [
+ 			{
+ 				name: 'value',
+ 				value: [10, 20, 30],
+-				provenance: { category: 'extracted' as const },
++				provenance: { category: 'extracted' },
+ 				confidence: 0.9,
+ 			},
+ 		]
+@@ -185,10 +186,10 @@ describe('Generator', () => {
+ 	describe('immutability', () => {
+ 		it('never mutates the input entities array or its element objects', () => {
+ 			const template = buildInterpretTemplate()
+-			const entity = {
++			const entity: Entity = {
+ 				name: 'value',
+ 				value: 42,
+-				provenance: { category: 'extracted' as const },
++				provenance: { category: 'extracted' },
+ 				confidence: 0.9,
+ 			}
+ 			const entities = Object.freeze([entity])
+@@ -201,8 +202,8 @@ describe('Generator', () => {
+ 		it('never mutates a multi-element array entity value while building the subject', () => {
+ 			const template = buildInterpretTemplate()
+ 			const value = Object.freeze([10, 20, 30])
+-			const entities = [
+-				{ name: 'value', value, provenance: { category: 'extracted' as const }, confidence: 0.9 },
++			const entities: readonly Entity[] = [
++				{ name: 'value', value, provenance: { category: 'extracted' }, confidence: 0.9 },
+ 			]
+ 			const result = generator.generate(entities, template)
+ 			// `value` stays frozen and unchanged (a mutation would throw under
+@@ -214,8 +215,8 @@ describe('Generator', () => {
+ 
+ 		it('builds a fresh subject reference on every call — no shared mutable state across calls', () => {
+ 			const template = buildInterpretTemplate()
+-			const entities = [
+-				{ name: 'value', value: 1, provenance: { category: 'extracted' as const }, confidence: 1 },
++			const entities: readonly Entity[] = [
++				{ name: 'value', value: 1, provenance: { category: 'extracted' }, confidence: 1 },
+ 			]
+ 			const first = generator.generate(entities, template)
+ 			const second = generator.generate(entities, template)
+diff --git a/tests/src/core/stages/Normalizer.test.ts b/tests/src/core/stages/Normalizer.test.ts
+index 22d5d59..862b15e 100644
+--- a/tests/src/core/stages/Normalizer.test.ts
++++ b/tests/src/core/stages/Normalizer.test.ts
+@@ -1,7 +1,8 @@
+ import { Normalizer } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ 
+-// The `Normalizer` stage — AGENTS §16: same inputs → same outputs, so every
++// The `Normalizer` stage — `.claude/rules/tests.md` § Test contract: same
++// inputs → same outputs, so every
+ // scenario double-invokes to pin run-twice determinism directly.
+ 
+ describe('Normalizer', () => {
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index 7823ebf..6b90449 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -8,7 +8,6 @@ import {
+ } from '@orkestrel/reason'
+ import {
+ 	createInterpret,
+-	Extractor,
+ 	isAmbiguity,
+ 	isComputedField,
+ 	isEntity,
+@@ -26,12 +25,12 @@ import { describe, expect, it } from 'vitest'
+ import {
+ 	buildInsuranceTemplate,
+ 	buildInterpretTemplate,
+-	INTERPRET_ACTIONS,
+-	INTERPRET_DOMAINS,
++	createCorpusExtractor,
+ 	TRICKY_KEYS,
+ } from '../../setup.js'
+ 
+-// The interprets validators — deep TOTAL guards (AGENTS §14): adversarial
++// The interprets validators — deep TOTAL guards
++// (`.claude/rules/patterns.md` § Validation and contracts): adversarial
+ // junk (cycles, hostile prototypes, wrong shapes) returns `false`, never
+ // throws. Input record guards are exact; foreign-result guards are open.
+ 
+@@ -480,7 +479,6 @@ describe('isInterpretation', () => {
+ 			prompt: 'Calculate Arithmetic',
+ 			stages: [{ stage: 'normalize', input: 'raw', output: 'normalized', failed: false }],
+ 			failures: [],
+-			complete: true,
+ 			confidence: Number.NaN,
+ 			digest: 'abc123',
+ 			extra: true,
+@@ -510,7 +508,6 @@ describe('isInterpretation', () => {
+ 			prompt: 'Calculate Arithmetic',
+ 			stages: [],
+ 			failures: [],
+-			complete: true,
+ 			confidence: 1,
+ 			digest: 'abc123',
+ 		}
+@@ -523,7 +520,6 @@ describe('isInterpretation', () => {
+ 		expect(isInterpretation({ ...interpretation, prompt: 1 })).toBe(false)
+ 		expect(isInterpretation({ ...interpretation, stages: [{}] })).toBe(false)
+ 		expect(isInterpretation({ ...interpretation, failures: [{}] })).toBe(false)
+-		expect(isInterpretation({ ...interpretation, complete: 'yes' })).toBe(false)
+ 		expect(isInterpretation({ ...interpretation, confidence: 'high' })).toBe(false)
+ 		expect(isInterpretation({ ...interpretation, digest: 1 })).toBe(false)
+ 		expect(isInterpretation([])).toBe(false)
+@@ -540,7 +536,6 @@ describe('isInterpretation', () => {
+ 			prompt: '',
+ 			stages: [],
+ 			failures: [],
+-			complete: false,
+ 			confidence: 0,
+ 			digest: 'digest',
+ 		}
+@@ -563,18 +558,19 @@ describe('isInterpretation', () => {
+ 	})
+ 
+ 	it('accepts a real result from the complete branch, subject and definition populated', () => {
+-		// The NO_TEMPLATE round trip above never reaches the branch that builds
++		// The preceding NO_TEMPLATE round trip never reaches the branch that builds
+ 		// `subject`, `definition`, `entities`, and `mappings`. This vector is
+-		// proven to complete in Interpret.test.ts, and the `complete` assertion
+-		// pins that the populated branch was actually reached — a guard pass on
+-		// the refusal branch would not count.
++		// proven to complete in Interpret.test.ts, and the empty-ambiguity and
++		// populated-subject assertions pin that the populated branch was actually
++		// reached — a guard pass on the refusal branch would not count.
+ 		const interpret = createInterpret({
+ 			templates: [buildInsuranceTemplate()],
+-			extractor: new Extractor({ actions: INTERPRET_ACTIONS, domains: INTERPRET_DOMAINS }),
++			extractor: createCorpusExtractor(),
+ 		})
+ 		try {
+ 			const result = interpret.interpret('calculate insurance age 25')
+-			expect(result.complete).toBe(true)
++			expect(result.ambiguities).toEqual([])
++			expect(result.subject).toBeDefined()
+ 			expect(isInterpretation(result)).toBe(true)
+ 		} finally {
+ 			interpret.destroy()

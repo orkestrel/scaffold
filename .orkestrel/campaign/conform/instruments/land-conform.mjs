@@ -67,13 +67,15 @@ for (const arg of process.argv.slice(2)) {
 	// A rename row (`R old -> new`, staged by `git mv` or detected in the work tree from a deletion beside an
 	// intent-to-add) names two paths, and both are staged: console's landing (cac35cd) took the new path alone
 	// and left the old paths tracked at the commit while the work tree had them deleted.
-	const entries = status.split('\n').filter(Boolean).map((l) => ({ index: l[0], work: l[1], path: l.slice(3).trim() })).flatMap((e) => (e.path.includes(' -> ') ? e.path.split(' -> ').map((p) => ({ ...e, path: p.trim() })) : [e])).filter((e) => !e.path.startsWith('.orkestrel/') && !e.path.startsWith('tmp/'))
+	const entries = status.split('\n').filter(Boolean).map((l) => ({ index: l[0], work: l[1], path: l.slice(3).trim() })).flatMap((e) => (e.path.includes(' -> ') ? e.path.split(' -> ').map((p, i) => ({ ...e, path: p.trim(), old: i === 0 })) : [e])).filter((e) => !e.path.startsWith('.orkestrel/') && !e.path.startsWith('tmp/'))
 	const paths = entries.map((e) => e.path)
 	if (paths.length === 0) { say(`${pkg} nothing to commit`); continue }
 	// Intent-to-add only the untracked paths; a deletion already staged (`D `) is in the index and `git add` on its
 	// path fails with "pathspec did not match", so it is left as it is and the commit carries it.
 	for (const e of entries) if (e.index === '?') execFileSync('git', ['-C', dir, 'add', '-N', '--', e.path], { stdio: 'ignore' })
-	const addable = entries.filter((e) => !(e.index === 'D' && e.work === ' ')).map((e) => e.path)
+	// The old half of a rename the index already carries (`RM old -> new`, sea's `seals/` → `seas/` at 19:49 UTC)
+	// is gone from the index and the work tree, so `git add` on it fails with "pathspec did not match".
+	const addable = entries.filter((e) => !(e.index === 'D' && e.work === ' ') && !(e.old && e.index === 'R')).map((e) => e.path)
 	const diff = execFileSync('git', ['-C', dir, 'diff', 'HEAD', '--', ...paths]).toString()
 	writeFileSync(`${EVIDENCE}/conform-${pkg}.diff`, diff)
 	writeFileSync(`${EVIDENCE}/conform-${pkg}.status`, status)
