@@ -1,0 +1,19 @@
+{
+  "package": "console",
+  "rows": 23,
+  "breaking": [
+    "console-obj-5",
+    "console-subj-2",
+    "console-subj-3",
+    "console-subj-4",
+    "console-subj-5",
+    "console-subj-7"
+  ],
+  "folded": [
+    "console-subj-8"
+  ],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": false,
+  "note": "Folded console-subj-8 into console-obj-5 (one createProcessCapture pass-through row), marked nothing ORCHESTRATOR because no confirmed repair touches a manifest, lockfile, install, off-limits file, or another checkout, and swept every breaking symbol across the fleet and scaffold to find no real source consumer."
+}

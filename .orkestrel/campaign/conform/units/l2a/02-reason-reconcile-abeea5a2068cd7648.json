@@ -1,0 +1,21 @@
+{
+  "package": "reason",
+  "rows": 23,
+  "breaking": [
+    "reason-subj-5",
+    "reason-subj-10",
+    "reason-subj-11",
+    "reason-obj-3",
+    "reason-obj-4",
+    "reason-obj-5"
+  ],
+  "folded": [
+    "reason-obj-11"
+  ],
+  "orchestrator": [],
+  "consumers": [
+    "brief"
+  ],
+  "skipped": false,
+  "note": "One ruling moved — reason-obj-11 folds into reason-subj-9 on the refuter's own one-carrier language — no ruling met an ORCHESTRATOR trigger, and the fleet sweep found brief the only real source consumer of a breaking symbol, through RuleResult.conclusion in /home/user/fleet/brief/tests/setup.ts."
+}

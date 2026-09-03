@@ -1,0 +1,14 @@
+{
+  "package": "middleware",
+  "rows": 22,
+  "breaking": [
+    "middleware-obj-6",
+    "middleware-subj-13",
+    "middleware-subj-14"
+  ],
+  "folded": [],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": false,
+  "note": "No fixed rule fired, so all 22 CONFIRMED rulings stand as implementation rows and the JSON is unchanged; the three breaking rows have no source consumer anywhere in the fleet or scaffold."
+}
