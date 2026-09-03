@@ -1,0 +1,8 @@
+Name the elided records in the source-lines fence
+
+The `extractSourceLines` fence in the guide ends its output comment at the first record and states the elision as a comment in the sample's language; the parity test transcribes both lines.
+
+Audit: the Orchestrator read the two-hunk diff against the row; no lane ran for a fence comment and its guard (`.orkestrel/campaign/conform/units/followon/guide-prose-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
