@@ -214,3 +214,10 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   config 46; guides 17), distribution red on the declared vendored inventory missing the five
   new references. Declared at `c3e53b9`; the release-mode distribution proof reads 5 passed. The
   chain runs once more after the `@orkestrel/test` 0.0.12 re-pin.
+- FX2e returned: committed in test at `7ef64b8`. `measureContent` reads the content edge (union
+  of element bottoms with their margins, plus body and root trailing padding and margin) and
+  reads the same value under any pane; `captureFrame` carries each staging's growth into the
+  next and shoots when the pane equals the edge; `CAPTURE_STAGINGS` is 4. Half-ratio fixture
+  settles at 1800, static frame exactly 1600, runaway still refused; browser project 246.
+  Tarball 0.0.12 rebuilt and re-staged in terrain; re-film and the prepublish re-take running in
+  parallel; lane C follows the re-film.
