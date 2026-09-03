@@ -90,7 +90,7 @@ Each file sits under `/home/user/work/evidence/server-proofs/`.
 - server-obj-10: both new guards inverted to `if (isAddressInfo(address)) throw`, restoring the `0` result.
 - server-subj-9: `Negotiator.encoding` given `negotiate`'s first-offered fallback on an empty entry list.
 
-**server-obj-10 has no natural red, and that is the row's own finding.** Both listen paths pass a numeric port (`Server.ts` `server.listen({ port, … })`, `helpers.ts` `probe.listen(port)`), so a TCP listener always yields an `AddressInfo` and the removed `0` is unreachable through the published API. Nothing in the suite can drive it. The inverted-guard control is what proves the replacement code sits on the live path rather than beside it: inverting it reddens 55 cases across `helpers.test.ts`, `Server.test.ts`, and `factories.test.ts`. The branch stays unproved by a narrow control; the row's evidence is the reachability argument and the live-path control. A reachable proof would need an injectable listener factory, which this package does not have and which the row does not ask for.
+**server-obj-10 has no natural red, and that is the row's own finding.** Invariant: a listener bound to a numeric port yields an `AddressInfo`, so the `isAddressInfo` guards in `Server.#listen` and `probePort` narrow Node's `address()` union (`string | AddressInfo | null`) and throw a `TypeError` for the members this path cannot produce, in place of the removed `0` sentinel. Constraint: no listener-injection seam is added to fake Node's return, because the rule against coordination machinery for a requirement nobody wrote binds. Interface: a comment at each guard states that the branch is unreachable through `listen(port)` and exists for the union's other members, while the members retain their `@throws` rows. Claim 4 reads the branch as an exempt, documented gap. The row's evidence is the reachability argument and the live-path control: inverting the guards reddens 55 cases across `helpers.test.ts`, `Server.test.ts`, and `factories.test.ts`.
 
 **Rows with no behavioural control.** server-obj-6, server-obj-7, server-obj-8, server-obj-9, server-obj-11, server-obj-12, server-subj-1, server-subj-2, server-subj-6, server-subj-8, and server-subj-10 are documentation, prose, or a loop-binding rename with no observable behaviour. Their evidence is the sweeps below plus the gate chain.
 
@@ -107,7 +107,7 @@ Each pattern ran over the paths named beside it. The vendored dependency mirrors
 | server-obj-10 sentinel removed         | `grep -rnE "resolvePort"` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md`                                            | Empty.                                                                                                            |
 | server-obj-1 placement                 | `grep -rnE "isAddressInfo"` over `src`, `tests/src`, `README.md`, `guides/README.md`, `guides/server.md`                                     | Declared only in `src/server/validators.ts`; imported by `helpers.ts` and `Server.ts` from `./validators.js`; tested in `tests/src/server/validators.test.ts`; one Helpers row and one Tests row in the guide. |
 | server-subj-1 numbered citations       | `grep -rnE "AGENTS §\|§2[0-9]"` over the same paths                                                                                          | Empty.                                                                                                            |
-| server-obj-6 / server-obj-7 old claims | `grep -rnE "Node\.js >= 24\|ESM-only"` over the same paths                                                                                   | Empty.                                                                                                            |
+| server-obj-6 / server-obj-7 old claims | `grep -rnE "Node\.js >= 24\|ESM-only"` over the same paths                                                                                   | `tests/distribution.test.ts:60` is permitted: `ESM-only` has the declaration-file sense in a vendored file outside this unit. |
 | addendum old member                    | `grep -rnE "symbol\.kind"` over the same paths                                                                                               | Empty.                                                                                                            |
 | server-subj-2 number words             | `grep -rniE "\b(one\|two\|three\|four\|five\|six\|seven\|eight\|nine\|ten\|first\|second\|third\|fourth\|fifth)\b"` over `guides/README.md`   | Ruled by sense: the surviving hits are all `one of this package's runtime dependencies`, which names membership rather than tallying the set. No ordinal remains. |
 | server-subj-2 numeral counts           | `grep -rnE "\b[0-9]+ (elements\|members\|rules\|rows\|exports\|files\|options\|steps\|cases\|stages\|findings\|tests\|helpers\|methods\|entities\|tables\|sections\|constants\|passes\|categories)\b"` over `guides/README.md`, `guides/server.md`, `README.md`, `src`, `tests/setup.ts`, `tests/setup.test.ts`, `tests/guides.test.ts`, `tests/src` | Empty.                                                                                                            |
@@ -246,3 +246,22 @@ hits:
 Every surviving hit uses `via` to mean `through` or `by using`, so every hit is
 in the substitution table's banned sense. Each surviving hit is outside this
 fix round's owned cells and remains unchanged.
+
+## Fix round 2
+
+Source: `/home/user/scaffold/.orkestrel/campaign/conform/units/l3/server-objective-r2-sol.md`.
+
+- **R1 and Claim 4.** The comments before the `isAddressInfo` guards at
+  `src/server/Server.ts` and `src/server/helpers.ts` state the unreachable
+  `listen(port)` branch and the purpose of the union's other members. The
+  server-obj-10 paragraph in § Failing-first controls records the invariant,
+  constraint, and interface, and rules the branch an exempt, documented gap
+  under claim 4. The `Node\.js >= 24|ESM-only` row in § Sweeps records the
+  permitted hit at `tests/distribution.test.ts:60`.
+- **O1.** The Quickstart case in `tests/guides.test.ts` passes its anonymous
+  middleware directly to `server.use(...)` and retains every lifecycle
+  assertion.
+- **Claim 9.** No source or report edit carries this claim. The Orchestrator
+  regenerated `/home/user/work/evidence/conform-server.diff` and
+  `/home/user/work/evidence/conform-server.status` at 21:33 UTC, and the
+  round-3 lanes read that evidence from the landing tree.
