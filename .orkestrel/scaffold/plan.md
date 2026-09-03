@@ -296,3 +296,17 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   `44dc238` (repair over every group but configs wrote nothing; audit reads the TypeScript
   question and the scaffold-owned `vite.config.ts` row; every gate green including `test:setup`
   43; six runs green). Independent verifier dispatched for the authoritative chain.
+
+## Three visits, returned 2026-09-03
+
+- Every checkout reached the canon at `scaffold audit` exit 0 with every `@orkestrel/*` range at
+  the catalog. Lloyds: installed, lint set repaired (120 to 0), build repaired; `check` 396 errors
+  under the floor's TypeScript flags and the database 0.0.12 surface, and 14 placement violations
+  older than the visit — both lloyds-owned migration work, carried by `lloyds-migration-brief.md`.
+  Taverna and supervisor: installs blocked by a fleet defect — `@orkestrel/middleware` 0.0.18
+  requires `@orkestrel/server ^0.0.16` as a peer while the catalog (and `@orkestrel/mcp` 0.0.27)
+  want 0.0.17; no published server satisfies both. Owner: a middleware release declaring server
+  `^0.0.17`; no middleware checkout exists on this host. Their chains, lint repairs (taverna 179
+  diagnostics, 57 nested-function), supervisor's bump and publish, and every chrome and journey
+  unit wait on it.
+- Visits committed: lloyds, taverna, supervisor (each with its lockfile excluded).
