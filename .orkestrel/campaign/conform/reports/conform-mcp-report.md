@@ -379,3 +379,7 @@ The scoped `tests/src/core/MCPServer.test.ts` run exited 0 with 222 passed at
 
 `git status --short` lists the conform-mcp unit's existing paths and no added path beyond
 `tests/src/browser/transports/MessagePortTransport.test.ts`.
+
+### Orchestrator integration (22:33 UTC, after the first landing attempt)
+
+The deciding run's `lint:check` reported `tests/guides.test.ts:12` importing `MCPTransportInterface` unused: fix round 2 deleted the local `GuideLoopbackInterface` that extended it and left the type import behind, and the fix round's own lint reading did not catch it. The Orchestrator removed the import entry (one line) and relaunched the landing.
