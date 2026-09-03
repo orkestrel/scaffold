@@ -1,10 +1,4 @@
  M guides/reason.md
- M src/core/factories.ts
- M tests/setup.ts
- M tests/src/core/Reason.test.ts
+ M src/core/builders/SubjectBuilder.ts
+ M src/core/types.ts
  M tests/src/core/builders/SubjectBuilder.test.ts
- M tests/src/core/helpers.test.ts
- M tests/src/core/reasoners/InferentialReasoner.test.ts
- M tests/src/core/reasoners/LogicalReasoner.test.ts
- M tests/src/core/reasoners/QuantitativeReasoner.test.ts
- M tests/src/core/validators.test.ts
