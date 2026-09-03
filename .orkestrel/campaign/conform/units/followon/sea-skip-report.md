@@ -38,8 +38,9 @@ untouched, confirming a string-literal union widens without breaking its existin
 `src/server/injectors/Injector.ts:1376` — the Mach-O load-command site, message and `context`
 (`executable`, `firstSectionOffset`, `requiredOffset`) unchanged.
 
-No other site changed. The remaining `'INJECT'` raises in `Injector.ts` — `:847`, `:1026`, `:1229`,
-`:1325`, `:1332`, `:1402`, `:1465`, `:1636` — are injector defect reports and keep their code.
+No other site changed in round 1; fix round 1 later moved `:1332` and `:1402` to `ROOM` (§ Fix
+round 1). The remaining `'INJECT'` raises in `Injector.ts` — `:847`, `:1026`, `:1229`, `:1325`,
+`:1465`, `:1636` — are injector defect reports and keep their code.
 
 ### Proof of the raise
 
@@ -432,4 +433,17 @@ recorded for a successor rather than closed here: the executed assertion behind 
 
 ### Orchestrator integration (20:5x UTC)
 
-The round-2 checker refuted claim 9 on two counts in authored prose: "below one entry" at the fixture paragraph is the size limit the header slack is measured against (a value, permitted), and "all four `ROOM` sites" tallied the raise-site set and now reads "every `ROOM` site" (the Orchestrator's edit).
+The round-2 checker refuted claim 9 in authored prose: "below one entry" at the fixture paragraph is the size limit the header slack is measured against (a value, permitted), and "all four `ROOM` sites" tallied the raise-site set and reads "every `ROOM` site" after the Orchestrator's edit.
+
+### Fix round 2 (Orchestrator-owned, 20:48–20:52 UTC)
+
+The round-2 objective lane (`sea-skip-r2-objective-opus.md`) confirmed claims 1 to 8 on the tree and refuted claim 9 on this report's prose, with findings O1, O2, and O3 outside the claims. Every fix adopts the lane's prescription verbatim, so a mutation probe closes the round in place of a third audit (`.claude/rules/quality.md` § Rounds and verdicts). Brief: `briefs/followon/sea-skip-fix2-brief.md`.
+
+- O1 — `tests/setupServer.test.ts:384` compared `parseMachoLoadCommands` against the `ncmds` field that function loops on. The assertion reads `expect(commands.length).toBe(parseMachoLoadCommands(roomy).length - 1)`.
+- O2 — the third `INJECT` member at `guides/sea.md:36` reads "a defect the injector reports against its own construction or a write it already made", which reaches `Injector.ts:1465`.
+- O3 — `src/server/types.ts:353-354` reads "no room for a new section entry or load command, or a `__LINKEDIT` layout it does not support".
+- Claim 9 — the row under § The sites states that fix round 1 moved `:1332` and `:1402`, and the round-2 integration note tallies nothing.
+
+Mutation probe: `tmp/probe/linkedit.test.ts` (deleted after the run) carried a control asserting the replaced line and a pin asserting the adopted line, run through `npm run test:probe` with `tests/setupServer.ts:741` mutated to `const linkeditPresent = true`. Under the mutation the control passed and the pin failed with `expected 5 to be 4` (`/home/user/work/evidence/sea-skip-proofs/fix2-mutation-probe.txt:8-10`, `:35` reading `1 failed | 1 passed (2)`). Restored, the probe read `2 passed (2)` (`fix2-restored-probe.txt:12`), `npm run test:setup` read `23 passed (23)` at exit 0 (`fix2-green-setup.txt:11`), and `npx oxfmt --check` over the three edited files exited 0.
+
+Referrals R1 to R3 are ruled in `units/followon/sea-skip-audit-verdict.md`.
