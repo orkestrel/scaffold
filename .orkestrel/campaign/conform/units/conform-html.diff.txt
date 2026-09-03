@@ -1,0 +1,1393 @@
+diff --git a/guides/html.md b/guides/html.md
+index 2b5e41e..641681e 100644
+--- a/guides/html.md
++++ b/guides/html.md
+@@ -40,29 +40,29 @@ The full node shape and handle contract, from [`types.ts`](../src/core/types.ts)
+ 
+ ### Constants
+ 
+-The element vocabularies, allowlists, entity table, and depth bound every engine reads, from [`constants.ts`](../src/core/constants.ts). Every collection is a frozen array, or — for the two keyed tables — a frozen record read through `Object.hasOwn`, so nothing a consumer can reach changes what an engine sees (§ [The sanitize floor](#the-sanitize-floor)).
+-
+-| Name                   | Kind  | Behavior                                                                                                                                                                                                                                                                                     |
+-| ---------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `HTML_WHITESPACE`      | const | `' \t\n\f\r'` — the five code points HTML treats as syntax whitespace; scanners do not mistake JavaScript's broader Unicode whitespace set for tag separation.                                                                                                                               |
+-| `VOID_ELEMENTS`        | const | `readonly string[]` — the 13 elements that cannot have children (`area` … `wbr`). Voidness is DERIVED from the name here, never stored on a node, so the two can never disagree.                                                                                                             |
+-| `RAW_ELEMENTS`         | const | `readonly string[]` — `['script', 'style']`: content is one verbatim, undecoded `TextNode` up to the case-insensitive close tag, with no tag scanning inside.                                                                                                                                |
+-| `LITERAL_ELEMENTS`     | const | `readonly string[]` — `['textarea', 'title']`: like raw text, but character references ARE decoded, so `<title>a &amp; b</title>` holds `a & b`.                                                                                                                                             |
+-| `BLOCK_ELEMENTS`       | const | `readonly string[]` — the structural elements; they are what implicitly closes an open `p` and what `renderText` treats as a line boundary.                                                                                                                                                  |
+-| `IMPLIED_CLOSERS`      | const | `Readonly<Record<string, readonly string[]>>` — for each element that may be left open, the start tags whose arrival closes it. `p`'s entry IS `BLOCK_ELEMENTS` itself rather than a second copy, so the two cannot drift.                                                                   |
+-| `IMPLIED_BARRIERS`     | const | `Readonly<Record<string, readonly string[]>>` — for each implied-close entry, the open containers that stop its ancestor search. The rows adapt WHATWG scope and special-element boundaries to this parser's total, non-inserting stack.                                                     |
+-| `SAFE_ELEMENTS`        | const | `readonly string[]` — `sanitize`'s default element allowlist: the document vocabulary that survives unchanged. A SAFE element outside it is unwrapped, not dropped.                                                                                                                          |
+-| `SAFE_ATTRIBUTES`      | const | `readonly string[]` — `sanitize`'s default attribute allowlist: `align alt cite class colspan dir height href lang rowspan span start title width`. Deliberately narrow — no `id`, no `style`, no handler, and no resource `src`; `align` remains subject to the cell-and-value floor below. |
+-| `TABLE_ALIGNMENTS`     | const | `readonly string[]` — `['center', 'left', 'right']`: the closed normalized values a sanitized table-cell `align` attribute may carry.                                                                                                                                                        |
+-| `TABLE_CELL_ELEMENTS`  | const | `readonly string[]` — `['td', 'th']`: the only elements on which sanitized `align` is honored, whatever a caller's attribute allowlist names.                                                                                                                                                |
+-| `SAFE_URL_SCHEMES`     | const | `readonly string[]` — `['http', 'https', 'mailto', 'tel']`. A relative URL is always allowed; every unlisted scheme is refused.                                                                                                                                                              |
+-| `URL_ATTRIBUTES`       | const | `readonly string[]` — `['action', 'cite', 'formaction', 'href', 'poster', 'src']`: the values `sanitize` decodes and scheme-checks, and `distill` resolves against `HTMLDistillOptions.base`.                                                                                                |
+-| `UNSAFE_ELEMENTS`      | const | `readonly string[]` — the hard floor: subtrees removed WHOLE whatever the options say, because unwrapping them is what makes them dangerous (a `script` body is live markup the moment its wrapper disappears).                                                                              |
+-| `CONTENT_ELEMENTS`     | const | `readonly string[]` — `distill`'s default keep list: prose, headings, lists, tables, code, and the inline marks that carry meaning. Everything else safe melts into it.                                                                                                                      |
+-| `BOILERPLATE_ELEMENTS` | const | `readonly string[]` — `['aside', 'footer', 'header', 'menu', 'nav']`: `distill`'s default regions, removed WITH their children, because a navigation menu's link text is noise in every reading of the page.                                                                                 |
+-| `REGION_ELEMENTS`      | const | `readonly string[]` — `['main', 'article']`: the content regions `distill` re-roots at, tried in order; a name qualifies only when it occurs EXACTLY once.                                                                                                                                   |
+-| `NAMED_ENTITIES`       | const | `Readonly<Record<string, string>>` — the table exactly matches the vendored WHATWG semicolon-terminated name → character reference set. Lookup is own-property only (`Object.hasOwn`), so a hostile name such as `&constructor;` is not an entry; an unlisted name stays literal.            |
+-| `MAX_DEPTH`            | const | `64` — the recursion bound the parser, the guards, the traversals, the renderers, and both shaping engines all honor (§ [Depth degrade semantics](#depth-degrade-semantics)).                                                                                                                |
++The element vocabularies, allowlists, entity table, and depth bound every engine reads, from [`constants.ts`](../src/core/constants.ts). Every collection is a frozen array, or — for the keyed tables — a frozen record read through `Object.hasOwn`, so nothing a consumer can reach changes what an engine sees (§ [The sanitize floor](#the-sanitize-floor)).
++
++| Name                   | Kind  | Behavior                                                                                                                                                                                                                                                                                               |
++| ---------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `HTML_WHITESPACE`      | const | `' \t\n\f\r'` — the code points HTML treats as syntax whitespace; scanners do not mistake JavaScript's broader Unicode whitespace set for tag separation.                                                                                                                                              |
++| `VOID_ELEMENTS`        | const | `readonly string[]` — the elements that cannot have children (`area` … `wbr`). Voidness is DERIVED from the name here, never stored on a node, so the two can never disagree.                                                                                                                          |
++| `RAW_ELEMENTS`         | const | `readonly string[]` — `['script', 'style']`: content is one verbatim, undecoded `TextNode` up to the case-insensitive close tag, with no tag scanning inside.                                                                                                                                          |
++| `LITERAL_ELEMENTS`     | const | `readonly string[]` — `['textarea', 'title']`: like raw text, but character references ARE decoded, so `<title>a &amp; b</title>` holds `a & b`.                                                                                                                                                       |
++| `BLOCK_ELEMENTS`       | const | `readonly string[]` — the structural elements; they are what implicitly closes an open `p` and what `renderText` treats as a line boundary.                                                                                                                                                            |
++| `IMPLIED_CLOSERS`      | const | `Readonly<Record<string, readonly string[]>>` — for each element that may be left open, the start tags whose arrival closes it. `p`'s entry IS `BLOCK_ELEMENTS` itself rather than a second copy, so the two cannot drift.                                                                             |
++| `IMPLIED_BARRIERS`     | const | `Readonly<Record<string, readonly string[]>>` — for each implied-close entry, the open containers that stop its ancestor search. The rows adapt WHATWG scope and special-element boundaries to this parser's total, non-inserting stack.                                                               |
++| `SAFE_ELEMENTS`        | const | `readonly string[]` — `sanitize`'s default element allowlist: the document vocabulary that survives unchanged. A SAFE element outside it is unwrapped, not dropped.                                                                                                                                    |
++| `SAFE_ATTRIBUTES`      | const | `readonly string[]` — `sanitize`'s default attribute allowlist: `align alt cite class colspan dir height href lang rowspan span start title width`. Deliberately narrow — no `id`, no `style`, no handler, and no resource `src`; `align` remains subject to the cell-and-value floor described later. |
++| `TABLE_ALIGNMENTS`     | const | `readonly string[]` — `['center', 'left', 'right']`: the closed normalized values a sanitized table-cell `align` attribute may carry.                                                                                                                                                                  |
++| `TABLE_CELL_ELEMENTS`  | const | `readonly string[]` — `['td', 'th']`: the only elements on which sanitized `align` is honored, whatever a caller's attribute allowlist names.                                                                                                                                                          |
++| `SAFE_URL_SCHEMES`     | const | `readonly string[]` — `['http', 'https', 'mailto', 'tel']`. A relative URL is always allowed; every unlisted scheme is refused.                                                                                                                                                                        |
++| `URL_ATTRIBUTES`       | const | `readonly string[]` — `['action', 'cite', 'formaction', 'href', 'poster', 'src']`: the values `sanitize` decodes and scheme-checks, and `distill` resolves against `HTMLDistillOptions.base`.                                                                                                          |
++| `UNSAFE_ELEMENTS`      | const | `readonly string[]` — the hard floor: subtrees removed WHOLE whatever the options say, because unwrapping them is what makes them dangerous (a `script` body is live markup the moment its wrapper disappears).                                                                                        |
++| `CONTENT_ELEMENTS`     | const | `readonly string[]` — `distill`'s default keep list: prose, headings, lists, tables, code, and the inline marks that carry meaning. Everything else safe melts into it.                                                                                                                                |
++| `BOILERPLATE_ELEMENTS` | const | `readonly string[]` — `['aside', 'footer', 'header', 'menu', 'nav']`: `distill`'s default regions, removed WITH their children, because a navigation menu's link text is noise in every reading of the page.                                                                                           |
++| `REGION_ELEMENTS`      | const | `readonly string[]` — `['main', 'article']`: the content regions `distill` re-roots at, tried in order; a name qualifies only when it occurs EXACTLY once.                                                                                                                                             |
++| `NAMED_ENTITIES`       | const | `Readonly<Record<string, string>>` — the table exactly matches the vendored WHATWG semicolon-terminated name → character reference set. Lookup is own-property only (`Object.hasOwn`), so a hostile name such as `&constructor;` is not an entry; an unlisted name stays literal.                      |
++| `MAX_DEPTH`            | const | `64` — the recursion bound the parser, the guards, the traversals, the renderers, and both shaping engines all honor (§ [Depth degrade semantics](#depth-degrade-semantics)).                                                                                                                          |
+ 
+ ### Validators
+ 
+@@ -83,14 +83,14 @@ The from-unknown guards, from [`validators.ts`](../src/core/validators.ts). A gu
+ 
+ The document coercers, from [`parsers.ts`](../src/core/parsers.ts). `parseProvenance` owns the single walk that turns source into an AST and its regions; `parseDocument` projects the bare document for callers that need no provenance. Every lexical piece the walk composes is a pure leaf in [`helpers.ts`](../src/core/helpers.ts) (§ [Helpers](#helpers)), exported and independently testable, because a scanner nobody can call is a scanner nobody can prove. All of them are index-based, with no backtracking regex over untrusted input.
+ 
+-| Name              | Kind     | Signature                           | Behavior                                                                                                                                                                                              |
+-| ----------------- | -------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `parseDocument`   | function | `(html: string) => HTMLDocument`    | Parses a page or fragment into an `HTMLDocument`. TOTAL — malformed markup recovers per the [recovery table](#the-parse-pipeline) instead of throwing — and guarantees no two adjacent text siblings. |
+-| `parseProvenance` | function | `(html: string) => HTMLParseResult` | Runs the same document walk and returns the document beside its operation-owned original-input regions.                                                                                               |
++| Name              | Kind     | Signature                           | Behavior                                                                                                                                                                                            |
++| ----------------- | -------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `parseDocument`   | function | `(html: string) => HTMLDocument`    | Parses a page or fragment into an `HTMLDocument`. TOTAL — malformed markup recovers per the [recovery table](#the-parse-pipeline) instead of throwing — and produces no two adjacent text siblings. |
++| `parseProvenance` | function | `(html: string) => HTMLParseResult` | Runs the same document walk and returns the document beside its operation-owned original-input regions.                                                                                             |
+ 
+ ### Helpers
+ 
+-Pure, total leaves from [`helpers.ts`](../src/core/helpers.ts) — the lexical scanners the document walk composes, the name, element, and URL predicates every engine consults, and the functional core `HTML`'s engines compose and callers reach for directly on a bare node. Every one of them is independently testable and none of them throws: a hostile value degrades to `''`, to an empty list, or to the input unchanged, contained by `attempt` from `@orkestrel/contract` rather than by a second boundary of this package's own (§ [Relationship with `@orkestrel/contract`](#relationship-with-orkestrelcontract)).
++Pure leaves from [`helpers.ts`](../src/core/helpers.ts) — the lexical scanners the document walk composes, the name, element, and URL predicates every engine consults, and the functional core `HTML`'s engines compose and callers reach for directly on a bare node. Every one of them is independently testable, and a hostile value degrades to `''`, to an empty list, or to the input unchanged, contained by `attempt` from `@orkestrel/contract` rather than by a second boundary of this package's own (§ [Relationship with `@orkestrel/contract`](#relationship-with-orkestrelcontract)). `foldNode` is the exception: it runs the handler table you supply and lets a handler's error propagate, exactly as `fold` does (§ [The sanitize floor](#the-sanitize-floor)).
+ 
+ | Name                 | Kind     | Signature                                                                                                                                                  | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+ | -------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+@@ -123,7 +123,7 @@ Pure, total leaves from [`helpers.ts`](../src/core/helpers.ts) — the lexical s
+ | `renderHTML`         | function | `(node: HTMLNode) => string`                                                                                                                               | Serializes any node to CANONICAL, safety-bounded HTML (§ [Roundtrip laws](#roundtrip-laws)). Never throws; refuses rather than emits an unsafe construct.                                                                                                                                                                                                                                                                                                                                        |
+ | `renderText`         | function | `(node: HTMLNode) => string`                                                                                                                               | Projects a node to structural plain text: block elements and `br` become line boundaries, table cells use tabs, table rows use newlines, and whitespace beneath `pre` stays verbatim while other whitespace collapses. `script` / `style` bodies are excluded; `title` / `textarea` text is kept. Heading level, link destination, list markers, nesting depth, image attributes, code fences, and code language remain lossy (§ [Text is the lossy projection](#text-is-the-lossy-projection)). |
+ | `walkNodes`          | function | `(node: HTMLNode) => Generator<HTMLNode>`                                                                                                                  | THE traversal: lazy, depth-first, pre-order, root-inclusive, depth-bounded. `walk` / `find` / `filter` / `reduce` all iterate this one function.                                                                                                                                                                                                                                                                                                                                                 |
+-| `foldNode`           | function | `<T>(node: HTMLNode, handlers: HTMLHandlerMap<T>) => T`                                                                                                    | The total catamorphism `fold` delegates to — children first, then the node's own handler with the already-folded children; a node AT the cap folds with an empty child list.                                                                                                                                                                                                                                                                                                                     |
++| `foldNode`           | function | `<T>(node: HTMLNode, handlers: HTMLHandlerMap<T>) => T`                                                                                                    | The catamorphism `fold` delegates to — children first, then the node's own handler with the already-folded children; a node AT the cap folds with an empty child list.                                                                                                                                                                                                                                                                                                                           |
+ | `rewriteDocument`    | function | `(document: HTMLDocument, rewrite: HTMLRewriteHandler) => HTMLDerivation<HTMLDocument>`                                                                    | The bottom-up, copy-on-write ONE-TO-ONE rewrite `map` delegates to; a subtree nothing changed keeps its reference, so an identity rewrite copies no node. The returned derivations record each rebuilt node's single source and mark a shared output identity ambiguous.                                                                                                                                                                                                                         |
+ | `mergeText`          | function | `(children: readonly HTMLNode[]) => readonly HTMLNode[]`                                                                                                   | Restores the no-adjacent-text invariant in a rebuilt sibling list: joins adjacent text, drops empty text. What keeps an unwrapping pass's output equal to its own reparse.                                                                                                                                                                                                                                                                                                                       |
+ | `collapseText`       | function | `(children: readonly HTMLNode[]) => HTMLDerivation<readonly HTMLNode[]>`                                                                                   | Collapses whitespace runs inside each direct text child while KEEPING edge spaces, because the space between `<b>one</b>` and `<i>two</i>` is a word boundary, not decoration. The returned derivations record each one-source text rebuild.                                                                                                                                                                                                                                                     |
+@@ -139,7 +139,7 @@ Declarative `ContractShape` values (from `@orkestrel/contract`) in [`shapers.ts`
+ | `attributeShape` | const | The shape of an `HTMLAttribute` — an optional `value`, which is what distinguishes valueless from empty. |
+ | `textShape`      | const | The shape of a `TextNode` — the decoded character-data leaf.                                             |
+ | `commentShape`   | const | The shape of a `CommentNode` — the verbatim leaf a bogus comment also recovers to.                       |
+-| `doctypeShape`   | const | The shape of a `DoctypeNode` — a required `name` plus the two optional legacy identifiers.               |
++| `doctypeShape`   | const | The shape of a `DoctypeNode` — a required `name` plus the optional legacy identifiers.                   |
+ 
+ ### Factories
+ 
+@@ -151,11 +151,11 @@ From [`factories.ts`](../src/core/factories.ts).
+ 
+ ### `HTML`
+ 
+-The implementing class of `HTMLInterface`, from [`HTML.ts`](../src/core/HTML.ts). A parsed document handle: constructed from an HTML `string` (runs `parseProvenance`, which is total, so there is nothing to catch) or from an already-parsed `HTMLDocument` (adopted AS-IS and not re-validated — gate an untrusted value with `isHTMLDocument` first). It exposes its AST through the `readonly document` member, documented here in Surface prose rather than in the [`## Methods`](#methods) table below, which lists exactly `HTMLInterface`'s call-signature members. Immutable: nothing mutates the stored AST, and `map`, `sanitize`, and `distill` each return a NEW handle whose root invariant (`category: 'document'`) always holds. `walk` is the deep traversal — lazy, depth-first, pre-order, root-inclusive — and `find` / `filter` / `reduce` all iterate it, so one ordering law covers the whole query surface; `stream` is the deliberate contrast, shallow and backpressured. The two engines are private methods composing the pure leaves in `helpers.ts` over one shared bottom-up spine, `pruneDocument`.
++The implementing class of `HTMLInterface`, from [`HTML.ts`](../src/core/HTML.ts). A parsed document handle: constructed from an HTML `string` (runs `parseProvenance`, which is total, so there is nothing to catch) or from an already-parsed `HTMLDocument` (adopted AS-IS and not re-validated — gate an untrusted value with `isHTMLDocument` first). It exposes its AST through the `readonly document` member, documented here in Surface prose rather than in the [`## Methods`](#methods) table that follows, which lists exactly `HTMLInterface`'s call-signature members. Immutable: nothing mutates the stored AST, and `map`, `sanitize`, and `distill` each return a NEW handle whose root invariant (`category: 'document'`) always holds. `walk` is the deep traversal — lazy, depth-first, pre-order, root-inclusive — and `find` / `filter` / `reduce` all iterate it, so one ordering law covers the whole query surface; `stream` is the deliberate contrast, shallow and backpressured. The two engines are private methods composing the pure leaves in `helpers.ts` over one shared bottom-up spine, `pruneDocument`.
+ 
+ ## Methods
+ 
+-The public methods of each behavioral interface — one table per type, keyed by its backticked name. The `readonly document` member is Surface-documented above, not listed here.
++The public methods of each behavioral interface — one table per type, keyed by its backticked name. The `readonly document` member is Surface-documented earlier, not listed here.
+ 
+ #### `HTMLInterface`
+ 
+@@ -174,9 +174,9 @@ The public methods of each behavioral interface — one table per type, keyed by
+ 
+ ## The AST model
+ 
+-Every node is plain, readonly data with no behavior — a discriminated union keyed by `category`, the axis that varies, never `kind` or `type`. Five categories, one root, no second family:
++Every node is plain, readonly data with no behavior — a discriminated union keyed by `category`, the axis that varies, never `kind` or `type`. The categories, one root, no second family:
+ 
+-- **`document`** is the root and the only container the parser ever creates for the whole input. There is exactly one, and `HTMLInterface` guarantees it: a page and a fragment are the same shape, because nothing is implied or inserted.
++- **`document`** is the root and the only container the parser ever creates for the whole input. There is exactly one, and `HTMLInterface` types it that way: a page and a fragment are the same shape, because nothing is implied or inserted.
+ - **`element`** carries a lowercased `name`, `attributes` in source order, and `children`. Voidness, raw-textness, and block-ness are all DERIVED from the name against `VOID_ELEMENTS` / `RAW_ELEMENTS` / `BLOCK_ELEMENTS` — there is no `void` or `selfClosing` flag on a node to disagree with its own tag.
+ - **`text`** carries decoded character data. The parser resolves references on the way in; the renderers re-encode minimally on the way out.
+ - **`comment`** carries verbatim, never-decoded inner text. A bogus comment (`<?…>`, a non-doctype `<!…>`, a CDATA section) recovers to this same node, which is why the AST needs no processing-instruction or CDATA category. The tokenizer builds only values it can write back: a produced `value` never begins with `>` or `->` and never contains `-->` or `--!>`, because an abrupt `<!-->` / `<!--->` closes as an EMPTY comment and an incorrect `--!>` close ends the comment exactly where a `-->` would, leaving what follows as ordinary text. The invariant lives in the tokenizer rather than the renderer because a comment decodes nothing — escaping inside one would change its text, not protect it — so a hand-built value that breaks it is dropped at render time instead (§ [Roundtrip laws](#roundtrip-laws)).
+@@ -184,7 +184,7 @@ Every node is plain, readonly data with no behavior — a discriminated union ke
+ 
+ Attribute absence is a real distinction, not a sentinel: `value` is `undefined` for a valueless attribute (`<input disabled>`) and `''` for an explicitly empty one (`<input disabled="">`). There is no separate "minimized" flag, so a malformed or unterminated attribute recovers to an absent value rather than to invented text. A duplicate attribute name keeps its FIRST occurrence, matched case-insensitively.
+ 
+-The parser also guarantees one invariant the whole system leans on: **no two adjacent `TextNode` siblings**. A final coalescing pass joins them, which is what makes an AST comparable to its own reparse — and why every pass that unwraps an element (both engines do) rejoins the text it splices together through `mergeText`.
++The parser also holds one invariant the whole system leans on: **no two adjacent `TextNode` siblings**. A final coalescing pass joins them, which is what makes an AST comparable to its own reparse — and why every pass that unwraps an element (both engines do) rejoins the text it splices together through `mergeText`.
+ 
+ Provenance stays beside the tree on its `HTML` handle; nodes gain no field. `span(node)` returns a half-open region in UTF-16 code units of the ORIGINAL constructor string. The coordinates precede the parser's rewrite of CRLF to one newline, a bare carriage return to one newline, and `U+0000` to `U+FFFD`. A parsed node covers the region its scanner consumed. An element runs from its start tag through its explicit close, or through the boundary that implicitly closed it; an element still open at end of input ends there. A one-source rebuild keeps that source region through `map`, `sanitize`, and `distill`. A join or a node with no single source has no provenance, and an adopted `HTMLDocument` starts with none.
+ 
+@@ -237,7 +237,7 @@ Every traversal and renderer is also iterative rather than recursive, so the cap
+ 
+ ## Roundtrip laws
+ 
+-What roundtrips is the AST, NOT the input bytes. Three laws hold on parser-produced roots; laws 1 and 2 are substantiated over a representative parser-produced corpus rather than by a universal proof, in [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) and [`tests/src/core/HTML.test.ts`](../tests/src/core/HTML.test.ts):
++What roundtrips is the AST, NOT the input bytes. The roundtrip laws hold on parser-produced roots; the AST fixpoint and canonical idempotence laws are substantiated over a representative parser-produced corpus rather than by a universal proof, in [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) and [`tests/src/core/HTML.test.ts`](../tests/src/core/HTML.test.ts):
+ 
+ 1. **AST fixpoint.** For a parser-produced document `d`, `parseDocument(renderHTML(d))` deep-equals `d`. Rendering then reparsing is the identity on parser output.
+ 2. **Canonical idempotence.** For that same `d`, `renderHTML(parseDocument(renderHTML(d))) === renderHTML(d)`. The serialization is canonical: writing it twice writes the same bytes.
+@@ -282,28 +282,28 @@ The differences between the input bytes and the canonical output are enumerated,
+ - **A safe element merely outside the allowlist is UNWRAPPED to its children.** Wrapper soup melts while its content survives, and `mergeText` rejoins the text the splice put side by side — which is exactly why the sanitize fixpoint also holds through a reparse.
+ - **Comments are dropped** unless `comments: true`, and a comment that is KEPT is normalized through the renderer and reparsed, so a hand-built body carrying a close sequence is dropped here as well rather than travelling on. **A doctype survives untouched**, through the same normalization.
+ 
+-Two consequences worth stating out loud. First, `SAFE_ATTRIBUTES` deliberately omits every resource `src`, so a sanitized `img` keeps its `alt` text and loses its download — sanitizing a page removes its ability to phone home, not only its ability to run code. `class` is kept because it is inert once `style`, `link`, `svg`, and `script` are gone, and because it is where a code block declares its language. Second, the output only ever leaves through `renderHTML`'s escaping grammar; the sanitizer never assembles markup itself.
++Consequences worth stating out loud. `SAFE_ATTRIBUTES` deliberately omits every resource `src`, so a sanitized `img` keeps its `alt` text and loses its download — sanitizing a page removes its ability to phone home, not only its ability to run code. `class` is kept because it is inert after `style`, `link`, `svg`, and `script` are gone, and because it is where a code block declares its language. And the output only ever leaves through `renderHTML`'s escaping grammar; the sanitizer never assembles markup itself.
+ 
+-The floor is enforced from immutable state. The hard-banned schemes (`javascript:`, `data:`, `vbscript:`, `file:`) and the always-stripped attribute names (`on*`, `style`, `srcdoc`, `xmlns`) are fixed comparisons in the code, and every behavior-bearing collection — `UNSAFE_ELEMENTS` first among them — is a frozen array or a frozen record: `Object.freeze` on an array refuses `push`, `splice`, and index assignment, and the keyed tables (`IMPLIED_CLOSERS`, `IMPLIED_BARRIERS`, `NAMED_ENTITIES`) are read as own properties only, so no entry can arrive through a prototype. Mutating an exported binding therefore cannot change what parsing, sanitizing, or rendering does. Every pass fails CLOSED: a thrown value anywhere in `sanitize` or `distill` yields safe output, never the untrusted original — and that includes the options themselves, since each allowlist is read and normalized INSIDE the boundary, so a hostile iterator or accessor on a collection you pass produces an empty document rather than an escaping error. Your own callbacks are the deliberate exception: `find`, `filter`, `reduce`, and `fold` let a handler's error propagate, because there is no honest generic value to substitute for behavior you authored, while `map` stays contained and preserves the document it started from. This is safety within this package's own serialization grammar — a guarantee about what `renderHTML` will re-emit — not a browser-native `TrustedHTML` substitute for a live DOM.
++The floor is enforced from immutable state. The hard-banned schemes (`javascript:`, `data:`, `vbscript:`, `file:`) and the always-stripped attribute names (`on*`, `style`, `srcdoc`, `xmlns`) are fixed comparisons in the code, and every behavior-bearing collection — `UNSAFE_ELEMENTS` first among them — is a frozen array or a frozen record: `Object.freeze` on an array refuses `push`, `splice`, and index assignment, and the keyed tables (`IMPLIED_CLOSERS`, `IMPLIED_BARRIERS`, `NAMED_ENTITIES`) are read as own properties only, so no entry can arrive through a prototype. Mutating an exported binding therefore cannot change what parsing, sanitizing, or rendering does. Every pass fails CLOSED: a thrown value anywhere in `sanitize` or `distill` yields safe output, never the untrusted original — and that includes the options themselves, because each allowlist is read and normalized INSIDE the boundary, so a hostile iterator or accessor on a collection you pass produces an empty document rather than an escaping error. Your own callbacks are the deliberate exception: `find`, `filter`, `reduce`, and `fold` let a handler's error propagate, because there is no honest generic value to substitute for behavior you authored, while `map` stays contained and preserves the document it started from. This is safety within this package's own serialization grammar — a property of what `renderHTML` re-emits — not a browser-native `TrustedHTML` substitute for a live DOM.
+ 
+-One more thing worth stating out loud: a URL sanitizer belongs to the output context it defends, and this one defends an AST that is about to be re-serialized. Three of its rules follow from that position rather than from the lower floor every URL sanitizer shares (strip every codepoint ≤ `U+0020` and `U+007F`–`U+009F`, refuse any two-character protocol-relative prefix drawn from `/` and `\`, extract an ASCII scheme, enforce an allowlist, keep relative / anchor / scheme-less values). First, `schemes` comes from the caller and REPLACES the default, so `javascript:` / `data:` / `vbscript:` / `file:` cannot be left to the allowlist and instead need the unwidenable refusal above, which no option can argue past. Second, the sanitized value is re-serialized and can be reparsed — and a hand-built AST can defer decoding to that later parse — so character references are decoded to a bounded fixpoint BEFORE the scheme is read: an obfuscated `https&colon;&sol;&sol;host` survives decoded while an obfuscated `javascript` does not. Third, `sanitizeURL` returns the raw survivor and lets `renderHTML` encode it later, which is why a kept `"` is not a hole: escaping is the serializer's job, one pass downstream, and doing it twice would corrupt the value.
++One more thing worth stating out loud: a URL sanitizer belongs to the output context it defends, and this one defends an AST that is about to be re-serialized. Its rules follow from that position rather than from the lower floor every URL sanitizer shares (strip every codepoint ≤ `U+0020` and `U+007F`–`U+009F`, refuse any two-character protocol-relative prefix drawn from `/` and `\`, extract an ASCII scheme, enforce an allowlist, keep relative / anchor / scheme-less values). First, `schemes` comes from the caller and REPLACES the default, so `javascript:` / `data:` / `vbscript:` / `file:` cannot be left to the allowlist and instead need the unwidenable refusal stated earlier, which no option can argue past. Second, the sanitized value is re-serialized and can be reparsed — and a hand-built AST can defer decoding to that later parse — so character references are decoded to a bounded fixpoint BEFORE the scheme is read: an obfuscated `https&colon;&sol;&sol;host` survives decoded while an obfuscated `javascript` does not. Third, `sanitizeURL` returns the raw survivor and lets `renderHTML` encode it later, which is why a kept `"` is not a hole: escaping is the serializer's job, one pass downstream, and doing it twice would corrupt the value.
+ 
+-The floor is enumerated as data rather than asserted case by case. `buildURLSafetyCorpus` in [`tests/setup.ts`](../tests/setup.ts) carries every vector with its disposition — control and whitespace splices, case variance, all four protocol-relative forms, kept relative / anchor / query URLs, refused schemes, entity obfuscation, unescaped survivors — and [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) sweeps the whole list, checks that no group has silently disappeared from it, and then pins each of the three rules above with a named test instead of an absent assertion.
++The floor is enumerated as data rather than asserted case by case. `buildURLSafetyCorpus` in [`tests/setup.ts`](../tests/setup.ts) carries every vector with its disposition — control and whitespace splices, case variance, all four protocol-relative forms, kept relative / anchor / query URLs, refused schemes, entity obfuscation, unescaped survivors — and [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) sweeps the whole list, checks that no group has silently disappeared from it, and then pins each of the preceding rules with a named test instead of an absent assertion.
+ 
+ ## The distill pass
+ 
+ `distill` is content extraction — a MECHANISM for reducing a page to its prose, with the policy in its option sets rather than baked in. It returns a pruned `HTMLInterface`, never a string: rendering stays a separate, downstream choice, which is what lets the same distilled document become HTML for a reader, plain text for a diff, or any projection a caller writes over the AST itself.
+ 
+-Four passes, in this order:
++The passes run in this order:
+ 
+ 1. **Region and chrome prune.** Every `boilerplate` region is removed WITH its children (a navigation menu's link text is noise in every reading of the page), as is every element marked `hidden` or `aria-hidden="true"`.
+ 2. **Sanitize with the DEFAULTS.** Distilling narrows content; it never widens the security floor, and it is not a second security surface with its own opinions.
+ 3. **Re-root at the sole content region.** `REGION_ELEMENTS` is tried in order — `main`, then `article` — and a name qualifies only when it occurs EXACTLY once. Zero occurrences or several is ambiguous evidence, so the document is left whole rather than guessed at.
+ 4. **Reduce to the content vocabulary.** Everything outside `elements` unwraps to its children; an attribute-free element whose only child is another element of the SAME name collapses into that child (`<ul><ul>…</ul></ul>` is one list); whitespace collapses to single spaces everywhere except inside `pre` and `code`, whose bodies stay exactly as written; an empty non-void element is dropped; comments and doctypes end here, being structure rather than content; and when `base` is given, every surviving URL attribute is resolved against it.
+ 
+-The hidden-content pass runs BEFORE the sanitize pass by necessity: `hidden` and `aria-hidden` are outside `SAFE_ATTRIBUTES`, so sanitizing first would consume the evidence stage 1 reads. Pruning more before the floor is applied can never admit anything the floor would have refused, which is why the order is safe as well as necessary.
++The hidden-content pass runs BEFORE the sanitize pass by necessity: `hidden` and `aria-hidden` are outside `SAFE_ATTRIBUTES`, so sanitizing first would consume the evidence the region and chrome prune reads. Pruning more before the floor is applied can never admit anything the floor would have refused, which is why the order is safe as well as necessary.
+ 
+-Two honest details about `base`. It resolves what SURVIVES stage 2 — in practice `href` and `cite`, since a resource `src` has already been removed by the sanitize floor — and an unresolvable value is left exactly as written rather than dropped. `resolveAttributes` is exported for the caller who wants base resolution over an AST that never went through the floor.
++`base` resolves what survives the sanitize pass — in practice `href` and `cite`, because a resource `src` has already been removed by the sanitize floor — and an unresolvable value is left exactly as written rather than dropped. `resolveAttributes` is exported for the caller who wants base resolution over an AST that never went through the floor.
+ 
+ Distilling is idempotent on its own output, and like every other operation here it returns a new handle and never touches the original.
+ 
+@@ -329,13 +329,13 @@ That table is the whole reason `distill` returns a handle. For a reader, a diff,
+ The validation surface is a thin, purpose-built layer over `@orkestrel/contract`, the package's single runtime dependency (its own guide is mirrored at [`contract.md`](contract.md)):
+ 
+ - **Primitives, not copies.** `validators.ts` composes `recordOf` / `literalOf` / `arrayOf` and the primitive guards for the leaf shapes. Nothing here reimplements a declared primitive.
+-- **One exception boundary.** `attempt` is the declared safe-exception boundary, and every total surface in this package runs on it: the recursive guard in `validators.ts`, both shaping engines in `HTML.ts`, and every containing leaf in `helpers.ts`, so a hostile getter, a revoked proxy, or a thrown value becomes `false`, an empty document, or the leaf's documented fallback instead of a throw. `walkNodes` is the one remaining `try`, because a generator yields from inside its own body and `attempt` returns a value rather than resuming a suspended frame; the comment beside it says so.
++- **One exception boundary.** `attempt` is the declared safe-exception boundary and `holds` its predicate form, and every total surface in this package runs on one of them: the recursive guard in `validators.ts` on `holds`, both shaping engines in `HTML.ts` and every containing leaf in `helpers.ts` on `attempt`, so a hostile getter, a revoked proxy, or a thrown value becomes `false`, an empty document, or the leaf's documented fallback instead of a throw. `walkNodes` is the one remaining `try`, because a generator yields from inside its own body and `attempt` returns a value rather than resuming a suspended frame; the comment beside it says so.
+ - **Leaf shapes and compiled contracts, in lockstep.** `shapers.ts` declares a `ContractShape` per non-recursive node, and a consumer compiles one with `createContract(attributeShape)` — the supported call — into a `ContractInterface<T>` whose `schema`, `is`, `parse`, and `generate` all derive from that one declaration and therefore cannot drift. This package publishes no door of its own around that call.
+ - **Why the recursive nodes are guard-only.** A shape tree has no lazy or self-referential node — it is a finite, developer-authored tree a compiler can walk exhaustively. `ElementNode` and `HTMLDocument` recurse into `HTMLNode`, so they stay hand-written total guards with explicit ancestor tracking and a `MAX_DEPTH` bound: the recursion lives where it can be capped.
+ 
+ ## Patterns
+ 
+-Every feature below has a compact, runnable example. Together they cover every `HTMLInterface` method and every standalone scanner, helper, and guard.
++Every feature that follows has a compact, runnable example. Together they cover every `HTMLInterface` method and every standalone scanner, helper, and guard.
+ 
+ ### Parse, then query
+ 
+@@ -432,7 +432,7 @@ renderHTML(page.sanitize({ elements: new Set(['p']) }).document)
+ // '<p>Hi bad</p>' - div and a are safe but unlisted, so they unwrap to their content
+ 
+ // An allowlist is a Set or an array, so a frozen export needs no copy to be named explicitly.
+-renderHTML(page.sanitize({ elements: ['p'] }).document) // '<p>Hi bad</p>' - same as the Set above
++renderHTML(page.sanitize({ elements: ['p'] }).document) // '<p>Hi bad</p>' - same as the preceding Set
+ renderHTML(page.sanitize({ elements: SAFE_ELEMENTS, comments: true }).document)
+ // '<div><p>Hi <a>bad</a></p><!-- note --></div>' - the default vocabulary, spelled out
+ 
+@@ -652,7 +652,7 @@ renderHTML(createHTML(renderHTML(clean)).sanitize().document) === renderHTML(cle
+ - [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) — returned provenance, the whole recovery table row by row, entity decoding, and a hostile corpus proving totality, the no-adjacent-text invariant, and guard soundness under hostile floods.
+ - [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — the from-unknown leaf and recursive guards (cycles, hostile getters, revoked proxies, excessive depth, the void-element invariant).
+ - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — source normalization and span projection; ASCII case folding, entity decoding, the escaping, URL, attribute, and text leaves; the element-name, empty-element, and URL predicates; every exported recovering scanner and the strict start-tag source boundaries with their hostile refusals; `mergeText` / `collapseText` / `extractRegion` / `pruneDocument`; both renderers including the hand-built-AST refusals; and the AST fixpoint and canonical idempotence laws.
+-- [`tests/src/core/HTML.test.ts`](../tests/src/core/HTML.test.ts) — construction and adoption, `walk` / `find` / `filter` / `map` / `reduce` / `fold` / `stream`, the sanitize floor and its laws against an adversarial corpus, and every stage of the distill pass including its idempotence.
++- [`tests/src/core/HTML.test.ts`](../tests/src/core/HTML.test.ts) — construction and adoption, `walk` / `find` / `filter` / `map` / `reduce` / `fold` / `stream`, the sanitize floor and its laws against an adversarial corpus, and every pass of the distill pipeline including its idempotence.
+ - [`tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) — per-shape guard exactness, closed JSON Schemas, seeded generation, parse rebuilds, `Infer` ↔ interface parity in both directions, and the doctype shape against what the parser produces.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createHTML` against the class it constructs.
+ - [`tests/policy.test.ts`](../tests/policy.test.ts) — repository coding law: source placement, exports, readonly contracts, and syntax.
+diff --git a/src/core/HTML.ts b/src/core/HTML.ts
+index 78c487b..c7ae1ae 100644
+--- a/src/core/HTML.ts
++++ b/src/core/HTML.ts
+@@ -251,7 +251,7 @@ export class HTML implements HTMLInterface {
+ 	 * and returns a NEW {@link HTML}.
+ 	 *
+ 	 * @remarks
+-	 * The pipeline runs in five stages: every `boilerplate` region and every element marked
++	 * The pipeline runs in this order: every `boilerplate` region and every element marked
+ 	 * `hidden` or `aria-hidden="true"` is dropped whole; the survivors are sanitized with the
+ 	 * DEFAULTS, because distilling narrows content and never widens the security floor; the
+ 	 * document is re-rooted at its single `main`, or failing that its single `article`, when
+@@ -261,9 +261,9 @@ export class HTML implements HTMLInterface {
+ 	 * finally every URL attribute is resolved against `base` when one is given. The result is
+ 	 * a pruned {@link HTMLInterface}, never a string: rendering stays a downstream choice.
+ 	 *
+-	 * The `hidden` stage runs BEFORE the sanitize stage by necessity - `hidden` and
++	 * The `hidden` pass runs BEFORE the sanitize pass by necessity - `hidden` and
+ 	 * `aria-hidden` are outside `SAFE_ATTRIBUTES`, so sanitizing first would consume the
+-	 * evidence this stage reads. Pruning more before the floor is applied can never admit
++	 * evidence that pass reads. Pruning more before the floor is applied can never admit
+ 	 * anything the floor would have refused.
+ 	 *
+ 	 * @param options - The base URL and the content and boilerplate element sets
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 75d3a37..a7642c2 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -1,4 +1,4 @@
+-/** Lists the five code points HTML treats as syntax whitespace. */
++/** Lists the code points HTML treats as syntax whitespace. */
+ export const HTML_WHITESPACE = ' \t\n\f\r'
+ 
+ /**
+@@ -433,7 +433,7 @@ export const SAFE_ELEMENTS: readonly string[] = Object.freeze([
+  * Lists the default attribute allowlist for `sanitize` - the attributes that describe content
+  * rather than fetch, script, or style it. Deliberately narrow: no `id`, no `style`, no
+  * event handler, and no resource `src`, so a sanitized `img` keeps its `alt` text and
+- * loses its download. `class` is kept because it is inert once `style`, `link`, `svg`, and
++ * loses its download. `class` is kept because it is inert after `style`, `link`, `svg`, and
+  * `script` are gone and it is where a code block declares its language
+  * (`class="language-ts"`).
+  */
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index e6a8765..04fc805 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -647,7 +647,8 @@ export function scanDoctype(html: string, offset: number): HTMLScan<DoctypeNode>
+  * @param html - The normalized HTML source
+  * @param offset - The first content offset after the start tag
+  * @param name - The lowercased element name
+- * @param entities - Whether to decode character references
++ * @param entities - If `true`, decodes character references in the scanned text; if `false`,
++ * keeps the text verbatim. Default: `false`
+  * @returns The text child, its source region, next offset, and whether a complete close was found
+  */
+ export function scanRawText(
+@@ -782,7 +783,7 @@ export function sanitizeURL(
+  * Determines whether a URL is relative or uses an allowed non-dangerous scheme.
+  *
+  * @param value - The already entity-decoded URL value
+- * @param schemes - The allowed absolute schemes
++ * @param schemes - The allowed absolute schemes. Default: `SAFE_URL_SCHEMES`
+  * @returns True if the URL passes the sanitizer's protocol floor; false otherwise
+  */
+ export function isSafeURL(
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 691acf2..9dc09f3 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -10,7 +10,7 @@ import type {
+ } from './types.js'
+ import {
+ 	arrayOf,
+-	attempt,
++	holds,
+ 	isArray,
+ 	isInteger,
+ 	isRecord,
+@@ -96,7 +96,7 @@ export const isDoctypeNode: Guard<DoctypeNode> = recordOf(
+  * {@link MAX_DEPTH}; false otherwise
+  */
+ export function isHTMLNode(value: unknown): value is HTMLNode {
+-	const outcome = attempt(() => {
++	return holds(() => {
+ 		const ancestors = new WeakSet<object>()
+ 		const visited = new WeakSet<object>()
+ 		const pending: Array<{
+@@ -158,7 +158,6 @@ export function isHTMLNode(value: unknown): value is HTMLNode {
+ 		}
+ 		return true
+ 	})
+-	return outcome.success && outcome.value
+ }
+ 
+ /**
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 9426ac5..55440b0 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -7,29 +7,20 @@
+ import type { SpawnSyncReturns } from 'node:child_process'
+ import type { TestContext } from 'vitest'
+ import { spawnSync } from 'node:child_process'
+-import {
+-	existsSync,
+-	mkdirSync,
+-	mkdtempSync,
+-	readdirSync,
+-	readFileSync,
+-	rmSync,
+-	statSync,
+-	writeFileSync,
+-} from 'node:fs'
+-import { tmpdir } from 'node:os'
++import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+ import { dirname, join, resolve } from 'node:path'
+ import { fileURLToPath } from 'node:url'
++import { createScratch, destroyScratch } from '@orkestrel/test/server'
+ import ts from 'typescript'
+ import { afterAll, describe, expect, it } from 'vitest'
+ 
+ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+-const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+-// Windows needs a shell to launch a `.cmd`: Node refuses one directly since the
+-// batch-argument hardening, and `spawnSync` returns `EINVAL` with a null status
+-// rather than an exit code a caller can read. Every following argument is a literal or
+-// a path this file built, so the shell has nothing to escape.
+-const SHELL = process.platform === 'win32'
++// The JavaScript entry npm runs itself from, spawned through `process.execPath` so no
++// `.bin` shim and no shell are involved. Windows refuses a `.cmd` launched directly —
++// the batch-argument hardening removed that path — and reaching one through a shell is
++// what the host portability rules forbid. `prepublishOnly` and `npm run test:distribution`
++// are the invocations that run this proof, and npm sets this variable for each of them.
++const NPM_CLI = process.env.npm_execpath
+ // `prepublishOnly` runs this proof as `npm run test:distribution -- --mode release`.
+ // Release is the publish gate, so evidence it cannot obtain fails there and skips
+ // everywhere else: a gate that passes on missing evidence proves nothing.
+@@ -201,21 +192,20 @@ function readManifestName(path: string): string {
+ 	return manifest.name
+ }
+ 
+-function writeFile(path: string, content: string): void {
+-	mkdirSync(dirname(path), { recursive: true })
+-	writeFileSync(path, content)
+-}
+-
+ function readOutput(result: SpawnSyncReturns<string>): string {
+ 	return `${result.stdout ?? ''}${result.stderr ?? ''}`.trim()
+ }
+ 
+ function runNpm(args: readonly string[], cwd: string): SpawnSyncReturns<string> {
+-	return spawnSync(NPM, [...args], {
++	if (NPM_CLI === undefined) {
++		throw new Error(
++			'npm set no npm_execpath, so this proof cannot resolve the npm JavaScript entry to spawn. Run it through an npm script.',
++		)
++	}
++	return spawnSync(process.execPath, [NPM_CLI, ...args], {
+ 		cwd,
+ 		encoding: 'utf8',
+ 		env: { ...process.env, npm_config_cache: CACHE },
+-		shell: SHELL,
+ 		windowsHide: true,
+ 	})
+ }
+@@ -479,7 +469,7 @@ function writeConsumerProbe(stage: Stage, path: string, specifiers: readonly str
+ 		bindings.push(`import * as ${binding} from ${JSON.stringify(specifier)}`)
+ 	}
+ 	const target = join(stage.consumer, path)
+-	writeFile(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
++	SCRATCH.write(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
+ 	return target
+ }
+ 
+@@ -500,9 +490,8 @@ function driveRuntime(stage: Stage, specifier: string, driver: string): readonly
+ // published surface back off the installed tree. Every later claim reads this
+ // result, so a failure here is raised where it happens rather than once per entry.
+ function buildStage(): Stage {
+-	const packed = join(SCRATCH, 'packed')
+-	const consumer = join(SCRATCH, 'consumer')
+-	mkdirSync(packed, { recursive: true })
++	const packed = SCRATCH.ensure('packed')
++	const consumer = SCRATCH.ensure('consumer')
+ 	const pack = runNpm(['pack', '--ignore-scripts', '--pack-destination', packed], ROOT)
+ 	if (pack.status !== 0) throw new Error(`npm pack refused this workspace: ${readOutput(pack)}`)
+ 	const archives = readdirSync(packed).filter((name) => name.endsWith('.tgz'))
+@@ -510,9 +499,9 @@ function buildStage(): Stage {
+ 	if (archives.length !== 1 || archive === undefined) {
+ 		throw new Error(`npm pack wrote no single archive: ${archives.join(', ')}`)
+ 	}
+-	writeFile(join(consumer, 'package.json'), CONSUMER_MANIFEST)
+-	writeFile(join(consumer, ESM_DRIVER), ESM_DRIVER_SOURCE)
+-	writeFile(join(consumer, CJS_DRIVER), CJS_DRIVER_SOURCE)
++	SCRATCH.write(join(consumer, 'package.json'), CONSUMER_MANIFEST)
++	SCRATCH.write(join(consumer, ESM_DRIVER), ESM_DRIVER_SOURCE)
++	SCRATCH.write(join(consumer, CJS_DRIVER), CJS_DRIVER_SOURCE)
+ 	const install = runNpm(
+ 		['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
+ 		consumer,
+@@ -576,13 +565,14 @@ function buildStage(): Stage {
+ 	return { consumer, installed, archives, entries, subpaths, undeclared, excluded, targets }
+ }
+ 
+-const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+-const CACHE = join(SCRATCH, 'cache')
+-mkdirSync(CACHE, { recursive: true })
++const SCRATCH = createScratch({ prefix: 'distribution-' })
++const CACHE = SCRATCH.ensure('cache')
+ // The scratch tree holds the npm cache, the packed archive, and the installed
+-// consumer, so its removal is registered before the first thing that can throw.
+-afterAll(() => {
+-	rmSync(SCRATCH, { force: true, recursive: true })
++// consumer, so its removal is registered before the first thing that can throw. A
++// just-stopped npm child can still hold the directory, so the removal retries inside
++// `destroyScratch`'s budget rather than failing the run on the first refusal.
++afterAll(async () => {
++	await destroyScratch(SCRATCH)
+ })
+ 
+ // Installing the packed archive resolves its own runtime dependencies, so an
+@@ -601,7 +591,7 @@ function openStage(): Stage | undefined {
+ 		}
+ 		return buildStage()
+ 	} catch (error) {
+-		rmSync(SCRATCH, { force: true, recursive: true })
++		SCRATCH.destroy()
+ 		throw error
+ 	}
+ }
+@@ -611,8 +601,8 @@ const STAGED = STAGE !== undefined
+ 
+ describe('distribution classifiers', () => {
+ 	it('classifies synthetic export mappings without a registry stage', () => {
+-		const root = join(SCRATCH, 'classifiers')
+-		writeFile(
++		const root = SCRATCH.ensure('classifiers')
++		SCRATCH.write(
+ 			join(root, 'package.json'),
+ 			JSON.stringify({
+ 				type: 'commonjs',
+@@ -639,8 +629,8 @@ describe('distribution classifiers', () => {
+ 				},
+ 			}),
+ 		)
+-		writeFile(join(root, 'module/package.json'), '{ "type": "module" }\n')
+-		writeFile(join(root, 'commonjs/package.json'), '{ "type": "commonjs" }\n')
++		SCRATCH.write(join(root, 'module/package.json'), '{ "type": "module" }\n')
++		SCRATCH.write(join(root, 'commonjs/package.json'), '{ "type": "commonjs" }\n')
+ 		const manifest = readJson(join(root, 'package.json'))
+ 		if (!isRecord(manifest) || !isRecord(manifest.exports)) {
+ 			throw new Error('The classifier fixture declares no exports map')
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index e88598e..1ee0338 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,8 +1,58 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The five constants below are this
+-// package's own, and are the only part a sibling package changes.
++// this repo's own `guides/README.md` manifest. The `@src/core` imports, the constants
++// that follow them, and the closing `flagship fences` block are this package's own, and
++// are the only parts a sibling package changes.
+ 
++import type { HTMLHandlerMap, HTMLNode } from '@src/core'
+ import { describe, expect, it } from 'vitest'
++import {
++	attributeOf,
++	collapseSpace,
++	collapseText,
++	createHTML,
++	decodeEntities,
++	encodeAttribute,
++	encodeText,
++	extractRegion,
++	foldNode,
++	HTML,
++	isBlockElement,
++	isElementNode,
++	isEmptyElement,
++	isHTMLCodePoint,
++	isHTMLDocument,
++	isHTMLNode,
++	isLiteralElement,
++	isRawElement,
++	isSafeURL,
++	isTextNode,
++	isVoidElement,
++	lowercaseASCII,
++	mergeText,
++	normalizeSource,
++	parseDocument,
++	parseProvenance,
++	parseStartTag,
++	projectSpan,
++	pruneDocument,
++	REGION_ELEMENTS,
++	renderHTML,
++	renderText,
++	resolveAttributes,
++	resolveURL,
++	rewriteDocument,
++	SAFE_ATTRIBUTES,
++	SAFE_ELEMENTS,
++	SAFE_URL_SCHEMES,
++	sanitizeAttributes,
++	sanitizeURL,
++	scanAttributes,
++	scanComment,
++	scanDoctype,
++	scanRawText,
++	scanTag,
++	walkNodes,
++} from '@src/core'
+ import {
+ 	computeSymbolKey,
+ 	createGuide,
+@@ -32,7 +82,7 @@ const MODULES = Object.freeze({ '@orkestrel/html': 'src/core', '@src/core': 'src
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+@@ -168,3 +218,420 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// The EXECUTED half. Every preceding check reads a name, and a name that resolves proves
++// nothing about the sentence beside it, so a fence documenting a value the code
++// contradicts passes all of them. The cases run every fence in the `guides/html.md` guide
++// and the usage and start-tag fences in the `README.md` file, and assert the values their
++// trailing comments claim. Change a fence, change the transcription beside it.
++describe('flagship fences', () => {
++	const guideText = requireValue(files['guides/html.md'], 'Missing file: guides/html.md')
++	const readmeText = readFileSync(new URL('README.md', root), 'utf8')
++
++	it('parses a page, then queries it by guard, walk order, and span', () => {
++		const page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')
++
++		expect(page.document.children[0]).toEqual({
++			category: 'element',
++			name: 'h1',
++			attributes: [],
++			children: [{ category: 'text', value: 'Title' }],
++		})
++		expect(page.span(page.document)).toEqual({ start: 0, end: 40 })
++		expect(page.find(isElementNode)?.name).toBe('h1')
++		expect(page.filter(isElementNode).map((element) => element.name)).toEqual(['h1', 'p', 'b'])
++
++		const categories: string[] = []
++		for (const node of page.walk()) categories.push(node.category)
++		expect(categories).toEqual([
++			'document',
++			'element',
++			'text',
++			'element',
++			'text',
++			'element',
++			'text',
++			'text',
++		])
++	})
++
++	it('adopts a foreign document through the total guard and refuses a bogus one', () => {
++		const candidate: unknown = { category: 'document', children: [] }
++		const adopted = isHTMLDocument(candidate) ? new HTML(candidate) : undefined
++		expect(adopted).toBeInstanceOf(HTML)
++
++		const bogus: unknown = { category: 'bogus' }
++		const refused = isHTMLDocument(bogus) ? new HTML(bogus) : undefined
++		expect(refused).toBeUndefined()
++
++		expect(isHTMLNode({ category: 'text', value: 'a & b' })).toBe(true)
++	})
++
++	it('rewrites with map, counts with reduce, and projects with fold', () => {
++		const page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')
++
++		const shouted = page.map((node) =>
++			node.category === 'text' ? { category: 'text', value: node.value.toUpperCase() } : node,
++		)
++		expect(renderHTML(shouted.document)).toBe('<h1>TITLE</h1><p>A <b>BOLD</b> WORD.</p>')
++		expect(renderHTML(page.document)).toBe('<h1>Title</h1><p>A <b>bold</b> word.</p>')
++
++		expect(
++			page.reduce((total, node) => (isTextNode(node) ? total + node.value.length : total), 0),
++		).toBe(17)
++
++		const elements: HTMLHandlerMap<number> = {
++			document: (_, children) => children.reduce((total, value) => total + value, 0),
++			element: (_, children) => 1 + children.reduce((total, value) => total + value, 0),
++			text: () => 0,
++			comment: () => 0,
++			doctype: () => 0,
++		}
++		expect(page.fold(elements)).toBe(3)
++	})
++
++	it("streams the root's direct children through a reader and an async iteration", async () => {
++		const page = createHTML('<h1>Title</h1><p>First.</p><p>Second.</p>')
++
++		const read: string[] = []
++		const reader = page.stream().getReader()
++		for (let result = await reader.read(); !result.done; result = await reader.read()) {
++			read.push(result.value.category)
++		}
++		expect(read).toEqual(['element', 'element', 'element'])
++
++		const iterated: string[] = []
++		for await (const node of page.stream()) iterated.push(node.category)
++		expect(iterated).toEqual(read)
++	})
++
++	it('sanitizes to the floor whatever the element and attribute allowlists say', () => {
++		const page = createHTML(
++			'<div id="wrap"><p onclick="steal()">Hi <script>steal()</script>' +
++				'<a href="javascript:alert(1)">bad</a></p><!-- note --></div>',
++		)
++
++		expect(renderHTML(page.sanitize().document)).toBe('<div><p>Hi <a>bad</a></p></div>')
++		expect(renderHTML(page.sanitize({ comments: true }).document)).toBe(
++			'<div><p>Hi <a>bad</a></p><!-- note --></div>',
++		)
++		expect(renderHTML(page.sanitize({ elements: new Set(['p']) }).document)).toBe('<p>Hi bad</p>')
++		expect(renderHTML(page.sanitize({ elements: ['p'] }).document)).toBe('<p>Hi bad</p>')
++		expect(renderHTML(page.sanitize({ elements: SAFE_ELEMENTS, comments: true }).document)).toBe(
++			'<div><p>Hi <a>bad</a></p><!-- note --></div>',
++		)
++
++		const link = createHTML('<a href="/guide" onclick="steal()" title="Guide">g</a>')
++		expect(renderHTML(link.sanitize({ attributes: new Set(['href', 'onclick']) }).document)).toBe(
++			'<a href="/guide">g</a>',
++		)
++	})
++
++	it('distills a page to its content and keeps the handle a projection choice', () => {
++		const content = {
++			html: '<nav>Menu</nav><main><h1>Title</h1><p>Read the <a href="/b">guide</a>.</p></main>',
++			url: 'https://x.dev/docs/page',
++		}
++		const page = createHTML(content.html)
++
++		const safe = page.sanitize()
++		const article = page.distill({ base: content.url })
++
++		expect(renderHTML(article.document)).toBe(
++			'<h1>Title</h1><p>Read the <a href="https://x.dev/b">guide</a>.</p>',
++		)
++		expect(renderText(article.document)).toBe('Title\nRead the guide.')
++		expect(renderText(safe.document)).toBe('Menu\nTitle\nRead the guide.')
++
++		const narrow = page.distill({ boilerplate: ['footer'], elements: new Set(['h1', 'p', 'a']) })
++		expect(narrow.document.category).toBe('document')
++	})
++
++	it('drives the standalone leaves on a bare node with no handle at all', () => {
++		const [document, spans] = parseProvenance('<nav>x</nav><main><p>Keep<!-- drop --></p></main>')
++		expect(spans.get(document)).toEqual({ start: 0, end: 49 })
++
++		const [region] = extractRegion(document, REGION_ELEMENTS)
++		const [pruned] = pruneDocument(region, (node) => (node.category === 'comment' ? [] : [node]))
++		expect(renderHTML(pruned)).toBe('<p>Keep</p>')
++
++		const [lowered] = rewriteDocument(document, (node) =>
++			node.category === 'text' ? { category: 'text', value: node.value.toLowerCase() } : node,
++		)
++		expect(renderText(lowered)).toBe('x\nkeep')
++
++		expect([...walkNodes(region)].map((node) => node.category)).toEqual([
++			'document',
++			'element',
++			'text',
++			'comment',
++		])
++
++		const leaves: HTMLHandlerMap<number> = {
++			document: (_, children) => children.reduce((total, value) => total + value, 0),
++			element: (_, children) => children.reduce((total, value) => total + value, 0),
++			text: () => 1,
++			comment: () => 1,
++			doctype: () => 1,
++		}
++		expect(foldNode(region, leaves)).toBe(2)
++
++		const joined: readonly HTMLNode[] = mergeText([
++			{ category: 'text', value: 'a ' },
++			{ category: 'text', value: 'b' },
++		])
++		expect(joined).toEqual([{ category: 'text', value: 'a b' }])
++		expect(collapseText([{ category: 'text', value: ' a \n b ' }])[0]).toEqual([
++			{ category: 'text', value: ' a b ' },
++		])
++	})
++
++	it('scans one construct at a time and reports each exact end offset', () => {
++		const [normalized, offsets] = normalizeSource('A\r\n\u{1d54f}')
++		expect(normalized).toBe('A\n\u{1d54f}')
++		expect(projectSpan(offsets, 2, 4)).toEqual({ start: 3, end: 5 })
++		expect(projectSpan([0, 1], 1, 2)).toBeUndefined()
++
++		expect(parseStartTag('<html lang="en" data-bs-theme="light">', 0)).toEqual({
++			name: 'html',
++			attributes: [
++				{ name: 'lang', value: 'en' },
++				{ name: 'data-bs-theme', value: 'light' },
++			],
++			slashed: false,
++			next: 38,
++		})
++		expect(parseStartTag('<html data-note="unterminated>', 0)).toBeUndefined()
++
++		expect(scanTag('<IMG SRC="x.png" alt=hi />', 0)).toEqual({
++			name: 'img',
++			attributes: [
++				{ name: 'src', value: 'x.png' },
++				{ name: 'alt', value: 'hi' },
++			],
++			closing: false,
++			next: 26,
++		})
++
++		expect(scanAttributes(' HREF="/a" disabled href="/b"')).toEqual([
++			{ name: 'href', value: '/a' },
++			{ name: 'disabled' },
++		])
++
++		expect(scanComment('<![CDATA[x]]>', 0)).toEqual({
++			node: { category: 'comment', value: '[CDATA[x]]' },
++			next: 13,
++		})
++		expect(scanDoctype('<!DOCTYPE html>', 0)).toEqual({
++			node: { category: 'doctype', name: 'html' },
++			next: 15,
++		})
++		expect(scanRawText('a < b</SCRIPT>tail', 0, 'script')).toEqual({
++			node: { category: 'text', value: 'a < b' },
++			span: { start: 0, end: 5 },
++			next: 14,
++			closed: true,
++		})
++
++		expect(decodeEntities('a &amp; b &#169; c &bogus;')).toBe('a & b \u{a9} c &bogus;')
++		expect(lowercaseASCII('HTML-\u{3a9}')).toBe('html-\u{3a9}')
++		expect(isHTMLCodePoint(0x1f600)).toBe(true)
++		expect(isHTMLCodePoint(0xd800)).toBe(false)
++	})
++
++	it('escapes, resolves, and inspects one attribute at a time', () => {
++		expect(encodeText('a & b < c')).toBe('a &amp; b &lt; c')
++		expect(encodeAttribute('a "b" & c')).toBe('a &quot;b&quot; &amp; c')
++		expect(collapseSpace('  a \n\t b  ')).toBe('a b')
++
++		expect(sanitizeURL('java&#115;cript:alert(1)', SAFE_URL_SCHEMES)).toBe('')
++		expect(sanitizeURL('/docs/page', SAFE_URL_SCHEMES)).toBe('/docs/page')
++		expect(resolveURL('../a', 'https://x.dev/docs/page')).toBe('https://x.dev/a')
++
++		const parsed = parseDocument('<a href="javascript:alert(1)" title="Home" onclick="x()">t</a>')
++			.children[0]
++		const anchor = requireValue(
++			isElementNode(parsed) ? parsed : undefined,
++			'The anchor fence parsed no element',
++		)
++		expect(attributeOf(anchor, 'TITLE')).toBe('Home')
++		expect(sanitizeAttributes(anchor, SAFE_ATTRIBUTES, SAFE_URL_SCHEMES)).toEqual([
++			{ name: 'title', value: 'Home' },
++		])
++		// The fence claims base resolution over every URL attribute and a lowercased name on
++		// the rest. An absolute `javascript:` URL resolves to itself, so the value survives
++		// exactly as written - the pass-through half of the same claim.
++		expect(resolveAttributes(anchor, 'https://x.dev/docs/')).toEqual([
++			{ name: 'href', value: 'javascript:alert(1)' },
++			{ name: 'title', value: 'Home' },
++			{ name: 'onclick', value: 'x()' },
++		])
++	})
++
++	it('answers a name predicate, a URL predicate, and an emptiness predicate', () => {
++		expect(isVoidElement('BR')).toBe(true)
++		expect(isRawElement('script')).toBe(true)
++		expect(isLiteralElement('title')).toBe(true)
++		expect(isBlockElement('p')).toBe(true)
++
++		expect(isSafeURL('/a')).toBe(true)
++		expect(isSafeURL('javascript:x')).toBe(false)
++		expect(isSafeURL('ftp://x.dev', new Set(['ftp']))).toBe(true)
++
++		const image = requireValue(
++			parseDocument('<img src="a.png" alt="A">').children.find(isElementNode),
++			'The image fence parsed no element',
++		)
++		expect(isEmptyElement(image)).toBe(true)
++	})
++
++	it('holds the AST fixpoint, canonical idempotence, and sanitize fixpoint laws', () => {
++		const page = createHTML('<P CLASS=a>x<BR/></P>')
++
++		expect(renderHTML(page.document)).toBe('<p class="a">x<br></p>')
++		expect(parseDocument(renderHTML(page.document))).toEqual(page.document)
++		expect(renderHTML(parseDocument(renderHTML(page.document)))).toBe(renderHTML(page.document))
++
++		const clean = page.sanitize().document
++		expect(renderHTML(createHTML(clean).sanitize().document)).toBe(renderHTML(clean))
++		expect(renderHTML(createHTML(renderHTML(clean)).sanitize().document)).toBe(renderHTML(clean))
++	})
++
++	it('answers the README usage and start-tag fences with the values they claim', () => {
++		const page = createHTML(
++			'<nav>Menu</nav><main><h1>Title</h1><p>Read the <a href="/b">guide</a>.</p></main>',
++		)
++		const article = page.distill({ base: 'https://x.dev/docs/page' })
++
++		expect(renderHTML(article.document)).toBe(
++			'<h1>Title</h1><p>Read the <a href="https://x.dev/b">guide</a>.</p>',
++		)
++		expect(renderText(article.document)).toBe('Title\nRead the guide.')
++
++		expect(parseStartTag('<html lang="en" data-note="a>b">', 0)).toEqual({
++			name: 'html',
++			attributes: [
++				{ name: 'lang', value: 'en' },
++				{ name: 'data-note', value: 'a>b' },
++			],
++			slashed: false,
++			next: 32,
++		})
++		expect(parseStartTag('<html data-note="unterminated>', 0)).toBeUndefined()
++	})
++
++	// The presence guards beside the transcriptions. Each proves the transcribed line is
++	// still the documented one and nothing whatever about behavior, so a fence input or a
++	// documented value edited away from its transcription reddens here rather than leaving a
++	// stale proof green.
++	it('carries every guide fence line whose input or documented value a transcription reuses', () => {
++		const claims = [
++			"const page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')",
++			"page.document.children[0] // { category: 'element', name: 'h1', attributes: [], children: [...] }",
++			'page.span(page.document) // { start: 0, end: 40 }',
++			"page.find(isElementNode)?.name // 'h1'",
++			"page.filter(isElementNode).map((element) => element.name) // ['h1', 'p', 'b']",
++			"// ['document', 'element', 'text', 'element', 'text', 'element', 'text', 'text']",
++			"adopt({ category: 'document', children: [] }) // an HTML handle",
++			"adopt({ category: 'bogus' }) // undefined - rejected before any handle exists",
++			"isHTMLNode({ category: 'text', value: 'a & b' }) // true - one leaf, validated from unknown",
++			"node.category === 'text' ? { category: 'text', value: node.value.toUpperCase() } : node,",
++			"renderHTML(shouted.document) // '<h1>TITLE</h1><p>A <b>BOLD</b> WORD.</p>'",
++			"renderHTML(page.document) // '<h1>Title</h1><p>A <b>bold</b> word.</p>' - never mutated",
++			'page.reduce((total, node) => (isTextNode(node) ? total + node.value.length : total), 0) // 17',
++			'const elements: HTMLHandlerMap<number> = {\n\tdocument: (_, children) => children.reduce((total, value) => total + value, 0),\n\telement: (_, children) => 1 + children.reduce((total, value) => total + value, 0),\n\ttext: () => 0,\n\tcomment: () => 0,\n\tdoctype: () => 0,\n}',
++			'page.fold(elements) // 3',
++			"const page = createHTML('<h1>Title</h1><p>First.</p><p>Second.</p>')",
++			"result.value.category // 'element' - the root's direct children only",
++			'\'<div id="wrap"><p onclick="steal()">Hi <script>steal()</script>\' +',
++			'\'<a href="javascript:alert(1)">bad</a></p><!-- note --></div>\',',
++			"renderHTML(page.sanitize().document)\n// '<div><p>Hi <a>bad</a></p></div>'",
++			"renderHTML(page.sanitize({ comments: true }).document)\n// '<div><p>Hi <a>bad</a></p><!-- note --></div>'",
++			"renderHTML(page.sanitize({ elements: new Set(['p']) }).document)\n// '<p>Hi bad</p>'",
++			"renderHTML(page.sanitize({ elements: ['p'] }).document) // '<p>Hi bad</p>' - same as the preceding Set",
++			"renderHTML(page.sanitize({ elements: SAFE_ELEMENTS, comments: true }).document)\n// '<div><p>Hi <a>bad</a></p><!-- note --></div>'",
++			'const link = createHTML(\'<a href="/guide" onclick="steal()" title="Guide">g</a>\')',
++			"renderHTML(link.sanitize({ attributes: new Set(['href', 'onclick']) }).document)\n// '<a href=\"/guide\">g</a>'",
++			'html: \'<nav>Menu</nav><main><h1>Title</h1><p>Read the <a href="/b">guide</a>.</p></main>\',',
++			"url: 'https://x.dev/docs/page',",
++			'const safe = page.sanitize()',
++			'const article = page.distill({ base: content.url })',
++			'renderHTML(article.document) // \'<h1>Title</h1><p>Read the <a href="https://x.dev/b">guide</a>.</p>\'',
++			"renderText(article.document) // 'Title\\nRead the guide.'",
++			"renderText(safe.document) // 'Menu\\nTitle\\nRead the guide.'",
++			"const narrow = page.distill({ boilerplate: ['footer'], elements: new Set(['h1', 'p', 'a']) })",
++			"narrow.document.category // 'document' - always a handle, never a string",
++			"const [document, spans] = parseProvenance('<nav>x</nav><main><p>Keep<!-- drop --></p></main>')",
++			'spans.get(document) // { start: 0, end: 49 }',
++			'const [region] = extractRegion(document, REGION_ELEMENTS)',
++			"const [pruned] = pruneDocument(region, (node) => (node.category === 'comment' ? [] : [node]))",
++			"renderHTML(pruned)\n// '<p>Keep</p>' - [] drops, node.children unwraps, [node] keeps",
++			"node.category === 'text' ? { category: 'text', value: node.value.toLowerCase() } : node,",
++			"renderText(lowered) // 'x\\nkeep'",
++			'const categories = [...walkNodes(region)].map((node) => node.category)',
++			"// ['document', 'element', 'text', 'comment'] - depth-first, pre-order, root included",
++			'const leaves: HTMLHandlerMap<number> = {\n\tdocument: (_, children) => children.reduce((total, value) => total + value, 0),\n\telement: (_, children) => children.reduce((total, value) => total + value, 0),\n\ttext: () => 1,\n\tcomment: () => 1,\n\tdoctype: () => 1,\n}',
++			'foldNode(region, leaves) // 2',
++			"mergeText([\n\t{ category: 'text', value: 'a ' },\n\t{ category: 'text', value: 'b' },\n]) // [{ category: 'text', value: 'a b' }]",
++			"collapseText([{ category: 'text', value: ' a \\n b ' }])[0]\n// [{ category: 'text', value: ' a b ' }]",
++			// Every line carrying a non-ASCII literal is written as a code-point escape, here and
++			// in the transcription it guards, because a retyped character would compare against
++			// itself and pass while documenting a different one: U+03A9 and U+2126 render
++			// identically.
++			"const [normalized, offsets] = normalizeSource('A\\r\\n\u{1d54f}')",
++			"normalized // 'A\\n\u{1d54f}'",
++			"lowercaseASCII('HTML-\u{3a9}') // 'html-\u{3a9}' - Unicode is preserved",
++			'projectSpan(offsets, 2, 4) // { start: 3, end: 5 }',
++			'projectSpan([0, 1], 1, 2) // undefined - boundary 2 is uncovered',
++			"parseStartTag('<html lang=\"en\" data-bs-theme=\"light\">', 0)\n// { name: 'html', attributes: [{ name: 'lang', value: 'en' }, { name: 'data-bs-theme', value: 'light' }], slashed: false, next: 38 }",
++			"parseStartTag('<html data-note=\"unterminated>', 0) // undefined",
++			"scanTag('<IMG SRC=\"x.png\" alt=hi />', 0)\n// { name: 'img', attributes: [{ name: 'src', value: 'x.png' }, { name: 'alt', value: 'hi' }], closing: false, next: 26 }",
++			"scanAttributes(' HREF=\"/a\" disabled href=\"/b\"')\n// [{ name: 'href', value: '/a' }, { name: 'disabled' }] - lowercased, first wins, valueless stays valueless",
++			"scanComment('<![CDATA[x]]>', 0) // { node: { category: 'comment', value: '[CDATA[x]]' }, next: 13 }",
++			"scanDoctype('<!DOCTYPE html>', 0) // { node: { category: 'doctype', name: 'html' }, next: 15 }",
++			"scanRawText('a < b</SCRIPT>tail', 0, 'script')\n// { node: { category: 'text', value: 'a < b' }, span: { start: 0, end: 5 }, next: 14, closed: true }",
++			"decodeEntities('a &amp; b &#169; c &bogus;') // 'a & b \u{a9} c &bogus;'",
++			'isHTMLCodePoint(0x1f600) // true',
++			'isHTMLCodePoint(0xd800) // false - surrogate',
++			"encodeText('a & b < c') // 'a &amp; b &lt; c'",
++			"encodeAttribute('a \"b\" & c') // 'a &quot;b&quot; &amp; c'",
++			"collapseSpace('  a \\n\\t b  ') // 'a b'",
++			"sanitizeURL('java&#115;cript:alert(1)', SAFE_URL_SCHEMES) // '' - decoded first, then refused",
++			"sanitizeURL('/docs/page', SAFE_URL_SCHEMES) // '/docs/page' - relative is always allowed",
++			"resolveURL('../a', 'https://x.dev/docs/page') // 'https://x.dev/a'",
++			'const anchor = parseDocument(\'<a href="javascript:alert(1)" title="Home" onclick="x()">t</a>\')',
++			"attributeOf(anchor, 'TITLE') // 'Home' - case-insensitive; '' would mean present-but-valueless",
++			"sanitizeAttributes(anchor, SAFE_ATTRIBUTES, SAFE_URL_SCHEMES) // [{ name: 'title', value: 'Home' }]",
++			"resolveAttributes(anchor, 'https://x.dev/docs/') // href resolved, other names lowercased",
++			"isVoidElement('BR') // true - case-insensitive, derived from the name, never stored",
++			"isRawElement('script') // true",
++			"isLiteralElement('title') // true",
++			"isBlockElement('p') // true",
++			"isSafeURL('/a') // true - relative",
++			"isSafeURL('javascript:x') // false - refused whatever the scheme set says",
++			"isSafeURL('ftp://x.dev', new Set(['ftp'])) // true - a caller may widen the safe schemes",
++			'const image = parseDocument(\'<img src="a.png" alt="A">\').children[0]',
++			'isEmptyElement(image) // true',
++			"const page = createHTML('<P CLASS=a>x<BR/></P>')",
++			'renderHTML(page.document) // \'<p class="a">x<br></p>\' - canonical, not byte-identical to the input',
++			'parseDocument(renderHTML(page.document)) // deep-equals page.document',
++			'renderHTML(parseDocument(renderHTML(page.document))) === renderHTML(page.document) // true',
++			'const clean = page.sanitize().document',
++			'renderHTML(createHTML(clean).sanitize().document) === renderHTML(clean) // true',
++			'renderHTML(createHTML(renderHTML(clean)).sanitize().document) === renderHTML(clean) // true',
++		]
++		expect(claims.filter((claim) => !guideText.includes(claim))).toEqual([])
++	})
++
++	it('carries every README fence line whose input or documented value the transcription reuses', () => {
++		const claims = [
++			'\'<nav>Menu</nav><main><h1>Title</h1><p>Read the <a href="/b">guide</a>.</p></main>\',',
++			"const article = page.distill({ base: 'https://x.dev/docs/page' })",
++			'renderHTML(article.document) // \'<h1>Title</h1><p>Read the <a href="https://x.dev/b">guide</a>.</p>\'',
++			"renderText(article.document) // 'Title\\nRead the guide.'",
++			"parseStartTag('<html lang=\"en\" data-note=\"a>b\">', 0)\n// { name: 'html', attributes: [{ name: 'lang', value: 'en' }, { name: 'data-note', value: 'a>b' }], slashed: false, next: 32 }",
++			"parseStartTag('<html data-note=\"unterminated>', 0) // undefined",
++		]
++		expect(claims.filter((claim) => !readmeText.includes(claim))).toEqual([])
++	})
++})
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 84c5129..472a6fa 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -1,8 +1,10 @@
++import type { CollectionMutation } from './setup.js'
+ import type { HTMLDocument, HTMLNode } from '@src/core'
+ import { MAX_DEPTH } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import WHATWG_ENTITIES from './src/core/fixtures/entities.json' with { type: 'json' }
+ import {
++	attemptCollectionMutation,
+ 	buildBranchingHTMLElement,
+ 	buildCyclicHTMLNode,
+ 	buildDeepHTMLDocument,
+@@ -26,20 +28,21 @@ import {
+ 	buildURLSafetyCorpus,
+ 	extractHTMLText,
+ 	hasAdjacentHTMLText,
+-	isBrowserVuePath,
+ 	measureHTMLDepth,
++	restoreCollectionMutation,
+ 	returnHTMLNonIterator,
+ 	throwHostileHTMLAccess,
+ 	throwHostileHTMLGetter,
++	URL_SAFETY_GROUPS,
+ 	WHATWG_NAMED_ENTITIES,
+ } from './setup.js'
+ 
+ // The behavior tests/setup.ts exports to the workspace's suites, one case per contract those
+ // suites rely on. Production behavior is out of scope here: helpers.test.ts pins
+ // NAMED_ENTITIES against WHATWG_NAMED_ENTITIES, and it pins URL_SAFETY_GROUPS against the
+-// groups buildURLSafetyCorpus carries, so neither equality is restated below. TEST_SEED is a
+-// shared constant with no behavior of its own - `seededRandom` owns the determinism
+-// factories.test.ts and shapers.test.ts consume through it.
++// groups buildURLSafetyCorpus carries, so neither equality is restated in the cases that
++// follow. TEST_SEED is a shared constant with no behavior of its own - `seededRandom` owns
++// the determinism factories.test.ts and shapers.test.ts consume through it.
+ //
+ // Every expectation is derived by a route the module cannot share: the entity table is checked
+ // against the vendored fixture read directly and against WHATWG values written by hand, the
+@@ -87,18 +90,40 @@ describe('setup - WHATWG entity table', () => {
+ 	})
+ })
+ 
+-describe('setup - browser path helper', () => {
+-	it('accepts a browser application SFC written with either separator family', () => {
+-		expect(isBrowserVuePath('app/browser/components/Panel.vue')).toBe(true)
+-		expect(isBrowserVuePath('app\\browser\\components\\Panel.vue')).toBe(true)
+-	})
++describe('setup - collection mutation', () => {
++	it('refuses a frozen array and a frozen record, and restores an unfrozen collection', () => {
++		// The unfrozen pair is the control. An attempt that lands nothing would report every
++		// frozen collection immutable without ever having tried a write that works, and a
++		// restore that lands nothing would read the same way.
++		const frozenList: readonly string[] = Object.freeze(['area', 'base'])
++		const frozenTable: Readonly<Record<string, string>> = Object.freeze({ p: 'block' })
++		const list = ['area', 'base']
++		const table: Record<string, string> = { p: 'block' }
++		const mutations: readonly CollectionMutation[] = [
++			{ collection: frozenList, remove: 'area', key: 'area', value: 'p', original: 'area' },
++			{ collection: frozenTable, remove: 'p', key: 'p', value: 'x', original: 'block' },
++			{ collection: list, remove: 'area', key: 'area', value: 'p', original: 'area' },
++			{ collection: table, remove: 'p', key: 'p', value: 'x', original: 'block' },
++		]
+ 
+-	it('refuses a sibling environment and a prefix lookalike', () => {
+-		expect(isBrowserVuePath('app/server/render.vue')).toBe(false)
+-		expect(isBrowserVuePath('app/core/state.vue')).toBe(false)
+-		expect(isBrowserVuePath('app/browsers/Panel.vue')).toBe(false)
+-		expect(isBrowserVuePath('app/browser.vue')).toBe(false)
+-		expect(isBrowserVuePath('docs/app/browser/Panel.vue')).toBe(false)
++		for (const mutation of mutations) attemptCollectionMutation(mutation)
++		expect(Object.isFrozen(frozenList)).toBe(true)
++		expect(Object.isFrozen(frozenTable)).toBe(true)
++		expect([...frozenList]).toEqual(['area', 'base'])
++		expect({ ...frozenTable }).toEqual({ p: 'block' })
++		expect([...list]).not.toEqual(['area', 'base'])
++		expect({ ...table }).not.toEqual({ p: 'block' })
++
++		for (const mutation of mutations) restoreCollectionMutation(mutation)
++		expect(Object.isFrozen(frozenList)).toBe(true)
++		expect(Object.isFrozen(frozenTable)).toBe(true)
++		expect([...frozenList]).toEqual(['area', 'base'])
++		expect({ ...frozenTable }).toEqual({ p: 'block' })
++		// Restoration returns the members. A named property the mutation cycle wrote beside them
++		// is left behind - `area` on the array, `0` on the record - which is why a caller reads
++		// the collection rather than the object.
++		expect([...list]).toEqual(['area', 'base'])
++		expect(table.p).toBe('block')
+ 	})
+ })
+ 
+@@ -150,7 +175,7 @@ describe('setup - HTML source builders', () => {
+ 		expect(mixed.split('</y>').length - 1).toBe(500)
+ 	})
+ 
+-	it('enumerates every bounded comment source over the three introducers exactly once', () => {
++	it('enumerates every bounded comment source over every introducer exactly once', () => {
+ 		const alphabet = ['<', '!', '-', '>', 'x']
+ 		const expected = new Set<string>()
+ 		for (const prefix of ['<!--', '<!', '<?']) {
+@@ -237,6 +262,20 @@ describe('setup - adversarial corpora', () => {
+ 		expect(new Set(names).size).toBe(names.length)
+ 	})
+ 
++	it('refuses every mutation of the URL-safety group list', () => {
++		// helpers.test.ts compares the corpus's families against this list, so a suite that
++		// pushed, replaced, or removed a member would move the population that comparison
++		// reads rather than reporting the drift it exists to catch.
++		const original = [...URL_SAFETY_GROUPS]
++		expect(Object.isFrozen(URL_SAFETY_GROUPS)).toBe(true)
++		expect(Reflect.set(URL_SAFETY_GROUPS, '0', 'mutated')).toBe(false)
++		expect(Reflect.deleteProperty(URL_SAFETY_GROUPS, '0')).toBe(false)
++		expect(() => Reflect.apply(Array.prototype.push, URL_SAFETY_GROUPS, ['added'])).toThrow(
++			TypeError,
++		)
++		expect([...URL_SAFETY_GROUPS]).toEqual(original)
++	})
++
+ 	it('declares a retained value on every kept vector and none on a refused one', () => {
+ 		const missing: string[] = []
+ 		const retained: string[] = []
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 92b0807..97d0cda 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -23,13 +23,90 @@ export const WHATWG_NAMED_ENTITIES: Readonly<Record<string, string>> = Object.fr
+ /** The shared seed for deterministic generated test input. */
+ export const TEST_SEED = 42
+ 
++/** One mutation attempt against a frozen collection, beside what restores it. */
++export interface CollectionMutation {
++	readonly collection: object
++	readonly remove: string
++	readonly key: string
++	readonly value: unknown
++	readonly original: unknown
++}
++
++/**
++ * Attempt every mutation shape a caller could reach an exported collection through.
++ *
++ * @remarks
++ * Array, `Set`, and `Map` each answer a different mutator, so one attempt covers all
++ * three: `delete` / `add` / `set` where the collection declares them, an indexed write
++ * behind `indexOf`, and a bare property write and delete. A frozen collection refuses
++ * every one of them silently outside strict mode, which is why the caller asserts the
++ * collection's contents afterwards rather than the return value here.
++ *
++ * @param mutation - The collection and the values to write, remove, and restore
++ */
++export function attemptCollectionMutation(mutation: CollectionMutation): void {
++	const remove = Reflect.get(mutation.collection, 'delete')
++	if (typeof remove === 'function') Reflect.apply(remove, mutation.collection, [mutation.remove])
++	const add = Reflect.get(mutation.collection, 'add')
++	if (typeof add === 'function') Reflect.apply(add, mutation.collection, [mutation.value])
++	const set = Reflect.get(mutation.collection, 'set')
++	if (typeof set === 'function') {
++		Reflect.apply(set, mutation.collection, [mutation.key, mutation.value])
++	}
++	const indexOf = Reflect.get(mutation.collection, 'indexOf')
++	if (typeof indexOf === 'function') {
++		const index = Reflect.apply(indexOf, mutation.collection, [mutation.remove])
++		if (typeof index === 'number' && index >= 0) {
++			Reflect.set(mutation.collection, String(index), mutation.value)
++		}
++	}
++	Reflect.set(mutation.collection, '0', mutation.value)
++	Reflect.deleteProperty(mutation.collection, '0')
++	Reflect.set(mutation.collection, mutation.key, mutation.value)
++	Reflect.deleteProperty(mutation.collection, mutation.remove)
++}
++
++/**
++ * Undo every write {@link attemptCollectionMutation} lands on a collection that accepted it.
++ *
++ * @remarks
++ * A frozen collection accepted nothing, so this is a no-op there. An unfrozen one is
++ * returned to its original contents, which is what keeps a failing immutability
++ * assertion from leaking into the suites that read the same collection afterwards.
++ *
++ * @param mutation - The same collection and values the attempt was given
++ */
++export function restoreCollectionMutation(mutation: CollectionMutation): void {
++	const add = Reflect.get(mutation.collection, 'add')
++	if (typeof add === 'function') Reflect.apply(add, mutation.collection, [mutation.remove])
++	const remove = Reflect.get(mutation.collection, 'delete')
++	if (typeof remove === 'function') Reflect.apply(remove, mutation.collection, [mutation.value])
++	const set = Reflect.get(mutation.collection, 'set')
++	if (typeof set === 'function') {
++		Reflect.apply(set, mutation.collection, [mutation.remove, mutation.original])
++		if (mutation.key !== mutation.remove) {
++			Reflect.apply(remove, mutation.collection, [mutation.key])
++		}
++	}
++	const indexOf = Reflect.get(mutation.collection, 'indexOf')
++	if (typeof indexOf === 'function') {
++		const index = Reflect.apply(indexOf, mutation.collection, [mutation.value])
++		if (typeof index === 'number' && index >= 0) {
++			Reflect.set(mutation.collection, String(index), mutation.remove)
++		}
++	}
++	Reflect.set(mutation.collection, '0', mutation.original)
++	Reflect.set(mutation.collection, mutation.remove, mutation.original)
++	if (mutation.key !== mutation.remove) Reflect.deleteProperty(mutation.collection, mutation.key)
++}
++
+ /**
+  * Build a realistic article page carrying every region the distiller prunes.
+  *
+  * @remarks
+  * One page with navigation, a hidden banner, a hidden paragraph, a tracking
+  * script, a wrapper `div`, a fenced code block, an empty element, and a footer -
+- * so one distill assertion covers the whole pipeline instead of nine fragments.
++ * so one distill assertion covers the whole pipeline instead of a fragment per region.
+  *
+  * @returns The page source
+  */
+@@ -52,12 +129,6 @@ export function buildHTMLPageInput(): string {
+ 	].join('')
+ }
+ 
+-/** Whether a repository-relative Vue SFC belongs to the private browser application. */
+-export function isBrowserVuePath(path: string): boolean {
+-	const normalized = path.replaceAll('\\', '/')
+-	return normalized.startsWith('app/browser/')
+-}
+-
+ /**
+  * Build a deeply nested HTML source around one text leaf.
+  *
+@@ -114,7 +185,8 @@ export function buildHTMLRoundtripCorpus(): readonly HTMLDocument[] {
+ }
+ 
+ /**
+- * Build every unique bounded comment-token source from three introducers and a small alphabet.
++ * Build every unique bounded comment-token source from the `<!--`, `<!`, and `<?` introducers
++ * and a small alphabet.
+  *
+  * @returns All sources with a `<!--`, `<!`, or `<?` introducer and up to six suffix characters
+  */
+@@ -594,7 +666,7 @@ export function buildURLSafetyCorpus(): readonly URLSafetyCase[] {
+ }
+ 
+ /** The URL-safety corpus's threat families, in corpus order. */
+-export const URL_SAFETY_GROUPS: readonly string[] = [
++export const URL_SAFETY_GROUPS: readonly string[] = Object.freeze([
+ 	'controls',
+ 	'case',
+ 	'relative',
+@@ -602,7 +674,7 @@ export const URL_SAFETY_GROUPS: readonly string[] = [
+ 	'schemes',
+ 	'entities',
+ 	'escaping',
+-]
++])
+ 
+ /**
+  * Build a hand-authored document deeper than the parser permits.
+diff --git a/tests/src/core/HTML.test.ts b/tests/src/core/HTML.test.ts
+index d248589..5d559bb 100644
+--- a/tests/src/core/HTML.test.ts
++++ b/tests/src/core/HTML.test.ts
+@@ -381,7 +381,7 @@ describe('HTML - fold', () => {
+ 		doctype: () => 1,
+ 	}
+ 
+-	it('is total over all five categories and agrees with reduce', () => {
++	it('is total over every category and agrees with reduce', () => {
+ 		const page = new HTML('<!DOCTYPE html><p>x</p><!--note-->')
+ 		const categories = new Set(page.reduce<string[]>((seen, node) => [...seen, node.category], []))
+ 		expect([...categories].sort()).toEqual(['comment', 'doctype', 'document', 'element', 'text'])
+@@ -760,7 +760,7 @@ describe('HTML - sanitize floor', () => {
+ 		}
+ 	})
+ 
+-	it('drops hand-built close-sequence comments through sanitize and preserves law three', () => {
++	it('drops hand-built close-sequence comments through sanitize and preserves the sanitize fixpoint law', () => {
+ 		const values = ['x--><script>alert(1)</script>', 'x--!><img src=x onerror=alert(1)>']
+ 		for (const value of values) {
+ 			const document: HTMLDocument = {
+diff --git a/tests/src/core/constants.test.ts b/tests/src/core/constants.test.ts
+index 1dd6c69..fdc1157 100644
+--- a/tests/src/core/constants.test.ts
++++ b/tests/src/core/constants.test.ts
+@@ -1,3 +1,4 @@
++import type { CollectionMutation } from '../../setup.js'
+ import {
+ 	BLOCK_ELEMENTS,
+ 	BOILERPLATE_ELEMENTS,
+@@ -26,64 +27,11 @@ import {
+ 	parseDocument,
+ 	renderHTML,
+ } from '@src/core'
++import { attemptCollectionMutation, restoreCollectionMutation } from '../../setup.js'
+ import { describe, expect, it } from 'vitest'
+ 
+-export interface CollectionMutation {
+-	readonly collection: object
+-	readonly remove: string
+-	readonly key: string
+-	readonly value: unknown
+-	readonly original: unknown
+-}
+-
+-export function attemptCollectionMutation(mutation: CollectionMutation): void {
+-	const remove = Reflect.get(mutation.collection, 'delete')
+-	if (typeof remove === 'function') Reflect.apply(remove, mutation.collection, [mutation.remove])
+-	const add = Reflect.get(mutation.collection, 'add')
+-	if (typeof add === 'function') Reflect.apply(add, mutation.collection, [mutation.value])
+-	const set = Reflect.get(mutation.collection, 'set')
+-	if (typeof set === 'function') {
+-		Reflect.apply(set, mutation.collection, [mutation.key, mutation.value])
+-	}
+-	const indexOf = Reflect.get(mutation.collection, 'indexOf')
+-	if (typeof indexOf === 'function') {
+-		const index = Reflect.apply(indexOf, mutation.collection, [mutation.remove])
+-		if (typeof index === 'number' && index >= 0) {
+-			Reflect.set(mutation.collection, String(index), mutation.value)
+-		}
+-	}
+-	Reflect.set(mutation.collection, '0', mutation.value)
+-	Reflect.deleteProperty(mutation.collection, '0')
+-	Reflect.set(mutation.collection, mutation.key, mutation.value)
+-	Reflect.deleteProperty(mutation.collection, mutation.remove)
+-}
+-
+-export function restoreCollectionMutation(mutation: CollectionMutation): void {
+-	const add = Reflect.get(mutation.collection, 'add')
+-	if (typeof add === 'function') Reflect.apply(add, mutation.collection, [mutation.remove])
+-	const remove = Reflect.get(mutation.collection, 'delete')
+-	if (typeof remove === 'function') Reflect.apply(remove, mutation.collection, [mutation.value])
+-	const set = Reflect.get(mutation.collection, 'set')
+-	if (typeof set === 'function') {
+-		Reflect.apply(set, mutation.collection, [mutation.remove, mutation.original])
+-		if (mutation.key !== mutation.remove) {
+-			Reflect.apply(remove, mutation.collection, [mutation.key])
+-		}
+-	}
+-	const indexOf = Reflect.get(mutation.collection, 'indexOf')
+-	if (typeof indexOf === 'function') {
+-		const index = Reflect.apply(indexOf, mutation.collection, [mutation.value])
+-		if (typeof index === 'number' && index >= 0) {
+-			Reflect.set(mutation.collection, String(index), mutation.remove)
+-		}
+-	}
+-	Reflect.set(mutation.collection, '0', mutation.original)
+-	Reflect.set(mutation.collection, mutation.remove, mutation.original)
+-	if (mutation.key !== mutation.remove) Reflect.deleteProperty(mutation.collection, mutation.key)
+-}
+-
+ describe('behavioral collection invariants', () => {
+-	it('defines exactly the five HTML ASCII whitespace characters', () => {
++	it('defines exactly the HTML ASCII whitespace characters', () => {
+ 		expect([...HTML_WHITESPACE]).toEqual([' ', '\t', '\n', '\f', '\r'])
+ 	})
+ 
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 68a8e31..51dc15e 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -186,7 +186,7 @@ describe('HTML escaping and URL helpers', () => {
+ 		}
+ 	})
+ 
+-	// Timeout basis: the three decodes together measured 101–116 ms across the scoped
++	// Timeout basis: the decodes together measured 101–116 ms across the scoped
+ 	// `test:src:core` runs on 2026-08-24, so 30 s is far past any loaded-host reading and catches
+ 	// a hang rather than grading the decode. The growth pairs these inputs came from live in the
+ 	// benchmark block at the end of this file.
+@@ -667,7 +667,7 @@ describe('strict start tag parsing', () => {
+ 
+ // The scheme and control floor `sanitizeURL` enforces, driven from `buildURLSafetyCorpus`
+ // so the whole floor reads as one list of vectors and dispositions (guides/html.md §
+-// The sanitize floor states the rules). The three tests after the corpus sweep are the
++// The sanitize floor states the rules). The named tests after the corpus sweep are the
+ // rules that follow from WHERE this sanitizer sits — on the AST, upstream of the
+ // serializer, behind a caller-replaceable allowlist — each pinned by name rather than
+ // left implicit in a corpus row.
+@@ -714,8 +714,9 @@ describe('sanitizeURL — URL-safety corpus', () => {
+ 	})
+ 
+ 	// Rule 3 — allowlist shape. The allowlist comes from the caller and REPLACES the
+-	// default, so the four dangerous schemes need an unwidenable refusal of their own: a
+-	// widened allowlist still admits its safe entries and still cannot buy `javascript`.
++	// default, so `javascript`, `data`, `vbscript`, and `file` need an unwidenable refusal of
++	// their own: a widened allowlist still admits its safe entries and still cannot buy
++	// `javascript`.
+ 	it('refuses a caller-widened dangerous scheme while honoring the same allowlist for safe ones', () => {
+ 		const widened = new Set(['http', 'https', 'javascript', 'data', 'vbscript', 'file'])
+ 		for (const scheme of ['javascript', 'data', 'vbscript', 'file']) {
+@@ -1380,7 +1381,7 @@ describe('AST walkers', () => {
+ 	})
+ })
+ 
+-// How decode cost moves as each entity-pressure input doubles. The suite above proves what the
++// How decode cost moves as each entity-pressure input doubles. The preceding suite proves what the
+ // decoder returns; these report what it costs and assert nothing, so only `npm run test:bench`
+ // collects them and no gate reads them. Each pair is the input pair the deleted wall-clock ratio
+ // assertions used.
+diff --git a/tests/src/core/parsers.test.ts b/tests/src/core/parsers.test.ts
+index 4f0b4d5..e11e2af 100644
+--- a/tests/src/core/parsers.test.ts
++++ b/tests/src/core/parsers.test.ts
+@@ -337,7 +337,7 @@ describe('parseDocument entities and declarations', () => {
+ })
+ 
+ describe('parseDocument hostile corpus totality', () => {
+-	// Timeout basis for the five sized parses that follow: each measured 25–137 ms across the
++	// Timeout basis for the sized parses that follow: each measured 25–137 ms across the
+ 	// scoped `test:src:core` runs on 2026-08-24, so 30 s is far past any loaded-host reading and
+ 	// catches a hang rather than grading the parse. The growth pairs these inputs came from live
+ 	// in the benchmark block at the end of this file.
+@@ -507,7 +507,7 @@ describe('parseDocument parse and guard soundness', () => {
+ 	})
+ })
+ 
+-// How parse cost moves as each hostile input doubles. The suite above proves what the parse
++// How parse cost moves as each hostile input doubles. The preceding suite proves what the parse
+ // returns; these report what it costs and assert nothing, so only `npm run test:bench` collects
+ // them and no gate reads them. Each pair is the input pair the deleted wall-clock ratio
+ // assertions used.
+diff --git a/tests/src/core/shapers.test.ts b/tests/src/core/shapers.test.ts
+index 2438c95..fc6b358 100644
+--- a/tests/src/core/shapers.test.ts
++++ b/tests/src/core/shapers.test.ts
+@@ -6,7 +6,7 @@ import { describe, expect, expectTypeOf, it } from 'vitest'
+ import { TEST_SEED } from '../../setup.js'
+ 
+ // Each shape compiles (through createContract) into a schema, a guard, a parser, and a
+-// generator that must agree in lockstep. These four are the LEAVES of the HTML AST: the
++// generator that must agree in lockstep. These shapes are the LEAVES of the HTML AST: the
+ // element and document nodes recurse into HTMLNode, which a shape tree cannot express, so
+ // they stay hand-written capped guards in validators.ts.
+ 

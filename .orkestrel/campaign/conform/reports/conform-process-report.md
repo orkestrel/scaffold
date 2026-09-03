@@ -58,13 +58,13 @@ Every control ran on Linux on 2026-09-03. Each output file sits under
 | -------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | process-subj-2 | Removed the `@example` from `ProcessChildInterface.once`                            | `npm run test:guides`                                                                          | 1 failed, 111 passed: `ProcessChildInterface examples > documents an example for every method` — `expected [ 'once' ] to deeply equal []` | `process-subj-2-control-red.txt`              |
 | process-obj-2  | Removed the `Supervisor` barrel row                                                  | `npm run test:guides`                                                                          | 4 failed, 108 passed, naming `class Supervisor` stranded, undocumented, and missing from the core refusal list  | `process-obj-2-control-red.txt`               |
-| process-obj-4  | Moved `this.#relieve?.()` below `await stopChild(...)` in `Supervisor.#kill`         | `npx vitest run … --project src:server … Supervisor.test.ts`                                   | 1 failed, 4 passed: `releases the face before the termination sequence rather than after it`                    | `process-obj-4-supervisor-control-red.txt`    |
-| process-obj-4  | Moved the `backlog` refusal in `Process` below the spawn                             | `npx vitest run … --project src:server … factories.test.ts`                                    | 1 failed, 6 passed: `refuses a backlog below one before it spawns anything` — the marker file existed           | `process-obj-4-factories-control-red.txt`     |
+| process-obj-4  | Moved `this.#relieve?.()` below `await stopChild(...)` in `Supervisor.#kill`         | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/Supervisor.test.ts` (the pre-move path; the Orchestrator expanded the elided command at the second audit round's F4) | 1 failed, 4 passed: `releases the face before the termination sequence rather than after it`                    | `process-obj-4-supervisor-control-red.txt`    |
+| process-obj-4  | Moved the `backlog` refusal in `Process` below the spawn                             | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts` (expanded by the Orchestrator at the second audit round's F4) | 1 failed, 6 passed: `refuses a backlog below one before it spawns anything` — the marker file existed           | `process-obj-4-factories-control-red.txt`     |
 | process-obj-5  | Planted a predicate that never holds in each new `waitForCondition`                  | `npx vitest run … --project src:server … {Process,helpers}.test.ts`                            | 2 failed, 142 passed, one per site                                                                              | `process-obj-5-control-red.txt`               |
 | P2             | The `deliver` example as the implement round wrote it, borrowing the class example's `engine` | `npm run test:guides`                                                            | 1 failed, 113 passed, 1 skipped: `returns what deliver's example claims` — `expected false to be true`          | `fix1-P2-control-red.txt`                     |
 | P8             | Re-planted the never-holding predicate at both sites, with the case timeouts in place | `npx vitest run … --project src:server tests/src/server/processes/Process.test.ts tests/src/server/helpers.test.ts` | 2 failed, 142 passed, 8 skipped, each naming its own condition rather than a case timeout | `fix1-P8-control-red.txt`                     |
 
-Green after restoring each control: `process-obj-4-green.txt` records the two new suites at 12
+Green after restoring each control (before fix round 1; the post-fix green for both files is the superset chain in `gate-test.txt`, named here at the second audit round's F4): `process-obj-4-green.txt` records the two new suites at 12
 passed; `fix1-P2-green.txt` records `npm run test:guides` at 114 passed, 1 skipped;
 `fix1-P8-green.txt` records the two files at 144 passed, 8 skipped; `gate-test.txt` records the
 whole chain.
@@ -188,8 +188,11 @@ One further site the round's acceptance criterion reaches and the finding did no
 `tests/src/server/helpers.test.ts` `reaches a detached descendant while the root is alive and leaves
 one whose root already exited` runs three sequential `{ budget: 10_000 }` conditions under the
 default timeout. It is skipped off Windows, which is why no reading here surfaced it. It took
-`{ timeout: 40_000 }`, the value the same file already uses for its longest case, so every budget in
-`tests/src/server/**` now sits inside a case that outlives it.
+`{ timeout: 40_000 }`, the value the same file already uses for its longest case, so every budget
+above the project's 5 s default in `tests/src/server/**` now sits inside a case carrying its own
+longer timeout; the sites carrying `{ budget: 5_000 }` under the default, which equals rather than
+outlives the budget, are the § Observations entry (the second audit round's F1 corrected this
+sentence, which had claimed every budget).
 
 ### P5 — r1a F5 and r1b F1, the pendency race
 
