@@ -1,0 +1,132 @@
+npm notice run @orkestrel/form@0.0.4 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/form@0.0.4 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1150ms on 48 files using 16 threads.
+npm notice run @orkestrel/form@0.0.4 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/form@0.0.4 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/form@0.0.4 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/form@0.0.4 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/form@0.0.4 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/form@0.0.4 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/form@0.0.4 build:src
+npm notice run npm run build:src:core
+npm notice run @orkestrel/form@0.0.4 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+[36mvite v8.2.2 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+
+[unplugin:dts] Start generate declaration files...
+[unplugin:dts] Start bundling declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+[unplugin:dts] Declaration files built in 4206ms.
+
+computing gzip size...
+dist/src/core/index.js  62.62 kB │ gzip: 13.88 kB │ map: 113.62 kB
+
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  67.96 kB │ gzip: 14.24 kB │ map: 116.12 kB
+
+[32m✓ built in 4.46s[39m
+[33m[33m[PLUGIN_TIMINGS] [0mYour build spent 99% of 4.4s inside plugin hooks (4.4s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - unplugin-dts writeBundle (78%, 3.5s, 2 calls)
+Those rows are 78% of the build; the rest of the 99% is below.
+Not measurable — 1 hook whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+  - orkestrel-environment-boundary resolveId (48 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[39m
+npm notice run @orkestrel/form@0.0.4 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/form@0.0.4 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/form@0.0.4 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/form
+
+·············································································································································································
+
+ Test Files  9 passed (9)
+      Tests  173 passed (173)
+   Start at  22:50:08
+   Duration  855ms (transform 1.95s, setup 3.28s, import 703ms, tests 264ms, environment 2ms)
+
+npm notice run @orkestrel/form@0.0.4 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/form
+
+···············································································································
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  22:50:10
+   Duration  1.86s (transform 199ms, setup 213ms, import 315ms, tests 1.17s, environment 0ms)
+
+npm notice run @orkestrel/form@0.0.4 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/form
+
+··············································
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  22:50:12
+   Duration  1.56s (transform 268ms, setup 212ms, import 617ms, tests 578ms, environment 0ms)
+
+npm notice run @orkestrel/form@0.0.4 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/form
+
+·············
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  22:50:14
+   Duration  436ms (transform 130ms, setup 234ms, import 28ms, tests 20ms, environment 0ms)
+
+npm notice run @orkestrel/form@0.0.4 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/form
+
+················································
+
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+   Start at  22:50:15
+   Duration  629ms (transform 129ms, setup 221ms, import 145ms, tests 104ms, environment 0ms)
+
+npm notice run @orkestrel/form@0.0.4 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/form
+
+(node:22180) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  22:50:17
+   Duration  5.81s (transform 187ms, setup 200ms, import 2.20s, tests 3.27s, environment 0ms)
+
