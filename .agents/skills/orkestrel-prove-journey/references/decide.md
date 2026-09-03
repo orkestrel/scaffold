@@ -15,7 +15,7 @@ Never ask `prove` about pixels, and never ask a screenshot about types.
 ## The receipt half
 
 A claim a compiler, a linter, or a Node runner judges goes to `prove`. Supply its workspace project,
-its case, its negative control, and the stage that control must break at.
+its case, its negative control, and the stage that negative control must break at.
 `.claude/rules/quality.md` § Instruments owns that rule and the receipt line every report quotes;
 follow it there rather than restating it here.
 

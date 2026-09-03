@@ -11,9 +11,9 @@ every entry to these rules.
 - **Report the population.** A reading carries the population it walked. An empty population fails
   the run, because an extractor that quietly matched nothing satisfies every other assertion.
 - **Draw every negative control from outside the population.** Name the membership rule first, then
-  pick a control the rule excludes. Reject a control that rule admits.
-- **Enter a negative control through the same door the surface enters.** A control handed straight
-  to the reading tests the reading alone, so pair it with one appended to the tree, the stylesheet,
+  pick a negative control the rule excludes. Reject a negative control that rule admits.
+- **Enter a negative control through the same door the surface enters.** A negative control handed
+  straight to the reading tests the reading alone, so pair it with one appended to the tree, the stylesheet,
   or the registry the instrument walks wherever the instrument has an extraction step.
 
 ## Contents
@@ -41,7 +41,7 @@ every entry to these rules.
   the extraction door: an element built in the harness carrying that undefined token on an SVG
   `class` attribute, added to the tree the reading walks. Each sits outside the population, which is
   authored tokens the cascade resolves.
-- **Coverage.** The fed control covers the subtraction. The appended control covers the extractor,
+- **Coverage.** The fed negative control covers the subtraction. The appended negative control covers the extractor,
   and it is what fails a reading that never leaves the root or that drops SVG tokens by reaching for
   `className`, where the value is an `SVGAnimatedString` rather than a string. Together they prove
   authored tokens are a subset of the cascade. The instrument says nothing about a cascade rule
@@ -61,8 +61,8 @@ every entry to these rules.
   Append the second through the extraction door: an element built in the harness carrying that same
   undeclared string on an SVG `class` attribute, added to the tree the reading walks. Each sits
   outside the declared set.
-- **Coverage.** The fed control covers the match against the declared set. The appended control
-  covers the extractor, and it is what fails a reading that never leaves the root or that drops SVG
+- **Coverage.** The fed negative control covers the match against the declared set. The appended negative
+  control covers the extractor, and it is what fails a reading that never leaves the root or that drops SVG
   tokens by reaching for `className`. Together they prove reused chrome is declared. The instrument
   does not prove a declared invariant is true, and it does not read a single utility used alone.
 - **Never substitute a cancellation heuristic.** A rule that flags a string for its utility count, or

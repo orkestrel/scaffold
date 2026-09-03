@@ -354,7 +354,7 @@ Hold the baseline in [SKILL.md](../SKILL.md) → Accessibility baseline. Its Boo
 - collects every painted layer from the element upward to the first opaque one, then composites them top over bottom (Porter-Duff `over`) onto that opaque base;
 - composites a translucent foreground over that result before taking the ratio, rather than reading the declared color;
 - measures both themes in one run, since the theme swap re-points the tokens under every layer;
-- carries a negative control drawn from outside the population it covers — a pairing known to fail — and voids the run if that control passes.
+- carries a negative control drawn from outside the population it covers — a pairing known to fail — and voids the run if that negative control passes.
 
 Wire the reader into the suite once it has settled a question.
 

@@ -40,7 +40,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"executable": false,
-			"digest": "760c0a0eff5ec137cc62ddb9885787e401626c1442166b587b12854562d85e81"
+			"digest": "2221c8fddbf0474c9fbf39b5411275e27127940338b20e7626e5fac18f62c5f0"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/components.md",
@@ -64,7 +64,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/inspection.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/inspection.md",
 			"executable": false,
-			"digest": "256b65f2a064716632aa368b95753a3bbf45290bb47a4f0499dbbee56795d0bc"
+			"digest": "48b202e331c17a26f8262b30095898e6d147906847a74d3779907c0aad4de43b"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/utilities.md",
@@ -238,7 +238,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/decide.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/decide.md",
 			"executable": false,
-			"digest": "71e598fe876a7228568247bd3cd7127c19f276c48f9bae8f1a73a3591f7c7199"
+			"digest": "b770ddf13674cc03c7e8fa415f3877d992ee16b52c2bdefa439179cc8ca23149"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/layer.md",
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "836346b9df1185f937389158dff97ee7278d73027b04172c981c796b5297cdfe"
+	"digest": "28f689bcc8a8b2bcf1268e0bad96088f1edfaa3d76c415d33b6ad12280c5b702"
 }
