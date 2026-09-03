@@ -1,0 +1,10 @@
+{
+  "package": "table",
+  "rows": 10,
+  "breaking": [],
+  "folded": [],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": false,
+  "note": "No fixed rule fired for table — every refuter ruling kept its verdict, so the CONFIRMED rulings became the brief's rows unchanged, and no ruling is breaking, so the fleet consumer sweep did not run."
+}

@@ -1,0 +1,15 @@
+{
+  "package": "websocket",
+  "rows": 19,
+  "breaking": [
+    "websocket-obj-11",
+    "websocket-subj-11"
+  ],
+  "folded": [
+    "websocket-obj-2"
+  ],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": false,
+  "note": "Folded websocket-obj-2 into websocket-subj-4 as the refuter's named single carrier for the missing NodeWebSocket @example, marked nothing ORCHESTRATOR because no confirmed repair reaches a manifest, lockfile, install, off-limits file, or another checkout, and swept both breaking renames across the fleet with no source consumer outside websocket's own tree — the only external hits are the vendored guide mirrors in mcp and browser, which the sweep excludes and which need a re-vendor after publish."
+}
