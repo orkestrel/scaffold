@@ -279,3 +279,8 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   reference's sanctioned path); `npm view` reads 0.0.12. Scaffold layer preparation running
   (re-pin to test 0.0.12, install, prepublish chain); form re-pinned to test 0.0.12 and waits for
   scaffold 0.0.60 before its chain.
+- `@orkestrel/scaffold` 0.0.60 published from `f2059d2` (chain green: src:core 373, src:server
+  425 passed 6 skipped, src:bin 209, policy 111, config 46, guides 17, distribution 5); main
+  pushed at `bacb639`; `npm view` reads 0.0.60. Launched in parallel: form's layer (scaffold
+  re-pin, repair, chain) for the last upload; test's development re-pin to 0.0.60 with repair and
+  gates; the three visits (workflow `visit-three-apps`, Opus implementers).
