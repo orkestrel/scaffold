@@ -207,3 +207,25 @@ Ancillary questions decided and carried on from, per the deviation contract:
 3. **Guide paragraph placement.** The four new `guides/README.md` dependency paragraphs sit in the existing section, with `queue.md` before `guide.md` so the runtime dependency precedes the development ones.
 4. **Two guide sentences beyond the letter of their row.** `guides/workflow.md` "a caller now has a THIRD, higher-level option" carried both a banned `now` and an ordinal naming a list item by position; I rewrote it to "a caller has a further, higher-level option" while applying workflow-subj-2 to the same sentence. Likewise the `PERSISTED_TASK_EVENTS` row's "the lifecycle five" was a count in a sentence workflow-subj-3 already reached.
 5. **`Workflow` `@example` value read.** The row's operative form names reads of `workflow.status`, `workflow.phase('build')` and `workflow.snapshot()`. I wrote the third as `workflow.snapshot().id // 'release'` rather than a length, so the example states no count.
+
+## Fix round 1
+
+The checker finding is `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/workflow-r1-checker-luna.result.md`. The successor is `/home/user/scaffold/tmp/units/conform/conform-workflow-fix1b-brief.md`.
+
+The checker repair and its successor rewrote these sites:
+
+- `guides/workflow.md:105` — `now inserted` became `inserted before`.
+- `tests/src/core/helpers.test.ts:206-210` — `taskStatus`, `phaseStatus`, and `workflowStatus` became `fromTask`, `fromPhase`, and `fromWorkflow`.
+- `tests/src/core/RunHolder.test.ts:41` — the nested `readActive` arrow was removed; the assertions read `holder.runner`.
+- `src/core/WorkflowRunner.ts:466` — deleted temporal `now` from the terminal sweep comment.
+- `src/core/factories.ts:49` — deleted temporal `now` from the compiler comment.
+- `src/core/helpers.ts:544` — replaced temporal `now` with `at that point`.
+- `src/core/types.ts:362` — replaced causal `since` with `because` and deleted temporal `now`.
+- `src/core/types.ts:1708` — replaced `the phase now starting` with `the phase that is starting`.
+- `src/core/types.ts:1938` — deleted temporal `now` from the control-surface description.
+
+The sweeps produced these results:
+
+- Old names — pattern `\b(WorkflowFunctions|TaskStatus|PhaseStatus|WorkflowStatus|TASK_STATUSES|TERMINAL_TASK_STATUSES|PHASE_STATUSES|WORKFLOW_STATUSES|RunnerValue|RunnerFailure|WorkflowHooks|PhaseHooks|TaskHooks|createGate|TestGateInterface|QueueExecution)(s|es|ed|ing)?\b`, case-insensitive, over `src`, `tests`, `guides/workflow.md`, `guides/README.md`, and `README.md`: empty.
+- Nested arrow — pattern `^\s+(const|let)\s+\w+\s*=\s*(async\s*)?\(.*\)\s*(:[^=]+)?=>` over `tests/src/core/RunHolder.test.ts`: empty.
+- `now` — pattern `\b[Nn][Oo][Ww]\b` over `guides/workflow.md`, `guides/README.md`, `README.md`, and `src`: `guides/workflow.md:330`, `:1025`, and `:1026` are `Date.now()` calls; `src/core/tasks/Task.ts:469` and `:485` are `Date.now()` calls; `src/core/helpers.ts:562` declares the `now` local from `Date.now()`, `:574` and `:575` read that local, `:648` declares it from `Math.max(Date.now(), snapshot.updated)`, and `:686` and `:700` read it; `src/core/Workflow.ts:441` calls `Date.now()`. Each hit is a permitted code token.
