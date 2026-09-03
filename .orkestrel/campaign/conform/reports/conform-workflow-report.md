@@ -396,3 +396,20 @@ The case-insensitive sweep used pattern `\b(should|simply|easy|easier|just|curre
 ### Orchestrator integration (22:22 UTC, after fix round 1c returned)
 
 Fix round 1c's population named prose in `tests` without excluding the vendored set, so the Sol writer rewrote a banned-table hit in the vendored `tests/distribution.test.ts` (the `since` scaffold's host rows already carry at `tests/distribution.test.ts:28`). The Orchestrator restored that file to its committed bytes and regenerated the evidence; the vendored site stays with scaffold's host-row follow-on. Every other rewrite of the round stands.
+
+## Fix round 1d
+
+The checker file is `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/workflow-r1c-checker-luna.result.md`.
+
+The Surface-row descriptions were rewritten as noun phrases:
+
+- `guides/workflow.md:245` — “Find the first `TaskResult` in a positional list whose boxed outcome is a `Failure`, or `undefined` if none.” became “The first `TaskResult` in a positional list whose boxed outcome is a `Failure`, or `undefined` if none.”
+- `guides/workflow.md:249` — “Convert a `WorkflowDefinition` into an INITIAL all-`pending` `WorkflowSnapshot` — the unified construction path.” became “An INITIAL all-`pending` `WorkflowSnapshot` converted from a `WorkflowDefinition` — the unified construction path.”
+- `guides/workflow.md:250` — “Convert one `PhaseDefinition` into an initial all-`pending` `PhaseSnapshot` (the per-phase step).” became “An initial all-`pending` `PhaseSnapshot` converted from one `PhaseDefinition` (the per-phase step).”
+- `guides/workflow.md:251` — “Convert one `TaskDefinition` into an initial `pending` `TaskSnapshot` (the per-task leaf step — no result, empty metadata).” became “An initial `pending` `TaskSnapshot` converted from one `TaskDefinition` (the per-task leaf step — no result, empty metadata).”
+- `guides/workflow.md:252` — “Project interrupted running work onto its remaining budget without replenishing attempts.” became “Interrupted running work projected onto its remaining budget without replenishing attempts.”
+- `guides/workflow.md:253` — “Flatten per-phase `TaskResult` lists into one positional list — the workflow tier of the result tree.” became “One positional list flattened from per-phase `TaskResult` lists — the workflow tier of the result tree.”
+- `guides/workflow.md:256` — “Reposition the entry keyed `key` to a new index in a readonly entries array — the pure remove-then-reinsert step behind a registry's `move`.” became “The entry keyed `key` repositioned to a new index in a readonly entries array — the pure remove-then-reinsert step behind a registry's `move`.”
+- `guides/workflow.md:257` — “Schedule the one host `setTimeout` boundary every scheduler's `delay` and macrotask fallback resumes from.” became “The one host `setTimeout` boundary that every scheduler's `delay` and macrotask fallback resumes from.”
+
+The sweep used pattern `^\| \x60[^\x60]+\x60 +\| [^|]+\| (Find|Convert|Project|Flatten|Reposition|Schedule|Create|Build|Run|Start|Stop|Return|Read|Write|Compile|Derive|Resolve|Check|Narrow|Validate|Compute|Emit|Produce|Wrap|Register|Remove|Add|Bind|Drive|Hold|Persist|Load|Save|Serialize|Restore|Watch|Wait|Yield|Report|Format|Parse|Scan|Walk|Filter|Map|Fold|Merge|Split|Sort|Count)\b` over `guides/workflow.md`. It returned no Surface-row description. Its remaining hits are the `## Methods` rows at `guides/workflow.md:451-454`, `:470-474`, `:493`, `:501-504`, `:515-518`, `:529-532`, `:551`, `:594`, `:603`, and `:626`; the brief excludes those rows from the noun-phrase rule.
