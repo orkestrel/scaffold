@@ -209,3 +209,8 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   (`fix-capture-edge-brief.md`): `measureContent` over the union of element bottoms, overshoot
   on that reading, final staging at the exact content height, refusal kept. Scaffold's own
   prepublish chain runs in parallel at the 0.0.60 bump for early evidence.
+- Scaffold's own prepublish chain at the 0.0.60 bump (`ce11b99`): format, lint, check, build,
+  every suite green (src:core 373; src:server 425 passed 6 skipped; src:bin 209; policy 111;
+  config 46; guides 17), distribution red on the declared vendored inventory missing the five
+  new references. Declared at `c3e53b9`; the release-mode distribution proof reads 5 passed. The
+  chain runs once more after the `@orkestrel/test` 0.0.12 re-pin.
