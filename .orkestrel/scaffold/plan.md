@@ -250,3 +250,12 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   re-pin to test 0.0.12, chain, push, publish 0.0.60; form to contract 0.0.15, scaffold 0.0.60,
   test 0.0.12, bump 0.0.4, chain, push, publish; terrain visit after T1; then the three
   applications.
+- M1 returned: the audit-deps branch merged into test main at `e7739e2` with both sides intact;
+  the branch's adoption of unpublished `@orkestrel/guide` names walked back to the published
+  `fenceImports` and `missingSymbols` (ruling: main builds against what consumers install; test
+  re-adopts when guide publishes the renames). The merge renamed the browser readers
+  (`contrast` to `readContrast`, `style` to `readStyle`, `token` to `readToken`, `rootToken` to
+  `readRootToken`, `pixels` to `readPixels`, `rgba` to `parseCSSColor`, `colorEqual` to
+  `matchesColor`) and `PortfolioInterface.states` to `placements`. The journey references follow
+  at scaffold `e355d45`; terrain's suite (25 call sites) follows after T1 through a builder
+  unit; the prepublish chain runs at the merge commit before the push and the publish.
