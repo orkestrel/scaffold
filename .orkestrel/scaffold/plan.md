@@ -314,3 +314,9 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   0.0.12 surface adopted, the 14 placement violations moved, the chain green (app:core 484,
   app:browser 247, policy 111, config 46). Committed in lloyds. Chrome unit C-lloyds next, then
   the journey unit; taverna and supervisor wait on the middleware release.
+- C-lloyds returned and is committed: scoped dark rail, solid tiers, neutral-then-solid Delete
+  with a native confirmation (the table widens to five rows through `confirming`), earned width
+  rules, per-row names, harness page green in a real browser, new guide. Findings for J-lloyds:
+  the five-row table, the changed names, the Quick Reference modal auto-opening at `md` and up
+  with two controls named `Close` (the Orchestrator renames the icon so `Close` resolves alone),
+  and the new helper leaves owing their describes.
