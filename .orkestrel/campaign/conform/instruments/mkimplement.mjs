@@ -14,7 +14,7 @@ for (const pkg of process.argv.slice(2)) {
 	const rulings = (report.refuter?.rulings || []).filter((r) => r.verdict === 'CONFIRMED')
 	const rows = rulings.map((r, i) => {
 		const f = byId[r.id] || {}
-		return `${i + 1}. **${r.id}** (${f.claim || '?'}; ${r.breaking ? 'BREAKING' : 'non-breaking'}${f.consumers && f.consumers.length ? `; consumers: ${f.consumers.join(', ')}` : ''})\n   - Where: \`${f.file || '?'}\`\n   - Rule: ${f.rule || '?'}\n   - Wrong: ${f.wrong || '?'}\n   - Repair (the refuter's operative form): ${r.repair || f.repair || '?'}\n   - Refuter's evidence: ${r.evidence || '?'}`
+		return `${i + 1}. **${r.id}** (${f.claim || '?'}; ${r.breaking ? 'BREAKING' : 'non-breaking'}${f.consumers && f.consumers.length ? `; consumers: ${f.consumers.join(', ')}` : ''})\n   - Where: \`${f.file || '?'}\`\n   - Rule: ${f.rule || '?'}\n   - Wrong: ${f.wrong || '?'}\n   - Repair (the refuter's operative form): ${r.repair || f.repair || '?'}${r.repair && f.repair && r.repair !== f.repair ? `\n   - Finder's repair (the text a refuter's "as written" refers to): ${f.repair}` : ''}\n   - Refuter's evidence: ${r.evidence || '?'}`
 	})
 	const consumers = [...new Set(rulings.flatMap((r) => (byId[r.id]?.consumers) || []))]
 	const tip = process.env.TIP || 'the committed HEAD'

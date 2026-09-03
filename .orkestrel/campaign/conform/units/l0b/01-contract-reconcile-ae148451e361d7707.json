@@ -1,0 +1,10 @@
+{
+  "package": "contract",
+  "rows": 19,
+  "breaking": [],
+  "folded": [],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": true,
+  "note": "Reconciliation was already complete for contract (marker /home/user/work/reports/conform-contract.reconciled dated Thu Sep 3 07:29:21 UTC 2026), so I only counted the existing brief's rows and made no changes."
+}

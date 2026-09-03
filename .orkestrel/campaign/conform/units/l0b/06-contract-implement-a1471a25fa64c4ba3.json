@@ -1,0 +1,206 @@
+{
+  "package": "@orkestrel/contract",
+  "rows": [
+    {
+      "id": "contract-obj-1",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. tests/setup.ts:139 imports `afterEach, vi` alone; `buildLockstep` / `buildJSONRoundtrip` return LockstepResult / JSONRoundtripResult; the `it` at tests/setup.test.ts:1325 names what it proves and the two `toThrow` cases stand unchanged."
+    },
+    {
+      "id": "contract-obj-2",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. The `Date.now` sweep under tests/ returns the named exclusions (tests/setup.ts:1171 lie-row control, compilers.test.ts:4921 comment) and the test titles naming Date.now as their subject; no elapsed-interval pair remains."
+    },
+    {
+      "id": "contract-obj-3",
+      "disposition": "applied",
+      "note": "The checkpoint created tests/src/core/factories.test.ts; I finished it. It was red (npm test: 1 failed / 1334) on `contract.explain({ name: 1 })`, because explain mirrors parse and parse coerces 1 to '1' past min:1 — the assertion was wrong, so it now faults on an absent required key. It also failed lint:check on six vitest(valid-expect) errors, now removed."
+    },
+    {
+      "id": "contract-obj-4",
+      "disposition": "applied",
+      "note": "Added tests/src/core/ValueInferer.test.ts, SchemaShaper.test.ts and SampleInferer.test.ts, each importing its class by relative source path with a leading comment stating the interning. No barrel row added, so tests/guides.test.ts INTERNAL stays true."
+    },
+    {
+      "id": "contract-obj-5",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. createScratch/destroyScratch replace mkdtempSync/rmSync; openStage keeps its synchronous catch-path scratch.destroy() and its rethrow; mkdirSync is retained."
+    },
+    {
+      "id": "contract-obj-6",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint, and the brief's UNVERIFIED claim is verified: npm run test:distribution exits 0 with 9 passed and the staged cases actually execute, which requires spawnSync(process.execPath, [npm_execpath, 'ping', ...]) to have run npm's real JavaScript entry. No process.platform fallback was needed."
+    },
+    {
+      "id": "contract-obj-8",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. src/core/ValueInferer.ts:217 throws the unprefixed 'property enumeration failed'; the `it` at tests/src/core/inferers.test.ts:304 and its comment name what they now prove; SampleInferer.ts and inferers.ts keep their single-door prefixes."
+    },
+    {
+      "id": "contract-subj-1",
+      "disposition": "applied",
+      "note": "BREAKING. The checkpoint carried type -> category through src, tests and the guide. I reversed two JSONSchema literals the checkpoint renamed by mistake (shapers.test.ts:1676, :1683) and corrected one guide sentence that still said a `type` cannot be read."
+    },
+    {
+      "id": "contract-subj-2",
+      "disposition": "applied",
+      "note": "ObjectShapeOptions gains the @remarks naming the JSON Schema additionalProperties keyword it mirrors; ObjectShape left alone. Applied as one edit with contract-subj-5's via -> through on the same line."
+    },
+    {
+      "id": "contract-subj-4",
+      "disposition": "applied",
+      "note": "Every cited passage rewritten as a present-tense invariant across helpers.ts, cloners.ts, inferers.ts, constants.ts, ContractCompiler.ts, ShapeValidator.ts, ShapeCloner.ts and validators.ts. The helpers.ts `attempt` site is the specified deletion, applied as one edit with contract-subj-7's citation repair in the same block."
+    },
+    {
+      "id": "contract-subj-5",
+      "disposition": "applied",
+      "note": "Every cited site plus the expanded sweep. src is clean of via/just/simply/e.g./i.e./etc./currently in the banned sense; the surviving hits are the `via` code identifiers the table's own header exempts."
+    },
+    {
+      "id": "contract-subj-6",
+      "disposition": "applied",
+      "note": "Every cited site plus the named expansions, and package.json's description count deleted (recorded as a scope deviation). helpers.ts 'the seven names' became 'the mandated names' as the row directs."
+    },
+    {
+      "id": "contract-subj-7",
+      "disposition": "applied",
+      "note": "Every AGENTS §N citation replaced with a named rule section across src, tests, guides/contract.md and guides/README.md. guides/guide.md left untouched as a vendored mirror. Two §12 sites the brief records as absent were found and repaired."
+    },
+    {
+      "id": "contract-subj-8",
+      "disposition": "applied",
+      "note": "guides/contract.md now states the shipped surface for guard purity, the emptiness guard, and shapeToKind. The shapeToKind line was applied as one edit with contract-subj-9's cap."
+    },
+    {
+      "id": "contract-subj-9",
+      "disposition": "applied",
+      "note": "compileAuditor, compileReporter, buildStringFaults, shapeToKind, isRecord and ShapeValidatorInterface.validate capped at their contracts; the rationale moved to named subsections beneath each row's own table."
+    },
+    {
+      "id": "contract-subj-10",
+      "disposition": "applied",
+      "note": "The U2 identifier is replaced with the rule stated in the guide's own terms, confirmed against tests/src/core/ShapeValidator.test.ts:511-533. A case-sensitive \\bU2\\b sweep over src, tests, guides, README.md and package.json returns nothing."
+    },
+    {
+      "id": "contract-subj-11",
+      "disposition": "applied",
+      "note": "The Dependency reference section names guide.md, probe.md, scaffold.md and test.md against their devDependencies, points at tests/guides.test.ts, and states the upstream-link exemption. Applied as one edit with contract-subj-7's See-also repair."
+    },
+    {
+      "id": "contract-subj-12",
+      "disposition": "applied",
+      "note": "Every cited site plus the named expansions, plus the same count family wherever my own sweep reached it in the guide (recorded as a deviation)."
+    },
+    {
+      "id": "contract-subj-14",
+      "disposition": "applied",
+      "note": "Carry row contract-c3 closed at both twins: guides/contract.md's buildStringFaults cell and src/core/helpers.ts's buildStringFaults TSDoc both now read 'share every constraint afterwards through this helper, so a constraint cannot drift between them'."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/contract/tests/src/core/ValueInferer.test.ts — new: the class driven with the unsanitized depth and breadth budgets its door removes",
+    "/home/user/fleet/contract/tests/src/core/SchemaShaper.test.ts — new: shared-node conversion identity, memo depth keying, cycle widening, and a read failure escaping with no door name",
+    "/home/user/fleet/contract/tests/src/core/SampleInferer.test.ts — new: the ordered row-prefix memo hit and missed, and the flags reaching the emission",
+    "/home/user/fleet/contract/tests/src/core/factories.test.ts — corrected the widened-overload fault value and removed the expect(value, message) second arguments that failed lint:check",
+    "/home/user/fleet/contract/tests/src/core/shapers.test.ts — restored the two JSONSchema literals the checkpoint renamed to category; named-form citation at the cyclic-schema test",
+    "/home/user/fleet/contract/src/core/types.ts — ObjectShapeOptions mirrored-key @remarks; via -> through; counts deleted",
+    "/home/user/fleet/contract/src/core/helpers.ts — revision narration deleted from attempt, pinMembers, matchesJSONValue and shapeToKind; buildStringFaults twin aligned; citations named; counts deleted",
+    "/home/user/fleet/contract/src/core/ContractCompiler.ts — engine narration rewritten as invariants; citations named; artifact counts deleted; temporal now deleted",
+    "/home/user/fleet/contract/src/core/constants.ts — INTRINSICS membership rule stated without its history; citation named; via and temporal now replaced",
+    "/home/user/fleet/contract/src/core/validators.ts — isRegExp narration rewritten; citations named; e.g. and etc. replaced",
+    "/home/user/fleet/contract/src/core/combinators.ts — citations named; via replaced; calling-mode and guard-arity counts deleted",
+    "/home/user/fleet/contract/src/core/compilers.ts — citations named; via and just replaced; artifact counts deleted",
+    "/home/user/fleet/contract/src/core/parsers.ts — module citation named; via and e.g. replaced",
+    "/home/user/fleet/contract/src/core/shapers.ts — module citation named; via and e.g. replaced",
+    "/home/user/fleet/contract/src/core/inferers.ts — valueToSchema depth-cap rationale stated in the present tense; via, just and e.g. replaced",
+    "/home/user/fleet/contract/src/core/cloners.ts — cloneShape freeze guarantee stated in the present tense",
+    "/home/user/fleet/contract/src/core/ShapeValidator.ts — position-rule, capture and measurement comments stated in the present tense; counts deleted",
+    "/home/user/fleet/contract/src/core/ShapeCloner.ts — capture-policy comment stated in the present tense; door count replaced with the door names",
+    "/home/user/fleet/contract/src/core/SchemaCloner.ts — owned-rule count deleted",
+    "/home/user/fleet/contract/src/core/ValueInferer.ts — partial-key count deleted",
+    "/home/user/fleet/contract/src/core/errors.ts — pinned-copy count replaced with the copies' names",
+    "/home/user/fleet/contract/src/core/factories.ts — createContract artifact counts deleted; precompilation stated in the present tense",
+    "/home/user/fleet/contract/guides/contract.md — citations named; revision narration deleted; oversized Summary cells capped with new named subsections; the U2 identifier replaced; counts deleted",
+    "/home/user/fleet/contract/guides/README.md — the Dependency reference section rewritten to name every vendored mirror; the See-also citation named",
+    "/home/user/fleet/contract/package.json — the description count deleted",
+    "/home/user/fleet/contract/tests/setup.ts — soundness-helper citation named",
+    "/home/user/fleet/contract/tests/guides.test.ts — header and runtime-half counts deleted",
+    "/home/user/fleet/contract/tests/src/core/parsers.test.ts — describe name carries the rule instead of a §N citation",
+    "/home/user/fleet/contract/tests/src/core/combinators.test.ts — describe and it names carry the rule instead of a §N citation",
+    "/home/user/fleet/contract/tests/src/core/validators.test.ts — describe and it names carry the rule instead of a §N citation",
+    "/home/user/fleet/contract/tests/src/core/compilers.test.ts — comments carry the rule instead of a §N citation",
+    "/home/user/fleet/contract/tests/src/core/helpers.test.ts — comment carries the rule instead of a §N citation",
+    "/home/user/fleet/contract/tests/src/core/integration.test.ts — header comment carries the rule instead of a §N citation"
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2070ms on 70 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "No output."
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json and tsc --noEmit -p configs/src/tsconfig.core.json both silent."
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "dist/src/core/index.js 393.31 kB; dist/src/core/index.cjs 398.79 kB; built in 4.29s; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:core Test Files 19 passed (19), Tests 1350 passed (1350); policy 111 passed; config 46 passed; setup 61 passed (2 files); guides 65 passed."
+    },
+    {
+      "command": "npm run test:distribution",
+      "exit": 0,
+      "excerpt": "Observation, not a criterion. Test Files 1 passed (1), Tests 9 passed (9); the staged registry cases executed, which verifies the brief's UNVERIFIED npm_execpath claim."
+    },
+    {
+      "command": "npx oxlint --config .oxlintrc.json --deny-warnings tests/src/core/SampleInferer.test.ts tests/src/core/SchemaShaper.test.ts tests/src/core/ValueInferer.test.ts tests/src/core/factories.test.ts",
+      "exit": 1,
+      "excerpt": "Failing-first reading before the contract-obj-3 repair: six 'error vitest(valid-expect): Expect takes at most 1 argument' at factories.test.ts:26,27,28,39 and ValueInferer.test.ts:18,19. Green after."
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "ContractShape discriminant — `type` renamed to `category`",
+      "change": "Every member of the ContractShape union keys its discriminant on `category` instead of `type`. The literal values are unchanged. JSONSchema keeps `type` and JSONSchemaType is untouched, so a JSONSchema literal, a `contract.schema.type` read, and a `rawShape({ type: … })` argument are unaffected.",
+      "consumers": [
+        "@orkestrel/database (src/core/helpers.ts:605, src/core/types.ts:463-466)",
+        "@orkestrel/workflow (tests/src/core/shapers.test.ts:19,20,24,25,35,36,42,48,54,55,64,73,79,89,111,119)",
+        "@orkestrel/database, @orkestrel/toolbox, @orkestrel/csv, @orkestrel/guide, @orkestrel/workflow, @orkestrel/markdown, @orkestrel/html, @orkestrel/brief, @orkestrel/template, @orkestrel/probe, @orkestrel/queue, @orkestrel/worker (each holds a vendored guides/contract.md mirror)"
+      ],
+      "edit": "Rule: every read or write of a ContractShape member's discriminant becomes `category`. `{ type: 'string' }` -> `{ category: 'string' }`; `shape.type` -> `shape.category`; `ContractShape['type']` -> `ContractShape['category']`; `Extract<ContractShape, { readonly type: T }>` -> `Extract<ContractShape, { readonly category: T }>`. Exact sites: @orkestrel/database src/core/helpers.ts:605 `switch (shape.type) {` -> `switch (shape.category) {`; @orkestrel/database src/core/types.ts:464, inside `export type RowOf<C extends ColumnMap> = Infer<{ … }>`, `readonly type: 'object'` -> `readonly category: 'object'` (this one is silent rather than red — without it the literal stops matching Infer's ObjectShape branch and RowOf widens instead of failing to compile). @orkestrel/workflow tests/src/core/shapers.test.ts: each `toMatchObject({ type: '…' })` over a shape and each `.type === '…'` becomes `category`, for example `expect(taskShape.properties.id).toMatchObject({ type: 'string', min: 1 })` -> `({ category: 'string', min: 1 })` and `expect(behavior.type === 'optional' && behavior.inner)` -> `expect(behavior.category === 'optional' && behavior.inner)`. Every consumer's vendored guides/contract.md is refreshed from this package's published guide after release, never hand-edited, per .claude/rules/documentation.md § Parity. No other consumer reads the discriminant: @orkestrel/toolbox's `type: '…'` literals are ColumnSpec and JSONSchema, @orkestrel/probe's are JSONSchema and import attributes, and csv/guide/markdown/html/template build shapes through the builders and assert on `contract.schema.type`, a JSONSchema read."
+    },
+    {
+      "symbol": "ValueInferer record-enumeration refusal — retained `cause` message",
+      "change": "src/core/ValueInferer.ts:217 throws `property enumeration failed` instead of `valueToSchema: property enumeration failed`, because both `valueToSchema` and `samplesToSchema` drive that walk and the prefix named a door that had not run. The published message keeps its own door prefix and is unchanged; only the retained `cause` moves.",
+      "consumers": [
+        "tests/src/core/inferers.test.ts:318 (in this package, already updated)"
+      ],
+      "edit": "`expect(error.cause.message).toBe('valueToSchema: property enumeration failed')` -> `expect(error.cause.message).toBe('property enumeration failed')`. No fleet consumer asserts on this cause: `grep -rn --include=*.ts --include=*.md \"property enumeration failed\"` over database, toolbox, csv, guide, workflow, markdown, html, brief, template, probe, queue and worker, excluding node_modules and dist, returns nothing."
+    }
+  ],
+  "patches": [
+    "None. This unit wrote only Owned files. The consumer edits under Breaking are the patches the Orchestrator carries to each package's own unit in layer order; they are stated as exact edits rather than as diffs because they belong to trees this unit did not read into a patch context."
+  ],
+  "deviations": [
+    "The checkpoint renamed two JSONSchema literals it should have left alone, and I reversed it. tests/src/core/shapers.test.ts:1676 and :1683 had become JSON.parse('{\"category\":\"object\",…}') and JSON.parse('{\"category\":\"array\"}'). Both are inputs to schemaToShape, which reads JSON Schema keywords, so under `category` the schema carried no recognized keyword and the walk widened to rawShape before reaching a cycle — the two tests named for a cyclic schema graph passed while exercising nothing. contract-subj-1's amendment (3) governs: rename only literals whose static type is ContractShape or one of its members. Restored to `type`; tests/src/core/shapers.test.ts is green at 112 passed. Reported rather than absorbed because it reverses a checkpoint edit.",
+    "The brief's contract-subj-7 correction (b) states that no §12 site exists in this package. Two do, both in guides/contract.md: the compileGenerator Summary cell and Contract law 5 ('createContract validates before it compiles'). Both name coded refusals from the declaration gate. The row's operative rule — a §N citation resolves to nothing — reaches them, so I removed both citations.",
+    "I edited package.json's `description` field. contract-subj-6 names package.json:4, which is that field. Scope grants package.json 'only for the exports, files, scripts, and bin fields a row names', and Off-limits bans only the version and dependency fields, so the row names a field the grant's enumeration omits and the ban does not cover. Applied, because package.json is Owned, the field is not off-limits, and the row names it explicitly; the edit deletes the numeral only, so the surface it describes is unchanged.",
+    "contract-subj-4 and contract-subj-12 sweeps reached sites their lists do not name, and I deleted the count in the same family at every site my own sweep returned rather than leaving a numeral one line from one I had just removed: src/core/ContractCompiler.ts (six artifacts / six roots / six families / six public doors), src/core/factories.ts, src/core/types.ts, and guides/contract.md (all six artifacts, all six compilers, the six artifacts, the three verdict families, Three details, Six refusal families, two halves, the four value doors, Two call forms, three mechanisms, two replaceable, the seven names, twelve own members). I also deleted the temporal `now` at src/core/ContractCompiler.ts:134 and :950, which contract-subj-5's expansion does not list.",
+    "guides/contract.md still carries substitution-table words in the banned sense. contract-subj-5's Where lists src/core/* only, so the guide is outside that row's scope and I did not widen a row past the file set it names. `via`, `e.g.` and `just` remain in guide prose the other guide rows did not send me to. Recorded against contract-subj-5 for the next change.",
+    "I kept the named result interfaces LockstepResult and JSONRoundtripResult that the checkpoint landed in tests/setup.ts, rather than the inline record types contract-obj-1's repair spells. .claude/rules/tests.md § Shared test infrastructure requires a setup file to export every reusable fixture type, so the named form is the conforming one and the returned records carry exactly the fields the repair names.",
+    "contract-obj-3's assertion corpus reads as a set rather than per-value, because vitest(valid-expect) forbids the expect(value, message) label form the checkpoint used. Each assertion still fails closed on an empty population: `expect(new Set(doorReadings)).toEqual(new Set([true, false]))` fails when the corpus exercises one verdict, and the memo identity assertions in SampleInferer.test.ts fail when both operands are undefined.",
+    "guides/contract.md gained the subsections contract-subj-9's 'move the rationale beneath the table as named prose' leaves to my judgment: 'Recognizing a plain record' under Structural & collection guards, 'How a union is audited and reported' and 'Supplying a rebuilt pattern' under Reporting, and 'Diagnostic precedence and reentry' under ShapeValidatorInterface. Their placement, headings, and heading depth are the ancillary decisions the deviation contract assigns to the executor.",
+    "No row was stopped. The report and both evidence files are written: /home/user/scaffold/tmp/units/conform/conform-contract-report.md, /home/user/work/evidence/conform-contract.diff (git diff f38a649, 839076 bytes, after git add -N on the three new test files), /home/user/work/evidence/conform-contract.status (git status --short, listing only Owned files)."
+  ]
+}
