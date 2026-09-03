@@ -278,3 +278,18 @@ Read as directed, not acted on: the `configs/browsers.ts` row round 1 reported s
 drifts. This unit's owned files are `tests/guides.test.ts`, `tests/src/server/factories.test.ts`,
 `/home/user/work/evidence/database-proofs/**`, and this report; none of them touches
 `configs/**`, so this reading is carried forward rather than caused by a row here.
+
+## Fix round 3
+
+Closes round-2 checker's F1 (the `DriverIterator` TSDoc example uses `Row` without importing it)
+and F2 (the `auditDriver` transcription cites the fence's comment line where the call sits one line
+earlier).
+
+| Row | Closed by |
+| --- | --- |
+| 1. F1 | `src/core/DriverIterator.ts`'s `@example` now opens with `import type { Row } from '@orkestrel/database'` ahead of the `DatabaseError, DriverIterator` value import, so the declared `rows: AsyncIterator<Row>` line compiles as written. |
+| 2. F2 | `tests/guides.test.ts:441`'s `auditDriver` case now cites `guides/database.md:1770-1771` — the `auditDriver` call at `:1770` and its `// []` value comment at `:1771` — instead of the comment line alone. |
+
+Claims 7 and 9's refutations rest on `configs/browsers.ts` and the Orchestrator's own
+`scaffold repair` refresh between the round 1 and round 2 audit reads, per § Fix round 2's R3; no
+row in this round revisits them.
