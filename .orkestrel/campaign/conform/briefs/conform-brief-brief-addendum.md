@@ -1,0 +1,10 @@
+# Addendum to the conform-brief brief — incoming consumer edits, taken first
+
+The closure staged for this unit carries the landed tips of interpret, reason, contract, and guide. Each of the following edits is one a landed unit returned for this package under its report's § Shared-file patches; apply them first, exactly as given, and record each under a `## Consumer edits taken` section of the report with the line now. Line numbers are the reports' and can have moved; read each site before changing it. A vendored `guides/<dep>.md` mirror is never edited by hand: it refreshes at the wave.
+
+1. **interpret's removed `complete` member** (`reports/conform-interpret-report.md:186-207`, `:235-250`): `src/core/constants.ts:70` drops the `'complete'` entry; `tests/setup.ts:93,167-171,242,313,380` drop the `complete: true`/`complete: false` fields and the `get complete()` getter from the interpretation fixtures; `tests/setup.test.ts:109-110,144` replace `expect(result.complete).toBe(true)` with `expect(result.failures).toEqual([])` and `expect(interpretation.complete).toBe(false)` with the assertion the fixture's own state supports (read the fixture: an interpretation with ambiguities or failures is incomplete by derivation, so assert on `ambiguities` or `failures` rather than a removed flag).
+2. **reason's dropped `RuleResult.conclusion`** (`reports/conform-reason-report.md:190-207`): remove `conclusion: true` and `conclusion: false` from the rule-result fixtures in `tests/setup.ts`.
+3. **contract's `type` → `category` discriminant** (`reports/conform-contract-report.md:247`): `tests/src/core/shapers.test.ts:304` reads `expect(briefShape.category).toBe('object')`.
+4. **guide's `symbol.kind` → `symbol.keyword`** (`reports/conform-guide-report.md:154-163`): `tests/guides.test.ts:166,190` read `.filter((symbol) => symbol.keyword === 'function')`.
+
+Mirrors refreshed at the wave, not here: `guides/interpret.md`, `guides/reason.md`, `guides/guide.md`, `guides/emitter.md`, `guides/contract.md`.
