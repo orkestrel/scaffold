@@ -165,6 +165,7 @@ reports `"matchesDriftReachability('birth', aligned) // false answered true"` ad
 | `\babove\b\|\bbelow\b\|\bOnce\b\|\bonce\b`                                                                                     | `README.md`                                                                                 | One hit, permitted sense                                  |
 | `deny-warnings`                                                                                                                | `src/`, `tests/`, `guides/scaffold.md`, `README.md`                                         | Three hits, all `lint:check`                              |
 | `emitter`                                                                                                                      | `src/server/WriteTransaction.ts`                                                            | No match, which is subj-2's claim                         |
+| `upstream reader emits\|reader emits `release`\|`mirror`, `error`\|Errors are emitted immediately` (fix round 1, the Orchestrator's sweep at 21:09 UTC) | `README.md`, `guides/*.md`, `src/**`, `tests/**` | One hit, the corrected sentence at `guides/scaffold.md:1511`; no other hit |
 
 Ruling each count-sweep hit by its sense: `README.md:6` "one toolchain, one set of agent
 instructions, and one set of root dotfiles", `:40` "one machine-readable value", `:61` "one row per
@@ -324,3 +325,16 @@ re-sorts the list and runs `npm run format:check`, `npm run check`, and `npm run
 ### Orchestrator integration (20:5x UTC)
 
 The § Shared-file patches entry for `tests/guides.test.ts` — `extractFenceImports` → `fenceImports` and `findMissingSymbols` → `missingSymbols`, the two helpers guide's landed tip `be14c1b` renamed — was applied by the Orchestrator as the exact returned patch, with the import list re-sorted, and `format:check`, `check`, and `test:guides` re-run on the tree (readings in the landing log). The unit's deviation is closed by that adoption, which the guide reconcile's breaking sweep did not surface for this checkout because scaffold's own guide test is not the fleet drop-in. Ruling on scaffold-obj-4: the `ReadAllowance.remaining` mutability exemption stands as its `@remarks` states it; the row stays `noop`. The `host.json` regeneration records that the vendored surface moved: scaffold bumps and publishes on its own account at the wave, and every target re-pins and runs `repair`.
+
+## Fix round 1 (Orchestrator-owned, 21:09–21:15 UTC)
+
+The round-1 objective lane (`units/l3/scaffold-objective-r1.md`) refuted claim 2 on `README.md:14` (the scaffold-subj-7 replacement landed without the reflow the row names) and claim 4 on this report (no sweep row for scaffold-subj-1's old form), confirmed every other claim, and referred R1: the repaired vendored-set sentences name neither `tests/config.test.ts` nor `configs/helpers.ts`, and `scripts/deps.sh` is a session-start hook rather than a bench probe. The Luna checker refuted claim 7 on `host.json` sitting outside Owned; the objective lane confirmed claim 7 with the note that `build:inventory` regenerates it. Brief: `briefs/conform-scaffold-fix1-brief.md`.
+
+- Claim 2 — `README.md:10-22` reflowed at the file's wrap, no word of the scaffold-subj-7 replacement changed except as R1 requires.
+- R1 — the vendored-set sentence at `README.md:10-13`, `guides/scaffold.md:16-19`, and `guides/scaffold.md:1195-1199` names every `HOST_PATHS` member by kind: the licence, the harness permission file, the session-start hooks, the policy register and plugin, the configuration leaf and its proof, the root dotfiles, and the guide mirrors. The README's next sentence states what the two hook kinds do.
+- Claim 4 — the scaffold-subj-1 sweep row in § Sweeps, from the Orchestrator's own run.
+- Claim 7 — `host.json` is the generated inventory `build:inventory` rewrites; the landing's gate chain runs `build` after the last edit and stages the regenerated file. The brief's Owned scope is read as including it; the verdict records the amendment.
+- O1 — the retained result `units/l3/scaffold-implement-direct.md` now states that the harness appended the auto-mode paragraph to the loaded rule content and that the file on disk carries none.
+- O2 — `units/l3/scaffold-implement-direct.md` is the unit's returned result and `reports/conform-scaffold-report.md` its report file, the retention pair every unit keeps; the verdict names the report file as the audit subject.
+
+`guides/scaffold.md` is a `HOST_PATHS` member, so `host.json` moves again at the landing's `build`.
