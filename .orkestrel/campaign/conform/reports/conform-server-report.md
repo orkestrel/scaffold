@@ -265,3 +265,54 @@ Source: `/home/user/scaffold/.orkestrel/campaign/conform/units/l3/server-objecti
   regenerated `/home/user/work/evidence/conform-server.diff` and
   `/home/user/work/evidence/conform-server.status` at 21:33 UTC, and the
   round-3 lanes read that evidence from the landing tree.
+
+## Fix round 3
+
+Source checker:
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l3/server-r3-checker-luna.result.md`.
+
+The sweep used the pattern `AGENTS[^\n]*§|§ ?[0-9]+` over `src`, `tests/src`,
+`tests/setup.ts`, `tests/setup.test.ts`, `tests/guides.test.ts`,
+`tests/setupServer.ts`, `guides/server.md`, `guides/README.md`, and `README.md`.
+The vendored `guides/<dependency>.md` mirrors were outside the population. The
+final sweep returned no hit.
+
+The initial sweep returned these hits and rewrites:
+
+- `src/server/helpers.ts:126` — before: "never `as` (`AGENTS.md` §
+  Non-negotiable rules), and total on hostile input." After: "never `as`, and
+  remains total on hostile input."
+- `src/server/helpers.ts:459` — before: "It then decodes + narrows the payload
+  (`isRecord` + `typeof`, never `as` — `AGENTS.md` § Non-negotiable rules) and,
+  when an expiry was bound in, rejects an expired token." After: "It then
+  decodes + narrows the payload (`isRecord` + `typeof`, never `as`) and, when
+  an expiry was bound in, rejects an expired token."
+- `src/server/helpers.ts:512` — before: "reads it as UTF-8 JSON, narrows it to a
+  record with a string `value` (`AGENTS.md` § Non-negotiable rules — never
+  `as`), and rejects an expired `exp`." After: "reads it as UTF-8 JSON, narrows
+  it to a record with a string `value` without `as`, and rejects an expired
+  `exp`."
+- `src/server/helpers.ts:828` — before: "compute/compare (RFC 7232 §2.3.2 WEAK
+  comparison) and the TOTAL `Range` parser." After: "compute/compare (RFC 7232
+  WEAK comparison) and the TOTAL `Range` parser."
+- `src/server/helpers.ts:860` — before: "before the RFC 7232 §2.3.2 weak
+  comparison." After: "before the RFC 7232 weak comparison."
+- `src/server/helpers.ts:877` — before: "`ETag` — the RFC 7232 §2.3.2 WEAK
+  comparison." After: "`ETag` — the RFC 7232 WEAK comparison."
+- `src/server/constants.ts:4` — before: "inside THIS package (`AGENTS.md` §
+  Design laws: a capability arrives with its first real consumer, never
+  speculatively)." After: "inside THIS package: a capability arrives with its
+  first real consumer, never speculatively."
+- `tests/src/server/helpers.test.ts:703` — before: "matches weak-vs-strong per
+  RFC 7232 §2.3.2". After: "matches weak-vs-strong per RFC 7232".
+- `guides/server.md:11` — before: "package's, never re-implemented here
+  (`AGENTS.md` § Design laws — mechanism, not product policy)." After:
+  "package's, never re-implemented here — mechanism, not product policy."
+
+A direct read found a split-line citation that the required same-line pattern
+did not admit:
+
+- `guides/server.md:650` — before: "`DispatcherInterface`; this package owns
+  zero route matching (`AGENTS.md` § Design laws — mechanism, not product
+  policy)." After: "`DispatcherInterface`; this package owns zero route
+  matching — mechanism, not product policy."
