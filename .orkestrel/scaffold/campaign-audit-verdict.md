@@ -73,3 +73,12 @@ so both stand.
 
 Round 1 verdict: FAIL. The round closes when the fix units return, the fix-round audit on an
 engine that did not write them passes, and the verifier reads every chain green.
+
+## Fix round, lane A (Grok objective, 2026-09-02)
+
+Ruled on claims 1–13 and 18–21 over `fix-scaffold.patch` (`3df4e22..4fb7ff2`), `fix-test.patch`
+(`c98f3ba..ce89721`), and `fix-form.patch`: FAIL — 2 broken (8, 19), 5 unresolved (14–17, 22,
+deferred to lane B), 0 findings outside the claims. Claim 8's residue was four bare
+instrument-sense `control` hits (`inspection.md` 14–15, `decide.md` 18,
+`bootstrap-reference.md` 357); closed by the Orchestrator at scaffold `1a7602e`, and claim 19
+follows. Lane B re-reads claim 8 at that commit with the terrain claims.
