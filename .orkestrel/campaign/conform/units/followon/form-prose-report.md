@@ -82,3 +82,35 @@ The brief's allowed Bash commands did not include a direct `oxfmt` invocation. T
 1. Sweeps under row 5 read empty of banned senses within Owned files; hits in off-limits files are named and ruled but not this unit's to close.
 2. `test:guides` exits 0 with every presence guard matching (48 passed).
 3. Every gate exits 0; the audit prints its single zero-drift line; `git status --short` lists only Owned paths (`guides/form.md`, `src/core/types.ts`, `tests/setup.test.ts`, `tests/src/core/helpers.test.ts`).
+
+## Fix round 1
+
+Closes the round-1 checker's finding on the directional and count references in `tests/guides.test.ts`.
+
+### Sites
+
+- `tests/guides.test.ts:2` — old: "The five constants below are this / package's own, and are the only part a sibling package changes." → new: "The following constants are this / package's own, and are the only part a sibling package changes."
+- `tests/guides.test.ts:91` — old: "intentional rather than forgotten — and the second assertion below fails when a name / here stops being stranded, so the list cannot rot." → new: "intentional rather than forgotten — and the assertion that a name stays stranded fails / when a name here stops being stranded, so the list cannot rot." The named assertion is `it('names no symbol internal that the barrel already exports', ...)` at line 146, which checks `INTERNAL.filter((key) => !stranded.includes(key))`.
+- `tests/guides.test.ts:244` — old: "Each block below transcribes one flagship fence of `guides/form.md` and asserts the" → new: "Each following block transcribes one flagship fence of `guides/form.md` and asserts the".
+- `tests/guides.test.ts:246` — old: "fails here; name resolution above would pass it." → new: "fails here; the earlier name resolution would pass it."
+
+### Sweeps
+
+- Case-insensitive sweep `\b(above|below)\b` over `tests/guides.test.ts`: no matches. The file reads empty of document-reference senses.
+- Number-word sweep (`one`, `two`, `three`, `four`, `five`, `six`, `seven`, `eight`, `nine`, `ten`, `first`, `second`, `third`, `fourth`, `fifth`) over the same file: hits remain at `one-class-per-file` (a compound identifier, not a count), `at least one guide`, `at least one method`, `We need this one`, `one line`, `two wire shapes`, and `three value claims` — each names a fixed arity or a literal test-fixture value describing behavior, not a count of a growable documentation set (rules, rows, members, exports, files, options, steps, cases, stages, findings, or tests). None sits in a comment describing the file's own document structure, so none is a count or an ordinal under this brief's ban. All ruled permitted; none touched.
+
+### Gates
+
+- `npm --prefix /home/user/fleet/form run format:check` — exit 0.
+- `npm --prefix /home/user/fleet/form run lint:check` — exit 0.
+- `npm --prefix /home/user/fleet/form run check` — exit 0.
+- `npm --prefix /home/user/fleet/form run build` — exit 0.
+- `npm --prefix /home/user/fleet/form test` — exit 0; `test:guides` reported 48 passed (48).
+- `cd /home/user/fleet/form && npx scaffold audit --offline` — "0 of 34 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6."
+- `node /home/user/scaffold/tmp/work/evidence.mjs form` — wrote `/home/user/work/evidence/conform-form.diff` (175 lines) and `/home/user/work/evidence/conform-form.status` (5 entries: `guides/form.md`, `src/core/types.ts`, `tests/guides.test.ts`, `tests/setup.test.ts`, `tests/src/core/helpers.test.ts`).
+
+### Acceptance
+
+1. The sweep over `tests/guides.test.ts` reads empty of `above` and `below` as document references, and the file states no count and no ordinal in a comment.
+2. `test:guides` exits 0.
+3. Every gate exits 0; the audit prints its single zero-drift line; `git status --short` lists only the form-prose unit's files (`guides/form.md`, `src/core/types.ts`, `tests/setup.test.ts`, `tests/src/core/helpers.test.ts`) plus `tests/guides.test.ts`.

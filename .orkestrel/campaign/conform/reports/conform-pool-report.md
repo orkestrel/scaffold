@@ -9,7 +9,7 @@ Every row is `applied` or `noop`. No row stopped. The gate chain is green in ord
 | ------------ | ----------- | -------------------------------------------------------------------------------------------------------- |
 | pool-obj-1   | applied     | `describe('flagship fences')` in `tests/guides.test.ts`: the executed boundary fence plus its presence guard. |
 | pool-obj-2   | applied     | New `tests/src/core/validators.test.ts`; the pure guard assertions moved out of `Pool.test.ts`.           |
-| pool-obj-3   | applied     | Line 373 deleted, case renamed, and a `getEventListeners` case pinning both reachable `#detach` sites.   |
+| pool-obj-3   | applied     | Line 373 deleted, case renamed, and a `getEventListeners` case pinning `#detach`'s two reachable paths: the commit path and the destroy path, each proven red by its own control.   |
 | pool-obj-4   | applied     | `tests/setup.ts` header rewritten in the present tense over what the tree holds.                          |
 | pool-subj-1  | applied     | `#### \`PoolInterface\`` inserted before the method table in `guides/pool.md`.                            |
 | pool-subj-2  | applied     | `#### \`PoolToken\`` and its `release` table added; the Surface row at line 61 left as it is.             |
@@ -35,7 +35,7 @@ of them `environment: 'node'` with `browser: { enabled: false }`. No edit made.
 
 ### fleet-F2 evidence
 
-The package declares two classes. `Pool` (`src/core/Pool.ts:28`) declares `#` fields first and
+The package declares `Pool` and `PoolError` as classes. `Pool` (`src/core/Pool.ts:28`) declares `#` fields first and
 exposes `emitter`, `size`, `idle`, and `active` as getters; it has no `id` field of any
 accessibility. `PoolError` (`src/core/errors.ts:18`) declares `readonly code` and `readonly
 context` and no `id`. `PoolInterface` (`src/core/types.ts:63`) declares no `id` member either, so
@@ -77,8 +77,9 @@ Diffstat (`git -C /home/user/fleet/pool diff --stat`, with the new file `git add
 
 Every capture is a full runner transcript under `/home/user/work/evidence/pool-proofs/`, indexed
 by `README.txt` in that directory. Each plant was reverted by the inverse edit immediately after
-its capture; `git status --short` lists neither `src/core/validators.ts` nor
-`src/core/Pool.ts` as modified, which is the revert's proof.
+its capture; `git status --short` lists no `src/core/validators.ts` entry, and
+`git -C /home/user/fleet/pool diff -- src/core/Pool.ts` carries only the three `@throws` hunks,
+with `#detach` unchanged, which is the revert's proof.
 
 ### pool-obj-1
 
@@ -113,13 +114,18 @@ guard's own proof had no home before this row.
 
 Command: `npm --prefix /home/user/fleet/pool run test:src`.
 
-| Control                                                    | Reading                  | File                                          |
-| ---------------------------------------------------------- | ------------------------ | ----------------------------------------------- |
-| `removeEventListener` line deleted from `Pool.#detach`      | 1 failed, 46 passed (47) | `pool-obj-3-control-detach-removed-red.txt`   |
-| Reverted                                                    | 47 passed (47)           | `pool-obj-2-obj-3-green.txt`                  |
+| Control                                                            | Reading                 | File                                                     |
+| ------------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------- |
+| `removeEventListener` line deleted from `Pool.#detach`              | 1 failed, 46 passed (47) | `pool-obj-3-control-detach-removed-red.txt`               |
+| Reverted                                                             | 47 passed (47)           | `pool-obj-2-obj-3-green.txt`                               |
+| `this.#detach(waiter)` deleted from `destroy()`'s waiter loop        | 1 failed, 40 passed (41) | `pool-obj-3-control-detach-destroy-red.txt`               |
+| Reverted                                                             | 41 passed (41)           | `pool-obj-3-control-detach-destroy-green.txt`              |
 
-The failure is the new case at `tests/src/core/Pool.test.ts:386`, and it is the only failure — a
-direct measurement of the refuter's claim that no other case in the suite reads listener state.
+The commit-path failure is the new case at `tests/src/core/Pool.test.ts:386`, and it is the only
+failure — a direct measurement of the refuter's claim that no other case in the suite reads
+listener state. The destroy-path deletion fails the same case's destroy-path assertion at
+`tests/src/core/Pool.test.ts:395` instead, `expected [ [Function] ] to have a length of +0 but got
+1`, which is the second reachable `#detach` site measured red.
 
 ### pool-subj-1 and pool-subj-2
 
@@ -152,6 +158,10 @@ Every sweep ran through `Grep` over `/home/user/fleet/pool` with `node_modules` 
 | `\b(one\|two\|…\|ten)\b` (case-insensitive)     | `src/**`, `tests/guides.test.ts`, `tests/setup*.ts`, `tests/src/**`, `guides/pool.md`, `guides/README.md`, `README.md` | Every hit is a singular determiner or pronoun, except one I wrote and then fixed — see the ruling that follows. |
 | `\b\d+ (elements\|members\|…\|categories)\b`    | the same population                                              | No hit.                                                                                                      |
 | `\b(should\|simply\|easy\|easier\|just\|currently\|via\|in order to\|e.g.\|i.e.\|etc.\|performant\|robust\|allows you to\|and/or\|please\|sanity check\|dummy\|ensure\|guarantee\|leverage\|utilize\|both)\b` (case-insensitive) | the same population | Two `both` hits, each pre-existing and each naming its members in the sentence (`guides/pool.md:157`, `tests/src/core/Pool.test.ts:978`). |
+| `without leaking the listener`                 | `src/**`, `tests/**`, `guides/pool.md`, `guides/README.md`, `README.md` | No hit. |
+| `accepts only positive safe integer maxima and omission remains unbounded\|recognizes only native signals and synchronously throws for an invalid acquire signal` | `src/**`, `tests/**`, `guides/pool.md`, `guides/README.md`, `README.md` | No hit. |
+| `` growing up to `max`, or parking on `` | `src/**`, `tests/**`, `guides/pool.md`, `guides/README.md`, `README.md` | No hit. |
+| `The four constants below are this package's own` | `src/**`, `tests/**`, `guides/pool.md`, `guides/README.md`, `README.md` | No hit. |
 
 The number-word sweep caught a count in a comment I had just written: `tests/src/core/Pool.test.ts`
 read "The two detach sites a leak can reach". `#detach` has three call sites, and the set can grow,
@@ -203,7 +213,7 @@ None. Three ancillary questions were decided and carried, as the deviation contr
 
 1. **`isPoolSignal` stays imported in `Pool.test.ts`.** Row pool-obj-2 names
    `Pool.test.ts:81-83` as the assertions to move and says to drop an import only if nothing uses
-   it. The case at `Pool.test.ts:107`, `expect(isPoolSignal(controller.signal)).toBe(true)`, is a
+   it. The case at `Pool.test.ts:105-106`, `expect(isPoolSignal(controller.signal)).toBe(true)`, is a
    different input — a native signal carrying hostile own accessors — and it establishes that the
    rejection asserted on the next line comes from the prototype read rather than a guard refusal.
    It stayed, so `isPoolSignal` stayed in the import list and `isPoolMax` left it.
@@ -229,3 +239,69 @@ None. Three ancillary questions were decided and carried, as the deviation contr
 - `guides/probe.md` sits in `guides/` but `guides/README.md` names only `emitter.md` and
   `guide.md` under `## Dependency reference`. That predates this unit, no row names it, and the
   manifest parity case is green because the parser reads listed guides only. Reported, not touched.
+
+## Fix round 1
+
+Closes the round-1 objective lane's findings F1 through F6 and referral R1
+(`units/l2a/pool-objective-r1.md`).
+
+- **F1.** `guides/pool.md:73` now reads "The public call-signature members of `PoolInterface` and
+  `PoolToken`; `Pool` implements the `PoolInterface` list exactly." One sentence — "The lease
+  returned by `acquire`, with the one operation that returns its record." — sits between
+  `#### \`PoolToken\`` and its table. `Grep` over `tests/guides.test.ts` for the old sentence found
+  no presence guard quoting it.
+- **F6.** The `Pool.test.ts` bullet at `guides/pool.md:241-247` is rewrapped to the file's existing
+  width; no word changed.
+- **R1.** `guides/README.md` § Dependency reference gained one paragraph naming `probe.md` and
+  `test.md` as byte-identical mirrors of the guides for `@orkestrel/probe` and `@orkestrel/test`,
+  in the form of the two existing paragraphs, which stayed byte-unchanged.
+- **F3.** Planted a second control in `src/core/Pool.ts`: deleted `this.#detach(waiter)` from
+  `destroy()`'s waiter loop, leaving the commit-path call untouched. The run reddened the same
+  `getEventListeners` case's destroy-path assertion at `tests/src/core/Pool.test.ts:395`
+  (`expected [ [Function] ] to have a length of +0 but got 1`; 1 failed, 40 passed (41)),
+  captured to `pool-obj-3-control-detach-destroy-red.txt`. Restored the line byte-for-byte;
+  `git -C /home/user/fleet/pool diff -- src/core/Pool.ts` again carries only the three `@throws`
+  hunks, with `#detach` unchanged. The re-run captured to
+  `pool-obj-3-control-detach-destroy-green.txt` read 41 passed (41).
+- **F2, F4, F5, and the pool-obj-3 sentence.** The revert-proof sentence now states the true
+  reading: `git status --short` lists no `src/core/validators.ts` entry, and
+  `git -C /home/user/fleet/pool diff -- src/core/Pool.ts` carries only the three `@throws` hunks,
+  with `#detach` unchanged. The sweep table gained four rows — `without leaking the listener`, the
+  two renamed case titles, `` growing up to `max`, or parking on ``, and the `tests/guides.test.ts`
+  header clause `The four constants below are this package's own` — each swept over `src/**`,
+  `tests/**`, `guides/pool.md`, `guides/README.md`, `README.md` and read empty. Line 38 now names
+  the classes `Pool` and `PoolError` instead of counting them. The citation at line 206 now reads
+  `Pool.test.ts:105-106`. The pool-obj-3 row and its controls table carry the second control's
+  transcript and its red count.
+
+## Sweeps (fix round 1)
+
+Every sweep ran through `Grep` over `src/**`, `tests/**`, `guides/pool.md`, `guides/README.md`,
+`README.md`, and each read empty.
+
+| Pattern                                                                                                            | Result  |
+| ------------------------------------------------------------------------------------------------------------------- | ------- |
+| `without leaking the listener`                                                                                      | No hit. |
+| `accepts only positive safe integer maxima and omission remains unbounded`\|`recognizes only native signals and synchronously throws for an invalid acquire signal` | No hit. |
+| `` growing up to `max`, or parking on ``                                                                            | No hit. |
+| `The four constants below are this package's own`                                                                   | No hit. |
+
+## Gates (fix round 1)
+
+| Gate                   | Exit code | Note                                            |
+| ----------------------- | --------- | ------------------------------------------------ |
+| `npm run format:check`  | 0         | `oxfmt --check`, 38 files, no reformat needed.  |
+| `npm run lint:check`    | 0         | `oxlint --deny-warnings`, no output.            |
+| `npm run check`         | 0         | `tsc --noEmit` across the project and `src:core`. |
+| `npm run build`         | 0         | `dist/src/core` rebuilt cleanly.                |
+| `npm test`              | 0         | `src:core` 47 passed, `policy` 111 passed, `config` 46 passed, `setup` 3 passed, `guides` 25 passed. |
+
+## Audit (fix round 1)
+
+`npx scaffold audit --offline` printed: "0 of 34 planned paths drifted from the plan. Audit
+compared bytes at 23, existence at 5, and nothing at 6."
+
+`git -C /home/user/fleet/pool status --short` lists exactly the unit's ten paths: `README.md`,
+`guides/README.md`, `guides/pool.md`, `src/core/Pool.ts`, `src/core/factories.ts`,
+`src/core/types.ts`, `tests/guides.test.ts`, `tests/setup.ts`, `tests/src/core/Pool.test.ts`
+(modified), and `tests/src/core/validators.test.ts` (added).

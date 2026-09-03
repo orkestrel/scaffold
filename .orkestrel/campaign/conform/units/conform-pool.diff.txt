@@ -1,0 +1,391 @@
+diff --git a/README.md b/README.md
+index 037ceba..4cd2a43 100644
+--- a/README.md
++++ b/README.md
+@@ -1,8 +1,9 @@
+ # @orkestrel/pool
+ 
+-A bounded, typed **resource pool**: idle reuse + FIFO waiting. `acquire` leases
+-a resource — reusing a validated idle one, growing up to `max`, or parking on
+-a FIFO waiter list until a `release` frees one — and the returned token's
++A typed **resource pool** with optional bounded capacity: idle reuse + FIFO
++waiting. `acquire` leases a resource — reusing a validated idle one, growing up
++to `max` when one is set, growing without bound when it is not, or parking on a
++FIFO waiter list until a `release` frees one — and the returned token's
+ `release()` returns it for reuse (or hands it straight to the next waiter).
+ The FIFO handoff is validated, so a resource that goes bad while leased is
+ never handed to the next lessee, and a parked `acquire` given an `AbortSignal`
+diff --git a/guides/README.md b/guides/README.md
+index afe0ec6..02b011f 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -1,6 +1,6 @@
+ # Guides
+ 
+-A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).
++A dual-axis index into this repository's guides — by concept, and by directory.
+ 
+ ## By concept
+ 
+@@ -30,6 +30,12 @@ surface (`Guide` / `Source`, the manifest and comparison helpers), not anything
+ sourced in this repo; it is kept here so a reader of the parity suite can see
+ the primitives it is built from without leaving this guide set.
+ 
++[`probe.md`](probe.md) and [`test.md`](test.md) are byte-identical mirrors of the
++guides for `@orkestrel/probe` and `@orkestrel/test` — the devDependencies behind
++this repo's probe project and test helpers. They document **those packages'**
++surfaces, not anything sourced in this repo; they are kept here for the same
++reason.
++
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the repository's coding and documentation rules.
+diff --git a/guides/pool.md b/guides/pool.md
+index 364a1a9..744274b 100644
+--- a/guides/pool.md
++++ b/guides/pool.md
+@@ -70,7 +70,10 @@ of `size`.
+ 
+ ## Methods
+ 
+-The public methods of `PoolInterface`; `Pool` implements this list exactly.
++The public call-signature members of `PoolInterface` and `PoolToken`; `Pool` implements the
++`PoolInterface` list exactly.
++
++#### `PoolInterface`
+ 
+ | Method    | Returns                 | Behavior                                                                                  |
+ | --------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+@@ -78,6 +81,14 @@ The public methods of `PoolInterface`; `Pool` implements this list exactly.
+ | `clear`   | `Promise<void>`         | Claim and clean only the records idle in this call's synchronous snapshot.                |
+ | `destroy` | `Promise<void>`         | Enter terminal state and return the exact stable promise for complete teardown.           |
+ 
++#### `PoolToken`
++
++The lease returned by `acquire`, with the one operation that returns its record.
++
++| Method    | Returns | Behavior                                                                                                              |
++| --------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
++| `release` | `void`  | Returns this exact record to the pool once; a repeat call and a call after teardown transferred ownership are no-ops. |
++
+ ## Contract
+ 
+ ### Capacity and FIFO
+@@ -232,10 +243,12 @@ await pool.destroy()
+ 
+ - [`tests/src/core/Pool.test.ts`](../tests/src/core/Pool.test.ts) — canonical behavior:
+   validation, hostile errors, duplicate ownership, transitional counts, overlapping FIFO
+-  hooks, create continuation, abort boundaries, exclusive invalid-cleanup waiter ownership,
+-  bounded and unbounded replacement, destroy-observer reentry ordering, concurrent clear,
+-  stable reentrant destruction, late resources, aggregate failures, emitter ordering, and high
+-  contention.
++  hooks, create continuation, abort boundaries, abort-listener detachment, exclusive
++  invalid-cleanup waiter ownership, bounded and unbounded replacement, destroy-observer
++  reentry ordering, concurrent clear, stable reentrant destruction, late resources,
++  aggregate failures, emitter ordering, and high contention.
++- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — the public
++  boundary guards alone: accepted and rejected maxima, and native versus hostile signals.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — factory
+   construction and instance identity only.
+ - [`tests/guides.test.ts`](../tests/guides.test.ts) — source/export,
+diff --git a/src/core/Pool.ts b/src/core/Pool.ts
+index 1e433b8..28cdd9d 100644
+--- a/src/core/Pool.ts
++++ b/src/core/Pool.ts
+@@ -107,6 +107,10 @@ export class Pool<T> implements PoolInterface<T> {
+ 	 * @throws {@link PoolError} Thrown when `signal` is present and is not a native `AbortSignal`,
+ 	 * with `code: 'invalid'`. This throw is synchronous rather than a rejected promise, so a caller
+ 	 * that handles failures with `.catch()` alone misses it.
++	 * @throws {@link PoolError} Thrown as a rejection when `destroy()` has already begun, with
++	 * `code: 'destroyed'`; when the create hook fails, with `code: 'create'` and the hook's thrown
++	 * value as `cause`; and when an invalid record's cleanup fails, with `code: 'cleanup'`. A
++	 * `signal` that aborts rejects with the caller's exact `signal.reason` instead.
+ 	 */
+ 	acquire(signal?: AbortSignal): Promise<PoolToken<T>> {
+ 		if (signal !== undefined && !isPoolSignal(signal)) {
+@@ -135,6 +139,10 @@ export class Pool<T> implements PoolInterface<T> {
+ 	 * Destroys the records that are idle at this call's synchronous snapshot.
+ 	 *
+ 	 * @returns A promise that settles after every snapshot cleanup attempt
++	 * @throws {@link PoolError} Thrown when `destroy()` has already begun, with `code: 'destroyed'`.
++	 * @throws {@link PoolError} Thrown when a claimed record's destroy hook fails, with
++	 * `code: 'cleanup'` and every distinct failure in `context.failures`. Each arrives as a rejected
++	 * promise rather than a synchronous throw.
+ 	 */
+ 	clear(): Promise<void> {
+ 		if (this.#ending !== undefined) return Promise.reject(new PoolError({ code: 'destroyed' }))
+@@ -155,6 +163,9 @@ export class Pool<T> implements PoolInterface<T> {
+ 	 * Tears down the pool permanently and returns its stable completion barrier.
+ 	 *
+ 	 * @returns The exact promise shared by every destroy call
++	 * @throws {@link PoolError} Thrown when a destroy hook failed during teardown, with
++	 * `code: 'cleanup'` and every distinct failure in `context.failures`. The barrier rejects; it
++	 * never throws synchronously, and a repeat call receives the same rejected promise.
+ 	 */
+ 	destroy(): Promise<void> {
+ 		if (this.#ending !== undefined) return this.#ending.promise
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index d1beb9c..b38487f 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -13,6 +13,8 @@ import { Pool } from './Pool.js'
+  * @typeParam T - The pooled resource type
+  * @param options - Lifecycle hooks, optional positive safe `max`, and observation hooks
+  * @returns A working {@link PoolInterface}
++ * @throws {@link PoolError} Thrown when `options.max` is present and is not a positive safe
++ * integer, with `code: 'invalid'`. Construction validates it synchronously, before the pool exists.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 547988c..92c7dae 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -77,18 +77,29 @@ export interface PoolInterface<T> {
+ 	 * @throws {@link PoolError} Thrown when `signal` is present and is not a native `AbortSignal`,
+ 	 * with `code: 'invalid'`. This throw is synchronous rather than a rejected promise, so a caller
+ 	 * that handles failures with `.catch()` alone misses it.
++	 * @throws {@link PoolError} Thrown as a rejection when `destroy()` has already begun, with
++	 * `code: 'destroyed'`; when the create hook fails, with `code: 'create'` and the hook's thrown
++	 * value as `cause`; and when an invalid record's cleanup fails, with `code: 'cleanup'`. A
++	 * `signal` that aborts rejects with the caller's exact `signal.reason` instead.
+ 	 */
+ 	acquire(signal?: AbortSignal): Promise<PoolToken<T>>
+ 	/**
+ 	 * Destroys the records that are idle at this call's synchronous snapshot.
+ 	 *
+ 	 * @returns A promise that settles after every snapshot cleanup attempt
++	 * @throws {@link PoolError} Thrown when `destroy()` has already begun, with `code: 'destroyed'`.
++	 * @throws {@link PoolError} Thrown when a claimed record's destroy hook fails, with
++	 * `code: 'cleanup'` and every distinct failure in `context.failures`. Each arrives as a rejected
++	 * promise rather than a synchronous throw.
+ 	 */
+ 	clear(): Promise<void>
+ 	/**
+ 	 * Tears down the pool permanently and returns its stable completion barrier.
+ 	 *
+ 	 * @returns The exact promise shared by every destroy call
++	 * @throws {@link PoolError} Thrown when a destroy hook failed during teardown, with
++	 * `code: 'cleanup'` and every distinct failure in `context.failures`. The barrier rejects; it
++	 * never throws synchronously, and a repeat call receives the same rejected promise.
+ 	 */
+ 	destroy(): Promise<void>
+ }
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index cc4f894..69214a9 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,7 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The four constants below are this
+-// package's own, and are the only part a sibling package changes.
++// this repo's own `guides/README.md` manifest. The constants below and the executed
++// `flagship fences` block are this package's own, and are the only parts a sibling
++// package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -20,6 +21,7 @@ import {
+ import { readFileSync } from 'node:fs'
+ import { requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
++import { PoolError, isPoolError, isPoolMax, isPoolSignal } from '@src/core'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+ const FENCE_LANGUAGES = Object.freeze(['text', 'ts'])
+@@ -168,3 +170,34 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// The EXECUTED half. Every case above reads a name — from the guide text or from the source —
++// and a name that resolves proves nothing about the sentence beside it, so a fence whose
++// comment claims a value the code contradicts passes all of them. The cases here run the
++// flagship fence and assert the values its comments claim. Change a fence, change the
++// transcription beside it.
++describe('flagship fences', () => {
++	const guideText = requireValue(files['guides/pool.md'], 'Missing file: guides/pool.md')
++
++	it('answers from the public boundary guards the patterns fence documents', () => {
++		expect(isPoolMax(4)).toBe(true)
++		expect(isPoolMax(Number.POSITIVE_INFINITY)).toBe(false)
++		expect(isPoolSignal(new AbortController().signal)).toBe(true)
++
++		const failure = new PoolError({ code: 'destroyed' })
++
++		expect(isPoolError(failure)).toBe(true)
++		expect(failure.code).toBe('destroyed')
++	})
++
++	it('carries the boundary fence lines the transcription copies', () => {
++		// The presence guard beside the transcription: it proves the transcribed lines are still
++		// the documented ones, and nothing whatever about behavior. Every line carrying a claim is
++		// bound, so a comment cannot start claiming the opposite value and stay green.
++		expect(guideText).toContain('isPoolMax(4) // true')
++		expect(guideText).toContain('isPoolMax(Infinity) // false: omit max for unbounded capacity')
++		expect(guideText).toContain('isPoolSignal(new AbortController().signal) // true')
++		expect(guideText).toContain("const failure = new PoolError({ code: 'destroyed' })")
++		expect(guideText).toContain('if (isPoolError(failure)) console.error(failure.code)')
++	})
++})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 9340ff5..89d9e46 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,14 +1,13 @@
+ import type { PoolEventMap } from '@src/core'
+ 
+-// ── Environment-agnostic base setup (AGENTS §16.1) ────────────────────────────
++// ── Environment-agnostic base setup ───────────────────────────────────────────
+ //
+ // Loaded first by every test project (`vite.config.ts` `setupFiles[0]`). Holds ONLY
+ // helpers with no `node:*` / DOM dependency, so it is safe for `src:core` alike.
+ //
+-// The fleet-wide helpers live in `@orkestrel/test`: `createRecorders` replaces the
+-// local emitter recorder bundle and `createResourceFactory` the local Pool resource
+-// fixture. What remains here is this package's own event vocabulary, which names the
+-// second type argument `createRecorders` cannot infer from an emitter.
++// `@orkestrel/test` supplies this package's shared recorder helpers. What remains here
++// is this package's own event vocabulary, which names the second type argument
++// `createRecorders` cannot infer from an emitter.
+ 
+ /** One observable lifecycle event name of a {@link PoolEventMap}. */
+ export type PoolEvent = keyof PoolEventMap
+diff --git a/tests/src/core/Pool.test.ts b/tests/src/core/Pool.test.ts
+index c7a39e5..ef08337 100644
+--- a/tests/src/core/Pool.test.ts
++++ b/tests/src/core/Pool.test.ts
+@@ -1,16 +1,18 @@
+ import type { PoolEventMap } from '@src/core'
+ import type { PoolEvent } from '../../setup.js'
+ import { describe, expect, it } from 'vitest'
+-import { Pool, PoolError, isPoolError, isPoolMax, isPoolSignal } from '@src/core'
++import { Pool, PoolError, isPoolError, isPoolSignal } from '@src/core'
++// `getEventListeners` reads the listeners really registered on a real signal. `createSignal` from
++// `@orkestrel/test` counts through own properties it installs on the signal it creates, and `Pool`
++// registers through `AbortSignal.prototype.addEventListener`, which bypasses them, so its tally
++// stays 0 here whatever the pool does. Do not swap this import back.
++import { getEventListeners } from 'node:events'
+ import { createRecorder, createRecorders } from '@orkestrel/test'
+ import { POOL_EVENTS } from '../../setup.js'
+ 
+ describe('Pool validation and errors', () => {
+-	it('accepts only positive safe integer maxima and omission remains unbounded', () => {
+-		expect(isPoolMax(1)).toBe(true)
+-		expect(isPoolMax(Number.MAX_SAFE_INTEGER)).toBe(true)
++	it('rejects a maximum that is not a positive safe integer and accepts omission as unbounded', () => {
+ 		for (const value of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, 2 ** 53]) {
+-			expect(isPoolMax(value)).toBe(false)
+ 			expect(() => new Pool({ create: () => 0, max: value })).toThrow(PoolError)
+ 		}
+ 		expect(() => new Pool({ create: () => 0 })).not.toThrow()
+@@ -70,17 +72,13 @@ describe('Pool validation and errors', () => {
+ 		}
+ 	})
+ 
+-	it('recognizes only native signals and synchronously throws for an invalid acquire signal', () => {
++	it('synchronously throws for an invalid acquire signal', () => {
+ 		const pool = new Pool({ create: () => 0 })
+-		const signal = new AbortController().signal
+-		const proxied = new Proxy(signal, {
++		const proxied = new Proxy(new AbortController().signal, {
+ 			get() {
+ 				throw new Error('signal trap')
+ 			},
+ 		})
+-		expect(isPoolSignal(signal)).toBe(true)
+-		expect(isPoolSignal(proxied)).toBe(false)
+-		expect(isPoolSignal({ aborted: false })).toBe(false)
+ 		expect(() => Reflect.apply(pool.acquire, pool, [{ aborted: false }])).toThrow(PoolError)
+ 		expect(() => pool.acquire(proxied)).toThrow(PoolError)
+ 	})
+@@ -357,7 +355,7 @@ describe('Pool cancellation', () => {
+ 		expect(pool.idle).toBe(1)
+ 	})
+ 
+-	it('aborts an assigned create and recycles its late resource without leaking the listener', async () => {
++	it('aborts an assigned create and recycles its late resource', async () => {
+ 		const creation = Promise.withResolvers<number>()
+ 		const controller = new AbortController()
+ 		const reason = new Error('assigned abort')
+@@ -370,10 +368,35 @@ describe('Pool cancellation', () => {
+ 		await Promise.resolve()
+ 		const next = await pool.acquire()
+ 		expect(next.value).toBe(7)
+-		controller.abort(new Error('late abort'))
+ 		expect(pool.active).toBe(1)
+ 	})
+ 
++	it('detaches the abort listener when an acquire settles successfully and when destroy rejects it', async () => {
++		// The detach sites a leak can reach: a signal-bearing acquire that commits, and a parked
++		// waiter that `destroy()` rejects. An abort-settled acquire cannot pin either. Its
++		// registration carries `{ once: true }`, so the platform removes the listener before the
++		// pool's own detach runs, and the tally returns to 0 with that detach deleted.
++		const creation = Promise.withResolvers<number>()
++		const committing = new AbortController()
++		const pool = new Pool({ create: () => creation.promise, max: 1 })
++		const acquiring = pool.acquire(committing.signal)
++		expect(getEventListeners(committing.signal, 'abort')).toHaveLength(1)
++
++		creation.resolve(3)
++		const token = await acquiring
++		expect(getEventListeners(committing.signal, 'abort')).toHaveLength(0)
++
++		const parked = new AbortController()
++		const waiting = pool.acquire(parked.signal)
++		expect(getEventListeners(parked.signal, 'abort')).toHaveLength(1)
++
++		const destroying = pool.destroy()
++		await expect(waiting).rejects.toMatchObject({ code: 'destroyed' })
++		expect(getEventListeners(parked.signal, 'abort')).toHaveLength(0)
++		token.release()
++		await destroying
++	})
++
+ 	it('aborts a ready result behind a slow head and returns that record to idle', async () => {
+ 		const gates = [Promise.withResolvers<number>(), Promise.withResolvers<number>()]
+ 		let created = 0
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+new file mode 100644
+index 0000000..d6a0179
+--- /dev/null
++++ b/tests/src/core/validators.test.ts
+@@ -0,0 +1,37 @@
++import { describe, expect, it } from 'vitest'
++import { isPoolMax, isPoolSignal } from '@src/core'
++
++describe('isPoolMax', () => {
++	it('accepts a positive safe integer', () => {
++		expect(isPoolMax(1)).toBe(true)
++		expect(isPoolMax(Number.MAX_SAFE_INTEGER)).toBe(true)
++	})
++
++	it('rejects zero, a negative, a fraction, NaN, Infinity, and an unsafe integer', () => {
++		for (const value of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, 2 ** 53]) {
++			expect(isPoolMax(value)).toBe(false)
++		}
++	})
++
++	it('rejects a candidate that is not a number', () => {
++		expect(isPoolMax('4')).toBe(false)
++		expect(isPoolMax(undefined)).toBe(false)
++	})
++})
++
++describe('isPoolSignal', () => {
++	it('accepts a native AbortSignal', () => {
++		expect(isPoolSignal(new AbortController().signal)).toBe(true)
++	})
++
++	it('rejects a proxy whose get trap throws and a plain aborted-shaped object', () => {
++		const proxied = new Proxy(new AbortController().signal, {
++			get() {
++				throw new Error('signal trap')
++			},
++		})
++
++		expect(isPoolSignal(proxied)).toBe(false)
++		expect(isPoolSignal({ aborted: false })).toBe(false)
++	})
++})
