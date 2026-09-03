@@ -10,7 +10,7 @@ Subject: the uncommitted unit in `/home/user/fleet/database` (brief `briefs/conf
 | 1 | checker | `checker` on GPT-5.6 Luna (`units/l2a/database-r1-checker-luna.md`) | PASS; three referrals |
 | 1 | objective | `reviewer` on Claude Opus 5, the recorded substitution for the dark Sol bench, reading the distillate (`units/l2a/database-objective-r1.md`) | FAIL 2, 9 (database-obj-6's three untranscribed fences; the cell claiming every fence); F1; R1 to R3 |
 | 2 | objective | `reviewer` on Claude Opus 5 (`units/l2a/database-objective-r2.md`) | FAIL 9 on the record (the exclusion citations); F2, F3 |
-| 2 | checker | `checker` on GPT-5.6 Luna (`units/l2a/database-r2-checker-luna.md`) | recorded when the lane returns |
+| 2 | checker | `checker` on GPT-5.6 Luna (`units/l2a/database-r2-checker-luna.md`) | FAIL 7, 9 on `configs/browsers.ts` alone — the Orchestrator's `scaffold repair` refresh, outside the unit's claims by the round note, ruled not the unit's; F1 (the `DriverIterator` example's missing `Row` import) and F2 (the `auditDriver` transcription's citation) closed by fix round 3; F3, F4 (`now`, `via`) carried to the prose follow-on |
 
 Subjective lane: not run in the audit rounds, by the round's design. The Sol bench is dark this session; Opus holds the objective lane as the recorded substitution. Absorption and the checkers ran on GPT-5.6 Luna, the tedious-work ladder's second rung, while Grok 4.6's quota was spent (session ledger).
 
