@@ -28,7 +28,7 @@ the baseline tip on the staged closure, for a reason no row named.
 | qualifier-subj-9  | applied     | `should` is gone from the guide; the opening sentence is split and names the actor.                                     |
 | qualifier-subj-10 | applied     | The false renderer/`@example` paragraph is one symbol-free sentence.                                                    |
 | qualifier-subj-11 | applied     | `## Tests` is a file-to-proof map; the `### Gates` fence and the `### Terminal eligibility proof` are deleted.           |
-| qualifier-subj-14 | noop        | No edit ruled. The `false` arm at `helpers.ts:329` stands, pinned by its `@remarks`, the guide, and its named case.      |
+| qualifier-subj-14 | noop        | No edit ruled. The `false` arm at `helpers.ts:326` stands, pinned by its `@remarks`, the guide, and its named case.      |
 | fleet-F1          | noop        | `grep -rn "isBrowserVuePath" src tests` returns nothing, and no browser environment exists.                              |
 | fleet-F2          | noop        | No class declares a public `readonly id: string`.                                                                        |
 
@@ -140,6 +140,13 @@ unless stated otherwise.
 | `\b(one\|two\|three\|four\|five\|six\|seven\|eight\|nine\|ten)\b`, case-insensitive, over the three prose files          | Every hit is a permitted sense: `one` meaning a single thing, `two postures` and `the first two` naming their members, and `two miles` as a measurement. |
 | `\b[0-9]+ (elements\|members\|rules\|rows\|exports\|files\|options\|steps\|cases\|stages\|findings\|tests\|helpers\|methods\|entities\|tables\|sections\|constants\|passes\|categories)\b`, over the three prose files and `src/` | Empty.                                                                                                    |
 | `above\|below`                                                                                                           | Fence operator arguments, plus two pre-existing header-comment references in `tests/guides.test.ts` — see § Observations. |
+| `from '\.\./\.\./setup'`                                                                                                 | Empty (qualifier-obj-3): `Qualifier.test.ts` resolves `'../../setup.js'`.                                 |
+| Type-import-after-value-import read of `tests/src/core/helpers.test.ts:1-41`                                            | Empty (qualifier-obj-4): line 1 carries `import type { Comparison } from '@orkestrel/reason'`, then the value imports follow. |
+| `\b(item\|data\|info\|obj\|thing\|cfg\|msg)\b`, over `src`                                                               | Empty (qualifier-subj-4).                                                                                 |
+| `@param failed - Whether`                                                                                                | Empty (qualifier-subj-5).                                                                                 |
+| `Validation is on by default`                                                                                            | Empty (qualifier-subj-7).                                                                                 |
+| The removed renderer sentence (`renderer`, case-insensitive)                                                             | Empty (qualifier-subj-10).                                                                                |
+| `### Gates\|### Terminal eligibility proof`                                                                              | Empty (qualifier-subj-11).                                                                                |
 
 The `via` hit sat at `tests/src/core/helpers.test.ts:526`, in a test-case title
 (`met via a real evaluator`). Row qualifier-subj-6's population is `src/**/*.ts`, `README.md`, and
@@ -263,6 +270,44 @@ Remaining call sites for the same two renames, by file and line, from
 Re-vendor the mirror from this package's `guides/qualifier.md` after the qualifier release. Do not
 hand-edit it; `.claude/rules/documentation.md` § Parity refuses a rewritten mirror.
 
+### Program's own authored prose
+
+The prior sweep bounded § Shared-file patches to program's `src` and `tests`, which omitted
+program's own `README.md` and `guides/program.md`. Both files import and call the renamed
+symbols in authored prose, so both are consumers too — the vendored mirror
+`program/guides/qualifier.md` is not. Sweep bound: `**/*.{ts,md}` under `/home/user/fleet/program/`,
+excluding the vendored mirror `guides/qualifier.md`. Verified with
+`grep -n "createQualificationDefinition\|createRuling\|qualificationDefinition\|rulingDefinition\|ruleToPremises\|logicalPremises" /home/user/fleet/program/README.md` and the same pattern over
+`guides/program.md`.
+
+```diff
+--- README.md:31
+-import { qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
++import { createQualificationDefinition, createRuling } from '@orkestrel/qualifier'
+
+--- guides/program.md:38
+-import { qualificationDefinition, rulingDefinition } from '@orkestrel/qualifier'
++import { createQualificationDefinition, createRuling } from '@orkestrel/qualifier'
+```
+
+Remaining whole-word renames, `qualificationDefinition` → `createQualificationDefinition`:
+
+- `README.md`: 50
+- `guides/program.md`: 57, 770, 786, 876
+
+Remaining whole-word renames, `rulingDefinition` → `createRuling`:
+
+- `README.md`: 56
+- `guides/program.md`: 63, 792, 821, 832, 890
+
+`guides/program.md:279` names `logicalPremises` as a public qualifier export in prose:
+
+```diff
+--- guides/program.md:279
+-`interpolateMessage`, `findRule`, and `logicalPremises` (all public qualifier exports,
++`interpolateMessage`, `findRule`, and `ruleToPremises` (all public qualifier exports,
+```
+
 ## Deviations
 
 ### `npm run check` was already red at the baseline tip
@@ -330,3 +375,23 @@ hand-edit it; `.claude/rules/documentation.md` § Parity refuses a rewritten mir
 - `npm run check` on the pre-existing tree also proves nothing about `src/` alone: `check` chains
   `tsc --project tsconfig.json && npm run check:src`, so the root project's failure short-circuited
   the scoped one throughout the baseline. Both are green now.
+
+## Fix round 1
+
+Closes the round-1 objective lane's refutations of claims 4 and 6 and F3
+(`units/l3/qualifier-objective-r1.md`).
+
+- **§ Sweeps** gains seven rows, one per row the lane named, each re-run and read empty:
+  qualifier-obj-3, qualifier-obj-4, qualifier-subj-4, qualifier-subj-5, qualifier-subj-7,
+  qualifier-subj-10, and qualifier-subj-11.
+- **§ Shared-file patches** gains the "Program's own authored prose" block: the corrected import
+  lines at `program/README.md:31` and `program/guides/program.md:38`; the remaining
+  `qualificationDefinition` → `createQualificationDefinition` sites at `README.md:50` and
+  `guides/program.md:57,770,786,876`; the remaining `rulingDefinition` → `createRuling` sites at
+  `README.md:56` and `guides/program.md:63,792,821,832,890`; and the `logicalPremises` →
+  `ruleToPremises` prose rename at `guides/program.md:279`.
+- The qualifier-subj-14 row is rewritten: the citation is `helpers.ts:326`, matching where the
+  `false` arm sits after this unit's edits.
+
+No file under `/home/user/fleet` changed; this unit read program's files only, with the `grep -rn`
+commands the brief grants.
