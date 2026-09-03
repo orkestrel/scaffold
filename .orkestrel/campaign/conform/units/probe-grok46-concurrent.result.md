@@ -1,0 +1,1 @@
+I'll read the brief in full first, then follow it exactly as written and stay read-only.The brief asks for the `name` field in `package.json` and its line number. I'll read that file next.`@orkestrel/scaffold` 2
