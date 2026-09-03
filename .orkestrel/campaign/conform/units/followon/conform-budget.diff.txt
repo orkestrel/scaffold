@@ -1,0 +1,100 @@
+diff --git a/guides/README.md b/guides/README.md
+index 32d16e9..14bc85f 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -22,12 +22,17 @@ A dual-axis index into this repository's guides — by concept, and by directory
+ anything sourced in this repo; it is kept here so a reader of this package can see
+ the primitives it is built from without leaving this guide set.
+ 
+-[`guide.md`](guide.md) is a byte-identical mirror of the guide for
+-`@orkestrel/guide` — the devDependency powering this repo's guides-parity test
+-suite (`tests/guides.test.ts`). It documents **that package's**
+-surface (`Guide` / `Source`, the manifest and comparison helpers), not anything
+-sourced in this repo; it is kept here so a reader of the parity suite can see
+-the primitives it is built from without leaving this guide set.
++The directory also holds one byte-identical mirror per declared `@orkestrel/*`
++development dependency:
++
++- [`guide.md`](guide.md) mirrors the guide for `@orkestrel/guide`, which powers
++  the guides-parity suite (`tests/guides.test.ts`).
++- [`test.md`](test.md) mirrors the guide for `@orkestrel/test`, which supplies
++  the shared test helpers every suite here imports.
++- [`scaffold.md`](scaffold.md) mirrors the guide for `@orkestrel/scaffold`,
++  which owns this workspace's structure and its vendored files.
++- [`probe.md`](probe.md) mirrors the guide for `@orkestrel/probe`, which runs a
++  claim's case and its negative control against this workspace.
+ 
+ ## See also
+ 
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 7901ee9..a8a525e 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -3,9 +3,8 @@
+  *
+  * @remarks
+  * `max` is a finite nonnegative ceiling. `consumer` extracts the finite
+- * nonnegative charge from each domain value. Omitted `id` values generate a
+- * random UUID, and an optional native parent `signal` participates in the
+- * exposed composite signal.
++ * nonnegative charge from each domain value. An optional native parent `signal`
++ * participates in the exposed composite signal.
+  *
+  * @example
+  * ```ts
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 1f4bb4e..f9c915d 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,5 +1,5 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The four constants below are this
++// this repo's own `guides/README.md` manifest. The constants that follow are this
+ // package's own, and are the only part a sibling package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+@@ -34,8 +34,8 @@ const MODULES = Object.freeze({ '@orkestrel/budget': 'src/core', '@src/core': 's
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
+- * here stops being stranded, so the list cannot rot.
++ * intentional rather than forgotten — and the `INTERNAL.filter` assertion later in this file
++ * fails when a name here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+@@ -208,8 +208,8 @@ describe('flagship fences', () => {
+ 
+ 	it('stops the stream loop after the cumulative bytes cross the ceiling', () => {
+ 		// Transcribed from the race-work-against-the-ceiling fence, driven over a local
+-		// list of byte lengths in place of the fence's stream. The third chunk carries the
+-		// tally past 1_000_000, so the fourth is the one the bound refuses.
++		// list of byte lengths in place of the fence's stream. Each chunk is 400_000 bytes; the
++		// tally crosses 1_000_000 at 1_200_000, and the bound refuses the chunk that would follow.
+ 		const budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })
+ 		const fired = createRecorder<readonly []>()
+ 		budget.start()
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 38559ba..df2b45c 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -83,15 +83,15 @@ export function createReadingProxy<T extends object>(
+ }
+ 
+ /**
+- * Defines a property on a target whose every read throws.
++ * Defines, in place on the target it receives, a property whose every read throws.
+  *
+  * @remarks
+  * The installed descriptor is the native `AbortSignal.prototype.aborted` getter, which
+  * throws a real `TypeError` when read through a receiver that is not an `AbortSignal`.
+  *
+- * @param target - Object that receives the throwing property
++ * @param target - Object that receives the throwing property; the call mutates it
+  * @param key - Property name that throws on read
+- * @returns The same target, with the throwing property installed
++ * @returns The same target object, mutated in place with the throwing property installed
+  * @throws {Error} When the native `aborted` descriptor is absent
+  *
+  * @example
