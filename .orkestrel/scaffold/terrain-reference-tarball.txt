@@ -1,5 +1,0 @@
-tarball: C:/Users/mikes/WebstormProjects/scaffold/tmp/tarballs/orkestrel-test-0.0.11.tgz
-installed version: 0.0.11
-previous node_modules version: 0.0.6
-manifest pin unchanged: ^0.0.6
-installed with: npm install --no-save (restore with npm ci before any publish-proving gate)
