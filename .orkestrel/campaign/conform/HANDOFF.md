@@ -71,7 +71,7 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | abort | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-abort-audit-verdict.md`) | `7aee9fd` |
 | ndjson | yes (successor) | complete | round 1 FAIL 8 / FAIL 3 9, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-ndjson-audit-verdict.md`) | `bc96a3c` |
 | contract | yes (successor; checkpoint `01f3390`) | complete (resumed) | round 1 FAIL 2 9 / FAIL 3 7, fix round 1 returned, round 2 FAIL 3 4 / PASS, fix round 2 in flight in `layer2.L0b` | — |
-| indexeddb | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 checker PASS, objective in flight in `fixaudit.L1` | — |
+| indexeddb | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-indexeddb-audit-verdict.md`) | `729ccf5` |
 | csv | yes (successor) | complete | round 1 FAIL 4 8 / PASS, round 2 FAIL 4 / PASS, fix round 2 in flight in `fixaudit.L1` | — |
 | emitter, html, sqlite, tool, timeout | yes (reconciled; sqlite-obj-1 is an Orchestrator manifest row) | in flight in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
 | database | yes (successor; carries database-subj-10) | not started | — | L2, after contract and indexeddb land and re-stage |
