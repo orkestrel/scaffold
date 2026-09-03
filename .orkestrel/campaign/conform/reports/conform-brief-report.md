@@ -509,3 +509,7 @@ The sweep reports no hit in `guides/README.md` or `README.md`.
 | `npm run lint:check` | 0 |
 | `npm run check` | 0 |
 | `npm run test:guides` | 0 |
+
+### Orchestrator integration (22:20 UTC, after fix round 1b returned)
+
+Fix round 1b's scope named `tests/**` for the pointer sweep without excluding the vendored set, so the Sol writer rewrote a document pointer in the vendored `tests/policy.test.ts` (the `above` scaffold's host rows already carry at `tests/policy.test.ts:544`). The Orchestrator restored that file to its committed bytes (`git show HEAD:tests/policy.test.ts` written back), regenerated the evidence, and records the vendored site against scaffold's host-row follow-on where it belongs. Every other rewrite of the round stands.
