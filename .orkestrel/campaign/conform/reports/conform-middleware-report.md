@@ -3,8 +3,11 @@
 ## Outcome
 
 Every row of § Rows and § Fleet rows is closed: every numbered row `applied`, `fleet-F1` `noop`,
-`fleet-F2` `applied`. The gate chain is green, exit 0 on each of `format:check`, `lint:check`,
-`check`, `build`, and `test`. `git status --short` lists only paths inside Owned.
+`fleet-F2` `applied`. The § Gates table's original readings were this unit's own, taken at the
+pre-fix-round staging; `check` and `test` later read nonzero on the `@orkestrel/database` cause
+§ Deviation (fix round 1) records, and § Fix round 2 carries the Orchestrator's 18:46 UTC `check`
+reading and this round's own gate chain on the closure re-staged at 17:53 UTC, which is the deciding
+reading. `git status --short` lists only paths inside Owned.
 
 This unit resumed the predecessor's uncommitted tree. I read the tree against each row rather than
 re-applying it. The tree already carried every row's repair in its refuter-operative form. The one
@@ -75,9 +78,19 @@ row by row against § Rows.
 | `tests/src/server/middlewares.test.ts`               | Substitutions in test titles and comments.                                                                                                  |
 | `tests/src/server/parsers.test.ts`                   | New. `parseMultipartRequest` end to end.                                                                                                    |
 
-Diffstat: 27 files changed, 1992 insertions(+), 1298 deletions(-).
+Diffstat, regenerated 2026-09-03 at fix round 2: 27 files changed, 1993 insertions(+), 1330
+deletions(-).
 
 ## Gates
+
+**Note, dated 2026-09-03.** The table below was taken at the pre-fix-round staging. `check` and
+`test` later read nonzero, on the `@orkestrel/database` cause § Deviation (fix round 1) records
+(`fix1-check.txt`; `npm test` at `3 failed | 32 passed (36)` in the `setup` project). The
+Orchestrator's own `npm --prefix /home/user/fleet/middleware run check` at 18:46 UTC, against the
+closure re-staged at 17:53 UTC from database's landed tip, exits 0
+(`/home/user/scaffold/tmp/work/middleware-check-1846.log`), which settles the objective lane's
+referral on the `database.table('sessions')` inference. § Fix round 2 carries this round's own gate
+chain on that same closure; the deciding reading is the Orchestrator's at landing.
 
 Each ran bare from `/home/user/fleet/middleware`, with no pipeline stage after it, so the reported
 status is the gate's own.
@@ -282,7 +295,7 @@ rather than completing the gate chain.
 
 | Row | Control | Red | Green |
 | --- | --- | --- | --- |
-| middleware-obj-2 | `destroy()` on `buildSymlinkFixture`'s returned fixture, planted as a no-op, proved by `tests/setupServer.test.ts` (`buildSymlinkFixture` describe) | `/home/user/work/evidence/middleware-proofs/obj-2-control-red.txt` — 1 failed \| 16 skipped (17) | `/home/user/work/evidence/middleware-proofs/obj-2-control-green.txt` — 1 passed \| 16 skipped (17) |
+| middleware-obj-2 | `destroy()` on `buildSymlinkFixture`'s returned fixture, planted as a no-op, proved by `tests/setupServer.test.ts` (`buildSymlinkFixture` describe), `npm --prefix /home/user/fleet/middleware test -- -t buildSymlinkFixture --project setup` | `/home/user/work/evidence/middleware-proofs/obj-2-control-red.txt` — 1 failed \| 16 skipped (17) | `/home/user/work/evidence/middleware-proofs/obj-2-control-green.txt` — 1 passed \| 16 skipped (17) |
 | middleware-obj-4 | `decompress`, planted to append `-wrong` to its decoded text, proved by `tests/setup.test.ts` (`decompress` describe), both scoped with `-t decompress --project setup` | `/home/user/work/evidence/middleware-proofs/obj-4-control-red.txt` — 1 failed \| 1 passed \| 17 skipped (19) | `/home/user/work/evidence/middleware-proofs/obj-4-control-green.txt` — 2 passed \| 17 skipped (19) |
 | middleware-obj-3, validators | `isSessionControl`'s `regenerate` check inverted (`===` → `!==` at `src/core/validators.ts:50`), proved by `tests/src/core/validators.test.ts` (`isSessionControl` describe), `--project src:core` | `/home/user/work/evidence/middleware-proofs/obj-3-validators-control-red.txt` — 2 failed \| 12 passed (14) | `/home/user/work/evidence/middleware-proofs/obj-3-validators-green.txt` — 14 passed (14) |
 | middleware-obj-3, parsers | `parseMultipartRequest`'s boundary guard inverted (`===` → `!==` at `src/server/parsers.ts:57`), proved by `tests/src/server/parsers.test.ts`, `--project src:server` | `/home/user/work/evidence/middleware-proofs/obj-3-parsers-control-red.txt` — 35 failed \| 1 passed (36) | `/home/user/work/evidence/middleware-proofs/obj-3-parsers-green.txt` — 36 passed (36) |
@@ -411,3 +424,71 @@ gate chain step of § Method is not done: `format:check`, `lint:check`, and `bui
 with the shape `buildStore` (`tests/setup.ts:363-`, the predecessor's own middleware-obj-4 addition)
 passes it, after the report's original green `check`/`test` readings were taken against the closure
 staged before that re-stage.
+
+## Fix round 2
+
+Closing the round-2 objective lane's findings F-1 to F-3 (`units/l2b/middleware-objective-r2.md`).
+
+### F-1
+
+Rewrote both comments to the rule's form: `tests/setup.test.ts:302` reads `// so the preceding
+eviction is the given \`ttl\` and not the default.`; `tests/src/core/stores/DatabaseSessionStore.test.ts:23`
+reads `// session it produces, so a store using its own step fails the following proof.`
+
+Sweep, case-insensitive `\b(above|below)\b` over `tests/**` excluding `node_modules/**` and the
+vendored files (`tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/config.test.ts`,
+`tests/distribution.test.ts`):
+
+| Site | Sense | Disposition |
+| --- | --- | --- |
+| `tests/setup.test.ts:302` | document reference | repaired, see preceding |
+| `tests/src/core/stores/DatabaseSessionStore.test.ts:23` | document reference | repaired, see preceding |
+| `tests/src/core/helpers.test.ts:358,381,460,497` | numeric threshold comparison | stays |
+| `tests/src/server/middlewares.test.ts:1159` | numeric threshold comparison | stays |
+| `tests/src/server/MultipartParser.test.ts:110` | numeric length comparison, the brief's own excluded example | stays |
+| `tests/src/core/stores/MemorySessionStore.test.ts:130` | numeric capacity comparison | stays |
+| `tests/guides.test.ts:2,40` | document reference | pre-existing, not one of this unit's two added pointers, outside this round's Owned files; left unedited |
+| `tests/src/server/middlewares.test.ts:1182` | document reference | pre-existing, outside this round's Owned files; left unedited |
+| `tests/src/core/middlewares.test.ts:1905` | document reference | pre-existing, outside this round's Owned files; left unedited |
+
+The objective is the two pointers this unit added; both are repaired. The remaining document-reference
+hits predate this unit's edits to their files and sit outside this round's Owned scope, so they are
+recorded here rather than changed.
+
+### F-2
+
+Rewrote § Outcome's gate sentence and added the dated note before § Gates, both stating the table's
+readings were taken at the pre-fix-round staging, that `check` and `test` later read nonzero on the
+cause § Deviation (fix round 1) records, that the Orchestrator's `check` at 18:46 UTC on the 17:53
+UTC re-stage exits 0, and that the deciding run is the Orchestrator's at landing. Regenerated the
+§ Files touched diffstat from `git -C /home/user/fleet/middleware diff --stat`: 27 files changed,
+1993 insertions(+), 1330 deletions(-).
+
+### F-3
+
+Added the exact command to the `middleware-obj-2` control row: `npm --prefix
+/home/user/fleet/middleware test -- -t buildSymlinkFixture --project setup`, read from the `setup`
+project tag in `obj-2-control-red.txt`'s header.
+
+### Gates, this round, on the closure re-staged at 17:53 UTC
+
+| Command | Exit | Reading |
+| --- | --- | --- |
+| `npm --prefix /home/user/fleet/middleware run format:check` | 0 | `All matched files use the correct format.` 69 files. |
+| `npm --prefix /home/user/fleet/middleware run lint:check` | 0 | No diagnostic emitted. |
+| `npm --prefix /home/user/fleet/middleware run check` | 0 | Root `tsc`, then `check:src:core`, then `check:src:server`, each silent. |
+| `npm --prefix /home/user/fleet/middleware run build` | 0 | `dist/src/core` and `dist/src/server` built in ES and CJS with declarations. |
+| `npm --prefix /home/user/fleet/middleware test` | 0 | `src` 432 passed \| 1 skipped (433); `policy` 111; `config` 46; `setup` 36; `guides` 38. |
+
+### Audit
+
+`cd /home/user/fleet/middleware && npx scaffold audit --offline` prints the single zero-drift line:
+`0 of 39 planned paths drifted from the plan. Audit compared bytes at 25, existence at 5, and
+nothing at 9.`
+
+### Evidence
+
+`node /home/user/scaffold/tmp/work/evidence.mjs middleware` regenerated
+`/home/user/work/evidence/conform-middleware.diff` (4624 lines) and
+`/home/user/work/evidence/conform-middleware.status` (27 entries, every one under Owned).
+`git -C /home/user/fleet/middleware status --short` lists 27 entries, all inside Owned.
