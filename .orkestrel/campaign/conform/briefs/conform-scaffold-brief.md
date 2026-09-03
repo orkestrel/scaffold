@@ -163,3 +163,7 @@ Stop and report — expected, found, exact evidence, done or not done, at most o
 ## Review evidence
 
 The diff and status files named under § Output; the report; the rows.
+
+## Amendment (Orchestrator, round 1 ruling, recorded 21:32 UTC)
+
+Owned also includes `host.json`: it is the generated inventory `build:inventory` rewrites whenever a `HOST_PATHS` member such as `guides/scaffold.md` changes, so its hunk is this unit's and the landing's `build` regenerates it last. Every path under `.orkestrel/**` is the campaign's record in the orchestrator's own checkout and is outside this unit: neither Owned nor Off-limits, and a lane rules on it in no claim. `tests/guides.test.ts` carries the Orchestrator's adoption of guide's renamed `fenceImports` and `missingSymbols`, recorded in the report under Orchestrator integration.
