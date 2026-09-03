@@ -122,7 +122,8 @@ Every pattern ran under `/home/user/fleet/interpret` over the population named b
 | `grep -rnE "AGENTS[[:space:]]*§\|§[0-9]"`                  | the same population                                            | no `AGENTS §` hit; the remaining `§` hits are `design §N` references         |
 | `grep -rniE "\bshould\b\|\bsimply\b\|\bvia\b\|e\.g\.\|i\.e\."` | the same population                                        | no hit in `src`, `guides/interpret.md`, `guides/README.md`, or `README.md`   |
 | `grep -rniE "\bshould\b\|\bsimply\b\|\bvia\b\|e\.g\.\|i\.e\.\|\bonce\b"` | `src`                                            | only `types.ts:347` and `:351`, the frequency-sense `once` the row permits   |
-| `grep -rnw "complete"`                                     | `src`, `tests/setup*.ts`, `tests/guides.test.ts`, `tests/src`, `guides/interpret.md`, `README.md` | no member access and no literal key; every hit is the English adjective or an assertion that the member is absent |
+| `grep -rniE "zero-dependency\|ESM-only\|no CommonJS build\|Node\.js >= 22$"` | `src`, `tests`, `README.md`, `guides/interpret.md`, `guides/README.md` | one hit, `tests/distribution.test.ts:60`, the unrelated declaration-extension comment "an ESM-only one `.d.mts`" describing the `require` condition's file naming, not the removed package-format claim; every obj-6 form is gone |
+| `grep -rniE "\bcomplete(s\|d\|ing)?\b"`                     | `src`, `tests`, `README.md`, `guides/interpret.md`, `guides/README.md` | no member access and no literal key; `types.ts:277` and `guides/interpret.md:69` derive the flag from `ambiguities` and `failures`; `Interpret.test.ts:99-100`, `Clarifier.test.ts:28`, and `Extractor.test.ts:43` assert the flag absent; the remaining hits (`Generator.ts:13`, `InterpretContext.ts:19`, `types.ts:347,355,396,799`, `Interpret.ts:456`, `setup.ts:276`, `validators.test.ts:560,563`, `Interpret.test.ts:69`, `integration.test.ts:55`, `setupPolicy.ts:105,228,231,311,314,1201,1208,1380`, `setup.test.ts:290`, `guides/interpret.md:96,677,915,957`) are the English adjective or an inflection of it; `guides/README.md` carries no hit |
 | `grep -rn "as const"`                                      | `src`, `tests`                                                 | empty                                                                        |
 | `grep -rnE "\bvi\.\|isBrowserVuePath"`                     | `tests`                                                        | only the vendored `tests/config.test.ts` string fixtures                     |
 | `grep -rnE "^\treadonly [a-z]\|^export class"`             | `src`                                                          | `InterpretError.code` is the only public data field                          |
@@ -318,3 +319,20 @@ successor unit.
 - **`Interpretation.stages` prose.** `src/core/types.ts` and `guides/interpret.md` both state that
   `stages` "always holds exactly five records". That is a count over a set the `InterpretStage` union
   can grow, and `AGENTS.md` § Writing bans it. It is prose the rows did not name.
+
+## Fix round 1
+
+Closed the round-1 objective lane's refutation of claim 4 (`units/l3/interpret-objective-r1.md`
+§ Required change R-1). § Sweeps now carries the interpret-obj-6 row and a widened `complete` row.
+
+1. **Added the interpret-obj-6 row.** `grep -rniE "zero-dependency|ESM-only|no CommonJS build|Node\.js
+   >= 22$"` over `src`, `tests`, `README.md`, `guides/interpret.md`, and `guides/README.md` returns
+   one hit — `tests/distribution.test.ts:60`, an unrelated comment describing the `require`
+   condition's `.d.mts` declaration extension, not the removed package-format claim. Every one of the
+   row's old forms is gone.
+2. **Rewrote the `complete` row.** Ran `grep -rniE "\bcomplete(s|d|ing)?\b"` at a word boundary over
+   the inflections, over `src`, `tests`, `README.md`, `guides/interpret.md`, and `guides/README.md`
+   — `guides/README.md` now in the population. Every hit is ruled by sense: the derivation sentence
+   at `types.ts:277` and `guides/interpret.md:69`; the absence assertions at `Interpret.test.ts:99-100`,
+   `Clarifier.test.ts:28`, and `Extractor.test.ts:43`; and the English adjective or its inflections
+   at every remaining site. `guides/README.md` carries no hit.
