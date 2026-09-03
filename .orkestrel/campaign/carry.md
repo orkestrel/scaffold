@@ -11,12 +11,12 @@ is the prune commit's message; every item it left open is here with its carrier.
 | Supervisor: install, gate chain against the catalog set, layer preparation                   | `resume-supervisor-brief.md`, after middleware       |
 | Supervisor: bump from the registry head and publish (runtime ranges moved)                   | Orchestrator, after the resume                       |
 | Taverna and supervisor: chrome, then journeys, then audit and verifier                        | `chrome-taverna-brief.md`, `chrome-supervisor-brief.md`; journey briefs after chrome |
-| Pushes of terrain, taverna, lloyds, supervisor                                                | the user's word                                      |
 
 ## Closed
 
 | Item | Carrier |
 | --- | --- |
+| Pushes of terrain `44dc238`, taverna `7721134`, supervisor `edf80e6`, lloyds `09e75ae`, scaffold | the user's word, 2026-09-03 |
 | Lloyds: visit, migration, chrome, journey suite, repair, fix round, audit PASS | lloyds `4748841`, `b124fe1`, `04eff85`, `3e8d5a3`, `4812416`, `5a4f6eb`, `e508e8c`, `09e75ae`; `audit-lloyds-verdict.md` |
 
 ## Waits on the user or the fleet
