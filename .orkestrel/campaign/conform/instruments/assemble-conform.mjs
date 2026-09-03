@@ -1,7 +1,7 @@
 // Assemble each package's conformance lanes and refuter rulings from a conform-slice workflow journal.
 // Usage: node assemble-conform.mjs <runId> → writes /home/user/work/reports/conform-<pkg>.json, prints a summary.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
-const D = `/root/.claude/projects/-home-user-scaffold/249f2596-6386-5f66-868c-31383bbd6eeb/subagents/workflows/${process.argv[2]}`
+const D = `/root/.claude/projects/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/subagents/workflows/${process.argv[2]}`
 mkdirSync('/home/user/work/reports', { recursive: true })
 const lines = readFileSync(`${D}/journal.jsonl`, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)).filter((l) => l.type === 'result')
 const out = {}

@@ -3,10 +3,10 @@
 # browser runner, regenerate the lockfile and node_modules from the registry, re-stage the full closure,
 # run the gate chain, commit the manifest and lockfile, push. Usage: deps-pass.sh <pkg>
 p=$1; d=/home/user/fleet/$p; [ "$p" = scaffold ] && d=/home/user/scaffold
-LOG=/home/user/work/logs/deps-pass.log; S=/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad
+LOG=/home/user/work/logs/deps-pass.log; S=/home/user/scaffold/tmp/work
 cd "$d" || { echo "$p NO DIR" >> $LOG; exit 1; }
 if [ -n "$(git status --short | grep -v '^?? tmp/')" ]; then echo "$p DIRTY - skipped" >> $LOG; exit 1; fi
-changes=$(node /home/user/work/edit-manifest.mjs "$p")
+changes=$(node /home/user/scaffold/tmp/work/edit-manifest.mjs "$p")
 if [ "$changes" = "no change" ]; then echo "$p no manifest change" >> $LOG; exit 0; fi
 npm install --no-audit --no-fund > /home/user/work/logs/deps-install-$p.log 2>&1 || { echo "$p INSTALL FAILED: $(tail -1 /home/user/work/logs/deps-install-$p.log)" >> $LOG; exit 1; }
 git add package.json package-lock.json

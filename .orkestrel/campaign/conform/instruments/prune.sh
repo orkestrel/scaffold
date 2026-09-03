@@ -2,7 +2,7 @@
 # Retire the campaign folders and sweep tmp/ as a tree, then commit with the promotion record.
 set -eu
 cd /home/user/scaffold
-S=/tmp/claude-0/-home-user-scaffold/249f2596-6386-5f66-868c-31383bbd6eeb/scratchpad
+S=/home/user/scaffold/tmp/work
 D=.orkestrel/campaign/debrief
 # Retain this round's bench briefs, run scripts, and the instruction-audit brief beside the lanes.
 mkdir -p "$D/instruments"

@@ -14,7 +14,7 @@ Land every row under § Rows in `/home/user/fleet/indexeddb` so that the tree co
 
 **Evidence.** Each row quotes the operative rule sentence, the `file:line` it applies to, what is wrong, and the smallest correct repair, as ruled by the refuter lane. The rows are the refuter's CONFIRMED rulings for this package; the finders' refuted findings are not here and are not yours.
 
-**Host.** POSIX shell in `/home/user/fleet/indexeddb`; `node_modules` holds the fleet closure staged with `npm install --no-save` from the tips named under § Staged closure, so a declared `@orkestrel/*` dependency's installed declaration can be ahead of the registry release the manifest declares. Never run `npm install`, `npm ci`, or any command that rewrites `node_modules` or the lockfile; a fresh install would revert the staged closure. Shell discipline: read files with the Read, Grep, and Glob tools rather than the shell; in Bash run one plain command per call with absolute paths (`npm run <script>` and `git status`, `git diff`, `git add -N` from the checkout), never a `cd … &&` chain, never inline `node -e`, and never a pipe into a tool outside cat, head, tail, grep, sed -n, sort, uniq, wc, tr, cut, and awk; a command that prompts for permission blocks the whole round.
+**Host.** POSIX shell in `/home/user/fleet/indexeddb`; `node_modules` holds the fleet closure staged with `npm install --no-save` from the tips named under § Staged closure, so a declared `@orkestrel/*` dependency's installed declaration can be ahead of the registry release the manifest declares. Never run `npm install`, `npm ci`, or any command that rewrites `node_modules` or the lockfile; a fresh install would revert the staged closure.
 
 **Measurements.** Every gate is green at the baseline tip `the committed HEAD` (`format:check`, `lint:check`, `check`, `build`, `test`) except where § Standing conditions says otherwise.
 
@@ -30,7 +30,7 @@ A row whose repair collides with an existing name, or whose ruled name is alread
 
 ## Scope
 
-**Owned.** `src/**`, `tests/**` except the vendored `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts`; `guides/indexeddb.md`; `guides/README.md`; `README.md`; `package.json` only for the `description`, `exports`, `files`, `scripts`, and `bin` fields a row names; `vite.config.ts` and `tsconfig.json` only where a row names them.
+**Owned.** `src/**`, `tests/**` except the vendored `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts`; `guides/indexeddb.md`; `guides/README.md`; `README.md`; `package.json` only for the `exports`, `files`, `scripts`, and `bin` fields a row names; `vite.config.ts` and `tsconfig.json` only where a row names them.
 
 **Shared (report-only).** Every other fleet checkout under `/home/user/fleet/`; the vendored dependency guide mirrors `guides/<other-package>.md`.
 
@@ -175,13 +175,6 @@ A row whose repair collides with an existing name, or whose ruled name is alread
    - Repair (the refuter's operative form): Finder's repair stands, with one addition. After the `guide.md` paragraph ending at `guides/README.md:31`, add one paragraph per unlisted mirror in the form the existing two use — naming the file, the package whose surface it documents, its role here (`@orkestrel/test` for the shared test infrastructure, `@orkestrel/probe` for the probe bench, `@orkestrel/scaffold` for the vendored host inventory), and the sentence stating it documents that package's surface rather than anything sourced here. ADDED: close the section with the mirror-parity sentence `/home/user/fleet/table/guides/README.md:34-35` carries — that a mirror's relative links address its upstream tree, resolve to nothing here, and sit outside this repository's link parity, and that a mirror is refreshed rather than rewritten — which `.claude/rules/documentation.md` § Parity states and this README omits. Do not edit the mirror files themselves; the round's brief places them off-limits.
    - Refuter's evidence: A glob of `/home/user/fleet/indexeddb/guides/*.md` returns `README.md`, `indexeddb.md`, `contract.md`, `guide.md`, `test.md`, `probe.md`, and `scaffold.md`. `/home/user/fleet/indexeddb/guides/README.md:18-31` describes `contract.md` and `guide.md` and stops; `test.md`, `probe.md`, and `scaffold.md` go unmentioned, and each corresponds to a declared devDependency (`@orkestrel/test ^0.0.11`, `@orkestrel/probe ^0.0.11`, `@orkestrel/scaffold ^0.0.59` at `package.json:75-77`). `/home/user/fleet/table/guides/README.md:21-35` accounts for each of its own mirrors in the same paragraph form and adds a closing sentence stating that a mirror's relative links resolve to nothing locally.
 
-## Fleet rows
-
-These rows come from the Orchestrator's fleet-wide rulings of 2026-09-03 on refuter findings that named a fleet pattern; each takes a disposition (`applied`, `noop` with evidence, or `stopped`) in the report's table like a numbered row, under the ids given here.
-
-- **fleet-F1** (the `isBrowserVuePath` residue; msg-obj-4 and budget-obj-7 pattern; non-breaking). Where `tests/setup.ts` declares `isBrowserVuePath` and this workspace has no browser environment (no `src/browser`, no `app/browser`, no `tests/setupBrowser.ts`), delete the helper and its doc comment, the `describe('isBrowserVuePath', …)` block in `tests/setup.test.ts`, its entry in that file's import list, and the clause naming it in the header comment of `tests/setup.ts`. Where the workspace has a browser environment, or the helper is absent, record `noop` with the path read.
-- **fleet-F2** (the `id` field ahead of the `#` fields; budget-obj-8 pattern; non-breaking). Where an implementation class declares a public `readonly id: string` data field ahead of its `#` private fields (`.claude/rules/architecture.md` § Class order puts `#` fields first and the public interface as getters then methods), declare `readonly #id: string` as the first `#` field, assign it in the constructor where the public field was assigned, and add `get id(): string { return this.#id }` as the first getter of the public interface; leave the interface's `readonly id: string` in `types.ts` unchanged. Before applying it, read every test and guide fence for a `JSON.stringify` of that class's instance: a getter lives on the prototype, so the serialized form loses `id`; where any serializes it, `stop` and report that site instead of applying. Where no class has the shape, record `noop` with the classes read.
-
 ## Method
 
 1. Types first: change `*/types.ts` for every row that moves a contract, and typecheck (`npm run check`) before implementing.
@@ -218,7 +211,3 @@ Stop and report — expected, found, exact evidence, done or not done, at most o
 ## Review evidence
 
 The diff and status files named under § Output; the report; the rows.
-
-## Successor note
-
-This brief supersedes `conform-indexeddb-brief-1.md` (generated 2026-09-02). What changed: the Owned row grants the `package.json` `description` field a row names, and § Fleet rows adds fleet-F1 and fleet-F2, the Orchestrator's fleet-wide carriers for the refuters' `isBrowserVuePath` and `id`-field findings. The numbered rows are unchanged.

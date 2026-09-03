@@ -14,7 +14,7 @@ Land every row under § Rows in `/home/user/fleet/abort` so that the tree confor
 
 **Evidence.** Each row quotes the operative rule sentence, the `file:line` it applies to, what is wrong, and the smallest correct repair, as ruled by the refuter lane. The rows are the refuter's CONFIRMED rulings for this package; the finders' refuted findings are not here and are not yours.
 
-**Host.** POSIX shell in `/home/user/fleet/abort`; `node_modules` holds the fleet closure staged with `npm install --no-save` from the tips named under § Staged closure, so a declared `@orkestrel/*` dependency's installed declaration can be ahead of the registry release the manifest declares. Never run `npm install`, `npm ci`, or any command that rewrites `node_modules` or the lockfile; a fresh install would revert the staged closure. Shell discipline: read files with the Read, Grep, and Glob tools rather than the shell; in Bash run one plain command per call with absolute paths (`npm run <script>` and `git status`, `git diff`, `git add -N` from the checkout), never a `cd … &&` chain, never inline `node -e`, and never a pipe into a tool outside cat, head, tail, grep, sed -n, sort, uniq, wc, tr, cut, and awk; a command that prompts for permission blocks the whole round.
+**Host.** POSIX shell in `/home/user/fleet/abort`; `node_modules` holds the fleet closure staged with `npm install --no-save` from the tips named under § Staged closure, so a declared `@orkestrel/*` dependency's installed declaration can be ahead of the registry release the manifest declares. Never run `npm install`, `npm ci`, or any command that rewrites `node_modules` or the lockfile; a fresh install would revert the staged closure.
 
 **Measurements.** Every gate is green at the baseline tip `the committed HEAD` (`format:check`, `lint:check`, `check`, `build`, `test`) except where § Standing conditions says otherwise.
 
@@ -30,7 +30,7 @@ A row whose repair collides with an existing name, or whose ruled name is alread
 
 ## Scope
 
-**Owned.** `src/**`, `tests/**` except the vendored `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts`; `guides/abort.md`; `guides/README.md`; `README.md`; `package.json` only for the `description`, `exports`, `files`, `scripts`, and `bin` fields a row names; `vite.config.ts` and `tsconfig.json` only where a row names them.
+**Owned.** `src/**`, `tests/**` except the vendored `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts`; `guides/abort.md`; `guides/README.md`; `README.md`; `package.json` only for the `exports`, `files`, `scripts`, and `bin` fields a row names; `vite.config.ts` and `tsconfig.json` only where a row names them.
 
 **Shared (report-only).** Every other fleet checkout under `/home/user/fleet/`; the vendored dependency guide mirrors `guides/<other-package>.md`.
 
@@ -103,13 +103,6 @@ A row whose repair collides with an existing name, or whose ruled name is alread
    - Repair (the refuter's operative form): In /home/user/fleet/abort/tests/guides.test.ts change line 2 to read `// this repo's own \`guides/README.md\` manifest. The constants below are this` so the sentence carries no number, matching /home/user/fleet/mcp/tests/guides.test.ts:2. Do not replace `four` with `five`. (Finder's repair correct, kept verbatim.)
    - Refuter's evidence: /home/user/fleet/abort/tests/guides.test.ts:2-3 reads "The four constants below are this / package's own, and are the only part a sibling package changes." The file declares five: `FENCE_LANGUAGES` (:25), `EXAMPLE_LANGUAGE` (:27), `MODULES` (:29), `INTERNAL` (:38), and `ROOT_FILES` (:41), the last likewise package-specific. Fleet corroboration for the repair's form, pattern `constants below are this` over /home/user/fleet/**/tests/guides.test.ts: /home/user/fleet/mcp/tests/guides.test.ts:2 and /home/user/fleet/worker/tests/guides.test.ts:4 already write "The constants below are this package's" with no number, which is the corrected form; the remaining checkouts split between "four" and "five", which is the drift the rule exists to stop.
 
-## Fleet rows
-
-These rows come from the Orchestrator's fleet-wide rulings of 2026-09-03 on refuter findings that named a fleet pattern; each takes a disposition (`applied`, `noop` with evidence, or `stopped`) in the report's table like a numbered row, under the ids given here.
-
-- **fleet-F1** (the `isBrowserVuePath` residue; msg-obj-4 and budget-obj-7 pattern; non-breaking). Where `tests/setup.ts` declares `isBrowserVuePath` and this workspace has no browser environment (no `src/browser`, no `app/browser`, no `tests/setupBrowser.ts`), delete the helper and its doc comment, the `describe('isBrowserVuePath', …)` block in `tests/setup.test.ts`, its entry in that file's import list, and the clause naming it in the header comment of `tests/setup.ts`. Where the workspace has a browser environment, or the helper is absent, record `noop` with the path read.
-- **fleet-F2** (the `id` field ahead of the `#` fields; budget-obj-8 pattern; non-breaking). Where an implementation class declares a public `readonly id: string` data field ahead of its `#` private fields (`.claude/rules/architecture.md` § Class order puts `#` fields first and the public interface as getters then methods), declare `readonly #id: string` as the first `#` field, assign it in the constructor where the public field was assigned, and add `get id(): string { return this.#id }` as the first getter of the public interface; leave the interface's `readonly id: string` in `types.ts` unchanged. Before applying it, read every test and guide fence for a `JSON.stringify` of that class's instance: a getter lives on the prototype, so the serialized form loses `id`; where any serializes it, `stop` and report that site instead of applying. Where no class has the shape, record `noop` with the classes read.
-
 ## Method
 
 1. Types first: change `*/types.ts` for every row that moves a contract, and typecheck (`npm run check`) before implementing.
@@ -146,7 +139,3 @@ Stop and report — expected, found, exact evidence, done or not done, at most o
 ## Review evidence
 
 The diff and status files named under § Output; the report; the rows.
-
-## Successor note
-
-This brief supersedes `conform-abort-brief-1.md` (generated 2026-09-02). What changed: the Owned row grants the `package.json` `description` field a row names, and § Fleet rows adds fleet-F1 and fleet-F2, the Orchestrator's fleet-wide carriers for the refuters' `isBrowserVuePath` and `id`-field findings. The numbered rows are unchanged.

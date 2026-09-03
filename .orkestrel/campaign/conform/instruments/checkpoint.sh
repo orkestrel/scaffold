@@ -3,7 +3,7 @@
 set -u
 BRANCH=claude/orkestrel-npm-audit-deps-14ibta
 for pkg in "$@"; do
-  dir=/home/user/fleet/$pkg; msg=/tmp/claude-0/-home-user-scaffold/249f2596-6386-5f66-868c-31383bbd6eeb/scratchpad/msgs/$pkg.txt
+  dir=/home/user/fleet/$pkg; msg=/home/user/scaffold/tmp/work/msgs/$pkg.txt
   paths=$(git -C $dir status --short | awk '{print $NF}' | grep -v '^tmp/' | grep -v '^.orkestrel/')
   [ -z "$paths" ] && { echo "$pkg: nothing to commit"; continue; }
   echo "$paths" | xargs git -C $dir add --
