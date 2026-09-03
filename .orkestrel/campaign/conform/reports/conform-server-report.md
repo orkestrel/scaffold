@@ -316,3 +316,7 @@ did not admit:
   zero route matching (`AGENTS.md` § Design laws — mechanism, not product
   policy)." After: "`DispatcherInterface`; this package owns zero route
   matching — mechanism, not product policy."
+
+### Orchestrator integration (21:45 UTC, after fix round 3 returned)
+
+Fix round 3's sweep pattern (`§ ?[0-9]+`, the Orchestrator's own brief) reached the RFC 7232 section pointers in `src/server/helpers.ts` (the `computeBodyETag` and `matchesETag` doc lines) and `tests/src/server/helpers.test.ts:703`, which are not instruction citations; the Orchestrator restored `§2.3.2` at those sites from the fix round's before-and-after record (`npx oxfmt --check` exit 0 over both files). The `AGENTS §` removals stand.
