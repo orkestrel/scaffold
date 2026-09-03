@@ -5,7 +5,7 @@ npm notice run oxfmt --config .oxfmtrc.json --check .
 Checking formatting...
 
 All matched files use the correct format.
-Finished in 1014ms on 59 files using 16 threads.
+Finished in 1089ms on 59 files using 16 threads.
 npm notice run @orkestrel/test@0.0.12 lint:check
 npm notice run oxlint --config .oxlintrc.json --deny-warnings .
 npm notice run @orkestrel/test@0.0.12 check
@@ -35,7 +35,7 @@ rendering chunks...
 [unplugin:dts] Start bundling declaration files...
 Analysis will use the bundled TypeScript version 5.9.3
 *** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
-[unplugin:dts] Declaration files built in 1384ms.
+[unplugin:dts] Declaration files built in 1401ms.
 
 computing gzip size...
 dist/src/core/index.js  29.04 kB │ gzip: 8.66 kB │ map: 44.48 kB
@@ -46,7 +46,7 @@ rendering chunks...
 computing gzip size...
 dist/src/core/index.cjs  29.76 kB │ gzip: 8.81 kB │ map: 44.48 kB
 
-[32m✓ built in 1.51s[39m
+[32m✓ built in 1.53s[39m
 npm notice run @orkestrel/test@0.0.12 copy
 npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
 Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
@@ -61,12 +61,12 @@ rendering chunks...
 [unplugin:dts] Start bundling declaration files...
 Analysis will use the bundled TypeScript version 5.9.3
 *** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
-[unplugin:dts] Declaration files built in 1639ms.
+[unplugin:dts] Declaration files built in 1564ms.
 
 computing gzip size...
-dist/src/browser/index.js  94.95 kB │ gzip: 29.78 kB │ map: 131.90 kB
+dist/src/browser/index.js  98.37 kB │ gzip: 30.88 kB │ map: 135.88 kB
 
-[32m✓ built in 1.71s[39m
+[32m✓ built in 1.63s[39m
 npm notice run @orkestrel/test@0.0.12 build:src:server
 npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
 [36mvite v8.2.2 [32mbuilding client environment for production...[36m[39m
@@ -102,7 +102,7 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
  RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
 
 ··············································-····················--·······-·-·············································-··············-·····-······································································-····························Port 63315 is in use, trying another one...
-····································································································································································································································8:28:39 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Boom
+·······································································································································································································································9:01:40 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Boom
 [39m > ../../../../@vite/client:539:50
  > tests/src/browser/factories.test.ts:453:10
     451 |  		try {
@@ -118,9 +118,9 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
  > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2305:20
  > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2272:10
 
-8:28:39 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mUnknown Error[22m: Refused
+9:01:40 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mUnknown Error[22m: Refused
 [39m
-8:28:39 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Ignored
+9:01:40 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Ignored
 [39m > ../../../../@vite/client:539:50
  > tests/src/browser/factories.test.ts:462:10
     460 |  			journal.stop()
@@ -139,9 +139,9 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
 ···············
 
  Test Files  7 passed (7)
-      Tests  479 passed | 9 skipped (488)
-   Start at  20:28:29
-   Duration  10.31s (transform 571ms, setup 686ms, import 599ms, tests 9.45s, environment 1ms)
+      Tests  482 passed | 9 skipped (491)
+   Start at  21:01:29
+   Duration  11.10s (transform 614ms, setup 713ms, import 604ms, tests 10.27s, environment 1ms)
 
 npm notice run @orkestrel/test@0.0.12 test:policy
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
@@ -152,8 +152,8 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
 
  Test Files  1 passed (1)
       Tests  111 passed (111)
-   Start at  20:28:40
-   Duration  1.44s (transform 115ms, setup 33ms, import 320ms, tests 926ms, environment 0ms)
+   Start at  21:01:41
+   Duration  1.45s (transform 115ms, setup 33ms, import 317ms, tests 941ms, environment 0ms)
 
 npm notice run @orkestrel/test@0.0.12 test:config
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
@@ -164,8 +164,8 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
 
  Test Files  1 passed (1)
       Tests  46 passed (46)
-   Start at  20:28:42
-   Duration  1.76s (transform 202ms, setup 32ms, import 958ms, tests 617ms, environment 0ms)
+   Start at  21:01:43
+   Duration  1.77s (transform 202ms, setup 33ms, import 964ms, tests 616ms, environment 0ms)
 
 npm notice run @orkestrel/test@0.0.12 test:setup
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
@@ -176,8 +176,8 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
 
  Test Files  3 passed (3)
       Tests  24 passed (24)
-   Start at  20:28:45
-   Duration  387ms (transform 155ms, setup 91ms, import 259ms, tests 25ms, environment 0ms)
+   Start at  21:01:46
+   Duration  394ms (transform 140ms, setup 88ms, import 252ms, tests 24ms, environment 0ms)
 
 npm notice run @orkestrel/test@0.0.12 test:guides
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
@@ -188,20 +188,20 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
 
  Test Files  1 passed (1)
       Tests  38 passed | 1 skipped (39)
-   Start at  20:28:46
-   Duration  1.07s (transform 98ms, setup 33ms, import 492ms, tests 379ms, environment 0ms)
+   Start at  21:01:47
+   Duration  1.06s (transform 96ms, setup 33ms, import 502ms, tests 370ms, environment 0ms)
 
 npm notice run @orkestrel/test@0.0.12 test:distribution
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
 
  RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
 
-(node:23752) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(node:32004) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 ········---···-
 
  Test Files  1 passed (1)
       Tests  11 passed | 4 skipped (15)
-   Start at  20:28:48
-   Duration  9.93s (transform 116ms, setup 33ms, import 5.56s, tests 4.18s, environment 0ms)
+   Start at  21:01:49
+   Duration  9.82s (transform 117ms, setup 32ms, import 5.51s, tests 4.12s, environment 0ms)
 
