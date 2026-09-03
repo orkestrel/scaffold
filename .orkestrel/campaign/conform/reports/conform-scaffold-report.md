@@ -338,3 +338,31 @@ The round-1 objective lane (`units/l3/scaffold-objective-r1.md`) refuted claim 2
 - O2 — `units/l3/scaffold-implement-direct.md` is the unit's returned result and `reports/conform-scaffold-report.md` its report file, the retention pair every unit keeps; the verdict names the report file as the audit subject.
 
 `guides/scaffold.md` is a `HOST_PATHS` member, so `host.json` moves again at the landing's `build`.
+
+## Fix round 2
+
+The objective lane is
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l3/scaffold-objective-r2-sol.md`.
+
+- `README.md:10-14`: “Each target carries its own copy of the paths it selects from the vendored set
+  — its licence, its harness permission file, its session-start hooks, its policy register, its
+  policy proof, its policy plugin, its configuration leaf and its proof, its root dotfiles, and the
+  guide mirrors it starts from, never its own guide — and the verbs write them and compare them.”
+- `guides/scaffold.md:16-20`: “`HOST_PATHS` names the vendored set — the licence, the harness
+  permission file, the session-start hooks, the shared policy register, the shared policy proof, the
+  shared policy plugin, the shared configuration leaf and its proof, the byte-identical root
+  dotfiles, and the guide mirrors a generated workspace starts from, never its own guide — and each
+  target carries its own copy of the paths it selects, which the verbs write and compare.”
+- `guides/scaffold.md:1195-1199`: “`HOST_PATHS` is the vendored set, and a target receives a copy of
+  each path it selects: the licence, the harness permission file, the session-start hooks, the shared
+  policy register, the shared policy proof, the shared policy plugin, the shared configuration leaf
+  and its proof, the byte-identical root dotfiles, and the guide mirrors a generated workspace starts
+  from.”
+- `src/core/constants.ts:114-119`: “These are the files the fleet shares verbatim, and each target
+  holds a copy of the paths it selects: the licence, the harness permission file, the session hook
+  scripts, the shared policy register, the byte-identical root dotfiles, and the guide mirrors a
+  generated workspace starts from.”
+
+### Orchestrator integration (21:30 UTC, after fix round 2 returned)
+
+The `HOST_PATHS` TSDoc at `src/core/constants.ts:114-119` named the policy register alone where the README and the guide name the register, the proof, the plugin, and the configuration leaf with its proof; the Orchestrator aligned the member list to the guide's wording (a one-phrase edit, `npx oxfmt --check` exit 0). Round 3 audits it with the fix round's passages.
