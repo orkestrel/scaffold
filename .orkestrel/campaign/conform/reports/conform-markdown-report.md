@@ -42,7 +42,8 @@ measures the same width (Types rows 291 characters, Helpers signature cells 139)
 now carry the repaired form, matching `/home/user/fleet/html/guides/README.md`.
 
 The `guides/src` By-directory row is deleted and the table tightened to its remaining
-`src/core` row, byte-for-byte the shape the html sibling carries. The finder's
+`src/core` row, matching the html sibling's table structure; the Guide cell text differs
+because it names `markdown.md` rather than `html.md`. The finder's
 alternative was not applied. The mirror inventory now lives once, in the Dependency
 reference prose, which names `contract.md`, `html.md`, `guide.md`, and `scaffold.md`
 and names `probe.md` and `test.md` nowhere — the sibling's state, as the refuter ruled.
@@ -86,9 +87,15 @@ No transcription disagreed with the code, so there is no guide-drift finding to 
 The adoption fence, the house-rule fence, and the guide-parity extraction fence each
 declare a named function of their own. Keeping the declaration inside its case would
 nest a function in a body, which `AGENTS.md` § Design laws refuses, so each sits at the
-test file's module scope with the fence's own name and body — the form
-`tests/setup.test.ts` already uses for its derivation helpers. That is the one ancillary
-decision this row took, recorded here.
+test file's module scope — the form `tests/setup.test.ts` already uses for its
+derivation helpers. The adoption fence and the guide-parity extraction fence keep the
+fence's own name and body. The house-rule fence's handler is transcribed as
+`projectKbdNode` rather than the guide's `projectHTMLNode`, because that name is already
+the `@src/core` import at `tests/guides.test.ts:52` and a same-named local declaration
+would collide with it; its case at `tests/guides.test.ts:362-372` inlines the fence's
+`project` wrapper body directly into `foldHTMLNode`'s call rather than declaring a
+separate `project` function. That is the one ancillary decision this row took, recorded
+here.
 
 The file's header comment said "The four constants below", which is a count over a set
 anyone can add to and was already false. It now reads "The constants below".
@@ -230,6 +237,7 @@ Every pattern was run with the `Grep` tool over `/home/user/fleet/markdown` excl
 | `isBrowserVuePath`                                               | package             | 0                                                          |
 | `\bclass \w+`                                                    | `src`               | 1 class, `Markdown`                                        |
 | `readonly id: string`                                            | `src`               | 0                                                          |
+| `guides/src\|Dependency mirrors`                                  | package             | 0 — the deleted By-directory row and the section it moved into leave no residue |
 
 Count sweeps over the rows that delete an enumeration, ruled by sense:
 
@@ -246,11 +254,11 @@ under `/home/user/work/evidence/markdown-proofs/`.
 
 | Gate                | Command                     | Exit | Reading                                                    | File                    |
 | ------------------- | --------------------------- | ---- | ------------------------------------------------------------ | ----------------------- |
-| `npm run format:check` | `oxfmt --check .`        | 0    | `All matched files use the correct format.` on 47 files    | `gate-format-check.txt` |
-| `npm run lint:check`   | `oxlint --deny-warnings .`| 0   | no diagnostic                                              | `gate-lint-check.txt`   |
+| `npm run format:check` | `oxfmt --config .oxfmtrc.json --check .`        | 0    | `All matched files use the correct format.` on 47 files    | `gate-format-check.txt` |
+| `npm run lint:check`   | `oxlint --config .oxlintrc.json --deny-warnings .`| 0   | no diagnostic                                              | `gate-lint-check.txt`   |
 | `npm run check`        | `tsc --noEmit` ×2         | 0    | no diagnostic                                              | `gate-check.txt`        |
 | `npm run build`        | `vite build` + `copy`     | 0    | `✓ built in 4.86s`, `Copied: dist/src/core/index.d.ts …`   | `gate-build.txt`        |
-| `npm test`             | five projects             | 0    | src:core 604, policy 111, config 46, setup 24, guides 58   | `gate-test.txt`         |
+| `npm test`             | `src:core`, `policy`, `config`, `setup`, and `guides` projects | 0    | src:core 604, policy 111, config 46, setup 24, guides 58   | `gate-test.txt`         |
 
 No failure excerpt: no gate reported one.
 
@@ -287,6 +295,10 @@ package, exactly as the brief records.
 
 Consumer edits obliged: none.
 
+The vendored mirror `/home/user/fleet/guide/guides/markdown.md` still carries
+`MarkdownHandlers`. It is refreshed from the published bytes after `@orkestrel/markdown`
+releases the renamed type, never rewritten here.
+
 ## Shared-file patches
 
 None. Every edit landed inside Owned. No file under `/home/user/fleet/` outside this
@@ -322,3 +334,71 @@ These sit outside every row of this brief and have no carrier here.
    in `tests/src/core/compilers.test.ts` rather than left unproven, but a successor round
    wanting the guide's own prose bound would need executed assertions beside those
    sentences.
+
+## Fix round 1
+
+Closes the round-1 objective lane's claim-4 refutation and findings F1 to F3
+(`units/l2a/markdown-objective-r1.md`) and the round-1 checker's F-setup-agents and
+F-readme-count (`units/l2a/markdown-r1-checker-luna.md`).
+
+### Findings and their edits
+
+- **F-setup-agents / claim S6's `§\d` residue.** `tests/setup.ts:3` named
+  `setupBrowser.ts`, a file this workspace does not have; the sentence now ends at
+  `Vue.`. `tests/setup.ts:54` carried the `AGENTS-forbidden; §1 / §16` clause; the
+  sentence now reads "without an `as` or an `if`-guarded `expect` narrowing with a
+  non-null assertion", keeping the original meaning without citing `AGENTS.md`.
+- **F-readme-count.** `guides/README.md:20` stated "one of this package's two runtime
+  dependencies"; it now reads "a runtime dependency of this package", carrying the
+  same fact without the count.
+- **F1 — the vendored guide mirror.** § Breaking now names
+  `/home/user/fleet/guide/guides/markdown.md` as a vendored mirror that still carries
+  `MarkdownHandlers`, refreshed from the published bytes after `@orkestrel/markdown`
+  releases the renamed type, never rewritten here.
+- **F2 — the house-rule fence's rename and inlined body.** The prose after § Rows
+  `markdown-obj-2` now names the `projectHTMLNode` → `projectKbdNode` rename (forced by
+  the collision with the `@src/core` import at `tests/guides.test.ts:52`) and the
+  inlining of the fence's `project` wrapper body into the `foldHTMLNode` call at
+  `tests/guides.test.ts:362-372`, replacing the false claim that every helper "keeps
+  the fence's own name and body".
+- **F3 — the `npm test` Command cell.** § Gates now names the `src:core`, `policy`,
+  `config`, `setup`, and `guides` projects instead of stating their count.
+- **claim-4 refutation — § Sweeps missing the `guides/src` row.** § Sweeps now carries
+  the `guides/src|Dependency mirrors` row (0 hits, re-run this round).
+- **§ Gates Command cells dropped their `--config` flags.** `format:check` and
+  `lint:check` now read `oxfmt --config .oxfmtrc.json --check .` and
+  `oxlint --config .oxlintrc.json --deny-warnings .`, matching the captures.
+- **Line 42's "byte-for-byte the shape" claim.** Reworded to say the table matches the
+  html sibling's structure, and that the Guide cell text differs because it names
+  `markdown.md` rather than `html.md`.
+
+### Sweeps
+
+| Pattern                              | Path                                                                 | Result |
+| ------------------------------------- | --------------------------------------------------------------------- | ------ |
+| `AGENTS\s*§\|§\d` (`-i`)              | `src/**`, `tests/**` (excluding `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/config.test.ts`, `tests/distribution.test.ts`), `guides/markdown.md`, `guides/README.md`, `README.md` | 0 |
+| `guides/src\|Dependency mirrors`      | package (excluding `node_modules/**`)                                  | 0 |
+
+### Gates
+
+| Gate                    | Command                                              | Exit |
+| ------------------------ | ----------------------------------------------------- | ---- |
+| `npm run format:check`   | `oxfmt --config .oxfmtrc.json --check .`             | 0    |
+| `npm run lint:check`     | `oxlint --config .oxlintrc.json --deny-warnings .`   | 0    |
+| `npm run check`          | `tsc --noEmit --project tsconfig.json` then `tsc --noEmit -p configs/src/tsconfig.core.json` | 0 |
+| `npm run build`          | `vite build --config configs/src/vite.core.config.ts` then `copy` | 0 |
+| `npm test`               | `src:core`, `policy`, `config`, `setup`, and `guides` projects | 0 |
+
+### Audit
+
+`npx scaffold audit --offline` from `/home/user/fleet/markdown`: "0 of 34 planned paths
+drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6."
+
+`git -C /home/user/fleet/markdown status --short` lists the unit's Owned paths, now
+including `tests/setup.ts` because this round's row 1 edits sit there:
+`guides/README.md`, `guides/markdown.md`, `src/core/Markdown.ts`, `src/core/helpers.ts`,
+`src/core/types.ts`, `tests/guides.test.ts`, `tests/setup.ts`,
+`tests/src/core/Markdown.test.ts`, `tests/src/core/helpers.test.ts`,
+`tests/src/core/parsers.test.ts` — no untracked file, no path outside Owned.
+
+No deviation.
