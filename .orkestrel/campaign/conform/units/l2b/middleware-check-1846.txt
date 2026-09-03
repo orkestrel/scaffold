@@ -1,0 +1,16 @@
+
+> @orkestrel/middleware@0.0.18 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/middleware@0.0.18 check:src
+> npm run check:src:core && npm run check:src:server
+
+
+> @orkestrel/middleware@0.0.18 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/middleware@0.0.18 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
