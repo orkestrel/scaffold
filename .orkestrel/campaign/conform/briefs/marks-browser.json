@@ -1,0 +1,4 @@
+{ "folded": [ { "id": "browser-subj-11", "carrier": "browser-obj-1" } ],
+  "orchestrator": [],
+  "breaking": [ { "id": "browser-obj-1", "consumers": [] }, { "id": "browser-subj-12", "consumers": [] }, { "id": "browser-subj-14", "consumers": [] }, { "id": "browser-subj-16", "consumers": [] } ],
+  "note": "Luna reconcile distillate 17:23 UTC. browser-subj-11 is the naming ground behind browser-obj-1's deletion of attributeOfBrowserNode and folds into it. Coordination, not folds: browser-subj-1 and browser-subj-12 share the parseBrowserChord call at line 683 (one writer, one pass); browser-subj-4 and browser-subj-5 both rewrite Contract clause 10; browser-subj-14 and browser-subj-16 rename in the same file, guide rows, and test file. No source consumer for any breaking row; the guides/browser.md mirrors refresh at re-pin." }
