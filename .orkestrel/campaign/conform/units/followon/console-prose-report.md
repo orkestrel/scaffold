@@ -166,3 +166,91 @@ at 28, existence at 5, and nothing at 12.` No `configs/browsers.ts` row reappear
 `tests/src/core/helpers.test.ts`, `tests/src/core/loggers/Logger.test.ts`,
 `tests/src/server/ProcessCapture.test.ts`, `tests/src/server/helpers.test.ts`, plus the six
 pre-existing standing-condition deletions untouched by this unit.
+
+## Fix round 1
+
+Closes the round-1 checker's refutation of claim 3 (`console-prose-checker-luna.md`): every `now`
+marking a moment in an execution order took a phrase naming the moment; every `new` the checker
+listed stays, because each names a fresh instance or a replacement idea.
+
+### Sites
+
+- `src/core/factories.ts:120` — `// snapshots console.* now` → `// snapshots console.* at construction`.
+- `src/core/factories.ts:125` — `Snapshot the three console writers now — bound to their console
+  receiver — so a later` → `Snapshot the console writers at construction — bound to their console
+  receiver — so a later` (dropped the count with the word).
+- `src/browser/factories.ts:52` — `Snapshot the three console writers now — bound to their console
+  receiver — so a later patch of` → `Snapshot the console writers at construction — bound to their
+  console receiver — so a later patch of` (dropped the count with the word).
+- `src/core/Spinner.ts:110` — unchanged: `so the new message shows without waiting for a tick`
+  carries no `now`; `new` stays (fresh-instance sense).
+- `tests/src/core/Capture.test.ts:43` — `The methods are now the wrappers, not the originals.` →
+  `After start, the methods are the wrappers, not the originals.`
+- `tests/src/core/Capture.test.ts:252` — `snapshots the real log NOW; console.log is now the wrapper`
+  → `snapshots the real log at this call; after it, console.log is the wrapper`.
+- `tests/src/core/Capture.test.ts:475` — `its console sink snapshots the real console.log now.` →
+  `its console sink snapshots the real console.log at construction.`
+- `tests/src/core/Spinner.test.ts:136` — `index now at 'y'` → `index at 'y' after the paint`.
+- `tests/src/core/Spinner.test.ts:140` — unchanged: `new message` carries no `now`; `new` stays
+  (fresh-instance sense).
+- `tests/src/core/factories.test.ts:276` — `snapshots the real console.log NOW` → `snapshots the real
+  console.log at this call`.
+- `tests/src/core/factories.test.ts:277` — `// Now PATCH console.log (as a Capture would)` → `// Then
+  PATCH console.log (as a Capture would)`.
+- `tests/src/core/factories.test.ts:401` — title `… independent of the (now destroyed) capture` →
+  `… independent of the destroyed capture`.
+- `tests/src/server/ProcessCapture.test.ts:512` — `// bucket stdout now [o2, o3]; total now [e2, o3]`
+  → `// bucket stdout after the write [o2, o3]; total [e2, o3]`.
+
+Grep confirmed no snapshot or guide transcribes the retitled `factories.test.ts:401` case name,
+before and after.
+
+### Sweeps
+
+- `\b(now|currently)\b` (case-insensitive) over `src/**` and the non-vendored `tests/**`: every
+  remaining hit is `Date.now()` or `performance.now()` (`src/core/Capture.ts:166`,
+  `src/core/types.ts:282,820`, `src/server/types.ts:126`, `src/server/ProcessCapture.ts:252`,
+  `src/core/loggers/Logger.ts:142`, `tests/src/core/loggers/Logger.test.ts:48,51`,
+  `tests/src/core/helpers.test.ts:1045,1047`, `tests/src/core/Capture.test.ts:69,74`,
+  `tests/src/browser/helpers.test.ts:243,245`) — permitted clock-reading calls, no execution-order
+  or temporal prose sense remains.
+- `\bnew\b` (case-insensitive), the checker's listed sites, ruled permitted in the construction or
+  replacement-idea sense and left unchanged: `src/core/Styler.ts:10` ("returns a new styler's
+  surface"), `src/core/Styler.ts:120` ("the overlay's new ones appended"), `src/core/Styler.ts:159`
+  ("A new styler with color as the foreground"), `src/core/Styler.ts:169` ("A new styler with
+  attribute added"), `src/core/types.ts:83` ("compose a new style with the styler"),
+  `src/core/types.ts:124` ("a getter returning a new styler"), `src/browser/types.ts:62` ("Each SGR
+  sequence produces a new frozen value"), `src/core/Spinner.ts:110` ("so the new message shows"),
+  `tests/src/core/Spinner.test.ts:140` ("re-renders current glyph … with new message"). Every other
+  `\bnew\b` hit across `src/**` and `tests/**` is the `new` constructor keyword (`new Styler(...)`,
+  `new Map(...)`, `new RegExp(...)`, and similar), not prose.
+
+### Gates
+
+- `npm run format:check` — exit 0 ("All matched files use the correct format.").
+- `npm run lint:check` — exit 0 (no output, no findings).
+- `npm run check` — exit 0 (`tsc --noEmit` root + `check:src:core` + `check:src:browser` +
+  `check:src:server`, all clean).
+- `npm run build` — exit 0 (`core`, `browser`, `server` bundles and declaration files built; the
+  API Extractor TypeScript-version notice is pre-existing tooling noise, not an error).
+- `npm test` — exit 0 (`test:src` 638 passed, `test:policy` 111 passed, `test:config` 46 passed,
+  `test:setup` 29 passed, `test:guides` 91 passed).
+
+### Audit
+
+`npx scaffold audit --offline` — `0 of 45 planned paths drifted from the plan. Audit compared bytes
+at 28, existence at 5, and nothing at 12.`
+
+### Evidence capture
+
+`node /home/user/scaffold/tmp/work/evidence.mjs console` wrote
+`/home/user/work/evidence/conform-console.diff` (783 lines) and
+`/home/user/work/evidence/conform-console.status` (22 entries). `git -C /home/user/fleet/console
+status --short` lists only the console-prose unit's files plus this round's Sites files: `README.md`,
+`src/browser/factories.ts`, `src/core/Styler.ts`, `src/core/errors.ts`, `src/core/factories.ts`,
+`src/core/types.ts`, `src/server/factories.ts`, `tests/setup.test.ts`, `tests/setup.ts`,
+`tests/setupServer.test.ts`, `tests/setupServer.ts`, `tests/src/browser/helpers.test.ts`,
+`tests/src/core/Capture.test.ts`, `tests/src/core/Progress.test.ts`, `tests/src/core/Reporter.test.ts`,
+`tests/src/core/Spinner.test.ts`, `tests/src/core/Styler.test.ts`, `tests/src/core/factories.test.ts`,
+`tests/src/core/helpers.test.ts`, `tests/src/core/loggers/Logger.test.ts`,
+`tests/src/server/ProcessCapture.test.ts`, `tests/src/server/helpers.test.ts`.
