@@ -1,0 +1,8 @@
+State the facts behind the unit citations in the router prose
+
+The `U1`, `U3`, and `U6` campaign citations in the published TSDoc and the dispatcher test header read the facts they stood on — the path compiler in `helpers.ts`, the type-level surfaces, the file's own describe blocks — and the guide-test header names the core, browser, and server faces in place of a count.
+
+Audit: the Orchestrator read the prose-only diff against the rows; no lane ran (`.orkestrel/campaign/conform/units/followon/router-prose-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

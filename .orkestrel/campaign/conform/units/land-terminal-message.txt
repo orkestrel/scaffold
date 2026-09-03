@@ -1,0 +1,8 @@
+Conform terminal to the fleet rules: console's primitives, the stream target, the reducers, the executed fences
+
+The local escape constants give way to console's `ESC` and `CSI` (`ESCAPE`, `KEY_CSI`, the server `CSI`, `CARRIAGE_RETURN`, and `LINE_FEED` are removed; `KEY_SS3` is rebuilt from `String.fromCharCode`); `OutputStreamInterface` and `isOutputStream` give way to console's `StreamTargetInterface` and `isStreamTarget`; the reducers take the `reduce*` form; `moveUp` becomes `renderCursorUp`; the `'terminal'` unmount reason becomes `'target'`, with toolbox's bridge re-pinning at its own release; the unused `TerminalAnswerError` member is removed. `tests/setupServer.ts` keeps one `createFakeTTY`; the validators gain their proof; every fence line of the guide that carries a value comment runs in `tests/guides.test.ts`. The guide's method tables match their interfaces, the citations leave the prose, and the new doc blocks open in the third person.
+
+Audit: Grok-first round 1 (Luna distillate, Luna checker PASS, Opus objective FAIL 9 closed by an Opus fix round transcribing every value-claiming fence line) and round 2 (Luna distillate, Luna checker PASS, Opus objective PASS with two prose findings applied); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-terminal-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

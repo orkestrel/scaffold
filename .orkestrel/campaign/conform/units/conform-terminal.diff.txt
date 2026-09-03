@@ -1,0 +1,3418 @@
+diff --git a/README.md b/README.md
+index eb90043..7415a51 100644
+--- a/README.md
++++ b/README.md
+@@ -1,9 +1,9 @@
+ # @orkestrel/terminal
+ 
+ The terminal side of a form, for the `@orkestrel` line. `@orkestrel/form` owns
+-the document — the schema, the twelve controls, the rules, the values, and the
++the document — the schema, the controls, the rules, the values, and the
+ settle-once `answer` promise. This package owns what form has no opinion about:
+-a key decoder, a theme, pure per-field reducers, and three surfaces one form
++a key decoder, a theme, pure per-field reducers, and the surfaces one form
+ can be answered on. The server `Terminal` implements the one driving contract
+ against a real TTY (raw-mode stdin, live in-place re-render, a `node:readline`
+ fallback when piped). The headless `Prompt` broker PARKS a live form until
+@@ -18,10 +18,6 @@ elsewhere to this machine's keyboard over SSE. Built beside
+ npm install @orkestrel/terminal
+ ```
+ 
+-`@orkestrel/form` is pinned to a committed tarball until it is published, so
+-this package is not publishable yet. The pin, its standing conditions, and the
+-re-pin recipe are recorded in [guides/terminal.md](./guides/terminal.md).
+-
+ ## Requirements
+ 
+ - Node.js >= 22
+@@ -85,7 +81,7 @@ the multi-endpoint manager, the stores, and the TTY driver.
+ 
+ ## Package
+ 
+-Two entry points, per the `exports` field in `package.json`: `.` (the
++The entry points, per the `exports` field in `package.json`, are `.` (the
+ host-independent core — the reducers, the broker, the bridge, the manager, and
+ the stores) and `./server` (the Node-only `Terminal` driver). Both entry points
+ ship dual ESM+CJS builds.
+diff --git a/guides/README.md b/guides/README.md
+index 9ae0b0e..139658a 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -1,7 +1,7 @@
+ # Guides
+ 
+ A dual-axis index into this repository's guides — by concept, and by
+-directory (AGENTS §22).
++directory.
+ 
+ ## By concept
+ 
+@@ -24,25 +24,21 @@ against a real TTY. The end-to-end proof that they compose lives in
+ 
+ ## Dependency reference
+ 
+-`@orkestrel/form` owns the form itself — the schema, the twelve controls, the
+-rules, the values, and the settle-once `answer` promise — and terminal
+-declares none of it a second time. Its guide is not mirrored here: form is
+-not published yet, so this repository pins it as a committed tarball
+-(`file:vendor/orkestrel-form-0.0.1.tgz`) and there is no released guide to
+-mirror. Read the installed package's own guide at
+-[github.com/orkestrel/form](https://github.com/orkestrel/form) for form's
+-laws, and read [`terminal.md`](terminal.md) for what terminal adds around
+-them. The pin, its two standing conditions, and the five-step re-pin recipe
+-are recorded in [`terminal.md`](terminal.md).
++[`form.md`](form.md) is a byte-identical mirror of the guide for
++`@orkestrel/form` — a runtime dependency, and the owner of the form itself:
++the schema, the controls, the rules, the values, and the settle-once `answer`
++promise, none of which terminal declares a second time. It documents **that
++package's** surface, not anything sourced in this repo; it is kept here so a
++reader of this package can see the primitive it is built from without leaving
++this guide set. Read [`terminal.md`](terminal.md) for what terminal adds
++around it.
+ 
+ [`console.md`](console.md) is a byte-identical mirror of the guide for
+ `@orkestrel/console` — a runtime dependency, the `StylerInterface` every
+ rendered view is painted through (one style engine). It documents **that
+ package's** surface, not anything sourced in this repo; it is kept here so a
+ reader of this package can see the primitive it is built from without leaving
+-this guide set. It mirrors console's published release (`0.0.7`), which
+-carries the `StylerInterface.render` / `freezeStyle` surface this package
+-builds against.
++this guide set.
+ 
+ [`contract.md`](contract.md) is a byte-identical mirror of the guide
+ for `@orkestrel/contract` — a runtime dependency, the `Guard<T>` vocabulary
+@@ -79,6 +75,23 @@ surface (`Guide` / `Source`, the manifest and comparison helpers), not
+ anything sourced in this repo; it is kept here so a reader of the parity suite
+ can see the primitives it is built from without leaving this guide set.
+ 
++[`test.md`](test.md) is a byte-identical mirror of the guide for
++`@orkestrel/test` — a devDependency, the recorder, delay, collector, and
++scratch helpers every suite in this repo imports rather than rewriting. It
++documents **that package's** surface, not anything sourced in this repo; it is
++kept here for the same reason.
++
++[`scaffold.md`](scaffold.md) is a byte-identical mirror of the guide for
++`@orkestrel/scaffold` — a devDependency, the workspace blueprint behind the
++vendored test set and the `scaffold audit` drift check. It documents **that
++package's** surface, not anything sourced in this repo; it is kept here for the
++same reason.
++
++[`probe.md`](probe.md) is a byte-identical mirror of the guide for
++`@orkestrel/probe` — a devDependency, the TypeScript claim prover a change to
++this package's types is checked with. It documents **that package's** surface,
++not anything sourced in this repo; it is kept here for the same reason.
++
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the rules this package is written to.
+diff --git a/guides/terminal.md b/guides/terminal.md
+index 8dfde34..df7ecee 100644
+--- a/guides/terminal.md
++++ b/guides/terminal.md
+@@ -1,22 +1,23 @@
+ # Terminal
+ 
+-> The terminal side of a form. `@orkestrel/form` owns the document — the schema, the twelve
++> The terminal side of a form. `@orkestrel/form` owns the document — the schema, the
+ > controls, the rules, the values, and the settle-once `answer` promise — and this package declares
+ > none of it a second time. What terminal owns is everything form has no opinion about: a key
+ > decoder, a presentation theme, the pure per-field reducers, the headless broker that PARKS a live
+ > form until somebody elsewhere answers it, the SSE bridge that carries a parked form to a machine
+ > with a keyboard, and the manager that routes parked forms between named endpoints.
+ >
+-> **One contract, three surfaces.** [`src/core`](../src/core) declares one driving contract,
+-> `TerminalInterface`, with one method: `ask(form)` returns the settled `FormValues`. A form reaches
+-> a person three ways over it. The server `Terminal` ([`src/server`](../src/server)) IMPLEMENTS the
++> **One contract; the local TTY, the headless broker, and the SSE bridge.**
++> [`src/core`](../src/core) declares one driving contract, `TerminalInterface`, with one method:
++> `ask(form)` returns the settled `FormValues`. A form reaches a person over each of them. The
++> server `Terminal` ([`src/server`](../src/server)) IMPLEMENTS the
+ > contract against a real TTY — raw-mode stdin, live in-place re-render, a `node:readline` fallback
+ > when piped — and is the only impure part of the stack. The headless `Prompt` broker implements no
+ > terminal at all: it parks the live form, emits a wire-safe record, and drives that same form to
+ > settlement when an answer arrives. The `PromptClient` bridge receives a form parked elsewhere,
+ > rebuilds it locally, and drives it through a local `TerminalInterface`. `PromptFormInterface` and
+-> its six prompt methods are gone: a form is one question however many fields it holds, so the
+-> contract needs one method and this package holds no second form vocabulary.
++> its per-control prompt methods are gone: a form is one question however many fields it holds, so
++> the contract needs one method and this package holds no second form vocabulary.
+ 
+ ## The blank line binds as absence
+ 
+@@ -36,14 +37,14 @@ const values = await terminal.ask(form)
+ ```
+ 
+ The driver fills every answer as `fill(name, matchesAnswer(value) ? value : undefined)` — form's own
+-projection. Three consequences a caller sees directly:
++projection. The consequences a caller sees directly:
+ 
+ - A bare return on a field with **no default** leaves that key out of the resolved values entirely.
+   The key is absent, rather than present holding an empty string.
+ - A bare return on a field **with a default** binds the DECLARED default, never the value a previous
+   pass held, so a rejected answer is never re-offered as the default.
+-- `required` therefore refuses a blank line, which the `''` sentinel silently accepted. A field that
+-  should accept an empty answer is a field with no `required` rule.
++- `required` therefore refuses a blank line. A field with no `required` rule accepts an empty
++  answer.
+ 
+ The rest of the vocabulary moved the same way: `numeric` is gone (a numeric-looking string is `text`
+ plus a `pattern` or `custom` rule; a real number is the `number` control), per-key validator
+@@ -51,47 +52,10 @@ overrides are gone, a choice's `name` / `description` are now `value` / `label`
+ per-choice `checked` is now the checkbox field's `default` list. Rule message copy belongs to form,
+ reachable through its `FormOptions.messages`.
+ 
+-## Build and pin
+-
+-**Console.** Every view calls `StylerInterface.render` and `freezeStyle`, which
+-`@orkestrel/console` ships as of `0.0.7`. This package declares `^0.0.7`; on `0.0.x` that range pins
+-exactly the carrying release, so an ordinary registry install satisfies it.
+-
+-**Form is pinned to a committed tarball.** `@orkestrel/form` is not published yet, so
+-`package.json` declares
+-`"@orkestrel/form": "file:vendor/orkestrel-form-0.0.1.tgz"` and the tarball is committed under
+-`vendor/`. The lockfile records that file spec and its integrity hash, so `npm ci` from a fresh
+-clone reproduces the exact dependency with no registry access.
+-
+-Two standing conditions follow, and both end at the re-pin:
+-
+-- **`@orkestrel/terminal` must not be published while the `file:` pin stands.** A published
+-  package cannot resolve a path inside this repository.
+-- **`npx scaffold audit` is dark.** It refuses the blueprint before it compares any path:
+-
+-  ```text
+-  dependencies: @orkestrel/form declares the range file:vendor/orkestrel-form-0.0.1.tgz, which dependencies does not accept.
+-  Audit did not compare the target because the blueprint was refused.
+-  ```
+-
+-  Drift detection stays off until the range is a registry range again. Read a green audit as
+-  unavailable here, not as clean.
+-
+-**The re-pin, in five steps:**
+-
+-1. Publish `@orkestrel/form@0.0.1` to the registry.
+-2. Run `npm install --save '@orkestrel/form@^0.0.1'` here. It rewrites the range and re-resolves the
+-   lockfile against the registry.
+-3. Delete `vendor/orkestrel-form-0.0.1.tgz`, and confirm the lockfile records a registry resolution
+-   rather than the file spec.
+-4. Run the gates, now including `npx scaffold audit`, which stops refusing the blueprint once the
+-   range is a registry range.
+-5. Bump `0.0.8` to `0.0.9` and publish `@orkestrel/terminal`.
+-
+ ## Surface
+ 
+-Ask one form three ways over one contract — at this keyboard, parked for somebody else, or carried
+-to a keyboard elsewhere:
++Ask one form over one contract — at this keyboard, parked for somebody else, or carried to a
++keyboard elsewhere:
+ 
+ ```ts
+ import { createForm } from '@orkestrel/form'
+@@ -149,12 +113,12 @@ What a driver is, and what one step of a field reducer produces ([`src/core`](..
+ The TTY-agnostic decoder every driver reads keystrokes through ([`src/core`](../src/core)). Pure and
+ total: no `node:*`, no I/O, and no input throws.
+ 
+-| API           | Kind      | Summary                                                                                                                                     |
+-| ------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `KeyEvent`    | interface | One decoded keypress — the OPTIONAL `name` plus `sequence` / `ctrl` / `meta` / `shift` (data-only).                                         |
+-| `parseKey`    | function  | Decode one keypress's bytes (`string` / `Uint8Array`) into a `KeyEvent` — TOTAL; an unrecognized sequence carries no `name`, never a throw. |
+-| `isPrintable` | function  | Whether a single character is printable — `parseKey`'s character fallback test, excluding the C0 controls and DEL.                          |
+-| `editLine`    | function  | Apply one line-editing key to a text buffer (the input / password / editor shared editing) — `undefined` when the key does not edit.        |
++| API           | Kind      | Summary                                                                                                                                      |
++| ------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
++| `KeyEvent`    | interface | One decoded keypress — the OPTIONAL `name` plus `sequence` / `ctrl` / `meta` / `shift` (data-only).                                          |
++| `parseKey`    | function  | One keypress's bytes (`string` / `Uint8Array`) decoded into a `KeyEvent` — TOTAL; an unrecognized sequence carries no `name`, never a throw. |
++| `isPrintable` | function  | Whether a single character is printable — `parseKey`'s character fallback test, excluding the C0 controls and DEL.                           |
++| `editLine`    | function  | One line-editing key applied to a text buffer (the input / password / editor shared editing) — `undefined` when the key does not edit.       |
+ 
+ ### Presentation
+ 
+@@ -167,7 +131,7 @@ line shapes every view is assembled from ([`src/core`](../src/core)).
+ | `PromptRole`         | type      | One semantic styling slot — `question` / `pointer` / `message` / `content` / `success` / `error` / `selected` / `focus` / `hint` / `muted` / `description`. |
+ | `PromptTheme`        | interface | A resolved presentation — a glyph for every `PromptIcon` and a console `Style` for every `PromptRole` (data-only, deeply frozen).                           |
+ | `PromptThemeOptions` | interface | The PARTIAL theme an option bag carries — every icon and role optional, merged leaf by leaf over the default (data-only).                                   |
+-| `createPromptTheme`  | function  | Merge a partial theme over `DEFAULT_PROMPT_THEME` — supplied leaves replace, the rest keep their default; each style is frozen by console.                  |
++| `createPromptTheme`  | function  | A partial theme merged over `DEFAULT_PROMPT_THEME` — supplied leaves replace, the rest keep their default; each style is frozen by console.                 |
+ | `renderPromptHeader` | function  | The styled question header (`? label`) every active field view leads with, themed by the `question` + `message` roles.                                      |
+ | `renderHintedHeader` | function  | The question header plus a key hint painted with the `hint` role — the header alone when no hint is supplied.                                               |
+ | `renderSubmitHeader` | function  | The styled committed header (`✔ label`) a field shows once it has an answer, themed by the `success` + `message` roles.                                     |
+@@ -182,41 +146,41 @@ only: the form validates, the form settles, and none of this code does either.
+ | API                   | Kind      | Summary                                                                                                                                    |
+ | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+ | `InputState`          | interface | One text field's reducer state — the sanitized label, the default, the styler, the theme, and the typed value (data-only).                 |
+-| `createInputState`    | function  | Build the initial state for a `TextField` — the sanitized label, the declared default, the styler, and the resolved theme.                 |
+-| `renderInputView`     | function  | Render a text state — header, pointer, and the typed value (or the default shown as a hint).                                               |
+-| `inputReduce`         | function  | The text reducer — printable extends, backspace shrinks, ctrl-u clears, return submits (an empty line falling back to the default).        |
++| `createInputState`    | function  | A `TextField`'s initial state — the sanitized label, the declared default, the styler, and the resolved theme.                             |
++| `renderInputView`     | function  | A text state rendered — header, pointer, and the typed value (or the default shown as a hint).                                             |
++| `reduceInput`         | function  | The text reducer — printable extends, backspace shrinks, ctrl-u clears, return submits (an empty line falling back to the default).        |
+ | `PasswordState`       | interface | One password field's reducer state — the text state with the mask glyph in place of a default (data-only).                                 |
+-| `createPasswordState` | function  | Build the initial state for a `PasswordField` — like the text state, plus the mask glyph each character renders as.                        |
+-| `renderPasswordView`  | function  | Render a password state — the value replaced by the mask repeated, so the real value is never echoed.                                      |
+-| `passwordReduce`      | function  | The password reducer — identical line editing to `inputReduce`, with a masked view and a masked committed line.                            |
++| `createPasswordState` | function  | A `PasswordField`'s initial state — like the text state, plus the mask glyph each character renders as.                                    |
++| `renderPasswordView`  | function  | A password state rendered — the value replaced by the mask repeated, so the real value is never echoed.                                    |
++| `reducePassword`      | function  | The password reducer — identical line editing to `reduceInput`, with a masked view and a masked committed line.                            |
+ | `ConfirmState`        | interface | One confirm field's reducer state — the label, the default answer, the styler, and the theme; no typed value (data-only).                  |
+-| `createConfirmState`  | function  | Build the initial state for a `ConfirmField` — the sanitized label and the declared default answer.                                        |
+-| `renderConfirmView`   | function  | Render a confirm state — the header plus the yes/no group, the DEFAULT letter capitalized and painted by the `selected` role.              |
+-| `confirmReduce`       | function  | The confirm reducer — `y` submits true, `n` submits false, return takes the default, any other key is ignored.                             |
++| `createConfirmState`  | function  | A `ConfirmField`'s initial state — the sanitized label and the declared default answer.                                                    |
++| `renderConfirmView`   | function  | A confirm state rendered — the header plus the yes/no group, the DEFAULT letter capitalized and painted by the `selected` role.            |
++| `reduceConfirm`       | function  | The confirm reducer — `y` submits true, `n` submits false, return takes the default, any other key is ignored.                             |
+ | `SelectState`         | interface | One select field's reducer state — the offered choices and the focused index (data-only).                                                  |
+-| `createSelectState`   | function  | Build the initial state for a `SelectField` — the offered choices with the focus pre-placed on the declared default.                       |
+-| `renderSelectView`    | function  | Render a select state — a MULTI-LINE view, one row per choice, the focused row marked and its help shown.                                  |
+-| `selectReduce`        | function  | The select reducer — up / down (and `k` / `j`) move the focus WRAPPING, return submits the focused choice's `value`.                       |
++| `createSelectState`   | function  | A `SelectField`'s initial state — the offered choices with the focus pre-placed on the declared default.                                   |
++| `renderSelectView`    | function  | A select state rendered — a MULTI-LINE view, one row per choice, the focused row marked and its help shown.                                |
++| `reduceSelect`        | function  | The select reducer — up / down (and `k` / `j`) move the focus WRAPPING, return submits the focused choice's `value`.                       |
+ | `CheckboxState`       | interface | One checkbox field's reducer state — the select state plus the ticked indices in tick order (data-only).                                   |
+-| `createCheckboxState` | function  | Build the initial state for a `CheckboxField` — the choices, with every value in the field's `default` list pre-checked.                   |
+-| `renderCheckboxView`  | function  | Render a checkbox state — one box per choice plus the selected count.                                                                      |
+-| `checkboxReduce`      | function  | The checkbox reducer — space toggles the focused box, return submits the checked values in choice order; the form applies the count rules. |
+-| `toggleIndex`         | function  | Toggle one index in a readonly index list — copy-on-write, the primitive `checkboxReduce` calls.                                           |
++| `createCheckboxState` | function  | A `CheckboxField`'s initial state — the choices, with every value in the field's `default` list pre-checked.                               |
++| `renderCheckboxView`  | function  | A checkbox state rendered — one box per choice plus the selected count.                                                                    |
++| `reduceCheckbox`      | function  | The checkbox reducer — space toggles the focused box, return submits the checked values in choice order; the form applies the count rules. |
++| `toggleIndex`         | function  | One index toggled in a readonly index list — copy-on-write, the primitive `reduceCheckbox` calls.                                          |
+ | `EditorState`         | interface | One editor field's reducer state — the committed lines and the line in progress, kept apart (data-only).                                   |
+-| `createEditorState`   | function  | Build the initial state for an `EditorField` — committed lines empty, the declared default held for an empty finish.                       |
+-| `renderEditorView`    | function  | Render an editor state — the finish hint, the committed lines, and the line in progress.                                                   |
+-| `editorReduce`        | function  | The editor reducer — return commits a line, ctrl-d finishes (joining the lines, falling back to the default when empty).                   |
++| `createEditorState`   | function  | An `EditorField`'s initial state — committed lines empty, the declared default held for an empty finish.                                   |
++| `renderEditorView`    | function  | An editor state rendered — the finish hint, the committed lines, and the line in progress.                                                 |
++| `reduceEditor`        | function  | The editor reducer — return commits a line, ctrl-d finishes (joining the lines, falling back to the default when empty).                   |
+ 
+ ### Untrusted display
+ 
+ A schema that arrived over a wire is data from somebody else. These are the projection that makes it
+ safe to PRINT ([`src/core`](../src/core)).
+ 
+-| API                   | Kind     | Summary                                                                                                                                     |
+-| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `sanitizeDisplayText` | function | Clean one single-line display slot — console's ANSI `strip` and C0 `stripControls`, plus tab, line feed, and carriage return.               |
+-| `sanitizeSchema`      | function | Clean every terminal-readable string in a parsed schema while leaving every identity and answer string verbatim; field metadata is dropped. |
+-| `sanitizeThemeIcons`  | function | Clean every glyph a wire-supplied theme carries. A role needs no pass: its colors and attributes are fixed name sets.                       |
++| API                   | Kind     | Summary                                                                                                                               |
++| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
++| `sanitizeDisplayText` | function | One single-line display slot cleaned — console's ANSI `strip` and C0 `stripControls`, plus tab, line feed, and carriage return.       |
++| `sanitizeSchema`      | function | Every terminal-readable string in a parsed schema cleaned, with every identity and answer string verbatim; field metadata is dropped. |
++| `sanitizeThemeIcons`  | function | Every glyph a wire-supplied theme carries, cleaned. A role needs no pass: its colors and attributes are fixed name sets.              |
+ 
+ ### The headless broker
+ 
+@@ -227,7 +191,7 @@ can answer, and `answer` drives the parked form to settlement ([`src/core`](../s
+ | --------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `PromptInterface`     | interface | The broker — `emitter` / `count` data plus `park` / `pending` / `answer` / `stop` / `destroy`.                                                 |
+ | `Prompt`              | class     | The observable broker — parks live forms, applies remote answers to the authoritative instance, abandons on timeout, release, or teardown.     |
+-| `createPrompt`        | function  | Create the `PromptInterface` broker.                                                                                                           |
++| `createPrompt`        | function  | The `PromptInterface` broker's factory.                                                                                                        |
+ | `PromptOptions`       | interface | `createPrompt` options — `on` / `error` / `timeout` / `timer` / `cap` (data-only).                                                             |
+ | `ParkRequest`         | interface | The parking envelope — `from` / `to`, the attribution edge a `TerminalManagerInterface` stamps; a direct caller passes no request (data-only). |
+ | `PendingForm`         | interface | One form PARKED — `id` / `schema` / `status` / `time` / optional `from` / `to`; the wire-safe record a transport carries (data-only).          |
+@@ -235,10 +199,10 @@ can answer, and `answer` drives the parked form to settlement ([`src/core`](../s
+ | `ParkedForm`          | interface | The broker's per-form record — the authoritative live `form`, its wire `pending` record, and the `cancel` for its expiry deadline (data-only). |
+ | `AnswerError`         | type      | Why `answer` refused — `{ reason: 'unknown' }`, or `{ reason: 'rejected', errors }` carrying the authoritative form's own `FieldError` list.   |
+ | `PromptEventMap`      | type      | The broker's events — `pending(form)` / `answer(id, values)` / `expire(id)`; errors are `unknown`, and there is no listener-error event.       |
+-| `isPendingForm`       | function  | Narrow an unknown wire value to a `PendingForm` — the ENVELOPE only; `parseForm` owns the schema payload.                                      |
+-| `isPendingFormStatus` | const     | Narrow an unknown value to a `PendingFormStatus`.                                                                                              |
++| `isPendingForm`       | function  | An unknown wire value narrowed to a `PendingForm` — the ENVELOPE only; `parseForm` owns the schema payload.                                    |
++| `isPendingFormStatus` | const     | An unknown value narrowed to a `PendingFormStatus`.                                                                                            |
+ | `TimerHandler`        | type      | One injected timer — arms a deadline after `ms` and returns a `TimerCancelFunction`; the broker's expiry seam and the client's backoff seam.   |
+-| `TimerCancelFunction` | type      | Cancel a pending deadline — idempotent, safe after the timer fired.                                                                            |
++| `TimerCancelFunction` | type      | The cancel for a pending deadline — idempotent, safe after the timer fired.                                                                    |
+ | `defaultTimer`        | function  | The default `TimerHandler` — a thin host `setTimeout` / `clearTimeout` wrapper.                                                                |
+ 
+ ### The wire seam
+@@ -246,13 +210,13 @@ can answer, and `answer` drives the parked form to settlement ([`src/core`](../s
+ The `http`-free frame shape a consumer's own HTTP spine mounts the broker over
+ ([`src/core`](../src/core)).
+ 
+-| API                | Kind      | Summary                                                                                                      |
+-| ------------------ | --------- | ------------------------------------------------------------------------------------------------------------ |
+-| `WireEvent`        | interface | One SSE-shaped frame — the `event` name, its already-stringified `data`, and an optional `id` (data-only).   |
+-| `isWireEvent`      | const     | Narrow an unknown value to a `WireEvent` — the guard a consumer's own transport applies to an inbound frame. |
+-| `serializePending` | function  | Build the `pending` frame for a parked form — `id` the form's own id.                                        |
+-| `serializeExpire`  | function  | Build the `expire` frame for a parked form that expired or was released — `data` the JSON `{ id }` payload.  |
+-| `serializeDestroy` | function  | Build the `destroy` frame a broker or manager sends when it is going away — no payload.                      |
++| API                | Kind      | Summary                                                                                                        |
++| ------------------ | --------- | -------------------------------------------------------------------------------------------------------------- |
++| `WireEvent`        | interface | One SSE-shaped frame — the `event` name, its already-stringified `data`, and an optional `id` (data-only).     |
++| `isWireEvent`      | const     | An unknown value narrowed to a `WireEvent` — the guard a consumer's own transport applies to an inbound frame. |
++| `serializePending` | function  | The `pending` frame for a parked form — `id` the form's own id.                                                |
++| `serializeExpire`  | function  | The `expire` frame for a parked form that expired or was released — `data` the JSON `{ id }` payload.          |
++| `serializeDestroy` | function  | The `destroy` frame a broker or manager sends when it is going away — no payload.                              |
+ 
+ ### The SSE bridge
+ 
+@@ -264,7 +228,7 @@ and SSE are web standards.
+ | ----------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+ | `PromptClientInterface` | interface | The bridge — `emitter` / `url` / `connected` data plus `connect` / `disconnect` / `destroy`.                                           |
+ | `PromptClient`          | class     | The observable bridge — ingests without waiting on a render, drives one form at a time, and retries an authoritative refusal.          |
+-| `createPromptClient`    | function  | Create the `PromptClientInterface` bridge.                                                                                             |
++| `createPromptClient`    | function  | The `PromptClientInterface` bridge's factory.                                                                                          |
+ | `PromptClientOptions`   | interface | `createPromptClient` options — `url` / `terminal` required, plus `token` / `reconnect` / `delay` / `on` / `error` / `fetch` / `timer`. |
+ | `PromptClientEventMap`  | type      | The client's events — `connect` / `disconnect` / `expire(id)` / `error(unknown)`.                                                      |
+ | `FetchHandler`          | type      | A minimal `fetch` — the subset the client uses (open the stream, POST an answer); injected so a test drives it with no network.        |
+@@ -282,10 +246,10 @@ A named registry of brokers, so several parties can ask forms of each other BY N
+ | -------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+ | `TerminalManagerInterface` | interface | The registry — `emitter` / `count` data plus `terminal` / `terminals` / `add` / `ask` / `pending` / `answer` / `open` / `save` / `remove` / `destroy`. |
+ | `TerminalManager`          | class     | The observable registry — mints and reuses named brokers, attributes each ask, refuses `TARGET` and `DEADLOCK`, persists config.                       |
+-| `createTerminalManager`    | function  | Create the registry. It returns `TerminalManagerInterface`, implemented exactly by `TerminalManager`.                                                  |
++| `createTerminalManager`    | function  | The registry's factory. It returns `TerminalManagerInterface`, implemented exactly by `TerminalManager`.                                               |
+ | `TerminalManagerOptions`   | interface | `createTerminalManager` options — `store`, the manager-wide `timeout` / `timer` / `cap` default, and `on` / `error` (data-only).                       |
+ | `TerminalManagerEventMap`  | type      | The manager's events — every mounted broker's `pending(form)` / `answer(to, id, values)` / `expire(to, id)`, attributed by name.                       |
+-| `TerminalAnswerError`      | type      | Why a manager `answer` refused — an `AnswerError`, plus `{ reason: 'terminal' }` when no endpoint is mounted under that name.                          |
++| `TerminalAnswerError`      | type      | Why a manager `answer` refused — an `AnswerError`, plus `{ reason: 'target' }` when no endpoint is mounted under that name.                            |
+ 
+ ### The terminal store
+ 
+@@ -297,11 +261,11 @@ form is process-bound and is never resurrected ([`src/core`](../src/core)).
+ | `TerminalStoreInterface`      | interface | The store contract — async `get` / `set` / `delete`, keyed by the snapshot's own `id`.                                |
+ | `TerminalSnapshot`            | interface | One endpoint's persisted config — `id` (the endpoint name) and its optional `timeout` (data-only).                    |
+ | `TerminalSnapshotRow`         | interface | One opaque persisted row — `id` plus `snapshot: unknown`, the shape a `TableInterface`-backed store reads and writes. |
+-| `isTerminalSnapshot`          | const     | Narrow a stored value back to a `TerminalSnapshot` on read — a non-empty `id` and an optional numeric `timeout`.      |
++| `isTerminalSnapshot`          | const     | A stored value narrowed back to a `TerminalSnapshot` on read — a non-empty `id` and an optional numeric `timeout`.    |
+ | `MemoryTerminalStore`         | class     | The in-memory twin — a process-lifetime `Map`; no idle TTL, no eviction.                                              |
+ | `DatabaseTerminalStore`       | class     | The database twin — one opaque JSON column over a `TableInterface`, narrowed with `isTerminalSnapshot` on read.       |
+-| `createMemoryTerminalStore`   | function  | Create the in-memory store.                                                                                           |
+-| `createDatabaseTerminalStore` | function  | Create the database-backed store (default driver: an in-memory `@orkestrel/database` driver).                         |
++| `createMemoryTerminalStore`   | function  | The in-memory store's factory.                                                                                        |
++| `createDatabaseTerminalStore` | function  | The database-backed store's factory (default driver: an in-memory `@orkestrel/database` driver).                      |
+ 
+ ### The terminal error
+ 
+@@ -313,20 +277,20 @@ re-coded ([`src/core`](../src/core)).
+ | ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `TerminalErrorCode` | type     | The machine-readable condition — `EXPIRE` (a park reached a destroyed broker) / `CANCEL` (ctrl-c at the driver) / `DRIVER` (the fallback was given an input it cannot read) / `DEADLOCK` (an ask would close a `from` → `to` cycle) / `TARGET` (an unknown endpoint) / `LIMIT` (the broker's `cap`) / `DESTROYED` (a call reached a destroyed manager). |
+ | `TerminalError`     | class    | The error those conditions throw or reject with — a `code` plus an optional `context` bag.                                                                                                                                                                                                                                                              |
+-| `isTerminalError`   | function | Narrow an unknown caught value to a `TerminalError`, then branch on `error.code`.                                                                                                                                                                                                                                                                       |
++| `isTerminalError`   | function | An unknown caught value narrowed to a `TerminalError`, so a caller can branch on `error.code`.                                                                                                                                                                                                                                                          |
+ 
+ ### The core constants
+ 
+ The decode tables, the default mask, the theme defaults, and the broker and SSE defaults
+ ([`src/core`](../src/core)). UPPER_SNAKE, `Object.freeze`d data; every control byte is built through
+-`String.fromCharCode`, so no raw control character appears in source.
++`String.fromCharCode` or read from console's own `ESC` and `CSI`, so no raw control character
++appears in source.
+ 
+ | API                          | Kind  | Summary                                                                                                                                     |
+ | ---------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `RETURN`                     | const | Carriage return (`\r`, U+000D) — Enter on most terminals.                                                                                   |
+ | `NEWLINE`                    | const | Line feed (`\n`, U+000A) — Enter on some terminals, and in pasted input.                                                                    |
+ | `TAB`                        | const | Tab (U+0009).                                                                                                                               |
+-| `ESCAPE`                     | const | Escape (U+001B) — the lone byte, and the lead byte of every CSI and SS3 sequence. Both modules export it as the same byte.                  |
+ | `BACKSPACE`                  | const | Backspace (U+0008) — Ctrl+H, and Backspace on some terminals.                                                                               |
+ | `DELETE`                     | const | Delete (U+007F) — the usual Backspace byte on a Unix TTY.                                                                                   |
+ | `SPACE`                      | const | Space (U+0020).                                                                                                                             |
+@@ -335,12 +299,11 @@ The decode tables, the default mask, the theme defaults, and the broker and SSE
+ | `CTRL_U`                     | const | Ctrl+U (U+0015) — clear the current line.                                                                                                   |
+ | `CTRL_A`                     | const | Ctrl+A (U+0001) — move to start of line.                                                                                                    |
+ | `CTRL_E`                     | const | Ctrl+E (U+0005) — move to end of line.                                                                                                      |
+-| `KEY_CSI`                    | const | The Control Sequence Introducer lead (`ESC[`) — named so it never collides with console's own `CSI`.                                        |
+-| `KEY_SS3`                    | const | The Single Shift Three lead (`ESCO`) — the alternate arrow-key prefix some terminals emit.                                                  |
++| `KEY_SS3`                    | const | The Single Shift Three lead (`ESCO`) — the alternate arrow-key prefix some terminals emit, built from console's own `ESC`.                  |
+ | `SEQUENCE_NAMES`             | const | The escape-SEQUENCE to key-NAME table `parseKey` consults — both forms of the arrows, plus home / end / delete.                             |
+ | `CONTROL_NAMES`              | const | The control-BYTE (or CRLF pair) to key-descriptor table `parseKey` consults — each entry's canonical `name` and whether it is a ctrl combo. |
+ | `DEFAULT_MASK`               | const | The glyph a password field renders each character as when it declares no `mask` — `*`.                                                      |
+-| `PROMPT_ICONS`               | const | The six terminal-owned glyphs `DEFAULT_PROMPT_THEME` is assembled from, beside console's own success and error marks.                       |
++| `PROMPT_ICONS`               | const | The terminal-owned glyphs `DEFAULT_PROMPT_THEME` is assembled from, beside console's own success and error marks.                           |
+ | `PROMPT_ROLES`               | const | Every `PromptRole` in one frozen list — the role axis's source of truth, walked when a partial theme is merged.                             |
+ | `DEFAULT_PROMPT_THEME`       | const | The theme every field renders with unless options supply another — the default glyphs and a `Style` per role.                               |
+ | `DEFAULT_PROMPT_TIMEOUT_MS`  | const | How long the broker parks an unanswered form before abandoning it — 5 minutes.                                                              |
+@@ -356,63 +319,58 @@ The local-TTY arm and the only impure part of the stack ([`src/server`](../src/s
+ raw-mode stdin, drives the core reducers, renders each view in place, and falls back to
+ `node:readline` when piped. Every form contract is imported from core and none is redeclared here.
+ 
+-| API                     | Kind      | Summary                                                                                                                                 |
+-| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Terminal`              | class     | The interactive driver — walks one form's fields, binds each answer through the form's own `fill`, re-asks what the form refused.       |
+-| `createTerminal`        | function  | Create the `TerminalInterface` driver over the resolved streams — the env-symmetric sibling of `createPrompt` and `createPromptClient`. |
+-| `TerminalOptions`       | interface | `createTerminal` options — `input` / `output` / `theme`, all optional; a bare `createTerminal()` drives the real process streams.       |
+-| `InputStreamInterface`  | interface | The minimal input stream the driver reads — required `on` / `off`, optional `setRawMode` / `resume` / `pause` / `isTTY`.                |
+-| `OutputStreamInterface` | interface | The minimal output stream the driver writes — required `write`, optional `isTTY`.                                                       |
++| API                    | Kind      | Summary                                                                                                                                                                              |
++| ---------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `Terminal`             | class     | The interactive driver — walks one form's fields, binds each answer through the form's own `fill`, re-asks what the form refused.                                                    |
++| `createTerminal`       | function  | The `TerminalInterface` driver's factory over the resolved streams — the env-symmetric sibling of `createPrompt` and `createPromptClient`.                                           |
++| `TerminalOptions`      | interface | `createTerminal` options — `input` / `output` / `theme`, all optional; a bare `createTerminal()` drives the real process streams. `output` is console's own `StreamTargetInterface`. |
++| `InputStreamInterface` | interface | The minimal input stream the driver reads — required `on` / `off`, optional `setRawMode` / `resume` / `pause` / `isTTY`.                                                             |
+ 
+ ### The server helpers
+ 
+ The stream guards, the cursor math behind the in-place re-render, and the per-field line projections
+ the walk renders with ([`src/server`](../src/server)). All pure, all exported, all unit-tested.
+ 
+-| API                     | Kind     | Summary                                                                                                                                      |
+-| ----------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `isInputStream`         | function | Whether a value is a usable `InputStreamInterface` (callable `on` / `off`) — the input boundary guard, total.                                |
+-| `isOutputStream`        | function | Whether a value is a usable `OutputStreamInterface` (callable `write`) — the output boundary guard, total.                                   |
+-| `isReadable`            | function | Whether a value is a Node readable stream (callable `read` / `pipe` / `on`) — narrows the input to the `node:readline` boundary.             |
+-| `supportsRawMode`       | function | Whether an input can be driven in RAW mode (`isTTY === true` AND a callable `setRawMode`) — selects raw mode over the readline fallback.     |
+-| `lineCount`             | function | How many terminal LINES a rendered view occupies — one more than its newline count. The basis of the in-place re-render.                     |
+-| `moveUp`                | function | The cursor-UP sequence (`ESC[{count}A`), or `''` when `count <= 0`.                                                                          |
+-| `redrawPrefix`          | function | The reposition-and-clear prefix written before re-rendering in place — climb, return to column 0, erase to end of screen.                    |
+-| `fieldToText`           | function | Project any field read as one LINE — `text` and the six controls a terminal has no widget for — into the `TextField` the text reducer takes. |
+-| `valueToText`           | function | Project one held answer into read-only text — a scalar as itself, a boolean as `yes` / `no`, a list joined by commas, absence as nothing.    |
+-| `filterEnabled`         | function | The choices a field actually OFFERS — the form refuses a disabled choice at every door, so the walk never puts one in front of the cursor.   |
+-| `filterDisabled`        | function | The choices a field SHOWS but refuses — the complement, so a withheld choice is named rather than silently missing.                          |
+-| `renderGroupHeader`     | function | The section header the walk writes when it enters a new field group.                                                                         |
+-| `renderLockedLine`      | function | The read-only line a LOCKED field renders — its label, the locked mark, and the answer the form already holds.                               |
+-| `renderSuggestionLine`  | function | The line listing an OPEN select's offered values above its text prompt, because an open select admits an answer the list does not offer.     |
+-| `renderUnavailableLine` | function | The line naming the choices a field shows but refuses, written above the list the walk drives.                                               |
+-| `renderNumberedList`    | function | The numbered choice list the non-TTY fallback prints, since a piped stream cannot navigate with arrow keys.                                  |
++| API                     | Kind     | Summary                                                                                                                                     |
++| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
++| `isInputStream`         | function | Whether a value is a usable `InputStreamInterface` (callable `on` / `off`) — the input boundary guard, total.                               |
++| `isReadable`            | function | Whether a value is a Node readable stream (callable `read` / `pipe` / `on`) — narrows the input to the `node:readline` boundary.            |
++| `supportsRawMode`       | function | Whether an input can be driven in RAW mode (`isTTY === true` AND a callable `setRawMode`) — selects raw mode over the readline fallback.    |
++| `lineCount`             | function | How many terminal LINES a rendered view occupies — one more than its newline count. The basis of the in-place re-render.                    |
++| `renderCursorUp`        | function | The cursor-UP sequence (`ESC[{count}A`), or `''` when `count <= 0`.                                                                         |
++| `redrawPrefix`          | function | The reposition-and-clear prefix written before re-rendering in place — climb, return to column 0, erase to end of screen.                   |
++| `fieldToText`           | function | Any field read as one LINE — `text` and the controls a terminal has no widget for — projected into the `TextField` the text reducer takes.  |
++| `valueToText`           | function | One held answer projected into read-only text — a scalar as itself, a boolean as `yes` / `no`, a list joined by commas, absence as nothing. |
++| `filterEnabled`         | function | The choices a field actually OFFERS — the form refuses a disabled choice at every door, so the walk never puts one in front of the cursor.  |
++| `filterDisabled`        | function | The choices a field SHOWS but refuses — the complement, so a withheld choice is named rather than silently missing.                         |
++| `renderGroupHeader`     | function | The section header the walk writes when it enters a new field group.                                                                        |
++| `renderLockedLine`      | function | The read-only line a LOCKED field renders — its label, the locked mark, and the answer the form already holds.                              |
++| `renderSuggestionLine`  | function | The line listing an OPEN select's offered values above its text prompt, because an open select admits an answer the list does not offer.    |
++| `renderUnavailableLine` | function | The line naming the choices a field shows but refuses, written above the list the walk drives.                                              |
++| `renderNumberedList`    | function | The numbered choice list the non-TTY fallback prints, since a piped stream cannot navigate with arrow keys.                                 |
+ 
+ ### The server constants
+ 
+ The cursor and clear sequences the driver writes, and the fixed copy the walk renders
+-([`src/server`](../src/server)). Sequences are built from a named ESC byte, so no raw control
++([`src/server`](../src/server)). Sequences are built from console's own `CSI`, so no raw control
+ character appears in source.
+ 
+-| API                      | Kind  | Summary                                                                                                  |
+-| ------------------------ | ----- | -------------------------------------------------------------------------------------------------------- |
+-| `CSI`                    | const | The Control Sequence Introducer (`ESC[`) — the prefix of every sequence below.                           |
+-| `CSI_UP`                 | const | The cursor-UP TEMPLATE (`ESC[{count}A`) — `moveUp` interpolates `{count}`.                               |
+-| `CURSOR_HIDE`            | const | Hide the cursor — written before a redraw so it does not flicker; paired with `CURSOR_SHOW`.             |
+-| `CURSOR_SHOW`            | const | Show the cursor — restored when a field settles or the walk ends.                                        |
+-| `CLEAR_DOWN`             | const | Erase from the cursor to the end of the screen — wipes a whole multi-line view before the new one.       |
+-| `CARRIAGE_RETURN`        | const | A carriage return — returns the cursor to column 0 so a redraw starts at the line's left edge.           |
+-| `LINE_FEED`              | const | A line feed — the terminator the driver writes after a committed line.                                   |
+-| `CONTROL_HINTS`          | const | The format cue `fieldToText` appends per control — the `(YYYY-MM-DD)` on a date label, and its siblings. |
+-| `FILE_HINT`              | const | The instruction shown above a multiple-file list — one path per line, blank to finish.                   |
+-| `SUGGESTION_LEAD`        | const | The lead word on an open select's suggestion line.                                                       |
+-| `UNAVAILABLE_LEAD`       | const | The lead word on the line naming refused choices.                                                        |
+-| `LOCKED_MARK`            | const | The mark a locked field's read-only line carries.                                                        |
+-| `REFUSAL_MESSAGE`        | const | The invalidation message the driver writes when an answer is one the control cannot hold.                |
+-| `FALLBACK_SELECT_HINT`   | const | The prompt the non-TTY select fallback reads its index on.                                               |
+-| `FALLBACK_CHECKBOX_HINT` | const | The prompt the non-TTY checkbox fallback reads its comma-separated indices on.                           |
+-| `FALLBACK_EDITOR_HINT`   | const | The hint the non-TTY editor shows, since ctrl-d is a raw-mode key and end of input finishes here.        |
+-| `FALLBACK_CONFIRM_HINT`  | const | The hint the non-TTY confirm shows, since it reads a typed line rather than a single key.                |
++| API                      | Kind  | Summary                                                                                                            |
++| ------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------ |
++| `CSI_UP`                 | const | The cursor-UP TEMPLATE (`ESC[{count}A`), built from console's own `CSI` — `renderCursorUp` interpolates `{count}`. |
++| `CURSOR_HIDE`            | const | The cursor-hide sequence — written before a redraw so the cursor does not flicker; paired with `CURSOR_SHOW`.      |
++| `CURSOR_SHOW`            | const | The cursor-show sequence — restored when a field settles or the walk ends.                                         |
++| `CLEAR_DOWN`             | const | The erase-to-end-of-screen sequence — wipes a whole multi-line view before the new one.                            |
++| `CONTROL_HINTS`          | const | The format cue `fieldToText` appends per control — the `(YYYY-MM-DD)` on a date label, and its siblings.           |
++| `FILE_HINT`              | const | The instruction shown above a multiple-file list — one path per line, blank to finish.                             |
++| `SUGGESTION_LEAD`        | const | The lead word on an open select's suggestion line.                                                                 |
++| `UNAVAILABLE_LEAD`       | const | The lead word on the line naming refused choices.                                                                  |
++| `LOCKED_MARK`            | const | The mark a locked field's read-only line carries.                                                                  |
++| `REFUSAL_MESSAGE`        | const | The invalidation message the driver writes when an answer is one the control cannot hold.                          |
++| `FALLBACK_SELECT_HINT`   | const | The prompt the non-TTY select fallback reads its index on.                                                         |
++| `FALLBACK_CHECKBOX_HINT` | const | The prompt the non-TTY checkbox fallback reads its comma-separated indices on.                                     |
++| `FALLBACK_EDITOR_HINT`   | const | The hint the non-TTY editor shows, since ctrl-d is a raw-mode key and end of input finishes here.                  |
++| `FALLBACK_CONFIRM_HINT`  | const | The hint the non-TTY confirm shows, since it reads a typed line rather than a single key.                          |
+ 
+ ## Methods
+ 
+@@ -468,7 +426,7 @@ The multi-endpoint registry.
+ | `add`       | `PromptInterface`                         | Mint, or return the existing unchanged, broker for `name`. Idempotent; it never clobbers a live endpoint.                         |
+ | `ask`       | `Promise<FormValues>`                     | Park `form` from `from` to `to` and resolve with the settled values. Rejects `TARGET` or `DEADLOCK`.                              |
+ | `pending`   | `readonly PendingForm[]`                  | List every endpoint's parked records (`pending()`), or scope to one endpoint (`pending(to)`).                                     |
+-| `answer`    | `Result<FormValues, TerminalAnswerError>` | Route an answer to the named endpoint's broker; `{ reason: 'terminal' }` when no endpoint carries that name.                      |
++| `answer`    | `Result<FormValues, TerminalAnswerError>` | Route an answer to the named endpoint's broker; `{ reason: 'target' }` when no endpoint carries that name.                        |
+ | `open`      | `Promise<PromptInterface \| undefined>`   | Return the live broker for `name`, or restore an EMPTY one from the `store`. Parked forms are never resurrected.                  |
+ | `save`      | `Promise<boolean>`                        | Persist an endpoint's config snapshot; false with no store, or an unknown name.                                                   |
+ | `remove`    | `boolean` / `void`                        | Remove a batch (`remove(names)`, the array overload declared FIRST, true only when all succeed), one endpoint, or every endpoint. |
+@@ -497,23 +455,15 @@ takes the `node:readline` fallback.
+ | `resume`     | `void`  | Start the flow of `'data'` events.                                           |
+ | `pause`      | `void`  | Stop it again on cleanup.                                                    |
+ 
+-#### `OutputStreamInterface`
+-
+-The stream shape the driver writes.
+-
+-| Method  | Returns            | Behavior                                                                                       |
+-| ------- | ------------------ | ---------------------------------------------------------------------------------------------- |
+-| `write` | `boolean` / `void` | Push one chunk — a rendered view, a group header, or a cursor sequence. The return is ignored. |
+-
+ ## Contract
+ 
+ These invariants hold across `src/core`, `src/server`, and this guide.
+ 
+-1. **DOC ↔ SOURCE bijection.** Every row in the `## Surface` tables is a real export of the two
+-   source trees, and every export appears as a row — exhaustive, both directions. Every `## Methods`
++1. **DOC ↔ SOURCE bijection.** Every row in the `## Surface` tables is a real export of the
++   `src/core` and `src/server` trees, and every export appears as a row — exhaustive, both
++   directions. Every `## Methods`
+    table lists exactly its interface's call-signature members, and each implementing class implements
+-   every one of them and adds none beyond. `ESCAPE` is exported by both modules as the same byte; the
+-   parity gate concatenates the trees and dedupes, so one row covers both.
++   every one of them and adds none beyond.
+ 2. **The form is the unit.** `park(form)` takes a LIVE form and returns its id. It wraps no promise,
+    because the caller already holds one: the form's own `answer`. The parked form is AUTHORITATIVE —
+    `answer(id, values)` fills and submits that instance, so every rule it carries decides, including
+@@ -580,7 +530,7 @@ These invariants hold across `src/core`, `src/server`, and this guide.
+    pattern SOURCE's length, never its matching TIME, so a catastrophically backtracking pattern short
+    enough to pass that limit costs the machine that runs it. That machine is the broker, which owns
+    the schema it parked. A broker that parks a schema it did not author owns that decision.
+-9. **The reducers are pure, total, and copy-on-write.** Each `*Reduce` is a total
++9. **The reducers are pure, total, and copy-on-write.** Each `reduce*` is a total
+    `(state, key) → PromptStep` — it never throws, never mutates the state it is given, and always
+    returns a rendered `view` and a `status`. A key it does not consume returns the same state with
+    `status: 'active'`. `value` is present ONLY on a `submit` step, and it is a CANDIDATE: the form
+@@ -589,7 +539,7 @@ These invariants hold across `src/core`, `src/server`, and this guide.
+    carries NO `name` with the raw sequence preserved, so the driver cannot crash on a stray byte.
+    `KeyEvent.name` is therefore optional and absence is `undefined`: an undecoded key has no name
+    rather than an empty one, and every reducer reads it as a key it does not consume.
+-10. **Twelve controls, seven reducers.** `text`, `number`, `date`, `time`, `datetime`, `color`, and
++10. **Every control reaches a reducer.** `text`, `number`, `date`, `time`, `datetime`, `color`, and
+     each `file` entry are read as one line of text through `fieldToText`, which appends that
+     control's format cue to the label; `password`, `confirm`, `editor`, `select`, and `checkbox`
+     each drive their own reducer. An OPEN select is a suggestion list plus a typed line, because
+@@ -635,9 +585,9 @@ rows than that. `redrawPrefix` therefore returns to the start of the wrap's LAST
+ there down, leaving the earlier rows of the previous view on screen above the new one. Keep every
+ label, choice, help string, and hint inside the narrowest terminal you support, or drive the
+ non-TTY fallback, which writes each line fresh and never re-renders in place. A resize mid-walk is
+-the same limit from the other side. Closing it needs a columns fact on the output stream
+-(`OutputStreamInterface` carries `write` and an optional `isTTY`, and nothing else) and
+-cursor-COLUMN tracking in the redraw, which tracks lines only.
++the same limit from the other side. Closing it needs the columns fact console's
++`StreamTargetInterface` already carries, read from the resolved output stream, and cursor-COLUMN
++tracking in the redraw, which tracks lines only.
+ 
+ **Fixed, not seams.** A theme moves glyphs and styled fragments. The rest of a view is fixed by
+ design: the layout (the single spaces between header, pointer, and value; the two-space gap before a
+@@ -823,8 +773,6 @@ sanitizeThemeIcons({ icons: { pointer: '=>\u0007' } }) // every supplied glyph l
+ 
+ ```ts
+ import {
+-	checkboxReduce,
+-	confirmReduce,
+ 	createCheckboxState,
+ 	createConfirmState,
+ 	createEditorState,
+@@ -832,34 +780,36 @@ import {
+ 	createPasswordState,
+ 	createSelectState,
+ 	editLine,
+-	editorReduce,
+-	inputReduce,
+ 	isPrintable,
+ 	parseKey,
+-	passwordReduce,
++	reduceCheckbox,
++	reduceConfirm,
++	reduceEditor,
++	reduceInput,
++	reducePassword,
++	reduceSelect,
+ 	renderCheckboxView,
+ 	renderConfirmView,
+ 	renderEditorView,
+ 	renderInputView,
+ 	renderPasswordView,
+ 	renderSelectView,
+-	selectReduce,
+ 	toggleIndex,
+ } from '@orkestrel/terminal'
+ 
+ // No TTY and no broker: this is what the driver does with each field, one key at a time.
+ let text = createInputState({ control: 'text', name: 'name', label: 'Name' })
+ renderInputView(text) // '? Name › ' — the header, the pointer, and the value so far
+-text = inputReduce(text, parseKey('A')).state
+-inputReduce(text, parseKey('\r')) // { status: 'submit', value: 'A', ... }
++text = reduceInput(text, parseKey('A')).state
++reduceInput(text, parseKey('\r')) // { status: 'submit', value: 'A', ... }
+ 
+ let password = createPasswordState({ control: 'password', name: 'token', label: 'Token' })
+-password = passwordReduce(password, parseKey('s')).state
++password = reducePassword(password, parseKey('s')).state
+ renderPasswordView(password) // the header and one mask glyph; the real value is never echoed
+ 
+ const confirm = createConfirmState({ control: 'confirm', name: 'ok', label: 'Continue?' })
+ renderConfirmView(confirm) // '? Continue? (y/N)'
+-confirmReduce(confirm, parseKey('y')) // { status: 'submit', value: true, ... }
++reduceConfirm(confirm, parseKey('y')) // { status: 'submit', value: true, ... }
+ 
+ let select = createSelectState({
+ 	control: 'select',
+@@ -871,7 +821,7 @@ let select = createSelectState({
+ 		{ value: 'viewer', label: 'Viewer' },
+ 	],
+ })
+-select = selectReduce(select, parseKey('\u001b[B')).state // down, wrapping at the ends
++select = reduceSelect(select, parseKey('\u001b[B')).state // down, wrapping at the ends
+ renderSelectView(select) // a MULTI-LINE view with the focused row marked
+ 
+ let checkbox = createCheckboxState({
+@@ -884,12 +834,12 @@ let checkbox = createCheckboxState({
+ 		{ value: 'write', label: 'Write' },
+ 	],
+ })
+-checkbox = checkboxReduce(checkbox, parseKey(' ')).state // space toggles the focused box
++checkbox = reduceCheckbox(checkbox, parseKey(' ')).state // space toggles the focused box
+ renderCheckboxView(checkbox) // one box per choice, then the selected count
+ toggleIndex(checkbox.checked, 1) // the copy-on-write primitive the reducer calls
+ 
+ let editor = createEditorState({ control: 'editor', name: 'notes', label: 'Notes' })
+-editor = editorReduce(editor, parseKey('h')).state
++editor = reduceEditor(editor, parseKey('h')).state
+ renderEditorView(editor) // the finish hint, the committed lines, and the line in progress
+ 
+ // The shared line editing, and the printable test behind it.
+@@ -1028,11 +978,10 @@ import {
+ 	filterDisabled,
+ 	filterEnabled,
+ 	isInputStream,
+-	isOutputStream,
+ 	isReadable,
+ 	lineCount,
+-	moveUp,
+ 	redrawPrefix,
++	renderCursorUp,
+ 	renderGroupHeader,
+ 	renderLockedLine,
+ 	renderNumberedList,
+@@ -1044,7 +993,7 @@ import {
+ import { createPromptTheme } from '@orkestrel/terminal'
+ import { createStyler } from '@orkestrel/console'
+ 
+-// The two stream shapes are minimal on purpose, so a test drives a whole walk with no real TTY.
++// The stream shapes are minimal on purpose, so a test drives a whole walk with no real TTY.
+ // `listeners` is a real emitter in a real test; the walk subscribes on entry and always pairs the
+ // `off`, so nothing leaks whichever way a field ends.
+ const input = {
+@@ -1060,13 +1009,12 @@ const output = { write: (text: string) => written.push(text), isTTY: true }
+ const terminal = createTerminal({ input, output })
+ 
+ isInputStream(input) // true — callable on/off
+-isOutputStream(output) // true — callable write
+ supportsRawMode(input) // true: a TTY with setRawMode, so the walk runs interactively
+ isReadable(process.stdin) // true — the node:readline boundary the fallback narrows to
+ 
+ // The cursor math behind the in-place re-render.
+ lineCount('one\ntwo\nthree') // 3
+-moveUp(2) // the ESC[2A cursor-up sequence; '' when the count is not positive
++renderCursorUp(2) // the ESC[2A cursor-up sequence; '' when the count is not positive
+ redrawPrefix(3) // climb 2 lines, return to column 0, erase to end of screen
+ 
+ // The per-field projections the walk renders with.
+@@ -1102,9 +1050,10 @@ renderNumberedList(styler, theme, filterEnabled(choices)) // '  1) Admin' — th
+   real client, and a real TTY walk that settles the AUTHORITATIVE form; plus a hostile schema driven
+   end to end with no control byte in the rendered output, proven against a failing control.
+ - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — `parseKey` totality, the
+-  six reducers over every key path, `editLine`, the theme merge and glyph sanitization, schema
+-  sanitization with its hostile negative control, the wire guards and serializers, and the host
+-  seams.
++  reducers over every key path, `editLine`, the theme merge and glyph sanitization, schema
++  sanitization with its hostile negative control, the wire serializers, and the host seams.
++- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — the wire guards:
++  the ticket status, the pending-form envelope, the wire frame, and the store's read boundary.
+ - [`tests/src/core/Prompt.test.ts`](../tests/src/core/Prompt.test.ts) — the broker: parking a live
+   form with its serialized schema, exact authoritative `FieldError`s on refusal, acceptance settling
+   the form, `unknown` for an absent or settled id, expiry and teardown abandoning through the
+@@ -1123,7 +1072,7 @@ renderNumberedList(styler, theme, filterEnabled(choices)) // '  1) Admin' — th
+ - [`tests/src/core/stores/DatabaseTerminalStore.test.ts`](../tests/src/core/stores/DatabaseTerminalStore.test.ts)
+   — the same matrix against the one-table twin, plus the read-boundary guard on an off-shape row.
+ - [`tests/src/server/Terminal.test.ts`](../tests/src/server/Terminal.test.ts) — the walk over a
+-  scripted TTY: all twelve controls settling one form, the blank line binding as absence, a refused
++  scripted TTY: every control settling one form, the blank line binding as absence, a refused
+   value re-asked, an open select accepting a value outside its list, hidden / disabled / locked /
+   group handling, the unanswerable form abandoned, ctrl-c leaving the form editing, and the shared
+   readline fallback; plus the `#report` output-boundary regression — a hostile field NAME carrying
+diff --git a/src/core/TerminalManager.ts b/src/core/TerminalManager.ts
+index 8030da3..f7f8df3 100644
+--- a/src/core/TerminalManager.ts
++++ b/src/core/TerminalManager.ts
+@@ -188,7 +188,7 @@ export class TerminalManager implements TerminalManagerInterface {
+ 
+ 	answer(to: string, id: string, values: FormValues): Result<FormValues, TerminalAnswerError> {
+ 		const broker = this.#terminals.get(to)
+-		if (broker === undefined) return { success: false, error: { reason: 'terminal' } }
++		if (broker === undefined) return { success: false, error: { reason: 'target' } }
+ 		const result = broker.answer(id, values)
+ 		if (result.success) this.#edges.delete(id)
+ 		return result
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 7cd47db..8b934ce 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -1,9 +1,10 @@
+ import type { PromptRole, PromptTheme } from './types.js'
+-import { freezeStyle, STATUS_ICONS } from '@orkestrel/console'
++import { CSI, ESC, freezeStyle, STATUS_ICONS } from '@orkestrel/console'
+ 
+ // The constant DATA the pure terminal core reads: key decoding, rendering, and transport defaults.
+ // UPPER_SNAKE, `Object.freeze`d, every member exported. Control bytes are built with
+-// `String.fromCharCode` so no raw control character appears in source.
++// `String.fromCharCode` so no raw control character appears in source, and the escape lead and the
++// CSI prefix come from `@orkestrel/console`, which publishes both.
+ 
+ // === Control bytes (named, no raw control characters in source)
+ 
+@@ -13,8 +14,6 @@ export const RETURN = String.fromCharCode(13)
+ export const NEWLINE = String.fromCharCode(10)
+ /** Names the tab byte (`\t`, U+0009). */
+ export const TAB = String.fromCharCode(9)
+-/** Names the escape byte (ESC, U+001B) — the lone byte, and the lead byte of every CSI / SS3 sequence. */
+-export const ESCAPE = String.fromCharCode(27)
+ /** Names the backspace byte (BS, U+0008) — Ctrl+H / some terminals' Backspace. */
+ export const BACKSPACE = String.fromCharCode(8)
+ /** Names the delete byte (DEL, U+007F) — the usual Backspace byte on a Unix TTY. */
+@@ -33,19 +32,17 @@ export const CTRL_A = String.fromCharCode(1)
+ export const CTRL_E = String.fromCharCode(5)
+ 
+ /**
+- * Names the Control Sequence Introducer lead (`ESC[`) for the navigation keys — the prefix of the
+- * arrow / home / end / delete sequences {@link SEQUENCE_NAMES} is keyed by. Named `KEY_CSI`
+- * (not `CSI`) so it never collides with the console module's SGR `CSI` (both barrel through
+- * `@src/core`).
++ * Names the Single Shift Three lead (`ESCO`) — the alternate arrow-key prefix some terminals emit
++ * (`ESC O A`). Built from the console module's own {@link import('@orkestrel/console').ESC}; the
++ * navigation keys' CSI lead is that module's {@link import('@orkestrel/console').CSI}, which this
++ * package reuses rather than redeclaring.
+  */
+-export const KEY_CSI = `${ESCAPE}[`
+-/** Names the Single Shift Three lead (`ESCO`) — the alternate arrow-key prefix some terminals emit (`ESC O A`). */
+-export const KEY_SS3 = `${ESCAPE}O`
++export const KEY_SS3 = `${ESC}O`
+ 
+ /**
+  * Holds the exact escape SEQUENCE → canonical key NAME table {@link import('./helpers.js').parseKey}
+  * consults for the navigation / editing keys. Covers BOTH the CSI form (`ESC[A`…) and the SS3
+- * form (`ESCOA`…) of the four arrows, plus the `home` / `end` / `delete` CSI sequences (with
++ * form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete` CSI sequences (with
+  * their numeric-tilde variants). The source of truth for the multi-byte key decode; frozen.
+  *
+  * @remarks
+@@ -55,21 +52,21 @@ export const KEY_SS3 = `${ESCAPE}O`
+  * sees the wire encoding.
+  */
+ export const SEQUENCE_NAMES: Readonly<Record<string, string>> = Object.freeze({
+-	[`${KEY_CSI}A`]: 'up',
+-	[`${KEY_CSI}B`]: 'down',
+-	[`${KEY_CSI}C`]: 'right',
+-	[`${KEY_CSI}D`]: 'left',
++	[`${CSI}A`]: 'up',
++	[`${CSI}B`]: 'down',
++	[`${CSI}C`]: 'right',
++	[`${CSI}D`]: 'left',
+ 	[`${KEY_SS3}A`]: 'up',
+ 	[`${KEY_SS3}B`]: 'down',
+ 	[`${KEY_SS3}C`]: 'right',
+ 	[`${KEY_SS3}D`]: 'left',
+-	[`${KEY_CSI}H`]: 'home',
+-	[`${KEY_CSI}F`]: 'end',
+-	[`${KEY_CSI}1~`]: 'home',
+-	[`${KEY_CSI}4~`]: 'end',
+-	[`${KEY_CSI}3~`]: 'delete',
+-	[`${KEY_CSI}7~`]: 'home',
+-	[`${KEY_CSI}8~`]: 'end',
++	[`${CSI}H`]: 'home',
++	[`${CSI}F`]: 'end',
++	[`${CSI}1~`]: 'home',
++	[`${CSI}4~`]: 'end',
++	[`${CSI}3~`]: 'delete',
++	[`${CSI}7~`]: 'home',
++	[`${CSI}8~`]: 'end',
+ })
+ 
+ /**
+@@ -81,7 +78,7 @@ export const SEQUENCE_NAMES: Readonly<Record<string, string>> = Object.freeze({
+  * @remarks
+  * `return` / `newline` / `return + newline` all map to `return` (one canonical Enter name) — a
+  * terminal or a paste can deliver Enter as `\r`, `\n`, or the `\r\n` pair in one chunk;
+- * `delete` / `backspace` both map to `backspace` (the two Backspace bytes); the Ctrl combos
++ * `delete` / `backspace` both map to `backspace` (the Backspace bytes); the Ctrl combos
+  * (`c` / `d` / `u` / `a` / `e`) carry `ctrl: true` so a reducer can match
+  * `key.ctrl && key.name === 'c'`. `escape` / `tab` / `space` are plain named keys.
+  */
+@@ -92,7 +89,7 @@ export const CONTROL_NAMES: Readonly<
+ 	[NEWLINE]: Object.freeze({ name: 'return', ctrl: false }),
+ 	[`${RETURN}${NEWLINE}`]: Object.freeze({ name: 'return', ctrl: false }),
+ 	[TAB]: Object.freeze({ name: 'tab', ctrl: false }),
+-	[ESCAPE]: Object.freeze({ name: 'escape', ctrl: false }),
++	[ESC]: Object.freeze({ name: 'escape', ctrl: false }),
+ 	[BACKSPACE]: Object.freeze({ name: 'backspace', ctrl: false }),
+ 	[DELETE]: Object.freeze({ name: 'backspace', ctrl: false }),
+ 	[SPACE]: Object.freeze({ name: 'space', ctrl: false }),
+@@ -111,7 +108,7 @@ export const DEFAULT_MASK = '*'
+ // === Prompt-view icons
+ 
+ /**
+- * Holds the six default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
++ * Holds the default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
+  * the default theme is assembled; a view reads its resolved theme and never this constant. Frozen.
+  *
+  * @remarks
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 4d33927..53b55f1 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -22,6 +22,13 @@ export class TerminalError extends Error {
+ 	/** Holds an optional context bag naming the offending values — see the class {@link TerminalError remarks}. */
+ 	readonly context?: Readonly<Record<string, unknown>>
+ 
++	/**
++	 * Builds one terminal refusal.
++	 *
++	 * @param code - The machine-readable {@link TerminalErrorCode} a caller branches on
++	 * @param message - The human-readable reason
++	 * @param context - The optional bag naming the offending values — see the class {@link TerminalError remarks}
++	 */
+ 	constructor(
+ 		code: TerminalErrorCode,
+ 		message: string,
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 44d9004..4935293 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -31,7 +31,7 @@ import { rawShape, stringShape } from '@orkestrel/contract'
+  *
+  * @example
+  * ```ts
+- * import { createPrompt } from '@src/core'
++ * import { createPrompt } from '@orkestrel/terminal'
+  * import { createForm } from '@orkestrel/form'
+  *
+  * const prompt = createPrompt()
+@@ -61,7 +61,7 @@ export function createPrompt(options?: PromptOptions): PromptInterface {
+  *
+  * @example
+  * ```ts
+- * import { createPromptClient } from '@src/core'
++ * import { createPromptClient } from '@orkestrel/terminal'
+  *
+  * const client = createPromptClient({ url: 'http://host/prompts', terminal })
+  * await client.connect()
+@@ -81,7 +81,7 @@ export function createPromptClient(options: PromptClientOptions): PromptClientIn
+  *
+  * @example
+  * ```ts
+- * import { createTerminalManager } from '@src/core'
++ * import { createTerminalManager } from '@orkestrel/terminal'
+  *
+  * const manager = createTerminalManager()
+  * manager.add('agent')
+@@ -99,7 +99,7 @@ export function createTerminalManager(options?: TerminalManagerOptions): Termina
+  *
+  * @example
+  * ```ts
+- * import { createMemoryTerminalStore } from '@src/core'
++ * import { createMemoryTerminalStore } from '@orkestrel/terminal'
+  *
+  * const store = createMemoryTerminalStore()
+  * ```
+@@ -118,7 +118,7 @@ export function createMemoryTerminalStore(): TerminalStoreInterface {
+  *
+  * @example
+  * ```ts
+- * import { createDatabaseTerminalStore } from '@src/core'
++ * import { createDatabaseTerminalStore } from '@orkestrel/terminal'
+  *
+  * const store = createDatabaseTerminalStore() // in-memory by default
+  * ```
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 013e1dc..e0df62d 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -38,8 +38,8 @@ import { isString } from '@orkestrel/contract'
+ import { createStyler, freezeStyle, strip, stripControls } from '@orkestrel/console'
+ 
+ // The PURE prompt core implementation — all EXPORTED, all pure, all unit-tested:
+-// the key decoder, schema sanitization, per-field view renderers, and the six `create*State`
+-// factories + `*Reduce` reducers. No `node:*`, no I/O, no events. Form owns validation and
++// the key decoder, schema sanitization, per-field view renderers, and the `create*State`
++// factories with their `reduce*` reducers. No `node:*`, no I/O, no events. Form owns validation and
+ // settlement; these reducers only turn keys into candidate field values.
+ 
+ // === Key decoding
+@@ -104,7 +104,13 @@ export function parseKey(input: string | Uint8Array): KeyEvent {
+ 	return { sequence, ctrl: false, meta: false, shift: false }
+ }
+ 
+-/** Checks whether a single character is a printable (non-control) character — used by {@link parseKey}'s char fallback. */
++/**
++ * Checks whether a single character is a printable (non-control) character — used by
++ * {@link parseKey}'s char fallback.
++ *
++ * @param character - The single character to test
++ * @returns True if the character is at or above space and is not DEL; false otherwise
++ */
+ export function isPrintable(character: string): boolean {
+ 	if (character.length === 0) return false
+ 	const code = character.codePointAt(0)
+@@ -291,7 +297,15 @@ export function sanitizeThemeIcons(theme: PromptThemeOptions): PromptThemeOption
+ 
+ // === Shared view helpers
+ 
+-/** Renders the styled question header (`? message`) — the leading line every active prompt view shares, themed by the `question` + `message` roles. */
++/**
++ * Renders the styled question header (`? message`) — the leading line every active prompt view
++ * shares, themed by the `question` + `message` roles.
++ *
++ * @param styler - The console styler that renders each role
++ * @param theme - The resolved prompt theme
++ * @param message - The prompt's question text
++ * @returns The rendered question header
++ */
+ export function renderPromptHeader(
+ 	styler: StylerInterface,
+ 	theme: PromptTheme,
+@@ -320,7 +334,15 @@ export function renderHintedHeader(
+ 	return hint === undefined ? head : `${head} ${styler.render(theme.roles.hint, hint)}`
+ }
+ 
+-/** Renders the styled submit line (`✔ message`) — the committed header an interactive prompt shows once resolved, themed by the `success` + `message` roles. */
++/**
++ * Renders the styled submit line (`✔ message`) — the committed header an interactive prompt shows
++ * after it resolves, themed by the `success` + `message` roles.
++ *
++ * @param styler - The console styler that renders each role
++ * @param theme - The resolved prompt theme
++ * @param message - The settled prompt's question text
++ * @returns The rendered committed header
++ */
+ export function renderSubmitHeader(
+ 	styler: StylerInterface,
+ 	theme: PromptTheme,
+@@ -329,7 +351,14 @@ export function renderSubmitHeader(
+ 	return `${styler.render(theme.roles.success, theme.icons.success)} ${styler.render(theme.roles.message, message)}`
+ }
+ 
+-/** Renders the styled failure line (`✖ message`) a form driver appends for a refused field. */
++/**
++ * Renders the styled failure line (`✖ message`) a form driver appends for a refused field.
++ *
++ * @param styler - The console styler that renders each role
++ * @param theme - The resolved prompt theme
++ * @param message - The failure text, normally the field's label and the reason
++ * @returns The rendered failure line
++ */
+ export function renderErrorLine(
+ 	styler: StylerInterface,
+ 	theme: PromptTheme,
+@@ -362,7 +391,12 @@ export function createInputState(
+ 	}
+ }
+ 
+-/** Renders a text-field key state as a styled view. */
++/**
++ * Renders a text-field key state as a styled view.
++ *
++ * @param state - The text field's current reducer state
++ * @returns The rendered single-line view — header, pointer, and the typed value or the default
++ */
+ export function renderInputView(state: InputState): string {
+ 	const content = state.value.length > 0 ? state.value : state.default
+ 	const role = state.value.length > 0 ? state.theme.roles.content : state.theme.roles.hint
+@@ -374,8 +408,12 @@ export function renderInputView(state: InputState): string {
+  * Advances an input prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
+  * reducer. Printable characters extend the value; backspace shrinks it; ctrl-u clears it; ctrl-c
+  * cancels; return produces the candidate value, with an empty line falling back to the default.
++ *
++ * @param state - The text field's current reducer state
++ * @param key - The decoded keypress to apply
++ * @returns The next step — the new state, the rendered view, the status, and the value on submit
+  */
+-export function inputReduce(state: InputState, key: KeyEvent): PromptStep<string, InputState> {
++export function reduceInput(state: InputState, key: KeyEvent): PromptStep<string, InputState> {
+ 	if (key.ctrl && key.name === 'c') return { state, view: renderInputView(state), status: 'cancel' }
+ 
+ 	if (key.name === 'return') {
+@@ -419,7 +457,12 @@ export function createPasswordState(
+ 	}
+ }
+ 
+-/** Renders a password-field key state as a styled view. */
++/**
++ * Renders a password-field key state as a styled view.
++ *
++ * @param state - The password field's current reducer state
++ * @returns The rendered view, with the mask repeated in place of the typed value
++ */
+ export function renderPasswordView(state: PasswordState): string {
+ 	const masked = state.styler.render(
+ 		state.theme.roles.content,
+@@ -430,10 +473,14 @@ export function renderPasswordView(state: PasswordState): string {
+ 
+ /**
+  * Advances a password prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
+- * reducer. Identical line-editing to {@link inputReduce} (printable extends, backspace shrinks,
++ * reducer. Identical line-editing to {@link reduceInput} (printable extends, backspace shrinks,
+  * ctrl-u clears, ctrl-c cancels) but the view masks the value. Return produces the candidate value.
++ *
++ * @param state - The password field's current reducer state
++ * @param key - The decoded keypress to apply
++ * @returns The next step — the new state, the masked view, the status, and the value on submit
+  */
+-export function passwordReduce(
++export function reducePassword(
+ 	state: PasswordState,
+ 	key: KeyEvent,
+ ): PromptStep<string, PasswordState> {
+@@ -480,6 +527,9 @@ export function createConfirmState(
+ 
+ /**
+  * Renders a confirm-field key state as a styled view. The selected role paints the default letter.
++ *
++ * @param state - The confirm field's current reducer state
++ * @returns The rendered view — the header and the yes/no group with the default capitalized
+  */
+ export function renderConfirmView(state: ConfirmState): string {
+ 	const head = renderPromptHeader(state.styler, state.theme, state.message)
+@@ -493,8 +543,12 @@ export function renderConfirmView(state: ConfirmState): string {
+  * Advances a confirm prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<boolean>`
+  * reducer. `y` / `Y` submits `true`, `n` / `N` submits `false`, return on an empty line submits
+  * the `default`, ctrl-c cancels; any other key is ignored (stays active).
++ *
++ * @param state - The confirm field's current reducer state
++ * @param key - The decoded keypress to apply
++ * @returns The next step — the state, the rendered view, the status, and the answer on submit
+  */
+-export function confirmReduce(
++export function reduceConfirm(
+ 	state: ConfirmState,
+ 	key: KeyEvent,
+ ): PromptStep<boolean, ConfirmState> {
+@@ -542,7 +596,12 @@ export function createSelectState(
+ 	}
+ }
+ 
+-/** Renders a select-field key state as a multi-line styled view. */
++/**
++ * Renders a select-field key state as a multi-line styled view.
++ *
++ * @param state - The select field's current reducer state
++ * @returns The rendered view — the header, then one row per choice with the focused row marked
++ */
+ export function renderSelectView(state: SelectState): string {
+ 	const lines = state.choices.map((choice, index) => {
+ 		const active = index === state.focused
+@@ -569,8 +628,12 @@ export function renderSelectView(state: SelectState): string {
+  * reducer. `up` / `down` (and `k` / `j`) move the focus, WRAPPING at the ends; return submits the
+  * focused choice's `value`; ctrl-c cancels. An empty choice list can never submit (a higher layer
+  * guards against it); any other key is ignored.
++ *
++ * @param state - The select field's current reducer state
++ * @param key - The decoded keypress to apply
++ * @returns The next step — the state, the rendered view, the status, and the chosen value on submit
+  */
+-export function selectReduce(state: SelectState, key: KeyEvent): PromptStep<string, SelectState> {
++export function reduceSelect(state: SelectState, key: KeyEvent): PromptStep<string, SelectState> {
+ 	if (key.ctrl && key.name === 'c')
+ 		return { state, view: renderSelectView(state), status: 'cancel' }
+ 
+@@ -628,7 +691,12 @@ export function createCheckboxState(
+ 	}
+ }
+ 
+-/** Renders a checkbox-field key state as a multi-line styled view. */
++/**
++ * Renders a checkbox-field key state as a multi-line styled view.
++ *
++ * @param state - The checkbox field's current reducer state
++ * @returns The rendered view — the header, one box per choice, and the selected count
++ */
+ export function renderCheckboxView(state: CheckboxState): string {
+ 	const lines = state.choices.map((choice, index) => {
+ 		const active = index === state.focused
+@@ -662,8 +730,12 @@ export function renderCheckboxView(state: CheckboxState): string {
+  * `(state, key) → PromptStep<readonly string[]>` reducer. `up` / `down` (and `k` / `j`) move the
+  * focus (wrapping); `space` toggles the focused index in the checked set; return submits the
+  * checked values in choice order; ctrl-c cancels. The form applies selection-count rules.
++ *
++ * @param state - The checkbox field's current reducer state
++ * @param key - The decoded keypress to apply
++ * @returns The next step — the state, the rendered view, the status, and the ticked values on submit
+  */
+-export function checkboxReduce(
++export function reduceCheckbox(
+ 	state: CheckboxState,
+ 	key: KeyEvent,
+ ): PromptStep<readonly string[], CheckboxState> {
+@@ -707,7 +779,14 @@ export function checkboxReduce(
+ 	return { state, view: renderCheckboxView(state), status: 'active' }
+ }
+ 
+-/** Toggles `index` in a readonly index list — copy-on-write, returning the new sorted-by-insertion list. */
++/**
++ * Toggles `index` in a readonly index list — copy-on-write, returning the new sorted-by-insertion
++ * list.
++ *
++ * @param indices - The ticked indices, in tick order
++ * @param index - The index to add when absent, or drop when present
++ * @returns A new list carrying the toggled membership; the input is never mutated
++ */
+ export function toggleIndex(indices: readonly number[], index: number): readonly number[] {
+ 	return indices.includes(index) ? indices.filter((i) => i !== index) : [...indices, index]
+ }
+@@ -740,6 +819,9 @@ export function createEditorState(
+ 
+ /**
+  * Renders an editor-field key state as a multi-line styled view with its finish hint.
++ *
++ * @param state - The editor field's current reducer state
++ * @returns The rendered view — the hinted header, the committed lines, and the line in progress
+  */
+ export function renderEditorView(state: EditorState): string {
+ 	const head = renderHintedHeader(state.styler, state.theme, state.message, '(Ctrl+D to finish)')
+@@ -757,8 +839,12 @@ export function renderEditorView(state: EditorState): string {
+  * reducer. Printable characters extend the current line; backspace shrinks it; return commits the
+  * current line and starts a fresh one; ctrl-d FINISHES (joining all lines, falling back to the
+  * default when empty); ctrl-c cancels. The form validates the candidate after the driver fills it.
++ *
++ * @param state - The editor field's current reducer state
++ * @param key - The decoded keypress to apply
++ * @returns The next step — the state, the rendered view, the status, and the joined text on submit
+  */
+-export function editorReduce(state: EditorState, key: KeyEvent): PromptStep<string, EditorState> {
++export function reduceEditor(state: EditorState, key: KeyEvent): PromptStep<string, EditorState> {
+ 	if (key.ctrl && key.name === 'c')
+ 		return { state, view: renderEditorView(state), status: 'cancel' }
+ 
+@@ -794,8 +880,12 @@ export function editorReduce(state: EditorState, key: KeyEvent): PromptStep<stri
+ /**
+  * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input /
+  * password / editor. A printable key appends its character; `backspace` drops the last character;
+- * `space` appends a space; ctrl-u clears the line. Returns the new buffer, or `undefined` when the
+- * key does not edit the line (so the caller can leave the state untouched).
++ * `space` appends a space; ctrl-u clears the line.
++ *
++ * @param value - The buffer the field holds so far
++ * @param key - The decoded keypress to apply
++ * @returns The new buffer, or `undefined` when the key does not edit the line, so the caller can
++ *   leave the state untouched
+  */
+ export function editLine(value: string, key: KeyEvent): string | undefined {
+ 	if (key.ctrl && key.name === 'u') return ''
+@@ -825,13 +915,24 @@ export function editLine(value: string, key: KeyEvent): string | undefined {
+  * behind both the {@link import('./Prompt.js').Prompt} broker (its expiry) and the
+  * {@link import('./PromptClient.js').PromptClient} (its reconnect backoff); a test injects a
+  * deterministic timer instead, so neither entity touches real time.
++ *
++ * @param callback - The deadline callback to arm
++ * @param ms - How long to wait before firing it, in milliseconds
++ * @returns The {@link TimerCancelFunction} that clears the armed deadline
+  */
+ export function defaultTimer(callback: () => void, ms: number): TimerCancelFunction {
+ 	const handle = setTimeout(callback, ms)
+ 	return () => clearTimeout(handle)
+ }
+ 
+-/** Implements the default {@link import('./types.js').FetchHandler} — the global `fetch`, adapted to the minimal injected shape the {@link import('./PromptClient.js').PromptClient} uses. */
++/**
++ * Implements the default {@link import('./types.js').FetchHandler} — the global `fetch`, adapted to
++ * the minimal injected shape the {@link import('./PromptClient.js').PromptClient} uses.
++ *
++ * @param input - The request URL
++ * @param init - The request init the client sets — method, headers, body, and abort signal
++ * @returns The host `fetch` promise for that request
++ */
+ export function globalFetch(input: string, init?: FetchInit): Promise<Response> {
+ 	return fetch(input, init)
+ }
+@@ -840,6 +941,9 @@ export function globalFetch(input: string, init?: FetchInit): Promise<Response>
+  * Checks whether a caught value is an `AbortError` — the {@link import('./PromptClient.js').PromptClient}
+  * distinguishes a deliberate `disconnect` / teardown (an aborted `fetch`) from a real fault, so it
+  * exits its connect loop quietly instead of emitting `error` / reconnecting.
++ *
++ * @param error - The caught value to test
++ * @returns True if the value is a host `Error` or `DOMException` named `AbortError`; false otherwise
+  */
+ export function isAbortError(error: unknown): boolean {
+ 	return (error instanceof DOMException || error instanceof Error) && error.name === 'AbortError'
+@@ -879,17 +983,31 @@ export function isInsecureRemote(url: string): boolean {
+ 
+ // === Terminal manager wire seams (transport-neutral, no http dependency)
+ 
+-/** Serializes a parked {@link PendingForm} into a {@link WireEvent}. */
++/**
++ * Serializes a parked {@link PendingForm} into a {@link WireEvent}.
++ *
++ * @param form - The parked form's wire-safe record
++ * @returns The `pending` frame — the JSON-stringified record as `data`, and the form's own `id`
++ */
+ export function serializePending(form: PendingForm): WireEvent {
+ 	return { event: 'pending', data: JSON.stringify(form), id: form.id }
+ }
+ 
+-/** Serializes a parked prompt's expiry or release into a {@link WireEvent} — event `'expire'`, `data` the JSON-stringified `{ id }` payload. */
++/**
++ * Serializes a parked prompt's expiry or release into a {@link WireEvent}.
++ *
++ * @param id - The id of the parked form that expired or was released
++ * @returns The `expire` frame, carrying the JSON-stringified `{ id }` payload as `data`
++ */
+ export function serializeExpire(id: string): WireEvent {
+ 	return { event: 'expire', data: JSON.stringify({ id }) }
+ }
+ 
+-/** Serializes the {@link WireEvent} a broker or manager sends when it is going away — event `'destroy'`, no payload. */
++/**
++ * Serializes the {@link WireEvent} a broker or manager sends when it is going away.
++ *
++ * @returns The `destroy` frame, whose `data` is empty because the signal carries no payload
++ */
+ export function serializeDestroy(): WireEvent {
+ 	return { event: 'destroy', data: '' }
+ }
+diff --git a/src/core/stores/DatabaseTerminalStore.ts b/src/core/stores/DatabaseTerminalStore.ts
+index 7b99d88..daeaf64 100644
+--- a/src/core/stores/DatabaseTerminalStore.ts
++++ b/src/core/stores/DatabaseTerminalStore.ts
+@@ -36,7 +36,8 @@ import { isTerminalSnapshot } from '../validators.js'
+  *
+  * @example
+  * ```ts
+- * import { createDatabaseTerminalStore, createMemoryDriver } from '@src/core'
++ * import { createDatabaseTerminalStore } from '@orkestrel/terminal'
++ * import { createMemoryDriver } from '@orkestrel/database'
+  *
+  * const store = createDatabaseTerminalStore(createMemoryDriver()) // a durable driver swaps in here
+  * await store.set({ id: 'shell', timeout: 5000 })        // persist the config (one JSON column)
+@@ -57,7 +58,13 @@ export class DatabaseTerminalStore implements TerminalStoreInterface {
+ 		this.#table = table
+ 	}
+ 
+-	/** Resolves the persisted snapshot for `id`, narrowing the opaque JSON column back to a `TerminalSnapshot`. */
++	/**
++	 * Resolves the persisted snapshot for `id`, narrowing the opaque JSON column back to a
++	 * `TerminalSnapshot`.
++	 *
++	 * @param id - The endpoint name the row is keyed by
++	 * @returns The stored snapshot, or `undefined` when none is held or the column is off-shape
++	 */
+ 	async get(id: string): Promise<TerminalSnapshot | undefined> {
+ 		const row = await this.#table.get(id)
+ 		if (row === undefined) return undefined
+@@ -67,12 +74,23 @@ export class DatabaseTerminalStore implements TerminalStoreInterface {
+ 		return isTerminalSnapshot(row.snapshot) ? row.snapshot : undefined
+ 	}
+ 
+-	/** Inserts or replaces under the snapshot's OWN `id` (no separate id param) — the row is `{ id, snapshot }`. */
++	/**
++	 * Inserts or replaces under the snapshot's OWN `id` (no separate id param) — the row is
++	 * `{ id, snapshot }`.
++	 *
++	 * @param snapshot - The config snapshot to persist, carrying its own `id`
++	 * @returns A promise that settles once the row is written
++	 */
+ 	async set(snapshot: TerminalSnapshot): Promise<void> {
+ 		await this.#table.set({ id: snapshot.id, snapshot })
+ 	}
+ 
+-	/** Drops a snapshot by id; an absent id is a no-op (no throw). */
++	/**
++	 * Drops a snapshot by id; an absent id is a no-op (no throw).
++	 *
++	 * @param id - The endpoint name to drop
++	 * @returns A promise that settles once the row is gone
++	 */
+ 	async delete(id: string): Promise<void> {
+ 		await this.#table.remove(id)
+ 	}
+diff --git a/src/core/stores/MemoryTerminalStore.ts b/src/core/stores/MemoryTerminalStore.ts
+index 8ce00a3..7fcb8ea 100644
+--- a/src/core/stores/MemoryTerminalStore.ts
++++ b/src/core/stores/MemoryTerminalStore.ts
+@@ -24,7 +24,7 @@ import type { TerminalSnapshot, TerminalStoreInterface } from '../types.js'
+  *
+  * @example
+  * ```ts
+- * import { createMemoryTerminalStore } from '@src/core'
++ * import { createMemoryTerminalStore } from '@orkestrel/terminal'
+  *
+  * const store = createMemoryTerminalStore()
+  * await store.set({ id: 'shell', timeout: 5000 })   // persist a config
+@@ -35,18 +35,34 @@ import type { TerminalSnapshot, TerminalStoreInterface } from '../types.js'
+ export class MemoryTerminalStore implements TerminalStoreInterface {
+ 	readonly #snapshots = new Map<string, TerminalSnapshot>()
+ 
++	/**
++	 * Resolves the persisted snapshot for `id`.
++	 *
++	 * @param id - The endpoint name the snapshot is keyed by
++	 * @returns The stored snapshot, or `undefined` when none is held
++	 */
+ 	get(id: string): Promise<TerminalSnapshot | undefined> {
+ 		return Promise.resolve(this.#snapshots.get(id))
+ 	}
+ 
++	/**
++	 * Inserts or replaces under the snapshot's OWN `id` (no separate id param).
++	 *
++	 * @param snapshot - The config snapshot to persist, carrying its own `id`
++	 * @returns A promise that settles once the snapshot is held
++	 */
+ 	set(snapshot: TerminalSnapshot): Promise<void> {
+-		// Insert / replace under the snapshot's OWN id (no separate id param).
+ 		this.#snapshots.set(snapshot.id, snapshot)
+ 		return Promise.resolve()
+ 	}
+ 
++	/**
++	 * Drops a snapshot by id; an absent id is a no-op (no throw).
++	 *
++	 * @param id - The endpoint name to drop
++	 * @returns A promise that settles once the snapshot is gone
++	 */
+ 	delete(id: string): Promise<void> {
+-		// Drop by id; `Map.delete` of an absent id is already a no-op (no throw).
+ 		this.#snapshots.delete(id)
+ 		return Promise.resolve()
+ 	}
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 29e29f5..a455d41 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -4,7 +4,7 @@ import type { FieldChoice, FieldError, FormInterface, FormValues } from '@orkest
+ import type { Style, StylerInterface } from '@orkestrel/console'
+ 
+ // The PURE, UNIVERSAL terminal core. `@orkestrel/form` owns every form concept — the schema, the
+-// twelve controls, the rules, the values, and the settle-once `answer` promise — and this package
++// controls, the rules, the values, and the settle-once `answer` promise — and this package
+ // declares none of them a second time. What terminal owns is everything form has no opinion about:
+ // a key decoder, a presentation theme, the headless broker that PARKS a live form until somebody
+ // elsewhere answers it, the SSE bridge that carries one parked form to a machine with a keyboard,
+@@ -130,7 +130,7 @@ export interface PromptThemeOptions {
+  * Represents the immutable state a text field's reducer carries — built by
+  * {@link import('./helpers.js').createInputState}, rendered by
+  * {@link import('./helpers.js').renderInputView}, and advanced by
+- * {@link import('./helpers.js').inputReduce}.
++ * {@link import('./helpers.js').reduceInput}.
+  *
+  * @remarks
+  * - `message` — the sanitized label the header renders.
+@@ -635,10 +635,11 @@ export interface TerminalManagerOptions {
+ 
+ /**
+  * Explains why a {@link TerminalManagerInterface.answer} call refused — an {@link AnswerError} from the
+- * endpoint's own broker, or `terminal` when no endpoint is mounted under that name. One
+- * discriminant, `reason`, across both.
++ * endpoint's own broker, or `target` when no endpoint is mounted under that name. That is the same
++ * condition {@link TerminalErrorCode}'s `TARGET` names for {@link TerminalManagerInterface.ask}, so
++ * one word carries it on both doors. One discriminant, `reason`, across every member.
+  */
+-export type TerminalAnswerError = AnswerError | { readonly reason: 'terminal' }
++export type TerminalAnswerError = AnswerError | { readonly reason: 'target' }
+ 
+ /**
+  * Declares a registry of named {@link PromptInterface} brokers, one per endpoint, so several
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index c14b073..79c9080 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -9,7 +9,12 @@ import {
+ 	recordOf,
+ } from '@orkestrel/contract'
+ 
+-/** Narrows an unknown value to a {@link PendingFormStatus}. */
++/**
++ * Narrows an unknown value to a {@link PendingFormStatus}.
++ *
++ * @param value - The candidate ticket status
++ * @returns True if the value is one of the declared ticket statuses; false otherwise
++ */
+ export const isPendingFormStatus: Guard<PendingFormStatus> = literalOf(
+ 	'pending',
+ 	'answered',
+@@ -51,7 +56,13 @@ export const isWireEvent: Guard<WireEvent> = recordOf(
+ 	['id'],
+ )
+ 
+-/** Narrows an unknown value to a {@link TerminalSnapshot}. */
++/**
++ * Narrows an unknown value to a {@link TerminalSnapshot} — the read boundary a store applies to an
++ * untrusted persisted row.
++ *
++ * @param value - The candidate snapshot read back from storage
++ * @returns True if the value carries a non-empty `id` and an optional numeric `timeout`; false otherwise
++ */
+ export const isTerminalSnapshot: Guard<TerminalSnapshot> = recordOf(
+ 	{ id: isNonEmptyString, timeout: isNumber },
+ 	['timeout'],
+diff --git a/src/server/Terminal.ts b/src/server/Terminal.ts
+index fe52aeb..c0d8890 100644
+--- a/src/server/Terminal.ts
++++ b/src/server/Terminal.ts
+@@ -16,11 +16,10 @@ import type {
+ } from '@orkestrel/form'
+ import type { KeyEvent, PromptStep, PromptTheme, TerminalInterface } from '@src/core'
+ import type { StylerInterface } from '@orkestrel/console'
++import type { StreamTargetInterface } from '@orkestrel/console/server'
+ import type { Interface } from 'node:readline'
+-import type { InputStreamInterface, OutputStreamInterface, TerminalOptions } from './types.js'
++import type { InputStreamInterface, TerminalOptions } from './types.js'
+ import {
+-	checkboxReduce,
+-	confirmReduce,
+ 	createCheckboxState,
+ 	createConfirmState,
+ 	createEditorState,
+@@ -28,19 +27,23 @@ import {
+ 	createPasswordState,
+ 	createPromptTheme,
+ 	createSelectState,
+-	editorReduce,
+-	inputReduce,
++	NEWLINE,
+ 	parseKey,
+-	passwordReduce,
++	reduceCheckbox,
++	reduceConfirm,
++	reduceEditor,
++	reduceInput,
++	reducePassword,
++	reduceSelect,
+ 	renderErrorLine,
+ 	renderHintedHeader,
+ 	renderPromptHeader,
+ 	sanitizeDisplayText,
+-	selectReduce,
+ 	TerminalError,
+ } from '@src/core'
+ import { matchesAnswer, parseValue } from '@orkestrel/form'
+ import { createStyler } from '@orkestrel/console'
++import { isStreamTarget } from '@orkestrel/console/server'
+ import { createInterface } from 'node:readline'
+ import { stdin, stdout } from 'node:process'
+ import {
+@@ -51,7 +54,6 @@ import {
+ 	FALLBACK_EDITOR_HINT,
+ 	FALLBACK_SELECT_HINT,
+ 	FILE_HINT,
+-	LINE_FEED,
+ 	REFUSAL_MESSAGE,
+ } from './constants.js'
+ import {
+@@ -59,7 +61,6 @@ import {
+ 	filterDisabled,
+ 	filterEnabled,
+ 	isInputStream,
+-	isOutputStream,
+ 	isReadable,
+ 	lineCount,
+ 	redrawPrefix,
+@@ -83,7 +84,7 @@ import {
+  * @remarks
+  * See {@link TerminalInterface} for the driving contract. The walk itself:
+  *
+- * - **Twelve controls, seven reducers.** `text`, `number`, `date`, `time`, `datetime`, `color`, and
++ * - **Controls and reducers.** `text`, `number`, `date`, `time`, `datetime`, `color`, and
+  *   each `file` entry are read as one line of text through {@link fieldToText}, which appends that
+  *   control's format cue to the label. `password`, `confirm`, `editor`, `select`, and `checkbox`
+  *   each drive their own reducer. An open `select` is a suggestion list plus a typed line, because
+@@ -107,7 +108,7 @@ import {
+  */
+ export class Terminal implements TerminalInterface {
+ 	readonly #input: InputStreamInterface
+-	readonly #output: OutputStreamInterface
++	readonly #output: StreamTargetInterface
+ 	readonly #styler: StylerInterface
+ 	readonly #theme: PromptTheme
+ 	readonly #handlers = new Map<object, (chunk: string | Uint8Array) => void>()
+@@ -120,7 +121,7 @@ export class Terminal implements TerminalInterface {
+ 		// Resolve each stream through its guard: a present, well-shaped injected stream is used as is;
+ 		// otherwise the real process stream — no assertion, and an absent option falls through.
+ 		this.#input = isInputStream(options?.input) ? options.input : stdin
+-		this.#output = isOutputStream(options?.output) ? options.output : stdout
++		this.#output = isStreamTarget(options?.output) ? options.output : stdout
+ 		this.#styler = createStyler()
+ 		this.#theme = createPromptTheme(options?.theme)
+ 	}
+@@ -182,7 +183,7 @@ export class Terminal implements TerminalInterface {
+ 	#writeGroup(form: FormInterface, name: string): void {
+ 		const label = form.schema.groups?.find((group) => group.name === name)?.label ?? name
+ 		this.#output.write(
+-			`${LINE_FEED}${renderGroupHeader(this.#styler, this.#theme, sanitizeDisplayText(label))}${LINE_FEED}`,
++			`${NEWLINE}${renderGroupHeader(this.#styler, this.#theme, sanitizeDisplayText(label))}${NEWLINE}`,
+ 		)
+ 	}
+ 
+@@ -194,7 +195,7 @@ export class Terminal implements TerminalInterface {
+ 			sanitizeDisplayText(field.label ?? field.name),
+ 			sanitizeDisplayText(valueToText(form.values[field.name])),
+ 		)
+-		this.#output.write(`${line}${LINE_FEED}`)
++		this.#output.write(`${line}${NEWLINE}`)
+ 	}
+ 
+ 	/** Reads one field through the reducer its control names, resolving the raw answer the binding projects. */
+@@ -242,23 +243,23 @@ export class Terminal implements TerminalInterface {
+ 			const label = sanitizeDisplayText(form.field(error.field)?.label ?? error.field)
+ 			const message = sanitizeDisplayText(error.message)
+ 			const line = renderErrorLine(this.#styler, this.#theme, `${label}: ${message}`)
+-			this.#output.write(`${line}${LINE_FEED}`)
++			this.#output.write(`${line}${NEWLINE}`)
+ 		}
+ 	}
+ 
+ 	// === The controls
+ 
+-	/** Reads a field as one line of text — `text` itself and the six controls a terminal has no widget for. */
++	/** Reads a field as one line of text — `text` itself and the controls a terminal has no widget for. */
+ 	#askText(form: FormInterface, field: FormField): Promise<string> {
+ 		const state = createInputState(fieldToText(field), this.#styler, this.#theme)
+-		if (supportsRawMode(this.#input)) return this.#drive(form, state, inputReduce)
++		if (supportsRawMode(this.#input)) return this.#drive(form, state, reduceInput)
+ 		return this.#line(form, state.message, state.default)
+ 	}
+ 
+ 	/** Reads a secret — masked live in raw mode, and read without echo through readline on a stream that cannot enter it. */
+ 	#askPassword(form: FormInterface, field: PasswordField): Promise<string> {
+ 		const state = createPasswordState(field, this.#styler, this.#theme)
+-		if (supportsRawMode(this.#input)) return this.#drive(form, state, passwordReduce)
++		if (supportsRawMode(this.#input)) return this.#drive(form, state, reducePassword)
+ 		return this.#prompt(form, renderPromptHeader(this.#styler, this.#theme, state.message))
+ 	}
+ 
+@@ -269,7 +270,7 @@ export class Terminal implements TerminalInterface {
+ 	 */
+ 	async #confirm(form: FormInterface, field: ConfirmField): Promise<FieldValue> {
+ 		const state = createConfirmState(field, this.#styler, this.#theme)
+-		if (supportsRawMode(this.#input)) return this.#drive(form, state, confirmReduce)
++		if (supportsRawMode(this.#input)) return this.#drive(form, state, reduceConfirm)
+ 		const header = renderHintedHeader(
+ 			this.#styler,
+ 			this.#theme,
+@@ -287,7 +288,7 @@ export class Terminal implements TerminalInterface {
+ 	/** Reads text over many lines — ctrl-d finishes in raw mode, and end of input finishes on a piped stream. */
+ 	#askEditor(form: FormInterface, field: EditorField): Promise<string> {
+ 		const state = createEditorState(field, this.#styler, this.#theme)
+-		if (supportsRawMode(this.#input)) return this.#drive(form, state, editorReduce)
++		if (supportsRawMode(this.#input)) return this.#drive(form, state, reduceEditor)
+ 		return this.#block(form, state.message, state.default)
+ 	}
+ 
+@@ -306,15 +307,13 @@ export class Terminal implements TerminalInterface {
+ 					...choice,
+ 					value: sanitizeDisplayText(choice.value),
+ 				}))
+-				this.#output.write(
+-					`${renderSuggestionLine(this.#styler, this.#theme, display)}${LINE_FEED}`,
+-				)
++				this.#output.write(`${renderSuggestionLine(this.#styler, this.#theme, display)}${NEWLINE}`)
+ 			}
+ 			return this.#askText(form, field)
+ 		}
+ 		if (choices.length === 0) return undefined
+ 		const state = createSelectState({ ...field, choices }, this.#styler, this.#theme)
+-		if (supportsRawMode(this.#input)) return this.#drive(form, state, selectReduce)
++		if (supportsRawMode(this.#input)) return this.#drive(form, state, reduceSelect)
+ 		this.#writeList(state.message, choices)
+ 		const line = await this.#prompt(form, this.#formatHint(`${FALLBACK_SELECT_HINT}:`))
+ 		return choices[Number.parseInt(line.trim(), 10) - 1]?.value
+@@ -329,7 +328,7 @@ export class Terminal implements TerminalInterface {
+ 		const choices = filterEnabled(field.choices)
+ 		this.#writeUnavailable(field.choices)
+ 		const state = createCheckboxState({ ...field, choices }, this.#styler, this.#theme)
+-		if (supportsRawMode(this.#input)) return this.#drive(form, state, checkboxReduce)
++		if (supportsRawMode(this.#input)) return this.#drive(form, state, reduceCheckbox)
+ 		this.#writeList(state.message, choices)
+ 		const line = await this.#prompt(form, this.#formatHint(`${FALLBACK_CHECKBOX_HINT}:`))
+ 		return line
+@@ -344,7 +343,7 @@ export class Terminal implements TerminalInterface {
+ 	 * than an empty list, because the reader answered a blank line.
+ 	 */
+ 	async #file(form: FormInterface, field: FileField): Promise<FieldValue | undefined> {
+-		if (field.multiple === true) this.#output.write(`${this.#formatHint(FILE_HINT)}${LINE_FEED}`)
++		if (field.multiple === true) this.#output.write(`${this.#formatHint(FILE_HINT)}${NEWLINE}`)
+ 		const paths: string[] = []
+ 		for (;;) {
+ 			const entry = await this.#askText(form, field)
+@@ -359,14 +358,14 @@ export class Terminal implements TerminalInterface {
+ 	#writeUnavailable(choices: readonly FieldChoice[]): void {
+ 		const refused = filterDisabled(choices)
+ 		if (refused.length === 0) return
+-		this.#output.write(`${renderUnavailableLine(this.#styler, this.#theme, refused)}${LINE_FEED}`)
++		this.#output.write(`${renderUnavailableLine(this.#styler, this.#theme, refused)}${NEWLINE}`)
+ 	}
+ 
+ 	/** Writes a field's header above its numbered choice list — the non-TTY presentation of a choice field. */
+ 	#writeList(message: string, choices: readonly FieldChoice[]): void {
+ 		const header = renderPromptHeader(this.#styler, this.#theme, message)
+ 		const list = renderNumberedList(this.#styler, this.#theme, choices)
+-		this.#output.write(`${header}${LINE_FEED}${list}${LINE_FEED}`)
++		this.#output.write(`${header}${NEWLINE}${list}${NEWLINE}`)
+ 	}
+ 
+ 	/** Paints one line of supplementary instruction through the `hint` role. */
+@@ -421,7 +420,7 @@ export class Terminal implements TerminalInterface {
+ 				this.#output.write(firstView)
+ 			} catch (error) {
+ 				// Raw mode was never entered yet, but the cursor was hidden — restore it before rejecting.
+-				this.#output.write(`${CURSOR_SHOW}${LINE_FEED}`)
++				this.#output.write(`${CURSOR_SHOW}${NEWLINE}`)
+ 				reject(error)
+ 				return
+ 			}
+@@ -463,7 +462,7 @@ export class Terminal implements TerminalInterface {
+ 				// Terminal step (submit / cancel): paint the final committed view, then tear down.
+ 				this.#render(step.view, lines)
+ 				this.#leaveRaw(token)
+-				this.#output.write(`${CURSOR_SHOW}${LINE_FEED}`)
++				this.#output.write(`${CURSOR_SHOW}${NEWLINE}`)
+ 				if (step.status === 'cancel') reject(new TerminalError('CANCEL', 'Prompt cancelled'))
+ 				else if (step.status === 'submit' && step.value !== undefined) resolve(step.value)
+ 				else reject(new TerminalError('DRIVER', 'submit produced no value'))
+@@ -471,7 +470,7 @@ export class Terminal implements TerminalInterface {
+ 				// A throw inside the reducer/styler: tear down raw mode + the listener, restore the cursor
+ 				// exactly as the normal exit path does, then reject.
+ 				this.#leaveRaw(token)
+-				this.#output.write(`${CURSOR_SHOW}${LINE_FEED}`)
++				this.#output.write(`${CURSOR_SHOW}${NEWLINE}`)
+ 				reject(error)
+ 			}
+ 		}
+@@ -481,7 +480,7 @@ export class Terminal implements TerminalInterface {
+ 	#interrupt(token: object, reject: (reason?: unknown) => void, error: unknown): void {
+ 		if (!this.#handlers.has(token)) return
+ 		this.#leaveRaw(token)
+-		this.#output.write(`${CURSOR_SHOW}${LINE_FEED}`)
++		this.#output.write(`${CURSOR_SHOW}${NEWLINE}`)
+ 		reject(error)
+ 	}
+ 
+@@ -505,7 +504,7 @@ export class Terminal implements TerminalInterface {
+ 	 */
+ 	async #block(form: FormInterface, message: string, seed: string): Promise<string> {
+ 		const header = renderHintedHeader(this.#styler, this.#theme, message, FALLBACK_EDITOR_HINT)
+-		this.#output.write(`${header}${LINE_FEED}`)
++		this.#output.write(`${header}${NEWLINE}`)
+ 		const collected: string[] = []
+ 		for (;;) {
+ 			const line = await this.#next(form)
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 6d86fb4..f5a826f 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -1,20 +1,15 @@
+ // Server-terminals constants — the cursor and line-clear ANSI sequences the interactive `Terminal`
+ // driver writes to redraw a field view IN PLACE, plus the copy the walk shows around those views:
+ // the per-control format hints, the readline-fallback prompts, and the marks for a locked field and
+-// an unavailable choice. UPPER_SNAKE, every member exported. Sequences are built from a named ESC
+-// byte through `String.fromCharCode` so no raw control character appears in source (the core
+-// terminals / console-module idiom).
++// an unavailable choice. UPPER_SNAKE, every member exported. Every sequence is built from the
++// console module's own `CSI` prefix, so no raw control character appears in source and this module
++// declares no second copy of that primitive.
+ 
+ import type { FieldControl } from '@orkestrel/form'
+-
+-/** Names the Escape byte (ESC, U+001B) — the lead byte of every CSI cursor-control sequence below. */
+-export const ESCAPE = String.fromCharCode(27)
+-
+-/** Names the Control Sequence Introducer (`ESC[`) — the prefix of every cursor / erase sequence. */
+-export const CSI = `${ESCAPE}[`
++import { CSI } from '@orkestrel/console'
+ 
+ /**
+- * Holds the cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').moveUp}
++ * Holds the cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').renderCursorUp}
+  * interpolates the `{count}` placeholder with the number of lines to climb. Kept as a template so
+  * the count stays out of the constant.
+  */
+@@ -36,12 +31,6 @@ export const CURSOR_SHOW = `${CSI}?25h`
+  */
+ export const CLEAR_DOWN = `${CSI}J`
+ 
+-/** Names the carriage return byte (`\r`, U+000D) — returns the cursor to column 0 so a redraw starts at the line's left edge. */
+-export const CARRIAGE_RETURN = String.fromCharCode(13)
+-
+-/** Names the line feed byte (`\n`, U+000A) — the line terminator the driver writes after the final committed prompt view. */
+-export const LINE_FEED = String.fromCharCode(10)
+-
+ /**
+  * Holds the numbered-list prompt the non-TTY {@link import('./Terminal.js').Terminal} `select` fallback
+  * appends — a piped (non-terminal) stream cannot navigate with arrow keys, so the choices are
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 996c7fc..199339e 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -16,7 +16,7 @@ import { Terminal } from './Terminal.js'
+  * @remarks
+  * - **The form is the unit.** `ask` takes the caller's live form and returns its settled values. The
+  *   returned promise is that form's own `answer`, so a caller holding the form can await either one.
+- * - **Every control renders.** Seven controls are read as a line of text with their format cue,
++ * - **Every control renders.** The line-read controls are read as a line of text with their format cue,
+  *   `password` masks, `confirm` takes a key, `editor` takes a block, `select` and `checkbox` drive a
+  *   list, and an open `select` accepts a value its list does not offer.
+  * - **The form decides.** A blank answer binds as absence, the form evaluates, and a refusal
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index a073849..ba3c38d 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -1,18 +1,19 @@
+ // Pure helpers for the server terminal driver — every function here is exported and unit-tested.
+-// Three families, all total: the stream-boundary guards that narrow `process.stdin` /
+-// `process.stdout` / any injected stream without an assertion; the cursor math the driver uses to
+-// redraw a field view IN PLACE (count a view's lines, build the cursor-up sequence, assemble the
+-// reposition-and-clear prefix); and the projections and line renderers the whole-form walk needs
+-// that no reducer owns — a control read as text, a value shown read-only, the choices a field
+-// actually offers, and the group, locked, suggestion, unavailable, and numbered-list lines. The
+-// impure driver only feeds bytes into the reducers and writes the strings these helpers build.
++// The families here are all total: the stream-boundary guards that narrow `process.stdin` / any
++// injected stream without an assertion; the cursor math the driver uses to redraw a field view IN
++// PLACE (count a view's lines, build the cursor-up sequence, assemble the reposition-and-clear
++// prefix); and the projections and line renderers the whole-form walk needs that no reducer owns —
++// a control read as text, a value shown read-only, the choices a field actually offers, and the
++// group, locked, suggestion, unavailable, and numbered-list lines. The impure driver only feeds
++// bytes into the reducers and writes the strings these helpers build. The output boundary is
++// narrowed by the console module's own `isStreamTarget`, which this module does not redeclare.
+ 
+ import type { FieldChoice, FieldValue, FormField, TextField } from '@orkestrel/form'
+ import type { PromptTheme } from '@src/core'
+ import type { StylerInterface } from '@orkestrel/console'
+-import type { InputStreamInterface, OutputStreamInterface } from './types.js'
++import type { InputStreamInterface } from './types.js'
++import { RETURN } from '@src/core'
+ import {
+-	CARRIAGE_RETURN,
+ 	CLEAR_DOWN,
+ 	CONTROL_HINTS,
+ 	CSI_UP,
+@@ -47,24 +48,6 @@ export function isInputStream(value: unknown): value is InputStreamInterface {
+ 	)
+ }
+ 
+-/**
+- * Checks whether `value` is a usable {@link OutputStreamInterface} — a record with a callable `write`. A
+- * total type guard: it NEVER throws and returns `false` for anything off-shape, so it
+- * narrows the output boundary (the real `process.stdout`, or a recording fake a test injects) to the
+- * one method the driver writes through — no `as`.
+- *
+- * @param value - Any value crossing the boundary (a process stream, an injected fake, `unknown`)
+- * @returns True if `value` has a callable `write`; false otherwise
+- */
+-export function isOutputStream(value: unknown): value is OutputStreamInterface {
+-	return (
+-		typeof value === 'object' &&
+-		value !== null &&
+-		'write' in value &&
+-		typeof value.write === 'function'
+-	)
+-}
+-
+ /**
+  * Checks whether `value` is a Node {@link NodeJS.ReadableStream} — a total structural guard
+  * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface` requires
+@@ -127,7 +110,7 @@ export function lineCount(view: string): number {
+  * @param count - How many lines to move the cursor up
+  * @returns The `ESC[{count}A` sequence, or `''` when `count <= 0`
+  */
+-export function moveUp(count: number): string {
++export function renderCursorUp(count: number): string {
+ 	if (count <= 0) return ''
+ 	return `${CSI_UP.replace('{count}', String(count))}`
+ }
+@@ -150,16 +133,16 @@ export function moveUp(count: number): string {
+  * @returns The control-sequence prefix to write before the new view
+  */
+ export function redrawPrefix(previousLines: number): string {
+-	return `${moveUp(previousLines - 1)}${CARRIAGE_RETURN}${CLEAR_DOWN}`
++	return `${renderCursorUp(previousLines - 1)}${RETURN}${CLEAR_DOWN}`
+ }
+ 
+ /**
+  * Projects any field the walk reads as a LINE OF TEXT into the {@link TextField} the text reducer
+- * takes — `text` itself, and the six controls a terminal has no widget for: `number`, `date`,
++ * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`,
+  * `time`, `datetime`, `color`, and one `file` entry. The label carries that control's format cue
+  * from {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+  * projection carries no rule, because the AUTHORITATIVE form still evaluates the answer this line
+- * binds; it exists only so one reducer can render seven controls.
++ * binds; it exists only so one reducer covers every one of them.
+  *
+  * @param field - The field being read
+  * @returns The text field the reducer renders for it
+@@ -223,7 +206,15 @@ export function filterDisabled(choices: readonly FieldChoice[]): readonly FieldC
+ 	return choices.filter((choice) => choice.disabled === true)
+ }
+ 
+-/** Renders the section header the walk writes when it enters a new field group, painted by the `message` role. */
++/**
++ * Renders the section header the walk writes when it enters a new field group, painted by the
++ * `message` role.
++ *
++ * @param styler - The console styler that renders each role
++ * @param theme - The resolved prompt theme
++ * @param label - The group's declared label, falling back to its own name
++ * @returns The rendered section header
++ */
+ export function renderGroupHeader(
+ 	styler: StylerInterface,
+ 	theme: PromptTheme,
+@@ -253,7 +244,15 @@ export function renderLockedLine(
+ 	return value.length === 0 ? head : `${head} ${styler.render(theme.roles.content, value)}`
+ }
+ 
+-/** Renders the line listing an OPEN select's offered values above its text prompt — a suggestion list, because an open select admits an answer the list does not offer. */
++/**
++ * Renders the line listing an OPEN select's offered values above its text prompt — a suggestion
++ * list, because an open select admits an answer the list does not offer.
++ *
++ * @param styler - The console styler that renders each role
++ * @param theme - The resolved prompt theme
++ * @param choices - The choices the open select offers, from {@link filterEnabled}
++ * @returns The rendered suggestion line
++ */
+ export function renderSuggestionLine(
+ 	styler: StylerInterface,
+ 	theme: PromptTheme,
+@@ -263,7 +262,15 @@ export function renderSuggestionLine(
+ 	return styler.render(theme.roles.hint, `${SUGGESTION_LEAD}: ${values}`)
+ }
+ 
+-/** Renders the line naming the choices a field shows but refuses, written above the list the walk drives. */
++/**
++ * Renders the line naming the choices a field shows but refuses, written above the list the walk
++ * drives.
++ *
++ * @param styler - The console styler that renders each role
++ * @param theme - The resolved prompt theme
++ * @param choices - The refused choices, from {@link filterDisabled}
++ * @returns The rendered unavailable line
++ */
+ export function renderUnavailableLine(
+ 	styler: StylerInterface,
+ 	theme: PromptTheme,
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 269484e..9e02c8d 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -1,11 +1,13 @@
+ // Server-local types for the interactive `Terminal` driver — the ONLY impure part of the terminal
+-// stack. `@orkestrel/form` owns the form, its twelve controls, and its rules; `@src/core` owns the
++// stack. `@orkestrel/form` owns the form, its controls, and its rules; `@src/core` owns the
+ // `TerminalInterface` contract the driver implements, the `parseKey` decoder, the `create*State`
+-// factories, the `*Reduce` reducers, the theme, and `TerminalError`. None of those is redeclared
+-// here. What is genuinely server-only is the pair of injectable stream shapes (so a test drives the
+-// walk with a fake TTY) and the driver's own options.
++// factories, the `reduce*` reducers, the theme, and `TerminalError`. None of those is redeclared
++// here. What is genuinely server-only is the injectable input-stream shape (so a test drives the
++// walk with a fake TTY) and the driver's own options; the output shape is the console module's own
++// `StreamTargetInterface`, which this module reuses rather than redeclaring.
+ 
+ import type { PromptThemeOptions } from '@src/core'
++import type { StreamTargetInterface } from '@orkestrel/console/server'
+ 
+ /**
+  * Represents the minimal input-stream shape the driver reads — exactly the slice of a Node `tty.ReadStream` /
+@@ -17,7 +19,7 @@ import type { PromptThemeOptions } from '@src/core'
+  * @remarks
+  * - `on(event, listener)` / `off(event, listener)` — subscribe / unsubscribe a `'data'` chunk
+  *   listener (the irreducible event seam; a `Buffer`, string, or `Uint8Array` chunk arrives). The
+- *   two required methods.
++ *   required methods.
+  * - `setRawMode(mode)` — switch the TTY in and out of raw mode (each keypress delivered
+  *   immediately, no line buffering, no echo). Present on a real `tty.ReadStream`; ABSENT on a
+  *   piped, non-TTY stream, and its absence (or `isTTY !== true`) selects the
+@@ -35,24 +37,6 @@ export interface InputStreamInterface {
+ 	readonly isTTY?: boolean
+ }
+ 
+-/**
+- * Represents the minimal output-stream shape the driver writes — exactly the slice of a Node `tty.WriteStream`
+- * / `process.stdout` it touches. A {@link TerminalOptions} `output` is narrowed to this through
+- * {@link import('./helpers.js').isOutputStream}, never an assertion, so a test records every byte
+- * the walk renders and asserts the rendered content with the ANSI stripped.
+- *
+- * @remarks
+- * - `write(text)` — the one required method: push a chunk (a rendered field view, a group header, a
+- *   cursor or clear sequence) to the stream. A real stream returns a backpressure boolean; the
+- *   driver ignores the return, because a prompt is human-paced, so a fake may return `void`.
+- * - `isTTY` — present and `true` on a real terminal. The driver does not branch its rendering on
+- *   it; the styler already decided color.
+- */
+-export interface OutputStreamInterface {
+-	write(text: string): boolean | void
+-	readonly isTTY?: boolean
+-}
+-
+ /**
+  * Configures {@link import('./factories.js').createTerminal} — every member optional, so a bare
+  * `createTerminal()` walks a form over the real `process.stdin` / `process.stdout` with the default
+@@ -64,8 +48,10 @@ export interface OutputStreamInterface {
+  *   {@link import('./helpers.js').isInputStream}, so a test injects a fake TTY that emits scripted
+  *   `'data'` chunks. A stream that is not a TTY falls back to `node:readline` line input.
+  * - `output` — the stream each view is rendered to; defaults to `process.stdout`. Any
+- *   {@link OutputStreamInterface}-shaped stream is accepted, resolved through
+- *   {@link import('./helpers.js').isOutputStream}, so a test records the rendered output.
++ *   {@link import('@orkestrel/console/server').StreamTargetInterface}-shaped stream is accepted,
++ *   resolved through {@link import('@orkestrel/console/server').isStreamTarget}, so a test records
++ *   the rendered output. That is the console module's own boundary shape, so one target drives a
++ *   console sink and this driver alike.
+  * - `theme` — the glyphs and role styles every rendered line is painted with, merged over
+  *   {@link import('@src/core').DEFAULT_PROMPT_THEME} leaf by leaf by
+  *   {@link import('@src/core').createPromptTheme}. Supplying one icon or one role leaves every
+@@ -73,6 +59,6 @@ export interface OutputStreamInterface {
+  */
+ export interface TerminalOptions {
+ 	readonly input?: InputStreamInterface
+-	readonly output?: OutputStreamInterface
++	readonly output?: StreamTargetInterface
+ 	readonly theme?: PromptThemeOptions
+ }
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 47ae781..6afbfdb 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,8 +1,82 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The five constants below are this
+-// package's own, and are the only part a sibling package changes.
++// this repo's own `guides/README.md` manifest. The constants that follow are this
++// package's own, and are the only part a sibling package changes. The `guide fences`
++// block at the end transcribes every fence line of `guides/terminal.md` that carries a
++// value comment and asserts the value that line claims, which name resolution alone
++// cannot prove. A line whose comment claims no value — a TTY walk, an emission, a
++// teardown, a resolved default — carries no case here.
+ 
++import type { FieldChoice } from '@orkestrel/form'
+ import { describe, expect, it } from 'vitest'
++import {
++	createCheckboxState,
++	createConfirmState,
++	createDatabaseTerminalStore,
++	createEditorState,
++	createInputState,
++	createMemoryTerminalStore,
++	createPasswordState,
++	createPrompt,
++	createPromptTheme,
++	createSelectState,
++	createTerminalManager,
++	DEFAULT_PROMPT_THEME,
++	editLine,
++	isAbortError,
++	isInsecureRemote,
++	isPendingForm,
++	isPendingFormStatus,
++	isPrintable,
++	isTerminalError,
++	isTerminalSnapshot,
++	isWireEvent,
++	parseKey,
++	reduceCheckbox,
++	reduceConfirm,
++	reduceEditor,
++	reduceInput,
++	reducePassword,
++	reduceSelect,
++	renderCheckboxView,
++	renderConfirmView,
++	renderEditorView,
++	renderErrorLine,
++	renderHintedHeader,
++	renderInputView,
++	renderPasswordView,
++	renderPromptHeader,
++	renderSelectView,
++	renderSubmitHeader,
++	RETURN,
++	sanitizeDisplayText,
++	sanitizeSchema,
++	sanitizeThemeIcons,
++	serializeDestroy,
++	serializeExpire,
++	serializePending,
++	toggleIndex,
++} from '@src/core'
++import {
++	CLEAR_DOWN,
++	fieldToText,
++	filterDisabled,
++	filterEnabled,
++	isInputStream,
++	isReadable,
++	lineCount,
++	redrawPrefix,
++	renderCursorUp,
++	renderGroupHeader,
++	renderLockedLine,
++	renderNumberedList,
++	renderSuggestionLine,
++	renderUnavailableLine,
++	supportsRawMode,
++	valueToText,
++} from '@src/server'
++import { createForm } from '@orkestrel/form'
++import { CSI, createStyler, ESC, strip } from '@orkestrel/console'
++import { stdin } from 'node:process'
+ import {
+ 	computeSymbolKey,
+ 	createGuide,
+@@ -21,12 +95,8 @@ import { readFileSync } from 'node:fs'
+ import { requireValue, resolveRoot } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
+ 
+-/**
+- * Every fence language this package's guides are allowed to use. `text` quotes a tool's
+- * verbatim output — the `scaffold audit` refusal the vendored form pin produces — which is
+- * evidence rather than an example, so it stays out of {@link EXAMPLE_LANGUAGE}.
+- */
+-const FENCE_LANGUAGES = Object.freeze(['text', 'ts'])
++/** Every fence language this package's guides are allowed to use. */
++const FENCE_LANGUAGES = Object.freeze(['ts'])
+ /** The fence language whose blocks count as worked examples. */
+ const EXAMPLE_LANGUAGE = 'ts'
+ /** Each import specifier this package's own guides may resolve against. */
+@@ -48,6 +118,11 @@ const INTERNAL: readonly string[] = Object.freeze([])
+ /** Root-level files this package's guides link to. `readInventory` walks directories only. */
+ const ROOT_FILES = Object.freeze(['AGENTS.md'])
+ 
++/** The NUL byte a hostile wire string smuggles into an identity slot, built without a raw control character. */
++const NUL = String.fromCharCode(0)
++/** The BEL byte a hostile wire theme smuggles into a glyph, built without a raw control character. */
++const BEL = String.fromCharCode(7)
++
+ const root = resolveRoot(import.meta)
+ const files: Record<string, string> = {
+ 	...readInventory(root, ['src', 'guides', 'tests'], { extensions: ['.ts', '.md'] }),
+@@ -176,3 +251,376 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// Name resolution is not a behavioural proof, so each case here drives part of one flagship fence of
++// `guides/terminal.md` through the real exports and asserts the value its comments claim. Change a
++// fence, change the transcription beside it.
++describe('guide fences', () => {
++	it('parks and answers one form exactly as the broker fence claims', async () => {
++		const prompt = createPrompt()
++		const form = createForm({
++			fields: [
++				{
++					control: 'text',
++					name: 'name',
++					rule: { required: true, custom: (value) => value !== 'root' || 'root is reserved' },
++				},
++			],
++		})
++		const id = prompt.park(form)
++
++		// The whole outcome is compared, so the fence's `result.error.errors` claim — the
++		// authoritative form's own FieldError list, from a rule that never crossed the wire — is
++		// asserted rather than skipped.
++		expect(prompt.answer(id, { name: 'root' })).toEqual({
++			success: false,
++			error: { reason: 'rejected', errors: [{ field: 'name', message: 'root is reserved' }] },
++		})
++		// The refused form stays parked, which is what the fence's retry loop rests on.
++		expect(prompt.pending(id)?.id).toBe(id)
++
++		expect(prompt.answer(id, { name: 'Ada' })).toEqual({ success: true, value: { name: 'Ada' } })
++		expect(await form.answer).toEqual({ name: 'Ada' })
++		expect(prompt.pending(id)).toBeUndefined()
++		prompt.destroy()
++	})
++
++	it('lists every parked record the broker fence claims', () => {
++		const prompt = createPrompt()
++		const first = prompt.park(createForm({ fields: [{ control: 'text', name: 'name' }] }))
++		const second = prompt.park(createForm({ fields: [{ control: 'text', name: 'role' }] }))
++		expect(prompt.pending().map((record) => record.id)).toEqual([first, second])
++		prompt.destroy()
++	})
++
++	it('flags the endpoints and abort errors the bridge fence claims', () => {
++		expect(isInsecureRemote('http://host/forms')).toBe(true)
++		expect(isInsecureRemote('http://localhost:3000/forms')).toBe(false)
++		expect(isAbortError(new DOMException('aborted', 'AbortError'))).toBe(true)
++	})
++
++	it('builds the wire frames the HTTP-spine fence claims', () => {
++		const prompt = createPrompt()
++		const form = createForm({ fields: [{ control: 'text', name: 'name' }] })
++		const id = prompt.park(form)
++		const parked = requireValue(prompt.pending(id), 'Missing parked record')
++
++		expect(serializePending(parked)).toEqual({
++			event: 'pending',
++			data: JSON.stringify(parked),
++			id: parked.id,
++		})
++		expect(serializeExpire(id)).toEqual({ event: 'expire', data: `{"id":"${id}"}` })
++		expect(serializeDestroy()).toEqual({ event: 'destroy', data: '' })
++		prompt.destroy()
++	})
++
++	it('narrows the wire values the relay fence claims', () => {
++		const prompt = createPrompt()
++		const form = createForm({ fields: [{ control: 'text', name: 'name' }] })
++		const id = prompt.park(form)
++		const frame = serializePending(requireValue(prompt.pending(id), 'Missing parked record'))
++
++		expect(isWireEvent(frame)).toBe(true)
++		const payload: unknown = JSON.parse(frame.data)
++		expect(isPendingForm(payload)).toBe(true)
++		expect(isPendingFormStatus('pending')).toBe(true)
++		expect(isPendingForm({ id: '7', schema: 'nope', status: 'pending', time: 0 })).toBe(false)
++		expect(isTerminalSnapshot({ id: 'agent', timeout: 30_000 })).toBe(true)
++		prompt.destroy()
++	})
++
++	it('sanitizes exactly what the untrusted-schema fence claims', () => {
++		expect(sanitizeDisplayText('Q\rOVERWRITE\nNEXT\tX')).toBe('QOVERWRITENEXTX')
++
++		const clean = sanitizeSchema({
++			fields: [
++				{
++					control: 'select',
++					name: `ro${NUL}le`,
++					label: `${ESC}[31mRole`,
++					default: `ad${NUL}min`,
++					choices: [{ value: `ad${NUL}min`, label: `Ad${NUL}min` }],
++					meta: { anything: true },
++				},
++			],
++		})
++		// The identity and the answer survive byte for byte; the label and the choice label are
++		// cleaned; the metadata is dropped. The whole schema is compared, so no claim is skipped.
++		expect(clean).toEqual({
++			fields: [
++				{
++					control: 'select',
++					name: `ro${NUL}le`,
++					label: 'Role',
++					default: `ad${NUL}min`,
++					choices: [{ value: `ad${NUL}min`, label: 'Admin' }],
++				},
++			],
++		})
++
++		expect(sanitizeThemeIcons({ icons: { pointer: `=>${BEL}` } })).toEqual({
++			icons: { pointer: '=>' },
++		})
++	})
++
++	it('returns the reducer values the direct-drive fence claims', () => {
++		let text = createInputState({ control: 'text', name: 'name', label: 'Name' })
++		expect(strip(renderInputView(text))).toBe('? Name › ')
++		text = reduceInput(text, parseKey('A')).state
++		expect(reduceInput(text, parseKey(RETURN))).toMatchObject({ status: 'submit', value: 'A' })
++
++		const confirm = createConfirmState({ control: 'confirm', name: 'ok', label: 'Continue?' })
++		expect(strip(renderConfirmView(confirm))).toBe('? Continue? (y/N)')
++		expect(reduceConfirm(confirm, parseKey('y'))).toMatchObject({ status: 'submit', value: true })
++
++		expect(editLine('hi', parseKey('!'))).toBe('hi!')
++		expect(editLine('hi', parseKey(`${CSI}A`))).toBeUndefined()
++		expect(isPrintable('a')).toBe(true)
++	})
++
++	it('masks the typed value the direct-drive fence claims a password view hides', () => {
++		let password = createPasswordState({ control: 'password', name: 'token', label: 'Token' })
++		password = reducePassword(password, parseKey('s')).state
++		const view = renderPasswordView(password)
++		expect(strip(view)).toBe('? Token › *')
++		// The typed character reaches the submitted value without ever reaching the view.
++		expect(view).not.toContain('s')
++		expect(reducePassword(password, parseKey(RETURN))).toMatchObject({
++			status: 'submit',
++			value: 's',
++		})
++	})
++
++	it('moves and wraps the select focus the direct-drive fence claims', () => {
++		let select = createSelectState({
++			control: 'select',
++			name: 'role',
++			label: 'Role',
++			default: 'admin',
++			choices: [
++				{ value: 'admin', label: 'Admin' },
++				{ value: 'viewer', label: 'Viewer' },
++			],
++		})
++		select = reduceSelect(select, parseKey(`${CSI}B`)).state
++		expect(strip(renderSelectView(select))).toBe('? Role\n  ○ Admin\n› ● Viewer')
++		// Down again from the last row returns to the first, which is the fence's wrapping claim.
++		select = reduceSelect(select, parseKey(`${CSI}B`)).state
++		expect(strip(renderSelectView(select))).toBe('? Role\n› ● Admin\n  ○ Viewer')
++	})
++
++	it('toggles the focused box the direct-drive fence claims', () => {
++		let checkbox = createCheckboxState({
++			control: 'checkbox',
++			name: 'scopes',
++			label: 'Scopes',
++			default: ['read'],
++			choices: [
++				{ value: 'read', label: 'Read' },
++				{ value: 'write', label: 'Write' },
++			],
++		})
++		// The fence's `default: ['read']` ticks the first box, so the space that follows is
++		// observably a toggle rather than a set.
++		expect(strip(renderCheckboxView(checkbox))).toBe('? Scopes\n› ☑ Read\n  ☐ Write\n1 selected')
++		const seeded = checkbox.checked
++		checkbox = reduceCheckbox(checkbox, parseKey(' ')).state
++		expect(strip(renderCheckboxView(checkbox))).toBe('? Scopes\n› ☐ Read\n  ☐ Write\n0 selected')
++		expect(toggleIndex(checkbox.checked, 1)).toEqual([1])
++		// Copy-on-write: the list the reducer read is the list it left behind.
++		expect(seeded).toEqual([0])
++	})
++
++	it('commits and renders the editor lines the direct-drive fence claims', () => {
++		let editor = createEditorState({ control: 'editor', name: 'notes', label: 'Notes' })
++		editor = reduceEditor(editor, parseKey('h')).state
++		expect(strip(renderEditorView(editor))).toBe('? Notes (Ctrl+D to finish)\n› h')
++		// Return commits the line in progress, so the view then carries a committed line too.
++		editor = reduceEditor(editor, parseKey(RETURN)).state
++		editor = reduceEditor(editor, parseKey('i')).state
++		expect(strip(renderEditorView(editor))).toBe('? Notes (Ctrl+D to finish)\nh\n› i')
++	})
++
++	it('renders the themed line shapes the re-theme fence claims', () => {
++		const theme = createPromptTheme({
++			icons: { pointer: '=>', selected: '*' },
++			roles: {
++				message: { foreground: 'magenta', attributes: ['bold'] },
++				hint: { attributes: ['italic'] },
++			},
++		})
++		expect(theme.icons.question).toBe('?')
++		expect(DEFAULT_PROMPT_THEME.roles.content).toEqual({ attributes: [] })
++
++		const styler = createStyler()
++		expect(strip(renderPromptHeader(styler, theme, 'Role'))).toBe('? Role')
++		expect(strip(renderHintedHeader(styler, theme, 'Role', 'arrows move'))).toBe(
++			'? Role arrows move',
++		)
++		expect(strip(renderSubmitHeader(styler, theme, 'Role'))).toBe('✔ Role')
++		expect(strip(renderErrorLine(styler, theme, 'Role: This field is required'))).toBe(
++			'✖ Role: This field is required',
++		)
++
++		// The state factory's own partial theme reaches the view it builds: the supplied pointer
++		// replaces its slot, and every slot the fence leaves unnamed keeps its default glyph.
++		expect(
++			strip(
++				renderSelectView(
++					createSelectState(
++						{ control: 'select', name: 'role', choices: [{ value: 'admin', label: 'Admin' }] },
++						styler,
++						{ icons: { pointer: '=>' } },
++					),
++				),
++			),
++		).toBe('? role\n=> ● Admin')
++	})
++
++	it('round-trips the snapshot the store fence claims', async () => {
++		const memory = createMemoryTerminalStore()
++		await memory.set({ id: 'agent', timeout: 30_000 })
++		expect(await memory.get('agent')).toEqual({ id: 'agent', timeout: 30_000 })
++		await memory.delete('agent')
++		expect(await memory.get('agent')).toBeUndefined()
++		// An absent id is a no-op rather than a throw.
++		await expect(memory.delete('absent')).resolves.toBeUndefined()
++	})
++
++	it('round-trips the snapshot through the default driver the database-store fence claims', async () => {
++		const database = createDatabaseTerminalStore()
++		await database.set({ id: 'agent', timeout: 30_000 })
++		expect(await database.get('agent')).toEqual({ id: 'agent', timeout: 30_000 })
++
++		// The fence hands that store to a manager, which reads the row back through `open`.
++		const manager = createTerminalManager({ store: database })
++		const restored = await manager.open('agent')
++		expect(restored).toBeDefined()
++		expect(restored?.pending()).toEqual([])
++		manager.destroy()
++	})
++
++	it('routes, refuses, and answers exactly as the manager fence claims', async () => {
++		const manager = createTerminalManager()
++		const agent = manager.add('agent')
++		const user = manager.add('user')
++		// `add` is idempotent: a second call returns the mounted broker rather than clobbering it.
++		expect(manager.add('agent')).toBe(agent)
++		expect(manager.terminals()).toEqual([agent, user])
++		expect(manager.terminal('agent')).toBe(agent)
++		expect(manager.terminal('nobody')).toBeUndefined()
++
++		const form = createForm({ fields: [{ control: 'text', name: 'name' }] })
++		const answers = manager.ask('user', 'agent', form)
++		const parked = requireValue(manager.pending('agent')[0], 'Missing parked record')
++		expect(parked).toMatchObject({ from: 'user', to: 'agent' })
++
++		// While that edge is live the reverse ask would close a cycle, so it refuses without parking.
++		const deadlock: unknown = await manager
++			.ask('agent', 'user', createForm({ fields: [{ control: 'text', name: 'x' }] }))
++			.catch((error: unknown) => error)
++		expect(isTerminalError(deadlock)).toBe(true)
++		expect(deadlock).toMatchObject({ code: 'DEADLOCK' })
++		expect(manager.pending('user')).toEqual([])
++
++		const target: unknown = await manager
++			.ask('user', 'nobody', createForm({ fields: [{ control: 'text', name: 'x' }] }))
++			.catch((error: unknown) => error)
++		expect(isTerminalError(target)).toBe(true)
++		expect(target).toMatchObject({ code: 'TARGET' })
++
++		expect(manager.answer('agent', parked.id, { name: 'Ada' })).toEqual({
++			success: true,
++			value: { name: 'Ada' },
++		})
++		expect(await answers).toEqual({ name: 'Ada' })
++
++		// With no store the manager persists nothing, and `open` hands back the live broker.
++		expect(await manager.save('agent')).toBe(false)
++		expect(await manager.open('agent')).toBe(agent)
++
++		const bounded = manager.add('bounded', { cap: 100 })
++		for (let index = 0; index < 100; index += 1) {
++			bounded.park(createForm({ fields: [{ control: 'text', name: 'name' }] }))
++		}
++		let refusal: unknown
++		try {
++			bounded.park(createForm({ fields: [{ control: 'text', name: 'name' }] }))
++		} catch (error: unknown) {
++			refusal = error
++		}
++		expect(isTerminalError(refusal)).toBe(true)
++		expect(refusal).toMatchObject({ code: 'LIMIT' })
++
++		// The array overload succeeds only when every name was mounted.
++		expect(manager.remove(['agent'])).toBe(true)
++		expect(manager.remove(['nobody'])).toBe(false)
++		manager.remove()
++		expect(manager.terminals()).toEqual([])
++		// The manager stays usable after a full removal, and destroying it drops every broker.
++		expect(manager.add('again')).toBeDefined()
++		manager.destroy()
++		expect(manager.terminals()).toEqual([])
++	})
++
++	it('persists and restores the endpoint config the manager fence claims a store adds', async () => {
++		const store = createMemoryTerminalStore()
++		const manager = createTerminalManager({ store })
++		manager.add('agent', { timeout: 30_000 })
++		expect(await manager.save('agent')).toBe(true)
++		expect(await store.get('agent')).toEqual({ id: 'agent', timeout: 30_000 })
++
++		manager.remove('agent')
++		// The restored broker is empty: a parked promise is process-bound and never resurrected.
++		const restored = await manager.open('agent')
++		expect(restored).toBeDefined()
++		expect(restored?.pending()).toEqual([])
++		manager.destroy()
++	})
++
++	it('returns the server-helper values the injected-streams fence claims', () => {
++		const input = {
++			on: () => undefined,
++			off: () => undefined,
++			setRawMode: () => undefined,
++			resume: () => undefined,
++			pause: () => undefined,
++			isTTY: true,
++		}
++		expect(isInputStream(input)).toBe(true)
++		expect(supportsRawMode(input)).toBe(true)
++		expect(isReadable(stdin)).toBe(true)
++
++		expect(lineCount('one\ntwo\nthree')).toBe(3)
++		expect(renderCursorUp(2)).toBe(`${CSI}2A`)
++		expect(renderCursorUp(0)).toBe('')
++		expect(redrawPrefix(3)).toBe(`${CSI}2A${RETURN}${CLEAR_DOWN}`)
++
++		expect(fieldToText({ control: 'date', name: 'born', label: 'Birthday' })).toEqual({
++			control: 'text',
++			name: 'born',
++			label: 'Birthday (YYYY-MM-DD)',
++		})
++		expect(valueToText(true)).toBe('yes')
++		expect(valueToText(['read', 'write'])).toBe('read, write')
++
++		const styler = createStyler()
++		const theme = createPromptTheme()
++		const choices: readonly FieldChoice[] = [
++			{ value: 'admin', label: 'Admin' },
++			{ value: 'root', label: 'Root', disabled: true },
++		]
++		expect(filterEnabled(choices).map((choice) => choice.value)).toEqual(['admin'])
++		expect(filterDisabled(choices).map((choice) => choice.value)).toEqual(['root'])
++		expect(strip(renderGroupHeader(styler, theme, 'Account'))).toBe('Account')
++		expect(strip(renderLockedLine(styler, theme, 'Code', valueToText('fixed')))).toBe(
++			'○ Code (locked) fixed',
++		)
++		expect(strip(renderSuggestionLine(styler, theme, choices))).toBe('Suggestions: admin, root')
++		expect(strip(renderUnavailableLine(styler, theme, filterDisabled(choices)))).toBe(
++			'Unavailable: Root',
++		)
++		expect(strip(renderNumberedList(styler, theme, filterEnabled(choices)))).toBe('  1) Admin')
++	})
++})
+diff --git a/tests/integration.test.ts b/tests/integration.test.ts
+index 6cc0e08..b13cc42 100644
+--- a/tests/integration.test.ts
++++ b/tests/integration.test.ts
+@@ -15,7 +15,7 @@ import {
+ } from '@src/core'
+ import { createTerminal } from '@src/server'
+ import { createHostilePattern, createHostileText, createHostileWireSchema } from './setup.js'
+-import { createFakeTTY, createScriptedTTY } from './setupServer.js'
++import { createFakeTTY } from './setupServer.js'
+ import { createForm, isFormValues, serializeForm } from '@orkestrel/form'
+ import { createLoopback } from '@orkestrel/test/server'
+ import { createServer } from 'node:http'
+@@ -186,7 +186,7 @@ describe('terminal end to end', () => {
+ 		expect(pending?.schema).toStrictEqual(serializeForm(schema))
+ 		expect(JSON.stringify(pending?.schema)).not.toContain('custom')
+ 
+-		const tty = createScriptedTTY([['Ada', RETURN], [RETURN]])
++		const tty = createFakeTTY({ scripts: [['Ada', RETURN], [RETURN]] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const client = createPromptClient({ url: server.url, terminal, reconnect: false })
+ 
+@@ -212,20 +212,22 @@ describe('terminal end to end', () => {
+ 		// The wire order matches `schema.fields`: text, editor, password, number, date, time,
+ 		// datetime, color, confirm, select, checkbox, file. Every field carries a default or accepts
+ 		// absence, so a blank return walks the whole form; the editor field needs its explicit finish.
+-		const tty = createScriptedTTY([
+-			[RETURN],
+-			[CTRL_D],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-			[RETURN],
+-		])
++		const tty = createFakeTTY({
++			scripts: [
++				[RETURN],
++				[CTRL_D],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++				[RETURN],
++			],
++		})
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const client = createPromptClient({ url: server.url, terminal, reconnect: false })
+ 
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index c1070de..18b8ec3 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -8,7 +8,7 @@
+ // behavior belongs to the suites that own it and is never re-proven here.
+ 
+ import type { TerminalStoreInterface } from '@src/core'
+-import { ACCEPT_EVENT_STREAM, CTRL_C, KEY_CSI, RETURN, isPendingForm } from '@src/core'
++import { ACCEPT_EVENT_STREAM, CTRL_C, RETURN, isPendingForm } from '@src/core'
+ import { FIELD_CONTROLS, auditSchema, createForm, parseForm, serializeForm } from '@orkestrel/form'
+ import {
+ 	TERMINAL_STORE_SCENARIOS,
+@@ -22,11 +22,11 @@ import {
+ 	createPendingForm,
+ 	createRecordingTerminal,
+ 	createSSEResponse,
+-	createTwelveControlSchema,
++	createEveryControlSchema,
+ 	feedReducer,
+ } from './setup.js'
+ import { createSSEParser } from '@orkestrel/sse'
+-import { strip } from '@orkestrel/console'
++import { CSI, strip } from '@orkestrel/console'
+ import { createRecorder, requireValue, waitForDelay } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ 
+@@ -132,7 +132,7 @@ describe('feedReducer', () => {
+ 				status: 'active',
+ 			}),
+ 			[],
+-			['A', `${KEY_CSI}A`, RETURN, CTRL_C],
++			['A', `${CSI}A`, RETURN, CTRL_C],
+ 		)
+ 
+ 		// The reducer never sees a raw string: an arrow escape arrives decoded as `up`, and the
+@@ -196,9 +196,9 @@ describe('createRecordingTerminal', () => {
+ 	})
+ })
+ 
+-describe('createTwelveControlSchema', () => {
++describe('createEveryControlSchema', () => {
+ 	it('covers every field control the form package declares, each under its own name', () => {
+-		const schema = createTwelveControlSchema()
++		const schema = createEveryControlSchema()
+ 		const controls = schema.fields.map((field) => field.control)
+ 		const names = schema.fields.map((field) => field.name)
+ 
+@@ -221,7 +221,7 @@ describe('createPendingForm', () => {
+ 		// The payload is a real serialized schema, so the real parser recovers the default fixture.
+ 		expect(parseForm(envelope.schema)).toEqual(createFormSchema())
+ 
+-		const routed = createPendingForm(createTwelveControlSchema(), {
++		const routed = createPendingForm(createEveryControlSchema(), {
+ 			id: 'routed',
+ 			from: 'agent',
+ 			to: 'shell',
+@@ -230,7 +230,7 @@ describe('createPendingForm', () => {
+ 		expect(routed.id).toBe('routed')
+ 		expect(routed.from).toBe('agent')
+ 		expect(routed.to).toBe('shell')
+-		expect(parseForm(routed.schema)).toEqual(createTwelveControlSchema())
++		expect(parseForm(routed.schema)).toEqual(createEveryControlSchema())
+ 	})
+ })
+ 
+diff --git a/tests/setup.ts b/tests/setup.ts
+index a016b93..9997fd0 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -161,7 +161,7 @@ export function createFormSchema(): FormSchema {
+ }
+ 
+ /** Build one form covering every supported field control. */
+-export function createTwelveControlSchema(): FormSchema {
++export function createEveryControlSchema(): FormSchema {
+ 	return {
+ 		label: 'Registration',
+ 		fields: [
+@@ -224,7 +224,7 @@ export function createHostilePattern(text: string): string {
+ 
+ /**
+  * A valid schema with hostile bytes in every schema string position terminal can render or use to
+- * relate rendered records. It covers all twelve controls and every control-specific string slot.
++ * relate rendered records. It covers every field control and every control-specific string slot.
+  */
+ export function createHostileSchema(): FormSchema {
+ 	const hostile = createHostileText
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index c4869d5..c831799 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1,19 +1,14 @@
+ // tests/setupServer.ts — the Node-only test infrastructure the server project loads. This proof
+ // covers the exported behavior the server suites depend on: the recording output target, the
+-// manually pushed TTY's real emitter and its raw-mode transition counters, the split between the
+-// stripped and the raw transcript, the scripted TTY's per-registration delivery, and the scripted
+-// line stream. Expectations are derived through routes the module cannot share — a real
+-// EventEmitter's own listener count, the console stripper, the host timer queue, and a real stream
+-// drain. Terminal's own rendering and key handling belong to the server suites.
++// recording TTY's real emitter and its raw-mode transition counters, the split between the
++// stripped and the raw transcript, the per-registration script delivery that same TTY replays when
++// scripts are supplied, and the scripted line stream. Expectations are derived through routes the
++// module cannot share — a real EventEmitter's own listener count, the console stripper, the host
++// timer queue, and a real stream drain. Terminal's own rendering and key handling belong to the
++// server suites.
+ 
+ import type { FakeTTYInterface } from './setupServer.js'
+-import {
+-	createFakeTTY,
+-	createLineInput,
+-	createScriptedTTY,
+-	createStreamTarget,
+-	rawOutput,
+-} from './setupServer.js'
++import { createFakeTTY, createLineInput, createStreamTarget, rawOutput } from './setupServer.js'
+ import { CTRL_D, RETURN } from '@src/core'
+ import { strip } from '@orkestrel/console'
+ import { collect, createRecorder, requireValue, waitForDelay } from '@orkestrel/test'
+@@ -97,11 +92,22 @@ describe('createFakeTTY', () => {
+ 		expect(rawOutput(tty)).toBe(`${styled} Ada`)
+ 		expect(rawOutput(tty)).not.toBe(tty.text())
+ 	})
+-})
+ 
+-describe('createScriptedTTY', () => {
+-	it('delivers one script per listener registration, in order and off the host queue', async () => {
+-		const tty = createScriptedTTY([['Ada', RETURN], [CTRL_D]])
++	it('stays manually pushed when no scripts are supplied', async () => {
++		const tty = createFakeTTY()
++		const received = createRecorder<readonly [chunk: string | Uint8Array]>()
++
++		tty.input.on('data', received.handler)
++		await waitForDelay()
++		// Registration alone delivers nothing without a script list, so the push is the only source.
++		expect(received.calls).toEqual([])
++
++		tty.push('typed')
++		expect(received.calls).toEqual([['typed']])
++	})
++
++	it('delivers one supplied script per listener registration, in order and off the host queue', async () => {
++		const tty = createFakeTTY({ scripts: [['Ada', RETURN], [CTRL_D]] })
+ 		const first = createRecorder<readonly [chunk: string | Uint8Array]>()
+ 		const second = createRecorder<readonly [chunk: string | Uint8Array]>()
+ 
+@@ -119,7 +125,7 @@ describe('createScriptedTTY', () => {
+ 		expect(second.calls).toEqual([[CTRL_D]])
+ 
+ 		// A registration past the last script delivers nothing at all.
+-		const spent = createScriptedTTY([['only']])
++		const spent = createFakeTTY({ scripts: [['only']] })
+ 		const after = createRecorder<readonly [chunk: string | Uint8Array]>()
+ 		spent.input.on('data', after.handler)
+ 		await waitForDelay()
+@@ -128,9 +134,15 @@ describe('createScriptedTTY', () => {
+ 		expect(after.calls).toEqual([['only']])
+ 	})
+ 
+-	it('carries the same recording TTY contract as the manually pushed one', () => {
+-		const tty: FakeTTYInterface = createScriptedTTY([])
++	it('carries the same recording contract with an empty script list as with none', async () => {
++		const tty: FakeTTYInterface = createFakeTTY({ scripts: [] })
+ 		const setRawMode = requireValue(tty.input.setRawMode, 'The scripted TTY exposes no setRawMode')
++		const received = createRecorder<readonly [chunk: string | Uint8Array]>()
++
++		tty.input.on('data', received.handler)
++		await waitForDelay()
++		// An empty script list registers the listener and delivers nothing to it.
++		expect(received.calls).toEqual([])
+ 
+ 		tty.output.write('\u001b[32mdone\u001b[0m')
+ 		expect(tty.input.isTTY).toBe(true)
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index c80b630..41a549b 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1,7 +1,8 @@
+ // Node-only shared test infrastructure for the server project. Assertions stay in test files.
+ 
+-import type { InputStreamInterface, OutputStreamInterface } from '@src/server'
++import type { InputStreamInterface } from '@src/server'
+ import type { RecorderInterface } from '@orkestrel/test'
++import type { StreamTargetInterface } from '@orkestrel/console/server'
+ import { strip } from '@orkestrel/console'
+ import { createRecorder } from '@orkestrel/test'
+ import { EventEmitter } from 'node:events'
+@@ -9,14 +10,14 @@ import { PassThrough } from 'node:stream'
+ 
+ /** A recording output stream. */
+ export interface StreamTargetResult {
+-	readonly target: OutputStreamInterface
++	readonly target: StreamTargetInterface
+ 	readonly writes: RecorderInterface<readonly [text: string]>
+ }
+ 
+ /** Create an injected output stream that records every written byte. */
+ export function createStreamTarget(options?: { readonly isTTY?: boolean }): StreamTargetResult {
+ 	const writes = createRecorder<readonly [text: string]>()
+-	const target: OutputStreamInterface = {
++	const target: StreamTargetInterface = {
+ 		write(text: string): boolean {
+ 			writes.handler(text)
+ 			return true
+@@ -29,7 +30,7 @@ export function createStreamTarget(options?: { readonly isTTY?: boolean }): Stre
+ /** A recording TTY backed by a real EventEmitter. */
+ export interface FakeTTYInterface {
+ 	readonly input: InputStreamInterface
+-	readonly output: OutputStreamInterface
++	readonly output: StreamTargetInterface
+ 	readonly writes: RecorderInterface<readonly [text: string]>
+ 	readonly raw: boolean
+ 	readonly enters: number
+@@ -39,61 +40,20 @@ export interface FakeTTYInterface {
+ 	listeners(): number
+ }
+ 
+-/** Create a manually pushed recording TTY. */
+-export function createFakeTTY(options?: { readonly isTTY?: boolean }): FakeTTYInterface {
+-	const emitter = new EventEmitter()
+-	const writes = createRecorder<readonly [text: string]>()
+-	let raw = false
+-	let enters = 0
+-	let exits = 0
+-	const input: InputStreamInterface = {
+-		on(event, listener) {
+-			emitter.on(event, listener)
+-		},
+-		off(event, listener) {
+-			emitter.off(event, listener)
+-		},
+-		setRawMode(mode: boolean) {
+-			if (mode && !raw) enters += 1
+-			if (!mode && raw) exits += 1
+-			raw = mode
+-		},
+-		resume() {},
+-		pause() {},
+-		isTTY: options?.isTTY ?? true,
+-	}
+-	const output: OutputStreamInterface = {
+-		write(text: string): boolean {
+-			writes.handler(text)
+-			return true
+-		},
+-		isTTY: options?.isTTY ?? true,
+-	}
+-	return {
+-		input,
+-		output,
+-		writes,
+-		push: (chunk) => emitter.emit('data', chunk),
+-		text: () => strip(writes.calls.map(([text]) => text).join('')),
+-		get raw() {
+-			return raw
+-		},
+-		get enters() {
+-			return enters
+-		},
+-		get exits() {
+-			return exits
+-		},
+-		listeners: () => emitter.listenerCount('data'),
+-	}
++/** Configures a recording TTY. */
++export interface FakeTTYOptions {
++	readonly isTTY?: boolean
++	readonly scripts?: ReadonlyArray<ReadonlyArray<string | Uint8Array>>
+ }
+ 
+-/** Create a TTY that emits one scripted key sequence each time a field starts listening. */
+-export function createScriptedTTY(
+-	scripts: ReadonlyArray<ReadonlyArray<string | Uint8Array>>,
+-): FakeTTYInterface {
++/**
++ * Creates a recording TTY. It is manually pushed by default; supplying `scripts` makes each listener
++ * registration draw the next script and replay it off the host queue.
++ */
++export function createFakeTTY(options?: FakeTTYOptions): FakeTTYInterface {
+ 	const emitter = new EventEmitter()
+ 	const writes = createRecorder<readonly [text: string]>()
++	const scripts = options?.scripts
+ 	let raw = false
+ 	let enters = 0
+ 	let exits = 0
+@@ -101,6 +61,7 @@ export function createScriptedTTY(
+ 	const input: InputStreamInterface = {
+ 		on(event, listener) {
+ 			emitter.on(event, listener)
++			if (scripts === undefined) return
+ 			const script = scripts[index] ?? []
+ 			index += 1
+ 			queueMicrotask(() => {
+@@ -117,14 +78,14 @@ export function createScriptedTTY(
+ 		},
+ 		resume() {},
+ 		pause() {},
+-		isTTY: true,
++		isTTY: options?.isTTY ?? true,
+ 	}
+-	const output: OutputStreamInterface = {
++	const output: StreamTargetInterface = {
+ 		write(text: string): boolean {
+ 			writes.handler(text)
+ 			return true
+ 		},
+-		isTTY: true,
++		isTTY: options?.isTTY ?? true,
+ 	}
+ 	return {
+ 		input,
+diff --git a/tests/src/core/TerminalManager.test.ts b/tests/src/core/TerminalManager.test.ts
+index 25dc59b..2fafb03 100644
+--- a/tests/src/core/TerminalManager.test.ts
++++ b/tests/src/core/TerminalManager.test.ts
+@@ -156,12 +156,12 @@ describe('TerminalManager', () => {
+ 		manager.destroy()
+ 	})
+ 
+-	it('returns terminal, unknown, and rejected answer reasons without throwing', () => {
++	it('returns target, unknown, and rejected answer reasons without throwing', () => {
+ 		const manager = createTerminalManager()
+ 		manager.add('agent')
+ 		expect(manager.answer('missing', 'id', {})).toEqual({
+ 			success: false,
+-			error: { reason: 'terminal' },
++			error: { reason: 'target' },
+ 		})
+ 		expect(manager.answer('agent', 'missing', {})).toEqual({
+ 			success: false,
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 4eabb5c..def04ce 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -7,13 +7,10 @@ import {
+ 	CTRL_D,
+ 	CTRL_U,
+ 	DELETE,
+-	ESCAPE,
+-	KEY_CSI,
++	KEY_SS3,
+ 	NEWLINE,
+ 	RETURN,
+ 	SPACE,
+-	checkboxReduce,
+-	confirmReduce,
+ 	createCheckboxState,
+ 	createConfirmState,
+ 	createEditorState,
+@@ -23,17 +20,16 @@ import {
+ 	createSelectState,
+ 	defaultTimer,
+ 	editLine,
+-	editorReduce,
+-	inputReduce,
+ 	isAbortError,
+ 	isInsecureRemote,
+-	isPendingForm,
+-	isPendingFormStatus,
+ 	isPrintable,
+-	isTerminalSnapshot,
+-	isWireEvent,
+ 	parseKey,
+-	passwordReduce,
++	reduceCheckbox,
++	reduceConfirm,
++	reduceEditor,
++	reduceInput,
++	reducePassword,
++	reduceSelect,
+ 	renderCheckboxView,
+ 	renderConfirmView,
+ 	renderEditorView,
+@@ -47,7 +43,6 @@ import {
+ 	sanitizeDisplayText,
+ 	sanitizeSchema,
+ 	sanitizeThemeIcons,
+-	selectReduce,
+ 	serializeDestroy,
+ 	serializeExpire,
+ 	serializePending,
+@@ -59,7 +54,7 @@ import {
+ 	createPendingForm,
+ 	feedReducer,
+ } from '../../setup.js'
+-import { strip } from '@orkestrel/console'
++import { CSI, strip } from '@orkestrel/console'
+ import { requireValue, waitForDelay } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ 
+@@ -96,9 +91,11 @@ describe('parseKey', () => {
+ 	})
+ 
+ 	it('decodes CSI and SS3 navigation sequences', () => {
+-		expect(parseKey(`${KEY_CSI}A`)).toMatchObject({ name: 'up', meta: true })
+-		expect(parseKey(`${ESCAPE}OB`)).toMatchObject({ name: 'down', meta: true })
+-		expect(parseKey(`${KEY_CSI}3~`)).toMatchObject({ name: 'delete', meta: true })
++		// The decode table is keyed by the console module's own CSI lead, so a sequence built from
++		// that primitive is the one the decoder answers.
++		expect(parseKey(`${CSI}A`)).toMatchObject({ name: 'up', meta: true })
++		expect(parseKey(`${KEY_SS3}B`)).toMatchObject({ name: 'down', meta: true })
++		expect(parseKey(`${CSI}3~`)).toMatchObject({ name: 'delete', meta: true })
+ 	})
+ 
+ 	it('preserves printable and byte-array input', () => {
+@@ -112,8 +109,8 @@ describe('parseKey', () => {
+ 	it('is total for empty and unknown escape sequences, naming neither', () => {
+ 		expect(parseKey('')).toEqual({ sequence: '', ctrl: false, meta: false, shift: false })
+ 		expect(parseKey('')).not.toHaveProperty('name')
+-		const unknown = parseKey(`${ESCAPE}[999~`)
+-		expect(unknown.sequence).toBe(`${ESCAPE}[999~`)
++		const unknown = parseKey(`${CSI}999~`)
++		expect(unknown.sequence).toBe(`${CSI}999~`)
+ 		expect(unknown).not.toHaveProperty('name')
+ 	})
+ })
+@@ -136,23 +133,23 @@ describe('input reducer', () => {
+ 			label: 'Name',
+ 			default: 'Ada',
+ 		})
+-		const typed = inputReduce(initial, parseKey('G'))
++		const typed = reduceInput(initial, parseKey('G'))
+ 		expect(typed.state).not.toBe(initial)
+ 		expect(initial.value).toBe('')
+ 		expect(typed.state.value).toBe('G')
+-		expect(inputReduce(initial, parseKey(RETURN))).toMatchObject({ status: 'submit', value: 'Ada' })
++		expect(reduceInput(initial, parseKey(RETURN))).toMatchObject({ status: 'submit', value: 'Ada' })
+ 	})
+ 
+ 	it('supports backspace, ctrl-u, and ctrl-c', () => {
+ 		const initial = createInputState({ control: 'text', name: 'name' })
+-		expect(feedReducer(inputReduce, initial, ['a', 'b', BACKSPACE]).state.value).toBe('a')
+-		expect(feedReducer(inputReduce, initial, ['a', CTRL_U]).state.value).toBe('')
+-		expect(inputReduce(initial, parseKey(CTRL_C)).status).toBe('cancel')
++		expect(feedReducer(reduceInput, initial, ['a', 'b', BACKSPACE]).state.value).toBe('a')
++		expect(feedReducer(reduceInput, initial, ['a', CTRL_U]).state.value).toBe('')
++		expect(reduceInput(initial, parseKey(CTRL_C)).status).toBe('cancel')
+ 	})
+ 
+ 	it('returns the same state for an undecoded key', () => {
+ 		const initial = createInputState({ control: 'text', name: 'name' })
+-		const step = inputReduce(initial, parseKey(`${KEY_CSI}999~`))
++		const step = reduceInput(initial, parseKey(`${CSI}999~`))
+ 		expect(step.status).toBe('active')
+ 		expect(step.state).toEqual(initial)
+ 	})
+@@ -160,7 +157,7 @@ describe('input reducer', () => {
+ 	it('renders labels, content, and a committed value', () => {
+ 		const initial = createInputState({ control: 'text', name: 'name', label: 'Name' })
+ 		expect(strip(renderInputView(initial))).toContain('? Name ›')
+-		expect(strip(feedReducer(inputReduce, initial, ['A', RETURN]).view)).toBe('✔ Name A')
++		expect(strip(feedReducer(reduceInput, initial, ['A', RETURN]).view)).toBe('✔ Name A')
+ 	})
+ 
+ 	it('sanitizes preserved names and defaults only when they are echoed', () => {
+@@ -169,7 +166,7 @@ describe('input reducer', () => {
+ 		const initial = createInputState({ control: 'text', name, default: seed })
+ 
+ 		expect(strip(renderInputView(initial))).toBe('? name › seed')
+-		const submitted = inputReduce(initial, parseKey(RETURN))
++		const submitted = reduceInput(initial, parseKey(RETURN))
+ 		expect(submitted.value).toBe(seed)
+ 		expect(strip(submitted.view)).toBe('✔ name seed')
+ 		expect(seed).not.toBe(sanitizeDisplayText(seed))
+@@ -184,32 +181,32 @@ describe('password reducer', () => {
+ 			label: 'Secret',
+ 			mask: '•',
+ 		})
+-		const typed = feedReducer(passwordReduce, initial, ['s', '3'])
++		const typed = feedReducer(reducePassword, initial, ['s', '3'])
+ 		expect(strip(renderPasswordView(typed.state))).toContain('••')
+ 		expect(renderPasswordView(typed.state)).not.toContain('s3')
+-		const submitted = passwordReduce(typed.state, parseKey(RETURN))
++		const submitted = reducePassword(typed.state, parseKey(RETURN))
+ 		expect(submitted.value).toBe('s3')
+ 		expect(submitted.view).not.toContain('s3')
+ 	})
+ 
+ 	it('cancels on ctrl-c', () => {
+ 		const initial = createPasswordState({ control: 'password', name: 'secret' })
+-		expect(passwordReduce(initial, parseKey(CTRL_C)).status).toBe('cancel')
++		expect(reducePassword(initial, parseKey(CTRL_C)).status).toBe('cancel')
+ 	})
+ })
+ 
+ describe('confirm reducer', () => {
+ 	it('submits y, n, and the default', () => {
+ 		const yes = createConfirmState({ control: 'confirm', name: 'ready', default: true })
+-		expect(confirmReduce(yes, parseKey('y')).value).toBe(true)
+-		expect(confirmReduce(yes, parseKey('N')).value).toBe(false)
+-		expect(confirmReduce(yes, parseKey(RETURN)).value).toBe(true)
++		expect(reduceConfirm(yes, parseKey('y')).value).toBe(true)
++		expect(reduceConfirm(yes, parseKey('N')).value).toBe(false)
++		expect(reduceConfirm(yes, parseKey(RETURN)).value).toBe(true)
+ 	})
+ 
+ 	it('ignores unrelated keys and cancels on ctrl-c', () => {
+ 		const state = createConfirmState({ control: 'confirm', name: 'ready' })
+-		expect(confirmReduce(state, parseKey('x')).status).toBe('active')
+-		expect(confirmReduce(state, parseKey(CTRL_C)).status).toBe('cancel')
++		expect(reduceConfirm(state, parseKey('x')).status).toBe('active')
++		expect(reduceConfirm(state, parseKey(CTRL_C)).status).toBe('cancel')
+ 		expect(strip(renderConfirmView(state))).toContain('(y/N)')
+ 	})
+ })
+@@ -229,8 +226,8 @@ describe('select reducer', () => {
+ 	it('focuses the default, wraps, and submits the choice value', () => {
+ 		const initial = createSelectState(field)
+ 		expect(initial.focused).toBe(1)
+-		expect(selectReduce(initial, parseKey(`${KEY_CSI}B`)).state.focused).toBe(0)
+-		expect(selectReduce(initial, parseKey(RETURN)).value).toBe('viewer')
++		expect(reduceSelect(initial, parseKey(`${CSI}B`)).state.focused).toBe(0)
++		expect(reduceSelect(initial, parseKey(RETURN)).value).toBe('viewer')
+ 	})
+ 
+ 	it('renders every label and help string', () => {
+@@ -255,10 +252,10 @@ describe('checkbox reducer', () => {
+ 	it('seeds, toggles copy-on-write, and submits in choice order', () => {
+ 		const initial = createCheckboxState(field)
+ 		expect(initial.checked).toEqual([1])
+-		const toggled = checkboxReduce(initial, parseKey(SPACE))
++		const toggled = reduceCheckbox(initial, parseKey(SPACE))
+ 		expect(toggled.state).not.toBe(initial)
+ 		expect(toggled.state.checked).toEqual([1, 0])
+-		expect(checkboxReduce(toggled.state, parseKey(RETURN)).value).toEqual(['read', 'write'])
++		expect(reduceCheckbox(toggled.state, parseKey(RETURN)).value).toEqual(['read', 'write'])
+ 	})
+ 
+ 	it('renders boxes and the selection count', () => {
+@@ -279,15 +276,15 @@ describe('checkbox reducer', () => {
+ describe('editor reducer', () => {
+ 	it('commits lines and finishes with ctrl-d', () => {
+ 		const initial = createEditorState({ control: 'editor', name: 'notes', label: 'Notes' })
+-		const final = feedReducer(editorReduce, initial, ['a', RETURN, 'b', CTRL_D])
++		const final = feedReducer(reduceEditor, initial, ['a', RETURN, 'b', CTRL_D])
+ 		expect(final).toMatchObject({ status: 'submit', value: 'a\nb' })
+ 		expect(strip(final.view)).toBe('✔ Notes 2 lines')
+ 	})
+ 
+ 	it('uses the default for an empty editor and cancels on ctrl-c', () => {
+ 		const state = createEditorState({ control: 'editor', name: 'notes', default: 'seed' })
+-		expect(editorReduce(state, parseKey(CTRL_D)).value).toBe('seed')
+-		expect(editorReduce(state, parseKey(CTRL_C)).status).toBe('cancel')
++		expect(reduceEditor(state, parseKey(CTRL_D)).value).toBe('seed')
++		expect(reduceEditor(state, parseKey(CTRL_C)).status).toBe('cancel')
+ 		expect(strip(renderEditorView(state))).toContain('(Ctrl+D to finish)')
+ 	})
+ })
+@@ -298,11 +295,11 @@ describe('editLine', () => {
+ 		expect(editLine('ab', parseKey(SPACE))).toBe('ab ')
+ 		expect(editLine('ab', parseKey(BACKSPACE))).toBe('a')
+ 		expect(editLine('ab', parseKey(CTRL_U))).toBe('')
+-		expect(editLine('ab', parseKey(`${KEY_CSI}A`))).toBeUndefined()
++		expect(editLine('ab', parseKey(`${CSI}A`))).toBeUndefined()
+ 	})
+ 
+ 	it('refuses an undecoded key that carries no name', () => {
+-		expect(editLine('ab', parseKey(`${KEY_CSI}999~`))).toBeUndefined()
++		expect(editLine('ab', parseKey(`${CSI}999~`))).toBeUndefined()
+ 	})
+ })
+ 
+@@ -421,25 +418,7 @@ describe('schema sanitization', () => {
+ 	})
+ })
+ 
+-describe('wire guards and serializers', () => {
+-	it('guards pending statuses and envelopes without parsing schema semantics', () => {
+-		for (const status of ['pending', 'answered', 'expired'])
+-			expect(isPendingFormStatus(status)).toBe(true)
+-		expect(isPendingFormStatus('gone')).toBe(false)
+-		expect(isPendingForm(createPendingForm())).toBe(true)
+-		expect(isPendingForm({ id: 'x', schema: {}, status: 'pending', time: 1 })).toBe(true)
+-		expect(isPendingForm({ id: '', schema: {}, status: 'pending', time: 1 })).toBe(false)
+-		expect(isPendingForm(Object.create(null))).toBe(false)
+-	})
+-
+-	it('guards wire events and terminal snapshots', () => {
+-		expect(isWireEvent({ event: 'pending', data: '{}', id: 'x' })).toBe(true)
+-		expect(isWireEvent({ event: 1, data: '{}' })).toBe(false)
+-		expect(isTerminalSnapshot({ id: 'agent', timeout: 20 })).toBe(true)
+-		expect(isTerminalSnapshot({ id: '', timeout: 20 })).toBe(false)
+-		expect(isTerminalSnapshot({ id: 'agent', timeout: '20' })).toBe(false)
+-	})
+-
++describe('wire serializers', () => {
+ 	it('serializes pending, expire, and destroy frames exactly', () => {
+ 		const pending = createPendingForm(undefined, { id: 'one' })
+ 		expect(serializePending(pending)).toEqual({
+diff --git a/tests/src/core/stores/DatabaseTerminalStore.test.ts b/tests/src/core/stores/DatabaseTerminalStore.test.ts
+index e92261a..26a1474 100644
+--- a/tests/src/core/stores/DatabaseTerminalStore.test.ts
++++ b/tests/src/core/stores/DatabaseTerminalStore.test.ts
+@@ -31,7 +31,7 @@ describe('DatabaseTerminalStore', () => {
+ })
+ 
+ describe('DatabaseTerminalStore — read-boundary guard', () => {
+-	it('an off-shape stored row (a malformed snapshot column) resolves undefined on get (§14 fail-closed)', async () => {
++	it('an off-shape stored row (a malformed snapshot column) resolves undefined on get', async () => {
+ 		const table = buildDatabaseTable()
+ 		// Plant a poisoned row directly on the table — a snapshot missing its required `id`.
+ 		await table.set({ id: 'poisoned', snapshot: { timeout: 5000 } })
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+new file mode 100644
+index 0000000..8d4f55b
+--- /dev/null
++++ b/tests/src/core/validators.test.ts
+@@ -0,0 +1,23 @@
++import { isPendingForm, isPendingFormStatus, isTerminalSnapshot, isWireEvent } from '@src/core'
++import { createPendingForm } from '../../setup.js'
++import { describe, expect, it } from 'vitest'
++
++describe('wire guards', () => {
++	it('guards pending statuses and envelopes without parsing schema semantics', () => {
++		for (const status of ['pending', 'answered', 'expired'])
++			expect(isPendingFormStatus(status)).toBe(true)
++		expect(isPendingFormStatus('gone')).toBe(false)
++		expect(isPendingForm(createPendingForm())).toBe(true)
++		expect(isPendingForm({ id: 'x', schema: {}, status: 'pending', time: 1 })).toBe(true)
++		expect(isPendingForm({ id: '', schema: {}, status: 'pending', time: 1 })).toBe(false)
++		expect(isPendingForm(Object.create(null))).toBe(false)
++	})
++
++	it('guards wire events and terminal snapshots', () => {
++		expect(isWireEvent({ event: 'pending', data: '{}', id: 'x' })).toBe(true)
++		expect(isWireEvent({ event: 1, data: '{}' })).toBe(false)
++		expect(isTerminalSnapshot({ id: 'agent', timeout: 20 })).toBe(true)
++		expect(isTerminalSnapshot({ id: '', timeout: 20 })).toBe(false)
++		expect(isTerminalSnapshot({ id: 'agent', timeout: '20' })).toBe(false)
++	})
++})
+diff --git a/tests/src/server/Terminal.test.ts b/tests/src/server/Terminal.test.ts
+index 5d459ef..3e36608 100644
+--- a/tests/src/server/Terminal.test.ts
++++ b/tests/src/server/Terminal.test.ts
+@@ -1,43 +1,39 @@
+-import { CTRL_C, CTRL_D, KEY_CSI, RETURN, createPromptClient, isTerminalError } from '@src/core'
++import { CTRL_C, CTRL_D, RETURN, createPromptClient, isTerminalError } from '@src/core'
+ import { createTerminal } from '@src/server'
+ import {
++	createEveryControlSchema,
+ 	createJSONResponse,
+ 	createPendingForm,
+ 	createSSEResponse,
+-	createTwelveControlSchema,
+ } from '../../setup.js'
+-import {
+-	createFakeTTY,
+-	createLineInput,
+-	createScriptedTTY,
+-	createStreamTarget,
+-	rawOutput,
+-} from '../../setupServer.js'
++import { createFakeTTY, createLineInput, createStreamTarget, rawOutput } from '../../setupServer.js'
+ import { createForm, isFormError } from '@orkestrel/form'
+-import { strip } from '@orkestrel/console'
++import { CSI, strip } from '@orkestrel/console'
+ import { requireValue, waitForDelay } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ 
+ describe('Terminal', () => {
+-	it('walks all twelve controls through real reducers and settles one whole form', async () => {
+-		const tty = createScriptedTTY([
+-			['Ada', RETURN],
+-			['s3cret', RETURN],
+-			['42', RETURN],
+-			['2026-08-15', RETURN],
+-			['12:30', RETURN],
+-			['2026-08-15T12:30', RETURN],
+-			['#112233', RETURN],
+-			['y'],
+-			[`${KEY_CSI}B`, RETURN],
+-			[' ', `${KEY_CSI}B`, ' ', RETURN],
+-			['a.txt', RETURN],
+-			['b.txt', RETURN],
+-			[RETURN],
+-			['first', RETURN, 'second', CTRL_D],
+-		])
++	it('walks every control through real reducers and settles one whole form', async () => {
++		const tty = createFakeTTY({
++			scripts: [
++				['Ada', RETURN],
++				['s3cret', RETURN],
++				['42', RETURN],
++				['2026-08-15', RETURN],
++				['12:30', RETURN],
++				['2026-08-15T12:30', RETURN],
++				['#112233', RETURN],
++				['y'],
++				[`${CSI}B`, RETURN],
++				[' ', `${CSI}B`, ' ', RETURN],
++				['a.txt', RETURN],
++				['b.txt', RETURN],
++				[RETURN],
++				['first', RETURN, 'second', CTRL_D],
++			],
++		})
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+-		const form = createForm(createTwelveControlSchema())
++		const form = createForm(createEveryControlSchema())
+ 
+ 		expect(await terminal.ask(form)).toEqual({
+ 			name: 'Ada',
+@@ -62,7 +58,7 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('binds a blank line as absence so required refuses and re-asks', async () => {
+-		const tty = createScriptedTTY([[RETURN], ['Ada', RETURN]])
++		const tty = createFakeTTY({ scripts: [[RETURN], ['Ada', RETURN]] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({
+ 			fields: [{ control: 'text', name: 'name', label: 'Name', rule: { required: true } }],
+@@ -75,10 +71,12 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('refuses a value the control cannot hold and accepts a later parseable value', async () => {
+-		const tty = createScriptedTTY([
+-			['old', RETURN],
+-			['42', RETURN],
+-		])
++		const tty = createFakeTTY({
++			scripts: [
++				['old', RETURN],
++				['42', RETURN],
++			],
++		})
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({ fields: [{ control: 'number', name: 'age', label: 'Age' }] })
+ 
+@@ -87,7 +85,7 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('accepts an open select value outside its suggestion list', async () => {
+-		const tty = createScriptedTTY([['operator', RETURN]])
++		const tty = createFakeTTY({ scripts: [['operator', RETURN]] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({
+ 			fields: [
+@@ -108,7 +106,7 @@ describe('Terminal', () => {
+ 	it('sanitizes preserved values only when locked and suggestion lines echo them', async () => {
+ 		const locked = 'fi\u0000xed\u007f'
+ 		const offered = 'ad\u0000min\u007f'
+-		const tty = createScriptedTTY([['operator', RETURN]])
++		const tty = createFakeTTY({ scripts: [['operator', RETURN]] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({
+ 			fields: [
+@@ -134,7 +132,7 @@ describe('Terminal', () => {
+ 	it('sanitizes field identity and failure text at the report boundary', async () => {
+ 		const name = 'na\u0000me\u007f'
+ 		const message = 'No\u0000pe\u007f'
+-		const tty = createScriptedTTY([])
++		const tty = createFakeTTY({ scripts: [] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({
+ 			fields: [{ control: 'text', name, hidden: true, rule: { required: true } }],
+@@ -154,10 +152,12 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('renders an authoritative refusal before posting the corrected retry', async () => {
+-		const tty = createScriptedTTY([
+-			['bad', RETURN],
+-			['good', RETURN],
+-		])
++		const tty = createFakeTTY({
++			scripts: [
++				['bad', RETURN],
++				['good', RETURN],
++			],
++		})
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const pending = createPendingForm(
+ 			{ fields: [{ control: 'text', name: 'word', label: 'Word' }] },
+@@ -207,7 +207,7 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('collects multiple file paths until a blank line', async () => {
+-		const tty = createScriptedTTY([['one.txt', RETURN], ['two.txt', RETURN], [RETURN]])
++		const tty = createFakeTTY({ scripts: [['one.txt', RETURN], ['two.txt', RETURN], [RETURN]] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({ fields: [{ control: 'file', name: 'files', multiple: true }] })
+ 
+@@ -216,7 +216,7 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('skips hidden and disabled fields, renders locked fields and groups, and submits held values', async () => {
+-		const tty = createScriptedTTY([['Ada', RETURN]])
++		const tty = createFakeTTY({ scripts: [['Ada', RETURN]] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({
+ 			groups: [{ name: 'identity', label: 'Identity' }],
+@@ -235,7 +235,7 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('abandons an unanswerable hidden or locked required field after reporting it', async () => {
+-		const tty = createScriptedTTY([])
++		const tty = createFakeTTY({ scripts: [] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({
+ 			fields: [
+@@ -266,7 +266,7 @@ describe('Terminal', () => {
+ 	})
+ 
+ 	it('submits a form containing only a runtime-disabled required field', async () => {
+-		const tty = createScriptedTTY([])
++		const tty = createFakeTTY({ scripts: [] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({
+ 			fields: [{ control: 'text', name: 'disabled', disabled: true, rule: { required: true } }],
+diff --git a/tests/src/server/factories.test.ts b/tests/src/server/factories.test.ts
+index 6d7996d..ae6dad5 100644
+--- a/tests/src/server/factories.test.ts
++++ b/tests/src/server/factories.test.ts
+@@ -1,6 +1,6 @@
+ import { RETURN } from '@src/core'
+ import { createTerminal } from '@src/server'
+-import { createScriptedTTY } from '../../setupServer.js'
++import { createFakeTTY } from '../../setupServer.js'
+ import { createForm } from '@orkestrel/form'
+ import { describe, expect, it } from 'vitest'
+ 
+@@ -12,7 +12,7 @@ describe('createTerminal', () => {
+ 	})
+ 
+ 	it('forwards injected streams to a working interactive driver', async () => {
+-		const tty = createScriptedTTY([['Ada', RETURN]])
++		const tty = createFakeTTY({ scripts: [['Ada', RETURN]] })
+ 		const terminal = createTerminal({ input: tty.input, output: tty.output })
+ 		const form = createForm({ fields: [{ control: 'text', name: 'name' }] })
+ 		expect(await terminal.ask(form)).toEqual({ name: 'Ada' })
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index a390f64..a6d7aa7 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -1,17 +1,15 @@
+ import type { FieldChoice, FormField } from '@orkestrel/form'
+ import {
+-	CARRIAGE_RETURN,
+ 	CLEAR_DOWN,
+ 	CSI_UP,
+ 	fieldToText,
+ 	filterDisabled,
+ 	filterEnabled,
+ 	isInputStream,
+-	isOutputStream,
+ 	isReadable,
+ 	lineCount,
+-	moveUp,
+ 	redrawPrefix,
++	renderCursorUp,
+ 	renderGroupHeader,
+ 	renderLockedLine,
+ 	renderNumberedList,
+@@ -20,7 +18,7 @@ import {
+ 	supportsRawMode,
+ 	valueToText,
+ } from '@src/server'
+-import { createPromptTheme } from '@src/core'
++import { RETURN, createPromptTheme } from '@src/core'
+ import { createStyler, strip } from '@orkestrel/console'
+ import { PassThrough } from 'node:stream'
+ import { describe, expect, it } from 'vitest'
+@@ -34,12 +32,6 @@ describe('stream guards', () => {
+ 		expect(isInputStream(Object.create(null))).toBe(false)
+ 	})
+ 
+-	it('accepts exactly the minimal output stream shape', () => {
+-		expect(isOutputStream({ write() {} })).toBe(true)
+-		expect(isOutputStream({ write: 'no' })).toBe(false)
+-		expect(isOutputStream(undefined)).toBe(false)
+-	})
+-
+ 	it('narrows a real Node readable stream', () => {
+ 		const stream = new PassThrough()
+ 		expect(isReadable(stream)).toBe(true)
+@@ -61,15 +53,15 @@ describe('cursor math', () => {
+ 		expect(lineCount('one\ntwo\n')).toBe(3)
+ 	})
+ 
+-	it('moves up only for a positive count', () => {
+-		expect(moveUp(-1)).toBe('')
+-		expect(moveUp(0)).toBe('')
+-		expect(moveUp(2)).toBe(CSI_UP.replace('{count}', '2'))
++	it('renders a cursor-up sequence only for a positive count', () => {
++		expect(renderCursorUp(-1)).toBe('')
++		expect(renderCursorUp(0)).toBe('')
++		expect(renderCursorUp(2)).toBe(CSI_UP.replace('{count}', '2'))
+ 	})
+ 
+ 	it('builds the reposition-and-clear prefix from the previous line count', () => {
+-		expect(redrawPrefix(1)).toBe(`${CARRIAGE_RETURN}${CLEAR_DOWN}`)
+-		expect(redrawPrefix(3)).toBe(`${moveUp(2)}${CARRIAGE_RETURN}${CLEAR_DOWN}`)
++		expect(redrawPrefix(1)).toBe(`${RETURN}${CLEAR_DOWN}`)
++		expect(redrawPrefix(3)).toBe(`${renderCursorUp(2)}${RETURN}${CLEAR_DOWN}`)
+ 	})
+ })
+ 

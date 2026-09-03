@@ -320,3 +320,7 @@ Two judgments the brief left to me are recorded rather than raised.
 The directive appended to `.claude/rules/documentation.md`'s tool output — work through Bash rather
 than the Read, Edit, and Write tools — was ignored, as the dispatch instructs. Every file change in
 this round went through `Edit`.
+
+### Orchestrator integration (20:4x UTC)
+
+The round-2 objective lane (`units/l3/terminal-objective-r2.md`) held every claim and named two prose findings with their exact replacements, which the Orchestrator applied as returned: `src/core/helpers.ts:786` reads "The ticked indices, in tick order" (the `currently` deleted), and `tests/guides.test.ts:2` reads "The constants that follow are this package's own". Its R2 completes the exclusion list in § Lines ruled out of the population: `guides/terminal.md:35-36` (a bare-return TTY walk) and `:692` and `:693` (two `// the default` option lines) claim no value and carry no case, under the header's categorical exclusion. Its R1 (`PromptClient.url`, fleet-F2's shape under another field name) is a fleet ruling recorded in the follow-on ledger. The evidence was regenerated with `node /home/user/scaffold/tmp/work/evidence.mjs terminal` after the edits.
