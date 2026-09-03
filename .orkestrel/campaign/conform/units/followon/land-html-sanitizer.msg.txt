@@ -1,0 +1,8 @@
+Prove the sanitize-floor claims the guide stated without a fence
+
+The sanitize fence in `guides/html.md` gains one line per prose claim under § The sanitize floor — a sanitized `img` keeps `alt` and loses `src`, an entity-obfuscated `java&#115;cript:` href is decoded before it is refused, and table-cell `align` survives trimmed and lowercase on `td` alone under an allowlist that names it — each with the value `sanitize` returns, and the transcription in `tests/guides.test.ts` asserts each value in the fence's order behind its presence guard. The html twin of markdown's sanitizer follow-on.
+
+Audit: round 1 (Luna checker PASS, Sol objective PASS through the Cursor bench); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/followon/html-sanitizer-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

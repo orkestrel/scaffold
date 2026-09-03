@@ -1,0 +1,8 @@
+Give the subject builder the whole remove batch family
+
+`SubjectBuilderInterface.remove` gains the no-argument overload every manager in the package declares: `remove()` removes every field, emitting one `remove` per key in the builder's key order, beside the one-key and key-list forms and the unchanged `clear`. The class implements it through the same per-key path, the mirrored test proves the removal, the event order, the empty `fields()`, and the destroyed refusal, and the guide's Entities row, Types row, and Methods table state the three forms in the managers' words. The added overload breaks no caller.
+
+Audit: round 1 (Luna checker PASS, Sol objective FAIL 6 through the Cursor bench, rejected on the record: the hit was the English preposition in a re-padded guide cell, not the type assertion the claim names); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/followon/reason-remove-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
