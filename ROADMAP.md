@@ -18,6 +18,13 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   the `AGENTS.md` and `CLAUDE.md` pointers and deletes every tracked copy the target still holds at a
   canon path, so a second `scaffold audit` in the same visit exits `0`. The step lives in
   `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository.
+- **scaffold**: the canonical `setup` Vitest project is node-only (`environment: 'node'`,
+  `browser: { enabled: false }`) while `scaffold audit` demands a `tests/setupBrowser.test.ts` proof
+  for a module that sets `data-bs-core` on the document, loads Halfmoon, and opens IndexedDB;
+  measured 2026-09-02 in `terrain`, whose `vite.config.ts` carries a browser-enabled `setup` project
+  and reads `stale` until the template moves. Rule whether a workspace carrying
+  `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
+  project the plan already runs in a browser, then move the template and the audit together.
 - **fleet**: an entry module's `@packageDocumentation` never reaches the published declaration
   rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
   2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
