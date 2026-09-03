@@ -197,3 +197,10 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   (209 to 212), browser project 243. Tarball 0.0.12 rebuilt and re-staged in terrain (version
   0.0.12 in `node_modules`). Re-film and the final prepublish chain running in parallel; lane B
   follows the re-film.
+- Re-film on the `e13f5d5` build: the 1280 runs 11 passed each; the empty-schedule 390 frames
+  now end on the surface's floor (one runner row closed); the populated schedule refused with
+  `never settled after 3 restagings: 1716 over a 1712 pane` (covered heights 1675, 1694, 1712,
+  1716 — geometric convergence outside the bound). Ruling: the pane only paints the body's box
+  and the shot clips to it, so restaging may overshoot by the last growth without adding rows.
+  FX2d dispatched (`fix-capture-overshoot-brief.md`). Lane B launched in parallel on claims 8,
+  14, 16, 17, 19; claims 15 and 22 go to a final lane after the next re-film.
