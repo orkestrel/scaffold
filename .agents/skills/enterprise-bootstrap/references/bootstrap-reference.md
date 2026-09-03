@@ -81,7 +81,7 @@ CDN (5.3.8 is the current — and final — 5.3.x patch before 5.4):
 
 ## Color Modes (light / dark / custom)
 
-The 5.3 color-mode system replaces the old per-component dark variants.
+The 5.3 color-mode system replaces the old per-component `*-dark` classes.
 
 ### Mechanics
 
@@ -290,7 +290,7 @@ Client-side, the documented pattern:
 </div>
 ```
 
-Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid/invalid-tooltip` variants need a `position-relative` parent. Validation colors are mode-adaptive via `--bs-form-valid-color`, `--bs-form-valid-border-color`, `--bs-form-invalid-color`, `--bs-form-invalid-border-color`.
+Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid-tooltip` and `.invalid-tooltip` need a `position-relative` parent. Validation colors are mode-adaptive via `--bs-form-valid-color`, `--bs-form-valid-border-color`, `--bs-form-invalid-color`, `--bs-form-invalid-border-color`.
 
 ### Autosave vs explicit save
 
@@ -354,7 +354,7 @@ Hold the baseline in [SKILL.md](../SKILL.md) → Accessibility baseline. Its Boo
 - collects every painted layer from the element upward to the first opaque one, then composites them top over bottom (Porter-Duff `over`) onto that opaque base;
 - composites a translucent foreground over that result before taking the ratio, rather than reading the declared color;
 - measures both themes in one run, since the theme swap re-points the tokens under every layer;
-- carries a negative control drawn from outside the population it covers — a pairing known to fail — and voids the run if that control passes.
+- carries a negative control drawn from outside the population it covers — a pairing known to fail — and voids the run if that negative control passes.
 
 Wire the reader into the suite once it has settled a question.
 
@@ -485,7 +485,7 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
 </div>
 ```
 
-Give header cells an **opaque background** (`bg-body-secondary` or a table variant) — table backgrounds are transparent by default, so rows show through a sticky header otherwise. Sticky chrome is the prime Focus-Not-Obscured offender: add `scroll-margin-top` on row focusables equal to the header height. Sticky first column only when row identity is lost on horizontal scroll — it costs paint and complexity.
+Give header cells an **opaque background** (`bg-body-secondary` or a `.table-*` tone class) — table backgrounds are transparent by default, so rows show through a sticky header otherwise. Sticky chrome is the prime Focus-Not-Obscured offender: add `scroll-margin-top` on row focusables equal to the header height. Sticky first column only when row identity is lost on horizontal scroll — it costs paint and complexity.
 
 - **Sorting:** the whole header is a button (not a bare caret), with a visible direction indicator, and `aria-sort="ascending|descending"` on the active `<th>` only:
 
@@ -551,7 +551,7 @@ Match friction to reversibility × blast radius:
 
 Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only where this ladder calls for it — a confirmation on every action gets clicked through.
 
-**Neutralize a disabled destructive control.** `btn-danger` at full saturation reads as armed whatever the `disabled` attribute says, and the contrast exemption for disabled controls does not excuse it. While the action is unavailable, drop to the neutral or outline variant (or let the disabled state mute the fill) so the color stops promising an action, and say _why_ it is unavailable in text the assistive layer reaches: `aria-describedby` pointing at the reason, with `title` only as the pointer-user convenience on top. Never use `title` alone — it never reaches a keyboard or screen-reader user, and it disappears on touch.
+**Neutralize a disabled destructive control.** `btn-danger` at full saturation reads as armed whatever the `disabled` attribute says, and the contrast exemption for disabled controls does not excuse it. While the action is unavailable, drop to the neutral or outline `btn-*` class (or let the disabled state mute the fill) so the color stops promising an action, and say _why_ it is unavailable in text the assistive layer reaches: `aria-describedby` pointing at the reason, with `title` only as the pointer-user convenience on top. Never use `title` alone — it never reaches a keyboard or screen-reader user, and it disappears on touch.
 
 ## RTL
 

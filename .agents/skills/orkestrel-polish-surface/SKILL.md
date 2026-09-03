@@ -26,7 +26,10 @@ contract and this skill as the workflow. Preserve dirty and user-owned work.
 A claim about a rendered surface is proven by capture, never by reading the code that was
 supposed to produce it. Source-reading review passes a component that renders nothing.
 
-- The portfolio IS the review input: captures at both viewports and both themes, an
+- Generate the portfolio from the journey suite's capture family wherever a Vitest
+  browser project can drive the surface, and from a spawned harness only where none
+  can ([capture-harness.md](references/capture-harness.md)).
+- The portfolio IS the review input: captures at every viewport and every theme the surface declares, an
   accessibility snapshot, and an interaction log.
 - Source is corroboration for a mechanism, never the proof that the surface shows it.
 - A claim the portfolio cannot show is unproven, not passed. Say so.

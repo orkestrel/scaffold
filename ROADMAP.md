@@ -18,6 +18,13 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   the `AGENTS.md` and `CLAUDE.md` pointers and deletes every tracked copy the target still holds at a
   canon path, so a second `scaffold audit` in the same visit exits `0`. The step lives in
   `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository.
+- **scaffold**: the canonical `setup` Vitest project is node-only (`environment: 'node'`,
+  `browser: { enabled: false }`) while `scaffold audit` demands a `tests/setupBrowser.test.ts` proof
+  for a module that sets `data-bs-core` on the document, loads Halfmoon, and opens IndexedDB;
+  measured 2026-09-02 in `terrain`, whose `vite.config.ts` carries a browser-enabled `setup` project
+  and reads `stale` until the template moves. Rule whether a workspace carrying
+  `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
+  project the plan already runs in a browser, then move the template and the audit together.
 - **fleet**: an entry module's `@packageDocumentation` never reaches the published declaration
   rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
   2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
@@ -25,7 +32,85 @@ recoverable from git history by hash; no campaign folder is the plan of record.
 - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
-  host — the bin suite passes complete with no skipped case.
+  host — the bin suite passes complete with no skipped case. Two defects reproduced 2026-09-02
+  in `terrain` (Vitest 4.1.11, Playwright Chromium) keep `prove` off every browser project: the
+  runtime stage matches the inferred project name exactly while Vitest names a browser instance
+  `<label> (<browser>)`, and it creates the specification on the `threads` pool, so with the name
+  patched the browser project's setup file ran in a Node worker and died at
+  `document is not defined`. The trigger is the first campaign that needs a receipt on a rendered claim; until then
+  `orkestrel-prove-journey` routes rendered questions to a written browser-run artifact.
+- **test**: successor seams from the skills campaign accepted 2026-09-02. A winning-declaration
+  reader (`readOrigin`: which rule won a property and which authored rules it beat) has no
+  platform door; the probe is whether the Vitest Playwright provider exposes a CDP session a
+  custom command can drive `CSS.getMatchedStylesForNode` through, and the reader ships only if
+  that probe lands. `elements` and `veneer` still declare the statechart contract locally;
+  `veneer` registers `describe`/`it.each` inside its `runScenarios(label, create, scenarios)`,
+  so adopting the published `executeScenarios` rewrites its call sites; the trigger is each
+  repository's next hardening visit. A glyph-to-meaning registry stays skill prose until a fleet
+  surface ships a status glyph set.
+- **contract**: successor seams from the memoization campaign accepted 2026-09-01 (contract
+  950a241). Working-state churn: `ShapeValidator` constructs fresh collections per `validate` call
+  through its `#clear` method, and `ShapeCloner` and `SchemaCloner` keep per-instance `#empty*`
+  peers — the idiom `ContractCompiler` left at that campaign, so sibling engines in one directory
+  carry one member vocabulary for two mechanisms; the trigger is an allocation-rate measurement
+  attributing material time to the churn, or the package's next hardening campaign. Ledger
+  semantics: a compiled door invoked synchronously from inside another door's walk joins the outer
+  call's scope, while `guides/contract.md` documents reuse as holding within one call; rule on the
+  wording or the mechanism at the ledger capability's next change. Test coverage: the reporter
+  family carries no cross-call memo case. Declarations: `INTRINSICS.recall` publishes an
+  `any`-shaped return, and `createContract` carries no `@throws` tag while the `contain` TSDoc
+  states that population carries one. Fleet: the catalog row for `@orkestrel/supervisor` pins
+  `@orkestrel/contract` at `^0.0.11` against the fleet's `^0.0.13`; confirm against that
+  repository's own manifest before sequencing any contract cascade. Successor seams from the
+  performance campaign accepted 2026-09-01: the promoted tracking ledger's reuse is unproven by the
+  suite — deleting the slot-to-map carry-in or the recall block keeps every test green, and only a
+  work-counting assertion over per-node reads can pin it; carrier is the published per-node read
+  bound. `oneOf` diagnostics still run every variant plan before their tally where the compiled
+  guards already exist; a guard-first tally is the remaining union seam. The internal snapshot
+  freezes cost 47 ns per call on a five-key object, measured and unclaimed behind documented frozen
+  returns. The u2fix hostile-pre-load probe suite is retained in the campaign archive and promotes
+  if the workspace ever takes a hostile-intrinsics test project. Successor seams from the
+  paired-harness performance campaign accepted 2026-09-01 (contract c13cfae): the refined-leaf
+  capture row is closed for strings — `createStringFaults` takes an optional pre-captured pattern,
+  and the compiled auditor, the compiled reporter, and `stringOf` capture it through `ownPattern` at
+  compile time — while `createNumberFaults` keeps its signature and reads `min` and `max` from the
+  shape per call; the trigger for the same capture there is a measurement attributing material time
+  to those reads. The lazy fault-path row is refused on measurement: an honest trail form that
+  materializes the path at every fault, every container `readValue` context, and every refined-leaf
+  helper call reads 1.07–1.11 on the audit families in 6 fresh processes against the tree without
+  it, so the per-field `pathOf` copies stay, and the baseline's habit of publishing the caller's
+  root `path` array by reference in root-level faults is recorded, not changed. The masked auditor's
+  extra-key scan through `matchesMember` reads 0.96–0.97 when gated on the presence pass, inside the
+  harness's admission bar, though `positions` and the declared vocabulary are provably one key set
+  (an absent child shape is refused at validation through every door); a form that drops the `Set`
+  for the record is the remaining seam. The folded array guard (0.976 and 0.972 on the
+  single-process paired instrument), the untracked ledger (ceiling 0.95–0.98 on the same
+  instrument), and a lazy fault-array slot (a clean container returns a fresh array either way) are
+  refused on measurement or by construction. The `oneOf` guard-first tally stays refused on the
+  every-door-reads rule, and the reporter-versus-`parse` law holds on coercible values by probe. The
+  compile tier stays excluded on the documented eager lockstep. The shape-builder tier is measured
+  and unopened: `stringShape()` 15.6 µs, `objectShape` of the five-key fixture 76.6 µs,
+  `compileGuard` 82.5 µs, `createContract` 114.6 µs on node 22.22.2, where the `ShapeValidator`
+  clear-twice churn is the first station to attribute. The `Result` allocation class stays excluded
+  on the memoization campaign's 0.992 reading (contract 950a241). The `readValue` success-path
+  deferral and the compiled doors' captured-pattern wire have no suite guard by construction (each
+  is unobservable from the published surface: every compiled door refuses a shape whose `pattern` is
+  an accessor, and the clone the leaves read carries an internal one) and rest on the campaign's
+  paired A/B and the retained wire probes. The compiled doors' plan-time `pattern` refusal is
+  unreachable while `ShapeCloner#captureString` mints the clone's pattern from captured strings; a
+  change there surfaces a `compileAuditor`-named message from `createContract`. The paired harness
+  runs 6 fresh processes with load order swapped: identity medians read 1.004–1.029 with replicates
+  spread between 0.945 and 1.087, a planted 6 % slowdown reads median 1.063 with every replicate at
+  or above 1.030, and the admission rule is median ≤ 0.95 with every replicate ≤ 0.98 on the target
+  family; a host with a different noise floor re-certifies the bar with its own identity and
+  planted-slowdown runs before reusing it. The accepted tree's readings and the identity control sit
+  in the scaffold commit that accepted the campaign. The guide's prose carries seams for its next
+  edit: a `below` cross-reference in the membership section's load-order precondition, a `both`
+  naming no members (the phrase `both accessors of RegExp.prototype`), the `createStringFaults` row's
+  read-count sentence whose condition sits in an elided final clause, the membership paragraph
+  closing on its own editing history, imperative TSDoc summaries across `helpers.ts` where the rule
+  asks the third person, and the aphoristic register the guide and the test comments share, which a
+  design round rules on.
 - **fleet publish wave**: every published package carries unpublished conformance, breaking, and
   voice changes on `claude/orkestrel-npm-audit-deps-14ibta` (closed 2026-09-02), and the owner
   holds publishing. The trigger is the owner's release decision. Per the `orkestrel-publish`

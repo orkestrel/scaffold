@@ -39,7 +39,7 @@ Prefer `bg-body-*` and `*-subtle` over `bg-white`/`bg-light` — they track `dat
 .rounded-0, .rounded-1, .rounded-2, .rounded-3, .rounded-4, .rounded-5
 ```
 
-For borders that must stay visible in both color modes, prefer `border-*-subtle` variants (theme-adaptive) over raw color borders.
+For borders that must stay visible in both color modes, prefer the `border-*-subtle` classes (theme-adaptive) over raw color borders.
 
 ### Colors (Text)
 
@@ -246,7 +246,7 @@ The composition traps in this group:
 ### Z-index
 
 ```css
-.z-n1, .z-0, .z-1, .z-2, .z-3    /* NOT responsive — no breakpoint variants exist */
+.z-n1, .z-0, .z-1, .z-2, .z-3    /* NOT responsive — no breakpoint classes exist */
 ```
 
 ## Spacing Scale
