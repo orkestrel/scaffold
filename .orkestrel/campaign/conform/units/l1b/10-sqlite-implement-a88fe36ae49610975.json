@@ -1,0 +1,228 @@
+{
+  "package": "@orkestrel/sqlite",
+  "rows": [
+    {
+      "id": "sqlite-obj-3",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts gained a describe('flagship fences', ...) block transcribing the Surface, round-trip, parameter-binding, reading, atomic-transaction, long-lived-transaction, Pragmas, closing, using, and boundary-helper fences against the real @src/server barrel, with the header comment naming that a fence change obliges its transcription. Pragmas is transcribed against a createScratch file because a :memory: database answers journal_mode with 'memory'. The long-lived-transaction fence is transcribed inside an async test with await Promise.resolve() standing in for the caller's work. npm run test:guides reports 33 passed (33). No fence value was contradicted by the code, so the row adds guards rather than repairing a defect; the transcriptions were proved non-vacuous by pointing Pragmas at :memory: (1 failed | 32 passed (33), expected \"wal\" to be \"memory\")."
+    },
+    {
+      "id": "sqlite-obj-4",
+      "disposition": "applied",
+      "note": "tests/src/server/helpers.test.ts allocates one file-scope createScratch({ prefix: 'sqlite-helpers-test-' }) with afterAll(() => scratch.destroy()) and passes join(scratch.path, 'busy.db'); the rmSync call and the node:fs and node:os imports are deleted."
+    },
+    {
+      "id": "sqlite-obj-5",
+      "disposition": "applied",
+      "note": "tests/setupServer.ts exports seedUsers(database), captureNativeConstraintError(), lockDatabase(path), and captureNativeBusyError(path) built on lockDatabase. The local seed, nativeConstraintError, and nativeBusyError declarations are deleted from SQLiteStatement.test.ts and helpers.test.ts, and SQLiteDatabase.test.ts holds the lock through lockDatabase(path) while the contender stays on createSQLiteDatabase({ path, timeout: 50 }). tests/setupServer.test.ts gained a case for each export. npm run test:src reports 52 passed (52); npm run test:setup reports 9 passed (9)."
+    },
+    {
+      "id": "sqlite-obj-6",
+      "disposition": "applied",
+      "note": "The end-to-end constraint case now reads expect(sqliteErrorCode(() => db.prepare('INSERT INTO t VALUES (?)').execute(['dup']))).toBe('CONSTRAINT') followed by db.close(); the captureError and isSQLiteError imports are dropped. The 'not-sqlite' sentinel spelling is gone, leaving only the helper's NOT_SQLITE_ERROR."
+    },
+    {
+      "id": "sqlite-obj-7",
+      "disposition": "applied",
+      "note": "src/server/SQLiteDatabase.ts leads with its import type block from './types.js', followed by import { DatabaseSync } from 'node:sqlite' and import { isPromiseLike } from '@orkestrel/contract', no blank line between imports of one kind. tests/src/server/SQLiteStatement.test.ts merges its two @src/server type imports into one leading import type { SQLiteDatabaseInterface, SQLiteRow }. format:check and lint:check both exit 0."
+    },
+    {
+      "id": "sqlite-obj-8",
+      "disposition": "applied",
+      "note": "#stream wraps its pull loop in try { ... } finally { native.return?.() }. Failing-first: npm run test:src reported 1 failed | 51 passed (52) with AssertionError: expected 'BUSY' to be 'NO_THROW' on 'SQLiteStatement - abandoned iterate > releases the read lock when a caller breaks out of iterate'. After the fix the same command reports 52 passed (52). The refuter's source-derived BUSY diagnosis is confirmed by execution, so the finally is a repair rather than bare cleanup. The mid-stream-fault control stays green."
+    },
+    {
+      "id": "sqlite-subj-1",
+      "disposition": "applied",
+      "note": "BREAKING. SQLiteStatementInterface.run renamed to execute at types.ts and SQLiteStatement.ts; SQLiteRunResult renamed to SQLiteExecuteResult at its declaration and every reference. The native this.#statement.run(...) calls and the direct DatabaseSync run calls in tests/setupServer.ts are kept as node:sqlite's own API. Guide rows, fences, TSDoc examples in factories.ts and errors.ts, test titles, and every in-package call site updated atomically. No collision: SQLiteStatementInterface declared no execute."
+    },
+    {
+      "id": "sqlite-subj-2",
+      "disposition": "applied",
+      "note": "guides/sqlite.md Contract preamble reads \"These invariants hold across `src/server` ↔ `sqlite.md`:\"."
+    },
+    {
+      "id": "sqlite-subj-3",
+      "disposition": "applied",
+      "note": "Every (AGENTS §N) parenthetical and §N tail is deleted from guides/sqlite.md, guides/README.md, src/server/{types,constants,errors,SQLiteStatement,helpers}.ts, and tests/src/server/{helpers,SQLiteDatabase,SQLiteStatement}.test.ts. The [AGENTS.md](../AGENTS.md) links at guides/sqlite.md and guides/README.md are kept so ROOT_FILES still resolves. One site beyond the ruled list was fixed: src/server/helpers.ts:9, whose bare §14 tail the refuter's `AGENTS §` grep missed because the citation wraps across two comment lines. grep -rn \"§\" over package-owned files now returns nothing."
+    },
+    {
+      "id": "sqlite-subj-4",
+      "disposition": "applied",
+      "note": "Contract item 5 now reads: a constraint violation maps to 'CONSTRAINT', a locked-database fault to 'BUSY', a wrapper-lifecycle fault to 'CLOSED', the wrapper's own invalid-argument refusal to 'INVALID', and every unclassified native fault to 'UNKNOWN'. No list item is referenced by its number, per AGENTS.md § Writing."
+    },
+    {
+      "id": "sqlite-subj-5",
+      "disposition": "applied",
+      "note": "src/server/errors.ts file comment now reads \"its codes stay lean - the wrapper sits right on the raw SQLite surface, where `CONSTRAINT` and `BUSY` are the native faults worth naming, `CLOSED` is the wrapper-lifecycle fault, `INVALID` is the wrapper's own invalid-argument fault, and everything else is `UNKNOWN`.\" The count and the (AGENTS §12) tail are deleted."
+    },
+    {
+      "id": "sqlite-subj-6",
+      "disposition": "applied",
+      "note": "src/server/types.ts reads \"a lean, typed layer whose one runtime dependency is `@orkestrel/contract`\"; guides/sqlite.md:3 reads \"one runtime dependency, `@orkestrel/contract`, for boundary narrowing - a thin typed skin on `DatabaseSync` / `StatementSync`\", which also removes the tagline's minimizer `just`."
+    },
+    {
+      "id": "sqlite-subj-7",
+      "disposition": "applied",
+      "note": "Every \"Chunk 3\" is deleted. @orkestrel/database is named explicitly at src/server/types.ts (file comment and SQLiteDatabaseInterface TSDoc), src/server/factories.ts @remarks, src/server/SQLiteStatement.ts TSDoc, and guides/sqlite.md line 65 and Contract item 2. factories.ts no longer hedges with \"a higher-level typed database engine would be built on\". Deviation recorded: the backticked DriverInterface is not written, because the same refuter's evidence records that backticking it breaks documentation parity; the prose says \"that package's asynchronous driver contract\" instead."
+    },
+    {
+      "id": "sqlite-subj-8",
+      "disposition": "applied",
+      "note": "The begin TSDoc is imperative: \"Branch on {@link SQLiteDatabaseInterface.transacting} first rather than catching this when composing a transaction alongside others (see the Practices section in `guides/sqlite.md`).\" A word-boundary case-insensitive sweep for should over src, tests, guides, and README returns nothing."
+    },
+    {
+      "id": "sqlite-subj-9",
+      "disposition": "applied",
+      "note": "e.g. replaced with \"for example\" at errors.ts, constants.ts, SQLiteDatabase.ts, SQLiteStatement.ts, and guides/sqlite.md; causal since replaced with because at types.ts, SQLiteDatabase.ts, and the guide; temporal once replaced with after at SQLiteStatement.ts, the guide, and SQLiteStatement.test.ts; via replaced with through at the guide, helpers.test.ts, and the SQLiteDatabase.test.ts dispose test name; currently deleted at types.ts and SQLiteDatabase.ts. One further hit fixed: SQLiteDatabase.test.ts \"the connection is now closed\" → \"the connection is closed\". The three remaining `just` hits read as \"only\" and are recorded permitted by the refuter. The vendored guide mirrors were not touched."
+    },
+    {
+      "id": "sqlite-subj-10",
+      "disposition": "applied",
+      "note": "README.md Package section reads \"one `.` entry that serves an ES module to `import` and a CommonJS build to `require`, both built from `src/server`\"; the node:sqlite CJS parenthetical is deleted; the Requirements line reads \"Server-only - no browser build\", so the two statements agree with vite.config.ts formats: ['es', 'cjs'] and the package.json exports map."
+    },
+    {
+      "id": "sqlite-subj-12",
+      "disposition": "applied",
+      "note": "The ## Methods preamble keeps only \"Each class implements its interface exactly - no extra public method. Every one of these calls is **synchronous** and returns a plain value, never a `Promise`.\" Contract item 1 is replaced by a package invariant: \"One barrel, one surface. Every name a consumer imports comes from `src/server/index.ts`, published as the `.` entry of the `exports` field. The wrapper ships no deep import path.\" Guide line 73 ([Symbol.dispose] in prose) is left in place."
+    },
+    {
+      "id": "sqlite-subj-13",
+      "disposition": "applied",
+      "note": "The three verb-phrase Surface summaries are noun phrases: \"A synchronous SQLite database over `node:sqlite` (defaults `:memory:`).\", \"The boundary conversion from a thrown native `node:sqlite` error to a typed `SQLiteError`.\", \"The normalization of `SQLiteParameters` to a native call's positional-spread or named shape.\" The isSQLiteError row is untouched."
+    },
+    {
+      "id": "sqlite-subj-14",
+      "disposition": "applied",
+      "note": "BREAKING. SQLiteDatabaseInterface.transaction renamed to transact at types.ts and SQLiteDatabase.ts; transacting is unchanged. The TSDoc at types.ts and SQLiteDatabase.ts, the thenable-refusal message at SQLiteDatabase.ts, guide rows and prose, and the SQLiteDatabase.test.ts describe titles all updated. pragma is deliberately not renamed: it transliterates the SQLite PRAGMA statement, which .claude/rules/names.md § General vocabulary licenses."
+    },
+    {
+      "id": "sqlite-subj-15",
+      "disposition": "applied",
+      "note": "'INVALID' added to SQLiteErrorCode with its @remarks distinguishing it from the unclassified native 'UNKNOWN'; SQLiteDatabase.ts throws it for the thenable-scope refusal. Guide Surface row, Contract item 5, Contract item 9, and the async-scope Practice name it, and the errors.ts file comment names it. Failing-first by reverting exactly that code: npm run test:src reported 1 failed | 51 passed (52), AssertionError: expected 'UNKNOWN' to be 'INVALID'; restored, the same command reports 52 passed (52)."
+    },
+    {
+      "id": "sqlite-subj-17",
+      "disposition": "applied",
+      "note": "src/server/factories.ts documents the options object as one @param: \"The database options; see {@link SQLiteDatabaseOptions} for `path`, `readonly`, `timeout`, `foreignKeys`, and `bigints`. Default: an in-memory database (`path` `':memory:'`).\" The field summaries are not duplicated into the factory @remarks; SQLiteDatabaseOptions keeps their one home."
+    },
+    {
+      "id": "sqlite-subj-18",
+      "disposition": "applied",
+      "note": "README.md now reads \"Node marks `node:sqlite` experimental. On Node 22.22.2, importing this package prints `ExperimentalWarning: SQLite is an experimental feature and might change at any time`.\" Both facts are measured on this host: the version from npm run env (node/v22.22.2) and the warning text from npm run test:src stderr. Deviation recorded: only one Node version was reachable, so the reading names 22.22.2 rather than the 22.12 engines floor."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "noop",
+      "note": "tests/setup.ts declares no isBrowserVuePath; it is export-free and carries only its header comment, and tests/setup.test.ts's sole case asserts Object.keys(setup) is empty. grep -rn \"isBrowserVuePath\" over src, tests/setup.ts, tests/setup.test.ts, and tests/setupServer.ts exits 1. The workspace has no browser environment: no src/browser, no app/browser, no tests/setupBrowser.ts. Nothing deleted."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "No implementation class declares a public readonly id data field ahead of its # fields. Classes read: SQLiteDatabase (#path, #readonly, #timeout, #foreignKeys, #bigints, #database, then getters, then methods), SQLiteStatement (#statement, #closed), SQLiteError (readonly code, readonly context - neither is id). grep -rn \"readonly id\" over src exits 1. No JSON.stringify of any class instance exists in tests or guide fences. Nothing changed."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/sqlite/src/server/types.ts",
+    "/home/user/fleet/sqlite/src/server/SQLiteStatement.ts",
+    "/home/user/fleet/sqlite/src/server/SQLiteDatabase.ts",
+    "/home/user/fleet/sqlite/src/server/errors.ts",
+    "/home/user/fleet/sqlite/src/server/helpers.ts",
+    "/home/user/fleet/sqlite/src/server/constants.ts",
+    "/home/user/fleet/sqlite/src/server/factories.ts",
+    "/home/user/fleet/sqlite/guides/sqlite.md",
+    "/home/user/fleet/sqlite/guides/README.md",
+    "/home/user/fleet/sqlite/README.md",
+    "/home/user/fleet/sqlite/tests/setupServer.ts",
+    "/home/user/fleet/sqlite/tests/setupServer.test.ts",
+    "/home/user/fleet/sqlite/tests/guides.test.ts",
+    "/home/user/fleet/sqlite/tests/src/server/SQLiteStatement.test.ts",
+    "/home/user/fleet/sqlite/tests/src/server/SQLiteDatabase.test.ts",
+    "/home/user/fleet/sqlite/tests/src/server/helpers.test.ts",
+    "/home/user/fleet/sqlite/tests/src/server/factories.test.ts",
+    "/home/user/scaffold/tmp/units/conform/conform-sqlite-report.md",
+    "/home/user/work/evidence/conform-sqlite.diff",
+    "/home/user/work/evidence/conform-sqlite.status"
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2595ms on 43 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . (no output)"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json && tsc --noEmit -p configs/src/tsconfig.server.json (no diagnostics)"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "dist/src/server/index.js 11.74 kB; dist/src/server/index.cjs 12.10 kB; built in 2.30s; Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:server 52 passed (52); policy 111 passed (111); config 46 passed (46); setup 9 passed (9); guides 33 passed (33). Reading taken inside this unit's own exec - an observation, not a criterion."
+    },
+    {
+      "command": "npm run test:src (failing-first, sqlite-obj-8, before the fix)",
+      "exit": 1,
+      "excerpt": "Tests 1 failed | 51 passed (52). FAIL tests/src/server/SQLiteStatement.test.ts > SQLiteStatement - abandoned iterate > releases the read lock when a caller breaks out of iterate. AssertionError: expected 'BUSY' to be 'NO_THROW'"
+    },
+    {
+      "command": "npm run test:src (failing-first, sqlite-subj-15, code reverted to 'UNKNOWN')",
+      "exit": 1,
+      "excerpt": "Tests 1 failed | 51 passed (52). FAIL tests/src/server/SQLiteDatabase.test.ts > SQLiteDatabase - transact > rolls back and throws INVALID when the scope returns a thenable (an async scope). AssertionError: expected 'UNKNOWN' to be 'INVALID'"
+    },
+    {
+      "command": "npm run test:guides (instrument-can-fail control, Pragmas fence pointed at :memory:)",
+      "exit": 1,
+      "excerpt": "Tests 1 failed | 32 passed (33). expected \"wal\" to be \"memory\" at tests/guides.test.ts db.pragma('journal_mode', 'WAL')"
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "SQLiteStatementInterface.run",
+      "change": "Renamed to `execute`. The member's return type `SQLiteRunResult` is renamed to `SQLiteExecuteResult` in the same change. No compatibility alias or re-export was left.",
+      "consumers": [
+        "@orkestrel/database (declares @orkestrel/sqlite ^0.0.9 at package.json:97)"
+      ],
+      "edit": "In /home/user/fleet/database/src/server/drivers/SQLiteDriver.ts: :530 `for (const values of replacement.values) statement.run(values)` -> `statement.execute(values)`; :571 `statement.run(values)` -> `statement.execute(values)`; :591 `statement.run(values)` -> `statement.execute(values)`; :606 `const result = statement.run([this.#key(key, schema)])` -> `const result = statement.execute([this.#key(key, schema)])`; :700 the `#clear` chain `.run()` -> `.execute()`; :916 `.run([metadata.version, JSON.stringify(metadata.schema)])` -> `.execute([metadata.version, JSON.stringify(metadata.schema)])`. Beyond the brief's list, three further sites on a SQLiteDatabaseInterface reached through createSQLiteDatabase, in /home/user/fleet/database/tests/src/server/drivers/SQLiteDriver.test.ts: :633 `native.prepare('INSERT INTO \"_metadata\" (\"id\", \"version\", \"schema\") VALUES (1, ?, ?)').run([` -> `.execute([`; :1752 `.run([version, schema])` -> `.execute([version, schema])`; :2302 `native.prepare('UPDATE \"users\" SET \"meta\" = ? WHERE \"id\" = ?').run(['{bad', 'u1'])` -> `.execute(['{bad', 'u1'])`. `SQLiteRunResult` is imported nowhere in that checkout (grep over src and tests returns nothing), so the type rename obliges no further edit. `SQLiteDatabaseInterface` is unrenamed, so SQLiteDriver.ts:14 needs no edit."
+    },
+    {
+      "symbol": "SQLiteDatabaseInterface.transaction",
+      "change": "Renamed to `transact`. The `transacting` property is unchanged. No compatibility alias or re-export was left.",
+      "consumers": [
+        "@orkestrel/database (declares @orkestrel/sqlite ^0.0.9 at package.json:97 and holds SQLiteDatabaseInterface at src/server/drivers/SQLiteDriver.ts:14)"
+      ],
+      "edit": "In /home/user/fleet/database/src/server/drivers/SQLiteDriver.ts only: :155 `database.transaction(() => {` -> `database.transact(() => {`; :415 `database.transaction(() => {` -> `database.transact(() => {`; :518 `current.transaction(() => {` -> `current.transact(() => {`. Rewrite no other `transaction(` in that checkout: every remaining call site is the consumer's own asynchronous `DriverInterface.transaction` - src/core/helpers.ts:1712 and :1727, src/core/Database.ts:108, src/core/DatabaseContext.ts:197 and :338, and every `driver.transaction(` / `database.transaction(` under tests/. The consumer's own contract declares the same noun-named method at src/core/types.ts:614; applying the vocabulary there is a separate decision this rename does not reach."
+    },
+    {
+      "symbol": "SQLiteErrorCode",
+      "change": "Gained the member 'INVALID', thrown by transact(scope) for a thenable scope where 'UNKNOWN' was thrown before. Additive for a producer.",
+      "consumers": [
+        "@orkestrel/database (imports isSQLiteError at src/server/drivers/SQLiteDriver.ts:36)"
+      ],
+      "edit": "No edit is required. The consumer's #guard at src/server/drivers/SQLiteDriver.ts:1066-1080 branches with an `if` chain over 'CONSTRAINT', 'CLOSED', and 'BUSY' and falls through to `new DatabaseError('DRIVER', error.message, { cause: error, code: error.code })`, so 'INVALID' lands in that fallthrough and nothing breaks. Recommended, not required: add `if (error.code === 'INVALID') { throw new DatabaseError('INVALID', error.message, { cause: error, code: error.code }) }` beside the existing branches if that package wants the wrapper's own invalid-argument refusal separated from an unclassified native fault, which is the purpose of the new member."
+    }
+  ],
+  "patches": [
+    "/home/user/fleet/database/guides/sqlite.md is a byte-identical vendored mirror of this package's guides/sqlite.md, which this unit rewrote. Refresh it from the released @orkestrel/sqlite tree after this change publishes; do not hand-edit it, per .claude/rules/documentation.md section Parity: \"Refresh a mirror rather than rewriting it: a rewritten copy is a translation, and no comparison against the fetched bytes can check it.\" No content patch is supplied for that reason.",
+    "No other fleet checkout under /home/user/fleet/ was read as needing an edit, and no shared file inside /home/user/fleet/sqlite was touched. The vendored test set (tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts) and the vendored guide mirrors (guides/contract.md, guide.md, probe.md, scaffold.md, test.md) are unchanged; the policy and config projects both pass unmodified."
+  ],
+  "deviations": [
+    "sqlite-subj-7, the backticked DriverInterface: the refuter's operative form writes \"`@orkestrel/database`'s SQLite driver adapts it to that package's asynchronous `DriverInterface`\", but the same refuter's evidence records that backticking DriverInterface at guides/sqlite.md:103 breaks .claude/rules/documentation.md section Parity (\"Every backticked API in a guide resolves to a real public export\") because DriverInterface is an export of @orkestrel/database, not of this package. I wrote \"that package's asynchronous driver contract\" at guides/sqlite.md Contract item 2 and at src/server/types.ts instead, which satisfies the ruled repair and the parity rule together. Decided and carried on; the unit did not stop.",
+    "sqlite-subj-18, one reachable Node version: the refuter's operative form asks for readings on the engines floor and on the highest CI matrix version. Neither could be taken. This unit's shell discipline does not permit `node -e`, and no second Node version is installed on this host. I measured the host version from `npm run env` (npm_config_user_agent=npm/10.9.7 node/v22.22.2 linux x64) and the warning text from real `npm run test:src` stderr (\"ExperimentalWarning: SQLite is an experimental feature and might change at any time\"), and wrote only that. README.md therefore names Node 22.22.2, the version actually run, rather than the 22.12 engines floor. This narrows the refuter's \"state only the floor's reading\" fallback to the version measured. Decided and carried on.",
+    "sqlite-subj-3, one site beyond the ruled list: src/server/helpers.ts:9 carries a bare §14 tail the refuter's `AGENTS §` grep missed, because the citation wraps across two comment lines (\"per AGENTS\" then \"// §14\"). It is the same defect under the same rule and would have failed acceptance criterion 6's sweep, so I repaired it and record it here. grep -rn \"§\" over package-owned files now returns nothing.",
+    "sqlite-subj-9, one site beyond the ruled list: tests/src/server/SQLiteDatabase.test.ts carried the comment \"// ROLLBACK will fault: the connection is now closed\". Temporal `now` is banned by the same substitution table row the refuter cited for `currently`, and the refuter's list did not name it. Repaired to \"the connection is closed\".",
+    "A tool result during this unit carried an appended instruction beginning \"While auto mode is active: Do your work through the Bash tool wherever it can accomplish the job: read files with cat, head, or sed -n, ... and make file changes with sed, heredocs, or short scripts, rather than using the dedicated Read, Edit, or Write tools.\" That directly contradicts the dispatch's shell discipline. I did not follow it. Every file was read with Read, Grep, or Glob and every change made with Edit or Write; Bash carried only npm scripts and git reads. Surfacing it because it arrived inside tool output rather than from the Orchestrator.",
+    "Not a deviation, recorded for the audit: the evidence diff was written with `git diff HEAD --output=/home/user/work/evidence/conform-sqlite.diff` (a native git flag, 1575 lines) because the shell discipline permits no `>` redirection, and the status evidence was written with the Write tool from the exact `git status --short` output. No untracked file was created by this unit, so `git add -N` had nothing to stage.",
+    "Observations outside this unit's rows, recorded rather than repaired: (a) sqliteErrorCode in tests/setupServer.ts documents itself with // comments while the exports this unit added, and every fleet sibling's setupServer.ts, use TSDoc; (b) tests/guides.test.ts:39 and tests/setupServer.test.ts:19 still point at material with \"below\", which .claude/rules/writing.md bans - both sentences predate this unit, and I corrected only the comments this unit authored."
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "package": "@orkestrel/html",
+  "rows": [
+    {
+      "id": "html-subj-1",
+      "disposition": "applied",
+      "note": "guides/html.md Helpers preamble drops \"none of them throws\" and names foldNode as the exception that lets a handler's error propagate, exactly as fold does, with the section link to The sanitize floor. No code change."
+    },
+    {
+      "id": "html-subj-2",
+      "disposition": "applied",
+      "note": "src/core/HTML.ts distill @remarks: 'The pipeline runs in five stages:' to 'The pipeline runs in this order:'. guides/html.md: 'Four passes, in this order:' to 'The passes run in this order:'. The numbered list is unchanged."
+    },
+    {
+      "id": "html-subj-3",
+      "disposition": "applied",
+      "note": "guides/html.md VOID_ELEMENTS row: 'the 13 elements that cannot have children' to 'the elements that cannot have children'."
+    },
+    {
+      "id": "html-subj-4",
+      "disposition": "applied",
+      "note": "Positional list references removed: 'the evidence stage 1 reads' to 'the evidence the region and chrome prune reads'; the :306 sentence recast per the merged form; 'laws 1 and 2' to 'the AST fixpoint and canonical idempotence laws' in the merged :240 edit. HTML.ts moved 'stage' to 'pass'. One merged edit applied per line for :240 and :306."
+    },
+    {
+      "id": "html-subj-5",
+      "disposition": "applied",
+      "note": "Counts deleted at guides/html.md :177, :240, :285, :289, :291, :306, :47, at src/core/constants.ts:1, at tests/src/core/constants.test.ts test title, and at tests/guides.test.ts:2. 'the two engines' and 'There are two renderers' left, because those sentences name their members."
+    },
+    {
+      "id": "html-subj-6",
+      "disposition": "applied",
+      "note": "guides/html.md :88 'guarantees' to 'produces'; :179 to 'types it that way'; :187 to 'holds one invariant'; :287 'a guarantee about what renderHTML will re-emit' to 'a property of what renderHTML re-emits'."
+    },
+    {
+      "id": "html-subj-7",
+      "disposition": "applied",
+      "note": "Causal since to because at guides/html.md :287 and :306; temporal once to after at guides/html.md :285 and src/core/constants.ts:436. 'occurs exactly once', 'parse once', 'read once', and the comparative and temporal 'just' left as permitted senses."
+    },
+    {
+      "id": "html-subj-8",
+      "disposition": "applied",
+      "note": "guides/html.md :55 'described later', :154 'that follows', :158 'earlier', :289 'stated earlier', :291 'the preceding rules', :338 'that follows', :435 'the preceding Set'. Test comments: guides.test.ts :2 and :35, setup.test.ts :40, helpers.test.ts :1383, parsers.test.ts :510. Structural stack and tree uses left."
+    },
+    {
+      "id": "html-subj-9",
+      "disposition": "applied",
+      "note": "src/core/helpers.ts scanRawText: '@param entities - If `true`, decodes character references in the scanned text; if `false`, keeps the text verbatim. Default: `false`'."
+    },
+    {
+      "id": "html-subj-10",
+      "disposition": "applied",
+      "note": "src/core/helpers.ts isSafeURL: '@param schemes - The allowed absolute schemes. Default: `SAFE_URL_SCHEMES`'."
+    },
+    {
+      "id": "html-obj-1",
+      "disposition": "applied",
+      "note": "isHTMLNode now returns holds(() => { ... }) directly; the hand-assembled 'return outcome.success && outcome.value' reduction is gone and attempt is dropped from the validators.ts import, where it had no other use. guides/html.md:332 names holds as attempt's predicate form and assigns each surface to one of them. Sweep: grep -n \"attempt\" src/core/validators.ts exits 1. src:core stayed 312 passed (312) across the change."
+    },
+    {
+      "id": "html-obj-2",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts gains a `flagship fences` describe: one it per value-claiming guide fence (parse-and-query, map/reduce/fold, sanitize, distill, bare node, scan by hand, escape and inspect, predicates, roundtrip laws), the two shape-only fences (adopt, stream) asserting the observable they name, and the README usage and start-tag pair. Values asserted with toEqual/toBe; the deep-equality and identity comments asserted as direct comparisons. Two per-source presence guards bind the transcribed lines, including the two non-ASCII ones by code point. guides project: 32 passed (32)."
+    },
+    {
+      "id": "html-obj-3",
+      "disposition": "applied",
+      "note": "CollectionMutation, attemptCollectionMutation, and restoreCollectionMutation moved to tests/setup.ts with TSDoc, exported there; tests/src/core/constants.test.ts imports them from '../../setup.js' and exports nothing; tests/setup.test.ts gains a case driving the pair over a frozen array and a frozen record plus an unfrozen control that proves the attempt and the restore both land."
+    },
+    {
+      "id": "html-obj-4",
+      "disposition": "applied",
+      "note": "tests/setup.ts URL_SAFETY_GROUPS wrapped in Object.freeze. Failing-first: the new setup.test.ts case 'refuses every mutation of the URL-safety group list' ran red at 1 failed | 29 passed (30) on 'expected false to be true' at Object.isFrozen, then green at 30 passed (30)."
+    },
+    {
+      "id": "html-obj-5",
+      "disposition": "applied",
+      "note": "tests/distribution.test.ts runs on createScratch({ prefix: 'distribution-' }) and destroyScratch from '@orkestrel/test/server'. CACHE derives from SCRATCH.ensure('cache'); packed, consumer, and classifiers derive from SCRATCH.ensure. The local writeFile is deleted and every call site uses SCRATCH.write, the classifiers fixture included. afterAll is async and awaits destroyScratch; the synchronous openStage failure path keeps SCRATCH.destroy(). mkdirSync, mkdtempSync, writeFileSync, rmSync, and tmpdir imports removed."
+    },
+    {
+      "id": "html-obj-6",
+      "disposition": "applied",
+      "note": "NPM and SHELL replaced by NPM_CLI read from process.env.npm_execpath; runNpm spawns process.execPath with [NPM_CLI, ...args] and no shell, and throws a named error when the variable is absent. The win32 shell comment is replaced by one naming the JavaScript-entry rule. Probed first: under an npm script npm_execpath is set, ends in .js, and node <entry> --version exits 0; the same path with '.absent' appended exits non-zero. npm run test:distribution exits 0 with the stage built, so the pack and install ran through the new path."
+    },
+    {
+      "id": "html-obj-7",
+      "disposition": "applied",
+      "note": "isBrowserVuePath and its doc comment deleted from tests/setup.ts; the import row at tests/setup.test.ts and the whole describe('setup - browser path helper') block deleted. setup project moved from 30 to 29 tests, which is the two deleted cases against the one added by html-obj-3."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "applied",
+      "note": "Folded into html-obj-7 by that row's id, per the brief's fold rule; no second edit made. The workspace has no browser environment (vite.config.ts registers src:core alone, no src/browser, no app/browser, no tests/setupBrowser.ts) and the helper was neither the sole export of tests/setup.ts nor its describe the sole case of tests/setup.test.ts, so the setup axis is untouched. tests/setup.ts opens with imports and carries no header comment clause naming the helper, so there was none to strike."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "No class has the shape. grep -rn \"class \" src/ returns exactly one row, src/core/HTML.ts:69 'export class HTML implements HTMLInterface'. Its first members are 'readonly #document: HTMLDocument' and 'readonly #spans: Map<HTMLNode, HTMLSpan>' — already # fields, already first, with a 'get document()' getter opening the public interface. grep -rn \"readonly id\" src/ returns nothing. No JSON.stringify check was needed because the population is empty. No edit."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/html/guides/html.md — count, positional-reference, guarantee, since/once, and above/below repairs; the foldNode exception in the Helpers preamble; holds named beside attempt in the contract section; the Tests-section 'stage' moved to 'pass'.",
+    "/home/user/fleet/html/src/core/HTML.ts — distill TSDoc drops the stage count and moves 'stage' to 'pass'.",
+    "/home/user/fleet/html/src/core/constants.ts — HTML_WHITESPACE count deleted; temporal 'once' becomes 'after' in the SAFE_ATTRIBUTES block.",
+    "/home/user/fleet/html/src/core/helpers.ts — scanRawText and isSafeURL TSDoc take the required boolean-parameter and default forms.",
+    "/home/user/fleet/html/src/core/validators.ts — isHTMLNode runs on the declared holds primitive instead of an attempt outcome it reduced by hand; attempt dropped from the import.",
+    "/home/user/fleet/html/tests/distribution.test.ts — owned scratch through createScratch/destroyScratch; npm spawned as a JavaScript entry through process.execPath with no shim and no shell.",
+    "/home/user/fleet/html/tests/guides.test.ts — the executed `flagship fences` block with per-source presence guards; header comment and INTERNAL doc comment repairs.",
+    "/home/user/fleet/html/tests/setup.ts — URL_SAFETY_GROUPS frozen; the collection-mutation interface and helper pair adopted with TSDoc; isBrowserVuePath deleted.",
+    "/home/user/fleet/html/tests/setup.test.ts — the freeze proof, the collection-mutation case, the browser-path block deleted, and the :40 comment repaired.",
+    "/home/user/fleet/html/tests/src/core/constants.test.ts — imports the shared mutation helpers from tests/setup.ts and exports nothing; the whitespace test title's count deleted.",
+    "/home/user/fleet/html/tests/src/core/helpers.test.ts — bench comment 'The suite above' becomes 'The preceding suite'.",
+    "/home/user/fleet/html/tests/src/core/parsers.test.ts — bench comment 'The suite above' becomes 'The preceding suite'."
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2064ms on 46 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostic"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json && tsc --noEmit -p configs/src/tsconfig.core.json — no diagnostic"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "10 modules transformed; dist/src/core/index.js 133.25 kB, dist/src/core/index.cjs 136.13 kB; declarations bundled; index.d.ts copied to index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:core 312 passed (312); policy 111 passed (111); config 46 passed (46); setup 29 passed (29); guides 32 passed (32) — every test file passed"
+    },
+    {
+      "command": "npm run test:distribution",
+      "exit": 0,
+      "excerpt": "9 passed (9). Two per-entry drives ran, so STAGE was defined and the pack and install actually executed through the rewritten npm spawn rather than skipping on an unreachable registry."
+    },
+    {
+      "command": "npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup (before html-obj-4's fix)",
+      "exit": 1,
+      "excerpt": "Tests 1 failed | 29 passed (30). FAIL setup - adversarial corpora > refuses every mutation of the URL-safety group list: AssertionError: expected false to be true, at expect(Object.isFrozen(URL_SAFETY_GROUPS)).toBe(true)"
+    },
+    {
+      "command": "npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup (after html-obj-4's fix)",
+      "exit": 0,
+      "excerpt": "Tests 30 passed (30)"
+    }
+  ],
+  "breaking": [],
+  "patches": [
+    "REFERRAL, not a patch to apply here — tests/distribution.test.ts template origin. html-obj-5 and html-obj-6 repaired bytes that are identical across the fleet, so the same two defects (a self-built mkdtempSync scratch with a bare rmSync teardown, and an npm.cmd spawn behind shell: true on win32) sit in every sibling and in the scaffold generator that writes the file. The file is claimed by presence, so `repair` does not restore it and this edit persists in this checkout; the generator still emits the old form for the next target. The exact repair is the tests/distribution.test.ts hunk of /home/user/work/evidence/conform-html.diff.",
+    "SHARED DROP-IN WORDING — tests/guides.test.ts header comment, byte-identical across the fleet. This unit changed it; sibling copies carry the old wording. Apply per sibling, adjusting only whether that package added a fences block:\n@@ tests/guides.test.ts:1-3 @@\n // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against\n-// this repo's own `guides/README.md` manifest. The five constants below are this\n-// package's own, and are the only part a sibling package changes.\n+// this repo's own `guides/README.md` manifest. The constants that follow and the\n+// closing `flagship fences` block are this package's own, and are the only parts a\n+// sibling package changes.\nRationale: 'five constants' is a count of a set anyone can add to (AGENTS.md § Writing), and 'below' is banned document navigation (.claude/rules/writing.md § Code tokens, references, and links). A sibling with no fences block takes 'The constants that follow are this package's own, and are the only part a sibling package changes.'",
+    "SHARED DROP-IN WORDING — tests/guides.test.ts INTERNAL doc comment, same drop-in:\n@@ tests/guides.test.ts INTERNAL @@\n- * intentional rather than forgotten — and the second assertion below fails when a name\n+ * intentional rather than forgotten — and the assertion that follows it fails when a name\n   * here stops being stranded, so the list cannot rot.\nRationale: 'below' is banned document navigation, and 'the second assertion' names a list item by its position (AGENTS.md § Writing)."
+  ],
+  "deviations": [
+    "No deviation stopped the unit. Every row is closed and the gate chain is green.",
+    "ANCILLARY 1 — guides/html.md Tests section repaired beyond the row's named line. html-subj-4 scopes the 'stage' to 'pass' rename to the distill section, but the Tests section read 'every stage of the distill pass', which is the same alternation the row's own cited rule (AGENTS.md § Design laws, One concept, one term) bans. Changed to 'every pass of the distill pipeline'. Decided and carried on per the deviation contract's ancillary clause. The stage-inflection sweep over guides/html.md and src/core/ now reads empty.",
+    "ANCILLARY 2 — the contract-section bullet keeps its 'One exception boundary.' lead-in. html-obj-1's operative form fixes the sentence but names no replacement for the bold lead, which now precedes a sentence naming two symbols. Kept, because the new sentence states that holds is attempt's predicate form: one boundary with two shapes, not two boundaries.",
+    "ANCILLARY 3 — the collection-mutation case carries an unfrozen control the row did not name. html-obj-3 specifies a frozen array and a frozen record. An attempt against a frozen collection lands nothing, so a case built only from those passes unchanged if either helper were reduced to a no-op — an instrument certified only from the inside (.claude/rules/quality.md § Instruments). The it drives an unfrozen array and record beside them, asserts the attempt changed both, then asserts the restore returned their members. It also records, in a comment and in the assertion shape, that restoreCollectionMutation leaves a named property beside the members on a collection that accepted the write; that residue is unreachable on the frozen path the helpers are actually used on.",
+    "ANCILLARY 4 — three fence transcriptions avoid the fences' own conditional shape. oxlint's vitest(no-conditional-expect) refused `if (node?.category === 'element') expect(...)`. The parse-and-query fence asserts the whole first node with one toEqual; the anchor and image fences narrow through isElementNode into requireValue, which throws with a named message rather than skipping. No case can pass vacuously, and no diagnostic was suppressed.",
+    "OBSERVATION — npm test under load. The reading in the gates list was taken with nothing else running in this checkout. The Orchestrator takes the deciding run after this unit exits.",
+    "OBSERVATION — guides/html.md:291 states 'all four protocol-relative forms', a count of a package-owned set on the same rule html-subj-5 cites, at a site no confirmed row names. Left untouched; it belongs to whichever row owns that sentence next.",
+    "OBSERVATION — guides/contract.md:614 states 'Three laws bind the two domains'. That file is a vendored dependency guide mirror and is shared/report-only; .claude/rules/documentation.md says a mirror is refreshed rather than rewritten, so it is @orkestrel/contract's to fix upstream. guides/test.md's mkdtempSync mentions are the same class and correctly describe createScratch's own internals.",
+    "OBSERVATION — the escape-and-inspect fence's resolveAttributes claim. The fence comment claims base resolution over URL attributes and lowercased names on the rest. That anchor's href is 'javascript:alert(1)', which new URL cannot resolve against the base, so it survives exactly as written. The transcription asserts the real returned array and names the pass-through in a comment; the guide's own resolveURL Surface row already documents that an unresolvable value is returned unchanged, so nothing is contradicted and no repair is owed.",
+    "INSTRUMENT NOTE — two throwaway probes ran under tmp/probe/ and were deleted before this report; git ls-files --others --exclude-standard returns nothing. The fence control asserted values one off from the ones the flagship fences block asserts, against the same real code, and passed: the span is not { start: 0, end: 41 }, foldNode over the un-extracted document returns 3 rather than the fence's 2, and the render is the exact documented string — so the extractRegion step and each asserted value discriminate. The npm_execpath probe carried its own negative control.",
+    "INSTRUMENT NOTE — the two non-ASCII transcriptions are bound by code point. lowercaseASCII('HTML-Ω') and normalizeSource('A\\r\\n𝕏') compare a character the test typed against itself, so a retyped Ω (U+03A9 against the identically-rendered U+2126) would pass while documenting a different code point. Both lines are in the presence guard, written with the \\u{1d54f} escape rather than retyped, and the guard passes — so the guide's code points are the ones transcribed. This is the .claude/rules/workspace.md § Text integrity hazard, closed rather than assumed away."
+  ]
+}

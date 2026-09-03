@@ -1,0 +1,13 @@
+{
+  "package": "timeout",
+  "rows": 16,
+  "breaking": [],
+  "folded": [
+    "timeout-subj-1",
+    "timeout-subj-2"
+  ],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": false,
+  "note": "Two duplicate README rulings folded into their objective carriers (timeout-subj-1 into timeout-obj-2, timeout-subj-2 into timeout-obj-3), no ruling carried to the Orchestrator, and every refuter ruling was non-breaking so the fleet consumer sweep had no symbol to run, leaving a 16-row implement brief."
+}

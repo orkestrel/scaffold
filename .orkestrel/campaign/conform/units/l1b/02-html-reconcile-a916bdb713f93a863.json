@@ -1,0 +1,10 @@
+{
+  "package": "html",
+  "rows": 17,
+  "breaking": [],
+  "folded": [],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": true,
+  "note": "The marker /home/user/work/reports/conform-html.reconciled already exists (written by the Orchestrator at 10:58 UTC after an earlier lane completed the write-back, sweep, reconcile section, and brief generation), so this lane did nothing but read /home/user/scaffold/tmp/units/conform/conform-html-brief.md and count its 17 numbered rows under § Rows."
+}

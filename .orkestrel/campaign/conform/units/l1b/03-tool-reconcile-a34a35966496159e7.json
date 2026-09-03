@@ -1,0 +1,12 @@
+{
+  "package": "tool",
+  "rows": 13,
+  "breaking": [],
+  "folded": [
+    "tool-subj-6"
+  ],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": false,
+  "note": "Reconciled 16 refuter rulings for tool: tool-subj-6 folded into tool-obj-2 (the refuter names one carrier for the dead isBrowserVuePath helper), no ruling carried to the Orchestrator because every CONFIRMED repair sits inside /home/user/fleet/tool and touches no manifest, lockfile, or off-limits file, and no ruling is marked breaking so the fleet consumer sweep had no identifier to run."
+}

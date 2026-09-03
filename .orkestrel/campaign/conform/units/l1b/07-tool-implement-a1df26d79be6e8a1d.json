@@ -1,0 +1,149 @@
+{
+  "package": "tool",
+  "rows": [
+    {
+      "id": "tool-obj-1",
+      "disposition": "applied",
+      "note": "Appended `describe('flagship fences', …)` to tests/guides.test.ts after the manifest loop, in the shape of /home/user/fleet/contract/tests/guides.test.ts:291-338. Imports Tool, createTool, createToolManager, isToolCall from @src/core and binds guideText with requireValue. Executed registry transcription asserts tools.count is 3, tools.tools().map(name) equals ['add','echo','now'], tools.remove('echo') is true, tools.remove(['now','ghost']) is false, and tools.count is 0 after clear(). Executed calls transcription re-registers add (the registry fence cleared it), asserts isToolCall(incoming) is true, that execute narrows to success with value 5, and that the batch equals exactly the two documented objects. Presence guards bind 'tools.count // 3', \"tools.remove('echo') // true\", \"tools.remove(['now', 'ghost']) // false\", 'result.value // 5', and both '// →' batch comments. No TSDoc @example block transcribed. npm run test:guides 23 passed before, 27 passed after."
+    },
+    {
+      "id": "tool-obj-2",
+      "disposition": "applied",
+      "note": "Deleted the isBrowserVuePath doc block and function from tests/setup.ts, rewrote the header comment to '// The fleet-wide helpers live in `@orkestrel/test`. What remains here is what is specific to this\\n// package: the tool call fixture.', deleted the describe('isBrowserVuePath', …) block from tests/setup.test.ts, and reduced its import to `import { createToolCall } from './setup.js'`. createToolCall untouched. npm run test:setup 4 passed before, 2 passed after."
+    },
+    {
+      "id": "tool-obj-3",
+      "disposition": "applied",
+      "note": "Documentation and proof only; src/core/tools/ToolManager.ts unchanged. src/core/types.ts ToolResult @remarks now reads 'Always a result and never a throw for a call whose members are plain values. A call whose `id` or `name` accessor throws when read makes `execute` reject instead, because no correlated result can be built without them. Narrow on `success`.' guides/tool.md now opens the execution paragraph with 'Execution always resolves for a call whose members are plain values; a call whose `id` or `name` accessor throws when read makes `execute` reject, because no correlated result can be built without them.' Added the test 'rejects when the call id accessor throws, the documented limit on always resolving' to tests/src/core/tools/ToolManager.test.ts after the null-prototype hostile case: it registers 'add', builds a call with createToolCall, redefines `id` with Object.defineProperty as a throwing getter, and asserts `await expect(manager.execute(call)).rejects.toThrow('blocked id read')`. npm run test:src 53 passed before, 54 passed after."
+    },
+    {
+      "id": "tool-subj-1",
+      "disposition": "applied",
+      "note": "guides/tool.md now reads 'an `Error` contributes its `message`, and any other thrown value is converted with `String`; a value whose conversion itself throws — a hostile `toString`, a throwing `message` getter, a null-prototype object — becomes the fixed message `Unknown thrown value`.' The rest of the sentence is unchanged."
+    },
+    {
+      "id": "tool-subj-2",
+      "disposition": "applied",
+      "note": "guides/tool.md: replaced 'Existing zero-argument and one-argument handlers remain valid, and when caller context is absent the handler receives `undefined`.' with 'A handler can declare no parameter, one, or two. When the call carries no caller context the registry invokes the handler with the arguments record alone, so a handler that reads its own arity sees one argument and a handler that declares `caller` sees `undefined`.' Also replaced 'when absent its value is `undefined`' with 'when absent it is not passed at all' in the caller-context paragraph."
+    },
+    {
+      "id": "tool-subj-3",
+      "disposition": "applied",
+      "note": "src/core/types.ts: added an @remarks block to ToolInterface.execute after the first sentence, stating that failures are not contained there (a synchronous throw propagates and an asynchronous rejection rejects), that {@link ToolManagerInterface.execute} is where a call becomes a result, and that the registry omits `caller` when the call carries none so a handler reading its own arity sees one argument. The existing @param and @returns lines are kept."
+    },
+    {
+      "id": "tool-subj-5",
+      "disposition": "applied",
+      "note": "guides/tool.md § Tests: added '- [`helpers.test.ts`](../tests/src/core/helpers.test.ts) — definition projection: summary preference, omitted optional keys, projected key order, schema identity, and a fresh object per call.' immediately after the factories row. The guides project's 'links only to test files that exist' assertion still passes."
+    },
+    {
+      "id": "tool-subj-7",
+      "disposition": "applied",
+      "note": "guides/tool.md: 'Two nouns carry the runtime.' replaced with '`Tool` and `ToolManager` carry the runtime.' and the paragraph rewrapped to the file's width. Line 17 ('are two such callers') left unchanged, per the refuter's operative form."
+    },
+    {
+      "id": "tool-subj-8",
+      "disposition": "applied",
+      "note": "guides/tool.md § Contracts preamble: 'Every property is readonly, and an absent optional field is simply absent.' replaced with 'Every property is readonly, and an optional field the caller did not supply is absent from the value.'"
+    },
+    {
+      "id": "tool-subj-9",
+      "disposition": "applied",
+      "note": "guides/tool.md: '`new Tool({ … })` builds the same thing; `createTool` is the form to reach for when a call site should not name a class.' replaced with '`new Tool({ … })` builds the same thing; reach for `createTool` where a call site must not name a class.'"
+    },
+    {
+      "id": "tool-subj-10",
+      "disposition": "applied",
+      "note": "README.md: 'An agent loop, an MCP bridge, and plain application code are all just callers.' now ends 'are all callers.'"
+    },
+    {
+      "id": "tool-subj-11",
+      "disposition": "applied",
+      "note": "guides/tool.md registry fence: 'tools.add(add) // the tool defined above' replaced with 'tools.add(add) // the tool defined earlier'. The tool-obj-1 presence guards do not bind this line, so no transcription depends on the old text."
+    },
+    {
+      "id": "tool-subj-12",
+      "disposition": "applied",
+      "note": "guides/tool.md: 'That guarantee is what lets a caller feed every result back to' replaced with 'That isolation is what lets a caller feed every result back to'."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "applied",
+      "note": "Folded into tool-obj-2, which is the same edit; no second edit made. This workspace has no browser environment: no src/browser, no app/ directory, no tests/setupBrowser.ts (`ls -R src tests` shows src/core and tests only). isBrowserVuePath was not the sole export of tests/setup.ts (createToolCall remains, consumed at tests/src/core/factories.test.ts and tests/src/core/tools/ToolManager.test.ts) and its describe was not the sole case of tests/setup.test.ts, so the blueprint's `setup` axis and the test:setup script stay valid and no blueprint change is implied."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "No implementation class has the shape. The classes read are Tool (src/core/tools/Tool.ts) and ToolManager (src/core/tools/ToolManager.ts). Tool declares readonly name, description, summary, parameters and the #execute private field, and no `id` field; ToolManager declares only `readonly #tools`. A grep for `readonly id\\s*:\\s*string` over src returns only src/core/types.ts:29, :47, and :63, which are ToolCall, ToolSuccess, and ToolFailure interface members that fleet-F2 leaves unchanged. No JSON.stringify of a class instance was reached, because the precondition for the edit was never met."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/tool/src/core/types.ts",
+    "/home/user/fleet/tool/guides/tool.md",
+    "/home/user/fleet/tool/README.md",
+    "/home/user/fleet/tool/tests/guides.test.ts",
+    "/home/user/fleet/tool/tests/setup.ts",
+    "/home/user/fleet/tool/tests/setup.test.ts",
+    "/home/user/fleet/tool/tests/src/core/tools/ToolManager.test.ts",
+    "/home/user/scaffold/tmp/units/conform/conform-tool-report.md",
+    "/home/user/work/evidence/conform-tool.diff",
+    "/home/user/work/evidence/conform-tool.status"
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "Checking formatting...\nAll matched files use the correct format.\nFinished in 2370ms on 41 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "> oxlint --config .oxlintrc.json --deny-warnings .\n(no diagnostics)"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "> tsc --noEmit --project tsconfig.json && npm run check:src\n> tsc --noEmit -p configs/src/tsconfig.core.json\n(no diagnostics)"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "dist/src/core/index.js  6.83 kB | gzip: 2.26 kB\ndist/src/core/index.cjs  7.23 kB | gzip: 2.35 kB\n built in 2.00s\nCopied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "test:src  Tests 54 passed (54)\ntest:policy  Tests 111 passed (111)\ntest:config  Tests 46 passed (46)\ntest:setup  Tests 2 passed (2)\ntest:guides  Tests 27 passed (27)"
+    },
+    {
+      "command": "npm run test:guides (baseline, before any edit)",
+      "exit": 0,
+      "excerpt": "Test Files  1 passed (1)\n     Tests  23 passed (23)"
+    },
+    {
+      "command": "npm run test:setup (baseline, before any edit)",
+      "exit": 0,
+      "excerpt": "Test Files  1 passed (1)\n     Tests  4 passed (4)"
+    },
+    {
+      "command": "npm run test:src (baseline, before any edit)",
+      "exit": 0,
+      "excerpt": "Test Files  5 passed (5)\n     Tests  53 passed (53)"
+    },
+    {
+      "command": "npm run test:probe (throwaway control probe for the tool-obj-3 assertion, deleted after the reading)",
+      "exit": 1,
+      "excerpt": "AssertionError: promise resolved \"{ id: 'plain', name: 'add', ...(2) }\" instead of rejecting\n  tmp/probe/idAccessor.test.ts:14:37\nTest Files  1 failed (1)\n     Tests  1 failed | 1 passed (2)\n\nThe control (a plain call, drawn from outside the hostile population) failed and the subject (the throwing id accessor) passed, so `rejects.toThrow('blocked id read')` observes the rejection rather than passing vacuously."
+    }
+  ],
+  "breaking": [],
+  "patches": [],
+  "deviations": [
+    "None. No row's repair contradicted a rule, collided with an existing name, required a file outside Owned, or required a consumer edit to keep this package's gates green.",
+    "Observation, not a deviation — guides/tool.md:31 still reads 'answers with a `ToolResult` that is always a result and never a throw', the same unqualified claim tool-obj-3 qualified at src/core/types.ts and at the Calls-and-results paragraph. The refuter's operative form named only those two homes, so the tagline paragraph was left as found. Route it to a successor unit if the Orchestrator wants the guide internally consistent on that claim.",
+    "Observation, not a deviation — tests/guides.test.ts:2-3 reads 'The four constants below are this // package's own', carrying both a count and `below`. The refuter recorded this explicitly as a finding outside the claims, so it was left as found even though the file is Owned and this unit edited it.",
+    "Observation, not a deviation — guides/README.md § Dependency reference lists contract.md, guide.md, and scaffold.md, while guides/probe.md and guides/test.md also sit in the tree unlisted. No parity assertion covers that section, so the gates stay green.",
+    "Process note — `rm -rf tmp/probe` was denied by the permission system; the single-file `rm tmp/probe/idAccessor.test.ts` was permitted and the probe is gone. `tmp/` is gitignored, so `git status --short` is unaffected and lists only Owned files.",
+    "Process note — every gate ran through `npm run --prefix /home/user/fleet/tool <script>` to honour the one-plain-command shell discipline; npm runs each script with the prefix directory as its working directory, which the baseline readings confirm against the same scripts run from the checkout."
+  ]
+}

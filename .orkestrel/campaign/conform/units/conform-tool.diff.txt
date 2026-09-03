@@ -1,0 +1,351 @@
+diff --git a/README.md b/README.md
+index d2642c7..0d0221b 100644
+--- a/README.md
++++ b/README.md
+@@ -10,7 +10,7 @@ registry around it: definitions to advertise, calls to dispatch, results to corr
+ per-call error isolation so one bad tool never takes down the run.
+ 
+ Nothing here is model-specific. An agent loop, an MCP bridge, and plain application code are all
+-just callers.
++callers.
+ 
+ ## Install
+ 
+diff --git a/guides/tool.md b/guides/tool.md
+index a109adb..9bc4056 100644
+--- a/guides/tool.md
++++ b/guides/tool.md
+@@ -25,17 +25,18 @@
+ > consumer's execution context, one layer up — the @orkestrel/mcp package's execution context
+ > carries a progress reporter — never of the tool contract itself.
+ 
+-Two nouns carry the runtime. A `Tool` is inert — a definition plus a handler, with no lifecycle
+-and no failure handling of its own. A `ToolManager` is the live surface a caller holds: it hands
+-`definitions()` outward, takes a `ToolCall` back, and answers with a `ToolResult` that is always
+-a result and never a throw. Everything else in this module is the plain data those two exchange.
++`Tool` and `ToolManager` carry the runtime. A `Tool` is inert — a definition plus a handler, with
++no lifecycle and no failure handling of its own. A `ToolManager` is the live surface a caller
++holds: it hands `definitions()` outward, takes a `ToolCall` back, and answers with a `ToolResult`
++that is always a result and never a throw. Everything else in this module is the plain data
++those two exchange.
+ 
+ ## Surface
+ 
+ ### Contracts
+ 
+ The data shapes, from [`types.ts`](../src/core/types.ts). Every property is readonly, and an
+-absent optional field is simply absent.
++optional field the caller did not supply is absent from the value.
+ 
+ | Name                   | Kind      | Shape / Purpose                                                                                                                     |
+ | ---------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+@@ -139,8 +140,8 @@ const add = createTool({
+ })
+ ```
+ 
+-`new Tool({ … })` builds the same thing; `createTool` is the form to reach for when a call site
+-should not name a class.
++`new Tool({ … })` builds the same thing; reach for `createTool` where a call site must not name
++a class.
+ 
+ The schema is descriptive runtime data, forwarded by reference and never interpreted here. A
+ handler always receives the open `Readonly<Record<string, unknown>>` the caller sent and narrows
+@@ -148,8 +149,9 @@ the fields it consumes — declaring `required` tells the caller what to send, n
+ what to reject. Its optional second parameter is the call's `caller` value verbatim. That value
+ is asserted by the invoking consumer and is never verified here; a handler or policy layer must
+ make every authorization and trust decision. Handlers may be synchronous or asynchronous; the
+-registry awaits either. Existing zero-argument and one-argument handlers remain valid, and when
+-caller context is absent the handler receives `undefined`.
++registry awaits either. A handler can declare no parameter, one, or two. When the call carries
++no caller context the registry invokes the handler with the arguments record alone, so a handler
++that reads its own arity sees one argument and a handler that declares `caller` sees `undefined`.
+ 
+ When one was authored, `definitions()` projects the tool's `summary` as `description`, advertising
+ it in place of the full description. The full text stays on the tool for direct lookup through
+@@ -164,7 +166,7 @@ caller is allowed to reach, and hand out its definitions:
+ import { Tool, createToolManager } from '@orkestrel/tool'
+ 
+ const tools = createToolManager()
+-tools.add(add) // the tool defined above
++tools.add(add) // the tool defined earlier
+ tools.add([
+ 	new Tool({ name: 'echo', execute: (args) => args.value }),
+ 	new Tool({ name: 'now', description: 'Current epoch milliseconds.', execute: () => Date.now() }),
+@@ -227,21 +229,25 @@ the handler, which is exactly where the domain knowledge to reject it lives.
+ 
+ Caller context exists only on the call and in the tool execution chain. This package never adds
+ it to advertised definitions, schemas, results, or logs. When present it is forwarded by
+-identity; when absent its value is `undefined`.
+-
+-Execution always resolves. An unknown name becomes `tool not found: <name>`; a synchronous throw
+-and an asynchronous rejection are both contained; an `Error` contributes its `message` and any
+-other thrown value is converted with `String`. Success and failure never mix in one result: a
+-successful call carries `value` even when that value is `undefined`, `null`, `0`, `''`, or
+-`false`, and a failed call carries `error`. Narrow on `success` to distinguish the two; a present
+-success value is not necessarily meaningful or truthy.
++identity; when absent it is not passed at all.
++
++Execution always resolves for a call whose members are plain values; a call whose `id` or `name`
++accessor throws when read makes `execute` reject, because no correlated result can be built
++without them. An unknown name becomes `tool not found: <name>`; a synchronous throw and an
++asynchronous rejection are both contained; an `Error` contributes its `message`, and any other
++thrown value is converted with `String`; a value whose conversion itself throws — a hostile
++`toString`, a throwing `message` getter, a null-prototype object — becomes the fixed message
++`Unknown thrown value`. Success and failure never mix in one result: a successful call carries
++`value` even when that value is `undefined`, `null`, `0`, `''`, or `false`, and a failed call
++carries `error`. Narrow on `success` to distinguish the two; a present success value is not
++necessarily meaningful or truthy.
+ 
+ An in-process caller needing a typed error can call `tools.tool(name)`, then
+ `tool.execute(args)` inside its own `try`/`catch`.
+ 
+ A batch is dispatched concurrently and answered in input order, with each call isolated from its
+ siblings — one failure never voids the batch, and duplicate ids stay distinct positional calls
+-rather than collapsing into one. That guarantee is what lets a caller feed every result back to
++rather than collapsing into one. That isolation is what lets a caller feed every result back to
+ whatever produced the calls and let it react to the failures itself.
+ 
+ ## Callers
+@@ -266,6 +272,7 @@ registers here unchanged.
+ - [`Tool.test.ts`](../tests/src/core/tools/Tool.test.ts) — definition binding, optional-field omission, argument identity, return values, and the deliberate absence of handler isolation.
+ - [`ToolManager.test.ts`](../tests/src/core/tools/ToolManager.test.ts) — insertion order, overwrite and removal lifecycle, definition projection, and isolated single and batch execution.
+ - [`factories.test.ts`](../tests/src/core/factories.test.ts) — factory construction and working instances.
++- [`helpers.test.ts`](../tests/src/core/helpers.test.ts) — definition projection: summary preference, omitted optional keys, projected key order, schema identity, and a fresh object per call.
+ - [`validators.test.ts`](../tests/src/core/validators.test.ts) — tool-call envelope boundaries: incomplete calls, wrong field types, and non-record arguments.
+ 
+ ## See also
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 0291967..24c172d 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -69,7 +69,9 @@ export interface ToolFailure extends Failure<string> {
+  * Represents the outcome of executing a {@link ToolCall}.
+  *
+  * @remarks
+- * Always a result and never a throw. Narrow on `success`.
++ * Always a result and never a throw for a call whose members are plain values. A call
++ * whose `id` or `name` accessor throws when read makes `execute` reject instead, because
++ * no correlated result can be built without them. Narrow on `success`.
+  */
+ export type ToolResult = ToolSuccess | ToolFailure
+ 
+@@ -86,6 +88,12 @@ export interface ToolInterface extends ToolDefinition {
+ 	/**
+ 	 * Runs the tool's handler.
+ 	 *
++	 * @remarks
++	 * Failures are not contained here: a synchronous throw propagates and an
++	 * asynchronous rejection rejects. {@link ToolManagerInterface.execute} is where a
++	 * call becomes a result. The registry omits `caller` from the invocation when the
++	 * call carries none, so a handler reading its own arity sees one argument.
++	 *
+ 	 * @param args - The caller-supplied arguments record
+ 	 * @param caller - Optional consumer-asserted caller context, forwarded without verification
+ 	 * @returns The tool's synchronous or asynchronous result
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index e076900..f1b33aa 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -2,6 +2,7 @@
+ // this repo's own `guides/README.md` manifest. The four constants below are this
+ // package's own, and are the only part a sibling package changes.
+ 
++import { Tool, createTool, createToolManager, isToolCall } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	computeSymbolKey,
+@@ -168,3 +169,100 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// The EXECUTED half. Every preceding case reads a name — from guide text or from source
++// text — and a name that resolves proves nothing about the sentence beside it, so a fence
++// whose comment claims a value the code contradicts passes all of them. The cases here run
++// the flagship fences and assert the values their comments claim. Change a fence, change
++// the transcription beside it.
++describe('flagship fences', () => {
++	const guideText = requireValue(files['guides/tool.md'], 'Missing file: guides/tool.md')
++	// The anatomy fence's tool, built once. Both flagship fences register this same tool.
++	const add = createTool({
++		name: 'add',
++		description: 'Add two numeric values and return their sum. Both operands are required.',
++		summary: 'Add two numbers.',
++		parameters: {
++			type: 'object',
++			properties: {
++				left: { type: 'number' },
++				right: { type: 'number' },
++			},
++			required: ['left', 'right'],
++		},
++		execute: (args) => Number(args.left) + Number(args.right),
++	})
++
++	it('counts, orders, and removes exactly as the registry fence claims', () => {
++		const tools = createToolManager()
++		tools.add(add)
++		tools.add([
++			new Tool({ name: 'echo', execute: (args) => args.value }),
++			new Tool({
++				name: 'now',
++				description: 'Current epoch milliseconds.',
++				execute: () => Date.now(),
++			}),
++		])
++
++		expect(tools.count).toBe(3)
++		expect(tools.tools().map((tool) => tool.name)).toEqual(['add', 'echo', 'now'])
++		expect(tools.remove('echo')).toBe(true)
++		expect(tools.remove(['now', 'ghost'])).toBe(false)
++
++		tools.clear()
++
++		expect(tools.count).toBe(0)
++	})
++
++	it('carries the registry fence lines the transcription copies', () => {
++		// The presence guard beside the transcription: it proves the transcribed lines are
++		// still the documented ones, and nothing whatever about behavior. Every line that
++		// carries a claim is bound, so a comment cannot drift to the opposite value and stay
++		// green.
++		expect(guideText).toContain('tools.count // 3')
++		expect(guideText).toContain("tools.remove('echo') // true")
++		expect(guideText).toContain("tools.remove(['now', 'ghost']) // false")
++	})
++
++	it('guards, executes, and batches exactly as the calls fence claims', async () => {
++		// The registry fence ends on `tools.clear()`, so a literal sequential transcription
++		// would answer `tool not found: add`. Registering `add` again is what makes this the
++		// case the calls fence documents.
++		const tools = createToolManager()
++		tools.add(add)
++		const incoming: unknown = {
++			id: 'call-1',
++			name: 'add',
++			arguments: { left: 2, right: 3 },
++			caller: { subject: 'user-42' },
++		}
++
++		expect(isToolCall(incoming)).toBe(true)
++		if (!isToolCall(incoming)) throw new Error('the fence envelope failed its own guard')
++
++		const result = await tools.execute(incoming)
++
++		expect(result.success).toBe(true)
++		const value = result.success ? result.value : undefined
++		expect(value).toBe(5)
++
++		const batch = await tools.execute([
++			{ id: '1', name: 'add', arguments: { left: 2, right: 3 } },
++			{ id: '2', name: 'ghost', arguments: {} },
++		])
++
++		expect(batch).toEqual([
++			{ id: '1', name: 'add', success: true, value: 5 },
++			{ id: '2', name: 'ghost', success: false, error: 'tool not found: ghost' },
++		])
++	})
++
++	it('carries the calls fence lines the transcription copies', () => {
++		expect(guideText).toContain('result.value // 5')
++		expect(guideText).toContain("// → { id: '1', name: 'add', success: true, value: 5 }")
++		expect(guideText).toContain(
++			"// → { id: '2', name: 'ghost', success: false, error: 'tool not found: ghost' }",
++		)
++	})
++})
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 11b8e99..e7ac6c3 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -1,5 +1,5 @@
+ import { describe, expect, it } from 'vitest'
+-import { createToolCall, isBrowserVuePath } from './setup.js'
++import { createToolCall } from './setup.js'
+ 
+ describe('createToolCall', () => {
+ 	it('defaults the arguments record to empty and the id to call', () => {
+@@ -16,28 +16,3 @@ describe('createToolCall', () => {
+ 		expect(call).toEqual({ id: 'turn-1', name: 'echo', arguments: args })
+ 	})
+ })
+-
+-describe('isBrowserVuePath', () => {
+-	it('accepts a repository-relative path under app/browser/ under either separator family', () => {
+-		const forward = 'app/browser/components/Panel.vue'
+-		const backslash = 'app\\browser\\components\\Panel.vue'
+-
+-		// Second route: split each path on both separators and compare the leading segments
+-		// directly, instead of reusing the module's own replace-then-startsWith logic.
+-		const expectedFromForward = forward.split(/[\\/]/).slice(0, 2).join('/') === 'app/browser'
+-		const expectedFromBackslash = backslash.split(/[\\/]/).slice(0, 2).join('/') === 'app/browser'
+-
+-		expect(isBrowserVuePath(forward)).toBe(expectedFromForward)
+-		expect(isBrowserVuePath(backslash)).toBe(expectedFromBackslash)
+-		expect(isBrowserVuePath(forward)).toBe(true)
+-		expect(isBrowserVuePath(backslash)).toBe(true)
+-	})
+-
+-	it('refuses a sibling application path and a prefix lookalike', () => {
+-		const sibling = 'app/server/components/Panel.vue'
+-		const lookalike = 'app/browserish/Panel.vue'
+-
+-		expect(isBrowserVuePath(sibling)).toBe(false)
+-		expect(isBrowserVuePath(lookalike)).toBe(false)
+-	})
+-})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 2292759..79e74c6 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,7 +1,7 @@
+ import type { ToolCall } from '@src/core'
+ 
+ // The fleet-wide helpers live in `@orkestrel/test`. What remains here is what is specific to this
+-// package: the tool call fixture and the browser-path predicate.
++// package: the tool call fixture.
+ 
+ /**
+  * Create a tool call for runtime tests.
+@@ -18,13 +18,3 @@ export function createToolCall(
+ ): ToolCall {
+ 	return { id, name, arguments: args }
+ }
+-
+-/**
+- * Determine whether a repository-relative Vue path belongs to a browser application.
+- *
+- * @param path - The repository-relative path
+- * @returns Whether the path is under the browser application
+- */
+-export function isBrowserVuePath(path: string): boolean {
+-	return path.replaceAll('\\', '/').startsWith('app/browser/')
+-}
+diff --git a/tests/src/core/tools/ToolManager.test.ts b/tests/src/core/tools/ToolManager.test.ts
+index 737198d..a012fb3 100644
+--- a/tests/src/core/tools/ToolManager.test.ts
++++ b/tests/src/core/tools/ToolManager.test.ts
+@@ -427,6 +427,22 @@ describe('ToolManager execution', () => {
+ 		})
+ 	})
+ 
++	it('rejects when the call id accessor throws, the documented limit on always resolving', async () => {
++		// The envelope members are read to correlate the result, so a call whose own `id`
++		// getter throws leaves no result to build and `execute` rejects instead. This is the
++		// qualification `ToolResult` and the guide carry; it is not a handler failure.
++		const manager = new ToolManager()
++		manager.add(new Tool({ name: 'add', execute: (args) => Number(args.a) + Number(args.b) }))
++		const call = createToolCall('add', { a: 1, b: 1 }, 'hostile')
++		Object.defineProperty(call, 'id', {
++			get: () => {
++				throw new Error('blocked id read')
++			},
++		})
++
++		await expect(manager.execute(call)).rejects.toThrow('blocked id read')
++	})
++
+ 	it('resolves unknown names to not-found errors without a value', async () => {
+ 		const manager = new ToolManager()
+ 
