@@ -89,3 +89,26 @@ or when a run is red outside the suite. Decide and record names, budgets, and fi
 2. Every run green at every variant and under the capture flag, with every frame ending on the
    surface's floor; the harness gate reads `passed` with a zero failure tally.
 3. One artifact per variant; the setup proofs pass; scoped gates green.
+
+## Findings from the chrome unit, carried
+
+- The Delete table is five rows: `idle × select → armed`, `armed × deselect → idle`,
+  `armed × delete → confirming`, `confirming × cancel → armed` (through `Keep selection`),
+  `confirming × confirm → idle` (through `Delete selection`). The scenario phases already exist
+  as leaves in `app/browser/helpers.ts` over `DeleteDriverInterface` (`select`, `delete`,
+  `confirm`, `cancel`, `armed`, `confirming`, `scheduled`, `settle`); implement the driver over
+  the layer's verbs in the test setup, as terrain does.
+- Names: row checkbox `Select building for deletion — Location {location} – Building {number}`;
+  the drop zone's button `Add the first building`; the toolbar's `Add building`,
+  `Delete selected buildings`, `Import buildings from CSV`, `Export buildings to CSV`,
+  `Download CSV template`, `Smart Default: copy the last building when adding`, `Tips`,
+  `Carrier guidelines`, `Quick reference`, `Switch to dark mode` / `Switch to light mode`; the
+  dialog's `Delete selection` and `Keep selection`; the harness's `Play every transition` and
+  `Play {transition name}`; the retry `Couldn't resolve ZIP code — tap to retry`.
+- The Quick Reference modal opens by itself on a wide empty schedule until "Do not show" is set;
+  a journey entering at `md` or wider dismisses it first through its footer `Close` (the icon
+  control is now `Close quick reference`, so `Close` resolves alone).
+- The helper leaves `nameSelection`, `nameTransition`, `readQuery`, `resultToBadge`, and the
+  seven scenario phases owe their describes in `tests/app/browser/helpers.test.ts`; write them.
+- The armed reading is reachability, not a rendered word, because the rail hides labels below
+  `lg`; assert what the surface renders at each variant rather than a label string.
