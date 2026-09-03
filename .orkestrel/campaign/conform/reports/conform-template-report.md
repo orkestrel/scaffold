@@ -17,7 +17,7 @@ open row is stopped rather than written.
 | template-obj-2    | applied     | `tests/src/core/helpers.test.ts:198,200,234,236` read `performance.now()`; the `Date.now` sweep is empty                       |
 | template-obj-3    | applied     | `tests/guides.test.ts:192-301` transcribes each value-claiming fence; `guides/template.md:228` corrected to `['name']`         |
 | template-obj-4    | applied     | `tests/src/core/helpers.test.ts:170` pins the host literal `'-0'`, with no call to `formatValue`                               |
-| template-obj-5    | stopped     | See § Deviations — `fleet-F1` rules a stop on this row                                                                        |
+| template-obj-5    | applied     | Folded into fleet-F1 by the Orchestrator's ruling of 14:52 UTC: the helper is gone and `tests/setup.test.ts` is the export-free proof; the `setup` project and the `test:setup` script stay because the audit infers them from the proof and refuses an uncovered `tests/setup.ts`. |
 | template-obj-6    | applied     | Section-number citations gone from source, tests, and this package's guides; the `AGENTS §` and `§ <number>` sweeps are empty  |
 | template-subj-1   | applied     | `README.md:3-9` carries the real description; `## Requirements` added at `:17-20`                                             |
 | template-subj-2   | applied     | `README.md:24-37` runs the worked call the guide proves, plus the `missing` behaviour paragraph                                |
@@ -30,7 +30,7 @@ open row is stopped rather than written.
 | template-subj-11  | applied     | `src/core/TemplateManager.ts:155` summary trimmed; the declaration-order note is a `//` comment at `:168-169`; signatures unmoved |
 | template-subj-12  | applied     | `via` replaced at `src/core/templates/Template.ts:25,139`, `src/core/helpers.ts:25,139`; `our` dropped at `tests/src/core/helpers.test.ts:51-53`; `through hooks` at `tests/src/core/templates/TemplateManager.test.ts:355` |
 | template-subj-14  | applied     | `destroy(): void` on `TemplateManagerInterface` (`types.ts:249`), implemented at `TemplateManager.ts:221-224`, guide row `:213` and fence line `:232`, tests at `TemplateManager.test.ts:309-343` |
-| fleet-F1          | stopped     | Folds into `template-obj-5`, which also removes the `setup` axis; the fold rule directs a stop                                |
+| fleet-F1          | applied     | Carries template-obj-5; the export-free proof shape.                                                                          |
 | fleet-F2          | noop        | No class in the package has the shape: `Template` declares `#missing`, `#locale`, `#contract` ahead of its public data fields (`src/core/templates/Template.ts:36-46`); `TemplateManager` declares only `#` fields (`:48-51`); `TemplateError` declares no `id` field (`src/core/errors.ts:18-19`) |
 
 ## Files touched
@@ -170,6 +170,20 @@ exports only the helper under review, which is the case `template-obj-5` was wri
 
 Every other row's repair was already in the tree, contradicted no rule, collided with no name, and
 required no file outside Owned.
+
+## Ruling on template-obj-5 and fleet-F1
+
+The Orchestrator ruled on 2026-09-03 at 14:52 UTC that the installed scaffold's plan infers the
+`setup` Vitest project and the `test:setup` script from the presence of a `tests/` module named
+`setup*.test.ts` (`node_modules/@orkestrel/scaffold/dist/bin/main.js:1266-1270`), and the audit
+refuses a `tests/setup.ts` that no proof covers, so a `tests/setup.ts` with no `isBrowserVuePath`
+export still needs `tests/setup.test.ts` as its structural proof. `template-obj-5` therefore folds
+into `fleet-F1` with the axis kept: `isBrowserVuePath` and its doc comment are gone from
+`tests/setup.ts`, `tests/setup.test.ts` is rewritten as the export-free proof that pins
+`Object.keys(setup)` to `[]`, and the `setup` project and `test:setup` script stay untouched because
+the audit derives them from the proof rather than from the deleted helper. Unit `template-setup`
+lands this ruling and re-runs `npm run test:setup`, `format:check`, `lint:check`, `check`, `build`,
+`test`, and `npx scaffold audit --offline`, all green.
 
 ## Acceptance criteria
 
