@@ -291,3 +291,8 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   node-only while the audit demands a browser proof for `tests/setupBrowser.ts`; terrain's
   `vite.config.ts` stays browser-enabled and reads stale until the template moves, so its re-pin
   repair skips the configs group. T2 rename dispatched.
+- Terrain closed on the published releases: T2 rename committed at `739e7f0` (25 call sites
+  across the integration and tokens suites), the re-pin to scaffold 0.0.60 and test 0.0.12 at
+  `44dc238` (repair over every group but configs wrote nothing; audit reads the TypeScript
+  question and the scaffold-owned `vite.config.ts` row; every gate green including `test:setup`
+  43; six runs green). Independent verifier dispatched for the authoritative chain.
