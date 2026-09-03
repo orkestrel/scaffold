@@ -1,0 +1,15 @@
+ M .orkestrel/campaign/conform/units/conform-scaffold.audit.txt
+ M README.md
+ M guides/scaffold.md
+ M host.json
+ M package.json
+ M src/bin/helpers.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M tests/guides.test.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/bin/helpers.test.ts
+ A tests/src/core/factories.test.ts
+ M tests/src/server/WriteTransaction.test.ts
+ M tests/src/server/helpers.test.ts

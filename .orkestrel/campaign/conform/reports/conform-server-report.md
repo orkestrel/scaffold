@@ -347,3 +347,7 @@ Source: `/home/user/scaffold/.orkestrel/campaign/conform/units/l3/server-objecti
   inflection forms for `requestEncoding` and `resolvePort`, the full-population
   generic-word reading, and the documentation-row readings for server-obj-8,
   server-obj-11, server-obj-12, server-subj-8, and server-subj-10.
+
+### Orchestrator integration (22:24 UTC, after the re-run round-3 checker)
+
+The re-run checker found one citation split across two comment lines at `src/server/types.ts:3-4` (`AGENTS.md` / `§ Non-negotiable rules`), which the single-line sweeps missed, and the Orchestrator's own line-by-line sweep found a second at `:584-585`. The Orchestrator removed both (the sentences keep "both `readonly`, both fetch/string-pure" and "no assertion at this boundary"; `npm run check` exit 0 afterwards) and swept `§` and `AGENTS` line by line over `src`, `tests/src`, the root setup and guides tests, `guides/server.md`, `guides/README.md`, and `README.md`: the surviving `§` hits are the RFC 7232 section pointers, and no `AGENTS` line remains.

@@ -513,3 +513,47 @@ The sweep reports no hit in `guides/README.md` or `README.md`.
 ### Orchestrator integration (22:20 UTC, after fix round 1b returned)
 
 Fix round 1b's scope named `tests/**` for the pointer sweep without excluding the vendored set, so the Sol writer rewrote a document pointer in the vendored `tests/policy.test.ts` (the `above` scaffold's host rows already carry at `tests/policy.test.ts:544`). The Orchestrator restored that file to its committed bytes (`git show HEAD:tests/policy.test.ts` written back), regenerated the evidence, and records the vendored site against scaffold's host-row follow-on where it belongs. Every other rewrite of the round stands.
+
+## Fix round 1c
+
+The fix answers claim 5 in
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/brief-r1b-checker-luna.result.md`.
+The executed Builders fence pins every value it supplies:
+
+- `tests/guides.test.ts:417` pins `draft.task` to
+  `{ operation: 'refactor', domain: 'code', statement: 'Refactor useForm to native browser form APIs.' }`.
+- `tests/guides.test.ts:422` pins `draft.authority` to
+  `[{ path: 'AGENTS.md', note: 'project law; wins every conflict' }]`.
+- `tests/guides.test.ts:425` pins `draft.manifest` to the fence's `read`, `edit`, `locked`, and
+  `forbidden` references.
+- `tests/guides.test.ts:436` pins `draft.outcomes` to the fence's ranked outcome text, with
+  `required: true` on each outcome.
+- `tests/guides.test.ts:443` pins `draft.rules` to `['No new dependencies.']`.
+- `tests/guides.test.ts:444` pins `draft.invariants` to
+  `['useForm public method names and signatures in types.ts.']`.
+- `tests/guides.test.ts:448` pins `draft.givens` to
+  `[{ category: 'convention', name: 'indentation', value: 'tabs' }]`.
+- `tests/guides.test.ts:451` pins `draft.examples` to
+  `[{ input: '<input required>', output: 'validity read from el.validity' }]`, with no `note`.
+- `tests/guides.test.ts:454` pins `draft.assumptions` to
+  `['Validation message wording is preserved.']`.
+- `tests/guides.test.ts:455` pins `draft.citations` to the MDN Constraint Validation name,
+  `https://developer.mozilla.org/` URL, and native-validity note.
+- `tests/guides.test.ts:462` pins `draft.gaps` to the `rules` question with `blocking: false` and
+  no `candidates`.
+- `tests/guides.test.ts:469` pins `draft.risks` to severity `medium`, text
+  `'native validation differs subtly'`, and mitigation `'assert message and state in tests'`.
+- `tests/guides.test.ts:476` pins `draft.output` to
+  `{ format: 'diff', include: ['updated useForm.ts'] }`, with no other optional key.
+- `tests/guides.test.ts:477` pins `draft.proofs` to
+  `[{ text: 'type-check and lint pass', command: 'npm run check' }]`.
+- `tests/guides.test.ts:480` pins `draft.output.format` to `'diff'`.
+- `tests/guides.test.ts:481` pins `draft.trace` to `undefined`.
+- `tests/guides.test.ts:482` pins `draft.hash` to `undefined`.
+- `tests/guides.test.ts:483` pins `buildGateDefinition().rules.length` to `7`.
+
+The failing-first command was `npm run test:guides`. With the `buildGiven` expected value planted
+as `'spaces'`, it reported `Tests 1 failed | 19 passed (20)` and received `'tabs'` at
+`/home/user/work/evidence/brief-proofs/fix1c-red.txt`. After restoring `'tabs'`, the same command
+reported `Tests 20 passed (20)` at
+`/home/user/work/evidence/brief-proofs/fix1c-green.txt`.
