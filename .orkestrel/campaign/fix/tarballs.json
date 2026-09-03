@@ -850,46 +850,6 @@
   "staged": "2026-09-03T08:26:25Z"
  },
  {
-  "consumer": "guide",
-  "dependency": "@orkestrel/contract",
-  "declared": "^0.0.15",
-  "tarball": "contract-f38a649.tgz",
-  "version": "0.0.15",
-  "sha256": "45022c7cf446cf95",
-  "commit": "f38a649",
-  "staged": "2026-09-03T08:31:22Z"
- },
- {
-  "consumer": "guide",
-  "dependency": "@orkestrel/html",
-  "declared": "none",
-  "tarball": "html-e120c9c.tgz",
-  "version": "0.0.7",
-  "sha256": "79a0857adda0c896",
-  "commit": "e120c9c",
-  "staged": "2026-09-03T08:31:22Z"
- },
- {
-  "consumer": "guide",
-  "dependency": "@orkestrel/markdown",
-  "declared": "^0.0.12",
-  "tarball": "markdown-018a404.tgz",
-  "version": "0.0.12",
-  "sha256": "ca06a45f6edd1fa8",
-  "commit": "018a404",
-  "staged": "2026-09-03T08:31:22Z"
- },
- {
-  "consumer": "guide",
-  "dependency": "@orkestrel/test",
-  "declared": "^0.0.12",
-  "tarball": "test-261b350.tgz",
-  "version": "0.0.12",
-  "sha256": "0ad700b0fa4ffcdf",
-  "commit": "261b350",
-  "staged": "2026-09-03T08:31:22Z"
- },
- {
   "consumer": "relation",
   "dependency": "@orkestrel/contract",
   "declared": "^0.0.15",
@@ -3998,5 +3958,45 @@
   "sha256": "69b3df13652cb467",
   "commit": "ed73b78",
   "staged": "2026-09-03T18:37:11Z"
+ },
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-b3892f4.tgz",
+  "version": "0.0.15",
+  "sha256": "4ba23b10f11e4edc",
+  "commit": "b3892f4",
+  "staged": "2026-09-03T18:42:29Z"
+ },
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-b3de1fa.tgz",
+  "version": "0.0.7",
+  "sha256": "02e4d2427f307290",
+  "commit": "b3de1fa",
+  "staged": "2026-09-03T18:42:29Z"
+ },
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/markdown",
+  "declared": "^0.0.12",
+  "tarball": "markdown-f45b004.tgz",
+  "version": "0.0.12",
+  "sha256": "d47ff8191f8e26d2",
+  "commit": "f45b004",
+  "staged": "2026-09-03T18:42:29Z"
+ },
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.12",
+  "tarball": "test-ed73b78.tgz",
+  "version": "0.0.12",
+  "sha256": "69b3df13652cb467",
+  "commit": "ed73b78",
+  "staged": "2026-09-03T18:42:29Z"
  }
 ]
