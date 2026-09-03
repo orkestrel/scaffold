@@ -83,7 +83,8 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | websocket | yes | direct `implementer` on Opus from 14:42 UTC | — | — |
 | form | yes | waits for an Opus writer slot | — | — |
 | process | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`, stopped 14:36 UTC); fix round 1 (`briefs/conform-process-fix1-brief.md`: the `processes/` move with `git mv` granted plus the objective lane's two readings) as a direct `implementer` on Opus from 14:38 UTC | round 1: checker PASS (twice); objective FAIL 2, 5 (two readings, `units/l2a/process-objective-r1a.md` and `-r1b.md`); round 2 through the Grok-first pipeline | — |
-| reason, console | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`, stopped) | round 1: checker PASS; objective lane owed, next through the Grok-first pipeline (distillate, then `reviewer` on Opus) | — |
+| reason | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`, stopped); fix round 1 on `builder` (`briefs/conform-reason-fix1-brief.md`: the two missing failing-first proofs and four record findings) from 15:12 UTC | round 1 (Grok-first): Luna distillate `units/l2a/reason-r1-distillate-luna.md`, Luna checker PASS, objective (Opus, from the distillate) FAIL 4 with F-1 to F-5 (`units/l2a/reason-objective-r1.md`); round 2 through the same pipeline | — |
+| console | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`, stopped) | round 1: Sonnet checker PASS; Luna distillate in flight, then the objective lane on Opus | — |
 | middleware | yes (successor note) | complete by the successor implementer at 14:35 UTC (`units/l2a/16-middleware-implement-*.json`) | round 1 owed, through the Grok-first pipeline | — |
 | database | yes (successor; carries database-subj-10) | not started | — | L2, after contract and indexeddb land and re-stage |
 | markdown, pool | no | not started | — | L2 |
