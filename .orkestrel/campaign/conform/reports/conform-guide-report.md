@@ -201,3 +201,149 @@ plus one instruction conflict:
 4. **`sources()`'s `@example` shows identity rather than a length.** A `sources().length // 1` line
    would state a count, so the example binds `const [core] = sources.sources()` and asserts it is the
    entity `source()` returns.
+
+## Fix round 1
+
+Closes the round-1 objective lane's refutations of claims 3, 4, and 6.
+
+**Claim 3.** `src/core/types.ts:104`'s `GuideInterface.surface` doc block read "Lists every
+`## Surface` identifier + kind", quoting the pre-rename axis while `guides/guide.md:203` already
+read "identifier + keyword". Rewritten to "Lists every `## Surface` identifier + keyword — table
+rows union backticked entity headings."
+
+A grep for `identifier + kind` over the tree returns no hit: no other guide sentence or
+`tests/guides.test.ts` presence guard quotes the old text. `\bkind\b`, case-insensitive, re-run over
+`src`, the non-vendored `tests`, `guides/guide.md`, `guides/README.md`, and `README.md`:
+
+- `src`: four files hit — `validators.ts:13`, `Guide.ts:26`, `factories.ts:30` (the `@example`
+  Markdown fence `| Name | Kind |`), and `helpers.ts:941-1243` (`findKindIndex`'s doc block and body,
+  which locates a Surface table's `Kind` column by its literal header text). Every hit is the
+  markdown `Kind` table header, permitted.
+- `tests`: hits across `guides.test.ts`, `setup.test.ts`, `helpers.test.ts`, `Source.test.ts`, and
+  the `tests/fixtures/**/widget.md` and `guide.md` fixtures are the same `Kind` table header in
+  fixture markdown and in `@example` fences; `tests/fixtures/broken/wrong-kind/` is the permitted
+  `wrong-kind` fixture directory and file name; `tests/src/core/Guide.test.ts:131-132` names the
+  `wrong-kind` fixture in a test title and path; `tests/src/core/helpers.test.ts:471,478,488` uses
+  `kind` as a local variable name whose value is a `SurfaceSymbol` with a `keyword` property —
+  the identifier names the variable, not the renamed axis; `tests/setupPolicy.ts` is the vendored
+  file, permitted, and reads the TypeScript compiler's `SyntaxKind` (`node.kind`) and its own
+  `function-kind` / `data-kind` file-classification prose, unrelated to `SurfaceSymbol`.
+- `guides/guide.md`: seven table-header hits (`| Name | Kind |` column headers across the Types,
+  Functions, Classes, and other entity tables) plus `findKindIndex`'s row describing the same
+  `Kind`-column lookup, plus two `@example` fences repeating the `| Name | Kind |` header. Every hit
+  is the markdown `Kind` table header, permitted.
+- `guides/README.md`, `README.md`: no hit.
+
+**Claim 4.** Added two rows to § Sweeps for guide-obj-6 and guide-subj-13:
+
+| Pattern                                   | Population                                                                              | Result                                                                                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `'class'\s*\|\s*'interface'` (inline union) | `src` — the three former sites of the inline union: `Source.ts:246,269` and `helpers.ts:1134` | one hit, `types.ts:390`, the `DeclarationKeyword` declaration itself; the three former sites now read `DeclarationKeyword` |
+| `\bstateful\b` (case-insensitive)           | `src`, the non-vendored `tests`, `guides/guide.md`, `guides/README.md`, `README.md`      | empty in the guide package's own prose; the only tree hits are in the vendored mirrors `guides/markdown.md` and `guides/contract.md`, which document other packages and are out of scope |
+
+**Claim 6.** Added a `database` entry to § Shared-file patches (below) naming the sites read
+directly from `/home/user/fleet/database/tests/setupServer.ts` and
+`/home/user/fleet/database/tests/setupServer.test.ts`, and restated the verification sweep.
+
+```diff
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@
+-import type { ExportKind, SurfaceSymbol } from '@orkestrel/guide'
++import type { ExportKeyword, SurfaceSymbol } from '@orkestrel/guide'
+@@
+- * @returns Its Guide surface kind, or `undefined` when unsupported
++ * @returns Its Guide surface keyword, or `undefined` when unsupported
+@@
+-): ExportKind | undefined {
++): ExportKeyword | undefined {
+@@
+- * @returns One symbol per distinct supported declaration kind
++ * @returns One symbol per distinct supported declaration keyword
+@@
+-	const kinds = new Set<ExportKind>()
++	const keywords = new Set<ExportKeyword>()
+ 	for (const declaration of declarations) {
+-		const kind = classifyEntryDeclaration(target, declaration)
+-		if (kind === undefined) {
++		const keyword = classifyEntryDeclaration(target, declaration)
++		if (keyword === undefined) {
+ 			throw new Error(`Entry '${entry}' export '${exported.name}' has unsupported declaration`)
+ 		}
+-		kinds.add(kind)
++		keywords.add(keyword)
+ 	}
+-	return Array.from(kinds, (kind) => ({ name: exported.name, kind }))
++	return Array.from(keywords, (keyword) => ({ name: exported.name, keyword }))
+@@
+-			return name === 0 ? left.kind.localeCompare(right.kind) : name
++			return name === 0 ? left.keyword.localeCompare(right.keyword) : name
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@
+-			expect([...shaped.map((symbol) => symbol.kind)].sort()).toEqual(['const', 'interface'])
++			expect([...shaped.map((symbol) => symbol.keyword)].sort()).toEqual(['const', 'interface'])
+@@
+-			expect(entry.map((symbol) => `${symbol.name}:${symbol.kind}`)).toEqual([
++			expect(entry.map((symbol) => `${symbol.name}:${symbol.keyword}`)).toEqual([
+@@
+-			expect(requireValue(surfaces.get('src/extra.ts'))).toEqual([{ name: 'EXTRA', kind: 'const' }])
++			expect(requireValue(surfaces.get('src/extra.ts'))).toEqual([{ name: 'EXTRA', keyword: 'const' }])
+@@
+-				{ name: 'BROKEN', kind: 'const' },
++				{ name: 'BROKEN', keyword: 'const' },
+```
+
+Read directly rather than from the brief's shorter line list: `tests/setupServer.ts` carries the
+renamed axis at lines 8 (`ExportKind` import), 205 (`@returns` doc), 210 (return type), 240
+(`@returns` doc), 258, 260, 261, 264, 266 (the `kinds`/`kind` locals and their `Set<ExportKind>`),
+and 329 (`left.kind.localeCompare(right.kind)`). `tests/setupServer.test.ts` carries it at lines 337,
+361 (test titles saying "kind"), 376, 420, 427, and 465 (`symbol.kind` / `kind:` object literals).
+The brief's `:8,210,258` and `:376,420` are each inside this fuller set, not a different one.
+
+Fleet-wide verification sweep, restated as `ExportKind|EXPORT_KINDS|isExportKind|symbol\.kind` over
+`/home/user/fleet/*/tests/**/*.ts` and `/home/user/fleet/*/src/**/*.ts`, excluding `node_modules` and
+`/home/user/fleet/guide`:
+
+```
+grep -rln --include=*.ts -E "ExportKind|EXPORT_KINDS|isExportKind|symbol\.kind" /home/user/fleet --exclude-dir=node_modules --exclude-dir=guide
+```
+
+Returns the same forty-six `tests/guides.test.ts` consumers § Shared-file patches already named —
+abort, agent, brief, browser, budget, codec, console, contract, csv, database, emitter, form, html,
+indexeddb, interpret, lsp, markdown, mcp, middleware, msg, ndjson, ollama, pool, process, program,
+qualifier, queue, rater, reason, relation, router, sea, server, sqlite, sse, table, template,
+terminal, test, timeout, tool, toolbox, websocket, worker, workflow, workspace — plus two additional
+files in the `database` package: `tests/setupServer.ts` and `tests/setupServer.test.ts`. No other
+package and no `src/**/*.ts` path in the fleet carries the renamed axis.
+
+### § Shared-file patches — added `database` entry
+
+`database/tests/setupServer.ts:8,205,210,240,258,260,261,264,266,329` and
+`database/tests/setupServer.test.ts:337,361,376,420,427,465` import and use `ExportKind` and
+`symbol.kind`. The diff above is the exact consumer-side edit, once `database` re-pins to the
+released `@orkestrel/guide`. `database` was already listed among the `tests/guides.test.ts`
+consumers; this entry is additional, for its two `setupServer` files, which import `ExportKind`
+directly rather than reading `symbol.kind` off a `guides.test.ts` fixture.
+
+### Gates
+
+| Command                                                      | Exit |
+| ------------------------------------------------------------- | ---- |
+| `npm --prefix /home/user/fleet/guide run format:check`        | 0    |
+| `npm --prefix /home/user/fleet/guide run lint:check`           | 0    |
+| `npm --prefix /home/user/fleet/guide run check`                | 0    |
+| `npm --prefix /home/user/fleet/guide run build`                 | 0    |
+| `npm --prefix /home/user/fleet/guide test`                      | 0    |
+
+`npm test` per project: `src:core` 378 passed, `policy` 111 passed, `config` 46 passed, `setup` 7
+passed, `guides` 42 passed — unchanged from the baseline this fix round started from.
+
+`cd /home/user/fleet/guide && npx scaffold audit --offline`: `0 of 33 planned paths drifted from the
+plan. Audit compared bytes at 23, existence at 4, and nothing at 6.`
+
+`git -C /home/user/fleet/guide status --short` lists only paths already under the unit's Files
+touched section, with `tests/setupServer.test.ts` and `tests/setupServer.ts` still deleted and
+unstaged.
+
+No deviation fired.
