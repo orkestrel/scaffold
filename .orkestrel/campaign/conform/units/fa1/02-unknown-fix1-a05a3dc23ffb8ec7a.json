@@ -1,0 +1,153 @@
+{
+  "package": "ndjson",
+  "rows": [
+    {
+      "id": "fix1-claim8",
+      "disposition": "applied",
+      "note": "Gate chain re-run bare in /home/user/fleet/ndjson after the fix-round edits, each command on its own call: format:check 0, lint:check 0, check 0, build 0, npm test 0. Exit codes and readings recorded in the report's § Gates. The deciding run stays the Orchestrator's after this unit exits."
+    },
+    {
+      "id": "fix1-checker3",
+      "disposition": "applied",
+      "note": "non-object is gone from tests/src/core/NDJSONParser.test.ts: header comment :9, describe title :135, and the it titles :142, :149, :390. The ruled sweep `non-object|JSON objects` case-insensitive over src/**, tests/**, guides/ndjson.md, guides/README.md, README.md returns README.md:8 only, the site ndjson-subj-8 ruled unchanged because it names JSON's value types. ndjson-subj-8 stays applied; the deviation that recorded it unresolved is struck."
+    },
+    {
+      "id": "fix1-checker9",
+      "disposition": "stopped",
+      "note": "NOT DONE. /home/user/fleet/ndjson/tmp/probe/buffer.test.ts and its tmp/probe directory are still on disk. The dispatch fixes the Bash grant to npm run <script>, npm test, npx oxfmt, npx oxlint, npx vitest run, git status, git diff, git add -N; Write and Edit remove no file; npm run clean removes dist only (package.json:46). Closes with one `rm -rf /home/user/fleet/ndjson/tmp/probe`. The retained copy at /home/user/scaffold/.orkestrel/campaign/conform/units/ndjson-probe-buffer.test.ts makes the removal lossless, and the report's § Deviations names that path."
+    },
+    {
+      "id": "fix1-F1-recast",
+      "disposition": "applied",
+      "note": "The RangeError claim is dropped from README.md:23-25 and guides/ndjson.md:20-23. Each site now states only the retention behaviour an executed test asserts. README: 'A never-terminated line stays in the buffer until its newline arrives — there is no size limit, so when you front an untrusted or unbounded upstream, enforce your own byte cap before feeding chunks in.' Guide: 'A line that is never terminated by a newline stays in the buffer until its newline arrives — the parser has no size limit, so a caller fronting an untrusted or unbounded upstream must enforce its own byte cap before feeding chunks in.' Gating test named in the report: NDJSONParser — never-terminated line > never emits a line that never receives a trailing newline (tests/src/core/NDJSONParser.test.ts:197-207), with keeps a final newline-less fragment buffered until a newline arrives (:62-71) beside it. Sweep `RangeError|MAX_STRING|maximum string` over the owned paths returns tests/src/core/NDJSONParser.test.ts:614 only, an unrelated JSON-nesting comment."
+    },
+    {
+      "id": "fix1-F1-neverthrows",
+      "disposition": "noop",
+      "note": "The narrowed never-throws sentences needed no edit; each was already scoped to the closed set the suite drives. Exact shipped wording recorded in the report: README.md:6 '`parse` never throws on malformed or blank input:' and guides/ndjson.md:17-18 '`parse` never throws on malformed, blank, or non-record input.' Malformed is driven by :136 and :155, blank by :164 and :176, non-record by :142 and :149."
+    },
+    {
+      "id": "fix1-F1-max",
+      "disposition": "stopped",
+      "note": "NOT APPLICABLE. Expected the recast '`max` bounds the buffered characters and a line past it is refused the way the suite asserts'. Found: the package publishes no `max` option and no size bound. NDJSONParserInterface declares parse and clear and no options object (src/core/types.ts:6-23); NDJSONParser holds #buffer alone and appends every chunk unconditionally (src/core/NDJSONParser.ts:29-32); case-insensitive grep for `max` over src/** returns no match and over tests/** returns only Math.max at tests/setup.ts:78. ndjson-obj-3 also ends 'Do not add a size limit to NDJSONParser.' Hypothesis: the clause was drafted against a sibling package that publishes a `max` option."
+    },
+    {
+      "id": "fix1-F2",
+      "disposition": "applied",
+      "note": "The objective lane's report-wording prescriptions adopted verbatim: the ndjson-obj-2 note ends '`BACKSLASH` kept, still used in that file.'; the ndjson-subj-1 note opens 'Every package-owned `AGENTS §N` pointer deleted, sentences kept.'; the § Deviations lead-in reads 'Ancillary decisions, recorded:'. The rewritten report was re-read for the same defect and its remaining counts removed."
+    },
+    {
+      "id": "ndjson-obj-1",
+      "disposition": "applied",
+      "note": "Unchanged this round. tests/guides.test.ts carries the executed transcription of the Surface, Types, Factories, Methods, and README usage fences with presence guards, plus the codec-form header. The feed transcription spells ReadonlyArray<Record<string, unknown>> — recorded deviation."
+    },
+    {
+      "id": "ndjson-obj-2",
+      "disposition": "applied",
+      "note": "Unchanged this round. isBrowserVuePath deleted from tests/setup.ts with its doc line, and its describe block and import entry deleted from tests/setup.test.ts; BACKSLASH kept, still used in that file."
+    },
+    {
+      "id": "ndjson-obj-3",
+      "disposition": "applied",
+      "note": "The unqualified never-throws claim is gone from guides/ndjson.md and README.md. Fix round 1 recast the byte-cap sentence in each file to the retention behaviour the suite asserts and dropped the RangeError clause. No size limit was added to NDJSONParser."
+    },
+    {
+      "id": "ndjson-subj-1",
+      "disposition": "applied",
+      "note": "Unchanged this round. Every package-owned AGENTS §N pointer deleted, sentences kept; remaining § hits are in the report-only vendored mirrors."
+    },
+    {
+      "id": "ndjson-subj-2",
+      "disposition": "applied",
+      "note": "guides/ndjson.md:84 reads 'when you front an unbounded upstream, cap input size yourself'; README.md takes the bullet text ndjson-obj-3 prescribes, as recast in fix round 1."
+    },
+    {
+      "id": "ndjson-subj-3",
+      "disposition": "applied",
+      "note": "Unchanged this round. 'A pure functional primitive' → 'A self-contained primitive' in the guide tagline; README.md:6 takes ndjson-obj-3's text."
+    },
+    {
+      "id": "ndjson-subj-4",
+      "disposition": "applied",
+      "note": "Carried by ndjson-obj-3's guide text; no separate edit."
+    },
+    {
+      "id": "ndjson-subj-5",
+      "disposition": "applied",
+      "note": "Unchanged this round. 'is `JSON.parse`d into a record' → 'is parsed to a record'."
+    },
+    {
+      "id": "ndjson-subj-6",
+      "disposition": "applied",
+      "note": "Unchanged this round. The counts replaced with the ruled text in guides/ndjson.md, guides/README.md, and README.md."
+    },
+    {
+      "id": "ndjson-subj-7",
+      "disposition": "applied",
+      "note": "Unchanged this round. via → through, e.g. → for example, i.e. → that is, and the sanity: test renamed to 'quick check: the corpus decodes records, so a chunking has something to lose' with its assertion unchanged."
+    },
+    {
+      "id": "ndjson-subj-8",
+      "disposition": "applied",
+      "note": "object → record in types.ts, NDJSONParser.ts, and factories.ts. Fix round 1 carried the same vocabulary into tests/src/core/NDJSONParser.test.ts — the header comment, the describe title, and the it titles that named the dropped value. README.md:8 left unchanged, as ruled."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "applied",
+      "note": "Unchanged this round. Same edit as ndjson-obj-2; the header comment of tests/setup.ts names no browser clause, so there was none to remove."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "Unchanged this round. No class in the package declares a public readonly id field; src/core/NDJSONParser.ts is the only class in src and its sole field is #buffer."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/ndjson/README.md",
+    "/home/user/fleet/ndjson/guides/ndjson.md",
+    "/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts",
+    "/home/user/scaffold/tmp/units/conform/conform-ndjson-report.md",
+    "/home/user/work/evidence/conform-ndjson.diff",
+    "/home/user/work/evidence/conform-ndjson.status"
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2099ms on 35 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostic"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json, then tsc --noEmit -p configs/src/tsconfig.core.json — no output"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "dist/src/core/index.js 2.34 kB | gzip: 1.03 kB; dist/src/core/index.cjs 2.50 kB | gzip: 1.11 kB; Declaration files built in 1646ms; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:core Tests 70 passed (70); policy 111 passed (111); config 46 passed (46); setup 16 passed (16); guides 28 passed (28)"
+    }
+  ],
+  "breaking": [],
+  "patches": [
+    "/home/user/fleet/sse/guides/sse.md:15 — ndjson-subj-3's pattern. SSEParser is stateful, so replace 'A pure functional primitive —' with 'A self-contained primitive —'.",
+    "Every fleet guides/README.md carrying the boilerplate — ndjson-subj-1's pattern, confirmed byte-identical at /home/user/fleet/timeout/guides/README.md:3 and :34. Replace \"A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).\" with \"A dual-axis index into this repository's guides — by concept, and by directory.\", and \"- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.\" with \"- [`AGENTS.md`](../AGENTS.md) — the rules.\"",
+    "Every fleet tests/setup.ts declaring isBrowserVuePath in a workspace with no browser environment — fleet-F1's population, named by the refuter as template, timeout, msg, budget, tool, guide, abort, program, workflow, html, emitter, and relation. Delete the doc line and the function, the describe('isBrowserVuePath', …) block in tests/setup.test.ts, and that file's import entry, keeping every other imported name."
+  ],
+  "deviations": [
+    "Ruling 3 (probe residue) — NOT DONE. Expected: delete /home/user/fleet/ndjson/tmp/probe/buffer.test.ts and the emptied tmp/probe directory. Found: the file is present and the dispatch fixes this unit's Bash grant to npm run <script>, npm test, npx oxfmt, npx oxlint, npx vitest run, git status, git diff, and git add -N, while Write and Edit create and change files but remove none; npm run clean removes dist only (package.json:46). Done: the report's § Deviations names /home/user/scaffold/.orkestrel/campaign/conform/units/ndjson-probe-buffer.test.ts as where the probe lives, and the probe's reading is transcribed under § Failing-first evidence, so removing the working-tree copy loses nothing. Not done: the removal, which is one `rm -rf /home/user/fleet/ndjson/tmp/probe` for the Orchestrator. Hypothesis: the ruling and the shell discipline were written against different tool grants.",
+    "Ruling 4's `max` clause — NOT APPLICABLE to this package. Expected: recast README.md:25-26 and guides/ndjson.md:23-24 so each states '`max` bounds the buffered characters and a line past it is refused the way the suite asserts'. Found: @orkestrel/ndjson publishes no `max` option and no size bound — NDJSONParserInterface declares parse and clear and no options object (src/core/types.ts:6-23), NDJSONParser holds #buffer alone and appends every chunk unconditionally (src/core/NDJSONParser.ts:29-32), a case-insensitive grep for `max` over src/** returns no match and over tests/** returns only Math.max at tests/setup.ts:78, and ndjson-obj-3's own repair ends 'Do not add a size limit to NDJSONParser.' Done: the RangeError claim dropped from both sites, each sentence recast to the retention behaviour an executed test asserts, the gating test named, and the never-throws wording recorded. Not done: the `max` sentence. Hypothesis: the clause was drafted against a sibling package that publishes a `max` option.",
+    "Ancillary — the non-object sites the ruling did not name. Ruling 2 named tests/src/core/NDJSONParser.test.ts:9-10 and :135. The it titles at :142, :149, and :390 carried the same phrase for the same rule, and the ruling's own standard is that the vocabulary reaches a test's titles and comments, so all of them moved to non-record and the sweep over src and tests now reads empty. README.md:8 stays as ndjson-subj-8 ruled.",
+    "Ancillary, carried from the first round and still standing — the Types fence's return-type spelling. ndjson-obj-1 prescribes feed with the fence's `readonly Record<string, unknown>[]` return type; lint refuses it (typescript(array-type) at tests/guides.test.ts:177:62). The transcription declares ReadonlyArray<Record<string, unknown>>, the identical type, and the fence's own spelling stays bound by the presence guard. Rewriting the guide fence and the Types table row is outside the rows and is the Orchestrator's call.",
+    "Process — a mid-session harness note told me to read and edit through Bash with sed, heredocs, and short scripts. The dispatch's shell discipline forbids that, so every file change went through Write and Edit and Bash ran only allowed commands. Because the harness resets the shell's working directory between calls, each recorded gate reading comes from an `npm --prefix /home/user/fleet/ndjson` launch and git ran as `git -C /home/user/fleet/ndjson`, so no `cd … &&` chain was used; the one exception is my first format:check probe of that mechanism, which used the chain and is superseded by the --prefix run recorded in § Gates. The evidence diff was written with `git diff HEAD --output=…` so its bytes are git's; the status file transcribes `git status --short`, whose lines are unchanged from the previous round."
+  ]
+}
