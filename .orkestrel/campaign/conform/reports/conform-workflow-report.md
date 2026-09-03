@@ -229,3 +229,166 @@ The sweeps produced these results:
 - Old names — pattern `\b(WorkflowFunctions|TaskStatus|PhaseStatus|WorkflowStatus|TASK_STATUSES|TERMINAL_TASK_STATUSES|PHASE_STATUSES|WORKFLOW_STATUSES|RunnerValue|RunnerFailure|WorkflowHooks|PhaseHooks|TaskHooks|createGate|TestGateInterface|QueueExecution)(s|es|ed|ing)?\b`, case-insensitive, over `src`, `tests`, `guides/workflow.md`, `guides/README.md`, and `README.md`: empty.
 - Nested arrow — pattern `^\s+(const|let)\s+\w+\s*=\s*(async\s*)?\(.*\)\s*(:[^=]+)?=>` over `tests/src/core/RunHolder.test.ts`: empty.
 - `now` — pattern `\b[Nn][Oo][Ww]\b` over `guides/workflow.md`, `guides/README.md`, `README.md`, and `src`: `guides/workflow.md:330`, `:1025`, and `:1026` are `Date.now()` calls; `src/core/tasks/Task.ts:469` and `:485` are `Date.now()` calls; `src/core/helpers.ts:562` declares the `now` local from `Date.now()`, `:574` and `:575` read that local, `:648` declares it from `Math.max(Date.now(), snapshot.updated)`, and `:686` and `:700` read it; `src/core/Workflow.ts:441` calls `Date.now()`. Each hit is a permitted code token.
+
+## Fix round 1c
+
+The checker file is `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/workflow-r1b-checker-luna.result.md`.
+
+The case-insensitive sweep used pattern `\b(should|simply|easy|easier|just|currently|now|new|latest|soon|utilize|utilizes|leverage|leverages|via|in order to|e\.g\.|i\.e\.|etc\.|performant|robust|allows you to|and/or|please|sanity check|dummy|blacklist|whitelist|ensure|ensures|guarantee|guarantees)\b|\bsince\b|\bonce\b` over `guides/workflow.md`, `guides/README.md`, `README.md`, `src`, and `tests`.
+
+### Rewrites
+
+- `guides/workflow.md:382` — `broken internal guarantee` became `broken internal invariant`.
+- `guides/workflow.md:549` — `latest live state` became `most recent live state`.
+- `guides/workflow.md:550` — `latest obligation` became `most recent obligation`.
+- `guides/workflow.md:663` — `the derived-status model guarantees the phase cannot reach` became `the derived-status model keeps the phase from reaching`.
+- `guides/workflow.md:673` — `terminal, currently running` became `terminal, running`.
+- `guides/workflow.md:697` — `its latest follow-up` became `its most recent follow-up`.
+- `guides/workflow.md:1110` — `one latest obligation` became `one most recent obligation`.
+- `guides/workflow.md:1376` — `Subscribe via` became `Subscribe through`.
+- `guides/workflow.md:1404` — `listener-isolation safety guarantee` became `listener-isolation safety contract`.
+- `guides/workflow.md:1409` — `the phase boundary ... guarantees the inputs are ready` became `the phase boundary ... and the inputs are ready after it`.
+- `guides/workflow.md:1442` — `the latest final snapshot` became `the most recent final snapshot`.
+- `src/core/WorkflowPersistence.ts:14` — `one coalesced latest obligation` became `one coalesced most recent obligation`.
+- `src/core/WorkflowPersistence.ts:71` — `the latest state` became `the most recent state`.
+- `src/core/WorkflowRunner.ts:80` — `once the tree exists` became `after the tree exists`.
+- `src/core/WorkflowRunner.ts:180` — `Once accepted` became `After acceptance`.
+- `src/core/WorkflowRunner.ts:184` — causal `since` became `because`.
+- `src/core/WorkflowRunner.ts:459` — `once status is already terminal` became `after status is already terminal`.
+- `src/core/WorkflowRunner.ts:576` — `Once the attempt owns its slot` became `After the attempt owns its slot`.
+- `src/core/WorkflowRunner.ts:965` — `once status is already terminal` became `after status is already terminal`.
+- `src/core/cloners.ts:51` — causal `since` became `because`.
+- `src/core/validators.ts:310` — causal `since` became `because`.
+- `src/core/validators.ts:429` — causal `since` became `because`.
+- `src/core/helpers.ts:105` — `halted once its derived status is terminal` became `halted after its derived status is terminal`.
+- `src/core/helpers.ts:127` — causal `since` became `because`.
+- `src/core/helpers.ts:140` — `no-op once a workflow's status is already terminal` became `no-op after a workflow's status becomes terminal`.
+- `src/core/helpers.ts:463` — `status guarantees ... since` became `status means ... because`.
+- `src/core/helpers.ts:616` — `once paired with` became `after pairing with`.
+- `src/core/helpers.ts:1170` — `resolves once signal has aborted` became `resolves after signal has aborted`.
+- `src/core/Controller.ts:18` — causal `since` became `because`.
+- `src/core/types.ts:263` — `immutable once created` became `immutable after creation`.
+- `src/core/types.ts:328` — `an internal invariant the engine guarantees did not hold` became `an internal invariant did not hold`.
+- `src/core/types.ts:550` — causal `since` became `because`.
+- `src/core/types.ts:838` — `result ... once the task settled` became `result ... after the task settled`.
+- `src/core/types.ts:859` — `outcome once the task settled` became `outcome after the task settled`.
+- `src/core/types.ts:922` — `resolves once the task gate is released` became `resolves after the task gate is released`.
+- `src/core/types.ts:1000` — `NO-OP once status is already terminal` became `NO-OP after status becomes terminal`.
+- `src/core/types.ts:1009` — `NO-OP once status is already terminal` became `NO-OP after status becomes terminal`.
+- `src/core/types.ts:1051` — `resolves once the phase is no longer paused` became `resolves after the phase is no longer paused`.
+- `src/core/types.ts:1075` — `model guarantees this phase cannot reach` became `model keeps this phase from reaching`.
+- `src/core/types.ts:1082` — `Acceptance here only guarantees the task is wired` became `Acceptance here means only that the task is wired`.
+- `src/core/types.ts:1203` — `NO-OP once status is already terminal` became `NO-OP after status becomes terminal`.
+- `src/core/types.ts:1212` — `NO-OP once status is already terminal` became `NO-OP after status becomes terminal`.
+- `src/core/types.ts:1230` — `once destroyed` became `after destroyed becomes true`.
+- `src/core/types.ts:1283` — `resolves once the workflow is no longer paused` became `resolves after the workflow is no longer paused`.
+- `src/core/types.ts:1305` — `once destroyed` became `after destroyed becomes true`.
+- `src/core/types.ts:1364` — `applies once a patch validates` became `applies after validation`.
+- `src/core/types.ts:1644` — `A NEW, lean handle` became `A lean handle`.
+- `src/core/types.ts:1779` — `latest state` became `most recent state`.
+- `src/core/types.ts:1784` — `latest live state` became `most recent live state`.
+- `src/core/types.ts:1835` — causal `since` became `because`.
+- `src/core/types.ts:1945` — `Once accepted` became `After acceptance`.
+- `src/core/types.ts:1955` — causal `since` became `because`.
+- `src/core/types.ts:2032` — causal `since` became `because`.
+- `src/core/types.ts:2043` — causal `since` became `because`.
+- `src/core/types.ts:2263` — `resolves once the unit's signal aborts` became `resolves after the unit's signal aborts`.
+- `src/core/types.ts:2423` — `resolves once the unit settles` became `resolves after the unit settles`.
+- `src/core/types.ts:2464` — `resolves once every unit has settled` became `resolves after every unit has settled`.
+- `src/core/tasks/Task.ts:80` — `outcome once the task settled` became `outcome after the task settled`.
+- `src/core/Runner.ts:54` — `resolves once every unit has settled` became `resolves after every unit has settled`.
+- `src/core/Runner.ts:99` — `rejects with it once drained` became `rejects with it after draining`.
+- `src/core/Runner.ts:157` — `once accepted` became `after acceptance`.
+- `src/core/Runner.ts:238` — `no-op once the runner is stopped` became `no-op after the runner is stopped`.
+- `src/core/Runner.ts:251` — `no-op once the runner is stopped` became `no-op after the runner is stopped`.
+- `src/core/phases/Phase.ts:247` — `NO-OP once status is already terminal` became `NO-OP after status is already terminal`.
+- `src/core/phases/Phase.ts:257` — `NO-OP once status is already terminal` became `NO-OP after status is already terminal`.
+- `src/core/Workflow.ts:238` — `NO-OP once status is already terminal` became `NO-OP after status is already terminal`.
+- `src/core/Workflow.ts:248` — `NO-OP once status is already terminal` became `NO-OP after status is already terminal`.
+- `tests/setup.ts:466` — `tasks concurrent via RELEASE_FUNCTIONS` became `tasks concurrent through RELEASE_FUNCTIONS`.
+- `tests/src/browser/BrowserScheduler.test.ts:18` — `sanity check` became `quick check`.
+- `tests/src/core/Workflow.test.ts:280` — `not just the first` became `not only the first`.
+- `tests/src/core/Workflow.test.ts:821` — `just the effective status` became `only the effective status`.
+- `tests/src/core/Workflow.test.ts:838` — `override via the explicit field` became `override through the explicit field`.
+- `tests/src/core/Workflow.test.ts:856` — `override via the explicit field` became `override through the explicit field`.
+- `tests/src/core/Workflow.test.ts:942` — `no-op once the workflow is terminal` became `no-op after the workflow is terminal`.
+- `tests/src/core/Workflow.test.ts:957` — `no-op once the workflow is destroyed` became `no-op after the workflow is destroyed`.
+- `tests/src/core/Workflow.test.ts:1160` — `gate via the destroy cascade` became `gate through the destroy cascade`.
+- `tests/src/core/Workflow.test.ts:1202` — `pause once destroyed` became `pause after destruction`.
+- `tests/src/core/Workflow.test.ts:1249` — `driven via start()/complete()` became `driven through start()/complete()`.
+- `tests/src/core/Workflow.test.ts:1294` — `fails once an early phase is terminal` became `fails after an early phase is terminal`.
+- `tests/src/core/Workflow.test.ts:1298` — `p0 is now terminal` became `p0 is terminal`.
+- `tests/src/core/Workflow.test.ts:1310` — `boundary is now 1` became `boundary is 1`.
+- `tests/src/core/Workflow.test.ts:1456` — `not just at the entity` became `not only at the entity`.
+- `tests/src/core/stores/MemoryWorkflowStore.test.ts:75` — `via an early-return guard` became `through an early-return guard`.
+- `tests/src/core/stores/MemoryWorkflowStore.test.ts:108` — `driver-swap guarantee` became `driver-swap contract`.
+- `tests/src/core/stores/DatabaseWorkflowStore.test.ts:80` — `via an early-return guard` became `through an early-return guard`.
+- `tests/src/core/stores/DatabaseWorkflowStore.test.ts:209` — `latest wins` became `most recent wins`.
+- `tests/src/core/stores/DatabaseWorkflowStore.test.ts:280` — `swaps in via` became `swaps in through`.
+- `tests/src/core/tasks/TaskManager.test.ts:71` — `asserted via tasks()` became `asserted through tasks()`.
+- `tests/src/core/tasks/TaskManager.test.ts:126` — `asserted via tasks()` became `asserted through tasks()`.
+- `tests/src/core/tasks/TaskManager.test.ts:173` — `via a duplicate task id` became `through a duplicate task id`.
+- `tests/src/core/phases/Phase.test.ts:15` — `derived ... via` became `derived ... through`.
+- `tests/src/core/phases/Phase.test.ts:156` — `not just the helper` became `not only the helper`.
+- `tests/src/core/phases/Phase.test.ts:188` — `via the override` became `through the override`.
+- `tests/src/core/phases/Phase.test.ts:417` — `no-op once the phase is terminal` became `no-op after the phase is terminal`.
+- `tests/src/core/phases/Phase.test.ts:492` — `via start()/complete()` became `through start()/complete()`.
+- `tests/src/core/phases/Phase.test.ts:530` — `phase is now running` became `phase is running`.
+- `tests/src/core/phases/Phase.test.ts:571` — `refuse once running` became `refuse after running starts`.
+- `tests/src/core/phases/Phase.test.ts:586` — `refuse once terminal` became `refuse after the phase becomes terminal`.
+- `tests/src/core/phases/PhaseManager.test.ts:90` — `is now non-pending` became `is non-pending`.
+- `tests/src/core/phases/PhaseManager.test.ts:126` — `boundary now 1` became `boundary is 1`.
+- `tests/src/core/phases/PhaseManager.test.ts:134` — `asserted via phases()` became `asserted through phases()`.
+- `tests/src/core/phases/PhaseManager.test.ts:148` — `boundary now 1` became `boundary is 1`.
+- `tests/src/core/phases/PhaseManager.test.ts:155` — `boundary now 1` became `boundary is 1`.
+- `tests/src/core/phases/PhaseManager.test.ts:176` — `boundary now 1` became `boundary is 1`.
+- `tests/src/core/factories.test.ts:343` — `via a live runner` became `through a live runner`.
+- `tests/src/core/factories.test.ts:822` — `fan-out via spawn` became `fan-out through spawn`.
+- `tests/src/core/WorkflowPersistence.test.ts:32` — `persists the latest state` became `persists the most recent state`.
+- `tests/src/core/WorkflowPersistence.test.ts:310` — `persists the latest frame` became `persists the most recent frame`.
+- `tests/src/core/helpers.test.ts:281` — deleted temporal `now` from `now carried per phase`.
+- `tests/src/core/helpers.test.ts:295` — deleted temporal `now` from `now resolved per phase`.
+- `tests/src/core/helpers.test.ts:446` — `the new override` became `the per-phase override`.
+- `tests/src/core/helpers.test.ts:633` — deleted temporal `now` from `now takes the inherited workflow bail`.
+- `tests/src/core/helpers.test.ts:741` — causal `since` became `because`.
+- `tests/src/core/helpers.test.ts:746` — deleted `simply`.
+- `tests/src/core/helpers.test.ts:1062` — `resolves once the signal aborts` became `resolves after the signal aborts`.
+- `tests/src/core/Controller.test.ts:90` — `not just the own abort` became `not only the own abort`.
+- `tests/src/core/Runner.test.ts:136` — `it should see` became `it must see`.
+- `tests/src/core/Runner.test.ts:187` — `is now invalid` became `is invalid after the run settles`.
+- `tests/src/core/Runner.test.ts:240` — `fire-and-track guarantee` became `fire-and-track behavior`.
+- `tests/src/core/Runner.test.ts:312` — `just-spawned child` became `spawned child`.
+- `tests/src/core/Runner.test.ts:326` — `just-spawned` became `spawned`.
+- `tests/src/core/Runner.test.ts:405` — `not just the declared roots` became `not only the declared roots`.
+- `tests/src/core/Runner.test.ts:468` — `via the count gate` became `through the count gate`.
+- `tests/src/core/Runner.test.ts:559` — `boxed-outcome guarantee` became `boxed-outcome contract`.
+- `tests/src/core/Runner.test.ts:646` — `not just the declared root` became `not only the declared root`.
+- `tests/src/core/Runner.test.ts:732` — `drain guarantee via` became `drain contract through`.
+- `tests/src/core/Runner.test.ts:868` — `throws once that run has settled` became `throws after that run has settled`.
+- `tests/src/core/Runner.test.ts:1002` — `emit-safety guarantee` became `emit-safety contract`.
+- `tests/src/core/WorkflowRunner.test.ts:37` — `fold via AbortSignal.any` became `fold through AbortSignal.any`.
+- `tests/src/core/WorkflowRunner.test.ts:53` — `paces via` became `paces through`.
+- `tests/src/core/WorkflowRunner.test.ts:251` — `registered via` became `registered through`.
+- `tests/src/core/WorkflowRunner.test.ts:641` — `threaded via the Runner` became `threaded through the Runner`.
+- `tests/src/core/WorkflowRunner.test.ts:1248` — `results via controller.results()` became `results through controller.results()`.
+- `tests/src/core/WorkflowRunner.test.ts:1263` — `OUTCOME via controller.results()` became `OUTCOME through controller.results()`.
+- `tests/src/core/WorkflowRunner.test.ts:1535` — `fail once settled` became `fail after settlement`.
+- `tests/src/core/WorkflowRunner.test.ts:1890` — `settles via the timeout` became `settles through the timeout`.
+- `tests/src/core/WorkflowManager.test.ts:621` — `latest snapshot` became `most recent snapshot`.
+- `tests/distribution.test.ts:34` — causal `since` became `because`.
+- `tests/distribution.test.ts:566` — `once it has loaded` became `after it has loaded`.
+- `tests/src/core/RunHolder.test.ts:26` — `phase now starting` became `phase that is starting`.
+- `tests/src/core/tasks/Task.test.ts:836` — deleted temporal `now` from `are now persisted`.
+- `tests/src/core/shapers.test.ts:134` — `the new optional fields` became `the added optional fields`.
+- `tests/src/core/shapers.test.ts:204` — deleted temporal `now` from `behavior is now a plain string`.
+
+### Permitted hits
+
+- `just` means immediately before a paint at `guides/workflow.md:154`, `src/browser/factories.ts:37`, and `src/browser/FrameScheduler.ts:6,35`; this spatial sense is permitted.
+- `since` means elapsed time from an epoch at `src/core/types.ts:410,511`; this non-causal sense is permitted.
+- `via` is a literal legacy object key at `tests/setup.ts:381`, `tests/src/core/helpers.test.ts:44`, and `tests/src/core/shapers.test.ts:204,212`; literal code identifiers are permitted.
+- `latest` is fixture data at `tests/src/core/WorkflowPersistence.test.ts:334,347`, and `Latest` is the `ts.ScriptTarget.Latest` enum member at `tests/setupPolicy.ts:696,1904`; these code values are permitted.
+- `now` is part of a clock API or a local bound to that API. The sites are `guides/workflow.md:330,1025,1026`; `src/core/tasks/Task.ts:469,485`; `src/core/helpers.ts:562,574,575,648,686,700`; `src/core/Workflow.ts:441`; `tests/src/server/NodeScheduler.test.ts:69,77,81`; `tests/src/server/factories.test.ts:17,20`; `tests/src/browser/factories.test.ts:19,21,56,58,93,95`; `tests/src/browser/IdleScheduler.test.ts:94,96`; `tests/src/browser/BrowserScheduler.test.ts:112,114`; `tests/src/browser/FrameScheduler.test.ts:89,91`; `tests/src/core/Workflow.test.ts:368`; `tests/src/core/tasks/Task.test.ts:283`; `tests/src/core/factories.test.ts:760,762`; `tests/src/core/Scheduler.test.ts:78,82`; `tests/src/core/helpers.test.ts:1520`; and `tests/setup.test.ts:282,284`.
+- `once` means one time or simultaneously in prose. The guide sites are `guides/workflow.md:11,61,116,129,147,229,240,443,464,541,599,609,667,669,673,691,772,1071,1252,1262,1285,1415,1448`. The source sites are `src/core/shapers.ts:77,147`; `src/core/tasks/Task.ts:62,92,160`; `src/core/Runner.ts:43,228,420`; `src/core/WorkflowRunner.ts:70,269,509`; `src/core/cloners.ts:54,100,101`; `src/core/phases/Phase.ts:77,79,110,164,486,514`; `src/core/factories.ts:105,216,342,471`; `src/core/Scheduler.ts:23`; `src/core/helpers.ts:36,865,1064,1137`; `src/core/constants.ts:76`; `src/core/Workflow.ts:107,164`; `src/core/Collection.ts:127`; and `src/core/types.ts:30,70,79,487,795,869,983,1631,1830,1880,2214,2328,2375`. The test-prose sites are `tests/setup.ts:260,268`; `tests/src/server/NodeScheduler.test.ts:36`; `tests/src/browser/BrowserScheduler.test.ts:103`; `tests/src/core/Workflow.test.ts:63,289,291,298,303,669,682,1223`; `tests/src/core/validators.test.ts:66,373`; `tests/src/core/tasks/Task.test.ts:36,218,541`; `tests/src/core/phases/Phase.test.ts:46,199`; `tests/src/core/factories.test.ts:303,320,373`; `tests/src/core/helpers.test.ts:61,830,844,858,920,1342,1362`; `tests/src/core/Controller.test.ts:68,123`; `tests/src/core/cloners.test.ts:74`; `tests/src/core/Runner.test.ts:123,436,438,457,491,630,813,843,953,1018,1116,1206,1442`; `tests/src/core/WorkflowRunner.test.ts:42,154,348,1122`; `tests/distribution.test.ts:603`; and `tests/setup.test.ts:43`.
+- `once` is an event-listener option at `src/core/tasks/TaskController.ts:131`; `src/core/tasks/Task.ts:501`; `src/core/WorkflowRunner.ts:287,829,889,906`; `src/core/helpers.ts:1107,1183`; `tests/src/core/Workflow.test.ts:1135`; and `tests/src/core/WorkflowRunner.test.ts:150,570,801,848,878,965,1079,1871,2126`. It is a fixture identifier or value at `tests/src/core/factories.test.ts:842`; `tests/src/core/helpers.test.ts:1580,1581,1582,1584`; `tests/src/core/Runner.test.ts:103,105,112,115,120,121,125,1484`. These code tokens are permitted.
+- Every remaining `new` hit is either the JavaScript/TypeScript construction operator or names a replacement, inserted, minted, or further value rather than dating it. The prose value sites are `guides/workflow.md:256,663,958,1044,1421`; `src/core/shapers.ts:127,128,141,142`; `src/core/tasks/Task.ts:445`; `src/core/phases/Phase.ts:302,394`; `src/core/helpers.ts:974,977,982,983,984,1003,1013,1018,1019`; `src/core/constants.ts:102`; `src/core/Workflow.ts:430`; `src/core/types.ts:642,682,1074,2395`; `tests/src/core/Workflow.test.ts:300,1206,1299,1302`; `tests/src/core/tasks/Task.test.ts:938,940`; and `tests/src/core/helpers.test.ts:1254,1261`. Construction expressions and fixture values are code tokens, so each is permitted.
