@@ -1,0 +1,301 @@
+{
+  "package": "@orkestrel/csv",
+  "rows": [
+    {
+      "id": "csv-obj-1",
+      "disposition": "applied",
+      "note": "README.md Requirements reads `- Dual ESM and CommonJS builds from one entry point`; no subpath clause copied."
+    },
+    {
+      "id": "csv-obj-2",
+      "disposition": "applied",
+      "note": "README.md Requirements reads `- Node.js >= 22.12.0`, matching engines.node; manifest unchanged."
+    },
+    {
+      "id": "csv-obj-3",
+      "disposition": "applied",
+      "note": "#carry and its comment are the class's last member. Fix round 2 changed the comment's causal `since` to `because` under referral R-B; nothing else in the moved text differs."
+    },
+    {
+      "id": "csv-obj-4",
+      "disposition": "applied",
+      "note": "src/core/CSV.ts opens with the import type block, then the @orkestrel/contract value import, then the local value imports."
+    },
+    {
+      "id": "csv-obj-5",
+      "disposition": "applied",
+      "note": "src/core/shapers.ts opens with the two type imports, then the @orkestrel/contract value block, then ./inferers.js."
+    },
+    {
+      "id": "csv-obj-6",
+      "disposition": "applied",
+      "note": "The adopted-table fence returns createCSV(candidate); the unreferenced `import type { CSVTable }` line is deleted."
+    },
+    {
+      "id": "csv-obj-7",
+      "disposition": "applied",
+      "note": "helpers.test.ts and inferers.test.ts import '../../setup.js'; the extensionless sweep over tests/ is empty."
+    },
+    {
+      "id": "csv-obj-8",
+      "disposition": "applied",
+      "note": "Local captureError deleted; @orkestrel/test's imported in helpers.test.ts, parsers.test.ts, CSV.test.ts, and factories.test.ts. Nothing re-exported from tests/setup.ts."
+    },
+    {
+      "id": "csv-obj-9",
+      "disposition": "applied",
+      "note": "Local isRecord deleted in CSV.test.ts; @orkestrel/contract's imported. Every call site stayed green; no assertion adjusted."
+    },
+    {
+      "id": "csv-obj-10",
+      "disposition": "applied",
+      "note": "describe('assertAndNarrow usage sanity') deleted in full; the assertAndNarrow import stays, still used."
+    },
+    {
+      "id": "csv-obj-11",
+      "disposition": "applied",
+      "note": "Every deriveShapes case and the CSV export integer case compile the shape with createContract. Fix round 2 re-took both mutation controls: 5 failed | 41 passed (46) and 1 failed | 17 passed (18), restored to 46 passed (46)."
+    },
+    {
+      "id": "csv-obj-12",
+      "disposition": "applied",
+      "note": "describe('flagship fences') runs below the parity loop in tests/guides.test.ts. Fix round 2 re-took both controls against the real total: 1 failed | 30 passed (31) and 4 failed | 27 passed (31), restored to 31 passed (31)."
+    },
+    {
+      "id": "csv-obj-13",
+      "disposition": "applied",
+      "note": "assertValidSeparators, advancePosition, and isBreakChar have describes in helpers.test.ts. Fix round 2 re-took all three controls: 13/123, 8/128, and 84/52 of 136, restored to 136 passed (136)."
+    },
+    {
+      "id": "csv-obj-14",
+      "disposition": "applied",
+      "note": "The nine tokenizer and table-builder describes moved verbatim into helpers.test.ts with START and their imports; src:core totals 231 before and 239 after."
+    },
+    {
+      "id": "csv-subj-1",
+      "disposition": "applied",
+      "note": "Guide tagline reads `A types-first RFC 4180 CSV parser and renderer`; the narrower helpers claim is unchanged."
+    },
+    {
+      "id": "csv-subj-2",
+      "disposition": "applied",
+      "note": "guides/README.md states the runtime dependency as ^0.0.15, matching package.json:73."
+    },
+    {
+      "id": "csv-subj-4",
+      "disposition": "applied",
+      "note": "Documentation only. ExportOptions.key is restated as the primary-key column; the TableExport remark states what @orkestrel/database declares. Fix round 1 extended it to the remaining attributions under F1."
+    },
+    {
+      "id": "csv-subj-5",
+      "disposition": "applied",
+      "note": "BREAKING. BlankPolicy deleted, ParseOptions.blanks is boolean, default true, branch reads !resolved.blanks. Fix round 2 re-took the typecheck control: exit 2 with error TS2322 at helpers.test.ts(784,44), (787,47), (792,54)."
+    },
+    {
+      "id": "csv-subj-6",
+      "disposition": "applied",
+      "note": "Every AGENTS §N / AGENTS section N / bare §N citation removed across src, tests, guides/csv.md, guides/README.md, and README.md, including the split and bare-link forms; the AGENTS.md link bullets and the guides/README.md ## See also section deleted."
+    },
+    {
+      "id": "csv-subj-7",
+      "disposition": "applied",
+      "note": "Count removed from validators.ts TSDoc, the guide's Validators table, and the validators.test.ts case name; helpers.ts names resolveParseOptions and resolveRenderOptions."
+    },
+    {
+      "id": "csv-subj-10",
+      "disposition": "applied",
+      "note": "The ### CSV parenthetical and the ## Methods preamble's trailing sentences cut; npm run test:guides exits 0."
+    },
+    {
+      "id": "csv-subj-11",
+      "disposition": "applied",
+      "note": "Every ## Tests row displays tests/src/core/<name>.test.ts; every href unchanged."
+    },
+    {
+      "id": "csv-subj-14",
+      "disposition": "applied",
+      "note": "README.md binds `remaining`; guides/csv.md keeps `adults`, where the fence data carries an age column."
+    },
+    {
+      "id": "csv-subj-15",
+      "disposition": "applied",
+      "note": "The Streaming boundary section states the limit without naming a version."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "noop",
+      "note": "No isBrowserVuePath anywhere in the checkout; src/browser, app/browser, and tests/setupBrowser.ts are all absent."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "No class declares a public readonly id: string. CSV declares only #result; CSVError declares code, line, column, offset, context."
+    },
+    {
+      "id": "claim-4",
+      "disposition": "applied",
+      "note": "Closed by re-taking every control alone and reading the counts bare, then restoring and re-reading green. Every count matches the first round's record. The csv-obj-12 totals are measured at (31) rather than derived, and the csv-subj-5 control's file and lines are corrected to their post-move location."
+    },
+    {
+      "id": "claim-8",
+      "disposition": "applied",
+      "note": "Closed for this unit's half: the gate chain re-run bare on the final tree, each exit code recorded under § Gates. The deciding run belongs to an independent verifier after this unit exits."
+    },
+    {
+      "id": "R-A",
+      "disposition": "applied",
+      "note": "src/core/validators.ts now reads `Each row is validated through`. Adopted verbatim; no reflow followed, because the replacement leaves the line inside the block's own width."
+    },
+    {
+      "id": "R-B",
+      "disposition": "applied",
+      "note": "src/core/CSV.ts:207 now reads `because the source parse is not repeated`. Adopted verbatim."
+    },
+    {
+      "id": "R-C",
+      "disposition": "noop",
+      "note": "No tree change. The lane's own prescription names a separate unit with the release gate re-run; package.json:56 shows npm test never collects the distribution project, only prepublishOnly does, and that proof packs and installs, which this unit is forbidden to run. Referred with the evidence."
+    },
+    {
+      "id": "R-D",
+      "disposition": "applied",
+      "note": "The report's § Files touched bullet for parsers.test.ts corrected: csv-obj-14 moved the blanks case into helpers.test.ts, and the report now names each file's real content."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/csv/README.md",
+    "/home/user/fleet/csv/guides/README.md",
+    "/home/user/fleet/csv/guides/csv.md",
+    "/home/user/fleet/csv/src/core/CSV.ts",
+    "/home/user/fleet/csv/src/core/constants.ts",
+    "/home/user/fleet/csv/src/core/errors.ts",
+    "/home/user/fleet/csv/src/core/factories.ts",
+    "/home/user/fleet/csv/src/core/helpers.ts",
+    "/home/user/fleet/csv/src/core/shapers.ts",
+    "/home/user/fleet/csv/src/core/types.ts",
+    "/home/user/fleet/csv/src/core/validators.ts",
+    "/home/user/fleet/csv/tests/guides.test.ts",
+    "/home/user/fleet/csv/tests/setup.ts",
+    "/home/user/fleet/csv/tests/src/core/CSV.test.ts",
+    "/home/user/fleet/csv/tests/src/core/factories.test.ts",
+    "/home/user/fleet/csv/tests/src/core/helpers.test.ts",
+    "/home/user/fleet/csv/tests/src/core/inferers.test.ts",
+    "/home/user/fleet/csv/tests/src/core/parsers.test.ts",
+    "/home/user/fleet/csv/tests/src/core/shapers.test.ts",
+    "/home/user/fleet/csv/tests/src/core/validators.test.ts",
+    "/home/user/scaffold/tmp/units/conform/conform-csv-report.md",
+    "/home/user/work/evidence/conform-csv.diff",
+    "/home/user/work/evidence/conform-csv.status"
+  ],
+  "gates": [
+    {
+      "command": "npm --prefix /home/user/fleet/csv run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2576ms on 47 files using 4 threads."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . (no output)"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json, then tsc --noEmit -p configs/src/tsconfig.core.json (no diagnostics)"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run build",
+      "exit": 0,
+      "excerpt": "built in 2.69s; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv test",
+      "exit": 0,
+      "excerpt": "src:core 239 passed, policy 111 passed, config 46 passed, setup 15 passed, guides 31 passed"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:src:core -- tests/src/core/shapers.test.ts tests/src/core/CSV.test.ts (csv-obj-11 control A applied)",
+      "exit": 1,
+      "excerpt": "5 failed | 41 passed (46); names CSV.test.ts:183, shapers.test.ts:110, :117, :127, :134"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:src:core -- tests/src/core/shapers.test.ts (csv-obj-11 control B applied)",
+      "exit": 1,
+      "excerpt": "1 failed | 17 passed (18); derives text for a column with no non-empty cells at shapers.test.ts:103"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:src:core -- tests/src/core/helpers.test.ts (csv-obj-13 control A applied)",
+      "exit": 1,
+      "excerpt": "13 failed | 123 passed (136)"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:src:core -- tests/src/core/helpers.test.ts (csv-obj-13 control B applied)",
+      "exit": 1,
+      "excerpt": "8 failed | 128 passed (136)"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:src:core -- tests/src/core/helpers.test.ts (csv-obj-13 control C applied)",
+      "exit": 1,
+      "excerpt": "84 failed | 52 passed (136)"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:guides (csv-obj-12 control A applied)",
+      "exit": 1,
+      "excerpt": "1 failed | 30 passed (31); folds the reduce fence to its documented total at guides.test.ts:238"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:guides (csv-obj-12 control B applied)",
+      "exit": 1,
+      "excerpt": "4 failed | 27 passed (31); every presence guard stayed green"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:guides (F2 control, export key default columns[1])",
+      "exit": 1,
+      "excerpt": "1 failed | 30 passed (31); expected 'name' to be 'id' at guides.test.ts:272"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:guides (F2 control, guide fence rebound)",
+      "exit": 1,
+      "excerpt": "1 failed | 30 passed (31); the guide presence guard alone at guides.test.ts:273"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run test:guides (F2 control, README comment shortened)",
+      "exit": 1,
+      "excerpt": "1 failed | 30 passed (31); the README presence guard alone at guides.test.ts:274"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/csv run check (csv-subj-5 control, blanks reverted to string literals)",
+      "exit": 2,
+      "excerpt": "error TS2322 at tests/src/core/helpers.test.ts(784,44), (787,47), (792,54): Type 'string' is not assignable to type 'boolean | undefined'"
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "BlankPolicy",
+      "change": "Removed. The exported type `BlankPolicy = 'keep' | 'skip'` is deleted from src/core/types.ts and no longer reaches the barrel.",
+      "consumers": [
+        "None inside the fleet. A grep for \"@orkestrel/csv\" across /home/user/fleet/*/package.json returns only csv's own name field at /home/user/fleet/csv/package.json:2."
+      ],
+      "edit": "Drop any `import type { BlankPolicy }` and annotate the value `boolean`."
+    },
+    {
+      "symbol": "ParseOptions.blanks",
+      "change": "Retyped from BlankPolicy to boolean. The default moves from 'keep' to true, and the branch in helpers.ts reads !resolved.blanks. Behaviour is unchanged.",
+      "consumers": [
+        "None inside the fleet, by the same grep."
+      ],
+      "edit": "Replace `blanks: 'keep'` with `blanks: true` and `blanks: 'skip'` with `blanks: false`."
+    }
+  ],
+  "patches": [],
+  "deviations": [
+    "R-C not applied, and this is the round's one departure from a lane prescription. The lane itself prescribes a separate unit with the release gate re-run. Measured here: package.json:56 composes `test` from test:src, test:policy, test:config, test:setup, and test:guides, so no gate this unit runs collects the `distribution` project; only prepublishOnly (package.json:65) reaches it, through `test:distribution -- --mode release`, which packs the package and installs the tarball into a generated consumer. The brief forbids this unit to install, and the swap is not behaviour-neutral: the local guard at tests/distribution.test.ts:159 returns Readonly<Record<string, unknown>> and refuses an array, while @orkestrel/contract's isRecord returns Record<string, unknown> and additionally refuses a Date, a Map, and a class instance. Applying it here would land an unproven narrowing change in the file that drives the release gate. Recorded for a successor unit owning tests/distribution.test.ts with npm run test:distribution as its gate.",
+    "The csv-subj-5 control's location was recorded wrongly in the first round. Expected, from that report: the control reddens tests/src/core/parsers.test.ts(310,44), (313,47), (318,54). Found, on re-running it: npm run check exits 2 with the same column offsets at tests/src/core/helpers.test.ts(784,44), (787,47), (792,54), because csv-obj-14 moved the blanks case into the helpers mirror inside the same round. Done: the control is re-taken and the row restated in the report. Not done: nothing. Hypothesis: the first round recorded the control at the coordinates it held when the control ran, before the move landed, and did not re-read it afterwards.",
+    "F1's ColumnType replacement wording, carried from fix round 1 and unchanged: the lane prescribed stating that no @orkestrel/database type named ColumnType exists; the measured name was written instead, because the sibling declares the same literal set as ColumnStorage at /home/user/fleet/database/src/core/types.ts:254, which the lane's own grep pattern could not reach.",
+    "Ancillary, recorded and carried on from: every command ran as `npm --prefix /home/user/fleet/csv run <script>`, because this round's shell starts in /home/user/scaffold and the dispatch bars a `cd … &&` chain. Vitest reports `RUN v4.1.11 /home/user/fleet/csv` under every reading, which is the check that the root resolved.",
+    "Ancillary, recorded and carried on from: the diff evidence file was written with `git diff HEAD --output=<path>`, git diff's own flag, because the dispatch bars a heredoc and every scripted writer and transcribing 2165 lines by hand would make the evidence a retyping rather than the command's output. /home/user/work/evidence/conform-csv.status is 20 short lines and was written with the Write tool from the git status --short output read in the same round. No untracked file was created, so `git add -N` had nothing to stage.",
+    "Observation, no tree change and no lane names it: `via` and causal `since` survive at further sites, some in blocks this unit re-flowed or moved, which is R-A's own reasoning for its site. The sweep \\bvia\\b|\\bsince\\b case-insensitive covered src, tests outside tests/setupPolicy.ts, README.md, guides/README.md, and guides/csv.md, and no other path. via: src/core/helpers.ts:685, :803; src/core/inferers.ts:66, :88; src/core/shapers.ts:32, :100; guides/csv.md:116, :137, :150, :219, :220, :259; tests/src/core/helpers.test.ts:336, :425, :850; tests/src/core/shapers.test.ts:7; tests/src/core/CSV.test.ts:24, :118. Causal since: src/core/parsers.ts:63; tests/distribution.test.ts:28. A vocabulary sweep over the package is the successor unit that closes the class.",
+    "Observation, report-only and still open from the first round: the brief at /home/user/scaffold/tmp/units/conform/conform-csv-brief.md:212 names the report path as /home/user/fleet/csvRT_PATH, an unsubstituted template token where REPORT_PATH belonged. This round's dispatch named the report path directly, which is where the report was written. Correct the brief before the unit is re-dispatched from what the campaign kept.",
+    "Observation, not a criterion: every gate reading here is this unit's own, taken inside its own exec. The deciding run belongs to one independent verifier after this unit exits."
+  ]
+}

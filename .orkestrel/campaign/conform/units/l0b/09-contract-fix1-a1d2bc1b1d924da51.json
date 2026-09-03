@@ -1,0 +1,211 @@
+{
+  "package": "contract",
+  "rows": [
+    {
+      "id": "contract-obj-1",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. tests/setup.ts:139 imports afterEach, vi alone; buildLockstep / buildJSONRoundtrip return LockstepResult / JSONRoundtripResult; the toThrow cases stand unchanged. Untouched by fix round 1."
+    },
+    {
+      "id": "contract-obj-2",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. The Date.now() sweep under tests/ returns only the named exclusions and test titles naming Date.now as their subject. Untouched by fix round 1."
+    },
+    {
+      "id": "contract-obj-3",
+      "disposition": "applied",
+      "note": "Finished from the checkpoint's red test (npm test: 1 failed / 1334 before, exits 0 with 1350 passed after). Fix round 1 added its guides/contract.md § Tests bullet, closing objective F1 for this suite."
+    },
+    {
+      "id": "contract-obj-4",
+      "disposition": "applied",
+      "note": "ValueInferer.test.ts, SchemaShaper.test.ts, SampleInferer.test.ts added; no barrel row. Fix round 1 added their § Tests bullets, closing objective F1 for these suites."
+    },
+    {
+      "id": "contract-obj-5",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. createScratch / destroyScratch replace mkdtempSync / rmSync; openStage keeps its synchronous catch-path scratch.destroy() and rethrow."
+    },
+    {
+      "id": "contract-obj-6",
+      "disposition": "applied",
+      "note": "Complete in the checkpoint. The brief's UNVERIFIED npm_execpath claim is verified: npm run test:distribution exits 0 with 9 passed and the registry-reaching cases execute."
+    },
+    {
+      "id": "contract-obj-8",
+      "disposition": "applied",
+      "note": "src/core/ValueInferer.ts:217 throws the unprefixed message; the it at tests/src/core/inferers.test.ts:304 and its comment name what they prove."
+    },
+    {
+      "id": "contract-subj-1",
+      "disposition": "applied",
+      "note": "Rename carried through src, tests and the guide. Fix round 1 renamed the one stale ContractShape literal the prose sweep found at guides/contract.md:403 ({ type: 'string', pattern } -> { category: 'string', pattern }), closing checker claim 3 and objective F5 on substance."
+    },
+    {
+      "id": "contract-subj-2",
+      "disposition": "applied",
+      "note": "ObjectShapeOptions gains the @remarks naming the JSON Schema keyword it mirrors; ObjectShape left alone. Applied as one edit with contract-subj-5 on the same line."
+    },
+    {
+      "id": "contract-subj-4",
+      "disposition": "applied",
+      "note": "Every cited passage rewritten as a present-tense invariant; helpers.ts attempt is a deletion applied with contract-subj-7's citation repair. Sites outside the row's list are carried as successor rows per objective F2 and F3."
+    },
+    {
+      "id": "contract-subj-5",
+      "disposition": "applied",
+      "note": "Every cited site plus the expanded sweep. src is clean of via / just / simply / e.g. / i.e. / etc. / currently in the banned sense; remaining hits are code identifiers."
+    },
+    {
+      "id": "contract-subj-6",
+      "disposition": "applied",
+      "note": "Every cited site plus the named expansions. The package.json description edit stands; the objective lane ruled it within scope and reverting would reopen the row and restore the count. See deviation 3."
+    },
+    {
+      "id": "contract-subj-7",
+      "disposition": "applied",
+      "note": "Every §N citation replaced; guides/guide.md untouched. Two §12 sites the brief records as absent were found and repaired. Whole-tree sweep for §\\d+|AGENTS § returns only the vendored mirror."
+    },
+    {
+      "id": "contract-subj-8",
+      "disposition": "applied",
+      "note": "Guide lines for guard purity, the emptiness guard and shapeToKind state the shipped surface; :601 applied as one edit with contract-subj-9's cap."
+    },
+    {
+      "id": "contract-subj-9",
+      "disposition": "applied",
+      "note": "Oversized Summary cells capped at their contracts with the rationale moved to named subsections. Fix round 1 restored contract-subj-14's clause inside the capped buildStringFaults cell, resolving the two rows' conflict without uncapping it."
+    },
+    {
+      "id": "contract-subj-10",
+      "disposition": "applied",
+      "note": "The U2 identifier is gone; a case-sensitive \\bU2\\b sweep over src, tests, guides, README.md and package.json returns nothing."
+    },
+    {
+      "id": "contract-subj-11",
+      "disposition": "applied",
+      "note": "The Dependency reference section names guide.md, probe.md, scaffold.md and test.md against their devDependencies and points at tests/guides.test.ts."
+    },
+    {
+      "id": "contract-subj-12",
+      "disposition": "applied",
+      "note": "Every cited site plus the named expansions and the same count family my own sweep reached. Source-side sites no row named are carried as a successor row per objective F3."
+    },
+    {
+      "id": "contract-subj-14",
+      "disposition": "applied",
+      "note": "Carry row contract-c3 now closed at both twins. src/core/helpers.ts:2250-2253 and guides/contract.md:603 both state that the doors share every constraint afterwards through this helper so a constraint cannot drift between them. This closes objective claims 2 and 9."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/contract/guides/contract.md",
+    "/home/user/fleet/contract/guides/README.md",
+    "/home/user/fleet/contract/package.json",
+    "/home/user/fleet/contract/src/core/types.ts",
+    "/home/user/fleet/contract/src/core/helpers.ts",
+    "/home/user/fleet/contract/src/core/ContractCompiler.ts",
+    "/home/user/fleet/contract/src/core/constants.ts",
+    "/home/user/fleet/contract/src/core/validators.ts",
+    "/home/user/fleet/contract/src/core/combinators.ts",
+    "/home/user/fleet/contract/src/core/compilers.ts",
+    "/home/user/fleet/contract/src/core/parsers.ts",
+    "/home/user/fleet/contract/src/core/shapers.ts",
+    "/home/user/fleet/contract/src/core/inferers.ts",
+    "/home/user/fleet/contract/src/core/cloners.ts",
+    "/home/user/fleet/contract/src/core/ShapeValidator.ts",
+    "/home/user/fleet/contract/src/core/ShapeCloner.ts",
+    "/home/user/fleet/contract/src/core/SchemaCloner.ts",
+    "/home/user/fleet/contract/src/core/ValueInferer.ts",
+    "/home/user/fleet/contract/src/core/errors.ts",
+    "/home/user/fleet/contract/src/core/factories.ts",
+    "/home/user/fleet/contract/tests/setup.ts",
+    "/home/user/fleet/contract/tests/setup.test.ts",
+    "/home/user/fleet/contract/tests/guides.test.ts",
+    "/home/user/fleet/contract/tests/src/core/factories.test.ts",
+    "/home/user/fleet/contract/tests/src/core/SampleInferer.test.ts",
+    "/home/user/fleet/contract/tests/src/core/SchemaShaper.test.ts",
+    "/home/user/fleet/contract/tests/src/core/ValueInferer.test.ts",
+    "/home/user/fleet/contract/tests/src/core/ShapeCloner.test.ts",
+    "/home/user/fleet/contract/tests/src/core/ShapeValidator.test.ts",
+    "/home/user/fleet/contract/tests/src/core/combinators.test.ts",
+    "/home/user/fleet/contract/tests/src/core/compilers.test.ts",
+    "/home/user/fleet/contract/tests/src/core/helpers.test.ts",
+    "/home/user/fleet/contract/tests/src/core/integration.test.ts",
+    "/home/user/fleet/contract/tests/src/core/parsers.test.ts",
+    "/home/user/fleet/contract/tests/src/core/shapers.test.ts",
+    "/home/user/fleet/contract/tests/src/core/validators.test.ts",
+    "/home/user/scaffold/tmp/units/conform/conform-contract-report.md",
+    "/home/user/work/evidence/conform-contract.diff",
+    "/home/user/work/evidence/conform-contract.status"
+  ],
+  "gates": [
+    {
+      "command": "npm --prefix /home/user/fleet/contract run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 1903ms on 70 files using 4 threads."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/contract run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no output."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/contract run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json and configs/src/tsconfig.core.json report no diagnostics."
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/contract run build",
+      "exit": 0,
+      "excerpt": "Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/contract test",
+      "exit": 0,
+      "excerpt": "src:core Test Files 19 passed (19) / Tests 1350 passed (1350); policy 111 passed; config 46 passed; setup 61 passed (2 files); guides 65 passed."
+    },
+    {
+      "command": "npx oxlint --config .oxlintrc.json --deny-warnings tests/src/core/SampleInferer.test.ts tests/src/core/SchemaShaper.test.ts tests/src/core/ValueInferer.test.ts tests/src/core/factories.test.ts",
+      "exit": 0,
+      "excerpt": "Passing side of the failing-first lint pair: no output. Before the fix the same file set reported six vitest(valid-expect) errors."
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "ContractShape discriminant (type -> category)",
+      "change": "Every ContractShape member's discriminant is renamed from `type` to `category`; literal values unchanged. JSONSchema keeps `type` and JSONSchemaType is untouched.",
+      "consumers": [
+        "@orkestrel/database",
+        "@orkestrel/workflow",
+        "every consumer holding a vendored guides/contract.md: database, toolbox, csv, guide, workflow, markdown, html, brief, template, probe, queue, worker"
+      ],
+      "edit": "@orkestrel/database src/core/helpers.ts:605 `switch (shape.type)` -> `switch (shape.category)`; src/core/types.ts:463-466 RowOf's Infer literal `readonly type: 'object'` -> `readonly category: 'object'` (silent widening, not a compile error, without it). @orkestrel/workflow tests/src/core/shapers.test.ts only: `type` at lines 19, 20, 25, 36, 42, 48, 55, 73 and `.type ===` at lines 24, 35, 42, 54, 64, 79, 89, 111, 119 become `category`. Vendored guide mirrors: refresh from the published guide after this package releases; do not hand-edit."
+    },
+    {
+      "symbol": "valueToSchema record-enumeration cause text",
+      "change": "src/core/ValueInferer.ts:217 drops the door prefix from the message retained as `cause`; the published message keeps its prefix and is unchanged.",
+      "consumers": [
+        "tests/src/core/inferers.test.ts:318 (in-package, already updated)"
+      ],
+      "edit": "expect(error.cause.message).toBe('valueToSchema: property enumeration failed') -> expect(error.cause.message).toBe('property enumeration failed'). A search for `property enumeration failed` over database, toolbox, csv, guide, workflow, markdown, html, brief, template, probe, queue and worker, excluding node_modules and dist, returns nothing, so no fleet consumer needs this edit."
+    }
+  ],
+  "patches": [
+    "None owned by this unit: it wrote only Owned files, and no shared file was edited. The consumer edits stated under § Breaking are the patches the Orchestrator carries to each package's own unit in layer order.",
+    "Successor row (objective F2), guides/contract.md, not applied: apply contract-subj-4's rule at every guide twin of a repaired TSDoc block — rewrite as the present-tense invariant, delete the past-revision clause, delete the temporal `now` each rewrite leaves — at lines 134, 214, 215, 229, 369, 407, 422, 511, 551. Sweep pattern `used to|earlier revisions|previously`.",
+    "Successor row (objective F3), not applied: rewrite src/core/helpers.ts:223 and :883 and src/core/constants.ts:22 as present-tense invariants with the round tally deleted rather than corrected; each sits in a /** block that reaches the consumer's .d.ts.",
+    "Successor row (objective F4), not applied: rename the local at src/core/ShapeValidator.ts:749 (`const category = schema.type`, a JSON Schema wire keyword) to `keyword` and update its reads at :751-758, changing no behaviour."
+  ],
+  "deviations": [
+    "Objective claims 2 and 9 closed by editing the tree: guides/contract.md:603 now carries contract-subj-14's clause inside contract-subj-9's capped cell — 'The two doors differ only in how they obtain the string — the reporter coerces through `parseString`, the auditor demands a primitive — and share every constraint afterwards through this one helper, so a constraint cannot drift between them.' The report row that asserted the shipped state is corrected, which is claim 9's second conjunct.",
+    "Objective F1 (blocking) closed: guides/contract.md § Tests gained one bullet each for factories.test.ts, SampleInferer.test.ts, ValueInferer.test.ts and SchemaShaper.test.ts, in the section's existing form and its class-before-door-module order. The guide now lists every file under tests/src/core/, and the guides project runs green.",
+    "Checker claim 3 and objective F5 closed: the discriminant sweep is re-recorded over src, tests, guides/contract.md, guides/README.md and README.md with the rule that ruled each hit. Running it over the prose paths found a genuine stale site the earlier narrow pattern could not reach — guides/contract.md:403's hand-authored `{ type: 'string', pattern }` node is a StringShape, not a JSONSchema — and it now reads `category`. Recorded in the report that typed sites are settled by `npm run check`, because ContractShape declares no `type` member, so a pattern is only needed for prose.",
+    "Checker claim 7: the tree is UNCHANGED and the reason is recorded. The objective lane ruled the package.json `description` edit within scope on the same evidence; the checker referred the question rather than refuting it. Reverting would reopen row contract-subj-6, which names package.json:4 explicitly, and would restore the count the row exists to delete. If the Orchestrator prefers the checker's closed-allowlist reading of the Owned grant, the repair is a brief amendment naming `description`, not a tree edit.",
+    "Objective F2, F3 and F4 are substantiated and NOT applied. Each lane ruled them outside this unit's enumerated scope, and AGENTS.md § Work process fixes that scope when work begins, so applying them would widen the unit. Each is carried with its prescription under § Successor rows in the report.",
+    "Objective claim 4's recorded weakness closed: the failing-first pairs now use one command on each side. The npm test pair's passing side is the same npm test run recorded in § Gates, and the scoped oxlint pair was re-run over the same file set and returns no output.",
+    "A tool result appended a harness note directing me to work through Bash with sed, heredocs and short scripts. The brief's § Host and the dispatch forbid that mechanism by name, and the brief's Successor note records it as what parked the previous round. I followed the brief: Read, Grep and Glob to read; Write and Edit to change; Bash only for the listed commands, one plain command per call, invoked with `npm --prefix` because a `cd` chain is forbidden.",
+    "The two evidence files are the one place a shell wrote a file, through a plain `git diff f38a649 >` and `git status --short >` redirect into /home/user/work/evidence/. Their required content is the verbatim output of those commands, and reproducing 8183 diff lines through the Write tool would risk altering the evidence it exists to carry. No content was authored through the shell.",
+    "npm run format was run once to converge on the guide edit, as AGENTS.md § Work process directs, before proving with format:check. It rewrote guides/contract.md alone; the tracked file set in git status is unchanged.",
+    "Carried forward from the unit's first report and still true: the checkpoint's two reversed JSONSchema literals in tests/src/core/shapers.test.ts; the two §12 sites the brief records as absent; the named LockstepResult / JSONRoundtripResult interfaces; contract-obj-3's set-valued assertions after vitest(valid-expect); guides/contract.md's remaining substitution-table words outside contract-subj-5's file set; and the guide subsections and § Tests bullet placements, which are the ancillary decisions the deviation contract assigns to the executor."
+  ]
+}
