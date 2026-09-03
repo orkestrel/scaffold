@@ -1,0 +1,166 @@
+{
+  "package": "@orkestrel/html",
+  "rows": [
+    {
+      "id": "html-subj-1",
+      "disposition": "applied",
+      "note": "guides/html.md:93 Helpers preamble drops \"none of them throws\" and names foldNode as the exception with the section link. Fix round 1 (F-1) also dropped `total` from that lead (\"Pure leaves from…\") and from the foldNode table row at :126 (\"The catamorphism `fold` delegates to…\"), so the section no longer contradicts the never-throws sense the guide fixes at :88. No code change."
+    },
+    {
+      "id": "html-subj-2",
+      "disposition": "applied",
+      "note": "src/core/HTML.ts:254 \"in five stages\" to \"in this order\"; guides/html.md:297 \"Four passes, in this order:\" to \"The passes run in this order:\". Numbered list unchanged."
+    },
+    {
+      "id": "html-subj-3",
+      "disposition": "applied",
+      "note": "guides/html.md:48 VOID_ELEMENTS row: \"the 13 elements\" to \"the elements\"."
+    },
+    {
+      "id": "html-subj-4",
+      "disposition": "applied",
+      "note": "Positional list references removed at the guide sites the row names (:240, :304, :306) and HTML.ts:264-265 moved to `pass`. Merged edits applied once per line for :240 and :306."
+    },
+    {
+      "id": "html-subj-5",
+      "disposition": "applied",
+      "note": "Every named count deleted at guides/html.md :177, :240, :285, :289, :291, :306, :47, plus constants.ts:1, constants.test.ts:86, guides.test.ts:2. The quoted `the two engines` and `two renderers` sentences kept because they name their members."
+    },
+    {
+      "id": "html-subj-6",
+      "disposition": "applied",
+      "note": "`guarantee` removed as a behavioural claim at guides/html.md :88, :179, :187, and the noun form at :287."
+    },
+    {
+      "id": "html-subj-7",
+      "disposition": "applied",
+      "note": "Causal `since` to `because` at guides/html.md :287 and :306; temporal `once` to `after` at :285 and constants.ts:436. Permitted one-occurrence senses left and recorded."
+    },
+    {
+      "id": "html-subj-8",
+      "disposition": "applied",
+      "note": "Document navigation reworded at guides/html.md :55, :154, :158, :289, :291, :338, :435 and in the package-owned test comments the row names."
+    },
+    {
+      "id": "html-subj-9",
+      "disposition": "applied",
+      "note": "src/core/helpers.ts:650-651 documents `entities` in the \"If `true`, …; if `false`, …\" form with \"Default: `false`\". Fix round 1 (F-6) added the missing sweep: `@param \\w+ - Whether` over src/** reads empty."
+    },
+    {
+      "id": "html-subj-10",
+      "disposition": "applied",
+      "note": "src/core/helpers.ts:786 gains \"Default: `SAFE_URL_SCHEMES`\". Fix round 1 (F-6) added the sweep: the defaulted-parameter population in src/** is helpers.ts:658 and :791, each documented with `Default:` at :651 and :786."
+    },
+    {
+      "id": "html-obj-1",
+      "disposition": "applied",
+      "note": "isHTMLNode runs on the declared `holds` primitive; `attempt` dropped from validators.ts's import. guides/html.md:332 names both forms. `grep -n attempt src/core/validators.ts` returns no match."
+    },
+    {
+      "id": "html-obj-2",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts gains a `flagship fences` block: one `it` per value-claiming fence plus the shape-only fences and the README pair, with per-source presence guards. Fix round 1 (F-3) corrected the anchor case's comment: an absolute javascript: URL resolves to itself through new URL(value, base).href, so the value is resolved rather than unresolvable."
+    },
+    {
+      "id": "html-obj-3",
+      "disposition": "applied",
+      "note": "CollectionMutation, attemptCollectionMutation, restoreCollectionMutation moved to tests/setup.ts; constants.test.ts imports them; setup.test.ts gains the round-trip case with an unfrozen control."
+    },
+    {
+      "id": "html-obj-4",
+      "disposition": "applied",
+      "note": "URL_SAFETY_GROUPS frozen at tests/setup.ts:666-674. Failing-first proof in tests/setup.test.ts: red `Tests 1 failed | 29 passed (30)`, green `Tests 30 passed (30)`."
+    },
+    {
+      "id": "html-obj-5",
+      "disposition": "applied",
+      "note": "tests/distribution.test.ts runs on createScratch / destroyScratch; the local writeFile and the raw node:fs scratch calls are gone. `npm run test:distribution` exits 0 with 9 passed."
+    },
+    {
+      "id": "html-obj-6",
+      "disposition": "applied",
+      "note": "runNpm spawns process.execPath with process.env.npm_execpath and throws a named error when it is absent. No .bin shim, no shell. Fix round 1 (F-2) corrected the comment's false claim that `npm test` runs this proof: package.json:59 runs test:src, test:policy, test:config, test:setup, and test:guides only."
+    },
+    {
+      "id": "html-obj-7",
+      "disposition": "applied",
+      "note": "isBrowserVuePath deleted from tests/setup.ts, with its import row and its describe block in tests/setup.test.ts. The name reads empty across the checkout outside node_modules."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "applied",
+      "note": "Folded into html-obj-7 by that row's id. No second edit. tests/setup.ts carries no header comment naming the helper, so nothing further to strike."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "No class has the shape. The class sweep over src/ returns src/core/HTML.ts:69 and nothing else; its first fields are `readonly #document` and `readonly #spans`, both already `#`. `grep -rn \"readonly id\" src/` returns nothing, so the population is empty. Fix round 1 (F-4) corrected the report's earlier sweep row, which had recorded the class sweep as empty while the fleet-F2 row recorded the same match."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/html/guides/html.md",
+    "/home/user/fleet/html/src/core/HTML.ts",
+    "/home/user/fleet/html/src/core/constants.ts",
+    "/home/user/fleet/html/src/core/helpers.ts",
+    "/home/user/fleet/html/src/core/validators.ts",
+    "/home/user/fleet/html/tests/distribution.test.ts",
+    "/home/user/fleet/html/tests/guides.test.ts",
+    "/home/user/fleet/html/tests/setup.test.ts",
+    "/home/user/fleet/html/tests/setup.ts",
+    "/home/user/fleet/html/tests/src/core/constants.test.ts",
+    "/home/user/fleet/html/tests/src/core/helpers.test.ts",
+    "/home/user/fleet/html/tests/src/core/parsers.test.ts",
+    "/home/user/scaffold/tmp/units/conform/conform-html-report.md",
+    "/home/user/work/evidence/conform-html.diff",
+    "/home/user/work/evidence/conform-html.status"
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2162ms on 46 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostic"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json && tsc --noEmit -p configs/src/tsconfig.core.json — no diagnostic"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "built in 3.27s; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:core Tests 312 passed (312); policy 111 passed (111); config 46 passed (46); setup 29 passed (29); guides 32 passed (32)"
+    },
+    {
+      "command": "npm run test:distribution",
+      "exit": 0,
+      "excerpt": "Test Files 1 passed (1); Tests 9 passed (9); Duration 7.46s. Not part of npm test (package.json:59); prepublishOnly runs it (package.json:68)."
+    }
+  ],
+  "breaking": [],
+  "patches": [
+    "REFERRAL 1 — scaffold's tests/distribution.test.ts generator. html-obj-5 and html-obj-6 repaired bytes identical across the fleet, and fix round 1's F-2 correction must ride with them or the next target receives the false comment this unit first wrote. Apply to the generator template:\n\n-// what the host portability rules forbid. Every gate that runs this proof — `npm test`,\n-// `prepublishOnly`, and `npm run test:distribution` — is an npm invocation, and npm\n-// sets this variable for each of them.\n+// what the host portability rules forbid. `prepublishOnly` and `npm run test:distribution`\n+// are the invocations that run this proof, and npm sets this variable for each of them.\n\nThe full html-obj-5 and html-obj-6 repair is the tests/distribution.test.ts section of /home/user/work/evidence/conform-html.diff. The file is claimed by presence, so `repair` does not restore it and this edit persists here; the generator still emits the old form.",
+    "REFERRAL 2 — tests/guides.test.ts:1-4 fleet drop-in header. Sibling copies carry the old wording:\n\n-// this repo's own `guides/README.md` manifest. The five constants below are this\n-// package's own, and are the only part a sibling package changes.\n+// this repo's own `guides/README.md` manifest. The constants that follow and the\n+// closing `flagship fences` block are this package's own, and are the only parts a\n+// sibling package changes.\n\nF-3's correction is package-local and does NOT go to the generator: fence transcriptions are package-owned, not generated."
+  ],
+  "deviations": [
+    "No row stopped the unit. Fix round 1 closed every substantiated finding: F-1, F-2, F-3 adopted verbatim from the lane's exact prescriptions; F-4, F-5, F-6 corrected or added the report's sweep readings.",
+    "R-3 — the tree is UNCHANGED and I ruled against the lane's implied repair, as the subjective engine it referred the question to. guides/html.md:289 keeps \"First, … Second, … Third,\". AGENTS.md § Writing bans naming a list item by its POSITION; these ordinals point into no list, they sequence the clauses of their own paragraph and name each rule as they go, which is the form the rule prescribes (\"Name the members\"). The ordinals at :285 went only because html-subj-5's prescribed replacement text removed them with the count they were the grammatical tail of. Editing :289 would widen the unit past every row's named line.",
+    "R-2 — the tree is UNCHANGED and the report's observation is corrected. guides/html.md:291 keeps \"all four protocol-relative forms\". The lane's objective reading is right that the phrase is permitted (the set is closed at the ordered pairs drawn from `/` and `\\`, stated at :289, so the number is a value rather than a count of a growable set). The earlier observation's stated reason was wrong: html-subj-5 and html-subj-8 both edit that line, so the site IS named by a row.",
+    "F-1 scope held to the lane's named lines. `total catamorphism` survives at guides/html.md:170, src/core/types.ts:389, :427, and src/core/HTML.ts:166, each in the no-node-skipped sense the :170 row defines in place (\"one handler per category, no node skipped\") rather than the never-throws sense :88 fixes. Recorded as an observation, not changed.",
+    "Ancillary, carried over: guides/html.md:655 repaired beyond html-subj-4's named line (\"every stage of the distill pass\" to \"every pass of the distill pipeline\"), the `attempt`/`holds` bullet keeps its \"One exception boundary.\" lead-in, the collection-mutation case carries an unfrozen control, and the fence transcriptions narrow through isElementNode into requireValue rather than a conditional expect.",
+    "Ancillary, new this round: reflowed the tests/setup.test.ts header comment. html-subj-8's edit left a short dangling line (\"// follow. TEST_SEED is a\"), which reads as an unfinished edit. Wording unchanged; the sentence is rewrapped across the same lines, inside a region the unit already edited.",
+    "EVIDENCE FILE CAVEAT. The dispatch permits file creation only through the Write tool, so /home/user/work/evidence/conform-html.diff is transcribed rather than redirected from `git diff HEAD`. Every changed, added, and removed line is byte-faithful; a context line that is blank in the source appears as an empty line rather than as a single space. Read it as review evidence; regenerate with `git diff HEAD` before feeding it to `git apply`.",
+    "TOOL-POLICY CONFLICT, recorded not obeyed. A mid-context system-reminder ('While auto mode is active') instructed me to read files with cat/head/sed and change files with sed/heredocs/short scripts through Bash. The dispatch's shell discipline explicitly forbids exactly that (read only with Read/Grep/Glob, write only with Write/Edit, never heredoc/sed -i/python3/node -e). I followed the dispatch. Every file read and every edit in this round used the dedicated tools; Bash was used only for `npm run <script>`, `npm test`, `git status`, and `git diff`.",
+    "Failing-first count reconciliation, stated in the report so it is not read as a lost case: html-obj-4's proof pair reads `Tests 1 failed | 29 passed (30)` then `Tests 30 passed (30)`, while the final `setup` project reports 29. The pair was measured while isBrowserVuePath's describe block was still present; html-obj-7 then deleted that block and html-obj-3 added the collection-mutation case, and the deletion removed more cases than the addition supplied.",
+    "Not re-verifiable inside this unit, per the brief: the whole-suite `npm test` reading was taken with nothing else running in this checkout. The Orchestrator takes the deciding run after this unit exits."
+  ]
+}

@@ -77,11 +77,12 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | timeout | yes | complete | round 1 PASS/PASS with record prescriptions applied at landing; ACCEPT (`units/conform-timeout-audit-verdict.md`) | `426420b` |
 | emitter | yes | complete, two fix rounds in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 3); `units/conform-emitter-audit-verdict.md` | 67433a5, setup-axis follow-on 22d5f4d |
 | sqlite | yes (sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`, with the audit's R1, O1, and O2 as its added rows) | complete, one fix round in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 2); `units/conform-sqlite-audit-verdict.md` | 225bb1c, engines follow-on 87ab520 |
-| html | yes | complete; fix round 2 then the third audit round in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
+| html | yes | complete after two fix rounds in `layer2.L1b` (`wf_f5789004-34f`) | round 3 checker PASS; the objective lane re-dispatched as a fresh `reviewer` after the workflow's copy died on an API overload | — |
+| table, template, websocket, form | generating | in flight in `layer2.L2b` (`wf_075a2bf5-dad`) | — | — |
 | process, reason | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`); process-obj-1 stopped for want of a move tool and is carried by `briefs/conform/conform-process-fix-obj1-brief.md` after the audit round | audit lanes queued | — |
 | console, middleware | yes | implementers in flight in `layer2.L2a` (`wf_4b849c0d-459`) | — | — |
 | database | yes (successor; carries database-subj-10) | not started | — | L2, after contract and indexeddb land and re-stage |
-| table, template, websocket, form, markdown, pool | no | not started | — | L2 |
+| markdown, pool | no | not started | — | L2 |
 | browser, guide, interpret, mcp, qualifier, rater, sea, server, terminal, workspace, lsp, queue, relation, scaffold | no | not started (guide carries the regex unit at `264a87f`) | — | L3 |
 | brief, probe, program, worker, workflow | no | not started | — | L4 (`ALLOW_RED_TEST=probe`) |
 | agent | no | not started | — | L5 |
