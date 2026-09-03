@@ -1,0 +1,239 @@
+{
+  "package": "csv",
+  "rows": [
+    {
+      "id": "csv-obj-1",
+      "disposition": "applied",
+      "note": "README.md Requirements now reads `- Dual ESM and CommonJS builds from one entry point`. No subpath clause copied; csv publishes only the `.` subpath."
+    },
+    {
+      "id": "csv-obj-2",
+      "disposition": "applied",
+      "note": "README.md Requirements now reads `- Node.js >= 22.12.0`, matching `engines.node`. The manifest is unchanged."
+    },
+    {
+      "id": "csv-obj-3",
+      "disposition": "applied",
+      "note": "`#carry` and its comment moved verbatim to after `export()`, making it the class's last member. The call site `csv.#carry(...)` inside `map` is unchanged."
+    },
+    {
+      "id": "csv-obj-4",
+      "disposition": "applied",
+      "note": "src/core/CSV.ts opens with the `import type` block, then the `@orkestrel/contract` value import, then `./errors.js`, `./parsers.js`, and `./shapers.js`."
+    },
+    {
+      "id": "csv-obj-5",
+      "disposition": "applied",
+      "note": "src/core/shapers.ts opens with the `ContractShape` and `./types.js` type imports, then the `@orkestrel/contract` value block, then `./inferers.js`."
+    },
+    {
+      "id": "csv-obj-6",
+      "disposition": "applied",
+      "note": "The `Guarding an adopted table` fence returns `createCSV(candidate)`; the now-unreferenced `import type { CSVTable }` line is deleted. Sweep for `as CSVTable` is empty."
+    },
+    {
+      "id": "csv-obj-7",
+      "disposition": "applied",
+      "note": "helpers.test.ts and inferers.test.ts import `'../../setup.js'`. Sweep `from '[./]*setup'` over tests/ is empty."
+    },
+    {
+      "id": "csv-obj-8",
+      "disposition": "applied",
+      "note": "Local `captureError` deleted and `@orkestrel/test`'s imported in helpers.test.ts; every open-coded `let caught: unknown; try …` block in parsers.test.ts, CSV.test.ts, and factories.test.ts routes through it. Nothing re-exported from tests/setup.ts."
+    },
+    {
+      "id": "csv-obj-9",
+      "disposition": "applied",
+      "note": "Local `isRecord` deleted and `@orkestrel/contract`'s imported. Every call site stayed green under the stricter guard, as the refuter predicted; no assertion was adjusted."
+    },
+    {
+      "id": "csv-obj-10",
+      "disposition": "applied",
+      "note": "`describe('assertAndNarrow usage sanity')` deleted in full. Nothing added to tests/setup.test.ts; the `assertAndNarrow` import stays, still used by other cases in the file."
+    },
+    {
+      "id": "csv-obj-11",
+      "disposition": "applied",
+      "note": "Every `deriveShapes` case and the `CSV — export` integer case compile the derived shape with `createContract` and read a value the wrong branch refuses. Two mutation controls proved every rewritten case falsifiable."
+    },
+    {
+      "id": "csv-obj-12",
+      "disposition": "applied",
+      "note": "`describe('flagship fences')` added below the parity loop in tests/guides.test.ts, covering every guide and README claim the row names, each beside a presence guard. Guide-text and source mutations proved the two halves fail independently."
+    },
+    {
+      "id": "csv-obj-13",
+      "disposition": "applied",
+      "note": "`assertValidSeparators`, `advancePosition`, and `isBreakChar` gained describes in helpers.test.ts. No `isCSVError` case added there, per the refuter's strike. Three mutation controls proved every new case falsifiable."
+    },
+    {
+      "id": "csv-obj-14",
+      "disposition": "applied",
+      "note": "`scanBreak`, `scanComment`, `scanUnquoted`, `scanQuoted`, `scanField`, `scanRecord`, `readRecords`, `deriveHeader`, and `buildRow` moved verbatim into helpers.test.ts with `START`, the `@src/core` names they need, and `buildQuotedField` / `buildMixedNewlineCSV`. `MAX_ERRORS` and `assertAndNarrow` stay imported in parsers.test.ts. Stale split comment replaced. Per-file counts recorded; every moved case lands intact."
+    },
+    {
+      "id": "csv-subj-1",
+      "disposition": "applied",
+      "note": "The guide tagline reads `A types-first RFC 4180 CSV parser and renderer`. The narrower claim in the Helpers section is left unchanged."
+    },
+    {
+      "id": "csv-subj-2",
+      "disposition": "applied",
+      "note": "guides/README.md states the runtime dependency as `^0.0.15`, matching package.json."
+    },
+    {
+      "id": "csv-subj-4",
+      "disposition": "applied",
+      "note": "Documentation only; src/core/CSV.ts `export()` untouched. `ExportOptions.key` restated as the primary-key column, and the `TableExport` remark states what @orkestrel/database actually declares (`TableDefinition`, `ColumnMap`). guides/csv.md interop passage restated the same way."
+    },
+    {
+      "id": "csv-subj-5",
+      "disposition": "applied",
+      "note": "BREAKING. `BlankPolicy` deleted, `ParseOptions.blanks` is `boolean`, the default is `true`, the branch reads `!resolved.blanks`, the guide Types row is gone, and the parsers.test.ts case takes the boolean and is renamed for what it proves. README.md needed no edit."
+    },
+    {
+      "id": "csv-subj-6",
+      "disposition": "applied",
+      "note": "Every stale `AGENTS §N` / `AGENTS section N` / bare `§N` citation removed across src/**, tests/**, guides/csv.md, guides/README.md, and README.md, including the split and bare-link forms. The `AGENTS.md` link bullet in each guide deleted, and the guides/README.md `## See also` section with it. The vendored guide mirrors are untouched."
+    },
+    {
+      "id": "csv-subj-7",
+      "disposition": "applied",
+      "note": "The count removed from validators.ts published TSDoc, the guide's Validators table, and the validators.test.ts case name; helpers.ts names `resolveParseOptions` and `resolveRenderOptions` instead of counting them, which also closes csv-subj-6 at that line."
+    },
+    {
+      "id": "csv-subj-10",
+      "disposition": "applied",
+      "note": "The `### CSV` parenthetical and the `## Methods` preamble's trailing sentences cut. `npm run test:guides` exits 0 with 30 tests."
+    },
+    {
+      "id": "csv-subj-11",
+      "disposition": "applied",
+      "note": "Every `## Tests` row displays `tests/src/core/<name>.test.ts`; every href unchanged. Sweep for `../../tests` is empty."
+    },
+    {
+      "id": "csv-subj-14",
+      "disposition": "applied",
+      "note": "README.md binds `remaining`. guides/csv.md § Parse and query keeps `adults`, where the fence data carries an `age` column."
+    },
+    {
+      "id": "csv-subj-15",
+      "disposition": "applied",
+      "note": "The Streaming boundary section states the limit without naming a version. Sweep for `v1 boundary` is empty."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "noop",
+      "note": "tests/setup.ts declares no `isBrowserVuePath`; a grep over tests/ and src/ returns nothing. The workspace has no browser environment: src/browser, app/browser, and tests/setupBrowser.ts are all absent."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "No class declares a public `readonly id: string`. src/ declares `CSV` (src/core/CSV.ts:38, whose only field is `#result`) and `CSVError` (src/core/errors.ts:21, whose fields are `code`, `line`, `column`, `offset`, and `context`). A grep for `readonly id` over src/ returns nothing."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/csv/README.md — dual-build and Node floor in Requirements; the usage fence binds `remaining`.",
+    "/home/user/fleet/csv/guides/README.md — dependency range corrected to ^0.0.15; index citation and the `## See also` section removed.",
+    "/home/user/fleet/csv/guides/csv.md — tagline, `BlankPolicy` row, citation sweep, the `ColumnType` count, the `### CSV` and `## Methods` prose, the interop passage, the streaming limit, the adopted-table fence, and the `## Tests` display paths and subjects.",
+    "/home/user/fleet/csv/src/core/CSV.ts — type imports first; `#carry` moved to the class's last member.",
+    "/home/user/fleet/csv/src/core/constants.ts — `blanks` defaults to `true`; citation removed.",
+    "/home/user/fleet/csv/src/core/errors.ts — citation removed and the comment block rewrapped.",
+    "/home/user/fleet/csv/src/core/factories.ts — citation removed.",
+    "/home/user/fleet/csv/src/core/helpers.ts — the blank-line branch reads the boolean; `resolveParseOptions` and `resolveRenderOptions` are named rather than counted; citations removed.",
+    "/home/user/fleet/csv/src/core/shapers.ts — type imports first; citation removed.",
+    "/home/user/fleet/csv/src/core/types.ts — `BlankPolicy` deleted, `blanks` is `boolean`, `ExportOptions.key` and `TableExport` remarks restated, citation removed.",
+    "/home/user/fleet/csv/src/core/validators.ts — the `ColumnType` count removed from published TSDoc; citations removed.",
+    "/home/user/fleet/csv/tests/guides.test.ts — `ROOT_FILES` carries README.md; `CORE_GUIDE` and `PACKAGE_README` added; `describe('flagship fences')` appended below the parity loop; stale count in the header comment deleted.",
+    "/home/user/fleet/csv/tests/setup.ts — citation removed from the `assertAndNarrow` doc block.",
+    "/home/user/fleet/csv/tests/src/core/CSV.test.ts — local `isRecord` deleted, `captureError` adopted, the integer-shape case compiles the shape.",
+    "/home/user/fleet/csv/tests/src/core/factories.test.ts — its open-coded catches route through `captureError`.",
+    "/home/user/fleet/csv/tests/src/core/helpers.test.ts — local `captureError` deleted, setup import extension fixed, the setup-helper describe deleted, the `assertValidSeparators` / `advancePosition` / `isBreakChar` describes added, and the tokenizer and table-builder describes received.",
+    "/home/user/fleet/csv/tests/src/core/inferers.test.ts — setup import extension fixed.",
+    "/home/user/fleet/csv/tests/src/core/parsers.test.ts — the moved describes and their now-unused imports removed; its open-coded catches route through `captureError`; the `blanks` case takes the boolean and is renamed for what it proves.",
+    "/home/user/fleet/csv/tests/src/core/shapers.test.ts — `deriveShapes` cases assert compiled contracts; citations removed.",
+    "/home/user/fleet/csv/tests/src/core/validators.test.ts — case renamed off the count; citation removed.",
+    "/home/user/scaffold/tmp/units/conform/conform-csv-report.md — the unit report.",
+    "/home/user/work/evidence/conform-csv.diff — `git diff HEAD`, 2127 lines, taken after `git add -N .`.",
+    "/home/user/work/evidence/conform-csv.status — `git status --short`, 20 lines, every path under Owned."
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2098ms on 47 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . (no diagnostics)"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json && tsc --noEmit -p configs/src/tsconfig.core.json (no diagnostics)"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "built in 2.72s; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:core 239 passed; policy 111 passed; config 46 passed; setup 15 passed; guides 30 passed. Observation, not a criterion: this ran inside the unit's own exec, so the deciding run belongs to the Orchestrator."
+    },
+    {
+      "command": "npm run check (before the csv-subj-5 test update, failing-first proof)",
+      "exit": 2,
+      "excerpt": "3 errors: tests/src/core/parsers.test.ts(310,44), (313,47), (318,54) — error TS2322: Type 'string' is not assignable to type 'boolean | undefined'."
+    },
+    {
+      "command": "npx vitest run --project src:core tests/src/core/shapers.test.ts tests/src/core/CSV.test.ts (csv-obj-11 control A: deriveShapes forced to columnTypeShape('text'))",
+      "exit": 1,
+      "excerpt": "5 failed | 41 passed (46): derives an inferred type for an all-string column; derives integer/real for an all-number column; derives boolean for an all-boolean column; derives json for a mixed column; CSV — export > infers an integer shape for whole-number numeric cells. Restored: 46 passed (46)."
+    },
+    {
+      "command": "npx vitest run --project src:core tests/src/core/shapers.test.ts (csv-obj-11 control B: empty-column branch forced to 'integer')",
+      "exit": 1,
+      "excerpt": "1 failed | 17 passed (18): deriveShapes > derives text for a column with no non-empty cells."
+    },
+    {
+      "command": "npx vitest run --project src:core tests/src/core/helpers.test.ts (csv-obj-13 controls A, B, C)",
+      "exit": 1,
+      "excerpt": "A (CR/LF/BOM set emptied, advancePosition stops shifting column, isBreakChar drops CR): 13 failed | 123 passed. B (length and equality checks deleted): 8 failed | 128 passed. C (assertValidSeparators always throws, isBreakChar widened): 84 failed | 52 passed. Between them every one of the nine new cases reddens. Restored: 136 passed (136)."
+    },
+    {
+      "command": "npm run test:guides (csv-obj-12 controls)",
+      "exit": 1,
+      "excerpt": "A (guide comment // 60 -> // 61): 1 failed | 29 passed — folds the reduce fence to its documented total. B (coerceInferred integer branch returns the raw string): 4 failed | 26 passed — the four executed fence cases, every presence guard green. Restored: 30 passed (30)."
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "BlankPolicy (removed) and ParseOptions.blanks (retyped from BlankPolicy to boolean)",
+      "change": "csv-subj-5 replaces the two-literal union `BlankPolicy = 'keep' | 'skip'` with a boolean. `src/core/types.ts` no longer declares `BlankPolicy`, so the barrel no longer exports it; `ParseOptions.blanks` is `boolean`; `DEFAULT_PARSE_OPTIONS.blanks` is `true`; `src/core/helpers.ts` branches on `!resolved.blanks`. Behaviour is unchanged: `true` remains the default and keeps a blank line as an empty row.",
+      "consumers": [
+        "None inside the fleet. `grep -ln '\"@orkestrel/csv\"' /home/user/fleet/*/package.json` returns `csv/package.json` alone, and that hit is csv's own `name` field."
+      ],
+      "edit": "For any external consumer: replace `blanks: 'keep'` with `blanks: true` and `blanks: 'skip'` with `blanks: false`; delete any `import type { BlankPolicy } from '@orkestrel/csv'` and annotate the value `boolean`."
+    }
+  ],
+  "patches": [],
+  "deviations": [
+    "None. No row's repair contradicted a rule, collided with an existing name, required a file outside Owned, or required a consumer edit to keep this package's gates green.",
+    "Ancillary decision (recorded, not escalated): the brief's operative form for csv-obj-11 writes `createContract(columns.a)` directly, which does not compile because tsconfig.json sets `noUncheckedIndexedAccess` and neither `!` nor `as` is available. Each site reads `createContract(requireValue(columns.a, '...'))` using @orkestrel/test's declared helper. The property the row names — an executed contract assertion the wrong branch fails — is unchanged.",
+    "Ancillary decision: `ROOT_FILES` in tests/guides.test.ts now reads `['README.md']`. csv-obj-12 needs the README text through the `files` inventory, and after csv-subj-6 deleted the `AGENTS.md` link bullets no manifest guide links that file. The brief calls the removal safe and optional.",
+    "Ancillary decision: the separate `@src/core` import statements in helpers.test.ts merged into one sorted block, because csv-obj-13 and csv-obj-14 add names to it.",
+    "Ancillary decision: `createTableContract` dropped from the interop sentence in guides/csv.md § Database interop without dependency. The sentence claimed it produces a `TableExport`; it returns `ContractInterface<Row>`. The restated sentence names `CSVInterface.export` alone rather than repeating a false claim inside a line csv-subj-4 directs me to rewrite.",
+    "Ancillary decision: the `TableExport` row of the guide's Types table restated. It read 'mirroring @orkestrel/database's TableExport member-for-member' — the exact claim csv-subj-4 forbids — and leaving it would have made the guide contradict the passage the row directs me to rewrite. It now reads '`columns` matches @orkestrel/database's `ColumnMap` structurally'.",
+    "Ancillary decision: the `## Tests` bullets for helpers.test.ts and parsers.test.ts rewritten, because csv-obj-14 moves describes between those files and made each description false.",
+    "Ancillary decision: the stale count in the tests/guides.test.ts header comment deleted ('The four constants below are this package's own'), because csv-obj-12 adds `CORE_GUIDE` and `PACKAGE_README` and AGENTS.md § Writing deletes a count rather than correcting it.",
+    "Ancillary decision: comment blocks rewrapped where a deleted citation left a ragged line, in src/core/errors.ts, src/core/constants.ts, src/core/shapers.ts, src/core/validators.ts, and the tagline, Errors intro, Helpers intro, error-model, and streaming paragraphs of guides/csv.md. No wording changed beyond the citation removals the rows require.",
+    "Harness note: an isBreakChar mutation returning `true` for every input wedged the tokenizer loop and killed the Vitest worker with an out-of-memory abort. That reading is a broken harness rather than evidence; it was discarded and replaced with a narrower mutation (control C).",
+    "Finding outside the rows, for the Orchestrator: src/core/types.ts:5-6 claims structural interoperability with @orkestrel/database through 'a table's `Columns` map, its `TableExport` shape'. That package declares neither name — /home/user/fleet/database/src/core/types.ts:438 declares `ColumnMap` and :570 declares `TableDefinition`, and a grep for `interface TableExport` across /home/user/fleet returns only csv's own declaration. csv-subj-4 names lines 274-277 and 289-293, so the header sits outside it.",
+    "Finding outside the rows: src/core/types.ts's `ColumnType` remark claims it 'mirrors @orkestrel/database's ColumnType structurally', and its `Columns` remark claims 'Structurally identical to @orkestrel/database's Columns' and that 'an export round-trips through import on either package'. That package declares no `ColumnType` and no `Columns`, and the round-trip claim is the lossless-re-import claim csv-subj-4 strikes elsewhere. guides/csv.md repeats each attribution in its Types table.",
+    "Finding outside the rows: tests/distribution.test.ts:159 declares a local `function isRecord(value: unknown): value is Readonly<Record<string, unknown>>` — the shape csv-obj-9 repairs in CSV.test.ts, at a second site no row names. That file drives the release gate, so the swap wants its own unit.",
+    "Finding outside the rows: guides/csv.md:412 claims `const table = csv.export() // { key: 'id', columns: {...}, schema: {...} }`. The claim is true today and carries no gate; csv-obj-12's enumerated coverage does not include it."
+  ]
+}

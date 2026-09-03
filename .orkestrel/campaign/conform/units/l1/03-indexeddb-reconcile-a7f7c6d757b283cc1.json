@@ -1,0 +1,10 @@
+{
+  "package": "indexeddb",
+  "rows": 22,
+  "breaking": [],
+  "folded": [],
+  "orchestrator": [],
+  "consumers": [],
+  "skipped": true,
+  "note": "The reconciled marker already existed, so I only counted the numbered rows under § Rows in /home/user/scaffold/tmp/units/conform/conform-indexeddb-brief.md, which holds 22 rows (indexeddb-obj-1 through obj-9 and indexeddb-subj-1, 2, 4, 5, 7, 8, 10 through 16)."
+}

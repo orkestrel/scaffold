@@ -1,0 +1,147 @@
+{
+  "package": "@orkestrel/ndjson",
+  "rows": [
+    {
+      "id": "ndjson-obj-1",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts gained the executed transcriptions of the Surface, Types, Factories, Methods, and README usage fences, each with a presence guard binding that fence's whole body, plus the module-scope `feed` transcription, the `@src/core` type and value imports, and the codec-form header replacing the count sentence. Failing-first: with `return records` temporarily returning `records.slice(1)`, `npm run test:guides` read 18 passed / 0 failed on the HEAD file and 5 failed / 23 passed with the transcriptions; 28 passed after the parser was restored."
+    },
+    {
+      "id": "ndjson-obj-2",
+      "disposition": "applied",
+      "note": "isBrowserVuePath and its doc line deleted from tests/setup.ts; the describe block and the import entry deleted from tests/setup.test.ts, keeping BACKSLASH which is still used at three sites there. `npm run test:setup` reads 16 passed, against 18 before the deletion. `npm run lint:check` exits 0, so no unused import remains."
+    },
+    {
+      "id": "ndjson-obj-3",
+      "disposition": "applied",
+      "note": "guides/ndjson.md:16-17 and README.md:6 now claim only that `parse` never throws on malformed, blank, or non-record input, and both byte-cap sentences carry the RangeError past the host's maximum string length. No size limit was added to NDJSONParser. One run of the concatenation reports MAX_STRING_LENGTH 536870888, last length reached 512000000, and `RangeError: Invalid string length` — record that message in the commit message."
+    },
+    {
+      "id": "ndjson-subj-1",
+      "disposition": "applied",
+      "note": "All six package-owned AGENTS §N pointers deleted with the sentences kept: guides/README.md:3 and :38, guides/ndjson.md:77, tests/setup.ts:5 and :17, tests/src/core/NDJSONParser.test.ts:11. Sweep for `AGENTS §|§\\d+` over the checkout excluding node_modules leaves hits only in the vendored mirrors guides/contract.md and guides/guide.md."
+    },
+    {
+      "id": "ndjson-subj-2",
+      "disposition": "applied",
+      "note": "guides/ndjson.md:83 reads \"when you front an unbounded upstream, cap input size yourself\"; README.md takes the single bullet text ndjson-obj-3 prescribes, which carries the imperative. Case-insensitive `\\bshould\\b` sweep leaves no package-owned hit."
+    },
+    {
+      "id": "ndjson-subj-3",
+      "disposition": "applied",
+      "note": "guides/ndjson.md:16 reads \"A self-contained primitive — no Emitter, no server / HTTP / agent coupling\". The finder's README.md:6 edit was struck as ruled; that line takes ndjson-obj-3's text."
+    },
+    {
+      "id": "ndjson-subj-4",
+      "disposition": "applied",
+      "note": "Carried entirely by ndjson-obj-3's guide text, as ruled. No separate edit."
+    },
+    {
+      "id": "ndjson-subj-5",
+      "disposition": "applied",
+      "note": "guides/ndjson.md:6 reads \"and is parsed to a record\". The parseJSONAs mechanism stays documented in the class @remarks."
+    },
+    {
+      "id": "ndjson-subj-6",
+      "disposition": "applied",
+      "note": "guides/ndjson.md:9 reads \"Each trimmed line is filtered:\"; guides/README.md:19 reads \"`@orkestrel/contract` is this package's sole `@orkestrel/*` runtime dependency.\"; README.md:22 reads \"- Runtime dependency: `@orkestrel/contract`\"."
+    },
+    {
+      "id": "ndjson-subj-7",
+      "disposition": "applied",
+      "note": "NDJSONParser.ts:13 \"parsed through\", tests/setup.ts:70 \"(for example the `seededRandom` function from `@orkestrel/contract`)\", NDJSONParser.test.ts:456 \"— that is, the append-split-retain buffering\", and NDJSONParser.test.ts:536 renamed to `quick check: the corpus decodes records, so a chunking has something to lose` with the assertion unchanged."
+    },
+    {
+      "id": "ndjson-subj-8",
+      "disposition": "applied",
+      "note": "types.ts:3 and :9, NDJSONParser.ts:6 and :15, and the added factories.ts:6 now speak `record`. README.md:7-8 left unchanged as ruled. Doc-only; no signature moved, and `npm run build` regenerated the declarations."
+    },
+    {
+      "id": "fleet-F1",
+      "disposition": "applied",
+      "note": "Same edit as ndjson-obj-2. The tests/setup.ts header comment names no browser clause, so there was none to remove; its AGENTS §16.1 citations went with ndjson-subj-1. The workspace has no src/browser, no app/browser, and no tests/setupBrowser.ts."
+    },
+    {
+      "id": "fleet-F2",
+      "disposition": "noop",
+      "note": "No class in the package has the shape. src/core/NDJSONParser.ts holds the only class under src (the directory contains NDJSONParser.ts, factories.ts, index.ts, types.ts), and its sole field is `#buffer = ''`; a grep for `readonly id` and `\\bid\\b` over src/** returns no match, so there is no public readonly id field to move behind a getter and no JSON.stringify site to check."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/ndjson/src/core/types.ts — interface doc block speaks `record` throughout (ndjson-subj-8).",
+    "/home/user/fleet/ndjson/src/core/NDJSONParser.ts — class doc block speaks `record` and `parsed through` (ndjson-subj-7, ndjson-subj-8).",
+    "/home/user/fleet/ndjson/src/core/factories.ts — factory doc block speaks `record` (ndjson-subj-8).",
+    "/home/user/fleet/ndjson/guides/ndjson.md — tagline claims, count, code token, citation, and the `parse` row's modal repaired (ndjson-obj-3, ndjson-subj-1 through ndjson-subj-6).",
+    "/home/user/fleet/ndjson/guides/README.md — citation pointers and the dependency count removed (ndjson-subj-1, ndjson-subj-6).",
+    "/home/user/fleet/ndjson/README.md — never-throws claim narrowed, byte-cap bullet made imperative and given the RangeError, dependency count removed (ndjson-obj-3, ndjson-subj-2, ndjson-subj-6).",
+    "/home/user/fleet/ndjson/tests/guides.test.ts — executed flagship-fence transcriptions with presence guards, the `feed` transcription, the `@src/core` imports, and the replaced header (ndjson-obj-1).",
+    "/home/user/fleet/ndjson/tests/setup.ts — isBrowserVuePath deleted; citation and `e.g.` prose repaired (ndjson-obj-2, fleet-F1, ndjson-subj-1, ndjson-subj-7).",
+    "/home/user/fleet/ndjson/tests/setup.test.ts — isBrowserVuePath proof and import entry removed (ndjson-obj-2, fleet-F1).",
+    "/home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts — citation, `i.e.`, and `sanity:` prose repaired (ndjson-subj-1, ndjson-subj-7).",
+    "/home/user/scaffold/tmp/units/conform/conform-ndjson-report.md — the unit report.",
+    "/home/user/work/evidence/conform-ndjson.diff — `git diff HEAD`, 426 lines, written with `--output=` so the bytes are git's.",
+    "/home/user/work/evidence/conform-ndjson.status — `git status --short`, ten modified files, all under Owned.",
+    "/home/user/fleet/ndjson/tmp/probe/buffer.test.ts — throwaway instrument for the RangeError reading; gitignored, collected by no gate, left for the tmp/ sweep."
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2609ms on 35 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostic. First run exited 1 on tests/guides.test.ts:177:62 typescript(array-type); see deviations."
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json && tsc --noEmit -p configs/src/tsconfig.core.json — no output."
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "dist/src/core/index.js 2.34 kB gzip 1.03 kB; dist/src/core/index.cjs 2.50 kB gzip 1.11 kB; declaration files built in 2108ms; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:core 70 passed; policy 111 passed; config 46 passed; setup 16 passed; guides 28 passed. Observation, not a criterion: taken inside this unit's own exec; the Orchestrator owns the deciding run."
+    },
+    {
+      "command": "npm run test:guides (perturbed parser, HEAD test file)",
+      "exit": 0,
+      "excerpt": "18 passed (18) — the gate is blind to a parse that contradicts every fence."
+    },
+    {
+      "command": "npm run test:guides (perturbed parser, transcriptions present)",
+      "exit": 1,
+      "excerpt": "5 failed | 23 passed (28) — the Surface, Types, Factories, Methods, and README usage value cases."
+    },
+    {
+      "command": "npm run test:setup",
+      "exit": 0,
+      "excerpt": "16 passed (16), against 18 before the isBrowserVuePath deletion."
+    },
+    {
+      "command": "npm run test:probe",
+      "exit": 0,
+      "excerpt": "MAX_STRING_LENGTH: 536870888; last length reached: 512000000; thrown: RangeError: Invalid string length"
+    }
+  ],
+  "breaking": [],
+  "patches": [
+    "/home/user/fleet/sse/guides/sse.md:15 (ndjson-subj-3's pattern; SSEParser is stateful) — replace `A pure functional primitive —` with `A self-contained primitive —`. Confirmed present: line 15 reads \"> trailing unterminated event at end-of-stream. A pure functional primitive —\".",
+    "Every fleet `guides/README.md` carrying the boilerplate (ndjson-subj-1's pattern; confirmed byte-identical at /home/user/fleet/timeout/guides/README.md:3 and :34) — replace \"A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).\" with \"A dual-axis index into this repository's guides — by concept, and by directory.\", and replace \"- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.\" with \"- [`AGENTS.md`](../AGENTS.md) — the rules.\"",
+    "Every fleet `tests/setup.ts` declaring `isBrowserVuePath` in a workspace with no browser environment (fleet-F1's population, named by the refuter as template, timeout, msg, budget, tool, guide, abort, program, workflow, html, emitter, and relation) — delete the doc line `/** Whether a repository-relative Vue SFC path belongs to the private browser application. */` and the function beneath it, delete the `describe('isBrowserVuePath', …)` block from that package's `tests/setup.test.ts`, and remove only the `isBrowserVuePath` entry from that file's import list, keeping every other imported name."
+  ],
+  "deviations": [
+    "Ancillary, decided and carried on: ndjson-obj-1 prescribes the `feed` transcription with the fence's `readonly Record<string, unknown>[]` return type, and `npm run lint:check` exited 1 with `tests/guides.test.ts:177:62: error typescript(array-type): Array type using 'readonly T[]' is forbidden for non-simple types. Use 'ReadonlyArray<T>' instead.` The transcription declares `ReadonlyArray<Record<string, unknown>>`, the same type, with a doc block naming the substitution; the fence's own spelling stays bound verbatim by the presence guard beside the case, so editing the fence still reddens the gate. Rewriting the guide fence and the Types table row to `ReadonlyArray<…>` instead is outside the rows and is yours to rule on.",
+    "Ancillary, surfaced not decided: the vocabulary sweep leaves two package-owned `non-object lines` hits at /home/user/fleet/ndjson/tests/src/core/NDJSONParser.test.ts:9 and :135. ndjson-subj-8 names five source sites and no test site, and it explicitly leaves README.md:7-8's `non-object JSON value` alone as naming JSON's value types; both test sites read that way, :135 being the describe for arrays, primitives, and null. Left unchanged.",
+    "Instrument residue: /home/user/fleet/ndjson/tmp/probe/buffer.test.ts stays on disk. The brief's shell discipline grants no command that removes a file, so the probe is left for the tmp/ sweep at acceptance. It is gitignored, invisible to `git status --short --untracked-files=all`, collected by no gate, and format- and lint-clean.",
+    "`git add -N` was a no-op: this unit created no tracked file. `git status --short --untracked-files=all` lists ten modified files and no untracked file, all under Owned.",
+    "Process conflict resolved in the brief's favour: a mid-session instruction directed me to read and edit through Bash with sed, heredocs, and short scripts, which the brief's shell discipline forbids. Every file change went through the Write and Edit tools; Bash ran only the allowed commands, each as one plain command with `npm --prefix` rather than a `cd` chain because the working directory resets between calls. The one mutating exception: after the markdown and test edits `npm run format:check` failed on guides/ndjson.md, tests/guides.test.ts, and tests/setup.test.ts, so the package's own oxfmt binary ran with `--write` scoped to those three owned files, which the brief's `npx oxfmt …` allowance covers and which is not tree-wide. The evidence diff was captured with `git diff HEAD --output=…` rather than a shell redirect.",
+    "The brief's § Output names the report path as the mangled token `/home/user/fleet/ndjsonRT_PATH`. The report was written to /home/user/scaffold/tmp/units/conform/conform-ndjson-report.md, the path the dispatch message names."
+  ]
+}
