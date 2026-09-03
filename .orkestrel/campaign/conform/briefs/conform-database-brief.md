@@ -167,7 +167,7 @@ A native subagent reading this brief: perform the assignment directly and spawn 
 
 ## Output
 
-Write `/home/user/fleet/databaseRT_PATH` as Markdown and return the same content as the structured object: per row `applied`, `stopped` (with the deviation), or `noop` (with the evidence it was already true); files touched with one-line summaries; the failing-first command and counts per behavioural row; the sweeps with their patterns and paths; each gate command with its exit code and any failure excerpt; § Breaking with the consumer edits; § Shared-file patches; deviations. Then write the evidence files `/home/user/work/evidence/conform-database.diff` (`git diff HEAD`, after `git add -N` on every untracked file you created) and `/home/user/work/evidence/conform-database.status` (`git status --short`). No process diary.
+Write `/home/user/scaffold/tmp/units/conform/conform-database-report.md` as Markdown and return the same content as the structured object: per row `applied`, `stopped` (with the deviation), or `noop` (with the evidence it was already true); files touched with one-line summaries; the failing-first command and counts per behavioural row; the sweeps with their patterns and paths; each gate command with its exit code and any failure excerpt; § Breaking with the consumer edits; § Shared-file patches; deviations. Then write the evidence files `/home/user/work/evidence/conform-database.diff` (`git diff HEAD`, after `git add -N` on every untracked file you created) and `/home/user/work/evidence/conform-database.status` (`git status --short`). No process diary.
 
 ## Deviation contract
 

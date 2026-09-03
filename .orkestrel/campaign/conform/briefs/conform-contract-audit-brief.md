@@ -6,7 +6,7 @@ Two read-only lanes in clean contexts, blind to each other: `reviewer` on Claude
 
 ## Subject and evidence
 
-The unit's uncommitted changes in `/home/user/fleet/contract`: the diff at `/home/user/work/evidence/conform-contract.diff`, the status at `/home/user/work/evidence/conform-contract.status`, the writer's report at `/home/user/scaffold/tmp/units/conform/conform-contract-report.md`, and the rows at `/home/user/scaffold/tmp/units/conform/conform-contract-brief.md` § Rows. The canon is `/home/user/scaffold/AGENTS.md` and `/home/user/scaffold/.claude/rules/`.
+The unit in `/home/user/fleet/contract` is the checkpoint commit `01f3390` (the first implementer's partial edits, stopped 2026-09-03 09:57 UTC) plus the resumed implementer's uncommitted changes on top of it, judged as one unit against the baseline `f38a649`: the diff at `/home/user/work/evidence/conform-contract.diff` (`git diff f38a649`, spanning both), the status at `/home/user/work/evidence/conform-contract.status`, the writer's report at `/home/user/scaffold/tmp/units/conform/conform-contract-report.md`, and the rows at `/home/user/scaffold/tmp/units/conform/conform-contract-brief.md` § Rows. The canon is `/home/user/scaffold/AGENTS.md` and `/home/user/scaffold/.claude/rules/`.
 
 ## What the round decides
 

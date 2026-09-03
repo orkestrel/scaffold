@@ -19,6 +19,7 @@ for (const pkg of process.argv.slice(2)) {
 	const consumers = [...new Set(rulings.flatMap((r) => (byId[r.id]?.consumers) || []))]
 	const tip = process.env.TIP || 'the committed HEAD'
 	const out = template
+		.replaceAll('REPORT_PATH', `${UNITS}/conform-${pkg}-report.md`)
 		.replaceAll('PACKAGE', pkg).replaceAll('REPO', repo).replaceAll('TIP', tip)
 		.replace('STAGED_CLOSURE', process.env.STAGED || 'the fleet closure re-staged from the accepted tips on 2026-09-02 (`.orkestrel/campaign/fix/tarballs.json` names each tarball, version, and the registry range still declared)')
 		.replace('STANDING_CONDITIONS', process.env.STANDING || (pkg === 'probe' ? '`npm test` is red at the baseline on the standing Oxlint language-server arming failure (the `initialize` deadline); report that gate as an observation with the same failure set, and stop if a new failure appears.' : 'none'))
