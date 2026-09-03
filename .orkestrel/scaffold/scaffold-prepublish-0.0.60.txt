@@ -5,7 +5,7 @@ npm notice run oxfmt --config .oxfmtrc.json --check .
 Checking formatting...
 
 All matched files use the correct format.
-Finished in 3397ms on 218 files using 16 threads.
+Finished in 3472ms on 218 files using 16 threads.
 npm notice run @orkestrel/scaffold@0.0.60 lint:check
 npm notice run oxlint --config .oxlintrc.json --deny-warnings .
 npm notice run @orkestrel/scaffold@0.0.60 check
@@ -35,7 +35,7 @@ rendering chunks...
 [unplugin:dts] Start bundling declaration files...
 Analysis will use the bundled TypeScript version 5.9.3
 *** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
-[unplugin:dts] Declaration files built in 1823ms.
+[unplugin:dts] Declaration files built in 1859ms.
 
 computing gzip size...
 dist/src/core/index.js  250.21 kB │ gzip: 67.95 kB │ map: 339.73 kB
@@ -46,7 +46,7 @@ rendering chunks...
 computing gzip size...
 dist/src/core/index.cjs  258.28 kB │ gzip: 68.66 kB │ map: 342.16 kB
 
-[32m✓ built in 2.10s[39m
+[32m✓ built in 2.13s[39m
 npm notice run @orkestrel/scaffold@0.0.60 copy
 npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
 Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
@@ -62,7 +62,7 @@ rendering chunks...
 [unplugin:dts] Start bundling declaration files...
 Analysis will use the bundled TypeScript version 5.9.3
 *** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
-[unplugin:dts] Declaration files built in 2171ms.
+[unplugin:dts] Declaration files built in 2239ms.
 
 computing gzip size...
 dist/src/server/index.js  173.28 kB │ gzip: 44.71 kB │ map: 282.61 kB
@@ -73,7 +73,7 @@ rendering chunks...
 computing gzip size...
 dist/src/server/index.cjs  181.75 kB │ gzip: 45.13 kB │ map: 288.26 kB
 
-[32m✓ built in 2.39s[39m
+[32m✓ built in 2.46s[39m
 npm notice run @orkestrel/scaffold@0.0.60 copy
 npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
 Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
@@ -86,7 +86,7 @@ rendering chunks...
 computing gzip size...
 dist/bin/main.js  71.71 kB │ gzip: 18.31 kB │ map: 141.24 kB
 
-[32m✓ built in 28ms[39m
+[32m✓ built in 30ms[39m
 npm notice run @orkestrel/scaffold@0.0.60 build:host
 npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
 build-host: staged 121 file(s) into dist/host
@@ -101,37 +101,37 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
  RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
 
 ····························································································································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
-[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-OlbBFw/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-JtuX3b/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
 
 
 stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
-[31mfailed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-OlbBFw\malformed\vite.config.ts[39m
+[31mfailed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-JtuX3b\malformed\vite.config.ts[39m
 
 ·························
 
  Test Files  8 passed (8)
       Tests  373 passed (373)
-   Start at  20:40:37
-   Duration  10.70s (transform 1.85s, setup 2.60s, import 1.16s, tests 9.99s, environment 1ms)
+   Start at  23:31:29
+   Duration  11.20s (transform 1.96s, setup 2.76s, import 1.28s, tests 10.45s, environment 1ms)
 
 npm notice run @orkestrel/scaffold@0.0.60 test:src:server
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
 
  RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
 
-···················---···························································································································································································································-···································································-························································-································································
+···············---··················································································································································································································-··············································································-··························································-································································
 
  Test Files  5 passed (5)
       Tests  425 passed | 6 skipped (431)
-   Start at  20:40:48
-   Duration  5.16s (transform 2.38s, setup 3.78s, import 465ms, tests 8.06s, environment 1ms)
+   Start at  23:31:40
+   Duration  5.32s (transform 2.34s, setup 3.84s, import 553ms, tests 8.17s, environment 1ms)
 
 npm notice run @orkestrel/scaffold@0.0.60 test:src:bin
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin
 
  RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
 
-········································································scaffold <verb> [options]
+·········································································scaffold <verb> [options]
 
   scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
       scaffold a workspace
@@ -163,12 +163,12 @@ exit codes
   0  clean
   1  drift or failure
   2  usage error
-·········································································································································
+········································································································································
 
  Test Files  3 passed (3)
       Tests  209 passed (209)
-   Start at  20:40:54
-   Duration  32.67s (transform 995ms, setup 1.77s, import 380ms, tests 32.72s, environment 0ms)
+   Start at  23:31:46
+   Duration  33.06s (transform 990ms, setup 1.82s, import 363ms, tests 33.21s, environment 0ms)
 
 npm notice run @orkestrel/scaffold@0.0.60 test:policy
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
@@ -179,23 +179,26 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
 
  Test Files  1 passed (1)
       Tests  111 passed (111)
-   Start at  20:41:27
-   Duration  2.00s (transform 245ms, setup 300ms, import 306ms, tests 1.24s, environment 0ms)
+   Start at  23:32:20
+   Duration  2.03s (transform 252ms, setup 316ms, import 314ms, tests 1.24s, environment 0ms)
 
 npm notice run @orkestrel/scaffold@0.0.60 test:config
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
 
  RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
 
-·······stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+····stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+[2m11:32:24 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+
+···stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
 host-inventory: entries=121
 
 ·······································
 
  Test Files  1 passed (1)
       Tests  46 passed (46)
-   Start at  20:41:29
-   Duration  2.72s (transform 318ms, setup 293ms, import 591ms, tests 1.68s, environment 0ms)
+   Start at  23:32:23
+   Duration  2.91s (transform 312ms, setup 317ms, import 612ms, tests 1.83s, environment 0ms)
 
 npm notice run @orkestrel/scaffold@0.0.60 test:guides
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
@@ -206,68 +209,20 @@ npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --pr
 
  Test Files  1 passed (1)
       Tests  17 passed (17)
-   Start at  20:41:33
-   Duration  3.03s (transform 415ms, setup 301ms, import 726ms, tests 1.85s, environment 0ms)
+   Start at  23:32:26
+   Duration  3.06s (transform 373ms, setup 316ms, import 701ms, tests 1.89s, environment 0ms)
 
 npm notice run @orkestrel/scaffold@0.0.60 test:distribution
 npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
 
  RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
 
-(node:38404) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(node:9356) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-x····
+·····
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-
- FAIL  |distribution| tests/distribution.test.ts > installed package consumer > stages exactly the declared vendored host inventory
-AssertionError: expected [ 'AGENTS.md', 'CLAUDE.md', …(120) ] to deeply equal [ 'AGENTS.md', 'CLAUDE.md', …(115) ]
-
-- Expected
-+ Received
-
-@@ -6,10 +6,12 @@
-    "agents/skills/enterprise-bootstrap/SKILL.md",
-    "agents/skills/enterprise-bootstrap/agents/openai.yaml",
-    "agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
-    "agents/skills/enterprise-bootstrap/references/components.md",
-    "agents/skills/enterprise-bootstrap/references/frontend-design.md",
-+   "agents/skills/enterprise-bootstrap/references/inputs.md",
-+   "agents/skills/enterprise-bootstrap/references/inspection.md",
-    "agents/skills/enterprise-bootstrap/references/utilities.md",
-    "agents/skills/orkestrel-align-packages/SKILL.md",
-    "agents/skills/orkestrel-align-packages/agents/openai.yaml",
-    "agents/skills/orkestrel-align-packages/references/fleet.md",
-    "agents/skills/orkestrel-align-packages/references/integration.md",
-@@ -34,11 +36,14 @@
-    "agents/skills/orkestrel-polish-surface/agents/openai.yaml",
-    "agents/skills/orkestrel-polish-surface/references/capture-harness.md",
-    "agents/skills/orkestrel-prove-journey/SKILL.md",
-    "agents/skills/orkestrel-prove-journey/agents/openai.yaml",
-    "agents/skills/orkestrel-prove-journey/references/captures.md",
-+   "agents/skills/orkestrel-prove-journey/references/decide.md",
-    "agents/skills/orkestrel-prove-journey/references/layer.md",
-+   "agents/skills/orkestrel-prove-journey/references/statechart.md",
-+   "agents/skills/orkestrel-prove-journey/references/styles.md",
-    "agents/skills/orkestrel-publish/SKILL.md",
-    "agents/skills/orkestrel-publish/agents/openai.yaml",
-    "agents/skills/orkestrel-publish/references/wave.md",
-    "agents/skills/orkestrel-publish/references/window.md",
-    "agents/templates/brief.md",
-
- ❯ tests/distribution.test.ts:295:49
-    293|    ).toBe(true)
-    294|   }
-    295|   expect(listFiles(resolve(root, 'dist/host'))).toEqual(
-       |                                                 ^
-    296|    [...expanded.map((path) => pathToStorage(path)), 'manifest.json'].s…
-    297|   )
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
-
-
- Test Files  1 failed (1)
-      Tests  1 failed | 4 passed (5)
-   Start at  20:41:36
-   Duration  53.00s (transform 309ms, setup 296ms, import 1.03s, tests 51.52s, environment 0ms)
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  23:32:30
+   Duration  52.44s (transform 319ms, setup 313ms, import 1.01s, tests 50.96s, environment 0ms)
 
