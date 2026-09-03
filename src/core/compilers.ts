@@ -1360,6 +1360,15 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
  *
  * @param blueprint - The workspace specification.
  * @returns One birth-owned guide index carrying the concept and directory views.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToGuideArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToGuideArtifacts(blueprint)[0]?.path // 'guides/README.md'
+ * ```
  */
 export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
 	const source: string[] = []
@@ -1423,6 +1432,15 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
  * Neither pointer carries a varying span, so neither is filled: a workspace's
  * name never reaches the text, and the paths a reader follows are the same in
  * every target.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToDocumentArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToDocumentArtifacts(blueprint).map((artifact) => artifact.path) // ['README.md', 'AGENTS.md', 'CLAUDE.md']
+ * ```
  */
 export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
 	const publishes = blueprint.src.length > 0
@@ -1467,6 +1485,17 @@ export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly Con
  * A vendor name does not describe startup, readiness, or cleanup. The script
  * therefore records only the declared inventory and does not invent a service
  * runner or test project.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToOrchestrationArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const plain = createBlueprint('router', { src: ['core'] })
+ * const served = createBlueprint('router', { src: ['core'], vendors: ['ollama'] })
+ *
+ * blueprintToOrchestrationArtifacts(plain) // []
+ * blueprintToOrchestrationArtifacts(served)[0]?.path // 'scripts/service.sh'
+ * ```
  */
 export function blueprintToOrchestrationArtifacts(
 	blueprint: Blueprint,

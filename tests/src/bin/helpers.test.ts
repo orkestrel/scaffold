@@ -537,6 +537,7 @@ describe('sanitizeLine', () => {
 	it('folds every break onto one line', () => {
 		expect(sanitizeLine('first\nsecond')).toBe('first second')
 		expect(sanitizeLine('first\r\nsecond')).toBe('first second')
+		expect(sanitizeLine('first\rsecond')).toBe('first second')
 	})
 
 	it('removes ANSI escapes and control characters, keeping ordinary prose', () => {

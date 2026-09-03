@@ -112,16 +112,17 @@ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
  * Lists the paths a target receives from the vendored data root, frozen.
  *
  * @remarks
- * These are the files the fleet shares verbatim and every target holds a copy
- * of: the licence, the harness permission file, the session hook scripts, the
- * shared policy register, the byte-identical root dotfiles, and the guide
- * mirrors a generated workspace starts from. A directory entry vendors
- * everything beneath it.
+ * These are the files the fleet shares verbatim, and each target holds a copy
+ * of the paths it selects: the licence, the harness permission file, the
+ * session-start hooks, the shared policy register, the shared policy proof,
+ * the shared policy plugin, the shared configuration leaf and its proof, the
+ * byte-identical root dotfiles, and the guide mirrors a generated workspace
+ * starts from. A directory entry vendors everything beneath it.
  *
  * A plan carries the subset its target selects, which is why the list is a
  * candidate set rather than a plan: a workspace never mirrors its own guide.
  *
- * Neither the instruction canon nor the harness wiring is here. A target reads
+ * Neither the instruction canon nor the bench and MCP wiring is here. A target reads
  * its rules, its skills, its agent roles, its bench configuration, and its MCP
  * registrations from {@link CANON_PATHS} inside the installed package, so no
  * file scaffold leaves in a target names a path the target does not hold.

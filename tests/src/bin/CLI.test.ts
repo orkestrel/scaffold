@@ -424,6 +424,16 @@ describe('CLI sanitization', () => {
 		expect(sink.diagnostic[0] ?? '').toContain('pull')
 	})
 
+	it('repaints no printed line from a lone carriage return in an argument', async () => {
+		const sink = createSink()
+		expect(
+			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute(['audit', 'first\rsecond']),
+		).toBe(EXIT_USAGE)
+		expect(sink.diagnostic).toHaveLength(1)
+		expect(sink.diagnostic[0] ?? '').not.toContain('\r')
+		expect(sink.diagnostic[0] ?? '').toContain('first second')
+	})
+
 	it('passes on no hostile byte through the machine-readable path either', async () => {
 		const sink = createSink()
 		const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([

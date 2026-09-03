@@ -562,6 +562,9 @@ export function writeDiagnostic(line: string): void {
  * ANSI escapes go first because they are what repaints a terminal, control
  * characters next, and what remains is folded onto one line because a handler
  * takes one line and a caller writing a record per call must get one record.
+ * A lone carriage return is folded as a break too, because a terminal repaints
+ * the line already printed on one. The fold is a replacement rather than a line
+ * split, so no bare `\r` is read as a line terminator here.
  *
  * @example
  * ```ts
@@ -571,7 +574,7 @@ export function writeDiagnostic(line: string): void {
  * ```
  */
 export function sanitizeLine(line: string): string {
-	return stripControls(strip(line)).split(/\r?\n/).join(' ')
+	return stripControls(strip(line)).replace(/\r\n|\r|\n/gu, ' ')
 }
 
 /**

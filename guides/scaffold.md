@@ -13,8 +13,11 @@ does not work. Scaffold makes the shared set data — a vendored data root shipp
 write the difference back.
 
 That root stages the vendored set and the instruction canon, and a target meets them differently.
-`HOST_PATHS` names the vendored set — the toolchain, the policy proofs, the bench scripts, and the
-harness permission file — and every target carries its own copy, which the verbs write and compare.
+`HOST_PATHS` names the vendored set — the licence, the harness permission file, the
+session-start hooks, the shared policy register, the shared policy proof, the shared policy plugin,
+the shared configuration leaf and its proof, the byte-identical root dotfiles, and the guide mirrors
+a generated workspace starts from, never its own guide — and each target carries its own copy of
+the paths it selects, which the verbs write and compare.
 `CANON_PATHS` names the instruction canon — the coding and orchestration contracts, the rules, the
 skills, the templates, the transport contracts, the agent roles, the bench configuration, and the
 MCP registrations — which stays in one place and is published for reading. A target carries the
@@ -222,8 +225,8 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `inferGroup`                | function | Infer the `Group` a path belongs to.                                          |
 | `isCanonPath`               | function | Test whether a path belongs to the instruction canon a target reads.          |
 | `isDeferredPath`            | function | Test whether another surface owns the vendored bytes at a path.               |
-| `isFloorPath`               | function | Checks whether a destination's floor bytes survive a live overlay.            |
-| `isRetainedPath`            | function | Checks whether another surface owns a target's present bytes at a path.       |
+| `isFloorPath`               | function | Test whether a destination's floor bytes survive a live overlay.              |
+| `isRetainedPath`            | function | Test whether another surface owns a target's present bytes at a path.         |
 | `manifestToDependencies`    | function | Project a manifest's `@orkestrel/*` declarations into separate section lists. |
 | `manifestToName`            | function | Project a package manifest's text to its own name.                            |
 | `matchesDriftReachability`  | function | Test whether `inferDrift` could have produced a finding for an ownership.     |
@@ -385,7 +388,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `isPhysicalDirectory`     | function | Test whether a path is a physical directory this package will read or write into.     |
 | `isPhysicalFile`          | function | Test whether a path is a physical file this package will read or replace.             |
 | `isVacant`                | function | Test whether a target is safe to write a fresh workspace into.                        |
-| `listCanonPaths`          | function | Lists the canon paths a target holds, filtered to a plan's groups.                    |
+| `listCanonPaths`          | function | List the canon paths a target holds, filtered to a plan's groups.                     |
 | `listDirectories`         | function | List a directory's descendant directories as sorted root-relative paths.              |
 | `listFiles`               | function | List a directory's files as sorted root-relative paths.                               |
 | `matchesAnchor`           | function | Test whether a captured directory is still the same directory.                        |
@@ -397,7 +400,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `matchesProtectedPath`    | function | Test whether a target-relative path is one no verb may delete.                        |
 | `matchesSensitivePath`    | function | Test whether a path names local configuration or a credential.                        |
 | `pathToStorage`           | function | Project a target-relative path to the storage name a vendored host holds it under.    |
-| `pruneEmptiedDirectories` | function | Removes every directory one set of deletions emptied.                                 |
+| `pruneEmptiedDirectories` | function | Remove every directory one set of deletions emptied.                                  |
 | `readAnchor`              | function | Capture one directory's physical identity.                                            |
 | `readExpectation`         | function | Capture what one destination holds before a write.                                    |
 | `readFileHex`             | function | Read one contained file as its exact bytes in lowercase hexadecimal.                  |
@@ -1190,10 +1193,11 @@ generating a workspace with no network receives.
 The vendored data root is the shared file set, staged into the published package as plain data.
 Staging walks `HOST_PATHS` and `CANON_PATHS`, and a release ships what both name.
 
-`HOST_PATHS` is the vendored set, and a target receives a copy of each path it selects: the licence,
-the harness permission file, the bench scripts, the shared policy register, the byte-identical root
-dotfiles, and the guide mirrors a generated workspace starts from. It is a candidate list rather than
-a plan, because a workspace never mirrors its own guide.
+`HOST_PATHS` is the vendored set, and a target receives a copy of each path it selects: the
+licence, the harness permission file, the session-start hooks, the shared policy register, the
+shared policy proof, the shared policy plugin, the shared configuration leaf and its proof, the
+byte-identical root dotfiles, and the guide mirrors a generated workspace starts from. It is a
+candidate list rather than a plan, because a workspace never mirrors its own guide.
 
 `CANON_PATHS` is the instruction canon, staged for reading instead: the `AGENTS.md` coding contract,
 the `CLAUDE.md` harness bridge, the `.agents/orchestration.md` agent-operation contract, the rules
@@ -1504,10 +1508,13 @@ value it asked for. A verb that creates a workspace throws it, because it chose 
 nothing to hand back. A blocking question closed the gate; a non-blocking one is a shape the package
 can describe and declines to create.
 
-Every entity publishes an emitter. The compiler emits `compile`, `audit`, `block`, `error`, and
-`destroy`; the materializer emits `write`, `remove`, `finish`, `error`, and `destroy`; the upstream
-reader emits `release`, `mirror`, `error`, and `destroy`. Errors are emitted immediately before they
-are thrown, so an observer sees a refusal even where the caller catches it.
+The compiler, the materializer, and the upstream reader each publish an emitter; `WriteTransaction`
+publishes none and reports through its return values and its thrown errors. The compiler emits
+`compile`, `audit`, `block`, `error`, and `destroy`; the materializer emits `write`, `remove`,
+`finish`, `error`, and `destroy`; the upstream reader emits `release`, `mirror`, `file`, `error`,
+and `destroy`. Every error raised after construction is emitted on `error` immediately before it is
+thrown, so an observer sees a refusal even where the caller catches it; a constructor refusal
+precedes the emitter and is thrown alone.
 
 ## Limits
 

@@ -88,7 +88,7 @@ import {
 	STORAGE_PATH_CASES,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
-import { createScratch, supportsFileLinks } from '@orkestrel/test/server'
+import { createScratch, supportsFileLinks, supportsMode } from '@orkestrel/test/server'
 
 describe('matchesMissingPath', () => {
 	it('reads only an ENOENT error as absence', () => {
@@ -1575,9 +1575,11 @@ describe('stageBytes', () => {
 		}
 	})
 
-	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
-	// there, so the assertion would measure the platform rather than the helper.
-	it.skipIf(process.platform === 'win32')('gives an entry the bit its manifest declares', () => {
+	// Skipped where `supportsMode` reports that a written mode does not round-trip
+	// through `stat`, because a host that cannot store the bit reports the same
+	// mode whatever `stageBytes` wrote, so the assertion would measure the host
+	// rather than the helper.
+	it.skipIf(!supportsMode())('gives an entry the bit its manifest declares', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const manifest = buildVendoredManifest()

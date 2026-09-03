@@ -656,6 +656,29 @@ export function artifactToFinding(artifact: Artifact, observed?: string): Findin
  * This predicate keeps the comparison law beside the reachability law it
  * restates. A mutation uses it so a refusal can distinguish an impossible
  * verdict from a target that genuinely moved after its audit.
+ *
+ * @example
+ * ```ts
+ * import type { Finding } from '@orkestrel/scaffold'
+ * import { matchesDriftReachability } from '@orkestrel/scaffold'
+ *
+ * const aligned: Finding = {
+ * 	path: 'README.md',
+ * 	group: 'docs',
+ * 	ownership: 'birth',
+ * 	drift: 'aligned',
+ * }
+ * const stale: Finding = {
+ * 	path: 'README.md',
+ * 	group: 'docs',
+ * 	ownership: 'birth',
+ * 	drift: 'stale',
+ * 	observed: '6279650a',
+ * }
+ *
+ * matchesDriftReachability('birth', aligned) // true
+ * matchesDriftReachability('birth', stale) // false
+ * ```
  */
 export function matchesDriftReachability(ownership: Ownership, finding: Finding): boolean {
 	if (finding.drift === 'aligned') return ownership === 'birth' || finding.observed !== undefined

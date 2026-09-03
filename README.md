@@ -7,15 +7,18 @@ Every `@orkestrel` repository shares one toolchain, one set of agent instruction
 root dotfiles. Scaffold ships that shared set as data inside the package and gives it verbs: create
 a workspace from it, report how a workspace differs from it, and write the difference back.
 
-The set splits by how a repository meets it. Every target carries its own copy of the vendored set —
-its toolchain, its policy proofs, its harness permission file, its bench probe scripts — and the
-verbs write it and compare it. A bench probe script is a session-start hook that reports whether a
-bench CLI resolves; what wires that bench stays in the canon, and a session reads it at its primary
-root. The instruction canon — the coding and orchestration contracts, the rules, the skills, the
-templates, the transport contracts, the agent roles, the bench configuration, and the MCP
-registrations — is published for reading instead, from a scaffold checkout sitting beside the
-repository, or from `node_modules/@orkestrel/scaffold/dist/host/` in the installed package. Every
-target carries the `AGENTS.md` and `CLAUDE.md` pointers that name where to read it, and the
+The set splits by how a repository meets it. Each target carries its own copy of the paths it
+selects from the vendored set — its licence, its harness permission file, its session-start hooks,
+its policy register, its policy proof, its policy plugin, its configuration leaf and its proof, its
+root dotfiles, and the guide mirrors it starts from, never its own guide — and the verbs write
+them and compare them. A bench probe hook reports whether a bench CLI resolves, and the dependency
+hook installs the lockfile's closure in a remote session; what wires a bench stays in the canon,
+and a session reads it at its primary root. The instruction canon — the coding and
+orchestration contracts, the rules, the skills, the templates, the transport contracts, the agent
+roles, the bench configuration, and the MCP registrations — is published for reading instead, from a
+scaffold checkout sitting beside the repository, or from
+`node_modules/@orkestrel/scaffold/dist/host/` in the installed package. Every target carries the
+`AGENTS.md` and `CLAUDE.md` pointers that name where to read it, and the
 `.claude/agents/orkestrel.md` catalog file the `catalog` verb rewrites. Anything else a target holds
 at a canon path is a superseded copy, and `overwrite` deletes it.
 
@@ -69,7 +72,7 @@ npx scaffold repair
 
 Restores each planned path the target is missing or has let drift, then re-audits. A file the
 workspace owns — its source, its own proofs, its README — is written once at creation and is never
-rewritten here. Two paths are not owned that way: `tests/distribution.test.ts` is restored when it
+rewritten here. Not everything is owned that way: `tests/distribution.test.ts` is restored when it
 is absent and left alone when the workspace has replaced it, and the manifest's script region is
 rewritten when its chain is the one scaffold generated and refused without a write when it is not.
 

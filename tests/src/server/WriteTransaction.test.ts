@@ -15,7 +15,7 @@ import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { readErrorCode, SCRATCH_PREFIX } from '../../setupServer.js'
-import { createScratch } from '@orkestrel/test/server'
+import { createScratch, supportsMode } from '@orkestrel/test/server'
 
 describe('WriteTransaction construction', () => {
 	it('refuses a target, a path list, and a repeated path that are off contract', () => {
@@ -200,10 +200,10 @@ describe('WriteTransaction staging', () => {
 		}
 	})
 
-	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
-	// there, NTFS carrying no POSIX permission bits, so the assertion below cannot
-	// distinguish a set bit from an unset one on that host.
-	it.skipIf(process.platform === 'win32')('sets the executable bit when asked', () => {
+	// Skipped where `supportsMode` reports that a written mode does not round-trip
+	// through `stat`, because a host that cannot store the bit cannot distinguish
+	// a set bit from an unset one and the assertion would measure the host.
+	it.skipIf(!supportsMode())('sets the executable bit when asked', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
@@ -221,10 +221,10 @@ describe('WriteTransaction staging', () => {
 		}
 	})
 
-	// Skipped on win32 because NTFS exposes no POSIX executable bit to clear, so
-	// the mode assertion cannot distinguish the false branch from an unchanged
-	// source there.
-	it.skipIf(process.platform === 'win32')('clears the executable bit when not asked', () => {
+	// Skipped where `supportsMode` reports that a written mode does not round-trip
+	// through `stat`, because a host that cannot store the bit exposes none to
+	// clear and the assertion cannot tell the false branch from an unchanged source.
+	it.skipIf(!supportsMode())('clears the executable bit when not asked', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
