@@ -11,7 +11,7 @@ adoption is reported as an exact patch rather than made here.
 | ----------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
 | scaffold-subj-1   | applied     | `guides/scaffold.md` names `file` in the upstream reader's event list, in `UpstreamEventMap` order   |
 | scaffold-subj-2   | applied     | `guides/scaffold.md` replaces the universal emitter claim and qualifies the error-emission claim     |
-| scaffold-subj-3   | applied     | `README.md:72` count deleted; both count sweeps ruled                                                |
+| scaffold-subj-3   | applied     | `README.md:75` count deleted; both count sweeps ruled                                                |
 | scaffold-subj-4   | applied     | Four Surface summaries rewritten to the table's imperative form, column alignment preserved          |
 | scaffold-subj-6   | applied     | Four `@example` fences added; each new claim driven and answered by `test:distribution`              |
 | scaffold-subj-7   | applied     | `guides/scaffold.md:16` and `README.md:10` name the set `HOST_PATHS` holds                           |
@@ -166,18 +166,19 @@ reports `"matchesDriftReachability('birth', aligned) // false answered true"` ad
 | `deny-warnings`                                                                                                                | `src/`, `tests/`, `guides/scaffold.md`, `README.md`                                         | Three hits, all `lint:check`                              |
 | `emitter`                                                                                                                      | `src/server/WriteTransaction.ts`                                                            | No match, which is subj-2's claim                         |
 | `upstream reader emits\|reader emits `release`\|`mirror`, `error`\|Errors are emitted immediately` (fix round 1, the Orchestrator's sweep at 21:09 UTC) | `README.md`, `guides/*.md`, `src/**`, `tests/**` | One hit, the corrected sentence at `guides/scaffold.md:1511`; no other hit |
+| `\b(extractFenceImports\|findMissingSymbols)\b`, and `extractFenceImport(s\|ed\|ing)?\|findMissingSymbol(s\|ed\|ing)?` case-insensitive (the adopted guide helpers, the Orchestrator's sweep at 22:07 UTC) | `src/**`, `tests/**`, `guides/scaffold.md`, `guides/README.md`, `README.md` | No match under either pattern; the replacements sit at `tests/guides.test.ts:6`, `:11`, `:102`, `:112`, `:188` |
 
 Ruling each count-sweep hit by its sense: `README.md:6` "one toolchain, one set of agent
-instructions, and one set of root dotfiles", `:40` "one machine-readable value", `:61` "one row per
-path", `:74` "the one scaffold generated", and `:95` "one run" are each the determiner naming a
-single thing, not a tally over a set anyone can add to. `README.md:71` "written once at creation"
+instructions, and one set of root dotfiles", `:43` "one machine-readable value", `:64` "one row per
+path", `:77` "the one scaffold generated", and `:98` "one run" are each the determiner naming a
+single thing, not a tally over a set anyone can add to. `README.md:74` "written once at creation"
 means one time rather than `after`, so the temporal row does not reach it.
 
 Ruling each old-form hit: `src/core/helpers.ts:172` and `:251`, and `src/server/helpers.ts:834` and
 `:878`, are TSDoc doc blocks, where `.claude/rules/typescript.md` § Comments and API documentation
 requires the third-person `-s` verb and `.claude/rules/documentation.md` § Parity holds that voice
 off a Surface row. They are correct as written and the row changed only the guide's cells.
-`guides/scaffold.md:1478` and `tests/src/server/WriteTransaction.test.ts:395` and `:563` are
+`guides/scaffold.md:1481` and `tests/src/server/WriteTransaction.test.ts:395` and `:563` are
 unrelated prose and test titles carrying the same words.
 
 The three `deny-warnings` hits are `src/core/compilers.ts:287` and the two generated-manifest
@@ -366,3 +367,7 @@ The objective lane is
 ### Orchestrator integration (21:30 UTC, after fix round 2 returned)
 
 The `HOST_PATHS` TSDoc at `src/core/constants.ts:114-119` named the policy register alone where the README and the guide name the register, the proof, the plugin, and the configuration leaf with its proof; the Orchestrator aligned the member list to the guide's wording (a one-phrase edit, `npx oxfmt --check` exit 0). Round 3 audits it with the fix round's passages.
+
+## Fix round 3 (Orchestrator-owned, record only, 22:07 UTC)
+
+The round-3 Sol objective lane (`units/l3/scaffold-objective-r3-sol.md`) confirmed every tree conjunct and refuted claims 3 and 9 on this report: the adopted-name sweep was unrecorded, and the disposition and ruling pointers had drifted from the audited tip after the fix rounds moved lines. The Orchestrator added the sweep row from its own run and refreshed each pointer from the tree (`README.md:75` for scaffold-subj-3; the count-sweep rulings at `README.md:6`, `:43`, `:64`, `:77`, `:98`, and `:74`; the old-form ruling at `guides/scaffold.md:1481`). R1 answered by a one-phrase edit: `src/core/constants.ts`'s "the harness wiring" read as contradicting the members it names, so the sentence reads "the bench and MCP wiring", which is what `CANON_PATHS` holds. The round-3 Luna checker's claim-7 refutation is the round-1 ruling on `host.json` and the campaign record, carried by the brief's amendment.
