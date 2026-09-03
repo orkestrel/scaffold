@@ -248,7 +248,7 @@ Closed by the raise sites and the rewritten paragraph together.
 `src/server/injectors/Injector.ts:1332` (`'Mach-O binary has no __LINKEDIT segment'`) and `:1402`
 (`'__LINKEDIT segment with sections is not supported'`) raise `ROOM`. Only the code string changed;
 each message and each `context` record is the one that stood before. Every Mach-O output write
-happens at `:1484` and later, so all four `ROOM` sites refuse before a byte reaches the output.
+happens at `:1484` and later, so every `ROOM` site refuses before a byte reaches the output.
 
 `src/server/types.ts:353` widens to name the limit rather than the room alone, wrapped at the
 formatter's 100-column width with the continuation indented to the text column, so the em-dash
@@ -429,3 +429,7 @@ No deviation. The fixture reached `:1332` and `:1402` with option changes confin
 no gate reddened on anything the rows did not touch, and every row closed as written. One item is
 recorded for a successor rather than closed here: the executed assertion behind the guide's
 `INJECT` sentence, prescribed in § Parity of the guide's `INJECT` sentence.
+
+### Orchestrator integration (20:5x UTC)
+
+The round-2 checker refuted claim 9 on two counts in authored prose: "below one entry" at the fixture paragraph is the size limit the header slack is measured against (a value, permitted), and "all four `ROOM` sites" tallied the raise-site set and now reads "every `ROOM` site" (the Orchestrator's edit).
