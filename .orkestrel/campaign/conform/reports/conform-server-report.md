@@ -67,20 +67,20 @@ Diffstat: 18 files changed, 469 insertions(+), 227 deletions(-).
 
 ## Failing-first controls
 
-Every command below ran with `--no-cache`. Each file sits under `/home/user/work/evidence/server-proofs/`.
+Each file sits under `/home/user/work/evidence/server-proofs/`.
 
 | Row / edit         | Command                                                                                                     | Red                                     | Green                              |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- | --------------------------------------- | ---------------------------------- |
 | addendum `keyword` | `npm --prefix /home/user/fleet/server run check`                                                            | exit 2, one TS2339 (`baseline-check.txt`) | exit 0 (`addendum-1-check-after.txt`) |
-| server-obj-1       | `npx vitest run … --project src:server tests/src/server/validators.test.ts`                                  | 1 failed, 1 passed (`obj-1-planted-red.txt`) | 2 passed (`obj-1-green.txt`)   |
+| server-obj-1       | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/validators.test.ts` | 1 failed, 1 passed (`obj-1-planted-red.txt`) | 2 passed (`obj-1-green.txt`)   |
 | server-obj-2       | `npm --prefix /home/user/fleet/server run test:src:server`                                                   | 1 failed, 257 passed, 1 skipped (`obj-2-red.txt`) | 259 passed, 1 skipped (`obj-10-green.txt`) |
-| server-obj-3       | `npx vitest run … --project src:server tests/src/server/helpers.test.ts -t "ETag"`                           | 1 failed, 6 passed, 123 skipped (`obj-3-planted-red.txt`) | 7 passed, 123 skipped (`obj-3-green.txt`) |
+| server-obj-3       | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/helpers.test.ts -t "ETag"` | 1 failed, 6 passed, 123 skipped (`obj-3-planted-red.txt`) | 7 passed, 123 skipped (`obj-3-green.txt`) |
 | server-obj-4       | `npm --prefix /home/user/fleet/server run test:guides`                                                       | 1 failed, 32 passed (`obj-4-red.txt`)   | 33 passed (`obj-4-green.txt`)      |
 | server-obj-5       | `npm --prefix /home/user/fleet/server run test:setup`                                                        | 1 failed, 13 passed (`obj-5-planted-red.txt`) | 14 passed (`obj-5-green.txt`)  |
 | server-obj-10      | `npm --prefix /home/user/fleet/server run test:src:server`                                                   | 55 failed, 204 passed, 1 skipped (`obj-10-planted-red.txt`) | 259 passed, 1 skipped (`obj-10-green.txt`) |
-| server-subj-4      | `npx vitest run … --project src:server tests/src/server/helpers.test.ts`                                     | 5 failed, 125 passed (`subj-4-red.txt`) | 259 passed, 1 skipped (`obj-10-green.txt`) |
-| server-subj-9      | `npx vitest run … --project src:server tests/src/server/Negotiator.test.ts`                                  | 2 failed, 25 passed (`subj-9-planted-red.txt`) | 27 passed (`subj-9-green.txt`) |
-| server-subj-11     | `npx vitest run … --project src:server tests/src/server/Stream.test.ts`                                      | 1 failed, 10 passed (`subj-11-red.txt`) | 11 passed (`subj-11-green.txt`)    |
+| server-subj-4      | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/helpers.test.ts` | 5 failed, 125 passed (`subj-4-red.txt`) | 130 passed (`subj-4-green.txt`) |
+| server-subj-9      | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/Negotiator.test.ts` | 2 failed, 25 passed (`subj-9-planted-red.txt`) | 27 passed (`subj-9-green.txt`) |
+| server-subj-11     | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/Stream.test.ts` | 1 failed, 10 passed (`subj-11-red.txt`) | 11 passed (`subj-11-green.txt`)    |
 
 **Which reds are natural and which are planted.** server-obj-2, server-obj-4, server-subj-4, and server-subj-11 reddened against the shipped defect: the double-`next` rejection was a bare `Error`, the guide's gzip fence executed as written rejects with `HTTPError: malformed compressed request body` at `helpers.ts:1387`, `parseEncoding` did not exist, and a re-cased seam key produced `text/event-stream; charset=utf-8, text/plain`. server-obj-1, server-obj-3, server-obj-5, server-obj-10, and server-subj-9 have no reachable defect vector, so each ran a planted-wrong control and the plant was undone by editing the same line back:
 
@@ -90,7 +90,7 @@ Every command below ran with `--no-cache`. Each file sits under `/home/user/work
 - server-obj-10: both new guards inverted to `if (isAddressInfo(address)) throw`, restoring the `0` result.
 - server-subj-9: `Negotiator.encoding` given `negotiate`'s first-offered fallback on an empty entry list.
 
-**server-obj-10 has no natural red, and that is the row's own finding.** Both listen paths pass a numeric port (`Server.ts` `server.listen({ port, … })`, `helpers.ts` `probe.listen(port)`), so a TCP listener always yields an `AddressInfo` and the removed `0` is unreachable through the published API. Nothing in the suite can drive it. The inverted-guard control is what proves the replacement code sits on the live path rather than beside it: inverting it reddens 55 cases across `helpers.test.ts`, `Server.test.ts`, and `factories.test.ts`. A reachable proof would need an injectable listener factory, which this package does not have and which the row does not ask for.
+**server-obj-10 has no natural red, and that is the row's own finding.** Both listen paths pass a numeric port (`Server.ts` `server.listen({ port, … })`, `helpers.ts` `probe.listen(port)`), so a TCP listener always yields an `AddressInfo` and the removed `0` is unreachable through the published API. Nothing in the suite can drive it. The inverted-guard control is what proves the replacement code sits on the live path rather than beside it: inverting it reddens 55 cases across `helpers.test.ts`, `Server.test.ts`, and `factories.test.ts`. The branch stays unproved by a narrow control; the row's evidence is the reachability argument and the live-path control. A reachable proof would need an injectable listener factory, which this package does not have and which the row does not ask for.
 
 **Rows with no behavioural control.** server-obj-6, server-obj-7, server-obj-8, server-obj-9, server-obj-11, server-obj-12, server-subj-1, server-subj-2, server-subj-6, server-subj-8, and server-subj-10 are documentation, prose, or a loop-binding rename with no observable behaviour. Their evidence is the sweeps below plus the gate chain.
 
@@ -104,7 +104,7 @@ Each pattern ran over the paths named beside it. The vendored dependency mirrors
 | server-subj-4 new name is reachable    | `grep -rnw "parseEncoding"` over the same paths                                                                                              | `src/server/helpers.ts` (declaration, `@example`, `readBody` call site), `tests/src/server/helpers.test.ts`, `guides/server.md` Helpers row. |
 | server-subj-6 rejected generic words   | `grep -rnwE "item\|items\|info\|thing\|obj\|cfg\|msg\|doc"` over `src`                                                                        | Empty.                                                                                                            |
 | server-obj-9 `should`                  | `grep -rni "should"` over `guides/server.md`, `guides/README.md`, `README.md`, `src`, `tests/src`, `tests/setup.ts`, `tests/setup.test.ts`, `tests/guides.test.ts`, `tests/setupServer.ts` | Empty.                                                                                                            |
-| server-obj-10 sentinel removed         | `grep -rnE "resolvePort"` over `src`, `tests/src`, `tests/guides.test.ts`                                                                    | Empty.                                                                                                            |
+| server-obj-10 sentinel removed         | `grep -rnE "resolvePort"` over `src`, `tests`, `guides/server.md`, `guides/README.md`, `README.md`                                            | Empty.                                                                                                            |
 | server-obj-1 placement                 | `grep -rnE "isAddressInfo"` over `src`, `tests/src`, `README.md`, `guides/README.md`, `guides/server.md`                                     | Declared only in `src/server/validators.ts`; imported by `helpers.ts` and `Server.ts` from `./validators.js`; tested in `tests/src/server/validators.test.ts`; one Helpers row and one Tests row in the guide. |
 | server-subj-1 numbered citations       | `grep -rnE "AGENTS §\|§2[0-9]"` over the same paths                                                                                          | Empty.                                                                                                            |
 | server-obj-6 / server-obj-7 old claims | `grep -rnE "Node\.js >= 24\|ESM-only"` over the same paths                                                                                   | Empty.                                                                                                            |
@@ -195,3 +195,54 @@ An addition beyond a row's literal text, recorded for audit: server-obj-3 is a s
 - `/home/user/work/evidence/conform-server.diff` — 1318 lines, written by `node /home/user/scaffold/tmp/work/evidence.mjs server`.
 - `/home/user/work/evidence/conform-server.status` — 18 entries, from the same command, which ran `git add -N` on `src/server/validators.ts` and `tests/src/server/validators.test.ts`.
 - `/home/user/work/evidence/server-proofs/` — every control and gate log named in this report.
+
+## Fix round 1
+
+Source: `/home/user/scaffold/.orkestrel/campaign/conform/units/l3/server-objective-r1-sol.md`.
+
+- **O1.** At `guides/server.md:93`, `clearCookie` now says "by setting". At
+  `guides/server.md:105`, `computeBodyETag` now says "by using WebCrypto". At
+  `guides/server.md:122`, `isHTTPError` now says "through a structural brand
+  fallback".
+- **O2.** The comment at `src/server/validators.ts:7-9` says that the file sits
+  at the bottom of the module's graph beside `helpers.ts`, imports the
+  `node:net` address type and the `@orkestrel/contract` guards, and never an
+  implementation class.
+- **Claim 3.** `grep -rnE "resolvePort" src tests guides/server.md
+  guides/README.md README.md` returned empty. The server-obj-10 sweep row now
+  records that full population.
+- **Claim 4.** Each abbreviated Vitest command in § Failing-first controls now
+  carries `--config vite.config.ts --no-cache --reporter=dot`. The
+  server-subj-4 green reran the red command and reports 130 passed in
+  `/home/user/work/evidence/server-proofs/subj-4-green.txt`; its red capture is
+  `/home/user/work/evidence/server-proofs/subj-4-red.txt`. The server-obj-10
+  paragraph records that no narrow red can drive the unreachable branch and
+  retains the reachability argument plus the live-path captures
+  `/home/user/work/evidence/server-proofs/obj-10-planted-red.txt` and
+  `/home/user/work/evidence/server-proofs/obj-10-green.txt`.
+
+The acceptance captures are
+`/home/user/work/evidence/server-proofs/fix1-format-check.txt`,
+`/home/user/work/evidence/server-proofs/fix1-lint-check.txt`,
+`/home/user/work/evidence/server-proofs/fix1-check.txt`, and
+`/home/user/work/evidence/server-proofs/fix1-test-guides.txt`.
+
+The O1 sweep used `grep -rniE "\bvia\b" src tests guides/server.md
+guides/README.md README.md`. It excludes the vendored `guides/<dependency>.md`
+mirrors. The owned hits at `guides/server.md:93`, `guides/server.md:105`, and
+`guides/server.md:122` are gone. The sweep returned the following surviving
+hits:
+
+- `src/server/helpers.ts:249`, `:400`, `:412`, `:455`, `:832`, `:884`,
+  `:1333`, and `:1410`
+- `src/server/constants.ts:47`
+- `src/server/Server.ts:53`, `:54`, `:57`, `:58`, and `:61`
+- `src/server/types.ts:78`, `:153`, `:574`, `:625`, `:713`, and `:716`
+- `src/server/errors.ts:15` and `:115`
+- `tests/src/server/helpers.test.ts:160` and
+  `tests/src/server/Server.test.ts:1346`
+- `guides/server.md:6`, `:8`, `:349`, and `:371`
+
+Every surviving hit uses `via` to mean `through` or `by using`, so every hit is
+in the substitution table's banned sense. Each surviving hit is outside this
+fix round's owned cells and remains unchanged.
