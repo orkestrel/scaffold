@@ -94,3 +94,22 @@ wait on the final layer build and the re-film (lane C).
 FX2d stopped on its deviation contract: the body's box is the larger of the content and the
 pane, so an overshoot on the box reading adds canvas rows. FX2e carries the content-edge
 mechanism.
+
+## Fix round, lane C (Grok objective, 2026-09-02)
+
+Ruled on claims 15, 20, 21, and 22 at test `7ef64b8` and terrain `7a27ee8` with the final frame
+readings: all four CONFIRMED (every 390 frame ends on the surface's floor at 1192 or 1717–1719
+rows; `captureFrame` converges on the content edge and `releasePane` hands the viewport back;
+`readFrame` and `FrameReading` exported, documented, and tested; the phone pane at 844 with the
+layer's reader and both controls through the root).
+
+## Fix-round ruling
+
+Across lanes A, B, and C every claim 1–22 is CONFIRMED at scaffold `1a7602e` (later `c3e53b9`),
+test `7ef64b8`, form `8ef0785`, terrain `7a27ee8`. The one residue lane A found (claim 8) was
+closed by the Orchestrator and re-read by lane B. No finding outside the claims. Gate evidence:
+scaffold chain green at `4fb7ff2` with the distribution proof green at `c3e53b9`; test
+prepublish green at `7ef64b8`; form chain green at `8ef0785`; terrain chain green at `7a27ee8`
+with every capture run green on the final build.
+
+VERDICT: PASS — 0 broken, 0 unresolved, 0 not-evidenced, 0 findings outside the claims

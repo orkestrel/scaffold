@@ -226,3 +226,12 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   `rgb(248, 249, 249)` light), the 390 frames at 1192 and 1717–1719 rows. Readings retained as
   `terrain-frames-final.txt`. Test's prepublish chain green at `7ef64b8` (src 482 passed).
   Lane C dispatched on claims 15, 20, 21, 22.
+
+## Acceptance, 2026-09-02
+
+- Fix round PASS across lanes A, B, C (`campaign-audit-verdict.md`). Exit criterion: the two
+  skills rewritten in the instruction voice with instruments, inputs, and the journey layer bound
+  to `@orkestrel/test`; the package additions and the four layer fixes proved and documented;
+  the form guide crosswalk; the terrain reference suite with every family; the fleet visits; the
+  evaluation at 100% on the re-run evals. Remaining decisions are the user's: the two uploads and
+  the fleet re-pin, the contract cascade, terrain's Delete chrome, and the prune.
