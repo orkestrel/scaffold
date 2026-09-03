@@ -182,3 +182,12 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   fold. Both proved red then green; browser project 240 passed. Tarball rebuilt and re-staged in
   terrain (digest `66b98aae9bf8043e`). FX3b dispatched; verifier dispatched
   (`gates-fx2b-brief.md`).
+- FX3b returned and stopped on its deviation contract: the 844 px pane, the layer's `readFrame`,
+  and both controls through the root are done and green in the four ordinary runs and the two
+  1280 capture runs; the two 390 capture runs are red at the capture proof because the rebuilt
+  layer still clips (integer scroll height under a fractional body box: one row; no re-read after
+  a viewport-bound rule reflows against the taller pane: 29 rows). The rebuilt `releasePane`
+  hand-back broke the suite's stage-then-release resize; the suite calls `page.viewport` itself.
+  Committed in terrain at `7a27ee8` as the honest state; FX2c dispatched in test
+  (`fix-capture-successor-brief.md`); terrain chain verifier dispatched at that commit; lane B
+  runs after the layer lands and terrain re-films.
