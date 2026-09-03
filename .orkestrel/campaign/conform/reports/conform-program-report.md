@@ -107,11 +107,14 @@ Each control planted the defect the row's assertion claims to catch, ran the nam
 command, then restored by editing and re-ran the same command. No git command discarded
 anything.
 
-| Rows | Command | Red | Green |
+| Row | Command | Red | Green |
 | --- | --- | --- | --- |
-| program-obj-1, program-obj-2, program-obj-5 | `npm run test:setup` | 9 failed, 76 passed (85) — `obj1-obj2-obj5-setup-red.txt` | 85 passed (85) — `obj1-obj2-obj5-setup-green.txt` |
-| program-obj-4, program-obj-6 | `npm run test:src:core` | 7 failed, 209 passed (216) — `obj4-obj6-src-core-red.txt` | 216 passed (216) — `obj4-obj6-src-core-green.txt` |
-| program-obj-3 | `npm run test:guides` | 2 failed, 24 passed (26) — `obj3-guides-red.txt` | 26 passed (26) — `obj3-guides-green.txt` |
+| program-obj-1 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts` | 1 failed, 84 passed (85) — `program-obj-1-red.txt` | 85 passed (85) — `program-obj-1-green.txt` |
+| program-obj-2 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts` | 1 failed, 84 passed (85) — `program-obj-2-red.txt` | 85 passed (85) — `program-obj-2-green.txt` |
+| program-obj-5 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts` | 1 failed, 84 passed (85) — `program-obj-5-red.txt` | 85 passed (85) — `program-obj-5-green.txt` |
+| program-obj-4 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts` | 1 failed, 73 passed (74) — `program-obj-4-red.txt` | 74 passed (74) — `program-obj-4-green.txt` |
+| program-obj-6 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/factories.test.ts` | 1 failed, 6 passed (7) — `program-obj-6-red.txt` | 7 passed (7) — `program-obj-6-green.txt` |
+| program-obj-3 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project guides tests/guides.test.ts` | 1 failed, 25 passed (26) — `program-obj-3-red.txt` | 26 passed (26) — `program-obj-3-green.txt` |
 
 Every file named is under `/home/user/work/evidence/program-proofs/`.
 
@@ -119,10 +122,10 @@ Failing test names and the plant each one caught:
 
 - program-obj-1 — `createRecordingEngine > counts every destroy, so a suite can prove an owned engine was released once`; plant: `RecordingReason.destroy` dropped its `#destroyCount` increment.
 - program-obj-2 — `recordEvents > records every wired event name, in the order the emitter fired it`; plant: the `rate` subscription pushed `'qualify'`.
-- program-obj-5 — `createOffContractValidationResult > reports valid while leaving the declared errors collection absent at runtime`, `createOffContractQualifier > returns an off-contract validation result and refuses to qualify`, `createOffContractReason > answers an empty registry and returns an off-contract validation result`, `createOffContractReason > refuses to reason and to register, so an unexpected call surfaces as a throw`, `buildQualificationResult > fills a clean eligible skeleton the override alone departs from`, `buildQualificationResult > lets an override replace any skeleton member, including the collections`, `buildStandardProgramDefinition > names the definition after the given id and reuses the standard pair by identity`; plants: `OffContractValidationResult.errors` returned `[]`, the two off-contract throws lost their messages, `buildQualificationResult`'s default id became `'q'`, and `buildStandardProgramDefinition` used the id as the name. Every moved export reddened its own proof.
-- program-obj-4 — `helpers > assertProgramSubject > throws RESERVED with the offending key as context`, `Program > safety and determinism > throws RESERVED with the offending key as context`, `Program > safety and determinism > throws DEFINITION for a malformed definition`, `Program > batch rejects before any work > throws RESERVED before rating or recording any subject`, `Program > construction-failure teardown > fires destroy once and leaves the injected engine unused and usable`; plant: `assertProgramSubject`'s `RESERVED` branch was made unreachable. The `captureError` conversion did not weaken the assertions.
-- program-obj-6 — `factories > createProgramManager > defaults validate to true` and `ProgramManager > add > throws DEFINITION when validation is enabled`; plant: `DEFAULT_PROGRAM_VALIDATE` flipped to `false`. This is exactly the defect the old body could not catch, which is the row's finding.
-- program-obj-3 — `flagship fences > returns the Surface fence values for an eligible and an ineligible subject` and `flagship fences > carries the batch fence lines the transcription copies`; plants: `deriveStatus`'s final branch always returned `'conditional'`, and the batch fence's last comment was edited to `// one`. Every pre-existing parity assertion stayed green under both plants, which is the gap the row names.
+- program-obj-5 — `buildStandardProgramDefinition > names the definition after the given id and reuses the standard pair by identity`; plant: `buildStandardProgramDefinition` used the id as the name.
+- program-obj-4 — `helpers > assertProgramSubject > throws RESERVED with the offending key as context`; plant: `assertProgramSubject`'s `RESERVED` branch was made unreachable. The `captureError` conversion did not weaken the assertion.
+- program-obj-6 — `factories > createProgramManager > defaults validate to true`; plant: `DEFAULT_PROGRAM_VALIDATE` flipped to `false`. This is exactly the defect the old body could not catch, which is the row's finding.
+- program-obj-3 — `flagship fences > carries the batch fence lines the transcription copies`; plant: the batch fence's last comment was edited to `// one`.
 
 Not a behavioural row, so no control: program-obj-8, program-obj-9, and every `program-subj-*` row. Their proof is the sweep plus the gate chain.
 
@@ -248,3 +251,56 @@ Ancillary decisions taken and carried on from, per the deviation contract:
   case, because the guide's batch fence continues from the same `program` the Surface
   fence built, and a second `program` would not be what the guide claims. Each fence
   keeps its own presence guard.
+
+## Fix round 1
+
+This round carries the rulings from
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/program-objective-r1-sol.md`.
+
+- Claim 2a: `tests/guides.test.ts:255-258` guards the Surface fence from the `gates`
+  definition through `program.destroy()`. The guard names the logical definition,
+  qualification, ruling, rating line, rating definition, program definition, subjects,
+  and documented result values that the transcription reuses.
+- Claim 2b: every multi-code `@throws` row is split into one row per code. The split
+  rows are at `src/core/types.ts:267-273,298-304,467-475`,
+  `src/core/programs/Program.ts:180-186,211-217`,
+  `src/core/programs/ProgramManager.ts:191-199`, and
+  `src/core/helpers.ts:68-70`.
+- Claim 4: the Failing-first controls table carries one isolated red and green command
+  for program-obj-1, program-obj-2, program-obj-5, program-obj-4, program-obj-6, and
+  program-obj-3. Each red capture reports only the test named in the plant paragraph.
+- O1: `src/core/types.ts:460-463` and
+  `src/core/programs/ProgramManager.ts:184-187` state: "After appending the program,
+  the `add` event fires with its id."
+- O2: `tests/guides.test.ts:229-252` wraps the executed Surface and batch fence
+  assertions in `try`, with `program.destroy()` in `finally`.
+- R1: `guides/program.md:172-176` states that `completeTallies` writes every `Status`
+  member as a literal record and that `isTallies` checks membership through `STATUSES`.
+
+The round recorded these sweeps:
+
+- `grep -rnE "@throws" src` shows one error code per `@throws` row. The rows split in
+  this round start with "Thrown when".
+- `grep -rnwE "new" src/core/types.ts src/core/programs/ProgramManager.ts` reports only
+  runtime constructor expressions in `ProgramManager.ts`; no doc comment uses temporal
+  `new`.
+
+The controls table names these captures under
+`/home/user/work/evidence/program-proofs/`: `program-obj-1-red.txt`,
+`program-obj-1-green.txt`, `program-obj-2-red.txt`, `program-obj-2-green.txt`,
+`program-obj-5-red.txt`, `program-obj-5-green.txt`, `program-obj-4-red.txt`,
+`program-obj-4-green.txt`, `program-obj-6-red.txt`, `program-obj-6-green.txt`,
+`program-obj-3-red.txt`, and `program-obj-3-green.txt`.
+
+The round's gates and scoped runs read:
+
+| Command | Exit | Reading |
+| --- | --- | --- |
+| `npm run format:check` | 0 | All matched files use the correct format. |
+| `npm run lint:check` | 0 | No diagnostic. |
+| `npm run check` | 0 | Root and `src:core` TypeScript checks pass. |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project guides tests/guides.test.ts` | 0 | 26 passed (26). |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts` | 0 | 85 passed (85). |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts` | 0 | 74 passed (74). |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/programs/Program.test.ts` | 0 | 60 passed (60). |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/programs/ProgramManager.test.ts` | 0 | 20 passed (20). |
