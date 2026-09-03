@@ -320,3 +320,6 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   the five-row table, the changed names, the Quick Reference modal auto-opening at `md` and up
   with two controls named `Close` (the Orchestrator renames the icon so `Close` resolves alone),
   and the new helper leaves owing their describes.
+- Orchestrator: the Quick Reference icon control renamed to `Close quick reference` in lloyds
+  (`3e8d5a3`) so `Close` resolves the footer button alone; J-lloyds dispatched with the chrome
+  findings carried; `audit-lloyds-brief.md` and its launcher retained for the round that follows.
