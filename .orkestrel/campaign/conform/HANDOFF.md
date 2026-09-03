@@ -73,8 +73,9 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | contract | yes (successor; checkpoint `01f3390`) | complete (resumed) | rounds FAIL 2 9 / FAIL 3 7, FAIL 3 4 / PASS, FAIL 6 / PASS; record prescriptions applied at landing; ACCEPT (`units/conform-contract-audit-verdict.md`) | `b3892f4` |
 | indexeddb | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-indexeddb-audit-verdict.md`) | `729ccf5` |
 | csv | yes (successor) | complete | rounds FAIL 4 8 / PASS, FAIL 4 / PASS, FAIL 4 / PASS; one header sentence applied at landing; ACCEPT (`units/conform-csv-audit-verdict.md`) | `24861c3` |
-| tool | yes | complete | round 1 PASS/PASS; ACCEPT (`units/conform-tool-audit-verdict.md`); follow-on builder unit in flight | `1f36348` |
-| emitter, html, sqlite, timeout | yes (reconciled; sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`) | complete; audits in flight in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
+| tool | yes | complete | round 1 PASS/PASS; ACCEPT (`units/conform-tool-audit-verdict.md`) | `1f36348`, follow-on `b2111d1` |
+| timeout | yes | complete | round 1 PASS/PASS with record prescriptions applied at landing; ACCEPT (`units/conform-timeout-audit-verdict.md`) | `426420b` |
+| emitter, html, sqlite | yes (reconciled; sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`) | complete; emitter and html in fix round 1, sqlite in audit round 1, in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
 | process, reason, console, middleware | generating | in flight in `layer2.L2a` (`wf_4b849c0d-459`) | — | — |
 | database | yes (successor; carries database-subj-10) | not started | — | L2, after contract and indexeddb land and re-stage |
 | console, process, reason, middleware, table, template, websocket, form, markdown, pool | no | not started | — | L2 |
