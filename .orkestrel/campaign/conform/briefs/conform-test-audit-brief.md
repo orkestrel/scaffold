@@ -29,7 +29,7 @@ The round passes only on `VERDICT: PASS` from both lanes with every claim `CONFI
 5. Guide parity holds: every renamed, added, moved, or removed export is reflected in `guides/test.md` (method tables exactly matching call-signature members, Surface rows for readonly data, fences importing the published specifier), `guides/README.md`, and the fence transcriptions in `tests/guides.test.ts`; no `AGENTS §` citation survives in the touched files.
 6. Every breaking change is named under the report's § Breaking with its consumers and the exact consumer edit; nothing renames or removes a published symbol without that entry.
 7. The diff touches only files under the brief's Owned row; `package-lock.json`, `node_modules`, and every off-limits file are untouched; no compatibility alias, re-export, or shim was added.
-8. The gate chain is green on the verifier's independent run (the writer's quoted exit codes are the writer quoting itself: rule the gate claim `UNRESOLVED` unless the dispatch supplies the verifier's reading), and no `.skip`, `.todo`, retry, or inflated timeout was added.
+8. No `.skip`, `.only`, `.todo`, retry, or inflated timeout was added, and the report's § Gates names `format:check`, `lint:check`, `check`, `build`, and `test` each with the command that produced it and exit 0. The independent gate reading is the Orchestrator's deciding run at landing, which no read-only lane can take: rule that run `NOT-EVIDENCED` with the note that the landing settles it, never `FAIL` or `UNRESOLVED`, and let the terminal line turn on the other claims and on this claim's first conjunct.
 9. Nothing hidden: no TODO, deferred row, commented-out code, or debug residue entered the tree, and the report's disposition table matches the diff.
 
 ## Output
