@@ -10,8 +10,10 @@ harness a person watches. Never write a second table for the harness.
   entity does not have fails to typecheck.
 - Write one `StateScenario` per transition, carrying that `transition` plus `arrange`, `act`, and
   `assert`. Each phase receives the context and the part of the transition it owns.
-- Put the table and the scenarios in the workspace's browser test setup module. A table is data, and
-  `.claude/rules/tests.md` places data there.
+- Put the scenarios in the workspace's browser test setup module. Put the table beside them until a
+  harness page ships; from then on declare it in the application's own constants module, typed on the
+  entity's unions, and import it from the page and from the setup alike, because a page cannot
+  import from `tests/` and a second table is what this reference forbids.
 - Declare a transition for every event the surface accepts in every state it accepts it, including
   the event that leaves the state unchanged. A table that lists only the moves the happy path takes
   proves the happy path.
