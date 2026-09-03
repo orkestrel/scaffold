@@ -76,3 +76,17 @@ Porcelain and starting colour (base); what each overwrite drops (probe-drift); n
 volume (visit); duplicate-contract typecheck in supervisor (visit); supervisor's registry head
 (prepare); `settings.local.json` ignored or not (prepare); local verb call-site counts (journey);
 harness bundle delta (chrome).
+
+## Round record, 2026-09-03
+
+- The skills campaign's folder was retired at scaffold `5e310d75`; this folder carries the open
+  campaign. Terrain, taverna, and supervisor mains pushed at the user's word; lloyds pushed after
+  its repair.
+- Lloyds: visit `4748841`, migration `b124fe1`, chrome `04eff85` and `3e8d5a3`, journey
+  `4812416`, repair (the push's head). The repair closed the document's height (the shell fills
+  the viewport once; the desk grows), the focus ring (an earned outline rule, 17.298 in every
+  variant against 3:1), and focus after a confirmed removal; every run and gate green. Next: the
+  audit round (`audit-lloyds-brief.md`) with the reviewer and the Grok lane blind to each other,
+  then the verifier.
+- Taverna and supervisor wait on the middleware release the user runs elsewhere; their resume
+  briefs and chrome briefs are in place.
