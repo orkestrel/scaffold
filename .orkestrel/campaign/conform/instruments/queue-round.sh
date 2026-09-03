@@ -3,6 +3,7 @@
 # Sol objective lane, and the checker lane on Luna beside them. Usage: bash tmp/work/queue-round.sh <pkg> <round>
 P=$1; N=$2; S=/home/user/scaffold; G=$S/tmp/work/grok5.sh; B=$S/tmp/cursor
 CWD=/home/user/fleet/$P; [ "$P" = scaffold ] && CWD=$S
+node $S/tmp/work/evidence.mjs $P > $S/tmp/work/round-$P-r$N-evidence.log 2>&1
 (
 	BENCH_LOCK=.bench-grok.lock CURSOR_GROK_MODEL=cursor-grok-4.6-high bash $G $P-r$N-distill-grok $B/$P-r$N-distill-brief.md $CWD
 	if [ -s "$B/$P-r$N-distill-grok.result.md" ]; then
