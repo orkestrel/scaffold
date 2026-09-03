@@ -33,4 +33,4 @@ Claim 4's counts are read from the capture files under `/home/user/work/evidence
 
 ## Terminal
 
-PASS (round 4 objective, round 3 checker), pending fix round 4's two lines and the deciding run at landing.
+PASS (round 4 objective, round 3 checker), accepted on the deciding run at landing after fix round 4's two lines: every gate exit 0 and the audit clean, landed as `08d4526`.

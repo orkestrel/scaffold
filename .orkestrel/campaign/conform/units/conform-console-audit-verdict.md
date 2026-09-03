@@ -36,4 +36,4 @@ Claim 4's counts are read from the capture files under `/home/user/work/evidence
 
 ## Terminal
 
-PASS (round 5 checker on claim 3; rounds 2 to 4 objective on every other claim), pending the deciding run at landing.
+PASS (round 5 checker on claim 3; rounds 2 to 4 objective on every other claim), accepted on the deciding run at landing: every gate exit 0 and the audit clean after the vendored `configs/browsers.ts` refresh, landed as `cac35cd`.
