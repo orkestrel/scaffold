@@ -1,0 +1,352 @@
+{
+  "package": "@orkestrel/msg",
+  "rows": [
+    {
+      "id": "msg-subj-1",
+      "disposition": "applied",
+      "note": "fileName -> name, content -> bytes across types.ts, MSG.ts, shapers.ts, mirrored tests, and the guide. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-2",
+      "disposition": "applied",
+      "note": "truncateAtNull with its restated first sentence, plus the guide row, fence import, and worked line. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-3",
+      "disposition": "applied",
+      "note": "decodeText(bytes, encoding?) with its restated sentence, @example, and guide signature row. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-4",
+      "disposition": "applied",
+      "note": "readMicrosoftUUID and computeSectors with every consumer and guide row. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-6",
+      "disposition": "applied",
+      "note": "Traversal stack carries { emit, index }; #processDirectory takes headerSize. No subClass survives. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-7",
+      "disposition": "applied",
+      "note": "data/item identifier renames in src plus the guide signature rows. Fix round 2's widened sweep found const data in tests/src/core/helpers.test.ts:268-280, outside the row's site list; recorded in Deviations."
+    },
+    {
+      "id": "msg-subj-8",
+      "disposition": "applied",
+      "note": "MSG_SECTOR_SIZE, MSG_MINI_SECTOR_SIZE, MSG_MINI_STREAM_CUTOFF, MSG_DIRECTORY_ENTRY_SIZE survive; the MSG_BURNER_* duplicates are deleted. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-9",
+      "disposition": "applied",
+      "note": "EmailAttachment.size removed from the type, its construction sites, the guard, the fixture, the guide, and README.md. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-10",
+      "disposition": "applied",
+      "note": "MSGOptions remark states what the encoding option actually reaches. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-11",
+      "disposition": "applied",
+      "note": "MSGSourceInterface remark names the constructor's adapter rather than a private member. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-12",
+      "disposition": "applied",
+      "note": "attachment(index) documents the .eml prerequisite and points at chain.messages[0].attachments. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-13",
+      "disposition": "applied",
+      "note": "via -> through, e.g. -> for example, and the helpers.ts:720 comment deleted. Same-class sites outside the row's list stay recorded in Deviations."
+    },
+    {
+      "id": "msg-subj-14",
+      "disposition": "applied",
+      "note": "Every AGENTS §N citation in a package-owned file names a rule file and heading. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-15",
+      "disposition": "applied",
+      "note": "The MSG section, the burn row, and the burn contrast describe observable behaviour; no #properties or #bigBlockTable token survives in guides/. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-16",
+      "disposition": "applied",
+      "note": "Helpers fence reads readUTF16String(view, 0, 2) // 'Hi' over 0x48 0x00 0x69 0x00. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-17",
+      "disposition": "applied",
+      "note": "Dependency reference names guide.md, test.md, scaffold.md, and probe.md as mirrors. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-18",
+      "disposition": "applied",
+      "note": "#### MSGSourceInterface method table with parse and attachment rows; parity checks it both ways. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-subj-19",
+      "disposition": "applied",
+      "note": "Tagline is a noun phrase; the Constants, Shapers, Validators, and MSG preambles open with one sentence each. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-1",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts carries describe('flagship fences', …) executing every guide fence. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-2",
+      "disposition": "applied",
+      "note": "Shapers fence imports MSG_CATEGORY_ROOT and the transcription asserts it is 5. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-3",
+      "disposition": "applied",
+      "note": "tests/setupServer.ts holds the one readFixture; tests/setupServer.test.ts proves it. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-4",
+      "disposition": "applied",
+      "note": "isBrowserVuePath, its proof, its import, and the header clause deleted. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-6",
+      "disposition": "applied",
+      "note": "package.json:53 reads oxlint --config .oxlintrc.json --fix .; lint:check unchanged. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-7",
+      "disposition": "applied",
+      "note": "parseMIMEHeaders splits on /\\r\\n|\\n/; parsers.ts:40 left alone; the proposed test dropped per the row. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-8",
+      "disposition": "applied",
+      "note": "MSG_FILE_HEADER and MSG_BURNER_ROOT_CLSID are frozen readonly number[]; the guide's Kind text and CLSID description follow. Unchanged in fix round 2."
+    },
+    {
+      "id": "msg-obj-9",
+      "disposition": "applied",
+      "note": "types.ts:92 readonly index signature and the Object.assign write landed in the checkpoint. Fix round 2 restated the doc block at types.ts:78-82 and the guide Surface row at guides/msg.md:51, which still advertised the index signature as a write channel (objective lane F1)."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/msg/src/core/types.ts — fix round 2: the MSGMutableFieldData doc block states readonly members and the Object.assign write path (F1); earlier rows land MSGAttachment { name, bytes }, EmailAttachment without size, the readonly index signature, and the MSGOptions and MSGSourceInterface remarks",
+    "/home/user/fleet/msg/guides/msg.md — fix round 2: the MSGMutableFieldData Surface row drops 'mutable' and '(index-signature)' (F1); earlier rows land the tagline, preambles, Surface/Constants/Helpers/Shapers/Validators tables, fences, MSG section, Methods tables, burn contrast, and See-also line",
+    "/home/user/fleet/msg/src/core/constants.ts — one name per CFB fact, MSG_BURNER_* duplicates deleted, byte arrays published as frozen readonly number[]",
+    "/home/user/fleet/msg/src/core/helpers.ts — truncateAtNull, decodeText, readMicrosoftUUID, computeSectors; CRLF-safe header split; data -> bytes; banned terms replaced",
+    "/home/user/fleet/msg/src/core/MSG.ts — { emit, index } traversal with step, #processDirectory headerSize, { name, bytes } attachment literal, Object.assign accumulator write, repointed constants",
+    "/home/user/fleet/msg/src/core/shapers.ts — the MSGAttachment translation and EmailAttachment.size drop; import lists repoint",
+    "/home/user/fleet/msg/src/core/errors.ts — e.g. replaced in the MSGError remark",
+    "/home/user/fleet/msg/src/core/validators.ts — isEmailAttachment drops its size check",
+    "/home/user/fleet/msg/package.json — the lint script drops --deny-warnings",
+    "/home/user/fleet/msg/guides/README.md — index line, Dependency reference section, See-also line",
+    "/home/user/fleet/msg/README.md — via replaced; the attachment loop reads attachment.bytes.length",
+    "/home/user/fleet/msg/tests/setupServer.ts — new; the one node:fs fixture loader",
+    "/home/user/fleet/msg/tests/setupServer.test.ts — new; proves the loader's anchoring, byte fidelity, ownership, and read error",
+    "/home/user/fleet/msg/tests/setup.ts — isBrowserVuePath deleted; header names the rule file",
+    "/home/user/fleet/msg/tests/setup.test.ts — the isBrowserVuePath block and import deleted",
+    "/home/user/fleet/msg/tests/guides.test.ts — header rewritten, source imports added, flagship-fence transcriptions appended",
+    "/home/user/fleet/msg/tests/src/core/MSG.test.ts — shared loader, renamed members and constants, rule-file citation",
+    "/home/user/fleet/msg/tests/src/core/factories.test.ts — shared loader",
+    "/home/user/fleet/msg/tests/src/core/helpers.test.ts — shared loader with DataView at the call sites, renamed helpers, MSG_FILE_HEADER immutability case",
+    "/home/user/fleet/msg/tests/src/core/shapers.test.ts — renamed members and constants, MSG_BURNER_ROOT_CLSID immutability case",
+    "/home/user/fleet/msg/tests/src/core/validators.test.ts — the EmailAttachment fixture drops size",
+    "/home/user/scaffold/tmp/units/conform/conform-msg-report.md — rewritten for the whole unit with a § Fix round 2 section",
+    "/home/user/work/evidence/conform-msg.diff — regenerated as git diff HEAD (working-tree half only; no off-limits file)",
+    "/home/user/work/evidence/conform-msg.checkpoint.diff — regenerated as git diff 1a8821a~1 1a8821a (checkpoint half only; no off-limits file)",
+    "/home/user/work/evidence/conform-msg.status — regenerated as git status --short"
+  ],
+  "gates": [
+    {
+      "command": "npm run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 1719ms on 46 files using 4 threads."
+    },
+    {
+      "command": "npm run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . with no diagnostic"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json then tsc --noEmit -p configs/src/tsconfig.core.json, each silent"
+    },
+    {
+      "command": "npm run build",
+      "exit": 0,
+      "excerpt": "dist/src/core/index.js 89.80 kB; dist/src/core/index.cjs 92.76 kB; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "excerpt": "src:core Tests 180 passed (180); policy Tests 111 passed (111); config Tests 46 passed (46); setup Tests 17 passed (17); guides Tests 33 passed (33)"
+    },
+    {
+      "command": "npm run check (F1 mutation probe: src/core/MSG.ts:1133 set to `fields[key] = value`, then restored)",
+      "exit": 2,
+      "excerpt": "src/core/MSG.ts(1133,26): error TS2542: Index signature in type 'MSGMutableFieldData' only permits reading. After restoring the Object.assign write the same command exits 0, and git diff HEAD -- src/core/MSG.ts carries no hunk at that line."
+    }
+  ],
+  "breaking": [
+    {
+      "symbol": "MSGAttachment.fileName",
+      "change": "renamed to name",
+      "consumers": [
+        "none"
+      ],
+      "edit": "read attachment.name"
+    },
+    {
+      "symbol": "MSGAttachment.content",
+      "change": "renamed to bytes",
+      "consumers": [
+        "none"
+      ],
+      "edit": "read attachment.bytes"
+    },
+    {
+      "symbol": "EmailAttachment.size",
+      "change": "removed; derive it",
+      "consumers": [
+        "none"
+      ],
+      "edit": "read attachment.bytes.length"
+    },
+    {
+      "symbol": "removeTrailingNull",
+      "change": "renamed to truncateAtNull",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import truncateAtNull"
+    },
+    {
+      "symbol": "readANSIString(data, encoding?)",
+      "change": "renamed to decodeText(bytes, encoding?)",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import decodeText; the argument order is unchanged"
+    },
+    {
+      "symbol": "msftUUIDStringify(data, offset)",
+      "change": "renamed to readMicrosoftUUID(bytes, offset)",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import readMicrosoftUUID"
+    },
+    {
+      "symbol": "sectorsNeeded",
+      "change": "renamed to computeSectors",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import computeSectors"
+    },
+    {
+      "symbol": "MSG_S_BIG_BLOCK_SIZE",
+      "change": "renamed to MSG_SECTOR_SIZE",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_SECTOR_SIZE"
+    },
+    {
+      "symbol": "MSG_SMALL_BLOCK_SIZE",
+      "change": "renamed to MSG_MINI_SECTOR_SIZE",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_MINI_SECTOR_SIZE"
+    },
+    {
+      "symbol": "MSG_BIG_BLOCK_MIN_DOC_SIZE",
+      "change": "renamed to MSG_MINI_STREAM_CUTOFF",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_MINI_STREAM_CUTOFF"
+    },
+    {
+      "symbol": "MSG_PROPERTY_SIZE",
+      "change": "renamed to MSG_DIRECTORY_ENTRY_SIZE",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_DIRECTORY_ENTRY_SIZE"
+    },
+    {
+      "symbol": "MSG_BURNER_SECTOR_SIZE",
+      "change": "removed as a duplicate of the 512-byte sector fact",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_SECTOR_SIZE"
+    },
+    {
+      "symbol": "MSG_BURNER_MINI_SECTOR_SIZE",
+      "change": "removed as a duplicate of the 64-byte mini-sector fact",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_MINI_SECTOR_SIZE"
+    },
+    {
+      "symbol": "MSG_BURNER_MINI_STREAM_CUTOFF",
+      "change": "removed as a duplicate of the mini-stream cutoff fact",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_MINI_STREAM_CUTOFF"
+    },
+    {
+      "symbol": "MSG_BURNER_DIR_ENTRY_SIZE",
+      "change": "removed as a duplicate of the 128-byte directory-entry fact",
+      "consumers": [
+        "none"
+      ],
+      "edit": "import MSG_DIRECTORY_ENTRY_SIZE"
+    },
+    {
+      "symbol": "MSG_FILE_HEADER",
+      "change": "Uint8Array -> frozen readonly number[]",
+      "consumers": [
+        "none"
+      ],
+      "edit": "index reads and .length are unchanged; passing it to Uint8Array.prototype.set is unchanged because that parameter is ArrayLike<number>; a consumer calling a Uint8Array method on it reads new Uint8Array(MSG_FILE_HEADER) first"
+    },
+    {
+      "symbol": "MSG_BURNER_ROOT_CLSID",
+      "change": "Uint8Array -> frozen readonly number[]",
+      "consumers": [
+        "none"
+      ],
+      "edit": "as for MSG_FILE_HEADER"
+    },
+    {
+      "symbol": "MSGMutableFieldData index signature",
+      "change": "made readonly; its doc block and guide Surface row now state the Object.assign write path",
+      "consumers": [
+        "none"
+      ],
+      "edit": "write through Object.assign(fields, { [key]: value })"
+    }
+  ],
+  "patches": [],
+  "deviations": [
+    "No row stopped. Fix round 2 changed src/core/types.ts and guides/msg.md only.",
+    "Objective lane F1 adopted verbatim: src/core/types.ts:78-82 now reads 'Represents an internal accumulator for MSG field extraction whose members are all readonly. The extraction path writes each resolved field through `Object.assign`, then narrows the accumulator to {@link MSGFieldData} at the public boundary.' and guides/msg.md:51 reads 'Internal readonly accumulator for field extraction, written through `Object.assign` and narrowed to `MSGFieldData`.' The type stays barrelled and the parity INTERNAL list is untouched, per the finding's bound. A mutation probe measured the refusal: restoring fields[key] = value at MSG.ts:1133 reddens npm run check with TS2542, and the restore is byte-exact.",
+    "Claim 3 closed as a record fix, not a tree fix: the retired-member sweep (\\.fileName|\\.content\\b|\\bsize\\b) and the data/item sweep (\\b(data|item)\\b) were re-run over src, tests, guides/msg.md, guides/README.md, and README.md, and § Sweeps names each path and every survivor. The substance already held; the recorded coverage did not.",
+    "Claim 7 and the checker referral closed by rescoping the artifacts, not the tree: /home/user/work/evidence/conform-msg.diff is now git diff HEAD and the checkpoint half moved back to /home/user/work/evidence/conform-msg.checkpoint.diff, so neither artifact carries package-lock.json or a dependency hunk. The lane's settling command was run: git diff HEAD -- package.json returns the lint script line alone, quoted in § Scope. git diff --stat 1a8821a HEAD returns package-lock.json and package.json and nothing else, which is the Orchestrator's staging commit 75a7b99.",
+    "New same-class finding from the widened sweep, recorded for the next matrix rather than fixed: tests/src/core/helpers.test.ts:268, :272, :276, :280 bind const data for the readMicrosoftUUID cases. `data` is in the rejected-word class, and msg-subj-7's site list names src files only, so renaming it here would rescope the unit.",
+    "Recorded against msg-obj-9's reserved successor ruling: src/core/MSG.ts:770-802 keeps the private parameter binding `mutable` and its // comments. F1's bound states nothing else msg-obj-9 touched is wrong, and these are private names rather than a published claim.",
+    "Carried unchanged from fix round 1: the msg-subj-13 same-class sites (src/core/helpers.ts:517, guides/msg.md:180, tests/setup.ts:41, tests/src/core/MSG.test.ts:251, tests/src/core/helpers.test.ts:109 and :290) and the msg-subj-8 sibling-vocabulary gap (MSG_S_BIG_BLOCK_MARK, MSG_L_BIG_BLOCK_SIZE, MSG_L_BIG_BLOCK_MARK, with guides/msg.md:79 carrying the mismatch).",
+    "Ancillary decision: F1's guide row is written to the Surface table's existing column width so the row lands without repadding the whole table.",
+    "Process note: the session's auto-mode reminder directs file reads through Bash, and the dispatch forbids it. The dispatch was followed. `head` and `grep` were run against the evidence artifacts before that constraint was re-read; they changed nothing, and every later read went through the Read and Grep tools."
+  ]
+}
