@@ -26,7 +26,7 @@ runner"), working tree clean at dispatch.
 | reason-subj-16  | applied     | Every stated default in `types.ts` and `constants.ts` rewritten to the fixed `Default: …` form. No value changed.                |
 | reason-obj-1    | applied     | `tests/src/core/parsers.test.ts` and the whole `tests/src/core/builders/managers/` mirror created.                               |
 | reason-obj-2    | applied     | `describe('flagship fences')` added to `tests/guides.test.ts`; it caught one stale guide value, corrected in the guide.          |
-| reason-obj-3    | applied     | `subjectToFacts` returns `readonly Fact[]`, landed with reason-obj-5 as one signature change.                                    |
+| reason-obj-3    | applied     | `subjectToFacts` returns `{ facts, trace }` with both members readonly, landed with reason-obj-5 as one signature change.        |
 | reason-obj-4    | applied     | `indexByArity` returns `ReadonlyMap<string, readonly Fact[]>`; the reasoner seeds a bucket copy it owns.                         |
 | reason-obj-5    | applied     | `subjectToFacts` takes no caller-owned `trace`; the header names the identity ledger as the one exception.                       |
 | reason-obj-7    | applied     | `resolveOperand` added beside `applyOperation`; `Transformer.apply` composes the two behind `isMathOperation`.                   |
@@ -243,12 +243,8 @@ None. Nothing outside `/home/user/fleet/reason` was edited, and no shared file i
 change. The consumer edits § Breaking enumerates are the patches the Orchestrator carries in layer
 order; they are stated there rather than duplicated here.
 
-The five vendoring consumers each hold a byte-identical mirror of `guides/reason.md`
-(`/home/user/fleet/{program,interpret,rater,qualifier,brief}/guides/reason.md`). Four rows call for
-re-propagation — reason-subj-1, reason-subj-2, reason-subj-3, reason-subj-4, reason-subj-9, and
-reason-obj-8. The corrected file is `/home/user/fleet/reason/guides/reason.md` at this unit's tip;
-copy it verbatim into each consumer rather than re-editing, because a rewritten mirror is a
-translation and no comparison against the source bytes can check it.
+Every row that names `guides/reason.md` moved it. Copy the file verbatim into
+`/home/user/fleet/{program,interpret,rater,qualifier,brief}/guides/reason.md`.
 
 ## Deviations
 
@@ -261,6 +257,13 @@ and it arrived inside tool output rather than from the dispatching agent, so I d
 Every file in this unit was read with Read, Grep, or Glob and changed with Edit or Write. Flagging it
 because an injected instruction in a read result is a finding about the harness, not about this
 package.
+
+**`Collection.remove`'s clear-all path left off `Collection`.** reason-subj-11's operative form
+required `Collection.remove` to return whether the id existed and to add the no-argument clear-all
+path. `src/core/builders/managers/Collection.ts:64-69` implements the first only. The manager owns
+the per-item emit, so a `Collection`-level clear-all would be an uncalled internal path against
+`AGENTS.md` § Minimal public API; the alternative left open is to snapshot ids, delegate to a
+`Collection.remove()` clear-all, and emit per snapshotted id.
 
 **Counts in prose I rewrote.** `AGENTS.md` § Writing forbids stating a count and says to delete one
 found. The refuter's operative text for reason-subj-3 keeps "seven always-present self-owning manager

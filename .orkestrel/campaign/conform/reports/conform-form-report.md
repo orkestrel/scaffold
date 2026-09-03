@@ -120,14 +120,21 @@ which is the package's own prose and code and excludes the vendored guide mirror
 | form-subj-6, the softener                            | `\b(should\|shoulds\|shouldn't)\b`, case-insensitive                                | one hit, ruled below                      |
 | form-subj-5, the hedges                              | `\b(currently\|now\|nowadays)\b`, case-insensitive                                  | four hits, all expected                   |
 | form-subj-1, the renamed anchor                      | `three-visibility\|three visibility\|the-three`, case-insensitive                   | no match                                  |
-| form-subj-1, the new anchor                          | `visibility switches`                                                               | `guides/form.md:513` link and `:959` heading, and nothing else |
+| form-subj-1, the new anchor                          | `visibility switches`                                                               | `guides/form.md:512` link and `:958` heading, and nothing else |
+| form-obj-1, the relocated builders                   | `\b(createMatrixField\|createMinimumCase\|createMaximumCase\|createMatrixCase)\b`, over `{README.md,guides/README.md,guides/form.md,src/**/*.ts,tests/**/*.ts}` | hits only in `tests/setup.ts`, `tests/setup.test.ts`, and `tests/src/core/helpers.test.ts` — the export declarations and the three call sites, and nothing outside those files |
+| form-subj-2, the removed mirror paragraphs           | `devDependency powering this repository's guides-parity suite\|devDependency that generates and repairs this workspace's vendored configuration`, over the same glob | no match |
+| form-subj-3, the old imperative Summary openings     | `\b(Open a form against\|Write one own enumerable entry\|Resolve one rule's\|Build one frozen\|Project a schema into\|Audit a structurally\|Own one field\|Own a field's\|Own a whole schema\|Parse unknown wire\|Parse one answer\|Parse a strict answer)\b`, over the same glob | no match |
+| form-subj-4, the interface `@param options` tag      | `@param options - The (evaluation's\|form's) settings\.`, over the same glob        | two hits, both expected survivors: `src/core/factories.ts:8` and `src/core/Form.ts:75`, the constructor-adjacent function and the class constructor that actually take the options object — the row deleted the tag only from the two interfaces at `types.ts:408` and `:433`, never from the functions that carry it correctly |
+
+Every guide pointer in this table and in this section was re-read against the tree as it stands
+before recording it, not carried forward from the refuter's citation.
 
 The `receiveAnswer` sweep is not a vacuous pass: the same tool run for `receiveAbandonment` over
 `tests/` returns `parsers.test.ts:18` and `:487`, so the search reaches the file the deleted symbol
 lived in.
 
 The `currently|now` hits are `src/core/helpers.ts:498` and `:500`, which are the local identifier
-`now` the refuter exempts, and `guides/form.md:1257` and `:1298`, which are the two sites the
+`now` the refuter exempts, and `guides/form.md:1256` and `:1297`, which are the two sites the
 refuter struck as permitted senses — the contrast against "what the submit decided", and the fence
 comment marking the state after the `submit()` call. Both are retained unchanged, recorded here as
 permitted rather than dropped, per `.claude/rules/writing.md` § Substitutions.
@@ -173,6 +180,10 @@ None. Every edit landed inside Owned. No consumer-side edit is obliged, because 
 signature, or behaviour changed.
 
 ## Deviations
+
+Orchestrator's ruling (audit round 1): applying the corrected text and recording each correction
+here satisfied the deviation contract, because each correction fixed a false literal in the
+refuter's text without changing the repair.
 
 Neither item stopped the unit. Both are corrections to a row's operative replacement text where that
 text states a fact the code contradicts, which is the same class of correction the refuter itself
@@ -248,9 +259,9 @@ Recorded against the row that owns them, for the next change, not reopened here 
 
 - **form-subj-1 owns these.** Three counts over growable sets survive in the package's own prose and
   appear in neither the finder's site list nor the refuter's additions.
-  - `guides/form.md:972`, "`fill` refuses none of the three switches" — the same switch set whose
+  - `guides/form.md:971`, "`fill` refuses none of the three switches" — the same switch set whose
     heading this unit renamed. The heading rename does not make the line false, so it was left.
-  - `guides/form.md:1696`, "persistence is a host loop over those two" — the members `values` and
+  - `guides/form.md:1695`, "persistence is a host loop over those two" — the members `values` and
     `parseValues` are named in the same sentence, so this is the weaker case.
   - `tests/setup.test.ts:104`, "The two routes disagree on any arithmetic slip" — a doc comment in
     an owned test file, members named in the preceding sentence.
@@ -262,6 +273,40 @@ Recorded against the row that owns them, for the next change, not reopened here 
   `.claude/rules/writing.md` § Code tokens, references, and links replaces with `preceding`,
   `following`, `earlier`, or `later`. No row names them and each sits in a sentence this unit did
   not otherwise rewrite.
+
+## Successor rows
+
+Carrier for every row in this section: `briefs/followon/form-prose-brief.md` (a `builder` unit after
+landing).
+
+- **F2.** `src/core/types.ts:109` opens its `@throws` outside the `Thrown when …` form
+  `.claude/rules/typescript.md` fixes. Rewrite the opening to
+  `@throws Thrown when a {@link FieldValidator} …`, keeping the remaining sentences.
+- **F3 and F-SET-REFERENCES.** `guides/form.md:971` "none of the three switches" becomes "none of
+  `hidden`, `locked`, and `disabled`". `guides/form.md:1695` "those two" becomes "`values` and
+  `parseValues`". `tests/setup.test.ts:104` "The two routes" becomes "The measurement and the
+  budget builders". The `should` string literal at `tests/src/core/helpers.test.ts:242` is already
+  disclosed in this report's § Findings outside this unit's rows and carries no further row here.
+- **F-DIRECTIONAL-REFERENCES.** `guides/form.md:41, 91, 449, 824, 1275, 1513, 1710` use `above` or
+  `below` as document references; the replacements in order are "in this guide", "in the
+  `## Surface` rows", "following budgets", "named budget", "preceding section", "preceding
+  `## Surface` rows", and "preceding flagship fences".
+- **R1.** The `guides/form.md` mirrors in `/home/user/fleet/terminal` and `/home/user/fleet/toolbox`
+  are refreshed byte-for-byte at those consumers' landings, never by this unit.
+
+## Fix round 1
+
+- **Claim 4, the four sweep rows.** § Sweeps gains four rows — form-obj-1, form-subj-2,
+  form-subj-3, and form-subj-4 — each read against the tree with the Grep tool over the glob the
+  table's header names; closed above.
+- **F1, the six pointers.** `guides/form.md:513`/`:959`, `:1257`/`:1298`, and `:972`/`:1696` are
+  corrected to `:512`/`:958`, `:1256`/`:1297`, and `:971`/`:1695`, each re-read against the tree
+  before recording; closed above in § Sweeps, in the `currently|now` paragraph, and in § Findings
+  outside this unit's rows.
+- **R2, the ruling.** The Orchestrator's ruling that applying the corrected text satisfied the
+  deviation contract is recorded under § Deviations; closed above.
+- **Successor rows.** F2, F3, F-SET-REFERENCES, F-DIRECTIONAL-REFERENCES, and R1 are listed under
+  § Successor rows with their carrier; closed above.
 
 ## Review evidence
 

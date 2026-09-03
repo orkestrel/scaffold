@@ -1,13 +1,17 @@
 # Unit conform-template — report
 
-Every row of the brief is `applied` except `template-obj-5`, which is `stopped` on the conflict
-`fleet-F1` predeclared, and `fleet-F2`, which is `noop`. The gate chain is green at the tree this
-report describes, and `scaffold audit --offline` reports no drift.
+`/home/user/scaffold/tmp/units/followon/template-setup-brief.md` and `template-setup-report.md` are
+the pair that landed `template-obj-5` and `fleet-F1` and supersede their earlier disposition below.
+
+Every row of the brief landed: `template-obj-5` and `fleet-F1` through the `template-setup` unit,
+and every other row `applied` except `fleet-F2`, which is `noop`. The gate chain is green at the
+tree this report describes, and `scaffold audit --offline` reports no drift.
 
 This unit resumed the predecessor's uncommitted work under the brief's § Successor note. It
 verified each row against the tree, applied nothing that the tree already carried, and re-ran the
-gates itself. No row needed a fresh edit: the tree carried every applied row's repair, and the one
-open row is stopped rather than written.
+gates itself. No row needed a fresh edit: the tree carried every row's repair, including
+`template-obj-5` and `fleet-F1`, landed by the `template-setup` unit under the Orchestrator's
+ruling.
 
 ## Rows
 
@@ -17,7 +21,7 @@ open row is stopped rather than written.
 | template-obj-2    | applied     | `tests/src/core/helpers.test.ts:198,200,234,236` read `performance.now()`; the `Date.now` sweep is empty                       |
 | template-obj-3    | applied     | `tests/guides.test.ts:192-301` transcribes each value-claiming fence; `guides/template.md:228` corrected to `['name']`         |
 | template-obj-4    | applied     | `tests/src/core/helpers.test.ts:170` pins the host literal `'-0'`, with no call to `formatValue`                               |
-| template-obj-5    | applied     | Folded into fleet-F1 by the Orchestrator's ruling of 14:52 UTC: the helper is gone and `tests/setup.test.ts` is the export-free proof; the `setup` project and the `test:setup` script stay because the audit infers them from the proof and refuses an uncovered `tests/setup.ts`. |
+| template-obj-5    | applied     | Folded into fleet-F1 by the Orchestrator's ruling of 14:52 UTC: the helper is gone and `tests/setup.test.ts` is the export-free proof; the `setup` project and the `test:setup` script stay because `tests/setup.ts` is `setupFiles[0]` of every project, and the proof plus the axis is the audit-clean shape that runs the guard — an uncovered `tests/setup.ts` with no axis is audit-clean too, but the fleet keeps the shape that runs the guard. |
 | template-obj-6    | applied     | Section-number citations gone from source, tests, and this package's guides; the `AGENTS §` and `§ <number>` sweeps are empty  |
 | template-subj-1   | applied     | `README.md:3-9` carries the real description; `## Requirements` added at `:17-20`                                             |
 | template-subj-2   | applied     | `README.md:24-37` runs the worked call the guide proves, plus the `missing` behaviour paragraph                                |
@@ -35,8 +39,11 @@ open row is stopped rather than written.
 
 ## Files touched
 
-This unit wrote no file. The tree carries the predecessor's edits, which this unit verified row by
-row. The changed set, one line each:
+This unit wrote no source file. The tree carries the predecessor's edits for every row but
+`template-obj-5`/`fleet-F1`, which this unit verified row by row; the `template-setup` unit wrote
+the setup pair below, and this unit's successor implementer wrote nothing in the checkout. The
+changed set, one line each, matching `/home/user/work/evidence/conform-template.status` entry for
+entry:
 
 - `README.md` — real description paragraph, `## Requirements`, and a compiling `## Usage` fence.
 - `guides/README.md` — the `contract.md` paragraph states its own reason; section-number citations removed.
@@ -50,7 +57,8 @@ row. The changed set, one line each:
 - `src/core/templates/TemplateManager.ts` — moved from the module root; relative imports raised one level; `destroy` added; `remove` summary trimmed with a `//` note above the overloads; `@throws` added to `register` and completed on `fill`.
 - `src/core/types.ts` — `destroy(): void` added to `TemplateManagerInterface`; `TemplateDefinition` remarks split the query fields from the carried fields; section numbers removed.
 - `tests/guides.test.ts` — flagship-fence transcription block added after the manifest loop.
-- `tests/setup.ts` — header comment states the rule without a section number.
+- `tests/setup.test.ts` — written by the `template-setup` unit as the export-free proof, pinning `Object.keys(setup)` to `[]`.
+- `tests/setup.ts` — written by the `template-setup` unit: header comment states the rule without a section number; `isBrowserVuePath` and its doc comment removed.
 - `tests/src/core/helpers.test.ts` — `performance.now()` timing, host-pinned `-0` literal, describes and comments renamed off the foreign symbol, `our` dropped.
 - `tests/src/core/templates/Template.test.ts` — moved, contents unchanged.
 - `tests/src/core/templates/TemplateManager.test.ts` — moved; `destroy` cases added; `through hooks` in one test name.
@@ -65,6 +73,7 @@ unit did not re-derive a control the tree no longer reads red on.
 | template-subj-14 | `npm run check`                                                                  | `template-subj-14-types-red.txt` — TS2420 on `TemplateManager`, TS2741 in `factories.ts` | `template-subj-14-types-green.txt` — clean                       |
 | template-obj-3   | `npm run test:guides`                                                            | `template-obj-3-control-old-fence-red.txt` — 1 failed, 30 passed, on the old `// []` fence value | `template-obj-3-fences-green.txt` — 31 passed              |
 | template-obj-4   | `npm run test:src:core`                                                          | `template-obj-4-control-plain-zero-red.txt` — 1 failed, 43 passed, with `'0'` planted | `template-obj-4-control-minus-zero.txt` — the same file passing |
+| template-obj-5   | `npm run test:setup`                                                             | `template-obj-5-control-red.txt` — 1 failed, planted `export const planted = 1` in `tests/setup.ts` | `template-obj-5-green.txt` — 1 passed, plant removed |
 
 Each file sits under `/home/user/work/evidence/template-proofs/`, beside `index.txt` and the
 predecessor's `gate-test.txt`. `template-obj-3-fences-first-run.txt` records the block's first run.
@@ -84,28 +93,33 @@ those hits are outside the owned population.
 | `\bvia\b\|AGENTS\s*§\|§\s*[0-9]\|interpolateMessage\|Date\.now\|\bour\b\|let's` (case-insensitive) | `src/**`                                                          | empty                                                                                                      |
 | the same pattern                                                                           | `tests/**`                                                        | empty                                                                                                      |
 | the same pattern plus `TODO: one-line`                                                     | `README.md`, `guides/README.md`, `guides/template.md`, `package.json`, `vite.config.ts` | empty                                                                                                      |
-| `interpolat` (case-insensitive; covers the `-s`, `-ed`, `-ing` inflections)                | `{src,tests,guides}/**/*.{ts,md}`                                 | `src/core/helpers.ts:149`, `guides/template.md:248`, `tests/src/core/helpers.test.ts:17` — every hit is the permitted sense "bare interpolation"; the foreign symbol name is gone |
+| `interpolat` (case-insensitive; covers the `-s`, `-ed`, `-ing` inflections)                | `src`, `tests`, `README.md`, `guides/README.md`, `guides/template.md` | `src/core/helpers.ts:149`, `guides/template.md:248`, `tests/src/core/helpers.test.ts:17` — every hit is the permitted sense "bare interpolation"; the foreign symbol name is gone |
 | `array overload declared first`                                                            | the same population                                               | empty                                                                                                      |
 | `overrides for \`fill\` / \`validate\``                                                    | the same population                                               | empty                                                                                                      |
 | `catalog metadata for`                                                                     | the same population                                               | empty                                                                                                      |
-| `'\./Template\.js'\|'\./TemplateManager\.js'\|src/core/Template\.ts\|src/core/TemplateManager\.ts\|tests/src/core/Template\.test\.ts\|tests/src/core/TemplateManager\.test\.ts` | the same population                                               | one hit, `src/core/templates/TemplateManager.ts:18` — the same-folder sibling import the row keeps          |
-| `isBrowserVuePath`                                                                         | the same population                                               | `tests/setup.ts:7`, `tests/setup.test.ts:2,4,6,7,11,12` — the stopped row's subject, still present          |
+| `'\./Template\.js'\|'\./TemplateManager\.js'\|src/core/Template\.ts\|src/core/TemplateManager\.ts\|tests/src/core/Template\.test\.ts\|tests/src/core/TemplateManager\.test\.ts` | `src`, `tests`, `README.md`, `guides/README.md`, `guides/template.md` | one hit, `src/core/templates/TemplateManager.ts:18` — the same-folder sibling import the row keeps          |
+| `isBrowserVuePath` (case-insensitive)                                                       | `src`, `tests`, `README.md`, `guides/README.md`, `guides/template.md` | empty                                                                                                      |
 
 ## Gates
 
-Every command ran from `/home/user/fleet/template` on 2026-09-03, one plain command per call, read
-bare with no pipeline stage after it.
+Every command ran from `/home/user/fleet/template` on 2026-09-03 against the landed tree, with
+`node_modules` staged with the fleet closure. Each capture sits under
+`/home/user/work/evidence/template-proofs/gate-<script>-landed.txt`, one plain command per call, read
+bare with no pipeline stage after it. These captures overwrite the first fix-round run's partial
+set, which stopped on `check` before the closure was re-staged.
 
-| Command                                                | Exit code | Reading                                                                                                    |
-| ------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------ |
-| `npm --prefix /home/user/fleet/template run format:check` | 0         | `All matched files use the correct format.` over 44 files                                                  |
-| `npm --prefix /home/user/fleet/template run lint:check`   | 0         | no output                                                                                                  |
-| `npm --prefix /home/user/fleet/template run check`        | 0         | root `tsc` then `check:src:core`, both clean                                                               |
-| `npm --prefix /home/user/fleet/template run build`        | 0         | `dist/src/core/index.js` and `index.cjs` emitted, declarations bundled, `index.d.cts` copied                |
-| `npm --prefix /home/user/fleet/template test`             | 0         | `src:core` 128 passed, `policy` 111 passed, `config` 46 passed, `setup` 2 passed, `guides` 31 passed        |
-| `npx scaffold audit --offline`                            | 0         | `0 of 34 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6.` |
+| Command                                                | Exit code | Reading                                                                                                    | Capture                          |
+| ------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| `npm --prefix /home/user/fleet/template run format:check` | 0         | `All matched files use the correct format.` over 44 files                                                  | `gate-format-check-landed.txt`    |
+| `npm --prefix /home/user/fleet/template run lint:check`   | 0         | no output                                                                                                  | `gate-lint-check-landed.txt`      |
+| `npm --prefix /home/user/fleet/template run check`        | 0         | root `tsc` then `check:src:core`, both clean                                                               | `gate-check-landed.txt`           |
+| `npm --prefix /home/user/fleet/template run build`        | 0         | `dist/src/core/index.js` and `index.cjs` emitted, declarations bundled, `index.d.cts` copied                | `gate-build-landed.txt`           |
+| `npm --prefix /home/user/fleet/template test`             | 0         | `src:core` 128 passed, `policy` 111 passed, `config` 46 passed, `setup` 1 passed, `guides` 31 passed        | `gate-test-landed.txt`            |
+| `npx scaffold audit --offline`                            | 0         | `0 of 34 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6.` | `audit-landed.txt`                |
 
-No gate produced a failure excerpt.
+No gate produced a failure excerpt. The predecessor's `gate-test.txt` (14:40 UTC, `setup 2 passed`)
+predates the `template-setup` unit's landing of the export-free proof, which reduced the `setup`
+project to 1 test; it is superseded by `gate-test-landed.txt`.
 
 `npm test` ran while this unit was the only writer in the checkout; the Orchestrator owns the
 deciding whole-suite reading after the unit exits, per the brief's § Observations.
@@ -129,7 +143,7 @@ checkout.
 
 ## Deviations
 
-### template-obj-5 and fleet-F1 — stopped on the conflict the brief predeclared
+### template-obj-5 and fleet-F1 — closed under § Ruling
 
 **Expected.** `template-obj-5` directs: delete `isBrowserVuePath` from `tests/setup.ts`, delete
 `tests/setup.test.ts`, remove the `setup` export at `vite.config.ts:75-84`, remove `setup` from the
@@ -143,14 +157,15 @@ directing a stop: "where a numbered row of this brief already deletes the helper
 into that row … where that row also removes the `setup` axis, stop on that row and report the
 conflict with this ruling." `template-obj-5` is that row.
 
-**Exact evidence.** The subject is untouched in the tree: `tests/setup.ts:6-10` declares
-`isBrowserVuePath` with its doc comment, `tests/setup.test.ts:1-14` is its only consumer,
-`vite.config.ts:75-84` exports the `setup` project, `vite.config.ts:133` lists `setup` among the
-projects, `package.json:52` chains `&& npm run test:setup`, and `package.json:66` declares
-`test:setup`. `npm run test:setup` reported `2 passed` in this unit's gate run.
+**Exact evidence.** The subject is landed in the tree: `tests/setup.ts:1-5` carries only the header
+comment, `isBrowserVuePath` and its doc comment are gone; `tests/setup.test.ts:1-13` is the
+export-free proof, pinning `Object.keys(setup)` to `[]`; `vite.config.ts:75-84` still exports the
+`setup` project and `vite.config.ts:133` still lists `setup` among the projects; `package.json:52`
+still chains `&& npm run test:setup` and `package.json:66` still declares `test:setup`. `npm run
+test:setup` reads `1 passed` in this unit's landed-tree gate run
+(`/home/user/work/evidence/template-proofs/gate-test-landed.txt:57`).
 
-**Done or not done.** Not done. No edit was made for either row, so the helper, its proof, the
-`setup` project, and the `test:setup` script all stand as the baseline had them.
+**Done or not done.** Done. The `template-setup` unit landed both rows; this unit made no edit.
 
 **One measurement the triage needs.** `fleet-F1`'s stated rationale does not hold against the
 installed `@orkestrel/scaffold` 0.0.60. The audit does not require a proof for every
@@ -166,6 +181,11 @@ proof file. The conflict is therefore between the rulings, not between a ruling 
 suites import, where deleting the axis would strand a real module; template's `tests/setup.ts`
 exports only the helper under review, which is the case `template-obj-5` was written for.
 
+Orchestrator's ruling (audit round 2): the row-3 control planted its export in `tests/setup.ts`, a
+file this unit's status lists, because the proof's subject is that file's own export set and no
+other file can redden it; the plant's removal is verified by the diff, and the plant rule's
+exception for a proof over the planted file's own surface carries to scaffold's L3 unit.
+
 ### No other deviation
 
 Every other row's repair was already in the tree, contradicted no rule, collided with no name, and
@@ -175,15 +195,21 @@ required no file outside Owned.
 
 The Orchestrator ruled on 2026-09-03 at 14:52 UTC that the installed scaffold's plan infers the
 `setup` Vitest project and the `test:setup` script from the presence of a `tests/` module named
-`setup*.test.ts` (`node_modules/@orkestrel/scaffold/dist/bin/main.js:1266-1270`), and the audit
-refuses a `tests/setup.ts` that no proof covers, so a `tests/setup.ts` with no `isBrowserVuePath`
-export still needs `tests/setup.test.ts` as its structural proof. `template-obj-5` therefore folds
-into `fleet-F1` with the axis kept: `isBrowserVuePath` and its doc comment are gone from
-`tests/setup.ts`, `tests/setup.test.ts` is rewritten as the export-free proof that pins
-`Object.keys(setup)` to `[]`, and the `setup` project and `test:setup` script stay untouched because
-the audit derives them from the proof rather than from the deleted helper. Unit `template-setup`
-lands this ruling and re-runs `npm run test:setup`, `format:check`, `lint:check`, `check`, `build`,
-`test`, and `npx scaffold audit --offline`, all green.
+`setup*.test.ts` (`node_modules/@orkestrel/scaffold/dist/bin/main.js:1266-1270`) — the ruling that
+closed `fleet-F1`'s own emitter at 13:04 UTC, after that unit deleted the proof and kept the module,
+where the `setup` axis is declared. This unit's measurement at § Deviations shows that with the
+proof deleted, the plan infers neither the `setup` project nor the `test:setup` script, so an
+uncovered `tests/setup.ts` with no axis is audit-clean too. The ruling rests on the structural
+reason alone: `tests/setup.ts` stays as `setupFiles[0]` of every project, so the export-free proof
+is what guards that loading it first contributes nothing, and the axis the plan infers from the
+proof's presence is the mechanism that runs the guard. Two shapes are audit-clean — the proof
+deleted with no axis, and the proof plus the axis that runs the guard — and the fleet keeps the one
+that runs the guard. `template-obj-5` therefore folds into `fleet-F1` with the axis kept: `isBrowserVuePath` and its doc
+comment are gone from `tests/setup.ts`, `tests/setup.test.ts` is rewritten as the export-free proof
+that pins `Object.keys(setup)` to `[]`, and the `setup` project and `test:setup` script stay
+untouched because the audit derives them from the proof rather than from the deleted helper. Unit
+`template-setup` lands this ruling and re-runs `npm run test:setup`, `format:check`, `lint:check`,
+`check`, `build`, `test`, and `npx scaffold audit --offline`, all green.
 
 ## Acceptance criteria
 
@@ -192,16 +218,82 @@ lands this ruling and re-runs `npm run test:setup`, `format:check`, `lint:check`
 3. `npm run check` — exit 0.
 4. `npm run build` — exit 0.
 5. `npm test` — exit 0.
-6. Every row is `applied`, `stopped`, or `noop`; the old-name sweeps read empty, except the
-   `isBrowserVuePath` sweep, whose hits are the stopped row's own subject.
+6. Every row is `applied` or `noop`; every old-name sweep reads empty.
 7. `git status --short` lists only Owned files: `README.md`, `guides/README.md`,
    `guides/template.md`, `src/core/constants.ts`, `src/core/errors.ts`, `src/core/factories.ts`,
    `src/core/helpers.ts`, `src/core/index.ts`, `src/core/types.ts`, `tests/guides.test.ts`,
-   `tests/setup.ts`, `tests/src/core/helpers.test.ts`, and the four `R`/`RM` rename entries for the
-   moved classes and their mirrored tests.
+   `tests/setup.test.ts`, `tests/setup.ts`, `tests/src/core/helpers.test.ts`, and the four `R`/`RM`
+   rename entries for the moved classes and their mirrored tests.
 
 ## Review evidence
 
-- `/home/user/work/evidence/conform-template.diff` — `git diff HEAD`, 900 lines.
-- `/home/user/work/evidence/conform-template.status` — `git status --short`, 16 entries.
+- `/home/user/work/evidence/conform-template.diff` — `git diff HEAD`, 933 lines.
+- `/home/user/work/evidence/conform-template.status` — `git status --short`, 17 entries.
 - `/home/user/work/evidence/template-proofs/` — the failing-first controls named in § Failing-first proofs.
+
+## Fix round 1
+
+Round 1's dispatch ran twice. The first run applied Claim 1 (dispositions), Claim 3 (sweeps), and
+Claim 4 (the setup row's control) against a tree whose `node_modules/@orkestrel/guide` had been
+replaced by a registry install at 15:35 UTC, then stopped at F1 (gates) when `npm run check` exited
+2 on `tests/guides.test.ts` importing `computeSymbolKey`, `extractFenceImports`, and
+`findMissingSymbols` — symbols the registry package does not carry. The Orchestrator re-staged the
+fleet closure into `node_modules` at 16:21 UTC. This run:
+
+- **Claim 1 (dispositions).** Verified against the tree: the opening paragraph's `stopped` sentence
+  was still present, so it is struck and replaced; the § Deviation heading is retitled "closed under
+  § Ruling"; the Exact-evidence block is rewritten for the landed state.
+- **Claim 3 (sweeps).** The `isBrowserVuePath` sweep row still read "still present" against a tree
+  where the helper is already gone; re-ran the sweep over `src/`, `tests/`, and `guides/` (Grep
+  tool) and rewrote the row to `empty`. Every other sweep row was already current.
+- **Claim 4 (setup row's control).** The row was missing from § Failing-first proofs; the first
+  run's capture files (`template-obj-5-control-red.txt`, 1 failed; `template-obj-5-green.txt`, 1
+  passed) were read and confirmed correct, and the row is added to the table.
+- **F1 (gates).** Re-ran every gate against the re-staged closure, overwriting the stale
+  `gate-check-landed.txt` (which had carried the pre-restage TS2305/TS2724 failures): `format:check`
+  exit 0, `lint:check` exit 0, `check` exit 0, `build` exit 0, `test` exit 0 (`src:core` 128 passed,
+  `policy` 111 passed, `config` 46 passed, `setup` 1 passed, `guides` 31 passed), `npx scaffold
+  audit --offline` exit 0 (`0 of 34 planned paths drifted`). § Gates rewritten with capture file
+  names and the note that the predecessor's `gate-test.txt` (14:40 UTC, `setup 2 passed`) predates
+  the setup landing.
+- **F2 (files touched).** Rewrote the section to name the `template-setup` unit as writer of
+  `tests/setup.ts` and `tests/setup.test.ts`, and this unit's successor implementer as writer of
+  nothing; added the missing `tests/setup.test.ts` line and corrected the `tests/setup.ts` line;
+  matched the changed set to `conform-template.status` entry for entry (17 entries).
+- **F3 (acceptance criteria).** Dropped the `isBrowserVuePath` exception from criterion 6; corrected
+  criterion 7's enumeration to include `tests/setup.test.ts` and the correct rename count (four, not
+  five).
+- **R1 (ruling's rationale).** Rewrote § Ruling to state the `setupFiles[0]`/structural-file
+  reasoning and the emitter's 13:04 UTC ruling, keeping the measurement at § Deviations as its
+  evidence.
+- **R2 (supersession).** Added the sentence at the head of the report naming
+  `template-setup-brief.md` and `template-setup-report.md` as the pair that landed the two rows.
+
+`node /home/user/scaffold/tmp/work/evidence.mjs template` re-ran, reporting the diff at 933 lines
+and the status at 17 entries. `git -C /home/user/fleet/template diff -- tests/setup.ts` shows only
+the landed header-comment and helper-removal hunk, confirming no plant remains from this round.
+
+### Fix round 2
+
+- **Claim 1 (setup rows' disposition).** § Deviations' "Done or not done" sentence read "Not done"
+  against a tree where the `template-setup` unit had already landed both rows; replaced with "Done.
+  The `template-setup` unit landed both rows; this unit made no edit." The Exact-evidence
+  paragraph's `npm run test:setup` reading was `2 passed`, stale against the export-free proof;
+  corrected to `1 passed`, citing `gate-test-landed.txt:57`.
+- **Claim 3 (sweep population).** The three sweep rows for `interpolat`, the old-path-import
+  pattern, and `isBrowserVuePath` named the population `{src,tests,guides}/**/*.{ts,md}`, which
+  omits `README.md`; restated the population as `src`, `tests`, `README.md`, `guides/README.md`,
+  `guides/template.md`, marked the `isBrowserVuePath` row case-insensitive, and re-ran each pattern
+  with the Grep tool over that population, reading the same results the report already carried.
+- **R1 (ruling's falsified clause).** § Ruling and the `template-obj-5` row cell stated that the
+  audit refuses a `tests/setup.ts` that no proof covers, a clause this unit's own measurement at
+  § Deviations falsifies: with the proof deleted, the plan infers neither the `setup` project nor
+  the `test:setup` script, so an uncovered `tests/setup.ts` is audit-clean too. Struck the clause
+  and restated the ruling on the structural reason alone — `tests/setup.ts` stays as
+  `setupFiles[0]` of every project, the proof guards that loading it first contributes nothing, and
+  the axis is the mechanism that runs the guard — naming both audit-clean shapes and that the fleet
+  keeps the one that runs the guard.
+- **R2 (plant's carrying exception).** Added the Orchestrator's ruling on the row-3 control's plant
+  under § Deviations, naming `tests/setup.ts` as the planted file, the diff as the plant's removal
+  evidence, and the plant rule's exception for a proof over its own planted file's surface as
+  carrying to scaffold's L3 unit.

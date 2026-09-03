@@ -1,0 +1,17 @@
+ M README.md
+ M guides/README.md
+ M guides/template.md
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/index.ts
+RM src/core/Template.ts -> src/core/templates/Template.ts
+RM src/core/TemplateManager.ts -> src/core/templates/TemplateManager.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/src/core/helpers.test.ts
+R  tests/src/core/Template.test.ts -> tests/src/core/templates/Template.test.ts
+RM tests/src/core/TemplateManager.test.ts -> tests/src/core/templates/TemplateManager.test.ts

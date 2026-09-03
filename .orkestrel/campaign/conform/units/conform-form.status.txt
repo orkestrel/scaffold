@@ -1,0 +1,11 @@
+ M README.md
+ M guides/README.md
+ M guides/form.md
+ M src/core/Form.ts
+ M src/core/errors.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/parsers.test.ts

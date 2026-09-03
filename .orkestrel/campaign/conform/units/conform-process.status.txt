@@ -1,0 +1,18 @@
+M  README.md
+M  guides/process.md
+M  src/core/types.ts
+M  src/server/factories.ts
+M  src/server/index.ts
+R  src/server/Process.ts -> src/server/processes/Process.ts
+R  src/server/ProcessManager.ts -> src/server/processes/ProcessManager.ts
+R  src/server/Session.ts -> src/server/processes/Session.ts
+R  src/server/Supervisor.ts -> src/server/processes/Supervisor.ts
+M  src/server/types.ts
+M  tests/guides.test.ts
+M  tests/setupServer.ts
+A  tests/src/server/factories.test.ts
+M  tests/src/server/helpers.test.ts
+R  tests/src/server/Process.test.ts -> tests/src/server/processes/Process.test.ts
+R  tests/src/server/ProcessManager.test.ts -> tests/src/server/processes/ProcessManager.test.ts
+R  tests/src/server/Session.test.ts -> tests/src/server/processes/Session.test.ts
+A  tests/src/server/processes/Supervisor.test.ts

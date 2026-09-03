@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# PATH shim for a bench lane: logs every npm invocation (time, pid, parent, cwd, argv) and refuses a
+# dependency-writing subcommand inside a fleet or scaffold checkout, so a lane cannot replace a staged
+# closure. Everything else passes through to the real npm.
+LOG=/home/user/scaffold/tmp/cursor/npm-shim.log
+printf '%s pid=%s ppid=%s cwd=%s npm %s\n' "$(date -u +%H:%M:%S)" "$$" "$PPID" "$PWD" "$*" >> "$LOG"
+case "$PWD" in
+	/home/user/fleet/*|/home/user/scaffold|/home/user/scaffold/*)
+		case "${1:-}" in
+			install|i|in|ins|inst|insta|instal|isnt|isnta|isntal|isntall|add|ci|clean-install|install-clean|isntall-clean|update|up|upgrade|udpate|uninstall|unlink|remove|rm|r|un|dedupe|ddp|prune|link|ln|rebuild|rb|install-test|it|install-ci-test|cit)
+				printf '%s REFUSED pid=%s cwd=%s npm %s\n' "$(date -u +%H:%M:%S)" "$$" "$PWD" "$*" >> "$LOG"
+				echo "npm-shim: refused 'npm $1' in $PWD (a bench lane never rewrites node_modules)" >&2
+				exit 97
+				;;
+		esac
+		;;
+esac
+exec /opt/node22/bin/npm "$@"
