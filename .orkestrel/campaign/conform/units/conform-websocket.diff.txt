@@ -1,0 +1,2433 @@
+diff --git a/README.md b/README.md
+index 3099499..87bc7b3 100644
+--- a/README.md
++++ b/README.md
+@@ -13,7 +13,7 @@ npm install @orkestrel/websocket
+ 
+ ## Requirements
+ 
+-- Node.js >= 24
++- Node.js >= 22.12.0
+ - Ships dual ESM + CommonJS builds (see `exports` in `package.json`)
+ - Server-only — a single Node-native surface
+ 
+@@ -27,9 +27,14 @@ import { createNodeWebSocket } from '@orkestrel/websocket'
+ // from there. Passing the client's `sec-websocket-key` selects SERVER mode — the
+ // wrapper writes the 101 handshake, marks the connection open, and decodes frames.
+ createServer().on('upgrade', (request, socket, head) => {
++	const key = request.headers['sec-websocket-key']
++	if (typeof key !== 'string') {
++		socket.destroy()
++		return
++	}
+ 	const ws = createNodeWebSocket({
+ 		socket,
+-		key: request.headers['sec-websocket-key'], // present => server mode + 101 handshake
++		key, // present => server mode + 101 handshake
+ 		head, // any bytes that arrived bundled with the upgrade request
+ 		on: { message: (text) => ws.send(`echo: ${text}`) }, // wire listeners at construction
+ 	})
+diff --git a/guides/README.md b/guides/README.md
+index fc79b83..7517401 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -1,7 +1,7 @@
+ # Guides
+ 
+ A dual-axis index into this repository's guides — by concept, and by
+-directory (AGENTS §22).
++directory.
+ 
+ ## By concept
+ 
+@@ -33,4 +33,4 @@ the primitives it is built from without leaving this guide set.
+ 
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the rules, including the documentation parity contract.
+diff --git a/guides/websocket.md b/guides/websocket.md
+index 37d423f..4938c42 100644
+--- a/guides/websocket.md
++++ b/guides/websocket.md
+@@ -1,6 +1,6 @@
+ # WebSocket
+ 
+-> The server-native bidirectional transport: a lean, typed wrapper over a raw upgraded [`node:stream`](https://nodejs.org/api/stream.html) Duplex socket that speaks **only** the [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) WebSocket wire protocol — zero npm dependencies (`node:crypto` for the one handshake hash, nothing else). Once an HTTP server hands you an upgraded socket, this wrapper turns that raw byte stream into a typed, observable connection: it owns the upgrade handshake, the masked/unmasked frame codec, ping/pong, and the close handshake, and surfaces messages through a §13 `emitter`.
++> The server-native bidirectional transport: a lean, typed wrapper over a raw upgraded [`node:stream`](https://nodejs.org/api/stream.html) Duplex socket that speaks **only** the [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455) WebSocket wire protocol — zero npm dependencies (`node:crypto` for the one handshake hash, nothing else). After an HTTP server hands you an upgraded socket, this wrapper turns that raw byte stream into a typed, observable connection: it owns the upgrade handshake, the masked/unmasked frame codec, ping/pong, and the close handshake, and surfaces messages through an owned `emitter`.
+ >
+ > What it deliberately is **not**: it has no knowledge of MCP, JSON-RPC, reconnection, heartbeats, or any message schema. Those belong to a _message_ transport built one layer up — this is only the wire. Its codec and boundary guards are pure exported functions, pinned against RFC 6455's worked byte vectors and malformed-input cases; the [`NodeWebSocket`](#nodewebsocketinterface) class is the thin stateful driver that runs them over a socket. Keeping the codec pure and the wrapper minimal is the same lean-native-wrapper discipline: a small typed surface over native power, the hard parts exported as testable units. Source: [`src/server`](../src/server). Surfaced through the `@src/server` barrel.
+ 
+@@ -14,11 +14,16 @@ import { createNodeWebSocket } from '@orkestrel/websocket'
+ // from there. Passing the client's `sec-websocket-key` selects SERVER mode — the
+ // wrapper writes the 101 handshake, marks the connection open, and decodes frames.
+ createServer().on('upgrade', (request, socket, head) => {
++	const key = request.headers['sec-websocket-key']
++	if (typeof key !== 'string') {
++		socket.destroy()
++		return
++	}
+ 	const ws = createNodeWebSocket({
+ 		socket,
+-		key: request.headers['sec-websocket-key'], // present => server mode + 101 handshake
++		key, // present => server mode + 101 handshake
+ 		head, // any bytes that arrived bundled with the upgrade request
+-		on: { message: (text) => ws.send(`echo: ${text}`) }, // wire listeners at construction (§8)
++		on: { message: (text) => ws.send(`echo: ${text}`) }, // wire listeners at construction
+ 	})
+ 
+ 	ws.emitter.on('close', (code, reason) => console.log('closed', code, reason))
+@@ -27,17 +32,19 @@ createServer().on('upgrade', (request, socket, head) => {
+ 
+ `send` writes a UTF-8 text frame (unmasked, because this is the server); the peer's reply arrives back as a `message`. Everything is driven off the one `emitter` — there are no callbacks to register beyond it.
+ 
++Narrow the header before the call. `sec-websocket-key` is typed `string | undefined`, and omitting `key` is what selects CLIENT mode: the wrapper writes no 101 handshake and masks its frames, so a browser waiting for the handshake sees a connection that never opens. The guard turns a missing header into a refused socket instead.
++
+ ### Factories
+ 
+-| API                   | Kind     | Summary                                                                                                                          |
+-| --------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+-| `createNodeWebSocket` | function | Create a server-native WebSocket over a raw upgraded `node:stream` Duplex (server mode when a `key` is given, else client mode). |
++| API                   | Kind     | Summary                                                                                                                   |
++| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
++| `createNodeWebSocket` | function | A server-native WebSocket over a raw upgraded `node:stream` Duplex — server mode when a `key` is given, else client mode. |
+ 
+ ### Entities
+ 
+-| API             | Kind  | Summary                                                                                                                |
+-| --------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+-| `NodeWebSocket` | class | The WebSocket — the handshake, frame dispatch (text + continuation reassembly), auto-pong, close, and a §13 `emitter`. |
++| API             | Kind  | Summary                                                                                                                   |
++| --------------- | ----- | ------------------------------------------------------------------------------------------------------------------------- |
++| `NodeWebSocket` | class | The WebSocket — the handshake, frame dispatch (text + continuation reassembly), auto-pong, close, and an owned `emitter`. |
+ 
+ ### Errors
+ 
+@@ -48,44 +55,44 @@ createServer().on('upgrade', (request, socket, head) => {
+ 
+ ### Codec helpers
+ 
+-| API                       | Kind     | Summary                                                                                                                                     |
+-| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `computeWebSocketAccept`  | function | Derive the `Sec-WebSocket-Accept` token (base64 SHA-1 of the key + `WEBSOCKET_GUID`).                                                       |
+-| `isWebSocketKey`          | function | Whether a value is the canonical base64 encoding of a 16-byte `Sec-WebSocket-Key`.                                                          |
+-| `isWebSocketProtocol`     | function | Whether a value is one valid HTTP-token WebSocket subprotocol (no separators or header injection).                                          |
+-| `parseWebSocketFrame`     | function | Decode one frame off a buffer; `undefined` when the buffer is incomplete (so the caller accumulates).                                       |
+-| `measureWebSocketFrame`   | function | Read a frame's declared payload length off the buffer without buffering the payload; `undefined` until the length field itself is complete. |
+-| `parseWebSocketCanonical` | function | Read whether the next frame uses the shortest valid length encoding; `undefined` until its length prefix is complete.                       |
+-| `parseUTF8`               | function | Decode bytes as strict UTF-8; `undefined` when the sequence is malformed.                                                                   |
+-| `isCloseCode`             | function | Whether a numeric value is a valid RFC 6455 close status code to receive (extended with the IANA-registered `1012`–`1014` interop codes).   |
+-| `encodeWebSocketFrame`    | function | Encode one frame to wire bytes (the inverse of `parseWebSocketFrame`); unmasked by default, optionally masked.                              |
++| API                         | Kind     | Summary                                                                                                                                   |
++| --------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
++| `computeWebSocketAccept`    | function | The `Sec-WebSocket-Accept` token, the base64 SHA-1 of the key plus `WEBSOCKET_GUID`.                                                      |
++| `isWebSocketKey`            | function | Whether a value is the canonical base64 encoding of a 16-byte `Sec-WebSocket-Key`.                                                        |
++| `isWebSocketProtocol`       | function | Whether a value is one valid HTTP-token WebSocket subprotocol (no separators or header injection).                                        |
++| `parseWebSocketFrame`       | function | One frame decoded off a buffer; `undefined` when the buffer is incomplete, so the caller accumulates.                                     |
++| `measureWebSocketFrame`     | function | A frame's declared payload length off the buffer without buffering the payload; `undefined` until the length field itself is complete.    |
++| `matchesWebSocketCanonical` | function | Whether the next frame uses the shortest valid length encoding; `undefined` until its length prefix is complete.                          |
++| `parseUTF8`                 | function | The bytes decoded as strict UTF-8; `undefined` when the sequence is malformed.                                                            |
++| `isCloseCode`               | function | Whether a numeric value is a valid RFC 6455 close status code to receive (extended with the IANA-registered `1012`–`1014` interop codes). |
++| `encodeWebSocketFrame`      | function | One frame as wire bytes, the inverse of `parseWebSocketFrame`; unmasked by default, optionally masked.                                    |
+ 
+ ### Constants
+ 
+-| API                             | Kind  | Summary                                                                                               |
+-| ------------------------------- | ----- | ----------------------------------------------------------------------------------------------------- |
+-| `WEBSOCKET_GUID`                | const | The RFC 6455 §1.3 accept GUID concatenated to the key before the hash.                                |
+-| `WEBSOCKET_VERSION`             | const | The supported protocol version (`'13'`).                                                              |
+-| `WEBSOCKET_OPCODE_TEXT`         | const | Text frame opcode (`0x01`).                                                                           |
+-| `WEBSOCKET_OPCODE_BINARY`       | const | Binary frame opcode (`0x02`).                                                                         |
+-| `WEBSOCKET_OPCODE_CONTINUATION` | const | Continuation frame opcode (`0x00`).                                                                   |
+-| `WEBSOCKET_OPCODE_CLOSE`        | const | Close frame opcode (`0x08`).                                                                          |
+-| `WEBSOCKET_OPCODE_PING`         | const | Ping frame opcode (`0x09`).                                                                           |
+-| `WEBSOCKET_OPCODE_PONG`         | const | Pong frame opcode (`0x0a`).                                                                           |
+-| `WEBSOCKET_READY_CONNECTING`    | const | Ready state `0` (connecting).                                                                         |
+-| `WEBSOCKET_READY_OPEN`          | const | Ready state `1` (open).                                                                               |
+-| `WEBSOCKET_READY_CLOSING`       | const | Ready state `2` (closing).                                                                            |
+-| `WEBSOCKET_READY_CLOSED`        | const | Ready state `3` (closed).                                                                             |
+-| `WEBSOCKET_CLOSE_NORMAL`        | const | The normal-closure status code (`1000`) — the default `close` code.                                   |
+-| `WEBSOCKET_CLOSE_PROTOCOL`      | const | Protocol-error status code (`1002`) — a framing/state rule was violated.                              |
+-| `WEBSOCKET_CLOSE_UNSUPPORTED`   | const | Unsupported-data status code (`1003`) — the endpoint received a data type it cannot accept.           |
+-| `WEBSOCKET_CLOSE_INVALID`       | const | Invalid-frame-payload-data status code (`1007`) — e.g. non-UTF-8 text or an unparseable close reason. |
+-| `WEBSOCKET_CLOSE_TOOBIG`        | const | Message-too-big status code (`1009`) — a reassembled message exceeded the payload cap.                |
+-| `WEBSOCKET_MAX_PAYLOAD`         | const | The default maximum inbound single-frame length AND reassembled-message total byte count (100 MiB).   |
+-| `WEBSOCKET_CLOSE_TIMEOUT_MS`    | const | The default close-handshake timeout in milliseconds — how long `close()` waits for the peer's echo.   |
+-| `WEBSOCKET_CONTROL_MAXLEN`      | const | The maximum control-frame payload length in bytes (RFC 6455 §5.5).                                    |
+-| `WEBSOCKET_CLOSE_REASON_MAXLEN` | const | The maximum UTF-8 close-reason length after its two-byte status code (`123`).                         |
+-| `WEBSOCKET_FAIL_TIMEOUT_MS`     | const | The post-`#fail` flush grace in milliseconds before the hard-teardown fallback destroys the socket.   |
++| API                                 | Kind  | Summary                                                                                                      |
++| ----------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------ |
++| `WEBSOCKET_GUID`                    | const | The RFC 6455 §1.3 accept GUID concatenated to the key before the hash.                                       |
++| `WEBSOCKET_VERSION`                 | const | The supported protocol version (`'13'`).                                                                     |
++| `WEBSOCKET_OPCODE_TEXT`             | const | Text frame opcode (`0x01`).                                                                                  |
++| `WEBSOCKET_OPCODE_BINARY`           | const | Binary frame opcode (`0x02`).                                                                                |
++| `WEBSOCKET_OPCODE_CONTINUATION`     | const | Continuation frame opcode (`0x00`).                                                                          |
++| `WEBSOCKET_OPCODE_CLOSE`            | const | Close frame opcode (`0x08`).                                                                                 |
++| `WEBSOCKET_OPCODE_PING`             | const | Ping frame opcode (`0x09`).                                                                                  |
++| `WEBSOCKET_OPCODE_PONG`             | const | Pong frame opcode (`0x0a`).                                                                                  |
++| `WEBSOCKET_READY_CONNECTING`        | const | Ready state `0` (connecting).                                                                                |
++| `WEBSOCKET_READY_OPEN`              | const | Ready state `1` (open).                                                                                      |
++| `WEBSOCKET_READY_CLOSING`           | const | Ready state `2` (closing).                                                                                   |
++| `WEBSOCKET_READY_CLOSED`            | const | Ready state `3` (closed).                                                                                    |
++| `WEBSOCKET_CLOSE_NORMAL`            | const | The normal-closure status code (`1000`) — the default `close` code.                                          |
++| `WEBSOCKET_CLOSE_PROTOCOL`          | const | Protocol-error status code (`1002`) — a framing/state rule was violated.                                     |
++| `WEBSOCKET_CLOSE_UNSUPPORTED`       | const | Unsupported-data status code (`1003`) — the endpoint received a data type it cannot accept.                  |
++| `WEBSOCKET_CLOSE_INVALID`           | const | Invalid-frame-payload-data status code (`1007`) — for example non-UTF-8 text or an unparseable close reason. |
++| `WEBSOCKET_CLOSE_TOO_BIG`           | const | Message-too-big status code (`1009`) — a reassembled message exceeded the payload cap.                       |
++| `WEBSOCKET_MAX_PAYLOAD`             | const | The default maximum inbound single-frame length AND reassembled-message total byte count (100 MiB).          |
++| `WEBSOCKET_CLOSE_TIMEOUT_MS`        | const | The default close-handshake timeout in milliseconds — how long `close()` waits for the peer's echo.          |
++| `WEBSOCKET_CONTROL_MAX_LENGTH`      | const | The maximum control-frame payload length in bytes (RFC 6455 §5.5).                                           |
++| `WEBSOCKET_CLOSE_REASON_MAX_LENGTH` | const | The maximum UTF-8 close-reason length after its two-byte status code (`123`).                                |
++| `WEBSOCKET_FAIL_TIMEOUT_MS`         | const | The post-`#fail` flush grace in milliseconds before the hard-teardown fallback destroys the socket.          |
+ 
+ ### Types
+ 
+@@ -97,46 +104,46 @@ createServer().on('upgrade', (request, socket, head) => {
+ | `WebSocketErrorCode`     | type      | The subject a `WebSocketError` names as refused — `OPTION` / `LIMIT` / `CLOSE` / `FRAME`.                                       |
+ | `NodeWebSocketEventMap`  | type      | The event map — `open` / `message` / `close` / `error` / `ping` / `pong`.                                                       |
+ | `NodeWebSocketOptions`   | interface | Options for `createNodeWebSocket` (`socket` / `key` / `head` / `protocol` / `on` / `error` / `payload` / `timeout` / `signal`). |
+-| `NodeWebSocketInterface` | interface | The wrapper contract.                                                                                                           |
++| `NodeWebSocketInterface` | interface | The wrapper contract — the `emitter` and `readyState` data members plus `send` / `ping` / `close` / `destroy`.                  |
+ 
+-Frame payloads are raw `Buffer`s off the wire; a text frame decodes to a `string` at the boundary, and the untyped socket `data` chunk is narrowed to a `Buffer` with a guard, never an assertion (AGENTS §14).
++Frame payloads are raw `Buffer`s off the wire; a text frame decodes to a `string` at the boundary, and the untyped socket `data` chunk is narrowed to a `Buffer` with a guard, never an assertion.
+ 
+ ## Methods
+ 
+-The public methods of the behavioral interface — its `readonly` data members (`emitter` / `readyState`) stay in the Surface rows above. `NodeWebSocket` implements `NodeWebSocketInterface` exactly, so this doubles as the per-instance method surface (AGENTS §22).
++The public methods of the behavioral interface — its `readonly` data members `emitter` and `readyState` stay in the preceding Surface row. `NodeWebSocket` implements `NodeWebSocketInterface` exactly, so this doubles as the per-instance method surface.
+ 
+ #### `NodeWebSocketInterface`
+ 
+-| Method    | Returns | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+-| --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `send`    | `void`  | Frame `data` as a UTF-8 text frame and write it (masked in client mode, unmasked in server mode). No-op unless `readyState` is open.                                                                                                                                                                                                                                                                                                                                             |
+-| `ping`    | `void`  | Write a ping frame with an optional payload; the peer is expected to answer with a pong (surfaced as `pong`). No-op unless open; throws a `LIMIT`-coded `WebSocketError` when the UTF-8 payload exceeds `WEBSOCKET_CONTROL_MAXLEN`.                                                                                                                                                                                                                                              |
+-| `close`   | `void`  | Start the closing handshake: move to `closing`, write a close frame (the 2-byte big-endian `code` — default `WEBSOCKET_CLOSE_NORMAL` — plus optional `reason`), and end the writable side. An invalid or fractional code throws a `CLOSE`-coded `WebSocketError` and a reason over `WEBSOCKET_CLOSE_REASON_MAXLEN` a `LIMIT`-coded one, in each case without changing state. The final `close` event fires once the peer echoes or the socket ends. A second `close` is a no-op. |
+-| `destroy` | `void`  | Abort immediately: detach the wrapper's domain socket listeners, destroy the socket, emit a final `close`, and tear the emitter down. Idempotent — a hard stop, not a handshake.                                                                                                                                                                                                                                                                                                 |
++| Method    | Returns | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
++| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `send`    | `void`  | Frame `message` as a UTF-8 text frame and write it (masked in client mode, unmasked in server mode). No-op unless `readyState` is open.                                                                                                                                                                                                                                                                                                                                               |
++| `ping`    | `void`  | Write a ping frame with an optional payload; the peer is expected to answer with a pong (surfaced as `pong`). No-op unless open; throws a `LIMIT`-coded `WebSocketError` when the UTF-8 payload exceeds `WEBSOCKET_CONTROL_MAX_LENGTH`.                                                                                                                                                                                                                                               |
++| `close`   | `void`  | Start the closing handshake: move to `closing`, write a close frame (the 2-byte big-endian `code` — default `WEBSOCKET_CLOSE_NORMAL` — plus optional `reason`), and end the writable side. An invalid or fractional code throws a `CLOSE`-coded `WebSocketError` and a reason over `WEBSOCKET_CLOSE_REASON_MAX_LENGTH` a `LIMIT`-coded one, in each case without changing state. The final `close` event fires after the peer echoes or the socket ends. A second `close` is a no-op. |
++| `destroy` | `void`  | Abort immediately: detach the wrapper's domain socket listeners, destroy the socket, emit a final `close`, and tear the emitter down. Idempotent — a hard stop, not a handshake.                                                                                                                                                                                                                                                                                                      |
+ 
+ ## Contract
+ 
+ These invariants hold across `src/server` ↔ `websocket.md`:
+ 
+-1. **DOC ↔ SOURCE bijection.** Every row in the `## Surface` tables is a real export of the module, and every export appears as a Surface row — exhaustive, both directions (AGENTS §22).
+-2. **Wire-only, schema-agnostic.** The wrapper speaks the RFC 6455 frame protocol and nothing else — no MCP, no JSON-RPC, no message schema. A higher transport is built _on_ it (the same minimal-interface discipline, AGENTS §21).
++1. **DOC ↔ SOURCE bijection.** Every row in the `## Surface` tables is a real export of the module, and every export appears as a Surface row — exhaustive, both directions.
++2. **Wire-only, schema-agnostic.** The wrapper speaks the RFC 6455 frame protocol and nothing else — no MCP, no JSON-RPC, no message schema. A higher transport is built _on_ it, keeping this interface minimal.
+ 3. **The codec and boundary guards are pure and exhaustively pinned.** The helpers are tested against RFC 6455's worked vectors, malformed handshake values, non-canonical length encodings, truncation at every byte, and seeded round trips. `parseWebSocketFrame` returns `undefined` on an **incomplete** buffer (the caller accumulates across `data` chunks); `encode` and `parse` are exact inverses for valid frames.
+ 4. **Server vs. client is the single `key` decision.** A canonical 16-byte-base64 `key` (the client's `Sec-WebSocket-Key`) selects SERVER mode: the wrapper writes the `101 Switching Protocols` handshake with `Sec-WebSocket-Accept: computeWebSocketAccept(key)` and sends **unmasked** frames. No `key` is CLIENT mode: no handshake is written and every outgoing frame is **masked** — RFC 6455 §5.3 mandates client→server masking. A negotiated `protocol` is accepted only in server mode and must pass `isWebSocketProtocol`; a malformed constructor option throws an `OPTION`-coded `WebSocketError` before the wrapper writes to or assumes ownership of the socket.
+ 5. **One accumulation buffer, drained frame by frame.** Incoming `data` chunks append to a buffer that is decoded with `parseWebSocketFrame` in a loop, slicing each frame's `consumed` bytes off the front and re-parsing until a partial frame remains. Every iteration independently checks canonical encoding and the declared payload cap, including the second and later frames in one chunk. Dispatch by opcode: a data frame (text, binary, or `WEBSOCKET_OPCODE_CONTINUATION`) buffers its fragments and emits one `message` (decoded UTF-8) at `fin`; a ping emits `ping` and is **auto-answered with a pong**; a pong emits `pong`; a close is echoed back (RFC 6455 §5.5.1), ends the socket, and emits the final `close`.
+-6. **Observable, and a faulty listener can never sink the socket (§13).** The wrapper exposes a typed `emitter`; listener isolation is the emitter's job. Two error channels stay distinct: an underlying socket fault emits the map's domain `error` event and terminates the wrapper, whereas a listener that _throws_ is caught by the emitter and routed to its own `error` handler (the `error` constructor option), never re-entered as a domain event. Every terminal path detaches only the wrapper's domain `data` / `close` / `error` listeners and leaves one durable no-op socket `error` sink, so a late peer RST cannot become an uncaught Node exception; caller-owned listeners remain untouched.
+-7. **A malformed or over-limit peer fails the connection, never the process.** `parseWebSocketCanonical` rejects non-minimal extended lengths and a set 64-bit high bit with `WEBSOCKET_CLOSE_PROTOCOL`; `measureWebSocketFrame` rejects each frame whose declared length exceeds `payload` (default `WEBSOCKET_MAX_PAYLOAD`) before its bytes are buffered, and the same cap applies to a reassembled fragmented message's total size — either cap breach closes `WEBSOCKET_CLOSE_TOOBIG`. A text payload that fails `parseUTF8` closes `WEBSOCKET_CLOSE_INVALID`; a received close code that fails `isCloseCode` closes `WEBSOCKET_CLOSE_PROTOCOL`; a fragmented or oversized control frame, nonzero `rsv`, reserved opcode, or wrong mask direction also closes `WEBSOCKET_CLOSE_PROTOCOL`. `close()` uses a configurable timeout so a silent peer cannot leak the handle open. Validation failures flush their close frame before the hard-teardown fallback destroys the socket.
+-8. **An `AbortSignal` is an external cancellation seam.** `signal` (composing with `@orkestrel/abort` / `@orkestrel/timeout`'s native `AbortSignal`s) tears the socket down via `destroy()` on abort — immediately after construction if already aborted, otherwise on the signal's `abort` event. The listener is removed on every terminal path (`#finish` and `destroy`) so a long-lived, shared signal never accumulates listeners from closed sockets.
++6. **Observable, and a faulty listener can never sink the socket.** The wrapper exposes a typed `emitter` it owns by composition; listener isolation is the emitter's job. Two error channels stay distinct: an underlying socket fault emits the map's domain `error` event and terminates the wrapper, whereas a listener that _throws_ is caught by the emitter and routed to its own `error` handler (the `error` constructor option), never re-entered as a domain event. Every terminal path detaches only the wrapper's domain `data` / `close` / `error` listeners and leaves one durable no-op socket `error` sink, so a late peer RST cannot become an uncaught Node exception; caller-owned listeners remain untouched.
++7. **A malformed or over-limit peer fails the connection, never the process.** `matchesWebSocketCanonical` rejects non-minimal extended lengths and a set 64-bit high bit with `WEBSOCKET_CLOSE_PROTOCOL`; `measureWebSocketFrame` rejects each frame whose declared length exceeds `payload` (default `WEBSOCKET_MAX_PAYLOAD`) before its bytes are buffered, and the same cap applies to a reassembled fragmented message's total size — either cap breach closes `WEBSOCKET_CLOSE_TOO_BIG`. A text payload that fails `parseUTF8` closes `WEBSOCKET_CLOSE_INVALID`; a received close code that fails `isCloseCode` closes `WEBSOCKET_CLOSE_PROTOCOL`; a fragmented or oversized control frame, nonzero `rsv`, reserved opcode, or wrong mask direction also closes `WEBSOCKET_CLOSE_PROTOCOL`. `close()` uses a configurable timeout so a silent peer cannot leak the handle open. Validation failures flush their close frame before the hard-teardown fallback destroys the socket.
++8. **An `AbortSignal` is an external cancellation seam.** `signal` (composing with `@orkestrel/abort` / `@orkestrel/timeout`'s native `AbortSignal`s) tears the socket down through `destroy()` on abort — immediately after construction if already aborted, otherwise on the signal's `abort` event. The listener is removed on every terminal path (`#finish` and `destroy`) so a long-lived, shared signal never accumulates listeners from closed sockets.
+ 
+ ## Errors
+ 
+ `WebSocketError` is the one failure type, carrying a stable machine-readable `code`. Narrow a caught value with `isWebSocketError`, then branch on `code`.
+ 
+-| Code     | Raised when                                                                                                                                                              |
+-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `OPTION` | `createNodeWebSocket` refused a `NodeWebSocketOptions` member: `payload`, `timeout`, `key`, `protocol`, or a `protocol` given without a server `key`.                    |
+-| `LIMIT`  | An outbound control-frame payload exceeded its RFC 6455 §5.5 cap: `ping` data past `WEBSOCKET_CONTROL_MAXLEN`, or a `close` reason past `WEBSOCKET_CLOSE_REASON_MAXLEN`. |
+-| `CLOSE`  | `close` received a status code `isCloseCode` refuses.                                                                                                                    |
+-| `FRAME`  | `encodeWebSocketFrame` refused a frame-header argument: an opcode outside the four-bit wire field, a `mask` that is not 4 bytes, or a `mask` without `masked: true`.     |
++| Code     | Raised when                                                                                                                                                                           |
++| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `OPTION` | `createNodeWebSocket` refused a `NodeWebSocketOptions` member: `payload`, `timeout`, `key`, `protocol`, or a `protocol` given without a server `key`.                                 |
++| `LIMIT`  | An outbound control-frame payload exceeded its RFC 6455 §5.5 cap: a `ping` payload past `WEBSOCKET_CONTROL_MAX_LENGTH`, or a `close` reason past `WEBSOCKET_CLOSE_REASON_MAX_LENGTH`. |
++| `CLOSE`  | `close` received a status code `isCloseCode` refuses.                                                                                                                                 |
++| `FRAME`  | `encodeWebSocketFrame` refused a frame-header argument: an opcode outside the four-bit wire field, a `mask` that is not 4 bytes, or a `mask` without `masked: true`.                  |
+ 
+ Every refusal is a caller-supplied value the wire protocol cannot carry, and each throws before it writes a byte: an `OPTION` throws before the wrapper writes to or assumes ownership of the socket, a `LIMIT` and a `CLOSE` throw without writing a frame or changing `readyState`, and a `FRAME` throws out of the pure encoder, which touches no socket at all. A **peer's** protocol violation is not a `WebSocketError`: it closes the connection with the matching `WEBSOCKET_CLOSE_*` status code and emits `close`, per the preceding Contract invariant.
+ 
+@@ -146,8 +153,13 @@ Every refusal is a caller-supplied value the wire protocol cannot carry, and eac
+ import { createNodeWebSocket, isWebSocketError } from '@orkestrel/websocket'
+ 
+ server.on('upgrade', (request, socket, head) => {
++	const key = request.headers['sec-websocket-key']
++	if (typeof key !== 'string') {
++		socket.destroy()
++		return
++	}
+ 	try {
+-		createNodeWebSocket({ socket, key: request.headers['sec-websocket-key'], head })
++		createNodeWebSocket({ socket, key, head })
+ 	} catch (error) {
+ 		if (isWebSocketError(error) && error.code === 'OPTION') {
+ 			socket.write('HTTP/1.1 400 Bad Request\r\n\r\n')
+@@ -167,9 +179,14 @@ The handle is fully driven through its `emitter` — attach as many observers as
+ import { createNodeWebSocket } from '@orkestrel/websocket'
+ 
+ server.on('upgrade', (request, socket, head) => {
++	const key = request.headers['sec-websocket-key']
++	if (typeof key !== 'string') {
++		socket.destroy()
++		return
++	}
+ 	const ws = createNodeWebSocket({
+ 		socket,
+-		key: request.headers['sec-websocket-key'],
++		key,
+ 		head, // any bytes already buffered after the upgrade headers
+ 	})
+ 	ws.emitter.on('message', (text) => ws.send(`echo: ${text}`))
+@@ -228,21 +245,20 @@ ws.destroy()
+ 
+ ### Practices
+ 
+-- **Reach for a message transport, not raw frames, when you have a protocol.** This is the wire-level handle a higher-level message transport is built on; drop to it directly only for bespoke framing where no schema applies. If you find yourself hand-rolling request/response correlation on top, you want the layer above.
+-- **Let the mode handle masking — never set the mask bit yourself.** Server mode sends unmasked, client mode masks; the single `key` choice decides it. Reach for `encodeWebSocketFrame(..., { masked: true })` only when you are feeding the parser a synthetic client frame (e.g. in a test).
++- **Reach for a message transport, not raw frames, when you have a protocol.** This is the wire-level handle a higher-level message transport is built on; drop to it directly only for bespoke framing where no schema applies. If you find yourself hand-rolling request/response correlation on top, you want the layer that sits over this one.
++- **Let the mode handle masking — never set the mask bit yourself.** Server mode sends unmasked, client mode masks; the single `key` choice decides it. Reach for `encodeWebSocketFrame(..., { masked: true })` only when you are feeding the parser a synthetic client frame, for example in a test.
+ - **Drive the parser as a stream, never per-chunk.** Accumulate `data`, loop `parseWebSocketFrame`, slice `consumed` off, and treat `undefined` as "need more bytes". A frame can span chunks and a chunk can hold several frames — the buffer is what reconciles both.
+ - **Observe everything through the `emitter`.** Wire `message` / `close` / `ping` / `pong` and the domain `error`; a listener that throws is contained by the emitter and surfaced on its own `error` handler (the `error` option), so one bad observer never takes the connection down.
+ 
+ ## Tests
+ 
+-- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/server` bijection and the `## Methods` ↔ interface/class method parity.
+-- [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — the remaining RFC 6455 codec helpers as pure units against the spec's own byte vectors: the §1.3 handshake accept token, the unmasked + masked "Hello" frame encoding (§5.7), the 7/16/64-bit length-form boundaries (125 / 126 / 65 536), and `measureWebSocketFrame` reading the declared length off the header alone.
+-- [`tests/src/server/parsers.test.ts`](../tests/src/server/parsers.test.ts) — the RFC 6455 coercers as pure units: `parseWebSocketFrame` against the spec's own byte vectors (the control opcodes, an incomplete buffer → `undefined` split mid-header/mid-mask/mid-payload, trailing-byte recovery via `consumed`, the encode↔parse inverse), `parseWebSocketCanonical`'s §5.2 minimal-length-encoding check (each shortest form accepted, an incomplete length prefix answered `undefined`, a non-minimal extended length or a set 64-bit high bit rejected), and `parseUTF8` against valid and malformed UTF-8 sequences.
+-- [`tests/src/server/validators.test.ts`](../tests/src/server/validators.test.ts) — the RFC 6455 boundary guards as pure units: `isWebSocketKey` and `isWebSocketProtocol` against canonical and malformed handshake values, and `isCloseCode` classifying every receivable and rejected close code.
+-- [`tests/src/server/NodeWebSocket.test.ts`](../tests/src/server/NodeWebSocket.test.ts) — the wrapper driven end to end over an in-memory `node:stream` Duplex pair (two cross-wired `PassThrough`s — a real bidirectional socket, no mock): the 101 handshake (with subprotocol echo), a masked client text frame → `message`, continuation-fragment reassembly, two frames in one chunk, `send` → an unmasked readable frame, ping → auto-pong, the close handshake + `close` event, `destroy` idempotency, and §13 observer-error isolation.
+-- [`tests/integration.test.ts`](../tests/integration.test.ts) — the public factory driven by native Chromium `WebSocket`s against a real Node HTTP upgrade server: handshake, multibyte and 2 MB payloads, binary rejection, client/server closes, ordered bursts, concurrency, churn, and reconnect.
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/server` bijection, the `## Methods` ↔ interface/class method parity, and the flagship fences transcribed and asserted on the values their comments claim.
++- [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — the RFC 6455 codec helpers and boundary predicates as pure units against the spec's own byte vectors: the §1.3 handshake accept token, the unmasked + masked "Hello" frame encoding (§5.7), the 7/16/64-bit length-form boundaries (125 / 126 / 65 536), `measureWebSocketFrame` reading the declared length off the header alone, `matchesWebSocketCanonical`'s §5.2 minimal-length-encoding check (each shortest form accepted, an incomplete length prefix answered `undefined`, a non-minimal extended length or a set 64-bit high bit rejected), `isWebSocketKey` and `isWebSocketProtocol` against canonical and malformed handshake values, and `isCloseCode` classifying every receivable and rejected close code.
++- [`tests/src/server/parsers.test.ts`](../tests/src/server/parsers.test.ts) — the RFC 6455 coercers as pure units: `parseWebSocketFrame` against the spec's own byte vectors (the control opcodes, an incomplete buffer → `undefined` split mid-header/mid-mask/mid-payload, trailing-byte recovery through `consumed`, the encode↔parse inverse), and `parseUTF8` against valid and malformed UTF-8 sequences.
++- [`tests/src/server/NodeWebSocket.test.ts`](../tests/src/server/NodeWebSocket.test.ts) — the wrapper driven end to end over an in-memory `node:stream` Duplex pair (two cross-wired `PassThrough`s — a real bidirectional socket, no mock): the 101 handshake (with subprotocol echo), a masked client text frame → `message`, continuation-fragment reassembly, two frames in one chunk, `send` → an unmasked readable frame, ping → auto-pong, the close handshake + `close` event, `destroy` idempotency, and observer-error isolation.
++- [`tests/integration.test.ts`](../tests/integration.test.ts) — the public factory driven by native `WebSocket` clients against a real Node HTTP upgrade server: handshake, multibyte and 2 MB payloads, binary rejection, client/server closes, ordered bursts, concurrency, churn, and reconnect.
+ 
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — §13 emitter, §14 untyped-boundary narrowing, §21 minimal interface, §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the coding rules this package follows.
+ - [`README.md`](README.md) — the guides index.
+diff --git a/src/server/NodeWebSocket.ts b/src/server/NodeWebSocket.ts
+index dde4ad0..03443e1 100644
+--- a/src/server/NodeWebSocket.ts
++++ b/src/server/NodeWebSocket.ts
+@@ -7,19 +7,26 @@ import type {
+ } from './types.js'
+ import type { EmitterInterface } from '@orkestrel/emitter'
+ import { Emitter } from '@orkestrel/emitter'
+-import { computeWebSocketAccept, encodeWebSocketFrame, measureWebSocketFrame } from './helpers.js'
+-import { parseUTF8, parseWebSocketCanonical, parseWebSocketFrame } from './parsers.js'
+-import { isCloseCode, isWebSocketKey, isWebSocketProtocol } from './validators.js'
++import {
++	computeWebSocketAccept,
++	encodeWebSocketFrame,
++	isCloseCode,
++	isWebSocketKey,
++	isWebSocketProtocol,
++	matchesWebSocketCanonical,
++	measureWebSocketFrame,
++} from './helpers.js'
++import { parseUTF8, parseWebSocketFrame } from './parsers.js'
+ import { WebSocketError } from './errors.js'
+ import {
+ 	WEBSOCKET_CLOSE_INVALID,
+ 	WEBSOCKET_CLOSE_NORMAL,
+ 	WEBSOCKET_CLOSE_PROTOCOL,
+-	WEBSOCKET_CLOSE_REASON_MAXLEN,
++	WEBSOCKET_CLOSE_REASON_MAX_LENGTH,
+ 	WEBSOCKET_CLOSE_TIMEOUT_MS,
+-	WEBSOCKET_CLOSE_TOOBIG,
++	WEBSOCKET_CLOSE_TOO_BIG,
+ 	WEBSOCKET_CLOSE_UNSUPPORTED,
+-	WEBSOCKET_CONTROL_MAXLEN,
++	WEBSOCKET_CONTROL_MAX_LENGTH,
+ 	WEBSOCKET_FAIL_TIMEOUT_MS,
+ 	WEBSOCKET_MAX_PAYLOAD,
+ 	WEBSOCKET_OPCODE_BINARY,
+@@ -48,11 +55,25 @@ import {
+  * `fin: false` frames — decodes to UTF-8 and emits `message`; a PING is auto-answered
+  * with a PONG and emits `ping`; a PONG emits `pong`; a CLOSE is echoed and ends the
+  * socket, emitting `close`. `send` writes a text frame, `ping` a ping, `close` a close
+- * frame; `destroy` tears down immediately. It owns a typed `#emitter` (AGENTS §13) that
+- * isolates a throwing listener and routes the error to its own `error` handler (the `error`
+- * option) — the socket never crashes. An underlying socket error emits the domain
+- * `error` event and terminates the wrapper. The untyped socket `data` is narrowed to a
+- * `Buffer` with a guard, never an assertion (AGENTS §14).
++ * frame; `destroy` tears down immediately. It owns a typed `#emitter` by composition, and
++ * the emitter isolates a throwing listener and routes the error to its own `error` handler
++ * (the `error` option) — the socket never crashes. An underlying socket error emits the
++ * domain `error` event and terminates the wrapper. The untyped socket `data` is narrowed
++ * to a `Buffer` with a guard, never an assertion.
++ *
++ * @example
++ * ```ts
++ * import { NodeWebSocket } from '@src/server'
++ *
++ * // In a node:http 'upgrade' handler, over the socket the server already handed over:
++ * const key = request.headers['sec-websocket-key']
++ * if (typeof key !== 'string') {
++ * 	socket.destroy()
++ * 	return
++ * }
++ * const ws = new NodeWebSocket({ socket, key, head })
++ * ws.emitter.on('message', (text) => ws.send(`echo: ${text}`))
++ * ```
+  */
+ export class NodeWebSocket implements NodeWebSocketInterface {
+ 	readonly #emitter: Emitter<NodeWebSocketEventMap>
+@@ -76,6 +97,17 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 	#destroyed = false
+ 	#detached = false
+ 
++	/**
++	 * Creates a WebSocket wrapper over an already-upgraded Duplex socket.
++	 *
++	 * @remarks
++	 * `key` selects the mode: present runs SERVER mode and writes the `101 Switching
++	 * Protocols` handshake, omitted runs CLIENT mode and masks every outgoing frame.
++	 * {@link NodeWebSocketOptions} describes every member.
++	 *
++	 * @param options - The {@link NodeWebSocketOptions} the wrapper is built from
++	 * @throws A {@link WebSocketError} coded `OPTION` when `payload`, `timeout`, `key`, or `protocol` is refused, or when `protocol` is supplied without a server `key`, thrown before the wrapper writes to or assumes ownership of the `socket`
++	 */
+ 	constructor(options: NodeWebSocketOptions) {
+ 		const payload = options.payload ?? WEBSOCKET_MAX_PAYLOAD
+ 		if (!Number.isSafeInteger(payload) || payload < 0) {
+@@ -142,7 +174,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		this.#emitter.emit('open')
+ 
+ 		// Replay any bytes buffered after the upgrade headers through the same ingest path
+-		// as `#handleData`, so the pre-buffer cap check applies uniformly (AGENTS §5 dedup).
++		// as `#handleData`, so the pre-buffer cap check applies uniformly through one route.
+ 		const head = options.head
+ 		if (head !== undefined && head.length > 0) {
+ 			this.#ingest(head)
+@@ -151,9 +183,9 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		// The external cancellation seam (composes with `@orkestrel/abort` /
+ 		// `@orkestrel/timeout`'s native AbortSignals) — wired last so an already-aborted
+ 		// signal tears the socket down only after the rest of construction has run. The
+-		// head-replay above can itself synchronously terminate the socket (a complete
++		// preceding head replay can itself synchronously terminate the socket (a complete
+ 		// CLOSE frame or an RFC violation routes through `#fail`/`#close` -> `#finish`),
+-		// which flushes the close frame GRACEFULLY via `#socket.end()`. In that case skip
++		// which flushes the close frame GRACEFULLY through `#socket.end()`. In that case skip
+ 		// the seam entirely: forcing `destroy()` would discard that flushing frame (the
+ 		// loss `#fail` is engineered to avoid), and there is no live socket to attach to.
+ 		if (this.#readyState !== WEBSOCKET_READY_CLOSED) {
+@@ -173,23 +205,24 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		return this.#readyState
+ 	}
+ 
+-	send(data: string): void {
++	send(message: string): void {
+ 		if (this.#readyState !== WEBSOCKET_READY_OPEN) return
+-		this.#write(WEBSOCKET_OPCODE_TEXT, Buffer.from(data, 'utf-8'))
++		this.#write(WEBSOCKET_OPCODE_TEXT, Buffer.from(message, 'utf-8'))
+ 	}
+ 
+-	ping(data?: string): void {
++	ping(payload?: string): void {
+ 		if (this.#readyState !== WEBSOCKET_READY_OPEN) return
+-		const size = data === undefined ? 0 : Buffer.byteLength(data, 'utf-8')
+-		if (size > WEBSOCKET_CONTROL_MAXLEN) {
+-			throw new WebSocketError('LIMIT', `ping payload exceeds ${WEBSOCKET_CONTROL_MAXLEN} bytes`, {
+-				size,
+-				limit: WEBSOCKET_CONTROL_MAXLEN,
+-			})
++		const size = payload === undefined ? 0 : Buffer.byteLength(payload, 'utf-8')
++		if (size > WEBSOCKET_CONTROL_MAX_LENGTH) {
++			throw new WebSocketError(
++				'LIMIT',
++				`ping payload exceeds ${WEBSOCKET_CONTROL_MAX_LENGTH} bytes`,
++				{ size, limit: WEBSOCKET_CONTROL_MAX_LENGTH },
++			)
+ 		}
+ 		this.#write(
+ 			WEBSOCKET_OPCODE_PING,
+-			data === undefined ? Buffer.alloc(0) : Buffer.from(data, 'utf-8'),
++			payload === undefined ? Buffer.alloc(0) : Buffer.from(payload, 'utf-8'),
+ 		)
+ 	}
+ 
+@@ -204,11 +237,11 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 			throw new WebSocketError('CLOSE', 'invalid close code', { code })
+ 		}
+ 		const size = reason === undefined ? 0 : Buffer.byteLength(reason, 'utf-8')
+-		if (size > WEBSOCKET_CLOSE_REASON_MAXLEN) {
++		if (size > WEBSOCKET_CLOSE_REASON_MAX_LENGTH) {
+ 			throw new WebSocketError(
+ 				'LIMIT',
+-				`close reason exceeds ${WEBSOCKET_CLOSE_REASON_MAXLEN} bytes`,
+-				{ size, limit: WEBSOCKET_CLOSE_REASON_MAXLEN },
++				`close reason exceeds ${WEBSOCKET_CLOSE_REASON_MAX_LENGTH} bytes`,
++				{ size, limit: WEBSOCKET_CLOSE_REASON_MAX_LENGTH },
+ 			)
+ 		}
+ 		this.#readyState = WEBSOCKET_READY_CLOSING
+@@ -228,8 +261,9 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		// Detach before destroy so a destroy-time error reaches the terminal sink.
+ 		this.#detach()
+ 		this.#signal?.removeEventListener('abort', this.#abortListener)
+-		// `#finish` no-ops once already CLOSED (e.g. after `#fail` armed the hard-teardown
+-		// fallback), so the timer is cleared here unconditionally rather than relying on it.
++		// `#finish` no-ops after the state is already CLOSED (for example after `#fail` armed
++		// the hard-teardown fallback), so the timer is cleared here unconditionally rather
++		// than relying on it.
+ 		clearTimeout(this.#closeTimer)
+ 		this.#closeTimer = undefined
+ 		if (!this.#socket.destroyed) this.#socket.destroy()
+@@ -237,18 +271,18 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		this.#emitter.destroy()
+ 	}
+ 
+-	// Decode every complete frame currently in the buffer, dispatching each and slicing
++	// Decode every complete frame in the buffer, dispatching each and slicing
+ 	// it off; stops when a partial frame remains (parse returns `undefined`).
+ 	#drain(): void {
+ 		for (;;) {
+-			const canonical = parseWebSocketCanonical(this.#buffer)
++			const canonical = matchesWebSocketCanonical(this.#buffer)
+ 			if (canonical === false) {
+ 				this.#fail(WEBSOCKET_CLOSE_PROTOCOL)
+ 				return
+ 			}
+ 			const declared = measureWebSocketFrame(this.#buffer)
+ 			if (declared !== undefined && declared > this.#payload) {
+-				this.#fail(WEBSOCKET_CLOSE_TOOBIG)
++				this.#fail(WEBSOCKET_CLOSE_TOO_BIG)
+ 				return
+ 			}
+ 			const frame = parseWebSocketFrame(this.#buffer)
+@@ -278,7 +312,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 			opcode === WEBSOCKET_OPCODE_PING ||
+ 			opcode === WEBSOCKET_OPCODE_PONG
+ 		) {
+-			if (!fin || payload.length > WEBSOCKET_CONTROL_MAXLEN) {
++			if (!fin || payload.length > WEBSOCKET_CONTROL_MAX_LENGTH) {
+ 				this.#fail(WEBSOCKET_CLOSE_PROTOCOL)
+ 				return
+ 			}
+@@ -315,7 +349,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		this.#fragments.push(payload)
+ 		this.#fragmentBytes += payload.length
+ 		if (this.#fragmentBytes > this.#payload) {
+-			this.#fail(WEBSOCKET_CLOSE_TOOBIG)
++			this.#fail(WEBSOCKET_CLOSE_TOO_BIG)
+ 			return
+ 		}
+ 		if (!fin) return
+@@ -355,7 +389,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 	// the domain listeners (the connection is protocol-dead — RFC 6455 permits discarding
+ 	// further input after sending close, and this also stops a post-fail socket `error`
+ 	// emitting AFTER the terminal `close` event), write the close frame, then flush + half
+-	// -close via `end()` (never a synchronous `destroy()`, which can discard the buffered
++	// -close through `end()` (never a synchronous `destroy()`, which can discard the buffered
+ 	// close frame and leave the peer seeing 1006 instead of the intended code) before
+ 	// finishing. The hard-teardown fallback is armed AFTER `#finish` so `#finish`'s
+ 	// `clearTimeout` cannot kill it; the normal path destroys the moment the write buffer
+@@ -374,9 +408,9 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		this.#write(WEBSOCKET_OPCODE_CLOSE, this.#encodeClose(code, reason))
+ 		this.#socket.end(() => {
+ 			if (!this.#socket.destroyed) this.#socket.destroy()
+-			// The normal flush path destroyed the socket already — clear the unref'd
+-			// fallback timer below so it doesn't linger `WEBSOCKET_FAIL_TIMEOUT_MS` holding
+-			// its closure alive for no reason.
++			// The normal flush path destroyed the socket already — clear the unref'd fallback
++			// timer this method arms after `#finish`, so it doesn't linger
++			// `WEBSOCKET_FAIL_TIMEOUT_MS` holding its closure alive for no reason.
+ 			clearTimeout(this.#closeTimer)
+ 			this.#closeTimer = undefined
+ 		})
+@@ -454,7 +488,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		return true
+ 	}
+ 
+-	// Transition to CLOSED once (idempotent), clear the close-handshake timer, and emit
++	// Transition to CLOSED one time only (idempotent), clear the close-handshake timer, and emit
+ 	// the final `close` with the last known code/reason.
+ 	#finish(): void {
+ 		if (this.#readyState === WEBSOCKET_READY_CLOSED) return
+@@ -486,7 +520,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		this.destroy()
+ 	}
+ 
+-	// Narrow an untyped socket `data` chunk to a `Buffer` (AGENTS §14) — a `node:net`
++	// Narrow an untyped socket `data` chunk to a `Buffer` with a guard — a `node:net`
+ 	// socket without an explicit encoding yields Buffers, but the listener parameter is
+ 	// `unknown`, so it crosses through this guard, never an assertion. A non-Buffer
+ 	// chunk (a string from a mis-encoded socket) is normalized; anything else is dropped.
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index d11340c..3ab4160 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -1,6 +1,6 @@
+ import type { WebSocketReadyState } from './types.js'
+ 
+-// The WebSocket wrapper's wire constants (AGENTS §5 constants file) — the RFC 6455
++// The WebSocket wrapper's wire constants — the RFC 6455
+ // magic values the codec and the handshake are built on: the accept GUID, the
+ // supported protocol version, the frame opcodes, the four ready states, and the
+ // normal-closure status code. Every member is exported; the codec helpers and the
+@@ -55,14 +55,14 @@ export const WEBSOCKET_CLOSE_NORMAL = 1000
+ /** Names the protocol-error status code (RFC 6455 §7.4.1) — a framing/state rule was violated. */
+ export const WEBSOCKET_CLOSE_PROTOCOL = 1002
+ 
+-/** Names the unsupported-data status code (RFC 6455 §7.4.1) — the endpoint received a data type it cannot accept (e.g. binary on a text-only endpoint). */
++/** Names the unsupported-data status code (RFC 6455 §7.4.1) — the endpoint received a data type it cannot accept, for example binary on a text-only endpoint. */
+ export const WEBSOCKET_CLOSE_UNSUPPORTED = 1003
+ 
+-/** Names the invalid-frame-payload-data status code (RFC 6455 §7.4.1) — e.g. non-UTF-8 text or an unparseable close reason. */
++/** Names the invalid-frame-payload-data status code (RFC 6455 §7.4.1) — for example non-UTF-8 text or an unparseable close reason. */
+ export const WEBSOCKET_CLOSE_INVALID = 1007
+ 
+ /** Names the message-too-big status code (RFC 6455 §7.4.1) — a reassembled message exceeded the payload cap. */
+-export const WEBSOCKET_CLOSE_TOOBIG = 1009
++export const WEBSOCKET_CLOSE_TOO_BIG = 1009
+ 
+ /** Names the default maximum inbound single-frame length AND reassembled-message total byte count (100 MiB — the `ws` package default). */
+ export const WEBSOCKET_MAX_PAYLOAD = 104_857_600
+@@ -74,7 +74,7 @@ export const WEBSOCKET_CLOSE_TIMEOUT_MS = 30_000
+ export const WEBSOCKET_FAIL_TIMEOUT_MS = 1_000
+ 
+ /** Names the maximum control-frame payload length in bytes (RFC 6455 §5.5). */
+-export const WEBSOCKET_CONTROL_MAXLEN = 125
++export const WEBSOCKET_CONTROL_MAX_LENGTH = 125
+ 
+ /** Names the maximum UTF-8 close-reason length after the two-byte status code. */
+-export const WEBSOCKET_CLOSE_REASON_MAXLEN = WEBSOCKET_CONTROL_MAXLEN - 2
++export const WEBSOCKET_CLOSE_REASON_MAX_LENGTH = WEBSOCKET_CONTROL_MAX_LENGTH - 2
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 8bd3ab3..0766e2f 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -9,7 +9,7 @@ import type { WebSocketErrorCode } from './types.js'
+ // of the socket, a LIMIT and a CLOSE without writing a frame or moving `readyState`,
+ // and a FRAME out of the pure encoder, which touches no socket. A PEER's protocol
+ // violation is not an error: it closes the connection with the matching
+-// `WEBSOCKET_CLOSE_*` status code instead (AGENTS §12).
++// `WEBSOCKET_CLOSE_*` status code instead.
+ 
+ /**
+  * Represents an error thrown by the WebSocket wrapper for a refused caller-supplied value.
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 5451f80..34fbf6f 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -5,7 +5,7 @@ import { NodeWebSocket } from './NodeWebSocket.js'
+  * Creates a server-native WebSocket over a raw upgraded `node:stream` Duplex socket.
+  *
+  * @remarks
+- * The construction entry point for the {@link NodeWebSocketInterface} (AGENTS §8). Pass
++ * The construction entry point for the {@link NodeWebSocketInterface}. Pass
+  * the upgraded `socket` plus the client's `Sec-WebSocket-Key` as `key` to run in SERVER
+  * mode — the wrapper writes the `101 Switching Protocols` handshake and sends unmasked
+  * frames; omit `key` for CLIENT mode (no handshake, masked frames). This is the
+@@ -24,9 +24,14 @@ import { NodeWebSocket } from './NodeWebSocket.js'
+  *
+  * // In a node:http 'upgrade' handler — server mode, identified by the client key:
+  * server.on('upgrade', (request, socket, head) => {
++ * 	const key = request.headers['sec-websocket-key']
++ * 	if (typeof key !== 'string') {
++ * 		socket.destroy()
++ * 		return
++ * 	}
+  * 	const ws = createNodeWebSocket({
+  * 		socket,
+- * 		key: request.headers['sec-websocket-key'],
++ * 		key, // present => server mode + 101 handshake
+  * 		head,
+  * 		on: { message: (text) => ws.send(`echo: ${text}`) },
+  * 	})
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index a084ec4..5fc3b8d 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -3,14 +3,16 @@ import { createHash, randomBytes } from 'node:crypto'
+ import { WEBSOCKET_GUID } from './constants.js'
+ import { WebSocketError } from './errors.js'
+ 
+-// The remaining RFC 6455 codec helpers — pure, exported, and exhaustively tested.
+-// `computeWebSocketAccept` derives the handshake token; `measureWebSocketFrame` reads
+-// a frame's declared length off the header alone; `encodeWebSocketFrame` builds the
+-// wire representation and refuses an unrepresentable frame header with a `FRAME`-coded
+-// `WebSocketError`. The coercers (`parseWebSocketFrame`, `parseUTF8`) live in
+-// `parsers.ts` and the boundary guards (`isWebSocketKey`, `isWebSocketProtocol`,
+-// `isCloseCode`) in `validators.ts` — this file keeps only what is neither.
+-//
++// The RFC 6455 codec helpers and boundary predicates — pure, exported, and exhaustively
++// tested. `computeWebSocketAccept` derives the handshake token; `measureWebSocketFrame`
++// reads a frame's declared payload length off the header alone and
++// `matchesWebSocketCanonical` reads whether that length uses the shortest valid encoding;
++// `encodeWebSocketFrame` builds the wire representation and refuses an unrepresentable
++// frame header with a `FRAME`-coded `WebSocketError`; `isWebSocketKey`,
++// `isWebSocketProtocol`, and `isCloseCode` are total predicates over caller-supplied
++// handshake and wire values. The coercers (`parseWebSocketFrame`, `parseUTF8`) live in
++// `parsers.ts` — this file keeps every pure read and predicate that coerces nothing.
++
+ /**
+  * Computes the `Sec-WebSocket-Accept` response value for an RFC 6455 upgrade.
+  *
+@@ -45,7 +47,7 @@ export function computeWebSocketAccept(key: string): string {
+  * @example
+  * ```ts
+  * const declared = measureWebSocketFrame(buffer)
+- * if (declared !== undefined && declared > limit) fail(WEBSOCKET_CLOSE_TOOBIG)
++ * if (declared !== undefined && declared > limit) fail(WEBSOCKET_CLOSE_TOO_BIG)
+  * ```
+  */
+ export function measureWebSocketFrame(buffer: Buffer): number | undefined {
+@@ -68,6 +70,40 @@ export function measureWebSocketFrame(buffer: Buffer): number | undefined {
+ 	return length
+ }
+ 
++/**
++ * Checks whether the next frame uses the shortest valid RFC 6455 payload-length encoding.
++ *
++ * @remarks
++ * Returns `undefined` until the complete length prefix is buffered. The 16-bit form
++ * is canonical only for lengths at least 126; the 64-bit form only for lengths at
++ * least 65,536 and with its most-significant bit clear (RFC 6455 §5.2). Reads the same
++ * length prefix as {@link measureWebSocketFrame}, under the same incomplete-buffer
++ * contract. Pure; never throws.
++ *
++ * @param buffer - The accumulation buffer containing the next frame header
++ * @returns Its canonicality, or `undefined` while the length prefix is incomplete
++ *
++ * @example
++ * ```ts
++ * if (matchesWebSocketCanonical(buffer) === false) fail(WEBSOCKET_CLOSE_PROTOCOL)
++ * ```
++ */
++export function matchesWebSocketCanonical(buffer: Buffer): boolean | undefined {
++	if (buffer.length < 2) return undefined
++
++	const lengthCode = buffer.readUInt8(1) & 0x7f
++	if (lengthCode < 126) return true
++	if (lengthCode === 126) {
++		if (buffer.length < 4) return undefined
++		return buffer.readUInt16BE(2) >= 126
++	}
++	if (buffer.length < 10) return undefined
++	const high = buffer.readUInt32BE(2)
++	const low = buffer.readUInt32BE(6)
++	if ((high & 0x8000_0000) !== 0) return false
++	return high > 0 || low >= 65_536
++}
++
+ /**
+  * Encodes a single RFC 6455 frame to its wire bytes — the inverse of
+  * `parseWebSocketFrame`.
+@@ -76,11 +112,11 @@ export function measureWebSocketFrame(buffer: Buffer): number | undefined {
+  * Builds a final (FIN-set) frame: byte 0 is `0x80 | opcode`; the payload length uses
+  * the 7-bit form below 126, the `126` + 16-bit form below 65 536, or the `127` +
+  * 64-bit form beyond; when `masked` is set the mask bit is set, a 4-byte key (supplied
+- * via `options.mask`, else random) is written, and the payload is XOR-masked. Server→
++ * through `options.mask`, else random) is written, and the payload is XOR-masked. Server→
+  * client frames are unmasked (the default); pass `masked: true` to encode a CLIENT
+- * frame (e.g. to feed the parser in a test). A `string` payload is encoded as UTF-8.
+- * Returns one contiguous `Buffer` (header + payload), so the wrapper writes it with a
+- * single `socket.write`. Pure.
++ * frame (for example to feed the parser in a test). A `string` payload is encoded as
++ * UTF-8. Returns one contiguous `Buffer` (header + payload), so the wrapper writes it
++ * with a single `socket.write`. Pure.
+  *
+  * @param opcode - The frame opcode (a `WEBSOCKET_OPCODE_*` value)
+  * @param payload - The payload, a `Buffer` or a UTF-8 `string`
+@@ -136,3 +172,74 @@ export function encodeWebSocketFrame(
+ 	}
+ 	return Buffer.concat([header, maskedBody])
+ }
++
++/**
++ * Checks whether a value is a canonical RFC 6455 `Sec-WebSocket-Key`.
++ *
++ * @remarks
++ * A valid key is exactly 16 random bytes encoded as 24 characters of base64, ending
++ * in `==` (RFC 6455 §4.1). This predicate is suitable at an HTTP upgrade boundary:
++ * malformed or non-canonical encodings return `false`; nothing is thrown.
++ *
++ * @param key - The proposed `Sec-WebSocket-Key` header value
++ * @returns True if `key` is the canonical base64 encoding of 16 bytes; false otherwise
++ *
++ * @example
++ * ```ts
++ * const key = request.headers['sec-websocket-key']
++ * if (typeof key !== 'string' || !isWebSocketKey(key)) socket.destroy()
++ * ```
++ */
++export function isWebSocketKey(key: string): boolean {
++	if (!/^[A-Za-z0-9+/]{22}==$/.test(key)) return false
++	return Buffer.from(key, 'base64').length === 16
++}
++
++/**
++ * Checks whether a value is one valid WebSocket subprotocol token.
++ *
++ * @remarks
++ * Subprotocols use the HTTP `token` grammar. Whitespace, separators, commas, and
++ * control characters are rejected, preventing an untrusted value from injecting a
++ * second handshake header.
++ *
++ * @param protocol - The negotiated subprotocol to validate
++ * @returns True if `protocol` is one non-empty HTTP token; false otherwise
++ *
++ * @example
++ * ```ts
++ * if (!isWebSocketProtocol(protocol)) socket.destroy()
++ * ```
++ */
++export function isWebSocketProtocol(protocol: string): boolean {
++	return /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(protocol)
++}
++
++/**
++ * Checks whether a numeric value is a valid RFC 6455 close status code to RECEIVE (§7.4.1).
++ *
++ * @remarks
++ * True for `1000`–`1003`, `1007`–`1014`, and the application range `3000`–`4999`; false
++ * for anything below `1000`, the reserved-for-local-use-only codes `1004`–`1006` and
++ * `1015`, and the unassigned `1016`–`2999` range. The `1012`–`1014` extension of the
++ * strict RFC 6455 receivable set is a deliberate IANA-interop choice: those three codes
++ * (Service Restart, Try Again Later, Bad Gateway) are IANA-registered in the WebSocket
++ * Close Code Number Registry and accepted by the `ws` ecosystem and modern conformance
++ * suites, so a peer sending one is not treated as a protocol violation. Pure predicate,
++ * never throws.
++ *
++ * @param code - The close status code to validate
++ * @returns True if `code` is a valid RFC 6455 close code; false otherwise
++ *
++ * @example
++ * ```ts
++ * if (!isCloseCode(code)) fail(WEBSOCKET_CLOSE_PROTOCOL)
++ * ```
++ */
++export function isCloseCode(code: number): boolean {
++	if (!Number.isInteger(code)) return false
++	if (code >= 1000 && code <= 1003) return true
++	if (code >= 1007 && code <= 1014) return true
++	if (code >= 3000 && code <= 4999) return true
++	return false
++}
+diff --git a/src/server/index.ts b/src/server/index.ts
+index 78abdd3..2e445b1 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -3,6 +3,5 @@ export * from './constants.js'
+ export * from './errors.js'
+ export * from './helpers.js'
+ export * from './parsers.js'
+-export * from './validators.js'
+ export * from './factories.js'
+ export * from './NodeWebSocket.js'
+diff --git a/src/server/parsers.ts b/src/server/parsers.ts
+index d000846..68c6669 100644
+--- a/src/server/parsers.ts
++++ b/src/server/parsers.ts
+@@ -3,7 +3,9 @@ import type { WebSocketFrame } from './types.js'
+ // The RFC 6455 coercers — pure reads off a wire buffer that answer `undefined` while
+ // the bytes they need are still incomplete, so the caller accumulates and retries.
+ // A coercion producing `T | undefined` is a `parse*`, never a guard: it answers about
+-// bytes that may not be there yet, where a guard is total.
++// bytes that may not be there yet, where a guard is total. The pure reads and
++// predicates that coerce nothing — `measureWebSocketFrame`, `matchesWebSocketCanonical`,
++// `isWebSocketKey`, `isWebSocketProtocol`, `isCloseCode` — live in `helpers.ts`.
+ 
+ /**
+  * Decodes a single RFC 6455 frame from the front of a buffer.
+@@ -76,45 +78,13 @@ export function parseWebSocketFrame(buffer: Buffer): WebSocketFrame | undefined
+ 	return { fin, opcode, payload, consumed: offset + length, masked, rsv }
+ }
+ 
+-/**
+- * Reads whether the next frame uses the shortest valid RFC 6455 payload-length encoding.
+- *
+- * @remarks
+- * Returns `undefined` until the complete length prefix is buffered. The 16-bit form
+- * is canonical only for lengths at least 126; the 64-bit form only for lengths at
+- * least 65,536 and with its most-significant bit clear (RFC 6455 §5.2).
+- *
+- * @param buffer - The accumulation buffer containing the next frame header
+- * @returns Its canonicality, or `undefined` while the length prefix is incomplete
+- *
+- * @example
+- * ```ts
+- * if (parseWebSocketCanonical(buffer) === false) fail(WEBSOCKET_CLOSE_PROTOCOL)
+- * ```
+- */
+-export function parseWebSocketCanonical(buffer: Buffer): boolean | undefined {
+-	if (buffer.length < 2) return undefined
+-
+-	const lengthCode = buffer.readUInt8(1) & 0x7f
+-	if (lengthCode < 126) return true
+-	if (lengthCode === 126) {
+-		if (buffer.length < 4) return undefined
+-		return buffer.readUInt16BE(2) >= 126
+-	}
+-	if (buffer.length < 10) return undefined
+-	const high = buffer.readUInt32BE(2)
+-	const low = buffer.readUInt32BE(6)
+-	if ((high & 0x8000_0000) !== 0) return false
+-	return high > 0 || low >= 65_536
+-}
+-
+ /**
+  * Decodes a byte sequence as strict UTF-8, or signals it is malformed.
+  *
+  * @remarks
+  * Wraps `TextDecoder('utf-8', { fatal: true })` in a try/catch so a malformed sequence
+- * returns `undefined` instead of throwing (AGENTS §14 — a guard-adjacent coercer never
+- * throws on bad input). Pure.
++ * returns `undefined` instead of throwing — a guard-adjacent coercer never throws on bad
++ * input. Pure.
+  *
+  * @param bytes - The raw bytes to decode
+  * @returns The decoded string, or `undefined` when `bytes` is not valid UTF-8
+diff --git a/src/server/types.ts b/src/server/types.ts
+index f8243e0..51f8ac4 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -8,12 +8,12 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ // wrapper has NO knowledge of MCP, JSON-RPC, or any message schema (that is the
+ // transport one layer up). It is the lean-native-wrapper sibling of the SQLite and
+ // IndexedDB wrappers: a minimal interface over native power, errors surfaced through
+-// the emitter, the codec a set of pure, exported, unit-tested helpers. Types are the
+-// source of truth (AGENTS §2).
++// the emitter, the codec a set of pure, exported, unit-tested helpers. This file is the
++// source of truth for the public contracts.
+ //
+ // Frame payloads are raw `Buffer`s off the wire; text frames decode to a `string` at
+ // the boundary, and the untyped socket `data` is narrowed with a guard, never an
+-// assertion (AGENTS §14).
++// assertion.
+ 
+ // === Ready state
+ 
+@@ -75,8 +75,8 @@ export interface WebSocketEncodeOptions {
+  * `OPTION` — a {@link NodeWebSocketOptions} member was refused at construction
+  * (`payload`, `timeout`, `key`, `protocol`, or a `protocol` given without a server
+  * `key`). `LIMIT` — an outbound control-frame payload exceeded its RFC 6455 §5.5 cap
+- * (`ping` data past `WEBSOCKET_CONTROL_MAXLEN`, a `close` reason past
+- * `WEBSOCKET_CLOSE_REASON_MAXLEN`). `CLOSE` — a close status code `isCloseCode` refuses
++ * (a `ping` payload past `WEBSOCKET_CONTROL_MAX_LENGTH`, a `close` reason past
++ * `WEBSOCKET_CLOSE_REASON_MAX_LENGTH`). `CLOSE` — a close status code `isCloseCode` refuses
+  * was passed to `close`. `FRAME` — an `encodeWebSocketFrame` frame-header argument was
+  * refused (an opcode outside the four-bit wire field, a mask that is not 4 bytes, or a
+  * mask supplied without `masked: true`).
+@@ -86,7 +86,7 @@ export type WebSocketErrorCode = 'OPTION' | 'LIMIT' | 'CLOSE' | 'FRAME'
+ // === Events
+ 
+ /**
+- * Represents the event map of a {@link NodeWebSocketInterface} (AGENTS §13).
++ * Represents the event map of a {@link NodeWebSocketInterface}.
+  *
+  * @remarks
+  * `open` — the handshake completed and the socket is ready. `message` — a text frame
+@@ -94,8 +94,8 @@ export type WebSocketErrorCode = 'OPTION' | 'LIMIT' | 'CLOSE' | 'FRAME'
+  * labeled `[code, reason]` tuple (each `undefined` when the peer sent none). `error` —
+  * the underlying socket faulted (a DOMAIN event and then terminates the wrapper).
+  * `ping` / `pong` — a control frame arrived (a ping is auto-answered with a pong).
+- * Listener isolation is the emitter's (AGENTS §13): a listener throw is routed to the
+- * emitter's `error` handler (the `error` option), never onto this map, so a buggy observer
++ * Listener isolation is the emitter's: a listener throw is routed to the emitter's
++ * `error` handler (the `error` option), never onto this map, so a buggy observer
+  * never breaks the socket.
+  */
+ export type NodeWebSocketEventMap = {
+@@ -119,8 +119,8 @@ export type NodeWebSocketEventMap = {
+  * frames; omit it for CLIENT mode — no handshake is written and frames are MASKED (RFC
+  * 6455 §5.3). `head` is any bytes buffered after the upgrade headers (replayed through
+  * the parser). `protocol` is a negotiated subprotocol to echo in the handshake. `on`
+- * wires initial listeners at construction (AGENTS §8 reserved option); `error` is the
+- * emitter's listener-error handler (§13 — a listener throw routes here). `payload` caps
++ * wires initial listeners at construction — the reserved `on` option; `error` is the
++ * emitter's listener-error handler, where a listener throw routes. `payload` caps
+  * both a single inbound frame's declared length AND the total bytes of a reassembled
+  * fragmented message (default `WEBSOCKET_MAX_PAYLOAD`) — a breach closes 1009. `timeout`
+  * is how long the wrapper waits, after sending a close frame, for the peer's echo before
+@@ -137,7 +137,7 @@ export interface NodeWebSocketOptions {
+ 	readonly head?: Buffer
+ 	readonly protocol?: string
+ 	readonly on?: EmitterHooks<NodeWebSocketEventMap>
+-	/** Holds the emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
++	/** Holds the emitter's listener-error handler — a listener throw routes here, not to a domain event. */
+ 	readonly error?: EmitterErrorHandler
+ 	readonly payload?: number
+ 	readonly timeout?: number
+@@ -157,18 +157,18 @@ export interface NodeWebSocketOptions {
+  * frame is echoed and ends the socket, emitting `close`. `send` writes a text frame;
+  * `ping` writes a ping; `close` writes a close frame (the 2-byte code + optional
+  * reason); `destroy` tears the socket down immediately. `readyState` tracks the
+- * lifecycle. It owns a typed `emitter` (AGENTS §13) and never throws on a faulty
++ * lifecycle. It owns a typed `emitter` by composition and never throws on a faulty
+  * listener — the emitter routes it to its `error` handler (the `error` option).
+  * `ping` throws a `LIMIT`-coded `WebSocketError` when its UTF-8 payload exceeds
+- * `WEBSOCKET_CONTROL_MAXLEN`; `close` throws a `CLOSE`-coded one for a status code
++ * `WEBSOCKET_CONTROL_MAX_LENGTH`; `close` throws a `CLOSE`-coded one for a status code
+  * `isCloseCode` refuses and a `LIMIT`-coded one for a reason past
+- * `WEBSOCKET_CLOSE_REASON_MAXLEN`, in each case without changing `readyState`.
++ * `WEBSOCKET_CLOSE_REASON_MAX_LENGTH`, in each case without changing `readyState`.
+  */
+ export interface NodeWebSocketInterface {
+ 	readonly emitter: EmitterInterface<NodeWebSocketEventMap>
+ 	readonly readyState: WebSocketReadyState
+-	send(data: string): void
+-	ping(data?: string): void
++	send(message: string): void
++	ping(payload?: string): void
+ 	close(code?: number, reason?: string): void
+ 	destroy(): void
+ }
+diff --git a/src/server/validators.ts b/src/server/validators.ts
+deleted file mode 100644
+index 84a52fa..0000000
+--- a/src/server/validators.ts
++++ /dev/null
+@@ -1,74 +0,0 @@
+-// The RFC 6455 boundary guards — pure, total predicates over caller-supplied
+-// handshake and wire values. A predicate that always answers `true` or `false`,
+-// never `undefined`, is a guard and belongs here, never in `parsers.ts`.
+-
+-/**
+- * Checks whether a value is a canonical RFC 6455 `Sec-WebSocket-Key`.
+- *
+- * @remarks
+- * A valid key is exactly 16 random bytes encoded as 24 characters of base64, ending
+- * in `==` (RFC 6455 §4.1). This predicate is suitable at an HTTP upgrade boundary:
+- * malformed or non-canonical encodings return `false`; nothing is thrown.
+- *
+- * @param key - The proposed `Sec-WebSocket-Key` header value
+- * @returns True if `key` is the canonical base64 encoding of 16 bytes; false otherwise
+- *
+- * @example
+- * ```ts
+- * const key = request.headers['sec-websocket-key']
+- * if (typeof key !== 'string' || !isWebSocketKey(key)) socket.destroy()
+- * ```
+- */
+-export function isWebSocketKey(key: string): boolean {
+-	if (!/^[A-Za-z0-9+/]{22}==$/.test(key)) return false
+-	return Buffer.from(key, 'base64').length === 16
+-}
+-
+-/**
+- * Checks whether a value is one valid WebSocket subprotocol token.
+- *
+- * @remarks
+- * Subprotocols use the HTTP `token` grammar. Whitespace, separators, commas, and
+- * control characters are rejected, preventing an untrusted value from injecting a
+- * second handshake header.
+- *
+- * @param protocol - The negotiated subprotocol to validate
+- * @returns True if `protocol` is one non-empty HTTP token; false otherwise
+- *
+- * @example
+- * ```ts
+- * if (!isWebSocketProtocol(protocol)) socket.destroy()
+- * ```
+- */
+-export function isWebSocketProtocol(protocol: string): boolean {
+-	return /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(protocol)
+-}
+-
+-/**
+- * Checks whether a numeric value is a valid RFC 6455 close status code to RECEIVE (§7.4.1).
+- *
+- * @remarks
+- * True for `1000`–`1003`, `1007`–`1014`, and the application range `3000`–`4999`; false
+- * for anything below `1000`, the reserved-for-local-use-only codes `1004`–`1006` and
+- * `1015`, and the unassigned `1016`–`2999` range. The `1012`–`1014` extension of the
+- * strict RFC 6455 receivable set is a deliberate IANA-interop choice: those three codes
+- * (Service Restart, Try Again Later, Bad Gateway) are IANA-registered in the WebSocket
+- * Close Code Number Registry and accepted by the `ws` ecosystem and modern conformance
+- * suites, so a peer sending one is not treated as a protocol violation. Pure predicate,
+- * never throws.
+- *
+- * @param code - The close status code to validate
+- * @returns True if `code` is a valid RFC 6455 close code; false otherwise
+- *
+- * @example
+- * ```ts
+- * if (!isCloseCode(code)) fail(WEBSOCKET_CLOSE_PROTOCOL)
+- * ```
+- */
+-export function isCloseCode(code: number): boolean {
+-	if (!Number.isInteger(code)) return false
+-	if (code >= 1000 && code <= 1003) return true
+-	if (code >= 1007 && code <= 1014) return true
+-	if (code >= 3000 && code <= 4999) return true
+-	return false
+-}
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index d6174a5..5ce4010 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,8 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The five constants below are this
+-// package's own, and are the only part a sibling package changes.
++// this repo's own `guides/README.md` manifest. The constants that follow are this
++// package's own, and are the only part a sibling package changes. The flagship-fence
++// transcriptions at the end of the file assert the values each fence's comments claim:
++// change a fence, change the transcription beside it.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -20,6 +22,14 @@ import {
+ import { readFileSync } from 'node:fs'
+ import { requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
++import {
++	computeWebSocketAccept,
++	createNodeWebSocket,
++	encodeWebSocketFrame,
++	WEBSOCKET_OPCODE_CLOSE,
++	WEBSOCKET_OPCODE_TEXT,
++} from '@src/server'
++import { duplexPair, flushSocket, readClientFrames } from './setupServer.js'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+@@ -32,8 +42,9 @@ const MODULES = Object.freeze({ '@orkestrel/websocket': 'src/server', '@src/serv
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
+- * here stops being stranded, so the list cannot rot.
++ * intentional rather than forgotten — and the `names no symbol internal that the barrel
++ * already exports` assertion fails when a name here stops being stranded, so the list
++ * cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+@@ -168,3 +179,85 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// The flagship fences of `guides/websocket.md`, transcribed and asserted on the values
++// their comments claim. Name resolution is not a behavioural proof, so a fence documenting
++// a value the code contradicts satisfies every parity assertion in this file; only an
++// executed transcription breaks on it. The `## Surface` and `## Patterns` fences take an
++// upgraded socket from a live `node:http` server, so they run here over the in-memory
++// Duplex pair `tests/setupServer.ts` builds, which is the same real bidirectional socket
++// without the listener.
++
++// The canonical `Sec-WebSocket-Key` of RFC 6455 §1.3, standing in for the request header
++// the two server-mode fences read.
++const FENCE_KEY = 'dGhlIHNhbXBsZSBub25jZQ=='
++
++describe('flagship fences', () => {
++	it('the Surface fence echoes a client text frame back as `echo: <text>`', async () => {
++		const [server, client] = duplexPair()
++		const collector = readClientFrames(client)
++		const headers: Record<string, string | readonly string[] | undefined> = {
++			'sec-websocket-key': FENCE_KEY,
++		}
++
++		const key = headers['sec-websocket-key']
++		if (typeof key !== 'string') throw new Error('the fence narrows the header to a string key')
++		const ws = createNodeWebSocket({
++			socket: server,
++			key, // present => server mode + 101 handshake
++			on: { message: (text) => ws.send(`echo: ${text}`) },
++		})
++		const closes: Array<number | undefined> = []
++		ws.emitter.on('close', (code) => closes.push(code))
++		await flushSocket()
++
++		client.write(encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'hello', { masked: true }))
++		await flushSocket()
++
++		expect(collector.frames.map((frame) => frame.payload.toString('utf-8'))).toEqual([
++			'echo: hello',
++		])
++
++		// The fence's `close` listener: the peer's close frame is echoed, the socket ends,
++		// and the final `close` carries the peer's code.
++		const closePayload = Buffer.alloc(2)
++		closePayload.writeUInt16BE(1000, 0)
++		client.write(encodeWebSocketFrame(WEBSOCKET_OPCODE_CLOSE, closePayload, { masked: true }))
++		await flushSocket()
++		expect(closes).toEqual([1000])
++	})
++
++	it('the Patterns fence echoes through an `emitter` listener attached after construction', async () => {
++		const [server, client] = duplexPair()
++		const collector = readClientFrames(client)
++
++		const ws = createNodeWebSocket({ socket: server, key: FENCE_KEY })
++		ws.emitter.on('message', (text) => ws.send(`echo: ${text}`))
++		await flushSocket()
++
++		client.write(encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'pattern', { masked: true }))
++		await flushSocket()
++
++		expect(collector.frames.map((frame) => frame.payload.toString('utf-8'))).toEqual([
++			'echo: pattern',
++		])
++		ws.destroy()
++	})
++
++	it('the encoder fence writes a server frame unmasked and a client frame masked', () => {
++		const unmasked = encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'hello')
++		const masked = encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'hello', { masked: true })
++
++		// server→client: FIN + text opcode, the 7-bit length form, and the mask bit clear.
++		expect([...unmasked]).toEqual([0x81, 0x05, 0x68, 0x65, 0x6c, 0x6c, 0x6f])
++		expect(unmasked.readUInt8(1) & 0x80).toBe(0)
++		// client→server: the same header with the mask bit set, so the bytes differ.
++		expect(masked.readUInt8(0)).toBe(0x81)
++		expect(masked.readUInt8(1) & 0x80).toBe(0x80)
++		expect(masked.equals(unmasked)).toBe(false)
++	})
++
++	it('the accept-token fence returns the RFC 6455 §1.3 worked example', () => {
++		expect(computeWebSocketAccept('dGhlIHNhbXBsZSBub25jZQ==')).toBe('s3pPLMBiTxaQ9kYGzzhZRbK+xOo=')
++	})
++})
+diff --git a/tests/integration.test.ts b/tests/integration.test.ts
+index 59b53e8..b352cd5 100644
+--- a/tests/integration.test.ts
++++ b/tests/integration.test.ts
+@@ -1,11 +1,14 @@
+-// Live-client WebSocket integration battery — driven by the platform WebSocket client
+-// (AGENTS §16.2): no `@src/*` or `node:*` import here, only the browser-native `WebSocket`,
+-// the shared browser helpers from `tests/setup.ts` (env-agnostic, framework-free), and the
+-// injected `wsUrl` the Node-side `setupGlobal.ts` provides (booting the package's own
+-// `createNodeWebSocket` server). These prove the wire protocol actually round-trips against a
+-// real client, not just the in-memory Duplex pair the src:server suite drives. They are slow
+-// and environment-dependent, so they are kept OUT of the default `test` run and live in this
+-// dedicated, opt-in `integration` project instead (run via `npm run test:integration`).
++// Live-client WebSocket integration battery — driven by the platform WebSocket client:
++// no `@src/*` or `node:*` import here, only the browser-native `WebSocket`, the shared
++// browser helpers from `tests/setup.ts` (the platform `WebSocket` plus `@orkestrel/test`'s
++// `waitForEvent` — no `node:*` API), and the injected
++// `wsUrl` the Node-side `setupGlobal.ts` provides (starting the package's own
++// `createNodeWebSocket` echo server). These prove the wire protocol actually round-trips
++// against a real client, not only the in-memory Duplex pair the src:server suite drives.
++// They compose this workspace's public surfaces without packing, installing, or driving an
++// external service, so the `integration` project runs from `test` like every other
++// cross-cutting proof; `npm run test:integration` is the scoped script for running it
++// alone.
+ 
+ import { describe, expect, inject, it } from 'vitest'
+ import { seededRandom } from '@orkestrel/contract'
+@@ -102,7 +105,7 @@ describe('WebSocket integration — limit & stress battery', () => {
+ 		const rng = seededRandom(11)
+ 		const sampled = buildText(rng, 200)
+ 		const payload = `${sampled}🔥🧵👩‍👩‍👧‍👦éCJK漢字中文한글`
+-		// The payload guards itself. The echo assertion below compares the reply to this
++		// The payload guards itself. The following echo assertion compares the reply to this
+ 		// same string, so it proves the transport round-tripped whatever it was given and
+ 		// says nothing about whether the string still carries the case this test exists
+ 		// for. A decomposed combining mark is that case — it is what a normalizing encoder
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 63292ec..91ac43d 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -1,17 +1,12 @@
+ // Proof of `tests/setup.ts` — the host-independent helpers the workspace's suites share:
+ // seeded text generation, the integration command vocabulary, and the pure browser
+ // `WebSocket` helpers. Node 22 ships `WebSocket` and `MessageEvent` as real globals, so
+-// `connect` and `nextMessage` are driven end to end against a real loopback server here.
+-// `nextClose`'s `CloseEvent` type has no Node runtime constructor, but the real `WebSocket`
+-// client still dispatches a real close event through the same listener path, so it is driven
+-// the same way.
++// `connect` and `nextMessage` are driven end to end against the shared `createEchoServer`
++// fixture here. `nextClose`'s `CloseEvent` type has no Node runtime constructor, but the
++// real `WebSocket` client still dispatches a real close event through the same listener
++// path, so it is driven the same way.
+ 
+ import { describe, expect, it } from 'vitest'
+-import { createServer } from 'node:http'
+-import type { Socket } from 'node:net'
+-import { createLoopback } from '@orkestrel/test/server'
+-import { createNodeWebSocket } from '@src/server'
+-import type { NodeWebSocketInterface } from '@src/server'
+ import {
+ 	buildText,
+ 	connect,
+@@ -22,6 +17,7 @@ import {
+ 	nextClose,
+ 	nextMessage,
+ } from './setup.js'
++import { createEchoServer } from './setupServer.js'
+ 
+ describe('buildText', () => {
+ 	it('is deterministic for a given rng and produces the requested code-point length', () => {
+@@ -52,7 +48,7 @@ describe('buildText', () => {
+ })
+ 
+ describe('integration command vocabulary', () => {
+-	it('is a set of distinct non-empty strings the setupGlobal fixture routes on', () => {
++	it('is a set of distinct non-empty strings the echo fixture routes on', () => {
+ 		const commands = [
+ 			INTEGRATION_CLOSE_NORMAL_REQUEST,
+ 			INTEGRATION_CLOSE_CUSTOM_REQUEST,
+@@ -64,60 +60,9 @@ describe('integration command vocabulary', () => {
+ 	})
+ })
+ 
+-async function startEchoServer(): Promise<{
+-	readonly url: string
+-	readonly sockets: Set<NodeWebSocketInterface>
+-	readonly stop: () => Promise<void>
+-}> {
+-	const sockets = new Set<NodeWebSocketInterface>()
+-	const server = createServer((_request, response) => {
+-		response.writeHead(404)
+-		response.end()
+-	})
+-	server.on('upgrade', (request, socket: Socket, head) => {
+-		const key = request.headers['sec-websocket-key']
+-		if (typeof key !== 'string') {
+-			socket.destroy()
+-			return
+-		}
+-		const ws = createNodeWebSocket({
+-			socket,
+-			key,
+-			head,
+-			on: {
+-				message: (text) => {
+-					if (text === INTEGRATION_CLOSE_NORMAL_REQUEST) {
+-						ws.close(1000, 'done')
+-						return
+-					}
+-					if (text === INTEGRATION_CLOSE_CUSTOM_REQUEST) {
+-						ws.close(4000, 'app-reason')
+-						return
+-					}
+-					ws.send(`echo: ${text}`)
+-				},
+-				close: () => {
+-					sockets.delete(ws)
+-				},
+-			},
+-		})
+-		sockets.add(ws)
+-	})
+-	const loopback = await createLoopback(server)
+-	return {
+-		url: `ws://127.0.0.1:${loopback.port}`,
+-		sockets,
+-		stop: async () => {
+-			for (const ws of sockets) ws.destroy()
+-			sockets.clear()
+-			await loopback.destroy()
+-		},
+-	}
+-}
+-
+ describe('connect', () => {
+ 	it('resolves an open WebSocket against a real loopback server', async () => {
+-		const fixture = await startEchoServer()
++		const fixture = await createEchoServer()
+ 		try {
+ 			const ws = await connect(fixture.url)
+ 			try {
+@@ -126,26 +71,21 @@ describe('connect', () => {
+ 				ws.close()
+ 			}
+ 		} finally {
+-			await fixture.stop()
++			await fixture.destroy()
+ 		}
+ 	})
+ 
+ 	it('rejects when the target refuses the connection', async () => {
+-		const probe = await createLoopback(
+-			createServer((_request, response) => {
+-				response.writeHead(404)
+-				response.end()
+-			}),
+-		)
+-		const refusedPort = probe.port
+-		await probe.destroy()
+-		await expect(connect(`ws://127.0.0.1:${refusedPort}`)).rejects.toBeDefined()
++		const fixture = await createEchoServer()
++		const refusedUrl = fixture.url
++		await fixture.destroy()
++		await expect(connect(refusedUrl)).rejects.toBeDefined()
+ 	})
+ })
+ 
+ describe('nextMessage and nextClose', () => {
+ 	it('resolves the next real message event with the server echo', async () => {
+-		const fixture = await startEchoServer()
++		const fixture = await createEchoServer()
+ 		try {
+ 			const ws = await connect(fixture.url)
+ 			ws.send('hello')
+@@ -153,12 +93,12 @@ describe('nextMessage and nextClose', () => {
+ 			expect(event.data).toBe('echo: hello')
+ 			ws.close()
+ 		} finally {
+-			await fixture.stop()
++			await fixture.destroy()
+ 		}
+ 	})
+ 
+ 	it('resolves the next real close event with the server-chosen code and reason', async () => {
+-		const fixture = await startEchoServer()
++		const fixture = await createEchoServer()
+ 		try {
+ 			const ws = await connect(fixture.url)
+ 			ws.send(INTEGRATION_CLOSE_CUSTOM_REQUEST)
+@@ -166,7 +106,7 @@ describe('nextMessage and nextClose', () => {
+ 			expect(event.code).toBe(4000)
+ 			expect(event.reason).toBe('app-reason')
+ 		} finally {
+-			await fixture.stop()
++			await fixture.destroy()
+ 		}
+ 	})
+ })
+diff --git a/tests/setup.ts b/tests/setup.ts
+index b873384..0f43382 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,13 +1,14 @@
+ // The fleet-wide helpers live in `@orkestrel/test`. What remains here is what is
+ // specific to this package: seeded randomness/text, the integration command
+-// vocabulary, and the pure browser WebSocket helpers.
++// vocabulary, and the browser WebSocket helpers.
++
++import { waitForEvent } from '@orkestrel/test'
+ 
+ // ── Deterministic seeded randomness + text corpus (fuzz/property tests) ──────
+ //
+-// AGENTS §16.1: fuzz/property/limit tests need the SAME reproducible pseudo-random
+-// sequence across a run — `@orkestrel/contract`'s `seededRandom` — plus a
+-// deterministic BMP-safe text builder over it, shared by every node AND
+-// browser-side test.
++// Fuzz, property, and limit tests need the SAME reproducible pseudo-random sequence
++// across a run — `@orkestrel/contract`'s `seededRandom` — plus a deterministic
++// BMP-safe text builder over it, shared by every node AND browser-side test.
+ 
+ /**
+  * Build a deterministic, BMP-safe, guaranteed-valid-UTF-8 string of `length` code
+@@ -35,17 +36,26 @@ export const INTEGRATION_CLOSE_CUSTOM_REQUEST = 'close-4000'
+ export const INTEGRATION_COUNT_REQUEST = 'count'
+ export const INTEGRATION_COUNT_PREFIX = 'count: '
+ 
+-// ── Browser WebSocket helpers (pure — WebSocket + Promise only) ──────────────
++// ── Browser WebSocket helpers (the platform `WebSocket` plus `@orkestrel/test`'s `waitForEvent` — no `node:*` API) ──────────────
+ //
+-// AGENTS §16.1: the integration project loads `setup.ts` into its platform-WebSocket
+-// client tests too, so these tiny, framework-free WebSocket helpers live here
+-// rather than in a node-only setup file — they touch no `node:*` API.
++// The integration project loads `setup.ts` into its platform-WebSocket client tests too,
++// so these tiny WebSocket helpers live here rather than in a node-only
++// setup file — they touch no `node:*` API.
++
++// The elapsed-time limit `nextMessage` and `nextClose` give one event before they fail
++// naming it. Sized from a contended `npm run test:integration` run on 2026-09-03 whose
++// slowest case — the 2 MB round trip — took 802 ms end to end, and kept under the
++// `integration` project's 5000 ms Vitest case timeout so the named-event failure is what a
++// reader sees rather than the runner's anonymous one.
++const NEXT_EVENT_BUDGET_MS = 4_000
+ 
+ /**
+- * Open a `WebSocket` to `url` and resolve once it reaches the `open` state.
++ * Open a `WebSocket` to `url` and resolve after it reaches the `open` state.
+  *
+  * @param url - The WebSocket URL to connect to
+  * @returns A promise resolving to the opened socket
++ * @remarks Rejects with the socket's own `error` event when the target refuses the
++ *   connection, so a refusal surfaces immediately rather than as an elapsed budget.
+  */
+ export function connect(url: string): Promise<WebSocket> {
+ 	return new Promise((resolve, reject) => {
+@@ -60,11 +70,19 @@ export function connect(url: string): Promise<WebSocket> {
+  *
+  * @param ws - The socket to listen on
+  * @returns A promise resolving to the next {@link MessageEvent}
++ * @throws An `Error` naming the awaited event when no message arrives within
++ *   `NEXT_EVENT_BUDGET_MS` (4000) milliseconds
+  */
+-export function nextMessage(ws: WebSocket): Promise<MessageEvent> {
+-	return new Promise((resolve) => {
+-		ws.addEventListener('message', (event) => resolve(event), { once: true })
+-	})
++export async function nextMessage(ws: WebSocket): Promise<MessageEvent> {
++	const [event] = await waitForEvent<[MessageEvent]>(
++		(listener) => {
++			ws.addEventListener('message', listener, { once: true })
++			return () => ws.removeEventListener('message', listener)
++		},
++		'the next WebSocket message event',
++		{ budget: NEXT_EVENT_BUDGET_MS },
++	)
++	return event
+ }
+ 
+ /**
+@@ -72,9 +90,18 @@ export function nextMessage(ws: WebSocket): Promise<MessageEvent> {
+  *
+  * @param ws - The socket to listen on
+  * @returns A promise resolving to the next {@link CloseEvent}
++ * @throws An `Error` naming the awaited event when no close arrives within
++ *   `NEXT_EVENT_BUDGET_MS` (4000) milliseconds — the case a peer that drops the
++ *   connection without dispatching `close` would otherwise leave hanging
+  */
+-export function nextClose(ws: WebSocket): Promise<CloseEvent> {
+-	return new Promise((resolve) => {
+-		ws.addEventListener('close', (event) => resolve(event), { once: true })
+-	})
++export async function nextClose(ws: WebSocket): Promise<CloseEvent> {
++	const [event] = await waitForEvent<[CloseEvent]>(
++		(listener) => {
++			ws.addEventListener('close', listener, { once: true })
++			return () => ws.removeEventListener('close', listener)
++		},
++		'the next WebSocket close event',
++		{ budget: NEXT_EVENT_BUDGET_MS },
++	)
++	return event
+ }
+diff --git a/tests/setupGlobal.ts b/tests/setupGlobal.ts
+index 513f0ab..eaca6cb 100644
+--- a/tests/setupGlobal.ts
++++ b/tests/setupGlobal.ts
+@@ -1,25 +1,15 @@
+-// Global setup for the `integration` project (AGENTS §16 live-service exception) — runs
+-// ONCE in Node, before the client-side tests start, and stays out of the client-side test
+-// files entirely (they import nothing from `@src/*` or `node:*`). It boots a real
+-// `node:http` server, upgrades every request to a server-mode `createNodeWebSocket`
+-// (the package's own public factory — the same wiring shown in its TSDoc example), and
+-// echoes text frames back as `echo: <text>`; a small centralized command vocabulary
+-// drives close/count assertions. The listening URL is handed to the browser
+-// side via `provide('wsUrl', …)`, read back with `inject('wsUrl')` in the test files.
++// Global setup for the `integration` project — runs ONCE in Node, before the client-side
++// tests start, and stays out of the client-side test files entirely (they import nothing
++// from `@src/*` or `node:*`). It starts the shared `createEchoServer` fixture from
++// `tests/setupServer.ts`: a real `node:http` server that upgrades every request to a
++// server-mode `createNodeWebSocket` (the package's own public factory — the same wiring
++// shown in its TSDoc example) and echoes text frames back as `echo: <text>`, with a small
++// centralized command vocabulary driving the close/count assertions. The listening URL is
++// handed to the client side through `provide('wsUrl', …)`, read back with
++// `inject('wsUrl')` in the test files.
+ 
+ import type { TestProject } from 'vitest/node'
+-import { createServer } from 'node:http'
+-import type { Server } from 'node:http'
+-import type { Socket } from 'node:net'
+-import { createLoopback } from '@orkestrel/test/server'
+-import { createNodeWebSocket } from '@src/server'
+-import type { NodeWebSocketInterface } from '@src/server'
+-import {
+-	INTEGRATION_CLOSE_CUSTOM_REQUEST,
+-	INTEGRATION_CLOSE_NORMAL_REQUEST,
+-	INTEGRATION_COUNT_PREFIX,
+-	INTEGRATION_COUNT_REQUEST,
+-} from './setup.js'
++import { createEchoServer } from './setupServer.js'
+ 
+ declare module 'vitest' {
+ 	export interface ProvidedContext {
+@@ -28,54 +18,9 @@ declare module 'vitest' {
+ }
+ 
+ export async function setup({ provide }: TestProject): Promise<() => Promise<void>> {
+-	const sockets = new Set<NodeWebSocketInterface>()
+-
+-	const server: Server = createServer((_request, response) => {
+-		response.writeHead(404)
+-		response.end()
+-	})
+-
+-	server.on('upgrade', (request, socket: Socket, head) => {
+-		const key = request.headers['sec-websocket-key']
+-		if (typeof key !== 'string') {
+-			socket.destroy()
+-			return
+-		}
+-		const ws = createNodeWebSocket({
+-			socket,
+-			key,
+-			head,
+-			on: {
+-				message: (text) => {
+-					if (text === INTEGRATION_CLOSE_NORMAL_REQUEST) {
+-						ws.close(1000, 'done')
+-						return
+-					}
+-					if (text === INTEGRATION_CLOSE_CUSTOM_REQUEST) {
+-						ws.close(4000, 'app-reason')
+-						return
+-					}
+-					if (text === INTEGRATION_COUNT_REQUEST) {
+-						ws.send(`${INTEGRATION_COUNT_PREFIX}${sockets.size}`)
+-						return
+-					}
+-					ws.send(`echo: ${text}`)
+-				},
+-				close: () => {
+-					sockets.delete(ws)
+-				},
+-			},
+-		})
+-		sockets.add(ws)
+-	})
+-
+-	const loopback = await createLoopback(server)
+-
+-	provide('wsUrl', `ws://127.0.0.1:${loopback.port}`)
+-
++	const fixture = await createEchoServer()
++	provide('wsUrl', fixture.url)
+ 	return async () => {
+-		for (const ws of sockets) ws.destroy()
+-		sockets.clear()
+-		await loopback.destroy()
++		await fixture.destroy()
+ 	}
+ }
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index a3d5453..7894203 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1,11 +1,29 @@
+-// Proof of `tests/setupServer.ts` — the Node-only fixtures the server source tests share:
+-// a cross-wired in-memory Duplex pair, a propagation wait, deterministic random bytes, a
+-// FIN-controllable frame encoder, and a client-frame collector. Real `node:stream` Duplex
+-// instances drive every case; nothing here is replaced.
++// Proof of `tests/setupServer.ts` — the Node-only fixtures the server source tests and the
++// `integration` project's global setup share: a cross-wired in-memory Duplex pair, a
++// propagation wait, deterministic random bytes, the seeded length-form corpus, a
++// FIN-controllable frame encoder, a client-frame collector, and the real echo server. Real
++// `node:stream` Duplex instances and a real loopback server drive every case; nothing here
++// is replaced.
+ 
+ import { describe, expect, it } from 'vitest'
+ import { encodeWebSocketFrame, WEBSOCKET_OPCODE_BINARY, WEBSOCKET_OPCODE_TEXT } from '@src/server'
+-import { duplexPair, flushSocket, frame, randomBuffer, readClientFrames } from './setupServer.js'
++import { seededRandom } from '@orkestrel/contract'
++import { requireValue } from '@orkestrel/test'
++import {
++	buildCorpus,
++	createEchoServer,
++	duplexPair,
++	flushSocket,
++	frame,
++	randomBuffer,
++	readClientFrames,
++} from './setupServer.js'
++import {
++	connect,
++	INTEGRATION_COUNT_PREFIX,
++	INTEGRATION_COUNT_REQUEST,
++	nextMessage,
++} from './setup.js'
+ 
+ describe('duplexPair', () => {
+ 	it('cross-wires real Duplex ends: each end reads what its partner writes, both directions', async () => {
+@@ -114,10 +132,63 @@ describe('readClientFrames', () => {
+ 		await flushSocket()
+ 
+ 		expect(collector.frames.length).toBe(1)
+-		const [received] = collector.frames
+-		expect(received).toBeDefined()
+-		if (received === undefined) throw new Error('unreachable: length checked above')
++		const received = requireValue(collector.frames[0], 'readClientFrames collected no frame')
+ 		expect(received.opcode).toBe(WEBSOCKET_OPCODE_TEXT)
+ 		expect(received.payload.toString()).toBe('echo: hi')
+ 	})
+ })
++
++describe('buildCorpus', () => {
++	it('spans every declared length form and is deterministic for a repeated seed', () => {
++		const corpus = buildCorpus(seededRandom(1))
++		const lengths = new Set(corpus.map((payload) => payload.length))
++
++		for (const length of [0, 1, 125, 126, 127, 65_535, 65_536]) {
++			expect(lengths.has(length)).toBe(true)
++		}
++		for (const length of [70_000, 90_000, 120_000, 150_000, 200_000]) {
++			expect(lengths.has(length)).toBe(true)
++		}
++
++		const repeated = buildCorpus(seededRandom(1))
++		expect(repeated.length).toBe(corpus.length)
++		expect(repeated.every((payload, index) => payload.equals(requireValue(corpus[index])))).toBe(
++			true,
++		)
++	})
++
++	it('draws different bytes from a different seed, so the seed is what fixes the corpus', () => {
++		const first = buildCorpus(seededRandom(1))
++		const second = buildCorpus(seededRandom(2))
++		const differing = first.findIndex(
++			(payload, index) => !payload.equals(requireValue(second[index])),
++		)
++		expect(differing).toBeGreaterThanOrEqual(0)
++	})
++})
++
++describe('createEchoServer', () => {
++	it('echoes a text frame back to a real client and tracks the live socket', async () => {
++		const fixture = await createEchoServer()
++		try {
++			expect(fixture.url).toMatch(/^ws:\/\/127\.0\.0\.1:\d+$/u)
++			const ws = await connect(fixture.url)
++			ws.send('hi')
++			expect(String((await nextMessage(ws)).data)).toBe('echo: hi')
++			expect(fixture.sockets.size).toBe(1)
++			ws.close()
++		} finally {
++			await fixture.destroy()
++		}
++	})
++
++	it('answers the count command with the live socket total and clears the set on destroy', async () => {
++		const fixture = await createEchoServer()
++		const ws = await connect(fixture.url)
++		ws.send(INTEGRATION_COUNT_REQUEST)
++		expect(String((await nextMessage(ws)).data)).toBe(`${INTEGRATION_COUNT_PREFIX}1`)
++
++		await fixture.destroy()
++		expect(fixture.sockets.size).toBe(0)
++	})
++})
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index ffb8b34..e8ca199 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1,9 +1,21 @@
+-// Node-only fixtures shared by the server source tests. The browser integration
+-// project loads `tests/setup.ts` instead, so `node:*` primitives stay isolated here.
++// Node-only fixtures shared by the server source tests, the `setup` suite, and the
++// `integration` project's global setup. The `integration` project's own test file imports
++// `tests/setup.ts` instead and reaches nothing under `node:*` or `@src/*`, so the
++// platform-WebSocket client side stays free of Node primitives.
+ 
+-import type { WebSocketFrame } from '@src/server'
++import type { NodeWebSocketInterface, WebSocketFrame } from '@src/server'
++import type { LoopbackInterface } from '@orkestrel/test/server'
++import type { Socket } from 'node:net'
++import { createServer } from 'node:http'
+ import { Duplex, PassThrough } from 'node:stream'
+-import { encodeWebSocketFrame, parseWebSocketFrame } from '@src/server'
++import { createLoopback } from '@orkestrel/test/server'
++import { createNodeWebSocket, encodeWebSocketFrame, parseWebSocketFrame } from '@src/server'
++import {
++	INTEGRATION_CLOSE_CUSTOM_REQUEST,
++	INTEGRATION_CLOSE_NORMAL_REQUEST,
++	INTEGRATION_COUNT_PREFIX,
++	INTEGRATION_COUNT_REQUEST,
++} from './setup.js'
+ 
+ // One endpoint of a cross-wired in-memory socket pair. Writes enter the partner's
+ // inbound channel; reads are push-driven by this endpoint's own channel.
+@@ -54,6 +66,13 @@ export interface TestFrameOptions {
+ 	readonly mask?: Buffer
+ }
+ 
++/** The live echo fixture: the URL clients dial, the sockets it holds, and its teardown. */
++export interface EchoServerInterface {
++	readonly url: string
++	readonly sockets: ReadonlySet<NodeWebSocketInterface>
++	destroy(): Promise<void>
++}
++
+ /** Build deterministic pseudo-random bytes from a seeded generator. */
+ export function randomBuffer(rng: () => number, length: number): Buffer {
+ 	const buffer = Buffer.alloc(length)
+@@ -61,6 +80,25 @@ export function randomBuffer(rng: () => number, length: number): Buffer {
+ 	return buffer
+ }
+ 
++/**
++ * Build the frame-payload corpus that spans every RFC 6455 length form: the 7-bit form
++ * (0, 1, 125), the 126 + 16-bit boundary (126, 127, 65 535), the 127 + 64-bit boundary
++ * (65 536), then large payloads up to 200 KB.
++ *
++ * @param rng - A seeded generator (see `seededRandom` from `@orkestrel/contract`), which fixes every byte, so one seed yields one corpus
++ * @returns The payloads, the repeated short forms first and the large payloads last
++ */
++export function buildCorpus(rng: () => number): readonly Buffer[] {
++	const lengths = [0, 1, 125, 126, 127, 65_535, 65_536]
++	const large = [70_000, 90_000, 120_000, 150_000, 200_000]
++	const corpus: Buffer[] = []
++	for (const length of lengths) {
++		for (let index = 0; index < 25; index += 1) corpus.push(randomBuffer(rng, length))
++	}
++	for (const length of large) corpus.push(randomBuffer(rng, length))
++	return corpus
++}
++
+ /** Encode one test frame, optionally clearing FIN for fragmentation cases. */
+ export function frame(
+ 	opcode: number,
+@@ -100,3 +138,86 @@ export function readClientFrames(client: Duplex): { readonly frames: readonly We
+ 	})
+ 	return { frames }
+ }
++
++// The listening half of the echo fixture: it holds the loopback and the live socket set
++// that `createEchoServer` wires, and tears both down. The wiring stays in the factory
++// because the upgrade handler is where a socket joins the set.
++class EchoServer implements EchoServerInterface {
++	readonly #loopback: LoopbackInterface
++	readonly #sockets: Set<NodeWebSocketInterface>
++
++	constructor(loopback: LoopbackInterface, sockets: Set<NodeWebSocketInterface>) {
++		this.#loopback = loopback
++		this.#sockets = sockets
++	}
++
++	get url(): string {
++		return `ws://127.0.0.1:${this.#loopback.port}`
++	}
++
++	get sockets(): ReadonlySet<NodeWebSocketInterface> {
++		return this.#sockets
++	}
++
++	async destroy(): Promise<void> {
++		for (const ws of this.#sockets) ws.destroy()
++		this.#sockets.clear()
++		await this.#loopback.destroy()
++	}
++}
++
++/**
++ * Start a real loopback `node:http` server that upgrades every WebSocket request to a
++ * server-mode `createNodeWebSocket` and echoes each text frame back as `echo: <text>`.
++ *
++ * @returns The listening fixture — its `ws://` URL, its live sockets, and its teardown
++ *
++ * @remarks
++ * Routing reads the integration command vocabulary `tests/setup.ts` centralizes:
++ * `INTEGRATION_CLOSE_NORMAL_REQUEST` closes `1000` with `done`,
++ * `INTEGRATION_CLOSE_CUSTOM_REQUEST` closes `4000` with `app-reason`, and
++ * `INTEGRATION_COUNT_REQUEST` answers `INTEGRATION_COUNT_PREFIX` plus the live socket
++ * total. A plain request answers `404`, and an upgrade request carrying no string
++ * `sec-websocket-key` header has its socket destroyed.
++ */
++export async function createEchoServer(): Promise<EchoServerInterface> {
++	const sockets = new Set<NodeWebSocketInterface>()
++	const server = createServer((_request, response) => {
++		response.writeHead(404)
++		response.end()
++	})
++	server.on('upgrade', (request, socket: Socket, head) => {
++		const key = request.headers['sec-websocket-key']
++		if (typeof key !== 'string') {
++			socket.destroy()
++			return
++		}
++		const ws = createNodeWebSocket({
++			socket,
++			key,
++			head,
++			on: {
++				message: (text) => {
++					if (text === INTEGRATION_CLOSE_NORMAL_REQUEST) {
++						ws.close(1000, 'done')
++						return
++					}
++					if (text === INTEGRATION_CLOSE_CUSTOM_REQUEST) {
++						ws.close(4000, 'app-reason')
++						return
++					}
++					if (text === INTEGRATION_COUNT_REQUEST) {
++						ws.send(`${INTEGRATION_COUNT_PREFIX}${sockets.size}`)
++						return
++					}
++					ws.send(`echo: ${text}`)
++				},
++				close: () => {
++					sockets.delete(ws)
++				},
++			},
++		})
++		sockets.add(ws)
++	})
++	return new EchoServer(await createLoopback(server), sockets)
++}
+diff --git a/tests/src/server/NodeWebSocket.test.ts b/tests/src/server/NodeWebSocket.test.ts
+index e67318a..d4619b8 100644
+--- a/tests/src/server/NodeWebSocket.test.ts
++++ b/tests/src/server/NodeWebSocket.test.ts
+@@ -7,10 +7,10 @@ import {
+ 	WEBSOCKET_CLOSE_INVALID,
+ 	WEBSOCKET_CLOSE_NORMAL,
+ 	WEBSOCKET_CLOSE_PROTOCOL,
+-	WEBSOCKET_CLOSE_REASON_MAXLEN,
+-	WEBSOCKET_CLOSE_TOOBIG,
++	WEBSOCKET_CLOSE_REASON_MAX_LENGTH,
++	WEBSOCKET_CLOSE_TOO_BIG,
+ 	WEBSOCKET_CLOSE_UNSUPPORTED,
+-	WEBSOCKET_CONTROL_MAXLEN,
++	WEBSOCKET_CONTROL_MAX_LENGTH,
+ 	WEBSOCKET_OPCODE_BINARY,
+ 	WEBSOCKET_OPCODE_CLOSE,
+ 	WEBSOCKET_OPCODE_CONTINUATION,
+@@ -28,17 +28,17 @@ import {
+ 	readClientFrames,
+ } from '../../setupServer.js'
+ 
+-// src/server/websocket/NodeWebSocket.ts — the wrapper driven END TO END over an
+-// in-memory `node:stream` Duplex PAIR (two cross-wired PassThroughs, a REAL bidirectional
+-// socket, not a mock — AGENTS §16). One end is a server-mode NodeWebSocket; the other is a
+-// hand-rolled "client" that writes MASKED frames (encodeWebSocketFrame({ masked: true }))
+-// and reads the server's UNMASKED frames through parseWebSocketFrame. The in-memory Duplex
+-// pair + flush + client frame reader are the SHARED `duplexPair` / `flushSocket` /
+-// `readClientFrames` from setupServer.ts (AGENTS §16.1 — the same harness the MCP WebSocket
+-// transport test reuses). Proves: the 101 handshake is written, a client text frame →
+-// `message`, `send` → a readable frame on the client, ping → auto-pong, close → `close` + a
+-// close handshake, and §13 observer-error isolation (a throwing listener routes to the
+-// emitter's `error` handler, never crashes the socket).
++// src/server/NodeWebSocket.ts — the wrapper driven END TO END over an in-memory
++// `node:stream` Duplex PAIR (two cross-wired PassThroughs, a REAL bidirectional socket,
++// not a mock). One end is a server-mode NodeWebSocket; the other is a hand-rolled "client"
++// that writes MASKED frames (encodeWebSocketFrame({ masked: true })) and reads the
++// server's UNMASKED frames through parseWebSocketFrame. The in-memory Duplex pair + flush
++// + client frame reader are the SHARED `duplexPair` / `flushSocket` / `readClientFrames`
++// from setupServer.ts — the same harness the MCP WebSocket transport test reuses. Proves:
++// the 101 handshake is written, a client text frame → `message`, `send` → a readable frame
++// on the client, ping → auto-pong, close → `close` + a close handshake, and observer-error
++// isolation (a throwing listener routes to the emitter's `error` handler, never crashes
++// the socket).
+ 
+ // The client's `Sec-WebSocket-Key` for the handshake assertions.
+ const CLIENT_KEY = 'dGhlIHNhbXBsZSBub25jZQ=='
+@@ -224,7 +224,7 @@ describe('NodeWebSocket — sending', () => {
+ 		const { frames } = readClientFrames(client)
+ 		const ws = createNodeWebSocket({ socket: server, key: CLIENT_KEY })
+ 		await flushSocket()
+-		ws.destroy() // now closed
++		ws.destroy() // closed
+ 		ws.send('dropped')
+ 		await flushSocket()
+ 		expect(frames.some((entry) => entry.opcode === WEBSOCKET_OPCODE_TEXT)).toBe(false)
+@@ -333,7 +333,7 @@ describe('NodeWebSocket — close', () => {
+ 		expect(isWebSocketError(oversize) ? oversize.code : 'not-websocket').toBe('LIMIT')
+ 		expect(isWebSocketError(oversize) ? oversize.context : undefined).toEqual({
+ 			size: 126,
+-			limit: WEBSOCKET_CONTROL_MAXLEN,
++			limit: WEBSOCKET_CONTROL_MAX_LENGTH,
+ 		})
+ 
+ 		const fractional = captureError(() => ws.close(1000.5))
+@@ -344,7 +344,7 @@ describe('NodeWebSocket — close', () => {
+ 		expect(isWebSocketError(longReason) ? longReason.code : 'not-websocket').toBe('LIMIT')
+ 		expect(isWebSocketError(longReason) ? longReason.context : undefined).toEqual({
+ 			size: 124,
+-			limit: WEBSOCKET_CLOSE_REASON_MAXLEN,
++			limit: WEBSOCKET_CLOSE_REASON_MAX_LENGTH,
+ 		})
+ 
+ 		await flushSocket()
+@@ -355,7 +355,7 @@ describe('NodeWebSocket — close', () => {
+ 	})
+ })
+ 
+-describe('NodeWebSocket — §13 observer-error isolation', () => {
++describe('NodeWebSocket — observer-error isolation', () => {
+ 	it('isolates a throwing message listener and routes to the error handler', async () => {
+ 		const [server, client] = duplexPair()
+ 		const recorder = createRecorder<[error: unknown, event: string]>()
+@@ -395,7 +395,7 @@ describe('NodeWebSocket — §13 observer-error isolation', () => {
+ 
+ // The RFC 6455 breach matrix — every distinct validation the hardened `#dispatch` /
+ // `#decodeClose` / `#onData` gauntlet enforces, each driven end to end over the same
+-// `duplexPair` harness (AGENTS §16.1) and asserted on the emitted `close(code)` (the
++// `duplexPair` harness and asserted on the emitted `close(code)` (the
+ // engine's single funnel, `#fail`) followed by teardown (`readyState` → CLOSED). Client
+ // frames are encoded `{ masked: true }` per RFC 6455 §5.3 UNLESS the test IS the
+ // unmasked-breach case itself.
+@@ -527,7 +527,7 @@ describe('NodeWebSocket — breach matrix', () => {
+ 		expect(ws.readyState).toBe(3)
+ 	})
+ 
+-	it('a new data frame opened mid-message closes with 1002 (protocol error)', async () => {
++	it('an additional data frame opened mid-message closes with 1002 (protocol error)', async () => {
+ 		const [server, client] = duplexPair()
+ 		const closes: Array<number | undefined> = []
+ 		const ws = createNodeWebSocket({
+@@ -662,13 +662,13 @@ describe('NodeWebSocket — breach matrix', () => {
+ 		)
+ 		await flushSocket()
+ 
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3)
+ 		// `#fail` flushes the close frame through `socket.end()` before the hard-teardown
+ 		// fallback destroys — the peer harness must observe the 1009 close frame on the wire.
+ 		const close = frames.find((entry) => entry.opcode === WEBSOCKET_OPCODE_CLOSE)
+ 		expect(close).toBeDefined()
+-		expect(close?.payload.readUInt16BE(0)).toBe(WEBSOCKET_CLOSE_TOOBIG)
++		expect(close?.payload.readUInt16BE(0)).toBe(WEBSOCKET_CLOSE_TOO_BIG)
+ 	})
+ 
+ 	it('preflights every coalesced frame before buffering its payload', async () => {
+@@ -694,7 +694,7 @@ describe('NodeWebSocket — breach matrix', () => {
+ 		await flushSocket()
+ 
+ 		expect(messages).toEqual(['ok'])
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3)
+ 	})
+ 
+@@ -725,7 +725,7 @@ describe('NodeWebSocket — breach matrix', () => {
+ 		)
+ 		await flushSocket()
+ 
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3)
+ 	})
+ 
+@@ -756,7 +756,7 @@ describe('NodeWebSocket — breach matrix', () => {
+ // whether the over-cap bytes arrive as ordinary `data` OR bundled as `options.head` (bytes
+ // already read off the socket before the upgrade handler ran).
+ describe('NodeWebSocket — head-replay cap parity', () => {
+-	it('an over-cap frame delivered entirely via options.head closes 1009 without buffering the payload', async () => {
++	it('an over-cap frame delivered entirely through options.head closes 1009 without buffering the payload', async () => {
+ 		const [server] = duplexPair()
+ 		const closes: Array<number | undefined> = []
+ 		// A small injected payload cap makes the over-cap breach cheap to construct and
+@@ -773,7 +773,7 @@ describe('NodeWebSocket — head-replay cap parity', () => {
+ 		})
+ 		await flushSocket()
+ 
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3)
+ 	})
+ 
+@@ -1019,8 +1019,8 @@ describe('NodeWebSocket — terminal socket listeners', () => {
+ })
+ 
+ // Reassembly, ping/pong interleaving, cap boundaries, close symmetry, and
+-// listener-leak hygiene, all driven end to end over the shared `duplexPair` harness
+-// (AGENTS §16.1). Each case is a REAL socket exchange — no mock — asserting the
++// listener-leak hygiene, all driven end to end over the shared `duplexPair` harness.
++// Each case is a REAL socket exchange — no mock — asserting the
+ // engine's observable contract (message content, wire frames, readyState).
+ describe('NodeWebSocket — stream reassembly and lifecycle', () => {
+ 	it('reassembles a message delivered one byte at a time', async () => {
+@@ -1180,7 +1180,7 @@ describe('NodeWebSocket — stream reassembly and lifecycle', () => {
+ 		client.write(Buffer.concat([first, second]))
+ 		await flushSocket()
+ 
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3) // closed
+ 	})
+ 
+@@ -1218,11 +1218,11 @@ describe('NodeWebSocket — stream reassembly and lifecycle', () => {
+ 		client.write(frame(WEBSOCKET_OPCODE_TEXT, Buffer.alloc(51, 0x61), { masked: true }))
+ 		await flushSocket()
+ 
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3) // closed
+ 		const close = frames.find((f) => f.opcode === WEBSOCKET_OPCODE_CLOSE)
+ 		expect(close).toBeDefined()
+-		expect(close?.payload.readUInt16BE(0)).toBe(WEBSOCKET_CLOSE_TOOBIG)
++		expect(close?.payload.readUInt16BE(0)).toBe(WEBSOCKET_CLOSE_TOO_BIG)
+ 	})
+ 
+ 	it('completes a we-initiate → peer-echoes close with exactly one close event', async () => {
+@@ -1386,7 +1386,7 @@ describe('NodeWebSocket — resource limits', () => {
+ 		client.write(Buffer.concat(frames))
+ 		await flushSocket()
+ 
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3) // closed
+ 	})
+ 
+@@ -1413,15 +1413,15 @@ describe('NodeWebSocket — resource limits', () => {
+ 
+ 		// The cap fires from the declared length alone, before any payload byte arrives:
+ 		// a 1009 close from a payload-less header proves pre-buffer rejection.
+-		expect(closes).toEqual([WEBSOCKET_CLOSE_TOOBIG])
++		expect(closes).toEqual([WEBSOCKET_CLOSE_TOO_BIG])
+ 		expect(ws.readyState).toBe(3) // closed
+ 	})
+ 
+ 	// Intended behavior, not a missing feature: only the payload cap (on a fully-declared
+ 	// length) and the close-handshake timeout bound the socket. A frame whose LENGTH PREFIX
+ 	// itself is still incomplete (fewer than the 2/4/10 header bytes buffered) has no
+-	// declared length to measure yet, so it simply sits — a lean wrapper has no idle-byte
+-	// timeout, by design (see AGENTS §16 framing notes).
++	// declared length to measure yet, so it sits — a lean wrapper has no idle-byte timeout,
++	// by design.
+ 	it('leaves a stalled partial frame bounded with no idle timeout (intended, by design)', async () => {
+ 		const [server, client] = duplexPair()
+ 		const closes: Array<number | undefined> = []
+@@ -1454,7 +1454,7 @@ describe('NodeWebSocket — resource limits', () => {
+ 
+ 		// An unmasked frame (a breach on its own) followed by unrelated garbage bytes, all
+ 		// delivered in a single chunk — the FIRST violation must fire #fail exactly once,
+-		// and nothing after it should trigger a second close.
++		// and nothing after it can trigger a second close.
+ 		const violation = encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'unmasked breach')
+ 		const garbage = randomBuffer(seededRandom(4), 64)
+ 		client.write(Buffer.concat([violation, garbage]))
+diff --git a/tests/src/server/factories.test.ts b/tests/src/server/factories.test.ts
+index 0e5cbe5..a4f7404 100644
+--- a/tests/src/server/factories.test.ts
++++ b/tests/src/server/factories.test.ts
+@@ -6,7 +6,7 @@ import { duplexPair, flushSocket } from '../../setupServer.js'
+ // `NodeWebSocketInterface` over a real upgraded socket. The full handshake / frame
+ // dispatch / ping / close behavior lives in NodeWebSocket.test.ts; here we only assert
+ // the factory wires up a usable handle in each mode (server writes the 101, client does
+-// not) over a genuine `node:stream` Duplex — no mock (AGENTS §16).
++// not) over a genuine `node:stream` Duplex — a real implementation, no mock.
+ 
+ describe('createNodeWebSocket', () => {
+ 	it('returns an open NodeWebSocketInterface that wrote the 101 handshake in server mode', async () => {
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 4532b7f..eb5f12e 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -2,21 +2,25 @@ import { describe, expect, it } from 'vitest'
+ import {
+ 	computeWebSocketAccept,
+ 	encodeWebSocketFrame,
++	isCloseCode,
+ 	isWebSocketError,
++	isWebSocketKey,
++	isWebSocketProtocol,
++	matchesWebSocketCanonical,
+ 	measureWebSocketFrame,
+ 	WEBSOCKET_OPCODE_BINARY,
+ 	WEBSOCKET_OPCODE_TEXT,
+ } from '@src/server'
+ import { captureError } from '@orkestrel/test'
+ 
+-// The remaining RFC 6455 codec helpers as pure units (no socket, AGENTS §16) —
+-// asserted against the spec's OWN worked byte vectors so the bit-level mechanics are
+-// pinned exactly: the handshake accept token (RFC 6455 §1.3), the unmasked + masked
+-// "Hello" frame encoding (§5.7), the 7/16/64-bit length-form boundaries, and
+-// `measureWebSocketFrame` reading the declared length off the header alone. The
+-// coercers (`parseWebSocketFrame`, `parseWebSocketCanonical`, `parseUTF8`) live in
+-// `parsers.test.ts`; the boundary guards (`isWebSocketKey`, `isWebSocketProtocol`,
+-// `isCloseCode`) live in `validators.test.ts`.
++// The RFC 6455 codec helpers and boundary predicates as pure units — no socket, real
++// implementations only — asserted against the spec's OWN worked byte vectors so the
++// bit-level mechanics are pinned exactly: the handshake accept token (RFC 6455 §1.3), the
++// unmasked + masked "Hello" frame encoding (§5.7), the 7/16/64-bit length-form
++// boundaries, `measureWebSocketFrame` reading the declared length off the header alone,
++// `matchesWebSocketCanonical`'s §5.2 minimal-length-encoding check, and the total
++// predicates over caller-supplied handshake and close values. The coercers
++// (`parseWebSocketFrame`, `parseUTF8`) live in `parsers.test.ts`.
+ 
+ const HELLO = Buffer.from('Hello', 'utf-8') // 48 65 6c 6c 6f
+ const MASK = Buffer.from([0x37, 0xfa, 0x21, 0x3d]) // the RFC §5.7 example mask key
+@@ -132,3 +136,99 @@ describe('measureWebSocketFrame', () => {
+ 		expect(measureWebSocketFrame(Buffer.from([0x82, 127, 0, 0, 0, 0, 0]))).toBeUndefined()
+ 	})
+ })
++
++// The RFC 6455 §5.2 minimal-length-encoding predicate as a pure unit (no socket).
++// `matchesWebSocketCanonical` answers `undefined` while the length prefix is still
++// incomplete, `true` for each shortest form, and `false` for a non-minimal extended
++// length or a set 64-bit high bit. The canonical frames come from
++// `encodeWebSocketFrame`, which picks the shortest form independently, so the
++// assertion compares two mechanisms rather than re-deriving the answer.
++
++describe('matchesWebSocketCanonical', () => {
++	it('accepts each shortest length form and waits for an incomplete prefix', () => {
++		expect(matchesWebSocketCanonical(Buffer.from([0x81]))).toBeUndefined()
++		expect(matchesWebSocketCanonical(Buffer.from([0x81, 125]))).toBe(true)
++		expect(
++			matchesWebSocketCanonical(encodeWebSocketFrame(WEBSOCKET_OPCODE_BINARY, Buffer.alloc(126))),
++		).toBe(true)
++		expect(
++			matchesWebSocketCanonical(
++				encodeWebSocketFrame(WEBSOCKET_OPCODE_BINARY, Buffer.alloc(65_536)),
++			),
++		).toBe(true)
++	})
++
++	it('rejects non-minimal extended lengths and a set 64-bit high bit', () => {
++		const nonMinimal16 = Buffer.from([0x81, 126, 0, 125])
++		const nonMinimal64 = Buffer.alloc(10)
++		nonMinimal64.writeUInt8(0x81, 0)
++		nonMinimal64.writeUInt8(127, 1)
++		nonMinimal64.writeUInt32BE(0, 2)
++		nonMinimal64.writeUInt32BE(65_535, 6)
++		const highBit = Buffer.alloc(10)
++		highBit.writeUInt8(0x81, 0)
++		highBit.writeUInt8(127, 1)
++		highBit.writeUInt32BE(0x8000_0000, 2)
++
++		expect(matchesWebSocketCanonical(nonMinimal16)).toBe(false)
++		expect(matchesWebSocketCanonical(nonMinimal64)).toBe(false)
++		expect(matchesWebSocketCanonical(highBit)).toBe(false)
++	})
++
++	it('waits for the extended length prefix before ruling', () => {
++		expect(matchesWebSocketCanonical(Buffer.from([0x81, 126, 0]))).toBeUndefined()
++		expect(matchesWebSocketCanonical(Buffer.from([0x81, 127, 0, 0, 0, 0, 0]))).toBeUndefined()
++	})
++})
++
++describe('handshake value guards', () => {
++	it('accepts only canonical 16-byte Sec-WebSocket-Key values', () => {
++		expect(isWebSocketKey('dGhlIHNhbXBsZSBub25jZQ==')).toBe(true)
++		expect(isWebSocketKey('abc')).toBe(false)
++		expect(isWebSocketKey('dGhlIHNhbXBsZSBub25jZQ=')).toBe(false)
++		expect(isWebSocketKey('dGhlIHNhbXBsZSBub25jZQ==\r\n')).toBe(false)
++	})
++
++	it('accepts one HTTP token and rejects separators or header injection', () => {
++		expect(isWebSocketProtocol('mcp.v1')).toBe(true)
++		expect(isWebSocketProtocol('')).toBe(false)
++		expect(isWebSocketProtocol('mcp, other')).toBe(false)
++		expect(isWebSocketProtocol('mcp\r\nX-Injected: true')).toBe(false)
++	})
++})
++
++describe('isCloseCode', () => {
++	it('accepts valid RFC 6455 receivable codes', () => {
++		expect(isCloseCode(1000)).toBe(true)
++		expect(isCloseCode(1009)).toBe(true)
++		expect(isCloseCode(3000)).toBe(true)
++	})
++
++	it('accepts the IANA-registered 1012-1014 interop extension', () => {
++		expect(isCloseCode(1012)).toBe(true)
++		expect(isCloseCode(1014)).toBe(true)
++	})
++
++	it('rejects reserved-for-local-use-only and unassigned codes', () => {
++		expect(isCloseCode(1005)).toBe(false)
++		expect(isCloseCode(1006)).toBe(false)
++		expect(isCloseCode(999)).toBe(false)
++		expect(isCloseCode(1004)).toBe(false)
++		expect(isCloseCode(1000.5)).toBe(false)
++	})
++})
++
++describe('codec properties — close-code classification', () => {
++	it('classifies every code 999..5000 exactly per RFC 6455 §7.4.1 + the 1012-1014 extension', () => {
++		for (let code = 999; code <= 5000; code += 1) {
++			const expected =
++				(code >= 1000 && code <= 1003) ||
++				(code >= 1007 && code <= 1014) ||
++				(code >= 3000 && code <= 4999)
++			expect(isCloseCode(code)).toBe(expected)
++		}
++		// Explicit call-outs for the reserved-for-local-use-only / unassigned codes.
++		for (const code of [1004, 1005, 1006, 1015]) expect(isCloseCode(code)).toBe(false)
++		for (const code of [1016, 2000, 2999]) expect(isCloseCode(code)).toBe(false)
++	})
++})
+diff --git a/tests/src/server/parsers.test.ts b/tests/src/server/parsers.test.ts
+index 67062f4..20bbce6 100644
+--- a/tests/src/server/parsers.test.ts
++++ b/tests/src/server/parsers.test.ts
+@@ -3,7 +3,6 @@ import {
+ 	encodeWebSocketFrame,
+ 	measureWebSocketFrame,
+ 	parseUTF8,
+-	parseWebSocketCanonical,
+ 	parseWebSocketFrame,
+ 	WEBSOCKET_OPCODE_BINARY,
+ 	WEBSOCKET_OPCODE_CLOSE,
+@@ -14,16 +13,17 @@ import {
+ import { seededRandom } from '@orkestrel/contract'
+ import { requireValue } from '@orkestrel/test'
+ import { buildText } from '../../setup.js'
+-import { frame, randomBuffer } from '../../setupServer.js'
+-
+-// The RFC 6455 coercers as pure units (no socket, AGENTS §16) — asserted against the
+-// spec's OWN worked byte vectors so the bit-level mechanics are pinned exactly: the
+-// unmasked + masked "Hello" frames (§5.7), the 7/16/64-bit length-form boundaries, the
+-// control opcodes, an INCOMPLETE buffer returning `undefined` until the frame is
+-// whole, a frame followed by trailing bytes (so `consumed` lets the caller recover the
+-// remainder), the encode↔parse inverse for masked and unmasked frames, valid and
+-// malformed UTF-8, and the §5.2 minimal-length-encoding check. Determinism comes from
+-// a SUPPLIED mask, so a "client" frame is byte-exact.
++import { buildCorpus, frame, randomBuffer } from '../../setupServer.js'
++
++// The RFC 6455 coercers as pure units — no socket, real implementations only — asserted
++// against the spec's OWN worked byte vectors so the bit-level mechanics are pinned
++// exactly: the unmasked + masked "Hello" frames (§5.7), the 7/16/64-bit length-form
++// boundaries, the control opcodes, an INCOMPLETE buffer returning `undefined` until the
++// frame is whole, a frame followed by trailing bytes (so `consumed` lets the caller
++// recover the remainder), the encode↔parse inverse for masked and unmasked frames, and
++// valid and malformed UTF-8. The §5.2 minimal-length-encoding predicate
++// `matchesWebSocketCanonical` lives in `helpers.test.ts`. Determinism comes from a
++// SUPPLIED mask, so a "client" frame is byte-exact.
+ 
+ const HELLO = Buffer.from('Hello', 'utf-8') // 48 65 6c 6c 6f
+ const MASK = Buffer.from([0x37, 0xfa, 0x21, 0x3d]) // the RFC §5.7 example mask key
+@@ -78,7 +78,7 @@ describe('parseWebSocketFrame — incomplete buffers return undefined', () => {
+ 		expect(parseWebSocketFrame(Buffer.from([0x81, 0x85, 0x37, 0xfa]))).toBeUndefined()
+ 	})
+ 
+-	it('returns undefined when the payload is split mid-body, then parses once complete', () => {
++	it('returns undefined when the payload is split mid-body, then parses after it is complete', () => {
+ 		const full = encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, HELLO) // 7 bytes
+ 		// Every prefix shorter than the whole frame is incomplete.
+ 		for (let cut = 1; cut < full.length; cut += 1) {
+@@ -185,26 +185,11 @@ describe('parseUTF8', () => {
+ //
+ // Every case here asserts the REAL invariant (round-trip equality, exact undefined,
+ // ordering between `measure` and `parse`) rather than a "does not throw" placeholder.
+-// A failure here is a potential codec bug, not a test to loosen (AGENTS §16 / the
+-// battery spec's recorder-not-mock discipline extends to fuzz assertions too).
+-
+-// A bounded corpus spanning every length-form boundary: the 7-bit form (0, 1, 125),
+-// the 126 + 16-bit boundary (126, 127, 65535), the 127 + 64-bit boundary (65536), plus
+-// ~5 large payloads up to 200 KB — ~180 payloads total from a single seeded generator.
+-function buildCorpus(): readonly Buffer[] {
+-	const rng = seededRandom(1)
+-	const lengths = [0, 1, 125, 126, 127, 65_535, 65_536]
+-	const large = [70_000, 90_000, 120_000, 150_000, 200_000]
+-	const corpus: Buffer[] = []
+-	for (const length of lengths) {
+-		for (let index = 0; index < 25; index += 1) corpus.push(randomBuffer(rng, length))
+-	}
+-	for (const length of large) corpus.push(randomBuffer(rng, length))
+-	return corpus
+-}
++// A failure here is a potential codec bug, not a test to loosen — the
++// recorder-not-mock discipline extends to fuzz assertions too.
+ 
+ describe('codec properties — seeded round trips', () => {
+-	const corpus = buildCorpus()
++	const corpus = buildCorpus(seededRandom(1))
+ 
+ 	it('round-trips a seeded random corpus at every length form (unmasked)', () => {
+ 		for (const payload of corpus) {
+@@ -308,13 +293,13 @@ describe('codec properties — measurement and parsing agree', () => {
+ 		expect(measureWebSocketFrame(wire.subarray(0, 1))).toBeUndefined()
+ 		expect(parseWebSocketFrame(wire.subarray(0, 1))).toBeUndefined()
+ 
+-		// Exactly the 4-byte length prefix (2 base + 2 extended) buffered: measure now
++		// Exactly the 4-byte length prefix (2 base + 2 extended) buffered: measure
+ 		// resolves the declared length, but parse is still undefined (mask + payload
+ 		// bytes are absent) — measure resolves strictly earlier than parse.
+ 		expect(measureWebSocketFrame(wire.subarray(0, 4))).toBe(300)
+ 		expect(parseWebSocketFrame(wire.subarray(0, 4))).toBeUndefined()
+ 
+-		// The full wire: parse now agrees with what measure already reported.
++		// The full wire: parse agrees with what measure already reported.
+ 		expect(parseWebSocketFrame(wire)?.payload.length).toBe(300)
+ 	})
+ })
+@@ -371,45 +356,3 @@ describe('codec properties — UTF-8 acceptance', () => {
+ 		}
+ 	})
+ })
+-
+-// The RFC 6455 §5.2 minimal-length-encoding coercer as a pure unit (no socket, AGENTS
+-// §16). `parseWebSocketCanonical` answers `undefined` while the length prefix is still
+-// incomplete, `true` for each shortest form, and `false` for a non-minimal extended
+-// length or a set 64-bit high bit. The canonical frames come from
+-// `encodeWebSocketFrame`, which picks the shortest form independently, so the
+-// assertion compares two mechanisms rather than re-deriving the answer.
+-
+-describe('parseWebSocketCanonical', () => {
+-	it('accepts each shortest length form and waits for an incomplete prefix', () => {
+-		expect(parseWebSocketCanonical(Buffer.from([0x81]))).toBeUndefined()
+-		expect(parseWebSocketCanonical(Buffer.from([0x81, 125]))).toBe(true)
+-		expect(
+-			parseWebSocketCanonical(encodeWebSocketFrame(WEBSOCKET_OPCODE_BINARY, Buffer.alloc(126))),
+-		).toBe(true)
+-		expect(
+-			parseWebSocketCanonical(encodeWebSocketFrame(WEBSOCKET_OPCODE_BINARY, Buffer.alloc(65_536))),
+-		).toBe(true)
+-	})
+-
+-	it('rejects non-minimal extended lengths and a set 64-bit high bit', () => {
+-		const nonMinimal16 = Buffer.from([0x81, 126, 0, 125])
+-		const nonMinimal64 = Buffer.alloc(10)
+-		nonMinimal64.writeUInt8(0x81, 0)
+-		nonMinimal64.writeUInt8(127, 1)
+-		nonMinimal64.writeUInt32BE(0, 2)
+-		nonMinimal64.writeUInt32BE(65_535, 6)
+-		const highBit = Buffer.alloc(10)
+-		highBit.writeUInt8(0x81, 0)
+-		highBit.writeUInt8(127, 1)
+-		highBit.writeUInt32BE(0x8000_0000, 2)
+-
+-		expect(parseWebSocketCanonical(nonMinimal16)).toBe(false)
+-		expect(parseWebSocketCanonical(nonMinimal64)).toBe(false)
+-		expect(parseWebSocketCanonical(highBit)).toBe(false)
+-	})
+-
+-	it('waits for the extended length prefix before ruling', () => {
+-		expect(parseWebSocketCanonical(Buffer.from([0x81, 126, 0]))).toBeUndefined()
+-		expect(parseWebSocketCanonical(Buffer.from([0x81, 127, 0, 0, 0, 0, 0]))).toBeUndefined()
+-	})
+-})
+diff --git a/tests/src/server/validators.test.ts b/tests/src/server/validators.test.ts
+deleted file mode 100644
+index 868c2b5..0000000
+--- a/tests/src/server/validators.test.ts
++++ /dev/null
+@@ -1,58 +0,0 @@
+-import { describe, expect, it } from 'vitest'
+-import { isCloseCode, isWebSocketKey, isWebSocketProtocol } from '@src/server'
+-
+-// The RFC 6455 boundary guards as pure units (no socket, AGENTS §16): total predicates
+-// over caller-supplied handshake and wire values, each pinned against canonical and
+-// malformed inputs.
+-
+-describe('handshake value guards', () => {
+-	it('accepts only canonical 16-byte Sec-WebSocket-Key values', () => {
+-		expect(isWebSocketKey('dGhlIHNhbXBsZSBub25jZQ==')).toBe(true)
+-		expect(isWebSocketKey('abc')).toBe(false)
+-		expect(isWebSocketKey('dGhlIHNhbXBsZSBub25jZQ=')).toBe(false)
+-		expect(isWebSocketKey('dGhlIHNhbXBsZSBub25jZQ==\r\n')).toBe(false)
+-	})
+-
+-	it('accepts one HTTP token and rejects separators or header injection', () => {
+-		expect(isWebSocketProtocol('mcp.v1')).toBe(true)
+-		expect(isWebSocketProtocol('')).toBe(false)
+-		expect(isWebSocketProtocol('mcp, other')).toBe(false)
+-		expect(isWebSocketProtocol('mcp\r\nX-Injected: true')).toBe(false)
+-	})
+-})
+-
+-describe('isCloseCode', () => {
+-	it('accepts valid RFC 6455 receivable codes', () => {
+-		expect(isCloseCode(1000)).toBe(true)
+-		expect(isCloseCode(1009)).toBe(true)
+-		expect(isCloseCode(3000)).toBe(true)
+-	})
+-
+-	it('accepts the IANA-registered 1012-1014 interop extension', () => {
+-		expect(isCloseCode(1012)).toBe(true)
+-		expect(isCloseCode(1014)).toBe(true)
+-	})
+-
+-	it('rejects reserved-for-local-use-only and unassigned codes', () => {
+-		expect(isCloseCode(1005)).toBe(false)
+-		expect(isCloseCode(1006)).toBe(false)
+-		expect(isCloseCode(999)).toBe(false)
+-		expect(isCloseCode(1004)).toBe(false)
+-		expect(isCloseCode(1000.5)).toBe(false)
+-	})
+-})
+-
+-describe('codec properties — close-code classification', () => {
+-	it('classifies every code 999..5000 exactly per RFC 6455 §7.4.1 + the 1012-1014 extension', () => {
+-		for (let code = 999; code <= 5000; code += 1) {
+-			const expected =
+-				(code >= 1000 && code <= 1003) ||
+-				(code >= 1007 && code <= 1014) ||
+-				(code >= 3000 && code <= 4999)
+-			expect(isCloseCode(code)).toBe(expected)
+-		}
+-		// Explicit call-outs for the reserved-for-local-use-only / unassigned codes.
+-		for (const code of [1004, 1005, 1006, 1015]) expect(isCloseCode(code)).toBe(false)
+-		for (const code of [1016, 2000, 2999]) expect(isCloseCode(code)).toBe(false)
+-	})
+-})

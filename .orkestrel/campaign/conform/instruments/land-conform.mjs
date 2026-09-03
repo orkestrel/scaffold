@@ -37,15 +37,19 @@ for (const arg of process.argv.slice(2)) {
 			const run = spawnSync('npx', ['scaffold', 'audit', '--offline'], { cwd: dir, encoding: 'utf8' })
 			const out = `${run.stdout || ''}${run.stderr || ''}`
 			const lines = out.split('\n').map((l) => l.trim()).filter(Boolean)
-			const clean = run.status === 0 && lines.length === 1 && /^0 of \d+ planned paths drifted from the plan\./.test(lines[0])
-			return { status: run.status, out, lines, clean }
+			// Drift rows are the table's `│ path │ group │ drift │` lines; an advisory such as the integration seed's
+			// "composes nothing" note (websocket, 17:33 UTC) is neither drift nor the summary and does not redden.
+			const rows = lines.filter((l) => l.startsWith('│') && !l.includes(' path '))
+			const summary = lines.some((l) => /^0 of \d+ planned paths drifted from the plan\./.test(l))
+			const clean = run.status === 0 && summary && rows.length === 0
+			return { status: run.status, out, lines, rows, clean }
 		}
 		let result = audit()
 		// A browser-environment target on scaffold 0.0.60 carries a vendored `configs/browsers.ts` behind the plan's
 		// bytes (database 16:19, console 16:45 UTC). The sanctioned fix is `scaffold repair`, which also rewrites the
 		// manifest's devDependency floors without the lockfile; the manifest is restored from the pre-repair bytes
 		// and the floors wait for the fleet-wide manifest unit. Any other drift stays red.
-		const onlyBrowsers = !result.clean && result.lines.filter((l) => l.startsWith('│') && !l.includes(' path ')).every((l) => l.includes('configs/browsers.ts') && l.includes('stale'))
+		const onlyBrowsers = !result.clean && result.rows.length > 0 && result.rows.every((l) => l.includes('configs/browsers.ts') && l.includes('stale'))
 		if (!result.clean && onlyBrowsers) {
 			const manifest = readFileSync(`${dir}/package.json`, 'utf8')
 			const repair = spawnSync('npx', ['scaffold', 'repair'], { cwd: dir, encoding: 'utf8' })

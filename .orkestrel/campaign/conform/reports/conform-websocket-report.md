@@ -81,7 +81,7 @@ named script, and is then restored. Every control file sits in
 | websocket-obj-8  | `npm run test:setup`       | `buildCorpus` drops the 65 536 length form                 | 1 failed \| 20 passed   | `obj-8-control.txt`             | 21 passed           |
 | websocket-obj-5  | `npm run test:setup`       | `nextMessage` subscribes to `close`                        | 3 failed \| 18 passed   | `obj-5-control.txt`             | 21 passed           |
 | websocket-obj-7  | `npm run test:setup`       | `createEchoServer` replies `reply:` instead of `echo:`     | 2 failed \| 19 passed   | `obj-7-control-setup.txt`       | 21 passed           |
-| websocket-obj-7  | `npm run test:integration` | the same plant                                             | 4 failed \| 10 passed   | `obj-7-control-integration.txt` | 14 passed           |
+| websocket-obj-7  | `npm run test:integration` | the same plant                                             | 9 failed \| 5 passed    | `obj-7-control-integration.txt` | 14 passed           |
 | websocket-obj-6  | `npm run test:guides`      | `computeWebSocketAccept` hashes with `sha256`              | 1 failed \| 21 passed   | `obj-6-control.txt`             | 22 passed           |
 | websocket-obj-6  | `npm run test:guides`      | `encodeWebSocketFrame` clears the FIN bit                  | 3 failed \| 19 passed   | `obj-6-control-fences.txt`      | 22 passed           |
 
@@ -222,3 +222,65 @@ Recorded against the capability that owns them, for the next change, rather than
 - `tests/guides.test.ts` and its "the second assertion below" and "The five constants below" lines
   are fleet-shared drop-in prose. This copy is fixed; the sibling packages carrying the same two
   lines are not, and the template the fleet regenerates the drop-in from is where the fix belongs.
+
+## Fix round 1
+
+### Fix round 2
+
+1. **F1.** `tests/setup.ts:3` dropped `pure`; the clause now reads `and the browser WebSocket
+   helpers.`
+2. **F2.** The `Fix round 1` F1 entry now cites `tests/integration.test.ts:3-4` for the wrapped
+   clause; the sweep entry's `new` row no longer carries the `setupPolicy.ts`'s excluded scope
+   aside parenthetical, since the row's opening sentence already excludes `tests/setupPolicy.ts`.
+
+1. **Claim 4.** `conform-websocket-report.md:84` corrected from `4 failed | 10 passed` to `9 failed
+   | 5 passed`, matching `/home/user/work/evidence/websocket-proofs/obj-7-control-integration.txt:367`.
+   Every other count in the failing-first table was re-read against its named file:
+   `obj-1-control.txt:73` (3 failed | 117 passed), `obj-11-control.txt:608` (28 failed | 92 passed),
+   `obj-4-control.txt:30` (1 failed | 20 passed), `obj-8-control.txt:33` (1 failed | 20 passed),
+   `obj-5-control.txt:22` (3 failed | 18 passed), `obj-7-control-setup.txt:46` (2 failed | 19 passed),
+   `obj-6-control.txt:30` (1 failed | 21 passed), `obj-6-control-fences.txt:82` (3 failed | 19
+   passed). Every one already matched the table; none needed correction.
+2. **F1.** `tests/setup.ts:39` now reads `// ── Browser WebSocket helpers (the platform \`WebSocket\`
+   plus \`@orkestrel/test\`'s \`waitForEvent\` — no \`node:*\` API) ──`; the header's `:42` line
+   dropped `framework-free` in the same rewrite, since both stood in the enumeration that
+   overreached. `tests/integration.test.ts:3-4` now reads `browser helpers from \`tests/setup.ts\`
+   (the platform \`WebSocket\` plus \`@orkestrel/test\`'s \`waitForEvent\` — no \`node:*\` API), and
+   the injected` — the wrap moved the clause onto its own comment line.
+3. **Checker F1.** `tests/src/server/NodeWebSocket.test.ts:1457` now reads `and nothing after it can
+   trigger a second close.` — ability sense, `can`.
+4. **Checker F2.** `src/server/NodeWebSocket.ts:274` now reads `// Decode every complete frame in the
+   buffer, dispatching each and slicing`.
+5. **Checker F3.** `tests/src/server/parsers.test.ts:296` now reads `// Exactly the 4-byte length
+   prefix (2 base + 2 extended) buffered: measure`; `:302` now reads `// The full wire: parse agrees
+   with what measure already reported.`
+6. **Checker F4.** `tests/src/server/NodeWebSocket.test.ts:227` now reads `ws.destroy() // closed`;
+   `:530` now reads `it('an additional data frame opened mid-message closes with 1002 (protocol
+   error)', async () => {`.
+7. **Sweep.** Pattern `\b(should|currently|now|new|framework-free)\b`, case-insensitive, over
+   `src/**`, `tests/**` excluding `tests/setupPolicy.ts`, `tests/policy.test.ts`,
+   `tests/config.test.ts`, and `tests/distribution.test.ts`, plus `guides/websocket.md`,
+   `guides/README.md`, and `README.md`. Remaining hits, each ruled:
+   - Every `new` hit in `src/**` and in the swept `tests/**` files (`guides.test.ts`,
+     `integration.test.ts`, `setup.test.ts`, `setup.ts`, `setupServer.ts`, `setupServer.test.ts`,
+     `NodeWebSocket.test.ts`) is the constructor keyword — permitted.
+   - `tests/src/server/NodeWebSocket.test.ts:1289` — `ws.send('should be dropped')` — a payload
+     string value the case under test asserts against, not prose describing behavior — permitted.
+   - No `currently`, `now`, or `framework-free` hit remains in the swept population.
+   - `guides/websocket.md`, `guides/README.md`, and `README.md` returned no match.
+
+## Gates (fix round 1)
+
+| Command                                          | Exit code |
+| ------------------------------------------------- | --------- |
+| `npm run format:check`                             | 0         |
+| `npm run lint:check`                               | 0         |
+| `npm run check`                                    | 0         |
+| `npm run build`                                    | 0         |
+| `npm test`                                         | 0         |
+
+`npm test` readings: src:server 120, policy 111, config 46, setup 21, guides 22, integration 14 —
+all passed, unchanged from the unit's own baseline.
+
+`npx scaffold audit --offline` printed: `0 of 37 planned paths drifted from the plan. Audit compared
+bytes at 23, existence at 5, and nothing at 9.`
