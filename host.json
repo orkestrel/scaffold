@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/captures.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/captures.md",
 			"executable": false,
-			"digest": "7ce7a737a59be1c36fe22f49e2009657f23560a78877646952b5d6d448931cbe"
+			"digest": "50b2fb2fe64cfbd0bbaae643222389163cd15aa71bee6256d1b4d22960ed3acd"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/decide.md",
@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/layer.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/layer.md",
 			"executable": false,
-			"digest": "5754dd269934e8e9a015d581b53b2aa0881a1d4eec54cef8cac7a7fbbe7700c1"
+			"digest": "256cbfe5065e01226a8b31cea009efa6cdff48bc5478316429c6aea14c1016de"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/statechart.md",
@@ -256,7 +256,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/styles.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/styles.md",
 			"executable": false,
-			"digest": "94f68e3743217d1d8805aa86e8683a92514ffd5dcb73e795a00ccb1c589fa24d"
+			"digest": "d84c40ac85e984c20d048ef16047b4f44a3cb928fcd5ef4e0f0e704055ae21a5"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "a759aaa108397ae972a4be6a09fd99a270349d927a45025f723b289b65bec335"
+	"digest": "0b9e3c4b9d1589204cc388725ccb2ac378a34b03a6ae878882da01cb7dfebd5e"
 }

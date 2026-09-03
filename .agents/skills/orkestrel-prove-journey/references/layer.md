@@ -37,7 +37,7 @@ take one, because their subject is a node the caller already holds.
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
 | `resolveAccessible`, `resolveRendered`, `clickAccessible`, `clickAccessibleWithin`, `clickDisclosure`, `typeAccessible`, `fillAccessible`, `pressKeys`, `traverseAccessible`, `readPerception`, `readPage`, `readFocus`, `readValue` | No               |
 | `readText`, `readRole`, `readName`, `readStates`, `describeTree`, `describeFocus`, `isReachable`, `isRendered`                                                                                                                       | Yes              |
-| `contrast`, `readRing`, `readLayers`, `readBackdrop`, `style`, `token`, `pixels`, `readClasses`, `extractStyles`, `extractOrphans`, `readRows`                                                                                       | Yes              |
+| `readContrast`, `readRing`, `readLayers`, `readBackdrop`, `readStyle`, `readToken`, `readPixels`, `readClasses`, `extractStyles`, `extractOrphans`, `readRows`                                                                       | Yes              |
 | `mount`, `typeInput`, `commitInput`, `captureFrame`, and a portfolio's `place`                                                                                                                                                       | Yes              |
 
 Never pass an element to a verb from a journey step. Read a step that would pass one as a missing

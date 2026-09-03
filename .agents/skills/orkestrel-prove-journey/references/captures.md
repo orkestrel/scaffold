@@ -15,7 +15,7 @@ to, and the flag as `enabled`.
   picture is one element.
 - Leave `enabled` unset in an ordinary run. `place` then returns `undefined`, resizes nothing,
   writes nothing, and records nothing.
-- Read `files` for the registry expanded across every variant, `states` for what this run placed,
+- Read `files` for the registry expanded across every variant, `placements` for what this run placed,
   and `paths` for what it wrote. Each hands back a snapshot.
 
 The package already refuses these, so assert none of them again:
@@ -40,7 +40,7 @@ that declaration.
 - Place a capture state from inside the journey that reaches it, immediately after the assertion
   that proves the surface is in the condition that state names.
 - Record each placed name in the suite's own set in the same step that calls `place`. That set, not
-  `states`, is what the always-on placement proof reads.
+  `placements`, is what the always-on placement proof reads.
 
 ## Variants
 
@@ -72,8 +72,8 @@ suite carries these.
   set built from it; a length equal to the set's size is what proves the expansion unique.
 - Assert placement as set equality against the registry, in every run. Never assert a count: a count
   passes while one state is placed twice and another never.
-- Read the placement proof from the suite's own set rather than from `states`. An ordinary run's
-  `place` returns before it reads the registry, so `states` is empty there and an unregistered name
+- Read the placement proof from the suite's own set rather than from `placements`. An ordinary run's
+  `place` returns before it reads the registry, so `placements` is empty there and an unregistered name
   reaches no refusal until a capture run. The always-on placement proof is what catches it.
 - Under the flag, assert the written filenames equal the registry expanded for the run's variant.
   `captureFrame` already reads each file back and compares its bytes against the frame it shot, so

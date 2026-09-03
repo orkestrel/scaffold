@@ -7,12 +7,12 @@ there and the reading from here.
 
 ## Assert the resolved value
 
-- Read one property with `style(element, property)` and a length with `pixels(element, property)`. A
+- Read one property with `readStyle(element, property)` and a length with `readPixels(element, property)`. A
   class present in the markup and absent from the cascade resolves to nothing, and an assertion on
   the class list passes on it.
 - Never substitute `findRule` for a resolved read. It proves a declaration exists, and another rule
   may still win; reach for it where the stylesheet itself is the subject.
-- Compare a color through `colorEqual` or `rgba` rather than by string. A browser normalizes a color
+- Compare a color through `matchesColor` or `parseCSSColor` rather than by string. A browser normalizes a color
   expression, so a literal comparison fails on a value that resolved correctly.
 
 ## Run per variant
@@ -32,7 +32,7 @@ readings follow.
 
 ## Contrast and focus chrome
 
-- Read a text pairing with `contrast(element)`, which composites the painted ancestors to the first
+- Read a text pairing with `readContrast(element)`, which composites the painted ancestors to the first
   opaque layer, so a translucent tint reads as a tint over what shows through it.
 - Pass `floor` only where the surface the stack really sits on is known, and pass `CANVAS_COLOR`
   where the browser paints onto its own canvas. Omitting `floor` refuses a stack whose painted layers
@@ -47,7 +47,7 @@ readings follow.
   in the harness rather than taken from the surface. An instrument whose negative control passes is
   broken, and its readings are not evidence.
 - Reach for `measureContrast`, `measureLuminance`, `blendColor`, `readLayers`, and `readBackdrop`
-  only where the composite itself is the subject. Never re-derive `contrast` from them.
+  only where the composite itself is the subject. Never re-derive `readContrast` from them.
 
 ## The authored-class census
 
@@ -78,7 +78,7 @@ instruments reference → Style escapes. This is the reading.
 
 ## Tokens
 
-- Read a token with `token(element, name)` where inheritance matters and `rootToken(name)` where the
+- Read a token with `readToken(element, name)` where inheritance matters and `readRootToken(name)` where the
   document declares it. The leading dashes are optional in each.
 - Compare values, never presence. An absent token and one declared empty both read as `''`, and a
   `var()` naming an undeclared property resolves to the inherited color rather than refusing, so an
