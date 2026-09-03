@@ -90,3 +90,7 @@ harness bundle delta (chrome).
   then the verifier.
 - Taverna and supervisor wait on the middleware release the user runs elsewhere; their resume
   briefs and chrome briefs are in place.
+- Lloyds closed 2026-09-03: fix round `e508e8c` (17 files) and the pin `09e75ae`; the fix-round
+  lane's two broken claims ruled (claim 6 struck as the Orchestrator's over-reach with the reader
+  gap carried to `ROADMAP.md`; claim 12 closed by the pin) and its unresolved claim closed on the
+  verifier's chain; `audit-lloyds-verdict.md` reads PASS. Lloyds main pushed at `09e75ae`.
