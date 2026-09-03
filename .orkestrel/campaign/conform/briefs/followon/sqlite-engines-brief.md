@@ -67,6 +67,16 @@ Stop and report — expected, found, exact evidence, done or not done, at most o
 
 **Observations, not criteria.** The whole-suite `npm test` reading; the Node 22.12.0 negative control.
 
+## Added rows
+
+Added 2026-09-03 at 13:09 UTC from the conformance unit's second audit round (`units/conform-sqlite-audit-verdict.md`, referral R1 and observations O1 and O2), after sqlite landed as 225bb1c. Each takes a disposition in the report's table like the numbered rows; the sites are read on that tip.
+
+5. **sqlite-obj-1e** — `guides/sqlite.md`, the `SQLiteDatabase` row of the Entities table (the line beginning `| \`SQLiteDatabase\`  | class |`): change its Summary cell from `The database — \`connect\` / \`close\` / \`execute\` / \`prepare\` / \`transact\` / \`begin\` / \`commit\` / \`rollback\` / \`pragma\`.` to `The database — \`connect\` / \`close\` / \`execute\` / \`prepare\` / \`transact\` / \`begin\` / \`commit\` / \`rollback\` / \`pragma\`; readonly \`path\`, \`connected\`, and \`transacting\`.`, re-padding the table column so `format:check` stays green. Rule: `.claude/rules/documentation.md` § Parity, "Readonly data properties remain in the interface's `## Surface` row"; `src/server/types.ts:140-141` declares `path` and `connected` and no row names them.
+6. **sqlite-obj-1f** — `guides/sqlite.md`, Contract item 1 (the line beginning `1. **One barrel, one surface.**`): replace the sentence `The wrapper ships no deep import path.` with `\`.\` is the only code entry; \`./package.json\` is the manifest.` Rule: `.claude/rules/writing.md` § Claims and time, "Claim only what the reader can check"; `package.json` exports `./package.json`.
+7. **sqlite-obj-1g** — the finalize-fault scope, at two sites. In `guides/sqlite.md`, Contract item 5, replace `Finalizing is the exception to that mapping: after a \`break\` or an early \`return\` the wrapper finalizes the native iterator, and a fault from that finalize call is discarded rather than mapped, so leaving the loop early never throws.` with `Finalizing is the exception to that mapping: on every exit after the first step the wrapper finalizes the native iterator, and a fault from that finalize call is discarded rather than mapped, so leaving the loop never throws.` In `src/server/types.ts`, the `SQLiteStatementInterface` doc block (lines 98-105 on 225bb1c), replace `a fault raised while finalizing an abandoned \`iterate\` stream is discarded instead, so leaving the loop early never throws.` with `a fault raised while finalizing an \`iterate\` stream on any exit after its first step is discarded instead, so leaving the loop never throws.`, rewrapping the ` * ` lines at the block's existing width. Rule: `.claude/rules/documentation.md` § Parity, "Re-read the prose last, against what actually shipped"; `src/server/SQLiteStatement.ts:129-136` discards the fault on every exit after the first step, not only on `break` and early `return`. `tests/guides.test.ts` presence-guards claim lines: where a guard quotes either replaced sentence, update the guard to the new sentence in the same row.
+
+The Owned row of § Scope extends to `src/server/types.ts` for row 7 only. § Acceptance criteria gains: `npm run test:guides` exit 0 after rows 5 to 7, and `npm run check` exit 0 after row 7.
+
 ## Review evidence
 
 The diff and status files named under § Output; the report; the rows.
