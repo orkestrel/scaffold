@@ -106,14 +106,16 @@ How each red was produced:
 
 An earlier readiness control also ran: with discovery handed empty candidate sources, `npm run test:service` reported `Test Files 1 failed`, `Tests no tests`, naming the install routes rather than skipping. That reading is in `browser-obj-5-red.txt`'s predecessor run and is reproduced by the retained `requireSystemBrowser` case.
 
-Structural rows (browser-obj-4, browser-obj-7, browser-subj-17, and the rename rows) carry a sweep plus a gate rather than a planted red, per the brief's placement-and-naming clause.
+Structural rows (browser-obj-4, browser-obj-7, browser-subj-17, and the rename rows) carry a sweep plus a gate rather than a planted red, per the brief's placement-and-naming clause. Neither browser-obj-2 nor browser-obj-3 admits a red: the old `localhost` form passes on a host that resolves `localhost` to `127.0.0.1`, and an elapsed reading built from `Date.now()` is green against the same budget as one built from `performance.now()`.
 
 ## Sweeps
 
 | Pattern                                                                             | Paths                                                              | Result                                        |
 | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------- |
 | `attributeOfBrowserNode\|parseBrowserChord\|findInStore\|defaultInstallPaths\|defaultStoreBases` (case-insensitive) | `src`, `tests`, `guides`, `README.md`, `package.json`, `vite.config.ts` | empty                                         |
-| `\bwindowsRoots\b`                                                                  | `src`, `tests`, `guides`                                           | empty                                         |
+| `\bwindowsRoots\b`                                                                  | `src`, `tests`, `guides`, `README.md`, `package.json`, `vite.config.ts` | empty                                     |
+| `Date\.now\(`                                                                       | `tests`                                                             | empty; the retained `src` hits (`src/server/helpers.ts:365,367,369,388`, `src/core/BrowserNetworkManager.ts:183,253`, `src/core/BrowserHARManager.ts:101,157,179,228`, `src/core/BrowserClock.ts:35`, `src/core/parsers.ts:377`) are ruled outside browser-obj-2's population, which is paired elapsed readings |
+| `localhost`                                                                         | `tests`                                                             | `tests/src/server/Browser.test.ts:527,541,952` and `tests/src/server/factories.test.ts:56` ruled inert string data; `tests/setupServer.ts:28,242` ruled TSDoc prose |
 | `\bvia\b\|\be\.g\.\|\bshould\b\|\bsince\b` (case-insensitive)                        | `src`, `guides/browser.md`, `guides/README.md`, `README.md`        | empty                                         |
 | `\b(one\|two\|…\|ten)\b` (case-insensitive)                                          | `guides/browser.md`, `guides/README.md`                            | every hit is the singular article or names its members; none is a count |
 | `\b[0-9]+ (elements\|members\|…\|categories)\b`                                      | `guides`, `README.md`, `src`, `tests`                              | one hit, inside a Chromium error-message fixture string — data, not prose |
@@ -196,6 +198,10 @@ escalated, because none contradicts a row's objective.
 7. **The new mirrored suites drive shared fixtures rather than local factories.**
    `createAttachedPage` and `readCDPParams` went into `tests/setup.ts` with their own proofs,
    because `.claude/rules/tests.md` refuses a local fixture factory in a test file.
+8. **`tests/service/browser.test.ts:553` renamed the moved contenteditable case's title from "via
+   codegen" to "through codegen."** browser-obj-5's move carries the block unchanged apart from its
+   imports; the title word is browser-subj-8's `via` substitution, applied where the moved text
+   crossed it, and is recorded here as an ancillary decision rather than left unstated.
 
 ## Observations for the next matrix
 
@@ -236,3 +242,17 @@ read with Read, Grep, or Glob and changed with Edit or Write.
 - `/home/user/work/evidence/browser-proofs/` — the control and gate runner output named earlier
 
 Both evidence files were produced by `node /home/user/scaffold/tmp/work/evidence.mjs browser`.
+
+## Fix round 1
+
+Closes the round-1 objective lane's findings F1 to F3.
+
+- § Sweeps: widened the `\bwindowsRoots\b` row to `src`, `tests`, `guides`, `README.md`,
+  `package.json`, `vite.config.ts` and re-ran it (empty); added the `Date\.now\(` row over `tests`
+  (empty, with the retained `src` hits ruled outside browser-obj-2's population) and the `localhost`
+  row over `tests` (every hit ruled inert string data or TSDoc prose).
+- § Failing-first controls: added the sentence stating that neither browser-obj-2 nor browser-obj-3
+  admits a red, with the reason for each.
+- § Recorded corrections and ancillary decisions: added row 8, recording the "via codegen" to
+  "through codegen" title rename in `tests/service/browser.test.ts:553` as browser-subj-8's
+  substitution applied where the moved text crossed it.

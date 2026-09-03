@@ -1,0 +1,460 @@
+diff --git a/README.md b/README.md
+index 5d718f3..5a7f64a 100644
+--- a/README.md
++++ b/README.md
+@@ -63,14 +63,14 @@ result.subject // { value: 42 }
+ interpret.destroy()
+ ```
+ 
+-`interpret()` is genuinely synchronous and runs the fixed five-stage
++`interpret()` is genuinely synchronous and runs the fixed
+ pipeline `[normalize, extract, clarify, format, generate]`. A `NO_TEMPLATE`
+ / `LOW_CONFIDENCE` non-match, or a thrown stage, both yield a visible
+ INCOMPLETE result rather than an arbitrary fallback.
+ 
+ ## Guide
+ 
+-For the full surface — the `Interpret` orchestrator, the five pipeline
++For the full surface — the `Interpret` orchestrator, the pipeline
+ stages, the template/subject/definition managers, the cross-turn context,
+ the lexicon-driven `Narrator`, helpers, validators, factories, errors, and
+ the observation surface — see
+diff --git a/guides/interpret.md b/guides/interpret.md
+index 4bf9272..6dd7d8a 100644
+--- a/guides/interpret.md
++++ b/guides/interpret.md
+@@ -14,14 +14,15 @@
+ > `describe*` family. Nothing here is an LLM, provider, or agent — the
+ > `prompt` a result carries is FOR an external model, never consumed
+ > internally. Every discriminant names its axis, never `kind` / `type`:
+-> `stage` splits the five pipeline phases, `category` splits provenance, and
++> `stage` splits the `[normalize, extract, clarify, format, generate]` pipeline
++> phases, `category` splits provenance, and
+ > `code` splits coded errors. Source: [`src/core`](../src/core).
+ > Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+-Add a template, interpret text through the five-stage pipeline, then
+-render the result back to prose:
++Add a template, interpret text through the normalize/extract/clarify/format/generate
++pipeline, then render the result back to prose:
+ 
+ ```ts
+ import { createExtractor, createInterpret } from '@orkestrel/interpret'
+@@ -62,7 +63,7 @@ interpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arit
+ interpret.destroy()
+ ```
+ 
+-`interpret()` is genuinely SYNCHRONOUS and runs the fixed five-stage pipeline
++`interpret()` is genuinely SYNCHRONOUS and runs the fixed pipeline
+ `[normalize, extract, clarify, format, generate]`; a `NO_TEMPLATE` /
+ `LOW_CONFIDENCE` non-match, or a thrown stage, both yield a visible
+ INCOMPLETE `Interpretation` (never an arbitrary fallback template) rather
+@@ -74,7 +75,7 @@ than throwing. An interpretation is complete when `ambiguities` and
+ | Type                         | Kind      | Shape                                                                                                                                                                                                                                                     |
+ | ---------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `ProvenanceCategory`         | type      | `'extracted' \| 'carried' \| 'default' \| 'computed' \| 'subject'` — how one value was obtained.                                                                                                                                                          |
+-| `InterpretStage`             | type      | `'normalize' \| 'extract' \| 'clarify' \| 'format' \| 'generate'` — the five fixed pipeline phases, in order.                                                                                                                                             |
++| `InterpretStage`             | type      | `'normalize' \| 'extract' \| 'clarify' \| 'format' \| 'generate'` — the fixed pipeline phases, in order.                                                                                                                                                  |
+ | `InterpretErrorCode`         | type      | `'NORMALIZE_FAILED' \| 'EXTRACT_FAILED' \| 'CLARIFY_FAILED' \| 'FORMAT_FAILED' \| 'GENERATE_FAILED' \| 'NO_TEMPLATE' \| 'LOW_CONFIDENCE' \| 'DESTROYED'` — coded `InterpretError` reasons.                                                                |
+ | `EntityMapping`              | interface | `{ entity, aliases, field, required? }` — one entity-extraction rule pointing at a subject field.                                                                                                                                                         |
+ | `FieldDefault`               | interface | `{ field, value }` — a fallback value filled onto an unresolved field.                                                                                                                                                                                    |
+@@ -366,6 +367,7 @@ Digest, template matching, computed-field resolution, and the reverse
+ direction:
+ 
+ ```ts
++import type { Template } from '@orkestrel/interpret'
+ import {
+ 	canonicalize,
+ 	canonicalizeNode,
+@@ -400,7 +402,7 @@ resolveExpression(
+ renderSubject({ age: 25, income: 50000 }, createNarrator()) // 'with age: 25, income: 50000'
+ 
+ const gate = { action: 'compute', domain: 'rating', confidence: 1 }
+-const template = {
++const template: Template = {
+ 	id: 't1',
+ 	name: 'T',
+ 	domain: 'rating',
+@@ -408,7 +410,7 @@ const template = {
+ 	mappings: [],
+ 	defaults: [],
+ 	computations: [],
+-	definition: { reasoning: 'symbolic' as const, id: 't1', name: 'T', equations: [], variables: {} },
++	definition: { reasoning: 'symbolic', id: 't1', name: 'T', equations: [], variables: {} },
+ }
+ scoreTemplate(gate, template) // 1
+ ```
+@@ -507,20 +509,20 @@ createDefinitionManager({
+ 
+ ### Entities
+ 
+-| API                 | Kind  | Summary                                                                                                                                |
+-| ------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Interpret`         | class | The interpretation orchestrator — runs the five-stage pipeline, owns the template registry and context, exposes the reverse direction. |
+-| `Narrator`          | class | A stateless, total, lexicon-driven rendering engine for the reverse direction.                                                         |
+-| `Normalizer`        | class | The `Normalizer` stage — contraction/abbreviation/correction substitutions plus whitespace collapse.                                   |
+-| `Extractor`         | class | The `Extractor` stage — template-agnostic intent classification plus numeric mining.                                                   |
+-| `Clarifier`         | class | The `Clarifier` stage — same-domain carry-over, defaults, and dependency-ordered computed fields.                                      |
+-| `Formatter`         | class | The `Formatter` stage — renders the refined natural-language prompt.                                                                   |
+-| `Generator`         | class | The `Generator` stage — builds the final subject/definition pair plus its field audit.                                                 |
+-| `RecordManager`     | class | The shared registry engine every record manager composes — the collection, the content hash, the version rule, and teardown.           |
+-| `TemplateManager`   | class | The self-owning, versioned/hashed template registry.                                                                                   |
+-| `SubjectManager`    | class | The self-owning, versioned/hashed subject registry that mints its own record ids.                                                      |
+-| `DefinitionManager` | class | The self-owning, versioned/hashed definition registry.                                                                                 |
+-| `InterpretContext`  | class | Cross-turn interpretation context — a capped, replayable history plus the subject/definition registries.                               |
++| API                 | Kind  | Summary                                                                                                                                                                       |
++| ------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Interpret`         | class | The interpretation orchestrator — runs the `[normalize, extract, clarify, format, generate]` pipeline, owns the template registry and context, exposes the reverse direction. |
++| `Narrator`          | class | A stateless, total, lexicon-driven rendering engine for the reverse direction.                                                                                                |
++| `Normalizer`        | class | The `Normalizer` stage — contraction/abbreviation/correction substitutions plus whitespace collapse.                                                                          |
++| `Extractor`         | class | The `Extractor` stage — template-agnostic intent classification plus numeric mining.                                                                                          |
++| `Clarifier`         | class | The `Clarifier` stage — same-domain carry-over, defaults, and dependency-ordered computed fields.                                                                             |
++| `Formatter`         | class | The `Formatter` stage — renders the refined natural-language prompt.                                                                                                          |
++| `Generator`         | class | The `Generator` stage — builds the final subject/definition pair plus its field audit.                                                                                        |
++| `RecordManager`     | class | The shared registry engine every record manager composes — the collection, the content hash, the version rule, and teardown.                                                  |
++| `TemplateManager`   | class | The self-owning, versioned/hashed template registry.                                                                                                                          |
++| `SubjectManager`    | class | The self-owning, versioned/hashed subject registry that mints its own record ids.                                                                                             |
++| `DefinitionManager` | class | The self-owning, versioned/hashed definition registry.                                                                                                                        |
++| `InterpretContext`  | class | Cross-turn interpretation context — a capped, replayable history plus the subject/definition registries.                                                                      |
+ 
+ ## Methods
+ 
+@@ -952,16 +954,16 @@ supplied-context half of that rule: `InterpretInterface` publishes no context
+ accessor, so nothing outside reads the state of a context the orchestrator
+ constructed itself or subscribes to its emitter.
+ 
+-| Method      | Returns                 | Behavior                                                                                               |
+-| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
+-| `interpret` | `Interpretation`        | Run the five-stage pipeline over raw text, returning a complete or visible-incomplete result.          |
+-| `add`       | `void`                  | Add one template; emits `add`.                                                                         |
+-| `remove`    | `boolean` (or `void`)   | Remove LISTED templates by id, ONE template by id, or ALL templates.                                   |
+-| `template`  | `Template \| undefined` | Look up ONE added template's plain data by id.                                                         |
+-| `templates` | `readonly Template[]`   | List ALL added templates' plain data.                                                                  |
+-| `describe`  | `string`                | Render a reasons `Definition` to a one-line, display-neutral description.                              |
+-| `narrate`   | `string`                | Render a reasons `ReasonResult` to a one-line, display-neutral description.                            |
+-| `destroy`   | `void`                  | Idempotent teardown — the template registry, the context it constructed itself, then the emitter LAST. |
++| Method      | Returns                 | Behavior                                                                                                                             |
++| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
++| `interpret` | `Interpretation`        | Run the `[normalize, extract, clarify, format, generate]` pipeline over raw text, returning a complete or visible-incomplete result. |
++| `add`       | `void`                  | Add one template; emits `add`.                                                                                                       |
++| `remove`    | `boolean` (or `void`)   | Remove LISTED templates by id, ONE template by id, or ALL templates.                                                                 |
++| `template`  | `Template \| undefined` | Look up ONE added template's plain data by id.                                                                                       |
++| `templates` | `readonly Template[]`   | List ALL added templates' plain data.                                                                                                |
++| `describe`  | `string`                | Render a reasons `Definition` to a one-line, display-neutral description.                                                            |
++| `narrate`   | `string`                | Render a reasons `ReasonResult` to a one-line, display-neutral description.                                                          |
++| `destroy`   | `void`                  | Idempotent teardown — the template registry, the context it constructed itself, then the emitter LAST.                               |
+ 
+ ```ts
+ import { createExtractor, createInterpret } from '@orkestrel/interpret'
+diff --git a/src/core/Interpret.ts b/src/core/Interpret.ts
+index 564512a..a19770f 100644
+--- a/src/core/Interpret.ts
++++ b/src/core/Interpret.ts
+@@ -45,8 +45,8 @@ import { Normalizer } from './stages/Normalizer.js'
+  *
+  * @remarks
+  * `interpret()` is genuinely SYNCHRONOUS — it returns its
+- * {@link Interpretation} directly, never a `Promise` — and runs a fixed
+- * five-stage pipeline —
++ * {@link Interpretation} directly, never a `Promise` — and runs the fixed
++ * pipeline
+  * `[normalize, extract, clarify, format, generate]` — each producing one
+  * {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+  * the classified {@link Intent} against its added {@link Template}s and,
+@@ -451,7 +451,7 @@ export class Interpret implements InterpretInterface {
+ 	}
+ 
+ 	// Assemble a visible incomplete result: pad the un-run stages with skipped
+-	// records so `stages` always holds exactly five, digest over the known
++	// records so `stages` always holds one record per phase, digest over the known
+ 	// pre-image, record the result in context, and emit `interpret` (an
+ 	// incomplete run is still a completed CALL — visibility is the point).
+ 	#assemble(
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 5e61dcb..3c77226 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -37,7 +37,7 @@ import { Normalizer } from './stages/Normalizer.js'
+  * Creates an interpretation orchestrator.
+  *
+  * @remarks
+- * `interpret()` is genuinely synchronous and runs the fixed five-stage
++ * `interpret()` is genuinely synchronous and runs the fixed
+  * pipeline `[normalize, extract, clarify, format, generate]`. Every stage
+  * slot (`normalizer` / `extractor` / `clarifier` / `formatter` / `generator`)
+  * is bring-your-own — a supplied implementation is used as-is, else the
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 4b40594..a78ac8b 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -14,7 +14,7 @@ import {
+ 
+ // The interprets pure-leaf inventory — every function here is
+ // a referentially-transparent computation with no instance state, exported
+-// and independently unit-testable. Stateful orchestration (the five-stage
++// and independently unit-testable. Stateful orchestration (the fixed
+ // pipeline, entity assignment sequencing, template registration) lives on the
+ // `Interpret` orchestrator and its stage classes, never here.
+ 
+diff --git a/src/core/types.ts b/src/core/types.ts
+index ef17bb3..faa5f1b 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -32,7 +32,7 @@ import type { Definition, ReasonResult, Subject, SymbolicExpression } from '@ork
+ export type ProvenanceCategory = 'extracted' | 'carried' | 'default' | 'computed' | 'subject'
+ 
+ /**
+- * Names the five fixed pipeline phases an {@link InterpretInterface#interpret} run
++ * Names the fixed pipeline phases an {@link InterpretInterface#interpret} run
+  * produces one {@link StageRecord} for, in order.
+  *
+  * @remarks
+@@ -275,8 +275,8 @@ export interface GenerateResult {
+  * `subject` / `definition` are absent on an incomplete `NO_TEMPLATE` /
+  * `LOW_CONFIDENCE` result — there is never a fabricated fallback template. An
+  * interpretation is complete when `ambiguities` and `failures` are both empty;
+- * no stored flag repeats that fact. `stages` always holds
+- * exactly five records, `[normalize, extract, clarify, format, generate]`,
++ * no stored flag repeats that fact. `stages` always holds one record per
++ * phase, `[normalize, extract, clarify, format, generate]`,
+  * in order. `digest` is `digestValue` over `{text, templateId,
+  * templateVersion, subject, definition}` — re-running the same original text
+  * against the same template version reproduces the same digest (the replay
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 65c5a33..6e90e3e 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -124,7 +124,7 @@ export function buildInterpretTemplate(overrides?: Partial<Template>): Template
+ /**
+  * The neutral caller ACTION vocabulary the interprets integration corpus wires
+  * into its `Extractor` (`token → action-name`). The redesign has no built-in
+- * worldview (divergence ledger 6) — every domain/action word a template answers
++ * worldview — every domain/action word a template answers
+  * to must be supplied here, not baked into core.
+  */
+ export const INTERPRET_ACTIONS: Readonly<Record<string, string>> = Object.freeze({
+@@ -136,8 +136,8 @@ export const INTERPRET_ACTIONS: Readonly<Record<string, string>> = Object.freeze
+ 
+ /**
+  * The neutral caller DOMAIN vocabulary the interprets integration corpus wires
+- * into its `Extractor` (`domain-name → keyword-list`). Per divergence ledger 18
+- * a template's own `domain` no longer auto-classifies — a caller MUST list each
++ * into its `Extractor` (`domain-name → keyword-list`). A template's own `domain`
++ * no longer auto-classifies — a caller MUST list each
+  * template's domain keywords here for domain classification to fire.
+  */
+ export const INTERPRET_DOMAINS: Readonly<Record<string, readonly string[]>> = Object.freeze({
+@@ -320,7 +320,7 @@ export function buildInterpretation(overrides?: Partial<Interpretation>): Interp
+ 
+ /**
+  * Seed a REAL {@link InterpretContext} with `previous` — one `.add(...)` call per
+- * given {@link Interpretation}, via the class's own public API — the canonical
++ * given {@link Interpretation}, through the class's own public API — the canonical
+  * form the `Clarifier` carry-over scenarios seed a real context with
+  * (`.claude/rules/tests.md` § Test contract: "Use real implementations and
+  * small scenarios"). The real `InterpretContext` flattens
+diff --git a/tests/src/core/Interpret.test.ts b/tests/src/core/Interpret.test.ts
+index 5dbd4dc..a1be859 100644
+--- a/tests/src/core/Interpret.test.ts
++++ b/tests/src/core/Interpret.test.ts
+@@ -25,9 +25,10 @@ import {
+ 	createCorpusExtractor,
+ } from '../../setup.js'
+ 
+-// The `Interpret` orchestrator — registry, synchronous five-stage pipeline,
++// The `Interpret` orchestrator — registry, synchronous
++// `[normalize, extract, clarify, format, generate]` pipeline,
+ // explicit NO_TEMPLATE / LOW_CONFIDENCE gates, visible stage-throw failures,
+-// reverse passthroughs, emitter, and DESTROYED teardown (design §2/§8).
++// reverse passthroughs, emitter, and DESTROYED teardown.
+ 
+ describe('Interpret', () => {
+ 	describe('registry', () => {
+@@ -66,7 +67,7 @@ describe('Interpret', () => {
+ 	})
+ 
+ 	describe('pipeline', () => {
+-		it('runs the five ordered stages and produces a complete result', () => {
++		it('runs the normalize/extract/clarify/format/generate stages in order and produces a complete result', () => {
+ 			const interpret = new Interpret({
+ 				templates: [buildInsuranceTemplate()],
+ 				extractor: createCorpusExtractor(),
+diff --git a/tests/src/core/Narrator.test.ts b/tests/src/core/Narrator.test.ts
+index f337604..a2e321a 100644
+--- a/tests/src/core/Narrator.test.ts
++++ b/tests/src/core/Narrator.test.ts
+@@ -22,7 +22,7 @@ import { TRICKY_KEYS } from '../../setup.js'
+ // The `Narrator` — a stateless, total, lexicon-driven reverse rendering
+ // engine (`AGENTS.md` § Design laws, mechanism not product policy). Every
+ // wording decision is data
+-// supplied via the lexicon/formatters seam, mirroring the forward
++// supplied through the lexicon/formatters seam, mirroring the forward
+ // `Formatter`'s `verbs` option.
+ 
+ const QUANTITATIVE = createQuantitativeDefinition('premium', 'Premium', [
+@@ -452,7 +452,7 @@ describe('Narrator', () => {
+ 
+ 	describe('totality against a type-violating lexicon / formatters (defense-in-depth)', () => {
+ 		// Adversarial data built the same way the house convention builds off-shape
+-		// input elsewhere (e.g. tests/src/core/raters/validators.test.ts) —
++		// input elsewhere (for example tests/src/core/raters/validators.test.ts) —
+ 		// `JSON.parse` assigned directly into a typed binding, no `as` cast.
+ 		it('a null sub-record under phrases degrades to fallback/key, never throws', () => {
+ 			const lexicon: Lexicon = JSON.parse('{"phrases":{"comparison":null}}')
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 5ca1859..9fe489a 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -88,7 +88,7 @@ describe('createInterpret', () => {
+ 		expect(interpret.templates()).toHaveLength(1)
+ 	})
+ 
+-	it('honors construction hooks via emitter events', () => {
++	it('honors construction hooks through emitter events', () => {
+ 		const interpretEvents = createRecorder<InterpretEventMap['interpret']>()
+ 		const interpret = createInterpret({
+ 			templates: [buildInterpretTemplate()],
+@@ -180,7 +180,7 @@ describe('createTemplateManager', () => {
+ 		expect(manager.has('template-1')).toBe(true)
+ 	})
+ 
+-	it('honors a custom id via add options', () => {
++	it('honors a custom id through add options', () => {
+ 		const manager = createTemplateManager()
+ 		const record = manager.add(buildInterpretTemplate(), { id: 'custom-id' })
+ 		expect(record.id).toBe('custom-id')
+@@ -195,7 +195,7 @@ describe('createSubjectManager', () => {
+ 		expect(manager.count).toBe(1)
+ 	})
+ 
+-	it('honors a custom id via add options', () => {
++	it('honors a custom id through add options', () => {
+ 		const manager = createSubjectManager()
+ 		const record = manager.add({ value: 1 }, { id: 'custom-subject' })
+ 		expect(record.id).toBe('custom-subject')
+@@ -214,7 +214,7 @@ describe('createDefinitionManager', () => {
+ 		expect(manager.has('d1')).toBe(true)
+ 	})
+ 
+-	it('honors a custom id via add options', () => {
++	it('honors a custom id through add options', () => {
+ 		const manager = createDefinitionManager()
+ 		const record = manager.add(definition, { id: 'custom-definition' })
+ 		expect(record.id).toBe('custom-definition')
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index bd5dd40..e2197ee 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -285,7 +285,7 @@ describe('classifyIntent', () => {
+ 		expect(Object.hasOwn(halfClassified, 'domain')).toBe(false)
+ 	})
+ 
+-	it('never auto-classifies from a domain name absent from the caller vocabulary (ledger 18)', () => {
++	it('never auto-classifies from a domain name absent from the caller vocabulary', () => {
+ 		expect(classifyIntent('arithmetic please', {}, {})).toEqual({ confidence: 0 })
+ 	})
+ 
+diff --git a/tests/src/core/integration.test.ts b/tests/src/core/integration.test.ts
+index acca9c9..495a1ff 100644
+--- a/tests/src/core/integration.test.ts
++++ b/tests/src/core/integration.test.ts
+@@ -16,7 +16,7 @@ import {
+ // 49-case suite (sync API; no-match is auditable-incomplete, never templates[0];
+ // no durations): forward NL → subject/definition, cross-turn carry-over,
+ // multi-template best-match, add-after-miss, computed fields, the numeric
+-// corpus pins, full provenance, and determinism + digest-replay (design §8).
++// corpus pins, full provenance, and determinism + digest-replay.
+ 
+ function build(templates = [buildInsuranceTemplate()]): Interpret {
+ 	return new Interpret({ templates, extractor: createCorpusExtractor() })
+diff --git a/tests/src/core/managers/DefinitionManager.test.ts b/tests/src/core/managers/DefinitionManager.test.ts
+index ef728af..bc7dacd 100644
+--- a/tests/src/core/managers/DefinitionManager.test.ts
++++ b/tests/src/core/managers/DefinitionManager.test.ts
+@@ -6,7 +6,7 @@ import { captureError, createRecorders } from '@orkestrel/test'
+ 
+ // The `DefinitionManager` registry — versioned/hashed records keyed by the
+ // definition id, content-derived version bumps, all-or-nothing batch remove,
+-// DESTROYED after teardown (design §0/§8).
++// DESTROYED after teardown.
+ 
+ describe('DefinitionManager', () => {
+ 	it('adds a definition keyed by its own id as a versioned, hashed record', () => {
+diff --git a/tests/src/core/managers/SubjectManager.test.ts b/tests/src/core/managers/SubjectManager.test.ts
+index 1308aa5..5ac6261 100644
+--- a/tests/src/core/managers/SubjectManager.test.ts
++++ b/tests/src/core/managers/SubjectManager.test.ts
+@@ -5,7 +5,7 @@ import { captureError, createRecorders } from '@orkestrel/test'
+ 
+ // The `SubjectManager` registry — mints its OWN identity per subject (defect 7),
+ // content-hashed with content-derived version bumps, all-or-nothing batch
+-// remove, DESTROYED after teardown (design §0/§8).
++// remove, DESTROYED after teardown.
+ 
+ describe('SubjectManager', () => {
+ 	it('mints a fresh id for every added subject — successive turns never overwrite', () => {
+diff --git a/tests/src/core/managers/TemplateManager.test.ts b/tests/src/core/managers/TemplateManager.test.ts
+index b9f19ff..b2c20e5 100644
+--- a/tests/src/core/managers/TemplateManager.test.ts
++++ b/tests/src/core/managers/TemplateManager.test.ts
+@@ -6,7 +6,7 @@ import { buildInterpretTemplate } from '../../../setup.js'
+ 
+ // The `TemplateManager` registry — versioned/hashed records, content-derived
+ // version bumps (identical re-add keeps its version), all-or-nothing batch
+-// remove, and DESTROYED after teardown (design §0/§8).
++// remove, and DESTROYED after teardown.
+ 
+ describe('TemplateManager', () => {
+ 	it('adds a template as a versioned, content-hashed record keyed by its id', () => {
+diff --git a/tests/src/core/stages/Clarifier.test.ts b/tests/src/core/stages/Clarifier.test.ts
+index 103f6c5..a243a5a 100644
+--- a/tests/src/core/stages/Clarifier.test.ts
++++ b/tests/src/core/stages/Clarifier.test.ts
+@@ -9,8 +9,8 @@ import {
+ } from '../../../setup.js'
+ 
+ // The `Clarifier` stage — carry-over, defaults, computed fields (topological,
+-// gap-on-cycle), and floor-gated ambiguities (design §8). Drives a REAL
+-// `InterpretContext` (via `seedInterpretContext`) — the Clarifier only ever
++// gap-on-cycle), and floor-gated ambiguities. Drives a REAL
++// `InterpretContext` (through `seedInterpretContext`) — the Clarifier only ever
+ // calls `context.previous()`.
+ 
+ const intent: Intent = { action: 'calculate', domain: 'arithmetic', confidence: 1 }
+@@ -108,7 +108,7 @@ describe('Clarifier', () => {
+ 	})
+ 
+ 	describe('computed fields', () => {
+-		it('resolves a computed field via resolveExpression against resolved bindings', () => {
++		it('resolves a computed field through resolveExpression against resolved bindings', () => {
+ 			const clarifier = new Clarifier()
+ 			const template = buildInterpretTemplate({
+ 				mappings: [{ entity: 'deductible', aliases: [], field: 'deductible' }],
+diff --git a/tests/src/core/stages/Extractor.test.ts b/tests/src/core/stages/Extractor.test.ts
+index b4d981e..91a1b7c 100644
+--- a/tests/src/core/stages/Extractor.test.ts
++++ b/tests/src/core/stages/Extractor.test.ts
+@@ -2,7 +2,7 @@ import { Extractor } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ 
+ // The `Extractor` stage — template-agnostic: intent classification + raw
+-// number mining only, never entity assignment (design §2/§8, ledger 17).
++// number mining only, never entity assignment.
+ 
+ describe('Extractor', () => {
+ 	it('extracts raw numbers and classifies intent from caller vocabulary', () => {
+diff --git a/tests/src/core/stages/Normalizer.test.ts b/tests/src/core/stages/Normalizer.test.ts
+index 862b15e..0e53c3c 100644
+--- a/tests/src/core/stages/Normalizer.test.ts
++++ b/tests/src/core/stages/Normalizer.test.ts
+@@ -21,7 +21,7 @@ describe('Normalizer', () => {
+ 			abbreviations: { yr: 'year' },
+ 			corrections: { cannot: 'CANNOT' },
+ 		})
+-		// "can't" expands to "cannot" via the built-in contraction FIRST, so the
++		// "can't" expands to "cannot" through the built-in contraction FIRST, so the
+ 		// later correction stage (targeting "cannot") sees the already-expanded
+ 		// text and fires too — proving sequencing, not just independent maps.
+ 		const result = normalizer.normalize("can't wait 1 yr")
