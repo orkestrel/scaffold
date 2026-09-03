@@ -60,16 +60,24 @@ middleware pool process reason router table template websocket; L3 browser guide
 qualifier queue rater relation scaffold sea server terminal workspace; L4 brief probe program worker
 workflow; L5 agent; L6 ollama toolbox.
 
-| Package | Rulings | Brief generated | Implementation | Checkpoint commit | Owed |
-| --- | --- | --- | --- | --- | --- |
-| budget | yes | yes | complete, writer reports gates green | `654fe45` | objective lane, checker, deciding gate run, land |
-| sse | yes | yes | complete, writer reports gates green | `b003c67` | objective lane, checker, deciding gate run, land |
-| msg | yes | yes (successor brief; partial diff named as a standing condition) | partial, gates unproven | `1a8821a` | implementer resumes on the committed partial tree, then audit, land |
-| contract, test, abort, csv, indexeddb, ndjson, database | yes | yes | not started (writers killed by the usage limit before editing; trees clean) | — | implement, audit, land |
-| emitter, html, sqlite, tool, console, process, reason, middleware, table, template, websocket, browser, guide, interpret, mcp, qualifier, rater, scaffold, sea, server, terminal, workspace, brief, program, workflow, agent, toolbox | yes | no | not started | — | reconcile, implement, audit, land |
-| probe, worker, ollama | finders yes, refuter no | no | — | — | refuter, then the row above |
-| codec, markdown | objective finder yes; subjective finder and refuter no | no | — | — | subjective lane, refuter, then the row above |
-| timeout, form, pool, lsp, queue, relation | none | no | — | — | both finder lanes, refuter, then the row above |
+State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the narrative; `ledgers/runs.json` the run ids). Every package is ruled and its rulings retained under `rulings/`.
+
+| Package | Brief generated | Implementation | Audit | Landed |
+| --- | --- | --- | --- | --- |
+| sse | yes | complete | three rounds, ACCEPT (`units/conform-sse-audit-verdict.md`) | `0586994`, follow-on `f80b232` |
+| budget | yes | complete | three rounds, ACCEPT at landing (`units/conform-budget-audit-verdict.md`) | `e35e994`, follow-on `b8c0029` |
+| test | yes (successor) | complete | round 1 PASS/PASS, ACCEPT (`units/conform-test-audit-verdict.md`) | `ed73b78` |
+| msg | yes | complete (resumed on `1a8821a`) | round 1 FAIL 8 / PASS, round 2 FAIL 3 7 8 / FAIL 3 7, fix round 2 in flight in `audit2.msg` | — |
+| contract | yes (successor; checkpoint `01f3390`) | complete (resumed) | round 1 checker FAIL 3 7, objective in flight in `layer2.L0b` | — |
+| abort, ndjson, indexeddb | yes (successor) | complete | round 1 read (see the ledger); briefed fix round 1 in flight in `fixaudit.L1` | — |
+| csv | yes (successor) | complete | round 1 FAIL 4 8 / PASS, fix round 1 returned; audit round 2 in `fixaudit.L1` | — |
+| emitter, html, sqlite, tool, timeout | generating | — | — | `layer2.L1b` running |
+| database | yes (successor; carries database-subj-10) | not started | — | L2, after contract and indexeddb land and re-stage |
+| console, process, reason, middleware, table, template, websocket, form, markdown, pool | no | not started | — | L2 |
+| browser, guide, interpret, mcp, qualifier, rater, sea, server, terminal, workspace, lsp, queue, relation, scaffold | no | not started (guide carries the regex unit at `264a87f`) | — | L3 |
+| brief, probe, program, worker, workflow | no | not started | — | L4 (`ALLOW_RED_TEST=probe`) |
+| agent | no | not started | — | L5 |
+| ollama, toolbox | no | not started | — | L6 |
 
 Every other checkout is clean at its last accepted tip (see `../last/<pkg>.md`). The scaffold checkout
 carries this folder only.
