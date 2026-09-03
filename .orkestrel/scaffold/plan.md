@@ -235,3 +235,18 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   the form guide crosswalk; the terrain reference suite with every family; the fleet visits; the
   evaluation at 100% on the re-run evals. Remaining decisions are the user's: the two uploads and
   the fleet re-pin, the contract cascade, terrain's Delete chrome, and the prune.
+
+## Release and adoption wave, 2026-09-02 (user's instruction)
+
+- Rulings from the user: reconcile test's `origin/claude/orkestrel-npm-audit-deps-14ibta` into
+  main before the push and the publish; every package we publish takes the latest contract
+  (0.0.15) and latest `@orkestrel` ranges; terrain follows the skills' instructions including
+  application changes; the publishing round runs on the user's login; then the prune; then
+  taverna, lloyds, and supervisor are brought to the latest versions and the skills applied.
+- Dispatched in parallel: M1 merge resolution (Opus, test), T1 terrain compliance (Opus,
+  terrain), Grok absorption over taverna, lloyds, supervisor. Scaffold re-pinned to contract
+  0.0.15 at `ee6f12b` (typecheck clean over the duplicate copies; chain after the test re-pin).
+- Order after M1: regenerate the lockfile, gates, push test main, publish 0.0.12; scaffold
+  re-pin to test 0.0.12, chain, push, publish 0.0.60; form to contract 0.0.15, scaffold 0.0.60,
+  test 0.0.12, bump 0.0.4, chain, push, publish; terrain visit after T1; then the three
+  applications.
