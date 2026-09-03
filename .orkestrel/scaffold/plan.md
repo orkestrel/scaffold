@@ -310,3 +310,7 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   diagnostics, 57 nested-function), supervisor's bump and publish, and every chrome and journey
   unit wait on it.
 - Visits committed: lloyds, taverna, supervisor (each with its lockfile excluded).
+- M-lloyds returned: check 0 across core, browser, and root (from 396, 144, 445), the database
+  0.0.12 surface adopted, the 14 placement violations moved, the chain green (app:core 484,
+  app:browser 247, policy 111, config 46). Committed in lloyds. Chrome unit C-lloyds next, then
+  the journey unit; taverna and supervisor wait on the middleware release.
