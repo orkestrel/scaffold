@@ -124,13 +124,34 @@ markdown-sourced pipeline can show.
 
 ### The prose changed
 
-- `guides/markdown.md`, the "**`renderHTML` sanitizes, unconditionally.**" paragraph: the sentence
-  claiming an `UNSAFE_ELEMENTS` subtree "is removed WHOLE rather than unwrapped, so its body can
-  never resurface as markup" is rewritten to state that `markdownToHTML` never projects a raw HTML
-  tag into an element in the first place, so html's `UNSAFE_ELEMENTS` removal has nothing to remove
-  in this pipeline; what actually judges the projection's output is html's attribute floor. The
-  closing "defence-in-depth" sentence is rewritten to keep its meaning — the floor still runs
-  unconditionally against a hand-built `MarkdownNode` — without repeating the subtree claim.
+`guides/markdown.md`, the "**`renderHTML` sanitizes, unconditionally.**" paragraph, quoted from
+`git -C /home/user/fleet/markdown diff -- guides/markdown.md` against the landed tip:
+
+- Old: "Everything that makes the output safe comes from html's floor, which no option can lower:
+  an `UNSAFE_ELEMENTS` subtree (`script`, `style`, `template`, `svg`, forms, metadata) is removed
+  WHOLE rather than unwrapped, so its body can never resurface as markup; every `on*` handler
+  attribute and `style` / `srcdoc` / namespaced attribute is removed; a URL attribute is
+  entity-decoded to a bounded fixpoint and stripped of ASCII whitespace and control characters
+  BEFORE its scheme is checked, and `javascript:`, `data:`, `vbscript:`, `file:`, and the
+  protocol-relative forms (`//`, `\\`, `/\`) are refused whatever the allowlist says."
+  New (the tip's final wording after fix round 2 narrowed it further; see § The sentences changed
+  below for that narrowing's own old/new pair): "`markdownToHTML` projects only markdown's own node
+  shapes — headings, paragraphs, links, images, emphasis, code, tables, and the rest — and never an
+  `UNSAFE_ELEMENTS` tag such as `script`, the case the fence below exercises: raw HTML written in
+  markdown source has no node shape of its own, so the parser leaves it as literal text and it
+  reaches the output escaped rather than as an element. html's `UNSAFE_ELEMENTS` removal therefore
+  has nothing to remove in this pipeline; what actually judges the projection's output is html's
+  attribute floor, whose full refusal list — the always-stripped attributes and the hard-banned
+  schemes — is [`guides/html.md`](./html.md)'s to state. The fence below shows one member of that
+  floor: a `javascript:` destination stripped from a link's `href` and from an image's `src` while
+  the element and its remaining content survive."
+- Old: "This is defence-in-depth: `renderHTML` accepts any `MarkdownNode`, including one a caller
+  constructed by hand, rewrote through `map`, or accepted from elsewhere, so it can never assume its
+  input came from `parseDocument` on trusted markdown."
+  New: "This still runs unconditionally: `renderHTML` accepts any `MarkdownNode`, including one a
+  caller constructed by hand, rewrote through `map`, or accepted from elsewhere, so it can never
+  assume its input came from `parseDocument` on trusted markdown, and a hand-built node whose
+  destination or attribute is hostile is still caught at this floor."
 - The sentence at `guides/markdown.md:432` is unchanged; the real reading confirmed it rather than
   contradicting it.
 
@@ -211,8 +232,9 @@ captured, because they are evidence pasted verbatim rather than authored prose s
 
 Closes the round-2 checker's refutations of claims 1, 5, and 9
 (`units/followon/markdown-sanitizer-r2-checker-luna.md`): the reading capture the report named did
-not exist, two sentences in the sanitizer paragraphs named attributes and schemes the fence's output
-does not show, and the report's authored prose still stated counts.
+not exist, the `UNSAFE_ELEMENTS`-tag sentence and the attribute-floor-refusal-list sentence in the
+sanitizer paragraphs named attributes and schemes the fence's output does not show, and the report's
+authored prose still stated counts.
 
 ### The reading
 
@@ -233,22 +255,37 @@ The fence's comment value in `guides/markdown.md`:
 '<p>&lt;script&gt;alert(1)&lt;/script&gt;</p><p><a>link</a></p><p><img alt="alt"></p><p><img src="https://x.dev/pic.png" alt="alt"></p>'
 ```
 
-The two strings are equal byte for byte once the reading's plain string is compared against the
-fence comment's quoted string with the surrounding single quotes stripped. `sanitizer-read-3.txt` is
+The reading's plain string and the fence comment's quoted string are equal byte for byte once the
+fence comment's surrounding single quotes are stripped from its string before the comparison.
+`sanitizer-read-3.txt` is
 the reading the sanitizer prose now cites; `sanitizer-read-2.txt`, which the round-1 report named but
 never captured, is dropped from this report.
 
 ### The sentences changed
 
-- `guides/markdown.md`, the "**`renderHTML` sanitizes, unconditionally.**" paragraph: the clause
-  naming `UNSAFE_ELEMENTS` tags the parser never projects — `script`, `style`, `template`, `svg`, a
-  form, metadata — is narrowed to name only `script`, the tag the fence exercises, and points the
-  reader at `guides/html.md` for the rest of that list. The following clause, which named the
-  attribute floor's full refusal set (`on*`, `style`, `srcdoc`, namespaced attributes, and the
-  hard-banned schemes `javascript:`, `data:`, `vbscript:`, `file:`, and the protocol-relative forms),
-  is rewritten to state that the floor's full refusal list is `guides/html.md`'s to state, and to
-  name the one member of it the fence below shows: a `javascript:` destination stripped from a
-  link's `href` and from an image's `src` while the element and its remaining content survive.
+`guides/markdown.md`, the "**`renderHTML` sanitizes, unconditionally.**" paragraph, quoted from
+`git -C /home/user/fleet/markdown diff -- guides/markdown.md` against the landed tip. Fix round 1
+had already replaced the original `UNSAFE_ELEMENTS`-subtree and refusal-set clauses (old text quoted
+in **Fix round 1 § The prose changed**) with a version naming the full tag list and the full
+refusal set; this round narrows that version further, so the pair below shows the original clause as
+old and the tip's landed clause as new:
+
+- Old: "an `UNSAFE_ELEMENTS` subtree (`script`, `style`, `template`, `svg`, forms, metadata) is
+  removed WHOLE rather than unwrapped, so its body can never resurface as markup"
+  New: "`markdownToHTML` projects only markdown's own node shapes — headings, paragraphs, links,
+  images, emphasis, code, tables, and the rest — and never an `UNSAFE_ELEMENTS` tag such as
+  `script`, the case the fence below exercises: raw HTML written in markdown source has no node
+  shape of its own, so the parser leaves it as literal text and it reaches the output escaped rather
+  than as an element."
+- Old: "every `on*` handler attribute and `style` / `srcdoc` / namespaced attribute is removed; a
+  URL attribute is entity-decoded to a bounded fixpoint and stripped of ASCII whitespace and control
+  characters BEFORE its scheme is checked, and `javascript:`, `data:`, `vbscript:`, `file:`, and the
+  protocol-relative forms (`//`, `\\`, `/\`) are refused whatever the allowlist says"
+  New: "html's `UNSAFE_ELEMENTS` removal therefore has nothing to remove in this pipeline; what
+  actually judges the projection's output is html's attribute floor, whose full refusal list — the
+  always-stripped attributes and the hard-banned schemes — is [`guides/html.md`](./html.md)'s to
+  state. The fence below shows one member of that floor: a `javascript:` destination stripped from a
+  link's `href` and from an image's `src` while the element and its remaining content survive."
 - The "**The one widening: `src`.**" paragraph is unchanged: none of its sentences names a scheme,
   an attribute, an element, or a behaviour the fence's output does not show.
 
@@ -302,3 +339,52 @@ verbatim as evidence inside a code fence.
 `node /home/user/scaffold/tmp/work/evidence.mjs markdown` ran clean, writing the diff to
 `/home/user/work/evidence/conform-markdown.diff` and the status to
 `/home/user/work/evidence/conform-markdown.status`.
+
+## Fix round 3
+
+Closes the round-3 checker's refutation of claim 9
+(`units/followon/markdown-sanitizer-r3-checker-luna.md`): the report's paraphrased prose-change
+descriptions did not carry the literal old and new text of every changed sentence, and its authored
+prose still stated counts.
+
+### The lines rewritten
+
+- **Fix round 1 § The prose changed**: replaced the paraphrase of the `UNSAFE_ELEMENTS`-subtree
+  clause and the "defence-in-depth" clause with the literal old sentence and literal new sentence for
+  each, quoted from `git -C /home/user/fleet/markdown diff -- guides/markdown.md` against the landed
+  tip, and noted that fix round 2 narrowed the first pair's new text further before it reached the
+  tip.
+- **Fix round 2 § The sentences changed**: replaced the paraphrase of the `UNSAFE_ELEMENTS`-tag-list
+  narrowing and the attribute-floor-refusal-list rewrite with the literal old sentence and literal
+  new sentence for each, quoted from the same diff.
+- **Fix round 2 § The report**, the sentence describing what the round-2 checker's own refutation
+  named: named the `UNSAFE_ELEMENTS`-tag sentence and the attribute-floor-refusal-list sentence
+  instead of stating "two sentences".
+- **Fix round 2 § The reading**: named the reading's plain string and the fence comment's quoted
+  string instead of stating "the two strings".
+- **Fix round 2 § The sentences changed**, the sentence naming what the attribute-floor rewrite
+  points to: named the `javascript:` member of the refusal list instead of stating "the one member".
+
+### The sweep
+
+Pattern: `\b(one|two|three|four|five|six|seven|eight|nine|ten|both|single|pair|dozen)\b`, case
+insensitive, run with Grep over
+`/home/user/scaffold/tmp/units/followon/markdown-sanitizer-report.md`. Result: every remaining hit
+is either a heading or phrase quoted verbatim from `guides/markdown.md` or from a prior report draft
+that the surrounding sentence names as replaced (`"**The one widening: `src`.**"`, `"one with a
+`data:`"`, `"both refused images"`, `"gained two cases"`, the `javascript:`-example clause quoted in
+**Fix round 1 § The prose changed** and **Fix round 2 § The sentences changed**), a structural
+device name rather than a tally (`pair pattern`, `old/new pair`, `single quotes`), or `both` in
+"both the guide fence's comment and the test assertion", which names its own members immediately
+after `both`. No authored sentence in the report states a count of a growable set that the report
+itself is tallying.
+
+### Tree
+
+`git -C /home/user/fleet/markdown status --short` lists only the Owned paths, unchanged by this
+round:
+
+```
+ M guides/markdown.md
+ M tests/guides.test.ts
+```

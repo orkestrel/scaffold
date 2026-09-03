@@ -199,3 +199,76 @@ possible. The brief's § Context fixes the opposite discipline — read only wit
 `Glob`, write only with `Edit` and `Write`, one plain command per `Bash` call, and never a heredoc
 or `sed -i` — and the dispatch names a permission prompt as something that blocks the whole round.
 The brief was followed.
+
+## Fix round 1
+
+Closes the round-1 objective lane's refutations of claims 2 and 4 and findings F1 to F3
+(`units/l3/sea-objective-r1.md`).
+
+- **Claim 2.** `tests/setupServer.ts:349` "Read one `IMAGE_RESOURCE_DIR_STRING_U` …" → "Reads
+  one …"; `:362` "Walk one level of a PE resource directory tree …" → "Walks one level …". Both
+  extracted helpers' TSDoc now opens in the third person with an `-s` verb.
+- **Claim 4, sea-subj-7.** Added a case to `tests/src/server/seas/SEA.test.ts` — "rejects
+  execute() with code STATE after a consumer destroys sea.emitter directly" — that calls
+  `sea.emitter.destroy()` on the public route and asserts `execute()` rejects with `SEAError`
+  code `STATE`. Planted the pre-change behaviour in `src/server/seas/SEA.ts` by deleting the
+  `this.#emitter.destroyed` guard at the head of `execute()`; `sea-subj-7-red.txt` shows 2 failed,
+  17 passed (19) — the new case and the existing "once destroyed" case both redden with `ENTRY`
+  received instead of `STATE`. Restored the guard, confirmed `git -C /home/user/fleet/sea diff --
+  src/server/seas/SEA.ts` matches the unit's original diff (the guard reads
+  `this.#emitter.destroyed` again, `#destroyed` stays deleted), then `sea-subj-7-green.txt` shows
+  19 passed (19).
+- **Claim 4, the sweeps.** Recorded under the amended § Sweeps.
+- **F1, F2.** `src/server/types.ts:322` "Outside SEA, `load()` reads client assets from disk." →
+  "Outside SEA, `load()` reads the paths `assets` configures from disk."; `guides/sea.md:185`
+  `e.g.` → "for example". `grep -rn "reads client assets from disk|e\.g\. \`format\`"
+  tests/guides.test.ts` returns no line: no presence guard quotes either sentence.
+- **F3.** Added to § Breaking, below.
+
+### Sweeps (fix round 1)
+
+Each pattern was run with `grep -rn` over `src`, `tests`, `guides/sea.md`, `guides/README.md`, and
+`README.md`.
+
+| Pattern                                                          | Result                                                                                                                       |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `-i "free program header entry\|kept OUT"`                       | one unrelated hit, `tests/guides.test.ts:47` "Declarations deliberately kept out of the barrel", a different phrase and outside sea-obj-7's subject; sea-obj-7's proof is the empty sweep for its own two old-form phrases plus the green `integration` project run recorded under § Gates, because the deleted skip was unreachable and carries no red to plant. |
+| `"// === "`                                                       | 24 hits, all file-section headers in `helpers.ts`, `constants.ts`, `types.ts`, `validators.ts`, `setupServer.ts`, and `AssetManager.test.ts` — a distinct pattern from the four class-level separators sea-subj-12 replaced (`SEA`, `Injector`, `AssetManager`, `Asset`), which are gone; outside sea-subj-12's scope. |
+| `"this package's other runtime dependency"`                       | empty                                                                                                                        |
+| `"const PT_LOAD\|const PT_PHDR\|const PF_R\|const PAGE"`          | empty                                                                                                                        |
+
+### Breaking (fix round 1 addition)
+
+- `execute()` now refuses with `SEAError('STATE', 'SEA is destroyed')` after the emitter is
+  destroyed by any route, including a consumer's own `sea.emitter.destroy()`, where the build
+  previously ran. A consumer needing a fresh run constructs a new `SEA`.
+
+### Captures
+
+- `/home/user/work/evidence/sea-proofs/sea-subj-7-red.txt` — 2 failed, 17 passed (19).
+- `/home/user/work/evidence/sea-proofs/sea-subj-7-green.txt` — 19 passed (19).
+- `/home/user/work/evidence/sea-proofs/gate-test-fix1.txt` — `src:server` 187 passed (187);
+  `policy` 111 passed (111); `config` 46 passed (46); `setup` 21 passed (21); `guides` 34 passed
+  (34); `integration` 4 passed (4).
+- `/home/user/work/evidence/conform-sea.diff` 3289 lines; `/home/user/work/evidence/conform-sea.status` 22 entries.
+
+### Gates (fix round 1)
+
+Run from `/home/user/fleet/sea` on the final tree, in order.
+
+| Command                        | Exit | Reading                                                                       |
+| ------------------------------- | ---- | ------------------------------------------------------------------------------ |
+| `npm run format:check`          | 0    | `All matched files use the correct format.` on 52 files                       |
+| `npm run lint:check`            | 0    | no diagnostic                                                                 |
+| `npm run check`                 | 0    | root `tsc` and `check:src:server` both silent                                 |
+| `npm run build`                 | 0    | `dist/src/server/index.cjs 98.46 kB`, declarations copied to `index.d.cts`    |
+| `npm test`                      | 0    | see § Captures                                                                |
+| `npx scaffold audit --offline`  | 0    | `0 of 36 planned paths drifted from the plan.`                                |
+| `node /home/user/scaffold/tmp/work/evidence.mjs sea` | 0 | see § Captures |
+
+`git -C /home/user/fleet/sea status --short` lists only the unit's paths, with `package.json` as
+the Orchestrator's hunk.
+
+### Deviations (fix round 1)
+
+None. The round ran to completion.
