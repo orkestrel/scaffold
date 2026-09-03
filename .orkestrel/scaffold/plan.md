@@ -269,3 +269,9 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   the builder was refused every write in that checkout by the permission classifier; MCP
   servers `codex` and `probe` recorded for out-of-tree registration). Registry still serves
   scaffold 0.0.59 and test 0.0.11, so every visit waits on the two uploads.
+- Baselines before any visit (verifier workflow, serial): taverna `441ca4e`, node_modules present
+  without scaffold, `npm test` not run; lloyds `315ba62`, `npm test` exit 1 at baseline —
+  `test:app:core` 446 passed, then `test:app:browser`'s first filtered invocation over
+  `tests/app/browser/components` reports "No test files found" (a pre-existing red the visit does
+  not own; the planned single `--project app:browser` run replaces that script); supervisor
+  `8ac9712`, no node_modules. Each recorded so the visits' readings are attributable.
