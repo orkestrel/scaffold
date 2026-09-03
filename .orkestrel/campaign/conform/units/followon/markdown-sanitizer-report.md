@@ -103,13 +103,14 @@ markdown-sourced pipeline can show.
 - **The refused image.** Read `@orkestrel/html`'s `URL_ATTRIBUTES`, `SAFE_URL_SCHEMES`, and
   `sanitizeURL` declarations at
   `/home/user/fleet/markdown/node_modules/@orkestrel/html/dist/src/core/index.d.ts:1219,1253,1364`,
-  then ran a real render of an image with a `javascript:` destination and one with a `data:`
+  then ran a real render of an image with a `javascript:` destination and an image with a `data:`
   destination through the installed pipeline (`sanitizer-read-2.ts`, output captured to
   `/home/user/work/evidence/markdown-proofs/sanitizer-read-2.txt`, run with
   `cd /home/user/fleet/markdown && npx tsx /home/user/work/evidence/markdown-proofs/sanitizer-read-2.ts`):
-  both refused images rendered as `<img alt="alt">` — the element and its `alt` survive, and only
-  `src` is dropped. The sentence at `guides/markdown.md:432` ("A refused image keeps its element and
-  its alt text and loses only the destination.") stands unchanged; it is now shown by the fence.
+  the `javascript:` image and the `data:` image rendered as `<img alt="alt">` — the element and its
+  `alt` survive, and only `src` is dropped. The sentence at `guides/markdown.md:432` ("A refused
+  image keeps its element and its alt text and loses only the destination.") stands unchanged; it is
+  now shown by the fence.
 - **The subtree claim.** Ran the same script against `<span>inline html</span>` and
   `a *b* <em>c</em> d` through the installed pipeline: raw inline HTML (`<span>`, `<em>` written by
   hand in markdown source) renders as HTML-escaped text, never as an element, because
@@ -166,8 +167,9 @@ the updated comment string.
 
 ### The report
 
-Replaced "gained two cases" with the members it names (the executing case and the presence guard)
-and swept the report for the other prose counts the checker did not flag: the test-result sentences
+Replaced the sentence naming the executing case and the presence guard by tally with a sentence
+naming each case, and swept the report for the other prose counts the checker did not flag: the
+test-result sentences
 under **The transcription** now state which case failed rather than a tally, the `test` gate row now
 states that the `test:guides` project's cases passed rather than a tally, and the `Tree` section now
 names the diff and status files it wrote rather than their line and entry tallies. The code fences
@@ -183,6 +185,102 @@ captured, because they are evidence pasted verbatim rather than authored prose s
 | check | `npm run check` | 0 |
 | build | `npm run build` | 0 |
 | test | `npm test` | 0 (`test:guides` project's cases passed) |
+
+### Audit
+
+`cd /home/user/fleet/markdown && npx scaffold audit --offline` exit 0:
+
+```
+0 of 34 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6.
+```
+
+### Tree
+
+`git -C /home/user/fleet/markdown status --short` lists only the Owned paths:
+
+```
+ M guides/markdown.md
+ M tests/guides.test.ts
+```
+
+`node /home/user/scaffold/tmp/work/evidence.mjs markdown` ran clean, writing the diff to
+`/home/user/work/evidence/conform-markdown.diff` and the status to
+`/home/user/work/evidence/conform-markdown.status`.
+
+## Fix round 2
+
+Closes the round-2 checker's refutations of claims 1, 5, and 9
+(`units/followon/markdown-sanitizer-r2-checker-luna.md`): the reading capture the report named did
+not exist, two sentences in the sanitizer paragraphs named attributes and schemes the fence's output
+does not show, and the report's authored prose still stated counts.
+
+### The reading
+
+Wrote `/home/user/work/evidence/markdown-proofs/sanitizer-read-3.ts`, whose `source` array is the
+fence's `source` array copied verbatim from `guides/markdown.md`, importing `parseDocument` and
+`renderHTML` from the built `dist/src/core/index.js` and printing
+`renderHTML(parseDocument(source))`. Ran it with
+`cd /home/user/fleet/markdown && npx tsx /home/user/work/evidence/markdown-proofs/sanitizer-read-3.ts`,
+captured to `/home/user/work/evidence/markdown-proofs/sanitizer-read-3.txt`:
+
+```
+<p>&lt;script&gt;alert(1)&lt;/script&gt;</p><p><a>link</a></p><p><img alt="alt"></p><p><img src="https://x.dev/pic.png" alt="alt"></p>
+```
+
+The fence's comment value in `guides/markdown.md`:
+
+```
+'<p>&lt;script&gt;alert(1)&lt;/script&gt;</p><p><a>link</a></p><p><img alt="alt"></p><p><img src="https://x.dev/pic.png" alt="alt"></p>'
+```
+
+The two strings are equal byte for byte once the reading's plain string is compared against the
+fence comment's quoted string with the surrounding single quotes stripped. `sanitizer-read-3.txt` is
+the reading the sanitizer prose now cites; `sanitizer-read-2.txt`, which the round-1 report named but
+never captured, is dropped from this report.
+
+### The sentences changed
+
+- `guides/markdown.md`, the "**`renderHTML` sanitizes, unconditionally.**" paragraph: the clause
+  naming `UNSAFE_ELEMENTS` tags the parser never projects — `script`, `style`, `template`, `svg`, a
+  form, metadata — is narrowed to name only `script`, the tag the fence exercises, and points the
+  reader at `guides/html.md` for the rest of that list. The following clause, which named the
+  attribute floor's full refusal set (`on*`, `style`, `srcdoc`, namespaced attributes, and the
+  hard-banned schemes `javascript:`, `data:`, `vbscript:`, `file:`, and the protocol-relative forms),
+  is rewritten to state that the floor's full refusal list is `guides/html.md`'s to state, and to
+  name the one member of it the fence below shows: a `javascript:` destination stripped from a
+  link's `href` and from an image's `src` while the element and its remaining content survive.
+- The "**The one widening: `src`.**" paragraph is unchanged: none of its sentences names a scheme,
+  an attribute, an element, or a behaviour the fence's output does not show.
+
+### The fence and the transcription
+
+Row 2 rewrote sentences rather than widening the fence, so the fence's `source` array, its rendered
+comment, and `tests/guides.test.ts`'s executing case and presence guard are unchanged from fix round
+1. No red or green capture was needed for this round; `sanitizer-control-red-3.txt` and
+`sanitizer-green-3.txt` were not produced because nothing in the executing case or its expected value
+changed.
+
+### The report
+
+Rewrote the authored counts the round-2 checker named: the sentence describing the refused-image
+reading no longer states "one with a `data:`" or "both refused images", and instead names the
+`javascript:` image and the `data:` image individually; the sentence in **Fix round 1 § The report**
+that quoted the phrase "gained two cases" now names the executing case and the presence guard
+directly, without repeating the counted phrase. A sweep of the rest of the report for a number word
+or numeral answering "how many" in authored prose found none outside a quoted claim identifier
+(`claims 5 and 9`, which numbers the checker's own findings rather than tallying anything this report
+counts), an exit code reported as the value a gate returned, and the audit's own output line quoted
+verbatim as evidence inside a code fence.
+
+### Gates
+
+| Gate | Command | Exit |
+| --- | --- | --- |
+| format:check | `npm run format:check` | 0 |
+| lint:check | `npm run lint:check` | 0 |
+| check | `npm run check` | 0 |
+| build | `npm run build` | 0 |
+| test | `npm test` | 0 (every project's cases passed) |
 
 ### Audit
 
