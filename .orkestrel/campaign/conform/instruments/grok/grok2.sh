@@ -14,6 +14,7 @@ mkdir -p "$OUT"
 exec 9>"$OUT/.bench.lock"
 flock 9
 git -C "$CWD" status --porcelain > "$OUT/$UNIT.status-before.txt" 2>/dev/null
+LOCK_BEFORE=$(stat -c '%Y' "$CWD/node_modules/.package-lock.json" 2>/dev/null || echo none)
 POINTER="Read the brief at $BRIEF in full and perform it exactly as written. Work read-only: never create, edit, or delete a file, and never run a command that changes the tree. Return only the sections the brief names."
 cd "$CWD" || exit 2
 START=$(date -u +%H:%M:%S)
@@ -35,5 +36,8 @@ fs.writeFileSync(process.argv[2], text);
 console.log(text.length + " chars");
 ' "$OUT/$UNIT.jsonl" "$OUT/$UNIT.result.md"
 DIRTY=$(diff "$OUT/$UNIT.status-before.txt" "$OUT/$UNIT.status-after.txt" >/dev/null && echo clean || echo DIRTY)
+# node_modules never enters git status; read the install marker's mtime so a reinstall by the bench shows here.
+LOCK_AFTER=$(stat -c '%Y' "$CWD/node_modules/.package-lock.json" 2>/dev/null || echo none)
+[ "$LOCK_BEFORE" = "$LOCK_AFTER" ] || DIRTY="DIRTY-NODE_MODULES(before=$LOCK_BEFORE after=$LOCK_AFTER)"
 echo "grok $UNIT exit=$EXIT start=$START end=$(date -u +%H:%M:%S) $SESSION containment=$DIRTY result=$OUT/$UNIT.result.md"
 [ -s "$OUT/$UNIT.result.md" ] || { echo "EMPTY result; err tail:"; tail -n 5 "$OUT/$UNIT.err"; exit 3; }
