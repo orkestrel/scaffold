@@ -1,0 +1,461 @@
+diff --git a/README.md b/README.md
+index 033ea96..d9e6b78 100644
+--- a/README.md
++++ b/README.md
+@@ -3,11 +3,11 @@
+ A minimal streaming NDJSON (newline-delimited JSON) parser — feed it string
+ chunks as they arrive; each complete `\n`-terminated line is decoded to a
+ record, and a partial line split across a chunk boundary is buffered until
+-the rest arrives. A total function — it never throws: a malformed line and a
+-blank line are silently skipped, and a well-formed but non-object JSON value
+-(a string, number, array, `null`) is dropped, so `parse()` only ever returns
+-plain records. `clear()` drops any buffered partial line so the same parser
+-instance can be reused for a fresh stream.
++the rest arrives. `parse` never throws on malformed or blank input: a
++malformed line and a blank line are silently skipped, and a well-formed but
++non-object JSON value (a string, number, array, `null`) is dropped, so
++`parse()` only ever returns plain records. `clear()` drops any buffered
++partial line so the same parser instance can be reused for a fresh stream.
+ 
+ ## Install
+ 
+@@ -19,10 +19,10 @@ npm install @orkestrel/ndjson
+ 
+ - Node.js >= 22.12
+ - ESM + CJS (dual-format build)
+-- One runtime dependency: `@orkestrel/contract`
+-- A never-terminated line is buffered indefinitely by design — there is no
+-  size limit, so callers fronting an untrusted or unbounded upstream should
+-  enforce their own byte cap before feeding chunks in.
++- Runtime dependency: `@orkestrel/contract`
++- A never-terminated line stays in the buffer until its newline arrives —
++  there is no size limit, so when you front an untrusted or unbounded
++  upstream, enforce your own byte cap before feeding chunks in.
+ 
+ ## Usage
+ 
+diff --git a/guides/README.md b/guides/README.md
+index 34d5650..00ae22a 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -1,6 +1,6 @@
+ # Guides
+ 
+-A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).
++A dual-axis index into this repository's guides — by concept, and by directory.
+ 
+ ## By concept
+ 
+@@ -16,8 +16,7 @@ A dual-axis index into this repository's guides — by concept, and by directory
+ 
+ ## Dependency reference
+ 
+-`@orkestrel/ndjson` has one `@orkestrel/*` runtime dependency:
+-`@orkestrel/contract`.
++`@orkestrel/contract` is this package's sole `@orkestrel/*` runtime dependency.
+ 
+ [`contract.md`](contract.md) is a byte-identical mirror of the guide
+ for `@orkestrel/contract` — the runtime dependency this package's guards /
+@@ -35,4 +34,4 @@ this guide set.
+ 
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the rules.
+diff --git a/guides/ndjson.md b/guides/ndjson.md
+index 96fd64b..3ce0828 100644
+--- a/guides/ndjson.md
++++ b/guides/ndjson.md
+@@ -3,23 +3,24 @@
+ > A stateful newline-delimited-JSON (NDJSON) stream parser: feed it string
+ > chunks, get back the complete records parsed so far. `parse(chunk)` appends
+ > `chunk` to an internal buffer and splits it on `\n` — every line _before_
+-> the last is `\n`-terminated, hence complete, and is `JSON.parse`d into a
+-> record; the final segment is the trailing partial line and is held back
+-> for the next call, so a line split across chunk boundaries is reassembled
+-> the moment its closing `\n` arrives. Each trimmed line is filtered three
+-> ways: a blank / whitespace-only line (including one whose only content was
+-> a CRLF's trailing `\r`) is skipped, malformed JSON is silently skipped
+-> (never thrown), and a non-record value (an array, a primitive, `null`) is
++> the last is `\n`-terminated, hence complete, and is parsed to a record;
++> the final segment is the trailing partial line and is held back for the
++> next call, so a line split across chunk boundaries is reassembled the
++> moment its closing `\n` arrives. Each trimmed line is filtered: a blank /
++> whitespace-only line (including one whose only content was a CRLF's
++> trailing `\r`) is skipped, malformed JSON is silently skipped (never
++> thrown), and a non-record value (an array, a primitive, `null`) is
+ > dropped — only plain records come back. A never-terminated line is never
+ > emitted, even when the buffered text already happens to be valid JSON.
+ > `clear()` drops the buffered partial line so a handle can be reused for a
+-> fresh stream. A pure functional primitive — no Emitter, no server / HTTP /
+-> agent coupling; it never throws, on malformed input or otherwise. Pair it
+-> with a streaming `TextDecoder` when reading a byte stream: the decoder
+-> handles partial characters, the parser handles partial lines. A line that
+-> is never terminated by a newline is buffered indefinitely by design — the
+-> parser has no size limit, so a caller fronting an untrusted or unbounded
+-> upstream must enforce its own byte cap before feeding chunks in.
++> fresh stream. A self-contained primitive — no Emitter, no server / HTTP /
++> agent coupling; `parse` never throws on malformed, blank, or non-record
++> input. Pair it with a streaming `TextDecoder` when reading a byte stream:
++> the decoder handles partial characters, the parser handles partial lines.
++> A line that is never terminated by a newline stays in the buffer until its
++> newline arrives — the parser has no size limit, so a caller fronting an
++> untrusted or unbounded upstream must enforce its own byte cap before
++> feeding chunks in.
+ > Source: [`src/core`](../src/core). Surfaced through the `@src/core`
+ > barrel.
+ 
+@@ -74,14 +75,14 @@ parser.parse('{"a":1}\n{"b":2}\n') // [{ a: 1 }, { b: 2 }]
+ ## Methods
+ 
+ The public methods of `NDJSONParserInterface` — the class's full method
+-surface (AGENTS §22).
++surface.
+ 
+ #### `NDJSONParserInterface`
+ 
+-| Method  | Returns                              | Behavior                                                                                                                                                                                                                                                                    |
+-| ------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `parse` | `readonly Record<string, unknown>[]` | Append `chunk`, then return every COMPLETE `\n`-terminated line parsed to a record (malformed / non-record lines skipped); retain a trailing partial line indefinitely until its newline arrives — callers fronting an unbounded upstream should cap input size themselves. |
+-| `clear` | `void`                               | Drop any buffered partial line, leaving the handle ready for a fresh stream.                                                                                                                                                                                                |
++| Method  | Returns                              | Behavior                                                                                                                                                                                                                                                          |
++| ------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `parse` | `readonly Record<string, unknown>[]` | Append `chunk`, then return every COMPLETE `\n`-terminated line parsed to a record (malformed / non-record lines skipped); retain a trailing partial line indefinitely until its newline arrives — when you front an unbounded upstream, cap input size yourself. |
++| `clear` | `void`                               | Drop any buffered partial line, leaving the handle ready for a fresh stream.                                                                                                                                                                                      |
+ 
+ ```ts
+ import { NDJSONParser } from '@orkestrel/ndjson'
+diff --git a/src/core/NDJSONParser.ts b/src/core/NDJSONParser.ts
+index 6e5fdd4..30e8a1a 100644
+--- a/src/core/NDJSONParser.ts
++++ b/src/core/NDJSONParser.ts
+@@ -3,16 +3,16 @@ import { isRecord, parseJSONAs } from '@orkestrel/contract'
+ 
+ /**
+  * Decodes an NDJSON (newline-delimited JSON) stream statefully — feed the handle
+- * string chunks, get back the complete JSON objects decoded so far.
++ * string chunks, get back the complete records decoded so far.
+  *
+  * @remarks
+  * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to an internal
+  *   buffer, splits on `\n`, and emits every line BEFORE the last one (each one is
+  *   `\n`-terminated, so it is complete); the final segment is the trailing partial
+  *   line and is retained for the next call.
+- * - **Records only, malformed-safe.** Each complete line is parsed via
++ * - **Records only, malformed-safe.** Each complete line is parsed through
+  *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped (never
+- *   throws), and a non-object value is dropped — only plain records pass
++ *   throws), and a non-record value is dropped — only plain records pass
+  *   {@link isRecord}.
+  *
+  * @example
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index af6a950..7f09027 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -3,7 +3,7 @@ import { NDJSONParser } from './NDJSONParser.js'
+ 
+ /**
+  * Creates an NDJSON (newline-delimited JSON) stream parser - a stateful handle
+- * that turns string chunks into the complete JSON objects decoded so far.
++ * that turns string chunks into the complete records decoded so far.
+  *
+  * @returns A working {@link NDJSONParserInterface}
+  *
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 125d4cc..36ad4a9 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,12 +1,12 @@
+ /**
+  * Represents a stateful NDJSON (newline-delimited JSON) stream parser: feed it string
+- * chunks, get back the complete JSON objects decoded so far. A trailing partial
++ * chunks, get back the complete records decoded so far. A trailing partial
+  * line is buffered until the rest arrives.
+  */
+ export interface NDJSONParserInterface {
+ 	/**
+ 	 * Appends `chunk`, then returns every COMPLETE `\n`-terminated line parsed to a
+-	 * record (malformed / non-object lines are skipped); a trailing partial line
++	 * record (malformed / non-record lines are skipped); a trailing partial line
+ 	 * is retained for the next call.
+ 	 *
+ 	 * @param chunk - Stream text appended to the internal buffer before splitting
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 04bcddb..5f35dc7 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,7 +1,10 @@
+-// The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The four constants below are this
+-// package's own, and are the only part a sibling package changes.
++// The guides-parity gate: @orkestrel/guide's checks run against this repository's own
++// `guides/README.md` manifest, and every flagship fence in `guides/ndjson.md` is transcribed here
++// and asserted against what its comments claim. Name resolution is not a behavioural proof, so a
++// fence documenting a value the code contradicts is exactly what the transcriptions catch. Change
++// a fence, change its transcription.
+ 
++import type { NDJSONParserInterface } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	computeSymbolKey,
+@@ -20,6 +23,7 @@ import {
+ import { readFileSync } from 'node:fs'
+ import { requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
++import { NDJSONParser, createNDJSONParser } from '@src/core'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+@@ -168,3 +172,94 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++/**
++ * The Types fence of `guides/ndjson.md`, transcribed so its case can call it. The fence spells
++ * the return type `readonly Record<string, unknown>[]`, which `typescript(array-type)` forbids in
++ * source for a non-simple element type; `ReadonlyArray<Record<string, unknown>>` is the same type,
++ * and the presence guard beside the case still binds the fence's own spelling.
++ */
++function feed(
++	parser: NDJSONParserInterface,
++	chunk: string,
++): ReadonlyArray<Record<string, unknown>> {
++	return parser.parse(chunk)
++}
++
++// The EXECUTED half of this file. Every check up to here reads a name — from the guide text
++// or from the barrel — and a name that resolves proves nothing about the sentence beside it,
++// so a fence whose comment claims a value the code contradicts passes all of them. The cases
++// here run each flagship fence and assert the values its comments claim, each paired with a
++// presence guard binding that fence's whole body, so a line one fence shares with another
++// cannot stand in for it. Change a fence, change the transcription beside it.
++describe('flagship fences', () => {
++	const guideText = requireValue(files['guides/ndjson.md'], 'Missing file: guides/ndjson.md')
++	const readmeText = readFileSync(new URL('README.md', root), 'utf8')
++
++	it('returns the Surface fence values and clears back to a fresh stream', () => {
++		const parser = createNDJSONParser()
++
++		expect(parser.parse('{"a":1}\n{"b"')).toEqual([{ a: 1 }])
++		expect(parser.parse(':2}\n')).toEqual([{ b: 2 }])
++		parser.clear()
++
++		expect(parser.parse('{"z":9}\n')).toEqual([{ z: 9 }])
++	})
++
++	it('carries the Surface fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			'const parser = createNDJSONParser()\nparser.parse(\'{"a":1}\\n{"b"\') // [{ a: 1 }] - the second line is still partial\nparser.parse(\':2}\\n\') // [{ b: 2 }] - the split line reassembled\nparser.clear() // drop any buffered partial - ready for a fresh stream',
++		)
++	})
++
++	it('returns the Types fence value through the documented signature', () => {
++		expect(feed(createNDJSONParser(), '{"a":1}\n')).toEqual([{ a: 1 }])
++	})
++
++	it('carries the Types fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			'function feed(parser: NDJSONParserInterface, chunk: string): readonly Record<string, unknown>[] {\n\treturn parser.parse(chunk)\n}',
++		)
++	})
++
++	it('returns the Factories fence values from one chunk carrying two lines', () => {
++		expect(createNDJSONParser().parse('{"a":1}\n{"b":2}\n')).toEqual([{ a: 1 }, { b: 2 }])
++	})
++
++	it('carries the Factories fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			'const parser = createNDJSONParser()\nparser.parse(\'{"a":1}\\n{"b":2}\\n\') // [{ a: 1 }, { b: 2 }]',
++		)
++	})
++
++	it('returns the Methods fence values from a directly constructed parser', () => {
++		const parser = new NDJSONParser()
++
++		expect(parser.parse('{"a":1}\n{"b"')).toEqual([{ a: 1 }])
++		expect(parser.parse(':2}\n')).toEqual([{ b: 2 }])
++		parser.clear()
++
++		expect(parser.parse('{"c":3}\n')).toEqual([{ c: 3 }])
++	})
++
++	it('carries the Methods fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			'const parser = new NDJSONParser()\nparser.parse(\'{"a":1}\\n{"b"\') // [{ a: 1 }] - the second line is still partial\nparser.parse(\':2}\\n\') // [{ b: 2 }] - the split line reassembled\nparser.clear() // drop any buffered partial - ready for a fresh stream\nparser.parse(\'{"c":3}\\n\') // [{ c: 3 }]',
++		)
++	})
++
++	it('returns the README usage fence values, skipping the malformed and blank lines', () => {
++		const parser = createNDJSONParser()
++
++		expect(parser.parse('{"a":1}\n{"b":2}\n')).toEqual([{ a: 1 }, { b: 2 }])
++		expect(parser.parse('{"c":3}')).toEqual([])
++		expect(parser.parse('\n')).toEqual([{ c: 3 }])
++		expect(parser.parse('not json\n\n{"d":4}\n')).toEqual([{ d: 4 }])
++	})
++
++	it('carries the README usage fence lines the transcription copies', () => {
++		expect(readmeText).toContain(
++			'const parser = createNDJSONParser()\nparser.parse(\'{"a":1}\\n{"b":2}\\n\') // [{ a: 1 }, { b: 2 }]\nparser.parse(\'{"c":3}\') // [] - buffered until its trailing newline arrives\nparser.parse(\'\\n\') // [{ c: 3 }]\n\nparser.parse(\'not json\\n\\n{"d":4}\\n\') // [{ d: 4 }] - malformed and blank lines skipped\n\nparser.clear() // drop buffered partial line - reuse for a fresh stream',
++		)
++	})
++})
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 3672240..fbecc46 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -13,18 +13,7 @@
+ import { NDJSONParser } from '@src/core'
+ import { seededRandom } from '@orkestrel/contract'
+ import { describe, expect, it } from 'vitest'
+-import {
+-	BACKSLASH,
+-	chunkings,
+-	CR,
+-	feedAll,
+-	FF,
+-	isBrowserVuePath,
+-	LF,
+-	partition,
+-	TAB,
+-	VT,
+-} from './setup.js'
++import { BACKSLASH, chunkings, CR, feedAll, FF, LF, partition, TAB, VT } from './setup.js'
+ 
+ // A short Ollama-shaped corpus: two well-formed records around one malformed line, so
+ // a chunking that loses, duplicates, or reorders a chunk changes the decoded result.
+@@ -151,21 +140,3 @@ describe('partition', () => {
+ 		expect(partition('', () => 0)).toEqual([])
+ 	})
+ })
+-
+-describe('isBrowserVuePath', () => {
+-	// The workspace's guard for the private browser SFC population. This package is
+-	// core-only and ships no `app/`, so what the proof pins is the guard's boundary.
+-	it('accepts a browser SFC path under either separator family', () => {
+-		const windows = 'app' + BACKSLASH + 'browser' + BACKSLASH + 'views' + BACKSLASH + 'Home.vue'
+-
+-		expect(isBrowserVuePath('app/browser/views/Home.vue')).toBe(true)
+-		expect(isBrowserVuePath(windows)).toBe(true)
+-	})
+-
+-	it('refuses a sibling directory and a prefix lookalike', () => {
+-		expect(isBrowserVuePath('app/core/views/Home.vue')).toBe(false)
+-		expect(isBrowserVuePath('src/browser/views/Home.vue')).toBe(false)
+-		expect(isBrowserVuePath('app/browserish/Home.vue')).toBe(false)
+-		expect(isBrowserVuePath('tests/app/browser/Home.vue')).toBe(false)
+-	})
+-})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 52ea069..4f477ad 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -2,7 +2,7 @@
+ // Vitest project (`setupFiles[0]`). Keep this file free of `node:*` and of
+ // `document` / `window`: this package is core-only.
+ //
+-// Scoped to the `ndjson` corpus this workspace ships today (AGENTS §16.1): NDJSON
++// Scoped to the `ndjson` corpus this workspace ships today: NDJSON
+ // line-terminator constants and corpus-partitioning helpers for chunk-boundary
+ // invariance testing. Seeded-fuzz partitioning uses @orkestrel/contract's
+ // `seededRandom` directly — no local PRNG.
+@@ -14,7 +14,7 @@ afterEach(() => {
+ 	vi.restoreAllMocks()
+ })
+ 
+-// ── NDJSON line-terminator / whitespace constants (shared — AGENTS §16.1) ──
++// ── NDJSON line-terminator / whitespace constants (shared) ──
+ 
+ // Control bytes spelled as codepoints so the raw wire content is unambiguous
+ // in source (a literal `'\r'` is identical, but the codepoint removes doubt).
+@@ -67,8 +67,8 @@ export function chunkings(
+ 
+ /**
+  * Split `stream` into a random sequence of non-empty chunks driven by `rng`
+- * (e.g. `seededRandom` from `@orkestrel/contract`) — every call consumes at
+- * least one character, so it always terminates.
++ * (for example the `seededRandom` function from `@orkestrel/contract`) — every
++ * call consumes at least one character, so it always terminates.
+  */
+ export function partition(stream: string, rng: () => number): readonly string[] {
+ 	const chunks: string[] = []
+@@ -81,9 +81,3 @@ export function partition(stream: string, rng: () => number): readonly string[]
+ 	}
+ 	return chunks
+ }
+-
+-/** Whether a repository-relative Vue SFC path belongs to the private browser application. */
+-export function isBrowserVuePath(path: string): boolean {
+-	const normalized = path.replaceAll('\\', '/')
+-	return normalized.startsWith('app/browser/')
+-}
+diff --git a/tests/src/core/NDJSONParser.test.ts b/tests/src/core/NDJSONParser.test.ts
+index d8383c6..be1dc48 100644
+--- a/tests/src/core/NDJSONParser.test.ts
++++ b/tests/src/core/NDJSONParser.test.ts
+@@ -6,9 +6,9 @@ import { BACKSLASH, CR, FF, LF, TAB, VT, chunkings, feedAll, partition } from '.
+ // The NDJSON stream parser — the load-bearing behavior is partial-line buffering:
+ // split the buffer on `\n`, emit every COMPLETE (`\n`-terminated) line parsed to a
+ // record, and retain the trailing partial line for the next call. Records only
+-// (malformed / non-object lines skipped, never throwing); a never-terminated line
++// (malformed / non-record lines skipped, never throwing); a never-terminated line
+ // stays buffered forever. Driven entirely with plain strings — no network, no
+-// provider, no fakes (AGENTS §16).
++// provider, no fakes.
+ 
+ describe('NDJSONParser — complete lines', () => {
+ 	it('parses a single complete line to one record', () => {
+@@ -132,21 +132,21 @@ describe('NDJSONParser — Ollama-style stream at arbitrary chunk boundaries', (
+ 	})
+ })
+ 
+-describe('NDJSONParser — malformed and non-object lines', () => {
++describe('NDJSONParser — malformed and non-record lines', () => {
+ 	it('skips a malformed JSON line without throwing, later valid lines still parse', () => {
+ 		const parser = new NDJSONParser()
+ 
+ 		expect(parser.parse('{"a":1}\nnot json at all\n{"b":2}\n')).toEqual([{ a: 1 }, { b: 2 }])
+ 	})
+ 
+-	it('drops a non-object line and keeps the records around it', () => {
++	it('drops a non-record line and keeps the records around it', () => {
+ 		const parser = new NDJSONParser()
+ 
+ 		// 42 / "str" / [1,2] / null / true are valid JSON but not records — dropped.
+ 		expect(parser.parse('42\n"str"\n[1,2]\nnull\ntrue\n{"ok":true}\n')).toEqual([{ ok: true }])
+ 	})
+ 
+-	it('drops every non-object value when no record is present', () => {
++	it('drops every non-record value when no record is present', () => {
+ 		const parser = new NDJSONParser()
+ 
+ 		expect(parser.parse('1\n2\n[]\nnull\n')).toEqual([])
+@@ -387,7 +387,7 @@ describe('NDJSONParser — value shapes and JSON semantics', () => {
+ 		expect(parser.parse('{}' + LF)).toEqual([{}])
+ 	})
+ 
+-	it('drops an empty-array line (a non-object value)', () => {
++	it('drops an empty-array line (a non-record value)', () => {
+ 		const parser = new NDJSONParser()
+ 
+ 		expect(parser.parse('[]' + LF + '{"ok":1}' + LF)).toEqual([{ ok: 1 }])
+@@ -453,7 +453,7 @@ describe('NDJSONParser — value shapes and JSON semantics', () => {
+ describe('NDJSONParser — buffer accumulation integrity over long streams', () => {
+ 	// Build a stream of `count` records, feed it to a fresh parser one byte at a
+ 	// time, and collect everything. Pins: no record lost, none duplicated, exact
+-	// stream order — i.e. the append-split-retain buffering has no off-by-one or
++	// stream order — that is, the append-split-retain buffering has no off-by-one or
+ 	// quadratic corruption no matter how granular the chunking.
+ 	const drainByByte = (count: number): ReadonlyArray<Record<string, unknown>> => {
+ 		const parser = new NDJSONParser()
+@@ -533,7 +533,7 @@ describe('NDJSONParser — property / invariant suite (chunking invariance)', ()
+ 
+ 	const EXPECTED = new NDJSONParser().parse(CORPUS)
+ 
+-	it('sanity: the corpus actually decodes records', () => {
++	it('quick check: the corpus decodes records, so a chunking has something to lose', () => {
+ 		expect(EXPECTED.length).toBe(6)
+ 	})
+ 

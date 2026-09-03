@@ -67,11 +67,13 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | sse | yes | complete | three rounds, ACCEPT (`units/conform-sse-audit-verdict.md`) | `0586994`, follow-on `f80b232` |
 | budget | yes | complete | three rounds, ACCEPT at landing (`units/conform-budget-audit-verdict.md`) | `e35e994`, follow-on `b8c0029` |
 | test | yes (successor) | complete | round 1 PASS/PASS, ACCEPT (`units/conform-test-audit-verdict.md`) | `ed73b78` |
-| msg | yes | complete (resumed on `1a8821a`) | round 1 FAIL 8 / PASS, round 2 FAIL 3 7 8 / FAIL 3 7, fix round 2 in flight in `audit2.msg` | — |
-| contract | yes (successor; checkpoint `01f3390`) | complete (resumed) | round 1 checker FAIL 3 7, objective in flight in `layer2.L0b` | — |
-| abort, ndjson, indexeddb | yes (successor) | complete | round 1 read (see the ledger); briefed fix round 1 in flight in `fixaudit.L1` | — |
-| csv | yes (successor) | complete | round 1 FAIL 4 8 / PASS, fix round 1 returned; audit round 2 in `fixaudit.L1` | — |
-| emitter, html, sqlite, tool, timeout | generating | — | — | `layer2.L1b` running |
+| msg | yes | complete (resumed on `1a8821a`) | three driver rounds, a targeted fix round, a checker pass; ACCEPT (`units/conform-msg-audit-verdict.md`) | `9298a32` |
+| abort | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-abort-audit-verdict.md`) | `7aee9fd` |
+| ndjson | yes (successor) | complete | round 1 FAIL 8 / FAIL 3 9, briefed fix, round 2 PASS/PASS; ACCEPT (`units/conform-ndjson-audit-verdict.md`) | `bc96a3c` |
+| contract | yes (successor; checkpoint `01f3390`) | complete (resumed) | round 1 FAIL 2 9 / FAIL 3 7, fix round 1 returned, round 2 FAIL 3 4 / PASS, fix round 2 in flight in `layer2.L0b` | — |
+| indexeddb | yes (successor) | complete | round 1 FAIL 8 / PASS, briefed fix, round 2 checker PASS, objective in flight in `fixaudit.L1` | — |
+| csv | yes (successor) | complete | round 1 FAIL 4 8 / PASS, round 2 FAIL 4 / PASS, fix round 2 in flight in `fixaudit.L1` | — |
+| emitter, html, sqlite, tool, timeout | yes (reconciled; sqlite-obj-1 is an Orchestrator manifest row) | in flight in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
 | database | yes (successor; carries database-subj-10) | not started | — | L2, after contract and indexeddb land and re-stage |
 | console, process, reason, middleware, table, template, websocket, form, markdown, pool | no | not started | — | L2 |
 | browser, guide, interpret, mcp, qualifier, rater, sea, server, terminal, workspace, lsp, queue, relation, scaffold | no | not started (guide carries the regex unit at `264a87f`) | — | L3 |
