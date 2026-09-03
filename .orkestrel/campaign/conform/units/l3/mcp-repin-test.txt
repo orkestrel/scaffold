@@ -1,0 +1,104 @@
+
+> @orkestrel/mcp@0.0.27 test
+> npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides && npm run test:conformance && npm run test:integration
+
+
+> @orkestrel/mcp@0.0.27 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+11:02:10 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+·······························································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································-···································11:02:40 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+····························································
+
+ Test Files  32 passed (32)
+      Tests  1342 passed | 1 skipped (1343)
+   Start at  23:02:10
+   Duration  47.46s (transform 3.65s, setup 5.32s, import 2.86s, tests 51.94s, environment 3ms)
+
+
+> @orkestrel/mcp@0.0.27 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+···············································································································
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  23:02:58
+   Duration  2.27s (transform 468ms, setup 400ms, import 576ms, tests 1.13s, environment 0ms)
+
+
+> @orkestrel/mcp@0.0.27 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+··············································
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  23:03:03
+   Duration  6.64s (transform 1.66s, setup 940ms, import 3.66s, tests 1.74s, environment 0ms)
+
+
+> @orkestrel/mcp@0.0.27 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+······················································································
+
+ Test Files  5 passed (5)
+      Tests  86 passed (86)
+   Start at  23:03:11
+   Duration  4.76s (transform 2.60s, setup 2.24s, import 2.11s, tests 4.09s, environment 1ms)
+
+
+> @orkestrel/mcp@0.0.27 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+································································································································································
+
+ Test Files  1 passed (1)
+      Tests  160 passed (160)
+   Start at  23:03:17
+   Duration  7.57s (transform 523ms, setup 428ms, import 1.56s, tests 5.43s, environment 0ms)
+
+
+> @orkestrel/mcp@0.0.27 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+···············································
+
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+   Start at  23:03:25
+   Duration  9.49s (transform 461ms, setup 388ms, import 266ms, tests 8.67s, environment 0ms)
+
+
+> @orkestrel/mcp@0.0.27 test:integration
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project integration
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+····
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  23:03:36
+   Duration  1.43s (transform 390ms, setup 300ms, import 290ms, tests 220ms, environment 0ms)
+
