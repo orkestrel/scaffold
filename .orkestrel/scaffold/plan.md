@@ -323,3 +323,10 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
 - Orchestrator: the Quick Reference icon control renamed to `Close quick reference` in lloyds
   (`3e8d5a3`) so `Close` resolves the footer button alone; J-lloyds dispatched with the chrome
   findings carried; `audit-lloyds-brief.md` and its launcher retained for the round that follows.
+- J-lloyds returned and is committed (`4812416`): every family proved on the layer, the harness
+  gate green, the setup proofs in place, `npm test` green. Three surface readings carried to
+  R-lloyds (app-owned): the desk's `min-vh-100` under the stacked bar keeps the document 42 px
+  taller than any pane at 390 (permanent overflow; the 390 capture runs refuse to settle), the
+  focus ring at 1.307–2.751 against 3:1, and focus on the body after a confirmed removal.
+  Ruling: the capture refusal is the surface's, not the layer's — a document taller than every
+  pane by a constant has no fixed point, and the instrument found real overflow scroll.
