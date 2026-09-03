@@ -1,0 +1,8 @@
+Conform queue to the fleet rules: the context handle, the shared store fixtures, the executed guide fences
+
+`QueueExecution` becomes `QueueContext` and `QueueHandler`'s parameter reads `context`; every consumer re-pins to the renamed type at its own release. The stub store, the stored-entry builder, the driver-backed store, and the event names move to `tests/setup.ts` with their own proofs; the guide's fences run in `tests/guides.test.ts`. The README states the Node floor and the ESM-and-CommonJS build; every numbered `AGENTS §` citation is replaced by the named rule or deleted; the defaults read `Default: …`; the guides map names every mirror; `databases` reads `@orkestrel/database`; the throw documentation on `Queue` names the synchronous case.
+
+Audit: Grok-first round 1 (Luna distillate, Luna checker PASS, Opus objective PASS with record findings closed by a report-only fix round); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-queue-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

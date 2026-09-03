@@ -1,0 +1,8 @@
+Conform guide to the fleet rules: the keyword axis, the declaration keyword, the executed fences, one setup module
+
+`SurfaceSymbol.kind` becomes `keyword`, `ExportKind` becomes `ExportKeyword`, `EXPORT_KINDS` becomes `EXPORT_KEYWORDS`, and `isExportKind` becomes `isExportKeyword`; every consumer's `tests/guides.test.ts` re-pins to the renamed axis at its own release, and database's hand-written `tests/setupServer.ts` sites with it. `DeclarationKeyword` names the `class` and `interface` subset at its three sites and in the guide. `SourceManagerInterface.sources()` lists the distinct sources. The flagship `## Patterns` fences run in `tests/guides.test.ts` with a presence guard beside each; the FI, LI, and TE guards refuse an empty population; the README's `## API` section is diffed against the real surface. `requireText` moves to `tests/setup.ts` and the two `setupServer` modules are removed. `exists` documents the directory case; `Guide` reads `pure`; the citations name a rule file and its heading; the counts, the slogan, the shouted words, `should`, `via`, `e.g.`, and the superseded-design history leave the prose.
+
+Audit: Grok-first round 1 (Luna distillate, Luna checker PASS, Opus objective FAIL 3, 4, 6 closed by fix round 1) and round 2 (Luna distillate, Luna checker PASS, Opus objective PASS with record findings closed by report-only fix round 2); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-guide-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

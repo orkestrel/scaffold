@@ -103,6 +103,10 @@ and `README.md` unless noted.
 | `\bonce\b` (case-insensitive)                                      | every hit means "a single time"; the one temporal `once` at guides/guide.md was repaired to `after` |
 | `\b[0-9]+ (elements\|members\|…\|symbols)\b` (case-insensitive)    | two hits in `Source.test.ts` test names (`exact 6 symbols`), both repaired                  |
 | `readonly id\|^export class` (fleet-F2, `src` only)                | no public `readonly id` field on any class                                                  |
+| `exists in the inventory` (guide-obj-5's old `SourceInterface.exists` `@returns`/description text, over `src`, the non-vendored `tests`, `guides/guide.md`, `guides/README.md`, `README.md`) | empty                                                                                        |
+| `\bsince\b\|the local name` (case-insensitive; guide-subj-8's dropped causal `since` and its `x as y` alias contradiction, same population)                | empty                                                                                        |
+| `\bsees\b\|\bnotion\b\|single mistake\|most often` (case-insensitive; guide-subj-9's dropped sight/knowledge clauses, same population)                     | empty                                                                                        |
+| `Measured across\|no longer needed` (guide-subj-10's dropped fleet measurement and superseded-design sentence, same population)                            | empty                                                                                        |
 
 ## Gates
 
@@ -136,7 +140,7 @@ exec. The Orchestrator takes the deciding run after the unit exits.
 `EXPORT_KEYWORDS`, and `isExportKind` to `isExportKeyword`. The markdown `Kind` column header and
 `findKindIndex` are unchanged: the header is table data this package locates by literal text.
 
-Two further consequences to carry into the release note:
+Further consequences to carry into the release note:
 
 - `createSurfaceSymbolContract().schema` now names its property `keyword`, so the published JSON
   Schema changes shape.
@@ -309,7 +313,7 @@ Fleet-wide verification sweep, restated as `ExportKind|EXPORT_KINDS|isExportKind
 grep -rln --include=*.ts -E "ExportKind|EXPORT_KINDS|isExportKind|symbol\.kind" /home/user/fleet --exclude-dir=node_modules --exclude-dir=guide
 ```
 
-Returns the same forty-six `tests/guides.test.ts` consumers § Shared-file patches already named —
+Returns the same `tests/guides.test.ts` consumers § Shared-file patches already named —
 abort, agent, brief, browser, budget, codec, console, contract, csv, database, emitter, form, html,
 indexeddb, interpret, lsp, markdown, mcp, middleware, msg, ndjson, ollama, pool, process, program,
 qualifier, queue, rater, reason, relation, router, sea, server, sqlite, sse, table, template,
@@ -347,3 +351,20 @@ touched section, with `tests/setupServer.test.ts` and `tests/setupServer.ts` sti
 unstaged.
 
 No deviation fired.
+
+## Fix round 2
+
+Closes F-1 and F-2 from the round-2 objective lane (`units/l3/guide-objective-r2.md`).
+
+- F-1: `:312` drops "forty-six" so the sentence names the consumers already listed rather than
+  tallying them; `:139` drops "Two" from "Two further consequences" and states them without a
+  count. The diffstat line at `:57` is unchanged; it cites a tool tally to the artifact that
+  produced it.
+- F-2: § Sweeps gains four rows, each run over `src`, the non-vendored `tests` (excluding
+  `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/config.test.ts`, `tests/distribution.test.ts`),
+  `guides/guide.md`, `guides/README.md`, and `README.md`: guide-obj-5's old `exists` `@returns`
+  and description text, guide-subj-8's `since` and "the local name", guide-subj-9's "sees",
+  "notion", "single mistake", and "most often", and guide-subj-10's "Measured across" and "no
+  longer needed". Every sweep returned empty.
+
+No file under `/home/user/fleet` changed.

@@ -10,7 +10,7 @@ order at `/home/user/fleet/queue`, and `git status --short` lists only files und
 | queue-obj-1    | `applied`   | `README.md:28` now reads `- ESM and CommonJS builds from one entry point`. `package.json` and `configs/src/vite.core.config.ts` untouched.                                                                     |
 | queue-obj-2    | `applied`   | `README.md:27` now reads `- Node.js >= 22.12.0`, matching `engines.node`. `engines` untouched.                                                                                                                 |
 | queue-obj-3    | `applied`   | `describe('guide fences', …)` appended to `tests/guides.test.ts`. Red/green control in § Failing-first controls.                                                                                               |
-| queue-obj-4    | `applied`   | The type-import-after-value-import violation is gone: `queue-obj-5` deleted `entryOf`, the only consumer of `StoredEntry` in that file, so the type import went with it. See § Composition note.               |
+| queue-obj-4    | `noop by composition` | The type-import-after-value-import violation is gone: `queue-obj-5` deleted `entryOf`, the only consumer of `StoredEntry` in that file, so the type import went with it. See § Composition note.               |
 | queue-obj-5    | `applied`   | `createStubStore`, `createStoredEntry`, `createDriverQueueStore`, `QUEUE_EVENTS`, and `QueueEvent` moved to `tests/setup.ts`; `failingSaveStore`, `entryOf`, `memoryStore`, and all 22 inline store literals routed through them; `tests/setup.test.ts` rewritten. |
 | queue-obj-6    | `applied`   | `tests/src/core/stores/DatabaseQueueStore.test.ts` header now names `src/core/stores/DatabaseQueueStore.ts`. `workers/` sweep is empty.                                                                        |
 | queue-subj-1   | `applied`   | Every numbered citation deleted from `src/core/types.ts`, `src/core/factories.ts`, and `src/core/stores/DatabaseQueueStore.ts`; each surrounding sentence left intact per the refuter's operative form.        |
@@ -32,8 +32,8 @@ order at `/home/user/fleet/queue`, and `git status --short` lists only files und
 
 ### Composition note on queue-obj-4
 
-The row's operative repair moves `import type { StoredEntry } from '@src/core'` to line 1. That
-declaration no longer exists: queue-obj-5 deletes `entryOf`, which was `StoredEntry`'s only
+The row's precondition was removed by queue-obj-5, not the repair performed: `import type { StoredEntry } from '@src/core'`
+no longer exists because queue-obj-5 deletes `entryOf`, which was `StoredEntry`'s only
 consumer in the file, and `noUnusedLocals` refuses a retained unused type import. The violation the
 row names — a type import following a value import — is therefore closed by deletion rather than by
 a move, and the file's remaining imports are all value imports. The old form is gone, which is what
@@ -89,7 +89,7 @@ its row names a narrower population.
 | Pattern                                                                                                          | Population                                          | Result                                                                                                  |
 | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `QueueExecution`                                                                                                  | `src`, `tests`, `guides`, `README.md`               | empty                                                                                                   |
-| `queueexecution\|entryOf\|memoryStore(\|failingSaveStore` (case-insensitive, covers the `-s`/`-ed`/`-ing` forms)   | `src`, `tests`, `guides`, `README.md`               | empty                                                                                                   |
+| `grep -rniE '\b(entryOf\|memoryStore\|failingSaveStore\|QueueExecution)\b'` | `src`, `tests`, `guides`, `README.md`               | empty                                                                                                   |
 | `§[0-9]`                                                                                                          | `src`, `tests`, `guides/queue.md`, `guides/README.md`, `README.md` | empty                                                                                    |
 | `\bdatabases\b\|workers/` (case-insensitive)                                                                      | same                                                | empty                                                                                                   |
 | `\bvia\b\|e\.g\.\|i\.e\.\|\bjust\b\|\bshould\b\|\bsimply\b` (case-insensitive)                                     | `src`, `guides/queue.md`, `guides/README.md`, `README.md` | empty                                                                                             |
@@ -271,6 +271,13 @@ these trees.
 - Order the units by layer: `queue` publishes first, then `worker`, `workflow`, and `agent` re-pin
   against the version the registry serves and re-run their gates.
 
+`/home/user/fleet/worker/guides/worker.md`
+
+Substitute `QueueExecution` → `QueueContext` and `execution` → `context` in the `WorkerHandler`
+shape row (`:98`) and the `ServeWorkerOptions` Surface row (`:103`, `:198`), and read the following
+prose sites by sense for the same substitution: `:19`, `:149`, `:152`, `:199`, `:204`, `:280`,
+`:283`, and `:427`.
+
 ## Deviations
 
 None. The deviation contract did not fire: no row's repair contradicted a rule, collided with an
@@ -303,12 +310,12 @@ before the rename.
 
 Neither is mine to repair under this brief's fixed scope, and I left both untouched.
 
-- `tests/src/core/stores/DatabaseQueueStore.test.ts:206` carries the positional pointer `below` in a
+- `tests/src/core/stores/DatabaseQueueStore.test.ts:194` carries the positional pointer `below` in a
   comment. `queue-subj-6` scopes positional pointers to the guide and the guides map, and
   `queue-subj-14` scopes them to `tests/guides.test.ts`, so no confirmed row reaches this site. I
   changed it and reverted it once I ruled it out of scope.
-- `tests/src/core/stores/MemoryQueueStore.test.ts:11` states the count `four-method`, and
-  `tests/guides.test.ts:36` carries `the second assertion below`. `queue-subj-7` scopes counts to
+- `tests/src/core/stores/MemoryQueueStore.test.ts:12` states the count `four-method`, and
+  `tests/guides.test.ts:47` carries `the second assertion below`. `queue-subj-7` scopes counts to
   `guides/queue.md` and `queue-subj-14` scopes its rewrite to lines 2-3 of `tests/guides.test.ts`.
 
 ## Observations, not criteria
@@ -318,3 +325,23 @@ Neither is mine to repair under this brief's fixed scope, and I left both untouc
 - `guides/queue.md`'s `## Tests` list gained no row for `tests/setup.test.ts`. That proof covers test
   infrastructure rather than a `src/core` module, no confirmed row names it, and the parity suite
   does not require it.
+
+## Fix round 1
+
+Closed the round-1 objective lane's findings F-1, F-2, F-3, and F-5, all on the record.
+
+- F-1: the queue-obj-4 row now reads `noop by composition`, and the Composition note's first
+  sentence states that queue-obj-5 removed the row's precondition rather than that a repair moved
+  the import.
+- F-2: the malformed sweep cell now carries the pattern that ran,
+  `grep -rniE '\b(entryOf|memoryStore|failingSaveStore|QueueExecution)\b'`, over `src`, `tests`,
+  `guides`, and `README.md`, with its empty result.
+- F-3: § Shared-file patches now names `/home/user/fleet/worker/guides/worker.md` with the
+  `QueueExecution` → `QueueContext` and `execution` → `context` substitutions at the `WorkerHandler`
+  shape row (`:98`) and the `ServeWorkerOptions` Surface row (`:103`, `:198`), and lists the prose
+  sites at `:19`, `:149`, `:152`, `:199`, `:204`, `:280`, `:283`, and `:427` for worker's unit to
+  read by sense.
+- F-5: the out-of-scope findings now cite `DatabaseQueueStore.test.ts:194`,
+  `MemoryQueueStore.test.ts:12`, and `tests/guides.test.ts:47`.
+
+No file under `/home/user/fleet` changed.
