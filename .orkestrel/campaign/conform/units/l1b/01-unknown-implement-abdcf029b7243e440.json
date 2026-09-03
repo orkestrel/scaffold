@@ -1,0 +1,106 @@
+{
+  "package": "html",
+  "rows": [
+    {
+      "id": "html-fix3-1",
+      "disposition": "applied",
+      "note": "F-1 closed by the lane's recommendation, not the cheap option: the presence guard's population was derived assertion by assertion from the `flagship fences` cases against the fences they transcribe, and the `claims` list extended to it. Two old entries were fragments ('slashed: false, next: 38 }', 'closing: false, next: 26 }') and are now the call line with its whole documented value. Control: `guides/html.md:591` trailing comment rewritten to `// ''` — before the edit `npm run test:guides` exit 0 `Tests 32 passed (32)` (the defect, /home/user/work/evidence/html-proofs/fix3-claims-control-red.txt), after it exit 1 `Tests 1 failed | 31 passed (32)` naming the guard and printing the unmatched claim (fix3-claims-guard-red.txt), restored exit 0 `Tests 32 passed (32)` (fix3-claims-restored-green.txt). The population is listed by guide section in the report's § The population."
+    },
+    {
+      "id": "html-fix3-2",
+      "disposition": "applied",
+      "note": "Breadth pass over every sentence the unit added or rewrote about an instrument's coverage in tests/guides.test.ts, tests/setup.test.ts, and tests/distribution.test.ts. Each is listed with its reading in the report's § The breadth pass. Four false sentences corrected: the drop-in header (`:1-4`, omitted the package-owned `@src/core` import block), the executed-half comment (`:222-226`, 'Each case here runs one flagship fence' is false for the README case, which runs the usage and start-tag fences), the guide guard title and comment (F-1), and the README guard title (`:626`, its list omitted the start-tag fence's documented value and both fence inputs). One misattribution corrected in tests/setup.test.ts:122-124: the leftover named property is written by the mutation cycle — `area` by restoreCollectionMutation (tests/setup.ts:99), `0` by attemptCollectionMutation (:63) and rewritten by the restore (:98) — not by the attempt. Every other sentence read true, each with the file:line evidence that settled it."
+    },
+    {
+      "id": "html-fix3-3",
+      "disposition": "applied",
+      "note": "tests/guides.test.ts:292 no longer carries U+2019. The title is now the double-quoted \"streams the root's direct children through a reader and an async iteration\" with an ASCII apostrophe. Double quotes rather than an escape because oxfmt picks the quote needing fewer escapes and would rewrite an escaped single-quoted form on the next format run. A [^\\x00-\\x7F] sweep over the file now returns only the em dash in the INTERNAL doc block at :85 (drop-in prose) and the deliberate code-point escapes at :390, :391, :436, :437, :581, :582, :583, :593. The report's sentence about code-point escapes is true of the tree again."
+    },
+    {
+      "id": "html-fix3-4",
+      "disposition": "applied",
+      "note": "R-1: `npm --prefix /home/user/fleet/html run test:distribution` run after the gate chain — exit 0, 9 passed in 7.79 s, the stage built so the pack and install ran through the npm spawn path rather than skipping. Recorded in the report's § Gates beside the chain, with the note that package.json:59 excludes the distribution project and :68 and :69 are the invocations that reach it."
+    }
+  ],
+  "files": [
+    "/home/user/fleet/html/tests/guides.test.ts",
+    "/home/user/fleet/html/tests/setup.test.ts",
+    "/home/user/fleet/html/guides/html.md",
+    "/home/user/scaffold/tmp/units/conform/conform-html-report.md",
+    "/home/user/work/evidence/conform-html.diff",
+    "/home/user/work/evidence/conform-html.status",
+    "/home/user/work/evidence/html-proofs/fix3-claims-control-red.txt",
+    "/home/user/work/evidence/html-proofs/fix3-claims-guard-red.txt",
+    "/home/user/work/evidence/html-proofs/fix3-claims-restored-green.txt"
+  ],
+  "gates": [
+    {
+      "command": "npm --prefix /home/user/fleet/html run test:guides (mutated guide, old claims list)",
+      "exit": 0,
+      "excerpt": "Tests  32 passed (32) — the defect: a falsified guide fence line reddened nothing"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html run test:guides (mutated guide, extended claims list)",
+      "exit": 1,
+      "excerpt": "FAIL flagship fences > carries every guide fence line whose input or documented value a transcription reuses; received [\"sanitizeURL('/docs/page', SAFE_URL_SCHEMES) // '/docs/page' - relative is always allowed\"]; Tests 1 failed | 31 passed (32)"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html run test:guides (restored guide, extended claims list)",
+      "exit": 0,
+      "excerpt": "Tests  32 passed (32)"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html run format:check",
+      "exit": 0,
+      "excerpt": "All matched files use the correct format. Finished in 2296ms on 46 files"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html run lint:check",
+      "exit": 0,
+      "excerpt": "oxlint --config .oxlintrc.json --deny-warnings . — no diagnostic"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html run check",
+      "exit": 0,
+      "excerpt": "tsc --noEmit --project tsconfig.json then check:src:core — no diagnostic"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html run build",
+      "exit": 0,
+      "excerpt": "Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html test",
+      "exit": 0,
+      "excerpt": "src:core 312 passed, policy 111 passed, config 46 passed, setup 29 passed, guides 32 passed"
+    },
+    {
+      "command": "npm --prefix /home/user/fleet/html run test:distribution",
+      "exit": 0,
+      "excerpt": "Tests  9 passed (9), Duration 7.79s"
+    },
+    {
+      "command": "git -C /home/user/fleet/html status --short",
+      "exit": 0,
+      "excerpt": "the same fourteen ' M' paths the unit owned before this round; no untracked entry"
+    }
+  ],
+  "breaking": [],
+  "patches": [
+    "Referral 2, superseding the fix-round-2 wording: the tests/guides.test.ts drop-in header this unit changed is now\n-// this repo's own `guides/README.md` manifest. The five constants below are this\n-// package's own, and are the only part a sibling package changes.\n+// this repo's own `guides/README.md` manifest. The `@src/core` imports, the constants\n+// that follow them, and the closing `flagship fences` block are this package's own, and\n+// are the only parts a sibling package changes.\nA sibling with no executed block names its own package-owned parts instead; the sentence has to match the file it sits in, which is what fix round 3's breadth pass found.",
+    "Referral 4, new this round: F-1 is a defect any package adopting the `flagship fences` pattern will reproduce — a presence guard whose sentence claims the fences and whose list carries a sample. The package-independent rule: the guard carries every fence line whose input literal or documented value the transcription reuses, its title names that population rather than 'every fence line', and its control is a mutation of a line the list omits (read green before the extension, red after). Carry it to the remaining conform units that add an executed block.",
+    "Referral 1, unchanged from fix round 2: scaffold's tests/distribution.test.ts generator still emits the false npm_execpath comment this unit first wrote. Corrected form:\n-// what the host portability rules forbid. Every gate that runs this proof — `npm test`,\n-// `prepublishOnly`, and `npm run test:distribution` — is an npm invocation, and npm\n-// sets this variable for each of them.\n+// what the host portability rules forbid. `prepublishOnly` and `npm run test:distribution`\n+// are the invocations that run this proof, and npm sets this variable for each of them.",
+    "Referral 3, unchanged from fix round 2: carry the number-word count sweep pattern pair (\\b(one|two|three|four|five|six|seven|eight|nine|ten)\\b plus the numeral counterpart) to the remaining conform units, so each package's counts are ruled from the same population the phrase list could not admit."
+  ],
+  "deviations": [
+    "None stopped the unit. Ancillary decisions, recorded and carried on from, per the deviation contract.",
+    "The guard's population is fence inputs and documented values, not 'every fence line the transcriptions copy'. A transcription restructures what it copies — the adopt fence's `if` becomes a ternary, the stream fence's reader loop becomes an assertion on collected categories — so a presence check over a restructured line cannot be written honestly. The title and the comment name the population they cover, so no gap sits between what the guard says and what it matches, and the report states the reasoning rather than recording a blind spot.",
+    "The claims list carries the two fence handler maps as multi-line strings with \\n\\t escapes. They are input literals the transcriptions reuse verbatim, so omitting them would have made the corrected title false again.",
+    "The U+2019 title is a double-quoted string rather than the escaped apostrophe or template literal the brief offered. oxfmt picks the quote needing fewer escapes, so an escaped single-quoted form would be rewritten on the next format run; the double-quoted form is the file's formatted fixpoint and matches the claim strings around it.",
+    "`npm run format` ran once to converge after the new claim strings landed. It reflowed the quoting of three claims and changed no string content; the non-mutating gates in § Gates were all run afterwards.",
+    "One presence-check limit is stated rather than closed: `guides/html.md:378` is byte-identical to `:345`, so one claim answers for both occurrences and an edit to either alone leaves the guard green. The transcriptions build the same page in each case, so the two fences are meant to stay identical.",
+    "Fix-round-2 deviation 5 is superseded. The evidence diff is no longer transcribed by hand: fix round 3's brief supplies `node /home/user/scaffold/tmp/work/evidence.mjs html`, which writes `git diff HEAD` and `git status --short` verbatim, so `/home/user/work/evidence/conform-html.diff` is byte-faithful and feedable to `git apply`. The report's § Deviations and fix round 2's O-3 row both record the supersession.",
+    "Observation, not a criterion: the guard's population is a reading rather than a mechanism. Nothing recomputes it, so a fence that gains a documented value leaves the guard green until someone adds the claim. Deriving the claims from the guide would assert the guide against itself, which is why it stays a list; the completeness evidence is the assertion-by-assertion reading recorded in the report.",
+    "Observation, not a criterion: the `npm test` and `npm run test:distribution` readings were taken with nothing else running in this checkout. The Orchestrator takes the deciding runs after this unit exits."
+  ]
+}
