@@ -1,0 +1,8 @@
+Conform lsp to the fleet rules: the transport listeners, the shared protocol fixture, the integration project
+
+`StdioClientTransportOptions` carries `on` and `error`, threaded into the transport's emitter, with `start` and `close` documented and the guide's Behavior cells extended. The stdio fixtures share `frame`, `reply`, `drain`, and `listen` from `tests/src/server/fixtures/protocol.mjs`, and the generated grandchild measures elapsed time with `performance.now()`. The end-to-end proof lives in `tests/integration.test.ts` under the `integration` project the plan registers, with `test:integration` in the `test` chain; `tests/setup.test.ts` proves the setup module's one export. The conformance proof adopts `createScratch` and `destroyScratch`; the validator suite pins the brand and the code membership with distinct vectors. `LSPError` carries an `@example`; the wire types name the format they transliterate; the README is rewritten on the package's own form with `description` and `keywords` declared.
+
+Audit: Grok-first round 1 after a `scaffold repair` fix round (Luna distillate, Luna checker PASS, Opus objective PASS with an `any` binding closed by fix round 2 and report findings); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-lsp-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
