@@ -1,0 +1,1456 @@
+diff --git a/guides/README.md b/guides/README.md
+index afcf60c..bbe46e4 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -29,7 +29,9 @@ not contracts this repository owns.
+   `@orkestrel/database`.
+ - [`emitter.md`](emitter.md) — typed event observation from `@orkestrel/emitter`.
+ - [`guide.md`](guide.md) — documentation parity support from `@orkestrel/guide`.
++- [`probe.md`](probe.md) — claim proving from `@orkestrel/probe`.
+ - [`scaffold.md`](scaffold.md) — repository maintenance from `@orkestrel/scaffold`.
++- [`test.md`](test.md) — shared test infrastructure from `@orkestrel/test`.
+ 
+ ## See also
+ 
+diff --git a/guides/workspace.md b/guides/workspace.md
+index 06712d4..de08e67 100644
+--- a/guides/workspace.md
++++ b/guides/workspace.md
+@@ -19,11 +19,11 @@
+ > **Anyone can drive it.** An agent loop, a tool handler, and plain application code are all just
+ > callers.
+ 
+-Three nouns carry the package. A `Workspace` is the live editing surface over one map of files. A
+-`WorkspaceManager` is a registry of workspaces keyed by id, with an active selection and, when a
+-store is supplied, lenient `open` and `save`. A `WorkspaceStoreInterface` is the durability seam:
+-three async methods over a `WorkspaceSnapshot`. Everything else in this module is the immutable
+-data those three exchange, plus the pure functions that derive it.
++A `Workspace` is the live editing surface over one map of files. A `WorkspaceManager` is a registry
++of workspaces keyed by id, with an active selection and, when a store is supplied, lenient `open`
++and `save`. A `WorkspaceStoreInterface` is the durability seam: `get`, `set`, and `delete` over a
++`WorkspaceSnapshot`. Everything else in this module is the immutable data those nouns exchange,
++plus the pure functions that derive it.
+ 
+ ## Surface
+ 
+@@ -36,6 +36,8 @@ absent optional field is simply absent.
+ | --------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `BinaryMIME`                | type      | The MIME labels a binary arm may carry: `image/png`, `image/jpeg`, `image/gif`, `image/webp`.                                                        |
+ | `FileContent`               | type      | `{ text, language } \| { base64, mime }` — the tagless text-or-binary union, narrowed by guard rather than by a discriminant field.                  |
++| `TextContent`               | interface | `{ text, language }` — the text arm: a body and the language tag its path resolved to.                                                               |
++| `BinaryContent`             | interface | `{ base64, mime }` — the binary arm: a base64 payload and the `BinaryMIME` it carries.                                                               |
+ | `FileState`                 | type      | `created \| modified` — whether the value was minted for a new path or changed from an existing one.                                                 |
+ | `FileInput`                 | interface | `{ path, content, state? }` — what `createFile` needs; size and line counts are derived, never supplied.                                             |
+ | `FileInterface`             | interface | `{ path, content, state, size, lines }` — one frozen file value.                                                                                     |
+@@ -49,8 +51,8 @@ absent optional field is simply absent.
+ | `WorkspaceOptions`          | interface | `{ id?, on?, error?, seed? }` — identity, emitter setup, and optional file-value hydration; an absent `id` is minted.                                |
+ | `WorkspaceSnapshot`         | interface | `{ id, files }` — the JSON-serializable form a store persists.                                                                                       |
+ | `WorkspaceStoreInterface`   | interface | The async snapshot seam, keyed by workspace id. See [`## Methods`](#methods).                                                                        |
+-| `WorkspaceSnapshotRow`      | interface | `{ id, snapshot }` — the two-column row `DatabaseWorkspaceStore` writes, the snapshot staying opaque to the table.                                   |
+-| `WorkspaceErrorCode`        | type      | `MODALITY \| PATTERN \| RANGE` — the three ways an edit or search is refused.                                                                        |
++| `WorkspaceSnapshotRow`      | interface | `{ id, snapshot }` — the `id` and `snapshot` row `DatabaseWorkspaceStore` writes, the snapshot staying opaque to the table.                          |
++| `WorkspaceErrorCode`        | type      | `MISSING \| MODALITY \| PATTERN \| RANGE` — the ways an edit or search is refused.                                                                   |
+ | `WorkspaceInterface`        | interface | The live editing contract; its readonly `id`, `emitter`, and `count` expose identity, observation, and the file tally. See [`## Methods`](#methods). |
+ | `WorkspaceManagerOptions`   | interface | `{ on?, error?, store? }` — listener defaults for created workspaces plus optional durability.                                                       |
+ | `WorkspaceManagerInterface` | interface | The registry contract; its readonly `count` and `active` expose the tally and the current selection. See [`## Methods`](#methods).                   |
+@@ -111,8 +113,8 @@ class. Each returns the interface, not the class.
+ | Name                           | Kind     | Signature                                                          | Behavior                                                                                 |
+ | ------------------------------ | -------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+ | `createFile`                   | function | `(input: FileInput) => FileInterface`                              | Freezes a file value and derives its `size` and `lines`.                                 |
+-| `createTextContent`            | function | `(text: string, language: string) => FileContent`                  | Builds the text arm.                                                                     |
+-| `createBinaryContent`          | function | `(base64: string, mime: BinaryMIME) => FileContent`                | Builds the binary arm.                                                                   |
++| `createTextContent`            | function | `(text: string, language: string) => TextContent`                  | Builds the text arm, returning it as `TextContent` rather than as the whole union.       |
++| `createBinaryContent`          | function | `(base64: string, mime: BinaryMIME) => BinaryContent`              | Builds the binary arm, returning it as `BinaryContent` rather than as the whole union.   |
+ | `createWorkspace`              | function | `(options?: WorkspaceOptions) => WorkspaceInterface`               | Creates a workspace with the same identity, emitter, and seed reach as the constructor.  |
+ | `createMemoryWorkspaceStore`   | function | `() => WorkspaceStoreInterface`                                    | Creates a process-local snapshot store.                                                  |
+ | `createDatabaseWorkspaceStore` | function | `(driver?: DriverInterface) => WorkspaceStoreInterface`            | Creates a snapshot store over a database table; the driver defaults to an in-memory one. |
+@@ -239,19 +241,19 @@ Language is inferred once, from the final path extension through `EXTENSION_LANG
+ unlisted extension resolves to `text`. Re-writing an existing text file keeps the language it
+ already had, so a caller that set one deliberately does not lose it to a rename-shaped write.
+ 
+-`FileState` has a two-value vocabulary: the first write to a path is `created`, and every later
+-edit of that path is `modified`. Hydration preserves whichever stored state the file already
+-carries verbatim; it does not synthesize provenance. There is no dirty tracking, and `isFile` is
++`FileState` names the first write to a path `created` and every later edit of that path
++`modified`. Hydration preserves whichever stored state the file already carries verbatim; it does
++not synthesize provenance. There is no dirty tracking, and `isFile` is
+ the total guard for a value arriving from outside this process.
+ 
+ ## Editing
+ 
+ Editing returns its documented value when the request has meaning and throws only when a text
+ operation cannot be applied. Missing lookups and no-op moves or removals answer with values rather
+-than exceptions; `MODALITY` and `RANGE` identify the two edit refusals below.
++than exceptions; `MISSING`, `MODALITY`, and `RANGE` identify the edit refusals that follow.
+ 
+-Writes come in three shapes: whole text, a clamped range, and a record batch. Prepend and append
+-are the two ends of the same map.
++A write takes whole text, a clamped range, or a record batch. Prepend and append are the two ends
++of the same map.
+ 
+ ```ts
+ import { createWorkspace, rangeOf } from '@orkestrel/workspace'
+@@ -273,9 +275,9 @@ as empty text and create it. Aimed at binary content, though, they throw `MODALI
+ sensible text to concatenate onto base64 data.
+ 
+ A ranged write is stricter, because it addresses text that must already exist. It refuses an
+-absent path with `Cannot splice a range of a missing file: <path>` and a binary path with
+-`Cannot splice a range of a binary file: <path>`, both under `MODALITY`. A structurally impossible
+-range — inverted, or with a coordinate below one — throws `RANGE`. A range that is merely too
++absent path with `Cannot splice a range of a missing file: <path>` under `MISSING`, and a binary
++path with `Cannot splice a range of a binary file: <path>` under `MODALITY`. A structurally
++impossible range — inverted, or with a coordinate below one — throws `RANGE`. A range that is merely too
+ large is not an error: both endpoints clamp to the text's bounds, so `rangeOf(1, 2, 9, 9)` over
+ `'abc'` addresses everything from the second column onward. The pure functions behind that
+ behavior are exported and usable on their own: `isValidRange`, `clampPosition`, `clampRange`,
+@@ -438,8 +440,8 @@ workspaces share nothing else: each owns its own files, its own emitter, and its
+ 
+ ## Durability
+ 
+-A manager without a store is complete and entirely in memory. Supplying one adds exactly two
+-operations, and both are lenient:
++A manager without a store is complete and entirely in memory. Supplying one adds `save` and
++`open`, and each is lenient:
+ 
+ ```ts
+ import {
+@@ -485,20 +487,22 @@ so a row that is not a snapshot reads as absent instead of propagating. Neither
+ it is given, and neither hydrates a live workspace: turning a snapshot back into a `Workspace` is
+ the manager's job.
+ 
+-Because the seam is three async methods over a plain serializable value, a caller's own
+-implementation is a peer of these two. A store that wrote snapshots to disk, to object storage, or
+-to a remote service would satisfy the same contract and change nothing about what a workspace is.
++Because the seam is `get`, `set`, and `delete` over a plain serializable value, a caller's own
++implementation is a peer of `MemoryWorkspaceStore` and `DatabaseWorkspaceStore`. A store that wrote
++snapshots to disk, to object storage, or to a remote service would satisfy the same contract and
++change nothing about what a workspace is.
+ 
+ ## Failures
+ 
+-Three codes describe every refusal, and `WorkspaceError` carries the code plus the context the
++A code describes every refusal, and `WorkspaceError` carries the code plus the context the
+ operation had:
+ 
+-| Code       | Raised by                                                                                |
+-| ---------- | ---------------------------------------------------------------------------------------- |
+-| `MODALITY` | a text-only operation aimed at binary content, or a ranged write aimed at a missing path |
+-| `RANGE`    | a ranged write whose range is inverted or has a coordinate below one                     |
+-| `PATTERN`  | a search or replacement whose pattern source will not compile                            |
++| Code       | Raised by                                                            |
++| ---------- | -------------------------------------------------------------------- |
++| `MISSING`  | a ranged write aimed at a path the workspace does not hold           |
++| `MODALITY` | a text-only operation aimed at binary content                        |
++| `RANGE`    | a ranged write whose range is inverted or has a coordinate below one |
++| `PATTERN`  | a search or replacement whose pattern source will not compile        |
+ 
+ ```ts
+ import { createWorkspace, isWorkspaceError } from '@orkestrel/workspace'
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 5552437..2808a6b 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -1,8 +1,9 @@
+ import type {
++	BinaryContent,
+ 	BinaryMIME,
+-	FileContent,
+ 	FileInput,
+ 	FileInterface,
++	TextContent,
+ 	WorkspaceInterface,
+ 	WorkspaceManagerInterface,
+ 	WorkspaceManagerOptions,
+@@ -56,7 +57,7 @@ export function createFile(input: FileInput): FileInterface {
+  * createTextContent('hello', 'text')
+  * ```
+  */
+-export function createTextContent(text: string, language: string): FileContent {
++export function createTextContent(text: string, language: string): TextContent {
+ 	return { text, language }
+ }
+ 
+@@ -74,7 +75,7 @@ export function createTextContent(text: string, language: string): FileContent {
+  * createBinaryContent('AAAA', 'image/png')
+  * ```
+  */
+-export function createBinaryContent(base64: string, mime: BinaryMIME): FileContent {
++export function createBinaryContent(base64: string, mime: BinaryMIME): BinaryContent {
+ 	return { base64, mime }
+ }
+ 
+@@ -115,7 +116,7 @@ export function createMemoryWorkspaceStore(): WorkspaceStoreInterface {
+ /**
+  * Creates a database-backed workspace snapshot store.
+  *
+- * @param driver - The database driver; defaults to an in-memory driver
++ * @param driver - The database driver. Default: an in-memory driver.
+  * @returns A workspace store backed by the supplied driver
+  *
+  * @example
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index f8e361b..75eb46b 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1,4 +1,4 @@
+-import type { BinaryMIME, FileContent, Position, Range } from './types.js'
++import type { BinaryContent, FileContent, Position, Range, TextContent } from './types.js'
+ import { EXTENSION_LANGUAGES } from './constants.js'
+ 
+ /**
+@@ -30,9 +30,7 @@ export function inferLanguage(path: string): string {
+  * isText({ text: 'hello', language: 'text' }) // true
+  * ```
+  */
+-export function isText(
+-	content: FileContent,
+-): content is { readonly text: string; readonly language: string } {
++export function isText(content: FileContent): content is TextContent {
+ 	return 'text' in content
+ }
+ 
+@@ -47,9 +45,7 @@ export function isText(
+  * isBinary({ base64: 'AAAA', mime: 'image/png' }) // true
+  * ```
+  */
+-export function isBinary(
+-	content: FileContent,
+-): content is { readonly base64: string; readonly mime: BinaryMIME } {
++export function isBinary(content: FileContent): content is BinaryContent {
+ 	return 'base64' in content
+ }
+ 
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 4c33586..633e69c 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -3,13 +3,23 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ /** Names the MIME labels a binary {@link FileContent} arm supports. */
+ export type BinaryMIME = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
+ 
++/** Holds the text arm of a file's immutable content: a body and its language tag. */
++export interface TextContent {
++	readonly text: string
++	readonly language: string
++}
++
++/** Holds the binary arm of a file's immutable content: a base64 payload and its MIME. */
++export interface BinaryContent {
++	readonly base64: string
++	readonly mime: BinaryMIME
++}
++
+ /**
+  * Holds a file's immutable content: either text with a language tag or a base64 string with a
+  * MIME.
+  */
+-export type FileContent =
+-	| { readonly text: string; readonly language: string }
+-	| { readonly base64: string; readonly mime: BinaryMIME }
++export type FileContent = TextContent | BinaryContent
+ 
+ /** Names the edit state of an immutable file value. */
+ export type FileState = 'created' | 'modified'
+@@ -52,8 +62,10 @@ export interface ReadResult {
+  * Configures search and replacement behavior.
+  *
+  * @remarks
+- * `regex` treats the query as regular-expression source, `sensitive` controls case sensitivity,
+- * and `limit` caps the search or replacement count.
++ * If `regex` is `true`, the query is treated as regular-expression source; if `false`, it is
++ * escaped and matched literally. Default: `false`. If `sensitive` is `false`, matching ignores
++ * case; if `true`, it does not. Default: `true`. `limit` caps the search or replacement count.
++ * Default: unlimited.
+  */
+ export interface SearchOptions {
+ 	readonly regex?: boolean
+@@ -88,8 +100,9 @@ export type WorkspaceEventMap = {
+  * Configures a workspace at construction.
+  *
+  * @remarks
+- * `id` supplies the registry key, `on` supplies initial event listeners, `error` receives isolated
+- * listener failures, and `seed` hydrates initial immutable files without emitting edits.
++ * `id` supplies the registry key. Default: a minted UUID. `on` supplies initial event listeners,
++ * `error` receives isolated listener failures, and `seed` hydrates initial immutable files without
++ * emitting edits.
+  */
+ export interface WorkspaceOptions {
+ 	readonly id?: string
+@@ -136,41 +149,183 @@ export interface WorkspaceSnapshotRow {
+ }
+ 
+ /** Names the machine-readable failure codes raised by the workspace edit surface. */
+-export type WorkspaceErrorCode = 'MODALITY' | 'PATTERN' | 'RANGE'
++export type WorkspaceErrorCode = 'MISSING' | 'MODALITY' | 'PATTERN' | 'RANGE'
+ 
+ /** Represents a mutable path-keyed editing surface over immutable file values. */
+ export interface WorkspaceInterface {
++	/** Reports the registry key, either supplied at construction or minted. */
+ 	readonly id: string
++	/** Reports the owned emitter that publishes every settled mutation. */
+ 	readonly emitter: EmitterInterface<WorkspaceEventMap>
++	/** Reports how many files the map holds. */
+ 	readonly count: number
++	/**
++	 * Finds the file value stored at one path.
++	 *
++	 * @param path - The path to look up
++	 * @returns The frozen file value, or `undefined` when the path is absent
++	 */
+ 	file(path: string): FileInterface | undefined
++	/**
++	 * Lists every file in insertion order.
++	 *
++	 * @returns A fresh array of the frozen file values
++	 */
+ 	files(): readonly FileInterface[]
++	/**
++	 * Reads a text file whole.
++	 *
++	 * @param path - The path to read
++	 * @returns The file's text, or `undefined` when the path is absent or holds binary content
++	 */
+ 	read(path: string): string | undefined
++	/**
++	 * Reads a clamped span of a text file.
++	 *
++	 * @param path - The path to read
++	 * @param range - The requested half-open span, clamped to the text's bounds
++	 * @returns The span's text and the span actually covered, or `undefined` when the path is absent
++	 * @throws Thrown when a range is requested for binary content (`MODALITY`).
++	 */
+ 	read(path: string, range: Range): ReadResult | undefined
++	/**
++	 * Reads a batch of text files.
++	 *
++	 * @param paths - The paths to read
++	 * @returns Each present text path mapped to its text, with absent and binary paths omitted
++	 */
+ 	read(paths: readonly string[]): Readonly<Record<string, string>>
++	/**
++	 * Checks whether one path is present.
++	 *
++	 * @param path - The path to test
++	 * @returns True if the workspace holds the path; false otherwise
++	 */
+ 	has(path: string): boolean
++	/**
++	 * Checks whether every path in a batch is present.
++	 *
++	 * @param paths - The paths to test
++	 * @returns True if every entry succeeded; false otherwise
++	 */
+ 	has(paths: readonly string[]): boolean
++	/**
++	 * Scans text files for a query, skipping binary content.
++	 *
++	 * @param query - The literal text, or regular-expression source under `regex`
++	 * @param options - Optional matching controls
++	 * @returns Each hit in insertion order across files, then line order within a file
++	 * @throws Thrown when the pattern source will not compile (`PATTERN`).
++	 */
+ 	search(query: string, options?: SearchOptions): readonly SearchMatch[]
++	/**
++	 * Rewrites every match across the text files, skipping binary content.
++	 *
++	 * @param query - The literal text, or regular-expression source under `regex`
++	 * @param replacement - The text each match becomes
++	 * @param options - Optional matching controls
++	 * @returns The occurrences replaced and the files changed
++	 * @throws Thrown when the pattern source will not compile (`PATTERN`).
++	 */
+ 	replace(query: string, replacement: string, options?: SearchOptions): ReplaceResult
++	/**
++	 * Writes whole text to a path, creating it when absent and retyping a binary path as text.
++	 *
++	 * @param path - The path to write
++	 * @param content - The text the path holds afterwards
++	 */
+ 	write(path: string, content: string): void
++	/**
++	 * Splices a clamped span of an existing text file.
++	 *
++	 * @param path - The path to edit
++	 * @param content - The text the span becomes
++	 * @param range - The half-open span to replace, clamped to the text's bounds
++	 * @throws Thrown when a ranged write names a missing path (`MISSING`) or binary content
++	 * (`MODALITY`), or the range is inverted or has a coordinate below 1 (`RANGE`).
++	 */
+ 	write(path: string, content: string, range: Range): void
++	/**
++	 * Writes a record batch, one whole-text write per entry.
++	 *
++	 * @param files - Each path mapped to the text it holds afterwards
++	 */
+ 	write(files: Readonly<Record<string, string>>): void
++	/**
++	 * Puts text before a path's existing content, treating an absent path as empty text.
++	 *
++	 * @param path - The path to edit
++	 * @param content - The text placed before what is there
++	 * @throws Thrown when the target path holds binary content (`MODALITY`).
++	 */
+ 	prepend(path: string, content: string): void
++	/**
++	 * Puts text before existing content for each entry of a record batch.
++	 *
++	 * @param files - Each path mapped to the text placed before what is there
++	 * @throws Thrown when a target path holds binary content (`MODALITY`).
++	 */
+ 	prepend(files: Readonly<Record<string, string>>): void
++	/**
++	 * Puts text after a path's existing content, treating an absent path as empty text.
++	 *
++	 * @param path - The path to edit
++	 * @param content - The text placed after what is there
++	 * @throws Thrown when the target path holds binary content (`MODALITY`).
++	 */
+ 	append(path: string, content: string): void
++	/**
++	 * Puts text after existing content for each entry of a record batch.
++	 *
++	 * @param files - Each path mapped to the text placed after what is there
++	 * @throws Thrown when a target path holds binary content (`MODALITY`).
++	 */
+ 	append(files: Readonly<Record<string, string>>): void
++	/**
++	 * Re-keys one file to a new path, keeping the source's insertion slot.
++	 *
++	 * @param from - The path to move
++	 * @param to - The path the file takes
++	 * @returns True if the file moved; false otherwise, which a same-path move also reports
++	 */
+ 	move(from: string, to: string): boolean
++	/**
++	 * Re-keys each entry of a mapping batch, moving every source it can.
++	 *
++	 * @param mapping - Each source path mapped to its target path
++	 * @returns True if every entry succeeded; false otherwise
++	 */
+ 	move(mapping: Readonly<Record<string, string>>): boolean
++	/**
++	 * Drops one path, leaving an absent path untouched.
++	 *
++	 * @param path - The path to drop
++	 * @returns True if a file was dropped; false otherwise
++	 */
+ 	remove(path: string): boolean
++	/**
++	 * Drops each path of a batch, dropping every present path.
++	 *
++	 * @param paths - The paths to drop
++	 * @returns True if every entry succeeded; false otherwise
++	 */
+ 	remove(paths: readonly string[]): boolean
++	/** Empties the workspace and emits one `clear`, never a burst of per-path removals. */
+ 	clear(): void
++	/**
++	 * Projects the identity and a flat file list into a serializable value.
++	 *
++	 * @returns The JSON-serializable state a store persists
++	 */
+ 	snapshot(): WorkspaceSnapshot
++	/** Releases the owned emitter, leaving the editing surface functional and unobserved. */
+ 	destroy(): void
+ }
+ 
+ /**
+  * Configures a workspace registry at construction.
+  *
++ * @remarks
+  * `on` and `error` become defaults for created workspaces; `store` supplies optional durability.
+  */
+ export interface WorkspaceManagerOptions {
+@@ -184,15 +339,69 @@ export interface WorkspaceManagerOptions {
+  * durability.
+  */
+ export interface WorkspaceManagerInterface {
++	/** Reports how many workspaces the registry holds. */
+ 	readonly count: number
++	/** Reports the current selection, resolved through the registry on every read. */
+ 	readonly active: WorkspaceInterface | undefined
++	/**
++	 * Finds one registered workspace by id.
++	 *
++	 * @param id - The workspace identifier
++	 * @returns The registered workspace, or `undefined` when the id is unknown
++	 */
+ 	workspace(id: string): WorkspaceInterface | undefined
++	/**
++	 * Lists registered workspaces in insertion order.
++	 *
++	 * @returns A fresh array of the registered workspaces
++	 */
+ 	workspaces(): readonly WorkspaceInterface[]
++	/**
++	 * Creates and registers a workspace, activating it when no selection is active yet.
++	 *
++	 * @param options - Optional identity, emitter configuration, and initial files; the registry's
++	 * own `on` and `error` supply the defaults
++	 * @returns The registered workspace
++	 */
+ 	add(options?: WorkspaceOptions): WorkspaceInterface
++	/**
++	 * Re-points the active selection at a registered workspace.
++	 *
++	 * @param id - The workspace identifier
++	 * @returns The newly active workspace, or `undefined` when the id is unknown, which leaves the
++	 * selection unchanged
++	 */
+ 	switch(id: string): WorkspaceInterface | undefined
++	/**
++	 * Activates a registered workspace, or hydrates one from a stored snapshot on a registry miss.
++	 *
++	 * @param id - The workspace identifier
++	 * @returns The active workspace, or `undefined` when neither the registry nor the store holds
++	 * the id
++	 */
+ 	open(id: string): Promise<WorkspaceInterface | undefined>
++	/**
++	 * Persists a registered workspace's snapshot under its own id.
++	 *
++	 * @param id - The workspace identifier
++	 * @returns True if the snapshot was written; false otherwise, which an unregistered id and a
++	 * registry with no store both report
++	 */
+ 	save(id: string): Promise<boolean>
++	/**
++	 * Drops one registered workspace and destroys it.
++	 *
++	 * @param id - The workspace identifier
++	 * @returns True if a workspace was dropped; false otherwise
++	 */
+ 	remove(id: string): boolean
++	/**
++	 * Drops each id of a batch, dropping every registered one.
++	 *
++	 * @param ids - The workspace identifiers
++	 * @returns True if every entry succeeded; false otherwise
++	 */
+ 	remove(ids: readonly string[]): boolean
++	/** Empties the registry, destroying each workspace and clearing the selection. */
+ 	clear(): void
+ }
+diff --git a/src/core/workspaces/Workspace.ts b/src/core/workspaces/Workspace.ts
+index 1157559..f7e8534 100644
+--- a/src/core/workspaces/Workspace.ts
++++ b/src/core/workspaces/Workspace.ts
+@@ -124,7 +124,7 @@ export class Workspace implements WorkspaceInterface {
+ 		for (const file of this.#files.values()) {
+ 			if (limit !== undefined && matches.length >= limit) break
+ 			if (!isText(file.content)) continue
+-			const lines = file.content.text.split('\n')
++			const lines = file.content.text.split(/\r\n|\n/)
+ 			for (let index = 0; index < lines.length; index += 1) {
+ 				if (limit !== undefined && matches.length >= limit) break
+ 				const lineText = lines[index] ?? ''
+@@ -266,7 +266,7 @@ export class Workspace implements WorkspaceInterface {
+ 	#splice(path: string, content: string, range: Range): void {
+ 		const existing = this.#files.get(path)
+ 		if (!existing) {
+-			throw new WorkspaceError('MODALITY', `Cannot splice a range of a missing file: ${path}`, {
++			throw new WorkspaceError('MISSING', `Cannot splice a range of a missing file: ${path}`, {
+ 				path,
+ 			})
+ 		}
+diff --git a/src/core/workspaces/stores/DatabaseWorkspaceStore.ts b/src/core/workspaces/stores/DatabaseWorkspaceStore.ts
+index d4878b0..ea6e521 100644
+--- a/src/core/workspaces/stores/DatabaseWorkspaceStore.ts
++++ b/src/core/workspaces/stores/DatabaseWorkspaceStore.ts
+@@ -13,9 +13,15 @@ import { isWorkspaceSnapshot } from '../../validators.js'
+  *
+  * @example
+  * ```ts
+- * import { createDatabaseWorkspaceStore } from '@orkestrel/workspace'
++ * import { rawShape, stringShape } from '@orkestrel/contract'
++ * import { createDatabase, createMemoryDriver } from '@orkestrel/database'
++ * import { DatabaseWorkspaceStore } from '@orkestrel/workspace'
+  *
+- * const store = createDatabaseWorkspaceStore()
++ * const database = createDatabase({
++ * 	driver: createMemoryDriver(),
++ * 	tables: { workspaces: { id: stringShape(), snapshot: rawShape({}) } },
++ * })
++ * const store = new DatabaseWorkspaceStore(database.table('workspaces'))
+  * ```
+  */
+ export class DatabaseWorkspaceStore implements WorkspaceStoreInterface {
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 0c19eb1..a2669ed 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -2,6 +2,23 @@
+ // this repo's own `guides/README.md` manifest. The four constants below are this
+ // package's own, and are the only part a sibling package changes.
+ 
++import type { WorkspaceEventMap } from '@src/core'
++import {
++	createBinaryContent,
++	createDatabaseWorkspaceStore,
++	createFile,
++	createMemoryWorkspaceStore,
++	createTextContent,
++	createWorkspace,
++	createWorkspaceManager,
++	escapeRegExp,
++	inferLanguage,
++	isBinary,
++	isText,
++	isWorkspaceError,
++	isWorkspaceSnapshot,
++	rangeOf,
++} from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	computeSymbolKey,
+@@ -18,7 +35,7 @@ import {
+ 	resolveLink,
+ } from '@orkestrel/guide'
+ import { readFileSync } from 'node:fs'
+-import { requireValue } from '@orkestrel/test'
++import { createRecorders, requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+@@ -168,3 +185,201 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// The flagship fences of `guides/workspace.md` and `README.md`, transcribed and executed. The
++// parity checks prove a documented name resolves; only a run proves the value a fence's comment
++// claims, so a fence the code contradicts passes every check earlier in this file. Change a
++// fence, change the transcription here.
++describe('flagship fences', () => {
++	it('files and content — derived sizes, line counts, inferred language, and arm narrowing', () => {
++		const note = createFile({
++			path: 'notes.md',
++			content: createTextContent('# Title\nBody', inferLanguage('notes.md')),
++		})
++
++		expect(inferLanguage('notes.md')).toBe('markdown')
++		expect(note.size).toBe(12)
++		expect(note.lines).toBe(2)
++		expect(note.state).toBe('created')
++		expect(isText(note.content)).toBe(true)
++
++		const icon = createFile({
++			path: 'icon.png',
++			content: createBinaryContent('AAAA', 'image/png'),
++		})
++
++		expect(isBinary(icon.content)).toBe(true)
++		expect(icon.size).toBe(3)
++	})
++
++	it('editing — the ranged splice, the record batch, and the prepend and append ends', () => {
++		const workspace = createWorkspace({ id: 'project' })
++
++		workspace.write('src/main.ts', 'const answer = 41')
++		expect(workspace.file('src/main.ts')?.state).toBe('created')
++
++		workspace.write('src/main.ts', '42', rangeOf(1, 16, 1, 18))
++		expect(workspace.read('src/main.ts')).toBe('const answer = 42')
++		expect(workspace.file('src/main.ts')?.state).toBe('modified')
++
++		workspace.write({ 'README.md': '# Project', 'src/util.ts': 'export {}' })
++		expect(workspace.files().map((file) => file.path)).toEqual([
++			'src/main.ts',
++			'README.md',
++			'src/util.ts',
++		])
++
++		workspace.prepend('src/main.ts', '// generated\n')
++		workspace.append('src/main.ts', '\n')
++		workspace.prepend({ 'README.md': '<!-- header -->\n' })
++
++		expect(workspace.read('src/main.ts')).toBe('// generated\nconst answer = 42\n')
++		expect(workspace.read('README.md')).toBe('<!-- header -->\n# Project')
++	})
++
++	it('reading and searching — read shapes, membership, hit order, and replacement tallies', () => {
++		const workspace = createWorkspace()
++		workspace.write({ 'a.ts': 'const x = 1\nconst y = 2', 'b.ts': 'const z = 3' })
++
++		expect(workspace.file('a.ts')?.path).toBe('a.ts')
++		expect(workspace.files().map((file) => file.path)).toEqual(['a.ts', 'b.ts'])
++		expect(workspace.count).toBe(2)
++
++		expect(workspace.read('a.ts')).toBe('const x = 1\nconst y = 2')
++		expect(workspace.read('a.ts', rangeOf(1, 1, 1, 6))?.content).toBe('const')
++		expect(workspace.read(['a.ts', 'missing.ts'])).toEqual({ 'a.ts': 'const x = 1\nconst y = 2' })
++		expect(workspace.has('a.ts')).toBe(true)
++		expect(workspace.has(['a.ts', 'b.ts'])).toBe(true)
++		expect(workspace.has(['missing.ts', 'b.ts'])).toBe(false)
++
++		expect(workspace.search('const').map((match) => [match.path, match.line])).toEqual([
++			['a.ts', 1],
++			['a.ts', 2],
++			['b.ts', 1],
++		])
++		// The fence's pattern names no letter-digit pair this fixture holds. The prose's claim is
++		// the literal-versus-pattern split, so one source proves it read each way.
++		expect(workspace.search('[a-z]\\d', { regex: true })).toEqual([])
++		expect(workspace.search('const.', { regex: true })).toHaveLength(3)
++		expect(workspace.search('const.')).toEqual([])
++		expect(workspace.search('CONST', { sensitive: false, limit: 2 })).toHaveLength(2)
++		expect(workspace.replace('const', 'let')).toEqual({ occurrences: 3, files: 2 })
++		expect(escapeRegExp('a.b')).toBe('a\\.b')
++	})
++
++	it('moving and removing — the batch answers and the serializable projection', () => {
++		const workspace = createWorkspace({ id: 'project' })
++		workspace.write({ 'old.ts': 'body', 'draft.md': 'notes' })
++
++		expect(workspace.move('old.ts', 'src/new.ts')).toBe(true)
++		expect(workspace.move({ 'draft.md': 'docs/draft.md' })).toBe(true)
++		expect(workspace.move('ghost.ts', 'x.ts')).toBe(false)
++
++		const snapshot = workspace.snapshot()
++		expect(snapshot.id).toBe('project')
++		expect(snapshot.files.map((file) => file.path)).toEqual(['src/new.ts', 'docs/draft.md'])
++
++		expect(workspace.remove('src/new.ts')).toBe(true)
++		expect(workspace.remove(['docs/draft.md', 'ghost.ts'])).toBe(false)
++
++		workspace.clear()
++		expect(workspace.count).toBe(0)
++	})
++
++	it('lifecycle — a write after destroy stores and delivers no event', () => {
++		const workspace = createWorkspace()
++		// The fence's claim is about what a listener sees, so an observer is attached while the
++		// emitter is still live.
++		const events = createRecorders<WorkspaceEventMap, 'write'>(workspace.emitter, ['write'])
++
++		workspace.destroy()
++		workspace.write('silent.txt', 'still stored')
++
++		expect(workspace.emitter.destroyed).toBe(true)
++		expect(workspace.read('silent.txt')).toBe('still stored')
++		expect(events.write.count).toBe(0)
++	})
++
++	it('the registry — auto-activation, switching, and the removal answers', () => {
++		const edited: string[] = []
++		const manager = createWorkspaceManager({ on: { write: (file) => edited.push(file.path) } })
++
++		const scratch = manager.add({ id: 'scratch' })
++		const review = manager.add({ id: 'review' })
++
++		expect(manager.count).toBe(2)
++		expect(manager.active).toBe(scratch)
++		expect(manager.workspace('review')).toBe(review)
++		expect(manager.workspaces()).toEqual([scratch, review])
++
++		expect(manager.switch('review')).toBe(review)
++		expect(manager.switch('ghost')).toBeUndefined()
++		expect(manager.active).toBe(review)
++
++		expect(manager.remove('review')).toBe(true)
++		expect(manager.active).toBeUndefined()
++		expect(manager.remove(['scratch', 'ghost'])).toBe(false)
++
++		manager.clear()
++		expect(manager.count).toBe(0)
++		// The registry's listener default reaches every workspace it creates; this fence edits none.
++		expect(edited).toEqual([])
++	})
++
++	it('durability — lenient save and open, and the store round trip', async () => {
++		const store = createMemoryWorkspaceStore()
++		const manager = createWorkspaceManager({ store })
++
++		const project = manager.add({ id: 'project' })
++		project.write('src/main.ts', 'const answer = 42')
++
++		expect(await manager.save('project')).toBe(true)
++		expect(await manager.save('ghost')).toBe(false)
++
++		const reader = createWorkspaceManager({ store })
++		const opened = await reader.open('project')
++		expect(opened?.read('src/main.ts')).toBe('const answer = 42')
++		expect(await reader.open('never-saved')).toBeUndefined()
++
++		const durable = createDatabaseWorkspaceStore()
++		await durable.set(project.snapshot())
++		expect(await durable.get('project')).toEqual(project.snapshot())
++		await durable.delete('project')
++		expect(isWorkspaceSnapshot(await durable.get('project'))).toBe(false)
++	})
++
++	it('failures — a pattern source that will not compile carries the PATTERN code', () => {
++		const workspace = createWorkspace()
++		let thrown: unknown
++
++		try {
++			workspace.search('(', { regex: true })
++		} catch (error) {
++			thrown = error
++		}
++
++		expect(isWorkspaceError(thrown)).toBe(true)
++		expect(isWorkspaceError(thrown) && thrown.code).toBe('PATTERN')
++	})
++
++	it('the README example — the first add activates, the append lands, one hit comes back', () => {
++		const workspaces = createWorkspaceManager()
++		const workspace = workspaces.add({ id: 'project' })
++
++		workspace.write('src/main.ts', 'export const answer = 42')
++		workspace.append('src/main.ts', '\n')
++
++		expect(workspaces.active).toBe(workspace)
++		expect(workspace.read('src/main.ts')).toBe('export const answer = 42\n')
++		expect(workspace.search('answer')).toEqual([
++			{
++				path: 'src/main.ts',
++				line: 1,
++				column: 14,
++				length: 6,
++				content: 'export const answer = 42',
++			},
++		])
++		expect(workspace.snapshot().id).toBe('project')
++	})
++})
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index fbf1dd7..7caca5b 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -1,17 +1,12 @@
+ import type { WorkspaceSnapshot, WorkspaceStoreInterface } from '@src/core'
+ import { roundTripJSON } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+-import {
+-	assertWorkspaceStoreContract,
+-	buildWorkspaceSnapshot,
+-	createRevokedProxy,
+-	createThrowingGetterRecord,
+-} from './setup.js'
++import { buildWorkspaceSnapshot, WORKSPACE_STORE_CASES } from './setup.js'
+ 
+ // The subject is `tests/setup.ts`, the workspace's shared test infrastructure, and nothing it is
+ // built from. Production behavior is proven by the mirrored suites under `tests/src/`; every
+-// expectation here is a literal or a second route (a property descriptor, a JSON round trip, a
+-// locally written store) that the module cannot share with the value it produces.
++// expectation here is a literal or a second route (a JSON round trip, a locally written store)
++// that the module cannot share with the value it produces.
+ //
+ // `tests/setup.ts` is host-independent, so the `setup` project's Node environment reaches every
+ // contract it exports and no half of it is deferred to another project.
+@@ -19,8 +14,8 @@ import {
+ /**
+  * A Map-backed store implementing the real persistence interface.
+  *
+- * The battery under test takes a store factory, so a conforming store is its input. This one is
+- * written here rather than taken from `@src/core` so the battery is not proven against the same
++ * The case table under test takes a store, so a conforming store is its input. This one is
++ * written here rather than taken from `@src/core` so the table is not proven against the same
+  * implementation the mirrored store suites already drive it with.
+  */
+ class MapWorkspaceStore implements WorkspaceStoreInterface {
+@@ -41,61 +36,23 @@ class MapWorkspaceStore implements WorkspaceStoreInterface {
+ 	}
+ }
+ 
+-/** Every store the battery asked for, in the order it asked. */
++/** Every store a case asked for, in the order it asked. */
+ const seen: WorkspaceStoreInterface[] = []
+ 
+-/** Hand the battery a conforming store and record which one it received. */
++/** Hand a case a conforming store and record which one it received. */
+ function createRecordedStore(): WorkspaceStoreInterface {
+ 	const store = new MapWorkspaceStore()
+ 	seen.push(store)
+ 	return store
+ }
+ 
+-/** Read a property through a trap-triggering path that returns `unknown` rather than `any`. */
+-function readProperty(source: object, property: string): unknown {
+-	return Reflect.get(source, property)
+-}
+-
+-describe('createThrowingGetterRecord', () => {
+-	it('seats an own enumerable accessor that throws when the named property is read', () => {
+-		const record = createThrowingGetterRecord('path')
+-		const descriptor = Object.getOwnPropertyDescriptor(record, 'path')
+-
+-		// A descriptor read and a `has` check reach the property without invoking the getter, so a
+-		// total guard can inspect the shape and still meet the throw on the value.
+-		expect(typeof descriptor?.get).toBe('function')
+-		expect(descriptor?.enumerable).toBe(true)
+-		expect(Object.keys(record)).toEqual(['path'])
+-		expect(Reflect.has(record, 'path')).toBe(true)
+-		expect(() => readProperty(record, 'path')).toThrow(Error)
+-	})
+-
+-	it('leaves every other property absent, so a guard reading another key is unaffected', () => {
+-		const record = createThrowingGetterRecord('id')
+-
+-		expect(Object.getOwnPropertyDescriptor(record, 'path')).toBeUndefined()
+-		expect(readProperty(record, 'path')).toBeUndefined()
+-	})
+-})
+-
+-describe('createRevokedProxy', () => {
+-	it('returns an object-typed value whose every trapped operation throws a TypeError', () => {
+-		const proxy = createRevokedProxy()
+-
+-		expect(typeof proxy).toBe('object')
+-		expect(() => readProperty(proxy, 'path')).toThrow(TypeError)
+-		expect(() => Reflect.has(proxy, 'path')).toThrow(TypeError)
+-		expect(() => Object.keys(proxy)).toThrow(TypeError)
+-	})
+-})
+-
+ describe('buildWorkspaceSnapshot', () => {
+ 	it('defaults its id to scratch and carries a supplied id through', () => {
+ 		expect(buildWorkspaceSnapshot().id).toBe('scratch')
+ 		expect(buildWorkspaceSnapshot('alpha').id).toBe('alpha')
+ 	})
+ 
+-	it('carries the text file then the binary file, in the order the store battery asserts', () => {
++	it('carries the text file then the binary file, in the order the store cases assert', () => {
+ 		const snapshot = buildWorkspaceSnapshot()
+ 		const [text, binary] = snapshot.files
+ 
+@@ -120,15 +77,34 @@ describe('buildWorkspaceSnapshot', () => {
+ 	})
+ })
+ 
+-// The registered battery is its own proof: every case it writes runs here against a conforming
+-// store and the real snapshot builder, so a battery that stopped asserting reddens this file.
+-assertWorkspaceStoreContract(createRecordedStore, buildWorkspaceSnapshot)
++// The table is its own proof: every case it carries runs here against a conforming store and the
++// real snapshot builder, so a case that stopped observing reddens this file. The membership
++// assertion comes first, so an emptied table reddens instead of running nothing.
++describe('WORKSPACE_STORE_CASES', () => {
++	it('carries the scenarios the store suites run, by name', () => {
++		expect(WORKSPACE_STORE_CASES.map((scenario) => scenario.name)).toEqual([
++			'round-trips text and binary files',
++			'replaces a snapshot under the same id',
++			'deletes present values and ignores absent ids',
++			'keeps distinct ids independent',
++		])
++	})
++
++	for (const scenario of WORKSPACE_STORE_CASES) {
++		it(`${scenario.name}`, async () => {
++			const { actual, expected } = await scenario.probe(
++				createRecordedStore(),
++				buildWorkspaceSnapshot,
++			)
++
++			expect(actual).toEqual(expected)
++		})
++	}
+ 
+-describe('assertWorkspaceStoreContract', () => {
+-	it('takes a fresh store for every case it registered', () => {
+-		// Registration order puts this case after the battery, so `seen` holds one entry per case
+-		// the battery ran. No entry repeats, so no case inherited another case's state.
+-		expect(seen.length).toBeGreaterThan(1)
++	it('took a fresh store for every case it carries', () => {
++		// Registration order puts this case after the loop, so `seen` holds one entry per case the
++		// table carries. No entry repeats, so no case inherited another case's state.
++		expect(seen.length).toBe(WORKSPACE_STORE_CASES.length)
+ 		expect(new Set(seen).size).toBe(seen.length)
+ 	})
+ })
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 3b15868..f1208da 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,24 +1,13 @@
+ import type { WorkspaceSnapshot, WorkspaceStoreInterface } from '@src/core'
+ import { createBinaryContent, createFile, createTextContent, createWorkspace } from '@src/core'
+-import { describe, expect, it } from 'vitest'
+ 
+-/** Create a plain record whose named property throws when read. */
+-export function createThrowingGetterRecord(property: string): object {
+-	return Object.defineProperty({}, property, {
+-		enumerable: true,
+-		get: throwGetter,
+-	})
+-}
+-
+-/** Create a revoked proxy for total-guard tests. */
+-export function createRevokedProxy(): object {
+-	const revocable = Proxy.revocable({}, {})
+-	revocable.revoke()
+-	return revocable.proxy
+-}
+-
+-function throwGetter(): never {
+-	throw new Error('hostile getter')
++/** One observable scenario every workspace store implementation must satisfy. */
++export interface WorkspaceStoreCase {
++	readonly name: string
++	probe(
++		store: WorkspaceStoreInterface,
++		build: (id?: string) => WorkspaceSnapshot,
++	): Promise<{ readonly actual: unknown; readonly expected: unknown }>
+ }
+ 
+ /**
+@@ -36,57 +25,68 @@ export function buildWorkspaceSnapshot(id = 'scratch'): WorkspaceSnapshot {
+ }
+ 
+ /**
+- * Register the shared observable contract suite for a workspace store.
++ * The shared observable contract every workspace store satisfies, carried as data.
+  *
+- * @param makeStore - A fresh-store factory
+- * @param build - A snapshot builder
++ * Each case drives a fresh store through one scenario and returns what it observed beside what the
++ * contract requires. A test file loops the table and compares the pair, so this module states the
++ * contract and registers nothing.
+  */
+-export function assertWorkspaceStoreContract(
+-	makeStore: () => WorkspaceStoreInterface,
+-	build: (id?: string) => WorkspaceSnapshot,
+-): void {
+-	describe('workspace store contract', () => {
+-		it('round-trips text and binary files', async () => {
+-			const store = makeStore()
++export const WORKSPACE_STORE_CASES: readonly WorkspaceStoreCase[] = [
++	{
++		name: 'round-trips text and binary files',
++		async probe(store, build) {
+ 			const snapshot = build()
+ 			await store.set(snapshot)
+ 			const stored = await store.get(snapshot.id)
+-			expect(stored).toEqual(snapshot)
+-			expect(stored?.files.map((file) => file.path)).toEqual(['src/main.ts', 'icon.png'])
+-		})
+-
+-		it('replaces a snapshot under the same id', async () => {
+-			const store = makeStore()
++			return {
++				actual: { stored, paths: stored?.files.map((file) => file.path) },
++				expected: { stored: snapshot, paths: ['src/main.ts', 'icon.png'] },
++			}
++		},
++	},
++	{
++		name: 'replaces a snapshot under the same id',
++		async probe(store, build) {
+ 			await store.set(build('work'))
+ 			const replacement: WorkspaceSnapshot = {
+ 				id: 'work',
+ 				files: [createFile({ path: 'only.txt', content: createTextContent('only', 'text') })],
+ 			}
+ 			await store.set(replacement)
+-			expect(await store.get('work')).toEqual(replacement)
+-		})
+-
+-		it('deletes present values and ignores absent ids', async () => {
+-			const store = makeStore()
++			return { actual: await store.get('work'), expected: replacement }
++		},
++	},
++	{
++		name: 'deletes present values and ignores absent ids',
++		async probe(store, build) {
+ 			const snapshot = build()
+ 			await store.set(snapshot)
+ 			await store.delete(snapshot.id)
+-			expect(await store.get(snapshot.id)).toBeUndefined()
+-			await expect(store.delete('absent')).resolves.toBeUndefined()
+-			expect(await store.get('absent')).toBeUndefined()
+-		})
+-
+-		it('keeps distinct ids independent', async () => {
+-			const store = makeStore()
++			const deleted = await store.get(snapshot.id)
++			const resolved = await store.delete('absent')
++			return {
++				actual: { deleted, resolved, absent: await store.get('absent') },
++				expected: { deleted: undefined, resolved: undefined, absent: undefined },
++			}
++		},
++	},
++	{
++		name: 'keeps distinct ids independent',
++		async probe(store, build) {
+ 			const alpha = build('alpha')
+ 			const beta = build('beta')
+ 			await store.set(alpha)
+ 			await store.set(beta)
+-			expect(await store.get('alpha')).toEqual(alpha)
+-			expect(await store.get('beta')).toEqual(beta)
++			const stored = { alpha: await store.get('alpha'), beta: await store.get('beta') }
+ 			await store.delete('alpha')
+-			expect(await store.get('alpha')).toBeUndefined()
+-			expect(await store.get('beta')).toEqual(beta)
+-		})
+-	})
+-}
++			return {
++				actual: {
++					...stored,
++					droppedAlpha: await store.get('alpha'),
++					keptBeta: await store.get('beta'),
++				},
++				expected: { alpha, beta, droppedAlpha: undefined, keptBeta: beta },
++			}
++		},
++	},
++]
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 3579d35..4ce737a 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -57,18 +57,24 @@ describe('createFile', () => {
+ })
+ 
+ describe('content factories', () => {
+-	it('creates the text arm', () => {
++	it('creates the text arm, reachable without narrowing the union first', () => {
+ 		const content = createTextContent('hello', 'markdown')
+ 		expect(content).toEqual({ text: 'hello', language: 'markdown' })
+ 		expect(isText(content)).toBe(true)
+ 		expect(isBinary(content)).toBe(false)
++		// The declared return is the arm itself, so these member reads compile. Widening the
++		// return back to `FileContent` fails the typecheck here rather than at a consumer.
++		expect(content.text).toBe('hello')
++		expect(content.language).toBe('markdown')
+ 	})
+ 
+-	it('creates the binary arm', () => {
++	it('creates the binary arm, reachable without narrowing the union first', () => {
+ 		const content = createBinaryContent('<base64>', 'image/jpeg')
+ 		expect(content).toEqual({ base64: '<base64>', mime: 'image/jpeg' })
+ 		expect(isBinary(content)).toBe(true)
+ 		expect(isText(content)).toBe(false)
++		expect(content.base64).toBe('<base64>')
++		expect(content.mime).toBe('image/jpeg')
+ 	})
+ })
+ 
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index ad286b7..d9a5b52 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -6,8 +6,8 @@ import {
+ 	isFile,
+ 	isWorkspaceSnapshot,
+ } from '@src/core'
++import { createHostileValues } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+-import { createRevokedProxy, createThrowingGetterRecord } from '../../setup.js'
+ 
+ describe('persistence guards', () => {
+ 	it('accepts both file states and every closed binary MIME', () => {
+@@ -57,15 +57,14 @@ describe('persistence guards', () => {
+ 		}
+ 	})
+ 
+-	it('keeps file and snapshot guards total for hostile property access', () => {
+-		const revoked = createRevokedProxy()
+-		expect(() => isFile(createThrowingGetterRecord('path'))).not.toThrow()
+-		expect(isFile(createThrowingGetterRecord('path'))).toBe(false)
+-		expect(() => isFile(revoked)).not.toThrow()
+-		expect(isFile(revoked)).toBe(false)
+-		expect(() => isWorkspaceSnapshot(createThrowingGetterRecord('id'))).not.toThrow()
+-		expect(isWorkspaceSnapshot(createThrowingGetterRecord('id'))).toBe(false)
+-		expect(() => isWorkspaceSnapshot(revoked)).not.toThrow()
+-		expect(isWorkspaceSnapshot(revoked)).toBe(false)
++	it('keeps file and snapshot guards total across every hostile value the package ships', () => {
++		// `createHostileValues` owns the hostile population and may grow it in a release, so the
++		// whole returned set runs in one loop and each failure names the index it came from.
++		for (const [index, value] of createHostileValues().entries()) {
++			expect(() => isFile(value), `hostile value ${index}`).not.toThrow()
++			expect(isFile(value), `hostile value ${index}`).toBe(false)
++			expect(() => isWorkspaceSnapshot(value), `hostile value ${index}`).not.toThrow()
++			expect(isWorkspaceSnapshot(value), `hostile value ${index}`).toBe(false)
++		}
+ 	})
+ })
+diff --git a/tests/src/core/workspaces/Workspace.test.ts b/tests/src/core/workspaces/Workspace.test.ts
+index bb7ee77..714f21a 100644
+--- a/tests/src/core/workspaces/Workspace.test.ts
++++ b/tests/src/core/workspaces/Workspace.test.ts
+@@ -1,16 +1,17 @@
+-import type { Range, WorkspaceEventMap } from '@src/core'
++import type { WorkspaceEventMap } from '@src/core'
+ import {
+ 	createBinaryContent,
+ 	createFile,
+ 	createWorkspace,
+ 	isText,
+ 	isWorkspaceError,
++	rangeOf,
+ 	Workspace,
+ } from '@src/core'
+ import { createRecorder, createRecorders } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+ 
+-// The in-memory Workspace edit surface (AGENTS §16 — real data, no mocks). Every edit
++// The in-memory Workspace edit surface (real data, no mocks). Every edit
+ // replaces the immutable File at a path (transitioning created → modified); the modality
+ // matrix governs text-only ops on a binary file; the emitter observes each mutation after
+ // it completes. The edit surface itself only ever mints TEXT Files, so a genuine binary File
+@@ -18,14 +19,6 @@ import { describe, expect, it } from 'vitest'
+ // optional construction-time seed — the same hydration seam a future FileStore uses — never
+ // a stub.
+ 
+-// Build a 1-based range from line/column pairs.
+-function range(startLine: number, startColumn: number, endLine: number, endColumn: number): Range {
+-	return {
+-		start: { line: startLine, column: startColumn },
+-		end: { line: endLine, column: endColumn },
+-	}
+-}
+-
+ // A workspace seeded with one real binary (image) File at `icon.png` (base64 'AAAA' → 3 decoded
+ // bytes). Built via the public createFile / createBinaryContent, placed through the
+ // construction-time seed (the only way to seat a non-text file — the edit surface mints
+@@ -97,7 +90,7 @@ describe('Workspace — ranged write (splice) + clamping', () => {
+ 		const workspace = createWorkspace()
+ 		workspace.write('a.ts', 'const x = 1')
+ 
+-		workspace.write('a.ts', '2', range(1, 11, 1, 12)) // replace the '1'
++		workspace.write('a.ts', '2', rangeOf(1, 11, 1, 12)) // replace the '1'
+ 
+ 		expect(workspace.read('a.ts')).toBe('const x = 2')
+ 		expect(workspace.file('a.ts')?.state).toBe('modified')
+@@ -107,7 +100,7 @@ describe('Workspace — ranged write (splice) + clamping', () => {
+ 		const workspace = createWorkspace()
+ 		workspace.write('a.ts', 'abc')
+ 
+-		workspace.write('a.ts', 'XYZ', range(1, 2, 9, 9)) // from column 2 to the end
++		workspace.write('a.ts', 'XYZ', rangeOf(1, 2, 9, 9)) // from column 2 to the end
+ 
+ 		expect(workspace.read('a.ts')).toBe('aXYZ')
+ 	})
+@@ -116,36 +109,36 @@ describe('Workspace — ranged write (splice) + clamping', () => {
+ 		const workspace = createWorkspace()
+ 		workspace.write('a.ts', 'hello\nworld')
+ 
+-		const result = workspace.read('a.ts', range(1, 1, 1, 6))
++		const result = workspace.read('a.ts', rangeOf(1, 1, 1, 6))
+ 
+-		expect(result).toEqual({ content: 'hello', range: range(1, 1, 1, 6) })
++		expect(result).toEqual({ content: 'hello', range: rangeOf(1, 1, 1, 6) })
+ 	})
+ 
+ 	it('reports the trimmed range when the read reaches past the end', () => {
+ 		const workspace = createWorkspace()
+ 		workspace.write('a.ts', 'ab')
+ 
+-		const result = workspace.read('a.ts', range(1, 1, 9, 9))
++		const result = workspace.read('a.ts', rangeOf(1, 1, 9, 9))
+ 
+-		expect(result).toEqual({ content: 'ab', range: range(1, 1, 1, 3) })
++		expect(result).toEqual({ content: 'ab', range: rangeOf(1, 1, 1, 3) })
+ 	})
+ 
+ 	it('throws RANGE on a structurally invalid ranged write (inverted / sub-1)', () => {
+ 		const workspace = createWorkspace()
+ 		workspace.write('a.ts', 'abc')
+ 
+-		expect(() => workspace.write('a.ts', 'x', range(2, 1, 1, 1))).toThrow(
++		expect(() => workspace.write('a.ts', 'x', rangeOf(2, 1, 1, 1))).toThrow(
+ 			expect.objectContaining({ name: 'WorkspaceError', code: 'RANGE' }),
+ 		)
+-		expect(() => workspace.write('a.ts', 'x', range(0, 1, 1, 1))).toThrow(
++		expect(() => workspace.write('a.ts', 'x', rangeOf(0, 1, 1, 1))).toThrow(
+ 			expect.objectContaining({ code: 'RANGE' }),
+ 		)
+ 	})
+ 
+-	it('throws MODALITY on a ranged write to an absent path (no text file to splice)', () => {
+-		expect(() => createWorkspace().write('missing.ts', 'x', range(1, 1, 1, 1))).toThrow(
++	it('throws MISSING on a ranged write to an absent path (no text file to splice)', () => {
++		expect(() => createWorkspace().write('missing.ts', 'x', rangeOf(1, 1, 1, 1))).toThrow(
+ 			expect.objectContaining({
+-				code: 'MODALITY',
++				code: 'MISSING',
+ 				message: 'Cannot splice a range of a missing file: missing.ts',
+ 			}),
+ 		)
+@@ -230,6 +223,20 @@ describe('Workspace — search', () => {
+ 		])
+ 	})
+ 
++	it('reports a CRLF line without its carriage return, keeping the coordinates readable', () => {
++		const workspace = createWorkspace()
++		workspace.write('a.ts', 'const x = 1\r\nconst y = 2')
++
++		const matches = workspace.search('const')
++
++		// A line scan that split on '\n' alone leaves '\r' on every line but the last, so the
++		// reported content lies and a `$`-anchored regex pattern never matches a line end.
++		expect(matches.map((match) => match.content)).toEqual(['const x = 1', 'const y = 2'])
++		// The reported line stays a valid input to a ranged read, whose offset arithmetic counts one
++		// character per separator, so the search split and that arithmetic agree on line indices.
++		expect(workspace.read('a.ts', rangeOf(2, 1, 2, 6))?.content).toBe('const')
++	})
++
+ 	it('treats the query as a regex when regex:true', () => {
+ 		const workspace = createWorkspace()
+ 		workspace.write('a.ts', 'a1 b2 c3')
+@@ -540,7 +547,7 @@ describe('Workspace — modality matrix (text-only ops on an image file)', () =>
+ 	it('throws MODALITY for a ranged read of an image file', () => {
+ 		const workspace = imageWorkspace()
+ 
+-		expect(() => workspace.read('icon.png', range(1, 1, 1, 2))).toThrow(
++		expect(() => workspace.read('icon.png', rangeOf(1, 1, 1, 2))).toThrow(
+ 			expect.objectContaining({ code: 'MODALITY' }),
+ 		)
+ 	})
+@@ -548,7 +555,7 @@ describe('Workspace — modality matrix (text-only ops on an image file)', () =>
+ 	it('throws MODALITY for a ranged write to an image file', () => {
+ 		const workspace = imageWorkspace()
+ 
+-		expect(() => workspace.write('icon.png', 'x', range(1, 1, 1, 2))).toThrow(
++		expect(() => workspace.write('icon.png', 'x', rangeOf(1, 1, 1, 2))).toThrow(
+ 			expect.objectContaining({
+ 				code: 'MODALITY',
+ 				message: 'Cannot splice a range of a binary file: icon.png',
+diff --git a/tests/src/core/workspaces/WorkspaceManager.test.ts b/tests/src/core/workspaces/WorkspaceManager.test.ts
+index 53bbaa3..0f5b8a1 100644
+--- a/tests/src/core/workspaces/WorkspaceManager.test.ts
++++ b/tests/src/core/workspaces/WorkspaceManager.test.ts
+@@ -9,11 +9,11 @@ import {
+ } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ 
+-// WorkspaceManager is the §9 registry over the workspace layer WITH an active pointer — an
++// WorkspaceManager is the registry over the workspace layer WITH an active pointer — an
+ // insertion-ordered store keyed by id (add / workspace / workspaces / count / remove(id|ids[]) /
+ // clear) PLUS active / switch. Event-free (each Workspace owns its own emitter). The first add
+ // auto-activates; a later add leaves active; switch re-points it; removing the active (or clear)
+-// clears it. Real data, no mocks (AGENTS §16) — each `add` mints a genuine Workspace.
++// clears it. Real data, no mocks — each `add` mints a genuine Workspace.
+ 
+ describe('WorkspaceManager — add / accessors / count', () => {
+ 	it('starts empty with no active workspace', () => {
+@@ -132,7 +132,7 @@ describe('WorkspaceManager — active pointer + switch + auto-activate', () => {
+ 	})
+ })
+ 
+-describe('WorkspaceManager — remove (§9.2) / clear', () => {
++describe('WorkspaceManager — remove / clear', () => {
+ 	it('remove(id) drops one and reports whether any was removed', () => {
+ 		const manager = new WorkspaceManager()
+ 		manager.add({ id: 'a' })
+@@ -299,7 +299,7 @@ describe('createWorkspaceManager', () => {
+ 	})
+ })
+ 
+-describe('WorkspaceManager — open / save over a real store (W-d hydration seam)', () => {
++describe('WorkspaceManager — open / save over a real store', () => {
+ 	it('open(id) of an ALREADY-registered id activates it WITHOUT hitting the store', async () => {
+ 		// A registry hit short-circuits: the workspace is activated (switched to) and returned, no
+ 		// store.get. Works even WITHOUT a store (the registry is the live source).
+diff --git a/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts b/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts
+index ef909a8..c4c76c5 100644
+--- a/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts
++++ b/tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts
+@@ -4,25 +4,32 @@ import { createDatabaseWorkspaceStore, DatabaseWorkspaceStore } from '@src/core'
+ import { rawShape, stringShape } from '@orkestrel/contract'
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { describe, expect, it } from 'vitest'
+-import { assertWorkspaceStoreContract, buildWorkspaceSnapshot } from '../../../../setup.js'
++import { buildWorkspaceSnapshot, WORKSPACE_STORE_CASES } from '../../../../setup.js'
+ 
+-// src/core/agents/workspaces/stores/DatabaseWorkspaceStore.ts — the durable, driver-pluggable twin
++// src/core/workspaces/stores/DatabaseWorkspaceStore.ts — the durable, driver-pluggable twin
+ // of the plain-Map MemoryWorkspaceStore behind the WorkspaceStoreInterface seam (get / set / delete,
+ // async, keyed by a snapshot's own id). It persists the WorkspaceSnapshot as ONE OPAQUE JSON column
+-// over a `databases` table (driver default = createMemoryDriver), narrowing the column back to a
+-// WorkspaceSnapshot on `get` (the §14 boundary narrow). Exercised over a REAL memory driver, with
+-// REAL WorkspaceSnapshot values (§16 NO mocks) — a real Workspace's text file (minted by the edit
+-// surface) plus a BINARY file (the only way to seat one is `createFile`).
++// over a `workspaces` table (driver default = createMemoryDriver), narrowing the column back to a
++// WorkspaceSnapshot on `get` (the boundary narrow). Exercised over a REAL memory driver, with
++// REAL WorkspaceSnapshot values — real data, no mocks — a real Workspace's text file (minted by the
++// edit surface) plus a BINARY file (the only way to seat one is `createFile`).
+ 
+-// The shared `WorkspaceStoreInterface` contract battery (round-trip / upsert / delete & absent /
+-// two-ids-coexist) plus the real `buildWorkspaceSnapshot` fixture both store twins drive live in
+-// tests/setup.ts (AGENTS §16.1). This file invokes that battery against the database factory (over a
+-// REAL memory driver) and keeps only its TWIN-SPECIFIC block below: the default-driver overload.
++// The shared `WorkspaceStoreInterface` contract cases (round-trip / upsert / delete & absent /
++// two-ids-coexist) plus the real `buildWorkspaceSnapshot` fixture drive MemoryWorkspaceStore and
++// DatabaseWorkspaceStore alike: the shared battery lives in tests/setup.ts. This file runs those
++// cases against the database factory
++// (over a REAL memory driver) and keeps only its TWIN-SPECIFIC block: the default-driver overload.
+ describe('DatabaseWorkspaceStore', () => {
+-	assertWorkspaceStoreContract(
+-		() => createDatabaseWorkspaceStore(createMemoryDriver()),
+-		buildWorkspaceSnapshot,
+-	)
++	for (const scenario of WORKSPACE_STORE_CASES) {
++		it(`${scenario.name}`, async () => {
++			const { actual, expected } = await scenario.probe(
++				createDatabaseWorkspaceStore(createMemoryDriver()),
++				buildWorkspaceSnapshot,
++			)
++
++			expect(actual).toEqual(expected)
++		})
++	}
+ })
+ 
+ describe('DatabaseWorkspaceStore — driver overload', () => {
+diff --git a/tests/src/core/workspaces/stores/MemoryWorkspaceStore.test.ts b/tests/src/core/workspaces/stores/MemoryWorkspaceStore.test.ts
+index d12f145..213ed8c 100644
+--- a/tests/src/core/workspaces/stores/MemoryWorkspaceStore.test.ts
++++ b/tests/src/core/workspaces/stores/MemoryWorkspaceStore.test.ts
+@@ -1,22 +1,31 @@
+ import { createMemoryWorkspaceStore, isWorkspaceSnapshot } from '@src/core'
+ import { roundTripJSON } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+-import { assertWorkspaceStoreContract, buildWorkspaceSnapshot } from '../../../../setup.js'
++import { buildWorkspaceSnapshot, WORKSPACE_STORE_CASES } from '../../../../setup.js'
+ 
+-// The W-d MemoryWorkspaceStore — the in-memory default behind the WorkspaceStoreInterface
+-// persistence seam (get / set / delete, async, keyed by a snapshot's own id). It persists the
+-// WorkspaceSnapshot (the self-contained, pure-JSON workspace state) UNCHANGED. REAL data only
+-// (AGENTS §16) — a real Workspace's `snapshot()` carrying BOTH a text file (minted by the edit
+-// surface) and a BINARY file (seated through `createFile`, the only way to seat a non-text file),
+-// NO mocks.
++// MemoryWorkspaceStore — the in-memory default behind the WorkspaceStoreInterface persistence
++// seam (get / set / delete, async, keyed by a snapshot's own id). It persists the
++// WorkspaceSnapshot (the self-contained, pure-JSON workspace state) UNCHANGED. Real data, no
++// mocks — a real Workspace's `snapshot()` carrying a text file (minted by the edit surface) and a
++// BINARY file (seated through `createFile`, the only way to seat a non-text file).
+ 
+-// The shared `WorkspaceStoreInterface` contract battery (round-trip / upsert / delete & absent /
+-// two-ids-coexist) plus the real `buildWorkspaceSnapshot` fixture both store twins drive live in
+-// tests/setup.ts (AGENTS §16.1), so the contract + snapshot stay in ONE place. This file invokes
+-// that battery against the memory factory and keeps only its TWIN-SPECIFIC blocks below: the JSON
++// The shared `WorkspaceStoreInterface` contract cases (round-trip / upsert / delete & absent /
++// two-ids-coexist) plus the real `buildWorkspaceSnapshot` fixture drive MemoryWorkspaceStore and
++// DatabaseWorkspaceStore alike: the shared battery lives in tests/setup.ts, so the contract and the
++// snapshot stay in ONE place. This file
++// runs those cases against the memory factory and keeps only its TWIN-SPECIFIC blocks: the JSON
+ // driver-swap-parity round-trip and the `isWorkspaceSnapshot` read-boundary guard.
+ describe('MemoryWorkspaceStore', () => {
+-	assertWorkspaceStoreContract(() => createMemoryWorkspaceStore(), buildWorkspaceSnapshot)
++	for (const scenario of WORKSPACE_STORE_CASES) {
++		it(`${scenario.name}`, async () => {
++			const { actual, expected } = await scenario.probe(
++				createMemoryWorkspaceStore(),
++				buildWorkspaceSnapshot,
++			)
++
++			expect(actual).toEqual(expected)
++		})
++	}
+ })
+ 
+ describe('MemoryWorkspaceStore — JSON driver-swap parity', () => {
+@@ -34,7 +43,7 @@ describe('MemoryWorkspaceStore — JSON driver-swap parity', () => {
+ 	})
+ })
+ 
+-describe('isWorkspaceSnapshot — the §14 read-boundary guard (total + defensive)', () => {
++describe('isWorkspaceSnapshot — the read-boundary guard (total + defensive)', () => {
+ 	it('accepts a real snapshot (text + binary files)', () => {
+ 		expect(isWorkspaceSnapshot(buildWorkspaceSnapshot())).toBe(true)
+ 		// An empty-files snapshot is still valid (a fresh workspace).

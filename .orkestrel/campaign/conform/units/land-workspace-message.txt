@@ -1,0 +1,8 @@
+Conform workspace to the fleet rules: the named content arms, the missing-file code, the shared store battery
+
+`TextContent` and `BinaryContent` name the arms of `FileContent`, and `createTextContent` and `createBinaryContent` return their arm. `WorkspaceErrorCode` gains `MISSING`: a ranged write to an absent path throws `MISSING` where `0.0.6` threw `MODALITY`. `search` splits on `/\r\n|\n/`. The store contract battery is a data table in `tests/setup.ts` with its own proofs, driven by `MemoryWorkspaceStore` and `DatabaseWorkspaceStore`; the local `range` and hostile helpers give way to `rangeOf` and `createHostileValues`; the guide's flagship fences run in `tests/guides.test.ts`. Every `WorkspaceInterface` and `WorkspaceManagerInterface` member carries TSDoc, the options remarks read `Default: …`, the `DatabaseWorkspaceStore` example constructs the class from a real table, the citations and counts leave the guide, and the guides map names the `probe` and `test` mirrors.
+
+Audit: Grok-first round 1 (Luna distillate, Luna checker FAIL 3 ruled on the symbol-shaped sweep, Opus objective FAIL 4 on the record closed by a report-only fix round); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-workspace-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

@@ -21,10 +21,12 @@ for (const pkg of process.argv.slice(2)) {
 	const out = template
 		.replaceAll('REPORT_PATH', `${UNITS}/conform-${pkg}-report.md`)
 		.replaceAll('PACKAGE', pkg).replaceAll('REPO', repo).replaceAll('TIP', tip)
-		.replace('STAGED_CLOSURE', process.env.STAGED || 'the fleet closure re-staged from the accepted tips on 2026-09-02 (`.orkestrel/campaign/fix/tarballs.json` names each tarball, version, and the registry range still declared)')
-		.replace('STANDING_CONDITIONS', process.env.STANDING || (pkg === 'probe' ? '`npm test` is red at the baseline on the standing Oxlint language-server arming failure (the `initialize` deadline); report that gate as an observation with the same failure set, and stop if a new failure appears.' : 'none'))
-		.replace('CONSUMERS', consumers.length ? consumers.join(', ') : 'none named by the confirmed rows')
-		.replace('ROWS', rows.length ? rows.join('\n') : 'none')
+		// Function replacers: a string replacement expands `$&`, `` $` ``, and `$'` inside the inserted text, and
+		// workspace-obj-8's "a caller's `$`-anchored pattern" spliced the brief's own head into the row (20:0x UTC).
+		.replace('STAGED_CLOSURE', () => process.env.STAGED || 'the fleet closure re-staged from the accepted tips on 2026-09-02 (`.orkestrel/campaign/fix/tarballs.json` names each tarball, version, and the registry range still declared)')
+		.replace('STANDING_CONDITIONS', () => process.env.STANDING || (pkg === 'probe' ? '`npm test` is red at the baseline on the standing Oxlint language-server arming failure (the `initialize` deadline); report that gate as an observation with the same failure set, and stop if a new failure appears.' : 'none'))
+		.replace('CONSUMERS', () => consumers.length ? consumers.join(', ') : 'none named by the confirmed rows')
+		.replace('ROWS', () => rows.length ? rows.join('\n') : 'none')
 		.replaceAll('REPORT_PATH', `${UNITS}/conform-${pkg}-report.md`).replaceAll('EVIDENCE_DIR', EVIDENCE)
 	writeFileSync(`${UNITS}/conform-${pkg}-brief.md`, out)
 	const audit = `# Audit brief — unit conform-${pkg}

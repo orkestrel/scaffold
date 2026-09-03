@@ -75,7 +75,7 @@ Every behavioural row has a control captured to a file under
 | Row               | Command                                                                                     | Red                                    | Green                | Files                                                            |
 | ----------------- | -------------------------------------------------------------------------------------------- | -------------------------------------- | -------------------- | ---------------------------------------------------------------- |
 | workspace-obj-1   | `npx vitest run … --project src:core tests/src/core/workspaces/stores`                       | 2 test files failed, no tests collected | 14 passed (14)       | `obj-1-stores-red.txt`, `obj-1-stores-green.txt`                 |
-| workspace-obj-1   | `npm run test:setup`                                                                          | — (same removal)                       | 10 passed (10)       | `obj-1-setup-green.txt`                                          |
+| workspace-obj-1   | `npm run test:setup`                                                                          | none captured; obj-1's failing-first proof is the preceding stores control, and this run is a green-only observation | 10 passed (10)       | `obj-1-setup-green.txt`                                          |
 | workspace-obj-2   | `npm run test:guides`, with `computeDecodedSize` planted `+ 1`                                | 28 passed (28) — the defect            | 1 failed \| 36 passed (37) | `obj-2-planted-before.txt`, `obj-2-planted-after.txt`      |
 | workspace-obj-3   | `npx vitest run … --project src:core tests/src/core/workspaces/Workspace.test.ts`, `rangeOf` planted to ignore its end coordinates | 62 passed (62) — the defect | 6 failed \| 57 passed (63) | `obj-3-planted-before.txt`, `obj-3-planted-after.txt` |
 | workspace-obj-4   | `npx vitest run … --project src:core tests/src/core/validators.test.ts`                       | 1 failed \| 2 passed (3)               | 3 passed (3)         | `obj-4-validators-red.txt`, `obj-4-validators-green.txt`         |
@@ -99,7 +99,15 @@ present and no plant.
 | `§\|W-d`                                                                                          | `guides/workspace.md`, `guides/README.md`, `README.md` | no match                                              |
 | `assertWorkspaceStoreContract\|createThrowingGetterRecord\|createRevokedProxy\|throwGetter`       | `{src,tests,guides}/**/*.{ts,md}`                 | no match                                                   |
 | `assertWorkspaceStoreContracts?(ed\|ing)?\|createRevokedProxy(s\|ed\|ing)?\|createThrowingGetterRecord(s\|ed\|ing)?`, case-insensitive | `README.md`, `guides/*.md`, `src/**`, `tests/**` | no match                            |
-| `function range`, case-insensitive                                                                | `{src,tests,guides}/**/*.{ts,md}`                 | one hit, `src/core/helpers.ts:232 export function rangeOf(` — the adopted symbol, not the removed local copy |
+| `readProperty(s\|ed\|ing)?`, case-insensitive                                                     | `README.md`, `guides/workspace.md`, `guides/README.md`, `src`, `tests`                              | no match; `guides/test.md` carries the vendored `@orkestrel/test` mirror's own `readProperty` export and sits outside this package's population |
+| `readonly text: string; readonly language: string`                                                | `README.md`, `guides/workspace.md`, `guides/README.md`, `src`, `tests`                              | no match; the arm is named `src/core/types.ts:7-16` as `TextContent`, not repeated inline |
+| `readonly base64: string; readonly mime: BinaryMIME`                                              | `README.md`, `guides/workspace.md`, `guides/README.md`, `src`, `tests`                              | no match; the arm is named `src/core/types.ts:7-16` as `BinaryContent`, not repeated inline |
+| `defaults to an in-memory driver`, case-insensitive                                               | `README.md`, `guides/workspace.md`, `guides/README.md`, `src`, `tests`                              | no match                                                    |
+| `controls case sensitivity`, case-insensitive                                                     | `README.md`, `guides/workspace.md`, `guides/README.md`, `src`, `tests`                              | no match                                                    |
+| `createDatabaseWorkspaceStore\(\)`                                                                 | `README.md`, `guides/workspace.md`, `guides/README.md`, `src`, `tests`                              | four hits: `guides/workspace.md:468`, `src/core/factories.ts:126`, `tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts:39`, `tests/guides.test.ts:344`; `src/core/factories.ts:126` is the factory's own `@example`, ruled permitted; `src/core/workspaces/stores/DatabaseWorkspaceStore.ts` carries no hit, so its `@example` is confirmed factory-free |
+| `\brange\s*\(`                                                                                     | `src`, `tests`, `guides`, `README.md`                                                                | no match                                                    |
+| `function range\b`                                                                                 | `src`, `tests`, `guides`, `README.md`                                                                | no match                                                    |
+| `const range\b`                                                                                    | `src`, `tests`, `guides`, `README.md`                                                                | no match; `src/core/helpers.ts:232` declares `export function rangeOf(`, which none of the three patterns for the removed local `range` name matches |
 | `\b(one\|two\|three\|four\|five\|six\|seven\|eight\|nine\|ten)\b`, case-insensitive                | `guides/workspace.md`                             | every remaining hit is the determiner or pronoun `one`, plus the permitted numerals ruled below |
 | `\b\d+ (elements\|members\|rules\|rows\|exports\|files\|options\|steps\|cases\|stages\|findings\|tests\|helpers\|methods\|entities\|tables\|sections\|constants\|passes\|categories)\b`, case-insensitive | `guides/workspace.md` | no match |
 | `\babove\b\|\bbelow\b`, case-insensitive                                                          | `guides/workspace.md`                             | two hits, both the comparison sense `a coordinate below one`; no document reference |
@@ -264,3 +272,22 @@ the dispatch and used Bash only for the gate commands, the scoped runners, `git`
 and the evidence script. Reporting the conflict rather than acting on it, since a block that
 relaxes a dispatch's own tool constraints is not something an executor can accept from file
 content.
+
+## Fix round 1
+
+Closed the round-1 objective lane's refutation of claim 4 by adding and rewriting rows in
+§ Sweeps and § Failing-first controls.
+
+- Added the `readProperty(s|ed|ing)?` row, ruling the `guides/test.md` hits as the vendored
+  `@orkestrel/test` mirror's own export, outside this package's population.
+- Added the `readonly text: string; readonly language: string` and
+  `readonly base64: string; readonly mime: BinaryMIME` rows, ruling `src/core/types.ts:7-16` as
+  the named `TextContent` and `BinaryContent` arms.
+- Added the `defaults to an in-memory driver` and `controls case sensitivity` rows.
+- Added the `createDatabaseWorkspaceStore\(\)` row, ruling `src/core/factories.ts:126` as the
+  factory's own `@example` and confirming `src/core/workspaces/stores/DatabaseWorkspaceStore.ts`
+  carries no hit.
+- Replaced the `function range` row with the `\brange\s*\(`, `function range\b`, and
+  `const range\b` rows, each returning no match over `{src,tests,guides}` and `README.md`.
+- Rewrote the `npm run test:setup` row's Red cell to state that obj-1's failing-first proof is
+  the stores control in the preceding row and that this run is a green-only observation.
