@@ -75,10 +75,12 @@ State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the na
 | csv | yes (successor) | complete | rounds FAIL 4 8 / PASS, FAIL 4 / PASS, FAIL 4 / PASS; one header sentence applied at landing; ACCEPT (`units/conform-csv-audit-verdict.md`) | `24861c3` |
 | tool | yes | complete | round 1 PASS/PASS; ACCEPT (`units/conform-tool-audit-verdict.md`) | `1f36348`, follow-on `b2111d1` |
 | timeout | yes | complete | round 1 PASS/PASS with record prescriptions applied at landing; ACCEPT (`units/conform-timeout-audit-verdict.md`) | `426420b` |
-| emitter, html, sqlite | yes (reconciled; sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`) | complete; emitter and html in fix round 1, sqlite in audit round 1, in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
-| process, reason, console, middleware | generating | in flight in `layer2.L2a` (`wf_4b849c0d-459`) | — | — |
+| emitter | yes | complete, two fix rounds in `layer2.L1b` (`wf_f5789004-34f`) | objective PASS and checker PASS (round 3); `units/conform-emitter-audit-verdict.md` | 67433a5 |
+| html, sqlite | yes (reconciled; sqlite-obj-1 is an Orchestrator manifest row, `briefs/followon/sqlite-engines-brief.md`) | complete; html in fix round 2, sqlite in audit round 2 (checker PASS), in `layer2.L1b` (`wf_f5789004-34f`) | — | — |
+| process, reason | yes | complete in `layer2.L2a` (`wf_4b849c0d-459`); process-obj-1 stopped for want of a move tool and is carried by `briefs/conform/conform-process-fix-obj1-brief.md` after the audit round | audit lanes queued | — |
+| console, middleware | yes | implementers in flight in `layer2.L2a` (`wf_4b849c0d-459`) | — | — |
 | database | yes (successor; carries database-subj-10) | not started | — | L2, after contract and indexeddb land and re-stage |
-| console, process, reason, middleware, table, template, websocket, form, markdown, pool | no | not started | — | L2 |
+| table, template, websocket, form, markdown, pool | no | not started | — | L2 |
 | browser, guide, interpret, mcp, qualifier, rater, sea, server, terminal, workspace, lsp, queue, relation, scaffold | no | not started (guide carries the regex unit at `264a87f`) | — | L3 |
 | brief, probe, program, worker, workflow | no | not started | — | L4 (`ALLOW_RED_TEST=probe`) |
 | agent | no | not started | — | L5 |

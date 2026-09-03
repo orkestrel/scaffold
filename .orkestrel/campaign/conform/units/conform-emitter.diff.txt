@@ -1,0 +1,528 @@
+diff --git a/README.md b/README.md
+index babbbff..7887b37 100644
+--- a/README.md
++++ b/README.md
+@@ -18,8 +18,8 @@ npm install @orkestrel/emitter
+ 
+ ## Requirements
+ 
+-- Node.js >= 24
+-- ESM-only (no CommonJS build)
++- Node.js >= 22.12.0
++- ESM and CommonJS builds
+ 
+ ## Usage
+ 
+@@ -34,13 +34,14 @@ type ClockEventMap = {
+ 
+ const clock = createEmitter<ClockEventMap>({
+ 	on: { done: () => stop() }, // initial listeners wired at construction
+-	error: (cause, event) => logger.warn(`listener for "${event}" threw`, cause),
++	error: (error, event) => logger.warn(`listener for "${event}" threw`, error),
+ })
+ 
+-clock.on('tick', (at) => render(at)) // `at` is typed `number` from the map
++const onTick = (at: number) => render(at)
++clock.on('tick', onTick) // `at` is typed `number` from the map
+ clock.emit('tick', Date.now()) // synchronous — every `tick` listener runs now
+ clock.once('done', () => cleanup()) // removes itself after its first call
+-clock.off('tick', render) // remove a listener by its original handler
++clock.off('tick', onTick) // remove a listener by its original handler
+ clock.count() // live listener count, total or per-event
+ clock.clear() // drop listeners, total or per-event; emitter stays usable
+ clock.destroy() // teardown — drops every listener, flips `destroyed`
+diff --git a/guides/README.md b/guides/README.md
+index bad6cda..9d08fb6 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -1,6 +1,6 @@
+ # Guides
+ 
+-A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).
++A dual-axis index into this repository's guides — by concept, and by directory.
+ 
+ ## By concept
+ 
+@@ -31,4 +31,4 @@ the primitives it is built from without leaving this guide set.
+ 
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the repository's coding and orchestration authority.
+diff --git a/guides/emitter.md b/guides/emitter.md
+index 0b0246c..956c0e9 100644
+--- a/guides/emitter.md
++++ b/guides/emitter.md
+@@ -1,8 +1,8 @@
+ # Emitter
+ 
+-> The foundational observable primitive (AGENTS §13): a typed, **synchronous** event emitter. Every stateful entity in the codebase — a queue, a database table, an agent — that has lifecycle transitions or observable operations **owns** one `Emitter<TMap>` as a `#emitter` field and exposes it through a `readonly emitter` property; consumers subscribe via `entity.emitter.on(...)`. Composition, never inheritance: an entity threads its event map and an optional error handler into the emitter and otherwise forgets it exists.
++> The foundational observable primitive: a typed, **synchronous** event emitter. Every stateful entity in the codebase — a queue, a database table, an agent — that has lifecycle transitions or observable operations **owns** one `Emitter<TMap>` as a `#emitter` field and exposes it through a `readonly emitter` property; consumers subscribe through `entity.emitter.on(...)`. Composition, never inheritance: an entity threads its event map and an optional error handler into the emitter and otherwise forgets it exists.
+ >
+-> It is deliberately small. There is no scheduler — `emit` fires listeners in the current tick, in registration order. There is no listener cap, no `max`-listeners warning, and no `console` output (a documented divergence from the scsr precursor). `on` returns `void`, not an `Unsubscribe`. What it _does_ carry is the one invariant a fan-out primitive can't omit: a throwing listener is isolated so it can never take down its siblings or the emit loop. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
++> It is deliberately small. There is no scheduler — `emit` fires listeners in the current tick, in registration order. There is no listener cap, no `max`-listeners warning, and no `console` output. `on` returns `void`, not an `Unsubscribe`. What it _does_ carry is the one invariant a fan-out primitive can't omit: a throwing listener is isolated so it can never take down its siblings or the emit loop. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+@@ -12,18 +12,18 @@ Create a standalone emitter, subscribe, and fire events synchronously:
+ import { createEmitter } from '@orkestrel/emitter'
+ 
+ // The event map names each event and the argument tuple its listeners receive.
+-// Declare it as a `type` alias (§4.5 — `EventMap` is a `type` kind), never as
+-// `interface … extends EventMap`: a type-literal satisfies the `EventMap`
+-// constraint structurally without inheriting its index signature, so each event
+-// keeps a precise tuple and `on`-hook literals stay exactly typed.
++// Declare it as a `type` alias, never as `interface … extends EventMap`: a
++// type-literal satisfies the `EventMap` constraint structurally without
++// inheriting its index signature, so each event keeps a precise tuple and
++// `on`-hook literals stay exactly typed.
+ type ClockEventMap = {
+ 	tick: readonly [at: number]
+ 	done: readonly []
+ }
+ 
+ const clock = createEmitter<ClockEventMap>({
+-	on: { done: () => stop() }, // initial listeners wired at construction (§8)
+-	error: (cause, event) => logger.warn(`listener for "${event}" threw`, cause),
++	on: { done: () => stop() }, // initial listeners wired at construction
++	error: (error, event) => logger.warn(`listener for "${event}" threw`, error),
+ })
+ 
+ clock.on('tick', (at) => render(at)) // `at` is typed `number` from the map
+@@ -31,7 +31,7 @@ clock.emit('tick', Date.now()) // synchronous — every `tick` listener runs now
+ clock.destroy() // teardown — drops every listener, flips `destroyed`
+ ```
+ 
+-The reserved `on` option wires initial listeners at construction (AGENTS §8); the optional `error` handler receives any listener's throw as `(cause, event)` so `emit` never has to rethrow. Event names are single present-tense verbs or nouns, and a map stays small — typically 4–8 events (AGENTS §4.1, §13).
++The reserved `on` option wires initial listeners at construction; the optional `error` handler receives any listener's throw as `(error, event)` so `emit` never has to rethrow. Event names are single present-tense verbs or nouns.
+ 
+ ### Factories
+ 
+@@ -47,9 +47,9 @@ The reserved `on` option wires initial listeners at construction (AGENTS §8); t
+ 
+ ### Entities
+ 
+-| API       | Kind  | Summary                                                                     |
+-| --------- | ----- | --------------------------------------------------------------------------- |
+-| `Emitter` | class | The typed synchronous emitter; entities own one as `#emitter` (AGENTS §13). |
++| API       | Kind  | Summary                                                        |
++| --------- | ----- | -------------------------------------------------------------- |
++| `Emitter` | class | The typed synchronous emitter; entities own one as `#emitter`. |
+ 
+ ### Types
+ 
+@@ -62,39 +62,39 @@ The reserved `on` option wires initial listeners at construction (AGENTS §8); t
+ | `EmitterOptions`      | interface | `{ on?: EmitterHooks<TMap>; error?: EmitterErrorHandler }` — options for `createEmitter` / the constructor. |
+ | `EmitterInterface`    | interface | `destroyed` data member + `on` / `once` / `off` / `emit` / `count` / `clear` / `destroy`.                   |
+ 
+-The `destroyed` boolean is a `readonly` data member of `EmitterInterface` (a Surface row, above) — its call-signature methods are documented under [Methods](#methods).
++The `destroyed` boolean is a `readonly` data member of `EmitterInterface` (a preceding Surface row) — its call-signature methods are documented under [Methods](#methods).
+ 
+ ## Methods
+ 
+-The public methods of `EmitterInterface` — every call-signature member listed (its `readonly` data member `destroyed` stays a Surface row). `Emitter` implements the interface exactly, so this doubles as the class's instance-method surface (AGENTS §22).
++The public methods of `EmitterInterface` — every call-signature member listed (its `readonly` data member `destroyed` stays a Surface row). `Emitter` implements the interface exactly, so this doubles as the class's instance-method surface.
+ 
+ #### `EmitterInterface`
+ 
+-`on` / `once` / `off` register and unregister listeners; `emit` fires them synchronously; `count` / `clear` are the §9.2 batch pair (all events, or one); `destroy` is the §10 teardown.
++`on` / `once` / `off` register and unregister listeners; `emit` fires them synchronously; `count` / `clear` are the batch pair (all events, or one); `destroy` is the teardown.
+ 
+-| Method    | Returns  | Behavior                                                                                                   |
+-| --------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+-| `on`      | `void`   | Register a listener for an event (no-op once destroyed).                                                   |
+-| `once`    | `void`   | Register a listener that removes itself after its first call (no-op once destroyed).                       |
+-| `off`     | `void`   | Remove a listener by its original handler — including one registered via `once`.                           |
+-| `emit`    | `void`   | Invoke an event's listeners synchronously, in registration order, isolating throws (no-op once destroyed). |
+-| `count`   | `number` | The live listener count — for one event, or the total across all events.                                   |
+-| `clear`   | `void`   | Drop listeners — for one event, or all of them; the emitter stays usable (`destroyed` unchanged).          |
+-| `destroy` | `void`   | Tear down: drop every listener and flip `destroyed` (idempotent).                                          |
++| Method    | Returns  | Behavior                                                                                                      |
++| --------- | -------- | ------------------------------------------------------------------------------------------------------------- |
++| `on`      | `void`   | Register a listener for an event (no-op after `destroy()`).                                                   |
++| `once`    | `void`   | Register a listener that removes itself after its first call (no-op after `destroy()`).                       |
++| `off`     | `void`   | Remove a listener by its original handler — including one registered through `once`.                          |
++| `emit`    | `void`   | Invoke an event's listeners synchronously, in registration order, isolating throws (no-op after `destroy()`). |
++| `count`   | `number` | The live listener count — for one event, or the total across all events.                                      |
++| `clear`   | `void`   | Drop listeners — for one event, or all of them; the emitter stays usable (`destroyed` unchanged).             |
++| `destroy` | `void`   | Tear down: drop every listener and flip `destroyed` (idempotent).                                             |
+ 
+ ## Contract
+ 
+ These invariants hold across `src/core` ↔ `emitter.md`:
+ 
+-1. **DOC ↔ SOURCE bijection.** Every `function` / `class` / `interface` / `type` row in the `## Surface` tables is a real export of the emitter source, and every export appears as a Surface row — exhaustive, both directions (AGENTS §22).
++1. **DOC ↔ SOURCE bijection.** Every `function` / `class` / `interface` / `type` row in the `## Surface` tables is a real export of the emitter source, and every export appears as a Surface row — exhaustive, both directions.
+ 2. **Synchronous, ordered.** `emit` invokes listeners in registration order, in the current tick — no microtask, no scheduler. A listener registered during an `emit` is not invoked for that same `emit` (the listener set is snapshotted before the loop).
+ 3. **Listener isolation routes errors.** A throwing listener never stops its siblings: every listener runs, and a throw is routed to the emitter's OWN `error` handler (`EmitterOptions.error`, surfaced as `(error, event)`) — `emit` NEVER rethrows. EVERY throwing listener surfaces (not just the first); with no `error` handler, a throw is swallowed silently. The `error` handler runs in its own try/catch, so a throwing handler is swallowed too (anti-recursion).
+-4. **Composition, not inheritance (AGENTS §13).** Entities own an `Emitter` as `#emitter` and expose `readonly emitter`; they never extend it. There is no delegation boilerplate, no `Omit` hacks.
++4. **Composition, not inheritance.** Entities own an `Emitter` as `#emitter` and expose `readonly emitter`; they never extend it. There is no delegation boilerplate, no `Omit` hacks.
+ 5. **Destroyed → no-op.** After `destroy()`, `on` / `once` / `emit` do nothing and `destroyed` is `true`; `destroy()` is idempotent. `clear()` resets listeners without destroying the emitter (`destroyed` stays `false`).
+ 6. **`once` / `off` correlate.** A `once` listener is wrapped so it removes itself after firing; `off` called with the original handler removes that wrapper, so callers never juggle the wrapper themselves.
+-7. **DOC ↔ SOURCE method bijection.** The `## Methods` table lists exactly `EmitterInterface`'s public methods — exhaustive, both directions — and `Emitter` exposes the same public methods, no more (AGENTS §22).
++7. **DOC ↔ SOURCE method bijection.** The `## Methods` table lists exactly `EmitterInterface`'s public methods — exhaustive, both directions — and `Emitter` exposes the same public methods, no more.
+ 
+-Deliberately out of scope (a documented divergence from the scsr precursor, kept lean): a listener-count cap / `max` warning and any `console` output. Asynchronous emit, wildcard events, and an `Unsubscribe` return from `on` are additive and would leave the surface above unchanged.
++Deliberately out of scope, to keep the surface small: a listener-count cap or `max` warning, and any `console` output. Asynchronous emit, wildcard events, and an `Unsubscribe` return from `on` are additive and would leave the preceding surface unchanged.
+ 
+ ## Patterns
+ 
+@@ -115,7 +115,7 @@ emitter.emit('chunk', 1024)
+ emitter.emit('done')
+ ```
+ 
+-### Own an emitter (the AGENTS §13 pattern)
++### Own an emitter
+ 
+ This is the dominant use, and the shape every observable entity in the codebase follows. The entity owns an `Emitter` as `#emitter`, exposes it through `readonly emitter`, and threads the caller's `on` (and optional `error`) options straight into the constructor — so the owner's options surface mirrors the emitter's without re-deriving it. It emits internally and tears the emitter down last in its own `destroy()`. No inheritance, no delegation boilerplate.
+ 
+@@ -133,7 +133,7 @@ type CounterEventMap = {
+ }
+ 
+ interface CounterOptions {
+-	readonly on?: EmitterHooks<CounterEventMap> // initial listeners (§8)
++	readonly on?: EmitterHooks<CounterEventMap> // initial listeners
+ 	readonly error?: EmitterErrorHandler // routes a listener throw, never rethrows
+ }
+ 
+@@ -199,21 +199,20 @@ feed.clear() // drop everything; `feed.destroyed` stays false
+ 
+ ### Practices
+ 
+-- **Own, never inherit** — store an `Emitter` as `#emitter`, expose `readonly emitter` (AGENTS §13). No subclassing, no delegation boilerplate.
+-- **One word per event** — event names are single present-tense verbs or nouns (`tick`, `chunk`, `done`); keep a map to 4–8 events (AGENTS §13).
++- **Own, never inherit** — store an `Emitter` as `#emitter`, expose `readonly emitter`. No subclassing, no delegation boilerplate.
+ - **Empty tuples for pure signals** — an event with no payload is `readonly []`; emit it with no extra args.
+-- **Wire initial listeners through `on`** — the reserved options key (AGENTS §8); the constructor registers them up front.
++- **Wire initial listeners through `on`** — the reserved options key; the constructor registers them up front.
+ - **Destroy last** — call `this.#emitter.destroy()` at the end of the entity's own `destroy()`, after any final events.
+ - **Route listener errors to the `error` handler** — `emit` never rethrows; supply `EmitterOptions.error` to receive a listener's throw (as `(error, event)`), or it is swallowed silently.
+ 
+ ## Tests
+ 
+-- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports) and the `EmitterInterface` ↔ `Emitter` method bijection.
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports), the `EmitterInterface` ↔ `Emitter` method bijection, and the executed transcription of the Manage listeners fence.
+ - [`tests/src/core/Emitter.test.ts`](../tests/src/core/Emitter.test.ts) — `on` / `emit` (typed args, registration order), `once` (fires once, auto-removes), `off` (by original handler, including a `once` wrapper), `count` / `clear` (total and per-event), `destroy` (clears, flips `destroyed`, then no-ops), initial `on` hooks, listener isolation (a throwing listener does not stop siblings; the throw routes to the `error` handler, never rethrown; every throwing listener surfaces; a throwing `error` handler is swallowed), and empty-tuple signals.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createEmitter` returns a working `EmitterInterface` and honors initial `on` hooks.
+-- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — `extractKeys` returns the typed own-enumerable-key union, including the empty-object case.
++- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — `extractKeys` returns the typed own-enumerable-key union, including the empty-object case and an object whose prototype carries an enumerable key.
+ 
+ ## See also
+ 
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §13 the Emitter pattern, §8 the reserved `on` option, §4.1 single-word event names, §10 lifecycle (`clear` / `destroy`), §22 documentation-as-contracts.
++- [`AGENTS.md`](../AGENTS.md) — the repository's coding and orchestration authority.
+ - [`README.md`](README.md) — the guides index.
+diff --git a/package.json b/package.json
+index 2e928f9..10cdedf 100644
+--- a/package.json
++++ b/package.json
+@@ -53,7 +53,7 @@
+ 		"format": "oxfmt --config .oxfmtrc.json --write .",
+ 		"format:check": "oxfmt --config .oxfmtrc.json --check .",
+ 		"lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+-		"test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
++		"test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:guides",
+ 		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+ 		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+ 		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+@@ -66,8 +66,7 @@
+ 		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+ 		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+ 		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+-		"prepack": "npm run build",
+-		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
++		"prepack": "npm run build"
+ 	},
+ 	"dependencies": {
+ 		"@orkestrel/contract": "^0.0.15"
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 9304b7a..4ad7142 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -5,7 +5,8 @@
+  * `Object.keys` widens its result to `string[]`, which breaks the key↔value
+  * correlation a mapped type (like `EmitterHooks<TMap>`) otherwise guarantees.
+  * A `for…in` push into a `keyof`-typed array narrows the result back,
+- * type-safely and with no assertion.
++ * type-safely and with no assertion. Inherited enumerable keys are excluded, as
++ * `Object.keys` excludes them.
+  *
+  * @typeParam T - The object shape whose keys are extracted.
+  * @param object - The object to read keys from.
+@@ -22,6 +23,6 @@
+  */
+ export function extractKeys<T extends object>(object: T): ReadonlyArray<keyof T> {
+ 	const collected: Array<keyof T> = []
+-	for (const key in object) collected.push(key)
++	for (const key in object) if (Object.hasOwn(object, key)) collected.push(key)
+ 	return collected
+ }
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index b46c053..b25c26e 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,5 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The four constants below are this
++// this repo's own `guides/README.md` manifest. The `FENCE_LANGUAGES`,
++// `EXAMPLE_LANGUAGE`, `MODULES`, `INTERNAL`, and `ROOT_FILES` constants are this
+ // package's own, and are the only part a sibling package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+@@ -18,8 +19,9 @@ import {
+ 	resolveLink,
+ } from '@orkestrel/guide'
+ import { readFileSync } from 'node:fs'
+-import { requireValue } from '@orkestrel/test'
++import { createRecorder, requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
++import { createEmitter } from '@src/core'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+@@ -32,8 +34,9 @@ const MODULES = Object.freeze({ '@orkestrel/emitter': 'src/core', '@src/core': '
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
+- * here stops being stranded, so the list cannot rot.
++ * intentional rather than forgotten — and the `names no symbol internal that the barrel
++ * already exports` assertion fails when a name here stops being stranded, so the list
++ * cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+@@ -168,3 +171,51 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// The event map the guide's Manage-listeners fence declares.
++type FeedEventMap = {
++	post: readonly [id: string]
++}
++
++// The EXECUTED half. Every preceding check reads a name — from the guide text or
++// from the source — and a name that resolves proves nothing about the sentence
++// beside it, so a fence whose comment claims a value the code contradicts passes
++// all of them. The cases here run the flagship fence and assert the values its
++// comments claim. Change the fence, change the transcription beside it.
++describe('flagship fences', () => {
++	const guideText = requireValue(files['guides/emitter.md'], 'Missing file: guides/emitter.md')
++
++	it('counts per event and in total, drops the counted listener on off, and survives clear', () => {
++		// Transcribed from the Manage-listeners fence. `count` is the load-bearing
++		// part: it answers for one event and across every event, it falls to zero when
++		// `off` is handed the original handler, and `clear` leaves the emitter usable.
++		const feed = createEmitter<FeedEventMap>()
++		const post = createRecorder<readonly [string]>()
++
++		feed.on('post', post.handler)
++
++		expect(feed.count('post')).toBe(1)
++		expect(feed.count()).toBe(1)
++
++		feed.off('post', post.handler)
++
++		expect(feed.count('post')).toBe(0)
++
++		feed.on('post', post.handler)
++		feed.clear('post')
++		feed.clear()
++
++		expect(feed.destroyed).toBe(false)
++	})
++
++	it('carries the manage-listeners fence lines the transcription copies', () => {
++		// The presence guard beside the transcription: it proves the transcribed lines
++		// are still the documented ones, and nothing whatever about behavior. Binding
++		// one call line alone leaves a comment free to claim the opposite value and
++		// stay green, so every line carrying a claim is bound.
++		expect(guideText).toContain("feed.count('post') // 1")
++		expect(guideText).toContain('feed.count() // 1 — total across all events')
++		expect(guideText).toContain("feed.count('post') // 0")
++		expect(guideText).toContain('feed.clear() // drop everything; `feed.destroyed` stays false')
++	})
++})
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+deleted file mode 100644
+index 45687b3..0000000
+--- a/tests/setup.test.ts
++++ /dev/null
+@@ -1,14 +0,0 @@
+-import { describe, expect, it } from 'vitest'
+-import { isBrowserVuePath } from './setup.js'
+-
+-describe('isBrowserVuePath', () => {
+-	it('accepts a browser Vue path under every separator family', () => {
+-		expect(isBrowserVuePath('app/browser/component.vue')).toBe(true)
+-		expect(isBrowserVuePath('app\\browser\\component.vue')).toBe(true)
+-	})
+-
+-	it('refuses a sibling environment and a prefix lookalike', () => {
+-		expect(isBrowserVuePath('app/server/component.vue')).toBe(false)
+-		expect(isBrowserVuePath('app/browserish/component.vue')).toBe(false)
+-	})
+-})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 174e7e6..4fb9860 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -3,18 +3,6 @@
+ // `document` / `window`: environment-specific helpers get their own setup
+ // file when this surface grows one.
+ 
+-import { afterEach, vi } from 'vitest'
+-
+-afterEach(() => {
+-	vi.restoreAllMocks()
+-})
+-
+ // Recorders come from `@orkestrel/test`. A listener-error recorder is
+ // `createRecorder<Parameters<EmitterErrorHandler>>()` at the call site, which derives
+ // its tuple from this package's own handler type rather than restating it here.
+-
+-/** Whether a repository-relative Vue SFC path belongs to the private browser application. */
+-export function isBrowserVuePath(path: string): boolean {
+-	const normalized = path.replaceAll('\\', '/')
+-	return normalized.startsWith('app/browser/')
+-}
+diff --git a/tests/src/core/Emitter.test.ts b/tests/src/core/Emitter.test.ts
+index 5073d03..9ac04cf 100644
+--- a/tests/src/core/Emitter.test.ts
++++ b/tests/src/core/Emitter.test.ts
+@@ -1,14 +1,14 @@
+-import type { EmitterErrorHandler, EmitterHandler } from '@src/core'
++import type { EmitterErrorHandler } from '@src/core'
+ import { Emitter } from '@src/core'
+ import { describe, expect, expectTypeOf, it } from 'vitest'
+ import { createRecorder } from '@orkestrel/test'
+ 
+-// Emitter — the foundational synchronous, listener-isolating observable primitive
+-// (AGENTS §13). Real listeners (recorders from tests/setup.ts), no mocks: assert
+-// observable behavior — what fired, in what order, how many remain. The event map
+-// is a `type` alias (not `interface extends EventMap`): a type-literal satisfies the
+-// `EventMap` constraint structurally without inheriting its index signature, which
+-// keeps `on`-hook literals precisely typed (§4.5 — `EventMap` is a `type` kind).
++// Emitter — the foundational synchronous, listener-isolating observable primitive.
++// Real listeners (recorders from `@orkestrel/test`), no mocks: assert observable
++// behavior — what fired, in what order, how many remain. The event map is a `type`
++// alias (not `interface extends EventMap`): a type-literal satisfies the `EventMap`
++// constraint structurally without inheriting its index signature, which keeps
++// `on`-hook literals precisely typed.
+ type TestEventMap = {
+ 	tick: readonly [count: number]
+ 	named: readonly [name: string, age: number]
+@@ -449,11 +449,10 @@ describe('Emitter', () => {
+ 	it('off during emit — a pending once handler still fires this round (snapshot), never again', () => {
+ 		const emitter = new Emitter<TestEventMap>()
+ 		const tick = createRecorder<readonly [number]>()
+-		const onceHandler: EmitterHandler<readonly [number]> = (count) => tick.handler(count)
+ 		emitter.on('tick', () => {
+-			emitter.off('tick', onceHandler)
++			emitter.off('tick', tick.handler)
+ 		})
+-		emitter.once('tick', onceHandler)
++		emitter.once('tick', tick.handler)
+ 
+ 		emitter.emit('tick', 1)
+ 		expect(tick.calls).toEqual([[1]])
+@@ -480,12 +479,9 @@ describe('Emitter', () => {
+ 	})
+ 
+ 	it('error handler doubling as a listener — receives both the listener call and the error call', () => {
+-		const calls: Array<readonly unknown[]> = []
+-		const dual = (...args: readonly unknown[]): void => {
+-			calls.push(args)
+-		}
+-		const emitter = new Emitter<TestEventMap>({ error: dual })
+-		emitter.on('tick', dual)
++		const dual = createRecorder()
++		const emitter = new Emitter<TestEventMap>({ error: dual.handler })
++		emitter.on('tick', dual.handler)
+ 		const failure = new Error('sibling boom')
+ 		emitter.on('tick', () => {
+ 			throw failure
+@@ -493,7 +489,7 @@ describe('Emitter', () => {
+ 
+ 		emitter.emit('tick', 5)
+ 
+-		expect(calls).toEqual([[5], [failure, 'tick']])
++		expect(dual.calls).toEqual([[5], [failure, 'tick']])
+ 	})
+ })
+ 
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 59fe037..66d9a0d 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -5,7 +5,7 @@ import { createRecorder } from '@orkestrel/test'
+ 
+ // The emitter factory — that `createEmitter` returns a working EmitterInterface.
+ // Full behavior (once/off/count/clear/destroy, isolation) lives in Emitter.test.ts;
+-// here we only assert the factory hands back a usable emitter and honors `on` hooks.
++// this file asserts only that the factory hands back a usable emitter and honors `on` hooks.
+ // Event map as a `type` alias (see Emitter.test.ts) so `on`-hook literals stay typed.
+ type ClockEventMap = {
+ 	tick: readonly [at: number]
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 7d2f876..fe5ad8a 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,8 +1,8 @@
+ import { extractKeys } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ 
+-// extractKeys — the pure, testable leaf behind Emitter's `#wire` (AGENTS §5): the
+-// typed keys of a mapped object, narrowed back from `Object.keys`'s `string[]` widening.
++// extractKeys — the pure, testable leaf behind Emitter's `#wire`: the typed keys of a
++// mapped object, narrowed back from `Object.keys`'s `string[]` widening.
+ describe('extractKeys', () => {
+ 	it('returns the own enumerable keys of a record, typed as its key union', () => {
+ 		const hooks = { tick: () => {}, done: () => {} }
+@@ -13,4 +13,15 @@ describe('extractKeys', () => {
+ 	it('returns an empty array for an empty record', () => {
+ 		expect(extractKeys({})).toEqual([])
+ 	})
++
++	it('excludes an inherited enumerable key', () => {
++		const base = { inherited: () => {} }
++		const hooks: { readonly tick: () => void } = { tick: () => {} }
++		Object.setPrototypeOf(hooks, base)
++
++		// The control: the inherited key is reachable, so a walk that included it would collect it.
++		expect('inherited' in hooks).toBe(true)
++
++		expect(extractKeys(hooks)).toEqual(['tick'])
++	})
+ })
+diff --git a/vite.config.ts b/vite.config.ts
+index ef65e84..a6d657c 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -72,17 +72,6 @@ export const config = (): UserConfig => ({
+ 	},
+ })
+ 
+-export const setup = (): UserConfig => ({
+-	resolve,
+-	test: {
+-		name: { label: 'setup', color: 'white' },
+-		include: ['tests/setup*.test.ts'],
+-		setupFiles: ['./tests/setup.ts'],
+-		environment: 'node',
+-		browser: { enabled: false },
+-	},
+-})
+-
+ export const guides = (): UserConfig => ({
+ 	resolve,
+ 	test: {
+@@ -130,6 +119,6 @@ export const probe = (): UserConfig => ({
+ export default defineConfig({
+ 	resolve,
+ 	test: {
+-		projects: [srcCore, policy, config, setup, guides, distribution, probe],
++		projects: [srcCore, policy, config, guides, distribution, probe],
+ 	},
+ })
