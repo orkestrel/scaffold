@@ -1,0 +1,338 @@
+{
+ "abort": {
+  "agentsCitations": 5,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "agent": {
+  "agentsCitations": 54,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "brief": {
+  "agentsCitations": 0,
+  "should": 4,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "browser": {
+  "agentsCitations": 2,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "budget": {
+  "agentsCitations": 4,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "codec": {
+  "agentsCitations": 0,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "console": {
+  "agentsCitations": 15,
+  "should": 3,
+  "skipsOrTodos": 3,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "contract": {
+  "agentsCitations": 31,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "csv": {
+  "agentsCitations": 12,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "database": {
+  "agentsCitations": 36,
+  "should": 0,
+  "skipsOrTodos": 3,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "emitter": {
+  "agentsCitations": 14,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "form": {
+  "agentsCitations": 0,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "guide": {
+  "agentsCitations": 17,
+  "should": 4,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "html": {
+  "agentsCitations": 0,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "indexeddb": {
+  "agentsCitations": 16,
+  "should": 0,
+  "skipsOrTodos": 3,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "interpret": {
+  "agentsCitations": 10,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "lsp": {
+  "agentsCitations": 0,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "markdown": {
+  "agentsCitations": 1,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "mcp": {
+  "agentsCitations": 0,
+  "should": 15,
+  "skipsOrTodos": 3,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "middleware": {
+  "agentsCitations": 8,
+  "should": 1,
+  "skipsOrTodos": 3,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "msg": {
+  "agentsCitations": 6,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "ndjson": {
+  "agentsCitations": 5,
+  "should": 2,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "ollama": {
+  "agentsCitations": 22,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "pool": {
+  "agentsCitations": 2,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "probe": {
+  "agentsCitations": 0,
+  "should": 0,
+  "skipsOrTodos": 13,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "process": {
+  "agentsCitations": 0,
+  "should": 0,
+  "skipsOrTodos": 19,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "program": {
+  "agentsCitations": 14,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "qualifier": {
+  "agentsCitations": 4,
+  "should": 4,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "queue": {
+  "agentsCitations": 19,
+  "should": 2,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "rater": {
+  "agentsCitations": 1,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "reason": {
+  "agentsCitations": 42,
+  "should": 2,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "relation": {
+  "agentsCitations": 15,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "router": {
+  "agentsCitations": 46,
+  "should": 0,
+  "skipsOrTodos": 3,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "sea": {
+  "agentsCitations": 7,
+  "should": 4,
+  "skipsOrTodos": 7,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "server": {
+  "agentsCitations": 1,
+  "should": 2,
+  "skipsOrTodos": 3,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "sqlite": {
+  "agentsCitations": 12,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "sse": {
+  "agentsCitations": 6,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "table": {
+  "agentsCitations": 0,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "template": {
+  "agentsCitations": 23,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "terminal": {
+  "agentsCitations": 1,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "test": {
+  "agentsCitations": 0,
+  "should": 1,
+  "skipsOrTodos": 5,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "timeout": {
+  "agentsCitations": 3,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "tool": {
+  "agentsCitations": 0,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "toolbox": {
+  "agentsCitations": 12,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "websocket": {
+  "agentsCitations": 34,
+  "should": 0,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "worker": {
+  "agentsCitations": 27,
+  "should": 2,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "workflow": {
+  "agentsCitations": 241,
+  "should": 5,
+  "skipsOrTodos": 42,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ },
+ "workspace": {
+  "agentsCitations": 5,
+  "should": 1,
+  "skipsOrTodos": 2,
+  "tsDirectives": 0,
+  "tmpLiterals": 0
+ }
+}

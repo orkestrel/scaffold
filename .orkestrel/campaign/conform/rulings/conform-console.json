@@ -1,0 +1,622 @@
+{
+ "package": "console",
+ "objective": {
+  "package": "@orkestrel/console (/home/user/fleet/console)",
+  "lane": "objective — held by `reviewer` on Claude Opus 5 as the recorded substitution for the dark GPT-5.6 Sol bench (`codex` absent from `PATH`, probed 2026-09-02); claims O1–O8 plus carry row console-c2",
+  "claims": [
+   {
+    "claim": "O1 Placement and kind purity — every declaration sits in the file the centralized-file pattern names; centralized declarations exported; helpers/validators import no implementation class; parsers/factories name forms; templates/contracts/routes data only; entity families nest; extension categories nest; stores follow point-access or bulk-restore",
+    "verdict": "BROKEN",
+    "read": "Every file of src/core (types.ts, constants.ts, errors.ts, helpers.ts, factories.ts, index.ts, ANSIRenderer.ts, Capture.ts, Logger.ts, LoggerManager.ts, Progress.ts, Reporter.ts, Retention.ts, Spinner.ts, Styler.ts), src/browser (types, constants, helpers, factories, index), src/server (types, constants, validators, helpers, factories, ProcessCapture, index). Confirmed clean: every type/interface declaration in the tree sits in a types.ts (grep over src for `^(export )?(interface|type)` returns only types.ts hits); constants.ts files hold only UPPER_SNAKE frozen data; src/core/helpers.ts and src/server/validators.ts import only types and constants; src/browser/helpers.ts and src/browser/constants.ts import `@src/core`, which is the only path the alias map offers a cross-face leaf, so no deep class import exists; every factories.ts export is `create*`; there is no parsers.ts, templates.ts, contracts.ts, routes.ts, or store. Broken on nesting: Logger.ts + LoggerManager.ts sit flat (findings console-obj-8) and ANSIRenderer.ts, the default implementation beside the `RendererInterface` seam its own TSDoc declares swappable, sits flat (console-obj-9)."
+   },
+   {
+    "claim": "O2 Functions, wrappers, and class order — no nested function declaration or assignment beyond the two permitted forms; no one-line delegate, pass-through factory, rename-only helper, compatibility alias, or wrapper around an identical declared primitive; no public method forwarding 1:1 to a helper; class order and readonly child-manager getters",
+    "verdict": "BROKEN",
+    "read": "All eight src class files plus the three factories.ts files, read line by line for in-body function syntax, and configs/policy.ts:76-288 (the `policy/no-nested-functions` instrument) together with .oxlintrc.json:83-91, which enables that rule for `src/**` and `app/**` only. src is clean: every in-body function is an anonymous callback passed directly as an argument (`setInterval(() => this.tick(), …)` Spinner.ts:96, `result.then(cb, cb)` factories.ts:200-209, `.map/.find/.reduce/.forEach` callbacks in helpers.ts) or a method on a returned object literal (createConsoleSink, createBrowserSink, createServerSink). Broken in tests, which .claude/rules/architecture.md's own frontmatter reaches but the vendored lint override does not: tests/setupServer.ts:75 and tests/setupBrowser.ts:39 assign arrow functions inside a function body (console-obj-6, console-obj-7). Also broken on the wrapper test: src/server/factories.ts:117-119 is a pass-through factory over a barrelled class (console-obj-5). Class order otherwise holds — `#` fields, constructor, getters, methods, `#` methods in every class; no public method forwards 1:1 to a helper (Reporter.table/tree/box compose #resolveStyle with the sink write)."
+   },
+   {
+    "claim": "O3 Barrels and exports — every intentional reusable top-level export reaches its environment barrel; barrels hold only `export * from` rows; no re-export of another package's symbol; an unconstructible class is interned and named in the parity INTERNAL list; no default export outside a framework-required file",
+    "verdict": "CONFIRMED",
+    "read": "src/core/index.ts, src/browser/index.ts, src/server/index.ts (all rows are `export * from './x.js'`, no named/default/namespace/type-only row); tests/guides.test.ts:43-50, whose `INTERNAL` list holds exactly `class Styler`, matching the one core class the barrel omits — and Styler is correctly interned because the public value is a projection (`new Styler(...).surface`, factories.ts:49) rather than the instance; the barrel covers every other file of each environment. src/core/types.ts imports `EmitterErrorHandler`/`EmitterHooks`/`EmitterInterface` as types and uses them in signatures without re-exporting them, and src/server re-exports nothing of `@src/core`. The only default exports in the tree are Vite config files, which the framework requires and .oxlintrc.json:70-82 exempts."
+   },
+   {
+    "claim": "O4 Non-negotiable syntax — no `any`, `!`, `as` other than `as const` on a literal, no `@ts-*`, no lint suppression, no accessibility keyword, no parameter property, `import type` before value imports, `.js` extensions, single quotes, no semicolons",
+    "verdict": "CONFIRMED",
+    "read": "Every src file in full, plus a tree-wide grep for `as const` over src (no hits, so the one form lint cannot judge is absent). Each file opens with its `import type` block before its value imports (Capture.ts:1-15, Logger.ts:1-16, ProcessCapture.ts:1-17, browser/helpers.ts:1-10, server/factories.ts:1-11 and the rest), every local specifier carries `.js`, quotes are single, no statement carries a semicolon, and every class field is `#`-private or a contract-required public `readonly` (ConsoleError.code/context, errors.ts:16-17) with no `public`/`protected`/`private` keyword and no parameter property. The vendored .oxlintrc.json:6-22 denies the remainder and lint:check is green per the brief's standing conditions."
+   },
+   {
+    "claim": "O5 Types, immutability, errors — reusable and public types in the nearest types.ts; readonly interface properties; readonly public collections; absence as `T | undefined`; no caller-owned mutation and no mutable internal leak; public error class with `code`, optional `context`, and an `is*` guard; declared contract's Result/attempt where applicable",
+    "verdict": "CONFIRMED",
+    "read": "src/core/types.ts (1220 lines), src/server/types.ts, src/browser/types.ts — every property of every interface is `readonly`, every collection is `readonly T[]` / `Readonly<Record<…>>` / `ReadonlyArray<…>`, and absence is `T | undefined` throughout with no `'none'`/`'unset'`/`-1` sentinel. Immutability verified at each seam: Logger.#record freezes a copy of caller `data` (Logger.ts:144), Logger.entries()/Retention.records()/Capture.messages() return fresh arrays (Logger.ts:108, Retention.ts:52-53), createTheme deep-freezes every leaf (factories.ts:80-96), Styler.#merge and #foreground/#attribute rebuild frozen styles rather than mutating (Styler.ts:122-181), createServerSink returns a frozen object (server/factories.ts:66). errors.ts:15-48 gives ConsoleError a machine-readable `code`, an optional `context`, and the `isConsoleError` guard. The declared `@orkestrel/contract` is reached for `isArray` (LoggerManager.ts:7); I read its installed declaration (node_modules/@orkestrel/contract/dist/src/core/index.d.ts) and found no Result-bearing surface the package fails to use — its only fallible boundaries are the two best-effort sink tees, which discard rather than report the failure by documented design."
+   },
+   {
+    "claim": "O6 Declared ecosystem reuse — no local guard, parser, combinator, outcome, boundary, emitter helper, recorder, delay, scratch, or other primitive duplicating a declared @orkestrel/* export with matching semantics",
+    "verdict": "BROKEN",
+    "read": "The installed declarations of all four declared packages: @orkestrel/contract (attempt, cloneJSON*, the is*/parse* families), @orkestrel/emitter (createEmitter, Emitter, extractKeys), @orkestrel/test core (createRecorder, createRecorders, waitForDelay, waitForCondition, retryUntil, requireValue, resolveRoot, collect*) and @orkestrel/test/server (createScratch, readInventory, supports*). Console reuses correctly nearly everywhere: `isArray` from contract, `Emitter` by composition in all four stateful entities, `createRecorder`/`createRecorders`/`waitForDelay`/`requireValue`/`resolveRoot`/`readInventory` in the test tree. Its local guards (isStreamTarget, isBufferEncoding) and helpers (decodeChunk, stringifyValue, freezeStyle) carry real domain invariants with no contract equivalent. The one duplicate is tests/src/core/Spinner.test.ts:42-45, which re-implements `waitForCondition` (console-obj-4)."
+   },
+   {
+    "claim": "O7 Tests — mirrored tests where behaviour exists; no mock, fake, module replacement, spy, or fake clock; no unreasoned skip/todo/retry/inflated timeout; setup files own helpers and register nothing; helpers from @orkestrel/test; guides.test.ts transcribes and executes the flagship fences; fixture servers bind 127.0.0.1 on port 0; intervals use performance.now()",
+    "verdict": "BROKEN",
+    "read": "The whole tests tree listing, tests/guides.test.ts in full, tests/setup.ts, tests/setupServer.ts, tests/setupBrowser.ts, tests/setup.test.ts, tests/setupBrowser.test.ts, tests/src/core/Spinner.test.ts:1-75, tests/src/browser/helpers.test.ts:232-256, tests/distribution.test.ts:42/699-712/760-820, plus tree-wide greps for `.skip(`/`.todo(`/`.only(`/`skipIf`/`vi.`/`jest.`/`Date.now()`/`performance.now()`/`listen(`/`while (`. Confirmed: every src module with behaviour has its mirror (constants/errors/types/index correctly have none); no `vi.`/`jest.` call exists in the package's own tests; the console and process-stream swaps are real reference swaps with identity-restore proofs, not spies; the only skips are distribution.test.ts's registry and browser gates, which throw rather than skip under `--mode release` (:42, :699-712, :909); setup files export helpers and contain no `describe`/`it`/`expect`; the fixture server binds `listen(0, '127.0.0.1')` (:582). Broken on three counts: guides.test.ts executes no flagship fence (console-obj-2), its fence-import check silently skips every published-subpath fence (console-obj-1), and tests/src/browser/helpers.test.ts:243-245 measures an elapsed interval with Date.now() (console-obj-3)."
+   },
+   {
+    "claim": "O8 Workspace and portability — scripts match the script-intent table; every declared Vitest project is reachable from a gate and resolves to a real file; distribution and service sit where the publishing rule places them; exports map, files, engines, and bin consistent with built outputs; text splits on /\\r\\n|\\n/; paths through node:path; no /tmp literal; no .sh in a script; children through @orkestrel/process where declared",
+    "verdict": "CONFIRMED",
+    "read": "package.json in full against /home/user/fleet/template/package.json:41-67 (the scaffold-canon script set) and against .claude/rules/workspace.md § Script intent and § Test project matrix; vite.config.ts in full; configs/src/vite.core.config.ts for the emit cross-check. Every declared project (src:core, src:browser, src:server, policy, config, setup, guides, distribution, probe) has a script; `test` runs src plus policy, config, setup, and guides; `distribution` runs only from `prepublishOnly` as the publishing rule requires; `probe` is composed in the root config rather than declared as a path string and no gate runs it; each project's include resolves to real files present in the tree. The exports map matches the builds — core and server emit es+cjs with the `.d.cts` copy step, browser emits es only and its exports entry declares only `import`; `files` ships `dist/src`; `engines: node >=22.12.0` matches the server build target `node22`. Portability: the one caller-text split is `options.content.split(/\\r\\n|\\n/)` (helpers.ts:415), a tree-wide grep finds no other `split(`, no `os.EOL`, no `process.platform` branch, and no `/tmp` literal in src; styling is gated on FORCE_COLOR/NO_COLOR/isTTY (server/helpers.ts:49-57), never on platform; no script names a `.sh` file; the package declares no @orkestrel/process and spawns no child from src."
+   },
+   {
+    "claim": "C Carry rows — console-c2 (objective): the guides test maps no `@orkestrel/console/server` specifier, so server fences' imports are unchecked",
+    "verdict": "BROKEN",
+    "read": "tests/guides.test.ts:31-41 and :154-164, the fence-import list of guides/console.md (lines 12-678), and the installed `SourceManagerInterface.source` declaration at node_modules/@orkestrel/guide/dist/src/core/index.d.ts:1255-1266. Ruled DRIFT and carried as finding console-obj-1 with its repair. Carry rows console-c1 (createCaptureResult's name and placement) and console-c3 (`succeed` beside `complete`, DEFAULT_STREAM_LIMIT untested) are named for the subjective lane and I return no verdict on them; I did read src/core/factories.ts:137-220 and src/core/types.ts:1064-1084 while auditing my own claims and found nothing in either row that falls under O1–O8."
+   }
+  ],
+  "findings": [
+   {
+    "id": "console-obj-1",
+    "claim": "O7 (and carry row console-c2)",
+    "file": "/home/user/fleet/console/tests/guides.test.ts:36-41 (guard at :158-159)",
+    "rule": "\".claude/rules/tests.md\" § Discovery and adequacy audit: \"confirm each assertion would fail for the defect it claims to catch, and that it fails rather than passes when its population is empty\"; and § Test contract: \"Assert the membership a discovered or globbed set must have, not a total that a partly empty population satisfies.\"",
+    "wrong": "`MODULES` maps `@orkestrel/console`, `@src/core`, `@src/browser`, and `@src/server`, but every fence in guides/console.md imports from `@orkestrel/console`, `@orkestrel/console/browser`, or `@orkestrel/console/server` (guides/console.md:589, 601, 627-628, 670, 678) and no fence imports an `@src/*` alias, so `sources.source('@orkestrel/console/browser')` and `sources.source('@orkestrel/console/server')` return `undefined` (node_modules/@orkestrel/guide/dist/src/core/index.d.ts:1255-1266) and the `continue` at tests/guides.test.ts:159 drops every browser and server fence unchecked, while the two `@src/*` rows now match nothing at all.",
+    "repair": "In tests/guides.test.ts replace the `MODULES` value with `{ '@orkestrel/console': 'src/core', '@orkestrel/console/browser': 'src/browser', '@orkestrel/console/server': 'src/server' }`, the exact shape /home/user/fleet/mcp/tests/guides.test.ts:55-59 uses, and rewrite the doc comment at :31-35, which states that console.md fences import `createProcessCapture` from `@src/server` — no fence does. All names those fences import (`createBrowserSink`, `createProcessCapture`, `createServerSink`, `inferColumns`, `isBufferEncoding`, `isStreamTarget`) are real barrel exports, so the added rows do not redden the gate.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "console-obj-2",
+    "claim": "O7",
+    "file": "/home/user/fleet/console/tests/guides.test.ts:1-183",
+    "rule": "\".claude/rules/tests.md\" § Cross-cutting proofs: \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof, so a fence documenting a value the code contradicts passes every parity assertion. Change a fence, change the transcription beside it.\" and \".claude/rules/documentation.md\" § Parity: \"That proof has a home: `tests/guides.test.ts` executes the flagship fences, per `.claude/rules/tests.md`.\"",
+    "wrong": "tests/guides.test.ts checks only fence languages, symbol bijection, method-table bijection, example presence, fence-import name resolution, and link resolution; it executes no fence, so every value guides/console.md claims in a comment is unproven — `reporter.timing('upload', 1234) // upload … 1.23s` (:470), `new Progress({ total: 10, width: 10, fill: '=', empty: '.' }).update(4) // ====...... 40% (4/10)` (:506), `manager.remove('http')` and the capture, theme, and logger fences (:420-524) among them.",
+    "repair": "Add a `describe('flagship fences')` block to tests/guides.test.ts that transcribes each runnable fence of guides/console.md and asserts the value each of its comments claims, driving every entity's output through `createRecordingSink` from tests/setup.ts instead of the real console so the suite stays output-clean. Follow the block shape at /home/user/fleet/codec/tests/guides.test.ts:241 and /home/user/fleet/contract/tests/guides.test.ts:288-305, and keep the transcription beside the fence list so a fence edit forces a transcription edit.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "console-obj-3",
+    "claim": "O7",
+    "file": "/home/user/fleet/console/tests/src/browser/helpers.test.ts:243-245",
+    "rule": "\".claude/rules/tests.md\" § Test contract: \"Measure an elapsed interval with `performance.now()`, never `Date.now()`. `Date.now()` returns whole milliseconds, so an interval built from two of its readings truncates at both ends and can under-report by a millisecond — enough to fail a boundary assertion against a timer that behaved correctly.\"",
+    "wrong": "The no-quadratic-blowup proof builds its elapsed interval from two `Date.now()` readings (`const started = Date.now()` … `const elapsed = Date.now() - started`) and asserts on the difference at :248.",
+    "repair": "Replace both readings with `performance.now()` (`const started = performance.now()` and `const elapsed = performance.now() - started`); the assertion at :248 is unchanged.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "console-obj-4",
+    "claim": "O6",
+    "file": "/home/user/fleet/console/tests/src/core/Spinner.test.ts:42-45",
+    "rule": "\".claude/rules/tests.md\" § Shared test infrastructure: \"Write a helper of your own only where the package exports none for the job.\" and § Delay: \"Wait until a named condition holds instead, polling with `waitForDelay` inside a budget measured by `performance.now()`, and fail with the condition's own description when the budget expires.\"",
+    "wrong": "`waitForFrames` hand-rolls the budgeted polling wait that the declared `@orkestrel/test` already exports as `waitForCondition(description, condition, options)` (node_modules/@orkestrel/test/dist/src/core/index.d.ts:506, with `WaitOptions.budget`/`interval` at :538-545), and the local loop returns silently when `FRAME_DEADLINE` expires instead of failing with the condition's description, so a never-firing timer surfaces as whichever assertion happens to run next.",
+    "repair": "Delete `waitForFrames` (tests/src/core/Spinner.test.ts:39-45), add `waitForCondition` to the `@orkestrel/test` import at line 5, and at each former call site write `await waitForCondition(`the spinner wrote ${count} frames`, () => sink.calls.length >= count, { budget: FRAME_DEADLINE, interval: PERIOD })`. Keep the `waitForDelay(SETTLE)` leak guards as they are — a wait for absence has no condition to name.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "console-obj-5",
+    "claim": "O2",
+    "file": "/home/user/fleet/console/src/server/factories.ts:117-119",
+    "rule": "\".claude/rules/architecture.md\" § Wrapper test: \"A wrapper survives only when it adds a real boundary, invariant, composition, translation, lifecycle, or materially narrower contract. Delete one-line delegates, pass-through factories, rename-only helpers/getters, compatibility aliases, and wrappers around semantically identical platform or declared-dependency primitives.\"",
+    "wrong": "`createProcessCapture(options)` is `return new ProcessCapture(options)` over a class the server barrel already exports (src/server/index.ts:5), and its `ProcessCaptureInterface` return type is not a materially narrower contract because `ProcessCapture` declares no public member beyond that interface — so the package ships two doors to one constructor while its core peer `Capture` ships only the class.",
+    "repair": "Delete `createProcessCapture` and its import of `ProcessCapture` from src/server/factories.ts, and update every consumer in the same change: guides/console.md:255-259 (the Surface rows), :601 and :614 (the fence), README.md:70-72, and the test call sites in tests/src/server/ProcessCapture.test.ts and tests/src/server/factories.test.ts:429-431 — each becomes `new ProcessCapture(options)`, and the `createProcessCapture — factory` describe block in factories.ts's mirror is dropped rather than moved, since ProcessCapture.test.ts already covers construction. Before applying, note that @orkestrel/emitter ships the identical pattern (createEmitter at /home/user/fleet/emitter/src/core/factories.ts:29-33 beside a barrelled `Emitter`), so this row is a fleet-wide ruling rather than a console-only defect — see referral.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": [
+     "No fleet consumer changes: @orkestrel/terminal is the only package declaring @orkestrel/console (terminal/package.json:86) and imports only core symbols (Style, StylerInterface, freezeStyle, STATUS_ICONS, createStyler, strip, stripControls) — verified by grep over /home/user/fleet/terminal/src. External consumers of @orkestrel/console/server break."
+    ]
+   },
+   {
+    "id": "console-obj-6",
+    "claim": "O2",
+    "file": "/home/user/fleet/console/tests/setupServer.ts:75-78",
+    "rule": "\".claude/rules/architecture.md\" § Functions and orchestration: \"Never declare or assign a function inside another function or method. This bans local `function`, `function*`, and `const fn = () => ...`, regardless of caller count. The only in-body function expressions allowed are an anonymous callback passed directly as an argument and an anonymous function returned directly as the result.\" The rule's own frontmatter covers `tests/**/*.ts`.",
+    "wrong": "`createWriteProbe` assigns `const write = (chunk: string | Uint8Array): boolean => { … }` inside its body, which is neither a directly-passed callback nor a directly-returned anonymous function; the vendored .oxlintrc.json:83-91 scopes `policy/no-nested-functions` to `src/**` and `app/**`, so no instrument reports it.",
+    "repair": "Return the probe as an object literal whose `write` is a method, the form the package's own factories already use (src/core/factories.ts:130-134, src/server/factories.ts:66-86): drop the `const write` binding and write `return { write(chunk: string | Uint8Array): boolean { texts.push(typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8')); return backpressure }, texts }`. The declared return type is unchanged, so no call site moves.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-obj-7",
+    "claim": "O2",
+    "file": "/home/user/fleet/console/tests/setupBrowser.ts:39-43",
+    "rule": "\".claude/rules/architecture.md\" § Functions and orchestration: \"Never declare or assign a function inside another function or method. This bans local `function`, `function*`, and `const fn = () => ...`, regardless of caller count.\"",
+    "wrong": "`captureConsole` assigns `const restore = (): void => { … }` inside its body before returning it in the result object.",
+    "repair": "Drop the `const restore` binding and declare it as a method on the returned literal: `return { log, warn, error, restore(): void { console.log = original.log; console.warn = original.warn; console.error = original.error } }`. `ConsoleCaptureInterface.restore(): void` (tests/setupBrowser.ts:16) already declares it as a method, and tests/setupBrowser.test.ts needs no change.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-obj-8",
+    "claim": "O1",
+    "file": "/home/user/fleet/console/src/core/LoggerManager.ts:43 (with /home/user/fleet/console/src/core/Logger.ts:52)",
+    "rule": "\".claude/rules/architecture.md\" § Entity subfolders: \"When one entity grows a family (entity + manager or sibling implementations), nest only its class files in a lowercase plural folder. Keep its interfaces in module-root `types.ts`, factories in module-root `factories.ts`, and exports in the module barrel.\"",
+    "wrong": "`Logger` and its `LoggerManager` — the textbook entity-plus-manager family, the manager being a registry of `LoggerInterface` — both sit flat at src/core/ instead of in a `loggers/` folder.",
+    "repair": "Create src/core/loggers/ and move Logger.ts and LoggerManager.ts into it unchanged apart from their relative imports (`./types.js` becomes `../types.js`, and likewise for constants.js, factories.js, helpers.js). Update src/core/index.ts rows to `export * from './loggers/Logger.js'` and `export * from './loggers/LoggerManager.js'`, and move the mirrored tests to tests/src/core/loggers/Logger.test.ts and tests/src/core/loggers/LoggerManager.test.ts (the `src:core` project glob `tests/src/core/**/*.test.ts` already collects them). Interfaces stay in src/core/types.ts and no published symbol moves. Fleet context for the ruling: /home/user/fleet/tool/src/core/tools/, /home/user/fleet/program/src/core/programs/, and /home/user/fleet/workspace/src/core/workspaces/ nest exactly this pair, while /home/user/fleet/template and /home/user/fleet/workflow keep it flat as console does.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-obj-9",
+    "claim": "O1",
+    "file": "/home/user/fleet/console/src/core/ANSIRenderer.ts:25",
+    "rule": "\".claude/rules/architecture.md\" § Extension categories: \"A designed extension point—drivers, stores, transports—gets its category folder even with one concrete class. This applies both to consumer implementations of another domain's contract and default implementations beside the defining contract. The contract remains in module-root `types.ts`; only concrete classes nest.\"",
+    "wrong": "`ANSIRenderer` is the default implementation beside a contract the package's own types.ts:92-97 declares a designed growth seam (\"Declares a swappable style renderer — the seam that turns style data into output for one target … a browser `%c` / CSS renderer implements the same contract over the same Style model, so it drops in\"), yet it sits flat at src/core/ with no category folder.",
+    "repair": "Create src/core/renderers/ and move ANSIRenderer.ts into it, rewriting its imports to `../types.js` and `../constants.js`; change the barrel row in src/core/index.ts to `export * from './renderers/ANSIRenderer.js'`, update the `new ANSIRenderer()` import in src/core/factories.ts:11 to `./renderers/ANSIRenderer.js`, and move the mirrored test to tests/src/core/renderers/ANSIRenderer.test.ts. `RendererInterface` stays in src/core/types.ts and no published symbol moves. The fleet nests single-class categories the same way — /home/user/fleet/lsp/src/server/transports/StdioClientTransport.ts and /home/user/fleet/database/src/browser/drivers/IndexedDBDriver.ts are each one class in a category folder.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   }
+  ],
+  "referrals": [
+   "To the subjective lane (S1, Managers) — `LoggerManager.remove(names)` at src/core/LoggerManager.ts:120-126 sets `removed = true` when ANY name was deleted and returns that, while `.claude/rules/patterns.md` § Managers requires \"An id list applies to those items and returns true only when all succeed.\" The declared contract repeats the loose semantics (src/core/types.ts:492 \"`remove(names)` drops a batch (`true` when any was removed)\") and the guide fence at guides/console.md:458 documents it, so the repair moves a published behaviour, its TSDoc, and its guide row together. No verdict from me.",
+   "To the subjective lane (S2, fixed derivation forms) — `parseParameters` at src/browser/helpers.ts:159-162 carries the `parse*` form but returns `readonly number[]` and never `undefined` (an unparsable field yields `NaN`), against `.claude/rules/names.md` § Fixed derivation/construction forms: \"`parse*`: coercion producing `T | undefined`\". Its behaviour matches the `scan*` prefix in § Standalone helpers (\"walks a structure and returns its findings\"), and .claude/rules/architecture.md § Kind purity names `scan*` in `helpers.ts` as the correct pairing. It is a published browser export, so a rename is breaking. No verdict from me.",
+   "To the subjective lane (S6, AGENTS §N citations) — the package's own files cite section numbers `AGENTS.md` does not carry: guides/console.md:131, :279, :395, :396; guides/README.md:4; tests/guides.test.ts:3; tests/setup.ts:12, :24; tests/setupServer.ts:4, :30, :63; tests/setupBrowser.ts:7, :21; tests/src/core/Reporter.test.ts:340; tests/src/browser/helpers.test.ts:35. The hits in guides/guide.md and guides/emitter.md are vendored dependency guides and are off-limits. No verdict from me.",
+   "To the subjective lane (S6, guide voice) — guides/console.md:217 (and the taglines at :5 and :243) describe the published surface as \"surfaced through `@src/browser`\", an in-repository alias, against `.claude/rules/documentation.md` § Guide examples: \"Never use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.\" The fences themselves are correct — every one imports a published specifier. No verdict from me.",
+   "To the subjective lane (S5, TSDoc) — `createCaptureResult`'s two public overload signatures (src/core/factories.ts:142-146) carry only the `//` block at :137-141, and the complete TSDoc sits on the implementation signature at :147-190, which no consumer's IDE or emitted declaration shows. `.claude/rules/typescript.md` § Comments and API documentation requires complete TSDoc on every public export and reserves `//` for overload-specific notes. No verdict from me.",
+   "To the subjective lane (S3/S4) — `ProgressReport` is the one record the package hands listeners unfrozen (`const report: ProgressReport = { current, total }` at src/core/Progress.ts:131), while `LogRecord`, `CapturedMessage`, and `CapturedChunk` are each frozen at construction. Nothing internal leaks, so it is not an O5 defect; whether the package's freeze convention should hold uniformly across its event payloads is a design call. No verdict from me.",
+   "To the Orchestrator — instrument scope. `.claude/rules/architecture.md` § Functions and orchestration binds `tests/**/*.ts` through its frontmatter, but the vendored `.oxlintrc.json:83-91` (off-limits, scaffold-owned) enables `policy/no-nested-functions` for `src/**` and `app/**` only, so the rule is unenforced across every fleet test tree. Beyond findings console-obj-6 and console-obj-7 the same class appears at tests/src/core/helpers.test.ts:911 and :1199-1201, tests/src/server/validators.test.ts:38, and tests/src/server/factories.test.ts:292, all inert one-use function values inside an `it` body whose only repair would be hoisting a datum into a setup file. Settle the rule's test-tree scope (or the instrument's) fleet-wide before dispatching those.",
+   "To the Orchestrator — fleet-wide patterns behind two of my findings. console-obj-5 (pass-through factory) reproduces @orkestrel/emitter's `createEmitter` (/home/user/fleet/emitter/src/core/factories.ts:29-33), and console-obj-8 (flat entity-plus-manager) matches /home/user/fleet/template and /home/user/fleet/workflow while /home/user/fleet/tool, /home/user/fleet/program, and /home/user/fleet/workspace nest. Both are rule violations as written; editing console alone would leave the fleet less consistent than it is now. Route each as a fleet ruling rather than a console-only implementation row."
+  ],
+  "coverage": "Read in full: /home/user/scaffold/AGENTS.md and every file under /home/user/scaffold/.claude/rules/ (names, typescript, architecture, patterns, tests, workspace, application-adjacent portability, documentation, writing, quality); both briefs. Subject read in full: every file of src/core, src/browser, and src/server (27 modules); package.json; vite.config.ts; configs/src/vite.core.config.ts (read only to cross-check the exports map against the emit, since configs/ is off-limits as a subject); .oxlintrc.json and configs/policy.ts:76-296 (read as instruments, not judged as subjects); tests/guides.test.ts, tests/setup.ts, tests/setupServer.ts, tests/setupBrowser.ts, tests/setup.test.ts, tests/setupBrowser.test.ts; tests/distribution.test.ts at :42, :560-600, :690-720, :760-830, :870-915; tests/src/core/Spinner.test.ts:1-75; tests/src/core/helpers.test.ts:895-925 and :1185-1205; tests/src/browser/helpers.test.ts:232-256; guides/console.md at :405-524 plus its full import and AGENTS-citation inventories. Installed declarations read: @orkestrel/contract, @orkestrel/emitter, @orkestrel/test core and server, @orkestrel/guide (SourceManager). Sibling evidence read: emitter/src/core/factories.ts, template/package.json, and the fleet-wide MODULES, Manager-path, and category-folder inventories. Not read in full, with why: tests/policy.test.ts, tests/setupPolicy.ts, tests/config.test.ts (off-limits, vendored); guides/guide.md, guides/emitter.md, guides/contract.md and the other vendored dependency guides (off-limits); configs/** apart from the one build config named earlier (off-limits); the bodies of the ten mirrored core/browser/server test files, which I attacked by targeted pattern instead — skips, todos, framework mocking, fake clocks, Date.now intervals, hand-rolled waits, nested function syntax, listen addresses — so my O7 ruling covers those populations and not every assertion's adequacy; README.md, read by grep for the createProcessCapture consumer set rather than in full; guides/console.md outside the ranges named, so my reading of its prose claims is partial and the guide-voice questions sit with the subjective lane in any case. I executed nothing: this lane is read-only, so every ruling rests on source, declarations, and the brief's standing gate evidence rather than on a run.",
+  "terminal": "VERDICT: FAIL — 5 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "subjective": {
+  "package": "console",
+  "lane": "subjective",
+  "claims": [
+   {
+    "claim": "S1 Entity API shape — one-word public members; no behaviour-selecting discriminator; managers expose singular/plural accessors and the batch overload family with all-succeed semantics.",
+    "verdict": "BROKEN",
+    "read": "Every public member of LoggerInterface, LoggerManagerInterface, ReporterInterface, CaptureInterface, SpinnerInterface, ProgressInterface, RetentionInterface, StylerInterface, SinkInterface, ServerSinkInterface and ProcessCaptureInterface in /home/user/fleet/console/src/core/types.ts and /home/user/fleet/console/src/server/types.ts is one word — that half holds. The manager accessors are the required pair (logger(name) / loggers(), types.ts:500-501) and remove carries the one-verb overload family (types.ts:510-512). The batch semantics do not hold: /home/user/fleet/console/src/core/LoggerManager.ts:120-126 returns true when ANY name was removed, and types.ts:491 and LoggerManager.ts:24 document that as the contract. Reporter.status(level, message) and Capture.messages(level) were attacked as discriminator parameters and rule as data under names.md § Split behavioral variants (a uniformly applied value enum and a key selector); the operation does not change per value."
+   },
+   {
+    "claim": "S2 Vocabulary and forms — helper prefixes, identifier tables, fixed derivation forms, lifecycle verbs, tallies, acronyms, rejected names, one term per concept.",
+    "verdict": "BROKEN",
+    "read": "Read every exported identifier through the `^export (function|const|class|interface|type)` sweep over /home/user/fleet/console/src, then each name against names.md. Acronym case holds (ANSIRenderer, ANSI_PATTERN, ansiToConsole, CSI/ESC/BEL, jsonless camelCase). Lifecycle verbs hold: start/stop/clear/destroy carry their fixed meanings and no cancel/reset/run synonym appears. Constant forms hold. Four alternations break: Spinner.succeed (Spinner.ts:114) beside Progress.complete (Progress.ts:102) for one concept; ProgressBarOptions (types.ts:972) beside the BAR_FILL / BAR_EMPTY / DEFAULT_BAR_WIDTH constants and the SeparatorOptions/BoxOptions/TableOptions/TreeOptions sibling family; ServerSinkOptions.out/err (server/types.ts:53-54) beside StreamLevel 'stdout' | 'stderr' (server/types.ts:88); and the visible-column count named width in five options types, target in align (helpers.ts:257) and count in repeatTo (helpers.ts:326). parseParameters (browser/helpers.ts:159) carries the parse* form and returns readonly number[] rather than T | undefined."
+   },
+   {
+    "claim": "S3 Options and emitters — single-word option keys grouped by entity noun, `on` reserved for hooks, the seven-step composed Emitter, focused event maps of present-tense verbs or nouns, no `status` event, errors typed `unknown`.",
+    "verdict": "CONFIRMED",
+    "read": "Attacked every options type and every emitter owner. `on` appears only as EmitterHooks (LoggerOptions, CaptureOptions, SpinnerOptions, ProgressOptions, ProcessCaptureOptions) and never as a domain key. Every top-level option key is one word. The seven-step pattern holds on Spinner.ts:52/66-69/81-83/145/161/132 and Progress.ts:47/61-64/75-77/109/132/122: the emitter is stored in a `#` field, exposed through a readonly getter typed as EmitterInterface, constructed with both hooks and handler, emitted directly with no guarded #notify, and destroyed last. No class extends Emitter and no Omit reshapes it. The event maps are LoggerEventMap {entry}, CaptureEventMap {capture,start,stop}, SpinnerEventMap {frame,start,stop}, ProgressEventMap {update,complete}, ProcessCaptureEventMap {capture,start,stop} — all present-tense verbs or nouns, all focused, no generic `status` event carrying a transition value, and no observerError member. No domain event carries an error payload, so the `unknown` requirement is inert here."
+   },
+   {
+    "claim": "S4 Design laws — derived state, real domain states, no compatibility shim, mechanism not product policy, no polling, minimal public API with every intentional capability exposed.",
+    "verdict": "BROKEN",
+    "read": "No compatibility shim, deprecation alias or backward-compatibility branch exists anywhere in src. No polling loop: Spinner parks on setInterval and always clears it (Spinner.ts:95-96, 122-128), Progress carries no timer. The package supplies mechanism only — sinks, renderers, a style data model — and stops before application decisions. Two laws break. StyleAccumulator (browser/types.ts:70-74) publishes '' as the unset sentinel for foreground and background, which AGENTS § Design laws names verbatim as a forbidden sentinel; browser/helpers.ts:61-65, 80-81 and 91-95 are the sites. createProcessCapture (server/factories.ts:117-119) is a one-line pass-through over `new ProcessCapture(options)`, and the campaign's own earlier breaking unit already removed the identical createLoggerManager wrapper (absent from LoggerManager.ts and from the guide, still present in terminal's stale mirror at /home/user/fleet/terminal/guides/console.md:67). Progress's #active/#completed pair was attacked as stored-twice state and rules clean: neither is derivable from the other."
+   },
+   {
+    "claim": "S5 TSDoc — complete blocks on every public export, third-person opening sentence that does not repeat the name, fixed boolean forms, defaults, throws, prerequisites and failure behaviour stated, options as one @param with fields under @remarks, comments explaining why, writing.md prose.",
+    "verdict": "BROKEN",
+    "read": "Every public export carries a block; the third-person opening landed everywhere I read (types.ts, helpers.ts, factories.ts, errors.ts, both environment trees) and no opening sentence repeats its symbol name. Options objects are documented as one @param with fields under @remarks throughout (factories.ts:23, 57; helpers.ts:543). Boolean returns use the fixed form (errors.ts:35). Defaults are stated as 'defaults to …' rather than 'Default: …', which reads as the same instruction and I do not raise. Three defects hold. The writing.md substitution table is violated across src TSDoc — `via`, `e.g.`, `just`, `simply`, `and/or`, `currently` and `should`, enumerated in the finding. types.ts:20-21 documents speculative future behaviour and dates itself with 'today'. createCaptureResult's block sits on the implementation signature (factories.ts:191) rather than on either overload (factories.ts:142, 146), so it reaches no consumer."
+   },
+   {
+    "claim": "S6 Guide and README parity — every public export documented, method tables matching call-signature members, fences importing the published specifier, prose the fences prove, README indexes, resolving links, no competing instruction copy, no AGENTS §N citation.",
+    "verdict": "BROKEN",
+    "read": "Read /home/user/fleet/console/guides/console.md end to end and /home/user/fleet/console/guides/README.md. The Surface tables cover the exports the barrels carry, the ## Methods tables match each interface's call-signature members with data members held back to Surface rows, every fence imports @orkestrel/console, @orkestrel/console/browser or @orkestrel/console/server, and every Tests-section link resolves against the real tests/ tree I globbed. No competing instruction copy sits in the guide. Four defects hold: AGENTS §N and bare §N citations across the guide, the README and the package's own test and setup files; every function Surface row written as an imperative rather than the noun phrase documentation.md requires; `above` / `below` and bare Contract ordinals used as cross-references, plus stated counts; and the README's Dependency reference section omitting guides/test.md and guides/probe.md, which sit in the same directory."
+   },
+   {
+    "claim": "C carry rows — console-c1 (createCaptureResult keeps the create* name and factories.ts placement) and console-c3 (succeed on Spinner beside complete on Progress).",
+    "verdict": "BROKEN",
+    "read": "console-c1 rules INVALID. createCaptureResult constructs a Capture (factories.ts:195) and returns a CaptureResult value it builds, so architecture.md § Kind purity places it in factories.ts, where the same section requires the create* form; the row's successor candidate — a verb-first helper taking a CaptureInterface — would have to live in helpers.ts, which the same section forbids from importing an implementation class, and it would move the scoped self-restoring lifecycle (the only invariant the function adds) out to the caller. console-c3's first half rules DRIFT: Spinner.ts:114 and Progress.ts:102 name one concept two ways, and types.ts:1134-1135 states in the package's own words that complete means 'the work finished successfully'. Its second half (no test names DEFAULT_STREAM_LIMIT) is the objective lane's and is carried as a referral."
+   }
+  ],
+  "findings": [
+   {
+    "id": "console-subj-1",
+    "claim": "S1",
+    "file": "/home/user/fleet/console/src/core/LoggerManager.ts:120-126",
+    "rule": ".claude/rules/patterns.md § Managers → Batch operations: \"An id list applies to those items and returns true only when all succeed.\"",
+    "wrong": "The batch overload returns true when ANY name was removed — `let removed = false; for (const name of names) { if (this.#loggers.delete(name)) removed = true }` — and types.ts:491 plus LoggerManager.ts:24 document that any-succeeded rule as the contract, so a caller removing ['http', 'absent'] is told the batch succeeded.",
+    "repair": "In /home/user/fleet/console/src/core/LoggerManager.ts replace the array branch body with an all-succeed accumulation that still attempts every name: `let removed = true; for (const name of names) { if (!this.#loggers.delete(name)) removed = false } return removed`. Then change the sentence at LoggerManager.ts:24 from \"`remove(names)` drops a batch (`true` if any was removed)\" to \"`remove(names)` drops a batch (`true` only when every name was present)\", and make the same change at /home/user/fleet/console/src/core/types.ts:491. Update the batch case in /home/user/fleet/console/tests/src/core/LoggerManager.test.ts under `describe('removal (§9.2)')` to assert false for a list containing an unregistered name while both registered names are still removed.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": [
+     "@orkestrel/terminal — imports only Style, StylerInterface, freezeStyle, STATUS_ICONS, createStyler, strip and stripControls from @orkestrel/console, so no consumer edit follows"
+    ]
+   },
+   {
+    "id": "console-subj-2",
+    "claim": "S2 (carry row console-c3)",
+    "file": "/home/user/fleet/console/src/core/Progress.ts:102 and /home/user/fleet/console/src/core/Spinner.ts:114",
+    "rule": "AGENTS.md § Design laws: \"One concept, one term. Do not alternate synonyms.\" and .claude/rules/names.md § General vocabulary: \"Do not alternate `count`/`length`/`size`/`total` or `abort`/`cancel`.\"",
+    "wrong": "The animation family names one concept — terminate with a positive outcome, commit a final line — `succeed` on Spinner and `complete` on Progress, while it names the negative counterpart `fail` on both; the package's own TSDoc at types.ts:1134-1135 says \"completion means the work finished successfully\", which is what succeed means, and terminal's stale mirror at /home/user/fleet/terminal/guides/console.md:154 shows the campaign already unified the negative half from `failure` to `fail` and stopped there.",
+    "repair": "Unify onto the package's established positive term, which `STATUS_LEVELS`, `STATUS_ICONS.success` and `Reporter.status('success', …)` already fix as `success`/`succeed`. In /home/user/fleet/console/src/core/types.ts rename `ProgressInterface.complete` to `succeed` (types.ts:1214), `ProgressInterface.completed` to `succeeded` (types.ts:1206), and the `ProgressEventMap.complete` member to `succeed` (types.ts:1145); rewrite the three doc sentences at types.ts:1132-1135, 1196 and 1198-1199 to use the new words. In /home/user/fleet/console/src/core/Progress.ts rename the method (line 102), the `#completed` field and its getter (lines 58, 83-85), and the `this.#emitter.emit('complete')` call (line 109). Update guides/console.md rows 151, 153, 154, the `ProgressInterface` method table row at line 377, the Animations fence at line 577, and the Progress test bullet at line 696. Reject the opposite repair (renaming Spinner.succeed to complete): it would divorce the spinner's outcome line from the `statuses.success` role it renders at Spinner.ts:143-144.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": [
+     "@orkestrel/terminal — no source use of Progress; its vendored guides/console.md mirror is already stale against console's tip and needs refreshing after the release"
+    ]
+   },
+   {
+    "id": "console-subj-3",
+    "claim": "S2",
+    "file": "/home/user/fleet/console/src/core/types.ts:972",
+    "rule": ".claude/rules/names.md § Type-level identifiers: \"Options/config → `{Entity}Options`\" and AGENTS.md § Design laws: \"One concept, one term. Do not alternate synonyms.\"",
+    "wrong": "`ProgressBarOptions` names an entity `ProgressBar` that does not exist, breaks the sibling renderer family `SeparatorOptions` / `BoxOptions` / `TableOptions` / `TreeOptions` — each named for its renderer's noun, not for a prefixed entity — and shadows the real `Progress` entity's own `ProgressOptions` (types.ts:1169), while the constants for the same renderer already call the concept `BAR` (constants.ts:469 BAR_FILL, 476 BAR_EMPTY, 485 DEFAULT_BAR_WIDTH).",
+    "repair": "Rename the interface `ProgressBarOptions` to `BarOptions` in /home/user/fleet/console/src/core/types.ts:972 and update its import and parameter type in /home/user/fleet/console/src/core/helpers.ts (the `renderBar` signature at line 706 and its import block), the `{@link import('./types.js').ProgressBarOptions}` reference at types.ts:474, the two guide Surface rows at guides/console.md:99 and 145, and the helpers test bullet at guides/console.md:698. No name `BarOptions` exists in the package, so the rename collides with nothing.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": [
+     "@orkestrel/terminal — no source use of ProgressBarOptions"
+    ]
+   },
+   {
+    "id": "console-subj-4",
+    "claim": "S2",
+    "file": "/home/user/fleet/console/src/browser/helpers.ts:159",
+    "rule": ".claude/rules/names.md § Fixed derivation/construction forms: \"`parse*`: coercion producing `T | undefined`; cross-type conversion never belongs in a guard.\" and its lead line \"A form's contract binds a new name\".",
+    "wrong": "`parseParameters` carries the `parse*` form but is total — it returns `readonly number[]` on every input and never returns `undefined` (it yields `[RESET_CODE]` for an empty list and `Number(field)` otherwise) — so the name promises a coercion contract the function does not honour, and it is not among the retained names architecture.md § Kind purity exempts.",
+    "repair": "Rename `parseParameters` to `scanParameters` in /home/user/fleet/console/src/browser/helpers.ts:159, which matches names.md § Standalone helpers \"`scan*` walks a structure and returns its findings\" and describes what the function does to the `;`-separated SGR parameter string. Update its call site at browser/helpers.ts:89, its `{@link}` references at browser/helpers.ts:145 and 155-157, the Surface row at guides/console.md:228, and the browser helpers test bullet at guides/console.md:700; update the assertions naming it in /home/user/fleet/console/tests/src/browser/helpers.test.ts. Placement stays in helpers.ts — architecture.md § Kind purity states the name forms are one-directional and a pure lexical leaf belongs there.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": [
+     "@orkestrel/terminal — no source use of parseParameters"
+    ]
+   },
+   {
+    "id": "console-subj-5",
+    "claim": "S2",
+    "file": "/home/user/fleet/console/src/server/types.ts:53-54",
+    "rule": ".claude/rules/names.md § Rejected naming: \"Abbreviations: `cfg`, `doc`, `msg`; write `config`, `document`, `message`.\" and AGENTS.md § Design laws: \"One concept, one term. Do not alternate synonyms.\"",
+    "wrong": "`ServerSinkOptions` names the two process streams `out` and `err` — `err` is a truncation of the same class the rule rejects — while `StreamLevel` (server/types.ts:88), `STREAM_LEVELS` and `STREAM_LEVEL_MAP` name the same two streams `stdout` and `stderr`, so one package spells one concept two ways in adjacent types.",
+    "repair": "Rename `ServerSinkOptions.out` to `stdout` and `ServerSinkOptions.err` to `stderr` in /home/user/fleet/console/src/server/types.ts:53-54, which names.md § General vocabulary permits as a mirrored external field (`process.stdout` / `process.stderr`) and which is already the package's own word for these two streams. Update the resolution lines at /home/user/fleet/console/src/server/factories.ts:59-60 and the doc bullets at server/types.ts:42-44 and factories.ts:37-41; the local bindings inside `createServerSink` may keep their short names. Update the Surface row at guides/console.md:248 and the server factories test bullet at guides/console.md:704, and the option keys in /home/user/fleet/console/tests/src/server/factories.test.ts. Do not rename to `output`/`error`: `error` is the emitter listener-error handler in every other options type in this package (LoggerOptions, CaptureOptions, SpinnerOptions, ProgressOptions, ProcessCaptureOptions), so that resolution collides.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": [
+     "@orkestrel/terminal — no source use of createServerSink or ServerSinkOptions"
+    ]
+   },
+   {
+    "id": "console-subj-6",
+    "claim": "S2",
+    "file": "/home/user/fleet/console/src/core/helpers.ts:257 and /home/user/fleet/console/src/core/helpers.ts:326",
+    "rule": ".claude/rules/names.md § General vocabulary: \"Do not alternate `count`/`length`/`size`/`total` or `abort`/`cancel`.\" and § Tallies: \"A lone unambiguous tally is `count`.\"",
+    "wrong": "One concept — a target measured in visible columns — is named three ways: `width` in SeparatorOptions, BoxOptions, ProgressBarOptions, ReporterOptions and ServerSinkOptions; `target` in `align(text, target, alignment)`; and `count` in `repeatTo(unit, count)`, where the value is not a tally of anything the function holds but the column budget it tiles to.",
+    "repair": "In /home/user/fleet/console/src/core/helpers.ts rename the second parameter of `align` from `target` to `width` (line 257) and the second parameter of `repeatTo` from `count` to `width` (line 326), updating the `@param` lines in their doc blocks and any body references. Leave `Reporter.blank(count?)` alone — that `count` is a genuine tally of lines. Both are positional parameters, so no call site changes.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-subj-7",
+    "claim": "S4",
+    "file": "/home/user/fleet/console/src/browser/types.ts:70-74",
+    "rule": "AGENTS.md § Design laws: \"**Absence is `undefined`.** Never invent sentinels such as `'none'`, `'unset'`, `'unknown'`, `''`, or `-1`. Use `null` only when an external format distinguishes it from omission.\"",
+    "wrong": "The published `StyleAccumulator` interface declares `foreground: string` and `background: string` and its own doc at browser/types.ts:65-66 states the value is \"`''` (unset / post-reset)\" — the empty string is the absence sentinel the rule names verbatim, and browser/helpers.ts:61-65, 91-95 write it while lines 80-81 read it back with `!== ''`.",
+    "repair": "In /home/user/fleet/console/src/browser/types.ts make both channels optional — `readonly foreground?: string` and `readonly background?: string` — and rewrite the two bullets at lines 65-66 to say the channel is absent when unset. In /home/user/fleet/console/src/browser/helpers.ts build the reset accumulator at lines 61-65 and 91-95 as `Object.freeze({ attributes: Object.freeze([]) })` with no channel keys, and change the two reads at lines 80-81 to `if (active.foreground !== undefined) declarations.push(active.foreground)` and the matching background line. Update the Surface row at guides/console.md:224 and the accumulator assertions in /home/user/fleet/console/tests/src/browser/helpers.test.ts.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": [
+     "@orkestrel/terminal — no source use of StyleAccumulator"
+    ]
+   },
+   {
+    "id": "console-subj-8",
+    "claim": "S4",
+    "file": "/home/user/fleet/console/src/server/factories.ts:117-119",
+    "rule": "AGENTS.md § Design laws: \"**No superfluous wrappers.** A wrapper must add a boundary, invariant, composition, translation, lifecycle, or materially narrower contract. Otherwise use or rename the real symbol and update every consumer.\"",
+    "wrong": "`createProcessCapture(options)` is `return new ProcessCapture(options)` with the same parameter type, and `ProcessCapture` is itself a public barrel export (server/index.ts:5) that implements the returned interface, so the factory adds no boundary, invariant, composition, translation, lifecycle or narrower contract — while core constructs every one of its entities with `new` (Logger, LoggerManager, Reporter, Capture, Spinner, Progress, Retention, ANSIRenderer) and the campaign's earlier breaking unit already deleted the identical `createLoggerManager` wrapper, which still appears in terminal's stale mirror at /home/user/fleet/terminal/guides/console.md:67.",
+    "repair": "Delete `createProcessCapture` from /home/user/fleet/console/src/server/factories.ts:89-119 together with its `ProcessCaptureInterface` / `ProcessCaptureOptions` type imports if they become unused, and delete the `{@link import('./factories.js').createProcessCapture}` references in /home/user/fleet/console/src/server/types.ts:160 and 255 in favour of the `ProcessCapture` class. Remove the Surface row at guides/console.md:259, retitle the `ProcessCaptureOptions` row at guides/console.md:255 to \"`ProcessCapture` options\", and rewrite the server fence at guides/console.md:601 and 614 to `import { createServerSink } from '@orkestrel/console/server'` plus `import { ProcessCapture } from '@orkestrel/console/server'` and `const capture = new ProcessCapture({ levels: ['stderr'], mirror: true })`. Update the construction sites in /home/user/fleet/console/tests/src/server/ProcessCapture.test.ts. Keep the other three `create*` sink functions: each returns a plain object rather than a class instance, so none is a pass-through.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": [
+     "@orkestrel/terminal — no source use of createProcessCapture; only its stale vendored guide mirror names it"
+    ]
+   },
+   {
+    "id": "console-subj-9",
+    "claim": "S5",
+    "file": "/home/user/fleet/console/src/core/types.ts:20 (and the population named in the repair)",
+    "rule": ".claude/rules/writing.md § Substitutions: rows `should` → \"`must`, `can`, `might`, or the imperative\"; `simply`, `just` → \"Delete\"; `currently` → \"Delete, or give the date\"; `via` → \"`through`, `by using`\"; `e.g.` → \"`for example`\"; `and/or` → \"`and`, `or`, or `both`\". Ruled by sense, per \"Rule every hit by the sense its row bans, not by the match.\"",
+    "wrong": "The src TSDoc violates six rows of the substitution table across every environment: `should` in the requirement sense at core/types.ts:20 and server/helpers.ts:30 and in the conditional sense at core/helpers.ts:614; `via` at core/Progress.ts:17 and 26, core/types.ts:874, 1017, 1022, 1144 and 1183, core/constants.ts:227, 352, 407, 437, 460, 466, 474 and 481, core/helpers.ts:360, 474 and 689, server/types.ts:15, 121 and 173, server/helpers.ts:70, server/constants.ts:18, browser/factories.ts:8 and 17, browser/helpers.ts:14; `just` as a minimiser at core/types.ts:309, core/helpers.ts:357, core/Reporter.ts:27, server/types.ts:168 and 193, server/factories.ts:91, server/validators.ts:17; `simply` at core/LoggerManager.ts:26; `and/or` at core/Capture.ts:21, core/types.ts:895, server/factories.ts:95, server/ProcessCapture.ts:23; `currently` at core/types.ts:915, 1055 and 1066 and server/types.ts:215; `e.g.` at core/types.ts:321, 326, 390, 576, 841 and 864, core/constants.ts:147, core/helpers.ts:182, 614, 616, 638 and 694, browser/helpers.ts:128, server/types.ts:164 and 168.",
+    "repair": "Sweep /home/user/fleet/console/src/**/*.ts case-insensitively for `\\b(should|via|just|simply|currently)\\b`, `e\\.g\\.` and `and/or`, and apply the substitution table row by row at each cited site: `via` → `through`; `e.g.` → `for example`; `just` → `only` or delete; `simply` → delete; `currently` → delete (so \"Reports whether interception is currently installed\" becomes \"Reports whether interception is installed\"); `and/or` → `or` where either or both apply; `should` → the indicative (core/types.ts:20 \"a defensive check that is structurally impossible to trip\", server/helpers.ts:30 \"Infers whether one stream target receives styled output\", core/helpers.ts:614 \"if `JSON.stringify` still throws\"). Rule the same sweep over /home/user/fleet/console/guides/console.md, which carries `via` at lines 397 and 407 and `e.g.` at line 279. Do not touch `above`/`below` in the severity sense at core/types.ts:268, 269, 392 and 428 — that sense is not the banned one.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "console-subj-10",
+    "claim": "S5",
+    "file": "/home/user/fleet/console/src/core/types.ts:20-21",
+    "rule": ".claude/rules/typescript.md § Comments and API documentation: \"Do not document speculative future product behavior unless requested.\" and .claude/rules/writing.md § Claims and time: \"Write the present tense for what exists. Do not write `currently`, `now`, `new`, `latest`, or `soon`; where time matters, give the version or the date.\"",
+    "wrong": "The `ConsoleErrorCode` block reads \"The sole code today; a richer taxonomy waits for a second throw site\" — it dates itself with `today` and documents a future taxonomy that does not exist, and guides/console.md:135 repeats the same clause in the Surface row.",
+    "repair": "In /home/user/fleet/console/src/core/types.ts replace the sentence at line 21 with \"`INVARIANT` is the only code the package throws.\" and delete the taxonomy clause. In /home/user/fleet/console/guides/console.md:135 replace \"— `INVARIANT` (the one throw site in this codebase today)\" with \"— `INVARIANT`, the only code the package throws\", and drop the trailing \"today\" from the ConsoleError row at line 136 if it carries one.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-subj-11",
+    "claim": "S5",
+    "file": "/home/user/fleet/console/src/core/factories.ts:137-191",
+    "rule": ".claude/rules/typescript.md § Comments and API documentation: \"Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.\"",
+    "wrong": "`createCaptureResult`'s complete block sits at factories.ts:147-190, attached to the implementation signature at line 191, while the two overload signatures a consumer actually calls (lines 142-145 and 146) carry only the `//` comment block at lines 137-141; TypeScript drops the implementation signature from the declaration emit and from overload help, so the one published function whose behaviour most needs documenting — it patches the global `console` — reaches consumers undocumented.",
+    "repair": "In /home/user/fleet/console/src/core/factories.ts move the TSDoc block now at lines 147-190 above the first overload signature at line 142, and give the second overload at line 146 a short block whose first sentence states the sync form in the third person and whose `@returns` names `CaptureResult<T>`. Convert the block at lines 137-141 into the single-line `//` overload notes typescript.md permits, or fold its content into the moved `@remarks`. Leave the implementation signature at line 191 undocumented.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-subj-12",
+    "claim": "S6",
+    "file": "/home/user/fleet/console/guides/console.md:131 (and the population named in the repair)",
+    "rule": "Claim S6: \"no guide, README, test, or source comment cites an `AGENTS §N` section (`AGENTS.md` numbers no section, so every such citation is stale and names nothing)\"; .claude/rules/documentation.md § Authority and workflow: \"`AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.\"",
+    "wrong": "The package's own guide, README, tests and test setup files cite AGENTS by section number, and AGENTS.md numbers no section, so each pointer names nothing a reader can follow.",
+    "repair": "Delete or re-point every citation in the package's own files, replacing each with the named section it means or with nothing. In /home/user/fleet/console/guides/console.md: lines 66 (§9), 67, 120, 146, 151, 254 (§13), 118, 260 (§14), 131 (AGENTS §12), 279, 395, 396 (AGENTS §22), 401, and the See-also line 709 — rewrite 709 as \"[`AGENTS.md`](../AGENTS.md) — the rules; see § Design laws and § Documentation contract.\" In /home/user/fleet/console/guides/README.md: line 4 and line 51. In tests: /home/user/fleet/console/tests/guides.test.ts:3, tests/setup.ts:12 and 24, tests/setupBrowser.ts:7 and 21, tests/setupServer.ts:4, 30 and 63, and the bare `§N` in tests/src/core/Progress.test.ts:260, tests/src/core/LoggerManager.test.ts:6, 8, 24 and 156, tests/src/core/Reporter.test.ts:340, tests/src/core/Spinner.test.ts:351, tests/src/core/Capture.test.ts:164, tests/src/browser/factories.test.ts:9 and tests/src/browser/helpers.test.ts:35 — note that a `describe` title carrying `(§13)` is part of the test's reported name, so rewrite it to name what it proves (\"the update / complete events — the observation seam\"). Leave the vendored guides (contract.md, emitter.md, guide.md, scaffold.md, test.md, probe.md), tests/policy.test.ts and tests/config.test.ts untouched — they are off-limits.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "console-subj-13",
+    "claim": "S6",
+    "file": "/home/user/fleet/console/guides/console.md:46-51, 63-64, 94-109, 127, 137, 225-228, 258-264",
+    "rule": ".claude/rules/documentation.md § Parity: \"The TSDoc voice rule governs a doc block; a guide tagline and a Surface-row description are noun phrases.\"",
+    "wrong": "Every function Surface row is written as a bare imperative — \"Create the fluent `StylerInterface`…\", \"Remove every ANSI escape sequence…\", \"Render a horizontal rule…\", \"Narrow an unknown caught value…\", \"Infer the width of a stream target…\" — while the type and class rows beside them are noun phrases, so the tables carry two voices and the function half is neither the noun phrase the rule requires nor the third person TSDoc uses.",
+    "repair": "Rewrite every `function` Surface row description in /home/user/fleet/console/guides/console.md as a noun phrase, matching the rows that already conform (`width` at line 51, `cellAt` at 103, `meetsLevel` at 104, `isStreamTarget` at 260, `isBufferEncoding` at 264). The rows to change are `createStyler`, `createTheme`, `freezeStyle`, `strip`, `stripControls` (lines 46-50); `selectWriter`, `createConsoleSink` (63-64); `renderSeparator`, `renderBox`, `renderTable`, `renderTree`, `renderTreeChildren`, `renderBar`, `align`, `paint`, `repeatTo`, `formatTime`, `formatRecord`, `formatDuration`, `stringifyValue`, `formatArgs` (94-109); `createCaptureResult` (127); `isConsoleError` (137); `createBrowserSink`, `ansiToConsole`, `escapePercent`, `parseParameters` (225-228); `createServerSink`, `createProcessCapture`, `inferColumns`, `inferStyled`, `decodeChunk` (258-263). For example, `createStyler` becomes \"The fluent `StylerInterface` factory — ANSI by default; a `renderer` retargets it and `enabled: false` disables color.\" and `strip` becomes \"Every ANSI escape sequence removed from a string, leaving the plain visible text (total, re-entrant).\" Leave the class, interface, type and const rows as they are.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-subj-14",
+    "claim": "S6",
+    "file": "/home/user/fleet/console/guides/console.md:243, 279, 281, 291",
+    "rule": ".claude/rules/writing.md § Code tokens, references, and links: \"Point to other material with `preceding`, `following`, `earlier`, or `later`, never with `above` or `below`.\" and AGENTS.md § Writing: \"**NEVER state a count.**\" plus \"**NEVER name a list item by its position.** Write the item's name, never its ordinal or its number.\"",
+    "wrong": "The guide points at its own material with `above` and `below` (line 243 \"contract 10 below\", 279 \"the Surface rows above\", 281 \"the inherited contract below\", 291 \"the Surface row above\"), names Contract entries by ordinal (\"Contract 10\" at 243 and 404, \"Contract 11\" at 407, \"contract 10 below\" at 243), and states counts of sets the package can grow (\"It composes five concerns\" at line 3, \"the six standard SGR effects\" at 37, \"all three answer to one `border`\" at 179), which repeats in the TSDoc at /home/user/fleet/console/src/core/types.ts:866 \"(all five)\" and 241 \"leaves the other three alone\".",
+    "repair": "In /home/user/fleet/console/guides/console.md replace `above` and `below` with `preceding` / `following` at lines 243, 279, 281 and 291. Give each numbered Contract entry a bold name after its number — the entries at lines 404, 405 and 407 become \"**Color detection is the server sink's alone.**\", \"**Animations: every sink gets the frame.**\", \"**`width()`-aware rendering.**\" — and change every cross-reference to that name, so line 243 reads \"by the precedence in the color-detection contract\" and line 407 reads \"a bare `\\r` is the animation frame's cursor control (the animation contract)\". Delete the counts: line 3 becomes \"It composes a style engine, structured logging, narrative reporting, console and stream capture, and live animations over one shared substrate\"; line 37 drops \"(the six standard SGR effects)\" in favour of naming the effects it already lists; line 179 becomes \"so a box, a table, and a tree all answer to one `border`\". In /home/user/fleet/console/src/core/types.ts:866 delete \"(all five)\" and at types.ts:241 replace \"leaves the other three alone\" with \"leaves `debug`, `info`, and `error` alone\". Do not change \"the 8 base colors\", \"their 8 bright variants\" (line 36) or \"the 16 standard terminal colors\" (lines 236, 413): those number an external fixed palette rather than a set this package grows.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "console-subj-15",
+    "claim": "S6",
+    "file": "/home/user/fleet/console/guides/README.md:20-47",
+    "rule": ".claude/rules/documentation.md § Authority and workflow: \"`guides/README.md` is the map: maintain both a concept index and a directory index.\"",
+    "wrong": "The README opens by calling itself \"A dual-axis index into this repository's guides\" and its Dependency reference section accounts for contract.md, emitter.md, guide.md and scaffold.md, but /home/user/fleet/console/guides also holds test.md and probe.md — the mirrors of the declared devDependencies `@orkestrel/test` and `@orkestrel/probe` — so two guides sitting in the directory the map claims to cover appear nowhere in it.",
+    "repair": "Add two paragraphs to the Dependency reference section of /home/user/fleet/console/guides/README.md in the same form as the existing four: one naming [`test.md`](test.md) as the byte-identical mirror of the guide for `@orkestrel/test`, the devDependency supplying this package's shared test infrastructure; one naming [`probe.md`](probe.md) as the byte-identical mirror of the guide for `@orkestrel/probe`, the devDependency this package's typecheck probes run through. Keep the mirror wording of the existing paragraphs so the section stays uniform, and order the paragraphs to match the alphabetical order the directory listing gives.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   }
+  ],
+  "referrals": [
+   "Objective lane (O5 — public types in types.ts): /home/user/fleet/console/src/core/helpers.ts:584-588 declares `renderTreeChildren`'s third parameter as an anonymous inline type, `Required<Pick<TreeOptions, 'border'>> & Pick<TreeOptions, 'style' | 'styler'>`, rather than a named interface in src/core/types.ts. The function is a barrel export and a guide Surface row (guides/console.md:98), so that expression is the published signature a consumer reads. The subjective face is that the renderer family's one named options type per renderer breaks here; the rule text that decides it is O5's, so I raise no verdict.",
+   "Objective lane (O2 — wrapper test): finding console-subj-8 (createProcessCapture at src/server/factories.ts:117-119) also falls squarely under O2's ban on a pass-through factory. I filed it under S4 because AGENTS § Design laws \"No superfluous wrappers\" is the rule I applied and the coherence defect is the design one; if the objective lane raises the same site, the Orchestrator carries one row, not two.",
+   "Objective lane (O7 — tests): the second half of carry row console-c3, that no test names `DEFAULT_STREAM_LIMIT`, is test-sufficiency and is not mine to rule. I read /home/user/fleet/console/src/server/constants.ts's export list and the guide's Surface row at guides/console.md:273; the constant is published and the bounded-buffer claim in Contract 8 (guides/console.md:402) depends on it.",
+   "Objective lane (O3 — barrels and interning): /home/user/fleet/console/src/core/Styler.ts:31 exports class `Styler`, which /home/user/fleet/console/src/core/index.ts does not re-export and which carries no guide Surface row. That is the interning shape architecture.md § Barrel exports describes; confirm it is named in the `INTERNAL` list of /home/user/fleet/console/tests/guides.test.ts, which I did not read.",
+   "Orchestrator (consumer impact and mirror refresh): `@orkestrel/terminal` is the only fleet package declaring `@orkestrel/console`. Its source imports only `Style`, `StylerInterface`, `freezeStyle`, `STATUS_ICONS`, `createStyler`, `strip` and `stripControls`, none of which any finding here touches, so every breaking repair in this verdict needs no consumer source edit. Separately, /home/user/fleet/terminal/guides/console.md is already stale against console's tip — it still carries `createLoggerManager`, `ProgressInterface.failure` and `columnsOf` — so that vendored mirror needs refreshing after the console release regardless of which findings land."
+  ],
+  "coverage": "Read in full: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/console-brief.md; /home/user/scaffold/AGENTS.md; /home/user/scaffold/.claude/rules/names.md, patterns.md, typescript.md, architecture.md, documentation.md, writing.md. Subject files read in full: src/core/types.ts, src/core/factories.ts, src/core/errors.ts, src/core/index.ts, src/core/Spinner.ts, src/core/Progress.ts, src/core/LoggerManager.ts, src/core/Retention.ts, src/browser/types.ts, src/browser/helpers.ts, src/server/types.ts, src/server/factories.ts, src/server/index.ts, guides/console.md (all 712 lines), guides/README.md. Read in part: src/core/helpers.ts (lines 520-640 plus every export signature through the declaration sweep). Sweeps run over the package's own files with the pattern named beside each result: `AGENTS §|§\\\\d` over the whole checkout excluding node_modules; `\\\\bshould\\\\b` over the same population; the writing.md substitution terms over src/**; `\\\\b(above|below)\\\\b` over the whole checkout; `^export (function|const|class|interface|type)` over src/**. Cross-checked /home/user/fleet/terminal for consumer impact: its package.json declaration, every `from '@orkestrel/console` import site, and its vendored guides/console.md mirror. Not read, with why: src/core/Logger.ts, Capture.ts, Reporter.ts, Styler.ts, ANSIRenderer.ts and constants.ts bodies, src/server/ProcessCapture.ts, helpers.ts and validators.ts bodies, src/browser/factories.ts and constants.ts bodies — I read each one's public surface through src/**/types.ts, the guide's Surface and Methods tables and the export sweep, and their internal implementation bears on correctness rather than on the shape a consumer meets. Every tests/**/*.ts body — test sufficiency, mocking and skip discipline are O7's. package.json, vite.config.ts, tsconfig.json — O8's. .claude/rules/tests.md, workspace.md, application.md, browser.md, styles.md, portability.md, quality.md — those govern the objective lane's claims. The vendored guides (contract.md, emitter.md, guide.md, scaffold.md, test.md, probe.md), tests/setupPolicy.ts, tests/policy.test.ts and tests/config.test.ts were treated as off-limits subjects per the shared brief and read only as evidence about the guide directory's contents.",
+  "terminal": "VERDICT: FAIL — 6 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "refuter": {
+  "package": "console",
+  "rulings": [
+   {
+    "id": "console-obj-1",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the cited code does what the finding says and the quoted rule bans it.",
+    "evidence": "Lane held: objective (refuter), on Claude as the recorded substitution for the dark Sol bench. /home/user/fleet/console/tests/guides.test.ts:36-41 maps `@orkestrel/console`, `@src/core`, `@src/browser`, `@src/server`; :158-159 does `const imported = sources.source(specifier); if (imported === undefined) continue`. The installed declaration node_modules/@orkestrel/guide/dist/src/core/index.d.ts:1263-1266 returns `undefined` for an unmapped specifier. Grep `from '@src/` over guides/console.md: no fence hit (the `@src/*` mentions at :5, :217, :243 are prose). Fences at :589, :601, :627-628, :670, :678 import from `@orkestrel/console/browser` and `@orkestrel/console/server`, so every browser and server fence is skipped unchecked while the three `@src/*` rows match nothing. The doc comment at :31-34 claims fences import `createProcessCapture` from `@src/server`; none does. /home/user/fleet/mcp/tests/guides.test.ts:55-59 carries the exact subpath shape the repair names. Every name those fences import (`createBrowserSink`, `createProcessCapture`, `createServerSink`, `inferColumns`, `isBufferEncoding`, `isStreamTarget`) is barrelled (src/browser/index.ts, src/server/index.ts:3-6).",
+    "repair": "Finder's repair stands: replace `MODULES` with `{ '@orkestrel/console': 'src/core', '@orkestrel/console/browser': 'src/browser', '@orkestrel/console/server': 'src/server' }` and rewrite the comment at tests/guides.test.ts:30-35 to say the fences import each face through its published specifier. Sequence it with console-obj-5/console-subj-8: after that removal the server fence at guides/console.md:601 must no longer import `createProcessCapture`, or this now-live check reddens.",
+    "breaking": false
+   },
+   {
+    "id": "console-obj-2",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the test executes no fence and the quoted rule requires it.",
+    "evidence": "tests/guides.test.ts:66-182 read in full: fence languages, symbol and method bijection, example presence, fence-import resolution, link resolution — no `describe('flagship fences')`, no transcription, no value assertion. .claude/rules/tests.md § Cross-cutting proofs: \"Transcribe each flagship fence and assert the values its comments claim.\" and .claude/rules/documentation.md § Parity: \"`tests/guides.test.ts` executes the flagship fences\". Value-bearing comments exist at guides/console.md:470 (`// upload … 1.23s`), :506 (`// ====...... 40% (4/10)`), :549-555 (retention lengths), :651-664 (renderer, cellAt, formatTime, formatDuration). The reference shapes exist: /home/user/fleet/codec/tests/guides.test.ts:246 and /home/user/fleet/contract/tests/guides.test.ts:291 each open `describe('flagship fences')`.",
+    "repair": "Finder's repair stands: add a `describe('flagship fences')` block to tests/guides.test.ts that transcribes each runnable fence of guides/console.md and asserts every commented value, driving output through `createRecordingSink` from tests/setup.ts. Transcribe after console-subj-2 and console-subj-5/8 land, so the transcription pins the renamed surface rather than the old one.",
+    "breaking": false
+   },
+   {
+    "id": "console-obj-3",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced verbatim.",
+    "evidence": "/home/user/fleet/console/tests/src/browser/helpers.test.ts:243 `const started = Date.now()`, :245 `const elapsed = Date.now() - started`, :248 `expect(elapsed).toBeLessThan(2000)`. .claude/rules/tests.md § Test contract: \"Measure an elapsed interval with `performance.now()`, never `Date.now()`.\" `performance` is a WHATWG global available in the Chromium project.",
+    "repair": "Finder's repair stands: replace both readings with `performance.now()`; the assertion at :248 is unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "console-obj-4",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the local helper duplicates an installed declared primitive with matching semantics, and the local one is weaker.",
+    "evidence": "tests/src/core/Spinner.test.ts:42-45 hand-rolls `while (sink.calls.length < count && performance.now() < deadline) await waitForDelay(PERIOD)` and returns silently when `FRAME_DEADLINE` passes. node_modules/@orkestrel/test/dist/src/core/index.d.ts:495-506 declares `waitForCondition(description, condition, options?: WaitOptions)` with `budget`/`interval` at :538-545, first read immediate, and it throws with the description when the budget expires. `@orkestrel/test` is a declared devDependency (console-brief). .claude/rules/tests.md § Shared test infrastructure: \"Write a helper of your own only where the package exports none for the job.\"",
+    "repair": "Finder's repair stands: delete `waitForFrames` (:39-45), import `waitForCondition` from `@orkestrel/test` at :5, and at each call site write `await waitForCondition(`the spinner wrote ${count} frames`, () => sink.calls.length >= count, { budget: FRAME_DEADLINE, interval: PERIOD })`. Keep the `waitForDelay(SETTLE)` leak guards. Note the behavioural change is intended: a never-firing timer now fails with the condition's description instead of the next assertion.",
+    "breaking": false
+   },
+   {
+    "id": "console-obj-5",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: a pass-through factory over a barrelled class, which the quoted rule deletes; same site as console-subj-8, so the Orchestrator carries one row.",
+    "evidence": "/home/user/fleet/console/src/server/factories.ts:117-119 is `return new ProcessCapture(options)` with the same `ProcessCaptureOptions` parameter; src/server/index.ts:5 barrels `ProcessCapture`; the class's public members (ProcessCapture.ts:104-163: emitter, active, start, stop, messages x2, clear, destroy) are exactly `ProcessCaptureInterface` (server/types.ts:213-229), so the return type is not materially narrower. .claude/rules/architecture.md § Wrapper test: \"Delete one-line delegates, pass-through factories…\". No TSDoc `@remarks` or guide line states a deliberate exception. Core constructs Capture, Logger, LoggerManager, Reporter, Spinner, Progress, Retention, ANSIRenderer with `new` (guides/console.md fences :12-25, :453, :531, :546, :563). Consumer check: /home/user/fleet/terminal/src imports only Style, StylerInterface, freezeStyle, STATUS_ICONS, createStyler, strip, stripControls from @orkestrel/console. The emitter sibling `createEmitter` (/home/user/fleet/emitter/src/core/factories.ts:29-33) is the same pattern and is a fleet ruling outside this package; it does not exempt console.",
+    "repair": "Amended to cover every consumer the finder's two repairs split between them: delete `createProcessCapture` and its now-unused imports from src/server/factories.ts; replace the `{@link import('./factories.js').createProcessCapture}` references at src/server/types.ts:160-161 and :255 with `ProcessCapture`; in guides/console.md delete the Surface row at :259, retitle the `ProcessCaptureOptions` row at :255 to \"`ProcessCapture` options\", and rewrite the fence at :601 and :614 to `import { createServerSink, ProcessCapture } from '@orkestrel/console/server'` and `const capture = new ProcessCapture({ levels: ['stderr'], mirror: true })`; update README.md:70-72 the same way; replace every `createProcessCapture(` in tests/src/server/ProcessCapture.test.ts (:86, :102, :114, :125, :145, :159, :173, :186, :213, :231, :249 and any later sites — re-derive by grep) with `new ProcessCapture(`, fix its import, and delete the `createProcessCapture — factory` block at tests/src/server/factories.test.ts:429-437 together with its import at :3. Land console-obj-1 in the same change so the fence-import check sees the new import.",
+    "breaking": true
+   },
+   {
+    "id": "console-obj-6",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: an in-body `const fn = () => …` in a file the rule's frontmatter reaches and no instrument covers.",
+    "evidence": "/home/user/fleet/console/tests/setupServer.ts:75-78 assigns `const write = (chunk: string | Uint8Array): boolean => { … }` inside `createWriteProbe` and returns it inside an object literal at :79, so it is neither a directly passed callback nor a directly returned anonymous function. .claude/rules/architecture.md frontmatter lists `tests/**/*.ts`; § Functions and orchestration: \"Never declare or assign a function inside another function or method. This bans … `const fn = () => ...`, regardless of caller count.\" .oxlintrc.json:84-90 scopes `policy/no-nested-functions` to `src/**` and `app/**`, and § What the policy sweep proves lists no nested-function check, so the standing-conditions exemption does not apply.",
+    "repair": "Finder's repair stands: return `{ write(chunk: string | Uint8Array): boolean { texts.push(typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8')); return backpressure }, texts }`; the declared return type `NodeJS.WriteStream['write']` accepts the method exactly as it accepted the arrow, so no call site moves.",
+    "breaking": false
+   },
+   {
+    "id": "console-obj-7",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: same construct as console-obj-6.",
+    "evidence": "/home/user/fleet/console/tests/setupBrowser.ts:39-43 assigns `const restore = (): void => { … }` inside `captureConsole` and returns it as a property at :44. `ConsoleCaptureInterface.restore(): void` at :16 already declares a method. Same rule text as console-obj-6.",
+    "repair": "Finder's repair stands: declare `restore(): void { console.log = original.log; console.warn = original.warn; console.error = original.error }` as a method on the returned literal. tests/setupBrowser.test.ts needs no change.",
+    "breaking": false
+   },
+   {
+    "id": "console-obj-8",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: an entity-plus-manager family sitting flat against an explicit rule.",
+    "evidence": "src/core/Logger.ts:52 and src/core/LoggerManager.ts:43 sit at src/core/; LoggerManager is a registry of `LoggerInterface` (LoggerManager.ts:44). .claude/rules/architecture.md § Entity subfolders: \"When one entity grows a family (entity + manager or sibling implementations), nest only its class files in a lowercase plural folder.\" Fleet reading: /home/user/fleet/tool/src/core/tools/{Tool,ToolManager}.ts, /home/user/fleet/program/src/core/programs/ProgramManager.ts, /home/user/fleet/workspace/src/core/workspaces/WorkspaceManager.ts nest; /home/user/fleet/template/src/core/TemplateManager.ts and /home/user/fleet/workflow/src/core/WorkflowManager.ts sit flat. The rule outranks the flat siblings. The barrel star-exports, so no published symbol moves.",
+    "repair": "Finder's repair stands: create src/core/loggers/, move Logger.ts and LoggerManager.ts with imports rewritten to `../types.js`, `../constants.js`, `../factories.js`, `../helpers.js`; update src/core/index.ts:6-7 to `./loggers/Logger.js` and `./loggers/LoggerManager.js`; move tests to tests/src/core/loggers/Logger.test.ts and LoggerManager.test.ts and fix their `../../setup.js` relative imports to `../../../setup.js`; update the Tests bullets at guides/console.md:691-692 to the new test paths (the guides test checks those links resolve).",
+    "breaking": false
+   },
+   {
+    "id": "console-obj-9",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: a default implementation beside a contract the package itself declares a swap seam, sitting flat.",
+    "evidence": "src/core/ANSIRenderer.ts:25 sits flat. src/core/types.ts:92-97 declares `RendererInterface` \"a swappable style renderer — the seam that turns style data into output for one target … a browser `%c` / CSS renderer implements the same contract … so it drops in\"; guides/console.md:398 (Contract 4) and :413 (\"A consumer who wants true color implements one `RendererInterface` … the 24-bit seam is already open\") repeat the designed-seam claim. .claude/rules/architecture.md § Extension categories: \"A designed extension point … gets its category folder even with one concrete class. This applies both to consumer implementations of another domain's contract and default implementations beside the defining contract.\" The flat exemption (\"Co-equal native-object wrappers that are core primitives\") does not describe a renderer. `renderers` is not a centralized kind (§ Centralized-file pattern), so § Kind or folder admits it. Fleet reading: /home/user/fleet/lsp/src/server/transports/StdioClientTransport.ts and /home/user/fleet/database/src/browser/drivers/IndexedDBDriver.ts are single-class category folders.",
+    "repair": "Finder's repair stands: create src/core/renderers/, move ANSIRenderer.ts with imports rewritten to `../types.js` and `../constants.js`; change src/core/index.ts:5 to `./renderers/ANSIRenderer.js`; update the `./ANSIRenderer.js` import in src/core/factories.ts; move the test to tests/src/core/renderers/ANSIRenderer.test.ts and fix its setup relative import; update the Tests bullet at guides/console.md:689.",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-1",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the batch overload returns true on any success against a rule that requires all; the finder's repair breaks a test it did not name, amended.",
+    "evidence": "/home/user/fleet/console/src/core/LoggerManager.ts:120-126: `let removed = false; for (const name of names) { if (this.#loggers.delete(name)) removed = true } return removed`. LoggerManager.ts:24 and src/core/types.ts:490-491 document \"`true` when any was removed\". .claude/rules/patterns.md § Managers → Batch operations: \"An id list applies to those items and returns true only when all succeed.\" Tests pin the wrong semantics at tests/src/core/LoggerManager.test.ts:234-238 (`remove(['a','absent'])` → true) and, unnamed by the finder, :227-231 (`remove([])` → false), which the finder's `let removed = true` accumulation turns true.",
+    "repair": "Replace the array branch with an all-succeed accumulation that still attempts every name: `let removed = true; for (const name of names) { if (!this.#loggers.delete(name)) removed = false } return removed`. Rewrite LoggerManager.ts:24 and types.ts:491 to \"`remove(names)` drops a batch (`true` only when every name was present)\". In tests/src/core/LoggerManager.test.ts change :234-238 to assert `false` for `['a', 'absent']` while `count` still reaches 0, and change :227-231 to assert `true` for `remove([])` (every member of an empty list succeeded) — or, if the Orchestrator rules an empty batch false, add `names.length > 0 &&` and keep :227-231; state the choice in the TSDoc either way. The describe title `removal (§9.2)` at :156 is rewritten by console-subj-12. The guide rows at guides/console.md:326 and :458 state no return semantics and need no change.",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-2",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: one concept under two verbs in the sibling animation entities; the package's own TSDoc equates the two.",
+    "evidence": "src/core/Spinner.ts:114 `succeed(message?)` and src/core/Progress.ts:102 `complete(message?)` both clear/finish, commit a final line, and pair with `fail` (Spinner.ts:118, Progress.ts:112). src/core/types.ts:1134-1135: \"completion means the work finished successfully\"; :1205 `completed` \"the bar finished successfully\". AGENTS.md § Design laws: \"One concept, one term. Do not alternate synonyms.\" The campaign already unified the negative half (`failure` → `fail`, visible in the stale mirror /home/user/fleet/terminal/guides/console.md:149-154, :364). `STATUS_LEVELS`/`STATUS_ICONS.success`/`Reporter.status('success', …)` fix the positive word as success. /home/user/fleet/terminal/src has no Progress use. tests/src/core/Progress.test.ts carries 51 `complete`/`completed` occurrences the finder's repair omits.",
+    "repair": "Finder's direction stands (rename the Progress side to `succeed`/`succeeded`, event `succeed`), amended to name every carrier: src/core/types.ts:1132-1135, :1142-1145, :1193-1199, :1205-1206, :1213-1216; src/core/Progress.ts:28-33 (doc), :58, :83-85, :102-110 (and the `#advance` comment at :127, `#paint` comment at :138); guides/console.md:151, :153, :377-378, :577, :581, :696; tests/src/core/Progress.test.ts every `complete`/`completed` site including the describe title at :260. Do not rename Spinner.succeed to complete.",
+    "breaking": true
+   },
+   {
+    "id": "console-subj-3",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the options type names a non-existent entity and alternates with the constants' term for the same renderer.",
+    "evidence": "src/core/types.ts:972 `ProgressBarOptions` is the options type of `renderBar` (src/core/helpers.ts:706); its siblings are `SeparatorOptions`/`BoxOptions`/`TableOptions`/`TreeOptions` for renderSeparator/renderBox/renderTable/renderTree (guides/console.md:83-88), each named for the renderer's noun; the same renderer's constants are `BAR_FILL`, `BAR_EMPTY`, `DEFAULT_BAR_WIDTH` (src/core/constants.ts:469, :476, :485); the real entity `Progress` already owns `ProgressOptions` (types.ts:1169). .claude/rules/names.md § Type-level identifiers `{Entity}Options` and AGENTS.md \"One concept, one term.\" Grep `BarOptions` over src: no collision.",
+    "repair": "Finder's repair stands: rename to `BarOptions` at src/core/types.ts:972; update src/core/helpers.ts:6 (import) and :679, :697, :706; the `{@link}` at src/core/constants.ts:467 and :474; guides/console.md:99, :145, :698; and any test naming it (grep tests for `ProgressBarOptions`).",
+    "breaking": true
+   },
+   {
+    "id": "console-subj-4",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: a `parse*` name on a total function that never returns `undefined`.",
+    "evidence": "src/browser/helpers.ts:159-162 returns `readonly number[]` on every input (`[RESET_CODE]` for `''`, `Number(field)` otherwise); tests/src/browser/helpers.test.ts:429-436 pins that a non-numeric field yields `NaN` rather than `undefined`. .claude/rules/names.md § Fixed derivation/construction forms: \"`parse*`: coercion producing `T | undefined`\". The retained-name exemptions in .claude/rules/architecture.md § Kind purity name `createWriteDirectory` and `isVacant`, not this. It is a barrelled browser export (guides/console.md:228), so the rename is breaking; terminal does not import it.",
+    "repair": "Finder's repair stands: rename to `scanParameters` (names.md § Standalone helpers: \"`scan*` walks a structure and returns its findings\") at src/browser/helpers.ts:159, its call at :89, the `{@link}`/prose mentions at :18, :145, :155-157; guides/console.md:228 and :700; tests/src/browser/helpers.test.ts:6, :25, :404-439. Placement stays in helpers.ts.",
+    "breaking": true
+   },
+   {
+    "id": "console-subj-5",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the same two streams are spelled `out`/`err` and `stdout`/`stderr` in adjacent published types.",
+    "evidence": "src/server/types.ts:53-54 `out?`/`err?`; :88 `StreamLevel = 'stdout' | 'stderr'`; src/server/constants.ts `STREAM_LEVELS`/`STREAM_LEVEL_MAP` keyed the same way. `err` is an abbreviation (.claude/rules/names.md § General vocabulary: \"avoid … abbreviations\"; § Rejected naming lists the class) and AGENTS.md \"One concept, one term.\" names.md § General vocabulary permits mirrored external wording (`process.stdout`/`process.stderr`). `error` is taken by the emitter handler key in every other options type, so the finder's rejection of `output`/`error` holds. terminal does not use ServerSinkOptions.",
+    "repair": "Finder's repair stands, amended to name the carriers it missed: rename to `stdout`/`stderr` at src/server/types.ts:53-54 and rewrite the bullets at :42-44 and the `out`/`err` prose at :68-69; src/server/factories.ts:59-60 (`options?.stdout`, `options?.stderr`) and its doc at :25-41, :56-58 (locals may stay `out`/`err`); guides/console.md:248 (row), :249 and :274 (\"the out target\"/\"the out stream\" prose), :404 (Contract 10: \"`out` and `err` can differ\", \"exposes the `out` fact\"), :704; every `out:`/`err:` option key in tests/src/server/factories.test.ts (:14-325, re-derive by grep).",
+    "breaking": true
+   },
+   {
+    "id": "console-subj-6",
+    "verdict": "CONFIRMED",
+    "ground": "Diagnosis holds; the finder's repair does not compile, amended.",
+    "evidence": "src/core/helpers.ts:257 `align(text, target, alignment)` documents `target` as \"The visible column count to fit `text` into\" (:246); :326 `repeatTo(unit, count)` documents `count` as \"The visible column count to fill\" (:317); every options type spells the same quantity `width` (types.ts:975, guides/console.md:83-84, :91, :145). AGENTS.md \"One concept, one term.\" Repair defect: both bodies call the imported `width` helper (`width(text)` at :258, `width(unit)` at :328), so a parameter named `width` shadows it and the call becomes a type error.",
+    "repair": "Rename the second parameter of `align` (:257) and of `repeatTo` (:326) to `columns` — the package's existing word for a cell count (`ServerSinkInterface.columns`, `inferColumns`, `DEFAULT_COLUMNS`) — updating every body reference (:259-260, :327-331), the `@param` lines (:246, :317), and the prose at :239-242 and :308, :313. Positional parameters, so no call site changes. Leave `Reporter.blank(count?)` alone.",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-7",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced verbatim: `''` as the unset sentinel the rule names.",
+    "evidence": "src/browser/types.ts:70-74 declares `foreground: string` and `background: string`; :64-66 documents \"`''` when unset\" / \"`''` (unset / post-reset)\"; src/browser/helpers.ts:61-65 and :91-95 build `foreground: '', background: ''`; :80-81 read `!== ''`. AGENTS.md § Design laws: \"Absence is `undefined`. Never invent sentinels such as `'none'`, `'unset'`, `'unknown'`, `''`, or `-1`.\" Grep `StyleAccumulator|foreground: ''` over tests: no assertion pins the accumulator shape, so only the source and the guide row move.",
+    "repair": "Finder's repair stands: make both channels optional at src/browser/types.ts:71-72 and rewrite :63-66; build the reset accumulator at helpers.ts:61-65 and :91-95 as `Object.freeze({ attributes: Object.freeze([]) })`; change :80-81 to `!== undefined` reads; update the Surface row at guides/console.md:224. No test edit is needed.",
+    "breaking": true
+   },
+   {
+    "id": "console-subj-8",
+    "verdict": "CONFIRMED",
+    "ground": "Same site and same defect as console-obj-5; confirmed on the same evidence and folded into one row.",
+    "evidence": "See console-obj-5. AGENTS.md § Design laws \"No superfluous wrappers\" and .claude/rules/architecture.md § Wrapper test agree. The finder's evidence that the campaign removed `createLoggerManager` is corroborated: it is absent from src/core and guides/console.md and present only in the stale mirror /home/user/fleet/terminal/guides/console.md:67, :72.",
+    "repair": "Apply the amended repair recorded under console-obj-5; the Orchestrator carries one implementation row for both ids.",
+    "breaking": true
+   },
+   {
+    "id": "console-subj-9",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: every cited site hit the case-insensitive sweep, ruled by sense.",
+    "evidence": "Sweep `\\b(should|via|just|simply|currently)\\b|e\\.g\\.|and/or` (case-insensitive) over /home/user/fleet/console/src/**: `should` in the requirement sense at core/types.ts:20 and server/helpers.ts:30, conditional at core/helpers.ts:614; `via` at core/Progress.ts:17, :26, core/types.ts:874, :1017, :1022, :1144, :1183, core/constants.ts:227, :352, :407, :437, :460, :466, :474, :481, core/helpers.ts:360, :474, :689, server/types.ts:15, :121, :173, server/helpers.ts:70, server/constants.ts:18, browser/factories.ts:8, :17, browser/helpers.ts:14; `just` as a minimiser at core/types.ts:309, core/helpers.ts:357, core/Reporter.ts:27, server/types.ts:168, :193, server/factories.ts:91, server/validators.ts:17; `simply` at core/LoggerManager.ts:26; `and/or` at core/Capture.ts:21, core/types.ts:895, server/factories.ts:95, server/ProcessCapture.ts:23; `currently` at core/types.ts:915, :1055, :1066, server/types.ts:215; `e.g.` at core/types.ts:321, :326, :390, :576, :841, :864, core/constants.ts:147, core/helpers.ts:182, :614, :616, :638, :694, browser/helpers.ts:128, server/types.ts:164, :168. .claude/rules/writing.md § Substitutions rows for each. Guide hits at guides/console.md:279 (`e.g.`), :397 and :407 (`via`) confirmed.",
+    "repair": "Finder's repair stands, row by row at each cited site; also fix the `e.g.` inside the test title at tests/src/browser/helpers.test.ts:438 if the writer sweeps tests. Keep `above`/`below` in the severity sense (core/types.ts:268-269, :392, :428; guides/console.md:424, :691).",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-10",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced verbatim.",
+    "evidence": "src/core/types.ts:19-21: \"a defensive check that should be structurally impossible to trip). The sole code today; a richer taxonomy waits for a second throw site.\" guides/console.md:135: \"`INVARIANT` (the one throw site in this codebase today)\". .claude/rules/typescript.md § Comments: \"Do not document speculative future product behavior unless requested.\" and .claude/rules/writing.md § Claims and time (present tense, no time words). Line 136 carries no `today`.",
+    "repair": "Finder's repair stands: types.ts:19-21 becomes \"`INVARIANT` — an internal invariant or unreachable guard was violated (a defensive check that is structurally impossible to trip). It is the only code the package throws.\"; guides/console.md:135 becomes \"— `INVARIANT`, the only code the package throws\".",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-11",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the complete block sits on the implementation signature, which declaration emit drops.",
+    "evidence": "src/core/factories.ts:137-141 is a `//` block; :142-146 are the two overload signatures with no TSDoc; :147-190 is the full TSDoc attached to the implementation signature at :191-194. TypeScript emits overload signatures with their own leading doc comments and omits the implementation signature, so the published `.d.ts` and overload help carry no documentation for this export. .claude/rules/typescript.md § Comments: \"Every public export has complete TSDoc\" and \"overload-specific notes use single-line `//` comments\".",
+    "repair": "Finder's repair stands: move the block at :147-190 above the first overload at :142; give the sync overload at :146 a short block whose first sentence states in the third person what the sync form does and whose `@returns` names `CaptureResult<T>`; reduce :137-141 to a `//` overload note; leave the implementation signature undocumented. Change the `@example` import at :174 from `@src/core` to `@orkestrel/console` while there (guides rule on aliases reaches examples a consumer reads).",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-12",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: the whole population matches the finder's list; AGENTS.md carries no numbered sections.",
+    "evidence": "Sweep `AGENTS §|§\\d` over /home/user/fleet/console excluding node_modules: guides/console.md:66, :67, :118, :120, :131, :146, :151, :254, :260, :279, :395, :396, :401, :709; guides/README.md:4, :51; tests/guides.test.ts:3; tests/setup.ts:12, :24; tests/setupBrowser.ts:7, :21; tests/setupServer.ts:4, :30, :63; tests/src/core/Progress.test.ts:260; tests/src/core/LoggerManager.test.ts:6, :8, :24, :156; tests/src/core/Reporter.test.ts:340; tests/src/core/Spinner.test.ts:351; tests/src/core/Capture.test.ts:164; tests/src/browser/factories.test.ts:9; tests/src/browser/helpers.test.ts:35. Hits in guides/contract.md, guides/emitter.md, guides/guide.md are vendored mirrors and off-limits. /home/user/scaffold/AGENTS.md numbers no section.",
+    "repair": "Finder's repair stands: delete or re-point every citation in the package's own files, rewriting describe titles to name what they prove; rewrite guides/console.md:709 and guides/README.md:51 to name AGENTS.md sections by title. Coordinate with console-subj-1 (LoggerManager.test.ts:156) and console-subj-2 (Progress.test.ts:260), which touch the same lines.",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-13",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced: every function Surface row is an imperative against an explicit noun-phrase rule.",
+    "evidence": "guides/console.md:46 \"Create the fluent…\", :49 \"Remove every ANSI…\", :63 \"Select the…\", :94 \"Render a horizontal rule…\", :127 \"Run a function…\", :137 \"Narrow an unknown…\", :225-228 \"Create…/Translate…/Double…/Parse…\", :258-263 \"Create…/Create…/Infer…/Infer…/Decode…\"; the conforming rows are :51, :103, :104, :260, :264. .claude/rules/documentation.md § Parity: \"a guide tagline and a Surface-row description are noun phrases.\" The guides test checks names, not voice, so this is a review finding.",
+    "repair": "Finder's repair stands: rewrite each listed function row as a noun phrase; leave class, interface, type, and const rows. Rows removed or renamed by console-obj-5 (:259), console-subj-4 (:228), and console-subj-5 (:248) are rewritten in their final form.",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-14",
+    "verdict": "CONFIRMED",
+    "ground": "Reproduced; two sites the finder missed added.",
+    "evidence": "guides/console.md:243 \"contract 10 below\", :279 \"Surface rows above\", :281 \"inherited contract below\", :291 \"Surface row above\" (.claude/rules/writing.md § Code tokens, references, and links bans `above`/`below`); \"Contract 10\" at :5, :243, :403, \"Contract 11\" at :407 (AGENTS.md § Writing: \"NEVER name a list item by its position\"); counts \"five concerns\" :3, \"the six standard SGR effects\" :37, \"all three answer to one `border`\" :179, and in src/core/types.ts \"(all five)\" :867, \"leaves the other three alone\" :244, plus \"the six standard SGR text effects\" at types.ts:63, which the finder did not list. \"the 8 base colors\" / \"16 standard terminal colors\" number an external fixed palette and stay.",
+    "repair": "Finder's repair stands, extended: also replace \"Contract 10\" at guides/console.md:5 and :403 with the named contract, and delete \"the six standard\" at src/core/types.ts:63 (\"Names a text-style attribute — the standard SGR text effects.\"). Give the numbered Contract entries bold names and cross-reference by name.",
+    "breaking": false
+   },
+   {
+    "id": "console-subj-15",
+    "verdict": "CONFIRMED",
+    "ground": "The README's own prose claim is false for two files in its directory, and the fleet form lists every mirror; confirmed on the prose-claim rule rather than the index rule the finder quoted.",
+    "evidence": "guides/README.md:3-4 calls itself \"A dual-axis index into this repository's guides\"; its Dependency reference (:20-47) names contract.md, emitter.md, guide.md, scaffold.md. Glob /home/user/fleet/console/guides/*.md also returns test.md and probe.md, the mirrors of the declared devDependencies `@orkestrel/test` and `@orkestrel/probe` (console-brief). .claude/rules/documentation.md § Parity: \"Falsify a prose claim the way you falsify a code claim.\" Sibling form: /home/user/fleet/sse/guides/README.md:29-30 lists contract.md, probe.md, scaffold.md, and test.md as mirrors. The concept and directory indexes the quoted rule mandates are present, so the quoted rule alone would not carry the finding.",
+    "repair": "Finder's repair stands: add two paragraphs in the existing form naming [`test.md`](test.md) as the mirror of the `@orkestrel/test` guide (the devDependency supplying the shared test helpers) and [`probe.md`](probe.md) as the mirror of the `@orkestrel/probe` guide (the devDependency the `prove` instrument runs through), ordered alphabetically with the others.",
+    "breaking": false
+   }
+  ],
+  "terminal": "VERDICT: FAIL — 24 broken, 0 unresolved, 0 findings outside the claims"
+ }
+}

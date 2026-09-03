@@ -1,0 +1,6 @@
+{
+	"A": ["contract", "indexeddb", "csv", "html", "msg", "sqlite", "budget", "sse", "ndjson", "emitter", "abort", "codec", "timeout"],
+	"B": ["agent", "middleware", "console", "database", "reason", "process", "table", "router", "websocket", "template", "markdown", "form", "pool"],
+	"C": ["mcp", "browser", "server", "interpret", "terminal", "guide", "sea", "qualifier", "workspace", "rater", "relation", "queue", "lsp"],
+	"D": ["workflow", "toolbox", "program", "brief", "probe", "scaffold", "test", "worker", "ollama", "tool"]
+}

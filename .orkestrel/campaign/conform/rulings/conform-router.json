@@ -1,0 +1,701 @@
+{
+ "package": "router",
+ "objective": {
+  "package": "@orkestrel/router (/home/user/fleet/router)",
+  "lane": "OBJECTIVE — held by `reviewer` on Claude Opus 5 as the recorded substitution for the dark GPT-5.6 Sol bench (`codex` absent from `PATH`, probed 2026-09-02). Claims O1–O8 plus claim C.",
+  "claims": [
+   {
+    "claim": "O1 Placement and kind purity",
+    "verdict": "CONFIRMED",
+    "read": "Read every file under /home/user/fleet/router/src: core/{types,constants,helpers,parsers,factories,Router,Group,Dispatcher,DispatchGroup,index}.ts, browser/{types,helpers,factories,Navigator,index}.ts, server/{types,helpers,validators,handlers,index}.ts. Attacked each against .claude/rules/architecture.md § Centralized-file pattern through § Stores. Every declaration sits in its kind file and every centralized declaration is exported. parsers.ts holds only `parseMethod` (src/core/parsers.ts:33), a `parse*` returning `Method | undefined`. factories.ts holds only `createRouter`/`createDispatcher` (src/core/factories.ts:33,64) and `createNavigator` (src/browser/factories.ts:35), each `create*` returning an entity it constructs. validators.ts holds only the total guard `isEncryptedSocket` (src/server/validators.ts:26). handlers.ts holds request handlers (src/server/handlers.ts:37,90); `createListener` returns a request handler and sits with its kind the way § Middleware places `createX(options): Middleware` in middlewares.ts, and the `create*` name form is one-directional per § Kind purity, so it does not force a move. The leaf pair stays class-free: src/core/helpers.ts:1-2 imports types and constants only; src/browser/helpers.ts:7-8 imports a type and the helper `canonicalizePath`; src/server/validators.ts:7 imports `@orkestrel/contract`; none imports an implementation class. No templates.ts, contracts.ts, or routes.ts exists. Each implementation file holds exactly one class with `#` fields and no module-scope declaration. No store and no designed extension category exists. Router/Group and Dispatcher/DispatchGroup implement different interfaces rather than being sibling implementations of one, so § Entity subfolders does not fire and flat placement holds."
+   },
+   {
+    "claim": "O2 Functions, wrappers, and class order",
+    "verdict": "CONFIRMED",
+    "read": "Read every class body in src and checked § Wrapper test, § Functions and orchestration, and § Class order. Class order holds in Router.ts:44-136, Group.ts:26-45, Dispatcher.ts:62-225, DispatchGroup.ts:28-47, and Navigator.ts:59-266: `#` fields, constructor, public getters then methods, then `#` private methods. Child collaborators are `#` fields exposed through readonly getters typed as their interfaces — Dispatcher.ts:84-90 (`router`, `emitter`), Navigator.ts:109-119 (`router`, `emitter`, `active`). No public method forwards 1:1 to a helper: Router.match composes matchPath and compareSpecificity over the candidate loop (Router.ts:67-86), Dispatcher.handle composes parse, match, and three responders (Dispatcher.ts:115-139), Navigator.match unwraps the nested meta (Navigator.ts:157-166). The only in-body function expressions are anonymous callbacks passed directly as arguments and object-literal methods; the object-literal method form (src/server/helpers.ts:89-96, tests/setup.ts:34-38) is exempted by `isPolicyMethod` at configs/policy.ts:121-130, which `reportNested` at configs/policy.ts:184-195 consults, and `lint:check` is green. One pass-through survives and is recorded as EXEMPT below (router-obj-8)."
+   },
+   {
+    "claim": "O3 Barrels and exports",
+    "verdict": "CONFIRMED",
+    "read": "Read src/core/index.ts, src/browser/index.ts, src/server/index.ts. Each holds only `export * from './module.js'` rows — no named, default, namespace, or type-only row. Every top-level source file reaches its barrel: core exports types, constants, helpers, parsers, Dispatcher, DispatchGroup, Group, Router, factories (all nine non-index files); browser exports types, helpers, Navigator, factories (all four); server exports types, validators, helpers, handlers (all four). No symbol of another package is re-exported: src/core/types.ts:31 and src/browser/types.ts:20-21 import `EmitterHooks`/`EmitterErrorHandler`/`EmitterInterface` and the core registry types with `import type` and reference them in declarations only. Every barrelled class is constructible from values a consumer holds — `new Group(router, prefix)` (Group.ts:29) and `new DispatchGroup(dispatcher, prefix)` (DispatchGroup.ts:31) take an interface the consumer owns — so the empty `INTERNAL` list at tests/guides.test.ts:47 is correct, and each barrelled class carries the `@example` its row obliges (Group.ts:15-23, DispatchGroup.ts:18-25, Router.ts:36-41, Dispatcher.ts:50-59, Navigator.ts:45-56). Grep for `export default` across src returned nothing."
+   },
+   {
+    "claim": "O4 Non-negotiable syntax",
+    "verdict": "CONFIRMED",
+    "read": "Grepped src for `as const`, `as <Type>`, `: any`, `!.`/`!)`, `@ts-`, `eslint-disable`, `oxlint-disable`, and the accessibility keywords: the only hit is `] as const)` at src/core/constants.ts:34, on the `METHOD_LIST` literal tuple with no declared contract, from which src/core/types.ts:388 derives `Method`. That is exactly the sanctioned use in .claude/rules/typescript.md § Types (\"Use it to derive a literal union from a value and to fix a tuple's arity\"), and `METHODS` at constants.ts:55 carries its declared `ReadonlySet<string>` type without one. No parameter property exists — every class assigns its `#` fields in the constructor body (Group.ts:29-32, DispatchGroup.ts:31-34, Router.ts:50-54, Dispatcher.ts:67-82, Navigator.ts:74-107). Grepped every local import in src: all twenty-six carry `.js`, and in every file the `import type` block precedes the value imports with no blank line between same-kind rows (checked Dispatcher.ts:1-22, Navigator.ts:1-9, server/helpers.ts:7-11, server/handlers.ts:8-11). Single quotes and no semicolons throughout. The vendored `.oxlintrc.json` denials plus a green `lint:check` cover the mechanical half per the brief's standing conditions."
+   },
+   {
+    "claim": "O5 Types, immutability, errors",
+    "verdict": "BROKEN",
+    "read": "Read src/core/types.ts (605 lines), src/browser/types.ts, src/server/types.ts and every consumer. Types side holds: every reusable and public type lives in the nearest types.ts; every interface property is `readonly` (CompiledPath:220, RouteEntry:243, RouterMatch:263, RouterOptions:305, RouteContext:408, RouteInput:447, RouteRecord:466, DispatcherOptions:532, RequestOptions:21, NavigatorOptions:75, and the data members of RouterInterface:342, GroupInterface:368, DispatcherInterface:573-574, DispatchGroupInterface:600, NavigatorInterface:119-121); every public collection is `ReadonlyArray`/`readonly T[]`/`Readonly<Record>` (types.ts:306,346-347,489,265,222). Absence is `T | undefined` everywhere — Router.match:345, Navigator.match:125, parseMethod:33, matchPath:220 — with no sentinel. Immutability holds on the collection surfaces: Router.entries returns `[...this.#entries]` (Router.ts:91), the filtered form builds a fresh array (Router.ts:92-99), matchPath freezes its record (helpers.ts:229), Dispatcher.#allow returns `[...methods]` (Dispatcher.ts:175), and no caller-owned input is mutated (Group.ts:39, DispatchGroup.ts:41, Navigator.ts:95-99 and Dispatcher.ts:157-165 all build new objects). BROKEN on the error strategy: every boundary guard throws a bare `TypeError` with no machine-readable `code` and the package ships no error class and no `is*` guard, while the declared runtime dependency `@orkestrel/contract` exports `ContractError`/`isContractError` and is already imported for guards in three of the affected files — finding router-obj-1. One further exposure is recorded EXEMPT (router-obj-9)."
+   },
+   {
+    "claim": "O6 Declared ecosystem reuse",
+    "verdict": "CONFIRMED",
+    "read": "Built the overlap map against the installed declarations of the declared dependencies. Read /home/user/fleet/router/node_modules/@orkestrel/contract/dist/src/core/index.d.ts (guards, combinators, parsers, `attempt`, `Result`, `ContractError`) and grepped it for `escapeRegExp|joinPath|canonicaliz|decodeParam|Specificity|matchPath|compilePath|classifySegment`: the only hits are prose about JSON-schema canonicalization (lines 416, 438, 1963, 6141, 6149), a different subject from path canonicalization. The same grep over @orkestrel/abort's declaration returned nothing. Negative control: the same pattern over node_modules/@orkestrel/router/dist/src/core/index.d.ts returns 5 hits for `escapeRegExp`, so the instrument does report a match when one exists. Reuse is real where it applies: `isString`/`isFunction` from @orkestrel/contract (Router.ts:10, Dispatcher.ts:17, Navigator.ts:7), `isRecord` (validators.ts:7), `Emitter` from @orkestrel/emitter (Dispatcher.ts:16, Navigator.ts:6), `createAbort` from @orkestrel/abort (Navigator.ts:5, server/helpers.ts:10), and in tests `createRecorder`/`waitForDelay`/`waitForCondition`/`resolveRoot` from @orkestrel/test with `createLoopback`/`readInventory` from @orkestrel/test/server (tests/setup*.ts, tests/src/**). No local recorder, delay, scratch, guard, parser, or combinator duplicates one of those. The unreused `ContractError` is filed under O5 rather than here, because failing to throw a declared error class is an error-strategy defect rather than a duplicated primitive."
+   },
+   {
+    "claim": "O7 Tests",
+    "verdict": "BROKEN",
+    "read": "Listed every file under tests/ and mapped it against src. Mirroring is complete: every src/app module with behaviour has its mirrored test (core Dispatcher, DispatchGroup, Group, Router, factories, helpers, parsers; browser Navigator, factories, helpers; server handlers, helpers, validators), and the absent tests are exactly the ones .claude/rules/tests.md forbids creating — barrels, constants.ts, types.ts. Every declared Vitest project resolves to a real file and is reachable from a gate: src:core/src:browser/src:server through `test:src`, policy/config/setup/guides through `test`, distribution through `prepublishOnly`, with `probe` the sanctioned ungated workbench per .claude/rules/workspace.md. No mock, behavioral fake, module replacement, framework spy, or fake clock stands in for project-owned behaviour — the suites drive real `node:http` sockets on `127.0.0.1` through `createLoopback` (tests/setupServer.ts:60-68), a real Chromium with real `location`/`history`/`MouseEvent` (tests/setupBrowser.ts), and `createRecorder` in place of a spy. Grep for `.skip(`/`.todo(`/`.only(`/`skipIf` found sites only in the vendored tests/config.test.ts and in tests/distribution.test.ts:786,910, each a `context.skip` naming the mechanism that made it inapplicable. Setup files own helpers and register nothing, and tests/setup.test.ts, setupServer.test.ts, setupBrowser.test.ts prove them. BROKEN on three counts: tests/guides.test.ts transcribes and executes no flagship fence (router-obj-2); its `MODULES` map omits the package's own published subpath specifiers so the fence-import check silently skips every browser and server fence (router-obj-3); and tests/src/server/helpers.test.ts:166-176 waits on a fixed inline timeout promise instead of a named condition (router-obj-4)."
+   },
+   {
+    "claim": "O8 Workspace and portability",
+    "verdict": "BROKEN",
+    "read": "Read package.json, vite.config.ts, tsconfig.json, README.md, guides/README.md, and configs/src/vite.core.config.ts as evidence. Scripts match the § Script intent table: `lint`/`lint:check`, `format`/`format:check`, `check` plus the three isolation scopes, `build` chain, `clean`, `copy`, `prepack`, `prepublishOnly` running the gate chain then `test:distribution -- --mode release`, and one script per cross-cutting project. `distribution` sits in `prepublishOnly` and no `service` project exists, as the publishing-workspace rule places them. Aliases in tsconfig.json:23-27 match the § Aliases table and vite.config.ts:29-33 derives from `compilerOptions.paths`. The exports map, `main`, `module`, and `files` agree with the built outputs: core and server build `['es','cjs']` with `.d.cts` copies (package.json:83,85), browser builds `['es']` only and its export block carries no `require` condition. `engines.node` is `>=22.12.0` and the server build targets `node22` (vite.config.ts:106). Portability holds: no `/tmp` literal, no `os.EOL`, no `\\n`-only split, no path concatenation, no `.sh` in any script, and `@orkestrel/process` is not declared so its rule is inert. `@microsoft/api-extractor` is not dead weight — configs/src/vite.core.config.ts:14-22 drives it through `vite-plugin-dts` `bundleTypes.extractorConfig`. BROKEN on documentation alignment and text integrity: README.md:16 names a Node floor the manifest contradicts (router-obj-5), README.md:17 claims ESM-only against a shipped CJS surface (router-obj-6), and guides/README.md:52 carries a stray `</content>` tag (router-obj-7)."
+   },
+   {
+    "claim": "C Carry rows",
+    "verdict": "CONFIRMED",
+    "read": "tmp/units/conform/router-brief.md:21 records `none recorded` for this package, so no carry row was open for any lane to rule on. Nothing to adjudicate."
+   }
+  ],
+  "findings": [
+   {
+    "id": "router-obj-1",
+    "claim": "O5 Types, immutability, errors",
+    "file": "/home/user/fleet/router/src/core/Router.ts:117; /home/user/fleet/router/src/core/Dispatcher.ts:149 and :153; /home/user/fleet/router/src/core/helpers.ts:138; /home/user/fleet/router/src/browser/Navigator.ts:76, :80, :84",
+    "rule": ".claude/rules/typescript.md § Errors and outcomes: \"| Programmer error or invalid argument | Throw an `AppError` |\"; \"Error classes expose a machine-readable `code` and optional `context`.\"; \"Every public error class ships with a guard such as `isAppError` for safe `catch` narrowing.\"; and \"When `@orkestrel/contract` is declared, inspect and use its exact installed `Result`, construction/narrowing helpers, and `attempt` behavior instead of duplicating them.\"",
+    "wrong": "Every registration and construction boundary throws a bare `TypeError` carrying only a message string, so the package ships no machine-readable `code`, no `context`, and no narrowing guard, even though its declared runtime dependency `@orkestrel/contract` exports `ContractError` (code + context + cause, index.d.ts:1256-1289) and `isContractError` (index.d.ts:2493), and is already imported in three of the affected files for `isString`/`isFunction`/`isRecord`.",
+    "repair": "Import `ContractError` from '@orkestrel/contract' beside the existing guard imports in src/core/Router.ts, src/core/Dispatcher.ts, src/core/helpers.ts, and src/browser/Navigator.ts, and replace each `throw new TypeError(<message>)` with `throw new ContractError(<the same message>, { code: 'bound', context: { path: [<the option or field name>], limit: <the accepted shape>, received: <the rejected value> } })` — the exact shape /home/user/fleet/abort/src/core/helpers.ts:24-66 uses for the same class of programmer error, with code 'literal' where the rejected value is a wrong-typed scalar. Then update the prose that names the thrown type: the `@throws {TypeError}` tag at src/core/helpers.ts:114, the `@remarks` at src/core/types.ts:555-558 and src/core/Router.ts:23-25 and src/core/Dispatcher.ts:36-40 and src/browser/types.ts, and the guide rows at guides/router.md:181, :196, :232 and the practice bullet at :607-608. Then update the assertions that pin `TypeError` in tests/src/core/Dispatcher.test.ts:304 and :316, tests/src/core/Router.test.ts, tests/src/core/helpers.test.ts, and tests/src/browser/Navigator.test.ts to assert `ContractError` and its `code`. Do not add a router-owned error class: the capability already exists in a declared dependency and .claude/rules/architecture.md § Barrel exports forbids re-exporting it.",
+    "breaking": true,
+    "consumers": [
+     "@orkestrel/server",
+     "@orkestrel/middleware",
+     "@orkestrel/mcp",
+     "@orkestrel/ollama"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-obj-2",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/router/tests/guides.test.ts:1-179",
+    "rule": ".claude/rules/tests.md § Cross-cutting proofs: \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof, so a fence documenting a value the code contradicts passes every parity assertion. Change a fence, change the transcription beside it.\" and the table row \"`tests/guides.test.ts` | Every documented API exists, every public API is documented, and every executable fence returns what the guide says it returns\". Reinforced by .claude/rules/documentation.md § Parity: \"That proof has a home: `tests/guides.test.ts` executes the flagship fences\".",
+    "wrong": "The file runs only name-resolution and link parity and transcribes no fence, so every behavioural claim written as a `// value` comment in guides/router.md is unproven — guides/router.md:409 (`options.headers.get('Allow') // 'GET, HEAD, OPTIONS'`), :403, :415, :370, :389-391, :476-479, :500 among them — and a fence whose claimed value the code contradicts passes every assertion in this file.",
+    "repair": "Append a `describe('flagship fences', …)` block after the manifest loop, in the shape /home/user/fleet/codec/tests/guides.test.ts:241-260 uses, importing from the real barrels and asserting each value comment. Cover at minimum the Surface fence (guides/router.md:24-41), Groups and dedup (:362-373), Wildcard capture and precedence (:380-392), Method-dimensioned dispatch (:396-416), Observing dispatch outcomes (:420-431), Typing a route input (:441-452), and Introspection and reset (:468-484). The `guides` project runs in Node with the browser disabled (vite.config.ts:175-185), so transcribe the three `@orkestrel/router/browser` fences (:488-503, :507-517, :524-538) into tests/src/browser/Navigator.test.ts instead and state that split in the block's header comment. Update the file's header comment to the form codec uses, naming that a fence change obliges a transcription change.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-obj-3",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/router/tests/guides.test.ts:33-38, consumed at :151-161",
+    "rule": ".claude/rules/quality.md § Instruments: \"Treat a gap between what an instrument says it checks and what it actually matches as a defect in the instrument, not as a documented limit.\" and \"State an instrument's coverage beside its result. A conclusion inherits the instrument's scope, not the question's.\"",
+    "wrong": "`MODULES` registers `@orkestrel/router`, `@src/browser`, `@src/core`, and `@src/server`, but the guide's browser and server fences import the published subpath specifiers `@orkestrel/router/browser` (guides/router.md:489, :508, :525) and `@orkestrel/router/server` (:543, :568, :593); `sources.source(specifier)` returns `undefined` for those and the `if (imported === undefined) continue` at :156 skips them silently, so the test named 'imports only real exports in every ```ts fence' checks no browser or server fence at all while reporting green.",
+    "repair": "Add `'@orkestrel/router/browser': 'src/browser',` and `'@orkestrel/router/server': 'src/server',` to the `MODULES` object at tests/guides.test.ts:33-38, matching /home/user/fleet/mcp/tests/guides.test.ts:55-59. Leave the `@src/*` rows in place for the TSDoc examples that use them. Prove the instrument can now fail by temporarily renaming one imported symbol in a browser fence and confirming the test reddens before restoring it.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-obj-4",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/router/tests/src/server/helpers.test.ts:166-176",
+    "rule": ".claude/rules/tests.md § Delay: \"Import `waitForDelay` from `@orkestrel/test`; never repeat an inline timeout promise.\" and \"Use it to yield, never to wait for something another process produces. A fixed delay chosen to outlast a child's startup is a race whose loss looks like a product defect… Wait until a named condition holds instead, polling with `waitForDelay` inside a budget measured by `performance.now()`, and fail with the condition's own description when the budget expires.\"",
+    "wrong": "The case builds an inline timeout promise with two hard-coded delays — `setTimeout(() => { socket.destroy(); setTimeout(resolve, 50) }, 20)` — to wait for a socket write to reach the server and for the resulting abort to fire, so the assertions at :179-183 measure host timing rather than the abort behaviour they name and go red on a loaded host; the sibling case at :186-228 already proves the correct shape by parking on the real `abort` event, and `waitForCondition` is already imported at :7.",
+    "repair": "Replace lines 166-176 with the event-parked form: hoist a `const aborted = Promise.withResolvers<void>()` before the listener registration at :162 and resolve it from the same `abort` listener that feeds `recorder.handler`; then write the request, `await waitForCondition(() => recorder.count === 0, …)`-free, destroy the socket once the server has read the partial body, and `await aborted.promise` before `server.close()`. Where the write must be observed server-side first, gate on a `Promise.withResolvers<void>()` resolved inside the listener at :160-165 rather than on a delay. Delete both raw `setTimeout` calls; add no fixed delay.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-obj-5",
+    "claim": "O8 Workspace and portability",
+    "file": "/home/user/fleet/router/README.md:16",
+    "rule": ".claude/rules/workspace.md § Tooling: \"Node build targets derive from the package's declared supported runtime. Keep `engines`, bundler targets, scoped configs, tests, and documentation aligned; never hard-code one Node version line-wide.\"",
+    "wrong": "README.md:16 states `- Node.js >= 24` while package.json:114-116 declares `\"engines\": { \"node\": \">=22.12.0\" }` and vite.config.ts:106 targets `node22`, so the published README tells a consumer the package refuses a runtime the manifest accepts and the build emits for.",
+    "repair": "Change README.md line 16 to `- Node.js >= 22.12.0`, the exact floor package.json:115 declares. Take the value from the manifest rather than restating it independently.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-obj-6",
+    "claim": "O8 Workspace and portability",
+    "file": "/home/user/fleet/router/README.md:17",
+    "rule": ".claude/rules/writing.md § Claims and time: \"Claim only what the reader can check.\" with .claude/rules/workspace.md § Build outputs, which fixes `dist/src/core` and `dist/src/server` as \"ES and CJS\" and `dist/src/browser` as \"ES\".",
+    "wrong": "README.md:17 states `- ESM-only (no CommonJS build)` while package.json:26 sets `\"main\": \"./dist/src/core/index.cjs\"`, package.json:34-37 and :50-53 declare `require` conditions resolving to `index.cjs` and `index.d.cts` for `.` and `./server`, and package.json:83,85 build both formats and copy the CJS declarations — so the sentence is false for two of the three published entries.",
+    "repair": "Replace README.md line 17 with `- ESM and CommonJS for the core and \\`./server\\` entries; the \\`./browser\\` entry is ESM only.` Keep the surrounding bullets unchanged.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-obj-7",
+    "claim": "O8 Workspace and portability",
+    "file": "/home/user/fleet/router/guides/README.md:52",
+    "rule": ".claude/rules/workspace.md § Text integrity: \"Before accepting broad generated or migrated edits, scan changed text for replacement characters, mojibake, unintended control characters, and accidental trailing debris.\"",
+    "wrong": "The file ends with a stray `</content>` line after the `## See also` bullet — authoring-harness debris that no Markdown construct in the file opens, and that the formatter and the guides-parity suite both pass over because neither reads a bare tag as a defect.",
+    "repair": "Delete line 52 of guides/README.md so the file ends after the `## See also` bullet on line 51.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-obj-8",
+    "claim": "O2 Functions, wrappers, and class order",
+    "file": "/home/user/fleet/router/src/core/helpers.ts:412-416",
+    "rule": ".claude/rules/architecture.md § Wrapper test: \"A wrapper survives only when it adds a real boundary, invariant, composition, translation, lifecycle, or materially narrower contract. Delete one-line delegates, pass-through factories, rename-only helpers/getters, compatibility aliases, and wrappers around semantically identical platform or declared-dependency primitives.\"",
+    "wrong": "`route` returns its argument unchanged — a literal one-line identity pass-through with no runtime effect, which reads as exactly the shape the wrapper test deletes.",
+    "repair": "Retain it. The `const Path extends string` type parameter supplies a materially narrower compile-time contract that no rename or direct use can deliver: an intermediate binding widens `path` to `string` and loses the `PathParams` inference at the registration site. The deliberate exception is stated in its own `@remarks` at src/core/helpers.ts:377-394, including the honest ceiling (a collected `RouteInput[]` still widens), and in guides/router.md:435-459. No edit is required; a writer must not delete this symbol on a wrapper-sweep reading.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "EXEMPT",
+    "confidence": "high"
+   },
+   {
+    "id": "router-obj-9",
+    "claim": "O5 Types, immutability, errors",
+    "file": "/home/user/fleet/router/src/core/Dispatcher.ts:84-86 and /home/user/fleet/router/src/browser/Navigator.ts:109-111",
+    "rule": ".claude/rules/typescript.md § Immutability: \"Return copies or readonly views; never leak a mutable internal reference.\"",
+    "wrong": "Both getters hand out the live internal registry typed as `RouterInterface`, whose `add` (types.ts:343-344) and `clear` (types.ts:349) mutate it, so a consumer can register entries that bypass `Dispatcher.#register`'s method and handler guard (Dispatcher.ts:147-166) or wipe the registry, which is not a readonly view.",
+    "repair": "Retain the exposure. It is stated as deliberate in the owning contract's `@remarks` — src/core/types.ts:551-552 and src/browser/types.ts:101-102 both declare the member as the underlying registry exposed for introspection, and guides/router.md:461-484 documents introspection through it — and the typed surface admits only well-formed `RouteRecord` values, so the guard the exposure bypasses is a runtime boundary for untyped input rather than an invariant the types leave open. No edit is required for this claim; see the referral below on the word \"READONLY\" in those two `@remarks`, which describes a mutable interface and belongs to the subjective lane.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "EXEMPT",
+    "confidence": "medium"
+   }
+  ],
+  "referrals": [
+   "To the SUBJECTIVE lane (claim S6, `AGENTS §N` citations): the package's own files cite numbered AGENTS sections that AGENTS.md does not number, so each names nothing. Sites in package-owned files: guides/README.md:4 and :51; guides/router.md:3, :12, :169, :224, :228, :273, :693-695; src/core/types.ts:12, :27, :283, :493, :528, :558, :571 and the bare `§4`/`§5.1`/`§9.2`/`§10`/`§14` forms throughout; src/core/constants.ts:2-4; src/core/helpers.ts:4-6, :94, :136, :141, :172, :350, :393; src/core/parsers.ts:2-5, :18; src/core/Group.ts:6; src/browser/types.ts:3, :8, :13, :24, :70, :71, :96, :103; src/browser/helpers.ts:1-5; src/browser/factories.ts:16; src/browser/Navigator.ts:15, :26, :239; src/server/types.ts:2, :4; src/server/helpers.ts:3, :16, :105; src/server/validators.ts:2, :11; src/server/handlers.ts:2, :5; tests/setup.ts:3; tests/setupBrowser.ts:4; tests/setupServer.ts:7. No verdict from me.",
+   "To the ORCHESTRATOR (off-limits subject): the vendored dependency mirrors guides/abort.md, guides/emitter.md, and guides/guide.md also carry `AGENTS §N` citations. They are byte-identical mirrors this package may not rewrite, so the repair belongs upstream in @orkestrel/abort, @orkestrel/emitter, and @orkestrel/guide, followed by a mirror refresh here. No verdict from me.",
+   "To the SUBJECTIVE lane (claim S6, prose contradicts source): guides/router.md:246-249 states that `Dispatcher` always constructs its internal `Router` with ``key: (entry) => `${entry.meta.method} ${entry.path}` ``, but src/core/helpers.ts:80-82 computes ``computeDispatchKey`` as ```${entry.meta.method} ${canonicalizePath(entry.path)}` ``. The documented key would not fold `/health/` and `/health` into one registration; the shipped one does, and tests/src/core/Dispatcher.test.ts:445 pins the folding behaviour. No verdict from me.",
+   "To the SUBJECTIVE lane (claim S6, unverifiable claim): README.md:3-4 calls this \"the first `@orkestrel` package to ship both server and browser environments alongside its shared core\", but /home/user/fleet/console/src and /home/user/fleet/mcp/src each carry core, browser, and server environments, and the sentence names no date a reader could check it against. No verdict from me.",
+   "To the SUBJECTIVE lane (claim S6, index completeness): guides/README.md § Dependency reference describes contract.md, emitter.md, abort.md, and guide.md, but the directory also carries probe.md, scaffold.md, and test.md with no entry, so the index does not account for every mirror it holds. No verdict from me.",
+   "To the SUBJECTIVE lane (claims S5 and S6, counts): src/core/types.ts:376, src/core/constants.ts:14 and :44, src/core/parsers.ts:16 and :24, and guides/router.md:63, :64, :138 each state \"the seven\" HTTP methods — a number answering \"how many\" about a set the constants' own TSDoc says can grow (\"Adding a verb here widens the `Method` type…\"). AGENTS.md § Writing forbids the count and directs naming the members or recasting the sentence. No verdict from me.",
+   "To the SUBJECTIVE lane (claim S2, helper naming): the module-scope helper at src/core/helpers.ts:412 is named `route`, a bare noun, where AGENTS.md § Design laws fixes `{verb}{Noun}` for module-scope helpers that lack entity context — the neighbouring `computeDispatchKey`, `compilePath`, `matchPath`, and `joinPaths` all carry the form. Renaming moves a published symbol, so the lane that owns naming must rule before any edit. No verdict from me.",
+   "To the ORCHESTRATOR (sequencing, not a verdict): finding router-obj-1's pattern is fleet-wide rather than router-local — bare `TypeError` throws for programmer error also appear in /home/user/fleet/middleware/src/core/middlewares.ts, /home/user/fleet/mcp/src/core/helpers.ts, /home/user/fleet/test/src/core/helpers.ts, and /home/user/fleet/server/src/server/Server.ts, while /home/user/fleet/abort/src/core/helpers.ts uses `ContractError`. The rule text is unambiguous and the reuse target is a declared dependency, so I ruled the finding CONFIRMED for this package; whether the repair ships as a router-only breaking change or as one fleet ruling across those packages is a routing decision, not mine."
+  ],
+  "coverage": "READ IN FULL — canon: /home/user/scaffold/AGENTS.md, .claude/rules/architecture.md, typescript.md, patterns.md, tests.md, workspace.md, portability.md, quality.md, documentation.md, writing.md; briefs tmp/units/conform/brief.md and router-brief.md. SUBJECT read in full: package.json, vite.config.ts, tsconfig.json, README.md, guides/README.md, guides/router.md, and every file under src/ (core: types, constants, helpers, parsers, factories, Router, Group, Dispatcher, DispatchGroup, index; browser: types, helpers, factories, Navigator, index; server: types, helpers, validators, handlers, index); tests/setup.ts, tests/setupBrowser.ts, tests/setupServer.ts, tests/setup.test.ts, tests/guides.test.ts, and tests/src/server/helpers.test.ts:150-259. EVIDENCE read (not subjects): node_modules/@orkestrel/contract/dist/src/core/index.d.ts (surveyed declarations, read ContractError at 1240-1289), node_modules/@orkestrel/guide/dist/src/core/index.d.ts (ManifestEntry, SourceOptions, createSource, createSourceManager), configs/policy.ts:58-256, configs/src/vite.core.config.ts, /home/user/fleet/abort/src/core/helpers.ts:18-57, /home/user/fleet/codec/tests/guides.test.ts:1-16 and 232-260, /home/user/fleet/mcp/tests/guides.test.ts:55-59. READ BY PATTERN, NOT LINE BY LINE — tests/src/core/Router.test.ts, Group.test.ts, DispatchGroup.test.ts, factories.test.ts, helpers.test.ts, parsers.test.ts; tests/src/browser/Navigator.test.ts, factories.test.ts, helpers.test.ts; tests/src/server/validators.test.ts, handlers.test.ts; tests/setupBrowser.test.ts, setupServer.test.ts: swept for `.skip`/`.todo`/`.only`/`skipIf`, `vi.`/`jest.`/`useFakeTimers`, `Date.now`, `setTimeout`, `waitForDelay`, `createRecorder`, `listen(`/`127.0.0.1`/`::1`, `retry`, `timeout:`, and case titles, and tests/src/core/Dispatcher.test.ts's full case list was read. A defect in those files outside those patterns and outside src/server/helpers.test.ts:150-259 is not covered by this lane. NOT READ, with reason — tests/policy.test.ts, tests/setupPolicy.ts, tests/config.test.ts, .claude/**, .codex/**, .cursor/**, AGENTS.md and CLAUDE.md in the target, .agents/**, the remaining configs/** wrappers, .oxlintrc.json, .oxfmtrc.json, and the vendored guides abort.md, contract.md, emitter.md, guide.md, probe.md, scaffold.md, test.md: all named off-limits as subjects by the shared brief, and a defect met there is a referral rather than a finding. tests/distribution.test.ts was opened only at its two skip sites. package-lock.json and dist/ were not read. INSTRUMENT NOTE — my first dependency-overlap grep used a `**/index.d.ts` glob under a directory path and matched nothing; I re-ran it against explicit declaration paths after a negative control (`escapeRegExp` over node_modules/@orkestrel/router/dist/src/core/index.d.ts, 5 hits) proved the corrected form reports a match when one exists. No claim rests on the broken form. This lane executed no command and ran no test, so every behavioural reading here is source analysis rather than an executed probe; the fence values I checked against source (guides/router.md:389-391, :403, :409, :415, :370) were derived from the code, not run, which is precisely the gap finding router-obj-2 exists to close.",
+  "terminal": "VERDICT: FAIL — 3 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "subjective": {
+  "package": "router",
+  "lane": "subjective — I held the SUBJECTIVE lane (design fit, API shape, vocabulary, simplification, TSDoc and guide voice), claims S1 through S6 plus claim C, on Claude Opus 5 in a clean context.",
+  "claims": [
+   {
+    "claim": "S1 Entity API shape — every public property, method, option key, and event on an entity is one word or the shape is changed by grouping, sub-entity extraction, or splitting; no behaviour-selecting discriminator parameter; managers expose singular/plural accessors and the batch overload family.",
+    "verdict": "BROKEN",
+    "read": "Read /home/user/fleet/router/src/core/types.ts in full (RouterInterface, GroupInterface, DispatcherInterface, DispatchGroupInterface, RouterOptions, DispatcherOptions), /home/user/fleet/router/src/browser/types.ts in full (NavigatorInterface, NavigatorOptions), and the four class files Router.ts, Dispatcher.ts, Group.ts, DispatchGroup.ts, Navigator.ts. Every public member is one word: count/add/match/entries/group/clear, router/emitter/add/group/match/handle/destroy, prefix/add/group, router/emitter/active/start/stop/navigate/match/destroy. No discriminator parameter selects an algorithm. No *Manager class exists, so the manager accessor law is vacuous here; Router.add takes entries rather than ids and throws on malformed input, which sits outside patterns.md § Batch operations (that shape governs applying a verb to already-registered items by id). What breaks the claim is the shape behind NavigatorInterface.router: it publishes RouterInterface<RouteEntry<Meta>>, so navigator.router.match and navigator.match return different meta shapes off the same object graph (Navigator.ts:163 unwraps hit.meta.meta). Finding router-subj-1."
+   },
+   {
+    "claim": "S2 Vocabulary and forms — helper prefixes carry one project-wide meaning; the identifier tables hold; is*/parse*/create*/*Of keep their contracts; lifecycle verbs keep fixed meanings; no rejected name; booleans read as assertions; discriminants name their axis; one term per concept.",
+    "verdict": "BROKEN",
+    "read": "Read every src file and checked each exported name against .claude/rules/names.md § Standalone helpers, § Fixed derivation/construction forms, § Type-level identifiers, § Value-level identifiers, § Fixed lifecycle vocabulary and § Rejected naming. Cleared: escapeRegExp, canonicalizePath, computeDispatchKey, computeSpecificity, computeNavigationKey (compute* calculates deterministically), classifySegment, compilePath, matchPath, decodeParam, joinPaths, findAnchor, extractHashPath, resolveLocationPath (resolve* picks the effective value), buildRequest, sendResponse, parseMethod (parse* returning T | undefined), isEncryptedSocket (total guard, returns false off-shape), createRouter/createDispatcher/createNavigator/createListener, clear and destroy against the lifecycle table. Attacked and cleared: Dispatcher.handle as a synonym for execute (handlers.ts is a canonical kind file in architecture.md and RouteHandler is the table's {Entity}Handler form, so handle is this package's own domain term, not a lifecycle synonym); NavigatorOptions.history and intercept as boolean names (names.md itself offers the verb bail as an acceptable switch name); the coinage unmethoded (used consistently for one meaning across the union, the option, and the event, and documented). Broken by three names: the identity helper route, the RouteEntry/RouteRecord synonym pair, and one axis carrying two labels (status and reason). Findings router-subj-2, router-subj-3, router-subj-4."
+   },
+   {
+    "claim": "S3 Options and emitters — options are single-word keys grouped by entity noun with on reserved for hooks; a stateful entity owns an Emitter by composition with the seven-step pattern and a focused event map of present-tense verbs or nouns, no status event, errors typed unknown.",
+    "verdict": "BROKEN",
+    "read": "Read Dispatcher.ts:61-143 and Navigator.ts:58-171 against .claude/rules/patterns.md § Options, § Stateful emitters, § Listener isolation and § Event maps, plus the installed declaration at /home/user/fleet/router/node_modules/@orkestrel/emitter/dist/src/core/index.d.ts:83-171. The composition pattern holds: EventMap in types.ts, on and error on the options, readonly emitter on the interface, #emitter field with a getter, construction threading both values, direct emit with no guarded #notify, and #emitter.destroy() last in destroy(). No inheritance, no Omit, no status event, no observerError on either map. Event names match and miss and navigate are present-tense verbs. All option keys are single words. Broken by the match event's payload: for a derived OPTIONS answer Dispatcher.ts:222 emits the raw pathname in the element labelled pattern, and both the TSDoc and the guide state the opposite. Findings router-subj-5 and router-subj-6 (the second EXEMPT on a documented deliberate exception)."
+   },
+   {
+    "claim": "S4 Design laws — state is derived rather than stored twice; literal unions represent real domain states only; no compatibility shim; mechanism not product policy; no polling architecture; the public API is minimal and every intentional capability is exposed.",
+    "verdict": "BROKEN",
+    "read": "Read Router.ts, Dispatcher.ts, Navigator.ts and the barrels src/core/index.ts, src/browser/index.ts, src/server/index.ts, plus tests/guides.test.ts:47 (INTERNAL is empty, so no class is interned). No compatibility shim, no polling loop, no product policy: the 404/405 responders are overridable defaults over a mechanism. The literal unions Method, DispatchResult.status and the miss reason are real domain states. Attacked and cleared: Router's parallel #entries/#compiled arrays (the compiled form is a genuine compile-once cache, and pairing them into one record type would force an internal-only interface into the published types.ts under architecture.md § Declaration placement, a larger cost than the invariant); the exported type-level recursion PathParamsRaw, SegmentParam, IdentifierHead, TakeIdentifierTail, IdentifierStartChar, IdentifierChar (architecture.md requires every centralized declaration to be exported and barrelled, and mutual type-level recursion cannot fold into its caller); the required state argument on handle when TState defaults to undefined (the conditional-tuple fix would add more machinery than it removes). Broken by one duplicated field: Navigator holds two separately bound copies of the same method. Finding router-subj-7."
+   },
+   {
+    "claim": "S5 TSDoc — every public export carries a complete block whose first sentence states what the symbol does in the third person without repeating its name; booleans use the fixed forms; defaults, throws, prerequisites, and failure behaviour are stated; options objects are one @param with fields under @remarks; comments explain why.",
+    "verdict": "BROKEN",
+    "read": "Read every doc block in src/core/types.ts, constants.ts, helpers.ts, parsers.ts, factories.ts, Router.ts, Group.ts, Dispatcher.ts, DispatchGroup.ts, src/browser/types.ts, helpers.ts, factories.ts, Navigator.ts, src/server/types.ts, helpers.ts, validators.ts, handlers.ts against .claude/rules/typescript.md § Comments and API documentation and .claude/rules/writing.md. The third-person opening holds everywhere (Represents, Creates, Compiles, Escapes, Canonicalizes, Extracts, Classifies, Computes, Compares, Joins, Narrows, Determines, Builds, Writes, Handles, Provides, Names, Lists, Holds), no block repeats its symbol's name, options objects are documented as one @param with fields under @remarks, and isEncryptedSocket uses the fixed boolean-return form. Broken on four counts: published @example blocks import in-repository aliases and ship that way in the consumer's .d.ts, boolean parameters and defaults miss their fixed forms, prose states counts, and prose carries banned substitutions. Findings router-subj-8 through router-subj-12."
+   },
+   {
+    "claim": "S6 Guide and README parity — guides/router.md documents every public export with one method table per behavioral interface matching its call-signature members exactly, readonly data in Surface rows, fences importing the published specifier, prose claims that the executed fences prove; guides/README.md carries the concept and directory indexes; README.md links resolve; no competing instruction copy; no AGENTS §N citation.",
+    "verdict": "BROKEN",
+    "read": "Read /home/user/fleet/router/guides/router.md in full, /home/user/fleet/router/guides/README.md in full, /home/user/fleet/router/README.md in full, and /home/user/fleet/router/tests/guides.test.ts in full to establish what the parity suite already proves. Cleared: every Surface row resolves to a real export and the tables are exhaustive (the suite's documents every barrel export / documents only barrel exports assertions cover it); every guide fence imports @orkestrel/router, @orkestrel/router/browser or @orkestrel/router/server; the concept index and directory index are both present with the showcase column correctly absent; README.md's links to guides/router.md and LICENSE resolve, and the guide's links to ../AGENTS.md and README.md resolve; the Practices section is package usage guidance, not a competing convention copy. Broken on six counts, including one prose claim that contradicts the code and one behavioral interface pair with no method table — a gap the parity suite structurally cannot see, because tests/guides.test.ts:101 iterates only the tables the guide already declares. Findings router-subj-13 through router-subj-19."
+   },
+   {
+    "claim": "C Carry rows — each open item the successor brief lists for this package, ruled DRIFT, EXCEPTION, or INVALID.",
+    "verdict": "CONFIRMED",
+    "read": "Read /home/user/scaffold/tmp/units/conform/router-brief.md § Carry rows: it records none. There is no row to rule, so the claim closes with nothing outstanding."
+   }
+  ],
+  "findings": [
+   {
+    "id": "router-subj-1",
+    "claim": "S1 Entity API shape",
+    "file": "/home/user/fleet/router/src/browser/Navigator.ts:94-102 and :157-166; /home/user/fleet/router/src/browser/types.ts:119",
+    "rule": "\".claude/rules/architecture.md § Wrapper test: 'A wrapper survives only when it adds a real boundary, invariant, composition, translation, lifecycle, or materially narrower contract.' and .claude/rules/names.md line 8: 'Names are public API. A consumer can predict them without documentation.'\"",
+    "wrong": "Navigator registers each whole RouteEntry<Meta> as its inner router's meta (Navigator.ts:97 `meta: route`), so the published getter NavigatorInterface.router is typed RouterInterface<RouteEntry<Meta>> and navigator.router.match returns a match whose .meta is a RouteEntry carrying a second .meta, while navigator.match on the same object graph returns RouterMatch<Meta> — two match calls on one entity yield different meta shapes, and the wrap earns nothing because Navigator.ts:160-165 immediately unwraps it back (meta: hit.meta.meta, name: hit.meta.name, both already equal to what the inner Router would have returned unwrapped).",
+    "repair": "In /home/user/fleet/router/src/browser/Navigator.ts:94-102 register the payload rather than the entry: change the entries mapping to `{ path: route.path, meta: route.meta, ...(route.name === undefined ? {} : { name: route.name }) }` and type #router (line 59) and the router getter (line 109) as `RouterInterface<Meta>`. Change /home/user/fleet/router/src/browser/types.ts:119 to `readonly router: RouterInterface<Meta>` and drop the now-unused RouteEntry import there if nothing else uses it. Reduce Navigator.match (lines 157-166) to `return this.#router.match(path)` — this forwards to a composed child entity, not to a helper, so architecture.md § Wrapper test's 1:1 ban does not reach it. Change computeNavigationKey in /home/user/fleet/router/src/browser/helpers.ts:26-28 to read the outer path, `return canonicalizePath(entry.path)`, and retype its parameter `RouteEntry<unknown>`; update its @example and its test. Update the guide's NavigatorInterface Surface row at /home/user/fleet/router/guides/router.md:150 if it names the meta shape.",
+    "breaking": true,
+    "consumers": [
+     "none in the fleet closure: grep over /home/user/fleet/{server,ollama,middleware,mcp}/{src,app,tests} shows consumers import only createDispatcher, DispatcherInterface, RouteContext, RouteInput, buildRequest, sendResponse and isEncryptedSocket; no consumer names NavigatorInterface, Navigator or RouteEntry"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-2",
+    "claim": "S2 Vocabulary and forms",
+    "file": "/home/user/fleet/router/src/core/helpers.ts:412",
+    "rule": "\".claude/rules/names.md § Standalone helpers: 'Module helpers have no owning entity at the call site, so default to `{verb}{Noun}`' and 'A one-word helper is valid only when its meaning and arguments are unmistakable: `delay`, `clamp`, `tokenize`, `similarity`.'\"",
+    "wrong": "The published helper `route` is a one-word noun naming the package's central domain action while doing nothing at runtime — it returns its argument unchanged as a type pin — so in a package whose own prose uses route as a verb for dispatching (Navigator.ts:239 'Route a guard throw to the error handler', src/browser/types.ts:65 'A throw routes to the error handler'), a consumer reading `route({ ... })` cannot predict that nothing is routed.",
+    "repair": "Rename the export at /home/user/fleet/router/src/core/helpers.ts:412 from `route` to `defineRoute`, keeping the signature, the body and the doc block unchanged. Update the two in-body call sites of the identifier `route` used as a loop variable in /home/user/fleet/router/src/core/Dispatcher.ts:96 and /home/user/fleet/router/src/core/DispatchGroup.ts:41 only if the rename collides there (it does not — those are local bindings). Update the guide row at /home/user/fleet/router/guides/router.md:83, the prose and fence at :435-452, the test list line at :656, /home/user/fleet/router/README.md:44, and tests/src/core/helpers.test.ts. Keep the function: it survives architecture.md § Wrapper test on 'materially narrower contract', because its `const Path extends string` parameter is the only mechanism that pins the literal at a call site. Fleet precedent for the verb form exists at /home/user/fleet/form/src/core/helpers.ts:68 (`defineEntry`).",
+    "breaking": true,
+    "consumers": [
+     "none in the fleet closure: no file under /home/user/fleet/{server,ollama,middleware,mcp} imports `route` from @orkestrel/router"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-3",
+    "claim": "S2 Vocabulary and forms",
+    "file": "/home/user/fleet/router/src/core/types.ts:466 (RouteRecord) against :243 (RouteEntry)",
+    "rule": "\"AGENTS.md § Design laws: 'One concept, one term. Do not alternate synonyms.' and .claude/rules/names.md line 8: 'Names are public API. A consumer can predict them without documentation.'\"",
+    "wrong": "`RouteEntry` and `RouteRecord` are English synonyms published side by side in one Types table for two different structures — the registry entry `{ path, meta, name? }` and the dispatcher's meta payload `{ method, handler, name? }` — so a consumer reading either name cannot predict which is which, and the package's own composed type reads `RouteEntry<RouteRecord<TState>>`, an entry whose meta is a record.",
+    "repair": "Rename the interface at /home/user/fleet/router/src/core/types.ts:466 from `RouteRecord` to `RouteMeta`, the term the engine already uses for that slot (RouteEntry.meta, RouterMatch.meta). Update every reference: types.ts:455 and :459 (the TSDoc), :545, :573, :576; /home/user/fleet/router/src/core/Dispatcher.ts:11, :62, :71, :171, :199; the guide row at /home/user/fleet/router/guides/router.md:142 and the tagline reference at :6; and any test naming it. No name `RouteMeta` exists in the package, so the rename collides with nothing.",
+    "breaking": true,
+    "consumers": [
+     "none in the fleet closure: no file under /home/user/fleet/{server,ollama,middleware,mcp} names RouteRecord; @orkestrel/server imports only DispatcherInterface, buildRequest, sendResponse and isEncryptedSocket, so it re-pins without a code edit"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-4",
+    "claim": "S2 Vocabulary and forms",
+    "file": "/home/user/fleet/router/src/core/types.ts:510",
+    "rule": "\"AGENTS.md § Design laws: 'One concept, one term. Do not alternate synonyms.'\"",
+    "wrong": "One axis carries two names: the dispatch outcome is `status` in DispatchResult (types.ts:488-490, values 'matched' | 'unmethoded' | 'unmatched') and `reason` in the miss event's labelled tuple element (types.ts:510, the same two miss literals), so a consumer wiring an emitter handler beside a match call reads two words for one fact.",
+    "repair": "In /home/user/fleet/router/src/core/types.ts:510 rename the labelled tuple element from `reason` to `status`: `readonly miss: readonly [method: string, pathname: string, status: 'unmatched' | 'unmethoded']`. Update the prose at types.ts:503-506 that names the reason field, the guide's Contract row at /home/user/fleet/router/guides/router.md:272-273 ('via its `reason` field'), and the fence parameter at /home/user/fleet/router/guides/router.md:426. A tuple element label carries no assignability, so this is not breaking; keep DispatchResult.status unchanged.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-5",
+    "claim": "S3 Options and emitters",
+    "file": "/home/user/fleet/router/src/core/Dispatcher.ts:222",
+    "rule": "\".claude/rules/patterns.md § Event maps: 'Use empty tuples for signals and labeled tuple elements for IDE clarity.' with .claude/rules/documentation.md § Parity: 'Falsify a prose claim the way you falsify a code claim.'\"",
+    "wrong": "For a derived OPTIONS answer Dispatcher.ts:222 emits `this.#emitter.emit('match', 'OPTIONS', pathname)`, putting a concrete request pathname into the element labelled `pattern`, while src/core/types.ts:501-503 states that match carries 'the winning pattern' including 'the auto-HEAD/auto-OPTIONS derived cases' and guides/router.md:270-272 states match fires on 'every dispatch that resolves to a handler (including derived HEAD/OPTIONS)' — the derived OPTIONS answer resolves to no route and runs no handler, so both sentences are false and a consumer aggregating metrics by pattern gets unbounded cardinality from OPTIONS traffic.",
+    "repair": "Delete the emit at /home/user/fleet/router/src/core/Dispatcher.ts:222 so #respondAutoOptions answers without emitting, and correct the two prose sites to match: in /home/user/fleet/router/src/core/types.ts:501-503 write that match is emitted whenever a registered handler runs, the derived HEAD case included because it runs the GET route's own handler under that route's registered pattern, and in /home/user/fleet/router/guides/router.md:270-272 replace 'every dispatch that resolves to a handler (including derived HEAD/OPTIONS)' with 'every dispatch that runs a registered handler, the derived HEAD case included'. Do not keep the current emission with a corrected label: the auto-OPTIONS answer has no single winning pattern to name, because #allow derives its set from every entry matching the pathname. No test pins this payload — tests/src/core/Dispatcher.test.ts:258-301 asserts only status and the Allow header.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-6",
+    "claim": "S3 Options and emitters",
+    "file": "/home/user/fleet/router/src/browser/Navigator.ts:242-250",
+    "rule": "\".claude/rules/patterns.md § Listener isolation: 'It reports every listener throw to its own `(error, event)` error handler.' and the installed declaration at node_modules/@orkestrel/emitter/dist/src/core/index.d.ts:83-85: 'This is machinery, NOT a domain event: a throwing listener is isolated by the emitter and its error routed here, never onto the entity's EventMap.'\"",
+    "wrong": "Navigator routes a domain failure — a guard throw from its own pipeline, before any emit — into the emitter's listener-error channel and labels it `handler(error, 'navigate')` (Navigator.ts:246), so a consumer's error handler receives an event name identical to a genuine navigate-listener throw and cannot tell the two failure classes apart.",
+    "repair": "Recorded EXEMPT rather than applied: the decision is documented deliberately at /home/user/fleet/router/src/browser/types.ts:71-73 ('ALSO the handler a thrown guard routes to (the Navigator's own pipeline, not a listener throw, so it is surfaced through the same channel)') and at /home/user/fleet/router/guides/router.md:301-302. If the Orchestrator lifts the exemption, the minimal repair is /home/user/fleet/router/src/browser/Navigator.ts:246 → `handler(error, 'guard')`, which typechecks because EmitterErrorHandler's second parameter is `string`, plus the matching sentence in src/browser/types.ts:71-73 and guides/router.md:301-302 naming the label a consumer will see.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "EXEMPT",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-7",
+    "claim": "S4 Design laws",
+    "file": "/home/user/fleet/router/src/browser/Navigator.ts:67-68 and :104-105",
+    "rule": "\"AGENTS.md § Design laws: 'Derive state. Compute facts from existing fields. Do not store a second flag or label that can drift.'\"",
+    "wrong": "#hashListener and #popListener are two fields holding two separately bound copies of the same method (`this.#resolve.bind(this)` at lines 104 and 105), and #history is fixed at construction so start (lines 124-129) and stop (lines 136-141) can only ever register one of them — the second field carries no information the first does not, and #popListener abbreviates popstate against the naming rules.",
+    "repair": "In /home/user/fleet/router/src/browser/Navigator.ts delete the #popListener field (line 68) and its assignment (line 105), rename the remaining field to #listener at line 67 and assign it once at line 104, then use this.#listener in all four addEventListener/removeEventListener calls at lines 125, 127, 137 and 139. These are # fields, so nothing published changes.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-8",
+    "claim": "S5 TSDoc",
+    "file": "/home/user/fleet/router/src/core/factories.ts:26 and :54; /home/user/fleet/router/src/core/Group.ts:17; /home/user/fleet/router/src/core/DispatchGroup.ts:20; /home/user/fleet/router/src/browser/factories.ts:23; /home/user/fleet/router/src/server/helpers.ts:46 and :126; /home/user/fleet/router/src/server/validators.ts:20; /home/user/fleet/router/src/server/handlers.ts:81-82",
+    "rule": "\".claude/rules/documentation.md § Guide examples: 'Code fences import through the package's published specifier: primary/core API: `@orkestrel/<name>`; secondary environment API: `@orkestrel/<name>/<environment>`.' and 'Never use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.'\"",
+    "wrong": "Ten published @example blocks tell a consumer to import from the in-repository aliases @src/core, @src/browser and @src/server, and those blocks ship: /home/user/fleet/server/node_modules/@orkestrel/router/dist/src/core/index.d.ts:236, :264, :452 and :551 carry `import { createDispatcher } from '@src/core'` verbatim, so every consumer's IDE hover names a specifier that resolves to nothing in their project.",
+    "repair": "Rewrite the import line inside each @example doc block to the published specifier, changing nothing else: '@orkestrel/router' at src/core/factories.ts:26, src/core/factories.ts:54, src/core/Group.ts:17, src/core/DispatchGroup.ts:20 and src/server/handlers.ts:82; '@orkestrel/router/browser' at src/browser/factories.ts:23; '@orkestrel/router/server' at src/server/helpers.ts:46, src/server/helpers.ts:126, src/server/validators.ts:20 and src/server/handlers.ts:81. Leave every real source import (src/browser/types.ts:21, src/browser/helpers.ts:7-8, src/browser/Navigator.ts:4 and :8, src/server/handlers.ts:9) untouched — the alias is correct there. tests/guides.test.ts:33-38 maps the @src/* specifiers for fence resolution, so the suite stays green after the change.",
+    "breaking": false,
+    "consumers": [
+     "every installer of @orkestrel/router reads these blocks from dist/src/**/index.d.ts"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-9",
+    "claim": "S5 TSDoc",
+    "file": "/home/user/fleet/router/src/core/helpers.ts:112 and :246; /home/user/fleet/router/src/browser/helpers.ts:75-77",
+    "rule": "\".claude/rules/typescript.md § Comments and API documentation: 'Describe a boolean parameter as \\\"If `true`, …; if `false`, …\\\", and a boolean return as \\\"True if …; false otherwise\\\".' and 'Write a default as \\\"Default: …\\\" and a thrown error as \\\"Thrown when …\\\".'\"",
+    "wrong": "Boolean parameters are documented in free prose instead of the fixed forms, and one default uses a parenthetical instead of the fixed form: helpers.ts:112 reads '@param sensitive - Case-sensitive matching (default `true`)' and helpers.ts:246 reads '@param isFinal - Whether `segment` is the last segment of its path'.",
+    "repair": "Rewrite /home/user/fleet/router/src/core/helpers.ts:112 as '@param sensitive - If `true`, matching is case-sensitive; if `false`, case is folded during matching. Default: `true`'. Rewrite /home/user/fleet/router/src/core/helpers.ts:246-247 as '@param isFinal - If `true`, `segment` is the path's last segment and may classify as a wildcard; if `false`, a wildcard-shaped segment classifies as a literal'. Rewrite /home/user/fleet/router/src/browser/helpers.ts:75-77 as '@param history - If `true`, the pathname is read from `location.pathname` with `base` stripped; if `false`, it is read from `location.hash`'.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-10",
+    "claim": "S5 TSDoc",
+    "file": "/home/user/fleet/router/src/core/types.ts:375; /home/user/fleet/router/src/core/constants.ts:14 and :44; /home/user/fleet/router/src/core/parsers.ts:15-16 and :24; /home/user/fleet/router/guides/router.md:3, :63, :64 and :138; /home/user/fleet/router/README.md:57",
+    "rule": "\"AGENTS.md § Writing: 'NEVER state a count. A number answering \\\"how many\\\" about a set anyone can add to is a count — rules, rows, members, exports, files, options, steps, cases, stages, findings, and tests are such sets. Name the members, or write the sentence without the number.' and 'Delete a count you find. Do not correct it.'\"",
+    "wrong": "Published prose tallies sets the package can extend: the HTTP method set is called 'the seven' at seven sites, and the package's own TSDoc at constants.ts:16-17 states that adding a verb to METHOD_LIST widens the type, the membership set and the parser together — so the tally is a count of a growable set that goes stale on the next verb; the guide tagline tallies 'all three faces' and the README tallies 'three environment-scoped entry points'.",
+    "repair": "Delete the numeral at each site, leaving the sentence otherwise intact: src/core/types.ts:375 'Names the HTTP methods a {@link DispatcherInterface} dimensions dispatch over'; src/core/constants.ts:14 'A frozen tuple of the verbs: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`'; src/core/constants.ts:44 'so it carries exactly the {@link import(\\'./types.js\\').Method} literals'; src/core/parsers.ts:15-16 'the one home for the registrable HTTP methods'; src/core/parsers.ts:24 'when `value` is not a registrable method'; guides/router.md:3 'covering its faces'; guides/router.md:63 and :64 'The registrable HTTP methods …'; guides/router.md:138 'The registrable HTTP methods (`\\'GET\\' | \\'POST\\' | … | \\'OPTIONS\\'`)'; README.md:57 'Published as environment-scoped entry points per the `exports` field in `package.json`: a shared core, `./browser`, and `./server`.'",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-11",
+    "claim": "S5 TSDoc",
+    "file": "/home/user/fleet/router/src/core/types.ts:132; /home/user/fleet/router/src/core/helpers.ts:111, :206, :236, :274, :276, :286, :354, :355, :397; /home/user/fleet/router/src/core/types.ts:396, :400, :437; /home/user/fleet/router/src/core/Router.ts:29, :34, :113; /home/user/fleet/router/src/core/Group.ts:13; /home/user/fleet/router/src/core/DispatchGroup.ts:13; /home/user/fleet/router/src/browser/helpers.ts:41, :70; /home/user/fleet/router/src/browser/Navigator.ts:220, :252; /home/user/fleet/router/src/server/helpers.ts:108",
+    "rule": "\".claude/rules/writing.md § Substitutions: '`via` → `through`, `by using`'; '`e.g.`, `i.e.` → `for example`, `that is`'; '`simply`, `easy`, `just` → Delete'. AGENTS.md § Writing scopes these rules to prose everywhere, TSDoc included.\"",
+    "wrong": "Published TSDoc and source comments carry banned substitution-table terms: `via` at fourteen sites, `e.g.` at eight sites, and `simply` at src/browser/helpers.ts:70 ('the `Navigator`'s match then simply misses').",
+    "repair": "Replace `via` with `through` at src/core/types.ts:396, :400, :437; src/core/Router.ts:29 ('Dedup through `key`'), :34, :113; src/core/Group.ts:13; src/core/DispatchGroup.ts:13; src/core/helpers.ts:274, :276, :397; src/browser/Navigator.ts:220, :252; src/server/helpers.ts:108. Replace `e.g.` with `for example` at src/core/types.ts:132; src/core/helpers.ts:111, :206, :236, :286, :354, :355; src/browser/helpers.ts:41. Delete `simply` at src/browser/helpers.ts:70, leaving 'the `Navigator`'s match then misses'. Leave 'currently-resolved' at src/browser/types.ts:104 alone: it names runtime state, not the time of writing, which is the sense the row bans.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-12",
+    "claim": "S5 TSDoc",
+    "file": "/home/user/fleet/router/src/core/constants.ts:8 and :37",
+    "rule": "\".claude/rules/documentation.md § Parity: 'Every backticked API in a guide resolves to a real public export.' and .claude/rules/typescript.md § Comments and API documentation: 'Every public export has complete TSDoc.'\"",
+    "wrong": "Both constants link `{@link import('./types.js').Dispatcher}`, but src/core/types.ts exports no `Dispatcher` — the class lives in src/core/Dispatcher.ts and the type in types.ts is DispatcherInterface — so the published reference names nothing and renders as dead text in a consumer's IDE.",
+    "repair": "Change /home/user/fleet/router/src/core/constants.ts:8 and /home/user/fleet/router/src/core/constants.ts:37 to `{@link import('./types.js').DispatcherInterface}`, which is the symbol that module actually exports.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-13",
+    "claim": "S6 Guide and README parity",
+    "file": "/home/user/fleet/router/guides/router.md:3, :12, :144, :148, :169, :224, :228, :273, :606, :608 and :693-695; /home/user/fleet/router/guides/README.md:4 and :51; /home/user/fleet/router/src/core/types.ts:12, :27, :282, :493, :515, :528, :529, :553, :568; /home/user/fleet/router/src/core/parsers.ts:4; /home/user/fleet/router/src/core/constants.ts:4; /home/user/fleet/router/src/core/Group.ts:6; /home/user/fleet/router/src/core/helpers.ts:4 and :172; /home/user/fleet/router/src/browser/types.ts:8, :13, :24, :41, :70, :71, :96, :103, :116; /home/user/fleet/router/src/browser/helpers.ts:1 and :5; /home/user/fleet/router/src/browser/factories.ts:16; /home/user/fleet/router/src/browser/Navigator.ts:15 and :239; /home/user/fleet/router/src/server/helpers.ts:4; /home/user/fleet/router/src/server/validators.ts:4 and :11; /home/user/fleet/router/src/server/handlers.ts:5; /home/user/fleet/router/tests/setup.ts:3; /home/user/fleet/router/tests/setupServer.ts:7; /home/user/fleet/router/tests/setupBrowser.ts:4",
+    "rule": "\".claude/rules/documentation.md § Authority and workflow: '`AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.' AGENTS.md numbers no section, so a `§N` citation resolves to nothing.\"",
+    "wrong": "The package cites a section numbering that does not exist: 46 `AGENTS §N` citations across the guide, the guide index, src and tests (grep 'AGENTS §' over /home/user/fleet/router excluding node_modules returns 64 hits, of which 18 sit in the off-limits vendored mirrors abort.md, guide.md and emitter.md), plus a further body of bare `§4`, `§5`, `§5.1`, `§5.3`, `§9.2`, `§10`, `§13`, `§14`, `§16.1`, `§17.7`, `§21` and `§22` markers in src alone (98 `§` occurrences across 17 src files) that reference the same absent numbering. Every one names nothing a reader can open, and the See-also block at guides/router.md:693-695 sends a reader to AGENTS.md for four numbered sections that do not exist.",
+    "repair": "Delete every `AGENTS §N` and bare `§N` citation from the package's own files, keeping the substantive clause around it. Where the citation is the only content of a parenthesis, delete the parenthesis: for example src/core/constants.ts:4 becomes '// and `export`ed.', src/core/types.ts:12 becomes '//  Type groups, all `readonly`:', src/core/types.ts:493 becomes 'Represents the `Dispatcher`'s event map — the two dispatch-outcome', guides/router.md:169 becomes 'instance-method surface.', and guides/router.md:693-695 becomes '- [`AGENTS.md`](../AGENTS.md) — the rules this package is written to.' Where the citation stands in for a named rule, name the rule in words instead: src/core/helpers.ts:4 becomes '// The PURE path-matching primitives — module scope, no entity context.' Do not touch the vendored mirrors guides/abort.md, guides/emitter.md and guides/guide.md; those are off-limits and belong to their owning packages.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-14",
+    "claim": "S6 Guide and README parity",
+    "file": "/home/user/fleet/router/guides/router.md:246-249",
+    "rule": "\".claude/rules/documentation.md § Parity: 'Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true' and 'Re-read the prose last, against what actually shipped.'\"",
+    "wrong": "Contract row 7 states that Dispatcher 'always constructs its internal `Router` with `key: (entry) => `${entry.meta.method} ${entry.path}`', but Dispatcher.ts:73 passes `key: computeDispatchKey`, which is `${entry.meta.method} ${canonicalizePath(entry.path)}` (src/core/helpers.ts:80-82) — the guide's stated key omits the canonicalization, so a reader predicts that `GET /health` and `GET /health/` register as two entries when the code replaces one with the other.",
+    "repair": "Rewrite /home/user/fleet/router/guides/router.md:246-249 to name the real function and its identity: 'Dedup with `key`. When `RouterOptions.key` is set, an entry whose computed key already exists replaces the prior entry in place (last write wins, no engine rebuild); `Dispatcher` always constructs its internal `Router` with `key: computeDispatchKey`, which pairs the route's method with `canonicalizePath(entry.path)`, so two registrations differing only by a trailing slash replace each other while different methods stay distinct.'",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-15",
+    "claim": "S6 Guide and README parity",
+    "file": "/home/user/fleet/router/guides/router.md:163-214 and :155-161",
+    "rule": "\".claude/rules/documentation.md, behavioral interfaces/classes: 'Document public methods under `## Methods`. Use one method table per interface, keyed by its backticked name. The table's methods exactly match the interface's call-signature members.'\"",
+    "wrong": "`GroupInterface` and `DispatchGroupInterface` are behavioral interfaces with call-signature members `add` and `group` (src/core/types.ts:367-372 and :599-604) and implementing classes Group and DispatchGroup, yet the guide gives them no method table — lines 155-161 route only their readonly `prefix` to a Surface row and then silently restrict the Methods section to the other three interfaces. The parity suite cannot catch this: tests/guides.test.ts:101 iterates `guide.methods()`, the tables the guide already declares, so a missing table is invisible to it.",
+    "repair": "Add two tables under `## Methods` in /home/user/fleet/router/guides/router.md, after the `NavigatorInterface` table, in the same shape as the existing ones. Under a `#### \\`GroupInterface\\`` heading, an intro sentence and rows: `add` | `void` | 'Register one entry, or many, on the owning router with this group's prefix composed onto each path.'; `group` | `GroupInterface` | 'A nested group whose prefix is this prefix followed by the given one.' Under a `#### \\`DispatchGroupInterface\\`` heading, rows: `add` | `void` | 'Register one route input, or many, on the owning dispatcher with this group's prefix composed onto each path.'; `group` | `DispatchGroupInterface` | 'A nested group whose prefix is this prefix followed by the given one.' Then correct lines 155-161 and Contract row 2 at :225-228 so both name all five interfaces rather than three. The existing fences at :362-373 and the Group/DispatchGroup @example blocks already exercise `add` and `group`, so the suite's per-method example assertion is satisfied.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "router-subj-16",
+    "claim": "S6 Guide and README parity",
+    "file": "/home/user/fleet/router/guides/router.md:233-238",
+    "rule": "\".claude/rules/writing.md § Structure: 'Keep a required fact in the main flow. A note or a notice carries only what the reader can skip, never a prerequisite, a step, or a warning the task depends on.'\"",
+    "wrong": "Contract row 4 wraps to lines beginning with `>` (lines 234-238), so markdown renders everything after 'param (`TIER_PARAM`, 1)' — the wildcard tier, the left-to-right comparison rule, the registration-order independence, the prefix rule and the tie-break — as a blockquote hanging off the list item, pushing the package's precedence contract out of the main flow and into a notice.",
+    "repair": "Rewrite /home/user/fleet/router/guides/router.md:233-238 without a line-initial `>` by spelling the comparison in words: '4. **Precedence tiers.** A literal segment (`TIER_LITERAL`, 2) outranks a param (`TIER_PARAM`, 1), which outranks a wildcard (`TIER_WILDCARD`, 0). Two matching routes compare left to right, and the higher tier at the earliest differing segment wins, independent of registration order. A shorter pattern that is a prefix of a longer one ranks below it. An equal-specificity tie, possible only between distinct wildcard shapes, resolves to the earliest registered.'",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-17",
+    "claim": "S6 Guide and README parity",
+    "file": "/home/user/fleet/router/guides/README.md:20-47",
+    "rule": "\"AGENTS.md § Writing: 'NEVER name a list item by its position. Write the item's name, never its ordinal or its number.' and .claude/rules/documentation.md § Authority and workflow: '`guides/README.md` is the map'.\"",
+    "wrong": "The Dependency reference names @orkestrel/abort 'this package's third runtime dependency' (line 36), naming a list item by position, and the map is incomplete: it describes contract.md, emitter.md, abort.md and guide.md while guides/probe.md, guides/scaffold.md and guides/test.md sit beside them unexplained, so a reader of the guide set meets three mirrors the map does not account for.",
+    "repair": "Replace the four paragraphs at /home/user/fleet/router/guides/README.md:20-47 with one paragraph that covers every mirror and carries no ordinal: '## Dependency reference\\n\\nEvery other guide in this directory is a byte-identical mirror of the guide for the `@orkestrel/*` package it names — [`contract.md`](contract.md), [`emitter.md`](emitter.md) and [`abort.md`](abort.md) for this package's runtime dependencies, and [`guide.md`](guide.md), [`probe.md`](probe.md), [`scaffold.md`](scaffold.md) and [`test.md`](test.md) for its development dependencies. Each documents that package's own surface, not anything sourced in this repository; each is kept here so a reader can see the primitives this package is built from without leaving the guide set. A mirror's relative links address its upstream tree.' Verify each named file exists before writing the paragraph.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-18",
+    "claim": "S6 Guide and README parity",
+    "file": "/home/user/fleet/router/README.md:3-6",
+    "rule": "\".claude/rules/writing.md § Claims and time: 'Claim only what the reader can check.' and 'Write the present tense for what exists. Do not write `currently`, `now`, `new`, `latest`, or `soon`; where time matters, give the version or the date.'\"",
+    "wrong": "The README opens on two claims a reader cannot check and that date the package rather than describing it: 'the first `@orkestrel` package to ship both server and browser environments alongside its shared core' is a fleet-history ranking no consumer can verify and that a later package falsifies, and 'reusing both as it takes shape' tells a consumer the package is unfinished instead of what it does.",
+    "repair": "Replace /home/user/fleet/router/README.md:3-6 with a present-tense description of the shipped surface: 'A typed request router for the `@orkestrel` line. One matching engine compiles route patterns, extracts URL-decoded params, and resolves the most specific match; a `Dispatcher` layers fetch-standard, method-dimensioned dispatch over it; a headless `Navigator` drives History or hash navigation in the browser; and a `node:http` adapter converts messages in both directions. Built on `@orkestrel/contract` for validation, `@orkestrel/emitter` for the observable surface, and `@orkestrel/abort` for cancellation.'",
+    "breaking": false,
+    "consumers": [
+     "every reader of the npm page and the repository landing page"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "router-subj-19",
+    "claim": "S6 Guide and README parity",
+    "file": "/home/user/fleet/router/guides/router.md:159, :246, :267, :273, :284, :335, :337, :350, :522, :636; /home/user/fleet/router/README.md:44",
+    "rule": "\".claude/rules/writing.md § Substitutions: '`via` → `through`, `by using`' and § Code tokens, references, and links: 'Point to other material with `preceding`, `following`, `earlier`, or `later`, never with `above` or `below`.'\"",
+    "wrong": "The guide and README carry banned terms: `via` at guides/router.md:246, :273, :284, :337, :350, :522, :636 and README.md:44, and the document pointers `above` at guides/router.md:159 ('Surface rows, above'), :267 ('§5 above') and :335 ('§9 above').",
+    "repair": "Replace `via` with `through` at each of guides/router.md:246, :273, :284, :337, :350, :522, :636 and README.md:44. Replace the pointers: guides/router.md:159 'Surface rows, preceding'; guides/router.md:267 'by the shared trailing-slash-insensitivity rule stated earlier'; guides/router.md:335 'by the core `Dispatcher` itself, as stated earlier'. Note that the last two also carry `§N` markers struck by router-subj-13, so apply that finding's deletion in the same edit. Leave 'ranks below it' at guides/router.md:236 alone: it is a comparison, not a document pointer.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   }
+  ],
+  "referrals": [
+   "To the objective lane (O5 immutability): both DispatcherInterface.router (src/core/Dispatcher.ts:84-86) and NavigatorInterface.router (src/browser/Navigator.ts:109-111) publish the entity's live internal registry typed RouterInterface, whose surface includes add and clear. A consumer can call dispatcher.router.add({ path, meta }) directly, bypassing #register's handler and method guards (Dispatcher.ts:147-155) and the dedup key, or dispatcher.router.clear() to empty the registry the entity still believes it owns. Rule text to test it against: .claude/rules/typescript.md § Immutability, 'Return copies or readonly views; never leak a mutable internal reference.' I raise no verdict on it.",
+   "To the objective lane (O7 tests): src/core/Router.ts:72 and :96 both carry `if (entry === undefined || compiled === undefined) continue`, a branch that is unreachable while #entries and #compiled stay index-paired, which #register (lines 115-136) guarantees. Whether an unreachable defensive branch is acceptable, and whether the suite's coverage claims account for it, is a correctness question I do not rule on.",
+   "To the objective lane (O1 placement): Router with Group, and Dispatcher with DispatchGroup, are entity families whose class files sit flat in src/core/ rather than in a lowercase plural folder. .claude/rules/architecture.md § Entity subfolders states 'When one entity grows a family (entity + manager or sibling implementations), nest only its class files in a lowercase plural folder.' Whether a prefix-scoped registration handle counts as a sibling implementation is that lane's call.",
+   "To the Orchestrator: /home/user/fleet/router/tests/guides.test.ts:2 states 'The five constants below are this package's own', a count of a growable set under AGENTS.md § Writing. The file's own header calls it 'the consumer-side guides-parity drop-in' whose surrounding body a sibling package does not change, so the repair likely belongs to the shared drop-in rather than to this package, and applying it here alone would diverge the fleet. The file is not on the brief's off-limits list, so I flag it rather than filing it as a package finding.",
+   "To the Orchestrator: /home/user/fleet/router/package.json:4 states '@orkestrel line' twice in one description ('A typed request router for the @orkestrel line — server and browser environments. Part of the @orkestrel line.'). A grep over every /home/user/fleet/*/package.json shows the same doubling in console, ollama, tool, worker, database, workflow, toolbox, sqlite, server, agent, browser and workspace, so it is the fleet's convention rather than this package's drift and a change is a fleet decision, not a router edit."
+  ],
+  "coverage": "\"Read in full: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/router-brief.md; /home/user/scaffold/AGENTS.md; /home/user/scaffold/.claude/rules/names.md, patterns.md, typescript.md, architecture.md, documentation.md, writing.md. Subject files read in full: src/core/types.ts, constants.ts, helpers.ts, parsers.ts, factories.ts, Router.ts, Group.ts, Dispatcher.ts, DispatchGroup.ts, index.ts; src/browser/types.ts, helpers.ts, factories.ts, Navigator.ts, index.ts; src/server/types.ts, helpers.ts, validators.ts, handlers.ts, index.ts; guides/router.md; guides/README.md; README.md; package.json; tests/guides.test.ts. Read in part: tests/src/core/Dispatcher.test.ts (the auto-OPTIONS block at :254-301, to check whether any test pins the match emission router-subj-5 removes — none does); node_modules/@orkestrel/emitter/dist/src/core/index.d.ts:83-171 (the EmitterErrorHandler contract behind router-subj-6). Corroborating evidence outside the subject: /home/user/fleet/server/node_modules/@orkestrel/router/dist/src/core/index.d.ts and index.d.cts, which prove the @src/* @example imports ship to consumers (router-subj-8); grep over /home/user/fleet/{server,ollama,middleware,mcp}/{src,app,tests} to establish the consumer surface behind the breaking findings; grep over every /home/user/fleet/*/package.json for the description convention. Not read, with reason: tests/src/**/*.test.ts other than the Dispatcher auto-OPTIONS block, tests/setup*.ts bodies, tests/distribution.test.ts and tests/setupServer.test.ts — test sufficiency is claim O7 and the objective lane's, and I touched tests only where an S-claim reached them (the AGENTS §N citations in tests/setup*.ts, grepped by pattern); vite.config.ts, tsconfig.json and configs/** — claim O8 and off-limits respectively; guides/abort.md, contract.md, emitter.md, guide.md, probe.md, scaffold.md, test.md — vendored mirrors the brief places off-limits (their 18 AGENTS §N hits are excluded from router-subj-13); tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts, .claude/**, .codex/**, .cursor/**, AGENTS.md and CLAUDE.md in the subject tree — off-limits. Attacked and cleared, recorded so the refuter can see the vector rather than re-derive it: the class name Navigator against the DOM global of the same name (a consumer importing it shadows only the lib.dom type, the package's Navigator is generic so a bare Navigator would not silently resolve to it, and the term is the domain's; no rule bans shadowing a platform type); the coinage unmethoded (one consistent meaning across the union member, the option key and the event, documented in the guide, and names.md § General vocabulary states only a preference for short common English); NavigatorOptions.history as a boolean named for one of its modes (names.md itself offers the verb bail as an acceptable switch name); the nine flat keys of NavigatorOptions (each is one word at the top level and none configures a sub-entity, so patterns.md § Options does not force grouping); Dispatcher.handle against the fixed lifecycle verb execute (handlers.ts is a canonical kind file and RouteHandler is the table's own function-type form); Router's parallel #entries/#compiled arrays (pairing them would force an internal-only interface into the published types.ts); the required state argument on handle when TState defaults to undefined (the conditional-tuple fix costs more machinery than the wart); the exported type-level recursion behind PathParams (architecture.md requires centralized declarations to be exported, and mutual type-level recursion cannot fold into its caller); the shouting capitalisation throughout the TSDoc and guide (loud, but no rule sentence in AGENTS.md § Writing or .claude/rules/writing.md governs emphasis capitals, so I filed nothing); the package.json description's thinness relative to sibling manifests (accurate as written). Not evidenced, named rather than inferred: whether the unqualified {@link joinPaths} in Router.ts:34, {@link canonicalizePath} in Navigator.ts:23, {@link PathParams} in core/helpers.ts:378 and :397, and {@link import('./factories.js')} in core/helpers.ts:381 resolve under this package's TSDoc toolchain. I filed only the two links whose named module demonstrably lacks the symbol (router-subj-12); ruling on the rest needs a doc-link resolver run I cannot perform read-only, and it is a mechanical question for checker.\"",
+  "terminal": "VERDICT: FAIL — 6 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "refuter": {
+  "package": "@orkestrel/router (/home/user/fleet/router) — REFUTER lane held in the OBJECTIVE perspective by `reviewer` on Claude, the recorded substitution for the dark GPT-5.6 Sol bench. Every vector reproduced read-only against the tree, the scaffold canon, the installed declarations, and sibling checkouts under /home/user/fleet; no command executed, so every behavioural reading is source analysis.",
+  "rulings": [
+   {
+    "id": "router-obj-1",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/typescript.md § Errors and outcomes is unconditional (\"Programmer error or invalid argument | Throw an `AppError`\", \"Error classes expose a machine-readable `code` and optional `context`\", \"Every public error class ships with a guard\"), a bare `TypeError` satisfies none of it, the TSDoc `@throws {TypeError}` documents the behaviour rather than an exception to the rule, and the declared runtime dependency already ships the matching primitive with fleet precedent in @orkestrel/abort.",
+    "evidence": "Throw sites: /home/user/fleet/router/src/core/Router.ts:116-119, src/core/Dispatcher.ts:148-155, src/core/helpers.ts:137-140, src/browser/Navigator.ts:75-84. Installed declaration: node_modules/@orkestrel/contract/dist/src/core/index.d.ts:1256-1267 (`ContractError` with `code: ContractCode`), :1079-1105 (`ContractCode` union includes 'bound', 'placement', 'literal', 'pattern'), :1270-1279 (`ContractErrorContext.received` is `string`), :2493 (`isContractError`), :4844 (`preview(value: unknown): string`). Precedent: /home/user/fleet/abort/src/core/helpers.ts:24-74. Tests pinning `TypeError`: tests/src/core/Router.test.ts:64-75, tests/src/core/Dispatcher.test.ts:304-324, tests/src/core/helpers.test.ts:102-107, tests/src/browser/Navigator.test.ts:640-684. Consumer grep for `TypeError` over /home/user/fleet/{server,middleware,mcp,ollama}/{src,app,tests}: only middleware's and mcp's own throws; nothing catches router's. Fleet split (grep `new TypeError(` vs `new ContractError(` over */src): TypeError survives in console, mcp, middleware, test, server, router; ContractError in abort, budget, timeout, contract.",
+    "repair": "Finder's repair stands with two corrections. (1) `received` must be a string: write `received: preview(<value>)` and import `preview` beside `ContractError` from '@orkestrel/contract', the exact shape /home/user/fleet/abort/src/core/helpers.ts:27-33 uses. (2) Choose codes by what was refused: `'literal'` for a wrong-typed scalar or non-function (Router.ts:116 non-string path, Dispatcher.ts:148 non-function handler, Dispatcher.ts:152 method outside METHODS, Navigator.ts:75/79/83 guard/fallback/base), `'pattern'` for a string path missing its leading `/` (Router.ts:116 second clause), `'placement'` for a wildcard segment that is not final (helpers.ts:137). Then update `@throws {TypeError}` at src/core/helpers.ts:114, the `@remarks` at src/core/types.ts:555-558, src/core/Router.ts:23-25, src/core/Dispatcher.ts:36-40, the guide rows guides/router.md:181, :196, :232 and practice bullet :607-608, and change the four test files' `toThrow(TypeError)` to `toThrow(ContractError)` plus an assertion on `.code`. Add no router-owned error class. Routing note for the Orchestrator: the same class survives in middleware, server, mcp, test, and console; ruling it here without a fleet row leaves the fleet split.",
+    "breaking": true
+   },
+   {
+    "id": "router-obj-2",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/tests.md § Cross-cutting proofs requires the flagship fences transcribed in `tests/guides.test.ts` and the file transcribes none.",
+    "evidence": "/home/user/fleet/router/tests/guides.test.ts:1-179 runs manifest, surface, method, example-presence, fence-import, and link parity only; no `describe('flagship fences')` and no value assertion. Value comments unproven: guides/router.md:370, :389-391, :403, :409, :415, :476-479, :500. The `guides` project runs Node with `browser: { enabled: false }` (vite.config.ts:175-185). Shape to copy: /home/user/fleet/codec/tests/guides.test.ts:1-5 header and :241-262 transcriptions.",
+    "repair": "Finder's repair stands verbatim: append a `describe('flagship fences', …)` block after the manifest loop importing from the real barrels and asserting each value comment for the Surface fence (:24-41), Groups and dedup (:362-373), Wildcard capture and precedence (:380-392), Method-dimensioned dispatch (:396-416), Observing dispatch outcomes (:420-431), Typing a route input (:441-452), Introspection and reset (:468-484); transcribe the three `@orkestrel/router/browser` fences (:488-503, :507-517, :524-538) into tests/src/browser/Navigator.test.ts and say so in the block's header; rewrite the header comment at tests/guides.test.ts:1-3 in the codec form.",
+    "breaking": false
+   },
+   {
+    "id": "router-obj-3",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: the instrument's stated coverage (\"imports only real exports in every ```ts fence\") is wider than what it matches, which .claude/rules/quality.md § Instruments names a defect in the instrument.",
+    "evidence": "MODULES at /home/user/fleet/router/tests/guides.test.ts:33-38 maps `@orkestrel/router`, `@src/browser`, `@src/core`, `@src/server` only. Guide fences import `@orkestrel/router/browser` at guides/router.md:489, :508, :525 and `@orkestrel/router/server` at :543, :568, :593. `SourceManager.source` returns `undefined` for an unmapped specifier (node_modules/@orkestrel/guide/dist/src/core/index.d.ts:1239, :1264), and tests/guides.test.ts:156 `continue`s on `undefined`, so those six fences are never checked. Sibling mapping: /home/user/fleet/mcp/tests/guides.test.ts:55-59.",
+    "repair": "Finder's repair stands: add `'@orkestrel/router/browser': 'src/browser',` and `'@orkestrel/router/server': 'src/server',` to MODULES at tests/guides.test.ts:33-38, keep the `@src/*` rows, and prove the instrument reddens by temporarily misnaming one import in a browser fence before restoring it.",
+    "breaking": false
+   },
+   {
+    "id": "router-obj-4",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/tests.md § Delay bans an inline timeout promise and a fixed delay chosen to outlast another process; the case builds both.",
+    "evidence": "/home/user/fleet/router/tests/src/server/helpers.test.ts:166-176 wraps `net.connect` in `new Promise` and chains `setTimeout(…, 20)` then `setTimeout(resolve, 50)`; the only `setTimeout(` sites in the package's own tests are :172 and :174 (grep over tests/ excluding the vendored files). The sibling case :186-228 already parks on the real `abort` event. `Promise.withResolvers` is used at :187 and :232, so the pattern is available.",
+    "repair": "Finder's diagnosis stands; its repair text is garbled (\"`waitForCondition(…)`-free\"), so apply this instead. Replace lines 159-176 with: `const recorder = createRecorder<[unknown]>()`; `const entered = Promise.withResolvers<void>()`; `const aborted = Promise.withResolvers<void>()`; `const server = await startServer((incoming, response) => { const request = buildRequest(incoming); request.signal.addEventListener('abort', () => { recorder.handler(request.signal.reason); aborted.resolve() }); void response; entered.resolve() })`; `const socket = net.connect(server.port, '127.0.0.1', () => { socket.write('POST /x HTTP/1.1\\r\\nHost: localhost\\r\\nContent-Length: 100\\r\\n\\r\\npartial') })`; `await entered.promise`; `socket.destroy()`; `await aborted.promise`. Keep `await server.close()` and the assertions at :179-183. No `setTimeout`, no `waitForDelay`.",
+    "breaking": false
+   },
+   {
+    "id": "router-obj-5",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/workspace.md § Tooling requires `engines` and documentation aligned, and the README contradicts the manifest.",
+    "evidence": "/home/user/fleet/router/README.md:16 `- Node.js >= 24`; package.json:114-116 `\"engines\": { \"node\": \">=22.12.0\" }`; vite.config.ts:106 `target: 'node22'`.",
+    "repair": "Finder's repair stands: change README.md:16 to `- Node.js >= 22.12.0`.",
+    "breaking": false
+   },
+   {
+    "id": "router-obj-6",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: the sentence is false against the manifest and the build-output table in .claude/rules/workspace.md § Build outputs (core and server ship ES and CJS).",
+    "evidence": "/home/user/fleet/router/README.md:17 `- ESM-only (no CommonJS build)`; package.json:26 `\"main\": \"./dist/src/core/index.cjs\"`, :34-37 and :50-53 `require` conditions for `.` and `./server`, :83 and :85 build both formats and copy `.d.cts`; :39-44 `./browser` carries `import` only.",
+    "repair": "Finder's repair stands: replace README.md:17 with `- ESM and CommonJS for the core and \\`./server\\` entries; the \\`./browser\\` entry is ESM only.`",
+    "breaking": false
+   },
+   {
+    "id": "router-obj-7",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: the line is authoring debris no Markdown construct opens, the case .claude/rules/workspace.md § Text integrity names.",
+    "evidence": "/home/user/fleet/router/guides/README.md:52 reads `</content>` after the `## See also` bullet at :51; nothing in the file opens a `<content>` element.",
+    "repair": "Finder's repair stands: delete guides/README.md:52.",
+    "breaking": false
+   },
+   {
+    "id": "router-obj-8",
+    "verdict": "CONFIRMED",
+    "ground": "The EXEMPT ruling holds: the wrapper test in .claude/rules/architecture.md keeps a wrapper that adds a \"materially narrower contract\", and the `const Path extends string` parameter supplies one no rename or direct use can; the exception is documented.",
+    "evidence": "/home/user/fleet/router/src/core/helpers.ts:412-416 body is identity; the narrowing is stated at :375-394 with its ceiling; guides/router.md:433-459 documents it; tests/src/core/helpers.test.ts:306-317 pin literal preservation with `expectTypeOf`.",
+    "repair": "No edit under claim O2. The symbol's NAME is ruled separately under router-subj-2 (rename, never delete); a writer applying subj-2 keeps the body, doc block, and tests.",
+    "breaking": false
+   },
+   {
+    "id": "router-obj-9",
+    "verdict": "CONFIRMED",
+    "ground": "The EXEMPT ruling holds, on a firmer ground than the finder's: .claude/rules/architecture.md § Class order directs \"Store child managers in `#` fields and expose readonly getters typed as their interfaces\", which is exactly what both getters do; § Immutability's \"never leak a mutable internal reference\" targets internal data structures, not a composed child entity exposed through its own interface.",
+    "evidence": "/home/user/fleet/router/src/core/Dispatcher.ts:84-86 and src/browser/Navigator.ts:109-111 return the `#router` child typed `RouterInterface`. No invariant leaks: Router's `clear()` also empties `#index` (src/core/Router.ts:106-110), Dispatcher holds no registry state outside the router, and the typed surface admits only well-formed `RouteRecord` values (types.ts:466-470, :573). The word READONLY at types.ts:551 and browser/types.ts:101 describes the getter and is the subjective lane's prose question.",
+    "repair": "No edit under claim O5. Note that router-subj-1 retypes the Navigator getter to `RouterInterface<Meta>`; that change is subj-1's, not this finding's.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-1",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: the outer entry's `path` and `name` are stored a second time inside `meta` and never differ, which AGENTS.md § Design laws bans (\"Derive state… Do not store a second flag or label that can drift\"), and the wrapper adds no boundary, invariant, or narrower contract under the wrapper test — `match` unwraps it immediately.",
+    "evidence": "/home/user/fleet/router/src/browser/Navigator.ts:94-102 registers `{ path: route.path, meta: route, name: route.name }`; `computeNavigationKey` reads `entry.meta.path` (src/browser/helpers.ts:26-28), which always equals `entry.path`; `match` unwraps `hit.meta.meta` and `hit.meta.name` (Navigator.ts:157-166); the published getter is `RouterInterface<RouteEntry<Meta>>` (src/browser/types.ts:119). `NavigatorOptions.routes` is already `ReadonlyArray<RouteEntry<Meta>>` (browser/types.ts:76), so the inner router can take it as-is. No test reads `navigator.router`, `meta.meta`, or `RouteEntry` under tests/src/browser (grep: no hits). No fleet consumer imports the browser entry (grep `from '@orkestrel/router` over server, middleware, mcp, ollama).",
+    "repair": "Finder's repair stands, simplified: in Navigator.ts:94-102 pass `entries: options.routes` directly (drop the map); type `#router` (:59), the getter (:109), and `NavigatorInterface.router` (browser/types.ts:119) as `RouterInterface<Meta>`; reduce `match` (:157-166) to `return this.#router.match(path)`; change `computeNavigationKey` to `(entry: RouteEntry<unknown>): string => canonicalizePath(entry.path)` and its `@example` (browser/helpers.ts:23) and test (tests/src/browser/helpers.test.ts:16) to `computeNavigationKey({ path: '/users/', meta: {} })`; drop the `RouteEntry` import from Navigator.ts if unused; rewrite the prose naming `Router<RouteEntry<Meta>>` at browser/types.ts:4 and :94, Navigator.ts:13, and browser/factories.ts:6 to `Router<Meta>`.",
+    "breaking": true
+   },
+   {
+    "id": "router-subj-2",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/names.md § Standalone helpers defaults to `{verb}{Noun}` and admits a one-word helper only when \"its meaning and arguments are unmistakable\"; `route` is the package's own dispatch verb (used that way in its prose) attached to a function that routes nothing, so the meaning is mistakable by the package's own vocabulary.",
+    "evidence": "/home/user/fleet/router/src/core/helpers.ts:412-416; the verb sense at src/browser/Navigator.ts:239 (\"Route a guard throw\") and src/browser/types.ts:65 (\"A throw routes to the error handler\"); guide rows guides/router.md:83, :435-459, :656; README.md:44; tests/src/core/helpers.test.ts:295-318. No `defineRoute` exists anywhere under /home/user/fleet/*/src (grep). No fleet consumer imports `route`.",
+    "repair": "Finder's repair stands: rename the export at src/core/helpers.ts:412 to `defineRoute`, keeping signature, body, and doc block; update guides/router.md:83, :435-452, :656, README.md:44, and tests/src/core/helpers.test.ts:295-317. The identity function itself is retained per router-obj-8.",
+    "breaking": true
+   },
+   {
+    "id": "router-subj-3",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban it. \"One concept, one term\" forbids alternating synonyms for ONE concept; `RouteEntry` (the registry row: path, meta, name) and `RouteRecord` (the dispatcher's stored payload: method, handler, name) are two concepts, each with one term. The proposed `RouteMeta` also collides with the engine's generic `Meta` vocabulary — `RouteEntry<Meta>`, `RouterMatch<Meta>`, `NavigatorOptions<Meta>` — where `Meta` names an opaque consumer payload, so the rename would introduce the ambiguity it claims to remove while breaking a published type with no rule behind it.",
+    "evidence": "/home/user/fleet/router/src/core/types.ts:243-247 (`RouteEntry`), :466-470 (`RouteRecord`, its `@remarks` at :455-457 already states it is the `meta` payload), :488 and :573 (`RouteEntry<RouteRecord<TState>>` composition), src/browser/types.ts:27, :44, :98 (`Meta` as the consumer's opaque payload).",
+    "repair": "None; retain both names.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-4",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: the miss tuple's third element carries the same literal set `DispatchResult.status` carries, under a second name, which AGENTS.md § Design laws (one concept, one term) and .claude/rules/names.md (\"Name the axis a discriminant varies\") both bind.",
+    "evidence": "/home/user/fleet/router/src/core/types.ts:488-490 `status: 'matched' | 'unmethoded' | 'unmatched'`; :510 `reason: 'unmatched' | 'unmethoded'`; guides/router.md:273 \"via its `reason` field\", :426 fence parameter `reason`; tests/src/core/Dispatcher.test.ts:91, :100 titles say \"reason\".",
+    "repair": "Finder's repair stands: rename the label at types.ts:510 to `status`, update the prose at types.ts:503-506, guides/router.md:272-273 and :426, and the test titles at Dispatcher.test.ts:91 and :100. Leave `DispatchResult.status` unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-5",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute the defect: the element labelled `pattern` receives a concrete pathname for a derived OPTIONS answer, contradicting the tuple label and both prose sites. The finder's REPAIR is amended: the emission is documented as intended, so give it the winning pattern rather than deleting it.",
+    "evidence": "/home/user/fleet/router/src/core/Dispatcher.ts:221-222 `this.#emitter.emit('match', 'OPTIONS', pathname)` against types.ts:509 `[method: Method, pattern: string]` and :497-499 (\"including the auto-`HEAD`/auto-`OPTIONS` derived cases: the request `method` and the winning `pattern`\"); guides/router.md:270-272. tests/src/core/Dispatcher.test.ts:81-89 pins the pattern for a plain hit; :258-300 asserts nothing about emission for auto-OPTIONS, so no test pins the wrong payload. `#respondAutoOptions` is reached only when `result.allow` is non-empty (:132-133), and a non-empty `entries(pathname)` implies `#router.match(pathname)` resolves.",
+    "repair": "In Dispatcher.ts:133 replace `if (method === 'OPTIONS') return this.#respondAutoOptions(pathname, result.allow)` with `if (method === 'OPTIONS') { const hit = this.#router.match(pathname); if (hit !== undefined) return this.#respondAutoOptions(hit.path, result.allow) }`; change `#respondAutoOptions(pattern: string, allow: readonly Method[])` to emit `this.#emitter.emit('match', 'OPTIONS', pattern)` and update its comment at :219-220. Rewrite types.ts:497-499 to \"emitted on every dispatch the dispatcher answers, the derived `HEAD` and `OPTIONS` cases included: the request `method` and the winning `pattern` (for a derived `OPTIONS` answer, the most-specific pattern the pathname resolved to)\", and guides/router.md:270-272 to match. Add to the auto-OPTIONS block in tests/src/core/Dispatcher.test.ts a case that records `match`, registers `GET /users/:id`, dispatches `OPTIONS http://x/users/7`, and expects `[['OPTIONS', '/users/:id']]`. Deletion (the finder's repair) is rejected because it leaves an answered dispatch emitting neither `match` nor `miss` and removes a documented capability.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-6",
+    "verdict": "CONFIRMED",
+    "ground": "The EXEMPT ruling holds: the routing is a documented deliberate decision, and the quoted rule does not ban it — .claude/rules/patterns.md § Listener isolation describes what the emitter does with listener throws and says nothing about an entity surfacing its own pipeline throw through the same handler; `EmitterErrorHandler`'s event parameter is a plain `string`.",
+    "evidence": "/home/user/fleet/router/src/browser/types.ts:71-73 and guides/router.md:301-302 state the decision; src/browser/Navigator.ts:239-250 implements it with the anti-recursion swallow; node_modules/@orkestrel/emitter/dist/src/core/index.d.ts:83-89 declares `(error: unknown, event: string) => void`.",
+    "repair": "No edit. If the Orchestrator lifts the exemption, the finder's minimal repair (`handler(error, 'guard')` at Navigator.ts:246 plus the two prose sites) is correct and typechecks.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-7",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: two fields hold two bindings of one method and only one is ever registered per instance, a duplicate the cleanup sweep in .claude/rules/architecture.md § Declaration placement and \"Centralize any pattern repeated twice\" in § System constraints both remove.",
+    "evidence": "/home/user/fleet/router/src/browser/Navigator.ts:67-68 declare `#hashListener` and `#popListener`; :104-105 assign both `this.#resolve.bind(this)`; :124-129 and :136-141 register exactly one of them, chosen by `#history`, which is fixed at :85.",
+    "repair": "Finder's repair stands: delete `#popListener` (:68, :105), rename `#hashListener` to `#listener` (:67, :104), and use `this.#listener` at :125, :127, :137, :139.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-8",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban it, and the pattern is the fleet convention rather than router drift. .claude/rules/documentation.md § Guide examples governs guide code fences and explicitly reserves `@src/*` \"for source/tests\"; a TSDoc `@example` is source. The shipped-declaration fact is true but the ruling it needs is a fleet-wide one the Orchestrator owns.",
+    "evidence": "Grep `^ \\* import .* from '@src/` over /home/user/fleet/*/src: 312 occurrences across 65 files in template, console, markdown, msg, server, websocket, interpret, emitter, sse, terminal, csv, relation, reason, toolbox, and router; the `@orkestrel/` form inside `@example` appears in 20 files, mostly mcp. The blocks do ship: /home/user/fleet/server/node_modules/@orkestrel/router/dist/src/core/index.d.ts:236, :264, :452, :551 carry `from '@src/core'` verbatim.",
+    "repair": "None for router alone. Referral to the Orchestrator: if the fleet adopts the published-specifier form for `@example` blocks, the finder's site list (src/core/factories.ts:26, :54; src/core/Group.ts:17; src/core/DispatchGroup.ts:20; src/browser/factories.ts:23; src/server/helpers.ts:46, :126; src/server/validators.ts:20; src/server/handlers.ts:81-82) is the correct router slice and the real source imports stay on `@src/*`.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-9",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/typescript.md § Comments and API documentation fixes the boolean-parameter form (\"If `true`, …; if `false`, …\") and the default form (\"Default: …\"), and none of the three sites uses them.",
+    "evidence": "/home/user/fleet/router/src/core/helpers.ts:112 `@param sensitive - Case-sensitive matching (default `true`)`; :246-247 `@param isFinal - Whether …`; src/browser/helpers.ts:74-75 `@param history - The navigation substrate: `false` for hash mode, `true` for history mode`. The fixed boolean-return form is used correctly at src/server/validators.ts:15-16, so the package knows the form.",
+    "repair": "Finder's rewrites stand verbatim for helpers.ts:112, helpers.ts:246-247, and browser/helpers.ts:74-75.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-10",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: AGENTS.md § Writing forbids stating a count of a growable set and directs deleting it; the method set is declared growable by its own TSDoc and the face/entry sets are growable by construction.",
+    "evidence": "Grep (case-insensitive number words over src, guides/router.md, README.md): `seven` at src/core/types.ts:375, src/core/constants.ts:14, :43, src/core/parsers.ts:16, :24, guides/router.md:63, :64, :138; `three faces` at guides/router.md:3; `three environment-scoped entry points` at README.md:57; constants.ts:15-17 states adding a verb widens the set.",
+    "repair": "Finder's repair stands for its listed sites. Amend to cover the same-class sites it missed: src/core/types.ts:474 \"the three dispatch tiers\" → \"the dispatch tiers\"; :493 \"the two dispatch-outcome signals\" → \"the dispatch-outcome signals\"; :514 \"the two default-responder overrides\" → \"the default-responder overrides\"; guides/router.md:13 \"the other two faces\" → \"the browser and server faces\"; :229 \"Three segment kinds\" → \"Segment kinds\"; :604 \"One engine, two seams\" → \"One engine, one seam per face\". Leave \"two paths\"/\"two routes\" in src/core/helpers.ts:277-308: a comparator's arity is a value, not a count.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-11",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: AGENTS.md § Writing scopes the prose rules to TSDoc, and .claude/rules/writing.md § Substitutions bans `via`, `e.g.`, and `simply`.",
+    "evidence": "Grep `\\bvia\\b|e\\.g\\.|\\bsimply\\b` over src: `via` at src/core/types.ts:396, :400, :437; src/core/Group.ts:13; src/core/Router.ts:29, :34, :113; src/core/DispatchGroup.ts:13; src/core/helpers.ts:274, :397; src/server/helpers.ts:108; src/browser/Navigator.ts:220, :252. `e.g.` at src/core/types.ts:132; src/core/helpers.ts:111, :206, :236, :276, :286, :354, :355; src/browser/helpers.ts:41. `simply` at src/browser/helpers.ts:70.",
+    "repair": "Finder's repair stands with one correction: src/core/helpers.ts:276 carries `e.g.` (\"(e.g. `a:b`)\"), not `via`, so it takes `for example`, not `through`. Leave `currently-resolved` at src/browser/types.ts:104 as the finder ruled.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-12",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: the `{@link}` names a symbol the linked module does not export, so the published doc reference resolves to nothing.",
+    "evidence": "/home/user/fleet/router/src/core/constants.ts:8 and :37 write `{@link import('./types.js').Dispatcher}`; src/core/types.ts exports `DispatcherInterface` (:572) and no `Dispatcher`; the class lives in src/core/Dispatcher.ts:61.",
+    "repair": "Finder's repair stands: change both links to `{@link import('./types.js').DispatcherInterface}`.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-13",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: every `AGENTS §N` and bare `§N` citation names a section AGENTS.md does not have, which .claude/rules/writing.md § Claims and time (\"Claim only what the reader can check\") and § Code tokens, references, and links (link text names the destination) both forbid, and the shared brief's claim S6 names the class explicitly. The finder's cited ground (competing instruction copy) is replaced by this one.",
+    "evidence": "/home/user/scaffold/AGENTS.md, read in full, numbers no heading. Grep `AGENTS §` over /home/user/fleet/router excluding node_modules: 64 hits in 20 files, 18 in the off-limits mirrors (guides/abort.md 3, guides/guide.md 4, guides/emitter.md 11), 46 in package-owned files at the sites the finder lists. Bare `§N` markers throughout src (for example src/core/types.ts:2, :134, :261, :312, :324; src/core/helpers.ts:93, :136; src/core/Dispatcher.ts:35, :46) reference the same absent numbering.",
+    "repair": "Finder's repair stands with two amendments. (1) Do not delete `(§5 above)` at guides/router.md:267 and `(§9 above)` at :335: they point at the guide's own Contract rows 5 and 9, and router-subj-19 rewrites them in words. (2) Strip the same-class campaign-unit markers that also name nothing a reader can open: `U1` at src/core/types.ts:213 and src/core/constants.ts:62, :77, :93; `U6`/`U3` at tests/src/core/Dispatcher.test.ts:14 and :19.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-14",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: the prose states a key function the code does not use, the exact prose-versus-code drift .claude/rules/documentation.md § Parity directs falsifying.",
+    "evidence": "/home/user/fleet/router/guides/router.md:246-249 states `key: (entry) => \\`${entry.meta.method} ${entry.path}\\``; src/core/Dispatcher.ts:73 passes `key: computeDispatchKey`; src/core/helpers.ts:80-82 computes `${entry.meta.method} ${canonicalizePath(entry.path)}`; helpers.ts:77 example shows `/health/` → `GET /health`.",
+    "repair": "Finder's rewrite of guides/router.md:246-249 stands verbatim (name `computeDispatchKey` and its `canonicalizePath` pairing).",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-15",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/documentation.md requires one method table per behavioral interface and both interfaces have call-signature members with no table; the parity suite iterates only the tables the guide declares, so nothing mechanical catches it.",
+    "evidence": "/home/user/fleet/router/src/core/types.ts:367-372 (`GroupInterface.add`, `.group`) and :599-604 (`DispatchGroupInterface.add`, `.group`); guides/router.md:163-215 holds tables for `RouterInterface`, `DispatcherInterface`, `NavigatorInterface` only, and :155-161, :165-169, :225-228 say three; tests/guides.test.ts:101 `for (const group of guide.methods())`. Examples exercising `add`/`group` already exist in guides/router.md:362-373 and src/core/Group.ts:15-23, src/core/DispatchGroup.ts:18-25, so the per-method example assertion will pass.",
+    "repair": "Finder's repair stands verbatim: add `#### \\`GroupInterface\\`` and `#### \\`DispatchGroupInterface\\`` tables after the `NavigatorInterface` table with the rows it gives, and correct :155-161 and Contract row 2 at :225-228 to name all five interfaces.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-16",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: a line-initial `>` inside a list item's continuation opens a block quote in CommonMark, so the rendered row is not the text written; the formatter has already re-prefixed the whole run with `>`, which is the formatter itself parsing it as a block quote. .claude/rules/workspace.md § Text integrity (unintended construct in migrated text) with .claude/rules/writing.md § Structure (a required fact stays in the main flow) is the ground.",
+    "evidence": "/home/user/fleet/router/guides/router.md:233 ends `> param (\\`TIER_PARAM\\`, 1)` and :234-238 each begin `   > ` (\"> wildcard …\", \"> differing segment; …\", \"> is a prefix …\", \"> possible …\", \"> registered.\"). Rendering is NOT-EVIDENCED by a capture; the ruling rests on the formatter's normalization visible in the file and the CommonMark block-quote rule.",
+    "repair": "Finder's rewrite of guides/router.md:233-238 stands verbatim (spell the comparison in words with no line-initial `>`).",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-17",
+    "verdict": "CONFIRMED",
+    "ground": "Confirmed for the ordinal only: AGENTS.md § Writing forbids naming a list item by its position. The completeness half is struck: sibling maps describe runtime and peer dependencies plus guide.md and leave probe.md, scaffold.md, and test.md unlisted, so omitting those mirrors is the fleet convention and no quoted rule requires listing them.",
+    "evidence": "/home/user/fleet/router/guides/README.md:23 \"one of this package's runtime dependencies\", :29 \"this package's other runtime dependency\", :36 \"this package's third runtime dependency\". Siblings: /home/user/fleet/abort/guides/README.md:17-30 lists contract.md and guide.md while abort/guides also holds probe.md, scaffold.md, test.md (Glob); /home/user/fleet/mcp/guides/README.md:19-75 lists runtime and peer mirrors plus guide.md while mcp/guides also holds probe.md, scaffold.md, test.md, codec.md, process.md. Both siblings write \"a runtime dependency\" or \"sole runtime dependency\", never an ordinal.",
+    "repair": "Narrowed: keep the four paragraphs; at guides/README.md:23 replace \"one of this package's runtime dependencies\" with \"a runtime dependency\"; at :29 replace \"this package's other runtime dependency\" with \"a runtime dependency\"; at :36 replace \"this package's third runtime dependency\" with \"a runtime dependency\". Do not add paragraphs for probe.md, scaffold.md, or test.md.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-18",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/writing.md § Claims and time forbids a claim the reader cannot check and prose that dates the package; \"the first `@orkestrel` package to ship both server and browser\" is a fleet-history ranking that is false or unverifiable, and \"as it takes shape\" describes a moment rather than the package.",
+    "evidence": "/home/user/fleet/router/README.md:3-6. Glob shows /home/user/fleet/console/src/{core,browser,server}/index.ts and /home/user/fleet/mcp/src/{core,browser,server}/index.ts, so other packages ship all three environments and the sentence names no date to check the ranking against.",
+    "repair": "Finder's replacement paragraph for README.md:3-6 stands verbatim.",
+    "breaking": false
+   },
+   {
+    "id": "router-subj-19",
+    "verdict": "CONFIRMED",
+    "ground": "Cannot refute: .claude/rules/writing.md § Substitutions bans `via` and § Code tokens, references, and links bans `above`/`below` as document pointers; every cited site is a hit in the banned sense.",
+    "evidence": "Grep `\\bvia\\b|\\babove\\b|\\bbelow\\b` over guides/router.md and README.md: `via` at guides/router.md:246, :273, :284, :337, :350, :522, :636 and README.md:44; `above` at guides/router.md:159, :267, :335; the only `below` (:236 \"ranks below it\") is a comparison and stays.",
+    "repair": "Finder's repair stands verbatim, including rewriting :267 and :335 in words (they cross-reference the guide's own Contract rows 5 and 9) rather than deleting them under router-subj-13.",
+    "breaking": false
+   }
+  ],
+  "terminal": "VERDICT: FAIL — 23 broken, 0 unresolved, 0 findings outside the claims"
+ }
+}

@@ -1,0 +1,127 @@
+{
+	"agent": [
+		{ "id": "agent-c1", "text": "`InstructionInterface.format` is a string beside the object-shaped manager members; a successor row for the per-item level.", "pointer": "fix/units/agent-audit-verdict.md:30", "lane": "subjective" },
+		{ "id": "agent-c2", "text": "The seeded `RunOutcome` in `#pump` is a masked-not-surfaced guard recorded for a future drive change.", "pointer": "fix/units/agent-audit-verdict.md:29", "lane": "objective" },
+		{ "id": "agent-c3", "text": "`guides/agent.md` names `consume` as a method reference; the `AgentEventMap` Types row gained `exhaust` while the row was rewritten — confirm the guide matches the shipped map.", "pointer": "fix/units/agent-audit-verdict.md:43", "lane": "subjective" }
+	],
+	"brief": [
+		{ "id": "brief-c1", "text": "The `result` parameter fills `Example.output`, a synonym pair; one term per concept.", "pointer": "fix/units/brief-audit-verdict.md:25", "lane": "subjective" }
+	],
+	"browser": [
+		{ "id": "browser-c1", "text": "`parseBrowserChord` is a throwing `parse*` in `helpers.ts`; `evaluate(expression, timeout?)` carries a positional timeout; `findInStore`'s plurality; the driver-interface split that would let drive methods leave the consumer contract.", "pointer": "fix/units/browser-audit-verdict.md:59", "lane": "subjective" },
+		{ "id": "browser-c2", "text": "The `helpers.ts` ↔ `parsers.ts` module cycle, proven safe by the dist probe, is recorded as a shape observation; rule it against § Kind purity's leaf-pair law.", "pointer": "fix/units/browser-audit-verdict.md:62", "lane": "objective" },
+		{ "id": "browser-c3", "text": "Finder resolution spawns without `@orkestrel/process`, rejected this campaign as an unrequested dependency; rule under `.claude/rules/portability.md` § Processes and executables as the package stands.", "pointer": "registry.md:173", "lane": "objective" }
+	],
+	"console": [
+		{ "id": "console-c1", "text": "`createCaptureResult` keeps the `create*` name and `factories.ts` placement although it runs a callback and returns a record; the successor candidate is a verb-first helper taking a `CaptureInterface`.", "pointer": "fix/units/console-audit-verdict.md:26", "lane": "subjective" },
+		{ "id": "console-c2", "text": "The guides test maps no `@orkestrel/console/server` specifier, so server fences' imports are unchecked.", "pointer": "fix/units/console-audit-verdict.md:29", "lane": "objective" },
+		{ "id": "console-c3", "text": "`succeed` on `Spinner` beside `complete` on `Progress`; no test names `DEFAULT_STREAM_LIMIT`.", "pointer": "fix/units/console-audit-verdict.md:31", "lane": "subjective" }
+	],
+	"contract": [
+		{ "id": "contract-c1", "text": "The shared per-sample classifier's cause prefix; the remaining out-of-order import members.", "pointer": "fix/units/contract-audit-verdict.md:56", "lane": "objective" },
+		{ "id": "contract-c2", "text": "The s03-22 radius under-scoped the moved Reflect keys; confirm every consumer of `INTRINSICS.reflect` in the fleet closure compiles (the compiler is the scope).", "pointer": "fix/units/contract-audit-verdict.md:29", "lane": "objective" },
+		{ "id": "contract-c3", "text": "The `buildStringFaults` guide row keeps a count (\"two copies of the same twenty-one lines\") against `AGENTS.md` § Writing.", "pointer": "fix/units/contract-merge-audit-verdict.md:16", "lane": "subjective" }
+	],
+	"csv": [
+		{ "id": "csv-c1", "text": "The tests-mirror drift: leaf describes in `parsers.test.ts` for symbols that live elsewhere.", "pointer": "fix/units/csv-audit-verdict.md:22", "lane": "objective" },
+		{ "id": "csv-c2", "text": "The parsers ↔ inferers module cycle's module-init behaviour is proved only by `test:distribution`, which runs from `prepublishOnly`; rule whether the cycle stands under § Kind purity.", "pointer": "fix/units/csv-audit-verdict.md:23", "lane": "objective" }
+	],
+	"database": [
+		{ "id": "database-c1", "text": "The optional `DriverInterface.transaction?` is absent from the Methods table; `scanDriver` beside `driver.scan` carries two senses of one word in one barrel.", "pointer": "fix/units/database-audit-verdict.md:31", "lane": "subjective" }
+	],
+	"guide": [
+		{ "id": "guide-c1", "text": "`Source.examples(name)` does not follow `extends`; the retirement block naming `extractCodeLines`, `moduleDirs`, `moduleKeys` in `helpers.test.ts`; `README.md` § API names `patterns()` where the interface exposes `fences()`.", "pointer": "fix/units/guide-audit-verdict.md:71", "lane": "objective" },
+		{ "id": "guide-c2", "text": "`EXTERNAL_SCHEMES` omits `file:`.", "pointer": "registry.md:175", "lane": "objective" },
+		{ "id": "guide-c3", "text": "Parity resolves only exports, so a renamed interface member ships a stale guide sentence with every gate green; rule whether `tests/guides.test.ts` owes a member-level check under `.claude/rules/documentation.md` § Parity.", "pointer": "fix/units/test-audit-verdict.md:23", "lane": "objective" }
+	],
+	"html": [
+		{ "id": "html-c1", "text": "Import-order residue at `HTML.ts:32-33`.", "pointer": "fix/units/html-audit-verdict.md:22", "lane": "objective" }
+	],
+	"indexeddb": [
+		{ "id": "indexeddb-c1", "text": "`open` is a state boolean on `IndexedDBDatabaseInterface` and the verb on the store manager; `context.stores.open(name)` beside `transaction.store(name)` returns one interface under two verbs; the database's list behind `stores.names`.", "pointer": "fix/units/indexeddb-audit-verdict.md:28", "lane": "subjective" },
+		{ "id": "indexeddb-c2", "text": "The guide's 'Explicit transaction control and cursor movement' fence still names its scope callback parameter `tx` (an abbreviation § Rejected naming bans) after the s16-11 repair renamed the interface signatures.", "pointer": "fix/units/indexeddb-report.md:104", "lane": "subjective" }
+	],
+	"interpret": [
+		{ "id": "interpret-c1", "text": "`InterpretEventMap` publishes `add` without `remove`; variable-length aggregates have no declarable computation.", "pointer": "fix/units/interpret-audit-verdict.md:43", "lane": "subjective" },
+		{ "id": "interpret-c2", "text": "The overload-forced statements at `src/core/Interpret.ts:336-337`.", "pointer": "fix/units/interpret-audit-verdict.md:48", "lane": "objective" }
+	],
+	"mcp": [
+		{ "id": "mcp-c1", "text": "Publish `createHTTPClientTransport` once from core and drop the two face delegates; `createScopeMessageListener` returns a function and sits in `factories.ts`; `MCPSessionOptions` and `MCPSessionMiddlewareOptions` share `ttl` and `capacity` with different meanings (group the entity's knobs under a `session` key); the bare `ScopeInterface` beside `cacheScope`.", "pointer": "fix/units/mcp-audit-verdict.md:47", "lane": "subjective" },
+		{ "id": "mcp-c2", "text": "`tests/src/core/MCPLegacyClientTransport.test.ts:397` carries a 20 ms race that loses under full-suite load; rule it against `.claude/rules/tests.md` § Delay (wait for a named condition, never a fixed delay).", "pointer": "registry.md:171", "lane": "objective" },
+		{ "id": "mcp-c3", "text": "The four wire headers left the server face with no fleet consumer; rule under the barrel law.", "pointer": "fix/units/mcp-audit-verdict.md:52", "lane": "objective" }
+	],
+	"middleware": [
+		{ "id": "middleware-c1", "text": "`Session.set` beside `SessionStoreInterface.set` (one word, two operations); `SessionLimits` as a bare `*Limits` for a partial; the `Input` suffix carrying two senses in one file; the restore step's callback type spelled inline rather than declared in `types.ts`.", "pointer": "fix/units/middleware-audit-verdict.md:36", "lane": "subjective" },
+		{ "id": "middleware-c2", "text": "Tally drift: `size` where `count` is the lone unambiguous tally (`.claude/rules/names.md` § Tallies); the plan recorded it and took no row.", "pointer": "fix/breaking-plan.md:165", "lane": "subjective" }
+	],
+	"msg": [
+		{ "id": "msg-c1", "text": "The guide's flagship fence constructs `category: 5` with no executed assertion binding it to `MSG_CATEGORY_ROOT`.", "pointer": "fix/units/msg-audit-verdict.md:18", "lane": "objective" },
+		{ "id": "msg-c2", "text": "Tally drift: `size` where `count` is the lone unambiguous tally (`.claude/rules/names.md` § Tallies).", "pointer": "fix/breaking-plan.md:165", "lane": "subjective" }
+	],
+	"pool": [
+		{ "id": "pool-c1", "text": "Tally drift: `size` where `count` is the lone unambiguous tally, or several tallies each named for its fact (`.claude/rules/names.md` § Tallies).", "pointer": "fix/breaking-plan.md:165", "lane": "subjective" }
+	],
+	"probe": [
+		{ "id": "probe-c1", "text": "`RuntimeStage` mints an exact-match overlay; a miss surfaces as a candidate-miss issue rather than a silent wrong answer; rule whether the behaviour is stated where a reader meets it.", "pointer": "registry.md:168", "lane": "objective" },
+		{ "id": "probe-c2", "text": "The standing Oxlint language-server arming failure on this container predates the campaign; rule whether the arming path's deadline and failure behaviour are stated and tested as `.claude/rules/tests.md` § Delay requires.", "pointer": "npm-audit-deps-findings.md:867", "lane": "objective" }
+	],
+	"process": [
+		{ "id": "process-c1", "text": "`executeSync.test.ts:71` splits child output on `'\\n'` alone with a stale bootstrap-latency comment; readiness budgets thin under contention.", "pointer": "registry.md:165", "lane": "objective" }
+	],
+	"program": [
+		{ "id": "program-c1", "text": "A uniform error surface wrapping the raw `DataCloneError` with `ProgramError('DEFINITION')`; the `buildNotice` / `buildNotices` pair (the plural returns `Determination[]`).", "pointer": "fix/units/program-audit-verdict.md:27", "lane": "subjective" },
+		{ "id": "program-c2", "text": "Tally drift: `size` where `count` is the lone unambiguous tally (`.claude/rules/names.md` § Tallies).", "pointer": "fix/breaking-plan.md:165", "lane": "subjective" },
+		{ "id": "program-c3", "text": "Two verbs for one guard operation (`Checks whether` at `errors.ts:44` beside `Determines whether` on the sibling guards).", "pointer": "voice/units/voice-program-audit-verdict.md:36", "lane": "subjective" },
+		{ "id": "program-c4", "text": "`Program` and `ProgramManager` carry a class summary only; public methods carry no TSDoc on the class or on `ProgramInterface`.", "pointer": "voice/units/voice-program-audit-verdict.md:48", "lane": "subjective" }
+	],
+	"rater": [
+		{ "id": "rater-c1", "text": "The `Worksheet` guide row never says the line's outcome lives on it; `lineDefinition`, `ratingDefinition`, `worksheetStep`, `worksheetSteps` assemble composites without the `build*` prefix; the `npx vite-node` fetch.", "pointer": "fix/units/rater-audit-verdict.md:27", "lane": "subjective" }
+	],
+	"reason": [
+		{ "id": "reason-c1", "text": "No fence in this package executes; direct `seat` coverage on `equations`, `facts`, `inferences` reaches the method through `merge` only; `guides/reason.md` uses `above`/`below`; `factToArityKey`, `factToKey`, `instantiateFact`, `findUnboundVariables` name a parameter `source`.", "pointer": "fix/units/reason-audit-verdict.md:29", "lane": "objective" },
+		{ "id": "reason-c2", "text": "A published package's first sentence references another package's shape (`taverna` `Workspace`-shaped).", "pointer": "voice/units/voice-reason-audit-verdict.md:36", "lane": "subjective" }
+	],
+	"relation": [
+		{ "id": "relation-c1", "text": "The count at `src/core/types.ts:23` (\"The five relation shapes.\") beside the two the report names, against `AGENTS.md` § Writing.", "pointer": "fix/units/relation-audit-verdict.md:23", "lane": "subjective" }
+	],
+	"scaffold": [
+		{ "id": "scaffold-c1", "text": "`tests/setupPolicy.ts` walks top-level statements while the oxlint policy plugin sees inside a class body; rule whether the split matches `.claude/rules/workspace.md` § Policy instruments (one instrument per rule) or leaves a rule with no instrument.", "pointer": "npm-audit-deps-findings.md:571", "lane": "objective" },
+		{ "id": "scaffold-c2", "text": "`AGENTS §N` citations survive in guides and tests across the fleet; rule scaffold's own guides and tests.", "pointer": "npm-audit-deps-findings.md:518", "lane": "objective" },
+		{ "id": "scaffold-c3", "text": "Scaffold's vendored host surface moved (names.md vocabulary, tests.md helpers); the `dist/host` inventory and `host.json` must match the committed canon.", "pointer": "fix/units/scaffold-adopt-audit-verdict.md:16", "lane": "objective" }
+	],
+	"sea": [
+		{ "id": "sea-c1", "text": "`readPEOffset` returns the sentinel `0` on a short read where the `read*` contract returns or throws; `ELFNoteHeader` names the header half of a type whose `total` spans the whole padded entry; the injector's alias `noteEntryTotal` → `noteTotal`.", "pointer": "fix/units/sea-audit-verdict.md:22", "lane": "objective" }
+	],
+	"server": [
+		{ "id": "server-c1", "text": "The ragged wrap at `guides/server.md:250-254`; the `should` at `guides/server.md:404`; the bare `Error` at `src/server/helpers.ts:106`.", "pointer": "fix/units/server-audit-verdict.md:38", "lane": "objective" },
+		{ "id": "server-c2", "text": "Whether the seam-owned header key must win over caller headers (prose states the caller wins).", "pointer": "fix/units/server-report.md:84", "lane": "subjective" }
+	],
+	"sqlite": [
+		{ "id": "sqlite-c1", "text": "`SQLiteStatementInterface.run` is a synonym for `execute` under § Fixed lifecycle vocabulary; the guide describes `run`/`get`/`all`/`iterate` with the prose verb \"Execute\"; the guide's `## Contract` preamble names a `src/server/sqlite` directory that does not exist.", "pointer": "fix/units/sqlite-audit-verdict.md:33", "lane": "subjective" }
+	],
+	"table": [
+		{ "id": "table-c1", "text": "A third `SCHEMA` message (a column whose metadata cannot be owned) sits beside the two the Guards paragraph names; the guide's counts over the managers and interfaces.", "pointer": "fix/units/table-audit-verdict.md:29", "lane": "subjective" }
+	],
+	"template": [
+		{ "id": "template-c1", "text": "Every `§` citation left after the stale `AGENTS §9.2` drop.", "pointer": "fix/units/template-audit-verdict.md:28", "lane": "objective" }
+	],
+	"terminal": [
+		{ "id": "terminal-c1", "text": "`moveUp` and `redrawPrefix` naming; a `name` on the broker if enumeration is wanted; `filterEnabled` and `filterDisabled` carry a `filter*` prefix `.claude/rules/names.md` § Standalone helpers has no row for.", "pointer": "fix/units/terminal-audit-verdict.md:35", "lane": "subjective" }
+	],
+	"toolbox": [
+		{ "id": "toolbox-c1", "text": "The two-vocabulary seam: `createTerminalRoutes` and its constants beside `TerminalBridge` on the factory's return type.", "pointer": "fix/units/toolbox-audit-verdict.md:26", "lane": "subjective" },
+		{ "id": "toolbox-c2", "text": "The s10-18 rename remainder: `databaseToolCode` → `inferDatabaseCode` and `relationToolCode` → `inferRelationCode`, left deferred by the fix round.", "pointer": "fix/breaking-plan.md:168", "lane": "subjective" }
+	],
+	"websocket": [
+		{ "id": "websocket-c1", "text": "`context` typed `Readonly<Record<string, unknown>>` documents a per-code shape the type does not express; `parseWebSocketCanonical`'s prose opens \"Reads whether\" for a `parse*` function; no fence in this guide executes.", "pointer": "fix/units/websocket-audit-verdict.md:30", "lane": "objective" }
+	],
+	"worker": [
+		{ "id": "worker-c1", "text": "Thread-spawn deadlines pass on this host; the contended-runner risk stands; rule the deadline assertions against `.claude/rules/tests.md` § Delay and § Expensive proofs.", "pointer": "registry.md:172", "lane": "objective" }
+	],
+	"workflow": [
+		{ "id": "workflow-c1", "text": "`RunnerValue` still boxes each settled value beside the `Result` discriminant.", "pointer": "fix/units/workflow-audit-verdict.md:46", "lane": "subjective" }
+	],
+	"workspace": [
+		{ "id": "workspace-c1", "text": "A snapshot persisted by 0.0.6 or earlier holding a binary file reads as absent after the `data → base64` rename; no shim by law; rule whether the guide states the break where a reader meets it.", "pointer": "fix/units/workspace-audit-verdict.md:26", "lane": "subjective" }
+	]
+}

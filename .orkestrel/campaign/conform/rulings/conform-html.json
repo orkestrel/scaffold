@@ -1,0 +1,549 @@
+{
+ "package": "html",
+ "subjective": {
+  "package": "@orkestrel/html",
+  "lane": "subjective (design fit, API shape, vocabulary, TSDoc voice, guide coherence) — Claude Opus 5, native subagent, clean context, read-only",
+  "claims": [
+   {
+    "claim": "S1 Entity API shape — every public property, method, option key, and event on an entity is one word or the shape is changed; no behaviour-selecting discriminator parameter; manager accessor and batch shapes hold.",
+    "verdict": "CONFIRMED",
+    "read": "src/core/HTML.ts:69-429 and src/core/types.ts:392-455. Every member of HTMLInterface and of the HTML class is one word: document, span, walk, find, filter, map, reduce, fold, stream, sanitize, distill. Option keys are one word each (HTMLSanitizeOptions elements/attributes/schemes/comments at types.ts:321-330; HTMLDistillOptions base/elements/boilerplate at types.ts:352-362). span(node) is the manager-accessor noun form patterns.md § Managers licenses (`entity(key)`), not a get* accessor. I attacked the constructor union `string | HTMLDocument` (HTML.ts:73-82) against names.md § Split behavioral variants: the union is a typed input, not the 'behavior-selecting magic string' that rule bans, and both arms produce the same entity, so the split rule does not fire. find/filter overloads (HTML.ts:121-137) narrow one algorithm rather than selecting a second one. No manager class exists, so the singular/plural and batch-overload rules are inert here."
+   },
+   {
+    "claim": "S2 Vocabulary and forms — helper prefixes keep one project-wide meaning; identifier tables hold; is*/parse*/create*/*Of contracts hold; lifecycle verbs fixed; no rejected name; booleans read as assertions; discriminants name their axis; one term per concept.",
+    "verdict": "BROKEN",
+    "read": "src/core/types.ts (whole), src/core/helpers.ts (whole), .claude/rules/names.md § General vocabulary, § Value-level identifiers, § Fixed derivation/construction forms, § Rejected naming. `category` names its axis and is used consistently for the node discriminant (types.ts:80, 98, 114, 130, 144) — no `kind`/`type` member anywhere in src (grep over src/core for `(kind|type|data|info|item)\\??:` returned only two prose matches inside `javascript:`/`data:` scheme text). No rejected generic name, no lifecycle synonym. Two boolean identifiers are named as bare nouns rather than assertions (findings html-subj-11, html-subj-12). I attacked and rejected two further candidates: `normalizeSource` returning `HTMLSource` rather than the input's type — the prefix gloss constrains the sense (canonicalize, not coerce), no listed prefix fits the composite better, and the only repair is a breaking rename with no clearly better target, so I do not report it; `resolveURL`/`resolveAttributes` — 'picks the effective value' reads correctly for resolving a relative reference against a base. The `parse*` totality question is recorded EXEMPT (html-subj-13)."
+   },
+   {
+    "claim": "S3 Options and emitters — single-word option keys grouped by entity noun, `on` reserved for hooks; a stateful entity owns an Emitter by composition with the seven-step pattern and a focused event map.",
+    "verdict": "CONFIRMED",
+    "read": "src/core/types.ts:321-362 and src/core/HTML.ts:235-305. Both options types are flat with one-word keys and no prefix grouping (no `sanitizeElements`, no `distillBase`); `on` appears nowhere as an option key, so the EmitterHooks reservation is not violated. patterns.md § Stateful emitters fires on 'an entity with lifecycle transitions, constraints, or observable operations': HTML is immutable (HTML.ts:70-71 `#document`/`#spans`, and map/sanitize/distill each return a new handle at HTML.ts:147-150, 235-247, 279-305), owns no lifecycle verb, and publishes no transition, so it owes no emitter. `stream()` (HTML.ts:197-211) is a pull-based ReadableStream, which is the one event model chosen for this environment rather than a second one."
+   },
+   {
+    "claim": "S4 Design laws — state derived rather than stored twice; literal unions represent real domain states; no compatibility shim; mechanism not product policy; no polling; minimal public API with every intentional capability exposed.",
+    "verdict": "CONFIRMED",
+    "read": "src/core/constants.ts:4-24 and src/core/types.ts:68-90 (voidness is derived from the name against VOID_ELEMENTS and is stored on no node, so no second fact can drift); types.ts:154 (HTMLNode union members are real parser-produced categories); src/core/index.ts:1-8 (barrel is `export * from` rows only, every module reachable); HTML.ts:197-211 (the stream enqueues one node per `pull`, so no busy loop or polling); guides/html.md:295 and types.ts:332-362 (distill is a mechanism whose policy sits in replaceable option sets, with the defaults named as data). I attacked `createHTML` (factories.ts:27-29) as a possible pass-through wrapper and then checked the fleet: `createTemplate`, `createTimeout`, `createNDJSONParser`, `createMCPServer` and their siblings are the same one-line interface-returning factory, so it is the fleet's established construction form rather than drift, and I do not report it. I attacked `findOpenPosition`/`projectDepth` as speculative public surface: helpers.ts is exported reusable infrastructure and architecture.md § Barrel exports forbids stranding an intentional export, so their exposure is compelled rather than speculative."
+   },
+   {
+    "claim": "S5 TSDoc — every public export carries a complete block whose first sentence states what the symbol does in the third person without repeating its name; booleans use the fixed forms; defaults, throws, prerequisites, and failure behaviour are stated; options objects are one @param with fields under @remarks.",
+    "verdict": "BROKEN",
+    "read": "Every doc block in src/core/{types,constants,validators,parsers,helpers,shapers,factories,HTML}.ts against .claude/rules/typescript.md § Comments and API documentation. Voice is uniformly third person with an -s verb and no name repetition (Represents/Describes/Holds/Determines/Parses/Scans/Projects), boolean returns use 'True if …; false otherwise' (helpers.ts:157, 167, 177, 187, 197; validators.ts:28-29, 46-47), options objects are documented as one @param with fields under @remarks (types.ts:293-320, 332-351; HTML.ts:225, 269), and failure behaviour is stated where it exists (HTML.ts:227-228, 271-272; helpers.ts:942). Three defects: a boolean parameter documented outside the fixed form with its default unstated (html-subj-9), a defaulted parameter whose default is unstated (html-subj-10), and a stated count inside a @remarks block that has already drifted against the guide describing the same pipeline (html-subj-2)."
+   },
+   {
+    "claim": "S6 Guide and README parity — the guide documents every public export, one method table per behavioral interface matching its call-signature members, readonly data in Surface rows, fences importing the published specifier, prose claims the fences prove, README indexes present, links resolve, no competing instruction copy, no AGENTS §N citation.",
+    "verdict": "BROKEN",
+    "read": "guides/html.md (whole, 667 lines), guides/README.md, README.md, and every src export. Parity of names holds in both directions: the Types, Constants, Validators, Parsers, Helpers, Shapers and Factories tables carry exactly the exports of types.ts, constants.ts, validators.ts, parsers.ts, helpers.ts, shapers.ts and factories.ts, with no phantom row and no missing row. The `HTMLInterface` method table (guides/html.md:160-173) lists exactly the interface's call-signature members and keeps `document` in the Surface prose (guides/html.md:154, 158). Every fence imports `@orkestrel/html`, never `@src/*`. I falsified the fences by hand rather than trusting them: the span values at guides/html.md:348 and :493, the walk and filter orders at :350-354 and :505, the reduce and fold totals at :386, :395 and :515, the offsets at :544-545, :548, :553, :558-561, the sanitize outputs at :426-441, the distill and renderText outputs at :463-467, and the README offsets at :52 all match what the code returns. guides/README.md carries both the concept and directory indexes over the columns this workspace has, and every relative link in both files resolves to a file that exists. No `AGENTS §N` citation appears. The defects are prose: a blanket behavioural claim the code contradicts (html-subj-1), a count over a package-owned list (html-subj-3), list items named by position plus a synonym alternation for one concept (html-subj-4), further counts (html-subj-5), `guarantees` as a behavioural claim (html-subj-6), banned substitutions (html-subj-7), and document navigation by `above`/`below` (html-subj-8)."
+   }
+  ],
+  "findings": [
+   {
+    "id": "html-subj-1",
+    "claim": "S6",
+    "file": "/home/user/fleet/html/guides/html.md:93",
+    "rule": ".claude/rules/documentation.md § Parity: \"Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns.\"",
+    "wrong": "The Helpers preamble claims of every function in that table that \"none of them throws: a hostile value degrades to `''`, to an empty list, or to the input unchanged, contained by `attempt` from `@orkestrel/contract`\", but `foldNode` (helpers.ts:1278-1348) is in that table and is wrapped in no `attempt` and no `try`, so a throwing handler or a hostile node propagates out of it — which the same guide states correctly at guides/html.md:287 (\"`find`, `filter`, `reduce`, and `fold` let a handler's error propagate\"), leaving the guide contradicting itself about one function.",
+    "repair": "In guides/html.md:93, replace the clause \"none of them throws: a hostile value degrades\" with a clause that names the exception, for example: \"a hostile value degrades to `''`, to an empty list, or to the input unchanged, contained by `attempt` from `@orkestrel/contract`. `foldNode` is the exception: it runs the handler table you supply and lets a handler's error propagate, exactly as `fold` does (§ [The sanitize floor](#the-sanitize-floor)).\" Change no code.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-2",
+    "claim": "S5",
+    "file": "/home/user/fleet/html/src/core/HTML.ts:254",
+    "rule": "AGENTS.md § Writing: \"NEVER state a count. A number answering \\\"how many\\\" about a set anyone can add to is a count — rules, rows, members, exports, files, options, steps, cases, stages, findings, and tests are such sets. Name the members, or write the sentence without the number.\" and \"Delete a count you find. Do not correct it.\"",
+    "wrong": "The `distill` @remarks opens \"The pipeline runs in five stages:\" while guides/html.md:297 describes the same pipeline as \"Four passes, in this order:\", so the count has already drifted between the two documents that describe one mechanism.",
+    "repair": "In src/core/HTML.ts:254, replace \"The pipeline runs in five stages:\" with \"The pipeline runs in this order:\". In guides/html.md:297, replace \"Four passes, in this order:\" with \"The passes run in this order:\". Leave the numbered list at guides/html.md:299-302 and the prose bodies unchanged.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-3",
+    "claim": "S6",
+    "file": "/home/user/fleet/html/guides/html.md:48",
+    "rule": "AGENTS.md § Writing: \"NEVER state a count. A number answering \\\"how many\\\" about a set anyone can add to is a count — rules, rows, members, exports, files, options, steps, cases, stages, findings, and tests are such sets.\"",
+    "wrong": "The `VOID_ELEMENTS` row reads \"the 13 elements that cannot have children (`area` … `wbr`)\", counting the members of a list this package owns in src/core/constants.ts:10-24, so adding or removing one member makes the guide false.",
+    "repair": "In guides/html.md:48, replace \"the 13 elements that cannot have children (`area` … `wbr`)\" with \"the elements that cannot have children (`area` … `wbr`)\".",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-4",
+    "claim": "S6",
+    "file": "/home/user/fleet/html/guides/html.md:304",
+    "rule": "AGENTS.md § Writing: \"NEVER name a list item by its position. Write the item's name, never its ordinal or its number.\" and AGENTS.md § Design laws: \"One concept, one term. Do not alternate synonyms.\"",
+    "wrong": "The distill section names its own list items by position — \"the evidence stage 1 reads\" (:304), \"It resolves what SURVIVES stage 2\" (:306) — and \"laws 1 and 2 are substantiated\" (:240) does the same for the roundtrip laws, while the same section calls the list \"Four passes\" (:297) and then \"stage 1\"/\"stage 2\", alternating two terms for one concept.",
+    "repair": "In guides/html.md:304, replace \"the evidence stage 1 reads\" with \"the evidence the region and chrome prune reads\". In guides/html.md:306, replace \"It resolves what SURVIVES stage 2\" with \"It resolves what survives the sanitize pass\". In guides/html.md:240, replace \"laws 1 and 2 are substantiated\" with \"the AST fixpoint and canonical idempotence laws are substantiated\". Use the word \"pass\" for the distill list everywhere in that section, and do not reintroduce \"stage\".",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-5",
+    "claim": "S6",
+    "file": "/home/user/fleet/html/guides/html.md:177",
+    "rule": "AGENTS.md § Writing: \"NEVER state a count.\" and \"Write a number only as a value the reader needs: a duration, a size, a limit, a version, a date, an exit code, or a measurement reported with the run that produced it.\"",
+    "wrong": "Guide and TSDoc prose counts sets the repository owns without naming the members in the sentence: \"Five categories, one root\" (:177) over the `HTMLNode` union, \"Three laws hold\" (:240), \"Two consequences worth stating out loud\" (:285), \"Three of its rules follow\" (:289) and \"each of the three rules above\" (:291), \"Two honest details about `base`\" (:306), \"the five code points HTML treats as syntax whitespace\" (:47), and the same sentence in src/core/constants.ts:1.",
+    "repair": "Delete the number from each site rather than correcting it: guides/html.md:177 → \"The categories, one root, no second family:\"; :240 → \"The roundtrip laws hold on parser-produced roots;\"; :285 → \"Two things worth stating out loud\" becomes \"Worth stating out loud.\" followed by the existing sentences; :289 → \"Its rules follow from that position\"; :291 → \"pins each of the preceding rules with a named test\"; :306 → \"Two honest details about `base`.\" becomes \"Two facts about `base`.\" recast as \"`base` resolves what survives the sanitize pass …\"; :47 and src/core/constants.ts:1 → \"the code points HTML treats as syntax whitespace\". Leave \"the two engines\" (:154, HTML.ts:54) and \"There are two renderers\" (:312) alone: those sentences name their members, which the rule permits.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "html-subj-6",
+    "claim": "S6",
+    "file": "/home/user/fleet/html/guides/html.md:88",
+    "rule": ".claude/rules/writing.md § Claims and time: \"Claim only what the reader can check. Never write `ensure`, `guarantee`, a superlative, or an effort adjective as a claim about behavior\".",
+    "wrong": "Three behavioural claims are stated with the banned word: \"and guarantees no two adjacent text siblings\" (:88), \"There is exactly one, and `HTMLInterface` guarantees it\" (:179), and \"The parser also guarantees one invariant the whole system leans on\" (:187).",
+    "repair": "In guides/html.md:88, replace \"and guarantees no two adjacent text siblings\" with \"and produces no two adjacent text siblings\". In :179, replace \"There is exactly one, and `HTMLInterface` guarantees it\" with \"There is exactly one, and `HTMLInterface` types it that way\". In :187, replace \"The parser also guarantees one invariant the whole system leans on\" with \"The parser also holds one invariant the whole system leans on\".",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-7",
+    "claim": "S6",
+    "file": "/home/user/fleet/html/guides/html.md:287",
+    "rule": ".claude/rules/writing.md § Substitutions: the rows \"`since` (causal) → `because`\" and \"`once` (temporal) → `after`\".",
+    "wrong": "Causal `since` appears at guides/html.md:287 (\"since each allowlist is read and normalized INSIDE the boundary\") and :306 (\"since a resource `src` has already been removed by the sanitize floor\"), and temporal `once` appears at guides/html.md:285 and src/core/constants.ts:436 (\"it is inert once `style`, `link`, `svg`, and `script` are gone\").",
+    "repair": "Replace causal `since` with `because` at guides/html.md:287 and :306. Replace temporal `once` with `after` at guides/html.md:285 and src/core/constants.ts:436. Leave \"occurs exactly once\" at guides/html.md:63, :301 and src/core/constants.ts:588 unchanged: that `once` means one occurrence, which the row does not ban.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-8",
+    "claim": "S6",
+    "file": "/home/user/fleet/html/guides/html.md:158",
+    "rule": ".claude/rules/writing.md § Code tokens, references, and links: \"Point to other material with `preceding`, `following`, `earlier`, or `later`, never with `above` or `below`.\"",
+    "wrong": "Document navigation uses the banned words at guides/html.md:55 (\"the cell-and-value floor below\"), :154 (\"the [`## Methods`](#methods) table below\"), :158 (\"Surface-documented above\"), :291 (\"the three rules above\"), :338 (\"Every feature below\") and :435 (\"same as the Set above\"), and in this package's own test comments at tests/guides.test.ts:2 and :35, tests/setup.test.ts:40, tests/src/core/helpers.test.ts:1383 and tests/src/core/parsers.test.ts:510.",
+    "repair": "At each site replace the spatial word with the rule's word: guides/html.md:55 → \"the cell-and-value floor described later\"; :154 → \"the [`## Methods`](#methods) table that follows\"; :158 → \"Surface-documented earlier\"; :291 → \"the preceding rules\"; :338 → \"Every feature that follows\"; :435 → \"same as the preceding Set\". In the test comments use \"following\" for `below` and \"preceding\" for `above`. Leave the structural uses alone — guides/html.md:100, src/core/constants.ts:133, src/core/helpers.ts:136 and tests/setup.ts:823 describe stack and tree position, not document position. Note before editing tests/guides.test.ts that its header calls it a drop-in shared with sibling packages, so apply the same wording across the fleet rather than diverging this copy.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-9",
+    "claim": "S5",
+    "file": "/home/user/fleet/html/src/core/helpers.ts:651",
+    "rule": ".claude/rules/typescript.md § Comments and API documentation: \"Describe a boolean parameter as \\\"If `true`, …; if `false`, …\\\"\" and \"Write a default as \\\"Default: …\\\"\".",
+    "wrong": "`scanRawText`'s boolean parameter is documented as \"@param entities - Whether to decode character references\" and its default `false` (helpers.ts:657) is stated nowhere, while `projectDepth` in the same file (helpers.ts:127) already uses the required form.",
+    "repair": "In src/core/helpers.ts:651, replace the line with \"@param entities - If `true`, decodes character references in the scanned text; if `false`, keeps the text verbatim. Default: `false`\".",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-10",
+    "claim": "S5",
+    "file": "/home/user/fleet/html/src/core/helpers.ts:785",
+    "rule": ".claude/rules/typescript.md § Comments and API documentation: \"Write a default as \\\"Default: …\\\"\".",
+    "wrong": "`isSafeURL` defaults `schemes` to `SAFE_URL_SCHEMES` (helpers.ts:790) and its @param says only \"The allowed absolute schemes\", so the default a caller gets by omitting the argument appears in the guide (guides/html.md:117) but not in the block a consumer reads in the editor.",
+    "repair": "In src/core/helpers.ts:785, replace the line with \"@param schemes - The allowed absolute schemes. Default: `SAFE_URL_SCHEMES`\".",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-subj-11",
+    "claim": "S2",
+    "file": "/home/user/fleet/html/src/core/types.ts:191",
+    "rule": ".claude/rules/names.md § General vocabulary: \"Booleans read as assertions: `aborted`, `exhausted`, `expired`.\" and § Value-level identifiers, row \"Boolean | camelCase adjective/past participle\".",
+    "wrong": "`HTMLOpenPosition.overflow` is a `boolean` named with a bare noun — the name of a stack rather than an assertion about the occurrence — and its own doc line says what the assertion is (\"Indicates whether the depth-overflow stack recorded the occurrence\"); the fleet's boolean members are adjectives, participles, or verbs (`required`, `enabled`, `expired`, `destroyed`, `bail`, `replace`), and this package's own siblings `closing`, `slashed` and `closed` follow that form.",
+    "repair": "Rename the member to `overflowed`: in src/core/types.ts:191 declare `readonly overflowed: boolean`; in src/core/helpers.ts:107-120 return `{ overflowed: true, position }` and `{ overflowed: false, position }`; rename the first parameter of `projectDepth` (src/core/helpers.ts:139) to `overflowed` and update its @param at helpers.ts:127 and the examples at helpers.ts:102-103 and :135-136; update `match.overflow`/`candidate.overflow`/`impliedTarget.overflow` and the `implied` element type in src/core/parsers.ts:136, :146, :153, :158-159, :163, :172, :182; update the guide rows at guides/html.md:28, :99, :100. No fleet consumer reads the member (grep for `overflow` in /home/user/fleet/browser/src and /home/user/fleet/markdown/src returns only unrelated CDP-frame prose), so the change is a published-surface rename with no consumer code edit.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": [
+     "@orkestrel/markdown",
+     "@orkestrel/browser"
+    ]
+   },
+   {
+    "id": "html-subj-12",
+    "claim": "S2",
+    "file": "/home/user/fleet/html/src/core/types.ts:329",
+    "rule": ".claude/rules/names.md § General vocabulary: \"Booleans read as assertions: `aborted`, `exhausted`, `expired`.\" and § Value-level identifiers, row \"Boolean | camelCase adjective/past participle\".",
+    "wrong": "`HTMLSanitizeOptions.comments?: boolean` is a boolean named as a plural noun and sits beside three keys of identical plural-noun shape (`elements`, `attributes`, `schemes`) that all take `ReadonlySet<string> | readonly string[]`, so the key's shape invites `comments: ['note']` and reads as a fourth allowlist rather than as a switch; no boolean anywhere in the fleet's public option types is named as a plural noun.",
+    "repair": "Rename the key to a switch the fleet's `bail`/`replace`/`mirror` precedent matches — declare `readonly retain?: boolean` in src/core/types.ts:329 with the doc line \"Retains comment nodes instead of dropping them.\" — and update the @remarks bullet at types.ts:302, the read at src/core/HTML.ts:240, the @remarks at HTML.ts:219-222, the guide rows at guides/html.md:37 and :172, the floor bullet at guides/html.md:283, and the fences at guides/html.md:428 and :436. Treat this as the lower-confidence of the two boolean-naming rows: if the reconciler prefers the axis-naming reading, in which every key of this options type names the axis it governs and only the value type differs, strike it rather than half-applying it.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "low",
+    "consumers": [
+     "@orkestrel/markdown",
+     "@orkestrel/browser"
+    ]
+   },
+   {
+    "id": "html-subj-13",
+    "claim": "S2",
+    "file": "/home/user/fleet/html/src/core/parsers.ts:36",
+    "rule": ".claude/rules/names.md § Fixed derivation/construction forms: \"`parse*`: coercion producing `T | undefined`; cross-type conversion never belongs in a guard.\"",
+    "wrong": "`parseDocument` returns `HTMLDocument` and `parseProvenance` returns `HTMLParseResult`, neither of them `T | undefined`, so the two exports of `parsers.ts` do not carry the form's declared failure shape.",
+    "repair": "Record and keep. The exception is stated as a deliberate design decision in the package's own documents: src/core/types.ts:9-11 (\"Document parsing is total - every input produces a document, so there are no parse options, no issue list, and no errors; `parseStartTag` is the separate fail-closed source boundary\"), guides/html.md:5 and :7, and src/core/factories.ts:12-14. The fail-closed `T | undefined` boundary the form describes exists beside it as `parseStartTag` (src/core/helpers.ts:339). Adding `| undefined` to a total function would force every caller into a check that can never fire. Change nothing; the objective lane owns the O1 ruling on `parsers.ts` return shape and should see this pointer.",
+    "breaking": false,
+    "verdict": "EXEMPT",
+    "confidence": "high"
+   }
+  ],
+  "referrals": [
+   "To the objective lane, under O7: `tests/guides.test.ts` transcribes and executes no guide fence. The file (read whole, 171 lines) asserts fence languages, surface parity in both directions, method-table parity, example presence, import resolution, and link resolution — and never runs a fence body or compares a value. `.claude/rules/tests.md` § Cross-cutting proofs states \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof, so a fence documenting a value the code contradicts passes every parity assertion.\" A grep over /home/user/fleet/html/tests for `guides/html.md|guide fence|transcrib` returns only two prose comments (tests/src/core/helpers.test.ts:669, tests/setup.ts:500), so no other file carries the transcription. The exposed claims are concrete: guides/html.md:348 `{ start: 0, end: 40 }`, :386 `// 17`, :395 `// 3`, :493 `{ start: 0, end: 49 }`, :515 `// 2`, :544 `{ start: 3, end: 5 }`, :548 `next: 38`, :553 `next: 26`, :561 `next: 14`, and README.md:52 `next: 32`. I verified each by hand against the code and they are correct today; nothing gates them tomorrow. No verdict from me.",
+   "To the objective lane, under O7: `tests/src/core/constants.test.ts` exists although `.claude/rules/tests.md` § Test contract states \"Do not create test files solely for `constants.ts`, barrels, error definitions, or `types.ts`\", and it declares its own fixture infrastructure in the test file — `export interface CollectionMutation` (lines 31-37) and `export function attemptCollectionMutation` (lines 39-59) — against § Shared test infrastructure, which states \"Export every reusable helper, fixture type, factory, constant, and guard from setup files\" and \"Test files import shared infrastructure rather than declaring local fixture factories.\" The package has a `tests/setup.ts`. No verdict from me.",
+   "To the objective lane, under O1: the `parsers.ts` return-shape half of that claim is live — both exports return a total value rather than `T | undefined` (src/core/parsers.ts:36, :46). I recorded it EXEMPT under S2 (html-subj-13) on the totality design stated in src/core/types.ts:9-11 and guides/html.md:5-7, and the placement ruling is yours.",
+   "On carry row html-c1 (objective lane's row, so no verdict from me): the residue is still present. src/core/HTML.ts:24-37 imports from './helpers.js' in alphabetical order except at lines 32-33, where `resolveAttributes` precedes `renderHTML`.",
+   "To the Orchestrator, scope note: `tests/guides.test.ts` describes itself at line 1-3 as a drop-in that sibling packages share, and finding html-subj-8 touches its comments at lines 2 and 35. Apply that wording change fleet-wide or not at all; a one-package edit diverges the drop-in."
+  ],
+  "coverage": "Read in full: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/html-brief.md; /home/user/scaffold/AGENTS.md; /home/user/scaffold/.claude/rules/{names,patterns,typescript,architecture,tests,documentation,writing}.md; /home/user/fleet/html/src/core/{types,HTML,helpers,parsers,validators,factories,shapers}.ts; /home/user/fleet/html/guides/html.md; /home/user/fleet/html/guides/README.md; /home/user/fleet/html/README.md; /home/user/fleet/html/package.json; /home/user/fleet/html/tests/guides.test.ts. Read in part: /home/user/fleet/html/src/core/constants.ts — every doc block and every declaration except the body of the `NAMED_ENTITIES` table (its vendored character rows carry no prose my lane rules on, and its fixture parity is the objective lane's); /home/user/fleet/html/tests/src/core/constants.test.ts (first 60 lines, enough for the referral). Verified by targeted grep across the package and the fleet: member names for `kind`/`type`/`data`/`info`/`item`; counts and ordinals; `above`/`below`; the writing substitution table; `ensure`/`guarantee`; boolean member naming across every fleet `src/**/types.ts`; one-line `create*` factories across every fleet `src/**/factories.ts`; consumers of `@orkestrel/html` (`@orkestrel/markdown` package.json:76, `@orkestrel/browser` package.json:90) and their use of the members two findings rename. Not read, with reason: the bodies of tests/src/core/{HTML,helpers,parsers,validators,shapers,factories}.test.ts, tests/setup.ts, tests/setup.test.ts, tests/distribution.test.ts — test sufficiency is O7's and I needed only the guide's links to them, which resolve; vite.config.ts, tsconfig.json and configs/** — O8's and off-limits respectively; node_modules/@orkestrel/* declarations — O6's declared-reuse question, which I did not rule on; tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts and the vendored dependency guides — off-limits as subjects. Attacked and deliberately not reported, so the reconciler is not told they went unexamined: `normalizeSource` against the `normalize*` prefix gloss; `resolveURL`/`resolveAttributes` against the `resolve*` gloss; `createHTML` as a pass-through factory (fleet convention refutes it); the `string | HTMLDocument` constructor union as a behaviour-selecting discriminator; the absence of an emitter on `HTML`; the guide's Tests list omitting tests/src/core/constants.test.ts; and the fragment \\\"From [`factories.ts`](../src/core/factories.ts).\\\" at guides/html.md:146 introducing a table without a complete sentence.",
+  "terminal": "VERDICT: FAIL — 3 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "objective": {
+  "package": "@orkestrel/html",
+  "lane": "objective (reviewer on Claude Opus 5, substituting for the dark GPT-5.6 Sol bench)",
+  "claims": [
+   {
+    "claim": "O1 Placement and kind purity",
+    "verdict": "BROKEN",
+    "read": "src/core/{index,types,constants,validators,parsers,helpers,shapers,factories,HTML}.ts against .claude/rules/architecture.md § Centralized-file pattern through § Stores. Every centralized file holds only its kind and exports every declaration; helpers.ts imports only types, constants and validators (no implementation class), validators.ts imports only isVoidElement from helpers.ts, which is the sanctioned leaf-pair cycle; factories.ts exports only create*; shapers.ts holds only *Shape values; constants.ts holds only UPPER_SNAKE_CASE frozen data; there is one class (HTML) in its own file with no entity family, no extension category and no store, so flat placement is correct. Broken by an unfrozen module-scope collection in tests/setup.ts (html-obj-4) and by the parse* form drift recorded as html-obj-8 and html-obj-9."
+   },
+   {
+    "claim": "O2 Functions, wrappers, and class order",
+    "verdict": "CONFIRMED",
+    "read": "Greped src for in-body function declarations and assignments (`^\\t+function `, `^\\t+const \\w+ = (`) — no hits. The only in-body function syntax is anonymous callbacks passed directly as arguments (attempt(() => ...), String.replace callbacks, the pruneDocument/rewriteDocument handlers) and the shorthand `pull(controller)` method in the ReadableStream underlying source at HTML.ts:201; configs/policy.ts:121-130 `isPolicyMethod` explicitly exempts a Property with `method === true`, and lint:check is green, so that form is sanctioned by the instrument that owns the rule (.claude/rules/workspace.md § Policy instruments). HTML.ts follows the class order at 70-71 (# fields), 73 (constructor), 85-305 (getter then public methods), 313-428 (# private methods); no child managers exist. parseDocument (parsers.ts:36-38) and createHTML (factories.ts:27-29) each narrow the contract they wrap (HTMLDocument from HTMLParseResult; HTMLInterface from HTML), so neither is a rename-only pass-through under .claude/rules/architecture.md § Wrapper test; walk/fold bind #document rather than forwarding a free helper 1:1."
+   },
+   {
+    "claim": "O3 Barrels and exports",
+    "verdict": "CONFIRMED",
+    "read": "src/core/index.ts holds exactly eight `export * from './x.js'` rows covering every sibling module; no named, default, namespace or type-only row; no @orkestrel/contract symbol re-exported. tests/guides.test.ts:38 declares `INTERNAL` empty and lines 70-86 assert both directions of barrel/guide parity, and the gate is green, so nothing intentional is stranded and nothing is interned without a name. HTML is barrelled and constructible from a plain string or an HTMLDocument, and carries an @example at HTML.ts:59-67 as .claude/rules/architecture.md § Barrel exports requires. No default export anywhere in src."
+   },
+   {
+    "claim": "O4 Non-negotiable syntax",
+    "verdict": "CONFIRMED",
+    "read": "Greped src/tests/configs for `any`, `!` non-null, `as` assertions, `@ts-`, eslint-disable/oxlint-disable, accessibility keywords, parameter properties. The only `as` in the package's own files is `as const` at tests/setup.ts:13, fixing a tuple's arity for Object.fromEntries — the sanctioned use in .claude/rules/typescript.md § Types, not a checker override on an already-declared contract. Every src file places `import type` before value imports (HTML.ts:1-12, helpers.ts:1-20, parsers.ts:1-8, validators.ts:1-10, factories.ts:1), uses `.js` extensions on local imports, single quotes and no semicolons, and format:check plus lint:check are green."
+   },
+   {
+    "claim": "O5 Types, immutability, errors",
+    "verdict": "CONFIRMED",
+    "read": "src/core/types.ts in full: every interface property is readonly, every public collection is `readonly T[]`, `ReadonlyMap` or `ReadonlySet` (HTMLParseResult, HTMLDerivation, ElementNode.children, HTMLInterface.filter), and absence is `T | undefined` throughout — HTMLAttribute.value, DoctypeNode.public/system, span(), find(), parseStartTag(), projectSpan() — with no 'none'/'unset'/-1 sentinel and no stored voidness flag (constants.ts:4-9 states voidness is derived). HTML.ts:77 copies the provenance map into the handle and HTML.ts:95-98 returns a fresh span value, so no mutable internal reference leaks; resolveAttributes/sanitizeAttributes/mergeText/collapseText all build new arrays and never mutate the caller's node. The package declares and uses @orkestrel/contract's `attempt` at HTML.ts:13, helpers.ts:21 and validators.ts:13 rather than a local outcome type, and declares no error class, so the code/context/is* obligation is vacuous."
+   },
+   {
+    "claim": "O6 Declared ecosystem reuse",
+    "verdict": "BROKEN",
+    "read": "Enumerated the installed declarations at node_modules/@orkestrel/contract/dist/src/core/index.d.ts and node_modules/@orkestrel/test/dist/src/{core,server}/index.d.ts and mapped them against every local primitive. validators.ts correctly composes recordOf/literalOf/arrayOf/isString/isInteger/isRecord/isArray rather than hand-rolling them, shapers.ts uses objectShape/literalShape/stringShape/optionalShape, and the scanners, entity table and URL floor are genuine domain behaviour with no contract analogue. Broken by two duplications: isHTMLNode reimplements `holds` (html-obj-1) and tests/distribution.test.ts reimplements `createScratch` (html-obj-5)."
+   },
+   {
+    "claim": "O7 Tests",
+    "verdict": "BROKEN",
+    "read": "Every src module with behaviour has its mirrored test under tests/src/core/ (parsers, validators, helpers, shapers, factories, HTML, constants); index.ts and types.ts are exempt per .claude/rules/tests.md. Greped tests for vi.*, mocks, spies, fake clocks, Date.now, retries and inflated timeouts — none; the only skip is tests/distribution.test.ts:684 `context.skip('`npm ping` did not answer, so nothing was packed or installed')`, which names its mechanism and fails rather than skips under `--mode release` (line 36, 596-601). Helpers come from @orkestrel/test (createRecorder, requireValue, readInventory) and tests/setup.ts registers nothing. Broken by three defects: guides.test.ts transcribes no flagship fence (html-obj-2), constants.test.ts declares and exports fixture helpers (html-obj-3), and tests/setup.ts carries a helper for an environment this package does not have (html-obj-7)."
+   },
+   {
+    "claim": "O8 Workspace and portability",
+    "verdict": "BROKEN",
+    "read": "package.json scripts against .claude/rules/workspace.md § Script intent and § Test project matrix: every project declared in vite.config.ts:133 (srcCore, policy, config, setup, guides, distribution, probe) resolves to a real file and is reachable — `test` chains test:src, test:policy, test:config, test:setup, test:guides; `distribution` runs from prepublishOnly as a publishing workspace requires; `probe` is deliberately gateless. No conformance/integration/service project is declared and none has a proof, which is correct. The exports map, `main`/`module`/`types`, `files: [dist/src, README.md]` and `prepack` match what build:src:core emits (index.js, index.cjs, index.d.ts, and the copied index.d.cts). `engines.node >= 22.12.0` is consistent. No `.sh` in any script, no `/tmp` literal in src, node:path used for every path composition, and the parser handles `\\r\\n` and lone `\\r` explicitly at helpers.ts:49-54 rather than splitting on `\\n`. Broken by the npm shim spawn in tests/distribution.test.ts (html-obj-6)."
+   },
+   {
+    "claim": "C html-c1 — import-order residue at HTML.ts:32-33",
+    "verdict": "CONFIRMED",
+    "read": "HTML.ts:24-37 imports resolveAttributes (line 32) before renderHTML (line 33) while every other specifier in the list is alphabetical. Ruled INVALID as drift: no rule requires alphabetical ordering of named import specifiers. .claude/rules/typescript.md § Syntax and imports fixes only that `import type` declarations precede value imports and that no blank line separates consecutive imports of the same kind, both of which hold here. .oxfmtrc.json declares no sorting option, and .oxlintrc.json enables no import-sort rule (its `import` plugin rows are no-default-export, no-dynamic-require, extensions and no-unassigned-import), so neither format:check nor lint:check has an opinion and both are green. If the Orchestrator wants the cosmetic tidy anyway, swap lines 32 and 33; it changes nothing observable."
+   }
+  ],
+  "findings": [
+   {
+    "id": "html-obj-1",
+    "claim": "O6 Declared ecosystem reuse",
+    "file": "/home/user/fleet/html/src/core/validators.ts:99-161",
+    "rule": ".claude/rules/patterns.md § Declared ecosystem capabilities: \"Reuse the originating package directly when semantics match.\" and \"Never reimplement or rename-wrap a declared package primitive.\"",
+    "wrong": "isHTMLNode wraps its predicate body in `attempt(...)` and then reduces the outcome with `return outcome.success && outcome.value` (line 161), which reproduces exactly the declared primitive `holds` — node_modules/@orkestrel/contract/dist/src/core/index.d.ts:1771, \"Invokes a predicate through the sanctioned never-throw boundary. @returns True if the callback returns the boolean value `true`; false otherwise\" — with a locally assembled Result narrowing instead of the primitive.",
+    "repair": "In src/core/validators.ts, add `holds` to the value import from '@orkestrel/contract' (line 11-20) and remove `attempt` from it, since isHTMLNode is its only use in the file. Replace line 99 `const outcome = attempt(() => {` with `return holds(() => {`, delete line 161 `return outcome.success && outcome.value`, and close the call at line 160 with `})`. The callback body is unchanged. Then update guides/html.md:332, which currently asserts that `attempt` is the boundary \"the recursive guard in `validators.ts`\" runs on, to name `holds` there instead.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-obj-2",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/html/tests/guides.test.ts:54-170",
+    "rule": ".claude/rules/tests.md § Cross-cutting proofs: \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof, so a fence documenting a value the code contradicts passes every parity assertion.\" and .claude/rules/documentation.md § Parity: \"That proof has a home: `tests/guides.test.ts` executes the flagship fences, per `.claude/rules/tests.md`.\"",
+    "wrong": "tests/guides.test.ts asserts only name resolution, surface parity, method-table parity, example presence and link resolution; it executes no fence. Greping tests for the fences' own inputs ('A <b>bold</b> word', '<nav>Menu</nav>', '<P CLASS=a>', 'data-bs-theme', '<IMG SRC=') returns nothing, so every value guides/html.md:342-648 claims — page.fold(elements) // 3, page.reduce(...) // 17, foldNode(region, leaves) // 2, spans.get(document) // { start: 0, end: 49 }, scanTag(...).next // 26, renderHTML(page.sanitize({ elements: new Set(['p']) }).document) // '<p>Hi bad</p>', and the rest — is unproven prose that would stay green if the behaviour moved.",
+    "repair": "Add a `describe('guides/html.md fences')` block to tests/guides.test.ts that transcribes each ```ts fence in guides/html.md §§ Patterns (the nine fences at lines 342-355, 359-370, 374-396, 400-413, 417-442, 446-472, 476-523, 527-567, 571-601, 605-627, 631-648) into an `it` per fence, imports the same symbols from '@src/core', runs the same statements, and asserts each value the fence's trailing comment claims with `expect(...).toEqual(...)`. Where a fence's comment claims deep equality against another expression (guides/html.md:639, 642, 646-647), assert that comparison directly.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-obj-3",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/html/tests/src/core/constants.test.ts:31-83",
+    "rule": ".claude/rules/tests.md § Shared test infrastructure: \"Export every reusable helper, fixture type, factory, constant, and guard from setup files.\" and \"Test files import shared infrastructure rather than declaring local fixture factories.\"",
+    "wrong": "The test file declares and exports one interface and two helper functions of its own — `CollectionMutation` (line 31), `attemptCollectionMutation` (line 39) and `restoreCollectionMutation` (line 61) — so shared test infrastructure lives in a test file rather than in tests/setup.ts, and a symbol exported from a `.test.ts` file reaches no legitimate importer. The policy sweep cannot see this: tests/setupPolicy.ts:229-238 scopes the placement population to `{app,src}/**` and `tests/**/setup*.ts`, so `tests/src/**/*.test.ts` is outside it.",
+    "repair": "Move `CollectionMutation`, `attemptCollectionMutation` and `restoreCollectionMutation` verbatim from tests/src/core/constants.test.ts into tests/setup.ts (they use only `Reflect`, so they are host-independent and belong in that file rather than a server setup), keep the `export` on each there, and import the three from '../../setup.js' in constants.test.ts. Add one `it` to tests/setup.test.ts proving the attempt/restore pair round-trips a frozen array and a frozen record, matching how that file already proves every other setup export.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-obj-4",
+    "claim": "O1 Placement and kind purity",
+    "file": "/home/user/fleet/html/tests/setup.ts:597-605",
+    "rule": ".claude/rules/architecture.md § Kind purity: \"Module-scope constants live only in `constants.ts`, use UPPER_SNAKE_CASE, and freeze object/array data with `Object.freeze`.\" and § What the policy sweep proves: \"It does not prove a collection is frozen. It reads the declaration, never the value a call returns … The freeze obligation in the earlier kind-purity rules binds regardless.\"",
+    "wrong": "`URL_SAFETY_GROUPS` is declared as a bare array literal with no `Object.freeze`, alone among the module's collections — WHATWG_NAMED_ENTITIES (line 9) and every corpus builder freeze their data — so a suite that mutates it silently changes the population tests/src/core/helpers.test.ts:686 compares the corpus against, and the sweep cannot report it.",
+    "repair": "In tests/setup.ts, change line 597 from `export const URL_SAFETY_GROUPS: readonly string[] = [` to `export const URL_SAFETY_GROUPS: readonly string[] = Object.freeze([` and close at line 605 with `])`.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "html-obj-5",
+    "claim": "O6 Declared ecosystem reuse",
+    "file": "/home/user/fleet/html/tests/distribution.test.ts:204-207, 579-586",
+    "rule": ".claude/rules/tests.md § Scratch: \"Import `createScratch` from `@orkestrel/test/server` when a proof needs real files. It allocates a temporary directory it owns, contains every path against escape, and removes the directory on `destroy`.\" plus § Shared test infrastructure: \"Write a helper of your own only where the package exports none for the job.\" and .claude/rules/portability.md § Processes and executables: \"Retry an `EBUSY`, `ENOTEMPTY`, or `EPERM` removal inside a bounded budget, and report the failure when the budget ends.\"",
+    "wrong": "The proof builds its own scratch directory and file operations — `mkdtempSync(join(tmpdir(), 'distribution-'))` at line 579, a local `writeFile` wrapping `mkdirSync`+`writeFileSync` at 204-207, and a bare `rmSync(SCRATCH, { force: true, recursive: true })` teardown at 585 and 604 — while `@orkestrel/test` is a declared devDependency (package.json:83) whose server entry exports `createScratch` (node_modules/@orkestrel/test/dist/src/server/index.d.ts:76, with `path`, `write`, `ensure`, `link`, `has`, `read`, `destroy`) and `destroyScratch` (line 103), the retrying removal built for exactly the case here: a directory a just-stopped npm child still holds on Windows. The vendored-set exemption in .claude/rules/tests.md does not reach this file — it names only tests/setupPolicy.ts, tests/policy.test.ts and tests/config.test.ts, and scaffold vendors only those (node_modules/@orkestrel/scaffold/dist/host/tests/ holds config.test.ts and policy.test.ts alone).",
+    "repair": "In tests/distribution.test.ts, import `createScratch` and `destroyScratch` from '@orkestrel/test/server'. Replace line 579 with `const SCRATCH = createScratch({ prefix: 'distribution-' })` and derive `CACHE` from `SCRATCH.ensure('cache')`. Replace the local `writeFile` at 204-207 with `SCRATCH.write(...)` at its call sites, and replace both `rmSync(SCRATCH, ...)` calls (585, 604) with `await destroyScratch(SCRATCH)` in the `afterAll` hook and `SCRATCH.destroy()` on the synchronous module-load failure path. Delete the now-unused `mkdtempSync`, `mkdirSync`, `writeFileSync`, `rmSync` and `tmpdir` imports where nothing else uses them.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "html-obj-6",
+    "claim": "O8 Workspace and portability",
+    "file": "/home/user/fleet/html/tests/distribution.test.ts:27, 32, 213-221",
+    "rule": ".claude/rules/portability.md § Processes and executables: \"Resolve, spawn, and terminate a child through `@orkestrel/process` where the package declares it. Where it is not declared, spawn `process.execPath` with a JavaScript entry. Never spawn a `.bin` shim, and never add `shell: true` to reach one.\"",
+    "wrong": "`@orkestrel/process` is not declared in package.json, so the rule's second sentence binds; `runNpm` instead spawns `npm.cmd` (line 27) with `shell: SHELL` (lines 32, 218) on win32, which is precisely the shim-plus-shell path the rule's third sentence forbids. The file already demonstrates the correct form one function later at line 224, where `runNode` spawns `process.execPath` directly.",
+    "repair": "In tests/distribution.test.ts, replace `const NPM` (line 27) and `const SHELL` (line 32) with a resolved JavaScript entry: `const NPM_CLI = process.env.npm_execpath ?? join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js')` (both gate paths — `npm test` and `prepublishOnly` — set `npm_execpath`). Change `runNpm` (213-221) to `spawnSync(process.execPath, [NPM_CLI, ...args], { cwd, encoding: 'utf8', env: { ...process.env, npm_config_cache: CACHE }, windowsHide: true })`, dropping the `shell` option. Delete the win32 shell comment at lines 28-31, which no longer describes the code.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "html-obj-7",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/html/tests/setup.ts:55-59",
+    "rule": "AGENTS.md § Design laws: \"Minimal public API. Add or substantively expand a capability with its first real consumer; do not speculate.\" and .claude/rules/architecture.md § System constraints: \"Do not expand the capability set without concrete need.\"",
+    "wrong": "`isBrowserVuePath` decides whether a repository-relative path is a browser-application Vue SFC, and this package has no `app/` tree at all — package.json declares only `check:src:core`/`test:src:core`, and vite.config.ts:133 registers only the `src:core` environment project, so no such path can exist. Its only consumer is the self-referential block at tests/setup.test.ts:90-103, which proves a helper nothing in the workspace calls.",
+    "repair": "Delete `isBrowserVuePath` and its doc comment from tests/setup.ts (lines 55-59), delete the `isBrowserVuePath` row from the import list at tests/setup.test.ts:29, and delete the whole `describe('setup - browser path helper')` block at tests/setup.test.ts:90-103. Reintroduce it with its first real consumer if this package ever gains an `app/browser` environment.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "html-obj-8",
+    "claim": "O1 Placement and kind purity",
+    "file": "/home/user/fleet/html/src/core/parsers.ts:36-38, 46-47",
+    "rule": ".claude/rules/names.md § Fixed derivation/construction forms: \"`parse*`: coercion producing `T | undefined`; cross-type conversion never belongs in a guard.\" and .claude/rules/patterns.md § Validation and contracts, table row \"`parsers.ts` | Flat coercers returning `T \\| undefined`\".",
+    "wrong": "Neither export in parsers.ts is a coercer: `parseDocument` returns `HTMLDocument` and `parseProvenance` returns `HTMLParseResult`, both total, so no call can produce `undefined` and the `parse*` form's contract does not hold for either name.",
+    "repair": "Deliberate and documented, so leave the code and carry the decision to the naming lane rather than editing. The exception is stated in src/core/types.ts:9-12 (\"Document parsing is total - every input produces a document, so there are no parse options, no issue list, and no errors; `parseStartTag` is the separate fail-closed source boundary\") and restated in guides/html.md:5 and :7. If the Orchestrator overrules the exception, the repair is a published rename of both functions to a total-conversion form and a matching update to the barrel consumers (src/core/HTML.ts:38, tests/src/core/{constants,helpers,factories}.test.ts, tests/setup.ts:2, guides/html.md §§ Parsers, Patterns, README.md:66-67), not a file move.",
+    "breaking": true,
+    "verdict": "EXEMPT",
+    "confidence": "medium",
+    "consumers": [
+     "no fleet package in the staged closure declares @orkestrel/html; the rename's blast radius is this repository's own guide, README and tests"
+    ]
+   },
+   {
+    "id": "html-obj-9",
+    "claim": "O1 Placement and kind purity",
+    "file": "/home/user/fleet/html/src/core/helpers.ts:339-443",
+    "rule": ".claude/rules/architecture.md § Centralized-file pattern, row \"Coercers | `*/parsers.ts`\", read with § Kind purity: \"Placement follows what the function is; the name form follows placement.\"",
+    "wrong": "`parseStartTag` is the one function in the package that matches the coercer shape exactly — `(html: string, offset: number) => HTMLStartTag | undefined`, refusing every malformed, duplicate, ambiguous or incomplete input — and it sits in helpers.ts rather than parsers.ts, which is the inverse of html-obj-8: the coercer is outside the coercer file while the file holds two total functions.",
+    "repair": "Leave the code. The placement is deliberate and stated — guides/html.md:84 (\"Every lexical piece the walk composes is a pure leaf in `helpers.ts` … exported and independently testable\") and :93 — and the move would create a new helpers.ts→parsers.ts import edge against the existing parsers.ts→helpers.ts one, a cycle outside the single leaf-pair cycle § Kind purity sanctions, because scanTag (helpers.ts:456) calls parseStartTag. If the naming lane rules the form binds, rename in place to a `scan*` form (§ Kind purity: \"Right file, wrong name → rename it in place\"), which is a published rename touching src/core/index.ts consumers, tests/src/core/helpers.test.ts, guides/html.md §§ Helpers and Patterns, and README.md:45-54.",
+    "breaking": true,
+    "verdict": "EXEMPT",
+    "confidence": "low",
+    "consumers": [
+     "no fleet package in the staged closure declares @orkestrel/html; the rename's blast radius is this repository's own guide, README and tests"
+    ]
+   }
+  ],
+  "referrals": [
+   "S6 (guide and README parity) — guides/README.md:17-39 titles a \"Dependency reference\" section and names contract.md, guide.md and scaffold.md, but the directory also holds guides/test.md and guides/probe.md (both matching declared devDependencies @orkestrel/test and @orkestrel/probe at package.json:81-83), which the index names nowhere. Neither the concept index (line 7-9) nor the directory index (line 13-15) reaches them either, and tests/guides.test.ts checks links only inside manifest-listed guides, so nothing catches it. Whether the map must name every mirror it carries is the documentation lane's call.",
+   "S5/S6 (TSDoc and guide voice) — the same pipeline is enumerated with two different counts that disagree: src/core/HTML.ts:265 says \"The pipeline runs in five stages\" and guides/html.md:297 says \"Four passes, in this order:\" over the same code (the guide folds base resolution into its fourth pass; the TSDoc gives it a fifth). AGENTS.md § Writing bans stating a count of a set anyone can add to and says to delete it rather than correct it. Related instances for the same sweep: guides/html.md:48 \"the 13 elements that cannot have children\", guides/html.md:177 \"Five categories, one root\", and src/core/types.ts:2-3 prose. Prose repair belongs to the subjective lane.",
+   "S1/S2 (entity API shape and vocabulary) — the package ships two public doors onto the same handle: `new HTML(input)` (barrelled at src/core/index.ts:8, documented at guides/html.md:152-154) and `createHTML(input)` (factories.ts:27-29, a one-line `return new HTML(input)` whose only difference is the declared return type `HTMLInterface`). tests/src/core/factories.test.ts:26-29 proves only that the two agree. Whether the second door earns its place under .claude/rules/architecture.md § Wrapper test, or whether one should be the sole entry, is a design-shape ruling I do not own.",
+   "S2 (vocabulary and forms) — html-obj-8 and html-obj-9 record a `parse*` form inversion I ruled EXEMPT on the guide's stated design. The naming lane owns whether the stated exception survives, and both repairs are published renames, so the decision should not be taken from my lane alone."
+  ],
+  "coverage": "READ IN FULL: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/html-brief.md; /home/user/scaffold/AGENTS.md; /home/user/scaffold/.claude/rules/{architecture,typescript,patterns,tests,workspace,portability,documentation,writing}.md (names.md read by targeted grep for the `is*`/`parse*`/`create*`/`*Of` form contracts and the fixed lifecycle table, since S1/S2 are the other lane's). SUBJECT READ IN FULL: /home/user/fleet/html/src/core/{index,types,HTML,helpers,parsers,validators,shapers,factories}.ts; package.json; tsconfig.json; vite.config.ts; .oxfmtrc.json; README.md; guides/html.md (all 667 lines); guides/README.md; tests/{setup.ts,setup.test.ts,guides.test.ts}; tests/src/core/{constants,factories}.test.ts. READ IN PART: src/core/constants.ts lines 1-1594 of 2741 — enough to rule kind purity, UPPER_SNAKE_CASE and Object.freeze over every behavioural collection; the unread remainder is NAMED_ENTITIES rows, whose values are gated against the vendored WHATWG fixture at tests/src/core/helpers.test.ts:130 and tests/setup.test.ts:50-88. tests/distribution.test.ts lines 1-60, 159-260, 575-612, 680-810 (header, helpers, stage construction, skip predicates); tests/src/core/helpers.test.ts lines 1-120 plus targeted greps; tests/src/core/HTML.test.ts read by describe/it structure (70 cases sampled) rather than assertion by assertion; .oxlintrc.json by grep for import and suppression rules; configs/policy.ts lines 95-200 and 270-340, read as evidence for which instrument owns the nested-function rule, not as a subject. EVIDENCE ONLY: node_modules/@orkestrel/contract/dist/src/core/index.d.ts (full export enumeration plus the `holds` declaration at 1771); node_modules/@orkestrel/test/dist/src/{core,server}/index.d.ts (full export enumeration plus `createScratch` at server:76 and `destroyScratch` at server:103); node_modules/@orkestrel/scaffold/dist/host/tests/ (to establish which test files scaffold vendors). NOT READ, WITH REASON: tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts, configs/**, .claude/**, AGENTS.md and CLAUDE.md in the checkout — off-limits as subjects per the shared brief (setupPolicy.ts was greped only to establish the sweep's population globs so I would not re-report what it proves); guides/{contract,guide,scaffold,test,probe}.md — vendored dependency mirrors, off-limits; tests/src/core/{parsers,validators,shapers}.test.ts bodies — greped for skips, mocks, fake clocks, local declarations and seeded-randomness usage, but not read line by line, so a defect internal to one of those assertions could be missed; dist/ — not built in this checkout.",
+  "terminal": "VERDICT: FAIL — 4 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "refuter": {
+  "package": "html",
+  "rulings": [
+   {
+    "id": "html-subj-1",
+    "verdict": "CONFIRMED",
+    "ground": "Lane: refuter, objective perspective, Claude (Fable 5.1) substituting for the dark GPT-5.6 Sol bench. The cited code does what the finding says: the guide's blanket claim is false for one function in the table it introduces.",
+    "evidence": "/home/user/fleet/html/src/core/helpers.ts:1278-1348 `foldNode` has no `attempt` and no `try`; a handler that throws propagates. Every other engine leaf in the same table wraps its body: `renderHTML` :945, `renderText` :1095, `rewriteDocument` :1369, `mergeText` :1471, `collapseText` :1506, `extractRegion` :1541, `pruneDocument` :1588, and `walkNodes` :1242 uses `try` with the comment explaining why. /home/user/fleet/html/guides/html.md:93 states of the whole Helpers table 'none of them throws'; guides/html.md:287 states the opposite for `fold` ('`find`, `filter`, `reduce`, and `fold` let a handler's error propagate'); /home/user/fleet/html/src/core/HTML.ts:173-175 `fold` delegates to `foldNode`, so the two guide sentences describe one code path. No test pins the :93 sentence (tests/guides.test.ts asserts parity and links only).",
+    "repair": "Apply the finder's repair verbatim at guides/html.md:93: drop 'none of them throws:' and name `foldNode` as the exception that lets a handler's error propagate, exactly as `fold` does, with the section link. Change no code.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-2",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says: a stated count of a package-owned set, already drifted between the two documents describing one mechanism.",
+    "evidence": "/home/user/fleet/html/src/core/HTML.ts:254 reads 'The pipeline runs in five stages:'; /home/user/fleet/html/guides/html.md:297 reads 'Four passes, in this order:' over the same `distill` pipeline (HTML.ts:279-305). AGENTS.md § Writing: 'NEVER state a count' and 'Delete a count you find. Do not correct it.' The objective lane's referral cites HTML.ts:265 for this sentence; the sentence is at :254.",
+    "repair": "Apply the finder's repair: HTML.ts:254 → 'The pipeline runs in this order:'; guides/html.md:297 → 'The passes run in this order:'. Leave the numbered list at :299-302 unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-3",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says.",
+    "evidence": "/home/user/fleet/html/guides/html.md:48 reads 'the 13 elements that cannot have children (`area` … `wbr`)'; /home/user/fleet/html/src/core/constants.ts:10-24 is the package-owned `VOID_ELEMENTS` list the number tallies, and adding a member makes the sentence false. AGENTS.md § Writing bans the count.",
+    "repair": "Apply the finder's repair: guides/html.md:48 → 'the elements that cannot have children (`area` … `wbr`)'.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-4",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says; the repair is amended to reach the TSDoc that alternates the same synonym.",
+    "evidence": "/home/user/fleet/html/guides/html.md:304 'the evidence stage 1 reads'; :306 'It resolves what SURVIVES stage 2'; :240 'laws 1 and 2 are substantiated'; :297 'Four passes'. AGENTS.md § Writing: 'NEVER name a list item by its position'; AGENTS.md § Design laws: 'One concept, one term.' The same alternation sits in /home/user/fleet/html/src/core/HTML.ts:264 ('The `hidden` stage runs BEFORE the sanitize stage') beside the guide's 'pass'.",
+    "repair": "Apply the finder's three replacements, and also change HTML.ts:264 to 'The `hidden` pass runs BEFORE the sanitize pass'. Lines :240 and :306 are also edited by html-subj-5, and :306 by html-subj-7; apply one merged edit per line. Merged :306: '`base` resolves what survives the sanitize pass — in practice `href` and `cite`, because a resource `src` has already been removed by the sanitize floor — and an unresolvable value is left exactly as written rather than dropped.' Merged :240 opening: 'What roundtrips is the AST, NOT the input bytes. The roundtrip laws hold on parser-produced roots; the AST fixpoint and canonical idempotence laws are substantiated over a representative parser-produced corpus rather than by a universal proof, in …' (rest unchanged).",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-5",
+    "verdict": "CONFIRMED",
+    "ground": "The cited prose does what the finding says; two further sites of the same class are added and the clumsiest replacement is amended.",
+    "evidence": "Read at /home/user/fleet/html/guides/html.md:177 'Five categories, one root'; :240 'Three laws hold'; :285 'Two consequences worth stating out loud'; :289 'Three of its rules follow'; :291 'each of the three rules above'; :306 'Two honest details about `base`'; :47 'the five code points'; /home/user/fleet/html/src/core/constants.ts:1 'Lists the five code points'. Missed by the finder, same rule: /home/user/fleet/html/tests/src/core/constants.test.ts:86 test title 'defines exactly the five HTML ASCII whitespace characters' and /home/user/fleet/html/tests/guides.test.ts:2 'The five constants below'. AGENTS.md § Writing: 'Delete a count you find. Do not correct it.'",
+    "repair": "Delete each number: :177 → 'The categories, one root, no second family:'; :240 → merged text under html-subj-4; :285 → replace 'Two consequences worth stating out loud. First, ' with 'Consequences worth stating out loud. ' and 'Second, the output' with 'And the output'; :289 → 'Its rules follow from that position rather than'; :291 → 'pins each of the preceding rules with a named test' (merged with html-subj-8); :306 → merged text under html-subj-4; :47 and constants.ts:1 → 'the code points HTML treats as syntax whitespace'; constants.test.ts:86 → 'defines exactly the HTML ASCII whitespace characters'; guides.test.ts:2 → 'The constants that follow are this' (merged with html-subj-8; apply the drop-in fleet-wide). Leave 'the two engines' (:154, HTML.ts:54) and 'There are two renderers' (:312).",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-6",
+    "verdict": "CONFIRMED",
+    "ground": "The cited prose does what the finding says; one site the finder missed is added.",
+    "evidence": "Grep `guarantee|\\bensure` (case-insensitive) over guides/html.md, README.md, src/**: /home/user/fleet/html/guides/html.md:88 'and guarantees no two adjacent text siblings'; :179 '`HTMLInterface` guarantees it'; :187 'The parser also guarantees one invariant'; and :287 'a guarantee about what `renderHTML` will re-emit', a behavioural claim in noun form the finder did not list. No hit in README.md or src/**. .claude/rules/writing.md § Claims and time bans `guarantee` as a claim about behavior.",
+    "repair": "Apply the finder's three replacements and add :287: replace 'a guarantee about what `renderHTML` will re-emit' with 'a property of what `renderHTML` re-emits'.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-7",
+    "verdict": "CONFIRMED",
+    "ground": "The cited prose does what the finding says, and the sweep is complete for the package's own prose.",
+    "evidence": "Grep `\\b(since|once|…substitution table…)\\b` case-insensitive over guides/html.md, README.md, src/**: causal `since` at /home/user/fleet/html/guides/html.md:287 ('since each allowlist is read') and :306 ('since a resource `src`'); temporal `once` at guides/html.md:285 and /home/user/fleet/html/src/core/constants.ts:436 ('inert once `style` … are gone'). Permitted senses, recorded as permitted: 'exactly once'/'read once'/'parse once' at guides/html.md:5, :63, :193, :301, constants.ts:588, helpers.ts:1527, :1529, HTML.ts:309; `just` at constants.ts:469 ('just as it narrows', comparative) and guides/html.md:318 ('just resolved', temporal). No other table word hit.",
+    "repair": "Apply the finder's repair: `because` at :287 and :306 (:306 merged under html-subj-4); `after` at :285 and constants.ts:436.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-8",
+    "verdict": "CONFIRMED",
+    "ground": "The cited prose does what the finding says; one site the finder missed is added.",
+    "evidence": "Grep `\\b(above|below)\\b` over guides/html.md, README.md, src/**, tests/**: document navigation at /home/user/fleet/html/guides/html.md:55, :154, :158, :291, :338, :435, and :289 ('need the unwidenable refusal above', pointing at the preceding bullet — missed by the finder); test comments at tests/guides.test.ts:2, :35, tests/setup.test.ts:40, tests/src/core/helpers.test.ts:1383, tests/src/core/parsers.test.ts:510. Structural uses correctly left alone: guides/html.md:100, constants.ts:133, helpers.ts:136, tests/setup.ts:823, helpers.test.ts:106, setup.test.ts:355. Hits in tests/setupPolicy.ts:2098 and tests/policy.test.ts:544 are vendored and off-limits. .claude/rules/writing.md § Code tokens, references, and links quoted correctly. tests/guides.test.ts is package-owned (scaffold.md:1006 in node_modules/@orkestrel/scaffold/dist/host/guides), so the edit persists; the finder's fleet-wide caveat stands because sibling copies are byte-identical.",
+    "repair": "Apply the finder's replacements and add :289 → 'the unwidenable refusal stated earlier'. :291 merges with html-subj-5; guides.test.ts:2 merges with html-subj-5.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-9",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says.",
+    "evidence": "/home/user/fleet/html/src/core/helpers.ts:650 '@param entities - Whether to decode character references'; :657 `entities = false`; no 'Default:' anywhere in the block (:644-652). .claude/rules/typescript.md § Comments and API documentation fixes the 'If `true`, …; if `false`, …' and 'Default: …' forms; helpers.ts:125-126 already uses the form for `projectDepth`.",
+    "repair": "Apply the finder's repair verbatim at helpers.ts:650.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-10",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says.",
+    "evidence": "/home/user/fleet/html/src/core/helpers.ts:785 '@param schemes - The allowed absolute schemes'; :790 `= SAFE_URL_SCHEMES`; guides/html.md:117 states the default the TSDoc omits. Rule as quoted.",
+    "repair": "Apply the finder's repair verbatim at helpers.ts:785.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-11",
+    "verdict": "REFUTED",
+    "ground": "Uncertain rule reach, and the repair breaks tests the finding does not name; default to refuted.",
+    "evidence": "/home/user/fleet/html/src/core/types.ts:186-194: the @remarks reads '`position` indexes the stack `overflow` names', so the member names which stack recorded the position — the axis-naming reading names.md § General vocabulary also licenses ('Name the axis a discriminant varies') — and `projectDepth(overflow, position, height)` at helpers.ts:139 carries the same reading. The rule's assertion examples (`aborted`, `exhausted`, `expired`) are entity states. The finder's fleet claim does not hold: fleet `src/**/types.ts` carry noun-shaped booleans (`csv` `header?` :209/:255 and `bom?` :260, `contract` `enum?`/`format?` :494-495 and `integer?` :570, `mcp` `duplex` :2422). The repair names no test, yet /home/user/fleet/html/tests/src/core/helpers.test.ts:73, :85, :97, :98 assert `{ overflow: … }` and redden if applied verbatim. Consumers read no such member (grep `.overflow|overflow:` over markdown/src and browser/src: no matches), so the rename buys no consumer anything.",
+    "repair": "None. The finder's rename would be a published-surface change across types.ts, helpers.ts, parsers.ts, helpers.test.ts, and the guide with no rule-mandated gain; do not create a row.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-12",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban it, and the proposed name is worse than the current one.",
+    "evidence": "/home/user/fleet/html/src/core/types.ts:321-330: every key of `HTMLSanitizeOptions` names the axis it governs (`elements`, `attributes`, `schemes`, `comments`), and `comments: true` reads as 'keep comments' the way csv's `header?: boolean` (/home/user/fleet/csv/src/core/types.ts:209, :255) and `bom?: boolean` (:260) and contract's `enum?`/`format?` (/home/user/fleet/contract/src/core/types.ts:494-495) read across the fleet. `retain` alone names no object, and names.md § Entity-scoped names forbids the `retainComments` compound that would restore it. The finder rates the row low confidence and invites striking it on exactly this reading. No consumer passes the key (grep over markdown/src and browser/src).",
+    "repair": "None; do not create a row.",
+    "breaking": false
+   },
+   {
+    "id": "html-subj-13",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban it, and the finder's own EXEMPT verdict already asks for no edit.",
+    "evidence": "/home/user/fleet/html/src/core/parsers.ts:36 and :46 return total values. architecture.md § Kind purity requires 'Every exported function in `parsers.ts` is named `parse*`' (satisfied) and states the name forms are one-directional; names.md fixes `parse*` as 'coercion producing `T | undefined`', a failure shape a total coercion has no failure to fill. The totality is the package's stated design: types.ts:9-11, guides/html.md:5 and :7, factories.ts:12-14. Fleet `parsers.ts` files carry total `parse*` throughout: markdown `parseDocument`/`parseProvenance`/`parseInline` (/home/user/fleet/markdown/src/core/parsers.ts:208, :225, :247), csv `parseCSV` (:57), msg `parseMIMEPart` (:19), contract `parseJSON` (:515), guide `parseManifest` (:30).",
+    "repair": "None; no row.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-1",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says: a locally assembled copy of a declared primitive.",
+    "evidence": "/home/user/fleet/html/src/core/validators.ts:98-162: `attempt(() => { … return true })` then `return outcome.success && outcome.value` (:161). The installed dependency is the declared release — node_modules/@orkestrel/contract/package.json:3 version 0.0.15 against `^0.0.15` at package.json:76 — and node_modules/@orkestrel/contract/dist/src/core/index.d.ts:1760-1771 declares `holds(callback: () => boolean): boolean`, 'True if the callback returns the boolean value `true`; false otherwise', the exact reduction at :161. Fleet validators use it (/home/user/fleet/workspace/src/core/validators.ts:16, :41; reason:1013; lsp:95 onward). `attempt` has no other use in validators.ts (import :13, sole call :99). guides/html.md:332 names `attempt` as the boundary the recursive guard runs on. tests/src/core/validators.test.ts references neither symbol.",
+    "repair": "Apply the finder's repair. For guides/html.md:332 write: '`attempt` is the declared safe-exception boundary and `holds` its predicate form, and every total surface in this package runs on one of them: the recursive guard in `validators.ts` on `holds`, both shaping engines in `HTML.ts` and every containing leaf in `helpers.ts` on `attempt`, so …' (rest unchanged).",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-2",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says, and the rule is live fleet practice, not a dead letter.",
+    "evidence": "/home/user/fleet/html/tests/guides.test.ts read whole (1-171): fence-language, parity, method-table, example-presence, import-resolution, and link assertions only; no fence body runs. Fleet siblings transcribe: /home/user/fleet/contract/tests/guides.test.ts:291 `describe('flagship fences')`, /home/user/fleet/process/tests/guides.test.ts:542, /home/user/fleet/table/tests/guides.test.ts:234 and :751. .claude/rules/tests.md § Cross-cutting proofs and .claude/rules/documentation.md § Parity quoted correctly. The file is package-owned (scaffold.md:1006), so the edit persists. Values I re-derived by hand from the code: guides/html.md:348 `{ start: 0, end: 40 }`, :386 `17`, :395 `3`, :493 `{ start: 0, end: 49 }`, :515 `2`, :548 `next: 38`, :553 `next: 26`, README.md:52 `next: 32` — all correct today and gated by nothing.",
+    "repair": "Amend the finder's repair: the rule names flagship fences, so transcribe every fence whose trailing comment claims a value — guides/html.md:342-355, :374-396, :417-442, :446-472, :476-523, :527-567, :571-601, :605-627, :631-648 — and the README.md fences at :30-43 and :48-54, one `it` per fence, importing from '@src/core' (the `guides` project resolves the tsconfig alias, vite.config.ts:86-96), asserting each claimed value with `toEqual`/`toBe` and the deep-equality comments at :639, :642, :646-647 as direct comparisons. For the shape-only fences (:359-370, :400-413) assert the observable they name (an `HTML` instance; `category === 'element'`). Name each test for the behaviour it proves, not the fence line.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-3",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says, the sweep does not cover it, and the pattern is unique to this package.",
+    "evidence": "/home/user/fleet/html/tests/src/core/constants.test.ts:31-83 exports `CollectionMutation`, `attemptCollectionMutation`, `restoreCollectionMutation`. Grep `^export (function|interface|const|type)` over */tests/src/**/*.test.ts across /home/user/fleet returns only these three lines. tests/setupPolicy.ts:238 `POLICY_TEST_GLOB` feeds only the mirror walk at :881; declaration placement runs over `POLICY_MODULE_GLOB` and `POLICY_TESTS_MODULE_GLOB` (:232, :235), so the sweep cannot see this. .claude/rules/tests.md § Shared test infrastructure quoted correctly; the helpers use only `Reflect`, so `tests/setup.ts` (host-independent) is the right home.",
+    "repair": "Apply the finder's repair; the added `tests/setup.test.ts` case drives `attemptCollectionMutation` then `restoreCollectionMutation` on a frozen array and a frozen record and asserts both that the collection stayed frozen and that the restored value deep-equals the original.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-4",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says.",
+    "evidence": "/home/user/fleet/html/tests/setup.ts:597-605 `export const URL_SAFETY_GROUPS: readonly string[] = [ … ]` with no `Object.freeze`; the same module freezes `WHATWG_NAMED_ENTITIES` at :9. tests/src/core/helpers.test.ts:47 imports it and :686 compares the corpus's families against it. .claude/rules/architecture.md § Kind purity and § What the policy sweep proves quoted correctly ('It does not prove a collection is frozen'). The same class exists in sibling setup files (form/tests/setup.ts:28-59, codec:109, database:196, mcp/tests/setupConformance.ts) — outside this package's scope.",
+    "repair": "Apply the finder's repair verbatim at tests/setup.ts:597 and :605.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-5",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says, and the declared dependency ships the primitive.",
+    "evidence": "/home/user/fleet/html/tests/distribution.test.ts:204-207 local `writeFile`, :579 `mkdtempSync(join(tmpdir(), 'distribution-'))`, :585 and :604 bare `rmSync`. node_modules/@orkestrel/test/package.json:3 version 0.0.11 equals the declared `^0.0.11` (package.json:83); node_modules/@orkestrel/test/dist/src/server/index.d.ts:76 `createScratch`, :103 `destroyScratch` (bounded retry for a directory a just-stopped child holds), :359 `ensure`. .claude/rules/tests.md § Scratch and portability.md § Processes and executables quoted correctly. Ownership: scaffold.md:1011-1020 (node_modules/@orkestrel/scaffold/dist/host/guides) says the file is generated once, claimed by presence, and 'editing it is how you keep your own', so `repair` never restores it and the edit persists; the brief's vendored set is unchanged. Caveat: the bytes are identical across the fleet (template, ndjson, timeout, msg, … at the same line numbers), so the defect originates in scaffold's generator — a referral to the Orchestrator to fix the template alongside.",
+    "repair": "Apply the finder's repair with these amendments: make the `afterAll` callback `async` and `await destroyScratch(SCRATCH)`; keep `SCRATCH.destroy()` on the synchronous `openStage` failure path; derive `CACHE` as `SCRATCH.ensure('cache')`; route the classifiers fixture at :615-643 through `SCRATCH.write(…)` too; remove the imports nothing else uses.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-6",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says; the repair is amended because its fallback path is wrong on a common host layout.",
+    "evidence": "/home/user/fleet/html/tests/distribution.test.ts:27 `npm.cmd`, :32 `SHELL = process.platform === 'win32'`, :218 `shell: SHELL`; :224 already spawns `process.execPath` directly. package.json:75-91 declares no `@orkestrel/process`, so portability.md § Processes and executables' second and third sentences bind as quoted. The comment at :28-31 explains the shell but is not a rule exemption; the rule prescribes the JavaScript-entry form for exactly this case. Same template-origin caveat as html-obj-5 (scaffold.md:1011-1020; identical bytes fleet-wide).",
+    "repair": "Replace `NPM`/`SHELL` with the JavaScript entry npm publishes: read `process.env.npm_execpath` and throw a named error when it is absent (`npm test`, `prepublishOnly`, and `npm run test:distribution` all set it) instead of guessing `dirname(process.execPath)/node_modules/npm/bin/npm-cli.js`, which is wrong under an nvm layout where npm lives under `../lib/node_modules`. Change `runNpm` to `spawnSync(process.execPath, [NPM_CLI, ...args], { cwd, encoding: 'utf8', env: { ...process.env, npm_config_cache: CACHE }, windowsHide: true })` with no `shell`. Delete the comment at :28-31. Carry the same change to scaffold's generator as a referral.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-7",
+    "verdict": "CONFIRMED",
+    "ground": "The cited code does what the finding says: an exported test capability with no consumer and no possible input in this workspace.",
+    "evidence": "/home/user/fleet/html/tests/setup.ts:55-59 `isBrowserVuePath`; its only caller is /home/user/fleet/html/tests/setup.test.ts:29 and :90-103. vite.config.ts:32-48 and :133 register `src:core` only; no `app/` tree exists (brief: environments present src/core). Grep over node_modules/@orkestrel/scaffold/dist for `isBrowserVuePath` returns nothing, so it is not a generated artifact that comes back; sibling packages carry the same residue (template, ndjson, timeout, msg, guide, abort, program, workflow, tool, relation, budget, emitter) — outside this package. AGENTS.md § Design laws 'Minimal public API' and architecture.md § System constraints quoted correctly.",
+    "repair": "Apply the finder's repair verbatim: delete tests/setup.ts:55-59, the import row at tests/setup.test.ts:29, and the block at :90-103.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-8",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban it, the finder's own EXEMPT verdict asks for no edit, and the finding's consumer note is wrong.",
+    "evidence": "Same evidence as html-subj-13: parsers.ts:36, :46; architecture.md § Kind purity's `parse*` placement law is satisfied and one-directional; names.md's `T | undefined` fixes a failure shape a total coercion lacks; types.ts:9-11 and guides/html.md:5, :7 state the design; fleet `parsers.ts` carry total `parse*` (markdown:208/:225/:247, csv:57, msg:19, contract:515, guide:30). Correction: `@orkestrel/html` is declared by markdown (/home/user/fleet/markdown/package.json:76) and browser (/home/user/fleet/browser/package.json:90), so the rename the finder sketches would reach two consumers, not none.",
+    "repair": "None; no row.",
+    "breaking": false
+   },
+   {
+    "id": "html-obj-9",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban it: name forms are one-directional and the rule's own example places a lexical leaf returning `T | undefined` in `helpers.ts`.",
+    "evidence": ".claude/rules/architecture.md § Kind purity: 'Those name forms are one-directional. A name does not place a function' and 'A `scan*` in `parsers.ts` is a pure lexical leaf that belongs in `helpers.ts`'. The sibling leaves `scanTag` (/home/user/fleet/html/src/core/helpers.ts:452), `scanComment` (:528), and `scanDoctype` (:573) also return `T | undefined`, so return shape alone does not make a leaf a coercer for placement. `parseStartTag` (:339) is the strict half of `scanTag` (called at :456), a pure lexical leaf; its name matches names.md's `parse*` contract exactly, so 'right file, wrong name' does not fire either. guides/html.md:7, :84, :109 document the placement. Moving it would create the helpers→parsers edge the finder names, outside the sanctioned leaf-pair cycle.",
+    "repair": "None; no row.",
+    "breaking": false
+   }
+  ],
+  "terminal": "VERDICT: FAIL — 17 confirmed, 5 refuted, 0 unresolved, 0 findings outside the claims"
+ }
+}

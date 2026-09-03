@@ -1,0 +1,638 @@
+{
+ "package": "program",
+ "objective": {
+  "package": "program",
+  "lane": "objective (substitution for the dark GPT-5.6 Sol bench; reviewer on Claude Opus 5)",
+  "claims": [
+   {
+    "claim": "O1 Placement and kind purity",
+    "verdict": "CONFIRMED",
+    "read": "Read every file under /home/user/fleet/program/src/core: index.ts, types.ts, constants.ts, errors.ts, validators.ts, helpers.ts, factories.ts, programs/Program.ts, programs/ProgramManager.ts. Attacked four vectors. (a) Leaf purity: helpers.ts imports only types, @orkestrel/* leaves, constants.js, errors.js and validators.js — no implementation class; errors are named as permitted by .claude/rules/architecture.md § Kind purity 'they import types, constants, errors, and each other'. validators.ts imports only types, contract/qualifier/rater/reason guards and constants.js. (b) factories.ts holds only createProgram and createProgramManager, both create* returning a constructed entity. There is no parsers.ts, templates.ts, contracts.ts or routes.ts to violate. (c) Entity family: src/core/programs/ nests only Program.ts and ProgramManager.ts, with interfaces in module-root types.ts, factories in module-root factories.ts and exports in the module barrel. No centralized file inside the folder. (d) build* placement: buildProgramDefinition, buildNotice and buildAggregateDefinition sit in helpers.ts rather than factories.ts. I checked this against .claude/rules/names.md § Standalone helpers ('build* assembles a composite value from parts and is neither a factory nor a combinator') and against the installed sibling node_modules/@orkestrel/rater/dist/src/core/index.d.ts, which places buildEvidence, buildWorksheet, buildLineResult and worksheetSteps outside its factory. The placement holds. Constants are UPPER_SNAKE_CASE with Object.freeze on every collection (constants.ts:8, 17, 26). No stores and no extension categories exist in this package."
+   },
+   {
+    "claim": "O2 Functions, wrappers, and class order",
+    "verdict": "BROKEN",
+    "read": "Read Program.ts, ProgramManager.ts, factories.ts, helpers.ts and every file under tests/ except the vendored tests/setupPolicy.ts, tests/policy.test.ts and tests/config.test.ts. Read configs/policy.ts:76-195 and .oxlintrc.json:83-91 to establish that policy/no-nested-functions is scoped to src/** and app/** alone, and tests/setupPolicy.ts:229 (POLICY_SOURCE_GLOB = '{app,src}/**/*') to establish that the policy sweep's kind population excludes tests/ — so a nested function under tests/ is proven by neither instrument and is this lane's to report. Two sites break the rule (findings program-obj-1 and program-obj-2). On the wrapper test I attacked createProgram/createProgramManager as pass-through factories and did NOT confirm a violation: node_modules/@orkestrel/rater/dist/src/core/index.d.ts:153 and :450 publish createRater beside a barrelled Rater class on the same shape, and .claude/rules/architecture.md names factories.ts as a centralized kind, so the pattern is fleet canon rather than package drift. Program.validate() and ProgramManager.has() add a #alive() destroyed-state guard and thread instance collaborators, so neither is a 1:1 forward. Class order in both classes runs #-fields, constructor, getters, public methods, #-methods, with child collaborators in # fields and the emitter exposed through a readonly getter typed as its interface."
+   },
+   {
+    "claim": "O3 Barrels and exports",
+    "verdict": "CONFIRMED",
+    "read": "Read src/core/index.ts — eight rows, every one `export * from './module.js'`, no named, default, namespace or type-only row. Read every source file for `export default`: none. Read types.ts, helpers.ts and validators.ts for re-export of a foreign symbol: each imports @orkestrel/* names as `import type` or as call targets and re-exports none, and tests/src/core/integration.test.ts:163-176 drives the same claim through the barrel object. Read tests/guides.test.ts:38 — INTERNAL is empty, and lines 70-80 assert both directions (`findMissingSymbols(source.exports(), source.surface())` and its inverse), so no intentional top-level export is stranded outside the barrel and no name is interned without being stranded. Program and ProgramManager are both barrelled and both constructible from values a consumer holds (a ProgramDefinition plus an options record), so the barrel-versus-intern rule places them correctly."
+   },
+   {
+    "claim": "O4 Non-negotiable syntax",
+    "verdict": "CONFIRMED",
+    "read": "Read every src file and every non-vendored test file. Import order: type imports precede value imports in types.ts (1-12), helpers.ts (1-32 then 33), validators.ts (1-15 then 16), constants.ts (all type), errors.ts (1), Program.ts (1-16 then 17), ProgramManager.ts (1-11 then 12), and in helpers.test.ts (1-16 then 17), setup.ts (1-14 then 15), setup.test.ts (18-21 then 22). Every local import carries a .js extension (./types.js, ../helpers.js, ../../setup.js). Single quotes and no semicolons throughout. No `public`/`protected`/`private` keyword and no parameter property — Program.ts:74-88 and ProgramManager.ts:38-48 declare # fields and assign in the constructor body. No @ts-* directive and no eslint-disable/oxlint-disable. The only `as` in the package is `as const` at constants.ts:14 on a literal, which .claude/rules/typescript.md § Types exempts and which is load-bearing: types.ts:18 derives Status from `(typeof STATUSES)[number]`."
+   },
+   {
+    "claim": "O5 Types, immutability, errors",
+    "verdict": "CONFIRMED",
+    "read": "Read types.ts in full: every interface property carries readonly, every collection is `readonly T[]` or `Readonly<Record<…>>`, and no reusable type is declared outside it (the only inline shapes are the anonymous return of the private Program.#aggregateLimits at Program.ts:281 and the options bag parameters at helpers.ts:335 and :920, none of which is a declared reusable alias). Attacked absence-versus-sentinel across the whole surface: decision, rating, scope, message, group, by, gates, metadata and total are all `T | undefined` and omitted rather than set — helpers.ts:355-367 and :971-981 spread each optional key conditionally. One `''`-for-absence collapse exists and is documented; recorded as finding program-obj-9 with verdict EXEMPT. Attacked mutation and leakage: Program.ts:90-105 structuredClones the caller's definition before storing it and Program.ts:306-316 deep-freezes the clone; buildQualificationSubject (helpers.ts:390-411) spreads rather than writes into the caller's subject and copies every nested sums record; sumFields (helpers.ts:653) builds a fresh record; ProgramManager.programs() returns `[...this.#programs]` and tests/src/core/programs/ProgramManager.test.ts:31-34 and :193-197 prove the returned array is detached. ProgramError (errors.ts:23-41) exposes readonly code and optional context and ships isProgramError (errors.ts:57). @orkestrel/contract declares Result and attempt (node_modules/@orkestrel/contract/dist/src/core/index.d.ts:196 and :5285) but this package performs no I/O and no external operation, so the errors-and-outcomes table's Result row does not fire; every failure here is a programmer error thrown as a coded ProgramError, which is the table's first row."
+   },
+   {
+    "claim": "O6 Declared ecosystem reuse",
+    "verdict": "BROKEN",
+    "read": "Read the installed declarations of every declared runtime dependency before ruling: node_modules/@orkestrel/contract/dist/src/core/index.d.ts (full export list), node_modules/@orkestrel/rater/dist/src/core/index.d.ts, and the qualifier/reason/emitter imports at their call sites. Source reuse is strong and correct: contract supplies isArray, isRecord, isFiniteNumber, resolveField, arrayOf/objectOf/recordOf/literalOf/whereOf; qualifier supplies findRule, interpolateMessage, logicalPremises; reason supplies findDuplicates, formatField, isReasonValidationResult; emitter supplies Emitter by composition. I attacked Program.#seal (Program.ts:306) as a possible duplicate of a contract primitive and found none — contract's freeze surface is INTRINSICS.freeze and pinMembers (index.d.ts:2099, :4771), which pin a class prototype rather than deep-freeze a data graph, and its cloners are JSON-scoped. One duplicate survives in the test infrastructure: finding program-obj-7."
+   },
+   {
+    "claim": "O7 Tests",
+    "verdict": "BROKEN",
+    "read": "Read tests/setup.ts, tests/setup.test.ts, tests/guides.test.ts, tests/distribution.test.ts, tests/src/core/integration.test.ts, tests/src/core/factories.test.ts, tests/src/core/helpers.test.ts (structure plus the class and fixture region), tests/src/core/validators.test.ts (head), tests/src/core/programs/ProgramManager.test.ts in full and tests/src/core/programs/Program.test.ts by targeted region. Mirror rule holds: every behaviour-bearing src module has its test, and index.ts, constants.ts, errors.ts and types.ts are the rule's own named exemptions (isProgramError is exercised from factories.test.ts:30). No .skip, .todo, .only, retry or inflated timeout outside tests/distribution.test.ts, whose skips are the sanctioned unreachable-registry form gated on `import.meta.env.MODE === 'release'` (distribution.test.ts:36, 680-684). tests/setup.ts registers nothing — no describe, it or expect appears in it. No fixture server and no elapsed-interval measurement exists, so the 127.0.0.1/port-0 and performance.now() sub-claims are inert. The scripted qualifier/rater/engine doubles are legitimate boundary stubs driven through the package's own published injection seams (ProgramOptions.qualifier/rater/engine) to reach the MISMATCH paths, not stand-ins for the integration claim, which tests/src/core/integration.test.ts drives with real engines. Five defects break the claim: findings program-obj-3 through program-obj-6 and program-obj-8."
+   },
+   {
+    "claim": "O8 Workspace and portability",
+    "verdict": "CONFIRMED",
+    "read": "Read package.json, vite.config.ts, tsconfig.json and .oxlintrc.json. Every declared Vitest project (srcCore, policy, config, setup, guides, distribution, probe at vite.config.ts:133) resolves to a real file and is reachable from the gate .claude/rules/workspace.md places it behind: srcCore/policy/config/setup/guides from `test` (package.json:63), distribution from `prepublishOnly` (package.json:73), and probe from no gate, which that rule mandates. The `setup` project is declared because tests/setup.test.ts matches tests/setup*.test.ts, and test:setup runs from `test`. No `service` project and no service directory exists, so its row is inert. The exports map, main, module, types and files agree with the built outputs: build:src:core emits dist/src/core/index.{js,cjs,d.ts} and copies index.d.ts to index.d.cts (package.json:71), which the require condition names. No script names a .sh file; clean and copy are Node invocations. No /tmp literal, no os.EOL, no `\\n`-only split and no path concatenation exists in src — the package composes no host paths and reads no arrived text. @orkestrel/process is not declared and no child is spawned from src. One deviation from the .claude/rules/workspace.md § Script intent table is recorded as a referral rather than a finding: the `lint` script carries --deny-warnings, which node_modules/@orkestrel/scaffold/package.json:65 also carries, so the table is stale rather than the package drifted."
+   },
+   {
+    "claim": "C Carry rows",
+    "verdict": "UNRESOLVED",
+    "read": "Read all four rows in tmp/units/conform/program-brief.md:21-24. Each of program-c1, program-c2, program-c3 and program-c4 names the subjective lane. No carry row names the objective lane, so this lane has nothing to rule here and returns no verdict on them. What would resolve it: the subjective lane's rulings on those four rows."
+   }
+  ],
+  "findings": [
+   {
+    "id": "program-obj-1",
+    "claim": "O2",
+    "file": "/home/user/fleet/program/tests/setup.ts:445",
+    "rule": ".claude/rules/architecture.md § Functions and orchestration: \"Never declare or assign a function inside another function or method. This bans local `function`, `function*`, and `const fn = () => ...`, regardless of caller count. The only in-body function expressions allowed are an anonymous callback passed directly as an argument and an anonymous function returned directly as the result (the factory/combinator pattern).\" The rule file's frontmatter names `tests/**/*.ts`.",
+    "wrong": "`createRecordingEngine` declares an overloaded named `function reason` inside its own body at lines 445, 446 and 447-455; a named function declaration nested in a function body is neither an anonymous argument callback nor an anonymous directly-returned function, and neither instrument covers it — .oxlintrc.json:83-91 scopes `policy/no-nested-functions` to `src/**` and `app/**`, and tests/setupPolicy.ts:229 scopes the sweep's kind population to `{app,src}/**/*`.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts, delete the nested `reason` declaration at lines 445-455 and give the returned object a `reason` method instead, matching the shape the sibling members already use: replace the `reason,` shorthand at line 461 with an object-literal method carrying the two overload signatures is not expressible on a literal, so instead lift the overloads onto the returned object's type by declaring the return value as `RecordingEngineInterface` (it already extends `ReasonInterface`, which declares both `reason` overloads) and write the member as a method that forwards its two parameters to `inner.reason` in one call — `reason(subjectsOrSubject: readonly Subject[] | Subject, definition: Definition) { return isArray<Subject>(subjectsOrSubject) ? inner.reason(subjectsOrSubject, definition) : inner.reason(subjectsOrSubject, definition) }`. Both existing branches already call `inner.reason` identically, so no behaviour moves. Import `isArray` from `@orkestrel/contract` while making this edit, which also closes program-obj-7.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": [],
+    "consumersNote": ""
+   },
+   {
+    "id": "program-obj-2",
+    "claim": "O2",
+    "file": "/home/user/fleet/program/tests/setup.ts:494",
+    "rule": ".claude/rules/architecture.md § Functions and orchestration: \"Never declare or assign a function inside another function or method. This bans local `function`, `function*`, and `const fn = () => ...`, regardless of caller count.\"",
+    "wrong": "`recordEvents` assigns an arrow function to a local const inside its body — `const record = (name: keyof ProgramEventMap) => { names.push(name) }` at lines 494-496 — which the rule bans by name, and which no instrument in this workspace reports because both the plugin override and the sweep population stop at `src/**` and `app/**`.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts, delete the `const record = …` assignment at lines 494-496 and inline the push into each of the seven subscriptions already at lines 497-503, so each reads `program.emitter.on('qualify', () => { names.push('qualify') })` and so on for rate, determine, decide, execute, aggregate and destroy. Each is then an anonymous callback passed directly as an argument, which the rule's first exception permits. tests/setup.test.ts:353-399 pins the recorded order and must stay green unchanged.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "program-obj-3",
+    "claim": "O7",
+    "file": "/home/user/fleet/program/tests/guides.test.ts:1",
+    "rule": ".claude/rules/tests.md § Cross-cutting proofs: \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof, so a fence documenting a value the code contradicts passes every parity assertion. Change a fence, change the transcription beside it.\" The same file's table fixes `tests/guides.test.ts` as proving \"every executable fence returns what the guide says it returns\", and .claude/rules/documentation.md § Parity points at it: \"That proof has a home: `tests/guides.test.ts` executes the flagship fences\".",
+    "wrong": "tests/guides.test.ts transcribes and executes no fence at all — every one of its assertions is a name-resolution or parity check (lines 63-168: fence languages, surface membership both directions, hidden declarations, method-table bijection, `@example` presence, fence import names, link resolution), so the value claims the flagship fence makes in guides/program.md:83-88 and :102-106 (`eligible.status // 'eligible'`, `eligible.rating?.total // 100`, `ineligible.rating // undefined`, `result.count // 2`, `result.tallies.eligible.count // 1`, `result.tallies.ineligible.count // 1`) are asserted by nothing and would stay green if the code started returning something else.",
+    "repair": "In /home/user/fleet/program/tests/guides.test.ts, add a `describe('guides/program.md fences')` block that transcribes the two flagship fences and asserts the values their comments claim. Transcribe guides/program.md:36-91 verbatim against `@src/core` (substituting the in-repository alias for the published specifier, as the rest of the suite already does) and assert `eligible.status === 'eligible'`, `eligible.rating?.total === 100`, `ineligible.status === 'ineligible'` and `ineligible.rating === undefined`; then transcribe guides/program.md:96-107 continuing from the same `program` and assert `result.count === 2`, `result.subjects[0]?.status === 'eligible'`, `result.subjects[1]?.status === 'ineligible'`, `result.tallies.eligible.count === 1` and `result.tallies.ineligible.count === 1`. Call `program.destroy()` at the end of the block. Do not weaken the existing parity assertions; the transcription sits beside them.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "program-obj-4",
+    "claim": "O7",
+    "file": "/home/user/fleet/program/tests/src/core/programs/ProgramManager.test.ts:43",
+    "rule": ".claude/rules/tests.md § Shared test infrastructure: \"`@orkestrel/test` owns the helpers every workspace repeats… Write a helper of your own only where the package exports none for the job.\" and \"Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.\" and \"Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.\"",
+    "wrong": "The block `let error: unknown; try { <call>; expect.unreachable('expected CODE') } catch (caught) { error = caught }` is hand-rolled at roughly twenty sites across four files — ProgramManager.test.ts:43-49, 56-62, 91-97, 122-128, 173-179, 221-227; factories.test.ts:21-27, 49-55, 76-82, 94-100; helpers.test.ts:185-191, 194-200; Program.test.ts:406-411, 419-425, 453-458, 465-470, 633-638 and further sites — while `@orkestrel/test` exports exactly that helper (`captureError(thunk: () => unknown): unknown`, node_modules/@orkestrel/test/dist/src/core/index.d.ts:21) and Program.test.ts:15 already imports and uses it at lines 73, 86, 102, 118, 199 and 225. The same file therefore carries both the declared helper and its hand-rolled near-duplicate.",
+    "repair": "Replace every hand-rolled capture block in /home/user/fleet/program/tests/src/core/programs/ProgramManager.test.ts, /home/user/fleet/program/tests/src/core/factories.test.ts, /home/user/fleet/program/tests/src/core/helpers.test.ts and the remaining sites in /home/user/fleet/program/tests/src/core/programs/Program.test.ts with `captureError`. Each site collapses to one statement: `expect(captureError(() => manager.add(standardProgramDefinition))).toMatchObject({ code: 'DUPLICATE', context: 'standard' })`. Add `import { captureError } from '@orkestrel/test'` to ProgramManager.test.ts, factories.test.ts and helpers.test.ts (Program.test.ts already has it), and delete the now-unused `let error: unknown` declarations. `captureError` returns `undefined` when the thunk completes, so `toMatchObject` still fails when nothing throws — the `expect.unreachable` guard is not lost. Do not touch the `try { … } finally { qualifier.destroy() }` cleanup blocks in tests/setup.test.ts:94-99, 105-110 and 851-860 or helpers.test.ts:538; those are cleanup, not capture.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "program-obj-5",
+    "claim": "O7",
+    "file": "/home/user/fleet/program/tests/src/core/helpers.test.ts:78",
+    "rule": ".claude/rules/tests.md § Shared test infrastructure: \"Extract a fixture, recorder, event factory, async wait, renderer, scenario/data builder, protocol fixture, or DOM builder as soon as it could serve another test.\" and \"Export every reusable helper, fixture type, factory, constant, and guard from setup files.\" and \"Test files import shared infrastructure rather than declaring local fixture factories.\" and \"Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.\"",
+    "wrong": "Four pieces of shared test infrastructure are declared locally inside test files instead of in tests/setup.ts, which already owns exactly this class of thing: helpers.test.ts:78 `class OffContractValidationResult`, :92 `class ScriptedQualifier`, :112 `class ScriptedReason` and :153 `function buildQualification`, plus ProgramManager.test.ts:17 `function buildDefinition`. `ScriptedReason` is a near-duplicate of tests/setup.ts:31 `FixedReason` (both wrap a real `createReason()` for their registry answers and override `reason`), and `buildDefinition` is a near-duplicate of the definition builders tests/setup.ts already exports at :688, :768 and :788.",
+    "repair": "Move all five declarations into /home/user/fleet/program/tests/setup.ts and export them through factory functions matching the module's existing shape, then import them where they are used. Add `createOffContractValidationResult(): ReasonValidationResult`, `createScriptedQualifier(): QualifierInterface`, `createScriptedReason(): ReasonInterface`, `buildQualificationResult(overrides: Partial<QualificationResult> & Pick<QualificationResult, 'eligibility'>): QualificationResult` and `buildStandardProgramDefinition(id: string): ProgramDefinition`, and delete helpers.test.ts:78-167 and ProgramManager.test.ts:17-19. Before adding `createScriptedReason`, check it against the existing `FixedReason` at tests/setup.ts:31-79: if the only difference is that one returns a pinned result and the other throws, consolidate them into one class whose factory takes the reason behaviour, per the near-duplicate rule. Name collision to resolve: `buildQualification` in helpers.test.ts builds a QualificationResult while `qualificationDefinition` from @orkestrel/qualifier builds a definition, so the moved name must read `buildQualificationResult` to keep one term per concept. Every moved declaration then needs its own assertion in tests/setup.test.ts, which is the setup module's proof.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "program-obj-6",
+    "claim": "O7",
+    "file": "/home/user/fleet/program/tests/src/core/factories.test.ts:113",
+    "rule": ".claude/rules/tests.md § Discovery and adequacy audit: \"confirm each assertion would fail for the defect it claims to catch, and that it fails rather than passes when its population is empty\".",
+    "wrong": "`it('defaults validate to true')` creates an empty manager and asserts only `manager.size === 0` (lines 114-116). Nothing in the body reaches the default at all: `ProgramManager` sets `#validate = options?.validate ?? DEFAULT_PROGRAM_VALIDATE` (ProgramManager.ts:67) and never uses it until `add` compiles a definition, so the test passes unchanged if DEFAULT_PROGRAM_VALIDATE (constants.ts:5) is flipped to `false`. The test names a defect it cannot catch, and constants.ts has no other test.",
+    "repair": "In /home/user/fleet/program/tests/src/core/factories.test.ts, replace the body of `it('defaults validate to true')` with one that adds an invalid definition to a default manager and proves the default rejected it: build a definition whose name and id are empty (the same shape ProgramManager.test.ts:58 uses), call `createProgramManager()`, and assert that `captureError(() => manager.add(definition))` matches `{ code: 'DEFINITION' }`; then assert the same `add` succeeds on a manager built with `{ validate: false }`, so the assertion fails in both directions when the default flips. Destroy both managers. Keep the existing `it('seeds programs from options')` unchanged.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "program-obj-7",
+    "claim": "O6",
+    "file": "/home/user/fleet/program/tests/setup.ts:429",
+    "rule": ".claude/rules/patterns.md § Declared ecosystem capabilities: \"Never reimplement or rename-wrap a declared package primitive.\" and step 3, \"Reuse the originating package directly when semantics match.\" .claude/rules/architecture.md § Wrapper test: \"Delete one-line delegates, pass-through factories, rename-only helpers/getters, compatibility aliases, and wrappers around semantically identical platform or declared-dependency primitives.\"",
+    "wrong": "`export function isSubjectArray(value: unknown): value is readonly Subject[] { return Array.isArray(value) }` is a rename-wrap of the declared runtime dependency's own primitive: node_modules/@orkestrel/contract/dist/src/core/index.d.ts:2279 declares `isArray<T = unknown>(value: unknown): value is readonly T[]`, semantics identical, and this package's own source already uses it — Program.ts:18 imports `isArray` from `@orkestrel/contract` and Program.ts:153 calls `isArray<Subject>(input)` for exactly this narrowing.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts, delete `isSubjectArray` at lines 429-431, add `import { isArray } from '@orkestrel/contract'` beside the existing value imports, and replace its two call sites — line 50 inside `FixedReason.reason` and line 451 inside `createRecordingEngine` — with `isArray<Subject>(subjectsOrSubject)`. Then delete the `describe('isSubjectArray')` block at tests/setup.test.ts:420-430 and drop `isSubjectArray` from that file's import list at line 71; the deleted block proves a contract primitive rather than this workspace's infrastructure, so it does not move. Apply this edit together with program-obj-1, which touches the same `createRecordingEngine` body.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "program-obj-8",
+    "claim": "O7",
+    "file": "/home/user/fleet/program/tests/setup.ts:989",
+    "rule": ".claude/rules/architecture.md § System constraints: \"Build or substantively expand a capability with its first real consumer; do not speculate.\" and \"Do not expand the capability set without concrete need.\" AGENTS.md § Design laws: \"Minimal public API. Add or substantively expand a capability with its first real consumer; do not speculate.\"",
+    "wrong": "`isBrowserVuePath` decides whether a repository-relative path belongs to `app/browser/`, in a package that has no `app/` directory (a glob over `app/**` at /home/user/fleet/program returns nothing) and no `.vue` file anywhere. Its only consumer is its own proof at tests/setup.test.ts:902-913 — a grep for `isBrowserVuePath` across the whole checkout returns those two files and nothing else — so it is speculative test infrastructure that reports on a population this workspace does not have, and its passing test reads as coverage of something real.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts, delete `isBrowserVuePath` at lines 988-992 (including its leading doc comment). In /home/user/fleet/program/tests/setup.test.ts, delete the `describe('isBrowserVuePath')` block at lines 902-913 and remove `isBrowserVuePath` from the import list at line 70. Restore the helper only when this package acquires an `app/browser` environment.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "program-obj-9",
+    "claim": "O5",
+    "file": "/home/user/fleet/program/src/core/helpers.ts:624",
+    "rule": "AGENTS.md § Design laws: \"**Absence is `undefined`.** Never invent sentinels such as `'none'`, `'unset'`, `'unknown'`, `''`, or `-1`.\"",
+    "wrong": "`formatGroupKey` returns `String(resolveField(subject, by) ?? '')`, so the empty string stands for an absent partition field and a subject missing `by` shares a partition with a subject whose `by` is literally `''`; that key then reaches the published surface as `AggregateGroup.key` (types.ts:106) and as the partition a per-subject projection is matched against (helpers.ts:760).",
+    "repair": "No change. The collapse is stated as a deliberate exception in the symbol's own `@remarks` at helpers.ts:607-611: \"`undefined` collapses to the empty string, so a subject missing the field and a subject whose field is literally `''` land in the SAME partition, and a numeric `1` collides with the string `'1'`.\" Recorded rather than dropped, per the shared brief's finding-shape rule. If a later scope reopens it, the correct shape is a `key: string | undefined` on AggregateGroup with the unpartitioned bucket carrying `undefined`, which is a breaking change to a published interface and needs its own unit.",
+    "breaking": false,
+    "verdict": "EXEMPT",
+    "confidence": "high",
+    "consumers": []
+   }
+  ],
+  "referrals": [
+   "To the subjective lane, claim S6 — `AGENTS §N` citations in package-owned files. AGENTS.md numbers no section, so every one of these names nothing. The fourteen package-owned sites are src/core/types.ts:194, :239, :253, :284; src/core/programs/ProgramManager.ts:21, :122; src/core/programs/Program.ts:148; src/core/helpers.ts:129; guides/program.md:29, :93, :154, :404, :426; and guides/README.md:3. The vendored dependency guides (guides/qualifier.md, guides/rater.md, guides/reason.md, guides/guide.md, guides/emitter.md) also carry them and are off-limits as subjects. Note that four of these sit in shipped TSDoc (types.ts) and therefore reach every consumer's editor through the published .d.ts.",
+   "To the subjective lane, claim S4 — src/core/constants.ts:8-23 stores the same five status literals twice. `STATUSES` (line 8) and `STATUS_PRECEDENCE` (line 17) hold identical arrays in identical order, so the two can drift silently; `STATUS_PRECEDENCE` reads as if it encoded an ordering fact that `STATUSES` does not already carry. AGENTS.md § Design laws, 'Derive state. Compute facts from existing fields. Do not store a second flag or label that can drift.' Consumers of a repair: helpers.ts:852 (buildEmptyTallies) and validators.ts:266 (isTallies) read STATUS_PRECEDENCE; validators.ts:65 and types.ts:18 read STATUSES.",
+   "To the subjective lane, claim S2 — five module helpers in src/core/helpers.ts take prefixes outside the one project-wide meaning .claude/rules/names.md § Standalone helpers fixes, and one takes a form § Fixed derivation/construction forms already names: `decideEligibility` (:182) is a whole-to-view projection and the fixed form for that is `{noun}To{Noun}`; `selectProgramLines` (:114) is a non-mutating in-order predicate filter, which the rule names `filter*`; `formatGroupKey` (:623), `completeTallies` (:825) and `tallyProgram` (:873) take prefixes the rule's list does not carry. Each rename moves the published surface, so the lane owning S2 should rule on all five together rather than piecemeal.",
+   "To the subjective lane, claim S5 — src/core/helpers.ts:499-502 states that `validateProgramDefinition` 'validates the rating structurally through the rater's {@link isRatingDefinition} guard (the rater exposes no `validate`)'. The function body never calls or imports `isRatingDefinition`; it reaches that guard only transitively, because `isProgramDefinition` (validators.ts:136-151) passes `rating: isRatingDefinition` into `recordOf`. The claim is transitively true but the sentence describes a direct call this module does not make, and the `{@link isRatingDefinition}` target resolves to no symbol in scope here. Whether that counts as a sentence misstating what the symbol does is S5's ruling, not this lane's.",
+   "To the subjective lane, claim S6 — two of the three fences in guides/program.md's `## Surface` section are not executable on their own: the batch fence at :96-107 reads `program` and `definition`, and the manager fence at :113-123 reads `definition` and `subject`, all defined in an earlier fence or nowhere. `subject` is defined by no fence in the guide at all. This bears on finding program-obj-3's repair — the transcription this lane prescribes must continue from the first fence's state — but the guide's own self-containment is S6's ruling.",
+   "To the Orchestrator — .claude/rules/workspace.md § Script intent fixes the `lint` row's contract as the literal command `oxlint --config .oxlintrc.json --fix .`, and this package's package.json:56 runs `oxlint --config .oxlintrc.json --fix --deny-warnings .`. I did not file this as a package finding because node_modules/@orkestrel/scaffold/package.json:65 carries the identical `--deny-warnings` form, so the canon tooling package itself deviates from the rule row and the drift is in the rule rather than in this target. The rule file is scaffold-owned and off-limits to this audit; deciding whether to correct the row or every target's script is the Orchestrator's."
+  ],
+  "coverage": "Read in full: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/program-brief.md; /home/user/scaffold/AGENTS.md; /home/user/scaffold/.claude/rules/{architecture,typescript,names,patterns,tests,workspace,portability,quality,documentation,writing}.md. Not read: /home/user/scaffold/.claude/rules/{application,browser,styles}.md — this package has no app/, no browser environment and no styles, so no changed path or concept those rules govern exists here.\n\nSubject files read in full: src/core/{index,types,constants,errors,validators,helpers,factories}.ts; src/core/programs/{Program,ProgramManager}.ts; package.json; vite.config.ts; tsconfig.json; .oxlintrc.json; tests/setup.ts; tests/setup.test.ts; tests/guides.test.ts; tests/src/core/programs/ProgramManager.test.ts; tests/src/core/factories.test.ts.\n\nRead in part, with the bound named: tests/src/core/helpers.test.ts — read lines 1-188 (imports, the three local classes, the local fixture factory, and the first assertions) and grepped the whole file for try-blocks, module-scope declarations and skip forms; the remaining ~400 assertion lines were not read, so a defect confined to an individual helper assertion there is outside this reading. tests/src/core/programs/Program.test.ts — grepped the whole file for try-blocks, captureError, toThrow, skip forms, module-scope declarations and nested functions, and read the matched regions; its ~1080 assertion lines were not read end to end. tests/src/core/validators.test.ts — read lines 1-60 and swept the whole file with the same greps. tests/src/core/integration.test.ts — read lines 1-60 and the whole barrel-exclusion block. tests/distribution.test.ts — read lines 1-80 and the skip region at 680-684. guides/program.md — read lines 29-159 (the flagship fences and the Types table) and its full heading and fence map; the ~1000 remaining lines of contract prose were not read, and guide prose is S6's subject rather than this lane's.\n\nRead as evidence only, never as subject: configs/policy.ts:70-195 and .oxlintrc.json overrides (to fix what lint proves); tests/setupPolicy.ts (greps for the populations the sweep parses, to fix what the sweep proves); node_modules/@orkestrel/contract/dist/src/core/index.d.ts (full export list plus the isArray, contain, pinMembers and freeze regions); node_modules/@orkestrel/rater/dist/src/core/index.d.ts in full; node_modules/@orkestrel/test/dist/src/core/index.d.ts (captureError region); node_modules/@orkestrel/scaffold/package.json (lint scripts).\n\nInstrument coverage and its limits. Every claim here rests on reading source and installed declarations; I executed nothing, so no behavioural claim in this verdict is backed by a run. Two text sweeps carry named bounds: the nested-function sweep matched the patterns `^\\\\t*(const|let|var)\\\\s+\\\\w+\\\\s*=\\\\s*(\\\\(|async\\\\s*\\\\(|function)` and `^\\\\t+function\\\\s+\\\\w+` over /home/user/fleet/program/tests, so a nested function written with a different leading-whitespace shape or assigned inside an expression would not appear in it; the `AGENTS §` sweep matched that literal over {src,tests,guides}/** and returned exactly the fourteen package-owned sites the successor brief's own measurement predicted, which is the cross-check that the pattern admitted the whole population. A single Glob over /home/user/fleet timed out, so I compared this package against one sibling only — @orkestrel/rater, read from its installed declaration rather than its source tree — and the two conventions I settled that way (barrelled class beside a create* factory; build* value helpers outside factories.ts) rest on that one comparison.\n\nClaims I attacked and could not break either way, so the next round knows they have been hit: the createProgram/createProgramManager pass-through-factory question under O2, settled against the rater declaration rather than against a rule that names it; the Program public-readonly-field position under the § Class order list, which names getters and methods but no public field, so the list decides nothing about id/name/definition sitting before the constructor; and `type Format` at tests/distribution.test.ts:63, which § Types reaches only if a single-use test-local alias counts as reusable, and which has no setup module it could move to because tests/setup.ts is host-independent and no tests/setupServer.ts exists.",
+  "terminal": "VERDICT: FAIL — 3 broken, 1 unresolved, 0 findings outside the claims"
+ },
+ "subjective": {
+  "package": "program",
+  "lane": "subjective — held in full (design acceptance, API and vocabulary, architecture fit, simplification, guide voice and product coherence). The Sol bench is dark, but this lane is my default assignment and I did not drift into the objective lane; objective observations are referrals, not verdicts.",
+  "claims": [
+   {
+    "claim": "S1 Entity API shape — every public property, method, option key, and event on an entity is one word; no behaviour-selecting discriminator parameter; managers expose singular/plural accessors and the batch overload family with all-succeed semantics.",
+    "verdict": "CONFIRMED",
+    "read": "/home/user/fleet/program/src/core/types.ts:224-296 (ProgramOptions keys qualifier, rater, engine, validate, labels, on, error; ProgramManagerOptions adds programs; ProgramInterface members id, name, definition, emitter, execute, validate, destroy; ProgramManagerInterface members emitter, size, has, program, programs, add, remove, destroy — every one a single word). Manager shape checked against /home/user/scaffold/.claude/rules/patterns.md § Managers: program(id)/programs() is the singular/plural pair, and remove carries the three-overload family at types.ts:292-294 with ProgramManager.ts:132-137 returning true only when every id existed. execute(subject | readonly Subject[]) at Program.ts:149-155 is an overload family selected by input type, not a literal mode argument; buildLimits (helpers.ts:246) runs the same algorithm over authority and aggregate-gate data, which .claude/rules/names.md § Split behavioral variants classes as data. The one-word rule holds; the tally-word and noun-form defects I found live under S2, and the missing member documentation under S5."
+   },
+   {
+    "claim": "S2 Vocabulary and forms — helper prefixes carry one meaning, identifier tables hold, tallies follow § Tallies, no rejected name, one term per concept.",
+    "verdict": "BROKEN",
+    "read": "/home/user/scaffold/.claude/rules/names.md § Tallies, § General vocabulary, § Standalone helpers, § Fixed derivation/construction forms, § Value-level identifiers. Against them: src/core/types.ts:287 exposes `size` as the lone tally on ProgramManagerInterface (program-subj-4); types.ts:52 and :93 name a data member `by` (program-subj-13); helpers.ts:999 buildNotice returns Notice while helpers.ts:206 buildNotices returns readonly Determination[] (program-subj-3); helpers.ts:873 tallyProgram tallies a subject, not a program (program-subj-16). Confirmed clean: helper prefixes build*/find*/format*/derive*/select*/decide*/sum*/aggregate*/complete*/assert*/has*/validate* each carry one meaning across helpers.ts; every guard in validators.ts is is* returning a Guard<T>; both factories.ts exports are create* returning an entity (architecture.md § Kind purity licenses build* for the plain authored values); the type table holds (ProgramOptions, ProgramInput, ProgramResult, ProgramEventMap, ProgramManagerInterface); lifecycle verbs execute/destroy/add/remove keep their fixed meanings with no synonym; no rejected name (`data`, `info`, `item`, `kind`, `type` as a member, `cfg`, `msg`) appears in src; acronyms hold (JSONValue); booleans read as assertions (applied, valid, success, rated); `effect` and `eligibility` name their axes."
+   },
+   {
+    "claim": "S3 Options and emitters — single-word option keys grouped by entity noun with `on` reserved for hooks; a stateful entity owns an Emitter by composition with the seven-step pattern, a focused event map of present-tense verbs or nouns, no `status` event, errors typed unknown.",
+    "verdict": "CONFIRMED",
+    "read": "/home/user/scaffold/.claude/rules/patterns.md § Options and § Stateful emitters against src/core/types.ts:201-232 and :254-282 and both classes. Every step is present: the event maps are declared in types.ts; `on?: EmitterHooks<...>` and `error?: EmitterErrorHandler` sit on both options types; `readonly emitter: EmitterInterface<...>` sits on both interfaces; Program.ts:74 and ProgramManager.ts:38 store `readonly #emitter: Emitter<...>` and expose it through a getter (Program.ts:144, ProgramManager.ts:77); both constructors pass on and error together (Program.ts:116-119, ProgramManager.ts:51-54); every emission is a direct `this.#emitter.emit(...)` with no guarded #notify; `this.#emitter.destroy()` is the last statement of both destroy methods (Program.ts:169, ProgramManager.ts:148). Event names qualify, rate, determine, decide, execute, aggregate, destroy and add, remove, destroy are present-tense verbs; no `status` event carries a transition value; no listener-failure event is published; no class inherits from Emitter or reshapes it with Omit. Option keys are single words and `on` carries hooks alone."
+   },
+   {
+    "claim": "S4 Design laws — state is derived rather than stored twice; literal unions represent real domain states; no compatibility shim; mechanism not product policy; no polling; the public API is minimal and every intentional capability is exposed.",
+    "verdict": "BROKEN",
+    "read": "/home/user/scaffold/AGENTS.md § Design laws against src/core/constants.ts:8-23, helpers.ts:825-855 and validators.ts:264-268: STATUSES and STATUS_PRECEDENCE hold the identical five literals in the identical order, and completeTallies re-authors the same membership a third time as an object literal — program-subj-2. Confirmed clean: the literal unions Decision, Status, ProgramEffect, ProgramErrorCode are irreducible domain modes; absence is `undefined` throughout (every optional key is omitted rather than set, helpers.ts:355-367, :971-981); no compatibility alias or moved-symbol re-export exists (index.ts:1-8 is eight `export *` rows); execution is synchronous with no polling loop; every helper, guard, constant, error, factory, and class is reachable from the barrel. I attacked ProgramResult.eligibility (helpers.ts:358, a copy of qualification.eligibility) and AggregateResult.count (helpers.ts:932, subjects.length) as stored-derived state and rule them clean: both are members of a single immutable output record built in one place, not persisted entity state that can drift, and the guide documents each as a projection."
+   },
+   {
+    "claim": "S5 TSDoc — every public export carries a complete block whose first sentence states what the symbol does in the third person; booleans use the fixed forms; defaults, throws, prerequisites, and failure behaviour are stated; options objects are one @param with fields under @remarks.",
+    "verdict": "BROKEN",
+    "read": "/home/user/scaffold/.claude/rules/typescript.md § Comments and API documentation and /home/user/scaffold/.claude/rules/writing.md against every doc block in src. Broken by: no member of ProgramInterface (types.ts:242-251), ProgramManagerInterface (types.ts:285-296), Program (Program.ts:144-170) or ProgramManager (ProgramManager.ts:77-149) carries any TSDoc — program-subj-6; pluralized code tokens at helpers.ts:187, :188, :221, :225 and ProgramManager.ts:21 — program-subj-10; counts at helpers.ts:816 and validators.ts:344 — program-subj-11; two verbs for one guard summary, errors.ts:44 — program-subj-5; the default form at types.ts:221 and :269 — program-subj-14. Confirmed clean: every helper, guard, constant, error, and factory export carries a description, @param rows, @returns and an @example; first sentences are third-person -s verbs that never repeat the symbol name; boolean returns use \"True if …; false otherwise\" (helpers.ts:55, validators.ts:41 and every sibling guard); throws are stated with their code (helpers.ts:73-74, :455-458); each options object is one @param with its fields under @remarks (factories.ts:21, types.ts:33-38, :44-50, :56-64)."
+   },
+   {
+    "claim": "S6 Guide and README parity — the guide documents every public export with one method table per behavioral interface matching its call-signature members, readonly data in Surface rows, fences importing the published specifier, prose claims the executed fences prove; guides/README.md carries the concept and directory indexes; README links resolve; no AGENTS §N citation.",
+    "verdict": "BROKEN",
+    "read": "/home/user/scaffold/.claude/rules/documentation.md against /home/user/fleet/program/guides/program.md, guides/README.md and README.md. Broken by: fourteen AGENTS §N citations across guides/README.md:3,58, guides/program.md:29,93,154,404,426, src/core/types.ts:194,239,253,284, helpers.ts:129, ProgramManager.ts:21,122 — program-subj-1; the ProgramManagerInterface Surface row at program.md:151 omits its readonly data members — program-subj-7; the fence at program.md:317-331 calls an export its import block does not name — program-subj-8; README.md:24 claims a Node floor its own manifest contradicts — program-subj-9; the STATUS_PRECEDENCE prose at program.md:174-178 and :626 states behaviour the code does not have — part of program-subj-2; `via` at README.md:25 and program.md:707 — program-subj-12; guides/README.md:19-54 accounts for six of the nine vendored mirrors — program-subj-15. Confirmed clean: the Types, Constants, Errors, Validators, Helpers, Factories and Entities tables cover every barrel export with no phantom row; the two method tables match ProgramInterface's and ProgramManagerInterface's call-signature members exactly; every ```ts fence imports through '@orkestrel/program' or a sibling published specifier and no fence uses an @src alias; guides/README.md carries both the concept index (spec, source, tests) and the directory index; README.md's links resolve. I hand-executed the arithmetic fences at program.md:344-355 (aggregateSums 350, aggregateGroups west 2/300 then east 1/50, sumFields 100, buildEmptySums 0) against helpers.ts:682-728 and they hold."
+   },
+   {
+    "claim": "C program-c1 — a uniform error surface wrapping the raw DataCloneError with ProgramError('DEFINITION'); the buildNotice / buildNotices pair (the plural returns Determination[]).",
+    "verdict": "BROKEN",
+    "read": "The error half is CLOSED and I raise no finding on it: Program.ts:92-101 catches the structuredClone failure and throws ProgramError('DEFINITION', 'Program definition could not be cloned', undefined, cause), and Program.ts:106-115 does the same for the seal failure with the host error as cause; types.ts:131-134 and guides/program.md:665-667 both state that surface. The naming half is DRIFT: helpers.ts:999 buildNotice returns Notice and helpers.ts:206 buildNotices returns readonly Determination[] — program-subj-3."
+   },
+   {
+    "claim": "C program-c2 — tally drift: `size` where `count` is the lone unambiguous tally.",
+    "verdict": "BROKEN",
+    "read": "DRIFT. src/core/types.ts:287 declares `readonly size: number` as the only tally on ProgramManagerInterface, and ProgramManager.ts:81-84 returns `this.#programs.length`. .claude/rules/names.md § Tallies: \"A lone unambiguous tally is `count`.\" No second tally coexists on the entity, so the several-distinct-tallies clause (which licenses a pool's `size`/`idle`/`active`) does not apply. I checked the fleet for a competing convention: every other `size` member I found under /home/user/fleet/*/src is a byte size or a several-tally entity, and reason's manager interfaces (reason/src/core/types.ts:903-1013) expose no tally at all. `count` collides with nothing on this interface. Finding program-subj-4."
+   },
+   {
+    "claim": "C program-c3 — two verbs for one guard operation (`Checks whether` at errors.ts:44 beside `Determines whether` on the sibling guards).",
+    "verdict": "BROKEN",
+    "read": "DRIFT. errors.ts:44 opens \"Checks whether a caught value is a {@link ProgramError}.\" Every other predicate in the package opens \"Determines whether\": validators.ts:38, :53, :68, :83, :100, :120, :154, :179, :208, :230, :248, :271, :307, :340, and helpers.ts:46. typescript.md § Comments names both `Checks whether` and third-person -s verbs as acceptable forms, so the operative rule is AGENTS.md § Design laws \"One concept, one term. Do not alternate synonyms.\" The minority spelling is the single site. Finding program-subj-5."
+   },
+   {
+    "claim": "C program-c4 — Program and ProgramManager carry a class summary only; public methods carry no TSDoc on the class or on ProgramInterface.",
+    "verdict": "BROKEN",
+    "read": "DRIFT, and wider than the row states: it reaches ProgramManagerInterface too. types.ts:242-251 and :285-296 declare fourteen interface members with no doc block of any kind; Program.ts:144 (get emitter), :149-155 (execute), :157-160 (validate), :162-170 (destroy) and ProgramManager.ts:77, :81, :86, :91, :96, :101, :123-138, :140 carry none either. The same file documents ProgramResult.decision in full at types.ts:154-161, so the omission is inconsistent inside its own module. The nearest sibling and declared dependency documents every member: /home/user/fleet/qualifier/src/core/types.ts:149-227 gives QualifierInterface.emitter, qualify, validate and destroy complete blocks with @remarks, @param, @returns, @throws and @example, and /home/user/fleet/qualifier/src/core/Qualifier.ts:83-219 repeats them on the class. Finding program-subj-6."
+   }
+  ],
+  "findings": [
+   {
+    "id": "program-subj-1",
+    "claim": "S6",
+    "file": "/home/user/fleet/program/guides/README.md:3, guides/README.md:58, guides/program.md:29, guides/program.md:93, guides/program.md:154, guides/program.md:404, guides/program.md:426, src/core/types.ts:194, src/core/types.ts:239, src/core/types.ts:253, src/core/types.ts:284, src/core/helpers.ts:129, src/core/programs/ProgramManager.ts:21, src/core/programs/ProgramManager.ts:122, src/core/programs/Program.ts:148",
+    "rule": "`.claude/rules/writing.md` § Claims and time: \"Claim only what the reader can check.\" `.claude/rules/documentation.md` § Authority and workflow: \"`AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.\" `AGENTS.md` numbers no section — its headings are named (`## Design laws`, `## Non-negotiable rules`, `## Rule map`), so `§13`, `§9`, `§9.2`, `§10`, `§4.1` and `§22` resolve to nothing.",
+    "wrong": "Published TSDoc, source comments, the guide, and the guide index cite AGENTS.md by section number at fifteen sites in the package's own files, and no such numbering exists, so a reader following the pointer finds nothing and a consumer reading the shipped declarations sees a citation to a file they do not have.",
+    "repair": "Delete the parenthetical citation at each site, leaving the sentence intact: `types.ts:194` and `:253` become \"Describes the push observation surface of a {@link ProgramInterface}.\" / \"…{@link ProgramManagerInterface}.\"; `types.ts:239` becomes \"The array-of-subjects `execute` overload is declared FIRST so a subject list resolves to one aggregate-aware batch execution.\"; `types.ts:284` becomes \"Defines an ordered manager over compiled programs, sharing one qualifier and rater.\"; `helpers.ts:129` becomes \"Explicit policy, not an opaque precedence reduce: global ineligibility…\"; `ProgramManager.ts:21` becomes \"Manages compiled {@link ProgramInterface} programs in order, sharing one…\"; `Program.ts:148` and `ProgramManager.ts:122` become \"// Array overload first so a subject list resolves to the batch form.\" / \"…so an id list resolves to the batch form.\"; `program.md:29`, `:93`, `:154`, `:404`, `:426` drop the parenthetical the same way; `guides/README.md:3` becomes \"A dual-axis index into this repository's guides — by concept, and by directory.\"; `guides/README.md:58` becomes \"- [`AGENTS.md`](../AGENTS.md) — the rules.\" Add no replacement citation: a published doc block carries no repository rule pointer.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-2",
+    "claim": "S4 (with its guide prose under S6)",
+    "file": "/home/user/fleet/program/src/core/constants.ts:17-23",
+    "rule": "`AGENTS.md` § Design laws: \"**Derive state.** Compute facts from existing fields. Do not store a second flag or label that can drift.\" and \"**One concept, one term.** Do not alternate synonyms.\" `.claude/rules/documentation.md` § Parity: \"Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true.\"",
+    "wrong": "`STATUS_PRECEDENCE` holds the same five literals in the same order as `STATUSES` (constants.ts:8-14), both of its call sites use it as the membership list rather than as an order (`validators.ts:266` iterates it to check a guard's required keys, `helpers.ts:852` iterates it to seed a Partial), and the guide's justification for keeping it — \"`STATUS_PRECEDENCE` fixes the order of a complete tally record\" (guides/program.md:174) — is false, because the returned key order is fixed by the hardcoded object literal in `completeTallies` (helpers.ts:828-834), which re-authors the same five statuses a third time; reordering `STATUS_PRECEDENCE` would not move a single key of the record the guide credits it with ordering.",
+    "repair": "Delete `STATUS_PRECEDENCE` from `src/core/constants.ts:16-23`. Replace its use at `src/core/helpers.ts:852` and at `src/core/validators.ts:266` with `STATUSES`, and drop it from the import lists at `helpers.ts:40` and `validators.ts:35`. Retarget the `{@link STATUS_PRECEDENCE}` references in the doc blocks at `helpers.ts:838` and `validators.ts:251` to `{@link STATUSES}`. Keep the explicit literal in `completeTallies` (it is the one place a total `Record<Status, Tally>` can be asserted without a type assertion) and state that in its `@remarks`: \"This literal is the sole site that must gain a key when {@link STATUSES} gains a status.\" In `tests/src/core/programs/Program.test.ts` change the import at line 13 and the assertions at lines 1033-1036 to `STATUSES`, keeping the same expected order so the test stays green. In `guides/program.md` delete the `STATUS_PRECEDENCE` row at line 166, rewrite lines 173-178 to \"`ELIGIBILITY_DECISIONS` maps each global eligibility to its decision. `STATUSES` declares status membership: the `Status` union, the `isStatus` guard, and the complete tally record all derive from it, so a status is authored once. `completeTallies` fixes the key order of a tally record.\", change line 244 to \"`isTallies` requires every status in `STATUSES`\", and delete lines 626-627.",
+    "breaking": true,
+    "consumers": [
+     "none — `\"@orkestrel/program\"` appears in no other package.json under /home/user/fleet, so no fleet consumer re-pins for this removal"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-3",
+    "claim": "S2 (carry row program-c1)",
+    "file": "/home/user/fleet/program/src/core/helpers.ts:206 and src/core/helpers.ts:999",
+    "rule": "`.claude/rules/names.md` preamble: \"Names are public API. A consumer can predict them without documentation.\" `AGENTS.md` § Design laws: \"**One concept, one term.** Do not alternate synonyms.\"",
+    "wrong": "`buildNotice(id, message, input)` returns a `Notice` and `buildNotices(notices, subject)` returns `readonly Determination[]`, so the package publishes a singular/plural pair whose plural is not the plural of the singular — a consumer who predicts `readonly Notice[]` from `buildNotices` gets determinations, and the word `notice` names two different published concepts (the authored input at types.ts:74 and the applied determination at types.ts:81) inside one helper family.",
+    "repair": "Rename `buildNotices` to `buildNoticeDeterminations` and, for symmetry with its sibling that produces the other `ProgramEffect`, rename `buildLimits` (helpers.ts:246) to `buildLimitDeterminations`; leave `buildNotice` unchanged. Update the call sites in `src/core/programs/Program.ts:39-40` (import), `:210`, `:228` and `:295`. Update `guides/program.md:289` and `:290` to the new names and keep their summaries. Update the imports and describe blocks in `tests/src/core/helpers.test.ts:33`, `:339`, `:341`, `:1068`, `:1070`, `:1075`, `:1083`, `:1123`. Do not reintroduce `buildNotices` as a `readonly Notice[]` factory in this change: the name must stay free rather than acquire a second meaning.",
+    "breaking": true,
+    "consumers": [
+     "none — `\"@orkestrel/program\"` appears in no other package.json under /home/user/fleet"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-4",
+    "claim": "S2 (carry row program-c2)",
+    "file": "/home/user/fleet/program/src/core/types.ts:287",
+    "rule": "`.claude/rules/names.md` § Tallies: \"A lone unambiguous tally is `count`. When several distinct tallies coexist, name each fact: a pool may expose `size`, `idle`, and `active`.\"",
+    "wrong": "`ProgramManagerInterface` exposes its only tally as `size`, and no second tally coexists on the entity to earn the distinguishing word, so the manager reports its member count with a synonym the package uses nowhere else (`count` is the tally word on `AggregateProjection`, `AggregateGroup`, `Tally` and `AggregateResult`, types.ts:99, :107, :113, :179).",
+    "repair": "Rename the member to `count`: change `src/core/types.ts:287` to `readonly count: number` and `src/core/programs/ProgramManager.ts:81` to `get count(): number`. Update the assertions in `tests/src/core/factories.test.ts:108`, `:115` and `tests/src/core/programs/ProgramManager.test.ts:27`, `:34`, `:120`, `:153`, `:161`, `:191`, `:197`, `:238`, `:346`. Name it in the guide's Surface row as part of program-subj-7. No collision: `ProgramManagerInterface` declares no other `count`.",
+    "breaking": true,
+    "consumers": [
+     "none — `\"@orkestrel/program\"` appears in no other package.json under /home/user/fleet"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-5",
+    "claim": "S5 (carry row program-c3)",
+    "file": "/home/user/fleet/program/src/core/errors.ts:44",
+    "rule": "`AGENTS.md` § Design laws: \"**One concept, one term.** Do not alternate synonyms.\"",
+    "wrong": "`isProgramError`'s first sentence opens \"Checks whether\" while every other predicate the package publishes opens \"Determines whether\" (validators.ts:38, :53, :68, :83, :100, :120, :154, :179, :208, :230, :248, :271, :307, :340 and helpers.ts:46), so one guard operation carries two verbs across the shipped declarations.",
+    "repair": "Change `src/core/errors.ts:44` to \"Determines whether a caught value is a {@link ProgramError}.\" Change nothing else: `.claude/rules/typescript.md` § Comments admits both forms, so the majority spelling is the one to converge on.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-6",
+    "claim": "S5 (carry row program-c4)",
+    "file": "/home/user/fleet/program/src/core/types.ts:242-251 and src/core/types.ts:285-296",
+    "rule": "`.claude/rules/typescript.md` § Comments and API documentation: \"Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.\" and \"State a prerequisite and the failure behavior wherever the symbol has either.\"",
+    "wrong": "Not one member of `ProgramInterface` or `ProgramManagerInterface` carries a doc block, and neither do the implementing members on `Program` (Program.ts:144, :149, :157, :162) or `ProgramManager` (ProgramManager.ts:77, :81, :86, :91, :96, :101, :123, :140), so the package's central behavioural surface ships undocumented while every helper, guard, constant and factory around it carries a full block — and the failure behaviour a caller must know (every method except `destroy` and the `emitter` getter throws `ProgramError('DESTROYED')` after teardown; `add` throws `'DUPLICATE'`; `execute` throws `'MISMATCH'` and `'RESERVED'`) exists only in the guide.",
+    "repair": "Add a complete TSDoc block to every member of `ProgramInterface` and `ProgramManagerInterface` in `src/core/types.ts`, and mirror each on the implementing member in `Program.ts` and `ProgramManager.ts`, following the shape the declared dependency already uses at /home/user/fleet/qualifier/src/core/types.ts:149-227 and /home/user/fleet/qualifier/src/core/Qualifier.ts:83-219: a third-person first sentence, `@remarks` for the behaviour the guide states, one `@param` per parameter, `@returns`, a `@throws {@link ProgramError}` row naming each code the member can raise, and one `@example` importing from '@orkestrel/program'. Document the readonly data members too (`id`, `name`, `definition`, `emitter`, and the manager's `emitter` and `count`) with a single-sentence `/** Holds … */` block. Put the overload-specific note about the array overload in the existing `//` comment (Program.ts:148, ProgramManager.ts:122), not in the block, as `.claude/rules/typescript.md` § Comments requires.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-7",
+    "claim": "S6",
+    "file": "/home/user/fleet/program/guides/program.md:151",
+    "rule": "`.claude/rules/documentation.md` § Parity: \"Readonly data properties remain in the interface's `## Surface` row.\"",
+    "wrong": "The `ProgramManagerInterface` Surface row reads \"Ordered program manager with singular/plural accessors and lifecycle\" and names neither of the interface's readonly data members, so `emitter` and `size` are documented nowhere in the guide (a search for `size` across guides/program.md returns no line), while the sibling row for `ProgramInterface` at line 148 names its data members explicitly.",
+    "repair": "Rewrite the Shape cell of `guides/program.md:151` in the style of line 148: `` `emitter` / `count` + `has` / `program` / `programs` / `add` / `remove` / `destroy`. `` Write `count` if program-subj-4 lands in the same change and `size` if it does not.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-8",
+    "claim": "S6",
+    "file": "/home/user/fleet/program/guides/program.md:318-328",
+    "rule": "`.claude/rules/documentation.md` § Guide examples: \"Code fences import through the package's published specifier.\"",
+    "wrong": "The fence's import block (lines 318-323) names `assertProgramSubject`, `decideEligibility`, `hasReservedKey` and `selectProgramLines`, and line 328 then calls `assertProgramDefinition`, which the block never imports — so the one fence in the guide that a reader can otherwise paste and run refers to an undefined binding, and the parity suite cannot see it because `tests/guides.test.ts:142-152` checks only that imported names are real exports.",
+    "repair": "Add `assertProgramDefinition,` as the first entry of the import block at `guides/program.md:319`, before `assertProgramSubject,`.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-9",
+    "claim": "S6",
+    "file": "/home/user/fleet/program/README.md:24",
+    "rule": "`.claude/rules/writing.md` § Claims and time: \"Claim only what the reader can check.\"",
+    "wrong": "The Requirements list states \"Node.js >= 24\" while the package's own manifest declares `\"engines\": { \"node\": \">=22.12.0\" }` (package.json:101-103), so the README turns away consumers the package supports and states a floor npm will not enforce.",
+    "repair": "Change `README.md:24` to \"- Node.js >= 22.12.0\", matching `package.json` `engines.node`. If the intended floor really is 24, change `package.json` instead — but do not leave the two disagreeing.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-10",
+    "claim": "S5 (with its guide site under S6)",
+    "file": "/home/user/fleet/program/src/core/helpers.ts:187, helpers.ts:188, helpers.ts:221, helpers.ts:225, src/core/programs/ProgramManager.ts:21, guides/program.md:138",
+    "rule": "`.claude/rules/writing.md` § Code tokens, references, and links: \"Put a code token in backticks and follow it with a noun: the `parse` method, the `vite.config.ts` file, the `--check` flag. Never inflect, pluralize, or possessivize a code token, and never use one as an English verb.\"",
+    "wrong": "Six published doc sites pluralize a code token by appending `s` to it — `{@link Notice}s`, `{@link Determination}s` (twice), `{@link LogicalDefinition}s`, `{@link ProgramInterface}s` and `` `FieldPath`s `` — which renders in the published declarations as a token that names no symbol.",
+    "repair": "Follow each token with a noun instead: `helpers.ts:187-188` becomes \"Resolves authored {@link Notice} values into unconditionally-applied `notice` {@link Determination} values.\"; `helpers.ts:221` becomes \"…into `limit` {@link Determination} values.\"; `helpers.ts:225` becomes \"…are plain {@link LogicalDefinition} definitions with no program-authored ruling map…\"; `ProgramManager.ts:21` becomes \"Manages compiled {@link ProgramInterface} programs in order…\"; `guides/program.md:138` becomes \"batch sums (`FieldPath` values)\".",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-11",
+    "claim": "S5 (with its guide sites under S6)",
+    "file": "/home/user/fleet/program/src/core/helpers.ts:816, src/core/validators.ts:344, guides/program.md:171, guides/program.md:536, guides/program.md:556",
+    "rule": "`AGENTS.md` § Writing: \"**NEVER state a count.** A number answering \\\"how many\\\" about a set anyone can add to is a count — rules, rows, members, exports, files, options, steps, cases, stages, findings, and tests are such sets. Name the members, or write the sentence without the number. … Delete a count you find. Do not correct it.\"",
+    "wrong": "Five prose sites tally a set that can grow: \"A record with all five statuses present\" (helpers.ts:816), \"checks the three program-owned members directly\" (validators.ts:344), \"The two reserved keys exist only for composed program execution\" (guides/program.md:171), \"one of the four decision gates, below\" (program.md:536), and \"A `decision` is present only when all four gates hold\" (program.md:556).",
+    "repair": "Delete each number: `helpers.ts:816` becomes \"@returns A record carrying every {@link Status}\"; `validators.ts:344` becomes \"This guard therefore checks the program-owned members directly\"; `program.md:171` becomes \"The reserved keys exist only for composed program execution\"; `program.md:536` becomes \"(a decision gate, listed later)\"; `program.md:556` becomes \"A `decision` is present only when every gate holds:\". Leave `both` at `program.md:176` alone — that sentence names its members, which `AGENTS.md` § Writing permits.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-12",
+    "claim": "S6",
+    "file": "/home/user/fleet/program/README.md:25 and guides/program.md:707",
+    "rule": "`.claude/rules/writing.md` § Substitutions: the table's row `| `via` | `through`, `by using` |`.",
+    "wrong": "Two documentation sites use the banned word: \"CommonJS (`require`) via the `exports` field\" and \"exact shape via `isProgramDefinition`\".",
+    "repair": "Change `README.md:25` to \"- ESM (`import`) and CommonJS (`require`) through the `exports` field\" and `guides/program.md:707` to \"exact shape through `isProgramDefinition` — this alone establishes…\". The same word also appears in a test title at `tests/src/core/helpers.test.ts:1112` (\"derives unrated for zero-line programs via real qualification\"); change it to \"…through real qualification\" in the same sweep.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "program-subj-13",
+    "claim": "S2",
+    "file": "/home/user/fleet/program/src/core/types.ts:52 and src/core/types.ts:93",
+    "rule": "`.claude/rules/names.md` § General vocabulary: \"Describe what a thing is, not its implementation.\" and \"Properties are nouns; methods are verbs.\"",
+    "wrong": "`AggregateInput.by` and `AggregateDefinition.by` name a published data member with a preposition borrowed from the SQL `GROUP BY` clause rather than with the noun for what the member holds — the field a batch partitions on — and no rule licenses it here: the mirrored-name exemption in `.claude/rules/names.md` § General vocabulary covers a member that transliterates an external protocol, format field, or engine pragma, and this member transliterates none (a fleet search for `by?: FieldPath` and `by?: string` under /home/user/fleet/*/src returns program's two declarations and nothing else, so no sibling convention supports it either).",
+    "repair": "Rename the member to `partition` in `src/core/types.ts:52` and `:93`, and update its `@remarks` at types.ts:46-50 and the `ProgramInput`/`AggregateDefinition` descriptions accordingly. Rename the parameter at `src/core/helpers.ts:623`, `:713`, `:757` and the argument reads at `Program.ts:251` and `:257`. Update `guides/program.md:135` and `:138` and the fence at `:363` and `:874`, and the assertions at `tests/setup.test.ts:721` and `:730`. If the writer judges `partition` too long against the one-word rule, `field` collides with `AggregateDefinition.fields` and must not be used; `key` collides with `AggregateGroup.key`, which holds the partition's value rather than its field, so `partition` is the resolution.",
+    "breaking": true,
+    "consumers": [
+     "none — `\"@orkestrel/program\"` appears in no other package.json under /home/user/fleet"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "program-subj-14",
+    "claim": "S5",
+    "file": "/home/user/fleet/program/src/core/types.ts:221 and src/core/types.ts:269-270",
+    "rule": "`.claude/rules/typescript.md` § Comments and API documentation: \"Write a default as \\\"Default: …\\\" and a thrown error as \\\"Thrown when …\\\".\"",
+    "wrong": "Both options blocks state the validation default as a trailing parenthetical — \"`validate` — validate the definition at construction (default {@link DEFAULT_PROGRAM_VALIDATE})\" — rather than in the fixed form the rule names.",
+    "repair": "In `src/core/types.ts:221` write \"`validate` — validate the definition at construction. Default: {@link DEFAULT_PROGRAM_VALIDATE}.\" and in `:269-270` write \"`validate` — validate each seeded and added definition at construction. Default: {@link DEFAULT_PROGRAM_VALIDATE}.\" Leave the `@throws` rows alone: they already name the error and its condition.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "program-subj-15",
+    "claim": "S6",
+    "file": "/home/user/fleet/program/guides/README.md:17-54",
+    "rule": "`.claude/rules/documentation.md` § Authority and workflow: \"`guides/README.md` is the map: maintain both a concept index and a directory index.\" and § Parity: \"A vendored dependency guide is a mirror.\"",
+    "wrong": "The Dependency reference section accounts for `reason.md`, `contract.md`, `emitter.md`, `qualifier.md`, `rater.md` and `guide.md`, but `guides/` also holds `test.md`, `probe.md` and `scaffold.md`, so a reader who opens the map finds three mirrors it does not explain — and the section's own criterion does not exclude them, because it already covers `guide.md`, which is a devDependency exactly as `@orkestrel/test`, `@orkestrel/probe` and `@orkestrel/scaffold` are (package.json:86-91).",
+    "repair": "Add one paragraph per unlisted mirror to `guides/README.md`, in the section's existing form and after the `guide.md` paragraph: name `test.md`, `probe.md` and `scaffold.md` as byte-identical mirrors of the guides for `@orkestrel/test`, `@orkestrel/probe` and `@orkestrel/scaffold`, each a devDependency, each documenting that package's surface rather than anything sourced here.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "program-subj-16",
+    "claim": "S2",
+    "file": "/home/user/fleet/program/src/core/helpers.ts:873",
+    "rule": "`.claude/rules/names.md` § Standalone helpers: \"Module helpers have no owning entity at the call site, so default to `{verb}{Noun}`\" with `.claude/rules/names.md` § General vocabulary: \"Describe what a thing is, not its implementation.\"",
+    "wrong": "`tallyProgram` names the program as the thing tallied, and the function tallies one subject: it selects a tally by `result.status` and folds that subject's fields into it (helpers.ts:879-882), which the guide states plainly at program.md:308 — \"Add one subject and its fields to the result-status tally\". Every other `Program`-qualified helper in the file qualifies a head noun (`buildProgramResult`, `buildProgramDefinition`, `validateProgramDefinition`, `assertProgramSubject`, `selectProgramLines`), so this name reads as the one member of that family whose noun is its object.",
+    "repair": "Rename the export to `tallySubject` in `src/core/helpers.ts:873` and update its `@example` at `:869`. Update the import at `src/core/programs/Program.ts:46` and the call at `:259`, the import at `tests/src/core/helpers.test.ts:45` and the call at `:856`, and the guide row at `guides/program.md:308`.",
+    "breaking": true,
+    "consumers": [
+     "none — `\"@orkestrel/program\"` appears in no other package.json under /home/user/fleet"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   }
+  ],
+  "referrals": [
+   "To the objective lane (O7), and to the Orchestrator while that lane is not running: `tests/guides.test.ts` executes no guide fence. Every assertion in /home/user/fleet/program/tests/guides.test.ts:54-170 is over parsed text — fence languages, surface bijection, method-table bijection, example presence by name search, import-name resolution, link resolution — and no fence code is run. `.claude/rules/documentation.md` § Parity states \"`tests/guides.test.ts` executes the flagship fences\". This is why program-subj-2's false ordering claim and program-subj-8's undefined binding both survived to this audit; I rule on neither the gate nor the repair, because O7 owns the test claims.",
+   "To the objective lane (O5), and to the Orchestrator while that lane is not running: two published helper signatures declare their options parameter as an inline type literal rather than an interface in the module's `types.ts` — `buildProgramResult(… options?: { readonly authority?: LogicalResult })` at /home/user/fleet/program/src/core/helpers.ts:335 and `buildAggregateResult(… options?: { readonly gates?: LogicalResult })` at :920. `.claude/rules/typescript.md` § Types requires every reusable or public type in the nearest `types.ts`. O5 owns that claim.",
+   "To the Orchestrator: the fleet publishes three different vocabularies for the same concept — a helper that assembles a plain authored definition value. program uses `build*` (`buildProgramDefinition`, `buildNotice`, `buildAggregateDefinition`), qualifier and rater use a bare noun (`qualificationDefinition`, `rulingDefinition`, `lineDefinition`, `ratingDefinition`, read in the fences at /home/user/fleet/program/README.md:31-32 and guides/program.md:38-39), and reason uses `create*` for plain values (`createLogicalDefinition`, `createRule`, `createAtom`, `createStaticFactor`, same fences). `AGENTS.md` § Design laws states \"One concept, one term.\" program is the form `.claude/rules/names.md` § Standalone helpers and `.claude/rules/architecture.md` § Kind purity license — `build*` assembles a composite value from parts and `create*` is reserved for the entity factory — so I raise no finding against this package; the repair belongs to the siblings and needs a fleet-level decision.",
+   "To the Orchestrator: program-subj-9 is one instance of a fleet-wide class. Every package.json under /home/user/fleet I sampled declares `\"node\": \">=22.12.0\"`, while README Requirements lines disagree freely — console:19, timeout:20, queue:27, rater:20, reason:25, qualifier:20, emitter:21, websocket:16, budget:21, relation:22 say \">= 24\"; msg:24, csv:14, toolbox:44, interpret:22, agent:21 say \">= 22\"; others say \">= 22.12\" or \">= 22.12.0\". Sweeping this in one pass costs less than fourteen package audits rediscovering it."
+  ],
+  "coverage": "Read in full: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/program-brief.md; /home/user/scaffold/AGENTS.md and /home/user/scaffold/.claude/rules/writing.md and documentation.md (supplied in context); /home/user/scaffold/.claude/rules/names.md; patterns.md; typescript.md; architecture.md § Centralized-file pattern, § Declaration placement, § Kind purity, § Environment/module placement, § Entity subfolders, § Extension categories, § Stores; quality.md § Falsification. Subject read in full: src/core/types.ts, constants.ts, errors.ts, helpers.ts, validators.ts, factories.ts, index.ts, programs/Program.ts, programs/ProgramManager.ts; guides/program.md; guides/README.md; README.md; package.json; tests/guides.test.ts. Read for corroboration: /home/user/fleet/qualifier/src/core/types.ts:148-227, /home/user/fleet/qualifier/src/core/Qualifier.ts (member-doc convention), /home/user/fleet/reason/src/core/types.ts:903-1200 (manager tally convention). Sweeps, each with its pattern and its path bound: `AGENTS §` over /home/user/fleet/program excluding node_modules returned 15 in-subject sites plus vendored-mirror sites I excluded as off-limits; `STATUS_PRECEDENCE|STATUSES` over the same scope returned every declaration, use and prose site; the writing.md substitution set (via|simply|easy|easier|just|currently|utilize|leverage|in order to|e.g.|i.e.|etc.|performant|robust|allows you to|and/or|sanity check|dummy|whitelist|blacklist|please|should, case-insensitive) over the same scope returned two in-subject documentation sites, one test title, and vendored-mirror or LICENSE hits I excluded; `{@link X}s|`X`s` over the same scope returned six in-subject sites; `(one|two|…|ten|both)` over src, guides/program.md and README.md returned the count sites ruled in program-subj-11; `readonly (size|count): number` and `by?: FieldPath|by?: string` over /home/user/fleet excluding node_modules established the fleet tally and preposition conventions; `\"@orkestrel/program\"` over every package.json under /home/user/fleet established that no fleet consumer exists. Not read, with why: tests/src/**, tests/setup.ts and tests/setup.test.ts beyond the specific lines my repairs must name — test sufficiency, mocks, skips and helper ownership are O7's; tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts, configs/**, vite.config.ts, tsconfig.json, .claude/** — off-limits per the shared brief or owned by O8; guides/reason.md, contract.md, emitter.md, qualifier.md, rater.md, guide.md, test.md, probe.md, scaffold.md — vendored mirrors, off-limits as subjects (I read only their presence for program-subj-15); .claude/rules/tests.md, workspace.md, portability.md, application.md, browser.md, styles.md — they govern the objective lane's claims and environments this src/core-only package does not have. Not evidenced: I ran no command and executed no fence, because this lane carries Read, Grep and Glob only; the guide arithmetic claims I checked at program.md:344-355 were traced by hand against helpers.ts:648-728 rather than executed, and the ordering claim in program-subj-2 was settled by reading that completeTallies (helpers.ts:828-834) returns a fresh object literal whose key order no caller can influence.",
+  "terminal": "VERDICT: FAIL — 8 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "refuter": {
+  "package": "program",
+  "rulings": [
+   {
+    "id": "program-obj-1",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/architecture.md § Functions and orchestration: \"Never declare or assign a function inside another function or method. This bans local `function` ...\" — frontmatter paths include `tests/**/*.ts`. Neither instrument reaches it: `.oxlintrc.json:85-89` scopes `policy/no-nested-functions` to `src/**` and `app/**`; `tests/setupPolicy.ts:229` sets `POLICY_SOURCE_GLOB` to `{app,src}/**/*`. No comment or guide states an exception.",
+    "evidence": "/home/user/fleet/program/tests/setup.ts:445-455 declares an overloaded named `function reason` inside `createRecordingEngine` and returns it as the `reason` member at :461. The finder's repair is wrong and would fail `check`: an object-literal method with one signature returning `readonly ReasonResult[] | ReasonResult` is not assignable to the overloaded `reason` member of `ReasonInterface` (each target overload requires its own narrower return type), which is exactly why the sibling `FixedReason` at tests/setup.ts:31-79 is a class carrying overload signatures.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts, replace lines 437-485 with a module-scope class `RecordingReason implements RecordingEngineInterface`, declared beside `FixedReason` (line 31) in the same shape: `readonly #inner: ReasonInterface` built exactly as lines 438-442 build `inner`, `#destroyCount = 0`, `get emitter()`, the two `reason` overload signatures plus an implementation that narrows with `isArray<Subject>(subjectsOrSubject)` (program-obj-7) and forwards to `this.#inner.reason`, `register`, `reasoner`, `reasoners`, `supports`, `validate`, `destroy` (increment `#destroyCount`, then `this.#inner.destroy()`), and `get destroyCount(): number`. Keep `createRecordingEngine(options?: ReasonOptions): RecordingEngineInterface` and make its body `return new RecordingReason(options)`. Do not write the finder's object-literal method. tests/setup.test.ts's `createRecordingEngine` assertions stay unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-2",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/architecture.md § Functions and orchestration: \"This bans local `function`, `function*`, and `const fn = () => ...`, regardless of caller count.\" Only an anonymous callback passed directly as an argument is exempt. Neither lint (`.oxlintrc.json:85-89`) nor the sweep (`tests/setupPolicy.ts:229`) covers `tests/`.",
+    "evidence": "/home/user/fleet/program/tests/setup.ts:494-496 assigns `const record = (name: keyof ProgramEventMap) => { names.push(name) }` inside `recordEvents`; lines 497-503 call it from seven `program.emitter.on` callbacks. tests/setup.test.ts:353-399 pins the recorded order and needs no change.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts delete lines 494-496 and inline the push into each subscription at 497-503, so each reads `program.emitter.on('qualify', () => { names.push('qualify') })` and likewise for rate, determine, decide, execute, aggregate, and destroy. tests/setup.test.ts:353-399 must stay green unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-3",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/tests.md § Cross-cutting proofs: \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof ...\"; the table row fixes `tests/guides.test.ts` as proving \"every executable fence returns what the guide says it returns\"; .claude/rules/documentation.md § Parity: \"That proof has a home: `tests/guides.test.ts` executes the flagship fences\".",
+    "evidence": "/home/user/fleet/program/tests/guides.test.ts:54-170 runs only parity assertions (fence languages, surface bijection, hidden declarations, method-table bijection, `@example` presence, fence import names, link resolution); no fence code executes. The value claims at guides/program.md:83-88 and :102-106 are asserted by nothing. Fleet siblings already carry the required form — /home/user/fleet/sse/tests/guides.test.ts:184 and /home/user/fleet/budget/tests/guides.test.ts:179 declare `describe('flagship fences')` and pair each transcription with a presence guard on the guide lines.",
+    "repair": "In /home/user/fleet/program/tests/guides.test.ts add `describe('flagship fences')` beside the parity suite. Transcribe guides/program.md:36-91 against `@src/core` (the in-repository alias, as the suite already resolves) and assert `eligible.status === 'eligible'`, `eligible.rating?.total === 100`, `ineligible.status === 'ineligible'`, `ineligible.rating === undefined`; then continue from the same `program` with guides/program.md:96-107 and assert `result.count === 2`, `result.subjects[0]?.status === 'eligible'`, `result.subjects[1]?.status === 'ineligible'`, `result.tallies.eligible.count === 1`, `result.tallies.ineligible.count === 1`; call `program.destroy()` last. Beside each transcription add a presence assertion that the transcribed fence lines still appear in `files['guides/program.md']`, in the form /home/user/fleet/sse/tests/guides.test.ts:199-344 uses, so an edited fence reddens the stale transcription. Leave every existing parity assertion in place.",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-4",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/tests.md § Shared test infrastructure: \"`@orkestrel/test` owns the helpers every workspace repeats ... Write a helper of your own only where the package exports none for the job.\", \"Any duplicate or near-duplicate helper is a defect\", \"Never reimplement a framework helper in tests or fixtures\".",
+    "evidence": "node_modules/@orkestrel/test/dist/src/core/index.d.ts:21 declares `captureError(thunk: () => unknown): unknown` (returns `undefined` when the thunk completes). /home/user/fleet/program/tests/src/core/programs/Program.test.ts:15 imports it and uses it at :73, :86, :102, :118, :199, :225, while the same file hand-rolls `let error: unknown; try { ...; expect.unreachable(...) } catch (caught) { error = caught }` at :405, :418, :452, :464, :632, :748, :782, :839, :1056. The same block appears at ProgramManager.test.ts:43, :56, :91, :122, :173, :221, :319; factories.test.ts:21, :49, :76, :94; helpers.test.ts:185, :194.",
+    "repair": "Replace every hand-rolled capture block listed in the evidence with `captureError`, collapsing each to one assertion such as `expect(captureError(() => manager.add(standardProgramDefinition))).toMatchObject({ code: 'DUPLICATE', context: 'standard' })`; at factories.test.ts:21-31 keep the `toSatisfy` predicate over the captured value; at Program.test.ts:418-425 move the `JSON.parse('\"subject\"')` inside the thunk. Add `import { captureError } from '@orkestrel/test'` to ProgramManager.test.ts, factories.test.ts, and helpers.test.ts; delete the `let error: unknown` declarations. Leave the `try { … } finally { destroy() }` cleanup blocks in tests/setup.test.ts:94-110 alone.",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-5",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/tests.md § Shared test infrastructure: \"Test files import shared infrastructure rather than declaring local fixture factories.\", \"Export every reusable helper, fixture type, factory, constant, and guard from setup files.\", \"Extract a fixture, recorder, ... scenario/data builder ... as soon as it could serve another test.\" The sweep does not reach tests (`tests/setupPolicy.ts:229`).",
+    "evidence": "/home/user/fleet/program/tests/src/core/helpers.test.ts:78 `class OffContractValidationResult`, :92 `class ScriptedQualifier`, :112 `class ScriptedReason`, :153 `function buildQualification` (used at :234-264, :314, :374, :390, :403, :860, :872, :893, :1093; the classes at :104, :145, :535, :537); /home/user/fleet/program/tests/src/core/programs/ProgramManager.test.ts:17-19 `function buildDefinition`. tests/setup.ts already owns this class of thing (classes at :31-329, `create*` factories at :331-386). The finder's near-duplicate diagnosis of `ScriptedReason` versus `FixedReason` is wrong: `FixedReason` (setup.ts:31-79) pins a reason result and delegates registry and `validate` to a real engine; `ScriptedReason` throws on `reason` and `register` and returns an off-contract validation result — different behaviours, so no consolidation.",
+    "repair": "Move the three classes and two builders into /home/user/fleet/program/tests/setup.ts and export them through factories in the module's existing shape: `createOffContractValidationResult(): ReasonValidationResult`, `createOffContractQualifier(): QualifierInterface` (was `ScriptedQualifier`), `createOffContractReason(): ReasonInterface` (was `ScriptedReason`), `buildQualificationResult(overrides: Partial<QualificationResult> & Pick<QualificationResult, 'eligibility'>): QualificationResult` (was `buildQualification`, renamed to keep one term per concept beside qualifier's `qualificationDefinition`), and `buildStandardProgramDefinition(id: string): ProgramDefinition` (was `buildDefinition`). Delete helpers.test.ts:78-167 and ProgramManager.test.ts:17-19, import the new names, and update every call site named in the evidence. Do not merge `ScriptedReason` into `FixedReason`. Add one assertion per moved export to tests/setup.test.ts.",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-6",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/tests.md § Discovery and adequacy audit: \"confirm each assertion would fail for the defect it claims to catch\".",
+    "evidence": "/home/user/fleet/program/tests/src/core/factories.test.ts:113-117 `it('defaults validate to true')` builds an empty manager and asserts only `manager.size === 0`. `ProgramManager.ts:67` stores `#validate = options?.validate ?? DEFAULT_PROGRAM_VALIDATE` and reads it only in `add` (:114), so flipping `constants.ts:5` to `false` leaves the test green. `buildProgramDefinition('', '', standardQualification, standardRating)` passes `assertProgramDefinition` (no missing scope, no duplicate) and fails only `validateProgramDefinition` (helpers.ts:529-530), so it separates the two branches.",
+    "repair": "In /home/user/fleet/program/tests/src/core/factories.test.ts replace the body of `it('defaults validate to true')`: build `buildProgramDefinition('', '', standardQualification, standardRating)`, assert `captureError(() => createProgramManager().add(definition))` matches `{ code: 'DEFINITION' }`, then assert `createProgramManager({ validate: false }).add(definition).id === ''`; destroy both managers. Keep `it('seeds programs from options')` unchanged. Import `captureError` from `@orkestrel/test` (shared with program-obj-4).",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-7",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/patterns.md § Declared ecosystem capabilities: \"Never reimplement or rename-wrap a declared package primitive.\"; .claude/rules/architecture.md § Wrapper test: \"Delete ... wrappers around semantically identical platform or declared-dependency primitives.\"",
+    "evidence": "/home/user/fleet/program/tests/setup.ts:429-431 `isSubjectArray(value: unknown): value is readonly Subject[] { return Array.isArray(value) }`. node_modules/@orkestrel/contract/dist/src/core/index.d.ts:2279 declares `isArray<T = unknown>(value: unknown): value is readonly T[]`, and src/core/programs/Program.ts:18 and :153 already use `isArray<Subject>` for this narrowing. Call sites: setup.ts:50 (`FixedReason.reason`) and :451 (`createRecordingEngine`); proof block tests/setup.test.ts:420-430, import at :71.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts delete `isSubjectArray` (lines 429-431), add `import { isArray } from '@orkestrel/contract'` beside the value imports, and replace both call sites with `isArray<Subject>(subjectsOrSubject)` — at line 50 and inside the `RecordingReason.reason` implementation that program-obj-1 introduces. Delete `describe('isSubjectArray')` at tests/setup.test.ts:420-430 and drop `isSubjectArray` from the import at :71.",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-8",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/architecture.md § System constraints (frontmatter reaches `tests/**/*.ts`): \"Build or substantively expand a capability with its first real consumer; do not speculate.\"; .claude/rules/tests.md § Probes: \"A probe left in the suite reports on the harness while reading as a test.\"",
+    "evidence": "/home/user/fleet/program/tests/setup.ts:988-992 exports `isBrowserVuePath`; a search for `isBrowserVuePath` across /home/user/fleet/program excluding node_modules returns only that declaration and its own proof at tests/setup.test.ts:70 and :902-913. The package has no `app/` directory and no `.vue` file. The helper is scaffold-template residue (/home/user/fleet/template/tests/setup.ts:7) carried by many fleet packages; that origin does not give it a consumer here. tests/setup.ts is not in the shared brief's vendored list, so the package owns the file.",
+    "repair": "In /home/user/fleet/program/tests/setup.ts delete lines 988-992 (doc comment and `isBrowserVuePath`). In /home/user/fleet/program/tests/setup.test.ts delete `describe('isBrowserVuePath')` at lines 902-913 and remove `isBrowserVuePath` from the import at line 70.",
+    "breaking": false
+   },
+   {
+    "id": "program-obj-9",
+    "verdict": "CONFIRMED",
+    "ground": "AGENTS.md § Design laws \"Absence is `undefined`. Never invent sentinels such as ... `''`\" is met by the collapse, and the shared brief's finding-shape rule records a `@remarks`- or guide-stated exception as `EXEMPT` with the pointer rather than dropping it.",
+    "evidence": "/home/user/fleet/program/src/core/helpers.ts:624 `String(resolveField(subject, by) ?? '')`; the `@remarks` at :607-611 and guides/program.md:352 both state that a missing field and a literal `''` land in the same partition. The finder's verdict is `EXEMPT` with repair `No change`, and I confirm that ruling as recorded: the exemption rests on a documented limit, not on a stated rationale, so the Orchestrator can reopen it only as a separate breaking unit (`AggregateGroup.key` becoming optional changes a published interface and `formatGroupKey`'s return type).",
+    "repair": "No change in this campaign. Record the finding as EXEMPT with the pointer helpers.ts:607-611 and guides/program.md:352.",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-1",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/writing.md § Claims and time: \"Claim only what the reader can check.\"; .claude/rules/documentation.md § Authority and workflow: \"Do not create competing instruction copies in guides.\" /home/user/scaffold/AGENTS.md numbers no section.",
+    "evidence": "Package-owned sites: src/core/types.ts:194, :239, :253, :284; src/core/helpers.ts:129; src/core/programs/ProgramManager.ts:21, :122; src/core/programs/Program.ts:148; guides/program.md:29, :93, :154, :404, :426; guides/README.md:3 and :58 (\"the rules; §22 documentation-as-contracts\"). Four sit in shipped TSDoc (`types.ts`) and reach consumers through the published `.d.ts`. The vendored mirrors (`guides/emitter.md`, `rater.md`, `guide.md`, `qualifier.md`, `reason.md`) also carry them and are off-limits.",
+    "repair": "Apply the finder's repair verbatim: delete the parenthetical `(AGENTS §N)` at each of the fifteen package-owned sites, leaving each sentence intact, and rewrite guides/README.md:58 to \"- [`AGENTS.md`](../AGENTS.md) — the rules.\" Add no replacement citation.",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-2",
+    "verdict": "CONFIRMED",
+    "ground": "AGENTS.md § Design laws: \"Derive state. Compute facts from existing fields. Do not store a second flag or label that can drift.\" and \"One concept, one term.\"; .claude/rules/documentation.md § Parity: \"Falsify a prose claim the way you falsify a code claim.\" The guide's rationale at program.md:174-178 does not license the constant because its premise is false.",
+    "evidence": "src/core/constants.ts:8-14 `STATUSES` and :17-23 `STATUS_PRECEDENCE` hold identical literals in identical order. Both consumers use it as a membership list: helpers.ts:852 seeds a `Partial`, validators.ts:266 checks required keys. The returned tally key order is fixed by the object literal in `completeTallies` (helpers.ts:828-834), so guides/program.md:174 (\"fixes the order of a complete tally record\") and :626-627 are false; reordering `STATUS_PRECEDENCE` moves no key. No fleet consumer: `\"@orkestrel/program\"` appears only in /home/user/fleet/program/package.json.",
+    "repair": "Delete `STATUS_PRECEDENCE` from src/core/constants.ts:16-23. Replace its use at helpers.ts:852 and validators.ts:266 with `STATUSES`; drop it from the imports at helpers.ts:40 and validators.ts:35; retarget `{@link STATUS_PRECEDENCE}` at helpers.ts:838 and validators.ts:251 to `{@link STATUSES}`. Keep the literal in `completeTallies` (the compiler enforces its totality through `Record<Status, Tally>`). In tests/src/core/programs/Program.test.ts change the import at :13 and the test at :1033-1036 to `STATUSES` with the same expected order; tests/setup.test.ts:87 stays (an independently authored list). In guides/program.md delete the row at :166, rewrite :173-178 to \"`ELIGIBILITY_DECISIONS` maps each global eligibility to its decision. `STATUSES` declares status membership: the `Status` union, the `isStatus` guard, and the complete tally record all derive from it, so a status is authored once. `completeTallies` fixes the key order of a tally record.\", change :244 to \"`isTallies` requires every status in `STATUSES`\", and delete :626-627.",
+    "breaking": true
+   },
+   {
+    "id": "program-subj-3",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/names.md preamble: \"Names are public API. A consumer can predict them without documentation.\"; AGENTS.md § Design laws: \"One concept, one term.\" Carry row program-c1 names this pair as open.",
+    "evidence": "src/core/helpers.ts:999 `buildNotice(...): Notice` and :206 `buildNotices(...): readonly Determination[]` — the plural of the singular is not what the plural returns. `buildLimits` (helpers.ts:246) returns the other `ProgramEffect`'s determinations under a nickname with no published type. Call sites: Program.ts:39-40 (imports), :210 (`buildNotices`), :228 and :295 (`buildLimits`); helpers.test.ts:32-33, :339, :341, :1005, :1020, :1042, :1062, :1068, :1070, :1075, :1083, :1123; guides/program.md:289-290.",
+    "repair": "Rename `buildNotices` to `buildNoticeDeterminations` and `buildLimits` to `buildLimitDeterminations` in src/core/helpers.ts; leave `buildNotice` unchanged. Update Program.ts:39-40, :210, :228, :295; helpers.test.ts:32, :33, :339, :341, :1005, :1020, :1042, :1062, :1068, :1070, :1075, :1083, :1123; guides/program.md:289 and :290 (keep the summaries). The finder's site list omitted the `buildLimits` test sites; the list here is complete for tests/src/core. Do not reintroduce `buildNotices` under any meaning.",
+    "breaking": true
+   },
+   {
+    "id": "program-subj-4",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/names.md § Tallies: \"A lone unambiguous tally is `count`. When several distinct tallies coexist, name each fact\"; § General vocabulary: \"Do not alternate `count`/`length`/`size`/`total`\". Carry row program-c2 names this drift.",
+    "evidence": "src/core/types.ts:287 `readonly size: number` is the only tally on `ProgramManagerInterface`; ProgramManager.ts:81-84 returns `this.#programs.length`. `count` is the tally word on `AggregateProjection`, `AggregateGroup`, `Tally`, and `AggregateResult` (types.ts:99, :107, :113, :179). The only fleet `size` members on single-tally entities are byte sizes or pools (middleware, pool, workspace, browser, lsp); every other manager-style tally is `count`. Test sites: factories.test.ts:108, :115; ProgramManager.test.ts:27, :34, :120, :153, :161, :191, :197, :238, :346. No fleet consumer.",
+    "repair": "Change src/core/types.ts:287 to `readonly count: number` and ProgramManager.ts:81 to `get count(): number`. Update the eleven test sites in the evidence. Name `count` in the guide's Surface row per program-subj-7.",
+    "breaking": true
+   },
+   {
+    "id": "program-subj-5",
+    "verdict": "CONFIRMED",
+    "ground": "AGENTS.md § Design laws: \"One concept, one term. Do not alternate synonyms.\" .claude/rules/typescript.md § Comments admits both `Checks whether` and third-person forms, so the package's majority spelling decides. Carry row program-c3.",
+    "evidence": "src/core/errors.ts:44 \"Checks whether\"; every other predicate in the package opens \"Determines whether\" (validators.ts:38, :53, :68, :83, :100, :120, :154, :179, :208, :230, :248, :271, :307, :340; helpers.ts:46). The fleet splits evenly across errors.ts files (contract, lsp, process, probe say `Checks`; mcp, queue, table, form say `Determines`), so no fleet convention overrides the in-package majority.",
+    "repair": "Change src/core/errors.ts:44 to \"Determines whether a caught value is a {@link ProgramError}.\" Change nothing else.",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-6",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/typescript.md § Comments and API documentation: \"Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.\" and \"State a prerequisite and the failure behavior wherever the symbol has either.\" Carry row program-c4.",
+    "evidence": "src/core/types.ts:242-251 (`ProgramInterface`) and :285-296 (`ProgramManagerInterface`) declare fourteen members with no doc block; Program.ts:144, :149-155, :157, :162 and ProgramManager.ts:77, :81, :86, :91, :96, :101, :123-126, :140 carry none. The `DESTROYED`, `DUPLICATE`, `MISMATCH`, and `RESERVED` throws exist only in the guide. The declared dependency documents every member at /home/user/fleet/qualifier/src/core/types.ts:148-229 and mirrors them on the class at /home/user/fleet/qualifier/src/core/Qualifier.ts:83-107 onward (`@remarks`, `@param`, `@returns`, `@throws`, `@example`).",
+    "repair": "Apply the finder's repair verbatim: a complete block on every member of `ProgramInterface` and `ProgramManagerInterface` in src/core/types.ts, mirrored on each implementing member of `Program` and `ProgramManager`, in the qualifier's shape — third-person first sentence, `@remarks` for the guide-stated behaviour, one `@param` per parameter, `@returns`, a `@throws {@link ProgramError}` row per code the member can raise, one `@example` importing from '@orkestrel/program'; single-sentence blocks on the readonly data members (`id`, `name`, `definition`, `emitter`, and the manager's `emitter` and `count`). Keep the overload note in the existing `//` comments at Program.ts:148 and ProgramManager.ts:122 (stripped of the `AGENTS §9.2` citation per program-subj-1).",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-7",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/documentation.md § Parity: \"Readonly data properties remain in the interface's `## Surface` row.\"",
+    "evidence": "guides/program.md:151 Shape cell reads \"Ordered program manager with singular/plural accessors and lifecycle.\" and names neither `emitter` nor `size`; the sibling row at :148 names `id` / `name` / `definition` / `emitter`. A search for `size` across guides/program.md returns no line.",
+    "repair": "Rewrite the Shape cell at guides/program.md:151 in the style of :148: `` `emitter` / `count` + `has` / `program` / `programs` / `add` / `remove` / `destroy` `` (write `count` because program-subj-4 lands in the same campaign).",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-8",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/documentation.md § Guide examples: \"Code fences import through the package's published specifier.\"; § Parity: \"Every backticked API in a guide resolves to a real public export.\"",
+    "evidence": "guides/program.md:318-323 imports `assertProgramSubject`, `decideEligibility`, `hasReservedKey`, `selectProgramLines`; line 328 calls `assertProgramDefinition`, which the block never imports. tests/guides.test.ts:142-152 checks only that imported names exist, so the parity suite cannot see it.",
+    "repair": "Insert `assertProgramDefinition,` as the first entry of the import block at guides/program.md:319, before `assertProgramSubject,`.",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-9",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/writing.md § Claims and time: \"Claim only what the reader can check.\"; .claude/rules/workspace.md § Tooling: \"Keep `engines`, bundler targets, scoped configs, tests, and documentation aligned\".",
+    "evidence": "/home/user/fleet/program/README.md:24 \"Node.js >= 24\"; /home/user/fleet/program/package.json:101-103 `\"engines\": { \"node\": \">=22.12.0\" }`; the scaffold template declares the same floor (/home/user/fleet/template/package.json:88). Nothing in src needs a Node 24 API (`structuredClone`, `Object.hasOwn`, `replaceAll`, `flatMap` all exist on 22.12).",
+    "repair": "Change /home/user/fleet/program/README.md:24 to \"- Node.js >= 22.12.0\".",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-10",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/writing.md § Code tokens, references, and links: \"Never inflect, pluralize, or possessivize a code token\".",
+    "evidence": "src/core/helpers.ts:187 `{@link Notice}s`, :188 and :221 `{@link Determination}s`, :225 `{@link LogicalDefinition}s`; src/core/programs/ProgramManager.ts:21 `{@link ProgramInterface}s`; guides/program.md:138 `` `FieldPath`s ``. The finder missed one site of the same class: src/core/helpers.ts:988 `` `{{token}}`s ``.",
+    "repair": "Apply the finder's rewrites at helpers.ts:187-188, :221, :225, ProgramManager.ts:21, and guides/program.md:138, and additionally change helpers.ts:988 to \"The message template, carrying optional `{{token}}` placeholders\".",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-11",
+    "verdict": "CONFIRMED",
+    "ground": "AGENTS.md § Writing: \"NEVER state a count. ... Name the members, or write the sentence without the number. ... Delete a count you find. Do not correct it.\" It governs TSDoc and guides.",
+    "evidence": "src/core/helpers.ts:816 \"A record with all five statuses present\"; src/core/validators.ts:344 \"checks the three program-owned members directly\"; guides/program.md:171 \"The two reserved keys\"; :536 \"one of the four decision gates, below\" (also `below`, which writing.md § Code tokens bans); :555-556 \"all four gates hold\". `both` at :176 names its members and is permitted.",
+    "repair": "Apply the finder's rewrites verbatim: helpers.ts:816 \"@returns A record carrying every {@link Status}\"; validators.ts:344 \"checks the program-owned members directly\"; program.md:171 \"The reserved keys exist only for composed program execution\"; :536 \"(a decision gate, listed later)\"; :556 \"A `decision` is present only when every gate holds:\".",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-12",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/writing.md § Substitutions: row `via` → `through`, `by using`; the sweep rule covers tests and doc comments.",
+    "evidence": "/home/user/fleet/program/README.md:25, guides/program.md:707, tests/src/core/helpers.test.ts:1112. The finder missed tests/setup.ts:981 (\"OWN keys via JSON parsing\"), found by the same pattern over src, tests, README.md, and guides/program.md.",
+    "repair": "Change README.md:25 to \"- ESM (`import`) and CommonJS (`require`) through the `exports` field\"; guides/program.md:707 to \"exact shape through `isProgramDefinition` — this alone establishes…\"; helpers.test.ts:1112 to \"…zero-line programs through real qualification\"; tests/setup.ts:981 to \"OWN keys through JSON parsing\".",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-13",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/names.md § General vocabulary: \"Properties are nouns; methods are verbs.\" and \"Describe what a thing is\". The mirrored-name exemption covers a member transliterating an external protocol, format field, or engine pragma; `by` transliterates none.",
+    "evidence": "src/core/types.ts:52 and :93 `readonly by?: FieldPath` — a preposition as a published data member. The package's own prose already names the concept: types.ts:47 \"the partition key field\", helpers.ts:580 \"Aggregate partition field must be non-empty\", guides/program.md:138 \"optional partition field\". A fleet search for `by?: FieldPath|by?: string` under */src returns only program's declarations, so no sibling convention supports it. `field` collides with `AggregateDefinition.fields`; `key` on the definition would name the field while `AggregateGroup.key` names the value.",
+    "repair": "Rename the member to `partition` at src/core/types.ts:52 and :93 and update the `@remarks` at :47. Rename the parameter and every read in src/core/helpers.ts (:579-580, :614, :623-624, :700-701, :713-718, :742, :757-760, :1011, :1018, :1027), the key in `isAggregateDefinition` at validators.ts:113-115, and the reads at Program.ts:251 and :257. Update tests/setup.ts:758, tests/setup.test.ts:721 and :730, every `by:` in tests/src/core, and guides/program.md:135, :138, :263, :363, :717, :874. Derive the full test set with a search for `\\bby\\b` bounded to src/**, tests/**, and guides/program.md before editing.",
+    "breaking": true
+   },
+   {
+    "id": "program-subj-14",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/typescript.md § Comments and API documentation: \"Write a default as \\\"Default: …\\\"\".",
+    "evidence": "src/core/types.ts:218-219 \"validate the definition at construction (default {@link DEFAULT_PROGRAM_VALIDATE})\" and :268-269 \"(default {@link DEFAULT_PROGRAM_VALIDATE})\". A search for `(default ` over src returns only these; factories.ts:15-16 is prose about the default, not a default statement.",
+    "repair": "At src/core/types.ts:218-219 write \"`validate` — validate the definition at construction. Default: {@link DEFAULT_PROGRAM_VALIDATE}.\" and at :268-269 \"`validate` — validate each seeded and added definition at construction. Default: {@link DEFAULT_PROGRAM_VALIDATE}.\"",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-15",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not require it. .claude/rules/documentation.md § Authority and workflow obliges `guides/README.md` to \"maintain both a concept index and a directory index\"; both are present (guides/README.md:5-9 and :11-15). § Parity's mirror sentence makes a vendored guide a mirror and asks nothing of the index. No rule sentence obliges the package-authored \"Dependency reference\" section to enumerate every mirror, and the section claims no completeness.",
+    "evidence": "guides/ holds test.md, probe.md, and scaffold.md (Glob over /home/user/fleet/program/guides/*.md) that the section at guides/README.md:17-54 does not name. The parity suite reads only the concept table (`parseManifest` at tests/guides.test.ts:48-51), so the omission breaks no gate. Fleet practice varies rather than fixing a convention: sse lists probe/test/scaffold, console, table, and relation list scaffold only, and the scaffold compiler that births the file (/home/user/scaffold/src/core/compilers.ts:1390-1402) writes no dependency-reference section at all. Adding the paragraphs is not wrong, but nothing makes their absence a rule violation.",
+    "repair": "None required. If the Orchestrator wants the section complete for consistency with the `guide.md` paragraph, the finder's text is usable as an optional editorial change, not a conformance row.",
+    "breaking": false
+   },
+   {
+    "id": "program-subj-16",
+    "verdict": "CONFIRMED",
+    "ground": ".claude/rules/names.md preamble: \"Names are public API. A consumer can predict them without documentation.\"; § Standalone helpers: \"default to `{verb}{Noun}`\" where the noun is what the verb acts on; § General vocabulary: \"Describe what a thing is\".",
+    "evidence": "src/core/helpers.ts:873-883 `tallyProgram` selects a tally by `result.status` and folds one subject's fields into it; nothing about a program is tallied, and the guide states the operation as \"Add one subject and its fields to the result-status tally\" (guides/program.md:308). Every other `Program`-qualified helper uses the noun as qualifier of its object (`buildProgramResult`, `validateProgramDefinition`, `assertProgramSubject`, `selectProgramLines`). Sites: helpers.ts:868 (`@example`), :873; Program.ts:46, :259; helpers.test.ts:45, :856; guides/program.md:308. No fleet consumer.",
+    "repair": "Rename `tallyProgram` to `tallySubject` at src/core/helpers.ts:873 and in its `@example` at :868-870; update the import at Program.ts:46 and the call at :259, the import at tests/src/core/helpers.test.ts:45 and the call at :856, and the row at guides/program.md:308.",
+    "breaking": true
+   }
+  ],
+  "terminal": "VERDICT: FAIL — 23 broken, 0 unresolved, 0 findings outside the claims"
+ }
+}

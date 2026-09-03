@@ -1,0 +1,701 @@
+{
+ "package": "csv",
+ "objective": {
+  "package": "csv",
+  "lane": "objective (reviewer on Claude Opus 5, holding the objective perspective as the recorded substitution for the dark GPT-5.6 Sol bench)",
+  "claims": [
+   {
+    "claim": "O1 Placement and kind purity",
+    "verdict": "CONFIRMED",
+    "read": "Read every module under /home/user/fleet/csv/src/core/ against .claude/rules/architecture.md § Centralized-file pattern through § Stores. Attacked four vectors and each held. (a) Leaf pair: helpers.ts:1-28 imports only types.js, constants.js, errors.js; validators.ts:1-3 imports types.js and @orkestrel/contract. Neither imports an implementation class, and no class-importing file (CSV.ts, factories.ts, shapers.ts) is imported by either — the rule's banned shape, 'an edge running downward from a class-importing file into the leaf pair', does not occur. (b) parse*/create* forms: parsers.ts exports parseCSV, parseInteger, parseReal, parseBoolean (all parse*); factories.ts exports createCSV, createTableContract (all create*). I attacked parseCSV as a possible misfile — architecture.md § Kind purity mandates only the name form for parsers.ts, and parseCSV is the coercer spine that composes the helpers.ts leaves, so the operative sentence is satisfied. (c) Kind assignment of the predicates in helpers.ts: isRowList (helpers.ts:394) is a type predicate over CSVTable | readonly Row[], not the (unknown) => value is T Guard shape .claude/rules/patterns.md § Validation and contracts fixes for validators.ts, so architecture.md's own 'isVacant is a predicate rather than a Guard<T>, so both stay in helpers.ts' places it where it sits; isBreakChar and needsQuote are the same case. (d) templates.ts, contracts.ts, routes.ts, seeders.ts, stores/, extension categories, entity subfolders: none present, so no rule in those sections is reachable. constants.ts declares only UPPER_SNAKE_CASE consts and freezes its object data (constants.ts:18, :36, :53)."
+   },
+   {
+    "claim": "O2 Functions, wrappers, and class order",
+    "verdict": "BROKEN",
+    "read": "Read src/core/CSV.ts in full against .claude/rules/architecture.md § Class order, § Wrapper test, § Functions and orchestration. BROKEN by csv-obj-3: the #carry private method sits at CSV.ts:118, between the public methods map (:105) and reduce (:134), while the rule fixes the order as fields, constructor, public getters then methods, then # private methods. Attacked three other vectors and each held. (a) Nested functions: the only in-body function syntax in src is anonymous callbacks passed directly as arguments (helpers.ts:350, inferers.ts:105/114/117, parsers.ts:85, shapers.ts:119) and the ReadableStream underlying-source object at CSV.ts:155-167 — I read configs/policy.ts:120-130 and :184-195 and confirmed reportNested deliberately exempts object-literal method syntax through isPolicyMethod, and workspace.md § Policy instruments makes that plugin the single instrument for this rule, so pull(controller) is sanctioned rather than unreported. (b) Pass-through factory: createCSV (factories.ts:30) returns new CSV(input, options) as CSVInterface; I compared it against /home/user/fleet/emitter/src/core/factories.ts:29-33, whose createEmitter is the identical shape with a TSDoc @remarks stating the intent, so this is the fleet's entity-factory convention and not a superfluous wrapper. (c) No child managers exist, so the readonly-getter clause is inert."
+   },
+   {
+    "claim": "O3 Barrels and exports",
+    "verdict": "CONFIRMED",
+    "read": "Read src/core/index.ts (ten rows, every one `export * from './x.js'`, no named/default/namespace/type-only row) against .claude/rules/architecture.md § Barrel exports. Every source module in src/core is reached. No file re-exports a @orkestrel/contract symbol: contract names appear only as `import type` in types.ts/factories.ts/validators.ts/shapers.ts or as call targets. No default export anywhere in src or tests. The INTERNAL list in tests/guides.test.ts:38 is empty and correctly so — CSV is constructible by a consumer from a string or a CSVTable (CSV.ts:41-44), so it is barrelled rather than interned, and tests/guides.test.ts:70-86 enforces both directions of that membership at the `test` gate."
+   },
+   {
+    "claim": "O4 Non-negotiable syntax",
+    "verdict": "BROKEN",
+    "read": "Swept src/**, tests/** (excluding the vendored set), guides/csv.md, guides/README.md, README.md, vite.config.ts and tsconfig.json for the banned constructs, and read each import block by hand. BROKEN four times: csv-obj-4 (CSV.ts:1 value import precedes the type import at :2), csv-obj-5 (shapers.ts:1-10 value import precedes the type imports at :11-12), csv-obj-6 (guides/csv.md:447 uses a banned `as` assertion in a published example), csv-obj-7 (tests/src/core/helpers.test.ts:19 and tests/src/core/inferers.test.ts:2 import '../../setup' with no .js extension). Held elsewhere: a grep for `as [A-Z]`, `any`, `!.`, `@ts-`, `eslint-disable` and `oxlint-disable` over src returned only prose matches on the English word 'any' inside TSDoc; there is no `as const` in the package at all, so .claude/rules/typescript.md § Types has nothing to judge; no accessibility keyword and no parameter property (CSVError declares #-free but readonly-only class fields and assigns them in the constructor body, errors.ts:22-45, which the parameter-property ban does not reach); single quotes and no semicolons throughout."
+   },
+   {
+    "claim": "O5 Types, immutability, errors",
+    "verdict": "CONFIRMED",
+    "read": "Read src/core/types.ts in full, src/core/errors.ts in full, and the @orkestrel/contract declaration at node_modules/@orkestrel/contract/dist/src/core/index.d.ts. Every reusable and public type lives in types.ts; every interface property there carries readonly; every public collection is readonly T[] or ReadonlySet (CSVInterface.rows, .errors, CSVTable.columns/.rows, RawRecord.fields, SANITIZE_PREFIXES as ReadonlySet). Absence is T | undefined everywhere — parseInteger/parseReal/parseBoolean, scanBreak, scanComment, RowResult.row/.error — with no sentinel. Immutability: inferRows (inferers.ts:104-125) and CSV.map (CSV.ts:105-113) both build fresh rows rather than mutating their input, deriveShapes (shapers.ts:111-132) returns a freshly built record, and the get rows()/toJSON() returns are the declared readonly views types.ts fixes as the contract. Errors: CSVError exposes a machine-readable code and an optional context (errors.ts:22, :26) and ships isCSVError (errors.ts:63). I attacked the outcome rule specifically: @orkestrel/contract exports attempt (index.d.ts:196) as its never-throw boundary, but its own TSDoc scopes it to the guards, and this package's declared model — throw a CSVError for a programmer error, collect a parse malformation into CSVParseResult.errors — matches the .claude/rules/typescript.md § Errors and outcomes table for a non-I/O surface, so the local try/catch at helpers.ts:213-217 is a language construct rather than a reimplementation of that primitive."
+   },
+   {
+    "claim": "O6 Declared ecosystem reuse",
+    "verdict": "BROKEN",
+    "read": "Read the installed declarations for both declared @orkestrel packages before ruling. BROKEN twice, both in tests: csv-obj-8 (tests/src/core/helpers.test.ts:27 declares captureError, which @orkestrel/test exports at node_modules/@orkestrel/test/dist/src/core/index.d.ts:21 under the same name with the same signature and the same documented semantics) and csv-obj-9 (tests/src/core/CSV.test.ts:14 declares isRecord, which @orkestrel/contract exports at index.d.ts:3140 — and the local copy is not merely a duplicate but the wrong one, since it accepts arrays and Date while the declared isRecord refuses both per its own example at index.d.ts:3136-3137). Held in src: validators.ts routes every guard through contract's arrayOf/isRecord/isString/literalOf/recordOf; shapers.ts uses contract's shape constructors; factories.ts uses createContract/objectShape; and I checked the three cell coercers in parsers.ts against contract's own parseInteger/parseNumber/parseBoolean — the semantic difference is real, documented on each symbol (parsers.ts:115-118, :140-144, :165-168), and pinned by an executed comparison at tests/src/core/parsers.test.ts:535-552, which is exactly the 'test the difference' the rule requires."
+   },
+   {
+    "claim": "O7 Tests",
+    "verdict": "BROKEN",
+    "read": "Read every non-vendored test file in full: tests/setup.ts, tests/setup.test.ts, tests/guides.test.ts, tests/distribution.test.ts, and all six files under tests/src/core/. BROKEN five times: csv-obj-10 (a setup-helper assertion misplaced into a mirrored src suite), csv-obj-11 (assertions that cannot fail for the defect they name), csv-obj-12 (tests/guides.test.ts executes no fence), csv-obj-13 (three exported helpers with no test at all), csv-obj-14 (the carry-row mirror drift). Held elsewhere: no mock, behavioral fake, module replacement, framework spy, or fake clock appears anywhere — real implementations throughout, with collectStream taken from @orkestrel/test; no .skip, .todo, .only or conditional skip outside the vendored baseline the brief named, except tests/distribution.test.ts:684, whose context.skip carries the exact mechanism ('npm ping did not answer') the conditional-skip rule demands and which the release mode at :36 converts into a hard failure at the publish gate; tests/setup.ts registers nothing and contains no describe/it/expect; the locally declared guards in tests/setup.test.ts:31-57 are the deliberate outside-control the 'never assert an implementation against itself' rule requires, since routing them through setup.ts would have the module under test certify itself; no fixture server and no interval measurement exist in this package, so those clauses are inert."
+   },
+   {
+    "claim": "O8 Workspace and portability",
+    "verdict": "BROKEN",
+    "read": "Read package.json, vite.config.ts, tsconfig.json, configs/src/vite.core.config.ts and README.md against .claude/rules/workspace.md and .claude/rules/portability.md. BROKEN twice, both in the published README: csv-obj-1 and csv-obj-2. Held elsewhere: every declared Vitest project (srcCore, policy, config, setup, guides, distribution, probe — vite.config.ts:133) is reachable from a gate and resolves to a real file, with distribution correctly placed on prepublishOnly and probe correctly ungated per workspace.md § Test project matrix; the scripts match the script-intent table; the exports map, files, main/module/types and the build:src:core chain agree with configs/src/vite.core.config.ts:28-29; portability — no /tmp literal (tests/distribution.test.ts:579 reads tmpdir()), no .sh in a script, every path composed through node:path, and line-ending handling stronger than the rule since helpers.ts scanBreak (:486-494) consumes CRLF, bare LF and bare CR explicitly rather than splitting; @orkestrel/process is not declared, so that clause is inert."
+   },
+   {
+    "claim": "C Carry rows (csv-c1, csv-c2)",
+    "verdict": "BROKEN",
+    "read": "csv-c1 is DRIFT, carried as csv-obj-14. csv-c2 is INVALID — the cycle stands. Reading: parsers.ts:11 imports inferRows from ./inferers.js and inferers.ts:3 imports parseBoolean/parseInteger/parseReal from ./parsers.js. The only sentence in .claude/rules/architecture.md § Kind purity that rules on cycles is 'One cycle between the leaves is the shape this produces and is acceptable; an edge running downward from a class-importing file into the leaf pair is not.' Neither parsers.ts nor inferers.ts is a leaf-pair file, neither imports an implementation class, and the leaf pair itself takes no inbound edge from either — so the banned shape does not occur and no rule reaches this cycle. The cycle is also forced by the kind table rather than chosen: parseCSV and the three flat cell coercers are all parse* and so all belong in parsers.ts, while inferRows is a value inferer and so belongs in inferers.ts, leaving no relocation that preserves kind purity. Both edges resolve inside function bodies (parsers.ts:104, inferers.ts:73-77) over hoisted function declarations, so module init reads no undefined binding. On the second half of the row — that module-init behaviour is proved only by test:distribution, which runs from prepublishOnly — that is the placement .claude/rules/workspace.md § Test project matrix mandates ('distribution | prepublishOnly; absent when private'), and tests/distribution.test.ts:791-813 satisfies .claude/rules/quality.md § Instruments exactly, driving a real Node import and a real Node require of the packed and installed entry and reading its exports. Claim C is BROKEN because csv-c1 is drift, not because of csv-c2."
+   }
+  ],
+  "findings": [
+   {
+    "id": "csv-obj-1",
+    "claim": "O8",
+    "file": "/home/user/fleet/csv/README.md:15",
+    "rule": "'the exports map, `files`, `engines`, and `bin` are consistent with the built outputs' — brief claim O8 over `.claude/rules/workspace.md` § Build outputs, which fixes `dist/src/core` as 'Core library + declarations | ES and CJS'; and `.claude/rules/documentation.md` § Parity: 'Falsify a prose claim the way you falsify a code claim.'",
+    "wrong": "The Requirements list tells every consumer 'ESM-only (no CommonJS build)', but the package publishes a CommonJS build: package.json:26 sets `main` to `./dist/src/core/index.cjs`, package.json:35-38 declares a `require` condition resolving to `index.cjs` with `index.d.cts` types, package.json:64 copies the CJS declaration during `build:src:core`, and configs/src/vite.core.config.ts:28 emits `formats: ['es', 'cjs']` — and tests/distribution.test.ts:803-813 drives a real Node `require` of that published entry at the release gate.",
+    "repair": "In /home/user/fleet/csv/README.md, replace the line `- ESM-only (no CommonJS build)` with `- Dual ESM and CommonJS builds from one entry point`. The sibling wording at /home/user/fleet/console/README.md:20-21 and /home/user/fleet/database/README.md:38 is the fleet's form for a dual-build package; do not copy their subpath clauses, because this package publishes only the `.` subpath.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-2",
+    "claim": "O8",
+    "file": "/home/user/fleet/csv/README.md:14",
+    "rule": "'the exports map, `files`, `engines`, and `bin` are consistent with the built outputs' — brief claim O8; `.claude/rules/writing.md` § Claims and time: 'Claim only what the reader can check … where time matters, give the version or the date.'",
+    "wrong": "The README states the supported runtime as `Node.js >= 22`, which admits Node 22.0.0, while package.json:91 declares `\"node\": \">=22.12.0\"` and refuses it — so a consumer on 22.0.0 reads the README as supported and is refused by the manifest.",
+    "repair": "In /home/user/fleet/csv/README.md, change `- Node.js >= 22` to `- Node.js >= 22.12.0`, matching the `engines.node` range in package.json:91. Change only the README; the manifest range is the source of truth.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-3",
+    "claim": "O2",
+    "file": "/home/user/fleet/csv/src/core/CSV.ts:115-120",
+    "rule": "`.claude/rules/architecture.md` § Class order: '1. `#` private fields … 2. Constructor … 3. Public interface: getters, then methods. 4. `#` private methods.'",
+    "wrong": "The `#carry` private method is declared at CSV.ts:118, between the public method `map` (:105-113) and the public method `reduce` (:134-136), so a private method interrupts the public interface section instead of following it.",
+    "repair": "In /home/user/fleet/csv/src/core/CSV.ts, cut the block at lines 115-120 (the `// Carries the source parse's errors …` comment together with the `#carry` method) and paste it verbatim after the closing brace of `export()` at line 210, so it becomes the last member of the class. Move the comment with the method; change no other line, and do not rename `#carry` — its call site at CSV.ts:111 stays as written.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-4",
+    "claim": "O4",
+    "file": "/home/user/fleet/csv/src/core/CSV.ts:1-13",
+    "rule": "`.claude/rules/typescript.md` § Syntax and imports: 'Place `import type` declarations before value imports.'",
+    "wrong": "The value import `import { createContract, objectShape } from '@orkestrel/contract'` at CSV.ts:1 precedes the type import block at CSV.ts:2-10, so a type import follows a value import.",
+    "repair": "In /home/user/fleet/csv/src/core/CSV.ts, move line 1 (`import { createContract, objectShape } from '@orkestrel/contract'`) to sit immediately after line 10 (the closing `} from './types.js'`), so the file reads: the `import type { … } from './types.js'` block, then `import { createContract, objectShape } from '@orkestrel/contract'`, then the three existing local value imports. Leave no blank line between consecutive imports of the same kind.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-5",
+    "claim": "O4",
+    "file": "/home/user/fleet/csv/src/core/shapers.ts:1-13",
+    "rule": "`.claude/rules/typescript.md` § Syntax and imports: 'Place `import type` declarations before value imports.'",
+    "wrong": "The multi-line value import from `@orkestrel/contract` at shapers.ts:1-10 precedes the two type imports at shapers.ts:11 and :12, so both type imports follow a value import.",
+    "repair": "In /home/user/fleet/csv/src/core/shapers.ts, move lines 11-12 (`import type { ContractShape } from '@orkestrel/contract'` and `import type { Columns, ColumnType, CSVTable } from './types.js'`) above line 1, so the file opens with the two type imports, then the `@orkestrel/contract` value import block, then `import { inferColumnType } from './inferers.js'`. Leave no blank line between consecutive imports of the same kind.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-6",
+    "claim": "O4",
+    "file": "/home/user/fleet/csv/guides/csv.md:445-448",
+    "rule": "`AGENTS.md` § Non-negotiable rules: 'NEVER use non-null assertions (`!`) or type assertions (`as`); narrow or validate.'",
+    "wrong": "The `Guarding an adopted table` fence writes `return createCSV(candidate as CSVTable)`, teaching every consumer who copies it a construct the package forbids — and the assertion is dead besides, because `isCSVTable` is declared `Guard<CSVTable>` (src/core/validators.ts:36), so the early return at csv.md:446 has already narrowed `candidate` to `CSVTable` on that branch.",
+    "repair": "In /home/user/fleet/csv/guides/csv.md, change the line `\treturn createCSV(candidate as CSVTable) // adopted AS-IS, not re-parsed` to `\treturn createCSV(candidate) // adopted AS-IS, not re-parsed`. The `import type { CSVTable } from '@orkestrel/csv'` line at csv.md:443 then has no remaining reference in the fence, so delete that import line too.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-7",
+    "claim": "O4",
+    "file": "/home/user/fleet/csv/tests/src/core/helpers.test.ts:19 and /home/user/fleet/csv/tests/src/core/inferers.test.ts:2",
+    "rule": "`.claude/rules/typescript.md` § Syntax and imports: 'ESM imports use explicit `.js` extensions for local TypeScript modules.'",
+    "wrong": "Both files import the shared setup module as `'../../setup'` with no extension, while every other local import in the package carries `.js` — tests/src/core/parsers.test.ts:25, CSV.test.ts:5 and factories.test.ts:3 all write `'../../setup.js'`, and tests/setup.test.ts:23 writes `'./setup.js'`.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts change `from '../../setup'` to `from '../../setup.js'`, and in /home/user/fleet/csv/tests/src/core/inferers.test.ts change `from '../../setup'` to `from '../../setup.js'`. Change nothing else in either import.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-8",
+    "claim": "O6",
+    "file": "/home/user/fleet/csv/tests/src/core/helpers.test.ts:22-34",
+    "rule": "`.claude/rules/tests.md` § Shared test infrastructure: '`@orkestrel/test` owns the helpers every workspace repeats … Write a helper of your own only where the package exports none for the job' and 'Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.' `.claude/rules/patterns.md` § Declared ecosystem capabilities: 'Never reimplement or rename-wrap a declared package primitive.'",
+    "wrong": "The file declares a local `captureError(fn: () => void): unknown` that reimplements the declared devDependency's own export: `@orkestrel/test` publishes `captureError(thunk: () => unknown): unknown` at node_modules/@orkestrel/test/dist/src/core/index.d.ts:21 with the identical documented semantics ('Returns the thrown value, or `undefined` when the thunk completes'). The same helper is then open-coded inline a further eight times as `let caught: unknown; try { … } catch (error) { caught = error }` — tests/src/core/parsers.test.ts:645-650, :704-709, :723-728; tests/src/core/CSV.test.ts:42-48, :213-219, :226-232; tests/src/core/factories.test.ts:50-55, :60-65 — which `.claude/rules/tests.md` names as 'Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.'",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts delete lines 22-34 (the TSDoc block and the `captureError` function) and add `import { captureError } from '@orkestrel/test'` to the file's imports; every existing call site in that file already matches the published signature and needs no edit. Then replace each of the eight inline `let caught: unknown; try { … } catch (error) { caught = error }` blocks named in the finding with `const caught = captureError(() => <the call that was inside the try>)`, adding the same `@orkestrel/test` import to tests/src/core/parsers.test.ts, tests/src/core/CSV.test.ts and tests/src/core/factories.test.ts. Do not re-export `captureError` from tests/setup.ts — `.claude/rules/architecture.md` § Wrapper test forbids re-exporting a dependency's symbol from this package.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-9",
+    "claim": "O6",
+    "file": "/home/user/fleet/csv/tests/src/core/CSV.test.ts:14-16",
+    "rule": "`.claude/rules/tests.md` § Shared test infrastructure: 'Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.' `.claude/rules/patterns.md` § Declared ecosystem capabilities: 'Never reimplement or rename-wrap a declared package primitive.'",
+    "wrong": "The file declares `function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null }`, reusing the exact name of a primitive the runtime dependency already exports — `@orkestrel/contract` declares `isRecord(value: unknown): value is Record<string, unknown>` at node_modules/@orkestrel/contract/dist/src/core/index.d.ts:3140 — and src/core/validators.ts:3 already imports that real one. The local copy is also the wrong semantics under that name: contract's `isRecord` refuses an array and a `Date` (index.d.ts:3136-3137) while the local one accepts both, so the assertions at CSV.test.ts:161, :182 and :183 would pass on an array the guard's name promises to reject. Contract's `isObject` (index.d.ts, documented 'true for arrays, class instances, plain objects, Map, Set') is the primitive whose semantics the local body actually has.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/CSV.test.ts delete lines 14-16 and add `isRecord` to the existing `@orkestrel/contract` import at line 2, so it reads `import { isRecord, stringShape } from '@orkestrel/contract'`. Then re-run the file: the three `assertAndNarrow(isRecord, …)` call sites at :161, :182 and :183 all pass plain objects, so the stricter declared guard admits them unchanged. If any call site reddens, that reddening is the defect this finding names and the fixture is what must change, never the guard.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-10",
+    "claim": "O7",
+    "file": "/home/user/fleet/csv/tests/src/core/helpers.test.ts:429-437",
+    "rule": "`.claude/rules/tests.md` § Cross-cutting proofs: 'Put each root `tests/setup*.test.ts` proof in the `setup` project. Keep its assertions on exported test-infrastructure behavior: do not duplicate production behavior there, and do not move setup-helper assertions into another cross-cutting proof.' § Test contract: 'Mirror module/application structure: `tests/{src,app}/[environment]/[domain]/[module].test.ts`.'",
+    "wrong": "The `describe('assertAndNarrow usage sanity')` block asserts on `assertAndNarrow`, which is exported from tests/setup.ts:29 and is not a `src/core/helpers.ts` export, so a setup-helper assertion sits inside the `src:core` project's mirror of helpers.ts — and it duplicates coverage that already exists in the right place, at tests/setup.test.ts:66-94, where the accepting case, the guard-deference case and both throw-message cases are already asserted.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts delete lines 429-437 in full. Add nothing to tests/setup.test.ts: its `describe('assertAndNarrow')` block at :66-94 already proves the accepting path this block re-tested. (The deleted heading also carried the banned word `sanity` from `.claude/rules/writing.md` § Substitutions, which the deletion resolves.)",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-11",
+    "claim": "O7",
+    "file": "/home/user/fleet/csv/tests/src/core/shapers.test.ts:98-125 and /home/user/fleet/csv/tests/src/core/CSV.test.ts:187-191",
+    "rule": "`.claude/rules/tests.md` § Discovery and adequacy audit: 'confirm each assertion would fail for the defect it claims to catch'. § Test contract: 'Never assert an implementation against itself.'",
+    "wrong": "Every one of the five `deriveShapes` cases asserts only `expect(columns.a).toBeDefined()` — shapers.test.ts:101, :106, :111, :113, :118, :123 — while their names claim which shape was derived ('derives text', 'derives an inferred type', 'derives integer/real', 'derives boolean', 'derives json'). `deriveShapes` (src/core/shapers.ts:111-132) assigns a `ContractShape` to every column of `table.columns` on every branch, so all five pass identically if the function returned `columnTypeShape('text')` for every input, and none can fail for the defect it names. CSV.test.ts:187-191 ('infers an integer shape for whole-number numeric cells') carries the same defect through `expect(csv.export().columns.n).toBeDefined()`.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/shapers.test.ts, import `createContract` (already imported at :3) and replace each `expect(columns.a).toBeDefined()` with an assertion that compiles the derived shape and reads a value the wrong branch would refuse: for 'derives text' assert `createContract(columns.a).is('x')` is true and `createContract(columns.a).is(5)` is false; for the all-string column `['1','2']` assert the integer contract accepts 1 and refuses 1.5; for the all-number columns assert integer accepts 2 and refuses 2.5, and real accepts 1.5; for the boolean column assert it accepts true and refuses 1; for the mixed column assert it accepts both 1 and 'x'. In /home/user/fleet/csv/tests/src/core/CSV.test.ts:187-191 replace `expect(csv.export().columns.n).toBeDefined()` with `expect(createContract(csv.export().columns.n).is(3)).toBe(true)` and `expect(createContract(csv.export().columns.n).is(3.5)).toBe(false)`, importing `createContract` from `@orkestrel/contract`. Before committing, run each rewritten case once against a `deriveShapes` edited to return `columnTypeShape('text')` unconditionally, confirm every one reddens, then restore the source — an assertion that stays green under that edit has not been repaired.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-12",
+    "claim": "O7",
+    "file": "/home/user/fleet/csv/tests/guides.test.ts:54-170",
+    "rule": "`.claude/rules/tests.md` § Cross-cutting proofs: 'Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof, so a fence documenting a value the code contradicts passes every parity assertion. Change a fence, change the transcription beside it.' `.claude/rules/workspace.md` § Test project matrix fixes the `guides` project's subject as 'Every documented API exists and every public API is documented'; `.claude/rules/tests.md` adds 'every executable fence returns what the guide says it returns'.",
+    "wrong": "The file asserts name resolution, surface parity, method-table parity, example presence and link resolution, and executes no fence at all — so every value a guide fence claims in a comment is unproven. guides/csv.md makes nine such claims: :36 `csv.rows // [{ name: 'Ada', age: 36 }, …]`, :346 `csv.table // { columns: …, rows: … }`, :361 `renderCSV(older.toJSON()) // 'name,age\\r\\nAda,37'`, :374 `const total = … // 60`, :389 `// values: ['1', '2', '3']`, :412 `error.code // 'RAGGED_ROW'`, :435-436 `contract.is(…) // true` / `// false`, :462-471 the tokenizer-leaf block (`isBreakChar('\\n') // true`, `scan.field // { value: 'ab', quoted: false }`, `coerceInferred('42', 'integer') // 42`, `isRowList(…) // true` / `// false`). README.md adds three more at :23, :44 and :65-66. I traced each claim through the source by hand and each is currently true, so this is a missing gate rather than a false sentence — which is precisely the state the rule exists to stop, because nothing will report the day one of them goes false.",
+    "repair": "In /home/user/fleet/csv/tests/guides.test.ts add one `describe('csv.md fences')` block after the existing manifest loop that transcribes each fence named in this finding and asserts the value its comment claims — import the real symbols from `@src/core`, write the fence body verbatim, and assert with `toEqual` on the commented value. Cover guides/csv.md:36, :346, :361, :374, :389, :412, :435-436 and :462-471, and README.md:23, :44 and :65-66. Keep the block below the parity loop so a parity failure still reports first, and do not modify any existing assertion in the file.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-13",
+    "claim": "O7",
+    "file": "/home/user/fleet/csv/src/core/helpers.ts:53, :458, :468",
+    "rule": "`.claude/rules/architecture.md` § Kind purity: 'A would-be helper has these outcomes: … non-trivial or reusable → extract, export, unit-test, and route every duplicate through it.' § Declaration placement: the cleanup sweep bans 'untested extracted functions'.",
+    "wrong": "`assertValidSeparators` (helpers.ts:53), `advancePosition` (:458) and `isBreakChar` (:468) are exported, barrelled, and documented in guides/csv.md:113, :129 and :130, yet a grep across every file under tests/ returns no occurrence of any of the three names — no test imports or calls them. `assertValidSeparators` is reached only indirectly through the two option resolvers; `advancePosition` and `isBreakChar` are reached only incidentally through the scanners; and guides/csv.md:462-463 publishes `isBreakChar` as a directly callable example with no proof behind it.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts add three describes. For `assertValidSeparators`: assert it returns without throwing for `(',', '\"')`, and that it throws a CSVError with code `INVALID_OPTION` for a multi-character delimiter, a multi-character quote, an equal delimiter and quote, and each of `'\\r'`, `'\\n'` and the BOM character in either position. For `advancePosition`: assert the default `count` of 1 shifts `offset` and `column` by one and leaves `line` unchanged, and that an explicit `count` of 2 shifts both by two. For `isBreakChar`: assert true for `'\\r'` and `'\\n'` and false for `'a'`, `''` and `'\\t'`. Add the three names to the existing `@src/core` import at helpers.test.ts:2-18. While in the file, add a `describe('isCSVError')` case asserting `isCSVError(new Error('x'))` is false — every current call site exercises only its true branch.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-obj-14",
+    "claim": "C (csv-c1)",
+    "file": "/home/user/fleet/csv/tests/src/core/parsers.test.ts:29-485",
+    "rule": "`.claude/rules/tests.md` § Test contract: 'Mirror module/application structure: `tests/{src,app}/[environment]/[domain]/[module].test.ts`' and 'A test the mirror rule flags is a misplaced test until its placement is checked. Move it to the location its scope names. Widen the rule only when that check shows the test already sits at the location its scope names …'",
+    "wrong": "Nine describes in the mirror of `src/core/parsers.ts` cover symbols that `src/core/parsers.ts` does not declare — `scanBreak` (:29), `scanComment` (:59), `scanUnquoted` (:79), `scanQuoted` (:114), `scanField` (:163), `scanRecord` (:175), `readRecords` (:193), `deriveHeader` (:402) and `buildRow` (:434) are all declared in src/core/helpers.ts (at :486, :513, :549, :594, :673, :699, :753, :820 and :878), whose own mirror at tests/src/core/helpers.test.ts:36-40 records the split in a comment rather than closing it. `src/core/parsers.ts` declares only `parseCSV`, `parseInteger`, `parseReal` and `parseBoolean`. The placement check the rule mandates fails: these tests do not sit at the location their scope names, so the widening path is not open and the comment does not license the split — `AGENTS.md` § Authority and loading makes the rules outrank existing code and its account of itself.",
+    "repair": "Move the nine describes at tests/src/core/parsers.test.ts:29-485 verbatim into /home/user/fleet/csv/tests/src/core/helpers.test.ts, appending them after the existing `renderCSV` describe. Carry with them the `START` constant (parsers.test.ts:27) and the imports those describes need — `buildRow`, `deriveHeader`, `readRecords`, `scanBreak`, `scanComment`, `scanField`, `scanQuoted`, `scanRecord`, `scanUnquoted`, `MAX_ERRORS`, `buildMixedNewlineCSV`, `buildQuotedField` — adding each to helpers.test.ts's `@src/core` and `../../setup.js` imports. Leave in parsers.test.ts only the `parseInteger`, `parseReal`, `parseBoolean`, the `@orkestrel/contract` comparison and the `parseCSV` describes, and prune its now-unused imports. Delete the stale comment at helpers.test.ts:36-40 and replace it with a one-line statement of what the file covers. Record the per-file test counts before and after and confirm the total is unchanged.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   }
+  ],
+  "referrals": [
+   "To the subjective lane (S6): stale `AGENTS §N` and `AGENTS section N` citations across the package's own files. `AGENTS.md` numbers no section, so each names nothing. Sites: src/core/types.ts:8 ('AGENTS §2'), src/core/helpers.ts:30 and :33 ('AGENTS §5 / §14', 'AGENTS §12'), src/core/errors.ts:3 ('AGENTS §12'), src/core/constants.ts:4 ('AGENTS §5'), src/core/factories.ts:37 ('AGENTS §14'), src/core/validators.ts:5 and :20 ('AGENTS section 14'), src/core/shapers.ts:15 ('AGENTS section 14 / 4.6.1'), tests/setup.ts:18 ('§1 / §16'), tests/src/core/helpers.test.ts:40 ('AGENTS §16'), tests/src/core/validators.test.ts:4, tests/src/core/shapers.test.ts:7 and :82, guides/csv.md:73, :108, :184, :215-216, :261-262, :502-503, guides/README.md:3 and :36. I did not rule on these; the shared brief assigns them to S6.",
+   "To the subjective lane (S6): guides/README.md:20 describes `@orkestrel/contract` as 'this package's `^0.0.5` runtime dependency', while package.json:73 declares `^0.0.15`. The version in the guide index is stale by ten releases.",
+   "To the subjective lane (S6): guides/csv.md:476-498 — every Tests entry writes its link text as `../../tests/src/core/<file>.test.ts` while its href is `../tests/src/core/<file>.test.ts`. The hrefs resolve, so `tests/guides.test.ts:162-168` stays green; the visible text names a path that does not exist.",
+   "To the subjective lane (S5/writing): src/core/validators.ts:45 and guides/csv.md:189 write 'one of the six `ColumnType` literals', and tests/src/core/validators.test.ts:53 names a test 'accepts all six ColumnType literals'. `AGENTS.md` § Writing: 'NEVER state a count … Name the members, or write the sentence without the number.'",
+   "To the Orchestrator: `@microsoft/api-extractor` is declared in package.json:76 and referenced nowhere in the tree outside package.json and package-lock.json. It is fleet-wide — the same declaration appears in at least 40 sibling manifests under /home/user/fleet/ — so this is a scaffold base-dependency question rather than a csv defect, and `AGENTS.md`'s 'NEVER add an npm package unless the user explicitly requests it' should be ruled on once for the fleet.",
+   "To the Orchestrator: tests/distribution.test.ts:32 and :218 set `shell: true` on win32 to launch `npm.cmd`, which `.claude/rules/portability.md` § Processes and executables states as 'never add `shell: true` to reach one'. The file carries a documented rationale at :28-31 and identifies itself at :780-781 as a scaffold-generated variant restored by the `repair` verb, so the ruling belongs to scaffold's host inventory rather than to this package. tests/distribution.test.ts is not on the brief's off-limits list, so I am naming it rather than dropping it."
+  ],
+  "coverage": "Read in full: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/csv-brief.md; /home/user/scaffold/AGENTS.md; and the rule files /home/user/scaffold/.claude/rules/{architecture,typescript,patterns,tests,workspace,portability,quality,documentation,writing}.md. Subject files read in full: /home/user/fleet/csv/src/core/{index,types,constants,errors,helpers,validators,parsers,inferers,shapers,factories,CSV}.ts — the whole published source; /home/user/fleet/csv/tests/{setup.ts,setup.test.ts,guides.test.ts,distribution.test.ts}; /home/user/fleet/csv/tests/src/core/{CSV,factories,helpers,inferers,parsers,shapers,validators}.test.ts — every non-vendored test; /home/user/fleet/csv/{package.json,vite.config.ts,tsconfig.json,README.md}; /home/user/fleet/csv/guides/{csv.md,README.md}. Read as evidence about declared dependencies: node_modules/@orkestrel/contract/dist/src/core/index.d.ts (searched for isRecord, isObject, attempt, Result, AppError and the leaf parsers) and node_modules/@orkestrel/test/dist/src/core/index.d.ts (full export list). Read as corroboration only: /home/user/fleet/csv/configs/src/vite.core.config.ts (to settle the CJS emit behind csv-obj-1) and /home/user/fleet/csv/configs/policy.ts:100-195 (to settle whether the nested-function instrument reaches the ReadableStream underlying-source object). Read for cross-package comparison: /home/user/fleet/emitter/src/core/factories.ts (the entity-factory convention) and /home/user/fleet/console/README.md:1-30 (the dual-build Requirements wording). Not read, with reason: .claude/**, .codex/**, .cursor/**, AGENTS.md and CLAUDE.md in the checkout, .agents/**, tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts, guides/contract.md and guides/guide.md — the brief lists each as off-limits and scaffold owns them; the rest of configs/** for the same reason beyond the two corroborating reads named; package-lock.json (machine-generated, and the brief's standing condition already accounts for staged closure drift); dist/ (not present in the committed tree). Instrument coverage: my searches ran over /home/user/fleet/csv excluding node_modules unless named, and each pattern is quoted in the finding that rests on it — a text sweep reports on text, so every structural claim here (import order, class-member order, declaration placement, guard signatures) was settled by reading the file rather than by a pattern. Attacked and held, so the next round need not repeat them: the leaf-pair class-free rule; the parse*/create* name forms; isRowList's placement in helpers.ts; createCSV as a possible pass-through factory; the ReadableStream underlying-source object against the no-nested-functions law; the barrel's shape and membership; the outcome model against @orkestrel/contract's attempt; every declared Vitest project's gate reachability and include resolution; the three flat cell coercers against contract's same-named parsers; and the parsers-inferers module cycle against § Kind purity and against the module-init proof obligation. Not evidenced: I executed nothing — this lane is read-only, so no gate, test, or probe was run, and every behavioural statement here is derived from source rather than measured. The nine guide fences and three README fences in csv-obj-12 were traced by hand and read as true; that tracing is a derivation, not a run, and csv-obj-12 exists precisely because no run currently covers them.",
+  "terminal": "VERDICT: FAIL — 6 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "subjective": {
+  "package": "@orkestrel/csv",
+  "lane": "subjective",
+  "claims": [
+   {
+    "claim": "S1 Entity API shape — every public property, method, option key, and event on an entity is one word, or the shape is changed by grouping/extraction/splitting; no behaviour-selecting discriminator parameter; managers expose singular/plural accessors and the batch overload family.",
+    "verdict": "CONFIRMED",
+    "read": "Read /home/user/fleet/csv/src/core/types.ts:322-347 (CSVInterface: table, rows, errors, find, filter, map, reduce, stream, toJSON, export — every member one word; toJSON is the JS host protocol name), types.ts:205-217 (ParseOptions: delimiter, quote, escape, header, comment, blanks, trim, ragged, infer, limit, strict — every key one word, none prefix-grouped), types.ts:250-261 (RenderOptions, same), types.ts:279-282 (ExportOptions: key, columns), and /home/user/fleet/csv/src/core/CSV.ts:38-211 (implementation matches member for member). Attacked the discriminator ban against .claude/rules/names.md § Split behavioral variants on three candidates and each held: RenderOptions.quotes (helpers.ts:370-381 quoteStyleToPolicy) and ParseOptions.ragged are uniformly applied value enums, which that section names as data; coerceInferred(value, type) (inferers.ts:70-83) is the exhaustive per-cell dispatch a whole-column loop needs and the split forms parseInteger/parseReal/parseBoolean already exist beside it (parsers.ts:130-184). No manager exists in the package, so § Managers is inert. Observation recorded in coverage: RenderOptions carries both `quote` (the quote character) and `quotes` (the quoting policy), a singular/plural pair naming two unrelated concepts; no rule sentence bans it, so it is not a finding."
+   },
+   {
+    "claim": "S2 Vocabulary and forms — helper prefixes carry one project-wide meaning; the identifier tables hold; is*/parse*/create*/*Of/{noun}To{Noun} keep their contracts; lifecycle verbs keep fixed meanings; tallies follow § Tallies; acronyms keep canonical case; no rejected name; booleans read as assertions; discriminants name their axis; one term per concept.",
+    "verdict": "BROKEN",
+    "read": "Read all of /home/user/fleet/csv/src/core/*.ts against .claude/rules/names.md. Held: acronym case is canonical everywhere (CSV, CSVTable, CSVError, CSVErrorCode, BOM, JSON in csvTableShape/toJSON — never Json/Csv); type-level forms hold (CSVInterface, ParseOptions/RenderOptions/ExportOptions, CSVParseResult/HeaderResult/RowResult/RecordsResult, CSVEventMap absent because no emitter exists, EscapeStyle/QuoteStyle/BlankPolicy/RaggedPolicy/ColumnType as {Entity}{Noun}); value-level forms hold (CSV class, createCSV/createTableContract factories, isCSVError/isCSVTable/isColumnType/isRowList/isBreakChar guards and predicates, UPPER_SNAKE constants in constants.ts:7-115); booleans read as assertions (RawField.quoted, ParseOptions.trim/infer/strict, RenderOptions.sanitize/bom); no rejected name (`data`, `info`, `item`, `kind`, `type` as a member) appears on any type or class member; parsers.ts exports only parse* returning T | undefined (parsers.ts:130,156,180) and factories.ts only create* (factories.ts:30,57). Attacked and ruled held: derive* (deriveColumns/deriveHeader/deriveShapes) coexisting with infer* (inferColumnType/inferRows) is not a synonym alternation, because .claude/rules/names.md § Standalone helpers lists `derivePhaseStatus` and `inferLanguage` side by side in its own example set and this package reserves infer* for CSV type inference; columnTypeShape being a function rather than a value follows the declared dependency's own convention, verified at node_modules/@orkestrel/contract/dist/src/core/index.d.ts:155,231 where arrayShape and booleanShape are declared functions. Broken by csv-subj-4 (ExportOptions.key carries two meanings) and csv-subj-13 (coerceInferred is not {verb}{Noun})."
+   },
+   {
+    "claim": "S3 Options and emitters — options are single-word keys grouped by entity noun with `on` reserved for hooks; a stateful entity owns an Emitter by composition with the seven-step pattern and a focused event map, no `status` event, errors typed `unknown`.",
+    "verdict": "CONFIRMED",
+    "read": "Read /home/user/fleet/csv/src/core/types.ts:205-217, 250-261, 279-282 and /home/user/fleet/csv/src/core/CSV.ts:38-211. Every option key is a single word and none encodes grouping through a prefix, so .claude/rules/patterns.md § Options § 'Never encode grouping through prefixes such as serverPort or databasePath' is satisfied without needing a group. `on` appears on no options type, so it stays reserved. Attacked the emitter obligation: patterns.md § Stateful emitters binds 'an entity with lifecycle transitions, constraints, or observable operations'. CSV has none — CSV.ts:41-44 parses once in the constructor, every reader (find/filter/reduce/stream/toJSON) is a pure projection over #result, and map (CSV.ts:105-113) returns a new instance rather than transitioning this one. There is no destroy, no lifecycle verb, and no observable operation, so no EventMap is owed and none exists. Nothing named `status` appears in the package."
+   },
+   {
+    "claim": "S4 Design laws — state is derived rather than stored twice; literal unions represent real domain states only; no compatibility shim; mechanism not product policy; no polling architecture; the public API is minimal and every intentional capability is exposed.",
+    "verdict": "BROKEN",
+    "read": "Read /home/user/fleet/csv/src/core/types.ts:152-169 (every union), CSV.ts:38-211, helpers.ts:419-434, parsers.ts:57-107, and src/core/index.ts. Held: state is derived, not duplicated — CSV.ts:52-59 computes `rows` and `errors` off #result rather than storing parallel fields; inferRows (inferers.ts:104-125) and map (CSV.ts:105-113) are copy-on-write and never mutate a caller's rows. No compatibility shim, alias, or deprecation branch exists anywhere in src. No polling loop: the stream `pull` (CSV.ts:155-167) enqueues one row per pull and closes, and the tokenizer loops are bounded by source length. Attacked 'mechanism, not product policy' against RenderOptions.sanitize defaulting to true (constants.ts:44, helpers.ts:184-189), which silently rewrites a caller's cell on render: ruled held, because guides/csv.md:271-287 states the mitigation, its exemption for plain signed numbers, and its explicit homoglyph limit, and `sanitize: false` restores the raw mechanism. Attacked EscapeStyle = 'double' | 'backslash' (types.ts:153) and ruled it held — those name two real CSV dialect conventions, which .claude/rules/names.md § General vocabulary keeps as a union. Broken by csv-subj-5: BlankPolicy = 'keep' | 'skip' is a binary behavioural switch declared as a two-literal union while every sibling binary parse behaviour on the same interface is a boolean."
+   },
+   {
+    "claim": "S5 TSDoc — every public export carries a complete block whose first sentence states what the symbol does in the third person without repeating its name; booleans use the fixed forms; defaults, throws, prerequisites, and failure behaviour are stated; options objects are one @param with fields under @remarks; comments explain why.",
+    "verdict": "BROKEN",
+    "read": "Read every doc block in /home/user/fleet/csv/src/core/{types,constants,errors,helpers,inferers,parsers,shapers,validators,factories,CSV}.ts against .claude/rules/typescript.md § Comments and API documentation and .claude/rules/writing.md. Held: every public export carries a block; every first sentence is third person with an -s verb and never repeats the symbol's name (Represents, Holds, Reports, Names, Returns, Checks whether, Validates, Merges, Disambiguates, Guards, Serializes, Derives, Wraps, Compiles, Coerces, Applies, Determines, Narrows, Advances, Consumes, Scans, Splits, Resolves, Builds, Infers, Implements, Parses, Creates); every boolean return uses the fixed 'True if …; false otherwise' form (helpers.ts:247,393,468; errors.ts:52; validators.ts:26,45); the options objects are documented as one @param with fields under @remarks exactly as the rule requires (types.ts:186-204 for ParseOptions, types.ts:236-249 for RenderOptions, types.ts:274-277 for ExportOptions, CSV.ts:190); throws and failure behaviour are stated wherever they exist (helpers.ts:46,73,98,411,746; parsers.ts:49; CSV.ts:192-193). Broken by csv-subj-7 (a count in published TSDoc at validators.ts:45 and in a source comment at helpers.ts:32) and csv-subj-8 (the shipped @example blocks tell a consumer to import from the in-repository alias `@src/core`)."
+   },
+   {
+    "claim": "S6 Guide and README parity — guides/csv.md documents every public export with one method table per behavioral interface matching its call-signature members exactly, readonly data in Surface rows, fences importing the published specifier, prose claims that the executed fences prove; guides/README.md carries the concept and directory indexes; README.md links resolve; no competing instruction copy lives in a guide; no guide, README, test, or source comment cites an AGENTS §N section.",
+    "verdict": "BROKEN",
+    "read": "Read /home/user/fleet/csv/guides/csv.md in full, /home/user/fleet/csv/guides/README.md in full, /home/user/fleet/csv/README.md in full, /home/user/fleet/csv/tests/guides.test.ts in full, and /home/user/fleet/csv/package.json. Held: the ## Methods table (csv.md:220-230) lists find, filter, map, reduce, stream, toJSON, export and matches CSVInterface's call-signature members at types.ts:329-346 exactly, with the readonly table/rows/errors members kept in Surface prose; every backticked API in the Types, Errors, Constants, Helpers, Inferers, Parsers, Shapers, Validators, and Factories tables resolves to a real export in src/core/index.ts's star-exported modules; guides/README.md carries both the concept index (README.md:7-9, minus the showcase column this workspace lacks) and the directory index (README.md:13-15). Broken by csv-subj-1 (the tagline's 'zero-dependency' claim contradicts package.json:73), csv-subj-2 (a stale dependency version in the index), csv-subj-3 (a false behavioural claim in README.md about export key), csv-subj-6 (AGENTS §N and 'AGENTS section N' citations at 17 in-scope sites), csv-subj-9 (a guide fence teaching a banned `as` assertion), csv-subj-10 (the guide explaining its own documentation-convention compliance to a reviewer), csv-subj-11 (every Tests link's display text naming a path that does not exist), csv-subj-12 (the parity test admitting the in-repository alias in guide fences), csv-subj-14 (a misdescriptive README example variable), and csv-subj-15 (a 'v1' version claim for a 0.0.5 package)."
+   }
+  ],
+  "findings": [
+   {
+    "id": "csv-subj-1",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/guides/csv.md:3",
+    "rule": "`.claude/rules/documentation.md` § Parity: \"Falsify a prose claim the way you falsify a code claim.\" `.claude/rules/writing.md` § Claims and time: \"Claim only what the reader can check.\"",
+    "wrong": "The guide's headline tagline reads \"A zero-dependency, types-first RFC 4180 CSV parser and renderer\", but `package.json:72-74` declares `\"@orkestrel/contract\": \"^0.0.15\"` under `dependencies` and that package is imported at runtime by `src/core/CSV.ts:1`, `src/core/shapers.ts:1-10`, `src/core/validators.ts:3`, and `src/core/factories.ts:1,3` — so the package a consumer installs pulls a runtime dependency, and the guide's own index contradicts the tagline at `guides/README.md:19-20` by naming `@orkestrel/contract` \"this package's ... runtime dependency\".",
+    "repair": "In `/home/user/fleet/csv/guides/csv.md:3`, replace `A zero-dependency, types-first RFC 4180 CSV parser and renderer` with `A types-first RFC 4180 CSV parser and renderer`. Leave `guides/csv.md:105` (\"Pure, total, zero-dependency leaves from helpers.ts\") unchanged: `src/core/helpers.ts:1-28` imports only local modules, so that narrower claim is true.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-2",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/guides/README.md:20",
+    "rule": "`.claude/rules/documentation.md` § Parity: \"A parity failure identifies drift; never suppress or weaken the test.\" `.claude/rules/writing.md` § Claims and time: \"Write the present tense for what exists. Do not write `currently`, `now`, `new`, `latest`, or `soon`; where time matters, give the version or the date.\"",
+    "wrong": "The dependency-reference paragraph states `@orkestrel/contract` is \"this package's `^0.0.5` runtime dependency\", but `package.json:73` declares `\"@orkestrel/contract\": \"^0.0.15\"` — the guide index gives a version the manifest contradicts, and no test reads it.",
+    "repair": "In `/home/user/fleet/csv/guides/README.md:20`, replace `^0.0.5` with `^0.0.15`.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-3",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/README.md:86",
+    "rule": "`.claude/rules/documentation.md` § Parity: \"Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns.\"",
+    "wrong": "The README states `table.key // 'id' — the first column, unless options.key overrides it`, which tells a reader any `options.key` overrides the default; `src/core/CSV.ts:201-206` throws `CSVError('INVALID_OPTION', ...)` for any key that is not already a member of `table.columns`, and `tests/src/core/CSV.test.ts:211-223` pins that throw for `export({ key: 'nope' })`.",
+    "repair": "In `/home/user/fleet/csv/README.md:86`, replace `table.key // 'id' — the first column, unless options.key overrides it` with `table.key // 'id' — the first column; options.key selects a different column and throws INVALID_OPTION for a name the table does not carry`. Apply this repair only if `csv-subj-4` is not applied; if `csv-subj-4` lands, restate this line to the contract that finding establishes.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-4",
+    "claim": "S2",
+    "file": "/home/user/fleet/csv/src/core/types.ts:279-282",
+    "rule": "`AGENTS.md` § Design laws: \"**One concept, one term.** Do not alternate synonyms.\" `.claude/rules/names.md` § General vocabulary: \"Describe what a thing is, not its implementation.\"",
+    "wrong": "`ExportOptions.key` is documented at `types.ts:274-277` as \"`key` names the export (mirrors `@orkestrel/database`'s `TableExport` unit of exchange)\" — a table identifier — while `src/core/CSV.ts:201-206` implements it as a column selector, defaulting to `table.columns[0]` and throwing `INVALID_OPTION` for any value not in `table.columns`; the same word therefore names the export in the type and names a column in the code, and the interop claim at `types.ts:290-293` and `guides/csv.md:307-322` that a CSV export \"re-imports losslessly as a database table\" cannot hold when the table's identity is forced to be one of its own column names.",
+    "repair": "Decide which concept `key` names and make both sides agree. Recommended: keep `key` as the export's name. In `/home/user/fleet/csv/src/core/CSV.ts:200-210`, delete the membership check and the throw, and resolve the key as `const key = options?.key ?? DEFAULT_EXPORT_KEY`, adding `export const DEFAULT_EXPORT_KEY = 'table'` to `/home/user/fleet/csv/src/core/constants.ts` with a TSDoc block naming it the fallback export name. Update `/home/user/fleet/csv/src/core/CSV.ts:192-193` to drop the `@throws` line and `/home/user/fleet/csv/src/core/types.ts:274-277` to state that `key` defaults to `DEFAULT_EXPORT_KEY`. Replace `tests/src/core/CSV.test.ts:201-235` with tests named for what they prove: that an absent key falls back to the default name, that an arbitrary key is carried verbatim, and that an empty table exports without throwing. Update `guides/csv.md:66,230,416-424` and `README.md:78-89` to the new contract. Name collision: none — `DEFAULT_EXPORT_KEY` is unused in the package.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-5",
+    "claim": "S4",
+    "file": "/home/user/fleet/csv/src/core/types.ts:159",
+    "rule": "`AGENTS.md` § Design laws: \"**Boolean behavior.** A binary behavioral switch is a boolean, not a two-literal union.\" `.claude/rules/names.md` § General vocabulary: \"A binary switch is a boolean such as `bail`, never `'continue' | 'halt'`; genuine discriminants, multi-state lifecycles, conventional value pairs (`ascending`/`descending`, `and`/`or`), and external-spec literals remain unions.\"",
+    "wrong": "`BlankPolicy = 'keep' | 'skip'` is a two-literal union selecting one binary behaviour — `src/core/helpers.ts:781` reads it as `if (isBlank && resolved.blanks === 'skip') continue` and nothing else branches on it — and it fits none of the union exemptions: it is not a conventional value pair, not a multi-state lifecycle, and no external CSV specification names it, while every sibling binary parse behaviour on the same interface (`header`, `trim`, `infer`, `strict` at `types.ts:209,213,214,216`) is already a boolean.",
+    "repair": "In `/home/user/fleet/csv/src/core/types.ts`, delete the `BlankPolicy` type at line 158-159 and change `readonly blanks?: BlankPolicy` at line 211 to `readonly blanks?: boolean`, documenting it in the `ParseOptions` `@remarks` as \"`blanks` whether a blank line becomes an empty row (`true`); a line of only whitespace is never blank, so `trim` does not change what `blanks` drops\". In `/home/user/fleet/csv/src/core/constants.ts:23`, change `blanks: 'keep'` to `blanks: true`. In `/home/user/fleet/csv/src/core/helpers.ts:781`, change the test to `if (isBlank && !resolved.blanks) continue`. Remove the `BlankPolicy` row from `guides/csv.md:58` and restate `blanks` as a boolean wherever the guide and `README.md:50` list parse options. Update every test asserting `blanks: 'skip'` or `blanks: 'keep'` under `tests/src/core/` to the boolean.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-6",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/src/core/types.ts:8",
+    "rule": "Shared brief claim S6: \"no guide, README, test, or source comment cites an `AGENTS §N` section (`AGENTS.md` numbers no section, so every such citation is stale and names nothing)\". `.claude/rules/documentation.md` § Authority and workflow: \"`AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.\"",
+    "wrong": "Seventeen in-scope sites cite a numbered `AGENTS.md` section that does not exist, and they use two spellings, so a repair sweeping only the `AGENTS §` form leaves five behind. The `§` spelling: `src/core/errors.ts:3`, `src/core/types.ts:8`, `src/core/constants.ts:4`, `src/core/helpers.ts:30`, `src/core/helpers.ts:33`, `src/core/factories.ts:37`, `guides/csv.md:73`, `guides/csv.md:108`, `guides/csv.md:184`, `guides/README.md:3`, `guides/README.md:36`, `guides/csv.md:502-503`, `tests/src/core/shapers.test.ts:82`, `tests/src/core/helpers.test.ts:40`. The `section` spelling, which the brief's grep bound of 12 did not reach: `src/core/validators.ts:5`, `src/core/validators.ts:19`, `src/core/shapers.ts:15`, `tests/src/core/shapers.test.ts:7`, `tests/src/core/validators.test.ts:4`.",
+    "repair": "Sweep case-insensitively for both `AGENTS §` and `AGENTS section` plus bare `§<digit>` across `src/**`, `tests/**` (excluding the vendored `tests/policy.test.ts` and `tests/setupPolicy.ts`), `guides/csv.md`, `guides/README.md`, and `README.md`, and at each site delete the citation while keeping the sentence's substance. For `guides/csv.md:502-503` delete the whole `- [`AGENTS.md`](../AGENTS.md) — the rules; §5 …` bullet and for `guides/README.md:36` delete the `## See also` section it is the only member of; a consumer-facing guide does not route a reader to the repository's agent rules. Do not touch `guides/guide.md`, which is a vendored mirror. After deleting the `AGENTS.md` links, remove `'AGENTS.md'` from `ROOT_FILES` at `tests/guides.test.ts:41`, which exists only to make those links resolve.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-7",
+    "claim": "S5",
+    "file": "/home/user/fleet/csv/src/core/validators.ts:45",
+    "rule": "`AGENTS.md` § Writing: \"**NEVER state a count.** A number answering \\\"how many\\\" about a set anyone can add to is a count — rules, rows, members, exports, files, options, steps, cases, stages, findings, and tests are such sets. Name the members, or write the sentence without the number.\" and \"Delete a count you find. Do not correct it.\"",
+    "wrong": "The published TSDoc `@returns` for `isColumnType` reads \"True if `value` is one of the six {@link ColumnType} literals; false otherwise\", counting the members of a union anyone can extend; the same count is repeated in the guide's Validators table at `guides/csv.md:189`, and `src/core/helpers.ts:32` carries a second count in \"aside from the two option resolvers\" without naming them.",
+    "repair": "In `/home/user/fleet/csv/src/core/validators.ts:45`, replace the sentence with `True if `value` is a {@link ColumnType} literal; false otherwise`. In `/home/user/fleet/csv/guides/csv.md:189`, replace `Determines whether `value` is one of the six `ColumnType` literals.` with `Determines whether `value` is a `ColumnType` literal.` In `/home/user/fleet/csv/src/core/helpers.ts:32-33`, replace `aside from the two option resolvers, which throw on a programmer error per AGENTS §12` with `aside from resolveParseOptions and resolveRenderOptions, which throw on a programmer error`, which names the members and closes csv-subj-6's site at that line in the same edit.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-8",
+    "claim": "S5",
+    "file": "/home/user/fleet/csv/src/core/CSV.ts:31",
+    "rule": "`.claude/rules/documentation.md` § Guide examples: \"Code fences import through the package's published specifier: primary/core API: `@orkestrel/<name>` … Never use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.\" `.claude/rules/typescript.md` § Comments and API documentation: \"Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.\"",
+    "wrong": "Six shipped `@example` blocks tell a consumer to `import … from '@src/core'`, an in-repository alias that resolves to nothing outside this checkout — `src/core/CSV.ts:31`, `src/core/factories.ts:24`, `src/core/factories.ts:50`, `src/core/factories.ts:51`, `src/core/shapers.ts:40`, `src/core/shapers.ts:80` — while `src/core/validators.ts:30` and `src/core/validators.ts:49` use the published `@orkestrel/csv` in the same shipped surface, so one package hands its consumers two different and mutually inconsistent import instructions in the IDE tooltips generated from `dist/src/core/index.d.ts`.",
+    "repair": "Replace `@src/core` with `@orkestrel/csv` in the `@example` import lines at `/home/user/fleet/csv/src/core/CSV.ts:31`, `/home/user/fleet/csv/src/core/factories.ts:24`, `/home/user/fleet/csv/src/core/factories.ts:50-51`, and `/home/user/fleet/csv/src/core/shapers.ts:40,80`. Merge the two adjacent import lines at `factories.ts:50-51` into one `import { columnTypeShape, createTableContract } from '@orkestrel/csv'`. After this repair no example in the package resolves through `@src/core`, which is the precondition for csv-subj-12.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-9",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/guides/csv.md:447",
+    "rule": "`AGENTS.md` § Non-negotiable rules: \"**NEVER** use non-null assertions (`!`) or type assertions (`as`); narrow or validate.\" `.claude/rules/documentation.md` § Parity: \"A showcase is executable proof of public API.\"",
+    "wrong": "The \"Guarding an adopted table\" fence writes `return createCSV(candidate as CSVTable) // adopted AS-IS, not re-parsed`, publishing to every consumer an example of the assertion the project's first non-negotiable bans; the assertion is also dead, because `isCSVTable` is declared `Guard<CSVTable>` at `src/core/validators.ts:36` and `Guard<T> = (value: unknown) => value is T` at `node_modules/@orkestrel/contract/dist/src/core/index.d.ts:1711`, so `candidate` is already `CSVTable` on the line after the early return.",
+    "repair": "In `/home/user/fleet/csv/guides/csv.md:447`, replace `return createCSV(candidate as CSVTable) // adopted AS-IS, not re-parsed` with `return createCSV(candidate) // adopted AS-IS, not re-parsed`. The `import type { CSVTable } from '@orkestrel/csv'` line at `guides/csv.md:443` then imports an unused name; delete that line too.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-10",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/guides/csv.md:196-202",
+    "rule": "`.claude/rules/documentation.md` § Authority and workflow: \"`AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.\" `AGENTS.md` § Writing: \"Give the reader what they need for the task at hand, and nothing else.\"",
+    "wrong": "The `### CSV` section and the `## Methods` preamble argue the guide's own compliance with a documentation convention instead of documenting CSV — `guides/csv.md:197-200` reads \"(documented here in Surface prose alongside the class, per the markdown sibling's precedent — these carry no row in the [`## Methods`](#methods) table below, which lists only call-signature members)\" and `guides/csv.md:215-218` repeats it as \"The `readonly table` / `rows` / `errors` members are Surface-documented above, not listed here — this table lists exactly `CSVInterface`'s call-signature members\"; both address a reviewer checking the guide against the parity rules rather than a developer using the package, and \"the markdown sibling's precedent\" names a convention source outside `AGENTS.md`.",
+    "repair": "In `/home/user/fleet/csv/guides/csv.md:196-202`, cut the parenthetical so the sentence reads `Exposes its parsed state through the `readonly table`, `readonly rows`, and `readonly errors` members. Immutable — `map` never mutates the stored table, it returns a new `CSV`. See [`## Methods`](#methods) for its public call-signature surface.` In `/home/user/fleet/csv/guides/csv.md:215-218`, cut the second and third sentences so the preamble reads `The public methods of `CSVInterface`, keyed by its backticked name.` — which also closes csv-subj-6's site at that line.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-11",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/guides/csv.md:476-498",
+    "rule": "`.claude/rules/writing.md` § Code tokens, references, and links: \"Write link text as the destination's title or a descriptive phrase, introduced by `see`. Never write `here`, `this document`, or a bare URL in prose.\" `.claude/rules/documentation.md` § Parity: \"Every backticked API in a guide resolves to a real public export.\"",
+    "wrong": "Every row of the `## Tests` list displays a path one directory too high: the text is `` `../../tests/src/core/CSV.test.ts` `` while the href is `../tests/src/core/CSV.test.ts`, and the same mismatch repeats for `factories.test.ts`, `helpers.test.ts`, `inferers.test.ts`, `parsers.test.ts`, `shapers.test.ts`, and `validators.test.ts` at lines 479, 482, 486, 489, 493, and 496. The href resolves from `guides/`, so `tests/guides.test.ts:154-168` reports no break, and the reader is shown a path that exists nowhere in the repository.",
+    "repair": "In `/home/user/fleet/csv/guides/csv.md:476-498`, change each list item's display text from `` `../../tests/src/core/<name>.test.ts` `` to `` `tests/src/core/<name>.test.ts` `` for CSV, factories, helpers, inferers, parsers, shapers, and validators, leaving each href `../tests/src/core/<name>.test.ts` unchanged.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-12",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/tests/guides.test.ts:29",
+    "rule": "`.claude/rules/documentation.md` § Guide examples: \"Never use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.\" `.claude/rules/documentation.md` § Parity: \"A parity failure identifies drift; never suppress or weaken the test.\"",
+    "wrong": "`const MODULES = Object.freeze({ '@orkestrel/csv': 'src/core', '@src/core': 'src/core' })` registers the in-repository alias as a specifier a guide fence may import, so the one gate that reads guide fence imports (`tests/guides.test.ts:142-152`) would pass a fence written against `@src/core` — the exact form the documentation rule bans in a public guide. No fence in `guides/csv.md` uses it today, so the entry guards nothing and only removes the guard.",
+    "repair": "In `/home/user/fleet/csv/tests/guides.test.ts:29`, change the constant to `const MODULES = Object.freeze({ '@orkestrel/csv': 'src/core' })`. Apply csv-subj-8 first, so no `@example` in `src/**` still names `@src/core` when this entry is removed.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-13",
+    "claim": "S2",
+    "file": "/home/user/fleet/csv/src/core/inferers.ts:70",
+    "rule": "`.claude/rules/names.md` § Standalone helpers: \"Module helpers have no owning entity at the call site, so default to `{verb}{Noun}`\" and \"A one-word helper is valid only when its meaning and arguments are unmistakable\".",
+    "wrong": "`coerceInferred(value: string, type: ColumnType)` pairs a verb with a past participle rather than a noun, so the name states no object — the reader cannot tell from it that the function coerces one cell, which is what `inferers.ts:70-83` and the caller at `inferers.ts:121` do; the sibling helpers in the same package all carry the noun (`inferColumnType`, `inferRows`, `serializeCell`, `renderRecord`, `deriveColumns`).",
+    "repair": "Rename `coerceInferred` to `coerceCell` throughout: the declaration and TSDoc at `/home/user/fleet/csv/src/core/inferers.ts:58-83`, the call site at `/home/user/fleet/csv/src/core/inferers.ts:121`, the `{@link coerceInferred}` reference at `/home/user/fleet/csv/src/core/inferers.ts:92`, the Inferers table row at `/home/user/fleet/csv/guides/csv.md:151`, the guide prose at `/home/user/fleet/csv/guides/csv.md:487`, the \"Tokenizer leaves directly\" fence at `/home/user/fleet/csv/guides/csv.md:455,468`, and every occurrence in `/home/user/fleet/csv/tests/src/core/inferers.test.ts`. No name collision: `coerceCell` is unused in the package.",
+    "breaking": true,
+    "verdict": "CONFIRMED",
+    "confidence": "low",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-14",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/README.md:26-27",
+    "rule": "`.claude/rules/writing.md` § Examples, numbers, and abbreviations: \"Build an example from fictional data with descriptive names and no personally identifiable information.\"",
+    "wrong": "The README's opening usage names the result of `csv.filter((row) => Number(row.id) > 1)` as `adults`, but the example's data is `id,name` and carries no age, so the name describes a filter the code does not perform and sends the reader looking for a column that is not there.",
+    "repair": "In `/home/user/fleet/csv/README.md:26-27`, rename the binding: `const later = csv.filter((row) => Number(row.id) > 1)` and `later // [{ id: 2, name: 'Grace' }]`.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   },
+   {
+    "id": "csv-subj-15",
+    "claim": "S6",
+    "file": "/home/user/fleet/csv/guides/csv.md:331",
+    "rule": "`.claude/rules/writing.md` § Claims and time: \"Write the present tense for what exists. Do not write `currently`, `now`, `new`, `latest`, or `soon`; where time matters, give the version or the date.\" and \"Claim only what the reader can check.\"",
+    "wrong": "The Streaming boundary section states \"Whole-string parsing is this package's v1 boundary\", naming a version the package has never had — `package.json:3` declares `0.0.5` — and framing a documented limit as a release milestone the reader cannot check.",
+    "repair": "In `/home/user/fleet/csv/guides/csv.md:331-334`, replace `Whole-string parsing is this package's v1 boundary — there is no incremental/chunked parser that consumes a text stream and emits rows as they arrive; a caller with a very large file reads it fully into memory first.` with `The package parses a whole string. It has no incremental parser that consumes a text stream and emits rows as they arrive, so a caller with a very large file reads it fully into memory first.`",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium",
+    "consumers": []
+   }
+  ],
+  "referrals": [
+   "To the OBJECTIVE lane, under O2 (class order): `/home/user/fleet/csv/src/core/CSV.ts:118` declares the `#` private method `#carry` between the public methods `map` (line 105) and `reduce` (line 134). `.claude/rules/architecture.md` § Class order fixes the order as `#` fields, constructor, public interface, then `#` private methods. Design note for whoever repairs it, offered as input rather than as a second finding: `#carry` exists only because the constructor cannot accept collected errors, so `map` builds a fresh `CSV` at line 110 and then reaches into that instance's private field to backfill them, which is a mutation on a class whose own TSDoc at line 25 leads with \"**Immutable.**\". A constructor accepting an optional pre-collected `CSVParseResult`, or a private static that builds the result before `new`, removes the method and the mutation together.",
+   "To the OBJECTIVE lane, under O2 (wrapper test): three candidates I did not adjudicate. `/home/user/fleet/csv/src/core/factories.ts:30-32` — `createCSV` is `return new CSV(input, options)`, a pass-through factory whose only added value is the `CSVInterface` return annotation. `/home/user/fleet/csv/src/core/factories.ts:57-59` — `createTableContract` is `return createContract(objectShape(columns))`, a composition of two declared `@orkestrel/contract` primitives. `/home/user/fleet/csv/src/core/helpers.ts:394-396` — `isRowList` is `return Array.isArray(source)` with one call site at `helpers.ts:421-422`; its `@remarks` at lines 386-389 claims the narrowing `Array.isArray` cannot do, which is the invariant that would save it. `.claude/rules/architecture.md` § Wrapper test owns all three.",
+   "To the OBJECTIVE lane, under O1 (placement and kind purity): `/home/user/fleet/csv/src/core/helpers.ts` holds the package's primary render entry point `renderCSV` (line 419), the entire tokenizer (`advancePosition`, `isBreakChar`, `scanBreak`, `scanComment`, `scanUnquoted`, `scanQuoted`, `scanField`, `scanRecord`, `readRecords`, lines 458-795), and the table builders (`deriveHeader` line 820, `buildRow` line 878), with an in-file comment at lines 436-444 arguing the placement. Separately, `/home/user/fleet/csv/src/core/shapers.ts:111-132` declares `deriveShapes`, a derivation function rather than a shape value, in the shape-value kind file. I attacked neither ruling because § Centralized-file pattern and § Kind purity are the objective lane's.",
+   "To the OBJECTIVE lane, under O7 (tests): `/home/user/fleet/csv/tests/guides.test.ts` parses `guides/csv.md` for fence languages, symbol parity, import resolution, and link resolution, and executes no fence. `.claude/rules/documentation.md` § Parity requires that \"`tests/guides.test.ts` executes the flagship fences\" and that \"Where a prose claim about behavior sits under no fence, add the executed assertion that would break if the claim went false\". Named consequences in my lane's subject, offered as evidence rather than as my ruling: `guides/csv.md:361` claims `renderCSV(older.toJSON())` returns `'name,age\\r\\nAda,37'`, `guides/csv.md:374` claims a reduce returns `60`, `guides/csv.md:412` claims the caught `error.code` is `'RAGGED_ROW'`, and `guides/csv.md:422` claims `csv.export()` yields `key: 'id'` — nothing runs any of them.",
+   "To the OBJECTIVE lane, under O5 (types, immutability, errors): `/home/user/fleet/csv/src/core/CSV.ts:41-44` adopts a caller-supplied `CSVTable` into `#result` by reference and `get table()` at line 47 returns that same object, so `readonly` typing is the only barrier between a caller's array and the instance's stored state. `.claude/rules/typescript.md` § Immutability (\"Return copies or readonly views; never leak a mutable internal reference\") owns whether that is sufficient here.",
+   "To the ORCHESTRATOR: both carry rows in `/home/user/scaffold/tmp/units/conform/csv-brief.md` — csv-c1 (the tests-mirror drift in `parsers.test.ts`) and csv-c2 (the `parsers.ts` ↔ `inferers.ts` module cycle proved only by `test:distribution`) — name the objective lane, so I returned no ruling on either. Flagging for reconciliation only: the cycle csv-c2 asks about is documented from both ends, at `/home/user/fleet/csv/src/core/parsers.ts:18-23` and `/home/user/fleet/csv/src/core/inferers.ts:10-13`, and `/home/user/fleet/csv/guides/csv.md` describes neither, so whichever way csv-c2 is ruled the guide does not currently account for it."
+  ],
+  "coverage": "READ IN FULL: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/csv-brief.md; /home/user/scaffold/AGENTS.md (loaded as project instruction); /home/user/scaffold/.claude/rules/names.md; /home/user/scaffold/.claude/rules/patterns.md; /home/user/scaffold/.claude/rules/typescript.md; /home/user/scaffold/.claude/rules/architecture.md; /home/user/scaffold/.claude/rules/documentation.md; /home/user/scaffold/.claude/rules/writing.md. SUBJECT FILES READ IN FULL: /home/user/fleet/csv/src/core/types.ts, CSV.ts, helpers.ts, parsers.ts, inferers.ts, errors.ts, constants.ts, validators.ts, shapers.ts, factories.ts, index.ts; /home/user/fleet/csv/guides/csv.md; /home/user/fleet/csv/guides/README.md; /home/user/fleet/csv/README.md; /home/user/fleet/csv/package.json; /home/user/fleet/csv/tests/guides.test.ts. SWEEPS RUN, WITH PATTERN AND BOUND NAMED: `AGENTS (section|§)` over /home/user/fleet/csv excluding node_modules — 20 hits, of which 3 sit in the vendored `guides/guide.md` and are off-limits, leaving the 17 in-scope sites csv-subj-6 names; `\\\\b(one|two|…|twelve)\\\\b` case-insensitive over src — reviewed every hit and ruled all but validators.ts:45 and helpers.ts:32 permitted values or the word `one` in its non-tallying sense; `@src/core` over src — the 6 sites csv-subj-8 names; `@orkestrel/csv` over **/package.json under /home/user/fleet — one hit, the package's own `name` field, so no fleet package consumes this one and the breaking repairs in csv-subj-4, csv-subj-5, and csv-subj-13 name no downstream consumer; `export\\\\(` over tests with context — read the whole `export` suite at tests/src/core/CSV.test.ts:176-256. DEPENDENCY DECLARATION READ AS EVIDENCE: /home/user/fleet/csv/node_modules/@orkestrel/contract/dist/src/core/index.d.ts, grepped for `Shape` (confirming arrayShape/booleanShape are declared functions, which is why columnTypeShape's function form is not a finding) and for `Guard` (confirming `Guard<T> = (value: unknown) => value is T` at line 1711, which is what makes the guide's `as` assertion in csv-subj-9 dead as well as banned). NOT READ, WITH REASON: tests/src/core/{CSV,factories,validators,shapers,inferers,helpers,parsers}.test.ts beyond the export suite and the two grep windows, tests/setup.ts, tests/setup.test.ts, tests/distribution.test.ts, vite.config.ts, tsconfig.json — test sufficiency, mocks, skips, mirroring, and workspace configuration are claims O7 and O8, outside my lane; tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts, .claude/**, configs/**, guides/guide.md, guides/contract.md — off-limits as subjects per the shared brief. ATTACKED AND HELD, RECORDED SO THE REFUTER SEES WHAT I DECLINED: RenderOptions carries `quote` (the quote character, types.ts:252) beside `quotes` (the quoting policy, types.ts:257), a singular/plural pair naming two unrelated concepts, which reads against the singular/plural convention `.claude/rules/patterns.md` § Managers fixes for one-item/all-items accessors — I could quote no rule sentence that bans it outside a manager, so it is an observation and not a finding; RenderOptions.sanitize defaulting to `true` silently rewrites a caller's cell and is arguably product policy rather than mechanism, held because guides/csv.md:271-287 states the mitigation, its numeric exemption, and its homoglyph limit and `sanitize: false` restores the raw path; EscapeStyle = 'double' | 'backslash' held as a genuine dialect discriminant rather than a binary switch; derive*/infer* coexistence held because `.claude/rules/names.md` § Standalone helpers lists `derivePhaseStatus` and `inferLanguage` in one example set; columnTypeShape as a function held against the `*Shape` fixed form because the declared dependency's own `*Shape` exports are functions; `type` as the parameter name at inferers.ts:70 and shapers.ts:47 held because `AGENTS.md` bans it as a discriminant member name and these are parameters whose axis genuinely is the column type; the barrel's very wide surface (the whole tokenizer, every quoting leaf, every Resolved* type) held because `.claude/rules/architecture.md` § Barrel exports requires every intentional top-level export to reach the barrel and forbids gating on consumer count.",
+  "terminal": "VERDICT: FAIL — 4 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "refuter": {
+  "package": "csv",
+  "rulings": [
+   {
+    "id": "csv-obj-1",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/documentation.md` § Parity: \"Falsify a prose claim the way you falsify a code claim.\" The README states a packaging fact the manifest and the build config both contradict.",
+    "evidence": "(Refuter lane, holding the OBJECTIVE perspective as the recorded substitution for the dark GPT-5.6 Sol bench.) /home/user/fleet/csv/README.md:15 reads `- ESM-only (no CommonJS build)`. Against that: package.json:26 `\"main\": \"./dist/src/core/index.cjs\"`; package.json:35-38 declares a `require` condition resolving to `index.cjs` with `index.d.cts` types; package.json:64 copies `index.d.ts` to `index.d.cts` inside `build:src:core`; configs/src/vite.core.config.ts:28 emits `formats: ['es', 'cjs']` with `fileName` mapping the non-ES format to `index.cjs` (:29). The package publishes a CommonJS build. Sibling wording read for the fleet form: /home/user/fleet/console/README.md:19-21.",
+    "repair": "In /home/user/fleet/csv/README.md, replace the line `- ESM-only (no CommonJS build)` with `- Dual ESM and CommonJS builds from one entry point`. Do not copy console's subpath clause: csv publishes only the `.` subpath (package.json:29-41). Change no other line.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-2",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/writing.md` § Claims and time: \"Claim only what the reader can check … where time matters, give the version or the date.\" The stated range admits a version the manifest refuses, so the claim is false rather than merely loose.",
+    "evidence": "/home/user/fleet/csv/README.md:14 reads `- Node.js >= 22`. package.json:90-92 declares `\"engines\": { \"node\": \">=22.12.0\" }`. A consumer on 22.0.0 satisfies the README and is refused by the manifest. Fleet comparison: /home/user/fleet/contract/README.md:16 writes `Node.js >= 22.12`, so naming the minor is the fleet's form; /home/user/fleet/console/README.md:19 carries the opposite drift (`>= 24` against an engines floor of `>=22.12.0` at console/package.json:115) and is not a model.",
+    "repair": "In /home/user/fleet/csv/README.md, change `- Node.js >= 22` to `- Node.js >= 22.12.0`, matching `engines.node` in package.json:91. Change only the README; the manifest range is the source of truth.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-3",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/architecture.md` § Class order: \"1. `#` private fields … 2. Constructor … 3. Public interface: getters, then methods. 4. `#` private methods.\"",
+    "evidence": "Read /home/user/fleet/csv/src/core/CSV.ts in full. `map` is public at :105-113, the comment at :115-117 and the `#carry` private method at :118-120 follow it, and the public `reduce` resumes at :134. `stream` (:152), `toJSON` (:182), and `export` (:200-210) follow, so the sole `#` private method sits inside the public-interface section. `export()` closes at :210 and the class at :211, so appending after :210 makes `#carry` the last member. The call site `csv.#carry(this.#result.errors)` at :111 is unaffected by the move.",
+    "repair": "In /home/user/fleet/csv/src/core/CSV.ts, cut lines 115-120 (the `// Carries the source parse's errors …` comment together with the `#carry` method) and paste them verbatim after the closing brace of `export()` at line 210, so `#carry` becomes the class's last member. Move the comment with the method, do not rename `#carry`, and change no other line. The deeper design question the subjective lane raised beside this — that `#carry` exists only because `map` backfills a freshly constructed instance's private field — is a separate proposal for the Orchestrator, not part of this repair.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-4",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/typescript.md` § Syntax and imports: \"Place `import type` declarations before value imports.\"",
+    "evidence": "/home/user/fleet/csv/src/core/CSV.ts:1 is the value import `import { createContract, objectShape } from '@orkestrel/contract'`; the `import type { … } from './types.js'` block runs :2-10; the local value imports run :11-13. Every other module in the package already puts type imports first — types.ts:1-2, helpers.ts:1-16 before :17-28, validators.ts:1-2 before :3, parsers.ts:1 before :2, inferers.ts:1 before :2-3, factories.ts:1-2 before :3-4 — so CSV.ts and shapers.ts are the only two deviations. No formatter reorders imports here: `format:check` is green with both orders present in the tree.",
+    "repair": "In /home/user/fleet/csv/src/core/CSV.ts, move line 1 (`import { createContract, objectShape } from '@orkestrel/contract'`) to sit immediately after line 10 (the closing `} from './types.js'`), so the file reads the `import type` block, then the `@orkestrel/contract` value import, then the three existing local value imports. Leave no blank line between consecutive imports of the same kind.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-5",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/typescript.md` § Syntax and imports: \"Place `import type` declarations before value imports.\"",
+    "evidence": "/home/user/fleet/csv/src/core/shapers.ts:1-10 is the multi-line value import from `@orkestrel/contract`; `import type { ContractShape } from '@orkestrel/contract'` sits at :11 and `import type { Columns, ColumnType, CSVTable } from './types.js'` at :12; the local value import `import { inferColumnType } from './inferers.js'` follows at :13. Both type imports therefore follow a value import.",
+    "repair": "In /home/user/fleet/csv/src/core/shapers.ts, move lines 11-12 above line 1, so the file opens with the two `import type` declarations, then the `@orkestrel/contract` value import block, then `import { inferColumnType } from './inferers.js'`. Leave no blank line between consecutive imports of the same kind.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-6",
+    "verdict": "CONFIRMED",
+    "ground": "`AGENTS.md` § Non-negotiable rules: \"**NEVER** use non-null assertions (`!`) or type assertions (`as`); narrow or validate.\" A published guide fence is example code a consumer copies, and the assertion is also dead.",
+    "evidence": "/home/user/fleet/csv/guides/csv.md:447 reads `\\treturn createCSV(candidate as CSVTable) // adopted AS-IS, not re-parsed`, inside the `Guarding an adopted table` fence (:441-449). `isCSVTable` is declared `Guard<CSVTable>` at src/core/validators.ts:36, and `@orkestrel/contract` declares `Guard<T> = (value: unknown) => value is T`, so the early return at :446 (`if (!isCSVTable(candidate)) return undefined`) already narrows `candidate` to `CSVTable` on the following line. Deleting the assertion leaves `import type { CSVTable } from '@orkestrel/csv'` at :443 with no referent in the fence. This finding and csv-subj-9 name the same site; give the site ONE carrier before dispatch.",
+    "repair": "In /home/user/fleet/csv/guides/csv.md, change line 447 to `\\treturn createCSV(candidate) // adopted AS-IS, not re-parsed`, and delete line 443 (`import type { CSVTable } from '@orkestrel/csv'`), which then imports an unused name. Change nothing else in the fence. Assign this site to one finding id only; the other is a duplicate.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-7",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/typescript.md` § Syntax and imports: \"ESM imports use explicit `.js` extensions for local TypeScript modules.\"",
+    "evidence": "/home/user/fleet/csv/tests/src/core/helpers.test.ts:19 reads `import { assertAndNarrow } from '../../setup'` and tests/src/core/inferers.test.ts:2 reads `import { buildInferenceTraps } from '../../setup'` — neither carries the extension. Every sibling does: tests/src/core/parsers.test.ts:25, CSV.test.ts:5, and factories.test.ts (all `'../../setup.js'`), and tests/setup.test.ts:23 (`'./setup.js'`).",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts change `from '../../setup'` to `from '../../setup.js'`, and in /home/user/fleet/csv/tests/src/core/inferers.test.ts change `from '../../setup'` to `from '../../setup.js'`. Change nothing else in either import.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-8",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/tests.md` § Shared test infrastructure: \"Write a helper of your own only where the package exports none for the job\" and \"Never reimplement a framework helper in tests or fixtures\"; `.claude/rules/patterns.md` § Declared ecosystem capabilities: \"Never reimplement or rename-wrap a declared package primitive.\"",
+    "evidence": "/home/user/fleet/csv/tests/src/core/helpers.test.ts:22-34 declares `function captureError(fn: () => void): unknown` with a try/catch body. The declared devDependency exports the same helper under the same name: node_modules/@orkestrel/test/dist/src/core/index.d.ts:21 `export declare function captureError(thunk: () => unknown): unknown;` with the documented semantics \"Returns the thrown value, or `undefined` when the thunk completes\" (:15-20). Package.json:80 declares `@orkestrel/test`, and tests/src/core/CSV.test.ts:3 already imports `collectStream` from it, so the import path is live. The signatures are compatible: a `() => T` argument satisfies `() => unknown`, and every existing call site passes an arrow whose result is discarded. I read the eight open-coded duplicates the finding names and they are the same shape — tests/src/core/CSV.test.ts:42-48, :213-219, :226-232 and tests/src/core/factories.test.ts:50-55, :60-65 read verbatim as `let caught: unknown; try { … } catch (error) { caught = error }`, which `.claude/rules/tests.md` names as \"Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.\"",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts delete lines 22-34 (the doc block and the local `captureError`) and add `import { captureError } from '@orkestrel/test'`; every call site in that file already matches the published signature. Then replace each inline `let caught: unknown; try { … } catch (error) { caught = error }` block at tests/src/core/parsers.test.ts:645-650, :704-709, :723-728, tests/src/core/CSV.test.ts:42-48, :213-219, :226-232 and tests/src/core/factories.test.ts:50-55, :60-65 with `const caught = captureError(() => <the statement that was inside the try>)`, adding the `@orkestrel/test` import to each of those three files. Do not re-export `captureError` from tests/setup.ts — `.claude/rules/architecture.md` § Barrel exports forbids re-exporting a symbol originating in another package. Run `npm run test:src:core` after the swap and report any red rather than adjusting an assertion to fit.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-9",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/tests.md` § Shared test infrastructure: \"Never reimplement a framework helper in tests or fixtures\"; `.claude/rules/patterns.md` § Declared ecosystem capabilities: \"Never reimplement or rename-wrap a declared package primitive.\" The local copy also takes the declared primitive's exact name with weaker semantics.",
+    "evidence": "/home/user/fleet/csv/tests/src/core/CSV.test.ts:14-16 declares `function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null }`. The runtime dependency declares the same name: node_modules/@orkestrel/contract/dist/src/core/index.d.ts documents `isRecord` as the total plain-record check that distinguishes `{}` / `Object.create(null)` \"from arrays, `Date`, `Map`, and class instances\" (:3120-3128), beside `isObject` (:3060-3077), whose documented behaviour (\"`true` for arrays, class instances, plain objects, `Map`, `Set`\") is what the local body actually has. src/core/validators.ts:3 already imports the real `isRecord`. The three call sites — CSV.test.ts:161 (a `JSON.parse` result), :182 (`result.schema`), :183 (`record.properties`) — all pass plain objects, so the stricter declared guard admits them.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/CSV.test.ts delete lines 14-16 and change line 2 to `import { isRecord, stringShape } from '@orkestrel/contract'`. Then run `npm run test:src:core`. If a call site reddens, report the reading rather than editing the assertion: a red there means the value under test is not a plain record, which is the fact the misnamed local guard was hiding.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-10",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/tests.md` § Test contract: \"Mirror module/application structure: `tests/{src,app}/[environment]/[domain]/[module].test.ts`\" and \"A test the mirror rule flags is a misplaced test until its placement is checked. Move it to the location its scope names.\" The finder's § Cross-cutting proofs quotation is not the operative sentence — helpers.test.ts is a mirrored module suite, not another cross-cutting proof — but the mirror rule reaches it, and § Cross-cutting proofs fixes `tests/setup*.test.ts` as the home for setup-helper assertions.",
+    "evidence": "/home/user/fleet/csv/tests/src/core/helpers.test.ts:429-437 is `describe('assertAndNarrow usage sanity')`, asserting on `assertAndNarrow`, which is exported from tests/setup.ts:29 and is not a `src/core/helpers.ts` export. Its subject already has a correctly placed proof: tests/setup.test.ts:66-94 asserts the accepting path (:67-74), guard deference (:76-81), and both throw messages (:83-93), so the deletion loses no coverage. The heading also carries `sanity`, which `.claude/rules/writing.md` § Substitutions rules against.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts delete lines 429-437 in full. Add nothing to tests/setup.test.ts — its `describe('assertAndNarrow')` block at :66-94 already proves the accepting path this block re-tested. Keep the `assertAndNarrow` import at helpers.test.ts:19, which the file's other cases still use.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-11",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/tests.md` § Discovery and adequacy audit: \"confirm each assertion would fail for the defect it claims to catch\".",
+    "evidence": "Read /home/user/fleet/csv/tests/src/core/shapers.test.ts:98-125 and src/core/shapers.ts:111-132. Every `deriveShapes` case asserts only `expect(columns.a).toBeDefined()` — at :101, :106, :111, :113, :118, :123 — while the case names claim which shape was derived ('derives text', 'derives an inferred type', 'derives integer/real', 'derives boolean', 'derives json'). `deriveShapes` assigns `columnTypeShape(...)` to every column on every one of its five branches (shapers.ts:118, :120, :122-124, :126, :128), so all six assertions pass identically if the function returned `columnTypeShape('text')` unconditionally. /home/user/fleet/csv/tests/src/core/CSV.test.ts:187-191 ('infers an integer shape for whole-number numeric cells') carries the same defect through `expect(csv.export().columns.n).toBeDefined()`. The neighbouring `columnTypeShape` describe (shapers.test.ts:18-54) already shows the correct form: compile the shape with `createContract` and read a value the wrong branch refuses.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/shapers.test.ts replace each `expect(columns.a).toBeDefined()` with a compiled-contract assertion, using the `createContract` already imported at :3: for 'derives text' assert `createContract(columns.a).is('x')` is true and `.is(5)` is false; for the all-string column `['1','2']` assert the derived contract accepts 1 and refuses 1.5; for the all-number columns assert the integer one accepts 2 and refuses 2.5 and the real one accepts 1.5; for the boolean column assert it accepts true and refuses 1; for the mixed column assert it accepts both 1 and 'x'. In /home/user/fleet/csv/tests/src/core/CSV.test.ts:187-191 replace `expect(csv.export().columns.n).toBeDefined()` with `expect(createContract(csv.export().columns.n).is(3)).toBe(true)` and `expect(createContract(csv.export().columns.n).is(3.5)).toBe(false)`, adding `createContract` to the `@orkestrel/contract` import at line 2. Before committing, run each rewritten case once against a `deriveShapes` edited to return `columnTypeShape('text')` unconditionally, record that every one reddens, then restore the source and record the same command green.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-12",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/tests.md` § Cross-cutting proofs fixes `tests/guides.test.ts` as proving \"every executable fence returns what the guide says it returns\" and directs \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof.\" `.claude/rules/documentation.md` § Parity adds that a substring check guards presence and nothing about behaviour.",
+    "evidence": "Read /home/user/fleet/csv/tests/guides.test.ts in full (171 lines). It asserts fence languages (:63-65), surface parity both directions (:81-86), method-table parity (:92-111), example presence (:113-123), fence import resolution (:142-152), and link resolution (:154-168). No block executes a fence. The guide carries value-claiming comments at guides/csv.md:36, :346, :361, :374, :389, :412, :435-436 and :462-471, and README.md at :23, :44 and :65-66; I traced each through the source by hand and each reads true today, so this is a missing gate rather than a false sentence. The file is package-owned, not vendored: `tests/guides.test.ts` is absent from `HOST_PATHS` (/home/user/scaffold/src/core/constants.ts:131-152), and scaffold references it only as `GUIDES_TEST_PATH` (:307) to select the `guides` project (src/bin/CLI.ts:910), so `repair` does not restore it. The file's own header comment claiming only its four constants are package-specific is contradicted by the fleet: /home/user/fleet/contract/tests/guides.test.ts:285-314 already carries a `describe('flagship fences')` block that runs the fences and asserts their commented values beside a presence guard.",
+    "repair": "In /home/user/fleet/csv/tests/guides.test.ts add a `describe('flagship fences')` block after the existing manifest loop, following the shape at /home/user/fleet/contract/tests/guides.test.ts:285-314: import the real symbols from `@src/core`, transcribe each fence body verbatim, assert the value its comment claims, and beside each transcription keep a `expect(guideText).toContain(<the fence line>)` presence guard so a fence edit that leaves the transcription behind reddens. Cover guides/csv.md:36, :346, :361, :374, :389, :412, :435-436 and :462-471, and README.md:23, :44 and :65-66. Read the guide and README text through the existing `files` inventory (guides.test.ts:44-47). Keep the block below the parity loop so a parity failure still reports first, and modify no existing assertion.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-13",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/architecture.md` § Kind purity: \"non-trivial or reusable → extract, export, unit-test, and route every duplicate through it\", and § Declaration placement, whose cleanup sweep bans \"untested extracted functions\".",
+    "evidence": "A grep for `assertValidSeparators|advancePosition|isBreakChar` across /home/user/fleet/csv/tests returns no match at all — no test imports or calls any of the three. All three are exported (src/core/helpers.ts:53, :458, :468), barrelled through src/core/index.ts:4, and documented as callable rows in guides/csv.md:113, :129 and :130, and guides/csv.md:462-463 publishes `isBreakChar('\\n') // true` / `isBreakChar('a') // false` as a directly callable example. `assertValidSeparators` is reached only indirectly through `resolveParseOptions` (helpers.ts:84) and `resolveRenderOptions` (:109); `advancePosition` and `isBreakChar` only incidentally through the scanners.",
+    "repair": "In /home/user/fleet/csv/tests/src/core/helpers.test.ts add three describes and add the three names to the `@src/core` import at :2-18. For `assertValidSeparators`: assert it returns without throwing for `(',', '\\\"')`, and that it throws a `CSVError` with code `INVALID_OPTION` for a multi-character delimiter, a multi-character quote, an equal delimiter and quote, and for each of `'\\r'`, `'\\n'` and the `BOM` character in either position (helpers.ts:54-64 covers each branch). For `advancePosition`: assert the default `count` of 1 shifts `offset` and `column` by one and leaves `line` unchanged, and that an explicit `count` of 2 shifts both by two. For `isBreakChar`: assert true for `'\\r'` and `'\\n'` and false for `'a'`, `''` and `'\\t'`. Strike the finder's trailing clause adding an `isCSVError` case to this file: `isCSVError` is declared in src/core/errors.ts, so an assertion on it in the helpers mirror repeats the misplacement csv-obj-14 repairs, and `.claude/rules/tests.md` bars a test file created solely for error definitions. Carry that false-branch gap to the Orchestrator as a separate row instead.",
+    "breaking": false
+   },
+   {
+    "id": "csv-obj-14",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/tests.md` § Test contract: \"Mirror module/application structure: `tests/{src,app}/[environment]/[domain]/[module].test.ts`\" and \"A test the mirror rule flags is a misplaced test until its placement is checked. Move it to the location its scope names. Widen the rule only when that check shows the test already sits at the location its scope names.\" The placement check fails here, so the widening path is not open, and `AGENTS.md` § Authority and loading makes the rules outrank the in-file comment that records the split.",
+    "evidence": "tests/src/core/parsers.test.ts declares describes for `scanBreak` (:29), `scanComment` (:59), `scanUnquoted` (:79), `scanQuoted` (:114), `scanField` (:163), `scanRecord` (:175), `readRecords` (:193), `deriveHeader` (:402) and `buildRow` (:434). Every one of those symbols is declared in src/core/helpers.ts — at :486, :513, :549, :594, :673, :699, :753, :820 and :878 — and src/core/parsers.ts declares only `parseCSV` (:57), `parseInteger` (:130), `parseReal` (:156) and `parseBoolean` (:180). The helpers mirror records the split in a comment at tests/src/core/helpers.test.ts:36-40 rather than closing it. This is carry row csv-c1, and it is DRIFT.",
+    "repair": "Move the describes at tests/src/core/parsers.test.ts:29-485 verbatim into /home/user/fleet/csv/tests/src/core/helpers.test.ts, appending them after the existing `renderCSV` describe (which ends at :427). Carry with them the `START` constant (parsers.test.ts:27) and the `@src/core` names those describes need — `buildRow`, `deriveHeader`, `readRecords`, `scanBreak`, `scanComment`, `scanField`, `scanQuoted`, `scanRecord`, `scanUnquoted`, `MAX_ERRORS` — plus `buildMixedNewlineCSV` and `buildQuotedField` from `../../setup.js`. Correct the finder's import list before applying it: `MAX_ERRORS` and `assertAndNarrow` must stay imported in parsers.test.ts as well, because the retained `parseCSV` describe still uses them (parsers.test.ts:651, :710, :729, :736-743); only `START`, `buildQuotedField` and `buildMixedNewlineCSV` leave that file. Leave in parsers.test.ts the `parseInteger`, `parseReal`, `parseBoolean`, `@orkestrel/contract` comparison (:535) and `parseCSV` (:554) describes, and prune only the imports that become unused. Delete the stale comment at helpers.test.ts:36-40 and replace it with one line naming what the file covers. Record the per-file test counts before and after and confirm the total is unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-1",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/documentation.md` § Parity: \"Falsify a prose claim the way you falsify a code claim.\" `.claude/rules/writing.md` § Claims and time: \"Claim only what the reader can check.\"",
+    "evidence": "/home/user/fleet/csv/guides/csv.md:3 opens \"A zero-dependency, types-first RFC 4180 CSV parser and renderer\". package.json:72-74 declares `\"dependencies\": { \"@orkestrel/contract\": \"^0.0.15\" }`, and that package is imported at runtime by src/core/CSV.ts:1, src/core/shapers.ts:1-10, src/core/validators.ts:3 and src/core/factories.ts:1,3. The guide's own index contradicts the tagline at guides/README.md:19-20, which calls `@orkestrel/contract` \"this package's … runtime dependency\". The narrower claim at guides/csv.md:105 stands: src/core/helpers.ts:1-28 imports only ./types.js, ./constants.js and ./errors.js.",
+    "repair": "In /home/user/fleet/csv/guides/csv.md:3, replace `A zero-dependency, types-first RFC 4180 CSV parser and renderer` with `A types-first RFC 4180 CSV parser and renderer`. Leave guides/csv.md:105 unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-2",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/documentation.md` § Parity: \"A parity failure identifies drift; never suppress or weaken the test.\" `.claude/rules/writing.md` § Claims and time: \"where time matters, give the version or the date\" — the version given is not the one the manifest declares.",
+    "evidence": "/home/user/fleet/csv/guides/README.md:19-20 states `contract.md` mirrors the guide for `@orkestrel/contract` — \"this package's `^0.0.5` runtime dependency\". package.json:73 declares `\"@orkestrel/contract\": \"^0.0.15\"`. No test reads the sentence: tests/guides.test.ts parses guides/README.md only as the manifest (:48-51) and checks the concept and directory tables, never the dependency-reference prose.",
+    "repair": "In /home/user/fleet/csv/guides/README.md:20, replace `^0.0.5` with `^0.0.15`.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-3",
+    "verdict": "REFUTED",
+    "ground": "The cited code does what the sentence says. `.claude/rules/documentation.md` § Parity requires running the example and reading what it returns; run this one and the documented value is correct, and no rule quoted here obliges a README line to enumerate a failure mode.",
+    "evidence": "/home/user/fleet/csv/README.md:86 reads `table.key // 'id' — the first column, unless options.key overrides it`. src/core/CSV.ts:201 resolves `const key = options?.key ?? this.#result.table.columns[0]`, so for the README's own example (`createCSV('id,name\\n1,Ada\\n2,Grace', { infer: true })` at :22) `csv.export().key` is `'id'` — the comment's value is right — and an `options.key` naming another column does override it, which tests/src/core/CSV.test.ts:206-209 pins. The throw at CSV.ts:202-206 fires only for a key the table does not carry; the sentence promises nothing about that case. The README is in fact the artifact that agrees with the code here — the drift is on the TSDoc side, ruled under csv-subj-4.",
+    "repair": "None required. If the Orchestrator wants the refusal documented anyway, that is an addition to a true sentence rather than a correction of a false one, and it belongs in the same edit as csv-subj-4's documentation repair so the README, the TSDoc, and the guide state one contract.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-4",
+    "verdict": "CONFIRMED",
+    "ground": "CONFIRMED WITH THE DIAGNOSIS CORRECTED. A real contradiction exists — `.claude/rules/documentation.md` § Parity, \"Falsify a prose claim the way you falsify a code claim\" — but it sits in the documentation, not the implementation, and the finder's repair would delete working behaviour that the README, the guide and the tests all describe. The finder's own supporting premise is false: `@orkestrel/database` declares no `TableExport`.",
+    "evidence": "src/core/types.ts:274-277 documents `ExportOptions.key` as \"`key` names the export (mirrors `@orkestrel/database`'s `TableExport` unit of exchange)\", and types.ts:289-293 claims `TableExport` \"Structurally mirrors `@orkestrel/database`'s `TableExport` (never imported) member-for-member - `key` a name … so a CSV export re-imports losslessly as a database table\". src/core/CSV.ts:200-210 instead resolves `key` to `options?.key ?? table.columns[0]` and throws `INVALID_OPTION` for any key not in `table.columns`. I read the sibling package: /home/user/fleet/database/src/core/types.ts:561-574 declares `interface TableDefinition { readonly primary: string; readonly columns: ColumnMap; readonly schema: JSONSchema }` with the remark \"`primary` is the primary-key column\", and :438 declares `ColumnMap = Readonly<Record<string, ContractShape>>`, structurally identical to csv's `Columns` (types.ts:181). A grep for `interface TableExport` across /home/user/fleet returns only csv's own declaration. So the CODE matches the sibling's real semantics — a primary-key column — and the DOCUMENTATION names a type that does not exist and glosses the member as a free-form name. README.md:86 and tests/src/core/CSV.test.ts:201-235 both document and pin the code's behaviour.",
+    "repair": "Do NOT apply the finder's repair: leave src/core/CSV.ts:200-210 exactly as written — the first-column default and the `INVALID_OPTION` membership check are the behaviour README.md:86 documents and tests/src/core/CSV.test.ts:201-235 pins, and deleting them would move the package further from the sibling it claims to mirror. Repair the documentation instead. In /home/user/fleet/csv/src/core/types.ts:274-277, restate the `ExportOptions` `@remarks` as: `key` names the primary-key column the export is keyed by — one of the table's own columns, defaulting to the first; `columns` overrides the exported column shapes, defaulting to the columns the table was parsed or declared with. In types.ts:289-293, replace the `TableExport` interop claim with what is true: `@orkestrel/database` declares `TableDefinition { primary, columns, schema }`, csv's `columns` map is structurally identical to that package's `ColumnMap` and `schema` is the same JSON Schema, and csv names the key column `key` where that package names it `primary`. Do not claim a member-for-member mirror or a lossless re-import. Restate guides/csv.md:307-322 the same way. Whether to go further and rename `key` to `primary` (and `TableExport` to `TableDefinition`) so the mirror is literal is a separate breaking decision for the Orchestrator, not part of this repair.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-5",
+    "verdict": "CONFIRMED",
+    "ground": "`AGENTS.md` § Design laws: \"**Boolean behavior.** A binary behavioral switch is a boolean, not a two-literal union.\" `.claude/rules/names.md` § General vocabulary: \"A binary switch is a boolean such as `bail`, never `'continue' | 'halt'`; genuine discriminants, multi-state lifecycles, conventional value pairs (`ascending`/`descending`, `and`/`or`), and external-spec literals remain unions.\"",
+    "evidence": "src/core/types.ts:158-159 declares `BlankPolicy = 'keep' | 'skip'` and :211 `readonly blanks?: BlankPolicy`. I swept the package for `blanks`: the only branch on the value is src/core/helpers.ts:781, `if (isBlank && resolved.blanks === 'skip') continue`; constants.ts:23 defaults it to `'keep'`; the only other sites are types.ts:193-195 (the remarks), guides/csv.md:58 and :62, and tests/src/core/parsers.test.ts:309-318. It fits none of the union exemptions: not a lifecycle, not a conventional value pair on the `ascending`/`descending` model, and no external CSV specification names it — RFC 4180 is silent on blank lines. Every sibling binary parse behaviour on the same interface is already a boolean (`header` :209, `trim` :212, `infer` :214, `strict` :216). No fleet package consumes `@orkestrel/csv`: a grep for `\"@orkestrel/csv\"` across `*/package.json` under /home/user/fleet returns only csv's own `name` field, so this names no downstream consumer inside the closure.",
+    "repair": "In /home/user/fleet/csv/src/core/types.ts delete the `BlankPolicy` declaration at :158-159, change :211 to `readonly blanks?: boolean`, and restate the `blanks` clause of the `ParseOptions` `@remarks` (:193-195) as: whether a blank line becomes an empty row (`true`); a line of only whitespace is never blank, so `trim` does not change what `blanks` drops. In src/core/constants.ts:23 change `blanks: 'keep'` to `blanks: true`, preserving today's default behaviour. In src/core/helpers.ts:781 change the test to `if (isBlank && !resolved.blanks) continue`. Delete the `BlankPolicy` row from guides/csv.md:58 and restate `blanks` in the `ParseOptions` row at :62 unchanged (the key name does not move). Update tests/src/core/parsers.test.ts:309-318 to the boolean and rename the case at :309 for what it proves rather than for the literals it passed. Correct one detail in the finder's repair: README.md:50 lists the parse options and does not mention `blanks`, so it needs no edit.",
+    "breaking": true
+   },
+   {
+    "id": "csv-subj-6",
+    "verdict": "CONFIRMED",
+    "ground": "Shared brief claim S6: \"no guide, README, test, or source comment cites an `AGENTS §N` section (`AGENTS.md` numbers no section, so every such citation is stale and names nothing)\"; `.claude/rules/documentation.md` § Authority and workflow: \"`AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.\"",
+    "evidence": "/home/user/scaffold/AGENTS.md numbers no section — its headings are named (`## Authority and loading`, `## Design laws`, `## Writing`), so `§2`, `§5`, `§12`, `§14`, `§16` and `§22` name nothing. My sweep for `AGENTS\\s*(§|section)` case-insensitively over /home/user/fleet/csv excluding node_modules returns the in-scope sites: src/core/types.ts:8, constants.ts:4, errors.ts:3, helpers.ts:30, helpers.ts:33, factories.ts:37, validators.ts:5, validators.ts:19, shapers.ts:15, tests/src/core/shapers.test.ts:7, :82, tests/src/core/helpers.test.ts:40, tests/src/core/validators.test.ts:4, guides/csv.md:73, :108, :184, guides/README.md:3. It also confirms guides/guide.md:9, :190, :211, :318 are out of scope as a vendored mirror. The finder's enumeration is incomplete in three places its own repair still catches, and the writer must not work from the list alone: guides/csv.md:215-216 and :261-262 split `(AGENTS` and `§22)` / `§12)` across a line break, and tests/setup.ts:18 carries a bare `§1 / §16`; guides/csv.md:502-503 and guides/README.md:36 carry bare `§N` inside `AGENTS.md` links.",
+    "repair": "Sweep case-insensitively for `AGENTS §`, `AGENTS section`, `AGENTS` followed by a line break and `§`, and bare `§<digit>` across src/**, tests/** (excluding the vendored tests/setupPolicy.ts, tests/policy.test.ts and tests/config.test.ts), guides/csv.md, guides/README.md and README.md, and at each site delete the citation while keeping the sentence's substance. The sites include, and are not limited to, the seventeen the finder lists plus guides/csv.md:215-216, guides/csv.md:261-262 and tests/setup.ts:18. Delete the whole `- [`AGENTS.md`](../AGENTS.md) — the rules; §5 …` bullet at guides/csv.md:502-503 and the `## See also` section at guides/README.md:34-36 that its single bullet occupies; a consumer-facing guide does not route a reader to the repository's agent rules. Do not touch guides/guide.md, guides/contract.md, guides/probe.md, guides/scaffold.md or guides/test.md — every one is a vendored mirror. After deleting the links, removing `'AGENTS.md'` from `ROOT_FILES` at tests/guides.test.ts:41 is safe and optional: the link-resolution assertions at :154-168 run only over manifest entries, and guides/README.md's concept table lists csv.md alone.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-7",
+    "verdict": "CONFIRMED",
+    "ground": "`AGENTS.md` § Writing: \"**NEVER state a count.** A number answering \\\"how many\\\" about a set anyone can add to is a count — rules, rows, members, exports, files, options, steps, cases, stages, findings, and tests are such sets. Name the members, or write the sentence without the number.\" and \"Delete a count you find. Do not correct it.\"",
+    "evidence": "src/core/validators.ts:45 is published TSDoc: \"@returns True if `value` is one of the six {@link ColumnType} literals; false otherwise\" — a count of the members of a union anyone can extend (`ColumnType` is declared at types.ts:169). The same count is repeated in the guide's Validators table at guides/csv.md:189, and in a test case name at tests/src/core/validators.test.ts:53 ('accepts all six ColumnType literals'). src/core/helpers.ts:32 carries a second count in \"aside from the two option resolvers\" without naming them; the members are `resolveParseOptions` (:82) and `resolveRenderOptions` (:107).",
+    "repair": "In /home/user/fleet/csv/src/core/validators.ts:45, replace the sentence with `True if `value` is a {@link ColumnType} literal; false otherwise`. In guides/csv.md:189, replace `Determines whether `value` is one of the six `ColumnType` literals.` with `Determines whether `value` is a `ColumnType` literal.` In src/core/helpers.ts:32-33, replace `aside from the two option resolvers, which throw on a programmer error per AGENTS §12` with `aside from resolveParseOptions and resolveRenderOptions, which throw on a programmer error`, which also closes csv-subj-6's site at that line. Extend the finder's repair to the third site: rename tests/src/core/validators.test.ts:53 to `accepts every ColumnType literal`.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-8",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban it, and carries the opposite reservation. `.claude/rules/documentation.md` § Guide examples scopes the ban to \"public guide examples\" and then states \"reserve them for source/tests\" — and src/core/*.ts is source. The finder also claims a convention the fleet does not hold.",
+    "evidence": "The `@example` blocks at src/core/CSV.ts:31, factories.ts:24, :50-51 and shapers.ts:40, :80 import from `@src/core`; validators.ts:30 and :49 import from `@orkestrel/csv`. That inconsistency is real but is not what the cited sentence bans: the section governs guide fences, and every fence in guides/csv.md already imports `@orkestrel/csv` (I read the file in full; the only `@src/core` mention is prose at :7). The sibling convention runs the finder's way too: /home/user/fleet/emitter/src/core/factories.ts:19 and helpers.ts:16 both write `import { … } from '@src/core'` in shipped `@example` blocks, so csv is not an outlier and this is a fleet-wide convention question rather than a csv defect.",
+    "repair": "None required in csv. Refer the fleet-wide question to the Orchestrator: decide once whether a shipped TSDoc `@example` must name the published specifier, and if so land it as a fleet row covering emitter and every sibling with the same pattern, not as a csv-only edit. csv-subj-12 depends on this finding and falls with it.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-9",
+    "verdict": "FOLDED",
+    "ground": "`AGENTS.md` § Non-negotiable rules: \"**NEVER** use non-null assertions (`!`) or type assertions (`as`); narrow or validate.\"",
+    "evidence": "Same site as csv-obj-6, independently reproduced: guides/csv.md:447 writes `return createCSV(candidate as CSVTable) // adopted AS-IS, not re-parsed` inside the `Guarding an adopted table` fence. `isCSVTable` is `Guard<CSVTable>` (src/core/validators.ts:36) and `@orkestrel/contract` declares `Guard<T> = (value: unknown) => value is T`, so `candidate` is already `CSVTable` after the early return at :446 and the assertion is dead as well as banned. Deleting it leaves the `import type { CSVTable }` at :443 unreferenced.",
+    "repair": "Apply the single repair once. This finding and csv-obj-6 are the same defect at the same line; give the site ONE carrier in the implementation plan and strike the other, per the shared brief's rule that every finding names exactly one carrier. The edit is: guides/csv.md:447 becomes `\\treturn createCSV(candidate) // adopted AS-IS, not re-parsed`, and line 443 is deleted.",
+    "breaking": false,
+    "orchestrator": "FOLDED into csv-obj-6: same defect at /home/user/fleet/csv/guides/csv.md:447 (the `as CSVTable` assertion in the adoption fence, with the then-unused `import type { CSVTable }` at :443); the refuter repair for csv-subj-9 names csv-obj-6 as the same defect at the same line and directs one carrier, and csv-obj-6's repair carries the operative edit, so csv-obj-6 is the one carrier."
+   },
+   {
+    "id": "csv-subj-10",
+    "verdict": "CONFIRMED",
+    "ground": "`AGENTS.md` § Writing: \"Give the reader what they need for the task at hand, and nothing else.\" The prose addresses a reviewer checking the guide against the parity rules rather than a developer using the package, and it cites a convention source outside `AGENTS.md`.",
+    "evidence": "guides/csv.md:196-202 reads \"… Exposes its parsed state through the `readonly table`, `readonly rows`, and `readonly errors` members (documented here in Surface prose alongside the class, per the markdown sibling's precedent — these carry no row in the [`## Methods`](#methods) table below, which lists only call-signature members).\" guides/csv.md:215-218 repeats the same argument: \"The `readonly table` / `rows` / `errors` members are Surface-documented above, not listed here — this table lists exactly `CSVInterface`'s call-signature members.\" Neither sentence tells a consumer anything about CSV. Removing them is safe for parity: tests/guides.test.ts reads the `## Methods` tables through `guide.methods()` (:92-111) and the Surface tables through `guide.surface()` (:81-86), neither of which reads this prose, and the readonly members stay Surface-documented as `.claude/rules/documentation.md` § Parity requires.",
+    "repair": "In /home/user/fleet/csv/guides/csv.md:196-202, cut the parenthetical so the passage reads: `Exposes its parsed state through the `readonly table`, `readonly rows`, and `readonly errors` members. Immutable — `map` never mutates the stored table, it returns a new `CSV`. See [`## Methods`](#methods) for its public call-signature surface.` In guides/csv.md:215-218, cut the second and third sentences so the preamble reads `The public methods of `CSVInterface`, keyed by its backticked name.` — which also closes csv-subj-6's split `(AGENTS §22)` citation at that line. Run `npm run test:guides` afterwards and report the result.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-11",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/documentation.md` § Parity, which makes a guide an enforced contract, read with `.claude/rules/writing.md` § Code tokens: the displayed path names a location that exists nowhere in the repository, so the visible text is false while the href is right.",
+    "evidence": "guides/csv.md:476-498: every `## Tests` row displays `` `../../tests/src/core/<name>.test.ts` `` while its href is `../tests/src/core/<name>.test.ts` — at :476, :479, :482, :486, :489, :493 and :496 for CSV, factories, helpers, inferers, parsers, shapers and validators. The guide sits in `guides/`, so `../tests/...` is the path that resolves and `../../tests/...` points outside the repository. tests/guides.test.ts:162-168 maps `guide.tests()` hrefs through `resolveLink` and reports no break, so nothing catches the text.",
+    "repair": "In /home/user/fleet/csv/guides/csv.md:476-498, change each list item's display text from `` `../../tests/src/core/<name>.test.ts` `` to `` `tests/src/core/<name>.test.ts` `` for CSV, factories, helpers, inferers, parsers, shapers and validators. Leave every href `../tests/src/core/<name>.test.ts` unchanged; the link-resolution assertion reads the href alone and stays green.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-12",
+    "verdict": "REFUTED",
+    "ground": "The diagnosis inverts the mechanism, and the repair would weaken the gate rather than restore it. `MODULES` is a specifier-to-module resolution map, not an allowlist of permitted specifiers, and an unresolved specifier is skipped rather than refused.",
+    "evidence": "tests/guides.test.ts:142-152 iterates each fence's imports and runs `const imported = sources.source(specifier); if (imported === undefined) continue` — an unknown specifier is skipped without assertion. `@orkestrel/guide` declares `source(specifier: string): SourceInterface | undefined` (node_modules/@orkestrel/guide/dist/src/core/index.d.ts:1255), so removing `'@src/core'` from `MODULES` at :29 would stop checking the imported names of any fence written against that alias instead of rejecting it — the opposite of the finder's stated effect. No fence in guides/csv.md imports `@src/core` today (I read the file in full), so the entry currently costs nothing and, if such a fence ever appeared, keeping it is what makes its names checked. The finding also depends on csv-subj-8, which I refuted.",
+    "repair": "None required. If the Orchestrator does want a guide fence importing an in-repository alias to FAIL rather than be skipped, that is a new assertion — a check that every fence import specifier is a published one — and it belongs in a successor brief against tests/guides.test.ts, not in a deletion from `MODULES`.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-13",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not ban the name, and the repair renames a published export on a preference the rule does not compel. `.claude/rules/names.md` § Standalone helpers says helpers \"default to `{verb}{Noun}`\", and its own example set includes `belongsTo` and `hasMany`, neither of which is `{verb}{Noun}`; the second sentence the finder quotes (\"A one-word helper is valid only when its meaning and arguments are unmistakable\") governs one-word helpers and does not reach a two-word name.",
+    "evidence": "src/core/inferers.ts:70 declares `export function coerceInferred(value: string, type: ColumnType): unknown`, an exhaustive switch over `ColumnType` (:71-82). It is barrelled through src/core/index.ts:5, documented in the guide's Inferers table at guides/csv.md:151, published as a callable example at guides/csv.md:455 and :468, and exercised throughout tests/src/core/inferers.test.ts. Its TSDoc (:58-69) states the subject the name elides, and the call site at :121 passes the cell value and its column's type, so the arguments make the object explicit. The finder rated its own confidence low, and the repair is a breaking rename of a published, barrelled, guide-documented symbol. `coerceCell` would also sit oddly beside the renderer's `serializeCell` (src/core/helpers.ts:208), giving the package two `*Cell` helpers in different kind files pointing in opposite directions.",
+    "repair": "None required; do not rename. If the Orchestrator overrules this on taste grounds, the rename must be dispatched as a deliberate breaking-surface decision with its own brief covering the declaration and TSDoc (inferers.ts:58-83), the `{@link}` at :92, the call site at :121, guides/csv.md:151, :455, :468 and :487, and every occurrence in tests/src/core/inferers.test.ts — and `coerceCell` should be re-examined against `serializeCell` before being chosen.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-14",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/writing.md` § Examples, numbers, and abbreviations: \"Build an example from fictional data with descriptive names.\" A binding named for a column the example does not contain is not descriptive of what it holds.",
+    "evidence": "README.md:22 builds the example from `'id,name\\n1,Ada\\n2,Grace'` — the data carries `id` and `name` and no age. README.md:26-27 then reads `const adults = csv.filter((row) => Number(row.id) > 1)` and `adults // [{ id: 2, name: 'Grace' }]`. The value in the comment is correct (with `infer: true`, `id` coerces to a number and the filter keeps the second row), so only the name misleads. The name is copy drift from guides/csv.md:349, where the fence's data does carry an `age` column and `adults` is apt.",
+    "repair": "In /home/user/fleet/csv/README.md:26-27, rename the binding to what the filter selects: `const remaining = csv.filter((row) => Number(row.id) > 1)` and `remaining // [{ id: 2, name: 'Grace' }]`. Change nothing else in the fence; do not touch guides/csv.md:349, where the name matches the data.",
+    "breaking": false
+   },
+   {
+    "id": "csv-subj-15",
+    "verdict": "CONFIRMED",
+    "ground": "`.claude/rules/writing.md` § Claims and time: \"Claim only what the reader can check\" and \"where time matters, give the version or the date\"; `.claude/rules/typescript.md` § Comments and API documentation: \"Do not document speculative future product behavior unless requested.\"",
+    "evidence": "guides/csv.md:331 reads \"Whole-string parsing is this package's v1 boundary — there is no incremental/chunked parser that consumes a text stream and emits rows as they arrive; a caller with a very large file reads it fully into memory first.\" package.json:3 declares version `0.0.5`; the package has never had a v1, so the version named is uncheckable and the phrasing frames a documented limit as a release milestone implying a later version that carries no commitment.",
+    "repair": "In /home/user/fleet/csv/guides/csv.md:331-334, replace the sentence with: `The package parses a whole string. It has no incremental parser that consumes a text stream and emits rows as they arrive, so a caller with a very large file reads it fully into memory first.` Change nothing else in the Streaming boundary section.",
+    "breaking": false
+   }
+  ],
+  "terminal": "VERDICT: FAIL — 25 broken, 0 unresolved, 0 findings outside the claims"
+ }
+}

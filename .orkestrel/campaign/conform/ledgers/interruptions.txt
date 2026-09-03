@@ -1,0 +1,9 @@
+interruptions (UTC, 2026-09-02):
+19:20 session usage limit (reset 19:50) failed every queued node
+21:01 container restart, 68 min into the run at 8 agents
+21:25 container restart, 20 min at 8 agents
+22:03 container restart, 37 min at 8 agents
+22:06 container restart, under 1 min after launching 10 agents (refute slices)
+22:23 container restart, 17 min at 4 agents (refute slices; 2 results per slice landed first)
+22:47 session usage limit (resets 00:50 UTC 2026-09-03) failed every queued node; the three L0 implementers died mid-unit
+00:58 user ruling: Fable 5.1 holds every judgment lane (finders, refuters, implementers, objective reviewers) from here; Sonnet keeps checker and verifier; Opus runs stopped and relaunched on Fable

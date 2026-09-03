@@ -1,0 +1,12 @@
+Checkpoint the sse conformance unit before the audit round
+
+The implementer completed the partial edits an earlier writer left and applied every row of
+tmp/units/conform/conform-sse-brief.md (the refuter's CONFIRMED rulings from the strict
+conformance audit of 2026-09-02), reporting the gate chain green on 2026-09-03: format:check,
+lint:check, check, build, and test all exit 0, with a failing-first proof for the README fence
+transcription. This commit is a checkpoint, not an acceptance: the blind objective lane, the
+checker, and the Orchestrator's deciding gate run are still owed, and the next session runs them
+from .orkestrel/campaign/conform/HANDOFF.md in the scaffold repository.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Cb3GKyBNeLz88N7b4LPGYW

@@ -1,0 +1,591 @@
+{
+ "package": "qualifier",
+ "objective": {
+  "package": "qualifier",
+  "lane": "objective (reviewer on Claude Opus 5, holding the objective perspective as the recorded substitution for the dark GPT-5.6 Sol bench — `codex` absent from PATH, probed 2026-09-02)",
+  "claims": [
+   {
+    "claim": "O1 Placement and kind purity",
+    "verdict": "BROKEN",
+    "read": "Read every file in /home/user/fleet/qualifier/src/core (index.ts, types.ts, constants.ts, errors.ts, validators.ts, helpers.ts, factories.ts, Qualifier.ts) against .claude/rules/architecture.md sections Centralized-file pattern, Declaration placement, Kind purity, Entity subfolders, Extension categories, Stores. Every declaration in a centralized file is exported; helpers.ts imports only types, constants and errors.ts (permitted by the leaf-pair rule) and no implementation class; validators.ts imports only types plus @orkestrel/contract and @orkestrel/reason; there is no parsers.ts, templates.ts, contracts.ts, routes.ts or stores/ to judge; the single class Qualifier.ts contains one class and imports only. The break is factories.ts holding only createQualifier while src/core/helpers.ts:815 and :848 declare qualificationDefinition and rulingDefinition, which construct fresh QualificationDefinition and Ruling values from scalar arguments. Compared against /home/user/fleet/reason/src/core/factories.ts, where the identical kind of pure value constructor (createCheck:538, createTransform:634, createBounds:657, createLogicalDefinition:1088) sits in factories.ts under a create* name. See finding qualifier-obj-1."
+   },
+   {
+    "claim": "O2 Functions, wrappers, and class order",
+    "verdict": "BROKEN",
+    "read": "Read Qualifier.ts in full for class order: # fields (55-61), constructor (63-81), getter emitter (98), public qualify/validate/destroy (138/177/219), then #qualify (227) and #alive (300) — the order .claude/rules/architecture.md § Class order fixes, with no child managers to expose. qualify composes (alive check, optional validation, #qualify) rather than forwarding 1:1. createQualifier returns QualifierInterface rather than the class, which is the materially narrower contract § Wrapper test requires of a factory. hasReservedKey and findRule bind a domain constant and a domain lookup rather than renaming a platform primitive, so both survive the wrapper test. Swept src, tests and configs/policy.ts for in-body function declarations: the only one outside the two permitted forms is tests/src/core/helpers.test.ts:81, a named function permutations declared inside the it callback opened at :73. Confirmed it is uninstrumented by reading configs/policy.ts:184-195 (reportNested would flag it) against .oxlintrc.json:83-91, which scopes policy/no-nested-functions to src/** and app/** only, so lint:check being green says nothing about it. See finding qualifier-obj-2."
+   },
+   {
+    "claim": "O3 Barrels and exports",
+    "verdict": "CONFIRMED",
+    "read": "src/core/index.ts holds seven export * from './x.js' rows and nothing else — no named, default, namespace or type-only barrel row, and no symbol originating in @orkestrel/contract, @orkestrel/emitter or @orkestrel/reason is re-exported (types.ts imports those types with import type and re-publishes none). Every module-scope declaration in src/core is exported and reachable through the barrel; tests/guides.test.ts:70-90 asserts exactly that (no stranded symbol, no hidden module-scope declaration) with INTERNAL empty at :38, and the guides project runs from the test script. The only class, Qualifier, is barrelled at index.ts:7 and constructible from values a consumer holds (QualifierOptions is all-optional), so the intern rule does not apply. Grepped src for default exports: none; the only default export in the tree is vite.config.ts:130 and configs/src/vite.core.config.ts:6, both framework-required config files, and .oxlintrc.json:70-82 records that exemption."
+   },
+   {
+    "claim": "O4 Non-negotiable syntax",
+    "verdict": "BROKEN",
+    "read": "Swept src/** and tests/** (excluding vendored setupPolicy.ts, policy.test.ts, config.test.ts) for any, non-null !, as assertions, @ts- directives, eslint-disable/oxlint-disable, public/protected/private keywords and parameter properties: none, consistent with the standing condition that the vendored .oxlintrc.json denies each and lint:check is green. The as const hits are all inside TSDoc @example fences (src/core/helpers.ts:311, 352, 436, 437, 485, 535) annotating an unannotated object literal to keep a literal type, which .claude/rules/typescript.md § Types sanctions. Format-shaped rules (single quotes, no semicolons, tabs) are covered by the green format:check. Two rules format and lint do not judge are broken: tests/src/core/Qualifier.test.ts:35 imports '../../setup' with no .js extension (a grep of every relative import in src and tests shows it is the only one — validators.test.ts:27 and factories.test.ts:3 carry the extension), and tests/src/core/helpers.test.ts:2 and :29 place import type declarations after the value import at :1. See findings qualifier-obj-3 and qualifier-obj-4."
+   },
+   {
+    "claim": "O5 Types, immutability, errors",
+    "verdict": "CONFIRMED",
+    "read": "src/core/types.ts holds every reusable and public type; each interface member is readonly and every public collection is readonly T[] (Finding.premises:78, Derivation.trace:86/errors:87, QualificationResult.findings:106/derivations:107/trace:109/errors:110) or Readonly<Record<...>> (scopes:105, metadata:97, labels:143). Absence is undefined throughout — optional keys are omitted rather than set (helpers.ts:204, 460, 462, 825-827, 860-861) and no 'none'/'unset'/-1 sentinel appears; Premise.met is genuinely three-state with absence meaning not evaluated, documented at types.ts:50-58. Caller inputs are not mutated: Qualifier.ts:230 copies the subject, :274 rebuilds a fresh working record per pass, helpers.ts:824-827 copies passes, rulings and metadata, and mergeQualificationContext:407 is copy-on-write. No mutable internal reference leaks: the result and each array is frozen at Qualifier.ts:285-295 and pinned by tests/src/core/Qualifier.test.ts:770-788. errors.ts exposes readonly code and readonly context plus the isQualifierError guard at :36, with QualifierErrorContext declared at types.ts:125. On the outcome contract: @orkestrel/contract is declared, but qualifier performs no I/O — the engine boundary throws consistently through mapEngineError into one typed QualifierError, which is the 'throw consistently' branch of the .claude/rules/typescript.md § Errors and outcomes table, so no Result or attempt is owed. I could not break this claim."
+   },
+   {
+    "claim": "O6 Declared ecosystem reuse",
+    "verdict": "BROKEN",
+    "read": "Built the overlap map by reading the installed declarations at node_modules/@orkestrel/contract/dist/src/core/index.d.ts and node_modules/@orkestrel/reason/dist/src/core/index.d.ts. Source reuse is correct and complete: helpers.ts:28 takes isFiniteNumber, isRecord and resolveField from contract; helpers.ts:29-35 takes extractAtoms, extractConclusions, formatField, isBounds and isReasonError from reason; validators.ts:11-27 takes arrayOf, isBoolean, isNumber, isRecord, isString, literalOf, objectOf, recordOf and whereOf from contract and isComparison, isFieldPath, isLogicalDefinition and isQuantitativeDefinition from reason; Qualifier.ts:36-43 takes Emitter from @orkestrel/emitter and createEvaluator, createLogicalReasoner, createQuantitativeReasoner, createReason and findDuplicates from reason. I checked reason for a rule-lookup export before ruling on the local findRule and found none, so findRule stays. Tests take createRecorder and requireValue from @orkestrel/test and readInventory from @orkestrel/test/server. The break is in tests: tests/setup.test.ts:24 declares a local guard whose body is typeof value === 'object' && value !== null, which is exactly contract's published isObject (index.d.ts:3060-3077, 'true for arrays, class instances, plain objects'), and names it isRecord — the name contract publishes at index.d.ts:3140 for the opposite contract. See finding qualifier-obj-5."
+   },
+   {
+    "claim": "O7 Tests",
+    "verdict": "BROKEN",
+    "read": "Read tests/setup.ts, tests/setup.test.ts, tests/guides.test.ts, tests/distribution.test.ts and all three mirrored suites under tests/src/core. Mirroring holds: Qualifier.ts, factories.ts, validators.ts and helpers.ts each have their test, and constants.ts, types.ts, errors.ts and index.ts are the kinds .claude/rules/tests.md exempts. No mock, module replacement, framework spy or fake clock: grepping tests for vi./jest./useFakeTimers/Date.now() returns hits only inside the vendored config.test.ts as fixture strings, and createFailingEngine (setup.ts:191) is a scripted boundary stub implementing the foreign ReasonInterface minimally, which the rule permits. The only .skip site outside the vendored pair is distribution.test.ts:684, a context.skip carrying its mechanism, and distribution.test.ts:36/596-601 fails rather than skips under --mode release as the rule requires. setup.ts registers nothing and contains no describe/it/expect. No fixture server, interval or inflated timeout to judge. Four breaks: tests/guides.test.ts transcribes and executes no flagship fence (every case compares names), while nine sibling packages including @orkestrel/contract do; two local fixture factories sit in test files rather than setup.ts; two cases are duplicated verbatim; and the discovered FIXTURES population is guarded only by a size total. See findings qualifier-obj-6 through qualifier-obj-9."
+   },
+   {
+    "claim": "O8 Workspace and portability",
+    "verdict": "BROKEN",
+    "read": "Read package.json, vite.config.ts, tsconfig.json, configs/src/vite.core.config.ts and README.md. Every declared Vitest project (vite.config.ts:133) reaches a gate and resolves to a real file: srcCore→test:src, policy→test:policy, config→test:config, setup→test:setup (tests/setup.test.ts exists, so the project and script are both owed and both present), guides→test:guides, distribution→prepublishOnly:65, and probe is the composed workbench no gate runs. distribution sits in prepublishOnly and no service project is declared, matching the publishing-workspace placement. The exports map (:28-40) names index.js, index.cjs, index.d.ts and index.d.cts, which build:src:core (:63) emits and copies; files ships dist/src and README.md, and both exist. No .sh appears in a script, no /tmp literal appears in src, no text is split on a bare \\n, and no path is composed by separator concatenation (the package touches no filesystem; tests use node:path and URL). @orkestrel/process is not declared and no child is spawned from src. The break is README.md:20 declaring 'Node.js >= 24' against package.json:91-93 engines '>=22.12.0'. See finding qualifier-obj-10."
+   }
+  ],
+  "findings": [
+   {
+    "id": "qualifier-obj-1",
+    "claim": "O1 Placement and kind purity",
+    "file": "/home/user/fleet/qualifier/src/core/helpers.ts:815 and :848",
+    "rule": ".claude/rules/architecture.md § Centralized-file pattern, table row \"| Entity/value factories | `*/factories.ts` |\"; § Kind purity: \"Each centralized file contains only its named kind.\" and \"Every exported function in `parsers.ts` is named `parse*`. Every exported function in `factories.ts` is named `create*`.\" and \"Repair a violation of those forms by deciding what the function **is** first, then moving or renaming to match.\"",
+    "wrong": "`qualificationDefinition` (helpers.ts:815) and `rulingDefinition` (helpers.ts:848) are value factories — each takes scalar authored arguments and returns a fresh `QualificationDefinition` / `Ruling` record — so they belong in `factories.ts` under a `create*` name, and `factories.ts` currently holds only `createQualifier`; the identical kind of pure value constructor in the package's own dependency sits in factories.ts as `create*` (/home/user/fleet/reason/src/core/factories.ts:538 `createCheck`, :634 `createTransform`, :657 `createBounds`, :1088 `createLogicalDefinition`).",
+    "repair": "Move both function bodies verbatim from `src/core/helpers.ts` into `src/core/factories.ts`, rename them `createQualificationDefinition` and `createRulingDefinition`, and carry their `QualificationDefinition`, `QualificationInput`, `QualificationPass`, `Ruling`, `RulingInput` and `QualificationEffect` type imports across (removing any left unused in helpers.ts, which `noUnusedLocals` will report). Neither new name collides with an existing export. Update every call site: `tests/setup.ts:10, 62, 64, 80, 82, 109, 111, 123, 125, 142, 144, 169, 171, 185, 186`; `tests/src/core/Qualifier.test.ts:6, 8, 98, 100, 143, 157, 208, 210-214, 217, 243-244, 263, 320, 355, 361-362, 367, 381, 402-403, 429, 431-432, 473, 851`; `tests/src/core/helpers.test.ts:21, 26, 259, 261-263, 266, 584, 605, 673, 680-681, 699, 710, 720`; `guides/qualifier.md` (move both rows out of the Helpers table at :238-239 into the Factories table at :344-346 and rewrite every fence naming them, at :35, 46, 48, 251-260, 304, 316-322, 332-333, 349, 360-361, 392, 402-403, 481, 533, 566, 572, 600, 602, 627, 646, 749, 755-763); and `README.md:26, 37, 39`.",
+    "breaking": true,
+    "consumers": [
+     "@orkestrel/program (declares @orkestrel/qualifier ^0.0.12 at package.json:82; its src and tests import no symbol from it, so the only downstream work is refreshing its vendored mirror /home/user/fleet/program/guides/qualifier.md after this package republishes)"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "qualifier-obj-2",
+    "claim": "O2 Functions, wrappers, and class order",
+    "file": "/home/user/fleet/qualifier/tests/src/core/helpers.test.ts:81",
+    "rule": ".claude/rules/architecture.md § Functions and orchestration: \"Never declare or assign a function inside another function or method.\" and \"This bans local `function`, `function*`, and `const fn = () => ...`, regardless of caller count.\" The rule's path frontmatter includes `tests/**/*.ts`.",
+    "wrong": "`function permutations<T>(list: T[]): T[][]` is a named function declaration inside the `it` callback opened at :73, which is neither of the two permitted in-body forms (an anonymous callback passed directly as an argument, or an anonymous function returned directly as the result), and no instrument reports it: `configs/policy.ts:184-195` would flag it but `.oxlintrc.json:83-91` scopes `policy/no-nested-functions` to `src/**` and `app/**` only.",
+    "repair": "Delete lines 81-91 and add the function to `tests/setup.ts` as an exported reusable builder — `export function buildPermutations<T>(list: readonly T[]): readonly T[][]` with the same recursion — then import it in `tests/src/core/helpers.test.ts` and call `buildPermutations(subset)` at :99. `.claude/rules/tests.md` § Shared test infrastructure puts a scenario builder in the setup file, and the recursive call at :88 becomes a call to the exported name.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-obj-3",
+    "claim": "O4 Non-negotiable syntax",
+    "file": "/home/user/fleet/qualifier/tests/src/core/Qualifier.test.ts:35",
+    "rule": ".claude/rules/typescript.md § Syntax and imports: \"ESM imports use explicit `.js` extensions for local TypeScript modules.\"",
+    "wrong": "The import ends `} from '../../setup'` with no `.js` extension, and it is the only relative import in `src/**` or `tests/**` missing one — the sibling suites resolve the same module as `'../../setup.js'` at `tests/src/core/validators.test.ts:27` and `tests/src/core/factories.test.ts:3`.",
+    "repair": "Change `tests/src/core/Qualifier.test.ts:35` from `} from '../../setup'` to `} from '../../setup.js'`.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-obj-4",
+    "claim": "O4 Non-negotiable syntax",
+    "file": "/home/user/fleet/qualifier/tests/src/core/helpers.test.ts:2 and :29",
+    "rule": ".claude/rules/typescript.md § Syntax and imports: \"Place `import type` declarations before value imports.\"",
+    "wrong": "`import type { Finding } from '@src/core'` (:2) and `import type { Comparison } from '@orkestrel/reason'` (:29) both sit after the value import `import { describe, expect, it } from 'vitest'` at :1, and :29 additionally sits after the value-import block at :3-28.",
+    "repair": "Move both `import type` declarations above line 1, so the file opens with `import type { Finding } from '@src/core'` and `import type { Comparison } from '@orkestrel/reason'`, then the value imports from `vitest`, `@src/core` and `@orkestrel/reason` — the order `tests/setup.test.ts:9-15` already uses. Leave no blank line between consecutive imports of the same kind.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-obj-5",
+    "claim": "O6 Declared ecosystem reuse",
+    "file": "/home/user/fleet/qualifier/tests/setup.test.ts:23-26",
+    "rule": ".claude/rules/tests.md § Shared test infrastructure: \"Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.\" and .claude/rules/patterns.md § Declared ecosystem capabilities: \"Reuse the originating package directly when semantics match.\" and \"Never reimplement or rename-wrap a declared package primitive.\"",
+    "wrong": "The local guard's body is `typeof value === 'object' && value !== null`, which is exactly the declared `@orkestrel/contract` export `isObject` (node_modules/@orkestrel/contract/dist/src/core/index.d.ts:3060-3077 — \"Determines whether a value is a non-null object … `true` for arrays, class instances, plain objects\"), and it takes the name `isRecord`, which the same package publishes at :3120-3140 for the opposite contract (rejects arrays and class instances), so a reader of this file meets `isRecord` behaving as `isObject`.",
+    "repair": "Delete lines 23-26 of `tests/setup.test.ts` and add `isObject` to the existing value import from `@orkestrel/contract` (the file already imports `FieldPath` from it as a type at :9, so add `import { isObject } from '@orkestrel/contract'` in the value-import block). Replace the call at :55 with `while (isObject(current) && 'nested' in current)`; the `in` check still narrows `object` to carry the member, so `current.nested` at :56 type-checks unchanged.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "qualifier-obj-6",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/qualifier/tests/guides.test.ts:1-170",
+    "rule": ".claude/rules/tests.md § Cross-cutting proofs: \"Transcribe each flagship fence and assert the values its comments claim. Name resolution is not a behavioural proof, so a fence documenting a value the code contradicts passes every parity assertion. Change a fence, change the transcription beside it.\" and the same file's table row: \"`tests/guides.test.ts` | Every documented API exists, every public API is documented, and every executable fence returns what the guide says it returns\". Also .claude/rules/documentation.md § Parity: \"Falsify a prose claim the way you falsify a code claim… That proof has a home: `tests/guides.test.ts` executes the flagship fences.\"",
+    "wrong": "Every case in the file compares names — `guide.surface()`, `source.exports()`, `source.methods()`, `findMissing`, `findUnexampled`, `resolveLink` — and the file imports nothing from `@src/core`, so no fence is ever run; the value claims at `guides/qualifier.md:57-59`, `:296-298`, `:306-307`, `:408-409` and `:582-584` would stay green if the code returned the opposite. Nine sibling packages carry the executed half (contract, test, guide, probe, process, table, mcp, lsp, form, codec), and `/home/user/fleet/contract/tests/guides.test.ts:285-360` is the shape.",
+    "repair": "Append a `describe('flagship fences', …)` block to `tests/guides.test.ts`, importing the symbols it drives from `@src/core` and `@orkestrel/reason`, holding `const guideText = requireValue(files['guides/qualifier.md'], 'Missing file: guides/qualifier.md')`. Transcribe three fences and assert the values their comments claim: (a) the Surface fence at `guides/qualifier.md:34-62` — assert `result.eligibility` is `'ineligible'`, `result.findings[0]?.message` is `'A license is required'`, and `result.derivations` equals `[]`; (b) the Patterns fence at `:532-585` — assert `result.eligibility` is `'ineligible'` and `result.derivations.map((entry) => [entry.id, entry.value])` equals `[['cap', 1_000_000], ['excess', 250_000]]`; (c) the Methods fence at `:391-411` — assert `qualifier.validate(definition)` equals `{ valid: true, errors: [], warnings: [] }`. Destroy each qualifier. Beside each behavioural case add a presence guard asserting `guideText` still contains each commented line verbatim (`\"result.eligibility // 'ineligible'\"`, `\"// [['cap', 1000000], ['excess', 250000]]\"`, `'qualifier.validate(definition) // { valid: true, errors: [], warnings: [] }'`), so a fence edit reddens the transcription rather than silently orphaning it.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-obj-7",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/qualifier/tests/src/core/Qualifier.test.ts:840 and /home/user/fleet/qualifier/tests/src/core/helpers.test.ts:52",
+    "rule": ".claude/rules/tests.md § Shared test infrastructure: \"Test files import shared infrastructure rather than declaring local fixture factories.\" and \"Extract a fixture, recorder, event factory, async wait, renderer, scenario/data builder, protocol fixture, or DOM builder as soon as it could serve another test.\" and \"Helper names follow module-helper naming: `createFixtureServer`, `buildElement`, `appendItems`, `renderRows`, `waitForReady`, `extractDetail`.\"",
+    "wrong": "`qualitativeDefinitionWithDottedField` (Qualifier.test.ts:840) builds a `QualificationDefinition` fixture — the same job the eight exported `build*Definition` factories in `tests/setup.ts` already do — while carrying no return type annotation, no verb prefix, and a name that says `qualitative` for a definition whose first pass is quantitative; `finding` (helpers.test.ts:52) is a local `Finding` fixture factory serving nine cases in that file and equally usable from `Qualifier.test.ts`.",
+    "repair": "Move both into `tests/setup.ts` beside the existing builders: `export function buildDottedFieldDefinition(): QualificationDefinition` carrying the body from `Qualifier.test.ts:841-851`, and `export function buildFinding(overrides: Partial<Finding> & Pick<Finding, 'id' | 'pass' | 'rule' | 'effect' | 'applied'>): Finding` carrying the body from `helpers.test.ts:55-58`. Add `Finding` to the type import at `tests/setup.ts:1`. Delete both local declarations, import the new names, and update the call sites: `Qualifier.test.ts:485` and `helpers.test.ts:423, 430, 442, 463, 471, 488, 496, 510, 518`. `tests/setup.test.ts` discovers zero-argument builders returning a qualification definition, so `buildDottedFieldDefinition` joins the FIXTURES population automatically and its ruling and pass-read inspections then cover it.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "qualifier-obj-8",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/qualifier/tests/src/core/helpers.test.ts:626-634",
+    "rule": "AGENTS.md § Work process step 5: \"Consolidate: remove duplication, nested declarations, and superfluous wrappers without expanding the API.\" and § TTTDD step 3: \"Consolidation: remove duplication and route repeated behavior through one shared implementation.\" (Stated honestly: the rule text names duplication generally, not test cases specifically — the duplication itself is verbatim and mechanically checkable.)",
+    "wrong": "The `describe('hasReservedKey/assertSubject')` block at :626 repeats two cases already present in `describe('assertSubject / hasReservedKey')` at :394 — `:627-629` asserts `hasReservedKey({ id: 'a' })` is `false`, identical to `:411-413`, and `:631-633` asserts `assertSubject({ id: 'a' })` does not throw, identical to `:415-417` — so the suite reports two cases that can only ever fail together with two others.",
+    "repair": "Delete lines 626-634 of `tests/src/core/helpers.test.ts` in full. The retained block at :394-418 already covers both assertions plus the MISMATCH throws.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "low"
+   },
+   {
+    "id": "qualifier-obj-9",
+    "claim": "O7 Tests",
+    "file": "/home/user/fleet/qualifier/tests/setup.test.ts:255",
+    "rule": ".claude/rules/tests.md § Test contract: \"Assert the membership a discovered or globbed set must have, not a total that a partly empty population satisfies.\" and § Discovery and adequacy audit: \"confirm each assertion would fail for the defect it claims to catch, and that it fails rather than passes when its population is empty\".",
+    "wrong": "`FIXTURES` is a discovered population — `collectDefinitionBuilders` (:34-41) calls every zero-argument export of `tests/setup.ts` and keeps the ones `isQualificationDefinition` accepts — and `buildCleanReport` (:192-196) derives its expectation from that same map, so every `reportFixtures` comparison at :261, :268, :275 and :281 is self-consistent for any subset; the only guard on the population is `expect(FIXTURES.size).toBeGreaterThan(0)` at :255, so if seven of the eight `build*Definition` exports were renamed or stopped returning a definition, the whole `qualification fixtures` block would still pass.",
+    "repair": "Replace the body of the case at :254-256 with a membership assertion naming the population: `expect([...FIXTURES.keys()].sort()).toEqual(['buildCapExcessGatesDefinition', 'buildConditionDefinition', 'buildContinuingLogicalDefinition', 'buildEvidenceSnapshotDefinition', 'buildGatesDefinition', 'buildReferralDefinition', 'buildScopedWindDefinition'].sort())`, adding `buildDottedFieldDefinition` to that list if finding qualifier-obj-7 lands first, and rename the case to state what it now proves (\"exports every qualification definition builder its suites import\"). Leave the `countFixtures(...)` guards at :259, :266 and :273 in place — each proves a different property of the population, not its size.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "qualifier-obj-10",
+    "claim": "O8 Workspace and portability",
+    "file": "/home/user/fleet/qualifier/README.md:20",
+    "rule": ".claude/rules/workspace.md § Tooling: \"Node build targets derive from the package's declared supported runtime. Keep `engines`, bundler targets, scoped configs, tests, and documentation aligned; never hard-code one Node version line-wide.\"",
+    "wrong": "`README.md:20` states \"- Node.js >= 24\" while `package.json:91-93` declares `\"engines\": { \"node\": \">=22.12.0\" }`, so the published README refuses runtimes the package's own engine declaration accepts, and nothing else in the workspace pins 24 — `tsconfig.json:3` targets `ESNext` and `configs/src/vite.core.config.ts` sets no Node target.",
+    "repair": "Change `README.md:20` to `- Node.js >= 22.12.0`, matching `package.json`'s `engines.node`. Do not move `engines`: it is the only declared supported runtime and no build target, scoped config or test depends on 24. Note for sequencing: the same README-versus-`engines` mismatch appears across the fleet — every `*/package.json` I sampled declares `>=22.12.0` while `console/README.md:19`, `timeout/README.md:20`, `emitter/README.md:21`, `reason/README.md:25`, `rater/README.md:20`, `program/README.md:24`, `queue/README.md:27`, `websocket/README.md:16`, `sse/README.md:23`, `abort/README.md:19`, `router/README.md:16`, `budget/README.md:21`, `relation/README.md:22`, `server/README.md:19` and `middleware/README.md:19` say 24 — so the Orchestrator can carry this as one wave-level row rather than a qualifier-only edit.",
+    "breaking": false,
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   }
+  ],
+  "referrals": [
+   "S6 (guide and README parity) — stale `AGENTS §N` citations, which AGENTS.md numbers no section for, so each names nothing: `src/core/types.ts:131` (\"the push observation surface of a {@link QualifierInterface} (AGENTS §13)\"), `guides/qualifier.md:27` (\"typed `emitter` (AGENTS §13)\"), `guides/qualifier.md:92` (\"single-word within its entity (AGENTS §4.1)\"), and `guides/README.md:3` (\"by directory (AGENTS §22)\") with its companion at `guides/README.md:45` (\"the rules; §22 documentation-as-contracts\"). This matches the four `AGENTS §` hits the successor brief measured, plus the bare `§22`. I hold O1–O8 and take no verdict on it.",
+   "S6 (guide and README parity) — `guides/README.md:17-41` names mirrors for `reason.md`, `contract.md`, `emitter.md` and `guide.md`, but `guides/` also carries `test.md`, `scaffold.md` and `probe.md`, which the Dependency reference section leaves unaccounted for while `package.json:78-81` declares all three as development dependencies.",
+   "S5/S6 (TSDoc and guide prose) — banned `should` under `.claude/rules/writing.md` § Substitutions at `guides/qualifier.md:461` (\"should not proceed\"), `:652` (\"should treat that outcome as terminal\"), `:718` (\"the caller should skip\") and `:818` (\"Integration tests should prove\"). These are the four hits the successor brief measured; I read each and all four carry the requirement sense the row bans.",
+   "S2 (vocabulary and forms) — `premiseCheck` (`src/core/helpers.ts:196`) builds a `Premise` from a `Check` and its `CheckResult`, which is the same translation its file-mates `rulingToFinding`, `reasonResultToProjection` and `quantitativeResultToDerivation` express in the `{noun}To{Noun}` form; the noun-noun name reads as a property rather than an action. Naming is the subjective lane's.",
+   "S6 (guide and README parity) — `guides/qualifier.md:212` and `:241` claim \"Every helper is pure and side-effect-free\", while the Helpers table at `:234` lists `assertSubject`, which throws `QualifierError('MISMATCH')` by design (`src/core/helpers.ts:636-646`). Whether that sentence needs qualifying is a guide-voice ruling."
+  ],
+  "coverage": "\"Read in full: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/qualifier-brief.md; /home/user/scaffold/AGENTS.md (loaded as project instructions); and the .claude/rules files my lane needs — architecture.md, typescript.md, patterns.md, tests.md, workspace.md, portability.md, quality.md, documentation.md, writing.md. I did not read names.md, application.md, browser.md or styles.md: names.md governs S1/S2 which I do not hold, and the package is src/core-only with no app, Vue or SCSS surface for the other three.\\n\\nSubject files read in full: src/core/{index,types,constants,errors,validators,helpers,factories,Qualifier}.ts; tests/{setup.ts,setup.test.ts,guides.test.ts}; tests/src/core/{Qualifier,helpers,validators,factories}.test.ts; package.json; vite.config.ts; tsconfig.json; README.md; guides/README.md; guides/qualifier.md. tests/distribution.test.ts read in part (lines 640-760 plus grep of its release-mode gating) — enough to rule its skip form and its --mode release behaviour, not its classifier internals.\\n\\nRead as evidence, not as subject: node_modules/@orkestrel/contract/dist/src/core/index.d.ts (isRecord, isObject) and node_modules/@orkestrel/reason/dist/src/core/index.d.ts (findDuplicates, formatField, isBounds) for O6; configs/policy.ts:70-195 and .oxlintrc.json for the instrument scope behind qualifier-obj-2; configs/src/vite.core.config.ts for the build target behind qualifier-obj-10; /home/user/fleet/reason/src/core/factories.ts and /home/user/fleet/contract/tests/guides.test.ts as sibling comparisons for qualifier-obj-1 and qualifier-obj-6; /home/user/fleet/program/package.json and its guides for the consumer blast radius.\\n\\nNot read, with the reason: tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts, configs/helpers.ts, .claude/**, AGENTS.md and CLAUDE.md in the target, and the vendored dependency guides (guides/{reason,contract,emitter,guide,test,scaffold,probe}.md) — all named off-limits as subjects by the shared brief, and scaffold audit proves them byte-identical.\\n\\nInstrument coverage and its limit: this lane is read-only (Read, Grep, Glob) with no Bash, so nothing here was executed. Every behavioural statement above is a reading of source, declarations and rule text, not a run — .claude/rules/quality.md § Rounds and verdicts requires that be labelled, and it is. Three consequences: the guide fence values I checked (qualifier.md:57-59, :296-307, :408-409, :582-584) I verified by tracing the code, not by running them, which is exactly the gap qualifier-obj-6 exists to close; the greens the standing conditions assert (format:check, lint:check, check, build, test) I took as given rather than reproducing; and my grep-based sweeps report on the spellings they matched — the .js-extension sweep covered every `from '.'`-prefixed specifier in src and tests, the import-type-order finding came from reading each file's head rather than from a pattern, and the mock sweep covered `vi.`, `jest.`, `useFakeTimers` and `Date.now()` across tests/**/*.ts.\"",
+  "terminal": "VERDICT: FAIL — 6 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "subjective": {
+  "package": "qualifier",
+  "lane": "subjective (S1-S6), run on Claude Opus 5 because the GPT-5.6 Sol bench is dark",
+  "claims": [
+   {
+    "claim": "S1 Entity API shape — every public property, method, option key, and event on an entity is one word; no behaviour-selecting discriminator parameter; manager accessor/batch shape where a manager exists.",
+    "verdict": "CONFIRMED",
+    "read": "src/core/types.ts:12-231 (every member of Ruling, Premise, Finding, Derivation, QualificationDefinition, QualificationResult, QualifierErrorContext, QualifierOptions, QualifierInterface — id, pass, rule, effect, scope, message, applied, premises, field, label, description, comparison, expected, actual, met, value, success, trace, errors, name, eligibility, scopes, findings, derivations, engine, validate, labels, on, error, emitter, qualify, validate, destroy: each is one word); src/core/Qualifier.ts:98-230 (public surface is emitter/qualify/validate/destroy, matching the interface exactly). qualify(subject, definition) takes two data arguments and no mode literal; reasonResultToProjection branches on definition.reasoning, which names.md § Split behavioral variants classifies as data ('Discriminants ... are data'). The package declares no manager, so the § Managers accessor and batch rules are inert. I attacked the compound-member rule against every member listed and found no compound."
+   },
+   {
+    "claim": "S2 Vocabulary and forms — helper prefixes carry one project-wide meaning; the identifier tables hold; is*/parse*/create*/*Of/{noun}To{Noun} keep their contracts; no rejected name; one term per concept.",
+    "verdict": "BROKEN",
+    "read": "src/core/helpers.ts (all 23 exports), src/core/validators.ts, src/core/factories.ts, src/core/constants.ts against .claude/rules/names.md § Standalone helpers, § Value-level identifiers, § Fixed derivation/construction forms, § Rejected naming. Four violations: the describe*/render* prefix split (helpers.ts:84,132,166), two helpers outside the {verb}{Noun} default (helpers.ts:196,243), two value factories named as bare nouns (helpers.ts:815,848), and a rejected generic binding (helpers.ts:451). Corroborated against the sibling that owns the same domain: /home/user/fleet/reason/src/core/factories.ts:1057-1151 names every definition builder create*Definition, and /home/user/fleet/console, terminal, html, markdown, csv, agent all use render* for value-to-text."
+   },
+   {
+    "claim": "S3 Options and emitters — single-word option keys grouped by entity noun, `on` reserved for hooks; the seven-step Emitter composition; a focused event map of present-tense verbs or nouns; no `status` event; errors typed unknown.",
+    "verdict": "CONFIRMED",
+    "read": "src/core/types.ts:132-146 (QualifierEventMap: derive, finding, qualify, destroy — labeled tuples, empty tuple for the destroy signal, no status event, four events inside the four-to-eight band; QualifierOptions: engine, validate, labels, on, error — every key one word, `on` carrying EmitterHooks and nothing else) and src/core/Qualifier.ts:55 (#emitter field), :64-67 (constructed with both on and error), :98-100 (readonly getter typed EmitterInterface), :253/:268/:296 (direct this.#emitter.emit, no guarded #notify), :224 (emitter.destroy() last in destroy()). No inheritance from Emitter and no delegation boilerplate. The conditional-spread constructor form matches the fleet: websocket/src/server/NodeWebSocket.ts:108-111, sea/src/server/seals/SEA.ts:58-61, pool/src/core/Pool.ts:76-79, probe/src/server/Probe.ts:89-92. The undocumented `labels` key is carried as finding qualifier-subj-7 under S5 so it has exactly one carrier."
+   },
+   {
+    "claim": "S4 Design laws — state derived rather than stored twice; literal unions represent real domain states only; no compatibility shim; mechanism not product policy; no polling; minimal public API with every intentional capability exposed.",
+    "verdict": "CONFIRMED",
+    "read": "src/core/Qualifier.ts:227-298 (#qualify derives eligibility and scopes from findings at return time rather than tracking them; #owned and #destroyed are the only stored flags and neither is recoverable from another field), src/core/helpers.ts:489-553 (eligibility derived, not stored), src/core/index.ts (the barrel star-exports every module, so every intentional capability reaches the surface; tests/guides.test.ts:38 carries an empty INTERNAL list and the Qualifier class is constructible from values a consumer holds). No deprecation alias, no compatibility re-export, no timer or poll loop anywhere in src. The one candidate sentinel — the boolean arm of QualificationProjection — is a documented deliberate exception and is recorded as EXEMPT finding qualifier-subj-14 rather than dropped."
+   },
+   {
+    "claim": "S5 TSDoc — complete blocks on every public export; third-person first sentence; fixed boolean forms; defaults, throws, prerequisites and failure behaviour stated; options objects as one @param with fields under @remarks.",
+    "verdict": "BROKEN",
+    "read": "Every doc block in src/core/{types,constants,errors,validators,helpers,factories,Qualifier}.ts. Voice is uniformly third person with an -s verb (Represents, Carries, Interpolates, Renders, Builds, Projects, Derives, Determines, Asserts, Maps, Creates) and every function carries @param/@returns plus an @example. Three defects: a boolean @param outside the fixed form (helpers.ts:478), banned substitution-table terms in shipped prose (helpers.ts:219,654 and README.md:21), and an options key documented nowhere (types.ts:143, factories.ts:7-12). I checked the @throws form against /home/user/fleet/reason/src/core/helpers.ts:782-1568 and the class-level @example question against /home/user/fleet/reason/src/core/{errors.ts:24,Reason.ts:37}; both match the fleet form, so neither is a finding."
+   },
+   {
+    "claim": "S6 Guide and README parity — the guide documents every public export, one method table per behavioral interface matching its call-signature members, fences importing the published specifier, prose claims the executed fences prove, indexes in guides/README.md, resolving README links, no competing instruction copy, no AGENTS §N citation.",
+    "verdict": "BROKEN",
+    "read": "guides/qualifier.md in full, guides/README.md in full, README.md in full, tests/guides.test.ts in full. Parity itself holds: the Types table carries 18 rows against 18 type exports, the Validators table 10 against 10, the Helpers table 23 against 23, the Constants table 4 against 4, and the `## Methods` table under `QualifierInterface` lists exactly qualify/validate/destroy with `emitter` kept in the Surface row. Every fence imports through `@orkestrel/qualifier` or `@orkestrel/reason`. I read every behavioural comment in the flagship fences against src (Qualifier.ts:227-298, helpers.ts:322-339, 380-408, 489-553, 578-603) and found none false. Six defects: stale AGENTS §N citations, banned `should` plus two sentences that fail first-read comprehension, a false sentence about the helper set, a competing gate ladder, an incomplete mirror map, and no executed flagship fence anywhere in tests."
+   }
+  ],
+  "findings": [
+   {
+    "id": "qualifier-subj-1",
+    "claim": "S2",
+    "file": "/home/user/fleet/qualifier/src/core/helpers.ts:84, :132, :166",
+    "rule": ".claude/rules/names.md § Standalone helpers: \"A helper prefix has one project-wide meaning: ... `describe*` takes a finding and returns the human-readable message that names it. ... `render*` produces text or markup from a value that is not a finding.\"",
+    "wrong": "`describeComparison` (a Comparison operator), `describeValue` (an arbitrary expected value) and `describePremise` (a Premise) all produce text from values that are not findings, so they hold the `describe*` prefix against its fixed meaning while the same file uses `describe*` correctly for the finding-message helpers `describeMissingReferences` (:578), `describeEmptyLogicalPasses` (:722) and `describeUnreadDerivations` (:758) — one prefix carrying two meanings inside one module, and the package's own prose already calls the first three renderers (their TSDoc at :110 and :144 opens \"Renders\", and guides/qualifier.md:218-220 and :242 call them \"Render ...\" and \"the message and premise renderers\").",
+    "repair": "Rename `describeComparison` to `renderComparison`, `describeValue` to `renderValue`, and `describePremise` to `renderPremise` in src/core/helpers.ts, keeping them in helpers.ts. Update the internal call sites at helpers.ts:174 (describeComparison), :173 (describeValue) and the {@link} references in their own blocks, and update the guide rows at guides/qualifier.md:218-220 and the sentence at :242-245. Leave `describeMissingReferences`, `describeEmptyLogicalPasses` and `describeUnreadDerivations` unchanged: each takes a definition and returns the messages naming its findings, which is exactly what `describe*` means. No name collides.",
+    "breaking": true,
+    "consumers": [
+     "@orkestrel/program (vendored mirror /home/user/fleet/program/guides/qualifier.md must be re-vendored after the qualifier release; no source or test in program imports these three symbols — checked by grepping `@orkestrel/qualifier` across program/{src,tests,app}/**/*.ts)"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-2",
+    "claim": "S2",
+    "file": "/home/user/fleet/qualifier/src/core/helpers.ts:196, :243",
+    "rule": ".claude/rules/names.md § Standalone helpers: \"Module helpers have no owning entity at the call site, so default to `{verb}{Noun}`\" and \"A one-word helper is valid only when its meaning and arguments are unmistakable\"; § Fixed derivation/construction forms: \"`{noun}To{Noun}`: projection from a whole to a derived view, such as `definitionToSnapshot`.\"",
+    "wrong": "`premiseCheck` is two nouns and `logicalPremises` is an adjective plus a plural noun, so neither is `{verb}{Noun}` nor an unmistakable one-word helper, and both do exactly the projection work the same file names in the fixed form elsewhere — `rulingToFinding` (:443), `quantitativeResultToDerivation` (:357), `reasonResultToProjection` (:322) and `qualificationToRecord` (:380) — so the module states one concept in two forms.",
+    "repair": "Rename `premiseCheck` to `checkToPremise` and `logicalPremises` to `ruleToPremises` in src/core/helpers.ts. Update the call sites at helpers.ts:260 (premiseCheck inside logicalPremises) and :454 (logicalPremises inside rulingToFinding), their `@example` bodies at :188 and :231, and the guide rows at guides/qualifier.md:221-222 and the list at :243-244. Neither name collides with an existing export.",
+    "breaking": true,
+    "consumers": [
+     "@orkestrel/program — /home/user/fleet/program/src/core/helpers.ts:34 imports `logicalPremises` by name; the vendored mirror program/guides/qualifier.md must be re-vendored"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-3",
+    "claim": "S2",
+    "file": "/home/user/fleet/qualifier/src/core/helpers.ts:815, :848",
+    "rule": ".claude/rules/names.md § Value-level identifiers: \"| Factory | camelCase `create{Entity}` |\"; .claude/rules/architecture.md § Centralized-file pattern: \"| Entity/value factories | `*/factories.ts` |\" and § Kind purity: \"Every exported function in `factories.ts` is named `create*`.\"",
+    "wrong": "`qualificationDefinition` and `rulingDefinition` construct fresh values from scratch — they are value factories — but carry bare noun names that are neither the factory form nor the `{verb}{Noun}` helper form, and `rulingDefinition` names a type that does not exist (it returns a `Ruling`, not a `RulingDefinition`); the sibling that owns the same authoring vocabulary names every equivalent builder in the factory form (/home/user/fleet/reason/src/core/factories.ts:1057 `createQuantitativeDefinition`, :1088 `createLogicalDefinition`, plus `createRule` and `createAtom`), so a reader composing the two packages meets two spellings of one idea in a single import block (guides/qualifier.md:35-36 shows exactly that).",
+    "repair": "Rename `qualificationDefinition` to `createQualificationDefinition` and `rulingDefinition` to `createRuling`, and move both function bodies out of src/core/helpers.ts into src/core/factories.ts beside `createQualifier`; the barrel star-exports both files (src/core/index.ts:5-6), so the published surface changes only by the two names. Update the TSDoc that names them at types.ts:27 and :33, the guide rows at guides/qualifier.md:238-239, the Factories table at :344-346, and every fence and prose mention of `qualificationDefinition`/`rulingDefinition` in guides/qualifier.md and README.md:26,37,39. Neither new name collides (`isQualificationDefinition` and `createQualifier` remain distinct).",
+    "breaking": true,
+    "consumers": [
+     "@orkestrel/program — /home/user/fleet/program/tests/setup.ts:15, tests/setup.test.ts:22, tests/src/core/helpers.test.ts:76, tests/src/core/factories.test.ts:4, tests/src/core/validators.test.ts:34, tests/src/core/programs/Program.test.ts:64, tests/src/core/programs/ProgramManager.test.ts:13-14 all import these two names; the vendored mirror program/guides/qualifier.md must be re-vendored"
+    ],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-4",
+    "claim": "S2",
+    "file": "/home/user/fleet/qualifier/src/core/helpers.ts:451",
+    "rule": ".claude/rules/names.md § Rejected naming: \"Generic words: `data`, `info`, `item`, `thing`, `obj`.\"",
+    "wrong": "The callback binding in `const entry = result.rules.find((item) => item.id === ruling.rule)` is named `item`, a rejected generic word, and the same file already names the same concept — one resolved rule inside a LogicalResult — `resolved` at :331.",
+    "repair": "In src/core/helpers.ts:451 rename the callback parameter `item` to `resolved`, matching :331: `const entry = result.rules.find((resolved) => resolved.id === ruling.rule)`. This is the only occurrence of a rejected generic word in src (swept with the pattern `\\b(item|data|info|obj|thing|cfg|msg)\\b` over /home/user/fleet/qualifier/src).",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-5",
+    "claim": "S5",
+    "file": "/home/user/fleet/qualifier/src/core/helpers.ts:478",
+    "rule": ".claude/rules/typescript.md § Comments and API documentation: \"Describe a boolean parameter as \\\"If `true`, …; if `false`, …\\\", and a boolean return as \\\"True if …; false otherwise\\\".\"",
+    "wrong": "`@param failed - Whether an operational pass failure occurred` documents a boolean parameter in the `Whether …` form the rule replaces, and it leaves the false branch unstated even though the parameter is what turns a clean finding set into a fail-closed referral; the same file uses the required return form correctly at :609 (\"True if the subject owns the reserved key; false otherwise\").",
+    "repair": "Rewrite src/core/helpers.ts:478 as: `@param failed - If `true`, adds a synthetic `referral` impact so an operational failure fails closed; if `false`, derives eligibility from the findings alone`. This is the only boolean parameter in the package's public surface.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "qualifier-subj-6",
+    "claim": "S5",
+    "file": "/home/user/fleet/qualifier/src/core/helpers.ts:219, /home/user/fleet/qualifier/src/core/helpers.ts:654, /home/user/fleet/qualifier/README.md:21",
+    "rule": ".claude/rules/writing.md § Substitutions: \"| `via` | `through`, `by using` |\" and \"| `e.g.`, `i.e.` | `for example`, `that is` |\"; the table's scope is set by that file's opening line: \"These rules govern prose a developer reads, including chat replies, reports, guides, README files, and commit messages.\"",
+    "wrong": "Three sites in shipped prose carry banned substitution-table terms: helpers.ts:219 \"flattened to its atom leaves via `extractAtoms`\", helpers.ts:654 \"every other `ReasonError` code (e.g. `MISSING`)\", and README.md:21 \"ESM (`import`) and CommonJS (`require`) via the `exports` field\" — and helpers.ts:219 uses `via` and `through` in one sentence for the same relation.",
+    "repair": "Rewrite src/core/helpers.ts:219 as \"flattened to its atom leaves through `extractAtoms`\"; rewrite src/core/helpers.ts:654 as \"every other `ReasonError` code (for example `MISSING`)\"; rewrite README.md:21 as \"- ESM (`import`) and CommonJS (`require`) through the `exports` field\". Sweep coverage: the pattern `\\b(via|utilize|leverage|in order to|e\\.g\\.|i\\.e\\.|etc\\.|simply|easy|easier|just|currently|allows you to|and/or|performant|robust|sanity check|dummy|whitelist|blacklist)\\b` case-insensitively plus a separate pass for `e.g.|i.e.|etc.|Once|once|new|latest|now` over README.md, guides/README.md, guides/qualifier.md and src/**/*.ts returned only these three plus permitted-sense hits (`once` meaning one time at guides/qualifier.md:65 and README.md:56; every `new` a constructor call).",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-7",
+    "claim": "S5",
+    "file": "/home/user/fleet/qualifier/src/core/types.ts:143, /home/user/fleet/qualifier/src/core/factories.ts:7-12",
+    "rule": ".claude/rules/typescript.md § Comments and API documentation: \"Document an options object as one `@param`; describe its short fields under `@remarks`.\"; .claude/rules/patterns.md § Options: \"Explain short option keys in TSDoc `@remarks`, not through longer names.\"",
+    "wrong": "`QualifierOptions.labels` is never explained anywhere a consumer reads: `createQualifier`'s `@remarks` (factories.ts:7-11) describes engine ownership and the validation default but not `labels`, its `@param` (factories.ts:12) only lists the word, `QualifierOptions` (types.ts:139-146) carries no `@remarks` at all, and guides/qualifier.md mentions `labels` only as a key inside the shape cell at :88 — so nothing tells a consumer that the key is a field-to-label override map keyed by the dot-joined field path, that it feeds `Premise.label`, or that it loses to nothing and wins over the premise's own `label` (helpers.ts:172, :204). The internal helpers document it correctly at helpers.ts:152, :183, :226, :425, which is where the gap is visible.",
+    "repair": "Add an `@remarks` block to `QualifierOptions` in src/core/types.ts above :140 describing each key in one clause, including: \"`labels` overrides the display name of a premise field, keyed by the dot-joined field path `formatField` produces, and takes precedence over a premise's own `label`.\" Extend the `createQualifier` `@remarks` in src/core/factories.ts:7-11 with the same sentence and write the validation default in the required form, \"Default: `true`\", replacing \"Validation is on by default.\" Add a sentence to the `QualifierOptions` guide row or the Observing section of guides/qualifier.md naming what `labels` does and how the key is formed.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-8",
+    "claim": "S6",
+    "file": "/home/user/fleet/qualifier/src/core/types.ts:131, /home/user/fleet/qualifier/guides/qualifier.md:27, /home/user/fleet/qualifier/guides/qualifier.md:92, /home/user/fleet/qualifier/guides/README.md:3, /home/user/fleet/qualifier/guides/README.md:45",
+    "rule": "Shared brief claim S6: \"no guide, README, test, or source comment cites an `AGENTS §N` section (`AGENTS.md` numbers no section, so every such citation is stale and names nothing)\"; .claude/rules/writing.md § Claims and time: \"Claim only what the reader can check.\"",
+    "wrong": "Five citations point at numbered AGENTS.md sections that do not exist — types.ts:131 \"(AGENTS §13)\", guides/qualifier.md:27 \"(AGENTS §13)\" and :92 \"(AGENTS §4.1)\", guides/README.md:3 \"(AGENTS §22)\" and :45 \"§22 documentation-as-contracts\" — so a reader who follows them finds nothing, and guides/README.md:45 additionally presents the citation as the destination's title.",
+    "repair": "Delete the parenthetical from src/core/types.ts:131, leaving \"/** Represents the push observation surface of a {@link QualifierInterface}. */\". Delete \"(AGENTS §13)\" from guides/qualifier.md:27 and \"(AGENTS §4.1)\" from :92. Delete \"(AGENTS §22)\" from guides/README.md:3. Rewrite guides/README.md:45 as \"- [`AGENTS.md`](../AGENTS.md) — the documentation contract these guides are held to.\" The five sites are the complete population: grep of `AGENTS §` over /home/user/fleet/qualifier excluding node_modules returned these plus hits only inside the vendored mirrors guides/{reason,emitter,guide}.md, which are off-limits.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-9",
+    "claim": "S6",
+    "file": "/home/user/fleet/qualifier/guides/qualifier.md:16-20, :461, :651-653, :718, :818",
+    "rule": ".claude/rules/writing.md § Voice and actor: \"Never write `should`, and never soften a recommendation into `We recommend`.\"; AGENTS.md § Writing: \"Word every sentence so the reader understands it on the first read\" and \"One idea per sentence. Keep sentences short.\"",
+    "wrong": "Four sentences use the banned `should` (:461 \"should not proceed\", :652 \"should treat that outcome as terminal\", :718 \"the caller should skip downstream work\", :818 \"Integration tests should prove that\"), and two of them sit inside a phrasing that fails on first read — \"terminal for any caller that qualifies for any downstream consumer\" (:16-20, one 57-word sentence) and \"A caller that qualifies for a downstream consumer\" (:651-653) both read as the caller being found eligible, which is the opposite of the intended sense of the caller running qualification ahead of a downstream step.",
+    "repair": "In guides/qualifier.md:461 write \"a subject with incomplete eligibility evidence must not proceed to any downstream decision step\". At :652 write \"A caller that runs qualification ahead of a downstream step must treat that outcome as terminal and skip that step.\" At :718 write \"the caller skips downstream work\". At :818 write \"Integration tests prove that a caller's downstream step is never invoked when qualification is terminal\" (or delete the sentence outright if finding qualifier-subj-11 removes the section). Split :16-20 into two sentences and name the actor in the first: \"A failed qualification, a global `ineligible`, and a global `referral` are terminal — a caller that runs qualification ahead of a downstream step stops there. A scoped restriction removes only that named scope from what the caller selects next, so an excluded scope is never evaluated merely to discard its outcome.\"",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-10",
+    "claim": "S6",
+    "file": "/home/user/fleet/qualifier/guides/qualifier.md:241-245",
+    "rule": ".claude/rules/documentation.md § Parity: \"Re-read the prose last, against what actually shipped.\"; .claude/rules/writing.md § Claims and time: \"Claim only what the reader can check.\"",
+    "wrong": "The sentence \"The message and premise renderers (`interpolateMessage`, `describeComparison`, `describeValue`, `describePremise`, `premiseCheck`, `logicalPremises`, `findRule`, `combineEligibilities`) each carry an `@example` in source\" is false twice: `findRule` locates a rule and `combineEligibilities` folds a severity list, so neither renders anything, and the `@example` distinction singles out eight helpers when all 23 exports in src/core/helpers.ts carry one (verified block by block from :51 through :843) — so a reader is told a subset is special when nothing separates it. The paragraph also restates :212-213 almost word for word (\"`Qualifier` retains only the ordered orchestration and ownership lifecycle\" against \"keeps only the ordered orchestration and ownership lifecycle\").",
+    "repair": "Replace guides/qualifier.md:241-245 with one sentence that is true of what shipped and does not repeat :212-213: \"Every helper is pure, carries a worked `@example` in source, and is composed by `Qualifier` rather than reimplemented by it.\" Delete the parenthetical list.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-11",
+    "claim": "S6",
+    "file": "/home/user/fleet/qualifier/guides/qualifier.md:790-862 (the gate fence at :854-860)",
+    "rule": ".claude/rules/documentation.md § Authority and workflow: \"`AGENTS.md` and its linked rules are the sole convention source. Do not create competing instruction copies in guides.\"",
+    "wrong": "The `## Tests` section carries a second, disagreeing copy of the project's process: the `### Gates` fence at :854-860 prescribes `npm run format`, `npm run lint`, `npm run check`, `npm run build`, `npm run test:src:core` while AGENTS.md § Work process fixes the acceptance gate as the non-mutating `format:check → lint:check → check → build → test`, so an agent reading the guide runs the mutating variants and never runs the checks that gate a commit; the surrounding prose (\"Integration tests should prove that\" at :818, \"Guide parity must verify every backticked export\" at :862) instructs how to write this package's tests, which is rule territory rather than product documentation. The sibling that carries the same section keeps it evidential instead: /home/user/fleet/reason/guides/reason.md:1085-1101 maps each test file to what it proves and states no command.",
+    "repair": "Replace the `## Tests` section of guides/qualifier.md (:790-862) with a linked map in the sibling's shape: one bullet per real test file — [`tests/guides.test.ts`](../tests/guides.test.ts), [`tests/src/core/Qualifier.test.ts`](../tests/src/core/Qualifier.test.ts), [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts), [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts), [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — each naming what that file proves. Delete the `### Gates` fence and the `### Terminal eligibility proof` prescription entirely; keep no command list in the guide.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "high"
+   },
+   {
+    "id": "qualifier-subj-12",
+    "claim": "S6",
+    "file": "/home/user/fleet/qualifier/guides/README.md:17-41",
+    "rule": ".claude/rules/documentation.md § Authority and workflow: \"`guides/README.md` is the map\"; AGENTS.md § Writing: \"Shape the response so the reader can act on it without asking a follow-up question.\"",
+    "wrong": "The `## Dependency reference` section names four mirrors — reason.md, contract.md, emitter.md, guide.md — while `guides/` holds seven: guides/test.md, guides/probe.md and guides/scaffold.md sit in the folder unnamed by the map even though `@orkestrel/test`, `@orkestrel/probe` and `@orkestrel/scaffold` are declared development dependencies exactly like `@orkestrel/guide`, which the section does explain. A reader opening the directory meets three documents the index says nothing about.",
+    "repair": "Add one paragraph to guides/README.md's `## Dependency reference` section, in the same form as the existing entries, covering the three unnamed mirrors: [`test.md`](test.md) for `@orkestrel/test` (the shared test infrastructure the suites import), [`probe.md`](probe.md) for `@orkestrel/probe`, and [`scaffold.md`](scaffold.md) for `@orkestrel/scaffold` (the vendored host inventory and its audit). Keep the existing wording pattern: name the package, name what its surface covers, and state that nothing in it is sourced in this repository.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "qualifier-subj-13",
+    "claim": "S6",
+    "file": "/home/user/fleet/qualifier/tests/guides.test.ts:1-171 against /home/user/fleet/qualifier/guides/qualifier.md:34-62",
+    "rule": ".claude/rules/documentation.md § Parity: \"Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns. ... That proof has a home: `tests/guides.test.ts` executes the flagship fences\"",
+    "wrong": "No fence in guides/qualifier.md is ever executed: tests/guides.test.ts runs only surface bijection, method bijection, example presence, fence-import resolution and link resolution, and grepping /home/user/fleet/qualifier/tests for `guide`, `fence` or `transcrib` returns nothing outside that file — so the guide's behavioural claims (`result.eligibility // 'ineligible'` at :57, `result.findings[0]?.message` at :58, `qualification.gates // { conclusion: true, blocked: true }` at :437, `qualifier.validate(definition) // { valid: true, errors: [], warnings: [] }` at :408, `result.derivations.map(...) // [['cap', 1000000], ['excess', 250000]]` at :583-584) are guarded by nothing and go stale silently. Reading them against src (Qualifier.ts:227-298, helpers.ts:322-339, :489-553) I found each one true today, which is exactly the state that rots unnoticed. Sibling packages already carry the missing block: /home/user/fleet/codec/tests/guides.test.ts:246 `describe('flagship fences')`, /home/user/fleet/database/tests/guides.test.ts:254, /home/user/fleet/form/tests/guides.test.ts:244, /home/user/fleet/table/tests/guides.test.ts:233, /home/user/fleet/mcp/tests/guides.test.ts:997.",
+    "repair": "Append a `describe('flagship fences', ...)` block to /home/user/fleet/qualifier/tests/guides.test.ts, below the existing parity loop and leaving the vendored drop-in body above it untouched, in the shape /home/user/fleet/codec/tests/guides.test.ts:246 uses. Transcribe three fences and assert every value their comments claim: the Surface fence (guides/qualifier.md:34-62) asserting `result.eligibility === 'ineligible'`, `result.findings[0]?.message === 'A license is required'` and `result.derivations.length === 0`; the Methods fence (:391-411) asserting `validate` returns `{ valid: true, errors: [], warnings: [] }`; and the quantitative pattern fence (:532-585) asserting the derivation pairs `[['cap', 1000000], ['excess', 250000]]` and that the caller's subject is still `{ total: 1250000 }`. This overlaps claim O7, which names the same file for the same reason; give it one carrier.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "CONFIRMED",
+    "confidence": "medium"
+   },
+   {
+    "id": "qualifier-subj-14",
+    "claim": "S4",
+    "file": "/home/user/fleet/qualifier/src/core/types.ts:22 and /home/user/fleet/qualifier/src/core/helpers.ts:329",
+    "rule": "AGENTS.md § Design laws: \"Absence is `undefined`. Never invent sentinels such as `'none'`, `'unset'`, `'unknown'`, `''`, or `-1`.\" and \"Real domain states only. Literal unions represent irreducible modes, phases, discriminants, or external values — not decorative labels for facts already represented.\"",
+    "wrong": "The `boolean` arm of `QualificationProjection` is produced by exactly one path — `if (definition.reasoning !== 'logical' || result.reasoning !== 'logical') return false` at helpers.ts:329 — so `false` stands for \"this pass produced no projection\", which is the shape the sentinel ban normally reaches; recorded here rather than dropped, per the brief's exception rule.",
+    "repair": "None. The behaviour is a stated deliberate exception and is pinned: the `@remarks` at src/core/helpers.ts:295 declares \"A mismatched pairing contributes `false`\", the guide documents the arm at guides/qualifier.md:75, and tests/src/core/helpers.test.ts:329 (\"returns false for mismatched result shapes\") holds it. The value is a present fail-closed projection for a foreign engine that answers with the wrong `reasoning`, not an absence, and narrowing the union would break that test and the published type for no gain. Leave as is.",
+    "breaking": false,
+    "consumers": [],
+    "verdict": "EXEMPT",
+    "confidence": "high"
+   }
+  ],
+  "referrals": [
+   "To the objective lane, claim O1 (placement and kind purity): `qualificationDefinition` (src/core/helpers.ts:815) and `rulingDefinition` (:848) construct fresh `QualificationDefinition` and `Ruling` values from scratch, which reads as an entity/value factory, yet they live in `helpers.ts`. Finding qualifier-subj-3 instructs the move to `factories.ts` alongside the rename because the two repairs are one edit; if O1 rules the placement differently, the rename still stands on its own and the move should follow O1's ruling.",
+   "To the objective lane, claim O5 (types and totality): `describeComparison` (src/core/helpers.ts:84-107) switches over the ten `Comparison` members with no default arm and declares `string`. Under the brief's standing condition that an installed `@orkestrel/reason` declaration can be ahead of the manifest's release, a comparison added upstream reaches this function at runtime and it returns `undefined` against a declared `string`. I did not execute anything, so this is a source reading; O5 owns whether the exhaustive-switch fall-through is a defect and what the total form is.",
+   "To the objective lane, claim O5 (hostile input and owned records): `deriveScopeEligibilities` (src/core/helpers.ts:542-547) assigns into a plain `{}` with a caller-authored scope string — `grouped[finding.scope] = [...]` — and `reasonResultToProjection` (:330-337) assigns into a plain `{}` with authored conclusion keys — `projection[key] = value`. A key of `__proto__` reaches the `__proto__` setter on both objects rather than creating an own property, so that scope or conclusion is silently dropped and the record is reparented. `mergeQualificationContext` (:407) is safe by contrast because a computed key in an object literal creates an own property. The existing prototype test at tests/src/core/helpers.test.ts:345-363 asserts only that `Object.prototype` is unpolluted, which both paths satisfy while still losing the value. O5 owns whether this needs a null-prototype record or a key guard.",
+   "To the Orchestrator: `tests/guides.test.ts` is a fleet drop-in whose own header (lines 1-3) says only its four constants are package-owned, yet finding qualifier-subj-13 asks a writer to extend its body with a flagship-fence block, as codec, database, form, table and mcp already do. Confirm that appending below the vendored parity loop is the sanctioned pattern rather than a fleet-canon change before dispatching that row."
+  ],
+  "coverage": "READ IN FULL: /home/user/scaffold/tmp/units/conform/brief.md; /home/user/scaffold/tmp/units/conform/qualifier-brief.md; /home/user/scaffold/AGENTS.md and .claude/rules/{names,patterns,typescript,architecture,documentation,writing}.md plus .claude/rules/quality.md § Falsification (lines 48-94); subject files /home/user/fleet/qualifier/src/core/{types,constants,errors,validators,helpers,factories,index,Qualifier}.ts, guides/qualifier.md, guides/README.md, README.md, tests/guides.test.ts. READ IN PART: tests/src/core/helpers.test.ts (grep windows around reasonResultToProjection, labels, and the prototype case), tests/src/core/Qualifier.test.ts (import and describe headers only). NOT READ, with reason: tests/src/core/{validators,factories}.test.ts, tests/setup.ts, tests/setup.test.ts, tests/distribution.test.ts — claim O7's subject, outside my lane; package.json, vite.config.ts, tsconfig.json — claim O8's subject; tests/{setupPolicy,policy,config}.test.ts and every other scaffold-owned path — off-limits by the shared brief; guides/{reason,contract,emitter,guide,test,probe,scaffold}.md — vendored mirrors, off-limits as subjects and read only as convention evidence; node_modules/@orkestrel/* declarations — I read the fleet source of @orkestrel/reason and @orkestrel/program instead, which is the campaign tip the closure was staged from. INSTRUMENTS AND THEIR COVERAGE: every result here comes from Read and from ripgrep over named paths, and I executed no code, so behavioural statements about the guide fences are source readings rather than runs. The sweeps and their bounds were: `AGENTS §` over /home/user/fleet/qualifier excluding node_modules (5 own-file hits, the rest inside vendored mirrors); `\\\\bshould\\\\b|\\\\bShould\\\\b` over the same population (4 own-file hits, all in guides/qualifier.md); the substitution-table pattern and a separate `e.g.|i.e.|etc.|Once|once|new|latest|now` pass over README.md, guides/README.md, guides/qualifier.md and src/**/*.ts (3 banned hits, the rest permitted senses); `\\\\b(item|data|info|obj|thing|cfg|msg)\\\\b` over src (1 hit); `export function (render|describe)[A-Z]\\\\w+` and `^export function [a-z][A-Za-z]*(Definition|Input)\\\\(` over */src/**/*.ts across the fleet, for convention evidence; `@orkestrel/qualifier` over */package.json and over program/{src,tests,app}/**/*.ts, for the consumer list; `guide|Guide|fence` over qualifier/tests/src and `guide fence|flagship|transcrib` over */tests/**/*.ts, for the fence-execution question. Each pattern reports on the spelling it matched and on those paths alone; a construct spelled differently would not appear.",
+  "terminal": "VERDICT: FAIL — 3 broken, 0 unresolved, 0 findings outside the claims"
+ },
+ "refuter": {
+  "package": "qualifier",
+  "rulings": [
+   {
+    "id": "qualifier-obj-1",
+    "verdict": "CONFIRMED",
+    "ground": "Diagnosis right, repair wrong in name, consumer claim, and scope. Lane: refuter (objective perspective on Claude, Sol bench dark).",
+    "evidence": "/home/user/fleet/qualifier/src/core/helpers.ts:815-829 and :848-863 build fresh `QualificationDefinition` / `Ruling` records from scalar arguments; `.claude/rules/architecture.md` § Centralized-file pattern row `Entity/value factories | */factories.ts` and § Kind purity `Every exported function in factories.ts is named create*`; /home/user/fleet/reason/src/core/factories.ts:538 `createCheck`, :634 `createTransform`, :657 `createBounds`, :1088 `createLogicalDefinition` hold the identical plain-value kind there. factories.ts:24 holds only `createQualifier`. The finding's consumer statement is false: /home/user/fleet/program/src imports neither name, but program/tests/setup.ts:15, tests/setup.test.ts:22, tests/src/core/helpers.test.ts:76, factories.test.ts:4, validators.test.ts:34, programs/Program.test.ts:64, programs/ProgramManager.test.ts:13-14 import both. The proposed `createRulingDefinition` breaks `.claude/rules/names.md` § Value-level identifiers `create{Entity}`: the function returns `Ruling` (types.ts:41) and no `RulingDefinition` type exists. helpers.test.ts holds no dedicated case for either function (describe list :61-687), so the move leaves factories.test.ts (15 lines, `createQualifier` only) without the moved behaviour.",
+    "repair": "One row shared with qualifier-subj-3. Move both bodies verbatim from src/core/helpers.ts:794-863 into src/core/factories.ts beside `createQualifier`, renamed `createQualificationDefinition` and `createRuling`; carry the `QualificationDefinition`, `QualificationInput`, `QualificationPass`, `Ruling`, `RulingInput`, `QualificationEffect` type imports across and drop the ones helpers.ts no longer uses. Update every call site the finding lists (tests/setup.ts, tests/src/core/{Qualifier,helpers}.test.ts, guides/qualifier.md Helpers rows :238-239 → Factories table :344-346 plus every fence and prose mention, README.md:26,37,39) AND the src TSDoc that names them: helpers.ts:564,570-571,711,717,747,753; types.ts:27,33,172,178-179,204,207; Qualifier.ts:123,129-130,169,172. Add to tests/src/core/factories.test.ts cases proving each factory returns a fresh record, copies `passes`/`rulings`/`metadata`, and omits absent optional keys (the @remarks at helpers.ts:797-800). Consumers: @orkestrel/program tests and tests/setup.ts listed in evidence, plus its vendored guides/qualifier.md mirror.",
+    "breaking": true
+   },
+   {
+    "id": "qualifier-obj-2",
+    "verdict": "CONFIRMED",
+    "ground": "Cited code does what the finding says; the rule reaches tests; the finding's population claim is incomplete.",
+    "evidence": "/home/user/fleet/qualifier/tests/src/core/helpers.test.ts:81-91 declares `function permutations<T>` inside the `it` callback opened at :73 — neither an anonymous callback argument nor an anonymous returned function (`.claude/rules/architecture.md` § Functions and orchestration :161-163; frontmatter includes `tests/**/*.ts`). `.oxlintrc.json:84-90` scopes `policy/no-nested-functions` to `src/**` and `app/**`, and § What the policy sweep proves does not list nesting, so green gates prove nothing here. The finding's 'only one' claim is wrong: /home/user/fleet/qualifier/tests/setup.ts:202-210 declares the overloaded `function reason` inside `createFailingEngine` and returns it as an object member at :214, which is the same banned form. My sweep (`^\\t+(async )?function |^\\t+const \\w+ = (async )?(\\(|\\w+ =>)` over tests/setup.ts, setup.test.ts, guides.test.ts, distribution.test.ts, tests/src/**) found those two plus a parenthesised non-function expression at distribution.test.ts:444.",
+    "repair": "(a) Delete helpers.test.ts:81-91; add `export function buildPermutations<T>(list: readonly T[]): readonly T[][]` to tests/setup.ts with the same recursion (recursive call becomes `buildPermutations(rest)`); import it in helpers.test.ts and call `buildPermutations(subset)` at :99; add one case to tests/setup.test.ts proving it (that file is the `setup` project's proof of setup.ts exports; its `isBuilder` collects arity-0 exports only, so the new helper does not join FIXTURES). (b) In tests/setup.ts hoist `failingResult` to an exported module constant `FAILING_RESULT: QuantitativeResult` and the overloaded `reason` to a module-scope `export function reasonFailing(...)` with the same three signatures, then return `{ ..., reason: reasonFailing, ... }` from `createFailingEngine`. Sibling packages carry the same nested class widely (for example /home/user/fleet/reason/tests/src/core/helpers.test.ts); that is fleet drift, not a licence.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-3",
+    "verdict": "CONFIRMED",
+    "ground": "Cited code does what the finding says.",
+    "evidence": "/home/user/fleet/qualifier/tests/src/core/Qualifier.test.ts:35 `} from '../../setup'`; tests/src/core/factories.test.ts:3 and validators.test.ts:27 resolve the same module as `'../../setup.js'`; my grep of every `^\\s*(import|from)` line under tests/**/*.ts shows no other extensionless relative specifier. `.claude/rules/typescript.md` § Syntax and imports :16.",
+    "repair": "Change tests/src/core/Qualifier.test.ts:35 to `} from '../../setup.js'`.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-4",
+    "verdict": "CONFIRMED",
+    "ground": "Cited code does what the finding says; the repair is format-safe.",
+    "evidence": "/home/user/fleet/qualifier/tests/src/core/helpers.test.ts:1 value import from vitest, :2 `import type { Finding }`, :29 `import type { Comparison }` after the value block :3-28. `.claude/rules/typescript.md` :17 `Place import type declarations before value imports.` /home/user/fleet/qualifier/.oxfmtrc.json configures no import sorting, so moving the lines keeps `format:check` green.",
+    "repair": "As the finding states: open the file with the two `import type` lines (`Finding` from `@src/core`, `Comparison` from `@orkestrel/reason`), then the value imports from `vitest`, `@src/core`, `@orkestrel/reason`, with no blank line between consecutive imports of one kind (the order tests/setup.test.ts:9-15 uses).",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-5",
+    "verdict": "CONFIRMED",
+    "ground": "Cited code duplicates a declared primitive and misnames it.",
+    "evidence": "/home/user/fleet/qualifier/tests/setup.test.ts:24-26 body `typeof value === 'object' && value !== null` is exactly `isObject` at node_modules/@orkestrel/contract/dist/src/core/index.d.ts:3061-3077 (`true for arrays, class instances, plain objects`), while contract's `isRecord` (:3120-3140) rejects arrays and class instances. `.claude/rules/tests.md` § Shared test infrastructure :186 and `.claude/rules/patterns.md` § Declared ecosystem capabilities :20. The repair typechecks: `isObject` narrows to `object`, `'nested' in current` narrows to carry the member, so `current.nested` at :57 stays legal.",
+    "repair": "Delete tests/setup.test.ts:23-26; add `import { isObject } from '@orkestrel/contract'` to the value-import block (after the `import type` lines, before `vitest` or beside the other value imports); change :56 to `while (isObject(current) && 'nested' in current)`.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-6",
+    "verdict": "CONFIRMED",
+    "ground": "Cited file executes no fence; the rule requires it; the claimed values hold on a source read.",
+    "evidence": "/home/user/fleet/qualifier/tests/guides.test.ts:1-170 imports nothing from `@src/core` and every case compares names. `.claude/rules/tests.md` § Cross-cutting proofs :70-72 and table row :55; `.claude/rules/documentation.md` § Parity. Shape precedent: /home/user/fleet/contract/tests/guides.test.ts:291-338, codec:246, sse:184, process:542. Traced values: Surface fence (guides/qualifier.md:34-62) — rule `licensed` fires on `licensed: false`, unscoped restriction → `'ineligible'` (Qualifier.ts:280,288; helpers.ts:489-498), message `'A license is required'` interpolated at helpers.ts:462-464, no quantitative pass → `derivations` `[]`. Patterns fence (:532-585) — cap 1_000_000, excess 1_250_000 + (1_000_000 × −1) = 250_000, `above 0` fires → `'ineligible'`, derivations `[['cap', 1000000], ['excess', 250000]]`. Methods fence (:391-411) — `validate` returns `{ valid: true, errors: [], warnings: [] }` (non-empty passes, the logical pass has a ruling, no quantitative pass; Qualifier.ts:177-200). The `guides` project carries `resolve` aliases (vite.config.ts:86-96), so `@src/core` resolves there. Not executed by this lane.",
+    "repair": "As the finding states: append `describe('flagship fences', ...)` below the vendored parity loop, importing from `@src/core` and `@orkestrel/reason`, transcribing the three fences, asserting each commented value, destroying each qualifier, and pairing each with a presence guard on the commented lines. Add subj-13's extra assertion that the caller's subject is still `{ total: 1_250_000 }` after the Patterns fence. This is the single carrier for qualifier-subj-13.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-7",
+    "verdict": "CONFIRMED",
+    "ground": "Cited code declares local fixture factories the rule places in the setup file.",
+    "evidence": "/home/user/fleet/qualifier/tests/src/core/Qualifier.test.ts:840-852 builds a `QualificationDefinition` (used at :485) with no return annotation and a name saying `qualitative` for a definition whose first pass is quantitative; tests/src/core/helpers.test.ts:52-59 `finding` builds a `Finding`, used at :423,:430,:443,:463,:471,:488,:496,:510,:518. `.claude/rules/tests.md` :180,:185,:188. The relocated definition joins FIXTURES (setup.test.ts:34-41) and passes every inspection: its string field `'qualification.cap'` is skipped at :117, it has no rulings, and it is fresh per call.",
+    "repair": "As the finding states: `export function buildDottedFieldDefinition(): QualificationDefinition` and `export function buildFinding(overrides: Partial<Finding> & Pick<Finding, 'id' | 'pass' | 'rule' | 'effect' | 'applied'>): Finding` in tests/setup.ts (add `Finding` to the type import at :1), delete both local declarations, import and update the listed call sites. Sequence after qualifier-obj-9 or add the new name to its membership list.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-8",
+    "verdict": "CONFIRMED",
+    "ground": "Duplication is verbatim and mechanically checkable; deletion breaks nothing.",
+    "evidence": "/home/user/fleet/qualifier/tests/src/core/helpers.test.ts:626-634 repeats :411-417 assertion for assertion (`hasReservedKey({ id: 'a' })` false; `assertSubject({ id: 'a' })` does not throw). `AGENTS.md` § TTTDD step 3 and § Work process step 5 name duplication removal as a law of every change. The cited rule is general, so confidence stays low-to-medium, but nothing licenses the duplicate.",
+    "repair": "Delete tests/src/core/helpers.test.ts:626-634.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-9",
+    "verdict": "CONFIRMED",
+    "ground": "Cited assertions total a discovered population the rule says to pin by membership; the repair's list matches the tree.",
+    "evidence": "/home/user/fleet/qualifier/tests/setup.test.ts:34-41 discovers builders from every arity-0 export of setup.ts; :192-196 derives the clean report from the same map; :255 and :280 assert only `FIXTURES.size > 0`. `.claude/rules/tests.md` :34 and :305. The seven names in the repair are exactly the arity-0 definition builders in tests/setup.ts (:54,:72,:90,:119,:134,:153,:178).",
+    "repair": "Replace the case body at tests/setup.test.ts:254-256 with the sorted-membership assertion the finding gives (adding `buildDottedFieldDefinition` if qualifier-obj-7 lands first) and rename the case; also delete the duplicate size guard at :280, since the membership case now pins the population. Keep the `countFixtures` guards at :259,:266,:273.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-obj-10",
+    "verdict": "CONFIRMED",
+    "ground": "Cited text contradicts the declared engine; the fleet observation is accurate.",
+    "evidence": "/home/user/fleet/qualifier/README.md:20 `Node.js >= 24`; package.json:91-93 `\"node\": \">=22.12.0\"`; `.claude/rules/workspace.md` § Tooling :246. My grep over /home/user/fleet/*/package.json shows every package declares `>=22.12.0` (probe `^22.12.0 || >=24.0.0`) while console, timeout, middleware, queue, websocket, emitter, rater, relation, reason, server, program, router, abort, budget READMEs say 24, and others say 22 or 22.12 — one wave-level row is the right shape.",
+    "repair": "Change README.md:20 to `- Node.js >= 22.12.0`. Leave `engines` unchanged.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-1",
+    "verdict": "CONFIRMED",
+    "ground": "Cited helpers hold `describe*` against its fixed meaning; repair scope amended.",
+    "evidence": "`.claude/rules/names.md` :100 `describe* takes a finding and returns the human-readable message that names it` and :104 `render* produces text or markup from a value that is not a finding`. /home/user/fleet/qualifier/src/core/helpers.ts:84 takes a `Comparison`, :132 an `unknown` value, :166 a `Premise` — `Finding` is a distinct type (types.ts:70) and a Premise is evidence inside one. The file's own TSDoc opens `Renders` at :110 and :144 and guides/qualifier.md:218-220 says `Render`. Fleet value-to-text helpers use `render*` (console, terminal, html, csv, agent per my `^export function (render|describe)[A-Z]` sweep). program imports none of the three (grep over program/{src,tests,app}).",
+    "repair": "Rename `describeComparison` → `renderComparison`, `describeValue` → `renderValue`, `describePremise` → `renderPremise` in src/core/helpers.ts; rewrite the first sentence at :72 to `Renders …`; update @example bodies at :79,:81,:125,:127-129,:157,:159,:162 and the internal calls at :173-174; update tests/src/core/helpers.test.ts imports :6,:9,:11 and the describe blocks :134-245; update guides/qualifier.md rows :218-220 and the sentence at :242-244 (which qualifier-subj-10 rewrites). Leave `describeMissingReferences`, `describeEmptyLogicalPasses`, `describeUnreadDerivations`. Consumers: @orkestrel/program's vendored guides/qualifier.md mirror only.",
+    "breaking": true
+   },
+   {
+    "id": "qualifier-subj-2",
+    "verdict": "CONFIRMED",
+    "ground": "Cited names are outside every helper form; the proposed names are in the fixed projection form the file already uses; program source imports one of them.",
+    "evidence": "/home/user/fleet/qualifier/src/core/helpers.ts:196 `premiseCheck` (noun-noun), :243 `logicalPremises` (adjective-noun); `.claude/rules/names.md` :85 default `{verb}{Noun}`, :176 `{noun}To{Noun}`; the same file spells the same class `reasonResultToProjection` :322, `quantitativeResultToDerivation` :357, `rulingToFinding` :443. `buildPremise`/`buildPremises` would be a one-letter pair, so the finder's names are the better fit. /home/user/fleet/program/src/core/helpers.ts:34 imports `logicalPremises`, :228 links it, :265 calls it.",
+    "repair": "Rename `premiseCheck` → `checkToPremise` and `logicalPremises` → `ruleToPremises`; update helpers.ts:260,:454 and examples :188,:192,:231,:238; tests/src/core/helpers.test.ts:17,:20 and cases :530-581; guides/qualifier.md:221-222 and :243-244. Consumer: @orkestrel/program src/core/helpers.ts:34,:228,:265 and its vendored mirror.",
+    "breaking": true
+   },
+   {
+    "id": "qualifier-subj-3",
+    "verdict": "CONFIRMED",
+    "ground": "Same defect as qualifier-obj-1 with the correct names; one carrier.",
+    "evidence": "See qualifier-obj-1. `createRuling` is right (`create{Entity}`, returns `Ruling`); consumer list matches my grep of /home/user/fleet/program (tests/setup.ts:15, tests/setup.test.ts:22, tests/src/core/helpers.test.ts:76, factories.test.ts:4, validators.test.ts:34, programs/Program.test.ts:64, programs/ProgramManager.test.ts:13-14).",
+    "repair": "Apply the amended qualifier-obj-1 repair once: move + rename to `createQualificationDefinition` / `createRuling`, update src TSDoc examples (helpers.ts:564,570-571,711,717,747,753; types.ts:27,33,172,178-179,204,207; Qualifier.ts:123,129-130,169,172), tests, guide, README, and add factories.test.ts cases for the moved behaviour.",
+    "breaking": true
+   },
+   {
+    "id": "qualifier-subj-4",
+    "verdict": "CONFIRMED",
+    "ground": "Cited code uses a rejected generic word; the population claim holds.",
+    "evidence": "/home/user/fleet/qualifier/src/core/helpers.ts:451 `result.rules.find((item) => item.id === ruling.rule)`; `.claude/rules/names.md` § Rejected naming :221. My sweep `\\b(item|data|info|obj|thing|cfg|msg)\\b` over /home/user/fleet/qualifier/src returned that one line. :331 names the same concept `resolved`.",
+    "repair": "`const entry = result.rules.find((resolved) => resolved.id === ruling.rule)` at helpers.ts:451.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-5",
+    "verdict": "CONFIRMED",
+    "ground": "Cited doc line uses the form the rule replaces.",
+    "evidence": "/home/user/fleet/qualifier/src/core/helpers.ts:478 `@param failed - Whether an operational pass failure occurred`; `.claude/rules/typescript.md` :77-78; the correct return form appears at :609. Behaviour of the true branch verified at :496 (`referral` pushed).",
+    "repair": "Rewrite helpers.ts:478 as `@param failed - If \\`true\\`, adds a synthetic \\`referral\\` impact so an operational failure fails closed; if \\`false\\`, derives eligibility from the findings alone. Default: \\`false\\``.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-6",
+    "verdict": "CONFIRMED",
+    "ground": "Cited prose carries substitution-table terms; the population claim holds.",
+    "evidence": "My case-insensitive sweep `\\bvia\\b|e\\.g\\.|i\\.e\\.|\\betc\\.|\\bsimply\\b|\\bjust\\b|\\bleverage|\\butiliz` over src/**/*.ts, README.md, guides/qualifier.md, guides/README.md returned exactly /home/user/fleet/qualifier/src/core/helpers.ts:219 (`via`), :654 (`e.g.`), README.md:21 (`via`). `.claude/rules/writing.md` § Substitutions; `.claude/rules/typescript.md` :73 binds those rules to TSDoc.",
+    "repair": "As the finding states: `through \\`extractAtoms\\`` at helpers.ts:219, `(for example \\`MISSING\\`)` at :654, `through the \\`exports\\` field` at README.md:21.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-7",
+    "verdict": "CONFIRMED",
+    "ground": "The option is undocumented everywhere a consumer reads; the precedence claim is correct.",
+    "evidence": "/home/user/fleet/qualifier/src/core/types.ts:139-146 has no `@remarks`; factories.ts:7-12 describes `engine` and `validate` only and writes the default as `Validation is on by default.` rather than `Default: …` (`.claude/rules/typescript.md` :79,:82; `.claude/rules/patterns.md` :28). guides/qualifier.md mentions `labels` only inside the shape cell at :88 (grep). Precedence: helpers.ts:172 `labels?.[field] ?? entry.label ?? field` and :204.",
+    "repair": "Add an `@remarks` block to `QualifierOptions` (types.ts, above :140) describing each key in one clause, including `labels` as the field-to-label override map keyed by the dot-joined path `formatField` produces, winning over a premise's own `label`; extend `createQualifier`'s `@remarks` with the same sentence and replace `Validation is on by default.` with `Default: \\`true\\``; add one sentence naming `labels` to the guide's Observing or options prose.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-8",
+    "verdict": "CONFIRMED",
+    "ground": "Every cited citation exists and names nothing; the population claim holds.",
+    "evidence": "My grep `AGENTS §|§\\d` over src, tests, README.md, guides/qualifier.md, guides/README.md returned /home/user/fleet/qualifier/src/core/types.ts:131, guides/qualifier.md:27,:92, guides/README.md:3,:45 and nothing else. /home/user/scaffold/AGENTS.md carries no numbered section. Shared brief claim S6; `.claude/rules/writing.md` § Claims and time.",
+    "repair": "As the finding states: delete the parentheticals at types.ts:131, qualifier.md:27,:92, guides/README.md:3; rewrite guides/README.md:45 as `- [\\`AGENTS.md\\`](../AGENTS.md) — the documentation contract these guides are held to.`",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-9",
+    "verdict": "CONFIRMED",
+    "ground": "Every cited `should` is in the banned requirement sense; the sentence rewrite preserves meaning.",
+    "evidence": "My case-insensitive grep `\\bshould\\b` over src, README.md, guides/qualifier.md, guides/README.md returned /home/user/fleet/qualifier/guides/qualifier.md:461,:652,:718,:818 only. `.claude/rules/writing.md` § Voice and actor. The :16-20 sentence is one 57-word sentence and `a caller that qualifies for any downstream consumer` reads as the caller being found eligible; the proposed split keeps the terminal and scoped-exclusion claims intact.",
+    "repair": "As the finding states for :461, :652, :718 and the :16-20 split. Do not edit :818 here — qualifier-subj-11 deletes that section and is its carrier.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-10",
+    "verdict": "CONFIRMED",
+    "ground": "The sentence is false on two counts and repeats an earlier paragraph; the replacement must survive the sibling renames.",
+    "evidence": "/home/user/fleet/qualifier/guides/qualifier.md:241-245 names `findRule` (helpers.ts:285, a lookup) and `combineEligibilities` (:513, a fold) as renderers and singles out eight helpers for `@example` when every export in helpers.ts:37-863 carries one (read block by block). :241-242 restates :212-213. `.claude/rules/documentation.md` § Parity `Re-read the prose last`; `.claude/rules/writing.md` § Claims and time.",
+    "repair": "Replace :241-245 with one symbol-free sentence such as `Every helper carries a worked \\`@example\\` in source and is composed by \\`Qualifier\\` rather than reimplemented by it.` Keep it symbol-free so the qualifier-obj-1 move and the qualifier-subj-1/2 renames do not orphan it; drop `pure and side-effect-free` or keep it knowing `assertSubject` throws on invalid input (deterministic, no side effects).",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-11",
+    "verdict": "CONFIRMED",
+    "ground": "The guide carries a competing, disagreeing process copy; the sibling shape and link targets check out.",
+    "evidence": "/home/user/fleet/qualifier/guides/qualifier.md:854-860 prescribes mutating `npm run format` and `npm run lint` where `AGENTS.md` § Work process fixes `format:check → lint:check → check → build → test`; :818 and :862 instruct test authoring. `.claude/rules/documentation.md` § Authority and workflow `Do not create competing instruction copies in guides.` /home/user/fleet/reason/guides/reason.md:1085-1101 is a file-to-proof map with no command. tests/guides.test.ts:162-168 requires every linked test file to exist; tests/guides.test.ts, tests/setup.test.ts, tests/src/core/{Qualifier,helpers,validators,factories}.test.ts all exist.",
+    "repair": "Replace `## Tests` (:790-862) with one bullet per real test file naming what it proves — add [`tests/setup.test.ts`](../tests/setup.test.ts) to the finding's list — and delete the `### Gates` fence and the `### Terminal eligibility proof` prescription. Carries the :818 `should` from qualifier-subj-9.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-12",
+    "verdict": "REFUTED",
+    "ground": "The quoted rule does not require it, and the pattern is the fleet's uniform convention over scaffold-vendored files.",
+    "evidence": "`.claude/rules/documentation.md` § Authority and workflow requires the concept and directory indexes, which /home/user/fleet/qualifier/guides/README.md:5-15 carries; nothing requires the `Dependency reference` section to enumerate every mirror. /home/user/fleet/reason/guides/README.md:17-35 and /home/user/fleet/program/guides/README.md:17-54 name exactly the same subset (runtime dependencies plus `guide.md`) while their guides/ folders hold the same `test.md`, `probe.md`, `scaffold.md` (glob of reason/guides). Those files arrive through scaffold's host inventory (/home/user/scaffold/src/core/constants.ts:150-151 lists `guides/guide.md`, `guides/scaffold.md` among the vendored paths), so naming them is a fleet-canon choice for the Orchestrator, not a qualifier drift. `AGENTS.md` § Writing's `Shape the response…` governs replies, not a guide index.",
+    "repair": "None as a qualifier row. Referral to the Orchestrator: decide once, fleet-wide, whether the vendored `Dependency reference` convention should name the scaffold-vendored dev mirrors, and land it through scaffold rather than per package.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-13",
+    "verdict": "CONFIRMED",
+    "ground": "Same defect as qualifier-obj-6; one carrier.",
+    "evidence": "See qualifier-obj-6. The finder's extra assertion (caller's subject still `{ total: 1_250_000 }`) holds on a source read: Qualifier.ts:230 copies the subject and :274 rebuilds the working record without touching it. The referral about appending to the drop-in is answered by precedent: codec:246, contract:291, sse:184, process:542 append below the vendored loop.",
+    "repair": "Carry under qualifier-obj-6 alone, with the subject-unchanged assertion added to the Patterns-fence case.",
+    "breaking": false
+   },
+   {
+    "id": "qualifier-subj-14",
+    "verdict": "CONFIRMED",
+    "ground": "The finder's EXEMPT ruling stands: no edit is owed.",
+    "evidence": "/home/user/fleet/qualifier/src/core/helpers.ts:329 is the sole `false` path and is reached only when an injected engine answers a different `reasoning` than the pass declares — the owned engine (Qualifier.ts:70-78) dispatches by definition kind, so the arm is reachable only through the documented `engine` seam (`.claude/rules/quality.md` § Rounds and verdicts: document the obligation for a foreign implementation). The value is pinned by the `@remarks` at :295-296, guides/qualifier.md:75, and tests/src/core/helpers.test.ts:329, and it is a present fail-closed projection rather than an absence.",
+    "repair": "No edit.",
+    "breaking": false
+   }
+  ],
+  "terminal": "VERDICT: FAIL — 9 broken, 0 unresolved, 0 findings outside the claims"
+ }
+}
