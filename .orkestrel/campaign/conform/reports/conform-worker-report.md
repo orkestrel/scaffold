@@ -58,7 +58,7 @@ The refuter's operative form, in full.
 
 Failing-first, parity half: with `export * from './Dispatch.js'` removed from the barrel, `npm run test:guides` reported **3 failed | 15 passed (18)** — `re-exports every direct declaration that is not named internal`, `documents only barrel exports`, `the Threads fence drives one thread by hand and filters its replies` (`/home/user/work/evidence/worker-proofs/obj1-parity-control-red.txt`). Restored, the same command reports **18 passed (18)** (`/home/user/work/evidence/worker-proofs/guides-after.txt`).
 
-Failing-first, `createThread` half: with the body planted as `new Thread(script, undefined)`, `npx vitest run … --project src:server tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createThread > resolves a live thread and clones its \`workerData\` across at spawn` (`/home/user/work/evidence/worker-proofs/obj1-createThread-control-red.txt`). Restored, the file is green inside the **74 passed (74)** server run (`/home/user/work/evidence/worker-proofs/src-server-after-2.txt`).
+Failing-first, `createThread` half: with the body planted as `new Thread(script, undefined)`, `npx vitest run … --project src:server tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createThread > resolves a live thread and clones its \`workerData\` across at spawn` (`/home/user/work/evidence/worker-proofs/obj1-createThread-control-red.txt`). Restored, the exact same command, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts -t "resolves a live thread and clones its \`workerData\` across at spawn"`, reported **1 passed | 8 skipped (9)** (`/home/user/work/evidence/worker-proofs/obj1-createThread-green-isolated.txt`).
 
 Old-name sweeps, both empty:
 
@@ -67,7 +67,7 @@ Old-name sweeps, both empty:
 
 ### worker-obj-2 — applied
 
-`tests/setupServer.ts:40-43` returns `{ readonly path: string; readonly scratch: ScratchInterface }`; the arrow assigned inside the body is gone. `ScratchInterface` joins the type-import block at `:7`. The module comment at `:36-39` describes the scratch rather than a `cleanup` thunk. Call sites: `tests/src/server/factories.test.ts:35-36`, `:52-53`, `:76-77` read `const { path, scratch } = tempDatabasePath()` then `teardown.add(() => scratch.destroy())`; `tests/setupServer.test.ts:66-78` reads the scratch and calls `scratch.destroy()` twice, keeping the second call as the existing control.
+`tests/setupServer.ts:40-43` returns `{ readonly path: string; readonly scratch: ScratchInterface }`; the arrow assigned inside the body is gone. `ScratchInterface` joins the type-import block at `:7`. The module comment at `:36-39` describes the scratch rather than a `cleanup` thunk. Call sites: `tests/src/server/factories.test.ts:38`, `:54`, and `:78` read `const { path, scratch } = tempDatabasePath()` then `teardown.add(() => scratch.destroy())`; `tests/setupServer.test.ts:66-78` reads the scratch and calls `scratch.destroy()` twice, keeping the second call as the existing control.
 
 Failing-first: with the body planted to destroy its scratch before returning, `npm run test:setup` reported **1 failed | 9 passed (10)** (`/home/user/work/evidence/worker-proofs/obj2-control-red.txt`). Restored, the same command reports **10 passed (10)** (`/home/user/work/evidence/worker-proofs/setup-after.txt`).
 
@@ -104,9 +104,9 @@ Sweep: `grep -rn "const fixture = " tests` — no output.
 
 Every `await waitForDelay(20)` gate is gone. `waitForCondition` from `@orkestrel/test` replaces all three, each with a described condition and an explicit `{ budget: 5_000 }`:
 
-- `tests/src/server/helpers.test.ts:242` — `'the long job is in flight'`.
-- `:280` — `'the long job is in flight'` (the handoff spec).
-- `:743` — `'three jobs are in flight'`.
+- `tests/src/server/helpers.test.ts:239` — `'the long job is in flight'`.
+- `:275` — `'the long job is in flight'` (the handoff spec).
+- `:727` — `'three jobs are in flight'`.
 
 Both abort specs warm the pool with a completed job before the long job, so the `acquire` returns an already-online idle thread and the abort lands on the attached listener rather than on a pending spawn. `waitForDelay` is no longer imported by that file.
 
@@ -141,7 +141,7 @@ The Threads fence body itself came from worker-subj-13 and the symbol rename fro
 
 Sweep: `grep -rnE "Date\.now" src tests --include=*.ts` — no output.
 
-No behavioural control exists for this row and I did not fabricate one. The defect it closes is a wall-clock adjustment during the spin; reproducing it needs the system clock moved, which is outside a test's reach and outside this unit's permissions. Both readings measure milliseconds identically on a steady clock, so the suite is green either way — the sweep plus the green server run (**74 passed (74)**) is the whole evidence this row can carry.
+the row is a rule-driven rewrite — `performance.now()` for an elapsed interval per `.claude/rules/tests.md` — whose defect, a wall-clock adjustment during a fixture's spin, has no reachable test vector; its evidence is the `Date\.now` sweep over `src` and `tests` and the green run, and no negative control is owed.
 
 ### worker-obj-11 — applied
 
@@ -159,7 +159,7 @@ Sweep: `grep -rn "core/workers/" tests src guides README.md` — no output.
 
 `tests/src/server/factories.test.ts:135-160` proves it end to end: an `on: { success }` hook fires for a `createNodeWorker` job, and the throw from that same listener reaches the supplied `error` handler.
 
-Failing-first: with the two spread lines removed from `build()`, `npx vitest run … tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createNodeWorker > wires the \`on\` hooks at construction and routes a listener throw to \`error\`` (`/home/user/work/evidence/worker-proofs/subj2-control-red.txt`). Restored, the file is green in the **74 passed (74)** server run.
+Failing-first: with the two spread lines removed from `build()`, `npx vitest run … tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createNodeWorker > wires the \`on\` hooks at construction and routes a listener throw to \`error\`` (`/home/user/work/evidence/worker-proofs/subj2-control-red.txt`). Restored, the exact same command, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts -t "wires the \`on\` hooks at construction and routes a listener throw to \`error\`"`, reported **1 passed | 8 skipped (9)** (`/home/user/work/evidence/worker-proofs/subj2-green-isolated.txt`).
 
 The option addition ripples into `NodeWorkerOptionsProbe` (`tests/setupServer.ts`), which implements `Required<NodeWorkerOptions>`: it gains `on` and `error` getters ahead of `script`, and the read-order assertions in `tests/setupServer.test.ts:110-121` and `tests/src/server/factories.test.ts:181-192` lead with `'on', 'error'`. The snapshot tally in that second file reads `expect(reads.count).toBe(10)`.
 
@@ -172,7 +172,7 @@ Every default in the package's public TSDoc uses the fixed form.
 - `src/core/factories.ts:21-22` — the `@param` parentheticals are gone; it lists the optional keys and points at `{@link WorkerOptions}`, which is the one place each default is stated.
 - `src/core/types.ts:53-54` — the `pool` bullet stated a default in free prose too ("its `max` defaults to `concurrency`"), which the row's evidence did not enumerate. It reads "Default for its `max`: the `concurrency` value." Recorded as an ancillary decision on the same rule sentence.
 
-Sweep: `grep -rniE "defaults to|\(default " src --include=*.ts` returns one line, `src/core/factories.ts:11` ("The pool's `max` defaults to `concurrency`, so resources match the jobs in flight"). Ruled permitted and left: it is composition narrative in the factory's `@remarks` about how the two options relate, not a documented option default — the row's repair scoped `factories.ts` to the `@param` parentheticals at `:21-22`, and `WorkerOptions` remains the one place each option's default value is stated. `grep -rn "Default: " src --include=*.ts` returns the `pool`, `concurrency`, `retries`, and `timeout` bullets in `src/core/types.ts` and the `concurrency`, `retries`, and `timeout` bullets in `src/server/types.ts`.
+Sweep: `grep -rnE "defaults to|\(default " src` returns no output after fix round 2. `grep -rn "Default: " src --include=*.ts` returns the `pool`, `concurrency`, `retries`, and `timeout` bullets in `src/core/types.ts` and the `concurrency`, `retries`, and `timeout` bullets in `src/server/types.ts`.
 
 ### worker-subj-9 — applied
 
@@ -193,7 +193,7 @@ Closing sweeps, each over `README.md guides/worker.md guides/README.md src tests
 
 ### worker-subj-10 — applied
 
-An introducing sentence now precedes each bare table and list the evidence named: `guides/worker.md` §Factories (`:53`), §Threads table (`:86`), §Entities (`:95`), §Types (`:104`), the event-map table under §Observing (`:373`), §Practices (`:441`), §Tests (`:474`), §See also (`:548`); `guides/README.md` §By concept (`:7`), §By directory (`:13`), §See also (`:65`); `README.md` §Requirements (`:30`). The fences at `guides/worker.md:37` and the Threads fence keep their existing introductions.
+An introducing sentence now precedes each bare table and list the evidence named: `guides/worker.md` §Factories (`:53`), §Threads table (`:86`), §Entities (`:95`), §Types (`:104`), the event-map table under §Observing (`:373`), §Practices (`:441`), §Tests (`:474`), §See also (`:548`); `guides/README.md` §By concept (`:7`) and §By directory (`:13`); `README.md` §Requirements (`:30`). Fix round 1 deleted the citation-only `guides/README.md` See-also section. The fences at `guides/worker.md:37` and the Threads fence keep their existing introductions.
 
 Ancillary decision recorded: the three §Patterns fences (`### A resource-backed worker`, `### CPU-parallel jobs over threads`, `### Durable jobs across restarts`) sat bare under their headings and the evidence did not list them. The same rule sentence reaches a code fence, they are inside Owned, and closing them costs one sentence each, so each now carries an introduction. No vendored dependency guide was touched.
 
@@ -387,3 +387,47 @@ The report now points to `src/server/types.ts:3,8-10,21-22,41-45,60,65-73,76-80,
 - Base setup: `4 passed (4)` (`fix1-setup.txt`).
 
 `git status --short` lists only the original conform-worker paths plus the citation sites `tests/src/core/factories.test.ts` and `tests/src/server/handlers.test.ts`, which Claim 5 owns.
+
+## Fix round 2
+
+The objective lane is `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/worker-objective-r2-sol.md`.
+
+### Claim 2 — default form
+
+`src/core/factories.ts:11` reads: “Default for the pool's `max`: the `concurrency` value, so resources match the jobs in flight.”
+
+The `grep -rnE "defaults to|\(default " src` sweep returned no output. The acceptance sweep, `grep -rn "defaults to" src`, also returned no output.
+
+### Claim 4 — same-command greens and worker-obj-10
+
+- Worker-obj-1: the restored exact narrow command reported `1 passed | 8 skipped (9)`. Capture: `/home/user/work/evidence/worker-proofs/obj1-createThread-green-isolated.txt`.
+- Worker-subj-2: the restored exact narrow command reported `1 passed | 8 skipped (9)`. Capture: `/home/user/work/evidence/worker-proofs/subj2-green-isolated.txt`.
+- Worker-obj-10: the row's paragraph states the ruling that no negative control is owed.
+
+### O1 — pointer prose
+
+- `tests/guides.test.ts:3` — “The following constants”.
+- `tests/guides.test.ts:195` — “Every preceding assertion”.
+- `tests/src/server/helpers.test.ts:19` — “The following round-trip suites”.
+
+### O2 — temporal prose
+
+`tests/setupServer.test.ts:77` reads “the same removed directory”; the temporal `now` is deleted.
+
+The case-insensitive `\b(above|below|now)\b` sweep over `tests/guides.test.ts`, `tests/setupServer.test.ts`, `tests/setupServer.ts`, and `tests/src` returned the `performance.now()` code tokens in `tests/src/server/fixtures/slow.ts:10,12` and `tests/src/server/fixtures/identify.ts:13,14`, which are permitted. It also returned pre-existing prose outside this fix round's owned lines in `tests/src/server/helpers.test.ts:203,206,273,505,804` and `tests/src/core/Worker.test.ts:851`; those `above`, `below`, and temporal `now` hits remain forbidden by `.claude/rules/writing.md`.
+
+The `grep -rnE "Date\.now" src tests` sweep returned no output.
+
+### O3 — refreshed pointers
+
+The worker-obj-2 paragraph points to `tests/src/server/factories.test.ts:38,54,78`. The worker-obj-8 paragraph points to `tests/src/server/helpers.test.ts:239,275,727`. The worker-subj-10 paragraph records that fix round 1 deleted the citation-only `guides/README.md` See-also section.
+
+### Gates and scoped runs
+
+- `npm run format:check` — exit 0 (`/home/user/work/evidence/worker-proofs/fix2-format-check.txt`).
+- `npm run lint:check` — exit 0 (`/home/user/work/evidence/worker-proofs/fix2-lint-check.txt`).
+- `npm run check` — exit 0 (`/home/user/work/evidence/worker-proofs/fix2-check.txt`).
+- Core factories — exit 0, `2 passed (2)` (`/home/user/work/evidence/worker-proofs/fix2-core-factories.txt`).
+- Guides — exit 0, `18 passed (18)` (`/home/user/work/evidence/worker-proofs/fix2-guides.txt`).
+- Setup server — exit 0, `6 passed (6)` (`/home/user/work/evidence/worker-proofs/fix2-setupServer.txt`).
+- Server helpers — exit 0, `48 passed (48)` (`/home/user/work/evidence/worker-proofs/fix2-server-helpers.txt`).
