@@ -7,7 +7,7 @@ Every row is `applied` or `noop`. No row stopped. The gate chain is green.
 | Id                        | Disposition | Evidence                                                                                                                                                                          |
 | ------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | database-subj-1           | applied     | `src/core/Table.ts` aggregate `@remarks` now opens `Unlike {@link count}`, matching `src/core/types.ts` and the guarded `count` body.                                              |
-| database-subj-2           | applied     | `guides/database.md` Observing parenthetical rewritten to the refuter's form. The corrected claim is already executed by `tests/src/core/Table.test.ts` (see § Behavioural proofs). |
+| database-subj-2           | applied     | `guides/database.md` Observing parenthetical rewritten to the refuter's form. The corrected claim is already executed by `tests/src/core/Table.test.ts:953` (the case constructing the database with `error: errors.handler` at `:958`). |
 | database-subj-3           | applied     | `#### \`AdmissionInterface\`` table added at `guides/database.md:363-370`; `track` example fence added beside the admission-ledger paragraph; `@example` added to the interface.    |
 | database-subj-4           | applied     | `README.md:26` reads `Pre-release: the core engine…`; the `0.0.7` parenthetical is gone and no version was substituted.                                                            |
 | database-subj-5           | applied     | Every in-subject `AGENTS §N` / bare `§N` citation replaced with its named rule section or deleted. Sweep clean (see § Sweeps).                                                     |
@@ -21,7 +21,7 @@ Every row is `applied` or `noop`. No row stopped. The gate chain is green.
 | database-obj-2            | applied     | `DriverIterator` barrelled; both deep relative imports folded into each file's `@src/core` value import; INTERNAL entry and comment name removed; Surface row and `@example` added. |
 | database-obj-4            | applied     | Every `import type` in the four named files moved above the first value import. Multiline sweep over `src/**` returns no remaining inversion.                                       |
 | database-obj-5            | applied     | Four mirrored test files added and collected by the existing globs; one guide `## Tests` row each.                                                                                 |
-| database-obj-6            | applied     | `describe('flagship fences: …')` blocks added to `tests/guides.test.ts`, transcribing every fence that states a value. Mutation control run (see § Behavioural proofs).            |
+| database-obj-6            | applied     | `describe('flagship fences: …')` blocks added to `tests/guides.test.ts`, transcribing every value-bearing fence except two exclusions. Transcribed: `guides/database.md:1554-1556`, `:1667-1669`, `:2020-2023`, `:2031-2033`, `:2038-2042`, `:2135-2138`, `:2140-2148`, `:2197-2212`, `:2362-2364`, `:891-892`, `:1145`, `:1798`, `:1805`, `:1907-1909`, `:1548` (`planMigration`), `:1771` (`auditDriver`), `:1472-1473` (the `AdmissionInterface` boundary). Excluded, with reason: `guides/database.md:2372` (`conditionToRange`), `:2376` and `:2383` (`selectPlan`) return `IDBKeyRange` values the `guides` project's Node host cannot construct, so `tests/src/browser/helpers.test.ts` asserts them in real Chromium instead; the browser fences at `:2362-2364` (`isKey`, `deriveIndexedDBIndexName`) transcribe host-independently and are not excluded. Mutation control run (see § Behavioural proofs). |
 | database-obj-7            | applied     | `taverna` replaced with `database` at every site; `npm run test:src:browser` green inside `test:src`. Sweep clean.                                                                  |
 | fleet-F1                  | noop        | The addendum's ruling: database **has** a browser environment. Read `src/browser/` (constants, drivers/IndexedDBDriver, factories, helpers, index, types) and `tests/setupBrowser.ts`. `isBrowserVuePath` is absent from the tree entirely (`git grep isBrowserVuePath -- tests src` empty). |
 | fleet-F2                  | noop        | No implementation class declares a public `readonly id: string` data field. Classes read: `IndexedDBDriver`, `Cursor`, `Database`, `DatabaseContext`, `DatabaseTransaction`, `DriverIterator`, `Query`, `ScopedIterator`, `Table`, `TransactionScope`, `MemoryDriver`, `DatabaseError`, `JSONDriver`, `SQLiteDriver`. The only public data fields anywhere are `DatabaseError`'s `code` and `context` — a different name, on an errors-file class. |
@@ -216,3 +216,65 @@ interface `@example` was kept because the TSDoc rule requires it. `database-subj
 rather than left as the brief's "no edit", because the § Successor note makes it a carrier once the
 re-staged `@orkestrel/guide` extracts the member — and it does, so the parity gate was already red
 without it.
+
+## Fix round 2
+
+Closes audit round 2's refutation of claim 9 and F3, and records the Orchestrator's ruling on F2.
+
+| Row | Closed by |
+| --- | --- |
+| 1. Claim 9, the cell | The `database-obj-6` disposition cell's exclusion clause now reads `guides/database.md:2372` (`conditionToRange`), `:2376` and `:2383` (`selectPlan`) — the line `conditionToRange` is called at and the two lines `selectPlan` is called at, read from the guide directly. |
+| 2. F3 | A comment ahead of the boundary case in `tests/guides.test.ts` (line 446) states that the case is a type-conformance transcription of a caller-supplied `AdmissionInterface` literal, proved by the fence's compile, and names `tests/src/core/DatabaseContext.test.ts` and `tests/src/core/TransactionScope.test.ts` as the suites that drive the real implementors. |
+
+**F2, the ruling.** `databasePath` keeps its noun form, sanctioned by the `tempDatabasePath`
+precedent it wraps (`.claude/rules/names.md` admits the form where the module already carries it).
+
+**R3.** The report's two audit readings — `1 of 45` at this unit's exit and `0 of 45` after the
+Orchestrator's `scaffold repair` — are consistent as written. The Orchestrator's `scaffold repair`
+of `configs/browsers.ts` between the two readings is what moved the count from `1 of 45` to
+`0 of 45`.
+
+## Fix round 1
+
+Closes audit round 1's refutation of claims 2 and 9, finding F1, and referral R1.
+
+| Row | Closed by |
+| --- | --- |
+| 1. The three fences | Three cases added to `tests/guides.test.ts`'s `flagship fences: core helpers` block: `planMigration` against `guides/database.md:1548`, asserting `plan.from`, `plan.to`, and `plan.steps`; `auditDriver` against `:1771`, asserting the empty finding array; the `AdmissionInterface` boundary against `:1472-1473`, asserting `boundary.accepting` and the resolved `track` call. |
+| 2. Claim 9, the cell | The `database-obj-6` disposition cell in § Rows now names every transcribed fence by guide line and the two exclusions (`conditionToRange` at `guides/database.md:2376`, `selectPlan` at `:2383`) with their reason, mirroring the browser-fence note this report already carried. |
+| 3. F1 | The `database-subj-2` disposition cell now points to `tests/src/core/Table.test.ts:953` (the case constructing the database with `error: errors.handler` at `:958`) instead of an internal `see § Behavioural proofs` pointer. |
+| 4. R1 | `tests/src/server/factories.test.ts`'s `jsonPath` helper (declared at the former `:22`, used at the former `:79`) is renamed `databasePath`; it is shared by the `createJSONDriver` and `createSQLiteDriver` describe blocks and yields a SQLite path in the latter, so `databasePath` is format-neutral where `jsonPath` was not. |
+
+### Runs
+
+| Run | Command | Result | File |
+| --- | --- | --- | --- |
+| Fences before | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project guides tests/guides.test.ts` | `81 passed` | `fix1-fences-before.txt` |
+| Fences after | same | `84 passed` (three more cases) | `fix1-fences-after.txt` |
+| Fences control red | same, with `plan.from` asserted as `1` instead of `0` inside the new `planMigration` case (never in the guide) | `1 failed \| 83 passed` — the planted case fails, restored to `84 passed` after reverting | `fix1-fences-control-red.txt` |
+| Factories rename | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts` | `5 passed` | `fix1-factories.txt` |
+
+### Gates
+
+| Gate | Command | Exit | File |
+| --- | --- | --- | --- |
+| `format:check` | `npm --prefix /home/user/fleet/database run format:check` | 0 | `fix1-format-check.txt` |
+| `lint:check` | `npm --prefix /home/user/fleet/database run lint:check` | 0 | `fix1-lint-check.txt` |
+| `check` | `npm --prefix /home/user/fleet/database run check` | 0 | `fix1-check.txt` |
+| `build` | `npm --prefix /home/user/fleet/database run build` | 0 | `fix1-build.txt` |
+| `test` | `npm --prefix /home/user/fleet/database test` | 0 | `fix1-test.txt` (`src` 969/969, `policy` 111/111, `config` 46/46, `setup` 63/63, `guides` 84/84) |
+
+No gate needed converging with `lint` or `format`; each ran clean on the first pass.
+
+### `scaffold audit --offline`, read as directed
+
+`cd /home/user/fleet/database && npx scaffold audit --offline`:
+
+```text
+0 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+```
+
+Read as directed, not acted on: the `configs/browsers.ts` row round 1 reported stale no longer
+drifts. This unit's owned files are `tests/guides.test.ts`, `tests/src/server/factories.test.ts`,
+`/home/user/work/evidence/database-proofs/**`, and this report; none of them touches
+`configs/**`, so this reading is carried forward rather than caused by a row here.

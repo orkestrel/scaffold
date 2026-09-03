@@ -224,10 +224,14 @@ Paths for each: `src`, `tests`, `guides/console.md`, `guides/README.md`, `README
   `guides/console.md:82,188,252`. `README.md` and `guides/README.md` return nothing. The hits the
   lane named as permitted (`src/core/constants.ts:465`, `tests/src/core/factories.test.ts:377`) are
   present and correct: a completed fill run and an awaited-work comment.
-- `\b(out|err)\s*:`. The only hit is `tests/src/core/renderers/ANSIRenderer.test.ts:6`, the prose
-  `string out: foreground 30–37 …`, an English sentence rather than the removed
-  `ServerSinkOptions.out` key. `src`, `guides/console.md`, `guides/README.md`, and `README.md`
-  return nothing.
+- `\b(out|err)\b`, case-sensitive (fix round 2, replacing the narrower `\b(out|err)\s*:`). Paths:
+  `src`, `tests` (excluding `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/config.test.ts`),
+  `guides/console.md`, `guides/README.md`, `README.md`. The full hit list is captured at
+  `/home/user/work/evidence/console-proofs/fix2-out-err-sweep.txt`, re-run through the `Grep` tool
+  for fix round 4. The current ruling for every hit in that capture is the `## Fix round 3` rulings
+  (console-fix3-1 through console-fix3-4), with `tests/setupServer.ts:38` added to those rulings as
+  repaired: the line now reads `pass as \`stdout\` / \`stderr\` / a process-stream stand-in`, so it
+  no longer names the old words.
 
 ### The per-row sweeps (console-fix1-4, claim 4)
 
@@ -367,6 +371,71 @@ changed a row's outcome.
    reason with the command; § Failing-first proofs carries both. It is the row's own fallback, not a
    deviation.
 
+## Fix round 2
+
+Audit round 2's Luna checker held claims 1, 3, 5, 7, 9 on the narrow pattern; the objective lane
+(Opus, from the Luna distillate) held every claim but 3 and named the five prose sites and the
+`selectWriter` example that survived fix round 1 as the old words `out` / `err`. Each row following
+names the line now at its site.
+
+| Row | Site | Line now |
+| --- | --- | --- |
+| 1 | `src/server/types.ts:67` | "the same consumer enable or disable its styler for the \`stdout\` target." |
+| 2 | `src/server/constants.ts:24` | "when the \`stdout\` stream is not a TTY (so" |
+| 3 | `guides/console.md:603` | `const styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with the sink's stdout stripping` |
+| 4 | `tests/src/server/factories.test.ts:28` | `it('infers styling independently for a TTY \`stdout\` target and a piped \`stderr\` target', () => {` |
+| 4 | `tests/src/server/factories.test.ts:224` | `it('falls back to 80 when the \`stdout\` stream is not a TTY', () => {` |
+| 5 | `src/core/helpers.ts:167-169` | `selectWriter('error', { log: 'stdout', warn: 'stdout', error: 'stderr' }) // 'stderr'` / `selectWriter('debug', { log: 'stdout', warn: 'stdout', error: 'stderr' }) // 'stdout'` / `selectWriter(undefined, { log: 'stdout', warn: 'stdout', error: 'stderr' }) // 'stdout'` |
+
+Row 3's presence guard: `Grep` for `out stripping` in `tests/guides.test.ts` returned no hit, so no
+transcribed fence line quoted the old comment and no guard needed a matching update.
+
+Row 5's alignment check: `Grep` for `selectWriter(` across `tests/**` found only
+`tests/src/core/helpers.test.ts:1167-1203`, which exercises the generic `WriterSet<T>` overload with
+its own arbitrary sample strings `'out'` / `'err'` / `'warn'`, unrelated to `ServerSinkOptions` and
+outside this round's scope (off-limits) — no assertion there reads the renamed example's strings, so
+no alignment edit was needed.
+
+Row 6's sweep — the `\b(out|err)\b` pattern replacing the round 1 narrow `\b(out|err)\s*:` pattern —
+is recorded in § Sweeps under "The re-run narrow sweeps (console-fix1-2, claim 3)" and captured at
+`/home/user/work/evidence/console-proofs/fix2-out-err-sweep.txt`. Every remaining hit is ruled
+permitted: `fan out` / `fan-out` prose, other ordinary-English `out`, the Orchestrator's already-
+permitted local bindings in `src/server/factories.ts`, and the matching local `out` / `err` bindings
+(and the prose describing them) in `src/core/factories.ts`'s example, `tests/src/server/factories.test.ts`,
+`tests/src/server/ProcessCapture.test.ts`, `tests/src/core/**`, `tests/setupServer.ts`, and
+`guides/console.md:522`'s capture example — none of which names the renamed
+`ServerSinkOptions.stdout` / `.stderr` field.
+
+Gates, run from `/home/user/fleet/console` after the rows landed:
+
+| Command | Exit |
+| --- | --- |
+| `npm run format:check` | 0 |
+| `npm run lint:check` | 0 |
+| `npm run check` | 0 |
+| `npm run build` | 0 |
+| `npm test` | 0 — `src` 638 passed (17 files), `policy` 111 passed, `config` 46 passed, `setup` 23 passed (3 files), `guides` 91 passed |
+
+`npx scaffold audit --offline` printed:
+
+```
+┌─────────────────────┬─────────┬───────┐
+│ path                │ group   │ drift │
+├─────────────────────┼─────────┼───────┤
+│ configs/browsers.ts │ configs │ stale │
+└─────────────────────┴─────────┴───────┘
+1 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+```
+
+The Orchestrator's disposition: this `configs/browsers.ts` stale row is the same vendored-file drift
+carried in the Orchestrator's drift database at 16:19 UTC, settled at landing with `scaffold repair`,
+not a condition this unit's rows touch or own (`git status --short` shows the file unmodified). The
+audit's zero-drift criterion is read at the landing's deciding run, not inside this unit's exec.
+
+`git status --short` continues to list only Owned paths beside the unit's earlier entries. Full
+output in `/home/user/work/evidence/conform-console.status`; the diff in
+`/home/user/work/evidence/conform-console.diff`.
+
 ## Observations for a successor unit
 
 Each is a finding outside this round's rows, recorded against the capability that owns it rather than
@@ -400,3 +469,148 @@ fixed here.
   `tests/src/core/Spinner.test.ts:315` and `tests/src/core/Progress.test.ts:204` still write
   `strip(text).replace(/^\r/, '')` inline. Now that `tests/setup.ts` exports the shared helper, each
   call site can route through it. Neither file is owned by this round.
+
+## Fix round 3
+
+Audit round 3 held claim 3, and the objective lane (Opus) held every other claim and named the
+sites for F3-1 through F3-3 and referral R3-B. Row 6's ruling for R3-B: every title or comment
+naming a `ServerSinkOptions.stdout` / `.stderr` target reads `stdout` and `stderr`, and the local
+bindings `out` and `err` keep their names.
+
+| Row | Site | Line now |
+| --- | --- | --- |
+| 1 | `tests/src/server/factories.test.ts:11` | `it('routes error and warn to the stderr stream, everything else to stdout', () => {` |
+| 2 | `tests/src/server/factories.test.ts:87` | `it('applies styled:false to stdout and stderr even when one target is a TTY', () => {` |
+| 2 | `tests/src/server/factories.test.ts:98` | `it('applies styled:true to stdout and stderr even when neither target is a TTY', () => {` |
+| 3 | `tests/src/server/factories.test.ts:375` | `it('routes only error and warn to stderr; info / debug / an omitted level go to stdout', () => {` |
+| 4 | `tests/src/server/factories.test.ts:214` | `it('reports the live stdout-stream width on a TTY', () => {` |
+| 4 | `src/server/factories.ts:77` | `// A fixed override wins; otherwise the live stdout-stream width (tracks a resize), with the` |
+| 5 (F3-1) | `src/core/helpers.ts:167-169` | `selectWriter('error', { log: 'stdout', warn: 'stderr', error: 'stderr' }) // 'stderr'` / `selectWriter('debug', { log: 'stdout', warn: 'stderr', error: 'stderr' }) // 'stdout'` / `selectWriter(undefined, { log: 'stdout', warn: 'stderr', error: 'stderr' }) // 'stdout'` |
+
+Row 5's confirmation: the remark at `src/core/helpers.ts:156-158` states that the server sink
+routes `warn` alongside `error` by supplying its error stream for both, matching `console.warn`
+writing to `stderr`. The corrected example's folded set (`warn: 'stderr'`) now demonstrates exactly
+that fold, where fix round 2's set left `warn` at `'stdout'` and disagreed with the remark.
+
+Row 6's capture and sweep: `\b(out|err)\b` (case-sensitive) re-run through the `Grep` tool over
+`src`; `tests` excluding `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts`;
+`guides/console.md`; `guides/README.md`; `README.md`. The tool's verbatim output is written to
+`/home/user/work/evidence/console-proofs/fix2-out-err-sweep.txt`, keeping the `[Omitted long
+matching line]` rendering at `guides/console.md:400` and no row from the three excluded files.
+`guides/README.md` and `README.md` return no matches.
+
+Rulings for the remaining hits, by sense:
+
+- **`fan out` / `fan-out` / `fans out` prose** — `src/core/types.ts`,
+  `src/core/loggers/LoggerManager.ts`, `src/core/constants.ts`, `src/core/Reporter.ts`,
+  `tests/src/core/loggers/LoggerManager.test.ts`, `tests/src/core/Styler.test.ts`,
+  `tests/src/core/Capture.test.ts`, `tests/src/server/ProcessCapture.test.ts:636`,
+  `guides/console.md` (Surface rows, method table, `manager.info` comment, the test-bullet
+  paragraph) — ordinary English for the registry's broadcast behavior, unrelated to the renamed
+  target.
+- **Other ordinary-English `out`** — `kept out` (`tests/guides.test.ts:68`), `keeps … out of`
+  (`tests/guides.test.ts:431`), `on its way out` (`tests/distribution.test.ts:695`), `lay out`
+  (`src/core/types.ts:369`), `parsing … out of` (`src/core/types.ts:378`), `pad(s) out`
+  (`src/core/types.ts:605`, `src/core/helpers.ts:336`, `tests/src/core/helpers.test.ts:416,842`),
+  `copies out` (`src/core/types.ts:1096`, `src/core/Retention.ts:17`), `SGR string out`
+  (`src/core/renderers/ANSIRenderer.ts:12`), `lay out to` (`src/core/Reporter.ts:33`), `string out`
+  (`tests/src/core/renderers/ANSIRenderer.test.ts:6`), `out-of-range` (`tests/src/core/helpers.test.ts:327`),
+  `swapped out` (`tests/src/server/factories.test.ts:390`), `leaks out` (`tests/src/server/ProcessCapture.test.ts:62`)
+  — none names a target.
+- **Local bindings and the prose describing them** — the `out` / `err` bindings the Orchestrator
+  already permits at `src/server/factories.ts:54-55,58-59,66,79`; `const out = …` / `const err = …`
+  bindings and their describing prose across `src/core/factories.ts:165,169,170`,
+  `tests/src/core/**`, `tests/src/server/ProcessCapture.test.ts`, `tests/setupServer.ts:38`, and
+  `guides/console.md:522`; and every remaining `out.target` / `err.target` / `out.writes` /
+  `err.writes` reference plus the `no level → out` and `omitted level → out` comments in
+  `tests/src/server/factories.test.ts` — each is that file's own local variable naming a
+  `StreamTarget` fixture or the sink's own bound parameter, not a title, comment, or example naming
+  a `ServerSinkOptions` field. Every construction call on these lines already spells the field
+  `stdout` / `stderr`.
+- **`selectWriter`'s generic sample strings** — `tests/src/core/helpers.test.ts:1164-1195` exercises
+  `WriterSet<T>` with arbitrary strings `'out'` / `'err'` / `'warn'`; the file is off-limits under
+  this round's scope and names no renamed target.
+- **`RangeError('out')`** — `tests/src/core/helpers.test.ts:945-946` is an unrelated error-message
+  fixture, not a target name.
+
+No title, comment, or example in the recorded set names a `ServerSinkOptions` target with the old
+words after this round.
+
+Gates, run from `/home/user/fleet/console` after the rows landed:
+
+| Command | Exit |
+| --- | --- |
+| `npm run format:check` | 0 |
+| `npm run lint:check` | 0 |
+| `npm run check` | 0 |
+| `npm run build` | 0 |
+| `npm test` | 0 — `src` 638 passed (17 files), `policy` 111 passed, `config` 46 passed, `setup` 23 passed (3 files), `guides` 91 passed |
+
+`npx scaffold audit --offline` printed:
+
+```
+┌─────────────────────┬─────────┬───────┐
+│ path                │ group   │ drift │
+├─────────────────────┼─────────┼───────┤
+│ configs/browsers.ts │ configs │ stale │
+└─────────────────────┴─────────┴───────┘
+1 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+```
+
+The `configs/browsers.ts` row is the Orchestrator's, unchanged from fix round 2's disposition; this
+round's rows do not touch it (`git status --short` shows the file unmodified). Read as reported,
+not stopped on.
+
+`node /home/user/scaffold/tmp/work/evidence.mjs console` wrote
+`/home/user/work/evidence/conform-console.diff` (3896 lines) and
+`/home/user/work/evidence/conform-console.status` (39 entries).
+
+## Fix round 4
+
+Closes audit round 4's refutation of claim 3 (`tests/setupServer.ts:38` still named `out` / `err`),
+F4-2 (a stale second ruling for the `\b(out|err)\b` sweep at this file's earlier lines 227-250), and
+F4-1 (the `selectWriter` example showed no `warn` selection).
+
+| Row | Site | Line now |
+| --- | --- | --- |
+| 1 | `tests/setupServer.ts:38` | `` * @returns The `target` (pass as `stdout` / `stderr` / a process-stream stand-in) plus its `writes` `` |
+| 2 | `src/core/helpers.ts:168` | `` * selectWriter('warn', { log: 'stdout', warn: 'stderr', error: 'stderr' }) // 'stderr' `` |
+| 3 | `conform-console-report.md` (the `\b(out|err)\b` ruling paragraph) | Struck the earlier ruling that listed lines `11, 16, 87, 98, 214, 330-331, 341, 346, 375, 381`; replaced it with one sentence pointing to the `## Fix round 3` rulings (console-fix3-1 through console-fix3-4) as the current ruling, with `tests/setupServer.ts:38` added as repaired |
+
+Row 3's capture: the sweep re-ran through the `Grep` tool over `src`; `tests` excluding
+`tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/config.test.ts`; `guides/console.md`;
+`guides/README.md`; `README.md`. The tool's verbatim output is written to
+`/home/user/work/evidence/console-proofs/fix2-out-err-sweep.txt`. `tests/setupServer.ts:38` no
+longer appears in the hit list (the site now reads `stdout` / `stderr`); every remaining hit matches
+the `## Fix round 3` rulings — `fan out` / `fan-out` prose, other ordinary-English `out`, local
+`out` / `err` bindings and the prose describing them, `selectWriter`'s generic `WriterSet<T>` sample
+strings at `tests/src/core/helpers.test.ts:1164-1195`, and the `RangeError('out')` fixture.
+`guides/README.md` and `README.md` return no hit.
+
+Gates, run from `/home/user/fleet/console` after the rows landed:
+
+| Command | Exit |
+| --- | --- |
+| `npm run format:check` | 0 |
+| `npm run lint:check` | 0 |
+| `npm run check` | 0 |
+| `npm run build` | 0 |
+| `npm test` | 0 — `src` 638 passed (17 files), `policy` 111 passed, `config` 46 passed, `setup` 23 passed (3 files), `guides` 91 passed |
+
+`npx scaffold audit --offline` printed:
+
+```
+┌─────────────────────┬─────────┬───────┐
+│ path                │ group   │ drift │
+├─────────────────────┼─────────┼───────┤
+│ configs/browsers.ts │ configs │ stale │
+└─────────────────────┴─────────┴───────┘
+1 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+```
+
+The `configs/browsers.ts` row is the Orchestrator's; this round's rows do not touch it. Read as
+reported, not stopped on.
+
+`node /home/user/scaffold/tmp/work/evidence.mjs console` wrote
+`/home/user/work/evidence/conform-console.diff` (3905 lines) and
+`/home/user/work/evidence/conform-console.status` (39 entries).

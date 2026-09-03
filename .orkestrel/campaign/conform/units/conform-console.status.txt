@@ -1,0 +1,40 @@
+ M README.md
+ M configs/browsers.ts
+ M guides/README.md
+ M guides/console.md
+ M src/browser/factories.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/Capture.ts
+ M src/core/Progress.ts
+ M src/core/Reporter.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/index.ts
+ R src/core/Logger.ts -> src/core/loggers/Logger.ts
+ R src/core/LoggerManager.ts -> src/core/loggers/LoggerManager.ts
+ R src/core/ANSIRenderer.ts -> src/core/renderers/ANSIRenderer.ts
+ M src/core/types.ts
+ M src/server/ProcessCapture.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M src/server/validators.ts
+ M tests/guides.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupServer.ts
+ M tests/src/browser/factories.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/core/Capture.test.ts
+ M tests/src/core/Progress.test.ts
+ M tests/src/core/Reporter.test.ts
+ M tests/src/core/Spinner.test.ts
+ R tests/src/core/Logger.test.ts -> tests/src/core/loggers/Logger.test.ts
+ R tests/src/core/LoggerManager.test.ts -> tests/src/core/loggers/LoggerManager.test.ts
+ R tests/src/core/ANSIRenderer.test.ts -> tests/src/core/renderers/ANSIRenderer.test.ts
+ M tests/src/server/ProcessCapture.test.ts
+ M tests/src/server/factories.test.ts
