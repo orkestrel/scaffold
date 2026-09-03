@@ -1,0 +1,12 @@
+{
+ "folded": [],
+ "orchestrator": [],
+ "breaking": [
+  { "id": "workflow-subj-8", "consumers": [] },
+  { "id": "workflow-subj-9", "consumers": [] },
+  { "id": "workflow-subj-10", "consumers": ["toolbox src/core/types.ts:9", "toolbox src/core/types.ts:125", "toolbox src/core/types.ts:126", "toolbox tests/src/core/helpers.test.ts:5", "toolbox tests/src/core/helpers.test.ts:152"] },
+  { "id": "workflow-subj-11", "consumers": ["toolbox src/core/types.ts:7", "toolbox src/core/types.ts:167", "toolbox src/core/types.ts:186", "toolbox src/core/factories.ts:8", "toolbox src/core/factories.ts:320", "toolbox src/core/factories.ts:325", "toolbox tests/src/core/factories.test.ts:6", "toolbox tests/src/core/factories.test.ts:600", "toolbox guides/toolbox.md:21"] },
+  { "id": "workflow-subj-14", "consumers": [] }
+ ],
+ "note": "workflow-subj-9 and workflow-subj-10 are coupled — the TASK_STATUSES → LIFECYCLE_STATUSES and TERMINAL_TASK_STATUSES → TERMINAL_STATUSES renames land in the same edit as the TaskStatus, PhaseStatus, and WorkflowStatus aliases collapsing to LifecycleStatus — and both rows stand under one writer. The mcp hits the sweep listed (tests/setupConformance.ts:501-527, the ext-tasks schema mirror) are MCP's own protocol vocabulary (TaskStatusNotificationParams, the task schema rows), not an import from @orkestrel/workflow; test's guides/test.md:1358 names TaskStatus in its own prose about this package and is a test-prose row at the wave. Toolbox is the one source consumer: its L6 unit takes the LifecycleStatus and WorkflowRegistry substitutions first. The vendored guides/workflow.md mirrors in toolbox and agent refresh at the wave. Incoming consumer edits taken first: queue's QueueExecution → QueueContext patch at src/core/Runner.ts (reports/conform-queue-report.md § Shared-file patches) and guide's symbol.kind → symbol.keyword line in tests/guides.test.ts, carried by the addendum."
+}

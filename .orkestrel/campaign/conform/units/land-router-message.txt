@@ -1,0 +1,8 @@
+Conform router to the fleet rules: the route definer, the contract errors, the typed navigator router, the executed fences
+
+`route` becomes `defineRoute`; every refusal at the public boundary throws `ContractError` where it threw `TypeError`; `NavigatorInterface.router` is typed `RouterInterface<Meta>` and `computeNavigationKey` reads `.meta` directly; the group interfaces carry their method tables. `Dispatcher` emits the registered pattern for a derived `OPTIONS` match, which the `match` contract already promised, in place of the request pathname; the navigator keeps one `#listener`. The core and browser guide fences run in `tests/guides.test.ts` and `tests/src/browser/Navigator.test.ts` against the real barrels, and the server helper proof parks on events rather than a timer. Every `AGENTS §` citation is stated inline or deleted; `via`, `e.g.`, the temporal `once`, and the `above`/`below` pointers leave the sources, the tests, and the guides, with the comparison senses ruled and kept; the guides map narrows to the runtime mirrors.
+
+Audit: Grok-first rounds 1 to 3 (Luna distillates and checkers; Opus objective FAIL 4, 5 then FAIL 4 on the record, closed by three fix rounds on Sonnet; round-3 checker PASS); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-router-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

@@ -1,0 +1,12 @@
+{
+ "folded": [
+  { "id": "ollama-subj-11", "carrier": "ollama-obj-1" },
+  { "id": "ollama-obj-9", "carrier": "ollama-subj-14" }
+ ],
+ "orchestrator": [],
+ "breaking": [
+  { "id": "ollama-obj-1", "consumers": [] },
+  { "id": "ollama-subj-12", "consumers": [] }
+ ],
+ "note": "ollama-obj-1 carries ollama-subj-11 (the parse* coercers return T | undefined; no identifier renamed); ollama-subj-12 renames assembleResult to buildResult, and agent's assembleResult hits are agent's own symbol, not an import from @orkestrel/ollama, so no consumer patch is owed; no fleet checkout imports @orkestrel/ollama. Incoming consumer edits: guide's symbol.kind → symbol.keyword line in tests/guides.test.ts; the vendored guides/agent.md, guides/workspace.md, and guides/queue.md mirrors refresh at the wave."
+}

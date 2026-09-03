@@ -1,0 +1,14 @@
+{
+ "folded": [
+  { "id": "program-obj-7", "carrier": "program-obj-1" }
+ ],
+ "orchestrator": [],
+ "breaking": [
+  { "id": "program-subj-2", "consumers": [] },
+  { "id": "program-subj-3", "consumers": [] },
+  { "id": "program-subj-4", "consumers": [] },
+  { "id": "program-subj-13", "consumers": [] },
+  { "id": "program-subj-16", "consumers": [] }
+ ],
+ "note": "program-obj-7's isArray<Subject> narrowing sits inside the RecordingReason.reason implementation program-obj-1 introduces, so one writer lands both under program-obj-1. The breaking rows (STATUS_PRECEDENCE, buildNotices and buildLimits, ProgramManagerInterface.size, AggregateInput.by and AggregateDefinition.by, tallyProgram) have no source consumer and no mirror hit; the size and by sweeps' hits are unrelated identifiers and prose. Incoming consumer edits taken first: qualifier's and rater's renamed helpers and the RuleResult.conclusion drop reaching program's sources, tests, README, and guide (reports/conform-qualifier-report.md and reports/conform-rater-report.md § Shared-file patches), and guide's symbol.kind → symbol.keyword line in tests/guides.test.ts, carried by the addendum."
+}

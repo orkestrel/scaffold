@@ -1,0 +1,11 @@
+{
+ "folded": [
+  { "id": "agent-subj-2", "carrier": "agent-obj-10" }
+ ],
+ "orchestrator": [],
+ "breaking": [
+  { "id": "agent-obj-10", "consumers": [] },
+  { "id": "agent-subj-14", "consumers": [] }
+ ],
+ "note": "agent-obj-10 changes ScopeManager's constructor shape to the one types.ts declares with no public identifier renamed; agent-subj-14 renames InstructionInterface.format and InstructionInput.format to override with no fleet source consumer, and toolbox's and ollama's vendored guides/agent.md mirrors refresh at the wave. Incoming consumer edits taken first: queue's QueueExecution → QueueContext patch at src/core/helpers.ts (reports/conform-queue-report.md § Shared-file patches) and guide's symbol.kind → symbol.keyword line in tests/guides.test.ts, carried by the addendum."
+}
