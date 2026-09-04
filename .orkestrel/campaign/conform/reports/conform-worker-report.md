@@ -19,7 +19,7 @@ Two sites the addendum did not name took the same substitution, because the rena
 - `src/server/handlers.ts:25` — the `serveWorker` TSDoc said the stable id is "exposed as `execution.id`"; the interface it documents (`ServeWorkerOptions`) now says `context.id`, so the sentence reads `context.id`.
 - `src/server/handlers.ts:87` and `:96` — the local narrowing the string job id was named `execution`; it is `entry`, and the comment at `:84` reads "stable Queue entry id".
 
-Test and fixture parameter names that bind a `QueueContext` (`tests/src/core/Worker.test.ts`, `tests/src/server/fixtures/execution.ts`) keep the name `execution`, and the fixture file name `execution.ts` is unchanged. They are local bindings rather than a published contract, and the addendum bounded the substitution to the six source files and the guide.
+Test and fixture parameter names that bind a `QueueContext` (`tests/src/core/Worker.test.ts`, `tests/src/server/fixtures/execution.ts`) keep the name `execution`, and the fixture file name `execution.ts` is unchanged. They are local bindings rather than a published contract, and the addendum bounded the substitution to the source files it named and the guide.
 
 ## Rows
 
@@ -58,9 +58,9 @@ The refuter's operative form, in full.
 
 Failing-first, parity half: with `export * from './Dispatch.js'` removed from the barrel, `npm run test:guides` reported **3 failed | 15 passed (18)** — `re-exports every direct declaration that is not named internal`, `documents only barrel exports`, `the Threads fence drives one thread by hand and filters its replies` (`/home/user/work/evidence/worker-proofs/obj1-parity-control-red.txt`). Restored, the same command reports **18 passed (18)** (`/home/user/work/evidence/worker-proofs/guides-after.txt`).
 
-Failing-first, `createThread` half: with the body planted as `new Thread(script, undefined)`, `npx vitest run … --project src:server tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createThread > resolves a live thread and clones its \`workerData\` across at spawn` (`/home/user/work/evidence/worker-proofs/obj1-createThread-control-red.txt`). Restored, the exact same command, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts -t "resolves a live thread and clones its \`workerData\` across at spawn"`, reported **1 passed | 8 skipped (9)** (`/home/user/work/evidence/worker-proofs/obj1-createThread-green-isolated.txt`).
+Failing-first, `createThread` half: with the body planted as `new Thread(script, undefined)`, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createThread > resolves a live thread and clones its \`workerData\` across at spawn` (`/home/user/work/evidence/worker-proofs/obj1-createThread-control-red.txt`). Restored, that same command reports **9 passed (9)** (fix round 3's run), and narrowed to the case, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts -t "resolves a live thread and clones its \`workerData\` across at spawn"`, it reported **1 passed | 8 skipped (9)** (`/home/user/work/evidence/worker-proofs/obj1-createThread-green-isolated.txt`).
 
-Old-name sweeps, both empty:
+Old-name sweeps, each empty:
 
 - `grep -rniE "\b(spawnThread|spawnThreads|spawnThreaded|spawnThreading)\b"` over `README.md guides/worker.md guides/README.md src tests` (`--include=*.ts --include=*.md`) — no output.
 - `grep -rnE "\`dispatch\`|\bdispatch\(|import .*\bdispatch\b"` over the same population — no output.
@@ -85,14 +85,14 @@ Documented the obligation on the interface that owns it and proved the documenta
 
 - `src/server/types.ts:41-45` — the `NodeThread` `@remarks` states that a dispatch marks a thread dead for a `NodeThread` this package produced through `createThread` or a `createNodeWorker` pool, and that a foreign implementation owns flipping its own `alive` when its `worker` is terminated.
 - `src/server/Dispatch.ts:35-37` — the same qualifier on the class that carries the behaviour (the `dispatch` wrapper the row named is deleted by worker-obj-1).
-- `guides/worker.md:210` — "flips `alive = false` for a thread this package produced".
-- `tests/src/server/helpers.test.ts:601-630` — a plain object satisfying `NodeThread` over a real `ThreadWorker`, aborted, asserting the job rejects with the caller's exact reason, that the supplied object's `alive` is untouched, and (as the case's own control) that the supplied `worker` really was terminated.
+- `guides/worker.md:213` — "flips `alive = false` for a thread this package produced".
+- `tests/src/server/helpers.test.ts:613-639` — a plain object satisfying `NodeThread` over a real `ThreadWorker`, aborted, asserting the job rejects with the caller's exact reason, that the supplied object's `alive` is untouched, and (as the case's own control) that the supplied `worker` really was terminated.
 
-Failing-first: with `#terminate` planted to `else Object.assign(this.#thread, { alive: false })` for the non-`Thread` branch, `npx vitest run … --project src:server tests/src/server/helpers.test.ts` reported **1 failed | 47 passed (48)**, failing exactly `Dispatch — a consumer-supplied NodeThread owns its own liveness > rejects the aborted job and terminates the supplied worker, leaving \`alive\` untouched` at `:625` (`/home/user/work/evidence/worker-proofs/obj6-control-red.txt`). Restored, the same command reports **48 passed (48)** (`/home/user/work/evidence/worker-proofs/obj8-control-green.txt`).
+Failing-first: with `#terminate` planted to `else Object.assign(this.#thread, { alive: false })` for the non-`Thread` branch, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/helpers.test.ts` reported **1 failed | 47 passed (48)**, failing exactly `Dispatch — a consumer-supplied NodeThread owns its own liveness > rejects the aborted job and terminates the supplied worker, leaving \`alive\` untouched` at `:614` (`/home/user/work/evidence/worker-proofs/obj6-control-red.txt`). Restored, the same command reports **48 passed (48)** (`/home/user/work/evidence/worker-proofs/obj8-control-green.txt`).
 
 ### worker-obj-7 — applied
 
-`tests/setupServer.ts:22-24` exports `buildFixtureURL(name: string): URL`, anchored with `resolveRoot(import.meta)` from `@orkestrel/test`. The three local `fixture` declarations are deleted and every call site imports the shared helper: `tests/src/server/helpers.test.ts`, `tests/src/server/handlers.test.ts`, `tests/setupServer.test.ts`, and `tests/src/server/factories.test.ts` (which previously built its own inline `new URL('./fixtures/…')` specifiers). `tests/setupServer.test.ts:56-65` proves the export: the href ends with `tests/src/server/fixtures/double.ts`, `existsSync(fileURLToPath(url))` is true, and a name with no fixture behind it is absent — the control that keeps the existence assertion non-vacuous.
+`tests/setupServer.ts:22-24` exports `buildFixtureURL(name: string): URL`, anchored with `resolveRoot(import.meta)` from `@orkestrel/test`. The local `fixture` declarations in `tests/setupServer.test.ts`, `tests/src/server/handlers.test.ts`, and `tests/src/server/helpers.test.ts` are deleted, and every call site imports the shared helper — those files plus `tests/src/server/factories.test.ts`, which previously built its own inline `new URL('./fixtures/double.ts', import.meta.url)` and `new URL('./fixtures/echo-data.ts', import.meta.url)` specifiers. `tests/setupServer.test.ts:56-65` proves the export: the href ends with `tests/src/server/fixtures/double.ts`, `existsSync(fileURLToPath(url))` is true, and a name with no fixture behind it is absent — the control that keeps the existence assertion non-vacuous.
 
 Broad reading retained: with the body planted as `tests/src/server/${name}`, `npm run test:setup` reported **3 failed | 7 passed (10)** (`/home/user/work/evidence/worker-proofs/obj7-control-red.txt`). Restored: **10 passed (10)**.
 
@@ -102,20 +102,20 @@ Sweep: `grep -rn "const fixture = " tests` — no output.
 
 ### worker-obj-8 — applied (carry row worker-c1 ruled DRIFT, closed)
 
-Every `await waitForDelay(20)` gate is gone. `waitForCondition` from `@orkestrel/test` replaces all three, each with a described condition and an explicit `{ budget: 5_000 }`:
+Every `await waitForDelay(20)` gate is gone. `waitForCondition` from `@orkestrel/test` replaces each, with a described condition and an explicit `{ budget: 5_000 }`:
 
 - `tests/src/server/helpers.test.ts:239` — `'the long job is in flight'`.
 - `:275` — `'the long job is in flight'` (the handoff spec).
 - `:727` — `'three jobs are in flight'`.
 
-Both abort specs warm the pool with a completed job before the long job, so the `acquire` returns an already-online idle thread and the abort lands on the attached listener rather than on a pending spawn. `waitForDelay` is no longer imported by that file.
+Each abort spec warms the pool with a completed job before the long job, so the `acquire` returns an already-online idle thread and the abort lands on the attached listener rather than on a pending spawn. `waitForDelay` is no longer imported by that file.
 
 The first abort spec was strengthened past `rejects.toBeDefined()`. These readings drove the final shape, and the second is a finding worth carrying:
 
-1. Planting `#terminate` to skip `evict()` did **not** redden the suite: `npx vitest run … tests/src/server/helpers.test.ts` reported **48 passed (48)** (`/home/user/work/evidence/worker-proofs/obj8-control-red.txt`). The pool's `validate` reads `alive && worker.threadId > 0`, and `terminate()` already drops `threadId`, so `evict()` alone is not observable through the public surface.
+1. Planting `#terminate` to skip `evict()` did **not** redden the suite: `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/helpers.test.ts` reported **48 passed (48)** (`/home/user/work/evidence/worker-proofs/obj8-control-red.txt`). The pool's `validate` reads `alive && worker.threadId > 0`, and `terminate()` already drops `threadId`, so `evict()` alone is not observable through the public surface.
 2. Planting the real defect the row names — `#abort` calling `#fail` instead of `#terminate`, so the signal-ignoring thread is never terminated — left the spec green when its assertion was only "a replacement job resolves": the reused thread finishes its 2-second spin inside the deadline (`/home/user/work/evidence/worker-proofs/obj8-control-red-2.txt`, **2 failed | 46 passed (48)**, and neither failure was the abort spec).
 
-So the spec now runs over `identify.ts`, which echoes its own `threadId`: it records the leased thread's id from the warm-up job, aborts the long job, and asserts the replacement job reports a **different** id. Against the `#abort` plant that reads the same id and fails. `npx vitest run … tests/src/server/helpers.test.ts` reported **3 failed | 45 passed (48)**, including `createNodeWorker — in-flight signal abort terminates + evicts the thread > rejects the aborted attempt and replaces the (signal-ignoring) thread` (`/home/user/work/evidence/worker-proofs/obj8-control-red-3.txt`). With the plant removed the same command reports **48 passed (48)** (`/home/user/work/evidence/worker-proofs/obj8-control-green.txt`).
+So the spec now runs over `identify.ts`, which echoes its own `threadId`: it records the leased thread's id from the warm-up job, aborts the long job, and asserts the replacement job reports a **different** id. Against the `#abort` plant that reads the same id and fails. `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/helpers.test.ts` reported **3 failed | 45 passed (48)**, including `createNodeWorker — in-flight signal abort terminates + evicts the thread > rejects the aborted attempt and replaces the (signal-ignoring) thread` (`/home/user/work/evidence/worker-proofs/obj8-control-red-3.txt`). With the plant removed the same command reports **48 passed (48)** (`/home/user/work/evidence/worker-proofs/obj8-control-green.txt`).
 
 No timeout was raised anywhere; the headroom sits in the `waitForCondition` budgets.
 
@@ -141,7 +141,9 @@ The Threads fence body itself came from worker-subj-13 and the symbol rename fro
 
 Sweep: `grep -rnE "Date\.now" src tests --include=*.ts` — no output.
 
-the row is a rule-driven rewrite — `performance.now()` for an elapsed interval per `.claude/rules/tests.md` — whose defect, a wall-clock adjustment during a fixture's spin, has no reachable test vector; its evidence is the `Date\.now` sweep over `src` and `tests` and the green run, and no negative control is owed.
+The row is a rule-driven rewrite — `performance.now()` for an elapsed interval per `.claude/rules/tests.md` — whose defect, a wall-clock adjustment during a fixture's spin, has no reachable test vector; its evidence is the `Date\.now` sweep over `src` and `tests` and the green run, and no negative control is owed.
+
+Fix round 3 carries the Orchestrator's R1 ruling on the round-3 objective lane: claim 4's failing-first conjunct excludes a rule-driven rewrite with no reachable vector, so the audit reads this row under that static-conformance exception rather than as a missing control.
 
 ### worker-obj-11 — applied
 
@@ -159,7 +161,7 @@ Sweep: `grep -rn "core/workers/" tests src guides README.md` — no output.
 
 `tests/src/server/factories.test.ts:135-160` proves it end to end: an `on: { success }` hook fires for a `createNodeWorker` job, and the throw from that same listener reaches the supplied `error` handler.
 
-Failing-first: with the two spread lines removed from `build()`, `npx vitest run … tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createNodeWorker > wires the \`on\` hooks at construction and routes a listener throw to \`error\`` (`/home/user/work/evidence/worker-proofs/subj2-control-red.txt`). Restored, the exact same command, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts -t "wires the \`on\` hooks at construction and routes a listener throw to \`error\`"`, reported **1 passed | 8 skipped (9)** (`/home/user/work/evidence/worker-proofs/subj2-green-isolated.txt`).
+Failing-first: with the `on` and `error` spread lines removed from `build()`, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts` reported **1 failed | 8 passed (9)** on `createNodeWorker > wires the \`on\` hooks at construction and routes a listener throw to \`error\`` (`/home/user/work/evidence/worker-proofs/subj2-control-red.txt`). Restored, that same command reports **9 passed (9)** (fix round 3's run), and narrowed to the case, `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts -t "wires the \`on\` hooks at construction and routes a listener throw to \`error\`"`, it reported **1 passed | 8 skipped (9)** (`/home/user/work/evidence/worker-proofs/subj2-green-isolated.txt`).
 
 The option addition ripples into `NodeWorkerOptionsProbe` (`tests/setupServer.ts`), which implements `Required<NodeWorkerOptions>`: it gains `on` and `error` getters ahead of `script`, and the read-order assertions in `tests/setupServer.test.ts:110-121` and `tests/src/server/factories.test.ts:181-192` lead with `'on', 'error'`. The snapshot tally in that second file reads `expect(reads.count).toBe(10)`.
 
@@ -168,7 +170,7 @@ The option addition ripples into `NodeWorkerOptionsProbe` (`tests/setupServer.ts
 Every default in the package's public TSDoc uses the fixed form.
 
 - `src/core/types.ts:55-59` — `concurrency` ends "Default: 1.", `retries` "Default: 0.", `timeout` "Default: no per-attempt deadline."
-- `src/server/types.ts:68-73` — the same three sentences on the same three bullets.
+- `src/server/types.ts:68-73` — the same sentences on the same `concurrency`, `retries`, and `timeout` bullets.
 - `src/core/factories.ts:21-22` — the `@param` parentheticals are gone; it lists the optional keys and points at `{@link WorkerOptions}`, which is the one place each default is stated.
 - `src/core/types.ts:53-54` — the `pool` bullet stated a default in free prose too ("its `max` defaults to `concurrency`"), which the row's evidence did not enumerate. It reads "Default for its `max`: the `concurrency` value." Recorded as an ancillary decision on the same rule sentence.
 
@@ -195,7 +197,7 @@ Closing sweeps, each over `README.md guides/worker.md guides/README.md src tests
 
 An introducing sentence now precedes each bare table and list the evidence named: `guides/worker.md` §Factories (`:53`), §Threads table (`:86`), §Entities (`:95`), §Types (`:104`), the event-map table under §Observing (`:373`), §Practices (`:441`), §Tests (`:474`), §See also (`:548`); `guides/README.md` §By concept (`:7`) and §By directory (`:13`); `README.md` §Requirements (`:30`). Fix round 1 deleted the citation-only `guides/README.md` See-also section. The fences at `guides/worker.md:37` and the Threads fence keep their existing introductions.
 
-Ancillary decision recorded: the three §Patterns fences (`### A resource-backed worker`, `### CPU-parallel jobs over threads`, `### Durable jobs across restarts`) sat bare under their headings and the evidence did not list them. The same rule sentence reaches a code fence, they are inside Owned, and closing them costs one sentence each, so each now carries an introduction. No vendored dependency guide was touched.
+Ancillary decision recorded: the §Patterns fences `### A resource-backed worker`, `### CPU-parallel jobs over threads`, and `### Durable jobs across restarts` sat bare under their headings and the evidence did not list them. The same rule sentence reaches a code fence, they are inside Owned, and closing them costs one sentence each, so each now carries an introduction. No vendored dependency guide was touched.
 
 ### worker-subj-11 — applied
 
@@ -214,7 +216,7 @@ The Threads fence at `guides/worker.md:69-84` exercises every symbol it imports 
 - `:306` — "Per-job consumer context is explicit, structured-cloneable `TInput`."
 - `:64-67` — "Exported for completeness and direct use; the factory is the intended entry point." is replaced by "Use these to drive one thread yourself; `createNodeWorker` is the entry point for pooled, queued work."
 
-Sweep for `remain`, `remains`, and `still` over `guides/worker.md guides/README.md README.md src`: each remaining hit is concessive within a described case ("a throwing handler still frees the resource", "the pooled worker remains usable after the failure", "that reason remains first in `AggregateError.errors`") and stays. Four asserted continuity with an unstated earlier state and were rewritten: `guides/worker.md:12` "runtime `null` remains invalid" → "is invalid"; `guides/worker.md:242` and `src/server/types.ts:60` "a built `.js` / `.mjs` script remains an alternative" → "is an alternative"; `README.md:19` "remains explicit structured-cloneable input" → "is explicit, structured-cloneable input"; `src/server/NodeWorker.ts:16` "The resulting public entity remains the plain core `WorkerInterface`" → "is the plain core `WorkerInterface`". The `src/server/helpers.ts` site the row named ("Per-job consumer context remains explicit") moved into the `Dispatch` TSDoc with worker-obj-1 and reads "is explicit" there.
+Sweep for `remain`, `remains`, and `still` over `guides/worker.md guides/README.md README.md src`: each remaining hit is concessive within a described case ("a throwing handler still frees the resource", "the pooled worker remains usable after the failure", "that reason remains first in `AggregateError.errors`") and stays. These asserted continuity with an unstated earlier state and were rewritten: `guides/worker.md:12` "runtime `null` remains invalid" → "is invalid"; `guides/worker.md:242` and `src/server/types.ts:60` "a built `.js` / `.mjs` script remains an alternative" → "is an alternative"; `README.md:19` "remains explicit structured-cloneable input" → "is explicit, structured-cloneable input"; `src/server/NodeWorker.ts:16` "The resulting public entity remains the plain core `WorkerInterface`" → "is the plain core `WorkerInterface`". The `src/server/helpers.ts` site the row named ("Per-job consumer context remains explicit") moved into the `Dispatch` TSDoc with worker-obj-1 and reads "is explicit" there.
 
 ### worker-subj-15 — applied
 
@@ -230,36 +232,40 @@ No implementation class declares a public `readonly id: string` data field ahead
 
 ## Files touched
 
+The rows are the paths `git status --short` reports in `/home/user/fleet/worker`, in that order.
+
 | File | Change |
 | ---- | ------ |
-| `/home/user/fleet/worker/src/core/types.ts` | `QueueContext` import and `WorkerHandler` third parameter renamed; the three defaults take the fixed "Default: …" form |
-| `/home/user/fleet/worker/src/core/Worker.ts` | `QueueContext` import; `#handle` parameter and its TSDoc reference renamed to `context` |
-| `/home/user/fleet/worker/src/core/factories.ts` | the `@param` parentheticals drop the duplicated defaults and point at `WorkerOptions` |
-| `/home/user/fleet/worker/src/server/types.ts` | `QueueContext`; `on?` / `error?` added to `NodeWorkerOptions` with their remarks; `workerData` mirror licence completed; defaults in fixed form; `Reply` and `NodeThread` remarks rewritten (public reply surface, foreign-implementation obligation) |
-| `/home/user/fleet/worker/src/server/helpers.ts` | reduced to `isReply`; imports no implementation class; header comment rewritten |
-| `/home/user/fleet/worker/src/server/factories.ts` | gains `createThread` with a runnable `@example`; `createNodeWorker` remarks name `createThread` and `Dispatch`; `just` deleted |
-| `/home/user/fleet/worker/src/server/Dispatch.ts` | published class TSDoc with `@example` and the foreign-thread obligation; `#context` field and reads renamed |
-| `/home/user/fleet/worker/src/server/NodeWorker.ts` | constructs `Thread` and `Dispatch` directly; captures and threads `on` / `error`; `context` parameter |
-| `/home/user/fleet/worker/src/server/handlers.ts` | count replaced by the named fields; `context.id` in TSDoc; the job-id local renamed `entry` |
-| `/home/user/fleet/worker/src/server/index.ts` | adds `export * from './Dispatch.js'` |
-| `/home/user/fleet/worker/guides/worker.md` | Threads section rewritten; `Dispatch` Entities row; `createThread` row; `QueueContext` substitution; introducing sentences; `on?` / `error?`; `workerData` mirror; vocabulary and continuity rewrites; Tests entries updated |
-| `/home/user/fleet/worker/guides/README.md` | introducing sentences before both index tables and the See-also list |
-| `/home/user/fleet/worker/README.md` | `via` → `through`; count removed from the Package section; continuity rewrite; Requirements introduction |
-| `/home/user/fleet/worker/tests/guides.test.ts` | `symbol.keyword`; INTERNAL and barrel-absence names; the flagship-fence transcription block |
-| `/home/user/fleet/worker/tests/setupServer.ts` | `buildFixtureURL` added; `tempDatabasePath` returns its scratch; probe gains `on` / `error` getters |
-| `/home/user/fleet/worker/tests/setupServer.test.ts` | type import first; `buildFixtureURL` case and its control; scratch-based `tempDatabasePath` case; probe read order |
-| `/home/user/fleet/worker/tests/src/server/factories.test.ts` | `createThread` cases; the `on` / `error` hook case; shared fixture URLs; scratch disposers; read order and tally |
-| `/home/user/fleet/worker/tests/src/server/helpers.test.ts` | `createThread` / `Dispatch` call sites; shared fixture URLs; `waitForCondition` budgets; warmed abort specs with the threadId eviction assertion; the foreign-`NodeThread` case; vocabulary |
-| `/home/user/fleet/worker/tests/src/server/handlers.test.ts` | shared fixture URLs; `just` recast; temporal `once`; describe renamed to "stable job identity" |
-| `/home/user/fleet/worker/tests/src/core/Worker.test.ts` | subject path corrected to `src/core/Worker.ts`; `via` and temporal `once` |
-| `/home/user/fleet/worker/tests/src/server/fixtures/slow.ts` | spin deadline on `performance.now()` |
-| `/home/user/fleet/worker/tests/src/server/fixtures/identify.ts` | spin deadline on `performance.now()`; temporal `once` |
-| `/home/user/fleet/worker/tests/src/server/fixtures/crash.ts` | comment names the `Dispatch` |
-| `/home/user/fleet/worker/tests/src/server/fixtures/load-throw.ts` | comment names `createThread` and the `Dispatch` |
-| `/home/user/fleet/worker/tests/src/server/fixtures/abortable.ts` | temporal `once` |
-| `/home/user/fleet/worker/tests/src/server/fixtures/throw-async.ts` | `just` recast |
+| `README.md` | `via` → `through`; the entry-point count removed from the Package section; continuity rewrite; Requirements introduction |
+| `guides/README.md` | introducing sentences before the By-concept and By-directory index tables; fix round 1 deleted the citation-only See-also section |
+| `guides/worker.md` | Threads section rewritten; `Dispatch` Entities row; `createThread` row; `QueueContext` substitution; introducing sentences; `on?` / `error?`; `workerData` mirror; vocabulary and continuity rewrites; Tests entries updated; fix round 3 states the listener-isolation property at `:384-386` and what a store must persist at `:351` |
+| `src/core/Worker.ts` | `QueueContext` import; `#handle` parameter and its TSDoc reference renamed to `context` |
+| `src/core/factories.ts` | the `@param` parentheticals drop the duplicated defaults and point at `WorkerOptions` |
+| `src/core/types.ts` | `QueueContext` import and `WorkerHandler` third parameter renamed; the `concurrency`, `retries`, `timeout`, and `pool` bullets take the fixed `Default:` form |
+| `src/server/Dispatch.ts` | published class TSDoc with `@example` and the foreign-thread obligation; `#context` field and reads renamed |
+| `src/server/NodeWorker.ts` | constructs `Thread` and `Dispatch` directly; captures and threads `on` / `error`; `context` parameter |
+| `src/server/factories.ts` | gains `createThread` with a runnable `@example`; `createNodeWorker` remarks name `createThread` and `Dispatch`; `just` deleted |
+| `src/server/handlers.ts` | count replaced by the named fields; `context.id` in TSDoc; the job-id local renamed `entry` |
+| `src/server/helpers.ts` | reduced to `isReply`; imports no implementation class; header comment rewritten |
+| `src/server/index.ts` | adds `export * from './Dispatch.js'` |
+| `src/server/types.ts` | `QueueContext`; `on?` / `error?` added to `NodeWorkerOptions` with their remarks; `workerData` mirror licence completed; defaults in fixed form; `Reply` and `NodeThread` remarks rewritten (public reply surface, foreign-implementation obligation) |
+| `tests/guides.test.ts` | `symbol.keyword`; INTERNAL and barrel-absence names; the flagship-fence transcription block; pointer prose at `:3` and `:195` |
+| `tests/setup.ts` | the base-setup heading at `:5` drops its `AGENTS` citation |
+| `tests/setupServer.test.ts` | type import first; `buildFixtureURL` case and its control; scratch-based `tempDatabasePath` case; probe read order; temporal `now` deleted at `:77` |
+| `tests/setupServer.ts` | `buildFixtureURL` added; `tempDatabasePath` returns its scratch; probe gains `on` / `error` getters; `createThrowingSuccess` exported |
+| `tests/src/core/Worker.test.ts` | subject path corrected to `src/core/Worker.ts`; `via` and temporal `once`; fix round 3 names the already-destroyed pool at `:851` and states the emitter's listener isolation at `:1207-1209` |
+| `tests/src/core/factories.test.ts` | the header comment drops its `AGENTS` citation and names the real-implementation boundary |
+| `tests/src/server/factories.test.ts` | `createThread` cases; the `on` / `error` hook case; shared fixture URLs; scratch disposers; read order and tally |
+| `tests/src/server/fixtures/abortable.ts` | temporal `once` |
+| `tests/src/server/fixtures/crash.ts` | comment names the `Dispatch` |
+| `tests/src/server/fixtures/identify.ts` | spin deadline on `performance.now()`; temporal `once` |
+| `tests/src/server/fixtures/load-throw.ts` | comment names `createThread` and the `Dispatch` |
+| `tests/src/server/fixtures/slow.ts` | spin deadline on `performance.now()` |
+| `tests/src/server/fixtures/throw-async.ts` | `just` recast |
+| `tests/src/server/handlers.test.ts` | shared fixture URLs; `just` recast; temporal `once`; describe renamed to "stable job identity" |
+| `tests/src/server/helpers.test.ts` | `createThread` / `Dispatch` call sites; shared fixture URLs; `waitForCondition` budgets; warmed abort specs with the threadId eviction assertion; the foreign-`NodeThread` case; vocabulary; fix round 3 names the suites the comments at `:203`, `:505`, and `:804` point to and deletes the temporal `now` at `:206` and `:273` |
 
-Diffstat: 26 files changed, 2460 lines in `git diff HEAD` (`/home/user/work/evidence/conform-worker.diff`).
+The tree diff is captured at `/home/user/work/evidence/conform-worker.diff`; that capture was taken after fix round 2 and predates fix round 3's prose rewrites. `/home/user/work/evidence/conform-worker.status` holds the same path list as the preceding table.
 
 ## Gates
 
@@ -273,7 +279,7 @@ Each run captured under `/home/user/work/evidence/worker-proofs/`. Before provin
 | `npm run build` | 0 | — | `gate-4-build.txt` |
 | `npm test` | 0 | `src:core`+`src:server` 111 passed (111); `policy` 111 passed (111); `config` 46 passed (46); `setup` 10 passed (10); `guides` 18 passed (18) | `gate-5-test.txt` |
 
-`git status --short` lists 26 entries, every one inside Owned (`/home/user/work/evidence/conform-worker.status`). No file under `.claude/`, `.codex/`, `.cursor/`, `.agents/`, `configs/`, `scripts/`, the vendored test set, a vendored `guides/<dep>.md` mirror, `package.json`, or `node_modules/` was written. No `npm install`, no discarding git command, no commit, no stage.
+`git status --short` lists the paths the Files touched table names, every one inside Owned (`/home/user/work/evidence/conform-worker.status`). No file under `.claude/`, `.codex/`, `.cursor/`, `.agents/`, `configs/`, `scripts/`, the vendored test set, a vendored `guides/<dep>.md` mirror, `package.json`, or `node_modules/` was written. No `npm install`, no discarding git command, no commit, no stage.
 
 **Observation, not a criterion.** The `npm test` reading was taken inside this unit's own exec with its harness resident. The Orchestrator's deciding run belongs after this unit exits.
 
@@ -307,13 +313,13 @@ None. No row stopped, no name collided, and no repair contradicted a rule.
 These ancillary decisions were taken and carried on from, as the deviation contract permits:
 
 1. The `QueueExecution` → `QueueContext` substitution extended to `src/server/handlers.ts`'s TSDoc reference and its job-id local, because the addendum's rename made that prose false about `ServeWorkerOptions`. Test and fixture parameter names keep `execution`.
-2. Introducing sentences were added to the three §Patterns fences in `guides/worker.md`, which the worker-subj-10 evidence did not enumerate but the rule it cites reaches.
+2. Introducing sentences were added to the §Patterns fences `### A resource-backed worker`, `### CPU-parallel jobs over threads`, and `### Durable jobs across restarts` in `guides/worker.md`, which the worker-subj-10 evidence did not enumerate but the rule it cites reaches.
 3. `createThread` and `isReply` were kept in the guide's §Threads table rather than moved into §Factories, so the section keeps its subject; parity is satisfied from either table.
 
 These readings corrected assumptions mid-unit and are worth carrying forward:
 
 - A worker thread whose script cannot be resolved reports `online` **before** it dies, so `createThread` resolves and the death arrives through the latch. My first `createThread` case asserted a rejection and failed (`/home/user/work/evidence/worker-proofs/src-server-after.txt`); the case now asserts the latch, which is what actually holds.
-- Removing `Dispatch`'s `evict()` call does not redden this suite, because the pool's `validate` reads `alive && worker.threadId > 0` and `terminate()` already drops `threadId`. `evict()` is therefore not independently observable through the public surface. Anyone auditing eviction coverage should know that the assertion that binds is the thread-identity one, not the liveness flag.
+- Removing `Dispatch`'s `evict()` call does not redden this suite, because the pool's `validate` reads `alive && worker.threadId > 0` and `terminate()` already drops `threadId`. `evict()` is therefore not independently observable through the public surface. The assertion that binds an eviction-coverage audit is the thread-identity one, not the liveness flag.
 
 ## Fix round 1
 
@@ -414,7 +420,7 @@ The `grep -rnE "defaults to|\(default " src` sweep returned no output. The accep
 
 `tests/setupServer.test.ts:77` reads “the same removed directory”; the temporal `now` is deleted.
 
-The case-insensitive `\b(above|below|now)\b` sweep over `tests/guides.test.ts`, `tests/setupServer.test.ts`, `tests/setupServer.ts`, and `tests/src` returned the `performance.now()` code tokens in `tests/src/server/fixtures/slow.ts:10,12` and `tests/src/server/fixtures/identify.ts:13,14`, which are permitted. It also returned pre-existing prose outside this fix round's owned lines in `tests/src/server/helpers.test.ts:203,206,273,505,804` and `tests/src/core/Worker.test.ts:851`; those `above`, `below`, and temporal `now` hits remain forbidden by `.claude/rules/writing.md`.
+The case-insensitive `\b(above|below|now)\b` sweep over `tests/guides.test.ts`, `tests/setupServer.test.ts`, `tests/setupServer.ts`, and `tests/src` returned the `performance.now()` code tokens in `tests/src/server/fixtures/slow.ts:10,12` and `tests/src/server/fixtures/identify.ts:13,14`, which are permitted. It also returned pre-existing prose outside this fix round's owned lines in `tests/src/server/helpers.test.ts:203,206,273,505,804` and `tests/src/core/Worker.test.ts:851`; those `above`, `below`, and temporal `now` hits remain forbidden by `.claude/rules/writing.md`, and fix round 3 rewrites each.
 
 The `grep -rnE "Date\.now" src tests` sweep returned no output.
 
@@ -431,3 +437,76 @@ The worker-obj-2 paragraph points to `tests/src/server/factories.test.ts:38,54,7
 - Guides — exit 0, `18 passed (18)` (`/home/user/work/evidence/worker-proofs/fix2-guides.txt`).
 - Setup server — exit 0, `6 passed (6)` (`/home/user/work/evidence/worker-proofs/fix2-setupServer.txt`).
 - Server helpers — exit 0, `48 passed (48)` (`/home/user/work/evidence/worker-proofs/fix2-server-helpers.txt`).
+
+## Fix round 3
+
+The objective lane is `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/worker-objective-r3-sol.md`, which refuted claim 4 and raised O1, O2, and O3. The checker lane is `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/worker-r3-checker-luna.result.md`, which refuted claim 9 on the inventory. This round carries claim 4's commands, claim 9 with O1, O2, and O3, and the Orchestrator's R1 and R3 rulings. Each lane read line numbers against the report as it stood before this round; the numbers in this section are the sites' locations after it.
+
+### Claim 4 — literal commands
+
+Every abbreviated command in a failing-first paragraph is replaced by the command that produced the capture. The elided middle was `--config vite.config.ts --no-cache --reporter=dot --project src:server` in each, so the commands read:
+
+- worker-obj-1 (`:61`) and worker-subj-2 (`:164`) — `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts`.
+- worker-obj-6 (`:91`) and worker-obj-8 (`:115`, `:118`) — `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/helpers.test.ts`.
+
+A capture's head records the Vitest banner and the dot glyphs rather than the invocation, so each reconstruction is checked against the population its capture reports: the factories command collects 9 cases and the helpers command 48, which is the `(9)` and the `(48)` every citing capture prints. Fix round 3 ran each against the restored tree and read `9 passed (9)` and `48 passed (48)`.
+
+The worker-obj-1 and worker-subj-2 paragraphs called a red whole-file run and a green `-t`-narrowed run "the exact same command". Each paragraph now reports the restored whole-file run beside the narrowed one, so every count sits next to the command that produced it.
+
+### Claim 9 and O1 — the inventory
+
+- The Files touched table is regenerated from `git status --short` in `/home/user/fleet/worker`, in that order, and carries every path it reports — including `tests/setup.ts` and `tests/src/core/factories.test.ts`, which the earlier table omitted. Its rows are repository-relative, matching the status output they come from.
+- The diffstat line stating a changed-file count is deleted. Its replacement points at the captured diff and records that the capture was taken after fix round 2 and predates this round's rewrites.
+- The status statement no longer claims a number of entries. It names the Files touched table as the path list.
+- The worker-obj-6 pointers are refreshed to `guides/worker.md:213` and `tests/src/server/helpers.test.ts:613-639`, and the failing case in the same paragraph to `:614`, the `it` carrying the name that run reported.
+
+### O2 — tallies
+
+- `:95` — the local `fixture` declarations are named by the files that held them (`tests/setupServer.test.ts`, `tests/src/server/handlers.test.ts`, `tests/src/server/helpers.test.ts`), and `tests/src/server/factories.test.ts`'s prior inline specifiers are written out.
+- `:105` — "replaces all three" reads "replaces each"; the sites follow in the list beneath it.
+- `:200` and `:316` — the §Patterns fences are named: `### A resource-backed worker`, `### CPU-parallel jobs over threads`, and `### Durable jobs across restarts`.
+
+A report-wide re-sweep for a growable-set tally also reached `:22` ("the six source files"), `:63` ("both empty"), `:111` ("Both abort specs"), `:164` ("the two spread lines"), `:173` ("the same three sentences on the same three bullets"), and `:219` ("Four asserted continuity"). Each now names its members or drops the number.
+
+### O3 — pre-existing prose
+
+Each rewrite holds its file's line count, so every `file:line` pointer elsewhere in this report stays valid.
+
+- `tests/src/server/helpers.test.ts:203` — "the eviction tests below" is "the `in-flight signal abort` eviction suite", naming the suite the `concurrency: 1` choice serves.
+- `tests/src/server/helpers.test.ts:206` — "That handoff now re-validates the released resource" is "That handoff re-validates the released resource".
+- `tests/src/server/helpers.test.ts:273` — "the dead one the (now-validated) handoff drops" is "the dead one the re-validating handoff drops".
+- `tests/src/server/helpers.test.ts:505` — "the direct post-death dispatch spec below pins the latch" is "the `latched-death path` suite pins the latch".
+- `tests/src/server/helpers.test.ts:804` — "the round-trip tests above are the real proof" is "the `createNodeWorker` round-trip suites are the proof".
+- `tests/src/core/Worker.test.ts:851` — "the (now-destroyed) pool" is "the already-destroyed pool".
+- `tests/src/core/Worker.test.ts:1207-1209` — "the emit-safety guarantee — a throwing observer leaves the worker fully functional (jobs still run against pooled resources, counts balanced), yet the `error` handler fires" is "the emitter's listener isolation — one listener's throw never prevents a sibling listener and reaches the emitter's `error` handler, while the worker stays fully functional (jobs still run against pooled resources, counts balanced)".
+- `guides/worker.md:384-386` — "the listener-isolation safety guarantee (the same guarantee applies here — the Worker's bridge never throws, so a buggy worker observer can never corrupt the inner queue or pool)" is "their listener isolation, which holds here too: one listener's throw never prevents a sibling listener, and the throw reaches the emitter's `error` handler, so a buggy worker observer leaves the inner queue and pool intact".
+- `guides/worker.md:351` — "the durability guarantees" is "what a store must persist across restarts".
+
+The sweep `grep -rniE "\b(above|below|now|guarantee|guarantees|guaranteed|ensure|ensures)\b"` over `src`, `tests/src`, `tests/setup.ts`, `tests/setupServer.ts`, `tests/setupServer.test.ts`, `tests/guides.test.ts`, `guides/worker.md`, `guides/README.md`, and `README.md` returns `tests/src/server/fixtures/slow.ts:10,12` and `tests/src/server/fixtures/identify.ts:13,14`, each the `performance.now()` code token, and nothing else. `ensure` and `ensures` matched nothing at any point. Before the rewrites the same sweep also returned the sites listed earlier plus `guides/worker.md:351`, which the round-3 lane's narrower `\bguarantee\b` pattern did not reach.
+
+### Ancillary decisions
+
+1. `guides/worker.md:351` was rewritten although the Sites do not name it. The brief's own sweep pattern surfaced it and acceptance criterion 2 requires the sweep to return only permitted hits. The line is untouched pre-existing prose, so closing it disturbed no edit this unit made.
+2. Every abbreviated command in the report was made literal, not only the ones in the three named rows. The worker-obj-8 readings at `:115` and `:118` carry the same abbreviation, and acceptance criterion 1 reaches a report command wherever it sits.
+3. `:322` said a reader "should know" which assertion binds. The sentence states the fact directly, because `.claude/rules/writing.md` refuses `should`.
+4. The worker-obj-10 paragraph's opening word was capitalized while the R1 ruling was added under it.
+5. The `guides/README.md` row in the Files touched table dropped the See-also list, which fix round 1 deleted.
+6. Fix round 2's O2 paragraph recorded the `above` / `below` / `now` hits as still forbidden. It now records that this round rewrites each.
+
+### Gates and scoped runs
+
+Read in this exec against the restored tree. No capture file was written, because `/home/user/work/evidence/` is outside this round's Owned set.
+
+| Command | Exit code | Reading |
+| ------- | --------- | ------- |
+| `npm run format:check` | 0 | `All matched files use the correct format`, 72 files |
+| `npm run lint:check` | 0 | no diagnostic |
+| `npm run check` | 0 | `check:src:core` and `check:src:server` clean |
+| `npm run test:guides` | 0 | `18 passed (18)` |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/helpers.test.ts` | 0 | `48 passed (48)` |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/Worker.test.ts` | 0 | `35 passed (35)` |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/factories.test.ts` | 0 | `9 passed (9)` |
+
+**Observation, not a criterion.** Every reading was taken inside this unit's own exec with its harness resident. The Orchestrator's deciding run belongs after this unit exits.
+
+`git status --short` lists the paths the Files touched table names, and nothing new.
