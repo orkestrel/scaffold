@@ -1,53 +1,13 @@
-diff --git a/src/core/types.ts b/src/core/types.ts
-index 8a9fb73..2e9076b 100644
---- a/src/core/types.ts
-+++ b/src/core/types.ts
-@@ -103,7 +103,7 @@ export type QueueEventMap<TResult> = {
- }
- 
- /**
-- * Represents the per-attempt execution handle a queue handler receives.
-+ * Represents the per-attempt context a queue handler receives.
-  *
-  * @example
-  * ```ts
 diff --git a/tests/guides.test.ts b/tests/guides.test.ts
-index 5247aad..343ad5f 100644
+index 343ad5f..ac51e4f 100644
 --- a/tests/guides.test.ts
 +++ b/tests/guides.test.ts
-@@ -44,7 +44,7 @@ const MODULES = Object.freeze({ '@orkestrel/queue': 'src/core', '@src/core': 'sr
-  *
-  * A class that one-class-per-file evicted from its single consumer cannot become a
-  * local, so it stays exported without being public. Naming it here is what makes that
-- * intentional rather than forgotten — and the second assertion below fails when a name
-+ * intentional rather than forgotten — and the internal-name assertion fails when a name
-  * here stops being stranded, so the list cannot rot.
-  */
- const INTERNAL: readonly string[] = Object.freeze([])
-diff --git a/tests/src/core/stores/DatabaseQueueStore.test.ts b/tests/src/core/stores/DatabaseQueueStore.test.ts
-index cc3c185..84180f7 100644
---- a/tests/src/core/stores/DatabaseQueueStore.test.ts
-+++ b/tests/src/core/stores/DatabaseQueueStore.test.ts
-@@ -191,7 +191,7 @@ describe('DatabaseQueueStore — upsert churn on one id', () => {
- // PRODUCTION GAP: only a shallow nested object is covered. A real `input` payload may be
- // an array of objects, carry booleans / nullables / optionals / a record map, and nest
- // deeply. Each must survive the JSON-ish round-trip AND come back fully TYPED (every
--// property access below compiles with NO `as` — the contract narrows the read).
-+// property access following compiles with NO `as` — the contract narrows the read).
- 
- describe('DatabaseQueueStore — complex / edge-value inputs', () => {
- 	it('round-trips a deeply nested payload of arrays, booleans, nullables and nested objects', async () => {
-diff --git a/tests/src/core/stores/MemoryQueueStore.test.ts b/tests/src/core/stores/MemoryQueueStore.test.ts
-index dcbe51e..f0d5fd1 100644
---- a/tests/src/core/stores/MemoryQueueStore.test.ts
-+++ b/tests/src/core/stores/MemoryQueueStore.test.ts
-@@ -9,8 +9,7 @@ import { createStoredEntry } from '../../../setup.js'
- // mocks): every `StoredEntry` comes from the shared `createStoredEntry` builder in
- // `tests/setup.ts` and is a real, typed value carrying the genuine `{ id; input; attempts }`
- // shape (`.claude/rules/tests.md` § Test contract) — there is no codec to fake.
--// The cases cover the four-method
--// surface and its semantics: a `save` → `load` round-trip by value, `save` upserts by id
-+// The cases cover the surface and its semantics: a `save` → `load` round-trip by value, `save` upserts by id
- // (never a duplicate), `remove` drops one (an absent id is a silent no-op), `load` returns
- // EVERY outstanding entry (the bulk-restore semantic — the whole table is the work to
- // resume), and `clear` empties it. Each primitive resolves a `Promise` (the async wrapper
+@@ -129,7 +129,7 @@ for (const entry of manifest) {
+ 				.map((fence) => fence.code)
+ 			const names = guide
+ 				.surface()
+-				.filter((symbol) => symbol.kind === 'function')
++				.filter((symbol) => symbol.keyword === 'function')
+ 				.map((symbol) => symbol.name)
+ 			expect(findUnexampled(names, fences, source.examples())).toEqual([])
+ 		})
