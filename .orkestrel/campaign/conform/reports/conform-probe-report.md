@@ -106,10 +106,10 @@ Per-file greens after each row, all with `npx vitest run --config vite.config.ts
 - `npm run test:guides` 13 passed (`probe-subj-2-guides.txt`)
 
 probe-obj-1 has no behavioural proof available, and that is a finding rather than a shortcut. The
-entry runs on import and ends the process it is loaded into, so its reporter cannot be called from a
-test. No refusal this package can construct carries a lone carriage return to it either: every
-construction-time message is built from a fixed string and a package name, and `describeUnknown` is
-reached only on the arming path, which never reaches this reporter. The row therefore reads the
+reporter is reachable only as a spawned entry, and no refusal this package can construct carries a
+lone carriage return to it: every construction-time message is built from a fixed string and a
+package name, and `describeUnknown` is reached only on the arming path, which never reaches this
+reporter. The row therefore reads the
 entry's own rule, the way `starts one probe server and exports nothing` beside it already does, and
 the row's comment records why.
 
@@ -387,3 +387,47 @@ therefore against the complete row set, and they stand as written.
 Not this unit's to take. The deciding whole-suite reading runs under `ALLOW_RED_TEST=probe` at
 landing, with the Orchestrator, after this unit exits. This round ran scoped files only.
 - `/home/user/work/evidence/probe-proofs/` — every red, green, and gate capture named in this report.
+
+## Fix round 2
+
+Verdict: `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/probe-objective-r2.md`.
+
+### O-1 — the false proof-form clause
+
+Before (report `:108-110`): "The entry runs on import and ends the process it is loaded into, so
+its reporter cannot be called from a test. No refusal this package can construct carries a lone
+carriage return to it either: every construction-time message is built from a fixed string and a
+package name, and `describeUnknown` is reached only on the arming path, which never reaches this
+reporter."
+
+After: "The reporter is reachable only as a spawned entry, and no refusal this package can
+construct carries a lone carriage return to it: every construction-time message is built from a
+fixed string and a package name, and `describeUnknown` is reached only on the arming path, which
+never reaches this reporter." The rewrite drops the false premise — `tests/src/bin/main.test.ts:248-267`
+spawns the built entry and reads the reporter's own stderr line — and states the operative reason
+the comment at `tests/src/bin/main.test.ts:235-240` already carries: no construction-time message
+this package builds contains a lone carriage return, so the split-at-line-ending behavior has
+nothing to exercise it against.
+
+### O-2 and R-1 — the parser guard a second parser satisfied
+
+Before (`tests/setupServer.test.ts:35`): `expect(fixture.program.split('const message = JSON.parse(').length - 1).toBe(1)`.
+
+After: `expect(fixture.program.split('JSON.parse(buffer.subarray(').length - 1).toBe(1)`.
+
+Control: planted a second buffer parse in `tests/setupServer.ts` directly after `:97` (a copy of
+`:97` spelled `const request = JSON.parse(buffer.subarray(...))`), then ran `npm run test:setup`.
+
+- Red: `/home/user/work/evidence/probe-proofs/probe-obj-3-parser-planted-red.txt` — 1 test file
+  failed, 1 test failed, at `tests/setupServer.test.ts:35`, `expected 2 to be 1`.
+- Restored the plant by editing the added line back out, ran the same command.
+- Green: `/home/user/work/evidence/probe-proofs/probe-obj-3-parser-green.txt` — 2 test files
+  passed, 9 tests passed.
+- `git diff --stat -- tests/setupServer.ts` read `248 insertions(+), 31 deletions(-)` both before
+  the plant and after the restore, confirming a byte-for-byte revert.
+
+### O-3 and R-2 — outside this unit
+
+O-3 (the pre-existing inline exit promise at `tests/setupServer.test.ts:113-115`) and R-2 (the
+sibling checkouts' vendored `guides/probe.md` mirrors) are ruled outside this unit and recorded in
+the campaign ledger. Neither was touched.

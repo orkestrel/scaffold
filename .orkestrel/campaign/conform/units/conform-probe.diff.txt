@@ -1,0 +1,1609 @@
+diff --git a/guides/probe.md b/guides/probe.md
+index b345e1b..7e6301b 100644
+--- a/guides/probe.md
++++ b/guides/probe.md
+@@ -186,9 +186,13 @@ resolves two spellings of one file name to one file, the tool keeps whichever sp
+ — the committed file's, where the candidate shadows one — and asks the overlay under that, so an
+ overlay matching keys exactly answers nothing and the tool reads the committed file instead.
+ `TypeStage` mints its overlay from the workspace compiler's own `useCaseSensitiveFileNames` reading,
+-which is the reading it declares to that compiler's language-service host. The folding reaches the
+-lookup key alone: `paths` reports the recorded spelling, and `covers` compares a directory against
+-that spelling unfolded.
++which is the reading it declares to that compiler's language-service host. `RuntimeStage` mints its
++overlay with the default instead, because it declares no case sensitivity to Vite: a covered path
++whose spelling an importer wrote differs from the recorded candidate path is served by whatever
++answers first, and the stage reports it as the `workspace` issue `The workspace configuration served
++this module before the runtime overlay` rather than leaving it answered silently. The folding
++reaches the lookup key alone: `paths` reports the recorded spelling, and `covers` compares a
++directory against that spelling unfolded.
+ 
+ ### Server helpers
+ 
+@@ -211,7 +215,7 @@ Pure leaves and workspace readers, from [`helpers.ts`](../src/server/helpers.ts)
+ | `inferTypeProject`         | function | `(path: string) => string`                                                                  | Selects the scoped TypeScript project for one candidate path, and throws for a path outside `src` and `app`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+ | `inferTestProject`         | function | `(path: string) => string \| undefined`                                                     | Selects the Vitest project whose environment matches one test path, or `undefined` when none collects it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+ | `inferDocumentLanguage`    | function | `(path: string) => string`                                                                  | Selects the Language Server Protocol language identifier a path's extension names.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+-| `createRevisionFile`       | function | `(workspace: string, path: string, revision: string) => string`                             | Builds the fresh sibling path one runtime inspection writes its specification to.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `buildRevisionPath`        | function | `(workspace: string, path: string, revision: string) => string`                             | Builds the fresh sibling path one runtime inspection writes its specification to.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+ | `matchesWorkspaceModule`   | function | `(path: string) => boolean`                                                                 | Reports whether a path is a script, TypeScript, Vue, or JSON module Vitest can cache.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+ | `describeUnknown`          | function | `(value: unknown) => string`                                                                | Normalizes a caught or foreign error into readable text.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+ | `guardStage`               | function | `<T>(stage: Stage, operation: Promise<T>) => Promise<T>`                                    | Guards one resident-stage operation, passing a `ProbeError` through unchanged and translating every other failure to `instrument`/`malformed` with the original fault on `cause`.                                                                                                                                                                                                                                                                                                                                                                                                             |
+@@ -251,7 +255,6 @@ The public call-signature members of each behavioral interface, one table per in
+ | Method    | Returns          | Behavior                                                                                                                                                                                                                 |
+ | --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+ | `inspect` | `Promise<Check>` | Inspects one case under the bound its caller supplies, and refuses an inspection that omits one. The bound is optional in the type because the shared `StageInterface.inspect` takes one argument, and required in fact. |
+-| `destroy` | `Promise<void>`  | Tears down the resident language server, abandoning every inspection it holds rather than waiting behind one.                                                                                                            |
+ 
+ #### `OverlayInterface`
+ 
+@@ -617,7 +620,7 @@ These things in it are load-bearing:
+ This claim carries no absolute string, so `verdict.digest` is the same in any workspace that runs
+ it. Change the control's `reason` and the digest changes with it, because the reason is part of the
+ control the digest covers. The tool versions and the project digest in the receipt are this
+-workspace's, taken on 2026-08-20.
++workspace's, and `tests/guides.test.ts` re-runs this claim and asserts the token this page carries.
+ 
+ ## Reading a receipt
+ 
+@@ -926,7 +929,11 @@ than the probe's — it decides which process reads the stdio, not when the engi
+   never reaches a caller: a test that reads its own filename, through `import.meta.url` or through a
+   frame in a failure it raised, reports the path the claim declared, because the stage rewrites the
+   exact basename it generated back to the declared test's basename in every message it reports.
+-- **Teardown.** `destroy()` releases every resident process and is idempotent. `ProbeServer.destroy`
++- **Teardown.** `destroy()` releases every resident process and is idempotent. It releases the
++  emitter last, and releases it on a teardown that failed too, so a listener registered through
++  `ProbeOptions.on` or through `probe.emitter` receives nothing after teardown settles and
++  `probe.emitter.destroyed` reads true. A refusal a later `prove` raises still reaches the caller
++  that asked for it, and reaches no listener. `ProbeServer.destroy`
+   adds the process itself: it removes the listeners `start` attached — the `data`, `close`, and
+   `error` forwarders on standard input, and the `SIGINT` and `SIGTERM` handlers on the process —
+   and pauses the stream unless `start` found it already flowing, so the
+diff --git a/src/bin/main.ts b/src/bin/main.ts
+index be047dc..b66f364 100644
+--- a/src/bin/main.ts
++++ b/src/bin/main.ts
+@@ -5,6 +5,6 @@ try {
+ 	new ProbeServer().start()
+ } catch (error) {
+ 	if (!isProbeError(error)) throw error
+-	console.error(`[${error.origin}] ${error.code}: ${error.message.split(/\r?\n|\r/u).join(' ')}`)
++	console.error(`[${error.origin}] ${error.code}: ${error.message.split(/\r\n|\n/u).join(' ')}`)
+ 	process.exitCode = 1
+ }
+diff --git a/src/server/Probe.ts b/src/server/Probe.ts
+index 9cbb039..a581a89 100644
+--- a/src/server/Probe.ts
++++ b/src/server/Probe.ts
+@@ -29,8 +29,8 @@ import {
+ } from '@src/core'
+ import { peerDependencies } from '../../package.json' with { type: 'json' }
+ import {
++	buildRevisionPath,
+ 	computeDigest,
+-	createRevisionFile,
+ 	describeUnknown,
+ 	overwriteFile,
+ 	readWorkspaceManifest,
+@@ -75,8 +75,10 @@ export class Probe implements ProbeInterface {
+ 	readonly #surfaced = new WeakSet<ProbeError>()
+ 	#typeTail = Promise.resolve()
+ 	#arming: Promise<void>
++	// The teardown latch and the destroyed reading are one field: `destroy` assigns it before
++	// anything it starts can suspend, so every later read of `#closing !== undefined` answers the
++	// question a second flag would have answered, and no second write can drift from this one.
+ 	#closing: Promise<void> | undefined
+-	#destroyed = false
+ 
+ 	/**
+ 	 * Resolves the target toolchain and starts warming the resident stages.
+@@ -137,7 +139,7 @@ export class Probe implements ProbeInterface {
+ 			this.#support()
+ 			this.#admit(claim)
+ 			await this.#ready()
+-			if (this.#destroyed) throw createDestroyedError('probe')
++			if (this.#closing !== undefined) throw createDestroyedError('probe')
+ 			const started = performance.now()
+ 			const id = randomUUID()
+ 			// Resolve the project before any inspection runs, so a project this workspace cannot parse
+@@ -175,7 +177,6 @@ export class Probe implements ProbeInterface {
+ 
+ 	destroy(): Promise<void> {
+ 		if (this.#closing !== undefined) return this.#closing
+-		this.#destroyed = true
+ 		this.#closing = this.#destroy()
+ 		return this.#closing
+ 	}
+@@ -194,7 +195,7 @@ export class Probe implements ProbeInterface {
+ 			await attempt
+ 			return
+ 		} catch (error) {
+-			if (this.#destroyed) throw error
++			if (this.#closing !== undefined) throw error
+ 		}
+ 		if (this.#arming === attempt) {
+ 			this.#arming = this.#arm()
+@@ -273,8 +274,8 @@ export class Probe implements ProbeInterface {
+ 		// fresh UUID. A boot the host does not survive leaves them behind, and the next runtime
+ 		// warm sweeps a file whose writer is gone while leaving a live neighbour's alone.
+ 		const revision = `${process.pid}-${randomUUID()}`
+-		const typeDependency = createRevisionFile(this.#workspace, 'tmp/probe/arm-type.ts', revision)
+-		const runtimeDependency = createRevisionFile(
++		const typeDependency = buildRevisionPath(this.#workspace, 'tmp/probe/arm-type.ts', revision)
++		const runtimeDependency = buildRevisionPath(
+ 			this.#workspace,
+ 			'tmp/probe/arm-runtime.ts',
+ 			revision,
+@@ -497,7 +498,7 @@ export class Probe implements ProbeInterface {
+ 	// rather than the process. A resident server whose type, lint, or runtime stage stays destroyed
+ 	// answers every later claim with the destruction of a stage that caller never asked about.
+ 	async #recycle(stage: StageInterface): Promise<boolean> {
+-		if (this.#destroyed) return false
++		if (this.#closing !== undefined) return false
+ 		const timeout = createTimeout({ ms: this.#deadline })
+ 		timeout.start()
+ 		try {
+@@ -519,7 +520,7 @@ export class Probe implements ProbeInterface {
+ 		} finally {
+ 			timeout.clear()
+ 		}
+-		if (this.#destroyed) return false
++		if (this.#closing !== undefined) return false
+ 		// Identity, not kind: a second expiry racing this one names the stage this call already
+ 		// replaced, and rebuilding on that report would discard a live stage the queues are using.
+ 		if (stage === this.#type) {
+@@ -601,17 +602,25 @@ export class Probe implements ProbeInterface {
+ 
+ 	async #destroy(): Promise<void> {
+ 		try {
+-			await this.#arming
+-		} catch {}
+-		// Tear the stages down and leave the queues running. A queue holds no host resource — no
+-		// timer, no listener, no store — and stage teardown settles every entry still admitted, so
+-		// each caller reads the stage's own refusal. Destroying a queue instead abandons those
+-		// entries, and a stage rejecting after its queue stopped observing ends the host process.
+-		await Promise.all([
+-			this.#destroyStage(this.#type),
+-			this.#destroyStage(this.#lint),
+-			this.#destroyStage(this.#runtime),
+-		])
++			try {
++				await this.#arming
++			} catch {}
++			// Tear the stages down and leave the queues running. A queue holds no host resource — no
++			// timer, no listener, no store — and stage teardown settles every entry still admitted, so
++			// each caller reads the stage's own refusal. Destroying a queue instead abandons those
++			// entries, and a stage rejecting after its queue stopped observing ends the host process.
++			await Promise.all([
++				this.#destroyStage(this.#type),
++				this.#destroyStage(this.#lint),
++				this.#destroyStage(this.#runtime),
++			])
++		} finally {
++			// Release the listener graph last, and release it on the teardown that failed as well:
++			// a stage whose teardown rejects is the moment a host most needs its listeners gone, and
++			// a plain trailing statement is the one skipped on exactly that path. `destroy` is
++			// idempotent, so no guard stands in front of it.
++			this.#emitter.destroy()
++		}
+ 	}
+ 
+ 	async #destroyStage(stage: StageInterface): Promise<void> {
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index a2927fd..d7bd6f5 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -594,23 +594,24 @@ export function inferDocumentLanguage(path: string): string {
+ }
+ 
+ /**
+- * Creates a fresh sibling identity while preserving a test's resolution directory.
++ * Builds the fresh sibling path a revision's file is written at, preserving the test's resolution
++ * directory.
+  *
+  * @param workspace - The target workspace root
+  * @param path - The workspace-relative test path
+  * @param revision - The fresh revision identity
+- * @returns An absolute sibling file path
++ * @returns The absolute sibling path
+  *
+  * @example
+  * ```ts
+  * relativeWorkspaceFile(
+  * 	'/srv/checkout',
+- * 	createRevisionFile('/srv/checkout', 'tmp/probe/greeting.test.ts', '4821-9f0c'),
++ * 	buildRevisionPath('/srv/checkout', 'tmp/probe/greeting.test.ts', '4821-9f0c'),
+  * )
+  * // 'tmp/probe/greeting.test.probe-4821-9f0c.ts'
+  * ```
+  */
+-export function createRevisionFile(workspace: string, path: string, revision: string): string {
++export function buildRevisionPath(workspace: string, path: string, revision: string): string {
+ 	const file = resolveWorkspaceFile(workspace, path)
+ 	const extension = extname(file)
+ 	const stem = extension === '' ? file : file.slice(0, -extension.length)
+diff --git a/src/server/stages/LintStage.ts b/src/server/stages/LintStage.ts
+index 6a9c397..f3860b7 100644
+--- a/src/server/stages/LintStage.ts
++++ b/src/server/stages/LintStage.ts
+@@ -59,13 +59,15 @@ export class LintStage implements LintStageInterface {
+ 	// failed or that is still waiting for its answer still leaves a client and a child to release.
+ 	#client: LSPClientInterface | undefined
+ 	#ending: string | undefined
++	// The teardown latch and the destroyed reading are one field: `destroy` assigns it before the
++	// teardown it starts can suspend, so every later read of `#closing !== undefined` answers the
++	// question a second flag would have answered, and no second write can drift from this one.
+ 	#closing: Promise<void> | undefined
+ 	#progress = 0
+ 	// The version every document this stage opens carries. It counts admissions across the stage's
+ 	// whole life and never falls, because the gauge beside it does fall and a version that fell would
+ 	// tell the server this text is older than the text it replaced.
+ 	#revision = 0
+-	#destroyed = false
+ 
+ 	/**
+ 	 * Starts warming the target workspace's Oxlint language server.
+@@ -95,13 +97,12 @@ export class LintStage implements LintStageInterface {
+ 
+ 	destroy(): Promise<void> {
+ 		if (this.#closing !== undefined) return this.#closing
+-		this.#destroyed = true
+ 		this.#closing = guardStage(this.stage, this.#destroy())
+ 		return this.#closing
+ 	}
+ 
+ 	async #inspect(subject: Case, options: InspectionOptions | undefined): Promise<Check> {
+-		if (this.#destroyed) throw createDestroyedError('lint stage')
++		if (this.#closing !== undefined) throw createDestroyedError('lint stage')
+ 		// The shared stage contract takes one argument, so this bound is optional in the type and
+ 		// required in fact. Serving without it would mean minting a bound beside the caller's, which
+ 		// is the racing pair this seam exists to remove.
+@@ -114,7 +115,7 @@ export class LintStage implements LintStageInterface {
+ 		}
+ 		const started = performance.now()
+ 		const client = await this.#warmed()
+-		if (this.#destroyed) throw createDestroyedError('lint stage')
++		if (this.#closing !== undefined) throw createDestroyedError('lint stage')
+ 		const issues: Issue[] = []
+ 		for (const draft of [...subject.files, subject.test]) {
+ 			issues.push(...(await this.#document(client, draft, options.signal)))
+@@ -238,7 +239,7 @@ export class LintStage implements LintStageInterface {
+ 	// terms, a server that ended is named by the ending it took, and everything else is the
+ 	// client's own coded failure, which `guardStage` carries to the caller as this stage's fault.
+ 	#translate(error: unknown, path?: string): Error {
+-		if (this.#destroyed) return createDestroyedError('lint stage')
++		if (this.#closing !== undefined) return createDestroyedError('lint stage')
+ 		const ending = this.#ending
+ 		if (ending !== undefined) {
+ 			return this.#fault(`The Oxlint language server exited with ${ending}`, error, path)
+diff --git a/src/server/stages/RuntimeStage.ts b/src/server/stages/RuntimeStage.ts
+index a3196ec..fe8141d 100644
+--- a/src/server/stages/RuntimeStage.ts
++++ b/src/server/stages/RuntimeStage.ts
+@@ -32,8 +32,8 @@ import {
+ 	matchesSpecification,
+ } from '@src/core'
+ import {
++	buildRevisionPath,
+ 	captureListeners,
+-	createRevisionFile,
+ 	describeUnknown,
+ 	guardStage,
+ 	inferTestProject,
+@@ -67,6 +67,11 @@ import { Overlay } from '../Overlay.js'
+  * The runtime overlay leaves bare specifier resolution to Vite: it replaces a bare import only
+  * after Vite resolves that import to a covered file. The type stage overlays the declared test
+  * path, while this stage executes a generated sibling and overlays only the candidate files.
++ * This stage mints its overlay with the default exact-match sensitivity, because it declares no
++ * file-name case sensitivity to Vite. A covered path whose spelling an importer wrote differs from
++ * the recorded candidate path is therefore served by whatever answers first, and `#misses` reports
++ * it as `The workspace configuration served this module before the runtime overlay` with origin
++ * `workspace` rather than leaving it answered silently.
+  *
+  * Vite retains one unresolved URL for every specification path, so the stage replaces its whole
+  * Vitest service after 64 specifications rather than deleting from each map that service owns. Any
+@@ -113,9 +118,11 @@ export class RuntimeStage implements StageInterface {
+ 	readonly #modules = new Map<string, string>()
+ 	readonly #revisions = new Set<string>()
+ 	#specifications = 0
++	// The teardown latch and the destroyed reading are one field: `destroy` assigns it before the
++	// teardown it starts can suspend, so every later read of `#closing !== undefined` answers the
++	// question a second flag would have answered, and no second write can drift from this one.
+ 	#closing: Promise<void> | undefined
+ 	#progress = 0
+-	#destroyed = false
+ 
+ 	/**
+ 	 * Starts warming the target workspace's Vitest service.
+@@ -142,20 +149,19 @@ export class RuntimeStage implements StageInterface {
+ 
+ 	destroy(): Promise<void> {
+ 		if (this.#closing !== undefined) return this.#closing
+-		this.#destroyed = true
+ 		this.#closing = guardStage(this.stage, this.#destroy())
+ 		return this.#closing
+ 	}
+ 
+ 	async #inspect(subject: Case): Promise<Check> {
+-		if (this.#destroyed) throw createDestroyedError('runtime stage')
++		if (this.#closing !== undefined) throw createDestroyedError('runtime stage')
+ 		const started = performance.now()
+ 		// Vitest reports a failed run by setting `process.exitCode` on this host, and a stage that
+ 		// runs a claim's negative control fails a run deliberately. Restore whatever the host had,
+ 		// rather than assigning zero over a code the host set for itself.
+ 		const exitCode = process.exitCode
+ 		const vitest = await this.#runner()
+-		if (this.#destroyed) throw createDestroyedError('runtime stage')
++		if (this.#closing !== undefined) throw createDestroyedError('runtime stage')
+ 		const project = this.#project(vitest, subject.test.path)
+ 		if ('message' in project) {
+ 			return {
+@@ -440,7 +446,7 @@ export class RuntimeStage implements StageInterface {
+ 			// alone deletes a neighbour's specification out from under its run. The same revision
+ 			// goes into the file's own marker, so the sweep reads one value from two places.
+ 			const revision = `${process.pid}-${randomUUID()}`
+-			const file = createRevisionFile(this.#workspace, test.path, revision)
++			const file = buildRevisionPath(this.#workspace, test.path, revision)
+ 			generated = file
+ 			const target = relative(this.#workspace, file)
+ 			resolveWorkspaceFile(this.#workspace, target, true)
+@@ -649,7 +655,7 @@ export class RuntimeStage implements StageInterface {
+ 			const vitest = await current
+ 			await vitest.close()
+ 		}
+-		if (this.#destroyed) throw createDestroyedError('runtime stage')
++		if (this.#closing !== undefined) throw createDestroyedError('runtime stage')
+ 		const runner = create ?? loadWorkspaceModule(this.#workspace, 'vitest/node').createVitest
+ 		const replacement = await this.#warm(runner)
+ 		this.#specifications = 0
+diff --git a/src/server/stages/TypeStage.ts b/src/server/stages/TypeStage.ts
+index 43a1db6..a92079a 100644
+--- a/src/server/stages/TypeStage.ts
++++ b/src/server/stages/TypeStage.ts
+@@ -59,9 +59,11 @@ export class TypeStage implements TypeStageInterface {
+ 	readonly #diagnostics = new Map<string, readonly Diagnostic[]>()
+ 	#overlay: OverlayInterface = new Overlay()
+ 	#recycled: string | undefined
++	// The teardown latch and the destroyed reading are one field: `destroy` assigns it before the
++	// teardown it starts can suspend, so every later read of `#closing !== undefined` answers the
++	// question a second flag would have answered, and no second write can drift from this one.
+ 	#closing: Promise<void> | undefined
+ 	#progress = 0
+-	#destroyed = false
+ 
+ 	/**
+ 	 * Starts warming the target workspace's TypeScript service.
+@@ -124,16 +126,15 @@ export class TypeStage implements TypeStageInterface {
+ 
+ 	destroy(): Promise<void> {
+ 		if (this.#closing !== undefined) return this.#closing
+-		this.#destroyed = true
+ 		this.#closing = guardStage(this.stage, this.#destroy())
+ 		return this.#closing
+ 	}
+ 
+ 	async #inspect(subject: Case, project?: string): Promise<Check> {
+-		if (this.#destroyed) throw createDestroyedError('type stage')
++		if (this.#closing !== undefined) throw createDestroyedError('type stage')
+ 		const started = performance.now()
+ 		const typescript = await this.#typescript
+-		if (this.#destroyed) throw createDestroyedError('type stage')
++		if (this.#closing !== undefined) throw createDestroyedError('type stage')
+ 		const resolved = subject.files.map((draft) => ({
+ 			draft,
+ 			path: resolveWorkspaceFile(this.#workspace, draft.path),
+@@ -195,9 +196,9 @@ export class TypeStage implements TypeStageInterface {
+ 	}
+ 
+ 	async #resolve(project: string): Promise<Project> {
+-		if (this.#destroyed) throw createDestroyedError('type stage')
++		if (this.#closing !== undefined) throw createDestroyedError('type stage')
+ 		const typescript = await this.#typescript
+-		if (this.#destroyed) throw createDestroyedError('type stage')
++		if (this.#closing !== undefined) throw createDestroyedError('type stage')
+ 		const resolved = resolveWorkspaceFile(this.#workspace, project)
+ 		this.#progress += 1
+ 		this.#service(typescript, project)
+@@ -257,7 +258,7 @@ export class TypeStage implements TypeStageInterface {
+ 	// this stage would then own past its own teardown.
+ 	async #unblock(): Promise<void> {
+ 		await setTimeout(0)
+-		if (this.#destroyed) throw createDestroyedError('type stage')
++		if (this.#closing !== undefined) throw createDestroyedError('type stage')
+ 	}
+ 
+ 	// Resolution happens here rather than in the overlay, because the workspace a candidate's
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index f746e39..923f194 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -3,14 +3,85 @@ import { resolve } from 'node:path'
+ import { createScratch } from '@orkestrel/test/server'
+ import { describe, expect, it } from 'vitest'
+ import {
+-	isProcessLive,
++	REFUSED_RUNTIME_TARGETS,
++	createLintFixture,
++	describeEnding,
+ 	killFixtureServer,
++	probeRefusedTargets,
++	readChildEnding,
+ 	readFixtureServer,
++	readHostEnding,
+ 	readSignalEnding,
+ 	waitForFixtureServer,
+ } from './setupServer.js'
+ 
+ describe('server test setup', () => {
++	it('classifies whether this host refuses a name it will not accept', () => {
++		const refused = probeRefusedTargets()
++		expect(typeof refused).toBe('boolean')
++		// The constant is what every gated proof reads, and it is one call taken at load. Comparing a
++		// fresh call against it is what keeps the gate a live reading of this host rather than a value
++		// nothing can re-derive.
++		expect(REFUSED_RUNTIME_TARGETS).toBe(refused)
++	})
++
++	it('builds one framing writer and the selections a caller made', () => {
++		const fixture = createLintFixture({ budget: 300_000, delay: 100 })
++		expect(fixture.program).toContain('setTimeout(() => process.exit(0), 300000)')
++		expect(fixture.program).toContain('setTimeout(() => publish(uri), 100)')
++		// One writer and one parser, which is the whole point of building this text in one place: a
++		// second copy is what lets one program answer a protocol its siblings no longer speak.
++		expect(fixture.program.split("process.stdout.write('Content-Length: ").length - 1).toBe(1)
++		expect(fixture.program.split('JSON.parse(buffer.subarray(').length - 1).toBe(1)
++		const published: unknown = JSON.parse(fixture.manifest)
++		expect(published).toMatchObject({ name: 'oxlint', bin: { oxlint: 'fixture.js' } })
++		expect(Object.keys(fixture.files)).toContain('node_modules/oxlint/fixture.js')
++		// A caller naming its own binary publishes that entry and needs no program beside it.
++		const linked = createLintFixture({ binary: '/opt/oxlint/bin/oxlint' })
++		const named: unknown = JSON.parse(linked.manifest)
++		expect(named).toMatchObject({ bin: { oxlint: '/opt/oxlint/bin/oxlint' } })
++		expect(Object.keys(linked.files)).not.toContain('node_modules/oxlint/fixture.js')
++	})
++
++	it('builds a fixture server that runs and announces itself', async () => {
++		const scratch = createScratch({ files: createLintFixture().files })
++		const child = spawn(
++			process.execPath,
++			[resolve(scratch.path, 'node_modules/oxlint/fixture.js')],
++			{ cwd: scratch.path, stdio: 'ignore' },
++		)
++		const ended = readChildEnding(child)
++		try {
++			// The announcement is what every proof driving this fixture reads its child through, so
++			// this drives the built text rather than inspecting it: a program that cannot parse or
++			// cannot start announces nothing.
++			expect(await waitForFixtureServer(scratch)).toBe(child.pid)
++		} finally {
++			child.kill('SIGKILL')
++			await ended
++			scratch.destroy()
++		}
++	})
++
++	it('reads the code and the signal a child ended with', async () => {
++		const child = spawn(process.execPath, ['-e', 'process.exit(3)'], { stdio: 'ignore' })
++		expect(await readChildEnding(child)).toStrictEqual({ code: 3, signal: null })
++	})
++
++	it('names an ending by the member the host reported', () => {
++		expect(describeEnding({ code: 0, signal: null })).toBe('code 0')
++		expect(describeEnding({ code: null, signal: 'SIGKILL' })).toBe('signal SIGKILL')
++	})
++
++	it('reads how this host ends a child killed through its own signal door', async () => {
++		// The control comes first: a child nobody killed ends on its own code, so a reading that
++		// reported a kill's ending for it would be reading nothing about the kill.
++		expect(describeEnding(await readHostEnding())).toBe('code 0')
++		// How a kill lands is the host's decision — a signal on one host, an exit code on another —
++		// so this reads the difference rather than a phrase one host writes.
++		expect(describeEnding(await readHostEnding('SIGKILL'))).not.toBe('code 0')
++	})
++
+ 	it('reads the ending of a real child after signaling it', async () => {
+ 		const ending = await readSignalEnding(
+ 			'SIGTERM',
+@@ -43,18 +114,17 @@ describe('server test setup', () => {
+ 			child.once('exit', () => settle())
+ 		})
+ 		try {
+-			expect(isProcessLive(id)).toBe(true)
+ 			expect(await waitForFixtureServer(scratch)).toBe(id)
+ 			expect(readFixtureServer(scratch)).toBe(id)
+ 			killFixtureServer(scratch)
++			// The child's own exit event is what proves the kill landed on the announced process: it
++			// settles only for the process this test started, which a signal-zero reading of a
++			// reusable id cannot promise.
+ 			await ended
+-			expect(isProcessLive(id)).toBe(false)
+ 		} finally {
+ 			try {
+-				if (isProcessLive(id)) {
+-					child.kill('SIGKILL')
+-					await ended
+-				}
++				child.kill('SIGKILL')
++				await ended
+ 			} finally {
+ 				scratch.destroy()
+ 			}
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 117ee40..321f93d 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1,4 +1,5 @@
+ import type { ScratchInterface } from '@orkestrel/test/server'
++import type { ChildProcess } from 'node:child_process'
+ import { spawn } from 'node:child_process'
+ import { statSync, writeFileSync } from 'node:fs'
+ import { resolve } from 'node:path'
+@@ -6,6 +7,176 @@ import { attempt } from '@orkestrel/contract'
+ import { waitForCondition } from '@orkestrel/test'
+ import { createScratch, supportsDirectoryLinks } from '@orkestrel/test/server'
+ 
++/** Selects what one built Oxlint language server fixture publishes and how long it answers. */
++export interface LintFixtureOptions {
++	/**
++	 * Holds the milliseconds the server lives before it exits itself, which bounds an abandoned
++	 * child rather than any exchange. Size it above the timeout of every row that drives it.
++	 * Default: `60_000`.
++	 */
++	readonly budget?: number
++	/**
++	 * Holds the milliseconds between one document's admission and its publication. A row reading
++	 * what the server does with a document still open raises it. Default: `0`.
++	 */
++	readonly delay?: number
++	/**
++	 * Names the JavaScript entry the manifest publishes as the `oxlint` binary. Default: the fixture
++	 * program written beside the manifest, which the built file set carries.
++	 */
++	readonly binary?: string
++}
++
++/** Holds one Oxlint language server fixture: its manifest, its program, and the file set both need. */
++export interface LintFixture {
++	/** Holds the manifest text a target workspace publishes at `node_modules/oxlint/package.json`. */
++	readonly manifest: string
++	/** Holds the language server program text the manifest's `bin` entry names. */
++	readonly program: string
++	/** Holds every file a scratch workspace needs to serve this fixture. */
++	readonly files: Readonly<Record<string, string>>
++}
++
++/**
++ * Builds one protocol-faithful Oxlint language server and the workspace files that publish it.
++ *
++ * @param options - The server's own budget and publication delay, and the binary its manifest names.
++ * @returns The manifest text, the server program, and the file set a scratch workspace needs.
++ * @remarks The server announces its own process id in `server.pid`, so a test kills the real child a
++ * stage owns privately and reads whether that child is still alive. Its `initialize` result declares
++ * `textDocumentSync` with `openClose`, which is what a client checks before it opens a document at
++ * all — real Oxlint declares the same capability, so a fixture omitting it would refuse every
++ * document the real server admits. It appends one line per `didOpen` to `probe-lint.log` carrying
++ * the number of documents open at that moment, and one line per `didClose`, so a coordinator that
++ * admits two inspections at once or admits them out of order is read off that record. Every admitted
++ * document appends its version to `versions`.
++ *
++ * Marker files in the workspace select how it ends: `frail` exits with a code on the first document,
++ * `unanswered-shutdown` exits without replying to `shutdown`, `unanswered-initialize` records
++ * `initialized` and exits 250 ms later without replying, `silent-initialize` stays alive and never
++ * replies to `initialize`, and `ignored-exit` answers `shutdown` and then stays alive through
++ * `exit`, which is the one ending the protocol leaves to the client to force. The `stall-lint`
++ * marker silences every document. Markers in a document's own text select how it answers that
++ * document: `PROBE_SILENT` writes the document URI to `admitted` and publishes nothing, `PROBE_SLOW`
++ * publishes after 3 s, which is past the bound a stage's client holds over its lifecycle exchanges,
++ * and `PROBE_CLOSES_INPUT` closes the server's own standard input when that document is closed and
++ * then writes the URI into the `closed` record it opened first, so the record's contents land after
++ * the close and a test that waits for those contents writes again only after the close has landed.
++ *
++ * The `stall` marker selects a different conversation entirely, and its content is the one document
++ * URI this server answers. It frames `initialize` with blocking reads on the descriptor itself, so
++ * it owns no stream buffer of its own, replies, and then reads nothing ever again. Its timer
++ * publishes empty diagnostics for the marked URI and records the publication in `published`, so a
++ * document it never read is answered while every byte the client writes after the handshake stays in
++ * a pipe nobody drains.
++ */
++export function createLintFixture(options?: LintFixtureOptions): LintFixture {
++	const program = [
++		"import { appendFileSync, closeSync, existsSync, openSync, readFileSync, readSync, writeFileSync, writeSync } from 'node:fs'",
++		'let buffer = Buffer.alloc(0)',
++		'let deferred',
++		'let open = 0',
++		"writeFileSync('server.pid', String(process.pid))",
++		`setTimeout(() => process.exit(0), ${options?.budget ?? 60_000})`,
++		'function send(message) {',
++		'\tconst content = JSON.stringify(message)',
++		"\tprocess.stdout.write('Content-Length: ' + Buffer.byteLength(content) + '\\r\\n\\r\\n' + content)",
++		'}',
++		'function publish(uri) {',
++		"\tsend({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri, diagnostics: [] } })",
++		'}',
++		'function frame() {',
++		"\tconst boundary = buffer.indexOf('\\r\\n\\r\\n')",
++		'\tif (boundary < 0) return undefined',
++		"\tconst header = buffer.subarray(0, boundary).toString('ascii')",
++		'\tconst match = /Content-Length: (\\d+)/i.exec(header)',
++		'\tif (match === null) return undefined',
++		'\tconst length = Number(match[1])',
++		'\tconst start = boundary + 4',
++		'\tif (buffer.length < start + length) return undefined',
++		"\tconst message = JSON.parse(buffer.subarray(start, start + length).toString('utf8'))",
++		'\tbuffer = buffer.subarray(start + length)',
++		'\treturn message',
++		'}',
++		"if (existsSync('stall')) {",
++		"\tconst held = readFileSync('stall', 'utf8')",
++		'\tconst chunk = Buffer.alloc(65_536)',
++		'\tlet request',
++		'\twhile (request === undefined) {',
++		'\t\tconst read = readSync(0, chunk, 0, chunk.length, null)',
++		'\t\tbuffer = Buffer.concat([buffer, chunk.subarray(0, read)])',
++		'\t\trequest = frame()',
++		'\t}',
++		"\tsend({ jsonrpc: '2.0', id: request.id, result: { capabilities: { textDocumentSync: { openClose: true, change: 1 } } } })",
++		'\tsetTimeout(() => {',
++		'\t\tpublish(held)',
++		"\t\twriteFileSync('published', held)",
++		'\t}, 800)',
++		'}',
++		"if (!existsSync('stall')) process.stdin.on('data', (chunk) => {",
++		'\tbuffer = Buffer.concat([buffer, chunk])',
++		'\twhile (true) {',
++		'\t\tconst message = frame()',
++		'\t\tif (message === undefined) return',
++		"\t\tif (message.method === 'initialize') {",
++		"\t\t\tif (existsSync('unanswered-initialize')) {",
++		"\t\t\t\twriteFileSync('initialized', String(process.pid))",
++		'\t\t\t\tsetTimeout(() => process.exit(0), 250)',
++		'\t\t\t\treturn',
++		'\t\t\t}',
++		"\t\t\tif (existsSync('silent-initialize')) return",
++		"\t\t\tsend({ jsonrpc: '2.0', id: message.id, result: { capabilities: { textDocumentSync: { openClose: true, change: 1 } } } })",
++		'\t\t}',
++		"\t\tif (message.method === 'textDocument/didOpen') {",
++		"\t\t\tif (existsSync('frail')) process.exit(7)",
++		'\t\t\tconst uri = message.params.textDocument.uri',
++		'\t\t\tconst text = message.params.textDocument.text',
++		'\t\t\topen += 1',
++		"\t\t\tappendFileSync('probe-lint.log', 'open ' + open + ' ' + uri + '\\n')",
++		"\t\t\twriteFileSync('versions', message.params.textDocument.version + '\\n', { flag: 'a' })",
++		"\t\t\tif (text.includes('PROBE_SILENT')) writeFileSync('admitted', uri)",
++		"\t\t\tif (text.includes('PROBE_CLOSES_INPUT')) deferred = uri",
++		"\t\t\tif (text.includes('PROBE_SLOW')) setTimeout(() => publish(uri), 3_000)",
++		"\t\t\tconst held = existsSync('stall-lint') || text.includes('PROBE_SILENT') || text.includes('PROBE_SLOW')",
++		`\t\t\tif (!held) setTimeout(() => publish(uri), ${options?.delay ?? 0})`,
++		'\t\t}',
++		"\t\tif (message.method === 'textDocument/didClose') {",
++		'\t\t\topen -= 1',
++		"\t\t\tappendFileSync('probe-lint.log', 'close ' + message.params.textDocument.uri + '\\n')",
++		'\t\t\tif (message.params.textDocument.uri === deferred) {',
++		// The record's descriptor is taken before the close, so the freed descriptor 0 is not the one
++		// this write lands on and the pipe's reading end stays closed for the write that follows.
++		"\t\t\t\tconst record = openSync('closed', 'w')",
++		'\t\t\t\tcloseSync(0)',
++		'\t\t\t\twriteSync(record, message.params.textDocument.uri)',
++		'\t\t\t\tcloseSync(record)',
++		'\t\t\t}',
++		'\t\t}',
++		"\t\tif (message.method === 'shutdown') {",
++		"\t\t\tif (existsSync('unanswered-shutdown')) process.exit(0)",
++		"\t\t\tsend({ jsonrpc: '2.0', id: message.id, result: null })",
++		'\t\t}',
++		"\t\tif (message.method === 'exit' && !existsSync('ignored-exit')) process.exit(0)",
++		'\t}',
++		'})',
++	].join('\n')
++	const manifest = `${JSON.stringify({
++		name: 'oxlint',
++		version: '1.79.0',
++		type: 'module',
++		bin: { oxlint: options?.binary ?? 'fixture.js' },
++	})}\n`
++	return {
++		manifest,
++		program,
++		files: {
++			'package.json': '{"type":"module"}\n',
++			'node_modules/oxlint/package.json': manifest,
++			...(options?.binary === undefined ? { 'node_modules/oxlint/fixture.js': program } : {}),
++		},
++	}
++}
++
+ /**
+  * Reads the process id announced by a fixture server.
+  *
+@@ -45,19 +216,38 @@ export function killFixtureServer(scratch: ScratchInterface): void {
+ 	process.kill(readFixtureServer(scratch), 'SIGKILL')
+ }
+ 
++/** The exit code and the ending signal a host reported for one child. */
++export interface Ending {
++	readonly code: number | null
++	readonly signal: string | null
++}
++
+ /**
+- * Checks whether a process id is live on this host.
++ * Reads the ending one spawned child reports.
+  *
+- * @param id - The process id to inspect.
+- * @returns True if signal zero reaches the process; false otherwise.
++ * @param child - The child to read.
++ * @returns The child's exit code and ending signal.
++ * @remarks Call it as the child is spawned rather than after the work that ends the child: the
++ * listener has to be attached before the exit it waits for, and a promise built afterwards never
++ * settles.
+  */
+-export function isProcessLive(id: number): boolean {
+-	try {
+-		process.kill(id, 0)
+-		return true
+-	} catch {
+-		return false
+-	}
++export function readChildEnding(child: ChildProcess): Promise<Ending> {
++	return new Promise<Ending>((settle) => {
++		child.once('exit', (code, signal) => settle({ code, signal }))
++	})
++}
++
++/**
++ * Names one child ending for a message.
++ *
++ * @param ending - The ending to name.
++ * @returns `code <n>` when the host reported no signal; `signal <s>` otherwise.
++ * @remarks The host announces an ending with exactly one non-null member, which is what lets one
++ * phrase carry either answer. The lint stage phrases a language server's ending the same way, so a
++ * proof comparing the two reads one construction rather than two.
++ */
++export function describeEnding(ending: Ending): string {
++	return ending.signal === null ? `code ${ending.code}` : `signal ${ending.signal}`
+ }
+ 
+ /**
+@@ -67,14 +257,9 @@ export function isProcessLive(id: number): boolean {
+  * @param program - The child program that announces readiness on standard output.
+  * @returns The child's exit code and ending signal.
+  */
+-export async function readSignalEnding(
+-	signal: NodeJS.Signals,
+-	program: string,
+-): Promise<{ readonly code: number | null; readonly signal: string | null }> {
++export async function readSignalEnding(signal: NodeJS.Signals, program: string): Promise<Ending> {
+ 	const child = spawn(process.execPath, ['-e', program], { stdio: ['ignore', 'pipe', 'ignore'] })
+-	const ended = new Promise<{ code: number | null; signal: string | null }>((settle) => {
+-		child.once('exit', (code, ending) => settle({ code, signal: ending }))
+-	})
++	const ended = readChildEnding(child)
+ 	await new Promise<void>((armed) => {
+ 		child.stdout.once('data', () => armed())
+ 	})
+@@ -82,20 +267,52 @@ export async function readSignalEnding(
+ 	return await ended
+ }
+ 
+-// Reads, on the host the suite is running on, whether a create fails because the host refuses a
+-// name whose final component is longer than the filesystem accepts. The code the failure carries is
+-// what decides that: `ENAMETOOLONG` and `ERR_INVALID_ARG_VALUE` name the refusal outright, and
+-// `ENOENT` names it while the parent still stats as a directory, because an ordinary absent file
+-// beneath an existing directory would have been created instead. Every other code — a denied
+-// permission, a full disk, a locked path — is a failure of the host rather than a refusal of the
+-// name, and reading the failure alone would run a proof about a refusal on a host that reported
+-// none and red it there. A host that creates the file instead refuses no such name, and a proof
+-// about a refusal is inapplicable there rather than failing.
+-//
+-// This reads the codes itself rather than calling `isRefusedName`, so a classifier that stops
+-// classifying cannot silence the proof that would catch it. The write goes into an owned scratch
+-// directory, so nothing survives the reading.
+-function probeRefusedTargets(): boolean {
++/**
++ * Reads how this host reports a child it killed through the host's own signal door.
++ *
++ * @param signal - The signal to deliver through `process.kill` after the child spawns. Omit it for
++ * the control, where the child ends on its own.
++ * @returns The child's exit code and ending signal.
++ * @throws An `Error` when the host reports no process id for the spawned child.
++ * @remarks The door decides the ending as much as the signal does, so this delivers the signal
++ * through `process.kill`, which is the door `killFixtureServer` uses. Readiness is the `spawn` event
++ * rather than an announcement on standard output, so the child announces nothing and needs no
++ * stream. A call with no signal reports the ending a child takes on its own, which is the control an
++ * instrument reporting a kill's ending must be read against.
++ */
++export async function readHostEnding(signal?: NodeJS.Signals): Promise<Ending> {
++	const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 250)'], { stdio: 'ignore' })
++	const ended = readChildEnding(child)
++	if (signal !== undefined) {
++		await new Promise<void>((ready) => {
++			child.once('spawn', () => ready())
++		})
++		const id = child.pid
++		if (id === undefined) throw new Error('The probe child never reported a process id')
++		process.kill(id, signal)
++	}
++	return await ended
++}
++
++/**
++ * Reads, on the host the suite is running on, whether a create fails because the host refuses a
++ * name whose final component is longer than the filesystem accepts.
++ *
++ * @returns True if this host refuses such a name; false otherwise.
++ * @remarks The code the failure carries is what decides that: `ENAMETOOLONG` and
++ * `ERR_INVALID_ARG_VALUE` name the refusal outright, and `ENOENT` names it while the parent still
++ * stats as a directory, because an ordinary absent file beneath an existing directory would have
++ * been created instead. Every other code — a denied permission, a full disk, a locked path — is a
++ * failure of the host rather than a refusal of the name, and reading the failure alone would run a
++ * proof about a refusal on a host that reported none and red it there. A host that creates the file
++ * instead refuses no such name, and a proof about a refusal is inapplicable there rather than
++ * failing.
++ *
++ * This reads the codes itself rather than calling `isRefusedName`, so a classifier that stops
++ * classifying cannot silence the proof that would catch it. The write goes into an owned scratch
++ * directory, so nothing survives the reading.
++ */
++export function probeRefusedTargets(): boolean {
+ 	const scratch = createScratch({ prefix: 'probe-refused-target-' })
+ 	try {
+ 		const outcome = attempt(() =>
+diff --git a/tests/src/bin/main.test.ts b/tests/src/bin/main.test.ts
+index c237de9..1169363 100644
+--- a/tests/src/bin/main.test.ts
++++ b/tests/src/bin/main.test.ts
+@@ -19,7 +19,7 @@ import { createTeardown, waitForCondition, waitForDelay } from '@orkestrel/test'
+ import { createScratch } from '@orkestrel/test/server'
+ import { formatVerdict, isVerdict } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+-import { readSignalEnding } from '../../setupServer.js'
++import { describeEnding, readChildEnding, readSignalEnding } from '../../setupServer.js'
+ import { WORKSPACE_ROOT } from '../../setup.js'
+ 
+ const ROOT = fileURLToPath(WORKSPACE_ROOT)
+@@ -232,6 +232,19 @@ describe('bin entry', () => {
+ 		expect(source).not.toContain('export')
+ 	})
+ 
++	// The reporter flattens a multi-line refusal onto one stderr line, so what it treats as a line
++	// ending decides what survives. A lone carriage return is a character inside a tool's own quoted
++	// text rather than an ending, and a reporter that broke a message there would report two joined
++	// fragments in place of the bytes the tool wrote. The entry runs on import and ends the process
++	// it is loaded into, so its rule is read here rather than driven: no refusal this package can
++	// construct carries a lone carriage return to it.
++	it('splits a reported message at a line ending and never at a bare carriage return', () => {
++		const source = readFileSync(resolve(ROOT, ENTRY), 'utf8')
++		expect(source).toContain('split(/\\r\\n|\\n/u)')
++		expect(source).not.toContain('\\r?')
++		expect(source).not.toContain('|\\r/')
++	})
++
+ 	it('reports a construction refusal as a formatted stderr line without a stack', async () => {
+ 		const scratch = createScratch({ files: { 'package.json': '{}\n' } })
+ 		const child = spawn(process.execPath, [BUILT_ENTRY], {
+@@ -1015,7 +1028,7 @@ describe('bin entry', () => {
+ 				// next boot, which the orphan-sweep proofs cover.
+ 				context.skip(
+ 					ending.code !== 0,
+-					`this host ends a child holding its own ${delivery.signal} handler as ${ending.signal === null ? `code ${ending.code}` : `signal ${ending.signal}`}, so child.kill runs no handler here and the entry's graceful teardown cannot be reached`,
++					`this host ends a child holding its own ${delivery.signal} handler as ${describeEnding(ending)}, so child.kill runs no handler here and the entry's graceful teardown cannot be reached`,
+ 				)
+ 				const scratch = createScratch()
+ 				writeTarget(scratch)
+@@ -1024,11 +1037,7 @@ describe('bin entry', () => {
+ 					cwd: scratch.path,
+ 					stdio: ['pipe', 'pipe', 'pipe'],
+ 				})
+-				const exited = new Promise<{ code: number | null; signal: string | null }>(
+-					(resolveExit) => {
+-						child.once('exit', (code, signal) => resolveExit({ code, signal }))
+-					},
+-				)
++				const exited = readChildEnding(child)
+ 				try {
+ 					if (delivery.phase === 'boot') await waitForArming(directory)
+ 					else await waitForArmed(directory)
+diff --git a/tests/src/server/Probe.test.ts b/tests/src/server/Probe.test.ts
+index c9e2d6e..dad678d 100644
+--- a/tests/src/server/Probe.test.ts
++++ b/tests/src/server/Probe.test.ts
+@@ -22,89 +22,23 @@ import { peerDependencies } from '../../../package.json' with { type: 'json' }
+ import { Probe, readWorkspaceManifest } from '@src/server'
+ import { matchesSpecification } from '@src/core'
+ import { describe, expect, it } from 'vitest'
++import { createLintFixture } from '../../setupServer.js'
+ import { WORKSPACE_ROOT } from '../../setup.js'
+ 
+ const ROOT = fileURLToPath(WORKSPACE_ROOT)
+ 
+-// A protocol-faithful Oxlint language server that records every document session it is given. It
+-// appends one line per `didOpen` carrying the number of documents open at that moment, waits, then
+-// publishes an empty diagnostic set. A coordinator that admits two inspections at once shows a
+-// count above one; a coordinator that admits them out of order shows the sessions transposed.
+-const ORDERED = [
+-	"import { appendFileSync } from 'node:fs'",
+-	'let buffer = Buffer.alloc(0)',
+-	'let open = 0',
+-	'setTimeout(() => process.exit(0), 300_000)',
+-	'function send(message) {',
+-	'\tconst content = JSON.stringify(message)',
+-	"\tprocess.stdout.write('Content-Length: ' + Buffer.byteLength(content) + '\\r\\n\\r\\n' + content)",
+-	'}',
+-	"process.stdin.on('data', (chunk) => {",
+-	'\tbuffer = Buffer.concat([buffer, chunk])',
+-	'\twhile (true) {',
+-	"\t\tconst boundary = buffer.indexOf('\\r\\n\\r\\n')",
+-	'\t\tif (boundary < 0) return',
+-	"\t\tconst header = buffer.subarray(0, boundary).toString('ascii')",
+-	'\t\tconst match = /Content-Length: (\\d+)/i.exec(header)',
+-	'\t\tif (match === null) return',
+-	'\t\tconst length = Number(match[1])',
+-	'\t\tconst start = boundary + 4',
+-	'\t\tif (buffer.length < start + length) return',
+-	"\t\tconst message = JSON.parse(buffer.subarray(start, start + length).toString('utf8'))",
+-	'\t\tbuffer = buffer.subarray(start + length)',
+-	"\t\tif (message.method === 'initialize') send({ jsonrpc: '2.0', id: message.id, result: { capabilities: { textDocumentSync: { openClose: true, change: 1 } } } })",
+-	"\t\tif (message.method === 'textDocument/didOpen') {",
+-	'\t\t\tconst uri = message.params.textDocument.uri',
+-	'\t\t\topen += 1',
+-	"\t\t\tappendFileSync('probe-lint.log', 'open ' + open + ' ' + uri + '\\n')",
+-	"\t\t\tsetTimeout(() => send({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri, diagnostics: [] } }), 100)",
+-	'\t\t}',
+-	"\t\tif (message.method === 'textDocument/didClose') {",
+-	'\t\t\topen -= 1',
+-	"\t\t\tappendFileSync('probe-lint.log', 'close ' + message.params.textDocument.uri + '\\n')",
+-	'\t\t}',
+-	"\t\tif (message.method === 'shutdown') send({ jsonrpc: '2.0', id: message.id, result: null })",
+-	"\t\tif (message.method === 'exit') process.exit(0)",
+-	'\t}',
+-	'})',
+-].join('\n')
++// The Oxlint language server every claim here is answered by. Its own exit budget sits above the
++// longest row's timeout, so a row reads the ending it drove rather than the server leaving on its
++// own. The `stall-lint` marker file silences every document, which is what holds the probe's boot
++// control past its deadline; the text marker `PROBE_SILENT` silences one document, which holds a
++// claim's candidate while the boot controls still answer.
++const STALLING = createLintFixture({ budget: 300_000 })
+ 
+-// A protocol-faithful Oxlint language server that can be made to publish nothing. The `stall-lint`
+-// marker file silences every document, which is what holds the probe's own boot control past its
+-// deadline; the text marker `PROBE_SILENT` silences one document, which holds a claim's candidate
+-// while the boot controls still answer.
+-const STALLING = [
+-	"import { existsSync } from 'node:fs'",
+-	'let buffer = Buffer.alloc(0)',
+-	'setTimeout(() => process.exit(0), 300_000)',
+-	'function send(message) {',
+-	'\tconst content = JSON.stringify(message)',
+-	"\tprocess.stdout.write('Content-Length: ' + Buffer.byteLength(content) + '\\r\\n\\r\\n' + content)",
+-	'}',
+-	"process.stdin.on('data', (chunk) => {",
+-	'\tbuffer = Buffer.concat([buffer, chunk])',
+-	'\twhile (true) {',
+-	"\t\tconst boundary = buffer.indexOf('\\r\\n\\r\\n')",
+-	'\t\tif (boundary < 0) return',
+-	"\t\tconst header = buffer.subarray(0, boundary).toString('ascii')",
+-	'\t\tconst match = /Content-Length: (\\d+)/i.exec(header)',
+-	'\t\tif (match === null) return',
+-	'\t\tconst length = Number(match[1])',
+-	'\t\tconst start = boundary + 4',
+-	'\t\tif (buffer.length < start + length) return',
+-	"\t\tconst message = JSON.parse(buffer.subarray(start, start + length).toString('utf8'))",
+-	'\t\tbuffer = buffer.subarray(start + length)',
+-	"\t\tif (message.method === 'initialize') send({ jsonrpc: '2.0', id: message.id, result: { capabilities: { textDocumentSync: { openClose: true, change: 1 } } } })",
+-	"\t\tif (message.method === 'textDocument/didOpen') {",
+-	'\t\t\tconst uri = message.params.textDocument.uri',
+-	"\t\t\tconst stalled = existsSync('stall-lint') || message.params.textDocument.text.includes('PROBE_SILENT')",
+-	"\t\t\tif (!stalled) send({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri, diagnostics: [] } })",
+-	'\t\t}',
+-	"\t\tif (message.method === 'shutdown') send({ jsonrpc: '2.0', id: message.id, result: null })",
+-	"\t\tif (message.method === 'exit') process.exit(0)",
+-	'\t}',
+-	'})',
+-].join('\n')
++// The same server, publishing one document's diagnostics a tenth of a second after admitting it and
++// recording each session in `probe-lint.log`. A coordinator that admits two inspections at once
++// leaves a count above one in that record; one that admits them out of order leaves the sessions
++// transposed.
++const ORDERED = createLintFixture({ budget: 300_000, delay: 100 })
+ 
+ // Builds one candidate draft whose type check costs about a second: 100 exclusions applied one
+ // after another to a 10,000-member template-literal union, measured at 12.8 ms per exclusion in this
+@@ -603,10 +537,9 @@ describe.sequential('probe', () => {
+ 			'{"name":"typescript","version":"7.0.2","type":"module","exports":{".":"./index.js","./package.json":"./package.json"}}\n',
+ 		)
+ 		scratch.write('node_modules/typescript/index.js', "export const version = '7.0.2'\n")
+-		scratch.write(
+-			'node_modules/oxlint/package.json',
+-			'{"name":"oxlint","version":"1.79.0","type":"module","bin":{"oxlint":"fixture.js"}}\n',
+-		)
++		scratch.write('node_modules/oxlint/package.json', createLintFixture().manifest)
++		// The refusal this row reads lands before any stage runs, so the binary the manifest names
++		// never has to answer the protocol and a server that exits at once serves it.
+ 		scratch.write('node_modules/oxlint/fixture.js', 'process.exit(1)\n')
+ 		scratch.write(
+ 			'node_modules/vitest/package.json',
+@@ -1034,11 +967,8 @@ describe.sequential('probe', () => {
+ 		scratch.write('package.json', '{"type":"module"}\n')
+ 		scratch.link('node_modules/typescript', resolve(ROOT, 'node_modules/typescript'))
+ 		scratch.link('node_modules/vitest', resolve(ROOT, 'node_modules/vitest'))
+-		scratch.write(
+-			'node_modules/oxlint/package.json',
+-			'{"name":"oxlint","version":"1.79.0","type":"module","bin":{"oxlint":"fixture.js"}}\n',
+-		)
+-		scratch.write('node_modules/oxlint/fixture.js', STALLING)
++		scratch.write('node_modules/oxlint/package.json', STALLING.manifest)
++		scratch.write('node_modules/oxlint/fixture.js', STALLING.program)
+ 		scratch.write(
+ 			'tsconfig.json',
+ 			'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","types":["vitest/globals"]}}\n',
+@@ -1135,11 +1065,8 @@ describe.sequential('probe', () => {
+ 			scratch.write('package.json', '{"type":"module"}\n')
+ 			scratch.link('node_modules/typescript', resolve(ROOT, 'node_modules/typescript'))
+ 			scratch.link('node_modules/vitest', resolve(ROOT, 'node_modules/vitest'))
+-			scratch.write(
+-				'node_modules/oxlint/package.json',
+-				'{"name":"oxlint","version":"1.79.0","type":"module","bin":{"oxlint":"fixture.js"}}\n',
+-			)
+-			scratch.write('node_modules/oxlint/fixture.js', STALLING)
++			scratch.write('node_modules/oxlint/package.json', STALLING.manifest)
++			scratch.write('node_modules/oxlint/fixture.js', STALLING.program)
+ 			scratch.write(
+ 				'tsconfig.json',
+ 				'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","types":["vitest/globals"]}}\n',
+@@ -1452,7 +1379,7 @@ describe.sequential('probe', () => {
+ 	})
+ 
+ 	it(
+-		'destroys idempotently and observes one error for a later proof',
++		'destroys idempotently and releases the listeners its host registered',
+ 		{ timeout: 60_000 },
+ 		async () => {
+ 			const directory = fileURLToPath(new URL('../../../tmp/probe/', import.meta.url))
+@@ -1464,6 +1391,9 @@ describe.sequential('probe', () => {
+ 				on: { error: failures.handler },
+ 			})
+ 			await Promise.all([probe.destroy(), probe.destroy()])
++			// The reading taken here is this row's own control: it is what a later reading is compared
++			// against, so a listener that fired before teardown cannot pass for one teardown released.
++			const released = failures.count
+ 			await expect(
+ 				probe.prove({
+ 					project: 'configs/src/tsconfig.core.json',
+@@ -1489,7 +1419,10 @@ describe.sequential('probe', () => {
+ 				message: 'The probe has been destroyed',
+ 				code: 'destroyed',
+ 			})
+-			expect(failures.count).toBe(1)
++			// Teardown releases the emitter last, so a refusal the destroyed coordinator raises reaches
++			// the caller that asked for it and reaches no listener the host registered before teardown.
++			expect(failures.count).toBe(released)
++			expect(probe.emitter.destroyed).toBe(true)
+ 			expect(
+ 				readdirSync(directory).filter((name) => name.startsWith('after-destroy.test.probe-')),
+ 			).toStrictEqual([])
+@@ -1594,11 +1527,8 @@ describe.sequential('probe', () => {
+ 			scratch.write('package.json', '{"type":"module"}\n')
+ 			scratch.link('node_modules/typescript', resolve(ROOT, 'node_modules/typescript'))
+ 			scratch.link('node_modules/vitest', resolve(ROOT, 'node_modules/vitest'))
+-			scratch.write(
+-				'node_modules/oxlint/package.json',
+-				'{"name":"oxlint","version":"1.79.0","type":"module","bin":{"oxlint":"fixture.js"}}\n',
+-			)
+-			scratch.write('node_modules/oxlint/fixture.js', ORDERED)
++			scratch.write('node_modules/oxlint/package.json', ORDERED.manifest)
++			scratch.write('node_modules/oxlint/fixture.js', ORDERED.program)
+ 			scratch.write(
+ 				'tsconfig.json',
+ 				'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","types":["vitest/globals"]}}\n',
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index d704a22..bcd0efb 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -7,9 +7,9 @@ import { compileGuard } from '@orkestrel/contract'
+ import { captureError } from '@orkestrel/test'
+ import { createScratch } from '@orkestrel/test/server'
+ import {
++	buildRevisionPath,
+ 	captureListeners,
+ 	computeDigest,
+-	createRevisionFile,
+ 	describeUnknown,
+ 	escapesRoot,
+ 	findRefusedPaths,
+@@ -111,7 +111,7 @@ describe('server helper examples', () => {
+ 		expect(
+ 			relativeWorkspaceFile(
+ 				ROOT,
+-				createRevisionFile(ROOT, 'tmp/probe/greeting.test.ts', '4821-9f0c'),
++				buildRevisionPath(ROOT, 'tmp/probe/greeting.test.ts', '4821-9f0c'),
+ 			),
+ 		).toBe('tmp/probe/greeting.test.probe-4821-9f0c.ts')
+ 		expect(matchesWorkspaceModule('src/core/greeting.ts')).toBe(true)
+@@ -210,7 +210,7 @@ describe('workspace message paths', () => {
+ 		expect(relativeWorkspaceMessage(ROOT, `Failed to load ${complete}`)).toBe(
+ 			`Failed to load ${complete}`,
+ 		)
+-		const generated = createRevisionFile(ROOT, 'tmp/probe/greeting.test.ts', `${process.pid}-1f0c`)
++		const generated = buildRevisionPath(ROOT, 'tmp/probe/greeting.test.ts', `${process.pid}-1f0c`)
+ 		// The root is removed even from a marker-carrying name, and the remainder keeps the separator
+ 		// the tool wrote rather than the forward-slash form `Issue.path` uses.
+ 		expect(relativeWorkspaceMessage(ROOT, `Failed to load ${generated}`)).toBe(
+@@ -341,11 +341,11 @@ describe('server path helpers', () => {
+ 		expect(normalizeValue(ROOT, resolve(ROOT, 'src/core/value.ts'))).toBe('src/core/value.ts')
+ 	})
+ 
+-	it('creates sibling revision paths with and without extensions', () => {
+-		expect(createRevisionFile(ROOT, 'tmp/probe/value.test.ts', 'revision')).toBe(
++	it('builds sibling revision paths with and without extensions', () => {
++		expect(buildRevisionPath(ROOT, 'tmp/probe/value.test.ts', 'revision')).toBe(
+ 			resolve(ROOT, 'tmp/probe/value.test.probe-revision.ts'),
+ 		)
+-		expect(createRevisionFile(ROOT, 'tmp/probe/value', 'revision')).toBe(
++		expect(buildRevisionPath(ROOT, 'tmp/probe/value', 'revision')).toBe(
+ 			resolve(ROOT, 'tmp/probe/value.probe-revision'),
+ 		)
+ 	})
+diff --git a/tests/src/server/stages/LintStage.test.ts b/tests/src/server/stages/LintStage.test.ts
+index 5dcece1..3357f6f 100644
+--- a/tests/src/server/stages/LintStage.test.ts
++++ b/tests/src/server/stages/LintStage.test.ts
+@@ -3,14 +3,16 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
+ import { spawn } from 'node:child_process'
+ import { resolve } from 'node:path'
+ import { createTeardown, waitForCondition, waitForDelay } from '@orkestrel/test'
+-import { createScratch } from '@orkestrel/test/server'
++import { createScratch, isRunning } from '@orkestrel/test/server'
+ import { LINT_DEADLINE, formatIssue, isProbeError } from '@src/core'
+ import { LintStage, resolveWorkspaceBinary } from '@src/server'
+ import { describe, expect, it } from 'vitest'
+ import {
+-	isProcessLive,
++	createLintFixture,
++	describeEnding,
+ 	killFixtureServer,
+ 	readFixtureServer,
++	readHostEnding,
+ 	waitForFixtureServer,
+ } from '../../../setupServer.js'
+ import { WORKSPACE_ROOT } from '../../../setup.js'
+@@ -29,116 +31,9 @@ const UNBOUNDED: AbortSignal = new AbortController().signal
+ // size it searches for is the size that holds exactly this write.
+ const CLOSE_WRITE = 200
+ 
+-// A protocol-faithful Oxlint language server. It announces its own process id, so a test can kill
+-// the real child the stage owns privately and can read whether that child is still alive. Its
+-// `initialize` result declares `textDocumentSync` with `openClose`, which is what a client checks
+-// before it opens a document at all — real Oxlint declares the same capability, so a fixture that
+-// omitted it would refuse every document the real server admits.
+-//
+-// Marker files select how it ends: `frail` exits with a code on the first document,
+-// `unanswered-shutdown` exits without replying to `shutdown`, `unanswered-initialize` exits
+-// without replying to `initialize`, `silent-initialize` stays alive and never replies to
+-// `initialize`, and `ignored-exit` answers `shutdown` and then stays alive through `exit`, which is
+-// the one ending the protocol leaves to the client to force. Markers in a document's own text
+-// select how it answers that document: `PROBE_SILENT` writes the document URI to `admitted` and
+-// publishes nothing, `PROBE_SLOW` publishes after 3 s, which is past the bound the stage's client
+-// holds over its lifecycle exchanges, and `PROBE_CLOSES_INPUT` closes the server's own standard
+-// input when that document is closed. Every document it admits appends its `didOpen` version to
+-// `versions`, so a test reads the versions the client actually put on the wire.
+-//
+-// The `stall` marker selects a different conversation entirely, and its content is the one document
+-// URI this server answers. It frames `initialize` with blocking reads on the descriptor itself, so
+-// it owns no stream buffer of its own, replies, and then reads nothing ever again. Its timer
+-// publishes empty diagnostics for the marked URI and records the publication in `published`, so a
+-// document it never read is answered while every byte the client writes after the handshake stays
+-// in a pipe nobody drains.
+-const SERVER = [
+-	"import { closeSync, existsSync, readFileSync, readSync, writeFileSync } from 'node:fs'",
+-	'let buffer = Buffer.alloc(0)',
+-	'let deferred',
+-	"writeFileSync('server.pid', String(process.pid))",
+-	'setTimeout(() => process.exit(0), 60_000)',
+-	'function send(message) {',
+-	'\tconst content = JSON.stringify(message)',
+-	"\tprocess.stdout.write('Content-Length: ' + Buffer.byteLength(content) + '\\r\\n\\r\\n' + content)",
+-	'}',
+-	"if (existsSync('stall')) {",
+-	"\tconst held = readFileSync('stall', 'utf8')",
+-	'\tconst chunk = Buffer.alloc(65_536)',
+-	'\tlet request',
+-	'\twhile (request === undefined) {',
+-	'\t\tconst read = readSync(0, chunk, 0, chunk.length, null)',
+-	'\t\tbuffer = Buffer.concat([buffer, chunk.subarray(0, read)])',
+-	"\t\tconst boundary = buffer.indexOf('\\r\\n\\r\\n')",
+-	'\t\tif (boundary < 0) continue',
+-	"\t\tconst framing = /Content-Length: (\\d+)/i.exec(buffer.subarray(0, boundary).toString('ascii'))",
+-	'\t\tif (framing === null) continue',
+-	'\t\tconst size = Number(framing[1])',
+-	'\t\tif (buffer.length < boundary + 4 + size) continue',
+-	"\t\trequest = JSON.parse(buffer.subarray(boundary + 4, boundary + 4 + size).toString('utf8'))",
+-	'\t}',
+-	'\tconst opening = { openClose: true, change: 1 }',
+-	"\tsend({ jsonrpc: '2.0', id: request.id, result: { capabilities: { textDocumentSync: opening } } })",
+-	'\tsetTimeout(() => {',
+-	"\t\tsend({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri: held, diagnostics: [] } })",
+-	"\t\twriteFileSync('published', held)",
+-	'\t}, 800)',
+-	'}',
+-	"if (!existsSync('stall')) process.stdin.on('data', (chunk) => {",
+-	'\tbuffer = Buffer.concat([buffer, chunk])',
+-	'\twhile (true) {',
+-	"\t\tconst boundary = buffer.indexOf('\\r\\n\\r\\n')",
+-	'\t\tif (boundary < 0) return',
+-	"\t\tconst header = buffer.subarray(0, boundary).toString('ascii')",
+-	'\t\tconst match = /Content-Length: (\\d+)/i.exec(header)',
+-	'\t\tif (match === null) return',
+-	'\t\tconst length = Number(match[1])',
+-	'\t\tconst start = boundary + 4',
+-	'\t\tif (buffer.length < start + length) return',
+-	"\t\tconst message = JSON.parse(buffer.subarray(start, start + length).toString('utf8'))",
+-	'\t\tbuffer = buffer.subarray(start + length)',
+-	"\t\tif (message.method === 'initialize') {",
+-	"\t\t\tif (existsSync('unanswered-initialize')) {",
+-	'\t\t\t\tsetTimeout(() => process.exit(0), 250)',
+-	'\t\t\t\treturn',
+-	'\t\t\t}',
+-	"\t\t\tif (existsSync('silent-initialize')) return",
+-	'\t\t\tconst sync = { openClose: true, change: 1 }',
+-	"\t\t\tsend({ jsonrpc: '2.0', id: message.id, result: { capabilities: { textDocumentSync: sync } } })",
+-	'\t\t}',
+-	"\t\tif (message.method === 'textDocument/didOpen') {",
+-	"\t\t\tif (existsSync('frail')) process.exit(7)",
+-	'\t\t\tconst uri = message.params.textDocument.uri',
+-	'\t\t\tconst text = message.params.textDocument.text',
+-	"\t\t\twriteFileSync('versions', message.params.textDocument.version + '\\n', { flag: 'a' })",
+-	"\t\t\tif (text.includes('PROBE_SILENT')) writeFileSync('admitted', uri)",
+-	"\t\t\tif (text.includes('PROBE_CLOSES_INPUT')) deferred = uri",
+-	"\t\t\tconst held = text.includes('PROBE_SILENT') || text.includes('PROBE_SLOW')",
+-	"\t\t\tif (text.includes('PROBE_SLOW')) {",
+-	"\t\t\t\tsetTimeout(() => send({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri, diagnostics: [] } }), 3_000)",
+-	'\t\t\t}',
+-	'\t\t\tif (!held) {',
+-	"\t\t\t\tsend({ jsonrpc: '2.0', method: 'textDocument/publishDiagnostics', params: { uri, diagnostics: [] } })",
+-	'\t\t\t}',
+-	'\t\t}',
+-	"\t\tif (message.method === 'textDocument/didClose') {",
+-	'\t\t\tif (message.params.textDocument.uri === deferred) closeSync(0)',
+-	'\t\t}',
+-	"\t\tif (message.method === 'shutdown') {",
+-	"\t\t\tif (existsSync('unanswered-shutdown')) process.exit(0)",
+-	"\t\t\tsend({ jsonrpc: '2.0', id: message.id, result: null })",
+-	'\t\t}',
+-	"\t\tif (message.method === 'exit' && !existsSync('ignored-exit')) process.exit(0)",
+-	'\t}',
+-	'})',
+-].join('\n')
+-
+-const FIXTURE = {
+-	'package.json': '{"type":"module"}\n',
+-	'node_modules/oxlint/package.json':
+-		'{"name":"oxlint","version":"1.79.0","type":"module","bin":{"oxlint":"fixture.js"}}\n',
+-	'node_modules/oxlint/fixture.js': SERVER,
+-}
++// The workspace every row here drives the stage against, carrying the shared protocol-faithful
++// Oxlint language server. `createLintFixture` states which marker selects which conversation.
++const FIXTURE = createLintFixture().files
+ 
+ const PASSING = "import { test } from 'vitest'\ntest('passes', () => {})\n"
+ 
+@@ -204,29 +99,6 @@ const CLOSER = [
+ 	'setTimeout(() => {}, 10_000)',
+ ].join('\n')
+ 
+-// Reads how this host reports a child that ended, phrased the way the lint stage phrases an ending.
+-// A kill lands as a signal on one host and as an exit code on another, and the door it came through
+-// decides too, so this kills with `process.kill`, the door `killFixtureServer` uses, and the
+-// assertion composes whatever came back. With no signal the child ends on its own, which is the
+-// control: an instrument that reported a kill's ending for a child nobody killed would be measuring
+-// nothing.
+-async function readHostEnding(signal?: NodeJS.Signals): Promise<string> {
+-	const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 250)'], { stdio: 'ignore' })
+-	const ended = new Promise<void>((settle) => {
+-		child.on('exit', () => settle())
+-	})
+-	if (signal !== undefined) {
+-		await new Promise<void>((ready) => {
+-			child.on('spawn', () => ready())
+-		})
+-		const id = child.pid
+-		if (id === undefined) throw new Error('The probe child never reported a process id')
+-		process.kill(id, signal)
+-	}
+-	await ended
+-	return child.signalCode === null ? `code ${child.exitCode}` : `signal ${child.signalCode}`
+-}
+-
+ // Reads how this host reports a write to a child that closed its own standard input, which is the
+ // mechanism the fixture server's `PROBE_CLOSES_INPUT` marker uses. A host that breaks the writing
+ // end when that descriptor closes refuses the next write, and the refusal's own code comes back; a
+@@ -332,12 +204,7 @@ async function expectReleased(stage: LintStage): Promise<void> {
+ function createLintWorkspace(): ScratchInterface {
+ 	return createScratch({
+ 		files: {
+-			'package.json': '{"type":"module"}\n',
+-			'node_modules/oxlint/package.json': `${JSON.stringify({
+-				name: 'oxlint',
+-				version: '1.79.0',
+-				bin: { oxlint: resolveWorkspaceBinary(ROOT, 'oxlint') },
+-			})}\n`,
++			...createLintFixture({ binary: resolveWorkspaceBinary(ROOT, 'oxlint') }).files,
+ 			'.oxlintrc.json': `${JSON.stringify({
+ 				rules: { 'no-debugger': 'error' },
+ 				overrides: [
+@@ -460,7 +327,14 @@ describe('lint stage', () => {
+ 		const held = stage.inspect({ files: [], test: source }, { signal: UNBOUNDED })
+ 		void held.catch(() => {})
+ 		try {
+-			await waitForDelay(250)
++			// The fixture records the silenced document as it admits it, so the second inspection
++			// arrives against a registration the server has taken rather than against a handshake
++			// this host was slow to finish.
++			await waitForCondition(
++				'the lint fixture to admit the first document',
++				() => scratch.read('admitted') !== undefined,
++				{ budget: 10_000, interval: 20 },
++			)
+ 			await expect(
+ 				stage.inspect({ files: [], test: source }, { signal: UNBOUNDED }),
+ 			).rejects.toThrow(
+@@ -915,12 +789,7 @@ describe('lint stage', () => {
+ 			// answers with the workspace's default rules and finds nothing.
+ 			const scratch = createScratch({
+ 				files: {
+-					'package.json': '{"type":"module"}\n',
+-					'node_modules/oxlint/package.json': `${JSON.stringify({
+-						name: 'oxlint',
+-						version: '1.79.0',
+-						bin: { oxlint: resolveWorkspaceBinary(ROOT, 'oxlint') },
+-					})}\n`,
++					...createLintFixture({ binary: resolveWorkspaceBinary(ROOT, 'oxlint') }).files,
+ 					'.oxlintrc.json': `${JSON.stringify({
+ 						rules: { 'no-debugger': 'off' },
+ 						overrides: [{ files: ['tmp/probe/**'], rules: { 'no-debugger': 'error' } }],
+@@ -1039,11 +908,11 @@ describe('lint stage', () => {
+ 				// The control comes first: signal zero reaches that process while the stage still
+ 				// holds it, so a refusal afterwards is evidence about the teardown rather than
+ 				// about a process id nothing could ever reach.
+-				expect(isProcessLive(owned)).toBe(true)
++				expect(isRunning(owned)).toBe(true)
+ 				await expect(stage.destroy()).resolves.toBeUndefined()
+ 				// Signal zero is refused for a process the host has reaped, which is what separates
+ 				// a released child from an orphan the stage abandoned to the host's lifetime.
+-				expect(isProcessLive(owned)).toBe(false)
++				expect(isRunning(owned)).toBe(false)
+ 				await expectReleased(stage)
+ 			} finally {
+ 				scratch.destroy()
+@@ -1064,12 +933,18 @@ describe('lint stage', () => {
+ 			)
+ 			const owned = readFixtureServer(scratch)
+ 			killFixtureServer(scratch)
+-			await waitForDelay(250)
++			// Teardown is measured against a server that is already gone, so this waits for the death
++			// itself rather than for a delay chosen to outlast it.
++			await waitForCondition(
++				'the killed language server to leave this host',
++				() => !isRunning(owned),
++				{ budget: 10_000, interval: 20 },
++			)
+ 			const killed = performance.now()
+ 			await expect(signalled.destroy()).resolves.toBeUndefined()
+ 			expect(performance.now() - killed).toBeLessThan(5_000)
+ 			await expectReleased(signalled)
+-			expect(isProcessLive(owned)).toBe(false)
++			expect(isRunning(owned)).toBe(false)
+ 
+ 			// The control is the death the guard already handled. A teardown that settles only for a
+ 			// signalled server would report the same pass as one that settles for neither.
+@@ -1086,7 +961,7 @@ describe('lint stage', () => {
+ 			await expect(closed.destroy()).resolves.toBeUndefined()
+ 			expect(performance.now() - exited).toBeLessThan(5_000)
+ 			await expectReleased(closed)
+-			expect(isProcessLive(answering)).toBe(false)
++			expect(isRunning(answering)).toBe(false)
+ 		} finally {
+ 			scratch.destroy()
+ 		}
+@@ -1102,12 +977,12 @@ describe('lint stage', () => {
+ 				// while it is still waiting for the answer the server owes it.
+ 				const silent = new LintStage(scratch.path)
+ 				const owned = await waitForFixtureServer(scratch)
+-				expect(isProcessLive(owned)).toBe(true)
++				expect(isRunning(owned)).toBe(true)
+ 				const asked = performance.now()
+ 				await expect(silent.destroy()).resolves.toBeUndefined()
+ 				expect(performance.now() - asked).toBeLessThan(10_000)
+ 				await expectReleased(silent)
+-				expect(isProcessLive(owned)).toBe(false)
++				expect(isRunning(owned)).toBe(false)
+ 			} finally {
+ 				scratch.destroy()
+ 			}
+@@ -1133,7 +1008,7 @@ describe('lint stage', () => {
+ 				await expect(unanswered.destroy()).resolves.toBeUndefined()
+ 				expect(performance.now() - asked).toBeLessThan(5_000)
+ 				await expectReleased(unanswered)
+-				expect(isProcessLive(owned)).toBe(false)
++				expect(isRunning(owned)).toBe(false)
+ 			} finally {
+ 				scratch.destroy()
+ 			}
+@@ -1155,7 +1030,7 @@ describe('lint stage', () => {
+ 				await expect(stage.destroy()).resolves.toBeUndefined()
+ 				expect(performance.now() - asked).toBeLessThan(5_000)
+ 				await expectReleased(stage)
+-				expect(isProcessLive(owned)).toBe(false)
++				expect(isRunning(owned)).toBe(false)
+ 			} finally {
+ 				answering.destroy()
+ 			}
+@@ -1185,7 +1060,7 @@ describe('lint stage', () => {
+ 				// decision rather than the server's.
+ 				expect(performance.now() - asked).toBeLessThan(5_000)
+ 				await expectReleased(stage)
+-				expect(isProcessLive(owned)).toBe(false)
++				expect(isRunning(owned)).toBe(false)
+ 			} finally {
+ 				scratch.destroy()
+ 			}
+@@ -1207,9 +1082,14 @@ describe('lint stage', () => {
+ 			)
+ 			void inspection.catch(() => {})
+ 			try {
+-				// The server exits a quarter second after it reads `initialize`, so teardown starts
+-				// while the stage is still warming and the ending arrives with the request outstanding.
+-				await waitForDelay(50)
++				// The server records that it read `initialize` and exits a quarter second later, so
++				// waiting for that record starts teardown inside the warming window: the stage is
++				// still waiting for its answer and the ending arrives with the request outstanding.
++				await waitForCondition(
++					'the lint fixture to record the initialize it never answers',
++					() => scratch.read('initialized') !== undefined,
++					{ budget: 10_000, interval: 10 },
++				)
+ 				const asked = performance.now()
+ 				await expect(stage.destroy()).resolves.toBeUndefined()
+ 				expect(performance.now() - asked).toBeLessThan(5_000)
+@@ -1278,12 +1158,19 @@ describe('lint stage', () => {
+ 					},
+ 					{ signal: UNBOUNDED },
+ 				)
++				const owned = readFixtureServer(scratch)
+ 				killFixtureServer(scratch)
+-				await waitForDelay(250)
++				// The later inspection is answered by the ending the stage read, so this waits for the
++				// death that produces that ending rather than for a delay chosen to outlast it.
++				await waitForCondition(
++					'the killed language server to leave this host',
++					() => !isRunning(owned),
++					{ budget: 10_000, interval: 20 },
++				)
+ 				// The control comes first: a child this host never killed ends on its own code, so an
+ 				// instrument returning the kill's phrase for it would be reading nothing about the kill.
+-				expect(await readHostEnding()).toBe('code 0')
+-				const ending = await readHostEnding('SIGKILL')
++				expect(describeEnding(await readHostEnding())).toBe('code 0')
++				const ending = describeEnding(await readHostEnding('SIGKILL'))
+ 				await expect(
+ 					stage.inspect(
+ 						{
+@@ -1409,7 +1296,15 @@ describe('lint stage', () => {
+ 					},
+ 					{ signal: UNBOUNDED },
+ 				)
+-				await waitForDelay(250)
++				// The fixture opens the record before it closes its own descriptor and writes the URI
++				// into it afterwards, so the record's contents land after the close. The write that
++				// follows this wait therefore meets a pipe that is already broken rather than one this
++				// host was slow to break.
++				await waitForCondition(
++					'the lint fixture to record the standard input it closed',
++					() => (scratch.read('closed') ?? '') !== '',
++					{ budget: 10_000, interval: 20 },
++				)
+ 				// The client owns the write, so the refusal reaches the caller as the notification
+ 				// that could not be delivered rather than as the host's own pipe code. What the row
+ 				// proves is unchanged: the inspection is refused as a stage fault instead of
+@@ -1449,7 +1344,7 @@ describe('lint stage', () => {
+ 			try {
+ 				// The host kills the language server through `process.kill`, so the ending it reports is
+ 				// the one this host gives that door.
+-				const ending = await readHostEnding('SIGKILL')
++				const ending = describeEnding(await readHostEnding('SIGKILL'))
+ 				const host = spawn(
+ 					process.execPath,
+ 					[
+diff --git a/tests/src/server/stages/RuntimeStage.test.ts b/tests/src/server/stages/RuntimeStage.test.ts
+index a5e1f03..9281b6c 100644
+--- a/tests/src/server/stages/RuntimeStage.test.ts
++++ b/tests/src/server/stages/RuntimeStage.test.ts
+@@ -27,7 +27,7 @@ import {
+ 	formatSpecification,
+ 	isProbeError,
+ } from '@src/core'
+-import { RuntimeStage, createRevisionFile, normalizePath } from '@src/server'
++import { RuntimeStage, buildRevisionPath, normalizePath } from '@src/server'
+ import { describe, expect, it } from 'vitest'
+ import { createVitest } from 'vitest/node'
+ import { DIRECTORY_LINKS, REFUSED_RUNTIME_TARGETS } from '../../../setupServer.js'
+@@ -62,7 +62,7 @@ describe('runtime stage', () => {
+ 	// at that suffix, which is what keeps an abandoned specification out of every suite while
+ 	// leaving it in the tree the type and lint gates read.
+ 	it('writes a generated specification no Vitest project collects', () => {
+-		const file = createRevisionFile(
++		const file = buildRevisionPath(
+ 			ROOT,
+ 			'tmp/probe/greeting.test.ts',
+ 			`${process.pid}-${randomUUID()}`,
+@@ -1587,7 +1587,7 @@ describe('runtime stage', () => {
+ 		const departed = spawnSync(process.execPath, ['--version'])
+ 		expect(departed.status).toBe(0)
+ 		const orphanRevision = `${departed.pid}-${randomUUID()}`
+-		const orphan = createRevisionFile(scratch.path, 'tmp/probe/orphan.test.ts', orphanRevision)
++		const orphan = buildRevisionPath(scratch.path, 'tmp/probe/orphan.test.ts', orphanRevision)
+ 		const specification = "import { test } from 'vitest'\ntest('leaks', () => {})\n"
+ 		scratch.write(
+ 			relative(scratch.path, orphan),
+@@ -1597,7 +1597,7 @@ describe('runtime stage', () => {
+ 		// the load-bearing pair: several hosts share one workspace routinely, so a sweep reading the
+ 		// name deletes a neighbour's specification while its run is reading it, and a consumer's own
+ 		// file that happens to carry the same name shape is theirs rather than this package's.
+-		const live = createRevisionFile(
++		const live = buildRevisionPath(
+ 			scratch.path,
+ 			'tmp/probe/live.test.ts',
+ 			`${process.pid}-${randomUUID()}`,
+@@ -1607,7 +1607,7 @@ describe('runtime stage', () => {
+ 		scratch.write('tmp/probe/notes.probe-draft.ts', 'export const NOTE = 1\n')
+ 		// A developer's own file, named exactly as this package names its own and carrying a dead
+ 		// identity, in a directory this package writes to only when a claim declares a test there.
+-		const authored = createRevisionFile(
++		const authored = buildRevisionPath(
+ 			scratch.path,
+ 			'src/core/notes.ts',
+ 			`${departed.pid}-${randomUUID()}`,
+@@ -1615,7 +1615,7 @@ describe('runtime stage', () => {
+ 		scratch.write(relative(scratch.path, authored), 'export const NOTE = 1\n')
+ 		// The same file inside the workbench directory, so the rule is the marker rather than the
+ 		// location the flagship claim happens to use.
+-		const drafted = createRevisionFile(
++		const drafted = buildRevisionPath(
+ 			scratch.path,
+ 			'tmp/probe/draft.test.ts',
+ 			`${departed.pid}-${randomUUID()}`,
+@@ -1624,7 +1624,7 @@ describe('runtime stage', () => {
+ 		// A boot the host did not survive leaves its arming dependencies in the same directory.
+ 		// They are ordinary TypeScript in the consumer's tree, so they carry the same identity and
+ 		// the sweep reads them the same way.
+-		const arming = createRevisionFile(
++		const arming = buildRevisionPath(
+ 			scratch.path,
+ 			'tmp/probe/arm-type.ts',
+ 			`${departed.pid}-${randomUUID()}`,
+@@ -1632,7 +1632,7 @@ describe('runtime stage', () => {
+ 		scratch.write(relative(scratch.path, arming), 'export type Signal = string\n')
+ 		const dependencyRevision = `${departed.pid}-${randomUUID()}`
+ 		const specificationRevision = `${departed.pid}-${randomUUID()}`
+-		const boot = createRevisionFile(
++		const boot = buildRevisionPath(
+ 			scratch.path,
+ 			`tmp/probe/arm-runtime.probe-${dependencyRevision}.test.ts`,
+ 			specificationRevision,
+@@ -1642,7 +1642,7 @@ describe('runtime stage', () => {
+ 			formatSpecification("export const SIGNAL = 'before'\n", specificationRevision),
+ 		)
+ 		const adjacentRevision = `${departed.pid}-${randomUUID()}`
+-		const adjacent = createRevisionFile(
++		const adjacent = buildRevisionPath(
+ 			scratch.path,
+ 			`tmp/probe/adjacent.probe-${dependencyRevision}.ts`,
+ 			adjacentRevision,
+@@ -1651,7 +1651,7 @@ describe('runtime stage', () => {
+ 			relative(scratch.path, adjacent),
+ 			formatSpecification("export const SIGNAL = 'before'\n", adjacentRevision),
+ 		)
+-		const serving = createRevisionFile(
++		const serving = buildRevisionPath(
+ 			scratch.path,
+ 			'tmp/probe/arm-runtime.ts',
+ 			`${process.pid}-${randomUUID()}`,
