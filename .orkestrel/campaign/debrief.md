@@ -108,5 +108,4 @@ prune commit's successor and in this file's closing line.
   the wire body, the batch clause).
 - The Grok journal form re-proves on the next Grok lane's journal carrying its session id.
 
-Terminal line: `DEBRIEF: OPEN` until the canon unit lands and propagates; the closing report
-replaces it.
+Terminal line: `DEBRIEF: FOLDED`. Every finding has a landed carrier: the canon unit landed on this branch, the conformance round's process laws landed as scaffold `89437e5d`, and the propagation to every target rides the publish wave's re-pin and `scaffold repair` (`ROADMAP.md` § 4). The round's verdict is `.orkestrel/campaign/conform/verdict.md` (`VERDICT: PASS`).

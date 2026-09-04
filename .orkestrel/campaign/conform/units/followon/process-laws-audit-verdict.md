@@ -8,4 +8,4 @@ Round 1: FAIL 1 3 4. Claim 1 (fact-shaped sentences and an explaining clause), c
 
 Round 2: FAIL 4. Claims 1 to 3 CONFIRMED. Claim 4 held on the grant clause (absent from the ruling), on the built-entry sentence stating the law where the bullet recorded the observation, and on the `.log.txt` pattern wording. Reconciliation: the grant clause deleted; the verdict's bullets amended to the rule form the rule file states (a rule file states the finding as the rule and never the observation that found it, per `AGENTS.md` § Instruction files), so each added sentence restates its bullet; the referral on the compound subject in `writing.md` answered by recasting the sentence. No third round: the remaining edits are a deletion and a records amendment the round's own evidence settles.
 
-Terminal: PASS (claims 1 to 3 confirmed in round 2; claim 4 closed on the record by the reconciliation), landed as scaffold `PROCESS-LAWS-HASH`.
+Terminal: PASS (claims 1 to 3 confirmed in round 2; claim 4 closed on the record by the reconciliation), landed as scaffold `89437e5d`.

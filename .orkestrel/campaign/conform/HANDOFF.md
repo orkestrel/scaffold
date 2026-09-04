@@ -196,6 +196,8 @@ and carries no model identifier. Retain each unit's brief, report, verdict, and 
 5. Run the retention prune from `.agents/skills/orkestrel-debrief/references/retention.md`: promotion record in the commit message, sweep `tmp/`, keep only what the procedure keeps.
 6. Push every checkout. Report to the user with the publish wave still held (`ROADMAP.md` § 1 names the release decision).
 
+Close-out state (2026-09-04 16:11 UTC): steps 1 to 4 done (`verdict.md` reads `VERDICT: PASS`; `../debrief.md` reads `DEBRIEF: FOLDED`; the process laws landed as scaffold `89437e5d`); step 5's checks are run and the prune disposition is presented, deletion held for the owner's go-ahead; step 6 follows the owner's word.
+
 ## Skills
 
 `orkestrel-falsify` (audit brief anatomy, verdict shape, the single terminal line, reconciliation
