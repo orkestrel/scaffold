@@ -1,0 +1,249 @@
+diff --git a/guides/server.md b/guides/server.md
+index d597bcd..bed46eb 100644
+--- a/guides/server.md
++++ b/guides/server.md
+@@ -3,9 +3,9 @@
+ > This package's ONE guide, covering its single published surface: the middleware seam (`compose`,
+ > `MiddlewareContext`/`NextFunction`/`MiddlewareHandler`), the `HTTPError`
+ > vocabulary, the shared substrate (cookies, WebCrypto tokens, content
+-> negotiation via `Negotiator`, ETag/Range, security primitives, SSE, and the
++> negotiation through `Negotiator`, ETag/Range, security primitives, SSE, and the
+ > body pipeline), and the deliberately node-bound `Server` lifecycle entity
+-> binding `node:http` via `@orkestrel/router`'s adapter helpers, the upgrade
++> binding `node:http` through `@orkestrel/router`'s adapter helpers, the upgrade
+ > seam, connection-fact injection, and `discoverPort`. The server
+ > **consumes** `@orkestrel/router` — routing, matching, and dispatch are that
+ > package's, never re-implemented here — mechanism, not product policy. Source:
+@@ -346,7 +346,7 @@ These invariants hold across `src/server` ↔ `server.md`.
+    `verifyToken` is TOTAL (malformed / tampered / expired / empty-rotation all
+    yield `undefined`, never throw); the expiry is HMAC-COVERED inside the
+    signed payload; a `TokenSecret` rotation list signs with the FIRST secret
+-   and verifies against ANY; comparison is constant-time via
++   and verifies against ANY; comparison is constant-time through
+    `crypto.subtle.verify` (the old `safeCompare` is retired, not ported).
+ 10. **Seam semantics: returning onion.** Each `MiddlewareHandler` receives a
+     `next` that, called, runs the downstream chain and resolves its `Response`;
+@@ -368,7 +368,7 @@ These invariants hold across `src/server` ↔ `server.md`.
+     client key explicitly in `state` or in middleware.
+ 13. **The stop signal is observable inside a handler.** The `Request`'s
+     `signal` (already tied to client disconnect by the router's
+-    `buildRequest`) is LINKED, via `@orkestrel/abort`'s `linkSignal`, to the
++    `buildRequest`) is LINKED, through `@orkestrel/abort`'s `linkSignal`, to the
+     server's per-run stop signal — so a handler awaiting `request.signal`
+     observes EITHER the client disconnecting OR the server calling `stop()`,
+     closing the old design's latent gap.
+diff --git a/src/server/Server.ts b/src/server/Server.ts
+index af720cb..a9b9456 100644
+--- a/src/server/Server.ts
++++ b/src/server/Server.ts
+@@ -50,15 +50,15 @@ import { HTTPError, isHTTPError, ServerError } from './errors.js'
+  *   busy-loop), then closes → `stopped`, forcing whatever the deadline caught
+  *   still open. `destroy()` is the idempotent final teardown.
+  * - **Per request.** In-flight is tracked (finished on response `finish` or
+- *   `close`); a `Request` is built via the router's `buildRequest`, its
+- *   `signal` LINKED to this run's stop signal via `@orkestrel/abort`'s
++ *   `close`); a `Request` is built through the router's `buildRequest`, its
++ *   `signal` LINKED to this run's stop signal through `@orkestrel/abort`'s
+  *   `linkSignal` (a fresh `Request` is constructed with the linked signal —
+  *   `buildRequest`'s own abort, armed by BOTH request-side and response-side
+- *   teardown, composes with the server's stop signal via `AbortSignal.any`,
+- *   so a handler awaiting `request.signal` observes BOTH); `context.state` is built via
++ *   teardown, composes with the server's stop signal through `AbortSignal.any`,
++ *   so a handler awaiting `request.signal` observes BOTH); `context.state` is built through
+  *   {@link ServerOptions.state} from the connection facts; the composed
+  *   middleware onion runs, terminating in `dispatcher.handle`; the result is
+- *   written back via `sendResponse`.
++ *   written back through `sendResponse`.
+  * - **The built-in boundary** wraps the WHOLE per-request chain, including
+  *   setup: `buildRequest` runs behind its own inner boundary that maps a
+  *   throw (e.g. a malformed `Host` header) to a silent `400` with no
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 00954ce..a48f760 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -44,7 +44,7 @@ export const DEFAULT_BODY_LIMIT = 1_048_576
+  * output would exceed this, BEFORE the full bomb is materialized, so the
+  * inflation can never exhaust memory. Defaults to `16 MiB` — a generous
+  * ceiling for a legitimate compressed JSON / form body, far below an OOM. A
+- * consumer raises it via {@link import('./types.js').BodyOptions}
++ * consumer raises it through {@link import('./types.js').BodyOptions}
+  * `decompression` for a workload that genuinely ships larger decompressed
+  * bodies.
+  */
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 384433b..7248cc1 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -12,7 +12,7 @@
+ // even though they are structurally identical. `isHTTPError` therefore tries
+ // `instanceof` first (the common, cheap case) and falls back to a total
+ // structural check keyed by a `Symbol.for`-interned brand (`HTTP_ERROR_BRAND`,
+-// shared across every copy via the global symbol registry) plus the exact
++// shared across every copy through the global symbol registry) plus the exact
+ // fields the server's boundary reads off a recognized error (`status`,
+ // `message`) — so a foreign-copy instance the guard accepts can never crash
+ // the boundary that trusts it.
+@@ -112,7 +112,7 @@ export class ContentTooLargeError extends HTTPError {
+  * an instance built by a DIFFERENT copy of this package (the dual-package
+  * hazard — version skew, a linked workspace duplicate) whose `HTTPError`
+  * constructor is a distinct object from this copy's: the value must carry
+- * the cross-copy brand (interned via `Symbol.for`, so every copy resolves the
++ * the cross-copy brand (interned by using `Symbol.for`, so every copy resolves the
+  * same key) AND expose the exact fields the server's error boundary reads off
+  * a recognized `HTTPError` — a numeric `status` and a string `message`. A
+  * plain object that merely carries a `status` WITHOUT the brand is rejected.
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 49e2e83..f083cd3 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -246,7 +246,7 @@ export function isCookieAttribute(value: string): boolean {
+  * with {@link isCookieAttribute} and THROW an {@link HTTPError} on an
+  * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is ALWAYS `Secure` regardless of
+  * the `secure` option (the spec requires it); an un-resolved `undefined`
+- * `secure` here falls to OFF — request-aware callers resolve it first via
++ * `secure` here falls to OFF — request-aware callers resolve it first through
+  * {@link resolveSecure}.
+  *
+  * @param name - The cookie name
+@@ -397,7 +397,7 @@ export function clearCookie(headers: Headers, name: string, options?: CookieOpti
+ // payload a base64url JSON `{ value, exp? }`, the signature an HMAC-SHA256 of
+ // the payload under the secret. Signing always uses the FIRST secret (a
+ // rotation list's current head); verifying accepts ANY secret in the list,
+-// via `crypto.subtle.verify` — constant-time internally, so the old
++// through `crypto.subtle.verify` — constant-time internally, so the old
+ // `safeCompare` is RETIRED, never ported. `verifyToken` is TOTAL (never
+ // throws — adversarial input returns `undefined`); only
+ // `signToken` throws, and only on a misconfigured (empty) secret.
+@@ -409,7 +409,7 @@ export function clearCookie(headers: Headers, name: string, options?: CookieOpti
+  * The payload is a base64url-encoded JSON `{ value, exp }` (`exp` is the
+  * absolute expiry instant `Date.now() + ttl` when `options.ttl` is set, so
+  * the expiry is HMAC-COVERED — a client cannot extend it without invalidating
+- * the signature), signed via `crypto.subtle.sign('HMAC', …)` under the FIRST
++ * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the FIRST
+  * {@link TokenSecret} (the current secret, or the head of a rotation list).
+  * Blank/whitespace-only secrets are IGNORED ({@link normalizeSecret}); a
+  * misconfigured secret with no usable entry THROWS an {@link HTTPError}
+@@ -452,7 +452,7 @@ export async function signToken(value: string, options: TokenOptions): Promise<s
+  * value containing dots survives), decodes the signature with
+  * `@orkestrel/codec`'s `decodeBase64URL` — a signature that is not canonical
+  * base64url is refused there, before any key import — and checks the payload's
+- * HMAC-SHA256 signature against EACH {@link TokenSecret} candidate via
++ * HMAC-SHA256 signature against EACH {@link TokenSecret} candidate through
+  * `crypto.subtle.verify` (constant-time internally — the old `safeCompare` is
+  * retired), accepting the token on the first match (the
+  * rotation path). It then decodes + narrows the payload (`isRecord` +
+@@ -827,7 +827,7 @@ export function isCompressibleType(type: string): boolean {
+ // parser.
+ 
+ /**
+- * Computes a CONTENT `ETag` over a fully-buffered response body via WebCrypto.
++ * Computes a CONTENT `ETag` over a fully-buffered response body by using WebCrypto.
+  *
+  * @remarks
+  * Hashes `body` with SHA-256 (`crypto.subtle.digest`) and wraps the hex
+@@ -879,7 +879,7 @@ export function unwrapETag(tag: string): string {
+  * listed tag matches), or the `*` wildcard (matches ANY current
+  * representation — only a list of exactly `*` is the wildcard). Comparison is
+  * WEAK: `W/"abc"` and `"abc"` are equal (both sides' weak prefix is stripped
+- * via {@link unwrapETag} before comparing the opaque body). TOTAL — a
++ * through {@link unwrapETag} before comparing the opaque body). TOTAL — a
+  * malformed/empty header matches nothing, never throws.
+  *
+  * @param header - The raw `If-None-Match` header value
+@@ -1328,7 +1328,7 @@ export function parseEncoding(header: string | null): Exclude<Encoding, 'identit
+ 
+ /**
+  * Decompresses an already-collected, `gzip`/`deflate`-encoded byte sequence
+- * transparently via `DecompressionStream`, capping the DECOMPRESSED output —
++ * transparently through `DecompressionStream`, capping the DECOMPRESSED output —
+  * the zip-bomb defense.
+  *
+  * @remarks
+@@ -1405,7 +1405,7 @@ export async function decompressRequestBody(
+  * through the zip-bomb-capped pipe ({@link decompressRequestBody}, capped at
+  * `options.decompression`, default {@link
+  * import('./constants.js').DEFAULT_DECOMPRESSED_LIMIT}), then decodes by
+- * content type: `application/json` is parsed via `@orkestrel/contract`'s
++ * content type: `application/json` is parsed by using `@orkestrel/contract`'s
+  * `parseJSON` and scrubbed of prototype-pollution keys ({@link
+  * scrubPrototype}); any other type decodes as UTF-8 text; an empty body
+  * decodes to `undefined`.
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 0e44e0d..9462426 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -75,7 +75,7 @@ export type NextFunction = (request?: Request) => Promise<Response>
+  * @remarks
+  * Transform the request (call `next(newRequest)`), transform the response
+  * (`await next()` then modify the result), short-circuit (return a `Response`
+- * without calling `next`), or thread data via `context.state` — no mutable
++ * without calling `next`), or thread data through `context.state` — no mutable
+  * framework object anywhere, only fetch-standard `Request`/`Response`.
+  *
+  * @example
+@@ -150,7 +150,7 @@ export interface TokenOptions {
+  * @param httpOnly - The `HttpOnly` directive; defaults to `true`.
+  * @param secure - The `Secure` directive: `true` forces it, `false`
+  *   suppresses it, and omitted/`undefined` (the default) derives it from the
+- *   connection via {@link import('./helpers.js').resolveSecure} — `Secure` on
++ *   connection through {@link import('./helpers.js').resolveSecure} — `Secure` on
+  *   a TLS connection, off over plaintext HTTP ({@link
+  *   Connection.encrypted}). A `sameSite: 'None'` cookie is ALWAYS
+  *   `Secure` regardless (the spec requires it).
+@@ -571,7 +571,7 @@ export type ServerEventMap = {
+ }
+ 
+ /**
+- * Represents a raw `node:http` protocol-upgrade claimant — registered via
++ * Represents a raw `node:http` protocol-upgrade claimant — registered through
+  * {@link ServerInterface.upgrade}.
+  *
+  * @remarks
+@@ -621,7 +621,7 @@ export type ConnectionStateFunction<TState> = (connection: Connection) => TState
+  *   is never implicitly trusted here; a deployment behind a trusted proxy
+  *   derives its own client key in this function or in middleware.
+  * @param middleware - Initial middleware, run in array order (outer-first);
+- *   more may be added later via `use`.
++ *   more may be added later by using `use`.
+  * @param host - The network interface `start()` binds to (`node:http`
+  *   `server.listen`'s host). Omitted ⇒ node's default (all interfaces).
+  * @param port - The TCP port `start()` binds to. Omitted or `0` ⇒ an
+@@ -709,10 +709,10 @@ export interface ServerOptions<TState> {
+  * connections, fires the stop signal so in-flight handlers can observe it,
+  * drains in-flight requests and claimed upgraded sockets up to the configured
+  * deadline, then closes — forcing whatever is left. `destroy()` is the final
+- * idempotent teardown. Per request: a `Request` is built via the router's
++ * idempotent teardown. Per request: a `Request` is built through the router's
+  * `buildRequest` (its signal linked to the server's stop signal), the composed
+  * middleware onion runs terminating in `dispatcher.handle`, and the result is
+- * written back via `sendResponse` — every escaping throw is caught by the
++ * written back through `sendResponse` — every escaping throw is caught by the
+  * built-in boundary (`HTTPError` → its status; anything else → a
+  * hidden-unless-`expose` `500`) so a handler error can never crash the process.
+  */
+diff --git a/tests/src/server/Server.test.ts b/tests/src/server/Server.test.ts
+index 1c01363..9f61e52 100644
+--- a/tests/src/server/Server.test.ts
++++ b/tests/src/server/Server.test.ts
+@@ -1343,7 +1343,7 @@ describe('Server — capstone', () => {
+ 		expect(await response.text()).toBe('user not found')
+ 	})
+ 
+-	it('an SSE route via createStream is consumed incrementally by fetch', async () => {
++	it('an SSE route through createStream is consumed incrementally by fetch', async () => {
+ 		const dispatcher = createDispatcher<AppState>()
+ 		dispatcher.add({
+ 			method: 'GET',
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 0acf99e..a853d98 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -157,7 +157,7 @@ describe('compose', () => {
+ 		expect(terminalRan).toBe(false)
+ 	})
+ 
+-	it('substitutes the downstream request via next(newRequest)', async () => {
++	it('substitutes the downstream request by using next(newRequest)', async () => {
+ 		let seenUrl = ''
+ 		const substitute: MiddlewareHandler<Record<string, never>> = async (_request, _context, next) =>
+ 			next(new Request('http://localhost/substituted'))
