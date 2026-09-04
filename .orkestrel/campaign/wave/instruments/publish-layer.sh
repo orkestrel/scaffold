@@ -8,6 +8,6 @@ W=/home/user/work/wave; LOG=$W/publish-layer-$1.log; : > "$LOG"
 for p in "$@"; do
   line=$(bash "$W/publish-one.sh" "$p" "$OTP" 2>&1 | tail -n 1 | tr -d '\r' | sed 's/\x1b\[[0-9;]*[A-Za-z]//g')
   echo "$(date -u +%H:%M:%S) $line" | tee -a "$LOG"
-  echo "$line" | grep -q 'registry serves nothing' && { echo "STOP at $p" | tee -a "$LOG"; exit 1; }
+  if ! tr -d "\r" < "$(ls -t $W/publish-$p-*.log | head -1)" | grep -qE "\+ @orkestrel/$p@"; then echo "STOP at $p (no acceptance line)" | tee -a "$LOG"; exit 1; fi
 done
 echo "LAYER-PUBLISHED" | tee -a "$LOG"

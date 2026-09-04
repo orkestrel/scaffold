@@ -1,0 +1,28 @@
+Script started on 2026-09-04 20:09:34+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=001060 < /home/user/work/wave/publish-csv.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/csv@0.0.6
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 3.5kB README.md
+[1mnpm[22m [96mnotice[39m 56.8kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 84.2kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 55.9kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 55.9kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 55.0kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 83.9kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 3.7kB package.json
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/csv
+|[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.6
+|[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-csv-0.0.6.tgz
+|[1G[0K[1mnpm[22m [96mnotice[39m package size: 101.9 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 400.1 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m shasum: be1e3b3230e46c4e037edab3988cb350b5303982
+|[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-8pp/C0bELbEQC[...]gT6OvJuJa/4Bg==
+|[1G[0K[1mnpm[22m [96mnotice[39m total files: 9
+|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K/[1G[0K-[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K+ @orkestrel/csv@0.0.6
+|[1G[0K
+Script done on 2026-09-04 20:09:36+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0

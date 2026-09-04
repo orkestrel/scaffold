@@ -1,0 +1,29 @@
+Script started on 2026-09-04 20:03:07+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=878694 < /home/user/work/wave/publish-abort.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/abort@0.0.9
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 2.2kB README.md
+[1mnpm[22m [96mnotice[39m 8.6kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 11.6kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 8.4kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 8.4kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 8.1kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 11.4kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 3.8kB package.json
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/abort
+|[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.9
+|[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-abort-0.0.9.tgz
+|[1G[0K[1mnpm[22m [96mnotice[39m package size: 9.6 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 63.6 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m shasum: e3a52500688028d9f7f3bd3d19fdca230cef28e6
+|[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-L7VLKsscW2xhk[...]T15mbk3YYIo0w==
+|[1G[0K[1mnpm[22m [96mnotice[39m total files: 9
+|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K/[1G[0K-[1G[0K\[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K[1mnpm[22m [96mnotice[39m Your package is being processed and may take a few minutes to become available.
+\[1G[0K+ @orkestrel/abort@0.0.9
+\[1G[0K
+Script done on 2026-09-04 20:03:09+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0
