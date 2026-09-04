@@ -1,1 +1,1 @@
- M guides/test.md
+ M tests/guides.test.ts
