@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "d561d955b8f01950337aa289dbf0f2dbf2c99994d5659f61252573124ec4c99e"
+			"digest": "5a03f0752db8449cfaf82c427917b1e9d8b3595313c46659afcfa927ac11cf0f"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -454,7 +454,7 @@
 			"storage": "claude/rules/writing.md",
 			"destination": ".claude/rules/writing.md",
 			"executable": false,
-			"digest": "e04ff7ae10d7efab9eefb4888af13408f1f73a5dfd33b0966d8f6c3701538bbd"
+			"digest": "dc979ac7bbabf483c66b22f68460d0f03ef5c3059854f1a0802d8a2a9213d2f3"
 		},
 		{
 			"storage": "claude/settings.json",
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "b4db6a5e119dec8c93ded71dabdfa2adce1f7ecb0666e84249c33bb6c8842e2c"
+	"digest": "b5e8423e828cb6d5f811692991de7dc6b5a347388229488a0461bff4e79e11dc"
 }

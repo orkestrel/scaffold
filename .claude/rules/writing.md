@@ -82,8 +82,8 @@ first, and these rules wherever a rule here names no different form for it.
 
 ## Substitutions
 
-Replace each term in this table with its replacement. Quote a literal code identifier as itself; it
-is exempt from every row.
+Replace each term in this table with its replacement. A literal code identifier is data, and so is
+a sample string inside a code fence or a test fixture: quote each as itself, exempt from every row.
 
 | Term                     | Replacement                               |
 | ------------------------ | ----------------------------------------- |

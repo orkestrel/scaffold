@@ -452,6 +452,8 @@ The harness bridge names the concrete mechanism for each of these.
   the record transcribes them, because the committed instrument re-produces the film. The **Bench
   laws** rule "Ephemeral streams, durable records" owns journals and points here for everything
   durable.
+- Name a retained log with the `<unit>.log.txt` pattern, never with a bare `.log` suffix, which the
+  root `.gitignore` file ignores.
 - Promote anything that must outlive the campaign into a durable artifact before the sweep — a
   commit message, a guide, a rule, a retrospective. What is only in a swept file did not survive,
   and a debrief that must quote the record verbatim has nothing to quote.
@@ -467,7 +469,10 @@ The harness bridge names the concrete mechanism for each of these.
   rule on.
 - Never put them in the package they are about. A published package's tree is its product.
 - Where the orchestrator's repository is itself a subject package, keep `.orkestrel/` as the
-  artifact home and stage every landing chain by path, never with `git add -A`.
+  artifact home and stage every landing chain by path, never with `git add -A`. Run that
+  checkout's own CLI through the built `node dist/bin/main.js` entry, never through the `npx`
+  launcher, and record its audit reading beside the landing instead of gating the landing on it.
+  Commit the records before the landing's commit step, never during it.
 - Claim nothing outside `.orkestrel/` unless Orkestrel scaffold mandates it. Everything Orkestrel
   owns in a consumer's tree lives beneath that folder, so a convention can be settled there without
   colliding with a convention that is not Orkestrel's.
@@ -544,6 +549,9 @@ each check. Then run this checklist against what you filled.
   derived from it, and a template change with the materialized copy the package generates from it.
 - Read each criterion against the off-limits list, line by line. Grant the file a criterion needs or
   strike that criterion. A file the change will break that appears in neither list is unscoped.
+- Where a scope line names the `tests/**` or `src/**` glob, name the paths the `scaffold repair`
+  command restores as off-limits in the same sentence. Bound a criterion wider than its Sites by
+  the brief's scope.
 - Scope a unit that changes a mechanism to own the prose describing it. Where a brief scopes that
   prose out, name the carrier and dispatch it before the change ships.
 - Give a small unrelated obligation its own unit.
