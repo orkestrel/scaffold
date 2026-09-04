@@ -1,0 +1,98 @@
+abort packed abort-674b77c.tgz
+agent packed agent-b5f826b.tgz
+brief packed brief-71d12f8.tgz
+browser packed browser-db03f8b.tgz
+budget packed budget-b8c0029.tgz
+codec packed codec-87040ad.tgz
+console packed console-9d49336.tgz
+contract packed contract-b3892f4.tgz
+csv packed csv-24861c3.tgz
+database packed database-b5c7dd9.tgz
+emitter packed emitter-22d5f4d.tgz
+form packed form-ca4aa7b.tgz
+guide packed guide-a8caefd.tgz
+html packed html-9ca9c9e.tgz
+indexeddb packed indexeddb-729ccf5.tgz
+interpret packed interpret-9a1b093.tgz
+lsp packed lsp-ca16e6f.tgz
+markdown packed markdown-8823dc1.tgz
+mcp packed mcp-cd631bb.tgz
+middleware packed middleware-16911eb.tgz
+msg packed msg-9298a32.tgz
+ndjson packed ndjson-bc96a3c.tgz
+ollama packed ollama-c3c8c05.tgz
+pool packed pool-724208d.tgz
+probe packed probe-cc54d40.tgz
+process packed process-9a74f40.tgz
+program packed program-be4e5a3.tgz
+qualifier packed qualifier-e8ebafa.tgz
+queue packed queue-818debe.tgz
+rater packed rater-096c465.tgz
+reason packed reason-fe75059.tgz
+relation packed relation-9c0d3d8.tgz
+router packed router-b54e09f.tgz
+sea packed sea-846d83b.tgz
+server packed server-10b489b.tgz
+sqlite packed sqlite-87ab520.tgz
+sse packed sse-f80b232.tgz
+table packed table-a00b591.tgz
+template packed template-7ba281d.tgz
+terminal packed terminal-956403d.tgz
+test packed test-a3c06a4.tgz
+timeout packed timeout-426420b.tgz
+tool packed tool-b2111d1.tgz
+toolbox packed toolbox-4dd0983.tgz
+websocket packed websocket-472381f.tgz
+worker packed worker-f3b14c3.tgz
+workflow packed workflow-affe372.tgz
+workspace packed workspace-be0da27.tgz
+scaffold packed scaffold-fc974ab8.tgz
+abort staged OK 5 rows
+agent staged OK 16 rows
+brief staged OK 9 rows
+browser staged OK 7 rows
+budget staged OK 5 rows
+codec staged OK 5 rows
+console staged OK 6 rows
+contract staged OK 4 rows
+csv staged OK 5 rows
+database staged OK 8 rows
+emitter staged OK 5 rows
+form staged OK 6 rows
+guide staged OK 4 rows
+html staged OK 4 rows
+indexeddb staged OK 5 rows
+interpret staged OK 8 rows
+lsp staged OK 7 rows
+markdown staged OK 4 rows
+mcp staged OK 15 rows
+middleware staged OK 15 rows
+msg staged OK 5 rows
+ndjson staged OK 5 rows
+ollama staged OK 21 rows
+pool staged OK 6 rows
+probe staged OK 21 rows
+process staged OK 6 rows
+program staged OK 9 rows
+qualifier staged OK 7 rows
+queue staged OK 11 rows
+rater staged OK 7 rows
+reason staged OK 6 rows
+relation staged OK 9 rows
+router staged OK 7 rows
+sea staged OK 7 rows
+server staged OK 10 rows
+sqlite staged OK 5 rows
+sse staged OK 5 rows
+table staged OK 6 rows
+template staged OK 6 rows
+terminal staged OK 12 rows
+test staged OK 4 rows
+timeout staged OK 5 rows
+tool staged OK 5 rows
+toolbox staged OK 25 rows
+websocket staged OK 6 rows
+worker staged OK 13 rows
+workflow staged OK 13 rows
+workspace staged OK 9 rows
+WEND-REPACK-RESTAGE-DONE
