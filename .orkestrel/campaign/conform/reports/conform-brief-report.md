@@ -706,3 +706,79 @@ The one edit taken outside the named line list is `guides/brief.md:990`, recorde
 rewrites. The rule taken: an owned edit must not leave a line it falsified standing, and it must
 not reach a violation it did not cause. `:990` is the first case; every site under § Deviations is
 the second.
+
+## Fix round 2b
+
+This section records the successor unit
+`/home/user/scaffold/tmp/units/conform/conform-brief-fix2b-brief.md`, which carries the four
+banned-sense sites fix round 2 reported outside its own scope. Fix round 2's edits stand
+unchanged; the four rewrites here are the only edits this round made.
+
+### Rewrites
+
+| Site | Before | After |
+| --- | --- | --- |
+| `src/core/BriefManager.ts:166` | `// seeding all-or-nothing once every entry has been staged.` | `// seeding all-or-nothing after every entry has been staged.` |
+| `src/core/helpers.ts:869` | ` * The throwing half of the intake pair: this returns its argument by IDENTITY once the` | ` * The throwing half of the intake pair: this returns its argument by IDENTITY after the` |
+| `guides/brief.md:591` | `argument once the guard passes — so it is a helper, not a factory, and lives beside the` / `other pure leaves.` | `argument after the guard passes — so it is a helper, not a factory, and lives beside` / `the other pure leaves.` |
+| `guides/brief.md:933` | `	text: 'migrate the 3 legacy stores to the new driver seam',` | `	text: 'migrate the 3 legacy stores to the replacement driver seam',` |
+
+The `guides/brief.md:591` rewrite moves one word across the line break so the paragraph keeps its
+wrap width; the sentence is otherwise unchanged. The `:933` rewrite changes fence sample data only.
+The fence's documented outputs at `:945`-`:950` read `'migrate'`, the extracted count `'3'`, and the
+gate's `true`, and the replaced word feeds none of them.
+
+`tests/guides.test.ts` transcribes neither changed guide line, so this round updated no
+transcription. The pattern behind that ruling is `guard passes` and `migrat`, run over
+`tests/guides.test.ts`; each returns no hit.
+
+### Permitted sites
+
+These two sites match the sweep pattern in a sense the substitution row does not ban, so they stand
+as written:
+
+- `src/core/types.ts:155` — "vocabulary this once held": `once` means "at one time", not `after`.
+- `tests/guides.test.ts:303` — "the exact member this package once shipped dead": same sense.
+
+### The sweep
+
+The pattern is `\b(new|should|once)\b`, case-insensitive, over `src`, `guides/brief.md`,
+`guides/README.md`, `README.md`, and `tests/guides.test.ts`. `guides/README.md` and `README.md`
+return no hit. No `should` survives in any swept path.
+
+Every surviving `new` is constructor syntax — `new BriefError`, `new BriefCompiler`,
+`new BriefManager`, `new Emitter`, `new Map`, `new Set`, `new WeakMap`, `new WeakSet`, `new Error`,
+`new RegExp` — at `src/core/BriefCompiler.ts:54`, `:83`, `:213`, `:226`, `:302`, `:396`, `:471`;
+`src/core/cloners.ts:36`, `:47`, `:125`; `src/core/factories.ts:36`, `:55`;
+`src/core/BriefManager.ts:28`, `:36`, `:49`, `:54`, `:105`, `:139`, `:150`, `:182`, `:199`;
+`src/core/helpers.ts:533`, `:539`, `:579`, `:587`, `:706`, `:805`, `:819`, `:854`, `:897`;
+`src/core/errors.ts:16`, `:46`; `guides/brief.md:188`, `:529`, `:677`, `:711`; and
+`tests/guides.test.ts:144`, `:213`, `:241`, `:251`, `:275`, `:299`.
+
+Every surviving `once` means "at one time" — a value read, materialized, or listed a single time —
+at `src/core/BriefCompiler.ts:243`, `:265`; `src/core/cloners.ts:12`; `src/core/helpers.ts:513`,
+`:557`; `src/core/types.ts:438`, `:453`, `:455`; `guides/brief.md:460`, `:466`, `:829`, `:837`,
+`:1205`; and `tests/guides.test.ts:221`. The past-time sense at `src/core/types.ts:155` and
+`tests/guides.test.ts:303` is recorded under § Permitted sites.
+
+### Sites outside Owned
+
+These sites carry a banned sense outside both the Owned line list and the sweep's paths, so this
+round left them as written:
+
+- `tests/src/core/helpers.test.ts:872` — the test name "returns the same value by identity once the
+  guard passes" carries temporal `once`, the same sense the `src/core/helpers.ts:869` rewrite closed.
+- `tests/src/core/integration.test.ts:29` and `tests/src/core/BriefCompiler.test.ts:57` — each
+  carries `'migrate the 3 legacy stores to the new driver seam'` as its own sample data. Neither
+  transcribes the guide, so the `guides/brief.md:933` rewrite leaves both true.
+
+### Gates
+
+Every gate ran from `/home/user/fleet/brief` after the four rewrites, on 2026-09-04:
+`npm run format:check` exit 0, `npm run lint:check` exit 0, `npm run check` exit 0, and
+`npm run test:guides` exit 0 with 20 tests passed in 1 file. `git status --short` lists the unit's
+22 modified paths and no untracked path.
+
+### Orchestrator integration (00:52 UTC, after fix round 2b returned)
+
+Fix round 2b reported one temporal `once` in a test name outside its scope, `tests/src/core/helpers.test.ts:872` ("once the guard passes", the sense fix round 2b's `src/core/helpers.ts:869` rewrite closed); the Orchestrator rewrote the one word to `after` (`npx oxfmt --check` exit 0). The sample strings at `tests/src/core/integration.test.ts:29` and `tests/src/core/BriefCompiler.test.ts:57` are test data rather than prose and stay.
