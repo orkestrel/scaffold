@@ -104,7 +104,8 @@ Every sweep ran through the Grep tool over the named population; the population 
 | `\b(WorkflowFunctions\|TaskStatus\|PhaseStatus\|WorkflowStatus\|TASK_STATUSES\|TERMINAL_TASK_STATUSES\|PHASE_STATUSES\|WORKFLOW_STATUSES\|RunnerValue\|RunnerFailure\|WorkflowHooks\|PhaseHooks\|TaskHooks\|createGate\|TestGateInterface\|QueueExecution)(s\|es\|ed\|ing)?\b`, case-insensitive | `guides/workflow.md`, `guides/README.md`, `README.md` | empty |
 | same base pattern | `src/**/*.ts`, `tests/**/*.ts` | only `derivePhaseStatus` / `deriveWorkflowStatus`, the retained helper names the rows keep |
 | `Date.now()` | `tests/**` | only the three wall-clock stamps at `helpers.test.ts:1520`, `Workflow.test.ts:368`, `tasks/Task.test.ts:283`, plus the explanatory comment at `server/NodeScheduler.test.ts:69` |
-| `\bcurrently\b`, `\bsimply\b`, `\bvia\b`, `\be\.g\.\b`, case-insensitive | `src/**` | empty |
+| `\bcurrently\b`, `\bsimply\b`, `\bvia\b`, case-insensitive | `src/**` | empty |
+| `\be\.g\.\b`, case-insensitive | `src/**` | recorded empty, and that reading is FALSE — a terminal `\b` cannot follow the pattern's final period, so the pattern matched nothing it was written to find. Superseded by the corrected `\be\.g\.` / `\bi\.e\.` sweep under Fix round 2 |
 | `\b(one\|two\|…\|ten)\b`, case-insensitive | `README.md`, `guides/README.md` | empty |
 | `\b\d+ (elements\|members\|rules\|rows\|exports\|files\|options\|steps\|cases\|stages\|findings\|tests\|helpers\|methods\|entities\|tables\|sections\|constants\|passes\|categories\|levels\|tiers\|layers\|backends\|overloads\|primitives)\b`, case-insensitive | `src/**`, `tests/**`, `guides/workflow.md`, `guides/README.md`, `README.md` | empty |
 | `^import \{…\} from …` followed by `^import type` (multiline) | `src/**`, `tests/**` | empty — no type-after-value inversion remains |
@@ -413,3 +414,80 @@ The Surface-row descriptions were rewritten as noun phrases:
 - `guides/workflow.md:257` — “Schedule the one host `setTimeout` boundary every scheduler's `delay` and macrotask fallback resumes from.” became “The one host `setTimeout` boundary that every scheduler's `delay` and macrotask fallback resumes from.”
 
 The sweep used pattern `^\| \x60[^\x60]+\x60 +\| [^|]+\| (Find|Convert|Project|Flatten|Reposition|Schedule|Create|Build|Run|Start|Stop|Return|Read|Write|Compile|Derive|Resolve|Check|Narrow|Validate|Compute|Emit|Produce|Wrap|Register|Remove|Add|Bind|Drive|Hold|Persist|Load|Save|Serialize|Restore|Watch|Wait|Yield|Report|Format|Parse|Scan|Walk|Filter|Map|Fold|Merge|Split|Sort|Count)\b` over `guides/workflow.md`. It returned no Surface-row description. Its remaining hits are the `## Methods` rows at `guides/workflow.md:451-454`, `:470-474`, `:493`, `:501-504`, `:515-518`, `:529-532`, `:551`, `:594`, `:603`, and `:626`; the brief excludes those rows from the noun-phrase rule.
+
+## Fix round 2
+
+Briefs: `/home/user/scaffold/tmp/units/conform/conform-workflow-fix2-brief.md`, stopped before editing on an out-of-scope sweep hit, and its successor `/home/user/scaffold/tmp/units/conform/conform-workflow-fix2b-brief.md`, which widened Owned to the two test sites and carried every other item forward. The round closes the objective lane's refutations of claims 2 and 4 and its findings O1 and O2, recorded at `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/workflow-objective-r1-sol.md`. Referral R2 is the Orchestrator's ruling and is not this round's work: the toolbox consumer patches under Shared-file patches apply at toolbox's own unit.
+
+The engine changed. The Cursor bench that was to run the round on GPT-5.6 Sol is dark on the account's usage limit, so Opus 5 ran it as the native `implementer` in `/home/user/fleet/workflow`.
+
+### Claim 2 — the two malformed doc blocks
+
+The `workflow-subj-1` citation removal joined a wrapped sentence onto its continuation line and left the continuation's leading ` * ` mid-sentence. Each block was rejoined as prose:
+
+- `src/core/Workflow.ts:40` — “… for a whole workflow — the observable * ROOT whose {@link LifecycleStatus} is computed from its phases under the `bail` policy and” became “… for a whole workflow — the observable ROOT” / “whose {@link LifecycleStatus} is computed from its phases under the `bail` policy and”, rewrapped at the printWidth the file already uses.
+- `src/core/types.ts:661` — “A `type` alias * so it satisfies `EventMap`.” became “A `type` alias so it satisfies `EventMap`.”, matching the same sentence the sibling block at `src/core/types.ts:698` already carried.
+
+### Claim 4 — the abbreviation rewrites
+
+Each site took `for example` in place of `e.g.`, rewrapped where the longer phrase crossed the file's width:
+
+- `src/core/types.ts:306` — “an illegal state-machine transition (for example, `start`ing a task that is not `pending` …”
+- `src/core/types.ts:834` — “an illegal transition (for example, completing a non-`running` task) throws …”
+- `src/core/types.ts:959` — “derived value (for example, skipping a whole phase); the override survives a snapshot.”
+- `src/core/types.ts:1920` — “A PATHOLOGICAL `definition` (for example, a duplicate phase or task `id`) THROWS SYNCHRONOUSLY …”
+- `src/core/types.ts:2337` — “wired at construction (for example, `{ finish: (r) => log(r) }`).”
+- `src/core/phases/Phase.ts:46` — “FORCE the phase's status (for example, skipping a whole phase) …”
+- `src/core/tasks/Task.ts:45` — “on an illegal move (for example, completing a non-`running` task) …”
+- `src/core/WorkflowRunner.ts:462` — “Not a signal cancel (for example, a normal phase settle, or a bail-true fail-fast the caller already `fail`ed) …”
+- `tests/src/browser/IdleScheduler.test.ts:10` — “(for engines without rIC, for example Safari) …”, added to Owned by the successor brief.
+- `tests/src/core/Runner.test.ts:527` — “a sentinel-based `#collect` (for example, `if (value)` or `value !== SENTINEL`) …”, added to Owned by the successor brief.
+
+### O1 — the counted test name
+
+`tests/guides.test.ts:253` — the case named “reads a count of 2 back from the positional collection fence” became “reads the documented positional collection fence”. The body is unchanged, so `expect(store.count).toBe(2)` still reads the value the fence documents.
+
+### O2 — the local fixture factories
+
+`buildTasks` and `buildCollection` moved out of `tests/src/core/Collection.test.ts` into the host-independent `tests/setup.ts`, as exported factories with complete TSDoc. Neither needs a host module, so `tests/setupServer.ts` was not involved.
+
+- `tests/setup.ts:438` — `buildTasks()` returns the live compile, scan, and audit tasks a fresh `buildWorkflowDefinition` tree holds.
+- `tests/setup.ts:458` — `buildCollection(noun = 'task')` returns an empty `Collection<TaskInterface, TaskUpdate>` gated by the real compiled `taskUpdateShape`.
+- `tests/src/core/Collection.test.ts:4` imports both from `../../setup.js`; the file declares no factory of its own.
+
+The `noun` parameter is the round's one ancillary decision, taken under the deviation contract and recorded here. The case at `tests/src/core/Collection.test.ts:38` proves the constructor's noun reaches the refusal message, and it constructed its own `Collection` inline. Moving the factories without that parameter would have left that construction — and the `Collection`, `TaskInterface`, `TaskUpdate`, `compileGuard`, and `taskUpdateShape` imports behind it — local to the test file, which is the duplication O2 names. The parameter forwards to the real constructor unchanged, so the case now reads `buildCollection('phase')` and asserts the same message.
+
+Proofs added to `tests/setup.test.ts`, in the form that file already uses (each case derives its expectation by a route the helper does not share):
+
+- `tests/setup.test.ts:324` — `buildTasks` returns every live task the definition declares, in declaration order. The expected ids are flat-mapped from `buildWorkflowDefinition()` rather than copied from the addresses the factory names, and every returned task reads `pending`.
+- `tests/setup.test.ts:337` — `buildTasks` mints a fresh tree per call: a `start()` on one call's task leaves a later call's task `pending` and not the same instance.
+- `tests/setup.test.ts:350` — `buildCollection` returns an empty store naming the noun it was given: `count` is `0`, `entries()` is empty, and a duplicate `append` reports `duplicate phase id '<id>'`.
+- `tests/setup.test.ts:365` — `buildCollection` defaults the noun to `task` and wires the real compiled guard: the duplicate message reads `duplicate task id '<id>'`, and `update(id, { name: '' })` fails, which a permissive stand-in guard would not.
+
+### Sweeps
+
+| Pattern | Population | Result |
+| ------- | ---------- | ------ |
+| `\be\.g\.\|\bi\.e\.` | `src`, `tests`, `guides/workflow.md`, `guides/README.md`, `README.md` | before the round: exactly the sites listed under Claim 4. After: empty (`grep` exit 1) |
+| `\w \* \w` | `src`, `tests` | no doc-block hit remains. Every hit is permitted: `export * from` in `src/core/index.ts:1-20`, `src/browser/index.ts:1-6`, `src/server/index.ts:1-2`; `import * as` in `tests/setupPolicy.ts:12`, `tests/setupPolicy.ts:2823`, `tests/setupServer.test.ts:1`, `tests/setupBrowser.test.ts:1`, `tests/config.test.ts:20`, `tests/distribution.test.ts:485`, `tests/distribution.test.ts:553`; and arithmetic multiplication in `src/core/factories.ts:456` and at `tests/src/core/Controller.test.ts:83` and `tests/src/core/Runner.test.ts:12,19,450,456,479,480,481,946,952,1010,1138,1150,1223` |
+
+The Sweeps table's earlier `\be\.g\.\b` row is corrected in place: its recorded empty reading was false, because a terminal `\b` cannot follow the pattern's final period.
+
+Sites outside Owned: none. The abbreviation sweep found no further site beyond the two the successor brief added.
+
+### Gates
+
+Run bare in `/home/user/fleet/workflow`, in this order.
+
+| Command | Exit |
+| ------- | ---- |
+| `npm run check` | 0 |
+| `npm run lint:check` | 0 |
+| `npm run format:check` | 0 |
+| `npm run test:setup` | 0 — 3 files / 29 tests passed |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/Collection.test.ts` | 0 — 1 file / 15 tests passed |
+| `npm run test:guides` | 0 — 1 file / 98 tests passed |
+
+A verbose `setup` run confirms each added case is collected by the `setup` project and green: `buildTasks > returns every live task the definition declares, in declaration order`, `buildTasks > mints a fresh tree per call, so a transition on one call cannot reach a later one`, `buildCollection > returns an empty store naming the entity noun it was given`, and `buildCollection > defaults the noun to the task vocabulary and wires the real compiled guard`.
+
+`git status --short` lists the same paths the round began with — `tests/src/core/Collection.test.ts` added, every other path modified — and nothing new.
