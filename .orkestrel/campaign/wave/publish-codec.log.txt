@@ -1,0 +1,28 @@
+Script started on 2026-09-04 19:51:44+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=076814 < /home/user/work/wave/publish-codec.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K/[1G[0K[1mnpm[22m [96mnotice[39m
+/[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/codec@0.0.2
+/[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+/[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 10.9kB README.md
+[1mnpm[22m [96mnotice[39m 29.2kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 48.4kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 19.7kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 19.7kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 28.6kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 48.4kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 3.7kB package.json
+/[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+/[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/codec
+/[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.2
+/[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-codec-0.0.2.tgz
+/[1G[0K[1mnpm[22m [96mnotice[39m package size: 41.1 kB
+/[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 209.7 kB
+/[1G[0K[1mnpm[22m [96mnotice[39m shasum: 0d109d2b76b660194fcdbb0f81d2f75935968663
+/[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-kfAqCEeHGpN9I[...]UALGk2u4dAsPQ==
+/[1G[0K[1mnpm[22m [96mnotice[39m total files: 9
+/[1G[0K[1mnpm[22m [96mnotice[39m
+/[1G[0K-[1G[0K\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K+ @orkestrel/codec@0.0.2
+|[1G[0K
+Script done on 2026-09-04 19:51:47+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0

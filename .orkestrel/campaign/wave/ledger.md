@@ -8,6 +8,12 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 
 | 19:44 | `@orkestrel/guide` | `0.0.16` | own account, before L0 (re-baseline) | `npm view @orkestrel/guide@0.0.16 version` served `0.0.16` at 19:44 | Uploaded with a one-time code (`publish-guide.log.txt`). Release commits `3c05022` and `f5b19f7` (the lockfile regenerated for the vendored toolchain ranges). Publishes again at L3 after its runtime ranges move. |
 
+| 19:51 | `@orkestrel/codec` | `0.0.2` | L0 | served `0.0.2` at 19:51 | release tip `3e55247`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-codec.log.txt`). |
+| 19:51 | `@orkestrel/contract` | `0.0.16` | L0 | served `0.0.16` at 19:51 | release tip `2ced48e`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-contract.log.txt`). |
+| 19:52 | `@orkestrel/msg` | `0.0.9` | L0 | served `0.0.9` at 19:52 | release tip `f1ed94a`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-msg.log.txt`). |
+| 19:52 | `@orkestrel/sse` | `0.0.6` | L0 | served `0.0.6` at 19:52 | release tip `f7f21e6`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-sse.log.txt`). |
+| 19:52 | `@orkestrel/test` | `0.0.13` | L0 | accepted at 19:52 with the registry's processing notice; served TEST-SERVED-AT | release tip `b8b0977`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-test.log.txt`). |
+
 ## The login
 
 The registry answered the web login's polls inconsistently through this host's proxy: the proxy leaves from several addresses, and a poll from an address other than the one that minted the session answers `403 {"message":"forbidden"}`, which npm 10 and npm 11 read as web login unsupported and drop to the legacy prompt. On one kept-alive connection the polls answer `202` every 3 seconds (`instruments/login-diag.sh`). `instruments/login-retry.sh` mints attempts until one survives its first poll and relays that URL; the owner's click landed on the third relayed link at 19:32, and `npm whoami` answered.

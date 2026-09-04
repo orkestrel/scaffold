@@ -1,0 +1,28 @@
+Script started on 2026-09-04 19:51:59+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=076814 < /home/user/work/wave/publish-msg.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/msg@0.0.9
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 3.1kB README.md
+[1mnpm[22m [96mnotice[39m 92.8kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 163.1kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 51.9kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 51.9kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 89.8kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 163.1kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 3.8kB package.json
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/msg
+|[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.9
+|[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-msg-0.0.9.tgz
+|[1G[0K[1mnpm[22m [96mnotice[39m package size: 148.2 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 620.4 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m shasum: 5443a46c84d9339d02e1397a2316be99d74117cf
+|[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-2sUwBQiuQq1m7[...]lQO1EAJWVOJXA==
+|[1G[0K[1mnpm[22m [96mnotice[39m total files: 9
+|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K/[1G[0K-[1G[0K\[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K+ @orkestrel/msg@0.0.9
+|[1G[0K
+Script done on 2026-09-04 19:52:02+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0
