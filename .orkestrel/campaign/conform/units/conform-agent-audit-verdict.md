@@ -10,7 +10,7 @@ Subject: the uncommitted unit in `/home/user/fleet/agent` (brief `briefs/conform
 | 1 | checker | `checker` on Cursor Grok 4.6 (`units/l56/agent-r1-checker-grok.result.md`), Luna being dark | FAIL 3 with two referrals |
 | 1 | objective | `reviewer` on Claude Opus 5 (`units/l56/agent-objective-r1.md`), Sol being dark | FAIL 3, 4 with O-1 to O-3, R-1 to R-3 |
 | 2 | absorption | `grok` on Cursor Grok 4.6 (`units/l56/agent-r2-distill-grok.result.md`) | distillate |
-| 2 | checker | `checker` on Cursor Grok 4.6 (`units/l56/agent-r2-checker-grok.result.md`) | AUDIT-R2-CHECKER |
+| 2 | checker | `checker` on Cursor Grok 4.6 (`units/l56/agent-r2-checker-grok.result.md`) | PASS |
 | 2 | objective | not run | — |
 
 Subjective lane: not run in the audit rounds, by the round's design. Every lane ran on a substitute engine, the Cursor account's usage limit having darkened Sol and Luna before this layer. Round 2's objective lane was not run: fix round 1 adopted every round-1 prescription verbatim, the Orchestrator read the fix round's delta against the round-1 evidence file by file (the guide's only new lines are the Errors table realigned by the formatter after one `because` edit and the two rows O-1 prescribed), and the round-2 checker re-runs the sweeps the refuted claims rest on.
@@ -32,4 +32,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-AUDIT-TERMINAL
+PASS (round 1's refutations closed by fix round 1; round 2's checker confirms the tree on the regenerated evidence; the Orchestrator verified the fix round's delta against the round-1 evidence), pending the deciding run at landing.
