@@ -79,11 +79,21 @@ rather than repairing a defect a test could name first.
 | ------------ | ------------------------------------------------------------------------------ | -------------------------------------------- | ------------------------------------------- |
 | probe-subj-5 | `#closing === undefined` at the entry guard of all four classes                | 99 failed, 21 passed (`probe-subj-5-planted-red.txt`) | 119 passed, 1 standing failure (`probe-subj-5-restored-green.txt`) |
 | probe-obj-3  | The builder drops the `server.pid` announcement and the `delay` selection      | 2 failed, 7 passed (`probe-obj-3-builder-planted-red.txt`) | 9 passed (`probe-obj-3-builder-green.txt`) |
-| probe-obj-5  | Each polled marker renamed to a key nothing writes                            | 3 failed, 27 passed (`probe-obj-5-planted-red.txt`) | 30 passed (`probe-obj-5-restored-green.txt`) |
+| probe-obj-5  | The lint fixture opens the `closed` record and never writes the URI into it   | 1 failed, 29 passed (`probe-obj-5-planted-red2.txt`) | 30 passed (`probe-obj-5-green2.txt`) |
 
-The `probe-obj-5` red output names each condition in its own words, for example
-`Condition "the lint fixture to record the initialize it never answers" did not hold within 2000ms`,
-which is what the rule requires of an expired budget.
+The `probe-obj-5` red output names the condition in its own words at the shipped budget:
+`Condition "the lint fixture to record the standard input it closed" did not hold within 10000ms`,
+which is what the rule requires of an expired budget. That plant is the control the reshaped
+condition needs: `openSync` still creates `closed`, so a condition reading existence alone would
+have passed the plant, and the shipped condition reads the record's contents and fails it. Both
+captures ran `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+tests/src/server/stages/LintStage.test.ts`, and the plant was restored by editing the line back.
+
+The round's earlier control renamed each polled marker to a key nothing writes and reported 3
+failed, 27 passed at a 2000 ms budget (`probe-obj-5-planted-red.txt`,
+`probe-obj-5-restored-green.txt`). Fix round 1 supersedes it: referral R-2 asked for a control at
+the shipped budget, and the reshaped condition needs a plant that leaves the record's existence
+intact. The superseded captures stay on disk.
 
 Per-file greens after each row, all with `npx vitest run --config vite.config.ts --no-cache
 --reporter=dot --project src:server <file>`:
@@ -109,19 +119,33 @@ probe-obj-7's new sentence names a failure behaviour that `RuntimeStage.test.ts:
 
 ## Sweeps
 
-Each pattern ran from `/home/user/fleet/probe` over the tracked tree, excluding `node_modules`.
+Each pattern ran from `/home/user/fleet/probe`, and every row names the paths it covered rather
+than a glob whose population a reader has to infer. No sweep entered `node_modules`,
+`package-lock.json`, or `tmp/`. Three path sets recur, and the `Paths` column names each by its
+placeholder:
+
+- `TREE` — `src`, `tests`, `guides`, `configs`, `scripts`, `dist`, `README.md`, `AGENTS.md`,
+  `CLAUDE.md`, `package.json`, `vite.config.ts`, `tsconfig.json`.
+- `PROSE` — `src`, `tests`, `guides`, `README.md`, `AGENTS.md`, `CLAUDE.md`.
+- `DIFF` — the added lines (`^\+`) of `git diff -U0 -- src tests guides`, which spans every path
+  this unit modified.
+
+Every row was re-measured in fix round 1 against the tree as it stands, so a line number here is the
+shipped one.
 
 | Pattern                                                             | Paths                          | Result                                             |
 | -------------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------- |
-| `createRevisionFile`                                                | `**/*.{ts,md,json,js,cjs}`     | no match, `dist/` included after `build`           |
-| `createRevisionFile(s|d|ing)?\b` case-insensitive                   | `**/*.{ts,md}`                 | no match                                           |
-| `isProcessLive`                                                     | `**/*.{ts,md}`                 | no match                                           |
-| `#destroyed`                                                        | `src/`                         | no match                                           |
-| `function readHostEnding|const SERVER = |const ORDERED = \[|const STALLING = \[` | `tests/`            | one hit, `tests/setupServer.ts:283`, the moved helper |
-| `Content-Length: ' + Buffer.byteLength`                             | `tests/`, `src/`               | one hit, `tests/setupServer.ts:82`                 |
-| `JSON.parse(buffer.subarray`                                        | `tests/`, `src/`               | one hit, `tests/setupServer.ts:96`                 |
-| `\b(should|simply|easy|easier|just|via|currently|utilize|leverage|e\.g\.|i\.e\.|etc\.|performant|robust|allows you to|and/or|dummy|sanity check|please)\b` case-insensitive | added lines of `git diff -U0` | no match |
-| `\b(above|below|once)\b` case-insensitive                           | added lines of `git diff -U0`  | every hit ruled: `above` as magnitude, `at once` as simultaneity, `child.once` as a code token. One hit was a document reference and was rewritten before the gates |
+| `createRevisionFile`                                                | `TREE`                         | no match; `dist/` carried the built output of the preceding `npm run build` |
+| `\bcreateRevisionFile(s|d|ing)?\b` case-insensitive                 | `PROSE`                        | no match                                           |
+| `isProcessLive`                                                     | `PROSE`                        | no match                                           |
+| `\b(isProcessLive|isProcessLives|isProcessLived|isProcessLiving)\b` case-insensitive | `src`, `tests`, `guides/probe.md`, `guides/README.md`, `README.md` | no match |
+| `#destroyed`                                                        | `src`                          | no match. A `#`-private field can occupy no other population |
+| `taken on 2026-08-20`                                               | `guides/probe.md`, `guides/README.md`, `README.md` | one hit, `guides/probe.md:1002`, the Cost measurement probe-subj-6's repair leaves in place; the receipt paragraph reads empty |
+| `function readHostEnding|const SERVER = |const ORDERED = \[|const STALLING = \[` | `tests`             | one hit, `tests/setupServer.ts:283`, the moved helper |
+| `Content-Length: ' + Buffer.byteLength`                             | `tests`, `src`                 | one hit, `tests/setupServer.ts:83`                 |
+| `JSON.parse(buffer.subarray`                                        | `tests`, `src`                 | one hit, `tests/setupServer.ts:97`                 |
+| `\b(should|simply|easy|easier|just|via|currently|utilize|leverage|e\.g\.|i\.e\.|etc\.|performant|robust|allows you to|and/or|dummy|sanity check|please)\b` case-insensitive | `DIFF` | no match |
+| `\b(above|below|once)\b` case-insensitive                           | `DIFF`                         | every hit ruled: `above` as magnitude, `at once` and `exits at once` as simultaneity, `child.once` as a code token. One hit was a document reference and was rewritten before the gates |
 
 No row deletes a count over a package-owned set, so the number-word and numeral sweeps that rule
 names do not fire. The prose this unit authored states no count.
@@ -230,6 +254,19 @@ The deviation contract makes each of these mine to settle. None conflicts with a
 10. **The guide's `sensitive` paragraph puts the `RuntimeStage` sentence after the `TypeStage`
     sentence and before the folding sentence**, so the paragraph reads as which stage mints with
     what, then what folding reaches.
+11. **probe-obj-4's `spawn` clause was not factored.** The repair asked for one exported leaf
+    carrying the mechanics both endings need — spawn, await exit, read `{ code, signal }`. Only the
+    exit reading is shared, and `readChildEnding` (`tests/setupServer.ts:234-238`) carries it; both
+    callers take it at `:262` and `:285`. The spawn stays where it is, at `readSignalEnding:261` and
+    `readHostEnding:284`, because the two spawns agree on nothing a leaf could hold fixed: different
+    programs (a caller-supplied one against a fixed timer), different stdio
+    (`['ignore', 'pipe', 'ignore']` against `'ignore'`), different readiness (the first `data` event
+    on standard output against the `spawn` event), and different kill doors (`child.kill` against
+    `process.kill`). A leaf parameterized over those adds no boundary, invariant, composition,
+    translation, lifecycle, or narrower contract, so it is the superfluous wrapper `AGENTS.md`
+    § Design laws refuses — and the same refuter refused a kill-door parameter in this row for that
+    reason. This decision is recorded in fix round 1 against finding O-2, which named the departure
+    defensible and the record missing.
 
 ## Deviation state
 
@@ -241,4 +278,112 @@ needed a consumer edit to keep this package's gates green. A grep for `buildRevi
 
 - `/home/user/work/evidence/conform-probe.diff` — 1600 lines, written by `node /home/user/scaffold/tmp/work/evidence.mjs probe`.
 - `/home/user/work/evidence/conform-probe.status` — 14 entries, every one inside Owned.
+
+## Fix round 1
+
+Round 1's lanes were the objective lane
+(`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/probe-objective-r1.md`: FAIL on claims 2
+and 4, findings O-1 to O-3, referrals R-1 to R-3) and the Grok checker
+(`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/probe-r1-checker-grok.result.md`: PASS,
+with one referral asking whether the sweep table names the paths claim 3 requires). The campaign
+directory holds no subjective-lane verdict for probe round 1, so this round answers the lane files
+that exist. Every fix landed in `/home/user/fleet/probe`, and the sections this round rewrote — the
+planted-control row, § Sweeps, and § Decisions — were corrected in place rather than restated here.
+
+### Claim 2 and R-2 — the polled condition holds only after the close
+
+The lane's failing input was real. `openSync('closed', 'w')` creates the record before
+`closeSync(0)` runs, so `scratch.read('closed') !== undefined` could hold in the window before the
+close the condition names. The condition was the same race in a new spelling.
+
+The lane's first form landed, keeping decision 8's descriptor discipline:
+
+- `tests/src/server/stages/LintStage.test.ts:1305` polls
+  `() => (scratch.read('closed') ?? '') !== ''`.
+- `tests/setupServer.ts:62-64` reads: "and `PROBE_CLOSES_INPUT` closes the server's own standard
+  input when that document is closed and then writes the URI into the `closed` record it opened
+  first, so the record's contents land after the close and a test that waits for those contents
+  writes again only after the close has landed."
+- `tests/src/server/stages/LintStage.test.ts:1299-1302` reads: "The fixture opens the record before
+  it closes its own descriptor and writes the URI into it afterwards, so the record's contents land
+  after the close. The write that follows this wait therefore meets a pipe that is already broken
+  rather than one this host was slow to break."
+
+`tests/setupServer.ts:147-148`, the descriptor comment decision 8 records, is unchanged: it explains
+which descriptor the write lands on, and it claims nothing about when the record exists.
+
+R-2's re-plant answers the referral's question. The plant now stops the fixture writing the record
+at all — the `writeSync(record, …)` element of the program text was deleted, leaving `openSync` and
+both `closeSync` calls — so `closed` still exists and stays empty. Under the reshaped condition that
+is a red; under the condition the lane refuted it would have been a green, which is what makes this
+plant the control the change needs. The budget is the shipped `10_000` rather than the earlier
+control's `2_000`.
+
+| Reading | Command | Result | Capture |
+| ------- | ------- | ------ | ------- |
+| Planted red | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/stages/LintStage.test.ts` | 1 failed, 29 passed; `Condition "the lint fixture to record the standard input it closed" did not hold within 10000ms` | `/home/user/work/evidence/probe-proofs/probe-obj-5-planted-red2.txt` |
+| Restored green | the same command | 30 passed | `/home/user/work/evidence/probe-proofs/probe-obj-5-green2.txt` |
+
+The plant was restored by editing the deleted element back, never by `git restore`, and the restored
+line is byte-identical to the shipped one.
+
+### Claim 4, O-3, and the checker's referral — the sweep records
+
+§ Sweeps is rewritten rather than extended, because the shortfall the lane and the checker both
+named is the same one: a row recording `**/*.{ts,md}` names the pattern's admitted population, not
+the population the sweep was drawn from. Each row now names its paths through `TREE`, `PROSE`,
+`DIFF`, or an explicit list, and each was re-measured against the tree as it stands.
+
+The rows this round adds:
+
+- probe-subj-6's sweep, which claim 4 found missing: `taken on 2026-08-20` over `guides/probe.md`,
+  `guides/README.md`, `README.md`. One hit, `guides/probe.md:1002`, the Cost measurement the row's
+  repair leaves in place; the receipt paragraph reads empty. The lane measured this hit at
+  `guides/probe.md:1003`; the O-1 deletion later in this round removed one line earlier in the file,
+  so the shipped line is `:1002`.
+- O-3's inflection rows:
+  `\b(isProcessLive|isProcessLives|isProcessLived|isProcessLiving)\b`, case-insensitive, over `src`,
+  `tests`, `guides/probe.md`, `guides/README.md`, `README.md` — no match; and `#destroyed` over
+  `src` — no match, with the row now stating why `src` is the whole population a `#`-private field
+  can occupy.
+
+Two recorded line numbers moved with the claim-2 reword, which adds one line to `tests/setupServer.ts`
+before both: the framing writer reads `tests/setupServer.ts:83` and the framing parser
+`tests/setupServer.ts:97`. The § Sweeps table carries the shipped values.
+
+### O-1 — `LintStageInterface` tables `inspect` alone
+
+`guides/probe.md:258` tabled a `destroy` row under `#### LintStageInterface`. That row is deleted.
+`src/server/types.ts:240-251` declares `LintStageInterface extends StageInterface` with `inspect`
+alone, `destroy` is inherited and already tabled under `StageInterface` at `guides/probe.md:244`,
+and the `TypeStageInterface` table takes the same convention. `.claude/rules/documentation.md`
+§ Parity requires the table's methods to match the interface's call-signature members exactly.
+
+`npm run test:guides` exits 0 with 13 passed
+(`/home/user/work/evidence/probe-proofs/fix1-test-guides-2.txt`). Its first run in this round exited
+1 on the standing arming failure, in the row `earns the receipt the guide documents`, whose cause
+chain ends in `LSPError: The LSP request 'initialize' exceeded its deadline`
+(`/home/user/work/evidence/probe-proofs/fix1-test-guides.txt`). That run started seconds after a
+24-second contended `LintStage.test.ts` run; run alone the project is green. The failure names no
+parity row and no file this round touched. The deciding reading is the landing run under
+`ALLOW_RED_TEST=probe`, which R-3 leaves with the Orchestrator.
+
+### O-2 — the `spawn` clause is recorded
+
+§ Decisions item 11 records it: only the exit reading is shared and `readChildEnding` carries it,
+and the two spawns differ in program, stdio, readiness signal, and kill door, so a leaf
+parameterized over those is the superfluous wrapper `AGENTS.md` § Design laws refuses. The decision
+records the departure rather than factoring the spawn.
+
+### R-1 — no addendum exists
+
+The referral is answered rather than carried. No file
+`/home/user/scaffold/tmp/units/conform/conform-probe-brief-addendum.md` exists, and probe's one
+fleet dependency, mcp, renamed nothing probe imports. The lane's claim-1 and claim-2 rulings are
+therefore against the complete row set, and they stand as written.
+
+### R-3 — the landing run
+
+Not this unit's to take. The deciding whole-suite reading runs under `ALLOW_RED_TEST=probe` at
+landing, with the Orchestrator, after this unit exits. This round ran scoped files only.
 - `/home/user/work/evidence/probe-proofs/` — every red, green, and gate capture named in this report.
