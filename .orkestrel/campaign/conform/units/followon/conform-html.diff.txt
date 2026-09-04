@@ -1,59 +1,13 @@
-diff --git a/guides/html.md b/guides/html.md
-index 641681e..42cb7c0 100644
---- a/guides/html.md
-+++ b/guides/html.md
-@@ -439,6 +439,19 @@ renderHTML(page.sanitize({ elements: SAFE_ELEMENTS, comments: true }).document)
- const link = createHTML('<a href="/guide" onclick="steal()" title="Guide">g</a>')
- renderHTML(link.sanitize({ attributes: new Set(['href', 'onclick']) }).document)
- // '<a href="/guide">g</a>' - href kept, onclick still stripped: the floor is not an allowlist
-+
-+renderHTML(createHTML('<img src="/x.png" alt="x">').sanitize().document)
-+// '<img alt="x">' - alt kept, resource src removed by the default attributes
-+
-+renderHTML(createHTML('<a href="java&#115;cript:alert(1)">bad</a>').sanitize().document)
-+// '<a>bad</a>' - the entity-obfuscated scheme is decoded and refused
-+
-+renderHTML(
-+	createHTML('<table><tr><td align=" Center ">c</td></tr></table><p align="center">p</p>').sanitize(
-+		{ attributes: ['align'] },
-+	).document,
-+)
-+// '<table><tr><td align="center">c</td></tr></table><p>p</p>' - only a cell keeps trimmed lowercase align
- ```
- 
- ### Distill a page down to its content
 diff --git a/tests/guides.test.ts b/tests/guides.test.ts
-index 1ee0338..7107b72 100644
+index 7107b72..6e9bc89 100644
 --- a/tests/guides.test.ts
 +++ b/tests/guides.test.ts
-@@ -325,6 +325,20 @@ describe('flagship fences', () => {
- 		expect(renderHTML(link.sanitize({ attributes: new Set(['href', 'onclick']) }).document)).toBe(
- 			'<a href="/guide">g</a>',
- 		)
-+
-+		expect(renderHTML(createHTML('<img src="/x.png" alt="x">').sanitize().document)).toBe(
-+			'<img alt="x">',
-+		)
-+		expect(
-+			renderHTML(createHTML('<a href="java&#115;cript:alert(1)">bad</a>').sanitize().document),
-+		).toBe('<a>bad</a>')
-+		expect(
-+			renderHTML(
-+				createHTML(
-+					'<table><tr><td align=" Center ">c</td></tr></table><p align="center">p</p>',
-+				).sanitize({ attributes: ['align'] }).document,
-+			),
-+		).toBe('<table><tr><td align="center">c</td></tr></table><p>p</p>')
- 	})
- 
- 	it('distills a page to its content and keeps the handle a projection choice', () => {
-@@ -552,6 +566,9 @@ describe('flagship fences', () => {
- 			"renderHTML(page.sanitize({ elements: SAFE_ELEMENTS, comments: true }).document)\n// '<div><p>Hi <a>bad</a></p><!-- note --></div>'",
- 			'const link = createHTML(\'<a href="/guide" onclick="steal()" title="Guide">g</a>\')',
- 			"renderHTML(link.sanitize({ attributes: new Set(['href', 'onclick']) }).document)\n// '<a href=\"/guide\">g</a>'",
-+			'renderHTML(createHTML(\'<img src="/x.png" alt="x">\').sanitize().document)\n// \'<img alt="x">\' - alt kept, resource src removed by the default attributes',
-+			"renderHTML(createHTML('<a href=\"java&#115;cript:alert(1)\">bad</a>').sanitize().document)\n// '<a>bad</a>' - the entity-obfuscated scheme is decoded and refused",
-+			'renderHTML(\n\tcreateHTML(\'<table><tr><td align=" Center ">c</td></tr></table><p align="center">p</p>\').sanitize(\n\t\t{ attributes: [\'align\'] },\n\t).document,\n)\n// \'<table><tr><td align="center">c</td></tr></table><p>p</p>\' - only a cell keeps trimmed lowercase align',
- 			'html: \'<nav>Menu</nav><main><h1>Title</h1><p>Read the <a href="/b">guide</a>.</p></main>\',',
- 			"url: 'https://x.dev/docs/page',",
- 			'const safe = page.sanitize()',
+@@ -167,7 +167,7 @@ for (const entry of manifest) {
+ 				.map((fence) => fence.code)
+ 			const names = guide
+ 				.surface()
+-				.filter((symbol) => symbol.kind === 'function')
++				.filter((symbol) => symbol.keyword === 'function')
+ 				.map((symbol) => symbol.name)
+ 			expect(findUnexampled(names, fences, source.examples())).toEqual([])
+ 		})

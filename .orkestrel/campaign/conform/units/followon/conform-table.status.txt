@@ -1,2 +1,1 @@
- M guides/table.md
  M tests/guides.test.ts

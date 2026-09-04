@@ -1,49 +1,13 @@
 diff --git a/tests/guides.test.ts b/tests/guides.test.ts
-index d15a500..2f98ea8 100644
+index 2f98ea8..bf4281e 100644
 --- a/tests/guides.test.ts
 +++ b/tests/guides.test.ts
-@@ -1,5 +1,5 @@
- // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
--// this repo's own `guides/README.md` manifest. The four constants below are this
-+// this repo's own `guides/README.md` manifest. The constants following are this
- // package's own, and are the only part a sibling package changes.
- 
- import { describe, expect, it } from 'vitest'
-@@ -37,8 +37,9 @@ const MODULES = Object.freeze({
-  *
-  * A class that one-class-per-file evicted from its single consumer cannot become a
-  * local, so it stays exported without being public. Naming it here is what makes that
-- * intentional rather than forgotten — and the second assertion below fails when a name
-- * here stops being stranded, so the list cannot rot.
-+ * intentional rather than forgotten — and the `names no symbol internal that the barrel
-+ * already exports` assertion later in this file fails when a name here stops being
-+ * stranded, so the list cannot rot.
-  */
- const INTERNAL: readonly string[] = Object.freeze(['class MultipartParser'])
- 
-diff --git a/tests/src/core/middlewares.test.ts b/tests/src/core/middlewares.test.ts
-index 0a74a2a..cad8553 100644
---- a/tests/src/core/middlewares.test.ts
-+++ b/tests/src/core/middlewares.test.ts
-@@ -1902,7 +1902,7 @@ describe('composition', () => {
- 	})
- })
- 
--// ── createCookieTransport / createHeaderTransport (from factories.ts, exercised indirectly above; direct smoke) ──
-+// ── createCookieTransport / createHeaderTransport (from factories.ts, exercised indirectly earlier in this file; direct smoke) ──
- 
- describe('transports', () => {
- 	it('createHeaderTransport reads/writes/clears the configured header', async () => {
-diff --git a/tests/src/server/middlewares.test.ts b/tests/src/server/middlewares.test.ts
-index 57be691..1e31ec2 100644
---- a/tests/src/server/middlewares.test.ts
-+++ b/tests/src/server/middlewares.test.ts
-@@ -1179,7 +1179,7 @@ describe('createCompression (node face)', () => {
- // throws `MODULE_NOT_FOUND` unconditionally, confirmed through a direct
- // `node -e "require('@orkestrel/server/server')"` repro — an external
- // peer-package build defect, out of this dispatch's scope to fix. The
--// capstone below substitutes a real `node:http` socket (this repo's own
-+// following capstone substitutes a real `node:http` socket (this repo's own
- // `startServer` helper) plus `@orkestrel/router`'s server-face
- // `buildRequest`/`sendResponse` conversion seam driving the SAME real
- // `@orkestrel/router` `Dispatcher` and the SAME canonical onion through the peer's
+@@ -123,7 +123,7 @@ for (const entry of manifest) {
+ 				.map((fence) => fence.code)
+ 			const names = guide
+ 				.surface()
+-				.filter((symbol) => symbol.kind === 'function')
++				.filter((symbol) => symbol.keyword === 'function')
+ 				.map((symbol) => symbol.name)
+ 			expect(findUnexampled(names, fences, source.examples())).toEqual([])
+ 		})

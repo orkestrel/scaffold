@@ -1,8 +1,8 @@
 diff --git a/tests/guides.test.ts b/tests/guides.test.ts
-index ec79386..24ebf77 100644
+index d447c4a..9146d03 100644
 --- a/tests/guides.test.ts
 +++ b/tests/guides.test.ts
-@@ -156,7 +156,7 @@ for (const entry of manifest) {
+@@ -123,7 +123,7 @@ for (const entry of manifest) {
  				.map((fence) => fence.code)
  			const names = guide
  				.surface()
