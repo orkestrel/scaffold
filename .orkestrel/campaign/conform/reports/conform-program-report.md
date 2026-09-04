@@ -109,7 +109,7 @@ anything.
 
 | Row           | Command                                                                                                                | Red                                                | Green                                      |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------ |
-| program-obj-1 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts`                 | 1 failed, 84 passed (85) — `program-obj-1-red.txt` | 85 passed (85) — `program-obj-1-green.txt` |
+| program-obj-1 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts`                 | 1 failed, 84 passed (85) — `program-obj-1-red2.txt` | 85 passed (85) — `program-obj-1-green2.txt` |
 | program-obj-2 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts`                 | 1 failed, 84 passed (85) — `program-obj-2-red.txt` | 85 passed (85) — `program-obj-2-green.txt` |
 | program-obj-5 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts`                 | 1 failed, 84 passed (85) — `program-obj-5-red.txt` | 85 passed (85) — `program-obj-5-green.txt` |
 | program-obj-4 | `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts`   | 1 failed, 73 passed (74) — `program-obj-4-red.txt` | 74 passed (74) — `program-obj-4-green.txt` |
@@ -120,7 +120,7 @@ Every file named is under `/home/user/work/evidence/program-proofs/`.
 
 Failing test names and the plant each one caught:
 
-- program-obj-1 — `createRecordingEngine > counts every destroy, so a suite can prove an owned engine was released once`; plant: `RecordingReason.destroy` dropped its `#destroyCount` increment.
+- program-obj-1 — `createRecordingEngine > counts every destroy, so a suite can prove an owned engine was released once`; plant: `RecordingReason.destroy` incremented `#destroyCount` only on its first call. The case calls `destroy` twice and asserts the count reaches 2, so the plant is the defect the case's name claims to catch.
 - program-obj-2 — `recordEvents > records every wired event name, in the order the emitter fired it`; plant: the `rate` subscription pushed `'qualify'`.
 - program-obj-5 — `buildStandardProgramDefinition > names the definition after the given id and reuses the standard pair by identity`; plant: `buildStandardProgramDefinition` used the id as the name.
 - program-obj-4 — `helpers > assertProgramSubject > throws RESERVED with the offending key as context`; plant: `assertProgramSubject`'s `RESERVED` branch was made unreachable. The `captureError` conversion did not weaken the assertion.
@@ -281,8 +281,8 @@ The round recorded these sweeps:
   `new`.
 
 The controls table names these captures under
-`/home/user/work/evidence/program-proofs/`: `program-obj-1-red.txt`,
-`program-obj-1-green.txt`, `program-obj-2-red.txt`, `program-obj-2-green.txt`,
+`/home/user/work/evidence/program-proofs/`: `program-obj-1-red2.txt`,
+`program-obj-1-green2.txt`, `program-obj-2-red.txt`, `program-obj-2-green.txt`,
 `program-obj-5-red.txt`, `program-obj-5-green.txt`, `program-obj-4-red.txt`,
 `program-obj-4-green.txt`, `program-obj-6-red.txt`, `program-obj-6-green.txt`,
 `program-obj-3-red.txt`, and `program-obj-3-green.txt`.
@@ -353,3 +353,102 @@ The fix-round gates and scoped runs read:
 
 `git status --short` lists the same package-owned modified paths as the incoming
 unit and no untracked path.
+
+## Fix round 3
+
+The round-3 objective lane
+(`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/program-objective-r3-sol.md`)
+refuted claims 2 and 4. Both are closed. Because each of the three rounds found a new
+TSDoc-form defect through a new door, the whole public TSDoc surface under `src/core/**`
+was swept against `.claude/rules/typescript.md` § Comments and API documentation in one
+pass, and every departure the sweep found is rewritten.
+
+### Claim 2 — overload-specific notes out of public TSDoc
+
+- `src/core/types.ts:251` — the `ProgramInterface` doc block's `@remarks` naming the
+  array-first `execute` overload order is deleted, and the note now sits before the
+  overload block as `// Array overload first so a subject list resolves to the batch
+  form.`, the wording `src/core/programs/Program.ts:179` already carried.
+- `src/core/types.ts:491` — the `remove(ids)` `@remarks` sentence "Declared FIRST so an
+  id list resolves here rather than to the single-id overload." is deleted, and the note
+  now sits before the overload block as `// Array overload first so an id list resolves
+  to the batch form.`, the wording `src/core/programs/ProgramManager.ts:242` already
+  carried. The vacuous-empty-list fact moved from `@returns` into `@remarks`.
+
+No public TSDoc block under `src/core/**` carries an overload-specific note. The
+`overload|[Dd]eclared FIRST|declared first` sweep over `src/` returns only the
+single-line comments at `src/core/types.ts:251`, `src/core/types.ts:491`,
+`src/core/programs/Program.ts:179`, and `src/core/programs/ProgramManager.ts:242`.
+
+### TSDoc sweep
+
+Population: every `/** … */` block on an exported symbol or an interface member in
+`src/core/constants.ts`, `src/core/errors.ts`, `src/core/factories.ts`,
+`src/core/helpers.ts`, `src/core/types.ts`, `src/core/validators.ts`,
+`src/core/programs/Program.ts`, and `src/core/programs/ProgramManager.ts`.
+`src/core/index.ts` is a barrel and carries no doc block.
+
+| Bullet                                                                                     | Sites rewritten                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Comments explain why, never restate what self-explanatory code does                        | none                                                                                                                                                                                        |
+| Every public export has complete TSDoc: description, `@param`, `@returns`, `@example`      | `src/core/programs/Program.ts:93-105` and `src/core/programs/ProgramManager.ts:50-56` — each constructor carried no block, so neither parameterized public entry point documented a `@param` |
+| First sentence in the third person with an `-s` verb, never repeating the symbol's name    | none                                                                                                                                                                                        |
+| Boolean parameter as "If `true`, …; if `false`, …" and boolean return as "True if …"       | returns `src/core/types.ts:408,501,519` and `src/core/programs/ProgramManager.ts:127,252,270`; the `validate` boolean option field `src/core/types.ts:218-220,374-376` and `src/core/factories.ts:15-17` |
+| A default written as "Default: …"                                                          | `src/core/factories.ts:15-17`                                                                                                                                                               |
+| A thrown error written as "Thrown when …"                                                  | `src/core/helpers.ts:451-454`                                                                                                                                                               |
+| A prerequisite and the failure behavior stated wherever the symbol has either              | none                                                                                                                                                                                        |
+| `@deprecated` names the replacement first, then the reason                                 | none — the `@internal\|@deprecated\|@alpha\|@beta\|@public\|@private` sweep over `src/` returns empty                                                                                        |
+| An options object documented as one `@param`, with its short fields under `@remarks`       | none — `ProgramOptions` and `ProgramManagerOptions` carry their fields under `@remarks`, and each factory takes one `options` `@param`                                                       |
+| Private methods and overload-specific notes as single-line `//` comments                   | `src/core/types.ts:251` and `src/core/types.ts:491`; no `#` private method carries a doc block                                                                                               |
+| No speculative future product behavior                                                     | none                                                                                                                                                                                        |
+| No `@internal`                                                                             | none — same sweep as `@deprecated`, empty                                                                                                                                                   |
+
+The boolean-return rewrites replaced "True when …" with "True if …" and, for
+`remove(ids)`, replaced "True only when every listed id named a compiled program; an
+empty list succeeds vacuously" with "True if every listed id named a compiled program;
+false otherwise". The `validate` rewrites give the option field the boolean form and keep
+its "Default: {@link DEFAULT_PROGRAM_VALIDATE}" clause. The `@throws` rewrites at
+`src/core/helpers.ts:451-454` put `assertProgramDefinition` in the "Thrown when …" form
+the rest of the package already used.
+
+### Claim 4 — the destroy-count case binds to its name
+
+`tests/setup.test.ts:313-321`, the case
+`createRecordingEngine > counts every destroy, so a suite can prove an owned engine was
+released once`, now calls `destroy()` twice and asserts `destroyCount` reaches 2. Its
+control planted `RecordingReason.destroy` in `tests/setup.ts:144-147` to increment
+`#destroyCount` only on its first call — the implementation the old single-call body
+admitted — and restored it by editing the line back. No git command discarded anything.
+
+Command:
+`npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts`
+
+- Red: 1 failed | 84 passed (85) —
+  `/home/user/work/evidence/program-proofs/program-obj-1-red2.txt`. The only failure is
+  the named case, at `tests/setup.test.ts:320`, `expected 1 to be 2`.
+- Green: 85 passed (85) —
+  `/home/user/work/evidence/program-proofs/program-obj-1-green2.txt`.
+
+The Failing-first controls table's program-obj-1 row and its plant paragraph now name
+these captures.
+
+### Fix-round-3 gates and scoped runs
+
+| Command                                                                                                | Exit | Reading                                     |
+| -------------------------------------------------------------------------------------------------------- | ---- | ------------------------------------------- |
+| `npm run format:check`                                                                                 | 0    | All matched files use the correct format.   |
+| `npm run lint:check`                                                                                   | 0    | No diagnostic.                              |
+| `npm run check`                                                                                        | 0    | Root and `src:core` TypeScript checks pass. |
+| `npm run test:guides`                                                                                  | 0    | 26 passed (26).                             |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setup.test.ts` | 0    | 85 passed (85).                             |
+| `npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core`                  | 0    | 216 passed (216).                           |
+
+Captures for these runs sit beside the controls under
+`/home/user/work/evidence/program-proofs/`: `fix3-gate-1-format-check.txt`,
+`fix3-gate-2-lint-check.txt`, `fix3-gate-3-check.txt`, `fix3-gate-4-test-guides.txt`,
+and `fix3-src-core.txt`.
+
+`git status --short` lists the incoming unit's modified paths plus `src/core/factories.ts`,
+which this round's sweep modified for the first time. The file is inside the round's owned
+scope (`src/core/**` doc blocks) and the edit is comment-only. No untracked path appears,
+and no vendored file is touched.
