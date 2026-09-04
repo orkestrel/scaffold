@@ -1,6 +1,6 @@
 # Conformance round — handoff to the next session
 
-Written 2026-09-03 06:55 UTC by the Orchestrator of the fleet campaign. This folder holds everything the
+Written 2026-09-03 06:55 UTC by the Orchestrator of the fleet campaign and amended through 2026-09-04; a state-table row carries the time of its own latest change. This folder holds everything the
 next session needs to finish the strict conformance round and close the campaign. Read this file first,
 then `AGENTS.md`, every file under `.claude/rules/`, `.agents/orchestration.md`, and the skills named in
 § Skills. The user's standing instruction for this round: *"Do not defer anything, make sure that we have
@@ -60,7 +60,7 @@ middleware pool process reason router table template websocket; L3 browser guide
 qualifier queue rater relation scaffold sea server terminal workspace; L4 brief probe program worker
 workflow; L5 agent; L6 ollama toolbox.
 
-State as of 2026-09-03 10:58 UTC (`ledgers/session-2026-09-03.md` carries the narrative; `ledgers/runs.json` the run ids). Every package is ruled and its rulings retained under `rulings/`.
+State as of 2026-09-03 10:58 UTC, with the rows that changed later carrying their own times (`ledgers/session-2026-09-03.md` carries the narrative; `ledgers/runs.json` the run ids). Every package is ruled and its rulings retained under `rulings/`.
 
 | Package | Brief generated | Implementation | Audit | Landed |
 | --- | --- | --- | --- | --- |
