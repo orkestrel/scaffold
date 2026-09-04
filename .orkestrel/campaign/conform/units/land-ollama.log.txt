@@ -1,0 +1,7 @@
+ollama format:check exit=0
+ollama lint:check exit=0
+ollama check exit=0
+ollama build exit=0
+ollama test exit=0
+ollama scaffold audit --offline exit=0 clean
+ollama committed c3c8c05 pushed=true paths=32
