@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
@@ -96,7 +96,9 @@ describe('the workspace anchors', () => {
 	it('allocates every scratch directory this suite owns under its own prefix', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			expect(workspace.path.includes(SCRATCH_PREFIX)).toBe(true)
+			expect(SCRATCH_PREFIX.includes('/')).toBe(false)
+			expect(SCRATCH_PREFIX.includes('\\')).toBe(false)
+			expect(basename(workspace.path).startsWith(SCRATCH_PREFIX)).toBe(true)
 			expect(existsSync(workspace.path)).toBe(true)
 		} finally {
 			workspace.destroy()
@@ -703,24 +705,28 @@ describe('the upstream fixtures', () => {
 			'/listed': { status: 200, body: '{}' },
 			'/held': { status: 200, body: '{}', held: true },
 		})
-		const answered = await fetch(`${server.base}/listed`)
-		expect(answered.status).toBe(200)
-		await answered.text()
-		const pending = fetch(`${server.base}/held`).then(
-			() => 'answered',
-			() => 'refused',
-		)
-		await server.arrival('/held')
-		await server.destroy()
-		// The held request is the one a suite would otherwise leak, so destroy is what
-		// releases it rather than the caller abandoning it.
-		expect(await pending).toBe('refused')
-		expect(
-			await fetch(`${server.base}/listed`).then(
+		try {
+			const answered = await fetch(`${server.base}/listed`)
+			expect(answered.status).toBe(200)
+			await answered.text()
+			const pending = fetch(`${server.base}/held`).then(
 				() => 'answered',
 				() => 'refused',
-			),
-		).toBe('refused')
+			)
+			await server.arrival('/held')
+			await server.destroy()
+			// The held request is the one a suite would otherwise leak, so destroy is what
+			// releases it rather than the caller abandoning it.
+			expect(await pending).toBe('refused')
+			expect(
+				await fetch(`${server.base}/listed`).then(
+					() => 'answered',
+					() => 'refused',
+				),
+			).toBe('refused')
+		} finally {
+			await server.destroy()
+		}
 	})
 
 	it('points both endpoints at one loopback base and keeps the writers a run reports through', () => {
