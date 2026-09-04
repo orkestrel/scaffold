@@ -107,7 +107,7 @@ Throughout 2026-09-04 the objective lane ran on the Opus `reviewer` as the recor
 
 ## Rulings the round established
 
-- A scope line naming `tests/**` names the vendored set off-limits in the same sentence; a criterion wider than its Sites is governed by the scope.
+- A scope line naming `tests/**` or `src/**` names the vendored set (the paths `scaffold repair` restores) off-limits in the same sentence; a criterion wider than its Sites is governed by the scope.
 - A sample string inside a fence or a fixture is data, exempt from the substitution table; a number word whose sentence names its members is permitted; a `format` homonym stays.
 - A class field holding one literal keeps `as const` under the vendored `prefer-as-const` gate (canon `17e00993`, agent-obj-9 EXEMPT).
 - Probe's standing red is the arming class alone; a timing red under load is re-run alone by the Orchestrator after the unit exits before it is believed.
@@ -118,10 +118,10 @@ Throughout 2026-09-04 the objective lane ran on the Opus `reviewer` as the recor
 
 ## Close-out readings
 
-- **W-END repack and re-stage** (`units/closeout-wend.log.txt`, 15:06 UTC): every tip packed (48 fleet packages and scaffold), every consumer's closure re-staged with no dirty or failed row.
-- **Gate sweep**: CLOSEOUT-GATES
-- **Inventory**: CLOSEOUT-INVENTORY
-- **Offline audit in every target**: CLOSEOUT-AUDIT
+- **W-END repack and re-stage** (`units/closeout-wend.log.txt`, 15:06 UTC): every tip packed (every fleet package and scaffold), every consumer's closure re-staged with no dirty or failed row.
+- **Gate sweep** (`units/closeout-fleet-gates.log.txt`, `units/closeout2.log.txt`, `units/closeout3.log.txt`; 15:38–15:58 UTC): the serial chain `format:check`, `lint:check`, `check`, `build`, `test` read OK in agent, brief, guide, mcp, ollama, program, server, toolbox, worker, and workflow, the packages whose last chain predated the W-END re-stage; the guide-keyword lanes' logs (`units/followon/land-guide-keyword-A.log.txt` through `-E`) are the readings for every other fleet package, each chain exit 0 on its final tip; scaffold's row is the roadmap-fix landing (`5c4af173`, every gate exit 0). Probe read `FAIL test`, and the deciding idle re-run after the chain (`units/closeout-probe-idle-test.log.txt`, 16:02 UTC) read 12 failed and 217 passed of 229, the totals its landing recorded, every failure tracing to the Oxlint language-server arming error (`The probe could not arm: The Oxlint language server exited with code 0`, carried in the bin-entry answers and raised in the `Probe.test.ts` cases alike): the standing arming class alone. The chain's first launch died with the 15:40 container restart after agent, brief, and guide had read OK; the relaunch kept those rows.
+- **Inventory** (`inventory-4.md`, 16:02 UTC; `instruments/inventory2.mjs` with the rebuilt `instruments/distdiff.mjs` over the published tarballs `instruments/published.sh` fetched from the registry; controls `units/closeout-distdiff-controls.log.txt`: the published copy against itself unmoved, a whitespace-only mutation unmoved, a material mutation changed): every package's `dist/` moved against its declared published version, by content on its entry files with no file added or removed; README moved in every package except html and probe; scaffold's `dist/` moved under `dist/host` (the vendored surface) and `dist/src`, so scaffold bumps and publishes on its own account first. Every package bumps and publishes in the layer order the catalog regenerates.
+- **Offline audit in every target** (`units/closeout-audit-all.log.txt`, 15:58 UTC, on the re-landed tips): `npx scaffold audit --offline` exited 0 in every fleet target, each summary line reading zero drifted planned paths. The canon checkout's reading through the built entry (`units/closeout-audit-scaffold-canon.log.txt`, `node dist/bin/main.js audit --offline`) is its own shape under the standing ruling: `AGENTS.md` and `CLAUDE.md` stale against the pointer templates, the `.codex` and `.cursor` files foreign, and no `setup` advisory.
 
 ## Carry
 

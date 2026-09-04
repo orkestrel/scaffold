@@ -1,0 +1,5 @@
+15:48:10 closeout3 start; fleet-gates.log keeps: agent OK;brief OK;guide OK;
+15:57:58 fleet-gates exit=0 FLEET-GATES-COMPLETE
+15:58:01 inventory exit=0
+15:58:54 audits done: 48 exit-0 rows of 48
+15:58:54 CLOSEOUT3-DONE

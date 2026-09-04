@@ -1,0 +1,694 @@
+
+> @orkestrel/probe@0.0.11 test
+> npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+
+
+> @orkestrel/probe@0.0.11 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server --project src:bin
+
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+················································x··x··········x··x···········x··xx·xxstderr | tests/src/server/stages/RuntimeStage.test.ts > runtime stage > recycles the resident runner after 64 written specifications, evicts disk caches, and strips the replacement warm's termination listeners
+failed to load config from /tmp/orkestrel-test-ziGM9J/vite.config.ts
+
+·········x····x································································································································x
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers both protocol eras without exposing worker output on stdout
+AssertionError: expected [ …(6) ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   ObjectContaining {
++ [
++   {
+      "id": 1,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "capabilities": {
++         "tools": {},
++       },
+        "protocolVersion": "2025-06-18",
+        "serverInfo": {
+          "name": "probe",
+          "version": "0.0.11",
+        },
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 2,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
+        "tools": [
+-         ObjectContaining {
++         {
++           "description": "Answers whether a TypeScript edit compiles, lints, and passes its test in this workspace — call it before relying on such a claim, instead of reasoning or writing a throwaway probe. Supply the edit you believe is correct and an edit that must break with the stage it breaks at; the closing line is a receipt only when the case ran clean and the control broke exactly at its declared stage, and no receipt otherwise. For a performance claim, measure before proving: write a guarded bench block — if (import.meta.env.MODE === 'benchmark') — beside the probe test, run the workspace bench script, and record only magnitudes; a settled ratio then proves here as an ordinary runtime claim.",
++           "inputSchema": {
++             "additionalProperties": false,
++             "description": "One claim: the project, the case, and the control that must break.",
++             "properties": {
++               "case": {
++                 "additionalProperties": false,
++                 "description": "The drafts a claim asserts about, and the test that exercises them.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                 ],
++                 "type": "object",
++               },
++               "control": {
++                 "additionalProperties": false,
++                 "description": "A case that must fail, naming the stage where it must fail and why.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "reason": {
++                     "description": "Why the control fails at that stage.",
++                     "minLength": 1,
++                     "type": "string",
++                   },
++                   "stage": {
++                     "description": "The stage this control must fail at.",
++                     "enum": [
++                       "type",
++                       "lint",
++                       "runtime",
++                     ],
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                   "stage",
++                   "reason",
++                 ],
++                 "type": "object",
++               },
++               "project": {
++                 "description": "Workspace-relative TypeScript project the candidate drafts are checked against.",
++                 "minLength": 1,
++                 "type": "string",
++               },
++             },
++             "required": [
++               "project",
++               "case",
++               "control",
++             ],
++             "type": "object",
++           },
+            "name": "prove",
+          },
+        ],
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 3,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.11",
++         },
++       },
++       "cacheScope": "private",
++       "resultType": "complete",
+        "tools": [
+-         ObjectContaining {
++         {
++           "description": "Answers whether a TypeScript edit compiles, lints, and passes its test in this workspace — call it before relying on such a claim, instead of reasoning or writing a throwaway probe. Supply the edit you believe is correct and an edit that must break with the stage it breaks at; the closing line is a receipt only when the case ran clean and the control broke exactly at its declared stage, and no receipt otherwise. For a performance claim, measure before proving: write a guarded bench block — if (import.meta.env.MODE === 'benchmark') — beside the probe test, run the workspace bench script, and record only magnitudes; a settled ratio then proves here as an ordinary runtime claim.",
++           "inputSchema": {
++             "additionalProperties": false,
++             "description": "One claim: the project, the case, and the control that must break.",
++             "properties": {
++               "case": {
++                 "additionalProperties": false,
++                 "description": "The drafts a claim asserts about, and the test that exercises them.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                 ],
++                 "type": "object",
++               },
++               "control": {
++                 "additionalProperties": false,
++                 "description": "A case that must fail, naming the stage where it must fail and why.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "reason": {
++                     "description": "Why the control fails at that stage.",
++                     "minLength": 1,
++                     "type": "string",
++                   },
++                   "stage": {
++                     "description": "The stage this control must fail at.",
++                     "enum": [
++                       "type",
++                       "lint",
++                       "runtime",
++                     ],
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                   "stage",
++                   "reason",
++                 ],
++                 "type": "object",
++               },
++               "project": {
++                 "description": "Workspace-relative TypeScript project the candidate drafts are checked against.",
++                 "minLength": 1,
++                 "type": "string",
++               },
++             },
++             "required": [
++               "project",
++               "case",
++               "control",
++             ],
++             "type": "object",
++           },
+            "name": "prove",
+          },
+        ],
++       "ttlMs": 60000,
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 4,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.11",
++         },
++       },
+        "content": [
+-         ObjectContaining {
+-           "text": StringMatching /^probe .+receipt probe:/s,
++         {
++           "text": "The probe could not arm: The Oxlint language server exited with code 0",
+            "type": "text",
+          },
+        ],
++       "isError": true,
++       "resultType": "complete",
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 5,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.11",
++         },
++       },
+        "content": [
+-         ObjectContaining {
+-           "text": StringMatching /^probe .+receipt probe:/s,
++         {
++           "text": "The probe could not arm: The Oxlint language server exited with code 0",
+            "type": "text",
+          },
+        ],
++       "isError": true,
++       "resultType": "complete",
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 6,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.11",
++         },
++       },
+        "content": [
+-         ObjectContaining {
+-           "text": StringMatching /^probe .+receipt probe:/s,
++         {
++           "text": "The probe could not arm: The Oxlint language server exited with code 0",
+            "type": "text",
+          },
+        ],
++       "isError": true,
++       "resultType": "complete",
+      },
+    },
+  ]
+
+ ❯ tests/src/bin/main.test.ts:412:23
+    410|     expect(Buffer.concat(errors).toString('utf8')).not.toContain('Erro…
+    411|     const responses: readonly unknown[] = lines.map((line) => JSON.par…
+    412|     expect(responses).toEqual(
+       |                       ^
+    413|      expect.arrayContaining([
+    414|       expect.objectContaining({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > carries the verdict record beside the rendered text on both eras
+AssertionError: no verdict on {"id":3,"jsonrpc":"2.0","result":{"_meta":{"io.modelcontextprotocol/serverInfo":{"name":"probe","version":"0.0.11"}},"content":[{"text":"The probe could not arm: The Oxlint language server exited with code 0","type":"text"}],"isError":true,"resultType":"complete"}}: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/bin/main.test.ts:555:58
+    553|      if (answer === undefined) continue
+    554|      const record = answer['structuredContent']
+    555|      expect(isVerdict(record), `no verdict on ${frame}`).toBe(true)
+       |                                                          ^
+    556|      if (!isVerdict(record)) continue
+    557|      expect(answer['content']).toStrictEqual([{ type: 'text', text: fo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > carries a record whose control reports an issue per refused declaration
+AssertionError: no verdict on {"id":1,"jsonrpc":"2.0","result":{"content":[{"text":"The probe could not arm: The Oxlint language server exited with code 0","type":"text"}],"isError":true}}: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/bin/main.test.ts:613:67
+    611|     if (answer === undefined) return
+    612|     const record = answer['structuredContent']
+    613|     expect(isVerdict(record), `no verdict on ${frames[0] ?? ''}`).toBe…
+       |                                                                   ^
+    614|     if (!isVerdict(record)) return
+    615|     expect(answer['content']).toStrictEqual([{ type: 'text', text: for…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a record past the published key bound with the rendered text alone
+AssertionError: expected NaN to be greater than 368
+ ❯ tests/src/bin/main.test.ts:691:30
+    689|     // drops, and the issues this control reports are what put the rec…
+    690|     const reported = /^control type: (\d+) issues/m.exec(text)?.[1]
+    691|     expect(Number(reported)).toBeGreaterThan(368)
+       |                              ^
+    692|     expect(text.split('\n').at(-1)).toMatch(/^receipt probe:/)
+    693|     const listed = answered.get(2) ?? ''
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a rendering past the content bound with the receipt block
+AssertionError: expected [ Array(1) ] to have a length of 4 but got 1
+
+- Expected
++ Received
+
+- 4
++ 1
+
+ ❯ tests/src/bin/main.test.ts:767:19
+    765|     if (text === undefined) return
+    766|     const lines = text.split('\n')
+    767|     expect(lines).toHaveLength(4)
+       |                   ^
+    768|     expect(lines[0]).toMatch(/^probe [0-9a-f-]+ \(\d+ ms\)$/)
+    769|     expect(lines[1]).toMatch(/^claim [0-9a-f]+$/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a driven third-party client with the verdict record
+Error: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ buildCallOutcome node_modules/@orkestrel/mcp/src/core/helpers.ts:627:8
+ ❯ MCPClient.call node_modules/@orkestrel/mcp/src/core/MCPClient.ts:442:9
+ ❯ tests/src/bin/main.test.ts:826:21
+    824|     expect(tools[0]?.description).toContain('measure before proving')
+    825|     expect(tools[0]?.description).toContain("import.meta.env.MODE === …
+    826|     const outcome = await client.call('prove', claim)
+       |                     ^
+    827|     expect(outcome.resultType).toBe('complete')
+    828|     if (outcome.resultType !== 'complete') return
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a pinned legacy client through the initialize path
+Error: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ buildCallOutcome node_modules/@orkestrel/mcp/src/core/helpers.ts:627:8
+ ❯ MCPClient.call node_modules/@orkestrel/mcp/src/core/MCPClient.ts:442:9
+ ❯ tests/src/bin/main.test.ts:885:21
+    883|     expect(tools[0]?.description).toContain('measure before proving')
+    884|     expect(tools[0]?.description).toContain("import.meta.env.MODE === …
+    885|     const outcome = await client.call('prove', claim)
+       |                     ^
+    886|     expect(outcome.resultType).toBe('complete')
+    887|     if (outcome.resultType !== 'complete') return
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > preserves worker diagnostics on stderr
+AssertionError: expected { id: 1, jsonrpc: '2.0', …(1) } to match object { Object (id, result) }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "id": 1,
+    "result": {
+      "content": [
+        {
+-         "text": StringMatching /^probe .+receipt probe:/s,
++         "text": "The probe could not arm: The Oxlint language server exited with code 0",
+          "type": "text",
+        },
+      ],
+    },
+  }
+
+ ❯ tests/src/bin/main.test.ts:972:22
+    970|      break
+    971|     }
+    972|     expect(response).toMatchObject({
+       |                      ^
+    973|      id: 1,
+    974|      result: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > mints receipts only when every stage executes cleanly, including for a control that shares no path with its case, and returns admitted path issues
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > retains all stage checks when the runtime stage cannot write its specification
+ProbeError: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ Probe.#arm src/server/Probe.ts:224:20
+    222|    // run through the same stages under the same deadline, so `The lin…
+    223|    // ms` reads as evidence about the candidate when it is the instrum…
+    224|    const failure = new ProbeError(`The probe could not arm: ${describe…
+       |                    ^
+    225|     origin: 'instrument',
+    226|     code: 'malformed',
+
+Caused by: ProbeError: The Oxlint language server exited with code 0
+ ❯ LintStage.#fault src/server/stages/LintStage.ts:255:10
+ ❯ LintStage.#translate src/server/stages/LintStage.ts:245:16
+ ❯ LintStage.#warmed src/server/stages/LintStage.ts:165:15
+ ❯ LintStage.#inspect src/server/stages/LintStage.ts:117:18
+ ❯ guardStage src/server/helpers.ts:678:10
+ ❯ Probe.#bound src/server/Probe.ts:487:11
+ ❯ Probe.#inspectStage src/server/Probe.ts:457:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { origin: 'instrument', code: 'malformed', context: { stage: 'lint' } }
+Caused by: LSPError: The LSP request 'initialize' exceeded its deadline
+ ❯ LSPClient.#timeoutRequest node_modules/@orkestrel/lsp/dist/src/core/index.js:1323:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'timeout', context: { value: 1 } }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > accounts one verdict for the two phases it ran in sequence
+ProbeError: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ Probe.#arm src/server/Probe.ts:224:20
+    222|    // run through the same stages under the same deadline, so `The lin…
+    223|    // ms` reads as evidence about the candidate when it is the instrum…
+    224|    const failure = new ProbeError(`The probe could not arm: ${describe…
+       |                    ^
+    225|     origin: 'instrument',
+    226|     code: 'malformed',
+
+Caused by: ProbeError: The Oxlint language server exited with code 0
+ ❯ LintStage.#fault src/server/stages/LintStage.ts:255:10
+ ❯ LintStage.#translate src/server/stages/LintStage.ts:245:16
+ ❯ LintStage.#warmed src/server/stages/LintStage.ts:165:15
+ ❯ LintStage.#inspect src/server/stages/LintStage.ts:117:18
+ ❯ guardStage src/server/helpers.ts:678:10
+ ❯ Probe.#bound src/server/Probe.ts:487:11
+ ❯ Probe.#inspectStage src/server/Probe.ts:457:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { origin: 'instrument', code: 'malformed', context: { stage: 'lint' } }
+Caused by: LSPError: The LSP request 'initialize' exceeded its deadline
+ ❯ LSPClient.#timeoutRequest node_modules/@orkestrel/lsp/dist/src/core/index.js:1323:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'timeout', context: { value: 1 } }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > mints one token for one claim in two separate processes
+Error: The second process minted no token
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+x
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  15:57:53
+   Duration  3.89s (transform 536ms, setup 61ms, import 613ms, tests 3.02s, environment 0ms)
+
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |probe| tmp/probe/probe-portable-a9aceded-061e-4804-b2df-ded1f5afc31b.test.ts > mints
+ProbeError: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ Probe.#arm src/server/Probe.ts:224:20
+    222|    // run through the same stages under the same deadline, so `The lin…
+    223|    // ms` reads as evidence about the candidate when it is the instrum…
+    224|    const failure = new ProbeError(`The probe could not arm: ${describe…
+       |                    ^
+    225|     origin: 'instrument',
+    226|     code: 'malformed',
+
+Caused by: ProbeError: The Oxlint language server exited with code 0
+ ❯ LintStage.#fault src/server/stages/LintStage.ts:255:10
+ ❯ LintStage.#translate src/server/stages/LintStage.ts:245:16
+ ❯ LintStage.#warmed src/server/stages/LintStage.ts:165:15
+ ❯ LintStage.#inspect src/server/stages/LintStage.ts:117:18
+ ❯ guardStage src/server/helpers.ts:678:10
+ ❯ Probe.#bound src/server/Probe.ts:487:11
+ ❯ Probe.#inspectStage src/server/Probe.ts:457:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { origin: 'instrument', code: 'malformed', context: { stage: 'lint' } }
+Caused by: LSPError: The LSP request 'initialize' exceeded its deadline
+ ❯ LSPClient.#timeoutRequest node_modules/@orkestrel/lsp/dist/src/core/index.js:1323:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'timeout', context: { value: 1 } }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ ❯ tests/src/server/Probe.test.ts:1875:11
+    1873|    const reported = /RECEIPT (\S+)/.exec(`${child.stdout}\n${child.std…
+    1874|    if (reported === undefined) {
+    1875|     throw new Error(`The second process minted no token\n${child.stdou…
+       |           ^
+    1876|    }
+    1877|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+
+ Test Files  2 failed | 9 passed (11)
+      Tests  12 failed | 217 passed (229)
+   Start at  15:55:21
+   Duration  156.38s (transform 3.64s, setup 1.28s, import 4.84s, tests 346.31s, environment 2ms)
+
