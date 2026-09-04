@@ -39,6 +39,8 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 
 | 20:33 | `@orkestrel/guide` | `0.0.17` | L3 | accepted at 20:33 with the processing notice; served `0.0.17` at 20:33 | release tip `7b93a5c`: runtime ranges contract `^0.0.16` and markdown `^0.0.13`. Uploaded on a one-time code (`publish-guide-0.0.17.log.txt`). |
 
+| 20:42 | `@orkestrel/scaffold` | `0.0.62` | L3 | served `0.0.62` at 20:42 | release tip `aa0d28f4`: runtime ranges moved with L0 to L2; the generated-manifest fixtures and the CLI audit's test-floor advisory moved with the release; `tests/guides.test.ts` reads guide's renamed API. Uploaded on a one-time code (`publish-scaffold-0.0.62.log.txt`). |
+
 ## The login
 
 The registry answered the web login's polls inconsistently through this host's proxy: the proxy leaves from several addresses, and a poll from an address other than the one that minted the session answers `403 {"message":"forbidden"}`, which npm 10 and npm 11 read as web login unsupported and drop to the legacy prompt. On one kept-alive connection the polls answer `202` every 3 seconds (`instruments/login-diag.sh`). `instruments/login-retry.sh` mints attempts until one survives its first poll and relays that URL; the owner's click landed on the third relayed link at 19:32, and `npm whoami` answered.
