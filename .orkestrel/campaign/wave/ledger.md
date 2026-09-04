@@ -151,4 +151,59 @@ Standing readings, not gates: probe's `npm test` under its arming red (8 failed 
 
 Open after the wave: every target pins `@orkestrel/scaffold` at `^0.0.62` as a development range while the registry serves `0.0.63`; the contract obliges no re-pin for a development bump whose vendored surface did not move, so that alignment is a round the owner can ask for. Every checkout carries its release on `claude/orkestrel-npm-audit-deps-14ibta`, clean and level with its remote; merging to `main` is the owner's.
 
+## After the release: main and the re-pin to scaffold 0.0.63
+
+On the owner's word every checkout's release branch fast-forwarded to `main` (`instruments/push-main.sh`); scaffold's `main` carried twelve commits of the three-application campaign's records the branch lacked, merged cleanly into the branch with gates green and `dist/` unmoved against the released 0.0.63 before its push. The fleet then re-pinned `@orkestrel/scaffold` to `^0.0.63` with each target's catalog table and guide mirrors refreshed from the registry (`instruments/repin-dev-2.sh`), gates green, dist unmoved, and the round fast-forwarded to `main` again. Process re-ran alone after the shared round reddened a stdout-chunking assertion; probe and ollama ran their gates member by member under their standing readings. The closing sweep (`instruments/devstale.mjs`) read: every range names the registry caret.
+
+| Package | Re-pin commit | Ranges moved |
+| --- | --- | --- |
+| `abort` | `9224bad` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `agent` | `a3b2a7d` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `brief` | `094b679` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `browser` | `f647a5a` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `budget` | `d92749c` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `codec` | `e7fe73d` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `console` | `3c8ed57` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `contract` | `0599b62` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `csv` | `0eaea88` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `database` | `1b731a0` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `emitter` | `a85bb05` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `form` | `f9bcf4e` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `guide` | `884bc8d` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `html` | `71affab` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `indexeddb` | `9740578` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `interpret` | `2c82cc7` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `lsp` | `9973533` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `markdown` | `aab4778` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `mcp` | `30a788b` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `middleware` | `684a0c1` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `msg` | `5b1950d` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `ndjson` | `7f7fbad` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `ollama` | `dfdf1fa` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `pool` | `a2a5268` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `probe` | `b331d93` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `process` | `ba0b4d0` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `program` | `af969d7` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `qualifier` | `525e97e` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `queue` | `7195226` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `rater` | `5d11e1d` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `reason` | `7661241` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `relation` | `aedb62f` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `router` | `a09d41b` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `sea` | `b11d4bb` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `server` | `1dbb1a6` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `sqlite` | `5fe9cac` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `sse` | `a394e30` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `table` | `88a2ef5` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `template` | `070f569` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `terminal` | `43d7839` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `test` | `5951098` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `timeout` | `d96438e` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `tool` | `0605881` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `toolbox` | `e47223c` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `websocket` | `9dc5aaf` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `worker` | `9d4b4f2` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `workflow` | `9078700` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+| `workspace` | `1d29aab` | `@orkestrel/scaffold:` ^0.0.62→^0.0.63 |
+
 RELEASE: LANDED
