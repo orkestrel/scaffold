@@ -1168,6 +1168,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			src: ['core', 'server'],
 			bin: true,
 			guides: true,
+			setup: true,
 		})
 		const artifacts = blueprintToConfigArtifacts(blueprint)
 
