@@ -1,0 +1,56 @@
+
+> @orkestrel/scaffold@0.0.60 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+··x······················x···········································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > the inert value builders > replaces only the named fields on the dependency, override, and question builders
+AssertionError: expected { field: 'src', …(2) } to strictly equal { field: 'src', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "blocking": true,
++   "blocking": false,
+    "field": "src",
+    "message": "Unknown environment",
+  }
+
+ ❯ tests/setup.test.ts:78:27
+     76|    content: '# Sample\n',
+     77|   })
+     78|   expect(buildQuestion()).toStrictEqual({
+       |                           ^
+     79|    field: 'src',
+     80|    message: 'Unknown environment',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > the manifest builders > digests the destination text every host root writes for an entry
+AssertionError: expected '8f434346648f6b96df89dda901c5176b10a6d…' to be '98ea6e4f216f2fb4b69fff9b3a44842c38686…' // Object.is equality
+
+Expected: "98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4"
+Received: "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4"
+
+ ❯ tests/setupServer.test.ts:136:60
+    134|   // that exact text is what the default digest owes, measured against…
+    135|   // algorithm rather than against a second copy of it.
+    136|   expect(buildManifestEntry({ destination: 'hi' }).digest).toBe(anchor…
+       |                                                            ^
+    137|   expect(buildManifestEntry()).toStrictEqual({
+    138|    storage: 'AGENTS.md',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 67 passed (69)
+   Start at  09:58:35
+   Duration  2.23s (transform 1.62s, setup 1.31s, import 786ms, tests 624ms, environment 0ms)
+
