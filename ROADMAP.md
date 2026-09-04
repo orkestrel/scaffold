@@ -25,6 +25,12 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   and reads `stale` until the template moves. Rule whether a workspace carrying
   `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
   project the plan already runs in a browser, then move the template and the audit together.
+- **test**: the browser journey layer resolves interactive targets and named regions, so a
+  contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
+  which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
+  `text-white text-opacity-75` copy stays an open limit. Add a reader that resolves a rendered
+  text node by its content within a named region for `readContrast`, with a negative control,
+  at the layer's next release.
 - **fleet**: an entry module's `@packageDocumentation` never reaches the published declaration
   rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
   2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
