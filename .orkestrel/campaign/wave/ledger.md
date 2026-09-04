@@ -62,7 +62,10 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 | 21:48 | `@orkestrel/worker` | `0.0.11` | L4 | accepted at 21:48 with the processing notice | release tip `6929232`. Uploaded on one one-time code with the layer, after a first code expired unused (`publish-worker.log.txt`). |
 | 21:48 | `@orkestrel/workflow` | `0.0.17` | L4 | accepted at 21:48 with the processing notice | release tip `2e07e2a`. Uploaded on one one-time code with the layer, after a first code expired unused (`publish-workflow.log.txt`). |
 
-| 21:53 | `@orkestrel/agent` | `0.0.20` | L5 | accepted at 21:53 with the processing notice | release tip `841e452`: every runtime range moved. Uploaded on a one-time code (`publish-agent.log.txt`). |
+| 21:53 | `@orkestrel/agent` | `0.0.20` | L5 | served `0.0.20` at 21:54 | release tip `841e452`: every runtime range moved. Uploaded on a one-time code (`publish-agent.log.txt`). |
+
+| 21:59 | `@orkestrel/toolbox` | `0.0.12` | L6 | served `0.0.12` at 21:59 | release tip `ceeff85`. Uploaded on one one-time code with ollama (`publish-toolbox.log.txt`). |
+| 21:59 | `@orkestrel/ollama` | `0.0.14` | L6 | served `0.0.14` at 21:59 | release tip `7657741`. Every member of `prepublishOnly` exit 0 except `test:service`, recorded: the suite needs the `qwen3.5:2b-q4_K_M` model at a local Ollama daemon this host lacks (`instruments/prep-ollama-gates.sh`); owed on a daemon host per `ROADMAP.md` § 4. Uploaded on the same code (`publish-ollama.log.txt`). |
 
 ## The login
 
