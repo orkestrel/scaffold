@@ -41,7 +41,7 @@ Edit 2 covered the shape-descriptor sites the report named plus the `type: 'lite
 | workflow-subj-12 | applied | `scanSnapshotContext` in `src/core/helpers.ts` takes a complete block: first sentence kept, `@remarks` on where the walk stops, `@param value`, and a prose `@returns`. |
 | workflow-subj-13 | applied | `hasWorkflowHandlers` gains `@param functions` and a `@remarks` sentence stating the parameter belongs to the snapshot overload alone. Written as `WorkflowRegistry`, since workflow-subj-11 landed first. |
 | workflow-subj-14 | applied | `src/core/Runner.ts` types `#values` as `Map<string, Success<TResult>>` and `#failure` / `#cleanup`'s return / `cleanupFailure` as `Failure<unknown>`; stores the narrowed outcome directly at `#settle`; constructs every failure through the already-imported `failure` helper. `RunnerValue` and `RunnerFailure` deleted from `src/core/types.ts` with their imports and Surface rows. Every `.value` and `.error` read unchanged. |
-| fleet-F1 | noop | This workspace has a browser environment, so the rule's own exemption applies. `src/browser/` holds `BrowserScheduler.ts`, `FrameScheduler.ts`, `IdleScheduler.ts`, `constants.ts`, `factories.ts`, `index.ts`, `types.ts`; `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` both exist. `isBrowserVuePath` remains at `tests/setup.ts:508` with its `describe` block in `tests/setup.test.ts`, untouched. |
+| fleet-F1 | noop | This workspace has a browser environment, so the rule's own exemption applies. `src/browser/` holds `BrowserScheduler.ts`, `FrameScheduler.ts`, `IdleScheduler.ts`, `constants.ts`, `factories.ts`, `index.ts`, `types.ts`; `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` both exist. `isBrowserVuePath` remains at `tests/setup.ts:523` with its `describe` block at `tests/setup.test.ts:423`, untouched. |
 | fleet-F2 | applied by workflow-obj-11 | `Controller` was the only class carrying the shape (`readonly id: string` ahead of `#abort` / `#spawn`), and workflow-obj-11 performed exactly the prescribed conversion. Before applying it I read every `JSON.stringify` in `src` and `tests`: every hit serializes a snapshot or a contract schema, none a `Controller` or `TaskController` instance, so no `stop` was owed. A sweep for module-indent `readonly` across `src` returns only `types.ts` / `browser/types.ts` interface members and `errors.ts:22-23`, which is the `Error` subclass's own shape and carries no `id`. |
 
 ## Files touched
@@ -73,7 +73,7 @@ Docs: `guides/workflow.md`, `guides/README.md`, `README.md`.
 
 ## Diffstat
 
-58 files changed: 57 modified, 1 added (`tests/src/core/Collection.test.ts`). `git status --short` lists only files under Owned; no vendored file, no `package.json`, no `configs/`, no `.claude/`.
+`git status --short` lists only files under Owned; `tests/src/core/Collection.test.ts` is added and every other path modified. No vendored file, no `package.json`, no `configs/`, no `.claude/`.
 
 ## Failing-first controls
 
@@ -99,8 +99,8 @@ Every sweep ran through the Grep tool over the named population; the population 
 | Pattern | Population | Result |
 | ------- | ---------- | ------ |
 | `§[0-9]` | `src/**`, `tests/**` | empty |
-| `§` | `guides/workflow.md`, `guides/README.md`, `README.md` | empty |
-| `§[0-9]` | whole checkout minus `node_modules` | only `guides/{budget,queue,timeout,abort,contract}.md` — vendored mirrors, correctly untouched |
+| `§` | `guides/workflow.md`, `guides/README.md`, `README.md` | recorded empty, and that reading is FALSE — the sweep returns `guides/README.md:89` and `guides/workflow.md:1462`. Both are the named-section citation form this row prescribes, and every section they cite exists (`AGENTS.md` § Design laws, `.claude/rules/names.md` § Fixed lifecycle vocabulary, `.claude/rules/typescript.md` § Errors and outcomes, `.claude/rules/documentation.md` § Parity), so the row supports its conclusion after all: no numbered-section form survives and no tree change is owed |
+| `§[0-9]` | whole checkout minus `node_modules` | recorded as hitting `guides/{budget,queue,timeout,abort,contract}.md`, and that reading is FALSE — it names fewer files than the sweep returns. The sweep hits `guides/{abort,budget,contract,database,emitter,guide,queue,timeout}.md`. Every one is a vendored dependency guide mirror, outside this unit's Owned set and correctly untouched, so the conclusion stands: no authored file carries the numbered-section form |
 | `\b(WorkflowFunctions\|TaskStatus\|PhaseStatus\|WorkflowStatus\|TASK_STATUSES\|TERMINAL_TASK_STATUSES\|PHASE_STATUSES\|WORKFLOW_STATUSES\|RunnerValue\|RunnerFailure\|WorkflowHooks\|PhaseHooks\|TaskHooks\|createGate\|TestGateInterface\|QueueExecution)(s\|es\|ed\|ing)?\b`, case-insensitive | `guides/workflow.md`, `guides/README.md`, `README.md` | empty |
 | same base pattern | `src/**/*.ts`, `tests/**/*.ts` | only `derivePhaseStatus` / `deriveWorkflowStatus`, the retained helper names the rows keep |
 | `Date.now()` | `tests/**` | only the three wall-clock stamps at `helpers.test.ts:1520`, `Workflow.test.ts:368`, `tasks/Task.test.ts:283`, plus the explanatory comment at `server/NodeScheduler.test.ts:69` |
@@ -137,7 +137,7 @@ Before the acceptance run I ran the mutating `npx oxlint --fix` then `npx oxfmt 
 
 ## Breaking
 
-Four rows move the published surface. No fleet code consumer exists for `workflow-subj-8`, `workflow-subj-9`, or `workflow-subj-14`; `workflow-subj-10` and `workflow-subj-11` reach `@orkestrel/toolbox`.
+These rows move the published surface. No fleet code consumer exists for `workflow-subj-8`, `workflow-subj-9`, or `workflow-subj-14`; `workflow-subj-10` and `workflow-subj-11` reach `@orkestrel/toolbox`.
 
 | Row | Removed or renamed | Consumers |
 | --- | ------------------ | --------- |
@@ -146,6 +146,8 @@ Four rows move the published surface. No fleet code consumer exists for `workflo
 | workflow-subj-10 | `TaskStatus`, `PhaseStatus`, `WorkflowStatus` removed; every position now `LifecycleStatus` | `@orkestrel/toolbox` |
 | workflow-subj-11 | `WorkflowFunctions` → `WorkflowRegistry` | `@orkestrel/toolbox` |
 | workflow-subj-14 | `RunnerValue`, `RunnerFailure` removed | none in fleet |
+
+A further row moves published behaviour rather than a symbol, so it sits under the table rather than in it. `workflow-subj-6` changes the value `WorkflowManagerInterface.remove(ids[])` returns: a partial batch, where some requested id is absent, returns `false` where it returned `true`, and an empty batch returns `true` where it returned `false`. The signature is unchanged, so a consumer reads the difference only at the return value. No fleet consumer calls it: `grep -rn 'WorkflowManager' --include=*.ts --include=*.vue /home/user/fleet/*/src /home/user/fleet/*/app` returns no hit outside `/home/user/fleet/workflow/src` itself (exit 1). The row therefore obliges a release note and no consumer patch.
 
 ## Shared-file patches
 
@@ -491,3 +493,117 @@ Run bare in `/home/user/fleet/workflow`, in this order.
 A verbose `setup` run confirms each added case is collected by the `setup` project and green: `buildTasks > returns every live task the definition declares, in declaration order`, `buildTasks > mints a fresh tree per call, so a transition on one call cannot reach a later one`, `buildCollection > returns an empty store naming the entity noun it was given`, and `buildCollection > defaults the noun to the task vocabulary and wires the real compiled guard`.
 
 `git status --short` lists the same paths the round began with — `tests/src/core/Collection.test.ts` added, every other path modified — and nothing new.
+
+## Fix round 3
+
+Brief: `/home/user/scaffold/tmp/units/conform/conform-workflow-fix3-brief.md`. Verdict closed:
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/workflow-objective-r2.md` — the round-2
+objective lane's O1, O2, O3, O5, and O6, with its R1 recorded. Opus 5 ran the round as the native
+`implementer` in `/home/user/fleet/workflow`; the Cursor bench carrying GPT-5.6 Sol stays dark on
+the account's API-model usage limit.
+
+O4 and R2 are the Orchestrator's rulings rather than this round's edits. O4 belongs to the
+landing run, which executes the full gate chain on the tree this round leaves. R2 stays open with
+toolbox's own unit, as this report already records under Shared-file patches.
+
+### O1 — the counted comment
+
+`tests/guides.test.ts:2`. The number is deleted rather than corrected.
+
+Before:
+
+```ts
+// this repo's own `guides/README.md` manifest. The four constants below are this
+```
+
+After:
+
+```ts
+// this repo's own `guides/README.md` manifest. The constants below are this
+```
+
+Line 3 is unchanged, so the sentence reads "The constants below are this package's own, and are the
+only part a sibling package changes."
+
+### O2 — the false sweep rows
+
+Both rows are corrected in place, in the form the `\be\.g\.\b` row already uses at `:108`. Each
+re-ran on the tree this round leaves, and each records the hits it returns and the conclusion those
+hits support.
+
+Row `:102`, pattern `§` over `guides/workflow.md`, `guides/README.md`, `README.md`, returns
+`guides/README.md:89` and `guides/workflow.md:1462`. Both are the named-section citation form the
+row prescribes, and every section they cite exists — `AGENTS.md` § Design laws,
+`.claude/rules/names.md` § Fixed lifecycle vocabulary, `.claude/rules/typescript.md` § Errors and
+outcomes, `.claude/rules/documentation.md` § Parity. The row's conclusion stands: no
+numbered-section form survives in an authored file, and no tree change is owed.
+
+Row `:103`, pattern `§[0-9]` over the checkout minus `node_modules`, returns
+`guides/{abort,budget,contract,database,emitter,guide,queue,timeout}.md`. The old reading named
+fewer files than the sweep returns. Every file it returns is a vendored dependency guide mirror,
+outside this unit's Owned set and correctly untouched, so the row's conclusion stands unchanged.
+
+### O3 — the diffstat and § Breaking counts
+
+- `:76` before: "58 files changed: 57 modified, 1 added (`tests/src/core/Collection.test.ts`). `git status --short` lists only files under Owned; no vendored file, …"
+- `:76` after: "`git status --short` lists only files under Owned; `tests/src/core/Collection.test.ts` is added and every other path modified. No vendored file, …"
+- `:140` before: "Four rows move the published surface."
+- `:140` after: "These rows move the published surface."
+
+The consumer sentence following `:140` is unchanged. The brief wrote the replacement with a
+trailing colon; the consumer sentence sits between that clause and the table, so a colon would
+dangle. Recorded here as an ancillary wording decision taken under the deviation contract.
+
+### O5 — the failing-first control for the setup fixtures
+
+Command, run bare in `/home/user/fleet/workflow`: `npm run test:setup`.
+
+| Run | Plant | Capture | Result |
+| --- | ----- | ------- | ------ |
+| red | `buildTasks` reads a module-level `PLANTED_TREE` and `buildCollection` takes a permissive stand-in guard | `/home/user/work/evidence/workflow-proofs/o5-setup-control-red.txt` | exit 1 — 1 failed / 28 passed (29), file `tests/setup.test.ts > buildTasks > mints a fresh tree per call, so a transition on one call cannot reach a later one` |
+| red | `buildCollection` alone takes the permissive stand-in guard | `/home/user/work/evidence/workflow-proofs/o5-setup-collection-control-red.txt` | exit 1 — 1 failed / 28 passed (29), file `tests/setup.test.ts > buildCollection > defaults the noun to the task vocabulary and wires the real compiled guard` |
+| green | none; both bodies restored | `/home/user/work/evidence/workflow-proofs/o5-setup-control-green.txt` | exit 0 — 3 files / 29 tests passed |
+
+The second red run is the round's remaining ancillary decision, and it is what the finding asks for
+rather than what the brief's method produces. Planting both bodies at once masks the
+`buildCollection` proof: the shared `PLANTED_TREE` leaves the task the earlier case starts in
+`running`, so `Collection.update` refuses at its `#pending` gate
+(`/home/user/fleet/workflow/src/core/Collection.ts:107-108`) before it ever consults the guard, and
+`store.update(first.id, { name: '' }).success` reads `false` for the wrong reason. The
+`buildCollection` case then passes under a guard it is written to catch. Planting that body alone
+reddens it, so each fixture now carries a proof that ran red against its own body. No stop trigger
+in the deviation contract fired: the planted control did fail, the restored run passed, no gate
+reddened, and every named site read as the brief quotes it.
+
+`tests/setup.ts` is restored by editing the exact lines back. `git diff --stat -- tests/setup.ts`
+reads `55 insertions(+), 40 deletions(-)` before the plant and the same after the restore, and the
+file's MD5 is `b0311d105154c023cbc9189c88602450` at both readings.
+
+### O6 — the moved citation
+
+`:44`, the `fleet-F1` `noop` evidence. Both cited lines were opened and confirmed before writing:
+`tests/setup.ts:523` reads `export function isBrowserVuePath(path: string): boolean {` and
+`tests/setup.test.ts:423` reads `describe('isBrowserVuePath', () => {`.
+
+- Before: "`isBrowserVuePath` remains at `tests/setup.ts:508` with its `describe` block in `tests/setup.test.ts`, untouched."
+- After: "`isBrowserVuePath` remains at `tests/setup.ts:523` with its `describe` block at `tests/setup.test.ts:423`, untouched."
+
+### R1 — the behavioural change recorded under § Breaking
+
+Recorded as a sentence under the § Breaking table at `:150`, because the row moves published
+behaviour rather than a symbol and the table's columns are Removed or renamed. `workflow-subj-6`
+changes what `WorkflowManagerInterface.remove(ids[])` returns for a partial batch from `true` to
+`false`, and for an empty batch from `false` to `true`. No fleet consumer calls it.
+
+### Gates
+
+Run bare in `/home/user/fleet/workflow`, after the restore.
+
+| Command | Exit |
+| ------- | ---- |
+| `npm run format:check` | 0 |
+| `npm run lint:check` | 0 |
+| `npm run check` | 0 |
+| `npm run test:setup` | 0 — 3 files / 29 tests passed |
+
+`git status --short` lists the same paths the round began with, and nothing new.
