@@ -1,0 +1,37 @@
+Script started on 2026-09-04 21:48:03+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=261730 < /home/user/work/wave/publish-workflow.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K[1mnpm[22m [96mnotice[39m
+-[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/workflow@0.0.17
+-[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+-[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 2.0kB README.md
+[1mnpm[22m [96mnotice[39m 12.2kB dist/src/browser/index.d.ts
+[1mnpm[22m [96mnotice[39m 12.9kB dist/src/browser/index.js
+[1mnpm[22m [96mnotice[39m 18.2kB dist/src/browser/index.js.map
+[1mnpm[22m [96mnotice[39m 206.8kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 381.0kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 246.4kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 246.4kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 201.3kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 378.8kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 4.1kB dist/src/server/index.cjs
+[1mnpm[22m [96mnotice[39m 5.0kB dist/src/server/index.cjs.map
+[1mnpm[22m [96mnotice[39m 4.0kB dist/src/server/index.d.cts
+[1mnpm[22m [96mnotice[39m 4.0kB dist/src/server/index.d.ts
+[1mnpm[22m [96mnotice[39m 4.0kB dist/src/server/index.js
+[1mnpm[22m [96mnotice[39m 5.0kB dist/src/server/index.js.map
+[1mnpm[22m [96mnotice[39m 5.2kB package.json
+-[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+-[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/workflow
+-[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.17
+-[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-workflow-0.0.17.tgz
+-[1G[0K[1mnpm[22m [96mnotice[39m package size: 436.5 kB
+-[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 1.7 MB
+-[1G[0K[1mnpm[22m [96mnotice[39m shasum: 9330a812ca1755a7dbc91e1b06f1d6e079d647a7
+-[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-hULv7eLwCcPS5[...]mvdIHIdSR1FAQ==
+-[1G[0K[1mnpm[22m [96mnotice[39m total files: 18
+-[1G[0K[1mnpm[22m [96mnotice[39m
+-[1G[0K\[1G[0K|[1G[0K/[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K+ @orkestrel/workflow@0.0.17
+|[1G[0K
+Script done on 2026-09-04 21:48:08+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0
