@@ -27,7 +27,7 @@ Fix round 1 and its successors 1b and 1c, Sol writers (`units/l4/brief-fix1-sol-
 
 ## Structural claims
 
-Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/brief`, recorded in `units/land-brief.log` and `units/conform-brief.audit.txt`, and the landing commit named in the state table.
+Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/brief`, recorded in `units/land-brief.log.txt` and `units/conform-brief.audit.txt`, and the landing commit named in the state table.
 
 ## Terminal
 

@@ -27,7 +27,7 @@ Fix round 1 and its successors 1b, 1c, and 1d, Sol writers (`units/l4/workflow-f
 
 ## Structural claims
 
-Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/workflow`, recorded in `units/land-workflow.log` and `units/conform-workflow.audit.txt`, and the landing commit named in the state table.
+Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/workflow`, recorded in `units/land-workflow.log.txt` and `units/conform-workflow.audit.txt`, and the landing commit named in the state table.
 
 ## Terminal
 

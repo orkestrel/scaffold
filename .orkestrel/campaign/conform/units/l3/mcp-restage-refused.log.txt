@@ -1,0 +1,1 @@
+REFUSE: mcp manifest or lockfile dirty before staging

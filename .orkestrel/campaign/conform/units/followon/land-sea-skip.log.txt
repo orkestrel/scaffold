@@ -1,0 +1,7 @@
+sea format:check exit=0
+sea lint:check exit=0
+sea check exit=0
+sea build exit=0
+sea test exit=0
+sea scaffold audit --offline exit=0 clean
+sea committed 846d83b pushed=true paths=7

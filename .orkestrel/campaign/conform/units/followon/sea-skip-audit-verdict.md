@@ -29,7 +29,7 @@ Fix round 2, Orchestrator-owned (`briefs/followon/sea-skip-fix2-brief.md`, repor
 
 ## Structural claims
 
-Claim 8's independent gate reading settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/sea`, recorded in `units/followon/land-sea-skip.log`, and the landing commit named in the state table.
+Claim 8's independent gate reading settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/sea`, recorded in `units/followon/land-sea-skip.log.txt`, and the landing commit named in the state table.
 
 ## Terminal
 

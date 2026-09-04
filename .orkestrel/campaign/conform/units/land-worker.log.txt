@@ -1,0 +1,7 @@
+worker format:check exit=0
+worker lint:check exit=0
+worker check exit=0
+worker build exit=0
+worker test exit=0
+worker scaffold audit --offline exit=0 clean
+worker committed f3b14c3 pushed=true paths=28

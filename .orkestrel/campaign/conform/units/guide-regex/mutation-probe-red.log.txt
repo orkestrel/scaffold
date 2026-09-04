@@ -1,0 +1,38 @@
+
+> @orkestrel/guide@0.0.15 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts
+
+
+ RUN  v4.1.11 /home/user/fleet/guide
+
+······················································································································································································x··········································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > extractMemberMethods > counts an optional method whose type params precede the parameter list
+AssertionError: expected [] to deeply equal [ 'transaction' ]
+
+- Expected
++ Received
+
+- [
+-   "transaction",
+- ]
++ []
+
+ ❯ tests/src/core/helpers.test.ts:1518:90
+    1516|
+    1517|  it('counts an optional method whose type params precede the parameter…
+    1518|   expect(extractMemberMethods(['\ttransaction?<R>(scope: DriverScope<R…
+       |                                                                                          ^
+    1519|    'transaction',
+    1520|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 224 passed (225)
+   Start at  08:20:20
+   Duration  679ms (transform 278ms, setup 69ms, import 326ms, tests 117ms, environment 0ms)
+

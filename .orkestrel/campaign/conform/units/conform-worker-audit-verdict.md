@@ -34,7 +34,7 @@ Fix round 1, a Sol writer (`units/l4/worker-fix1-sol-result.md`): isolated faili
 
 ## Structural claims
 
-Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/worker`, recorded in `units/land-worker.log` and `units/conform-worker.audit.txt`, and the landing commit named in the state table.
+Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/worker`, recorded in `units/land-worker.log.txt` and `units/conform-worker.audit.txt`, and the landing commit named in the state table.
 
 ## Terminal
 

@@ -35,7 +35,7 @@ Fix round 1, a Sol writer (`units/l4/program-fix1-sol-result.md`): six isolated 
 
 ## Structural claims
 
-Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/program`, recorded in `units/land-program.log` and `units/conform-program.audit.txt`, and the landing commit named in the state table.
+Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/program`, recorded in `units/land-program.log.txt` and `units/conform-program.audit.txt`, and the landing commit named in the state table.
 
 ## Terminal
 

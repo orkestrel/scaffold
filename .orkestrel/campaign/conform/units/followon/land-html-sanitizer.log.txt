@@ -1,0 +1,7 @@
+html format:check exit=0
+html lint:check exit=0
+html check exit=0
+html build exit=0
+html test exit=0
+html scaffold audit --offline exit=0 clean
+html committed 9ca9c9e pushed=true paths=2

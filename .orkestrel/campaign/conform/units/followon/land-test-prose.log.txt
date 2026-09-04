@@ -1,0 +1,7 @@
+test format:check exit=0
+test lint:check exit=0
+test check exit=0
+test build exit=0
+test test exit=0
+test scaffold audit --offline exit=0 clean
+test committed a3c06a4 pushed=true paths=1

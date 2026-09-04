@@ -1,0 +1,9 @@
+mcp format:check exit=0
+mcp lint:check exit=1
+
+> @orkestrel/mcp@0.0.27 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+tests/guides.test.ts:12:2: error eslint(no-unused-vars): Type 'MCPTransportInterface' is imported but never used. help: Consider removing this import.
+
+mcp RED - not committed

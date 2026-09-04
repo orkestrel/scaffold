@@ -27,7 +27,7 @@ Fix round 1, an Opus `implementer` (`units/l4/probe-fix1-opus-result.md`): a mar
 
 ## Structural claims
 
-Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test` under the standing-red ruling, and `npx scaffold audit --offline` in `/home/user/fleet/probe`, recorded in `units/land-probe.log` and `units/conform-probe.audit.txt`, and the landing commit named in the state table.
+Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test` under the standing-red ruling, and `npx scaffold audit --offline` in `/home/user/fleet/probe`, recorded in `units/land-probe.log.txt` and `units/conform-probe.audit.txt`, and the landing commit named in the state table.
 
 ## Terminal
 

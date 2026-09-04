@@ -19,7 +19,7 @@ Subjective lane: not run, by the round's design; the unit's rows are objective (
 
 ## Structural claims
 
-Claim 6's gate reading is NOT-EVIDENCED by every read-only lane and settles on the deciding run: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/reason`, recorded in `units/followon/land-reason-remove.log`, and the landing commit named in the state table.
+Claim 6's gate reading is NOT-EVIDENCED by every read-only lane and settles on the deciding run: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/reason`, recorded in `units/followon/land-reason-remove.log.txt`, and the landing commit named in the state table.
 
 ## Terminal
 

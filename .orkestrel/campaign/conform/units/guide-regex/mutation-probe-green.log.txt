@@ -1,0 +1,14 @@
+
+> @orkestrel/guide@0.0.15 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts
+
+
+ RUN  v4.1.11 /home/user/fleet/guide
+
+·································································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  225 passed (225)
+   Start at  08:20:21
+   Duration  929ms (transform 495ms, setup 57ms, import 576ms, tests 97ms, environment 0ms)
+

@@ -22,12 +22,12 @@ Fix round 1, a Sol writer (`units/l3/mcp-fix1-sol-result.md`): the `capacity` re
 - Round 1, claims 3, 4, 7 and the checker's claim 3 with F-1, F-2: closed by fix round 1; confirmed by both round-2 lanes.
 - Round 1 O1 (the predicate placement) and O2 (the busy-wait): closed by fix round 1.
 - Round 2, claim 4 and O1: closed by fix round 2.
-- The re-stage after server's landing refused on mcp's dirty manifest (`units/l3/mcp-restage-refused.log`): mcp lands on the closure it was audited against, imports no symbol server renamed, and re-stages after landing with its gates re-run as the wave's re-pin check (`ledgers/followons.md`).
+- The re-stage after server's landing refused on mcp's dirty manifest (`units/l3/mcp-restage-refused.log.txt`): mcp lands on the closure it was audited against, imports no symbol server renamed, and re-stages after landing with its gates re-run as the wave's re-pin check (`ledgers/followons.md`).
 - Breaking rows (`MCP_WEBSOCKET_SUBPROTOCOL` moved to core, the predicates renamed `supports*`, `MCPCompletionInterface`, the `deferral` and `producer` keys, the `session` group, `push` and `replay` without `now`): probe is the one fleet dependent and imports none of them; it re-pins at the wave.
 
 ## Structural claims
 
-Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/mcp`, recorded in `units/land-mcp.log` and `units/conform-mcp.audit.txt`, and the landing commit named in the state table.
+Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on the Orchestrator's deciding run at landing: `format:check`, `lint:check`, `check`, `build`, `test`, and `npx scaffold audit --offline` in `/home/user/fleet/mcp`, recorded in `units/land-mcp.log.txt` and `units/conform-mcp.audit.txt`, and the landing commit named in the state table.
 
 ## Terminal
 
