@@ -7,7 +7,7 @@ Subject: the uncommitted unit in `/home/user/fleet/toolbox` (brief `briefs/confo
 | Round | Lane | Role, engine | Terminal |
 | --- | --- | --- | --- |
 | 1 | absorption | `grok` on Cursor Grok 4.6 (`units/l56/toolbox-r1-distill-grok.result.md`) | distillate |
-| 1 | checker | `checker` on Cursor Grok 4.6 (`units/l56/toolbox-r1-checker-grok.result.md`), Luna being dark | AUDIT-R1-CHECKER |
+| 1 | checker | `checker` on Cursor Grok 4.6 (`units/l56/toolbox-r1-checker-grok.result.md`), Luna being dark | PASS with a referral: the `0.0.7` numeral in the `createInferTool` TSDoc at `src/core/factories.ts:1452`, ruled with the objective lane |
 | 1 | objective | `reviewer` on Claude Opus 5 (`units/l56/toolbox-objective-r1.md`), Sol being dark | AUDIT-R1-OBJECTIVE |
 
 Subjective lane: not run in the audit round, by the round's design. Both lanes ran on substitute engines, the Cursor account's usage limit having darkened Sol and Luna; both were blind to each other.

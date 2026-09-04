@@ -25,4 +25,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-AUDIT-TERMINAL
+PASS (round 1's refutation closed by fix round 1, verified by the Orchestrator on the tree; the deciding run at landing read every gate exit 0 and `scaffold audit --offline` clean, landed as codec 87040ad).

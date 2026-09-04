@@ -1,0 +1,11 @@
+# Lane brief — draft the landing commit message for toolbox
+
+Role and engine: `grok` (Cursor Grok 4.6), read-only absorption and distillation. Never create, edit, or delete a file; never run a command that changes a tree. Perform the reading directly and spawn nothing.
+
+Objective: draft one commit message for toolbox in the exact shape of the landed example `/home/user/scaffold/tmp/work/msgs/land-program.txt` (read it first): a title line of at most 72 characters beginning `Conform <pkg> to the fleet rules:` followed by a colon list of the change's substance; one body paragraph naming, from the report, every breaking row (old name → new name, with "breaking, no fleet consumer" or the consumer it reaches) and the substantive changes the rows made, in prose; then the literal placeholder line `AUDIT-PARAGRAPH` where the Orchestrator writes the audit history; then a blank line. Do not write the trailers.
+
+Source, under `/home/user/scaffold/tmp/units/conform/`: `conform-toolbox-report.md`. Read each report's `## Rows` (the disposition table: every `applied` row's summary is a candidate sentence), `## Breaking`, and `## Consumer edits taken` sections. Ignore `## Fix round N` sections except where they state a row's final form. The unit briefs under the same directory (`conform-<pkg>-brief.md`) carry each row's full text where a summary is too terse.
+
+Writing rules, binding: `/home/user/scaffold/AGENTS.md` § Writing — never state a count of a growable set (write the members or drop the number); never name a list item by its position; no `should`, `via`, `e.g.`, `i.e.`, `currently`, `now`, `new` as a dating word, `above`, `below`; present tense for what exists; a code token in backticks followed by a noun. Each message is one paragraph of prose after the title, in the voice of the example: what the package's surface is after the change, stated as facts.
+
+Output shape, exactly: one section headed `## toolbox` containing one fenced block with the draft message text (title, blank line, body paragraph, blank line, `AUDIT-PARAGRAPH`), then one line `Sources:` naming the report line ranges read. Then a section `## Unknowns` naming any row whose final form the report leaves ambiguous, with the report line. Nothing else.

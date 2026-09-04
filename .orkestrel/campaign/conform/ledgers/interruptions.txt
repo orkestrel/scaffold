@@ -7,3 +7,5 @@ interruptions (UTC, 2026-09-02):
 22:23 container restart, 17 min at 4 agents (refute slices; 2 results per slice landed first)
 22:47 session usage limit (resets 00:50 UTC 2026-09-03) failed every queued node; the three L0 implementers died mid-unit
 00:58 user ruling: Fable 5.1 holds every judgment lane (finders, refuters, implementers, objective reviewers) from here; Sonnet keeps checker and verifier; Opus runs stopped and relaunched on Fable
+12:0x 2026-09-04 Opus session limit (HTTP 429, resets 14:20 UTC) killed the ollama round-1 objective lane at its sweeps; codec's landing and the toolbox Grok lanes were unaffected
+12:3x 2026-09-04 user usage limit held the session; resumed 14:22 UTC on the user's word, the ollama lane re-dispatched on its brief
