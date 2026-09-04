@@ -1,0 +1,29 @@
+Script started on 2026-09-04 20:50:55+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=104048 < /home/user/work/wave/publish-interpret.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/interpret@0.0.12
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 2.8kB README.md
+[1mnpm[22m [96mnotice[39m 98.8kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 155.6kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 97.8kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 97.8kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 95.0kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 154.6kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 3.9kB package.json
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/interpret
+|[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.12
+|[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-interpret-0.0.12.tgz
+|[1G[0K[1mnpm[22m [96mnotice[39m package size: 171.9 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 707.3 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m shasum: ab06cc1be8269c9cbd3fe14827e3dcf3d7867709
+|[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-Bp2x/4zuRwV9c[...]ynQMzqrGZ5anA==
+|[1G[0K[1mnpm[22m [96mnotice[39m total files: 9
+|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K/[1G[0K-[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m Your package is being processed and may take a few minutes to become available.
+|[1G[0K+ @orkestrel/interpret@0.0.12
+|[1G[0K
+Script done on 2026-09-04 20:50:57+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0

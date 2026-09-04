@@ -1,0 +1,29 @@
+Script started on 2026-09-04 20:51:23+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=104048 < /home/user/work/wave/publish-rater.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/rater@0.0.13
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 2.0kB README.md
+[1mnpm[22m [96mnotice[39m 26.3kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 37.6kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 26.2kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 26.2kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 24.4kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 37.0kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 3.8kB package.json
+|[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+|[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/rater
+|[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.13
+|[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-rater-0.0.13.tgz
+|[1G[0K[1mnpm[22m [96mnotice[39m package size: 32.8 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 184.6 kB
+|[1G[0K[1mnpm[22m [96mnotice[39m shasum: 48de7e9a5f7c095192d8a837521421351cd88692
+|[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-XCxOqnl3o1E5K[...]R1wHI1cHmlo1w==
+|[1G[0K[1mnpm[22m [96mnotice[39m total files: 9
+|[1G[0K[1mnpm[22m [96mnotice[39m
+|[1G[0K/[1G[0K-[1G[0K\[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K[1mnpm[22m [96mnotice[39m Your package is being processed and may take a few minutes to become available.
+\[1G[0K+ @orkestrel/rater@0.0.13
+\[1G[0K
+Script done on 2026-09-04 20:51:25+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0

@@ -41,6 +41,18 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 
 | 20:42 | `@orkestrel/scaffold` | `0.0.62` | L3 | served `0.0.62` at 20:42 | release tip `aa0d28f4`: runtime ranges moved with L0 to L2; the generated-manifest fixtures and the CLI audit's test-floor advisory moved with the release; `tests/guides.test.ts` reads guide's renamed API. Uploaded on a one-time code (`publish-scaffold-0.0.62.log.txt`). |
 
+| 20:50 | `@orkestrel/server` | `0.0.18` | L3 | accepted at 20:50 with the processing notice; served SERVER-SERVED-AT | release tip `a8ceab3`. Uploaded on one one-time code with the round, server first (`publish-server.log.txt`). |
+| 20:51 | `@orkestrel/interpret` | `0.0.12` | L3 | accepted at 20:51 with the processing notice | release tip `c9881bb`. Uploaded on one one-time code with the round, server first (`publish-interpret.log.txt`). |
+| 20:51 | `@orkestrel/lsp` | `0.0.6` | L3 | accepted at 20:51 with the processing notice | release tip `ff004ba`. Uploaded on one one-time code with the round, server first (`publish-lsp.log.txt`). |
+| 20:51 | `@orkestrel/qualifier` | `0.0.13` | L3 | served `0.0.13` at 20:51 | release tip `a24b399`. Uploaded on one one-time code with the round, server first (`publish-qualifier.log.txt`). |
+| 20:51 | `@orkestrel/queue` | `0.0.12` | L3 | served `0.0.12` at 20:51 | release tip `04a2644`. Uploaded on one one-time code with the round, server first (`publish-queue.log.txt`). |
+| 20:51 | `@orkestrel/rater` | `0.0.13` | L3 | accepted at 20:51 with the processing notice | release tip `fb9605f`. Uploaded on one one-time code with the round, server first (`publish-rater.log.txt`). |
+| 20:51 | `@orkestrel/relation` | `0.0.11` | L3 | served `0.0.11` at 20:51 | release tip `7691b0e`. Uploaded on one one-time code with the round, server first (`publish-relation.log.txt`). |
+| 20:51 | `@orkestrel/sea` | `0.0.14` | L3 | accepted at 20:51 with the processing notice | release tip `a46be1c`. Uploaded on one one-time code with the round, server first (`publish-sea.log.txt`). |
+| 20:51 | `@orkestrel/terminal` | `0.0.14` | L3 | served `0.0.14` at 20:51 | release tip `0037e59`. Uploaded on one one-time code with the round, server first (`publish-terminal.log.txt`). |
+| 20:51 | `@orkestrel/workspace` | `0.0.7` | L3 | served `0.0.7` at 20:51 | release tip `5b6e5ec`. Uploaded on one one-time code with the round, server first (`publish-workspace.log.txt`). |
+| pending | `@orkestrel/browser` | `0.0.15` | L3 | prepared; upload pending | release tip `92f3d7e`: the HAR creator constant moved with the bump. |
+
 ## The login
 
 The registry answered the web login's polls inconsistently through this host's proxy: the proxy leaves from several addresses, and a poll from an address other than the one that minted the session answers `403 {"message":"forbidden"}`, which npm 10 and npm 11 read as web login unsupported and drop to the legacy prompt. On one kept-alive connection the polls answer `202` every 3 seconds (`instruments/login-diag.sh`). `instruments/login-retry.sh` mints attempts until one survives its first poll and relays that URL; the owner's click landed on the third relayed link at 19:32, and `npm whoami` answered.
