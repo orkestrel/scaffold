@@ -18,7 +18,8 @@ const git = (...args) => execFileSync('git', ['-C', repo, ...args], { encoding: 
 mkdirSync(dir, { recursive: true })
 const untracked = git('ls-files', '--others', '--exclude-standard').split('\n').filter(Boolean)
 if (untracked.length > 0) git('add', '-N', '--', ...untracked)
-const diff = git('diff', base)
+// --text renders a fixture carrying a null byte (brief's tests/src/core/parsers.test.ts) instead of `Binary files differ`.
+const diff = git('diff', '--text', base)
 const status = git('status', '--short')
 writeFileSync(`${dir}/conform-${pkg}.diff`, diff)
 writeFileSync(`${dir}/conform-${pkg}.status`, status)
