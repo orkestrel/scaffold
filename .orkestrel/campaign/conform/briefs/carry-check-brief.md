@@ -1,0 +1,11 @@
+# Lane brief — the retention carry check over the conformance campaign's registers
+
+Role and engine: `grok` (Cursor Grok 4.6), read-only absorption and distillation. Never create, edit, or delete a file; never run a command that changes a tree. Perform the reading directly and spawn nothing.
+
+Objective: apply the carry check of `/home/user/scaffold/.agents/skills/orkestrel-debrief/references/retention.md` § The carry check to the campaign's registers. List every item the campaign folder leaves open — a defect, a measurement to re-take, a deferred decision, a withdrawn claim, an unmet acceptance condition — and, for each, the carrier it names: a landed commit (quote the hash and the file:line that names it), a live or retained brief that owns it (quote the path), or an explicit next-matrix row or drop on the record (quote the file:line). An item with no carrier is the finding.
+
+Registers to read, in this order, under `/home/user/scaffold/.orkestrel/campaign/conform/`: `ledgers/followons.md` (every row), `HANDOFF.md` (the state table and its Landed column), every `units/conform-*-audit-verdict.md` file's rulings and terminal lines, every `units/followon/*-audit-verdict.md`, and `units/round-verdict-draft-grok.result.md` § Open carriers and § Unknowns. Do not read the briefs and reports themselves unless a register points at one for the carrier.
+
+Rules: a next-matrix row is a valid carrier only where the register says so in words (`next matrix`, `next-matrix row`, `successor brief`); a row that says a thing "stays open", "is owed", or "waits" names no carrier unless a later row or a HANDOFF cell closes it (quote the closing line). A landing hash is a carrier only where the register ties the item to that hash.
+
+Output shape, exactly: `## Carried` — a table with columns `item (register file:line)`, `class` (defect, measurement, deferred decision, withdrawn claim, unmet acceptance), `carrier` (commit hash, brief path, or next-matrix row, with its file:line). `## Uncarried` — the same columns with `carrier` reading `none`, and one sentence on what would carry it. `## Stale` — register lines that state a status a later line contradicts (quote both). `## Unknowns` — items you could not classify. Nothing else; no verdicts.
