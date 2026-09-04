@@ -23,4 +23,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 1's refutation closed by fix round 1, verified by the Orchestrator's sweeps on the tree; the R2 guard asserts the `limit` field the buggy form alone mis-reports, the builder's recorded ancillary decision), pending the deciding run at landing.
+PASS (round 1's refutation closed by fix round 1, verified by the Orchestrator's sweeps on the tree; the R2 guard asserts the `limit` field the buggy form alone mis-reports, the builder's recorded ancillary decision; the deciding run at landing read every gate exit 0 and `scaffold audit --offline` clean, landed as toolbox 5c4228c; the `via`/`e.g.` prose sites are the toolbox-prose follow-on).

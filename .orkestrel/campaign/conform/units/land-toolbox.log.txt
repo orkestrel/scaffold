@@ -1,0 +1,7 @@
+toolbox format:check exit=0
+toolbox lint:check exit=0
+toolbox check exit=0
+toolbox build exit=0
+toolbox test exit=0
+toolbox scaffold audit --offline exit=0 clean
+toolbox committed 5c4228c pushed=true paths=28
