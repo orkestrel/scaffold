@@ -9,7 +9,7 @@ Both addendum edits landed first, before any numbered row.
 | Edit | Disposition | Line now |
 | ---- | ----------- | -------- |
 | queue's `QueueExecution` → `QueueContext` | applied | `src/core/types.ts:3` (import), `:43` (`WorkerHandler` third parameter `context: QueueContext`); `src/core/Worker.ts:2` (import), `:154` (`#handle(input, context: QueueContext)`); `src/server/types.ts:3` (import), `:117` (`ServeWorkerOptions.handler` second parameter); `src/server/Dispatch.ts:1` (import), `:58` (`readonly #context: QueueContext`), `:71` (constructor parameter), `:102`/`:106`/`:110`/`:159`/`:209` (`this.#context` reads); `src/server/NodeWorker.ts:4` (import), `:73` (`#handle(input, thread, context: QueueContext)`); `src/server/helpers.ts` — the `dispatch` wrapper that carried the parameter is deleted by worker-obj-1, so the type import left with it |
-| the same substitution in `guides/worker.md` | applied | `:19` (`context.signal`), `:108` (`WorkerHandler` shape row `(input, resource, context)`), `:113` (`ServeWorkerOptions` row `QueueContext`), `:155`, `:158`, `:204`, `:205`, `:210`, `:286`, `:439` |
+| the same substitution in `guides/worker.md` | applied | `:19` (`context.signal`), `:108` (`WorkerHandler` shape row `(input, resource, context)`), `:113` (`ServeWorkerOptions` row `QueueContext`), `:159`, `:162`, `:208`, `:209`, `:215`, `:291`, `:453` |
 | guide's `symbol.kind` → `symbol.keyword` | applied | `tests/guides.test.ts:143` — `.filter((symbol) => symbol.keyword === 'function')` |
 
 Failing-first evidence for the pair: `npm run check` at the committed baseline `9eb4bdd` reported 7 errors — 6 `TS2305: Module '"@orkestrel/queue"' has no exported member 'QueueExecution'` and 1 `TS2339: Property 'kind' does not exist on type 'SurfaceSymbol'` (`/home/user/work/evidence/worker-proofs/baseline-check.txt`). The same command after the two edits exits 0 (`/home/user/work/evidence/worker-proofs/consumer-edits-check.txt`).
@@ -157,7 +157,7 @@ Sweep: `grep -rn "core/workers/" tests src guides README.md` — no output.
 
 `NodeWorker` captures them into `readonly #on` and `readonly #error` (`src/server/NodeWorker.ts:19-20`, assigned at `:32-33`) and threads them into `createWorker` with the same conditional-spread form as the other optional members (`:52-53`).
 
-`guides/worker.md:112` lists `on?` / `error?` on the `NodeWorkerOptions` row, and `:322-324` states that a thread worker takes the same `on` and `error` hooks as the core worker.
+`guides/worker.md:112` lists `on?` / `error?` on the `NodeWorkerOptions` row, and `:326-328` states that a thread worker takes the same `on` and `error` hooks as the core worker.
 
 `tests/src/server/factories.test.ts:135-160` proves it end to end: an `on: { success }` hook fires for a `createNodeWorker` job, and the throw from that same listener reaches the supplied `error` handler.
 
@@ -180,9 +180,9 @@ Sweep: `grep -rnE "defaults to|\(default " src` returns no output after fix roun
 
 The refuter's operative form plus the sites the re-run sweep found.
 
-- `should` → `must`: `guides/worker.md:235`, `:442`.
-- `just` deleted or recast: `guides/worker.md:250`, `:434`; `src/server/factories.ts:50-52`; `tests/src/server/helpers.test.ts:495`; `tests/src/server/handlers.test.ts:183-184`; `tests/src/server/fixtures/throw-async.ts:4`.
-- `via` → `through`: `README.md:13`; `guides/worker.md:346`, `:442`; `src/server/types.ts` (the `workerData` bullet, rewritten wholesale by worker-subj-15); `src/server/factories.ts` (the `spawnThread` parenthetical, removed by worker-obj-1); `tests/src/core/Worker.test.ts:932`; `tests/src/server/helpers.test.ts:771`.
+- `should` → `must`: `guides/worker.md:239`, `:457`.
+- `just` deleted or recast: `guides/worker.md:254`, `:454`; `src/server/factories.ts:50-52`; `tests/src/server/helpers.test.ts:495`; `tests/src/server/handlers.test.ts:183-184`; `tests/src/server/fixtures/throw-async.ts:4`.
+- `via` → `through`: `README.md:13`; `guides/worker.md:356`, `:456`; `src/server/types.ts` (the `workerData` bullet, rewritten wholesale by worker-subj-15); `src/server/factories.ts` (the `spawnThread` parenthetical, removed by worker-obj-1); `tests/src/core/Worker.test.ts:932`; `tests/src/server/helpers.test.ts:771`.
 - Temporal `once` → `after`: `guides/worker.md` §Threads table (the `createThread` row, rewritten by worker-obj-1) and the `createThread` TSDoc at `src/server/factories.ts:11-12`, plus the sites the refuter's sweep did not name and I ruled temporal — `tests/src/server/fixtures/identify.ts:8`, `tests/src/server/fixtures/abortable.ts:2`, `tests/src/server/handlers.test.ts:130`, `tests/src/server/helpers.test.ts:488`, `tests/src/core/Worker.test.ts:620`, and `tests/src/core/Worker.test.ts:1074`.
 - Count: `src/server/handlers.ts:55-56` reads "Read the envelope's `command`, `id`, `job`, and `input` fields once, defensively."
 
@@ -195,13 +195,13 @@ Closing sweeps, each over `README.md guides/worker.md guides/README.md src tests
 
 ### worker-subj-10 — applied
 
-An introducing sentence now precedes each bare table and list the evidence named: `guides/worker.md` §Factories (`:53`), §Threads table (`:86`), §Entities (`:95`), §Types (`:104`), the event-map table under §Observing (`:373`), §Practices (`:441`), §Tests (`:474`), §See also (`:548`); `guides/README.md` §By concept (`:7`) and §By directory (`:13`); `README.md` §Requirements (`:30`). Fix round 1 deleted the citation-only `guides/README.md` See-also section. The fences at `guides/worker.md:37` and the Threads fence keep their existing introductions.
+An introducing sentence now precedes each bare table and list the evidence named: `guides/worker.md` §Factories (`:53`), §Threads table (`:86`), §Entities (`:95`), §Types (`:104`), the event-map table under §Observing (`:373`), §Practices (`:451`), §Tests (`:474`), §See also (`:572`); `guides/README.md` §By concept (`:7`) and §By directory (`:15`); `README.md` §Requirements (`:30`). Fix round 1 deleted the citation-only `guides/README.md` See-also section. The fences at `guides/worker.md:37` and the Threads fence keep their existing introductions.
 
 Ancillary decision recorded: the §Patterns fences `### A resource-backed worker`, `### CPU-parallel jobs over threads`, and `### Durable jobs across restarts` sat bare under their headings and the evidence did not list them. The same rule sentence reaches a code fence, they are inside Owned, and closing them costs one sentence each, so each now carries an introduction. No vendored dependency guide was touched.
 
 ### worker-subj-11 — applied
 
-`src/server/types.ts:8-10` reads "the reply half of the wire protocol `createNodeWorker` posts and `serveWorker` answers", and the sentence beginning "Internal plumbing rather than public call surface" is deleted. `guides/worker.md:114` (the `Reply` Surface row) reads "the reply half of the wire protocol". `guides/worker.md:200` reads "The run/abort/reply protocol is published as `Reply` and `isReply`:". The barrel is unchanged for these symbols; the INTERNAL list changed only for `Dispatch`, which is worker-obj-1's edit.
+`src/server/types.ts:8-10` reads "the reply half of the wire protocol `createNodeWorker` posts and `serveWorker` answers", and the sentence beginning "Internal plumbing rather than public call surface" is deleted. `guides/worker.md:115` (the `Reply` Surface row) reads "the reply half of the wire protocol". `guides/worker.md:204` reads "The run/abort/reply protocol is published as `Reply` and `isReply`:". The barrel is unchanged for these symbols; the INTERNAL list changed only for `Dispatch`, which is worker-obj-1's edit.
 
 Sweep: `grep -rn "internal wire protocol\|Internal plumbing" src guides/worker.md` — no output.
 
@@ -211,16 +211,16 @@ The Threads fence at `guides/worker.md:69-84` exercises every symbol it imports 
 
 ### worker-subj-14 — applied
 
-- `guides/worker.md:283-286` — the clause "Existing handlers that ignore the execution or destructure only `signal` remain source-compatible;" is deleted and the sentence starts at "The handler's resolved value is the reply:".
-- `:285` — "`signal` is per attempt and fires on a cooperative abort."
-- `:306` — "Per-job consumer context is explicit, structured-cloneable `TInput`."
+- `guides/worker.md:294` — the clause "Existing handlers that ignore the execution or destructure only `signal` remain source-compatible;" is deleted and the sentence starts at "The handler's resolved value is the reply:".
+- `:293-294` — "`signal` is per attempt and fires on a cooperative abort."
+- `:310` — "Per-job consumer context is explicit, structured-cloneable `TInput`."
 - `:64-67` — "Exported for completeness and direct use; the factory is the intended entry point." is replaced by "Use these to drive one thread yourself; `createNodeWorker` is the entry point for pooled, queued work."
 
-Sweep for `remain`, `remains`, and `still` over `guides/worker.md guides/README.md README.md src`: each remaining hit is concessive within a described case ("a throwing handler still frees the resource", "the pooled worker remains usable after the failure", "that reason remains first in `AggregateError.errors`") and stays. These asserted continuity with an unstated earlier state and were rewritten: `guides/worker.md:12` "runtime `null` remains invalid" → "is invalid"; `guides/worker.md:242` and `src/server/types.ts:60` "a built `.js` / `.mjs` script remains an alternative" → "is an alternative"; `README.md:19` "remains explicit structured-cloneable input" → "is explicit, structured-cloneable input"; `src/server/NodeWorker.ts:16` "The resulting public entity remains the plain core `WorkerInterface`" → "is the plain core `WorkerInterface`". The `src/server/helpers.ts` site the row named ("Per-job consumer context remains explicit") moved into the `Dispatch` TSDoc with worker-obj-1 and reads "is explicit" there.
+Sweep for `remain`, `remains`, and `still` over `guides/worker.md guides/README.md README.md src`: each remaining hit is concessive within a described case ("a throwing handler still frees the resource", "the pooled worker remains usable after the failure", "that reason remains first in `AggregateError.errors`") and stays. These asserted continuity with an unstated earlier state and were rewritten: `guides/worker.md:12` "runtime `null` remains invalid" → "is invalid"; `guides/worker.md:246-247` and `src/server/types.ts:60` "a built `.js` / `.mjs` script remains an alternative" → "is an alternative"; `README.md:19` "remains explicit structured-cloneable input" → "is explicit, structured-cloneable input"; `src/server/NodeWorker.ts:16` "The resulting public entity remains the plain core `WorkerInterface`" → "is the plain core `WorkerInterface`". The `src/server/helpers.ts` site the row named ("Per-job consumer context remains explicit") moved into the `Dispatch` TSDoc with worker-obj-1 and reads "is explicit" there.
 
 ### worker-subj-15 — applied
 
-The key name is unchanged. The licence is completed at `src/server/types.ts:65-67`: "`workerData` — opaque data cloned to every thread at spawn; the key mirrors the `node:worker_threads` `Worker` constructor option of the same name, and the thread reads it back from `node:worker_threads`. It must be structured-cloneable." The same source sentence is added to the structured-clone paragraph at `guides/worker.md:319-321`.
+The key name is unchanged. The licence is completed at `src/server/types.ts:65-67`: "`workerData` — opaque data cloned to every thread at spawn; the key mirrors the `node:worker_threads` `Worker` constructor option of the same name, and the thread reads it back from `node:worker_threads`. It must be structured-cloneable." The same source sentence is added to the structured-clone paragraph at `guides/worker.md:322-324`.
 
 ### fleet-F1 — noop
 
@@ -340,9 +340,9 @@ The `AGENTS[^\n]*§` population is empty after these rewrites:
 - `tests/setupServer.ts:1-3,19-21,36-39` — retained the environment boundary, shared fixture factory, and scratch ownership.
 - `tests/guides.test.ts:1-5` — retained the package's multi-directory guide-module description.
 - `guides/worker.md:20,127,155,178,190,249-251,355` — retained each observable-surface, parity, and raw-worker statement without a rule pointer.
-- `guides/worker.md:570-581` — removed the citation-only `AGENTS.md` list item.
+- `guides/worker.md:570-582` — removed the citation-only `AGENTS.md` list item.
 - `guides/README.md:3` — retained the dual-axis index description.
-- `guides/README.md:60-66` — removed the citation-only See-also section.
+- `guides/README.md` — removed the citation-only See-also section; no line carries it, and the file ends at `:65` with the `guide.md` mirror paragraph.
 
 ### Claim 3 — sweeps
 
@@ -470,7 +470,7 @@ A report-wide re-sweep for a growable-set tally also reached `:22` ("the six sou
 
 ### O3 — pre-existing prose
 
-Each rewrite holds its file's line count, so every `file:line` pointer elsewhere in this report stays valid.
+Fix round 4 re-derived every `guides/worker.md` and `guides/README.md` pointer in this report from the working tree at `/home/user/fleet/worker`, reading each cited line after that round's own edit to `guides/worker.md`. § Fix round 4 lists each pointer it moved.
 
 - `tests/src/server/helpers.test.ts:203` — "the eviction tests below" is "the `in-flight signal abort` eviction suite", naming the suite the `concurrency: 1` choice serves.
 - `tests/src/server/helpers.test.ts:206` — "That handoff now re-validates the released resource" is "That handoff re-validates the released resource".
@@ -510,3 +510,140 @@ Read in this exec against the restored tree. No capture file was written, becaus
 **Observation, not a criterion.** Every reading was taken inside this unit's own exec with its harness resident. The Orchestrator's deciding run belongs after this unit exits.
 
 `git status --short` lists the paths the Files touched table names, and nothing new.
+
+## Fix round 4
+
+Closes O1 to O4 of the round-4 objective lane at
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/worker-objective-r4.md`. The round-4
+checker passed every claim. Referrals R1, R2, and R3 are the Orchestrator's and are not this
+round's work.
+
+### O1 — the added `(§8)` in published TSDoc
+
+`src/server/types.ts:76`.
+
+- Before: `` * - `on` — the reserved {@link EmitterHooks} key (§8): initial listeners for the worker's ``
+- After: `` * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the worker's ``
+
+`grep -n '§' src/server/types.ts` returns no hit at `:76`. The pre-existing bare `§` citations at
+`src/core/types.ts:21,62`, `src/core/factories.ts:15`, `src/core/Worker.ts:28,36,50`, and
+`tests/src/server/handlers.test.ts:14` are untouched; R3 carries them.
+
+### O2 — the `legacy` envelope in a comment
+
+`src/server/handlers.ts:85`.
+
+- Before: `// stable Queue entry id handed to the handler. A legacy or malformed envelope`
+- After: `// stable Queue entry id handed to the handler. A malformed envelope`
+
+The comment now states the condition the code at `:87` tests: `command !== 'run' || typeof job !== 'string' || !carried`. `grep -n 'legacy' src/server/handlers.ts` returns nothing. Lines `:84` and `:86` are outside this round's Owned set, so the comment block was not rewrapped.
+
+### O3 — the report's guide pointers
+
+The sentence at report `:473` claimed every `file:line` pointer stayed valid. That was false. Each
+`guides/worker.md` and `guides/README.md` pointer in this report was re-derived by opening the
+cited line in `/home/user/fleet/worker` after this round's `guides/worker.md` edit, which adds one
+line at `:563` and shifts every later line by one.
+
+The sweep ran twice: `grep -nE 'guides/worker\.md:[0-9]|guides/README\.md:[0-9]'` over this report,
+and a second read of every line that names `guides/` without an attached number, which is how the
+pointer list at report `:12` and the bare pointers at report `:215-216` were reached.
+
+Pointers moved:
+
+| Report line | Old | New | Text it opens on |
+| --- | --- | --- | --- |
+| `:12` | `guides/worker.md:155` | `:159` | `` `context.signal`, runs the caller's handler against it `` |
+| `:12` | `:158` | `:162` | `` `context.signal` keeps its leased resource until it returns `` |
+| `:12` | `:204` | `:208` | `` `job` is the Queue entry's stable `QueueContext.id` `` |
+| `:12` | `:205` | `:209` | `` exposed to the thread handler as `context.id` `` |
+| `:12` | `:210` | `:215` | `` termination rejects with the exact `context.signal.reason` `` |
+| `:12` | `:286` | `:291` | `` the Queue's `{ id, signal }` context `` |
+| `:12` | `:439` | `:453` | `` - **Honour `context.signal`** `` |
+| `:160` | `guides/worker.md:322-324` | `:326-328` | the thread worker's shared `on` and `error` hooks |
+| `:183` | `guides/worker.md:235` | `:239` | `` `TInput` / `TResult` / `workerData` must be structured-cloneable `` |
+| `:183` | `:442` | `:457` | `` only when the resource cap must diverge from the job cap `` |
+| `:184` | `guides/worker.md:250` | `:254` | `` A queue's durable state is a `@orkestrel/database` table `` |
+| `:184` | `:434` | `:454` | `` actually stop work rather than abandoning `` |
+| `:185` | `guides/worker.md:346` | `:356` | `` Subscribe through `` |
+| `:185` | `:442` | `:456` | `` - **Size the pool through `concurrency`** `` |
+| `:198` | `guides/worker.md:441` | `:451` | `Follow these practices when you run a worker in production:` |
+| `:198` | `:548` | `:572` | `Read these guides next:` |
+| `:198` | `guides/README.md:13` | `:15` | `Each source directory and the guide that documents it:` |
+| `:204` | `guides/worker.md:114` | `:115` | the `Reply` Surface row |
+| `:204` | `guides/worker.md:200` | `:204` | `` The run/abort/reply protocol is published as `Reply` and `isReply` `` |
+| `:214` | `guides/worker.md:283-286` | `:294` | `The handler's resolved value is the reply:` |
+| `:215` | `:285` | `:293-294` | `` `signal` is per attempt and fires on a cooperative abort. `` |
+| `:216` | `:306` | `:310` | `` Per-job consumer context is explicit, structured-cloneable `TInput`. `` |
+| `:219` | `guides/worker.md:242` | `:246-247` | `` A built `.js` / `.mjs` script is an alternative `` |
+| `:223` | `guides/worker.md:319-321` | `:322-324` | the `workerData` mirror sentence |
+| `:343` | `guides/worker.md:570-581` | `:570-582` | the See-also section the `AGENTS.md` item was removed from |
+| `:345` | `guides/README.md:60-66` | no line | the section was deleted, so the pointer names the file and its end |
+
+Pointers re-derived and found already correct: report `:12` (`:19`, `:108`, `:113`); `:88` and
+`:461` (`guides/worker.md:213`); `:160` (`:112`); `:198` (`:37`, `:53`, `:86`, `:95`, `:104`,
+`:373`, `:474`, and `guides/README.md:7`); `:210` (`:69-84`); `:219` (`:12`); `:342` (`:20`,
+`:127`, `:155`, `:178`, `:190`, `:249-251`, `:355`); `:344` (`guides/README.md:3`); `:350`
+(`:225`, `:320`); `:482` (`:384-386`); `:483`, `:485`, and `:489` (`:351`).
+
+### O4 — the fixtures paragraph's type-stripping claim
+
+`guides/worker.md:560-562`, rewritten under the Orchestrator's ruling.
+
+- Before:
+
+```text
+  real `.ts` worker scripts loaded by Node's type-stripping. Raw TypeScript is unflagged on
+  Node 22.18+ and Node 23.6+; on Node 22.12–22.17 and Node 23.0–23.5 the `src:server` Vitest
+  project supplies `--experimental-strip-types`. Ordinary fixtures import `serveWorker` by
+```
+
+- After (`guides/worker.md:560-563`):
+
+```text
+  real `.ts` worker scripts. The Vitest projects supply no type-stripping flag, so the
+  `src:server` and `guides` suites load the fixtures through Node's unflagged type stripping
+  and run on Node 22.18+ and Node 23.6+ — a narrower floor than the `>=22.12.0` engine range
+  in `package.json`. Ordinary fixtures import `serveWorker` by
+```
+
+The rewrite states what the configuration does and drops the claim that `src:server` supplies
+`--experimental-strip-types`. `vite.config.ts:87-94` declares `name`, `include`, `exclude`,
+`setupFiles`, `environment`, and `browser` for `srcServer`, with no `execArgv` and no
+`poolOptions`; `package.json:106-108` declares `"node": ">=22.12.0"`. The paragraph names the
+`guides` suite, which worker-obj-9 moved raw `.ts` thread spawning into. It makes no claim about
+what the flag would do on an earlier Node version: this host runs Node v22.22.2, so no run taken
+here can settle that.
+
+`guides/worker.md:246-247` and `src/server/types.ts:58-60` are unchanged. They state Node's own
+documented behaviour for a consumer's worker script, not a claim about this package's test
+configuration.
+
+### Ancillary decisions
+
+1. The O4 replacement holds the flag token out of the fixtures paragraph entirely, rather than
+   naming it in a negated sentence. Acceptance criterion 3 requires the
+   `experimental-strip-types` sweep over `guides/worker.md` to return the consumer-script
+   statement alone, and a negated mention would still match the pattern.
+2. The rewrite runs to four lines where the original ran to three, so `guides/worker.md` gains one
+   line and every pointer past `:562` moves by one. The O3 re-derivation was taken after this edit,
+   so the table's new numbers are the landing numbers.
+
+### Observations, not criteria
+
+1. Acceptance criterion 3 names `guides/worker.md:247` as the surviving
+   `experimental-strip-types` hit. The token sits at `:246`
+   (`` 23.0–23.5 require `--experimental-strip-types`. A built `.js` / `.mjs` script is an ``),
+   and the statement wraps across `:246-247`. No edit in this round precedes `:246`, so that line
+   cannot move. The criterion's substance holds: the sweep returns the consumer-script statement
+   and nothing else.
+2. `git diff -U0 guides/worker.md` shows a third `via` → `through` rewrite in this file, at
+   `guides/worker.md:228` (`` A death mid-flight still rejects through the dispatch's own ``),
+   which the row at report `:185` does not name. The two pointers that row does carry were
+   re-derived and are correct. Naming the third site would change what the row claims its sweep
+   found, so it is recorded here for a successor rather than added to the row.
+
+### Gates
+
+Every reading was taken inside this unit's own exec with its harness resident. The Orchestrator's
+deciding run belongs after this unit exits.

@@ -1,0 +1,2737 @@
+diff --git a/README.md b/README.md
+index 2c35690..f9845a2 100644
+--- a/README.md
++++ b/README.md
+@@ -10,13 +10,13 @@ observable (a typed `emitter` re-exposes the underlying queue's job lifecycle
+ — `enqueue` / `start` / `retry` / `success` / `failure` / `abort` / `drain`).
+ For CPU-parallel work, the server surface's `createNodeWorker` specializes the
+ core `createWorker` over a pool of `node:worker_threads`, crossing the
+-structured-clone boundary with zero `as` via `input` / `result` guards. Each
++structured-clone boundary with zero `as` through `input` / `result` guards. Each
+ thread handler receives `{ id, signal }`: `id` is the Queue's stable idempotency
+ key across retries and crash restore, while `signal` is per attempt. The wire
+ protocol separately mints a fresh correlation id for each dispatch so a stale
+ reply cannot settle a later retry. The stable id identifies work, not a caller,
+ and is not authentication or authorization evidence; per-job consumer context
+-remains explicit structured-cloneable input rather than ambient thread state.
++is explicit, structured-cloneable input rather than ambient thread state.
+ Part of the `@orkestrel` line.
+ 
+ ## Install
+@@ -27,6 +27,8 @@ npm install @orkestrel/worker
+ 
+ ## Requirements
+ 
++The package runs under these conditions:
++
+ - Node.js >= 22.12.0
+ - ESM and CommonJS builds ship for both the core and server entry points
+ 
+@@ -72,7 +74,7 @@ patterns — see [`guides/worker.md`](guides/worker.md).
+ 
+ ## Package
+ 
+-Published with two entry points per the `exports` field in `package.json`:
++Published with the entry points the `exports` field in `package.json` names:
+ the environment-agnostic core (`.`) and the Node-only server surface
+ (`./server`).
+ 
+diff --git a/guides/README.md b/guides/README.md
+index 6a1a39e..09c936f 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -1,15 +1,19 @@
+ # Guides
+ 
+-A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).
++A dual-axis index into this repository's guides — by concept, and by directory.
+ 
+ ## By concept
+ 
++Each concept this repository documents, with its spec, source, and tests:
++
+ | Concept | Spec                     | Source                                                   | Tests                                                                            |
+ | ------- | ------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
+ | Worker  | [`worker.md`](worker.md) | [`src/core`](../src/core), [`src/server`](../src/server) | [`tests/src/core`](../tests/src/core), [`tests/src/server`](../tests/src/server) |
+ 
+ ## By directory
+ 
++Each source directory and the guide that documents it:
++
+ | Directory    | Guide                    |
+ | ------------ | ------------------------ |
+ | `src/core`   | [`worker.md`](worker.md) |
+@@ -59,7 +63,3 @@ suite (`tests/guides.test.ts`). It documents **that package's**
+ surface (`Guide` / `Source`, the manifest and comparison helpers), not
+ anything sourced in this repo; it is kept here so a reader of the parity suite
+ can see the primitives it is built from without leaving this guide set.
+-
+-## See also
+-
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
+diff --git a/guides/worker.md b/guides/worker.md
+index b397432..45a4cb6 100644
+--- a/guides/worker.md
++++ b/guides/worker.md
+@@ -9,15 +9,15 @@
+ > reimplement either primitive.
+ >
+ > Construction captures every caller-owned top-level option once. Only `undefined` selects
+-> the `concurrency` default (`1`) or matching pool `max`; runtime `null` remains invalid and
++> the `concurrency` default (`1`) or matching pool `max`; runtime `null` is invalid and
+ > reaches the owning validator. Queue is constructed and validates `concurrency` before the
+ > caller's pool option is read; then every declared pool option (`max`, `on`, `error`, `create`,
+ > `destroy`, `validate`) is captured once by direct property access before Pool is constructed,
+ > preserving structural implementations whose members are inherited or non-enumerable.
+ > At most one resource exists per in-flight job by default, and idle resources are reused
+ > across jobs. Each job acquires over the
+-> attempt's `execution.signal`, so an abort / timeout while waiting for a resource rejects
+-> the acquire cleanly (no token to release). The worker is **observable** (AGENTS §13): its
++> attempt's `context.signal`, so an abort / timeout while waiting for a resource rejects
++> the acquire cleanly (no token to release). The worker is **observable**: its
+ > `emitter` RE-EXPOSES the underlying queue's job lifecycle (`enqueue` / `start` / `retry` /
+ > `success` / `failure` / `abort` / `drain`) as its own events, bridged at construction, so a
+ > consumer never reaches through to the internal `Queue`.
+@@ -50,6 +50,8 @@ await worker.destroy() // awaits queue cleanup, then pool cleanup, then emitter
+ 
+ ### Factories
+ 
++Each factory the package publishes, with the entry point it belongs to:
++
+ | API                    | Kind     | Summary                                                                                               |
+ | ---------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+ | `createWorker`         | function | Create a `WorkerInterface` — a `Queue` ⨉ `Pool`; each job runs against an acquired resource.          |
+@@ -60,52 +62,60 @@ await worker.destroy() // awaits queue cleanup, then pool cleanup, then emitter
+ ### Threads
+ 
+ The lower-level `node:worker_threads` machinery `createNodeWorker` composes over
+-(`@orkestrel/worker/server`) — the thread-pool lifecycle hooks behind the public factory. Exported
+-for completeness and direct use; the factory is the intended entry point. Driving a
+-thread by hand:
++(`@orkestrel/worker/server`) — the thread-pool lifecycle hooks behind the public factory. Use
++these to drive one thread yourself; `createNodeWorker` is the entry point for pooled, queued
++work. Driving a thread by hand:
+ 
+ ```ts
+-import { dispatch, isReply, spawnThread } from '@orkestrel/worker/server'
++import { createThread, Dispatch, isReply } from '@orkestrel/worker/server'
+ 
+ const isNumber = (value: unknown): value is number => typeof value === 'number'
+ 
+-const thread = await spawnThread(new URL('./double.ts', import.meta.url), undefined)
++const thread = await createThread(new URL('./double.ts', import.meta.url))
+ const controller = new AbortController()
+ try {
+-	const result = await dispatch(thread, 21, { id: 'job-1', signal: controller.signal }, isNumber)
+-	// `isReply` is the total predicate `dispatch` uses internally to filter replies by job id.
++	const job = new Dispatch(thread, 21, { id: 'job-1', signal: controller.signal }, isNumber)
++	console.log(await job.promise) // 42
++	console.log(isReply({ id: 'reply-1', ok: true, value: 42 }, 'reply-1')) // true
++	console.log(isReply({ id: 'reply-1', ok: true, value: 42 }, 'other')) // false
+ } finally {
+ 	await thread.worker.terminate()
+ }
+ ```
+ 
+-| API           | Kind     | Summary                                                                                                           |
+-| ------------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+-| `spawnThread` | function | Spawn one worker thread and resolve a live `NodeThread` once it comes `online` (a death before `online` rejects). |
+-| `dispatch`    | function | Post a job to a leased `NodeThread` and await its reply, narrowed through its result guard.                       |
+-| `isReply`     | function | Narrow an inbound message to a `Reply` for a job id (total, correlated) — `dispatch`'s filter.                    |
++The thread-level functions behind `createNodeWorker`:
++
++| API            | Kind     | Summary                                                                                                          |
++| -------------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
++| `createThread` | function | Create one worker thread and resolve a live `NodeThread` after it comes `online` (an earlier death rejects).     |
++| `isReply`      | function | Narrow an inbound message to a `Reply` for a correlation id (total, correlated) — a `Dispatch`'s message filter. |
+ 
+ ### Entities
+ 
+-| API      | Kind  | Summary                                                          |
+-| -------- | ----- | ---------------------------------------------------------------- |
+-| `Worker` | class | A resource-backed job worker — a `Queue` composed with a `Pool`. |
++The classes the core and server faces export:
++
++| API        | Kind  | Summary                                                                                 |
++| ---------- | ----- | --------------------------------------------------------------------------------------- |
++| `Dispatch` | class | One job posted to a leased `NodeThread`; its `promise` settles with the narrowed reply. |
++| `Worker`   | class | A resource-backed job worker — a `Queue` composed with a `Pool`.                        |
+ 
+ ### Types
+ 
++Each type and interface the core and server faces publish:
++
+ | Type                 | Kind      | Shape                                                                                                                                                          |
+ | -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `WorkerHandler`      | type      | `(input, resource, execution) => Promise<TResult> \| TResult` — runs one job against a leased pool resource.                                                   |
++| `WorkerHandler`      | type      | `(input, resource, context) => Promise<TResult> \| TResult` — runs one job against a leased pool resource.                                                     |
+ | `WorkerOptions`      | interface | `createWorker` options — `handler` + `pool` + `concurrency?` / `retries?` / `timeout?` / `store?` / `on?` / `error?`.                                          |
+ | `WorkerInterface`    | interface | `emitter` / `count` / `active` / `paused` / `stopped` data members + the lifecycle + `enqueue` / `restore` methods.                                            |
+ | `WorkerEventMap`     | type      | The `Worker`'s observable events — the queue lifecycle it surfaces (`enqueue` / `start` / `retry` / `success` / `failure` / `abort` / `drain`).                |
+-| `NodeWorkerOptions`  | interface | `createNodeWorker` options — `script` + `input` / `result` guards + `workerData?` / `concurrency?` / `retries?` / `timeout?` / `store?`.                       |
+-| `ServeWorkerOptions` | interface | `serveWorker` options — the `input` guard + the `handler` (receives the narrowed input + Queue `QueueExecution` `{ id, signal }`).                             |
++| `NodeWorkerOptions`  | interface | `createNodeWorker` options — `script` + `input` / `result` guards + `workerData?` / `concurrency?` / `retries?` / `timeout?` / `store?` / `on?` / `error?`.    |
++| `ServeWorkerOptions` | interface | `serveWorker` options — the `input` guard + the `handler` (receives the narrowed input + Queue `QueueContext` `{ id, signal }`).                               |
+ | `NodeThread`         | interface | A leased worker thread + readonly `alive` / latched `death` observations (backed by private lifecycle state) — the pooled resource `createNodeWorker` runs on. |
+-| `Reply`              | type      | A thread→main reply envelope — `{ id, ok: true, value }` or `{ id, ok: false, error }`; the internal wire protocol.                                            |
++| `Reply`              | type      | A thread→main reply envelope — `{ id, ok: true, value }` or `{ id, ok: false, error }`; the reply half of the wire protocol.                                   |
+ 
+ The `emitter` / `count` / `active` / `paused` / `stopped` members of `WorkerInterface` are
+-`readonly` data members (Surface rows, above) — `emitter` is the typed push observation
++`readonly` data members (Surface rows, earlier) — `emitter` is the typed push observation
+ surface (see [Observing](#observing)); the call-signature methods are documented under
+ [Methods](#methods). `Queue` / `Pool` themselves — and their own options, event maps, and
+ stores — are documented in their own packages: [queue.md](queue.md) / [pool.md](pool.md).
+@@ -114,7 +124,7 @@ stores — are documented in their own packages: [queue.md](queue.md) / [pool.md
+ 
+ The public methods of `WorkerInterface` — every call-signature member listed (its
+ `readonly` data members stay Surface rows). `Worker` implements `WorkerInterface`
+-exactly, so this doubles as the class's instance-method surface (AGENTS §22).
++exactly, so this doubles as the class's instance-method surface.
+ 
+ | Method    | Returns            | Behavior                                                                                           |
+ | --------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+@@ -142,14 +152,14 @@ These invariants hold across `src/core` ↔ `worker.md`:
+ 
+ 1. **DOC ↔ SOURCE bijection.** Every `function` / `class` / `interface` / `type` row in
+    the `## Surface` tables is a real export of the worker module, and every export
+-   appears as a Surface row — exhaustive, both directions (AGENTS §22).
++   appears as a Surface row — exhaustive, both directions.
+ 2. **Composition, not reimplementation.** A `Worker` does not reimplement concurrency /
+    retry / lifecycle — it composes a `Queue` (`@orkestrel/queue`) with a `Pool`
+    (`@orkestrel/pool`). Its queue handler `acquire`s a resource over the attempt's
+-   `execution.signal`, runs the caller's handler against it, and `release`s it in a
++   `context.signal`, runs the caller's handler against it, and `release`s it in a
+    `finally` (so a throwing or aborted handler still frees the resource). Because the
+    `finally` runs only when the handler actually settles, a handler that IGNORES its
+-   `execution.signal` keeps its leased resource until it returns — so on a timeout /
++   `context.signal` keeps its leased resource until it returns — so on a timeout /
+    abort the resource can outlive the freed queue slot; a cooperative handler that
+    honours the signal releases promptly. Construction snapshots every caller-owned
+    top-level option once. Only `undefined` defaults `concurrency` or pool `max`; runtime
+@@ -165,7 +175,7 @@ These invariants hold across `src/core` ↔ `worker.md`:
+    settlement serially, aggregates two failures in that order, and destroys the worker
+    emitter last.
+ 3. **Observable — the queue lifecycle re-exposed.** The `Worker` owns a typed `Emitter`
+-   (AGENTS §13) exposed as `readonly emitter` carrying `WorkerEventMap<TResult>`
++   exposed as `readonly emitter` carrying `WorkerEventMap<TResult>`
+    (`enqueue` / `start` / `retry` / `success` / `failure` / `abort` / `drain`), bridged
+    from the underlying queue's own emitter at construction — each bridge listener
+    re-emits directly on the worker's emitter and never throws, so the inner queue's own
+@@ -177,44 +187,45 @@ These invariants hold across `src/core` ↔ `worker.md`:
+    concern — observe a `Pool` directly for those.
+ 4. **DOC ↔ SOURCE method bijection.** The `## Methods` table lists exactly the public
+    methods of `WorkerInterface` — exhaustive, both directions — and `Worker` exposes
+-   the same public methods as its interface, no more (AGENTS §22).
++   the same public methods as its interface, no more.
+ 5. **`createNodeWorker` is a thread specialization of `createWorker` (`@orkestrel/worker/server`).**
+    It does NOT reimplement concurrency / retry / timeout / lifecycle — it calls
+    `createWorker` with a `Pool` whose resource is a `node:worker_threads` thread
+-   (`create` = `spawnThread`, `destroy` = `terminate()`, `validate` = `alive &&
+-threadId > 0`) and an internal handler that narrows the input through
+-   `options.input` then `dispatch`es the job to the leased thread. Both generics INFER
+-   from the `input` / `result` guards, so a call site needs no type argument. The
+-   structured-clone boundary is crossed with ZERO `as`: `dispatch` narrows each reply
++   (`create` = the spawn `createThread` publishes, `destroy` = `terminate()`,
++   `validate` = `alive && threadId > 0`) and an internal handler that narrows the input
++   through `options.input` then runs a `Dispatch` against the leased thread. Both generics
++   INFER from the `input` / `result` guards, so a call site needs no type argument. The
++   structured-clone boundary is crossed with ZERO `as`: a `Dispatch` narrows each reply
+    value through `options.result` (a value that fails it rejects with `'reply did not
+ satisfy result guard'`), and the worker side narrows each payload through
+    `options.input` (a bad input replies `'input did not satisfy input guard'`) —
+    `TInput` / `TResult` are reconstructed by validation, never asserted. A throwing
+    caller guard is contained and rejects only that job; the pooled worker remains usable.
+-   The run/abort/reply protocol is internal: main → thread posts
++   The run/abort/reply protocol is published as `Reply` and `isReply`: main → thread posts
+    `{ id, job, command: 'run', input }` / `{ id, command: 'abort' }`; thread → main posts
+    `{ id, ok: true, value }` / `{ id, ok: false, error }`. The run `id` is a fresh
+    per-dispatch correlation key used exclusively for replies, aborts, controllers, and
+-   listeners; `job` is the Queue entry's stable `QueueExecution.id`, preserved across retry
+-   attempts and crash restore and exposed to the thread handler as `execution.id`. A run
++   listeners; `job` is the Queue entry's stable `QueueContext.id`, preserved across retry
++   attempts and crash restore and exposed to the thread handler as `context.id`. A run
+    without a string `job` fails closed: the handler is not invoked and no reply is sent.
+ 6. **Abort TERMINATES + evicts the thread without losing its cause.** Because CPU-bound
+    work cannot honour an `AbortSignal`, an `abort` / `timeout` posts the cooperative
+-   `abort`, flips `alive = false`, and observes `terminate()` settlement. Successful
+-   termination rejects with the exact `execution.signal.reason`. If the cooperative post
++   `abort`, flips `alive = false` for a thread this package produced, and observes
++   `terminate()` settlement. Successful
++   termination rejects with the exact `context.signal.reason`. If the cooperative post
+    fails, that reason remains first in `AggregateError.errors`, followed by the notification
+    failure, with message `worker abort notification failed`. A termination failure rejects
+    with `AggregateError.errors` ordered as reason, optional notification failure, then
+    termination failure, with message `worker termination failed`. Neither failure escapes
+    its event callback. The freed pool slot spawns a fresh thread on the next job.
+ 7. **A thread death settles its job under EVERY event ordering — the `death` latch.**
+-   `spawnThread` attaches persistent `error` / `messageerror` / `exit` listeners that flip
+-   `alive = false`
+-   AND latch the first terminal event on `NodeThread.death`; `dispatch` checks that latch
+-   synchronously at entry, so a job dispatched onto a thread that already died rejects
++   Every spawned thread carries persistent `error` / `messageerror` / `exit` listeners that
++   flip `alive = false`
++   AND latch the first terminal event on `NodeThread.death`; a `Dispatch` checks that latch
++   synchronously at construction, so a job dispatched onto a thread that already died rejects
+    immediately. A thread can become terminal before the readiness promise continuation
+    attaches dispatch listeners, and those events will never fire again; without the latch
+-   the job would wait forever. A death mid-flight still rejects via the dispatch's own
++   the job would wait forever. A death mid-flight still rejects through the dispatch's own
+    `error` / `exit` listeners; exit rejects with that exact already-latched `death` object,
+    whose message retains the exit code (for example, `worker thread exited (code 1)`). An
+    inbound `messageerror` also evicts and terminates the thread, rejects the
+@@ -225,22 +236,22 @@ satisfy result guard'`), and the worker side narrows each payload through
+    `options.handler` exactly once. Getter failure is therefore fail-fast during registration,
+    the handler getter is not read after an input-getter failure, and every later job retains
+    the initially captured guard and handler identities. The main-thread no-op reads neither.
+-9. **Structured-clone constraints.** `TInput` / `TResult` / `workerData` should be
++9. **Structured-clone constraints.** `TInput` / `TResult` / `workerData` must be
+    structured-cloneable (no functions / Promises / `AbortSignal`). A non-cloneable result
+    cannot strand a dispatch: `serveWorker` replaces the failed success post with a clone-safe
+    failure envelope, and closes the parent port if even that fallback cannot be posted so the
+    main side observes exit. A matching-id malformed reply similarly rejects the dispatch,
+    terminates and evicts the tainted thread, and leaves id-less / foreign-id chatter ignored.
+    Raw TypeScript is unflagged on Node 22.18+ and Node 23.6+; Node 22.12–22.17 and Node
+-   23.0–23.5 require `--experimental-strip-types`. A built `.js` / `.mjs` script remains an
++   23.0–23.5 require `--experimental-strip-types`. A built `.js` / `.mjs` script is an
+    alternative across supported Node versions. The worker script's
+    module MUST call `serveWorker` — the worker-side entry
+-   that runs the handler and answers the protocol; it is self-contained (only
+-   `node:worker_threads` at runtime, per the AGENTS §5 runtime-self-contained exception)
++   that runs the handler and answers the protocol; it is self-contained and imports only
++   `node:worker_threads` at runtime,
+    so it loads as a raw module in a spawned thread. `createNodeWorker` returns the plain
+    `WorkerInterface`, so it inherits the Worker's `emitter` unchanged (clause 3).
+ 10. **`createJSONQueueStore` is `@orkestrel/queue`'s `createDatabaseQueueStore` over a
+-    server JSON driver.** A queue's durable state is just a `@orkestrel/database` table,
++    server JSON driver.** A queue's durable state is a `@orkestrel/database` table,
+     so JSON persistence reuses the existing driver rather than a bespoke store — see
+     [queue.md](queue.md) for the `QueueStoreInterface` contract itself.
+ 
+@@ -253,9 +264,9 @@ it returns the plain `WorkerInterface`, so its methods, lifecycle, concurrency,
+ timeout, and durability are exactly the Worker's (see [Methods](#methods)). The only
+ additions are the thread pairing and the zero-`as` wire bridge.
+ 
+-Two guards define the boundary and the inference: `input` narrows each payload (and
+-fail-fasts a bad one before it crosses to a thread), and `result` narrows each reply
+-value. Both generics infer from these, so call sites pass no type arguments:
++The `input` and `result` guards define the boundary and the inference: `input` narrows each
++payload (and fail-fasts a bad one before it crosses to a thread), and `result` narrows each
++reply value. Both generics infer from these, so call sites pass no type arguments:
+ 
+ ```ts
+ import { createNodeWorker } from '@orkestrel/worker/server'
+@@ -277,11 +288,10 @@ await worker.destroy() // awaits termination of every thread
+ The worker script registers its handler with `serveWorker`, which must be the thread
+ module's entry. On a worker thread, registration captures `input` then `handler` exactly
+ once and retains those identities for every job; on the main thread it reads neither.
+-It receives the narrowed input and the Queue's `{ id, signal }` execution. `id` is the stable
++It receives the narrowed input and the Queue's `{ id, signal }` context. `id` is the stable
+ Queue idempotency key across retries and crash restore; it identifies the work, not its caller,
+-and is not authentication or authorization evidence. `signal` remains per attempt and fires on
+-a cooperative abort. Existing handlers that ignore the execution or destructure only `signal`
+-remain source-compatible; the handler's resolved value is the reply:
++and is not authentication or authorization evidence. `signal` is per attempt and fires on
++a cooperative abort. The handler's resolved value is the reply:
+ 
+ ```ts
+ // double.ts — the worker script
+@@ -297,7 +307,7 @@ serveWorker<number, number>({
+ })
+ ```
+ 
+-Per-job consumer context remains explicit structured-cloneable `TInput`. Ambient main-thread
++Per-job consumer context is explicit, structured-cloneable `TInput`. Ambient main-thread
+ state, including `AsyncLocalStorage`, does not cross a worker-thread structured-clone boundary;
+ there is no implicit caller transport.
+ 
+@@ -309,7 +319,13 @@ dies (a crash, a script that fails to load or even to resolve) always settles it
+ the exact latched `NodeThread.death`, including its exit-code message, so even a job
+ dispatched after the death — its events already fired — rejects immediately rather than
+ waiting on a reply that never comes. `workerData`, the input, and the result must all be
+-structured-cloneable (no functions, Promises, or `AbortSignal`s cross the boundary).
++structured-cloneable (no functions, Promises, or `AbortSignal`s cross the boundary). The
++`workerData` key mirrors the `node:worker_threads` `Worker` constructor option of the same
++name, and the thread reads it back from `node:worker_threads`.
++
++A thread worker takes the same `on` and `error` hooks as the core worker: pass `on` to wire
++initial `WorkerEventMap` listeners at construction, and `error` to receive a listener's throw
++(see [Observing](#observing)).
+ 
+ ## Persistence
+ 
+@@ -332,12 +348,12 @@ const work = await resumed.load() // [{ id: 'job-1', input: 'https://example.com
+ 
+ Pass the resulting `store` to `createWorker`'s `store` option to wire it into a worker's
+ underlying queue — see [queue.md](queue.md) for the `QueueStoreInterface` contract, the
+-`save` / `remove` / `load` / `clear` semantics, and the durability guarantees.
++`save` / `remove` / `load` / `clear` semantics, and what a store must persist across restarts.
+ 
+ ## Observing
+ 
+-The `Worker` exposes a typed `emitter` (AGENTS §13) carrying the job lifecycle it
+-re-exposes from its underlying queue — logging, metrics, tracing. Subscribe via
++The `Worker` exposes a typed `emitter` carrying the job lifecycle it
++re-exposes from its underlying queue — logging, metrics, tracing. Subscribe through
+ `worker.emitter.on(...)`, or wire initial listeners through the reserved `on?` option;
+ supply an `error?` handler to receive a listener's throw.
+ 
+@@ -354,6 +370,8 @@ worker.emitter.on('success', (id, result) => metrics.record(id, result))
+ worker.emitter.on('failure', (id, error) => log.warn(`job ${id} failed`, error))
+ ```
+ 
++The events the worker's emitter carries:
++
+ | Event map                 | Events                                                                                                                          |
+ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+ | `WorkerEventMap<TResult>` | `enqueue(id)` · `start(id)` · `retry(id, attempt)` · `success(id, result)` · `failure(id, error)` · `abort(reason)` · `drain()` |
+@@ -363,14 +381,16 @@ the queue's coded `QueueError` with code `aborted`; its `cause` retains the call
+ abort reason.
+ 
+ See [queue.md](queue.md) / [pool.md](pool.md) for the underlying
+-`Queue` / `Pool` event vocabulary and the listener-isolation safety guarantee (the same
+-guarantee applies here — the Worker's bridge never throws, so a buggy worker observer can
+-never corrupt the inner queue or pool).
++`Queue` / `Pool` event vocabulary and their listener isolation, which holds here too: one
++listener's throw never prevents a sibling listener, and the throw reaches the emitter's
++`error` handler, so a buggy worker observer leaves the inner queue and pool intact.
+ 
+ ## Patterns
+ 
+ ### A resource-backed worker
+ 
++Pair a resource lifecycle with a handler and let the queue drive both:
++
+ ```ts
+ import { createWorker } from '@orkestrel/worker'
+ 
+@@ -389,6 +409,8 @@ await worker.destroy() // awaits queue cleanup, pool cleanup, then emitter teard
+ 
+ ### CPU-parallel jobs over threads
+ 
++Run the same job shape across a pool of worker threads:
++
+ ```ts
+ import { createNodeWorker } from '@orkestrel/worker/server'
+ 
+@@ -407,6 +429,8 @@ await worker.destroy()
+ 
+ ### Durable jobs across restarts
+ 
++Back the queue with a store so outstanding work survives a restart:
++
+ ```ts
+ import { stringShape } from '@orkestrel/contract'
+ import { createWorker } from '@orkestrel/worker'
+@@ -424,11 +448,13 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+ 
+ ### Practices
+ 
+-- **Honour `execution.signal`** — pass it through to the resource's operation and bail
+-  out when it fires, so timeouts and aborts actually stop work rather than just
+-  abandoning its result.
+-- **Size the pool via `concurrency`** — the pool's `max` defaults to it; override
+-  `pool.max` explicitly only when the resource cap should diverge from the job cap.
++Follow these practices when you run a worker in production:
++
++- **Honour `context.signal`** — pass it through to the resource's operation and bail
++  out when it fires, so timeouts and aborts actually stop work rather than abandoning
++  its result.
++- **Size the pool through `concurrency`** — the pool's `max` defaults to it; override
++  `pool.max` explicitly only when the resource cap must diverge from the job cap.
+   Concurrency must be a positive safe integer; invalid values are rejected by Queue and
+   are never normalized.
+ - **`abort` is terminal** — a worker-level abort cancels in-flight work and stops the
+@@ -445,9 +471,13 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+ 
+ ## Tests
+ 
++These tests pin the behaviour this guide documents:
++
+ - [`tests/guides.test.ts`](../tests/guides.test.ts) — the
+-  `## Surface` ↔ `src/core` / `src/server` bijection (value + type exports) and the
+-  `WorkerInterface` ↔ `Worker` method bijection.
++  `## Surface` ↔ `src/core` / `src/server` bijection (value + type exports), the
++  `WorkerInterface` ↔ `Worker` method bijection, and the transcription of the Threads,
++  NodeWorker, Persistence, and CPU-parallel fences: each runs against the real exports and
++  asserts the value its trailing comment claims.
+ - [`tests/policy.test.ts`](../tests/policy.test.ts) — the fleet placement sweep over
+   `src`: every module function sits in a function-kind file, every centralized declaration
+   is exported, types sit in `types.ts`, classes match their file, and every module test
+@@ -475,10 +505,13 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+ - [`tests/src/server/factories.test.ts`](../tests/src/server/factories.test.ts) —
+   `createJSONQueueStore` over a real temp file: entries persist ACROSS store instances on
+   the same path (a second store `load`s the first's work), a nested-object input survives
+-  the JSON round-trip, and a `remove` is reflected across a reopen; plus a
+-  `createNodeWorker` round-trip smoke (a job over a real thread, then teardown).
++  the JSON round-trip, and a `remove` is reflected across a reopen; `createThread` resolving
++  a live thread that clones its `workerData` across, spawning with that argument omitted, and
++  rejecting a script that dies before `online`; plus a `createNodeWorker` round-trip smoke (a
++  job over a real thread, then teardown), the `on` hooks wired at construction with a
++  listener throw routed to `error`, and the option snapshot retained across jobs.
+ - [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — the
+-  main-side worker-thread machinery (`spawnThread` / `dispatch`), driven
++  main-side worker-thread machinery (`createThread` / `Dispatch`), driven
+   through `createNodeWorker` over REAL worker threads (no mocking): a round-trip and a
+   batch over a small pool; the concurrency cap AND the live-thread cap + idle reuse; a
+   throwing handler rejecting with its error, and re-running under `retries`; explicit enqueue
+@@ -495,7 +528,9 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+   tainted thread, and allowing a later job on a replacement; an already-aborted enqueue signal
+   short-circuiting; a non-cloneable result rejecting without a hang and a later job on the
+   same concurrency-1 worker succeeding; false and throwing `input` / `result` guards
+-  rejecting without wedging the worker; `messageerror` listener attachment and settlement
++  rejecting without wedging the worker; a consumer-supplied `NodeThread` whose job the abort
++  rejects and whose `worker` it terminates while the implementer's own `alive` stays
++  untouched; `messageerror` listener attachment and settlement
+   cleanup; `destroy` with multiple threads mid-job terminating
+   all; rapid enqueue/abort churn settling every job with no thread leak; and `destroy`
+   terminating every thread so the process exits. Plus the total `isReply` predicate over
+@@ -503,7 +538,7 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+   non-records, hostile getters, and stray messages.
+ - [`tests/src/server/handlers.test.ts`](../tests/src/server/handlers.test.ts) —
+   `serveWorker` driven MANUALLY over a raw `node:worker_threads` thread (post a run/abort
+-  envelope, await the reply): reply correlation remaining distinct from the stable execution id,
++  envelope, await the reply): reply correlation remaining distinct from the stable job id,
+   missing / non-string job ids plus revoked proxies and throwing job getters invoking no handler
+   and producing no reply, abort routing by correlation id when the stable job id differs, the
+   success envelope, false and throwing input-guard
+@@ -522,9 +557,10 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+   `echo-data` / `sum` /
+   `stray` / `malformed` / `throw-async` / `load-throw` / `echo` / `noncloneable-result` /
+   `serve-options`) are
+-  real `.ts` worker scripts loaded by Node's type-stripping. Raw TypeScript is unflagged on
+-  Node 22.18+ and Node 23.6+; on Node 22.12–22.17 and Node 23.0–23.5 the `src:server` Vitest
+-  project supplies `--experimental-strip-types`. Ordinary fixtures import `serveWorker` by
++  real `.ts` worker scripts. The Vitest projects supply no type-stripping flag, so the
++  `src:server` and `guides` suites load the fixtures through Node's unflagged type stripping
++  and run on Node 22.18+ and Node 23.6+ — a narrower floor than the `>=22.12.0` engine range
++  in `package.json`. Ordinary fixtures import `serveWorker` by
+   relative-to-source path; `malformed` and `identity` speak the internal envelope protocol
+   directly. `malformed` keeps a tainted thread alive after its invalid reply; `identity` observes
+   the fresh correlation id and stable job id across a retry. Every fixture contains no diagnostic
+@@ -533,6 +569,8 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+ 
+ ## See also
+ 
++Read these guides next:
++
+ - [`queue.md`](queue.md) — the `Queue` engine a `Worker` composes (cooperative wake-park
+   loop, retries, timeout, durability) — the `QueueStoreInterface` contract for
+   `createJSONQueueStore` / the `store` option.
+@@ -541,6 +579,4 @@ await resumed.restore() // re-enqueues every still-outstanding entry, then runs
+ - [`contract.md`](contract.md) — the `Guard<T>` / shape vocabulary threaded through the
+   structured-clone boundary (`input` / `result` on `createNodeWorker`).
+ - [`database.md`](database.md) — the storage layer `createJSONQueueStore` builds on.
+-- [`AGENTS.md`](../AGENTS.md) — the rules; §10 lifecycle, §4.1 single-word members,
+-  §13 emitter pattern, §22 documentation-as-contracts.
+ - [`README.md`](README.md) — the guides index.
+diff --git a/src/core/Worker.ts b/src/core/Worker.ts
+index 14d8669..7944ef2 100644
+--- a/src/core/Worker.ts
++++ b/src/core/Worker.ts
+@@ -1,5 +1,5 @@
+ import type { EmitterInterface } from '@orkestrel/emitter'
+-import type { QueueEntryOptions, QueueExecution } from '@orkestrel/queue'
++import type { QueueContext, QueueEntryOptions } from '@orkestrel/queue'
+ import type { WorkerEventMap, WorkerHandler, WorkerInterface, WorkerOptions } from './types.js'
+ import { Emitter } from '@orkestrel/emitter'
+ import { Pool } from '@orkestrel/pool'
+@@ -22,7 +22,7 @@ import { Queue } from '@orkestrel/queue'
+  *   options. At most one resource exists per in-flight job by default, and idle resources are
+  *   reused across jobs.
+  * - **Acquire over the attempt signal.** Each job acquires using the attempt's
+- *   `execution.signal`, so an `abort` / `timeout` while waiting for a resource rejects
++ *   `context.signal`, so an `abort` / `timeout` while waiting for a resource rejects
+  *   the acquire — the Queue then handles retry / rejection, and there is no token to
+  *   release (the resource was never leased).
+  * - **Lifecycle (§10).** `enqueue` / `restore` / `start` / `stop` / `pause` / `resume` /
+@@ -150,10 +150,10 @@ export class Worker<TInput, TResource, TResult> implements WorkerInterface<TInpu
+ 		return ending.promise
+ 	}
+ 
+-	async #handle(input: TInput, execution: QueueExecution): Promise<TResult> {
+-		const token = await this.#pool.acquire(execution.signal)
++	async #handle(input: TInput, context: QueueContext): Promise<TResult> {
++		const token = await this.#pool.acquire(context.signal)
+ 		try {
+-			return await this.#handler(input, token.value, execution)
++			return await this.#handler(input, token.value, context)
+ 		} finally {
+ 			token.release()
+ 		}
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index e2c30b8..239f697 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -8,8 +8,8 @@ import { Worker } from './Worker.js'
+  * queue's bounded concurrency, retries, and per-attempt timeout / abort.
+  *
+  * @remarks
+- * The pool's `max` defaults to `concurrency`, so resources match the jobs in flight and
+- * are reused across jobs. A handler that throws still releases its resource (the
++ * Default for the pool's `max`: the `concurrency` value, so resources match the jobs in flight.
++ * Resources are reused across jobs. A handler that throws still releases its resource (the
+  * acquire/release pair brackets the call in a `finally`), so a later job reuses it. The
+  * lifecycle (`start` / `stop` / `pause` / `resume` / `abort` / `clear` / `destroy`)
+  * delegates to the queue; `destroy` also tears the pool down. Observable (§13): a typed
+@@ -18,8 +18,8 @@ import { Worker } from './Worker.js'
+  * @typeParam TInput - The work input each job carries
+  * @typeParam TResource - The pooled resource each job runs against
+  * @typeParam TResult - The value the handler resolves for a job
+- * @param options - The `handler` and `pool` plus optional `concurrency` (default `1`),
+- *   `retries` (default `0`), and a default per-attempt `timeout` in milliseconds
++ * @param options - The `handler` and `pool` plus the optional `concurrency`, `retries`,
++ *   `timeout`, `store`, `on`, and `error` keys (see {@link WorkerOptions})
+  * @returns A working {@link WorkerInterface}
+  *
+  * @example
+diff --git a/src/core/types.ts b/src/core/types.ts
+index a4e68fe..ac89571 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,9 +1,9 @@
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ import type { PoolOptions } from '@orkestrel/pool'
+-import type { QueueEntryOptions, QueueExecution, QueueStoreInterface } from '@orkestrel/queue'
++import type { QueueContext, QueueEntryOptions, QueueStoreInterface } from '@orkestrel/queue'
+ 
+ /**
+- * Represents the push observation surface of a {@link WorkerInterface} (AGENTS §13) — the job
++ * Represents the push observation surface of a {@link WorkerInterface} — the job
+  * lifecycle a fire-and-forget observer subscribes to, surfacing the underlying queue's
+  * moments so a Worker consumer never reaches through to the internal `Queue`.
+  *
+@@ -15,7 +15,7 @@ import type { QueueEntryOptions, QueueExecution, QueueStoreInterface } from '@or
+  * map RE-EXPOSES the queue lifecycle the worker surfaces (`enqueue` / `start` / `retry` /
+  * `success` / `failure` / `abort` / `drain`) as the worker's OWN events — wired from the
+  * underlying queue's emitter at construction, so a buggy observer is isolated exactly as
+- * on the queue (a throw routes to the worker emitter's `error` handler, AGENTS §13). The
++ * on the queue (a throw routes to the worker emitter's `error` handler). The
+  * pool's create / acquire / release events stay the pool's internal concern (a Worker
+  * manages its own resources); a consumer who wants them observes a `Pool` directly.
+  * Declared as a `type` alias (§4.5).
+@@ -41,7 +41,7 @@ export type WorkerEventMap<TResult> = {
+ export type WorkerHandler<TInput, TResource, TResult> = (
+ 	input: TInput,
+ 	resource: TResource,
+-	execution: QueueExecution,
++	context: QueueContext,
+ ) => Promise<TResult> | TResult
+ 
+ /**
+@@ -50,12 +50,13 @@ export type WorkerHandler<TInput, TResource, TResult> = (
+  * @remarks
+  * - `handler` — runs each job against an acquired pool resource; rejecting triggers a
+  *   retry while attempts remain (delegated to the underlying queue).
+- * - `pool` — the {@link PoolOptions} for the resource the handler runs against; its
+- *   `max` defaults to `concurrency` so resources match the jobs in flight.
+- * - `concurrency` — the maximum jobs in flight at once; defaults to `1` and must be a
+- *   positive safe integer, as validated by the underlying queue.
+- * - `retries` — the default extra attempts per job on failure; defaults to `0`.
+- * - `timeout` — the default per-attempt deadline in milliseconds; defaults to none.
++ * - `pool` — the {@link PoolOptions} for the resource the handler runs against, sized so
++ *   resources match the jobs in flight. Default for its `max`: the `concurrency` value.
++ * - `concurrency` — the maximum jobs in flight at once; it must be a positive safe
++ *   integer, as validated by the underlying queue. Default: 1.
++ * - `retries` — the default extra attempts per job on failure. Default: 0.
++ * - `timeout` — the default per-attempt deadline in milliseconds. Default: no per-attempt
++ *   deadline.
+  * - `store` — durable backing; outstanding entries survive a restart; call
+  *   `restore()` to re-run them.
+  * - `on` — the reserved {@link EmitterHooks} key (§8): initial listeners for the worker's
+@@ -64,7 +65,7 @@ export type WorkerHandler<TInput, TResource, TResult> = (
+  */
+ export interface WorkerOptions<TInput, TResource, TResult> {
+ 	readonly on?: EmitterHooks<WorkerEventMap<TResult>>
+-	/** Holds the emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
++	/** Holds the emitter's listener-error handler; a listener throw routes here, not to a domain event. */
+ 	readonly error?: EmitterErrorHandler
+ 	readonly handler: WorkerHandler<TInput, TResource, TResult>
+ 	readonly pool: PoolOptions<TResource>
+@@ -79,7 +80,7 @@ export interface WorkerOptions<TInput, TResource, TResult> {
+  * Represents a resource-backed job worker — a Queue whose handler runs against a pooled resource.
+  *
+  * @remarks
+- * Exposes a typed {@link emitter} (AGENTS §13) carrying the job lifecycle
++ * Exposes a typed {@link emitter} carrying the job lifecycle
+  * ({@link WorkerEventMap}) — the underlying queue's moments re-exposed as the worker's own,
+  * so a consumer never reaches through to internals. Emitting is observation-only: a buggy
+  * observer is isolated exactly as on the queue (a throw routes to the emitter's `error`
+diff --git a/src/server/Dispatch.ts b/src/server/Dispatch.ts
+index 55811ca..4bf2bea 100644
+--- a/src/server/Dispatch.ts
++++ b/src/server/Dispatch.ts
+@@ -1,4 +1,4 @@
+-import type { QueueExecution } from '@orkestrel/queue'
++import type { QueueContext } from '@orkestrel/queue'
+ import type { Guard } from '@orkestrel/contract'
+ import type { NodeThread } from './types.js'
+ import type { Worker as ThreadWorker } from 'node:worker_threads'
+@@ -7,19 +7,55 @@ import { isReply } from './helpers.js'
+ import { Thread } from './Thread.js'
+ 
+ /**
+- * Represents the internal lifecycle entity for one dispatched worker-thread job.
++ * Represents one dispatched worker-thread job — the lifecycle entity behind a job posted to a
++ * leased {@link NodeThread}, whose {@link promise} settles with the narrowed reply.
+  *
+  * @remarks
+- * Owns stable `message` / `messageerror` / death listener identities, settlement, result-guard
+- * containment, and abort eviction for one dispatch. Deserialization failure, a matching-id
+- * malformed reply, and abort each evict and terminate the thread before rejecting, with
+- * termination failure preserved. Non-record, id-less, hostile-id, and foreign-id chatter is ignored.
++ * Mints a fresh per-dispatch correlation `id`, posts it with `job: context.id`, and settles
++ * when the thread replies for that correlation id. The stable Queue job id reaches the worker
++ * handler for idempotency across retries and restore; it is not caller identity or
++ * authentication / authorization evidence. Per-job consumer context is explicit,
++ * structured-cloneable `input`; ambient context is not worker-thread transport. A success
++ * `value` is narrowed through `result` (a value that fails the guard rejects — the zero-`as`
++ * type bridge); a failure rejects with the thread's error string. A thread that ALREADY died
++ * rejects synchronously at construction from the latched {@link NodeThread.death} — its death
++ * events fired before this dispatch existed and will never fire again, so waiting on the
++ * listeners would dangle forever; the latch makes death total across every event ordering. If
++ * the thread `error`s / `exit`s mid-flight the job rejects. On a `context.signal` abort it
++ * contains the cooperative `abort` post, evicts the thread, and observes `terminate()`
++ * settlement because CPU-bound work cannot honour the signal.
++ *
++ * It owns stable `message` / `messageerror` / death listener identities, settlement,
++ * result-guard containment, and abort eviction for one dispatch. Deserialization failure, a
++ * matching-id malformed reply, and abort each evict and terminate the thread before rejecting,
++ * with termination failure preserved. Non-record, id-less, hostile-id, and foreign-id chatter
++ * is ignored. Every per-job listener (`message` / `messageerror` / `error` / `exit` / `abort`)
++ * is removed on settle.
++ *
++ * Eviction reaches `alive` for a {@link NodeThread} this package produced. Against a
++ * consumer-supplied `NodeThread` an abort or a `messageerror` still terminates the supplied
++ * `worker` and rejects the job, and the implementer owns flipping its own `alive`.
++ *
++ * @typeParam TResult - The reply type the `result` guard narrows to
++ *
++ * @example
++ * ```ts
++ * import { createThread, Dispatch } from '@orkestrel/worker/server'
++ *
++ * const isNumber = (value: unknown): value is number => typeof value === 'number'
++ *
++ * const thread = await createThread(new URL('./double.js', import.meta.url))
++ * const controller = new AbortController()
++ * const job = new Dispatch(thread, 21, { id: 'job-1', signal: controller.signal }, isNumber)
++ * console.log(await job.promise) // 42
++ * await thread.worker.terminate()
++ * ```
+  */
+ export class Dispatch<TResult> {
+ 	readonly #thread: NodeThread
+ 	readonly #worker: ThreadWorker
+ 	readonly #input: unknown
+-	readonly #execution: QueueExecution
++	readonly #context: QueueContext
+ 	readonly #result: Guard<TResult>
+ 	readonly #id = crypto.randomUUID()
+ 	readonly #promise: Promise<TResult>
+@@ -32,16 +68,11 @@ export class Dispatch<TResult> {
+ 	readonly #abortHandler: () => void
+ 	#settled = false
+ 
+-	constructor(
+-		thread: NodeThread,
+-		input: unknown,
+-		execution: QueueExecution,
+-		result: Guard<TResult>,
+-	) {
++	constructor(thread: NodeThread, input: unknown, context: QueueContext, result: Guard<TResult>) {
+ 		this.#thread = thread
+ 		this.#worker = thread.worker
+ 		this.#input = input
+-		this.#execution = execution
++		this.#context = context
+ 		this.#result = result
+ 		const settlement = Promise.withResolvers<TResult>()
+ 		this.#promise = settlement.promise
+@@ -68,15 +99,15 @@ export class Dispatch<TResult> {
+ 		this.#worker.on('messageerror', this.#messageErrorHandler)
+ 		this.#worker.on('error', this.#errorHandler)
+ 		this.#worker.on('exit', this.#exitHandler)
+-		if (this.#execution.signal.aborted) {
++		if (this.#context.signal.aborted) {
+ 			this.#abort()
+ 			return
+ 		}
+-		this.#execution.signal.addEventListener('abort', this.#abortHandler, { once: true })
++		this.#context.signal.addEventListener('abort', this.#abortHandler, { once: true })
+ 		try {
+ 			this.#worker.postMessage({
+ 				id: this.#id,
+-				job: this.#execution.id,
++				job: this.#context.id,
+ 				command: 'run',
+ 				input: this.#input,
+ 			})
+@@ -125,7 +156,7 @@ export class Dispatch<TResult> {
+ 		} catch (cause: unknown) {
+ 			notification.push(cause)
+ 		}
+-		this.#terminate(this.#execution.signal.reason, notification)
++		this.#terminate(this.#context.signal.reason, notification)
+ 	}
+ 
+ 	#terminate(error: unknown, notification: readonly unknown[] = []): void {
+@@ -175,6 +206,6 @@ export class Dispatch<TResult> {
+ 		this.#worker.off('messageerror', this.#messageErrorHandler)
+ 		this.#worker.off('error', this.#errorHandler)
+ 		this.#worker.off('exit', this.#exitHandler)
+-		this.#execution.signal.removeEventListener('abort', this.#abortHandler)
++		this.#context.signal.removeEventListener('abort', this.#abortHandler)
+ 	}
+ }
+diff --git a/src/server/NodeWorker.ts b/src/server/NodeWorker.ts
+index 05c2e16..80a3f6b 100644
+--- a/src/server/NodeWorker.ts
++++ b/src/server/NodeWorker.ts
+@@ -1,19 +1,23 @@
+-import type { WorkerInterface } from '@src/core'
++import type { EmitterErrorHandler, EmitterHooks } from '@orkestrel/emitter'
++import type { WorkerEventMap, WorkerInterface } from '@src/core'
+ import type { Guard } from '@orkestrel/contract'
+-import type { QueueExecution, QueueStoreInterface } from '@orkestrel/queue'
++import type { QueueContext, QueueStoreInterface } from '@orkestrel/queue'
+ import type { NodeThread, NodeWorkerOptions } from './types.js'
+ import { createWorker } from '@src/core'
+ import { attempt } from '@orkestrel/contract'
+-import { dispatch, spawnThread } from './helpers.js'
++import { Dispatch } from './Dispatch.js'
++import { Thread } from './Thread.js'
+ 
+ /**
+  * Represents the internal composition entity backing {@link createNodeWorker}.
+  *
+  * @remarks
+  * Supplies bound Pool and Queue operations without nested function assignments. The resulting
+- * public entity remains the plain core {@link WorkerInterface}.
++ * public entity is the plain core {@link WorkerInterface}.
+  */
+ export class NodeWorker<TInput, TResult> {
++	readonly #on: EmitterHooks<WorkerEventMap<TResult>> | undefined
++	readonly #error: EmitterErrorHandler | undefined
+ 	readonly #script: string | URL
+ 	readonly #input: Guard<TInput>
+ 	readonly #result: Guard<TResult>
+@@ -24,6 +28,8 @@ export class NodeWorker<TInput, TResult> {
+ 	readonly #store: QueueStoreInterface<TInput> | undefined
+ 
+ 	constructor(options: NodeWorkerOptions<TInput, TResult>) {
++		this.#on = options.on
++		this.#error = options.error
+ 		this.#script = options.script
+ 		this.#input = options.input
+ 		this.#result = options.result
+@@ -43,6 +49,8 @@ export class NodeWorker<TInput, TResult> {
+ 				...(this.#concurrency !== undefined ? { max: this.#concurrency } : {}),
+ 			},
+ 			handler: this.#handle.bind(this),
++			...(this.#on !== undefined ? { on: this.#on } : {}),
++			...(this.#error !== undefined ? { error: this.#error } : {}),
+ 			...(this.#concurrency !== undefined ? { concurrency: this.#concurrency } : {}),
+ 			...(this.#retries !== undefined ? { retries: this.#retries } : {}),
+ 			...(this.#timeout !== undefined ? { timeout: this.#timeout } : {}),
+@@ -51,7 +59,7 @@ export class NodeWorker<TInput, TResult> {
+ 	}
+ 
+ 	#create(): Promise<NodeThread> {
+-		return spawnThread(this.#script, this.#workerData)
++		return new Thread(this.#script, this.#workerData).promise
+ 	}
+ 
+ 	async #destroy(thread: NodeThread): Promise<void> {
+@@ -62,12 +70,12 @@ export class NodeWorker<TInput, TResult> {
+ 		return thread.alive && thread.worker.threadId > 0
+ 	}
+ 
+-	#handle(input: TInput, thread: NodeThread, execution: QueueExecution): Promise<TResult> {
++	#handle(input: TInput, thread: NodeThread, context: QueueContext): Promise<TResult> {
+ 		const outcome = attempt(() => this.#input(input))
+ 		if (!outcome.success) return Promise.reject(outcome.error)
+ 		if (!outcome.value) {
+ 			return Promise.reject(new Error('input did not satisfy input guard'))
+ 		}
+-		return dispatch(thread, input, execution, this.#result)
++		return new Dispatch(thread, input, context, this.#result).promise
+ 	}
+ }
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 9d89991..447d8fa 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -1,17 +1,53 @@
+ import type { WorkerInterface } from '@src/core'
+ import type { ContractShape, Infer } from '@orkestrel/contract'
+ import type { QueueStoreInterface } from '@orkestrel/queue'
+-import type { NodeWorkerOptions } from './types.js'
++import type { NodeThread, NodeWorkerOptions } from './types.js'
+ import { createJSONDriver } from '@orkestrel/database/server'
+ import { createDatabaseQueueStore } from '@orkestrel/queue'
+ import { NodeWorker } from './NodeWorker.js'
++import { Thread } from './Thread.js'
++
++/**
++ * Creates one live worker thread and resolves it as a {@link NodeThread} after it comes
++ * online.
++ *
++ * @remarks
++ * Constructs the thread with the `script` module and the cloned `workerData`, then
++ * resolves on the thread's `online` event (rejecting on an early `error` OR an `exit`
++ * that arrives before `online`, so the spawn promise is total — it can never dangle on a
++ * thread that died without erroring). The returned entity attaches persistent `error` /
++ * `exit` listeners that flip `alive` to `false` AND latch the first terminal event on
++ * {@link NodeThread.death}: a crash is observable to an in-flight {@link Dispatch} (through
++ * its own listeners), to a pool's `validate` (through `alive`), and — crucially — to a
++ * dispatch that attaches AFTER the death (through the latch). A `messageerror` is terminal
++ * too, so a thread whose inbound payload could not be deserialized is never reused. The latch
++ * closes a real race: a thread can become terminal before the readiness promise continuation
++ * hands it to a {@link Dispatch}, leaving no future death event for that dispatch to observe.
++ * Without the latch, that job would wait forever. {@link createNodeWorker} spawns its pooled
++ * threads the same way; reach for this to drive one thread yourself.
++ *
++ * @param script - The worker module the thread runs (its module must call `serveWorker`)
++ * @param workerData - Opaque, structured-cloneable data handed to the thread at spawn
++ * @returns A promise resolving the online {@link NodeThread}
++ *
++ * @example
++ * ```ts
++ * import { createThread } from '@orkestrel/worker/server'
++ *
++ * const thread = await createThread(new URL('./double.js', import.meta.url))
++ * await thread.worker.terminate()
++ * ```
++ */
++export function createThread(script: string | URL, workerData?: unknown): Promise<NodeThread> {
++	return new Thread(script, workerData).promise
++}
+ 
+ /**
+  * Creates a persistent JSON-file {@link QueueStoreInterface} — the core
+  * `createDatabaseQueueStore` over a server {@link createJSONDriver}.
+  *
+  * @remarks
+- * A queue's durable state is just a database table, so JSON persistence reuses the
++ * A queue's durable state is a database table, so JSON persistence reuses the
+  * existing JSON-file driver rather than a bespoke store: the entries are written to
+  * (and reloaded from) the file at `path`, surviving a process restart. There is no new
+  * class — the store engine ({@link createDatabaseQueueStore}) is shared, and only the
+@@ -50,14 +86,15 @@ export function createJSONQueueStore<TInput extends ContractShape>(
+  * @remarks
+  * Composition, not reimplementation: all concurrency, retries, per-attempt timeout,
+  * lifecycle, and durability are the core `Worker`'s (a `Queue` ⨉ `Pool`). This factory
+- * supplies only the thread pairing — the pool `create`s a thread (via `spawnThread`),
+- * `destroy`s it with `terminate()`, and `validate`s it by `alive && threadId > 0` (so an
+- * evicted / crashed thread is dropped and replaced) — and an internal handler that
+- * narrows the input through `options.input` (fail-fast before the structured-clone
+- * boundary) then `dispatch`es the job to the leased thread, narrowing the reply through
++ * supplies only the thread pairing — the pool `create`s a thread (the same spawn
++ * {@link createThread} publishes), `destroy`s it with `terminate()`, and `validate`s it by
++ * `alive && threadId > 0` (so an evicted / crashed thread is dropped and replaced) — and an
++ * internal handler that narrows the input through `options.input` (fail-fast before the
++ * structured-clone boundary) then runs a {@link Dispatch} against the leased thread,
++ * narrowing the reply through
+  * `options.result`. Both generics INFER from the `input` / `result` guards, so call sites
+  * need no explicit type arguments. The boundary is crossed with ZERO `as`: the guards
+- * reconstruct `TInput` / `TResult` by validation (AGENTS §14). An `abort` / `timeout`
++ * reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+  * TERMINATES the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+  * subsequent job spawns a fresh thread. The worker script's module must call
+  * `serveWorker`. Returns the plain {@link WorkerInterface} — its methods are the Worker's.
+@@ -65,7 +102,7 @@ export function createJSONQueueStore<TInput extends ContractShape>(
+  * @typeParam TInput - The work payload each job carries (inferred from `input`)
+  * @typeParam TResult - The value a thread resolves for a job (inferred from `result`)
+  * @param options - The `script` plus the `input` / `result` guards and optional
+- *   `workerData` / `concurrency` / `retries` / `timeout` / `store`
++ *   `on` / `error` / `workerData` / `concurrency` / `retries` / `timeout` / `store`
+  *   (see {@link NodeWorkerOptions})
+  * @returns A working {@link WorkerInterface} backed by a thread pool
+  *
+diff --git a/src/server/handlers.ts b/src/server/handlers.ts
+index e9ca039..91e0930 100644
+--- a/src/server/handlers.ts
++++ b/src/server/handlers.ts
+@@ -22,7 +22,7 @@ import { parentPort } from 'node:worker_threads'
+  * success value cannot be cloned, the post is retried as a clone-safe failure; if that post also
+  * fails, the parent port closes so the main side observes thread exit instead of waiting forever.
+  * The run envelope's `id` is fresh per dispatch and keys controllers, aborts, and replies;
+- * its `job` is the stable Queue idempotency key exposed as `execution.id` across retries
++ * its `job` is the stable Queue idempotency key exposed as `context.id` across retries
+  * and restore. That job id identifies work, not a caller, and is not authentication or
+  * authorization evidence. Each attempt has its own `AbortController`, so an `abort`
+  * message for the correlation id fires the handler's `signal` (cooperative — the main
+@@ -52,7 +52,8 @@ export function serveWorker<TInput, TResult>(options: ServeWorkerOptions<TInput,
+ 	const handler = options.handler
+ 	const controllers = new Map<string, AbortController>()
+ 	port.on('message', (raw: unknown) => {
+-		// Read the envelope's four fields once, defensively. A hostile message can be a revoked
++		// Read the envelope's `command`, `id`, `job`, and `input` fields once, defensively. A
++		// hostile message can be a revoked
+ 		// proxy or carry a throwing getter, so every property access sits inside this one guard:
+ 		// a read that throws leaves the envelope unrecognised and the message is dropped without
+ 		// a reply, exactly as a malformed envelope is.
+@@ -81,10 +82,10 @@ export function serveWorker<TInput, TResult>(options: ServeWorkerOptions<TInput,
+ 			return
+ 		}
+ 		// A `run` envelope carries BOTH ids: `id` is the per-dispatch correlation, `job` the
+-		// stable Queue execution id handed to the handler. A legacy or malformed envelope
++		// stable Queue entry id handed to the handler. A malformed envelope
+ 		// without a string `job`, or without an `input` at all, fails closed with no reply.
+ 		if (command !== 'run' || typeof job !== 'string' || !carried) return
+-		const execution = job
++		const entry = job
+ 		const value = payload
+ 		const controller = new AbortController()
+ 		controllers.set(id, controller)
+@@ -93,7 +94,7 @@ export function serveWorker<TInput, TResult>(options: ServeWorkerOptions<TInput,
+ 				if (!input(value)) {
+ 					throw new Error('input did not satisfy input guard')
+ 				}
+-				return handler(value, { id: execution, signal: controller.signal })
++				return handler(value, { id: entry, signal: controller.signal })
+ 			})
+ 			.then((result) => {
+ 				controllers.delete(id)
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 8ac5bbc..e1208ba 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -1,80 +1,14 @@
+-import type { QueueExecution } from '@orkestrel/queue'
+-import type { Guard } from '@orkestrel/contract'
+-import type { NodeThread, Reply } from './types.js'
++import type { Reply } from './types.js'
+ import { attempt, isRecord } from '@orkestrel/contract'
+-import { Dispatch } from './Dispatch.js'
+-import { Thread } from './Thread.js'
+ 
+ // === The wire protocol (main ↔ thread)
+ //
+-// The main-side half of the run/abort/reply protocol `serveWorker` answers — spawning a
+-// pooled thread, narrowing its replies, and dispatching one job at a time. The envelope
+-// types ({@link Reply}, {@link NodeThread}) live in `./types.js` (AGENTS §5); the public
+-// bridge across the structured-clone boundary is the `input` / `result` `Guard`s, which
+-// narrow the envelopes' opaque `unknown` payloads with no assertion (AGENTS §14).
+-
+-/**
+- * Spawns one worker thread and resolves a live {@link NodeThread} once it comes online.
+- *
+- * @remarks
+- * Constructs the thread with the `script` module and the cloned `workerData`, then
+- * resolves on the thread's `online` event (rejecting on an early `error` OR an `exit`
+- * that arrives before `online`, so the spawn promise is total — it can never dangle on a
+- * thread that died without erroring). The wrapper attaches persistent `error` / `exit`
+- * listeners that flip `alive` to `false` AND latch the first terminal event on
+- * {@link NodeThread.death}: a crash is observable to an in-flight {@link dispatch} (via
+- * its own listeners), to the pool's `validate` (via `alive`), and — crucially — to a
+- * dispatch that attaches AFTER the death (via the latch). A `messageerror` is terminal too,
+- * so a thread whose inbound payload could not be deserialized is never reused. The latch
+- * closes a real race: a thread can become terminal before the readiness promise continuation
+- * hands it to `dispatch`, leaving no future death event for that dispatch to observe. Without
+- * the latch, that job would wait forever. The pool's `create` hook calls this.
+- *
+- * @param script - The worker module each thread runs (must call `serveWorker`)
+- * @param workerData - Opaque, structured-cloneable data handed to the thread at spawn
+- * @returns A promise resolving the online {@link NodeThread}
+- */
+-export function spawnThread(script: string | URL, workerData: unknown): Promise<NodeThread> {
+-	return new Thread(script, workerData).promise
+-}
+-
+-/**
+- * Dispatches one job to a leased {@link NodeThread} and awaits its narrowed reply.
+- *
+- * @remarks
+- * Mints a fresh per-dispatch correlation `id`, posts it with `job: execution.id`, and
+- * resolves when the thread replies for that correlation id. The stable Queue job id reaches
+- * the worker handler for idempotency across retries and restore; it is not caller identity or
+- * authentication / authorization evidence. Per-job consumer context remains explicit,
+- * structured-cloneable `input`; ambient context is not worker-thread transport. A success
+- * `value` is narrowed through `result` (a value that fails the guard
+- * rejects — the zero-`as` type bridge), a failure rejects with the thread's error string.
+- * A thread that ALREADY died rejects synchronously at entry from the latched
+- * {@link NodeThread.death} — its death events fired before this dispatch existed and will
+- * never fire again, so waiting on the listeners below would dangle forever; the latch makes
+- * death total across every event ordering. If the thread `error`s / `exit`s mid-flight it is
+- * marked dead and the
+- * job rejects. An inbound `messageerror` also evicts and terminates the thread before
+- * rejection. On `execution.signal` abort it contains the cooperative `abort` post,
+- * evicts the thread, and observes `terminate()` settlement because CPU-bound work cannot
+- * honour the signal; the freed pool slot then gets a fresh thread. Every per-job listener
+- * (`message` / `messageerror` / `error` / `exit` / `abort`) is removed on settle.
+- *
+- * @typeParam TResult - The reply type the `result` guard narrows to
+- * @param thread - The leased thread to run the job on
+- * @param input - The work payload (structured-cloned to the thread)
+- * @param execution - The per-attempt handle; its `signal` aborts → terminate + evict
+- * @param result - The {@link Guard} narrowing the reply value with no assertion
+- * @returns A promise resolving the narrowed `TResult`, or rejecting on error / abort
+- */
+-export function dispatch<TResult>(
+-	thread: NodeThread,
+-	input: unknown,
+-	execution: QueueExecution,
+-	result: Guard<TResult>,
+-): Promise<TResult> {
+-	return new Dispatch(thread, input, execution, result).promise
+-}
++// The reply half of the run/abort/reply protocol `serveWorker` answers — the leaf predicate
++// a `Dispatch` filters inbound messages with. The envelope types ({@link Reply},
++// `NodeThread`) live in `./types.js`; the public bridge across the
++// structured-clone boundary is the `input` / `result` `Guard`s, which narrow the envelopes'
++// opaque `unknown` payloads with no assertion. This file imports no
++// implementation class, so it stays the bottom of the module's graph.
+ 
+ /**
+  * Narrows an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
+diff --git a/src/server/index.ts b/src/server/index.ts
+index cf62585..0e36aaa 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -2,3 +2,4 @@ export * from './types.js'
+ export * from './helpers.js'
+ export * from './handlers.js'
+ export * from './factories.js'
++export * from './Dispatch.js'
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 2cf104d..d6f6871 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -1,18 +1,19 @@
++import type { EmitterErrorHandler, EmitterHooks } from '@orkestrel/emitter'
+ import type { Guard } from '@orkestrel/contract'
+-import type { QueueExecution, QueueStoreInterface } from '@orkestrel/queue'
++import type { QueueContext, QueueStoreInterface } from '@orkestrel/queue'
++import type { WorkerEventMap } from '@src/core'
+ import type { Worker as ThreadWorker } from 'node:worker_threads'
+ 
+ /**
+  * Represents a thread→main reply envelope — a success carrying an opaque `value`, or a failure with a
+- * message — part of the internal wire protocol `createNodeWorker` posts and `serveWorker`
++ * message — the reply half of the wire protocol `createNodeWorker` posts and `serveWorker`
+  * answers.
+  *
+  * @remarks
+- * Internal plumbing rather than public call surface, but centralized here per AGENTS §5 (an
+- * impl file holds only its class / functions). A reply is a discriminated union on `ok`: a
++ * A reply is a discriminated union on `ok`: a
+  * `true` carries any opaque `value` (narrowed at the boundary by the `result` guard,
+  * with no `as`); a `false` carries a string `error`. The worker-side `serve.ts` cannot import
+- * this (it loads as raw source in a spawned thread, AGENTS §5 exception) and posts the same
++ * this because it loads as raw source in a spawned thread, and posts the same
+  * shape structurally. The `id` ties a reply to its job: id-less / foreign-id chatter is ignored,
+  * while a matching-id malformed envelope taints the thread and causes dispatch to terminate it.
+  */
+@@ -30,12 +31,18 @@ export type Reply =
+  * `alive && worker.threadId > 0`, so a
+  * dead thread is destroyed and replaced rather than reused. `death` LATCHES the first
+  * terminal event (`error` / `messageerror`, or a synthesized error on `exit`) — the death-signal
+- * record a `dispatch` checks at entry, so a job dispatched AFTER the thread died (its
++ * record a {@link Dispatch} checks at construction, so a job dispatched AFTER the thread died (its
+  * death events already fired and will never fire again) rejects immediately instead of
+  * awaiting events that already happened. A thread can become terminal before the readiness
+  * promise continuation attaches dispatch listeners; the latch is what makes that ordering
+  * safe. `worker` is the underlying
+  * `node:worker_threads` thread (its `postMessage` / `terminate` drive the protocol).
++ *
++ * A dispatch marks a thread dead for a `NodeThread` this package produced, through
++ * {@link createThread} or a {@link createNodeWorker} pool. A foreign implementation of this
++ * interface owns flipping its own `alive` when its `worker` is terminated: an abort or a
++ * `messageerror` terminates the supplied `worker` and rejects the job, and leaves the
++ * implementer's `alive` and `death` exactly as the implementer reports them.
+  */
+ export interface NodeThread {
+ 	readonly worker: ThreadWorker
+@@ -50,25 +57,34 @@ export interface NodeThread {
+  * - `script` — the worker module each pooled thread runs; its module must call
+  *   `serveWorker(...)`. Raw TypeScript is unflagged on Node 22.18+ and Node 23.6+;
+  *   Node 22.12–22.17 and Node 23.0–23.5 require `--experimental-strip-types`. A built
+- *   `.js` / `.mjs` script remains an alternative across supported Node versions.
++ *   `.js` / `.mjs` script is an alternative across supported Node versions.
+  * - `input` — narrows the work payload BEFORE it crosses the structured-clone boundary
+  *   (fail-fast) and supplies the `TInput` inference, so call sites need no type argument.
+  * - `result` — narrows every reply value coming back from a thread; an invalid reply
+  *   rejects the job. This is the zero-`as` type bridge — `TResult` is inferred from it.
+- * - `workerData` — opaque data cloned to every thread once at spawn (read there via
+- *   `serveWorker`'s host `workerData`); must be structured-cloneable.
++ * - `workerData` — opaque data cloned to every thread at spawn; the key mirrors the
++ *   `node:worker_threads` `Worker` constructor option of the same name, and the thread reads
++ *   it back from `node:worker_threads`. It must be structured-cloneable.
+  * - `concurrency` — the maximum jobs in flight at once; the thread pool's `max` matches
+- *   it, so at most this many threads exist. Defaults to `1` and must be a positive safe
+- *   integer, as validated by the underlying queue.
+- * - `retries` — the default extra attempts per job on failure / timeout; defaults to `0`.
+- * - `timeout` — the default per-attempt deadline in milliseconds; defaults to none.
++ *   it, so at most this many threads exist. It must be a positive safe integer, as
++ *   validated by the underlying queue. Default: 1.
++ * - `retries` — the default extra attempts per job on failure / timeout. Default: 0.
++ * - `timeout` — the default per-attempt deadline in milliseconds. Default: no per-attempt
++ *   deadline.
+  * - `store` — durable backing for outstanding jobs (survives a restart; `restore()`
+  *   re-runs them).
++ * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the worker's
++ *   {@link WorkerEventMap} (the job lifecycle it surfaces from its underlying queue), wired
++ *   at construction. A thread worker takes the same hooks as the core worker.
++ * - `error` — the emitter's listener-error handler; a listener throw routes
++ *   here, not to a domain event.
+  *
+  * @typeParam TInput - The work payload each job carries (inferred from `input`)
+  * @typeParam TResult - The value a thread resolves for a job (inferred from `result`)
+  */
+ export interface NodeWorkerOptions<TInput, TResult> {
++	readonly on?: EmitterHooks<WorkerEventMap<TResult>>
++	readonly error?: EmitterErrorHandler
+ 	readonly script: string | URL
+ 	readonly input: Guard<TInput>
+ 	readonly result: Guard<TResult>
+@@ -86,10 +102,10 @@ export interface NodeWorkerOptions<TInput, TResult> {
+  * - `input` — narrows each inbound payload inside the thread; an invalid payload replies
+  *   with an error envelope rather than running the handler. Supplies the `TInput`
+  *   inference for the handler.
+- * - `handler` — runs one job; receives the narrowed input and the Queue's execution.
+- *   `execution.id` is the stable Queue idempotency key across retries and crash restore;
++ * - `handler` — runs one job; receives the narrowed input and the Queue's context.
++ *   `context.id` is the stable Queue idempotency key across retries and crash restore;
+  *   it identifies work, not a caller, and is not authentication or authorization evidence.
+- *   `execution.signal` is per attempt and fires when the main side aborts that attempt
++ *   `context.signal` is per attempt and fires when the main side aborts that attempt
+  *   (cooperative). The handler may be async; its resolved value (which must be
+  *   structured-cloneable) is the reply.
+  *
+@@ -98,5 +114,5 @@ export interface NodeWorkerOptions<TInput, TResult> {
+  */
+ export interface ServeWorkerOptions<TInput, TResult> {
+ 	readonly input: Guard<TInput>
+-	readonly handler: (input: TInput, execution: QueueExecution) => Promise<TResult> | TResult
++	readonly handler: (input: TInput, context: QueueContext) => Promise<TResult> | TResult
+ }
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index d655a7e..9c1f81a 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,7 +1,7 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest — one row (Worker) spanning the
+-// core/server faces as a multi-dir `GuideModule` (AGENTS §22 — one guide per
+-// package). The constants below are this package's own, and are the only part a
++// core/server faces as a multi-dir `GuideModule`. The following constants are this
++// package's own, and are the only part a
+ // sibling package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+@@ -20,8 +20,17 @@ import {
+ 	resolveLink,
+ } from '@orkestrel/guide'
+ import { readFileSync } from 'node:fs'
++import { isNumber, stringShape } from '@orkestrel/contract'
+ import { requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
++import {
++	createJSONQueueStore,
++	createNodeWorker,
++	createThread,
++	Dispatch,
++	isReply,
++} from '@src/server'
++import { buildFixtureURL, tempDatabasePath } from './setupServer.js'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+@@ -37,18 +46,13 @@ const MODULES = Object.freeze({
+  * Declarations deliberately kept out of the barrel, as `computeSymbolKey` strings.
+  *
+  * The coding-law gate requires every matching implementation class declaration to
+- * carry `export`, while `Dispatch`, `NodeWorker`, and `Thread` are intentionally
+- * absent from `src/server/index.ts` — internal orchestration classes behind the
+- * documented `createNodeWorker` / `spawnThread` / `dispatch` surface, not package
+- * exports. Naming them here is what makes that intentional rather than forgotten —
+- * and the second assertion below fails when a name here stops being stranded, so
+- * the list cannot rot.
++ * carry `export`, while `NodeWorker` and `Thread` are intentionally absent from
++ * `src/server/index.ts` — internal orchestration classes behind the documented
++ * `createNodeWorker` / `createThread` surface, not package exports. Naming them here
++ * is what makes that intentional rather than forgotten — and the paired assertion
++ * fails when a name here stops being stranded, so the list cannot rot.
+  */
+-const INTERNAL: readonly string[] = Object.freeze([
+-	'class Dispatch',
+-	'class NodeWorker',
+-	'class Thread',
+-])
++const INTERNAL: readonly string[] = Object.freeze(['class NodeWorker', 'class Thread'])
+ 
+ /** Root-level files this package's guides link to. `readInventory` walks directories only. */
+ const ROOT_FILES = Object.freeze(['AGENTS.md'])
+@@ -70,7 +74,7 @@ it('manifest lists at least one guide', () => {
+ 
+ it('keeps internal orchestration classes out of the public server barrel', () => {
+ 	const barrel = requireValue(files['src/server/index.ts'], 'Missing file: src/server/index.ts')
+-	const names = ['Dispatch', 'NodeWorker', 'Thread']
++	const names = ['NodeWorker', 'Thread']
+ 	expect(names.every((name) => !barrel.includes(`./${name}.js`))).toBe(true)
+ })
+ 
+@@ -136,7 +140,7 @@ for (const entry of manifest) {
+ 				.map((fence) => fence.code)
+ 			const names = guide
+ 				.surface()
+-				.filter((symbol) => symbol.kind === 'function')
++				.filter((symbol) => symbol.keyword === 'function')
+ 				.map((symbol) => symbol.name)
+ 			expect(findUnexampled(names, fences, source.examples())).toEqual([])
+ 		})
+@@ -187,3 +191,65 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// Every preceding assertion proves a name resolves; none proves a value. The flagship fences in
++// `guides/worker.md` each state a value in a trailing comment, so they are transcribed here
++// and run against the real exports — a fence whose comment stops matching what the code
++// returns reddens one of these. Change a fence, change its transcription.
++describe('worker.md fences return the values they claim', () => {
++	it('the Threads fence drives one thread by hand and filters its replies', async () => {
++		const thread = await createThread(buildFixtureURL('double.ts'))
++		const controller = new AbortController()
++		try {
++			const job = new Dispatch(thread, 21, { id: 'job-1', signal: controller.signal }, isNumber)
++			expect(await job.promise).toBe(42)
++			expect(isReply({ id: 'reply-1', ok: true, value: 42 }, 'reply-1')).toBe(true)
++			expect(isReply({ id: 'reply-1', ok: true, value: 42 }, 'other')).toBe(false)
++		} finally {
++			await thread.worker.terminate()
++		}
++	})
++
++	it('the NodeWorker fence doubles 21 on a worker thread', async () => {
++		const worker = createNodeWorker({
++			script: buildFixtureURL('double.ts'),
++			input: isNumber,
++			result: isNumber,
++			concurrency: 4,
++			retries: 1,
++		})
++		try {
++			await expect(worker.enqueue(21)).resolves.toBe(42)
++		} finally {
++			await worker.destroy()
++		}
++	})
++
++	it('the Persistence fence resumes the prior process outstanding entry', async () => {
++		const { path, scratch } = tempDatabasePath()
++		try {
++			const store = createJSONQueueStore(path, stringShape())
++			await store.save({ id: 'job-1', input: 'https://example.com', attempts: 0 })
++
++			const resumed = createJSONQueueStore(path, stringShape())
++			const work = await resumed.load()
++			expect(work).toEqual([{ id: 'job-1', input: 'https://example.com', attempts: 0 }])
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('the CPU-parallel patterns fence doubles 21 over a thread pool', async () => {
++		const worker = createNodeWorker({
++			script: buildFixtureURL('double.ts'),
++			input: isNumber,
++			result: isNumber,
++			concurrency: 4,
++		})
++		try {
++			await expect(worker.enqueue(21)).resolves.toBe(42)
++		} finally {
++			await worker.destroy()
++		}
++	})
++})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 5824df6..3221a36 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -2,7 +2,7 @@ import type { PoolOptions } from '@orkestrel/pool'
+ import type { QueueStoreInterface, StoredEntry } from '@orkestrel/queue'
+ import type { RecorderInterface } from '@orkestrel/test'
+ 
+-// ── Environment-agnostic base setup (AGENTS §16.1) ────────────────────────────
++// ── Environment-agnostic base setup ───────────────────────────────────────────
+ //
+ // Loaded first by every test project (`vite.config.ts` `setupFiles[0]`). Holds ONLY
+ // helpers with no `node:*` / DOM dependency, so it is safe for `src:core` alike.
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index ab6309b..2bcc4f2 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1,24 +1,30 @@
++import type { NodeWorkerOptions } from '@src/server'
+ import { describe, expect, it } from 'vitest'
+ import { existsSync } from 'node:fs'
++import { fileURLToPath } from 'node:url'
+ import { Worker as ThreadWorker } from 'node:worker_threads'
+ import { createMemoryQueueStore } from '@orkestrel/queue'
+-import { numberShape } from '@orkestrel/contract'
++import { isNumber, numberShape } from '@orkestrel/contract'
+ import { createRecorder } from '@orkestrel/test'
+-import { NodeWorkerOptionsProbe, postRun, tempDatabasePath, ThreadReply } from './setupServer.js'
+-import type { NodeWorkerOptions } from '@src/server'
++import {
++	buildFixtureURL,
++	NodeWorkerOptionsProbe,
++	postRun,
++	tempDatabasePath,
++	ThreadReply,
++} from './setupServer.js'
+ 
+ // tests/setupServer.ts — the node-only setup layer loaded after `setup.ts` for `src:server`
+ // (and any environment stacking on it). Drives real Node resources throughout: a real worker
+ // thread over the existing `tests/src/server/fixtures/` scripts for `postRun`/`ThreadReply`,
+-// and a real scratch directory on disk for `tempDatabasePath`. `NodeWorkerOptionsProbe`'s
+-// getter-recording/`replace` contract is hermetic and needs no real worker, mirroring
+-// `PoolOptionsProbe`'s proof in `tests/setup.test.ts`.
+-
+-const fixture = (name: string): URL => new URL(`./src/server/fixtures/${name}`, import.meta.url)
++// a real on-disk file for `buildFixtureURL`, and a real scratch directory for
++// `tempDatabasePath`. `NodeWorkerOptionsProbe`'s getter-recording/`replace` contract is
++// hermetic and needs no real worker, mirroring `PoolOptionsProbe`'s proof in
++// `tests/setup.test.ts`.
+ 
+ describe('postRun / ThreadReply', () => {
+ 	it('posts a run envelope a real worker thread replies to, resolving a frozen copy keyed by id', async () => {
+-		const thread = new ThreadWorker(fixture('double.ts'))
++		const thread = new ThreadWorker(buildFixtureURL('double.ts'))
+ 		try {
+ 			const pending = new ThreadReply(thread, 'job-1').promise
+ 			postRun(thread, 'job-1', 'job-1', 21)
+@@ -34,7 +40,7 @@ describe('postRun / ThreadReply', () => {
+ 	})
+ 
+ 	it('rejects when the worker thread exits before it replies to the pending id', async () => {
+-		const thread = new ThreadWorker(fixture('crash.ts'))
++		const thread = new ThreadWorker(buildFixtureURL('crash.ts'))
+ 		try {
+ 			const pending = new ThreadReply(thread, 'job-crash').promise
+ 			postRun(thread, 'job-crash', 'job-crash', -1)
+@@ -45,33 +51,47 @@ describe('postRun / ThreadReply', () => {
+ 	})
+ })
+ 
++describe('buildFixtureURL', () => {
++	it('resolves a real worker fixture under the workspace tests directory', () => {
++		const url = buildFixtureURL('double.ts')
++		expect(url.href.endsWith('tests/src/server/fixtures/double.ts')).toBe(true)
++		expect(existsSync(fileURLToPath(url))).toBe(true)
++
++		// Control: the existence assertion is not vacuous — a name with no fixture behind it
++		// resolves into the same directory and is absent on disk.
++		expect(existsSync(fileURLToPath(buildFixtureURL('does-not-exist.ts')))).toBe(false)
++	})
++})
++
+ describe('tempDatabasePath', () => {
+-	it('allocates a real on-disk path under an owned scratch directory, removed on cleanup', () => {
+-		const { path, cleanup } = tempDatabasePath()
++	it('allocates a real on-disk path under an owned scratch directory its scratch removes', () => {
++		const { path, scratch } = tempDatabasePath()
+ 		expect(path.endsWith('store.json')).toBe(true)
+ 		expect(existsSync(path)).toBe(false)
++		expect(existsSync(scratch.path)).toBe(true)
+ 
+-		cleanup()
+-		expect(existsSync(path)).toBe(false)
++		scratch.destroy()
++		expect(existsSync(scratch.path)).toBe(false)
+ 
+-		// Control: a path that was never allocated under a scratch directory would not
+-		// disappear on this cleanup — this test would fail if `cleanup` were a no-op, since a
+-		// second call proves it targets the real directory rather than something already gone.
+-		expect(() => cleanup()).not.toThrow()
++		// Control: the returned scratch owns a real directory rather than a no-op disposer — a
++		// second destroy over the same removed directory still settles without throwing.
++		expect(() => scratch.destroy()).not.toThrow()
+ 	})
+ })
+ 
+ describe('NodeWorkerOptionsProbe', () => {
+ 	it('records each getter access once, in property order, and returns the configured value', () => {
+ 		const reads = createRecorder<readonly [property: keyof NodeWorkerOptions<number, number>]>()
+-		const script = fixture('double.ts')
+-		const input = (value: unknown): value is number => typeof value === 'number'
+-		const result = (value: unknown): value is number => typeof value === 'number'
++		const script = buildFixtureURL('double.ts')
++		const on = {}
++		const errors = createRecorder<readonly [unknown]>()
+ 		const probe = new NodeWorkerOptionsProbe<number, number>(
+ 			{
++				on,
++				error: errors.handler,
+ 				script,
+-				input,
+-				result,
++				input: isNumber,
++				result: isNumber,
+ 				workerData: { token: 'a' },
+ 				concurrency: 1,
+ 				retries: 0,
+@@ -81,15 +101,19 @@ describe('NodeWorkerOptionsProbe', () => {
+ 			reads,
+ 		)
+ 
++		expect(probe.on).toBe(on)
++		expect(probe.error).toBe(errors.handler)
+ 		expect(probe.script).toBe(script)
+-		expect(probe.input).toBe(input)
+-		expect(probe.result).toBe(result)
++		expect(probe.input).toBe(isNumber)
++		expect(probe.result).toBe(isNumber)
+ 		expect(probe.workerData).toEqual({ token: 'a' })
+ 		expect(probe.concurrency).toBe(1)
+ 		expect(probe.retries).toBe(0)
+ 		expect(probe.timeout).toBe(5_000)
+ 		expect(probe.store).toBeDefined()
+ 		expect(reads.calls.map(([property]) => property)).toEqual([
++			'on',
++			'error',
+ 			'script',
+ 			'input',
+ 			'result',
+@@ -103,10 +127,12 @@ describe('NodeWorkerOptionsProbe', () => {
+ 
+ 	it('replace swaps the values every subsequent getter read returns', () => {
+ 		const reads = createRecorder<readonly [property: keyof NodeWorkerOptions<number, number>]>()
+-		const isNumber = (value: unknown): value is number => typeof value === 'number'
++		const errors = createRecorder<readonly [unknown]>()
+ 		const probe = new NodeWorkerOptionsProbe<number, number>(
+ 			{
+-				script: fixture('double.ts'),
++				on: {},
++				error: errors.handler,
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				workerData: undefined,
+@@ -117,8 +143,10 @@ describe('NodeWorkerOptionsProbe', () => {
+ 			},
+ 			reads,
+ 		)
+-		const laterScript = fixture('echo-data.ts')
++		const laterScript = buildFixtureURL('echo-data.ts')
+ 		probe.replace({
++			on: {},
++			error: errors.handler,
+ 			script: laterScript,
+ 			input: isNumber,
+ 			result: isNumber,
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 854cfd2..99f3134 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1,12 +1,14 @@
+ // Server-test setup — node-only helpers, loaded after `setup.ts` for the node
+ // `src:server` project. `node:fs` / `node:os` / `node:path` imports belong here,
+-// never in `setup.ts` (AGENTS §16.1).
++// never in `setup.ts`.
+ 
+ import type { NodeWorkerOptions } from '@src/server'
+ import type { RecorderInterface } from '@orkestrel/test'
++import type { ScratchInterface } from '@orkestrel/test/server'
+ import type { Worker as ThreadWorker } from 'node:worker_threads'
+ import { join } from 'node:path'
+ import { isRecord } from '@orkestrel/contract'
++import { resolveRoot } from '@orkestrel/test'
+ import { createScratch } from '@orkestrel/test/server'
+ 
+ /** Post one valid raw run envelope to a real worker thread. */
+@@ -14,18 +16,32 @@ export function postRun(thread: ThreadWorker, id: string, job: string, input: un
+ 	thread.postMessage({ id, job, command: 'run', input })
+ }
+ 
+-// A fresh on-disk JSON-store path under an owned scratch directory, with a `cleanup`
+-// thunk that removes it. Used by the `createJSONQueueStore` tests, which need real
+-// file persistence across a store reopen. Call `cleanup` in `afterEach` so no temp
+-// file leaks (AGENTS §16.1).
+-export function tempDatabasePath(): { readonly path: string; readonly cleanup: () => void } {
+-	const scratch = createScratch({ prefix: 'worker-store-' })
+-	return {
+-		path: join(scratch.path, 'store.json'),
+-		cleanup: () => scratch.destroy(),
++// The one worker-fixture URL builder for the whole suite, anchored to the workspace root
++// rather than to a caller's module URL, so every test file resolves the same directory
++// without redeclaring a local factory.
++export function buildFixtureURL(name: string): URL {
++	return new URL(`tests/src/server/fixtures/${name}`, resolveRoot(import.meta))
++}
++
++/** Creates a success listener that resolves its result and then throws. */
++export function createThrowingSuccess(
++	resolve: (value: readonly [id: string, result: number]) => void,
++): (id: string, result: number) => void {
++	return (id, result) => {
++		resolve([id, result])
++		throw new Error('listener-boom')
+ 	}
+ }
+ 
++// A fresh on-disk JSON-store path under an owned scratch directory, returned with the
++// scratch that owns it. Used by the `createJSONQueueStore` tests, which need real file
++// persistence across a store reopen. Register `scratch.destroy` as a disposer so no temp
++// file leaks.
++export function tempDatabasePath(): { readonly path: string; readonly scratch: ScratchInterface } {
++	const scratch = createScratch({ prefix: 'worker-store-' })
++	return { path: join(scratch.path, 'store.json'), scratch }
++}
++
+ /** Getter-backed Node worker options whose property reads are recorded. */
+ export class NodeWorkerOptionsProbe<TInput, TResult> implements NodeWorkerOptions<TInput, TResult> {
+ 	#values: Required<NodeWorkerOptions<TInput, TResult>>
+@@ -39,6 +55,16 @@ export class NodeWorkerOptionsProbe<TInput, TResult> implements NodeWorkerOption
+ 		this.#reads = reads
+ 	}
+ 
++	get on(): Required<NodeWorkerOptions<TInput, TResult>>['on'] {
++		this.#reads.handler('on')
++		return this.#values.on
++	}
++
++	get error(): Required<NodeWorkerOptions<TInput, TResult>>['error'] {
++		this.#reads.handler('error')
++		return this.#values.error
++	}
++
+ 	get script(): string | URL {
+ 		this.#reads.handler('script')
+ 		return this.#values.script
+diff --git a/tests/src/core/Worker.test.ts b/tests/src/core/Worker.test.ts
+index d62e205..e03f29c 100644
+--- a/tests/src/core/Worker.test.ts
++++ b/tests/src/core/Worker.test.ts
+@@ -27,10 +27,10 @@ function track<T extends DestroyableWorker>(worker: T): T {
+ 	return worker
+ }
+ 
+-// src/core/workers/Worker.ts — the Queue⨉Pool facade. Real behaviour, no mocks: a
++// src/core/Worker.ts — the Queue⨉Pool facade. Real behaviour, no mocks: a
+ // counting `create` hook proves resources are reused and never exceed the pool max,
+ // gates pin jobs in flight so the cap is observable, and a throwing handler proves the
+-// acquired resource is released in the `finally` and reused by a later job (AGENTS §16).
++// acquired resource is released in the `finally` and reused by a later job.
+ // Beyond the per-feature cases, production-grade sections cover: the resource bound
+ // under saturation (40 jobs through 3 slots — at most 3 resources), a burst of failing
+ // handlers never starving the pool, the pool-max-vs-queue-concurrency mismatch (real
+@@ -617,7 +617,7 @@ describe('Worker — lifecycle delegation', () => {
+ })
+ 
+ describe('Worker — a signal-ignoring handler keeps its resource leased', () => {
+-	it('frees the queue slot on timeout while the resource stays held, then reuses it once the handler settles', async () => {
++	it('frees the queue slot on timeout while the resource stays held, then reuses it after the handler settles', async () => {
+ 		const { create, created } = createResourceFactory()
+ 		const gate = Promise.withResolvers<void>()
+ 		const started = createRecorder<[number]>()
+@@ -848,7 +848,7 @@ describe('Worker — destroy tears down the pool', () => {
+ 			concurrency: 1,
+ 			pool: { create, destroy },
+ 			// A cooperative handler that unwinds on its signal, so the `finally` releases
+-			// the resource into the (now-destroyed) pool, which destroys it.
++			// the resource into the already-destroyed pool, which destroys it.
+ 			handler: (_input, _resource, execution) =>
+ 				new Promise<void>((_resolve, reject) => {
+ 					execution.signal.addEventListener('abort', () => reject(execution.signal.reason), {
+@@ -929,7 +929,7 @@ describe('Worker — destroy tears down the pool', () => {
+ })
+ 
+ describe('Worker — durability passthrough + restore', () => {
+-	it('persists a job through its store and re-runs it via restore (delegated to the queue)', async () => {
++	it('persists a job through its store and re-runs it on restore (delegated to the queue)', async () => {
+ 		const store = createMemoryQueueStore(stringShape())
+ 
+ 		// Worker A: persist a job but never run it — paused, so its parked workers leave the
+@@ -1071,7 +1071,7 @@ describe('Worker — pool max vs queue concurrency mismatch', () => {
+ 		let liveHandlers = 0
+ 		let peakHandlers = 0
+ 		// concurrency 4 but only 2 resources — at most 2 handlers can truly run at once
+-		// because a handler only proceeds once it has ACQUIRED a resource.
++		// because a handler only proceeds after it has ACQUIRED a resource.
+ 		const worker = new Worker<number, number, void>({
+ 			concurrency: 4,
+ 			pool: { create, max: 2 },
+@@ -1195,7 +1195,7 @@ describe('Worker — destroy mid-flight tears down queue and pool together', ()
+ 	})
+ })
+ 
+-// ── Emitter — the PUSH observation surface (AGENTS §13) ──────────────────────
++// ── Emitter — the PUSH observation surface ───────────────────────────────────
+ //
+ // The Worker exposes a typed `emitter` (`WorkerEventMap<TResult>`) RE-EXPOSING the
+ // underlying queue's job lifecycle — `enqueue` / `start` / `retry` / `success` / `failure` /
+@@ -1204,13 +1204,13 @@ describe('Worker — destroy mid-flight tears down queue and pool together', ()
+ // worker's own emitter, which isolates a buggy worker observer (routing its throw to the
+ // worker emitter's `error` handler — the `error` option) so it can NEVER corrupt the inner
+ // queue or pool. These pin: the facade events fire at the right moments with the right
+-// payloads; `on?` wires initial listeners; and the emit-safety guarantee — a throwing observer
+-// leaves the worker fully functional (jobs still run against pooled resources, counts
+-// balanced), yet the `error` handler fires.
++// payloads; `on?` wires initial listeners; and the emitter's listener isolation — one listener's
++// throw never prevents a sibling listener and reaches the emitter's `error` handler, while the
++// worker stays fully functional (jobs still run against pooled resources, counts balanced).
+ 
+ // The WorkerEventMap event names recorded across the emitter tests — fed to the shared
+-// `createRecorders` (AGENTS §16.1: the per-event wiring is centralized; this file
+-// keeps only the names its scenarios observe).
++// `createRecorders`; the per-event wiring is centralized, and this file keeps only the
++// names its scenarios observe.
+ const WORKER_EVENTS: readonly [
+ 	'enqueue',
+ 	'start',
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index fcfdb45..8ff8057 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -3,8 +3,9 @@ import { createWorker } from '@src/core'
+ import { createRecorder } from '@orkestrel/test'
+ 
+ // src/core/factories.ts — createWorker wires up a working, typed interface end to end
+-// (AGENTS §16). createQueue / createPool / createDatabaseQueueStore / createMemoryQueueStore
+-// are @orkestrel/queue and @orkestrel/pool factories, covered by their own packages' tests.
++// with real implementations. createQueue / createPool / createDatabaseQueueStore /
++// createMemoryQueueStore are @orkestrel/queue and @orkestrel/pool factories, covered by
++// their own packages' tests.
+ 
+ describe('createWorker', () => {
+ 	it('returns a working worker that runs the handler with a pooled resource', async () => {
+diff --git a/tests/src/server/factories.test.ts b/tests/src/server/factories.test.ts
+index 9504079..fcd89f0 100644
+--- a/tests/src/server/factories.test.ts
++++ b/tests/src/server/factories.test.ts
+@@ -12,23 +12,31 @@ import {
+ 	stringShape,
+ } from '@orkestrel/contract'
+ import { createMemoryQueueStore } from '@orkestrel/queue'
+-import { createJSONQueueStore, createNodeWorker } from '@src/server'
+-import { createRecorder, createTeardown } from '@orkestrel/test'
+-import { NodeWorkerOptionsProbe, tempDatabasePath } from '../../setupServer.js'
++import { createJSONQueueStore, createNodeWorker, createThread } from '@src/server'
++import { createRecorder, createTeardown, waitForCondition } from '@orkestrel/test'
++import {
++	buildFixtureURL,
++	createThrowingSuccess,
++	NodeWorkerOptionsProbe,
++	postRun,
++	tempDatabasePath,
++	ThreadReply,
++} from '../../setupServer.js'
+ 
+ // src/server/factories.ts — createJSONQueueStore over a real JSON file (node
+ // env, no mocks). Durability is the JSONDriver's job and the store engine is shared, so
+ // the proof is cross-INSTANCE: entries one store persists to a path are loaded by a
+ // SECOND store built over the SAME path — exactly how a queue resumes after a restart.
++// `createThread` and `createNodeWorker` are driven over real worker threads.
+ 
+-// Track each temp-dir `cleanup` thunk so it runs in afterEach even when an assertion throws — the
+-// shared §16.1 teardown registrar.
++// Track each scratch disposer so it runs in afterEach even when an assertion throws — the
++// shared teardown registrar.
+ const teardown = createTeardown()
+ afterEach(() => teardown.destroy())
+ describe('createJSONQueueStore', () => {
+ 	it('persists outstanding entries across store instances over the same file', async () => {
+-		const { path, cleanup } = tempDatabasePath()
+-		teardown.add(cleanup)
++		const { path, scratch } = tempDatabasePath()
++		teardown.add(() => scratch.destroy())
+ 
+ 		const writer = createJSONQueueStore(path, stringShape())
+ 		await writer.save({ id: 'job-1', input: 'https://example.com', attempts: 0 })
+@@ -43,8 +51,8 @@ describe('createJSONQueueStore', () => {
+ 	})
+ 
+ 	it('round-trips a nested-object input through the JSON file', async () => {
+-		const { path, cleanup } = tempDatabasePath()
+-		teardown.add(cleanup)
++		const { path, scratch } = tempDatabasePath()
++		teardown.add(() => scratch.destroy())
+ 
+ 		const writer = createJSONQueueStore(
+ 			path,
+@@ -67,8 +75,8 @@ describe('createJSONQueueStore', () => {
+ 	})
+ 
+ 	it('reflects a removed entry across a reopen', async () => {
+-		const { path, cleanup } = tempDatabasePath()
+-		teardown.add(cleanup)
++		const { path, scratch } = tempDatabasePath()
++		teardown.add(() => scratch.destroy())
+ 
+ 		const writer = createJSONQueueStore(path, stringShape())
+ 		await writer.save({ id: 'a', input: 'a', attempts: 0 })
+@@ -80,10 +88,54 @@ describe('createJSONQueueStore', () => {
+ 	})
+ })
+ 
++describe('createThread', () => {
++	it('resolves a live thread and clones its `workerData` across at spawn', async () => {
++		const thread = await createThread(buildFixtureURL('echo-data.ts'), { token: 'spawned' })
++		try {
++			expect(thread.alive).toBe(true)
++			expect(thread.death).toBeUndefined()
++			expect(thread.worker.threadId).toBeGreaterThan(0)
++
++			// The second argument reaches the worker side intact — the fixture echoes back the
++			// value it was handed at spawn, so a dropped argument fails this assertion.
++			const reply = new ThreadReply(thread.worker, 'spawn-1').promise
++			postRun(thread.worker, 'spawn-1', 'spawn-1', 0)
++			expect(await reply).toEqual({ id: 'spawn-1', ok: true, value: { token: 'spawned' } })
++		} finally {
++			await thread.worker.terminate()
++		}
++	})
++
++	it('spawns with the `workerData` argument omitted', async () => {
++		const thread = await createThread(buildFixtureURL('double.ts'))
++		try {
++			expect(thread.alive).toBe(true)
++		} finally {
++			await thread.worker.terminate()
++		}
++	})
++
++	it('latches the death of a script that fails to resolve', async () => {
++		// A thread bootstraps and reports `online` BEFORE it fails to resolve its module, so the
++		// spawn resolves a live thread that dies immediately after. The persistent listeners the
++		// spawn attaches are what make that death observable: `death` latches and `alive` flips,
++		// so a pool validating this thread drops it instead of leasing a corpse.
++		const thread = await createThread(buildFixtureURL('does-not-exist.ts'))
++		try {
++			await waitForCondition('the thread latches its death', () => thread.death !== undefined, {
++				budget: 5_000,
++			})
++			expect(thread.alive).toBe(false)
++		} finally {
++			await thread.worker.terminate()
++		}
++	})
++})
++
+ describe('createNodeWorker', () => {
+ 	it('round-trips a job over a real worker thread, then tears down', async () => {
+ 		const worker = createNodeWorker({
+-			script: new URL('./fixtures/double.ts', import.meta.url),
++			script: buildFixtureURL('double.ts'),
+ 			input: isNumber,
+ 			result: isNumber,
+ 		})
+@@ -94,15 +146,42 @@ describe('createNodeWorker', () => {
+ 		}
+ 	})
+ 
++	it('wires the `on` hooks at construction and routes a listener throw to `error`', async () => {
++		const settled = Promise.withResolvers<readonly [string, number]>()
++		const failures = createRecorder<readonly [unknown]>()
++		const worker = createNodeWorker({
++			on: {
++				success: createThrowingSuccess(settled.resolve),
++			},
++			error: failures.handler,
++			script: buildFixtureURL('double.ts'),
++			input: isNumber,
++			result: isNumber,
++		})
++		try {
++			await expect(worker.enqueue(21, { id: 'hooked' })).resolves.toBe(42)
++			expect(await settled.promise).toEqual(['hooked', 42])
++			// The initial listener ran at construction, so its throw reached the supplied handler
++			// rather than being swallowed by an emitter built with neither hook.
++			expect(failures.count).toBe(1)
++			expect(failures.calls[0]?.[0]).toBeInstanceOf(Error)
++		} finally {
++			await worker.destroy()
++		}
++	})
++
+ 	it('captures every option once and retains the snapshot across jobs', async () => {
+ 		const reads =
+ 			createRecorder<
+ 				readonly [property: keyof NodeWorkerOptions<number, Readonly<Record<string, unknown>>>]
+ 			>()
++		const errors = createRecorder<readonly [unknown]>()
+ 		const payload = { token: 'initial' }
+ 		const probe = new NodeWorkerOptionsProbe<number, Readonly<Record<string, unknown>>>(
+ 			{
+-				script: new URL('./fixtures/echo-data.ts', import.meta.url),
++				on: {},
++				error: errors.handler,
++				script: buildFixtureURL('echo-data.ts'),
+ 				input: isNumber,
+ 				result: isRecord,
+ 				workerData: payload,
+@@ -116,6 +195,8 @@ describe('createNodeWorker', () => {
+ 		const worker = createNodeWorker(probe)
+ 		try {
+ 			expect(reads.calls.map(([property]) => property)).toEqual([
++				'on',
++				'error',
+ 				'script',
+ 				'input',
+ 				'result',
+@@ -126,10 +207,12 @@ describe('createNodeWorker', () => {
+ 				'store',
+ 			])
+ 			probe.replace({
+-				script: new URL('./fixtures/double.ts', import.meta.url),
++				on: {},
++				error: errors.handler,
++				script: buildFixtureURL('double.ts'),
+ 				input: literalOf(999),
+ 				result: recordOf({ changed: isBoolean }),
+-				workerData: () => undefined,
++				workerData: Promise.resolve(),
+ 				concurrency: 2,
+ 				retries: 1,
+ 				timeout: 1,
+@@ -138,7 +221,7 @@ describe('createNodeWorker', () => {
+ 
+ 			await expect(worker.enqueue(1)).resolves.toEqual(payload)
+ 			await expect(worker.enqueue(2)).resolves.toEqual(payload)
+-			expect(reads.count).toBe(8)
++			expect(reads.count).toBe(10)
+ 		} finally {
+ 			await worker.destroy()
+ 		}
+diff --git a/tests/src/server/fixtures/abortable.ts b/tests/src/server/fixtures/abortable.ts
+index 97b45df..582c2f2 100644
+--- a/tests/src/server/fixtures/abortable.ts
++++ b/tests/src/server/fixtures/abortable.ts
+@@ -1,5 +1,5 @@
+ // A real worker-thread script. Cooperative: it awaits its abort signal and resolves the
+-// sentinel `-1` once it fires, so a manually-driven test can observe the handler react.
++// sentinel `-1` after it fires, so a manually-driven test can observe the handler react.
+ import { serveWorker } from '../../../../src/server/handlers.ts'
+ 
+ serveWorker({
+diff --git a/tests/src/server/fixtures/crash.ts b/tests/src/server/fixtures/crash.ts
+index 54efe52..6b0b95e 100644
+--- a/tests/src/server/fixtures/crash.ts
++++ b/tests/src/server/fixtures/crash.ts
+@@ -3,7 +3,7 @@ import { serveWorker } from '../../../../src/server/handlers.ts'
+ 
+ // CRASHES the thread mid-flight (not a handler throw): a NEGATIVE input calls
+ // `process.exit(1)`, killing the thread WITHOUT a reply — so the parent's `ThreadWorker`
+-// emits `'exit'` while the job is in flight and hits `dispatch`'s `onExit` (the thread is
++// emits `'exit'` while the job is in flight and hits the `Dispatch`'s `onExit` (the thread is
+ // marked dead + evicted), distinct from `fail.ts`'s normal `{ ok: false }` error reply. A
+ // non-negative input doubles as usual, so a SUBSEQUENT job proves the pool spun up a fresh
+ // thread after the crashed one was evicted.
+diff --git a/tests/src/server/fixtures/identify.ts b/tests/src/server/fixtures/identify.ts
+index d64c20d..101d7c7 100644
+--- a/tests/src/server/fixtures/identify.ts
++++ b/tests/src/server/fixtures/identify.ts
+@@ -5,13 +5,13 @@ import { serveWorker } from '../../../../src/server/handlers.ts'
+ // Echoes the thread's OWN `threadId` (read straight from `node:worker_threads`, since the
+ // handler runs inside the thread). A test counts the distinct ids across many jobs to prove
+ // the concurrency cap (at most `concurrency` threads ever spawn) and idle reuse (the same
+-// thread serves multiple sequential jobs once it is returned to idle). The input gates the
++// thread serves multiple sequential jobs after it is returned to idle). The input gates the
+ // job by a small busy-spin so several jobs genuinely overlap in flight at concurrency > 1.
+ serveWorker({
+ 	input: (value: unknown): value is number => typeof value === 'number',
+ 	handler: (value) => {
+-		const deadline = Date.now() + value
+-		while (Date.now() < deadline) {
++		const deadline = performance.now() + value
++		while (performance.now() < deadline) {
+ 			// brief CPU spin so concurrent jobs co-reside on distinct threads
+ 		}
+ 		return threadId
+diff --git a/tests/src/server/fixtures/load-throw.ts b/tests/src/server/fixtures/load-throw.ts
+index 0b6f331..ca4385f 100644
+--- a/tests/src/server/fixtures/load-throw.ts
++++ b/tests/src/server/fixtures/load-throw.ts
+@@ -1,8 +1,8 @@
+ // A real worker-thread script that throws at module load, before
+ // it ever registers a handler with `serveWorker`. A worker thread fires `'online'` as its
+ // bootstrap completes and only THEN surfaces a module-evaluation throw as an `'error'` +
+-// `'exit'` — so `spawnThread` resolves a live thread that immediately dies. The death reaches
+-// an in-flight `dispatch` (its `onError` / `onExit` rejects the job) and flips `alive = false`
++// `'exit'` — so `createThread` resolves a live thread that immediately dies. The death reaches
++// an in-flight `Dispatch` (its `onError` / `onExit` rejects the job) and flips `alive = false`
+ // so the pool evicts the thread and a later job spawns a fresh one. Proves a broken worker
+ // script rejects the job cleanly (no hang) and the pool recovers.
+ throw new Error('worker failed to load')
+diff --git a/tests/src/server/fixtures/slow.ts b/tests/src/server/fixtures/slow.ts
+index 665b580..6909bca 100644
+--- a/tests/src/server/fixtures/slow.ts
++++ b/tests/src/server/fixtures/slow.ts
+@@ -7,9 +7,9 @@ import { serveWorker } from '../../../../src/server/handlers.ts'
+ serveWorker({
+ 	input: (value: unknown): value is number => typeof value === 'number',
+ 	handler: (value) => {
+-		const deadline = Date.now() + value
++		const deadline = performance.now() + value
+ 		// Intentionally ignores the signal — a tight spin loop.
+-		while (Date.now() < deadline) {
++		while (performance.now() < deadline) {
+ 			// burn CPU
+ 		}
+ 		return value
+diff --git a/tests/src/server/fixtures/throw-async.ts b/tests/src/server/fixtures/throw-async.ts
+index b10dbc0..ee38971 100644
+--- a/tests/src/server/fixtures/throw-async.ts
++++ b/tests/src/server/fixtures/throw-async.ts
+@@ -1,7 +1,7 @@
+ // A real worker-thread script. The handler rejects
+ // ASYNCHRONOUSLY (a rejected promise after a microtask), distinct from `fail.ts`'s
+ // SYNCHRONOUS throw — proving `serveWorker` reports a rejected async handler as an
+-// `{ ok: false, error }` reply (not an unhandled rejection / thread crash) just as it does a
++// `{ ok: false, error }` reply (not an unhandled rejection / thread crash) as it does a
+ // sync throw.
+ import { serveWorker } from '../../../../src/server/handlers.ts'
+ 
+diff --git a/tests/src/server/handlers.test.ts b/tests/src/server/handlers.test.ts
+index cbf2c70..1d5eb2e 100644
+--- a/tests/src/server/handlers.test.ts
++++ b/tests/src/server/handlers.test.ts
+@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
+ import { Worker as ThreadWorker } from 'node:worker_threads'
+ import { serveWorker } from '@src/server'
+ import { createRecorder, createTeardown, waitForDelay } from '@orkestrel/test'
+-import { postRun, ThreadReply } from '../../setupServer.js'
++import { buildFixtureURL, postRun, ThreadReply } from '../../setupServer.js'
+ 
+ // src/server/handlers.ts — the worker-side `serveWorker` entry, driven MANUALLY
+ // (no createNodeWorker): a raw `node:worker_threads` thread over a serve fixture, posting
+@@ -10,8 +10,6 @@ import { postRun, ThreadReply } from '../../setupServer.js'
+ // success envelope, an input-guard rejection envelope, and a cooperative abort firing the
+ // handler's signal. Every thread is terminated in `afterEach` so none leaks.
+ 
+-const fixture = (name: string): URL => new URL(`./fixtures/${name}`, import.meta.url)
+-
+ // Track every spawned thread so it is terminated in afterEach even when an assertion throws — the
+ // shared §16.1 teardown registrar (the disposer terminates a raw worker thread; its
+ // `Promise<number>` exit code is awaited as a plain settle, the value discarded).
+@@ -26,7 +24,7 @@ function track(thread: ThreadWorker): ThreadWorker {
+ }
+ 
+ function spawn(name: string): ThreadWorker {
+-	return track(new ThreadWorker(fixture(name)))
++	return track(new ThreadWorker(buildFixtureURL(name)))
+ }
+ 
+ describe('serveWorker — success reply envelope', () => {
+@@ -38,7 +36,7 @@ describe('serveWorker — success reply envelope', () => {
+ 	})
+ })
+ 
+-describe('serveWorker — execution identity', () => {
++describe('serveWorker — stable job identity', () => {
+ 	it('replies by correlation id while exposing the stable Queue id to the handler', async () => {
+ 		const thread = spawn('execution.ts')
+ 		const pending = new ThreadReply(thread, 'dispatch-1').promise
+@@ -50,7 +48,7 @@ describe('serveWorker — execution identity', () => {
+ 		const shared = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT)
+ 		const handled = new Int32Array(shared)
+ 		const replies = createRecorder<[unknown]>()
+-		const thread = track(new ThreadWorker(fixture('execution.ts'), { workerData: shared }))
++		const thread = track(new ThreadWorker(buildFixtureURL('execution.ts'), { workerData: shared }))
+ 		thread.on('message', replies.handler)
+ 		const pending = new ThreadReply(thread, 'dispatch-valid').promise
+ 		thread.postMessage({ id: 'dispatch-missing', command: 'run', input: 1 })
+@@ -129,7 +127,7 @@ describe('serveWorker — abort fires the handler signal', () => {
+ 		// Start a job that parks on its abort signal, then abort only by correlation id.
+ 		postRun(thread, 'dispatch-4', 'stable-4', 100)
+ 		thread.postMessage({ id: 'dispatch-4', command: 'abort' })
+-		// The cooperative handler resolves the sentinel -1 once its signal fires.
++		// The cooperative handler resolves the sentinel -1 after its signal fires.
+ 		expect(await pending).toEqual({ id: 'dispatch-4', ok: true, value: -1 })
+ 	})
+ 
+@@ -183,8 +181,8 @@ describe('serveWorker — unknown message command', () => {
+ describe('serveWorker — result shapes round-trip', () => {
+ 	it('replies an object / array / null / boolean value unchanged', async () => {
+ 		// `echo.ts` returns its input verbatim, so the reply `value` carries whatever shape was
+-		// posted — proving the `{ ok: true, value }` envelope round-trips structured shapes (not
+-		// just scalars) through the worker side.
++		// posted — proving the `{ ok: true, value }` envelope round-trips structured shapes as
++		// well as scalars through the worker side.
+ 		const thread = spawn('echo.ts')
+ 		const shapes: readonly unknown[] = [
+ 			{ nested: { count: 2 }, items: [1, 2, 3] },
+@@ -205,7 +203,9 @@ describe('serveWorker — option capture', () => {
+ 	it('reads input then handler once and retains both identities across jobs', async () => {
+ 		const shared = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3)
+ 		const counters = new Int32Array(shared)
+-		const thread = track(new ThreadWorker(fixture('serve-options.ts'), { workerData: shared }))
++		const thread = track(
++			new ThreadWorker(buildFixtureURL('serve-options.ts'), { workerData: shared }),
++		)
+ 		const first = new ThreadReply(thread, 'job-o1').promise
+ 		postRun(thread, 'job-o1', 'job-o1', 21)
+ 		expect(await first).toEqual({ id: 'job-o1', ok: true, value: 42 })
+@@ -220,7 +220,9 @@ describe('serveWorker — option capture', () => {
+ 		const shared = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3)
+ 		const counters = new Int32Array(shared)
+ 		Atomics.store(counters, 2, 1)
+-		const thread = track(new ThreadWorker(fixture('serve-options.ts'), { workerData: shared }))
++		const thread = track(
++			new ThreadWorker(buildFixtureURL('serve-options.ts'), { workerData: shared }),
++		)
+ 		const failure = Promise.withResolvers<Error>()
+ 		thread.once('error', failure.resolve)
+ 		const error = await failure.promise
+@@ -234,7 +236,7 @@ describe('serveWorker — main-thread no-op', () => {
+ 	it('reads neither option and never runs the handler when called off a worker thread', async () => {
+ 		// THIS test runs on the main thread, where `parentPort === null`, so `serveWorker`
+ 		// must return immediately — registering no listeners and never invoking the handler.
+-		// A recorder stands in for the handler; it is a real callback (AGENTS §16.1), so a
++		// A recorder stands in for the handler; it is a real callback, so a
+ 		// single recorded call would prove the no-op guard failed.
+ 		const reads = createRecorder<[string]>()
+ 		const handled = createRecorder<[number]>()
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 864bb61..46ab71f 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -10,17 +10,20 @@ import {
+ } from '@orkestrel/contract'
+ import { MemoryQueueStore } from '@orkestrel/queue'
+ import { fileURLToPath } from 'node:url'
+-import { createNodeWorker, dispatch, isReply, spawnThread } from '@src/server'
+-import { createTeardown, waitForDelay } from '@orkestrel/test'
+-
+-// src/server/helpers.ts — the main-side worker-thread machinery (`spawnThread` /
+-// `dispatch` / `isReply`) `createNodeWorker` composes over. The round-trip suites below
+-// drive `createNodeWorker` over REAL worker threads (no mocking; the node `src:server`
+-// project), exercising `spawnThread` + `dispatch` END TO END — each stands up a worker
++import { createNodeWorker, createThread, Dispatch, isReply } from '@src/server'
++import { createTeardown, waitForCondition } from '@orkestrel/test'
++import { buildFixtureURL } from '../../setupServer.js'
++
++// src/server/helpers.ts — the `isReply` predicate a `Dispatch` filters inbound messages
++// with, proven directly at the end of this file, plus the main-side worker-thread machinery
++// (`createThread` / `Dispatch`) it serves. The following round-trip suites drive
++// `createNodeWorker` over REAL worker threads (no mocking; the node `src:server`
++// project), exercising `createThread` + `Dispatch` END TO END — each stands up a worker
+ // against a real fixture script, drives
+ // jobs, and tears it down in `afterEach` so no thread leaks and the process exits; the
+ // fixtures are raw `.ts` loaded by Node's type-stripping; the server Vitest project supplies
+-// the required flag on Node 22.12–22.17 and Node 23.0–23.5. Paths resolve from this file's URL.
++// the required flag on Node 22.12–22.17 and Node 23.0–23.5. Fixture paths resolve through the
++// shared `buildFixtureURL` helper, anchored to the workspace root.
+ 
+ const isEven = (value: unknown): value is number => isNumber(value) && value % 2 === 0
+ const isThrowingInput = (value: unknown): value is number => {
+@@ -36,9 +39,6 @@ const isWorkerPayload = (value: unknown): value is { readonly token: string } =>
+ }
+ const isNumberArray = arrayOf(isNumber)
+ 
+-// The fixtures directory, resolved from this test's URL so the runner's cwd never matters.
+-const fixture = (name: string): URL => new URL(`./fixtures/${name}`, import.meta.url)
+-
+ // Track every worker so it is destroyed even when an assertion throws.
+ const teardown = createTeardown()
+ afterEach(() => teardown.destroy())
+@@ -51,7 +51,7 @@ function track<T extends { destroy(): Promise<void> }>(worker: T): T {
+ describe('createNodeWorker — round-trip over a thread', () => {
+ 	it('dispatches the input to a thread and resolves the narrowed reply', async () => {
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('double.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({ script: buildFixtureURL('double.ts'), input: isNumber, result: isNumber }),
+ 		)
+ 		await expect(worker.enqueue(21)).resolves.toBe(42)
+ 	})
+@@ -59,7 +59,7 @@ describe('createNodeWorker — round-trip over a thread', () => {
+ 	it('runs many jobs on a small pool and returns every result', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 3,
+@@ -75,7 +75,7 @@ describe('createNodeWorker — concurrency over parallel threads', () => {
+ 	it('runs up to `concurrency` jobs at once and never exceeds it', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 2,
+@@ -94,7 +94,7 @@ describe('createNodeWorker — concurrency over parallel threads', () => {
+ describe('createNodeWorker — failure + retry', () => {
+ 	it('rejects with the thread error message when the handler throws', async () => {
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('fail.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({ script: buildFixtureURL('fail.ts'), input: isNumber, result: isNumber }),
+ 		)
+ 		await expect(worker.enqueue(5)).rejects.toThrow('boom:5')
+ 	})
+@@ -102,7 +102,7 @@ describe('createNodeWorker — failure + retry', () => {
+ 	it('re-runs a failing job up to its retry budget (then rejects)', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('fail.ts'),
++				script: buildFixtureURL('fail.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				retries: 2,
+@@ -113,11 +113,11 @@ describe('createNodeWorker — failure + retry', () => {
+ 	})
+ })
+ 
+-describe('createNodeWorker — stable Queue execution identity', () => {
++describe('createNodeWorker — stable Queue job identity', () => {
+ 	it('exposes an explicit enqueue id to the worker handler', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('execution.ts'),
++				script: buildFixtureURL('execution.ts'),
+ 				input: isNumber,
+ 				result: isString,
+ 			}),
+@@ -128,7 +128,7 @@ describe('createNodeWorker — stable Queue execution identity', () => {
+ 	it('keeps the job id stable while minting a fresh retry correlation id', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('identity.ts'),
++				script: buildFixtureURL('identity.ts'),
+ 				input: isNumber,
+ 				result: (
+ 					value: unknown,
+@@ -148,7 +148,7 @@ describe('createNodeWorker — stable Queue execution identity', () => {
+ 		await store.save({ id: 'stable-restore', input: 1, attempts: 0 })
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('execution.ts'),
++				script: buildFixtureURL('execution.ts'),
+ 				input: isNumber,
+ 				result: isString,
+ 				store,
+@@ -168,7 +168,7 @@ describe('createNodeWorker — timeout terminates + evicts the thread', () => {
+ 	it('rejects on the per-attempt timeout and replaces the tainted thread', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('slow.ts'),
++				script: buildFixtureURL('slow.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				timeout: 50,
+@@ -182,7 +182,7 @@ describe('createNodeWorker — timeout terminates + evicts the thread', () => {
+ 	it('serves a later job on a fresh thread after a timeout eviction', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('slow.ts'),
++				script: buildFixtureURL('slow.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				timeout: 50,
+@@ -200,56 +200,81 @@ describe('createNodeWorker — timeout terminates + evicts the thread', () => {
+ 	})
+ })
+ 
+-// `concurrency: 1` is deliberate in the eviction tests below: the pool's `max` matches it, so
+-// when the aborted job's thread is released a SECOND, already-queued job is PARKED as a pool
+-// waiter (the pool is at `max` with the dead thread still leased) — the exact contention that
+-// drives the pool's FIFO `release`→waiter HANDOFF. That handoff now re-validates the released
+-// resource (the core `Pool` fix), so the dead thread is destroyed and the parked job is served
+-// a FRESH thread instead of the terminated one — proving eviction through the handoff path
+-// end to end (not merely through `grow`, which a `concurrency: 2` pool would have masked).
++// `concurrency: 1` is deliberate in the `in-flight signal abort` eviction suite: the pool's
++// `max` matches it, so when the aborted job's thread is released a SECOND, already-queued job
++// is PARKED as a pool waiter (the pool is at `max` with the dead thread still leased) — the
++// exact contention that drives the pool's FIFO `release`→waiter HANDOFF. That handoff
++// re-validates the released resource (the core `Pool` fix), so the dead thread is destroyed
++// and the parked job is served a FRESH thread instead of the terminated one — proving eviction
++// through the handoff path end to end (not merely through `grow`, which `concurrency: 2` masks).
+ describe('createNodeWorker — in-flight signal abort terminates + evicts the thread', () => {
+ 	it('rejects the aborted attempt and replaces the (signal-ignoring) thread', async () => {
++		// `identify.ts` spins for its input and echoes its OWN `threadId`, so the thread the pool
++		// leases is observable from the result — which is what turns "the thread was evicted" into
++		// a determinate assertion rather than a job that merely finishes eventually.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('slow.ts'),
++				script: buildFixtureURL('identify.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 1,
+ 			}),
+ 		)
++		// Warm the pool first, so the aborted job's `acquire` returns this already-online IDLE
++		// thread instead of spawning one. `active` counts a claimed queue entry, which increments
++		// before the handler awaits `acquire`, so without the warm-up the abort can land while
++		// the spawn is still pending and reject the acquire — never reaching the in-flight
++		// listener path this spec names.
++		const leased = await worker.enqueue(0)
++		expect(leased).toBeGreaterThan(0)
+ 		// The fixture spins 2s ignoring its signal. A per-entry `signal` (distinct from the
+-		// timeout path) aborts the attempt MID-FLIGHT: `dispatch`'s `onAbort` posts the abort,
+-		// terminates the uncooperative thread, and flips `alive = false` so the pool evicts it.
++		// timeout path) aborts the attempt MID-FLIGHT: the `Dispatch`'s abort handler posts the
++		// abort, terminates the uncooperative thread, and flips `alive = false` so the pool
++		// evicts it.
+ 		const controller = new AbortController()
+ 		const aborted = worker.enqueue(2_000, { signal: controller.signal })
+ 		// Gate on the job actually being in flight before aborting — so this exercises the
+ 		// in-flight `addEventListener('abort')` path, not the pre-flight `signal.aborted` short
+-		// circuit (short real timer, AGENTS §16; the eviction proof below carries determinism).
+-		await waitForDelay(20)
++		// circuit.
++		await waitForCondition('the long job is in flight', () => worker.active === 1, {
++			budget: 5_000,
++		})
+ 		expect(worker.active).toBe(1)
+ 		controller.abort()
+ 		// The attempt rejects (the exact reason races between the signal's `reason` and the
+-		// dispatch's abort error, so assert only that it rejects — the eviction is proven next).
++		// dispatch's abort error, so assert only that it rejects).
+ 		await expect(aborted).rejects.toBeDefined()
++		// The eviction this spec exists for: the aborted thread was terminated, so the pool
++		// cannot hand it back and the replacement reports a DIFFERENT `threadId`. An abort that
++		// merely rejected the job would return the same still-spinning thread to idle and this
++		// job would report the leased id again.
++		const replacement = await worker.enqueue(0, { timeout: 5_000 })
++		expect(replacement).toBeGreaterThan(0)
++		expect(replacement).not.toBe(leased)
+ 	})
+ 
+ 	it('serves a queued job on a fresh thread after a signal-abort eviction (handoff)', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('slow.ts'),
++				script: buildFixtureURL('slow.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 1,
+ 			}),
+ 		)
++		// Warm the pool so the aborted job leases an already-online idle thread and the abort
++		// lands on the in-flight listener rather than on a pending spawn.
++		await expect(worker.enqueue(1)).resolves.toBe(1)
+ 		const controller = new AbortController()
+ 		const aborted = worker.enqueue(2_000, { signal: controller.signal })
+ 		// A SECOND job is queued behind the aborted one. At `concurrency: 1` it parks on the
+ 		// pool (the only slot is leased by the in-flight job), so when that job's thread is
+ 		// terminated + released the queued job is the PARKED WAITER the release hands off to —
+-		// it must receive a fresh thread, never the dead one the (now-validated) handoff drops.
++		// it must receive a fresh thread, never the dead one the re-validating handoff drops.
+ 		const queued = worker.enqueue(1)
+-		await waitForDelay(20)
++		await waitForCondition('the long job is in flight', () => worker.active === 1, {
++			budget: 5_000,
++		})
+ 		expect(worker.active).toBe(1)
+ 		controller.abort()
+ 		await expect(aborted).rejects.toBeDefined()
+@@ -264,7 +289,7 @@ describe('createNodeWorker — a thread crash mid-flight evicts the thread', ()
+ 	it('rejects the in-flight job when its thread crashes, then runs a later job on a fresh thread', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('crash.ts'),
++				script: buildFixtureURL('crash.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 2,
+@@ -272,7 +297,7 @@ describe('createNodeWorker — a thread crash mid-flight evicts the thread', ()
+ 		)
+ 		// A NEGATIVE input makes the fixture `process.exit(1)` — the thread dies WITHOUT a
+ 		// reply, so `ThreadWorker` emits `'exit'`/`'error'` while the job is in flight and
+-		// `dispatch`'s `onExit`/`onError` rejects it (not the normal `{ ok: false }` reply that
++		// the `Dispatch`'s `onExit`/`onError` rejects it (not the normal `{ ok: false }` reply that
+ 		// `fail.ts` covers) and marks the thread dead.
+ 		await expect(worker.enqueue(-1)).rejects.toBeDefined()
+ 		// The dead thread is never reused; a non-negative input then doubles on a FRESH thread,
+@@ -284,7 +309,11 @@ describe('createNodeWorker — a thread crash mid-flight evicts the thread', ()
+ describe('createNodeWorker — result-guard violation', () => {
+ 	it('rejects when a reply does not satisfy the result guard', async () => {
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('bad-result.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({
++				script: buildFixtureURL('bad-result.ts'),
++				input: isNumber,
++				result: isNumber,
++			}),
+ 		)
+ 		// The fixture replies with a string; the number `result` guard rejects it.
+ 		await expect(worker.enqueue(3)).rejects.toThrow('reply did not satisfy result guard')
+@@ -293,7 +322,7 @@ describe('createNodeWorker — result-guard violation', () => {
+ 	it('contains a throwing result guard and keeps the worker usable', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isThrowingResult,
+ 				concurrency: 1,
+@@ -307,7 +336,7 @@ describe('createNodeWorker — result-guard violation', () => {
+ describe('createNodeWorker — input-guard fail-fast', () => {
+ 	it('rejects a bad input before it crosses the boundary', async () => {
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('double.ts'), input: isEven, result: isNumber }),
++			createNodeWorker({ script: buildFixtureURL('double.ts'), input: isEven, result: isNumber }),
+ 		)
+ 		await expect(worker.enqueue(3)).rejects.toThrow('input did not satisfy input guard')
+ 		// A valid input still works on the same worker.
+@@ -317,7 +346,7 @@ describe('createNodeWorker — input-guard fail-fast', () => {
+ 	it('contains a throwing input guard and keeps the worker usable', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isThrowingInput,
+ 				result: isNumber,
+ 				concurrency: 1,
+@@ -332,7 +361,7 @@ describe('createNodeWorker — non-cloneable result', () => {
+ 	it('rejects the failed clone and serves a later job on the same concurrency-1 worker', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('noncloneable-result.ts'),
++				script: buildFixtureURL('noncloneable-result.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 1,
+@@ -349,7 +378,7 @@ describe('createNodeWorker — non-cloneable input', () => {
+ 		// function property fails the structured clone. The job must reject cleanly.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: unionOf(isRecord, isNumber),
+ 				result: isNumber,
+ 				concurrency: 1,
+@@ -369,7 +398,7 @@ describe('createNodeWorker — concurrency caps the live thread count + reuses i
+ 		// per in-flight slot). All eight still complete.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('identify.ts'),
++				script: buildFixtureURL('identify.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 4,
+@@ -386,7 +415,11 @@ describe('createNodeWorker — concurrency caps the live thread count + reuses i
+ 		// `alive`, is re-validated and reused for the next — so every sequential job reports the
+ 		// SAME `threadId`. Proves idle reuse (not a fresh thread per job).
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('identify.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({
++				script: buildFixtureURL('identify.ts'),
++				input: isNumber,
++				result: isNumber,
++			}),
+ 		)
+ 		const first = await worker.enqueue(0)
+ 		const second = await worker.enqueue(0)
+@@ -404,7 +437,7 @@ describe('createNodeWorker — workerData reaches the worker side', () => {
+ 		const payload = { token: 'abc', limits: { max: 7, names: ['a', 'b'] } }
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('echo-data.ts'),
++				script: buildFixtureURL('echo-data.ts'),
+ 				input: isNumber,
+ 				result: isWorkerPayload,
+ 				workerData: payload,
+@@ -415,12 +448,12 @@ describe('createNodeWorker — workerData reaches the worker side', () => {
+ 
+ 	it('surfaces a clear error (no hang) when `workerData` cannot be cloned', async () => {
+ 		// A function is not structured-cloneable, so the `ThreadWorker` constructor throws a
+-		// DataCloneError SYNCHRONOUSLY inside `spawnThread` (workerData is cloned at construction,
++		// DataCloneError SYNCHRONOUSLY inside the spawn (workerData is cloned at construction,
+ 		// before the spawn promise). The pool's `create` propagates it and the job rejects cleanly
+ 		// — never a silent hang waiting on a thread that never spawned.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				workerData: () => undefined,
+@@ -433,10 +466,14 @@ describe('createNodeWorker — workerData reaches the worker side', () => {
+ describe('createNodeWorker — large / deep payloads round-trip', () => {
+ 	it('clones a large array input and result across the boundary', async () => {
+ 		// A 10k-element array sums on the thread; both the large input and the numeric result
+-		// survive the structured clone intact (a stress on the clone path, not just a scalar).
++		// survive the structured clone intact (a stress on the clone path rather than a scalar).
+ 		const size = 10_000
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('sum.ts'), input: isNumberArray, result: isNumber }),
++			createNodeWorker({
++				script: buildFixtureURL('sum.ts'),
++				input: isNumberArray,
++				result: isNumber,
++			}),
+ 		)
+ 		const input = Array.from({ length: size }, (_unused, index) => index)
+ 		const expected = (size * (size - 1)) / 2
+@@ -446,11 +483,15 @@ describe('createNodeWorker — large / deep payloads round-trip', () => {
+ 
+ describe('createNodeWorker — a worker script that fails to load', () => {
+ 	it('rejects the job cleanly when the worker script throws at module load', async () => {
+-		// `load-throw.ts` throws while evaluating. The thread comes `'online'` (so `spawnThread`
++		// `load-throw.ts` throws while evaluating. The thread comes `'online'` (so the spawn
+ 		// resolves a live thread) then immediately `'error'`s / `'exit'`s — the death reaches the
+-		// in-flight `dispatch`, which rejects the job. No hang: the broken script settles the job.
++		// in-flight `Dispatch`, which rejects the job. No hang: the broken script settles the job.
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('load-throw.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({
++				script: buildFixtureURL('load-throw.ts'),
++				input: isNumber,
++				result: isNumber,
++			}),
+ 		)
+ 		await expect(worker.enqueue(1)).rejects.toBeDefined()
+ 	})
+@@ -459,25 +500,33 @@ describe('createNodeWorker — a worker script that fails to load', () => {
+ 		// A non-existent module: the thread bootstraps, fails to resolve the module, and dies the
+ 		// same way — the job rejects rather than hanging on a reply that never comes. This was the
+ 		// suite's one residual flake (a hang under full-suite load, NOT slow bootstrap): the death
+-		// events could all fire before `dispatch` attached its listeners, losing the signal. The
+-		// `NodeThread.death` latch settles that ordering deterministically (the direct post-death
+-		// dispatch spec below pins the latch), so the spec runs at the default timeout again.
++		// events could all fire before the `Dispatch` attached its listeners, losing the signal. The
++		// `NodeThread.death` latch settles that ordering deterministically (the `latched-death path`
++		// suite pins the latch), so the spec runs at the default timeout again.
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('does-not-exist.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({
++				script: buildFixtureURL('does-not-exist.ts'),
++				input: isNumber,
++				result: isNumber,
++			}),
+ 		)
+ 		await expect(worker.enqueue(1)).rejects.toBeDefined()
+ 	})
+ 
+-	it('still serves a later job once a healthy script is used (pool recovers)', async () => {
++	it('still serves a later job after a healthy script is used (pool recovers)', async () => {
+ 		// The broken-script worker rejects + evicts its dead threads, but the FAILURE is per-worker;
+ 		// proving the harness recovers, a SEPARATE healthy worker enqueued right after still works —
+ 		// the runtime is not wedged by the prior load failures.
+ 		const broken = track(
+-			createNodeWorker({ script: fixture('load-throw.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({
++				script: buildFixtureURL('load-throw.ts'),
++				input: isNumber,
++				result: isNumber,
++			}),
+ 		)
+ 		await expect(broken.enqueue(1)).rejects.toBeDefined()
+ 		const healthy = track(
+-			createNodeWorker({ script: fixture('double.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({ script: buildFixtureURL('double.ts'), input: isNumber, result: isNumber }),
+ 		)
+ 		await expect(healthy.enqueue(21)).resolves.toBe(42)
+ 	})
+@@ -490,7 +539,7 @@ describe('createNodeWorker — a worker script that fails to load', () => {
+ 		// the eviction-and-respawn cycle is durable under repeated load failures.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('load-throw.ts'),
++				script: buildFixtureURL('load-throw.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				retries: 1,
+@@ -501,30 +550,35 @@ describe('createNodeWorker — a worker script that fails to load', () => {
+ 	})
+ })
+ 
+-describe('dispatch — the latched-death path (post-death dispatch settles immediately)', () => {
++describe('Dispatch — the latched-death path (post-death dispatch settles immediately)', () => {
+ 	it('rejects a dispatch onto a thread that already died, from the latched death', async () => {
+-		const thread = await spawnThread(fixture('double.ts'), undefined)
++		const thread = await createThread(buildFixtureURL('double.ts'))
+ 		await thread.worker.terminate()
+ 		expect(thread.alive).toBe(false)
+ 		expect(thread.death).toBeDefined()
+ 		const controller = new AbortController()
+-		const pending = dispatch(thread, 1, { id: 'post-death', signal: controller.signal }, isNumber)
++		const pending = new Dispatch(
++			thread,
++			1,
++			{ id: 'post-death', signal: controller.signal },
++			isNumber,
++		).promise
+ 		await expect(pending).rejects.toBe(thread.death)
+ 	})
+ })
+ 
+-describe('dispatch — exact terminal causes', () => {
++describe('Dispatch — exact terminal causes', () => {
+ 	it('rejects with the exact caller abort reason object', async () => {
+-		const thread = await spawnThread(fixture('slow.ts'), undefined)
++		const thread = await createThread(buildFixtureURL('slow.ts'))
+ 		try {
+ 			const controller = new AbortController()
+ 			const reason = Object.freeze({ command: 'stop', source: 'caller' })
+-			const pending = dispatch(
++			const pending = new Dispatch(
+ 				thread,
+ 				5_000,
+ 				{ id: 'exact-abort', signal: controller.signal },
+ 				isNumber,
+-			)
++			).promise
+ 			controller.abort(reason)
+ 			await expect(pending).rejects.toBe(reason)
+ 		} finally {
+@@ -533,15 +587,15 @@ describe('dispatch — exact terminal causes', () => {
+ 	})
+ 
+ 	it('rejects a code-1 crash with the exact latched thread death', async () => {
+-		const thread = await spawnThread(fixture('crash.ts'), undefined)
++		const thread = await createThread(buildFixtureURL('crash.ts'))
+ 		try {
+ 			const controller = new AbortController()
+-			const pending = dispatch(
++			const pending = new Dispatch(
+ 				thread,
+ 				-1,
+ 				{ id: 'exact-crash', signal: controller.signal },
+ 				isNumber,
+-			)
++			).promise
+ 			let failure: unknown
+ 			try {
+ 				await pending
+@@ -556,18 +610,48 @@ describe('dispatch — exact terminal causes', () => {
+ 	})
+ })
+ 
+-describe('dispatch — messageerror listener lifecycle', () => {
++describe('Dispatch — a consumer-supplied NodeThread owns its own liveness', () => {
++	it('rejects the aborted job and terminates the supplied worker, leaving `alive` untouched', async () => {
++		// A foreign `NodeThread`: a real `ThreadWorker` this package did not produce, wrapped in a
++		// plain object satisfying the published interface. The documented obligation on
++		// `NodeThread` is that eviction reaches `alive` only for a thread this package produced,
++		// so this proves the abort still rejects the job and terminates the supplied worker while
++		// the implementer's own `alive` stays exactly as the implementer reports it.
++		const spawned = await createThread(buildFixtureURL('slow.ts'))
++		const foreign = { worker: spawned.worker, alive: true, death: undefined }
++		try {
++			const controller = new AbortController()
++			const reason = Object.freeze({ command: 'stop', source: 'foreign' })
++			const pending = new Dispatch(
++				foreign,
++				5_000,
++				{ id: 'foreign-abort', signal: controller.signal },
++				isNumber,
++			).promise
++			controller.abort(reason)
++			await expect(pending).rejects.toBe(reason)
++			expect(foreign.alive).toBe(true)
++			// Control: the abort really terminated the supplied worker, so the reading is about
++			// ownership of `alive` rather than about a dispatch that did nothing.
++			expect(foreign.worker.threadId).toBe(-1)
++		} finally {
++			await foreign.worker.terminate()
++		}
++	})
++})
++
++describe('Dispatch — messageerror listener lifecycle', () => {
+ 	it('attaches one stable listener for the job and removes it on settlement', async () => {
+-		const thread = await spawnThread(fixture('double.ts'), undefined)
++		const thread = await createThread(buildFixtureURL('double.ts'))
+ 		try {
+ 			const baseline = thread.worker.listenerCount('messageerror')
+ 			const controller = new AbortController()
+-			const pending = dispatch(
++			const pending = new Dispatch(
+ 				thread,
+ 				2,
+ 				{ id: 'listener-lifecycle', signal: controller.signal },
+ 				isNumber,
+-			)
++			).promise
+ 			expect(thread.worker.listenerCount('messageerror')).toBe(baseline + 1)
+ 			await expect(pending).resolves.toBe(4)
+ 			expect(thread.worker.listenerCount('messageerror')).toBe(baseline)
+@@ -580,10 +664,10 @@ describe('dispatch — messageerror listener lifecycle', () => {
+ describe('createNodeWorker — protocol robustness (stray messages)', () => {
+ 	it('ignores stray / foreign-id messages and still resolves the correct reply', async () => {
+ 		// `stray.ts` posts a message with NO `id` and a well-formed reply for a DIFFERENT id BEFORE
+-		// its real reply. `dispatch`'s `isReply` guard drops both (id mismatch), so the job still
++		// its real reply. The `Dispatch`'s `isReply` filter drops both (id mismatch), so the job still
+ 		// resolves its own correct value — a thread that chatters on the channel can't corrupt a job.
+ 		const worker = track(
+-			createNodeWorker({ script: fixture('stray.ts'), input: isNumber, result: isNumber }),
++			createNodeWorker({ script: buildFixtureURL('stray.ts'), input: isNumber, result: isNumber }),
+ 		)
+ 		await expect(worker.enqueue(21)).resolves.toBe(42)
+ 	})
+@@ -593,7 +677,7 @@ describe('createNodeWorker — protocol robustness (matching-id malformed reply)
+ 	it('rejects, evicts the tainted thread, and serves later work on a replacement', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('malformed.ts'),
++				script: buildFixtureURL('malformed.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 1,
+@@ -607,12 +691,12 @@ describe('createNodeWorker — protocol robustness (matching-id malformed reply)
+ 
+ describe('createNodeWorker — an already-aborted enqueue signal', () => {
+ 	it('rejects without leaving the worker wedged (pre-flight abort short-circuit)', async () => {
+-		// A signal already aborted when the job reaches `dispatch` hits the `signal.aborted` short
++		// A signal already aborted when the job reaches its `Dispatch` hits the `signal.aborted` short
+ 		// circuit: it posts the abort + evicts and rejects WITHOUT awaiting a reply. The worker is
+ 		// not wedged — a later un-aborted job on the same worker still succeeds.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 2,
+@@ -631,7 +715,7 @@ describe('createNodeWorker — destroy with multiple threads mid-job', () => {
+ 		// leaked, vitest would hang at exit — so this passing + the process exiting IS the proof.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('slow.ts'),
++				script: buildFixtureURL('slow.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 3,
+@@ -640,7 +724,9 @@ describe('createNodeWorker — destroy with multiple threads mid-job', () => {
+ 		const inflight = [5_000, 5_000, 5_000].map((input) =>
+ 			worker.enqueue(input).catch((error: unknown) => error),
+ 		)
+-		await waitForDelay(20)
++		await waitForCondition('three jobs are in flight', () => worker.active === 3, {
++			budget: 5_000,
++		})
+ 		expect(worker.active).toBe(3)
+ 		await worker.destroy()
+ 		// Every in-flight job settles (rejected by the abort), so nothing dangles.
+@@ -659,7 +745,7 @@ describe('createNodeWorker — rapid enqueue / abort churn through the pool', ()
+ 		// still serves a final clean job. The trailing `destroy` (afterEach) terminates the pool.
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 3,
+@@ -698,7 +784,7 @@ describe('createNodeWorker — destroy terminates every thread', () => {
+ 	it('tears down so the process can exit (no hanging threads)', async () => {
+ 		const worker = track(
+ 			createNodeWorker({
+-				script: fixture('double.ts'),
++				script: buildFixtureURL('double.ts'),
+ 				input: isNumber,
+ 				result: isNumber,
+ 				concurrency: 2,
+@@ -714,10 +800,10 @@ describe('createNodeWorker — destroy terminates every thread', () => {
+ })
+ 
+ describe('fixture path resolves inside a thread', () => {
+-	it('loads a raw `.ts` worker script via the relative-to-source import', () => {
+-		// A guard on the fixture URL itself — the round-trip tests above are the real proof
++	it('loads a raw `.ts` worker script through the relative-to-source import', () => {
++		// A guard on the fixture URL itself — the `createNodeWorker` round-trip suites are the proof
+ 		// the relative `serveWorker` import resolves when Node loads the script in a thread.
+-		expect(fileURLToPath(fixture('double.ts'))).toContain('fixtures')
++		expect(fileURLToPath(buildFixtureURL('double.ts'))).toContain('fixtures')
+ 	})
+ })
+ 
