@@ -1,0 +1,5 @@
+M	package.json
+A	tests/setup.test.ts
+A	tests/setupServer.test.ts
+M	tests/src/core/compilers.test.ts
+M	vite.config.ts
