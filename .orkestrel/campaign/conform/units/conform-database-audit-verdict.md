@@ -30,4 +30,4 @@ Claim 4's counts are read from the capture files under `/home/user/work/evidence
 
 ## Terminal
 
-PASS (round 2 objective's refutation closed on the record by fix round 2; round 1 checker; the round-2 checker's F1 and F2 closed by fix round 3), pending the deciding run at landing.
+PASS (round 2 objective's refutation closed on the record by fix round 2; round 1 checker; the round-2 checker's F1 and F2 closed by fix round 3), the deciding run at landing read every gate exit 0 (landed as database `67c50a9`).

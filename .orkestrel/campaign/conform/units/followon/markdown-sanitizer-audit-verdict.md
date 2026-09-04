@@ -32,4 +32,4 @@ Claims 2, 4, 6, and 8 are not held by the checker. Claim 8's gate reading settle
 
 ## Terminal
 
-PASS (claims 1, 3, and 7 held by the round-3 checker; claim 5 ruled satisfied in substance; claim 9 closed by fix round 3 on the Orchestrator's reading), pending the deciding run at landing.
+PASS (claims 1, 3, and 7 held by the round-3 checker; claim 5 ruled satisfied in substance; claim 9 closed by fix round 3 on the Orchestrator's reading), the deciding run at landing read every gate exit 0 (landed as markdown `8823dc1`).

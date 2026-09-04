@@ -17,4 +17,4 @@ The gate reading settles on the Orchestrator's deciding run at landing: `format:
 
 ## Terminal
 
-PASS (Orchestrator's read of the substitution-only diff), pending the deciding run at landing.
+PASS (Orchestrator's read of the substitution-only diff), the deciding run at landing read every gate exit 0 (landed as browser `db03f8b`).

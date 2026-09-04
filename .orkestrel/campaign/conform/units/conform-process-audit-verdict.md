@@ -29,4 +29,4 @@ Claim 4's counts are read from the capture files under `/home/user/work/evidence
 
 ## Terminal
 
-PASS (round 2, objective and checker), pending the deciding run at landing.
+PASS (round 2, objective and checker), the deciding run at landing read every gate exit 0 (landed as process `7fe522e`).

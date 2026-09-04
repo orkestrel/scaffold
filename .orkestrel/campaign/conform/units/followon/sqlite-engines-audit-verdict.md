@@ -21,4 +21,4 @@ None.
 
 ## Terminal
 
-PASS, pending the deciding run at landing.
+PASS; the deciding run at landing read every gate exit 0 and the offline audit clean, landed as sqlite `87ab520`.

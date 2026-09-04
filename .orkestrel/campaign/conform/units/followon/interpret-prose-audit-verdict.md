@@ -21,4 +21,4 @@ The gate reading settles on the Orchestrator's deciding run at landing: `format:
 
 ## Terminal
 
-PASS (checker's claim-9 refutation ruled a permitted measurement), pending the deciding run at landing.
+PASS (checker's claim-9 refutation ruled a permitted measurement), the deciding run at landing read every gate exit 0 (landed as interpret `9a1b093`).

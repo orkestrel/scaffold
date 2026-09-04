@@ -34,4 +34,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 1's refutations closed by fix round 1, round 2's by fix round 2 and the evidence regeneration, round 3's by fix rounds 3 and 4 and the Orchestrator's citation removals), pending the deciding run at landing.
+PASS (round 1's refutations closed by fix round 1, round 2's by fix round 2 and the evidence regeneration, round 3's by fix rounds 3 and 4 and the Orchestrator's citation removals); the deciding run at landing read every gate exit 0 and the offline audit clean, landed as server `6dafcea`.

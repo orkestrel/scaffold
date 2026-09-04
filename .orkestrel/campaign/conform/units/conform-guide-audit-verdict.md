@@ -35,4 +35,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 1 objective's refutations closed by fix round 1; round 2 checker; round 2 objective; record findings closed by fix round 2), pending the deciding run at landing.
+PASS (round 1 objective's refutations closed by fix round 1; round 2 checker; round 2 objective; record findings closed by fix round 2), the deciding run at landing read every gate exit 0 (landed as guide `be14c1b`).

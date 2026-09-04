@@ -23,4 +23,4 @@ Claims 2, 4, 6, and 8 are not held by the checker. Claim 8's gate reading settle
 
 ## Terminal
 
-PASS (round 2 checker after fix round 1), pending the deciding run at landing.
+PASS (round 2 checker after fix round 1), the deciding run at landing read every gate exit 0 (landed as form `ca4aa7b`).

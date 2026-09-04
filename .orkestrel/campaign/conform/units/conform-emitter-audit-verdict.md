@@ -31,4 +31,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 3, objective and checker), pending the deciding run at landing.
+PASS (round 3, objective and checker), the deciding run at landing read every gate exit 0 (landed as emitter `67433a5`).

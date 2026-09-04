@@ -33,4 +33,4 @@ Claim 8's independent gate reading settles on the Orchestrator's deciding run at
 
 ## Terminal
 
-PASS (round 1 objective's refutation closed by fix round 1; round 2 lanes' record refutations and O1 to O3 closed by fix round 2 under a mutation probe), pending the deciding run at landing.
+PASS (round 1 objective's refutation closed by fix round 1; round 2 lanes' record refutations and O1 to O3 closed by fix round 2 under a mutation probe); the deciding run at landing read every gate exit 0 and the offline audit clean, landed as sea `846d83b`.

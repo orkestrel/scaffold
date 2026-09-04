@@ -31,4 +31,4 @@ Claim 4's `html-obj-4` red count is writer-reported and unreproducible after the
 
 ## Terminal
 
-PASS (round 4, objective and checker), pending the deciding run at landing.
+PASS (round 4, objective and checker), the deciding run at landing read every gate exit 0 (landed as html `b3de1fa`).

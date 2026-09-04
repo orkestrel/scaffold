@@ -22,4 +22,4 @@ Claim 6's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS, pending the deciding run at landing.
+PASS; the deciding run at landing read every gate exit 0 and the offline audit clean, landed as html `9ca9c9e`.

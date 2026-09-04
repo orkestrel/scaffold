@@ -25,4 +25,4 @@ Claims 2, 4, 6, and 8 are not held by the checker. Claim 8's gate reading settle
 
 ## Terminal
 
-PASS (round 3 checker after two Orchestrator corrections), pending the deciding run at landing.
+PASS (round 3 checker after two Orchestrator corrections), the deciding run at landing read every gate exit 0 (landed as reason `ccd2baf`).

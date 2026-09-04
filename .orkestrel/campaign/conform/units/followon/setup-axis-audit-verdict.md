@@ -16,4 +16,4 @@ None.
 
 ## Terminal
 
-PASS, pending the deciding run at landing.
+PASS; the deciding run at landing read every gate exit 0 and the offline audit clean, landed as abort `674b77c` and emitter `22d5f4d`.

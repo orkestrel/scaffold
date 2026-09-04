@@ -29,4 +29,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 1 checker; round 1 objective; F-1 closed by fix round 2 on the Orchestrator's read of the one-line diff), pending the deciding run at landing.
+PASS (round 1 checker; round 1 objective; F-1 closed by fix round 2 on the Orchestrator's read of the one-line diff), the deciding run at landing read every gate exit 0 (landed as lsp `ca16e6f`).

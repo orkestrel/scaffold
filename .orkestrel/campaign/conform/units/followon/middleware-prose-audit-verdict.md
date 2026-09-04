@@ -21,4 +21,4 @@ Claims 2, 4, 6, and 8 are not held by the checker. Claim 8's gate reading settle
 
 ## Terminal
 
-PASS (round 1 checker, its claim-9 refutation ruled a permitted measurement), pending the deciding run at landing.
+PASS (round 1 checker, its claim-9 refutation ruled a permitted measurement), the deciding run at landing read every gate exit 0 (landed as middleware `16911eb`).

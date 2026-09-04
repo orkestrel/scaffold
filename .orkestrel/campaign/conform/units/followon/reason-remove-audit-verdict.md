@@ -23,4 +23,4 @@ Claim 6's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (the one refutation rejected on the record), pending the deciding run at landing.
+PASS (the one refutation rejected on the record; the deciding run at landing read every gate exit 0 and the offline audit clean, landed as reason `fe75059`.)

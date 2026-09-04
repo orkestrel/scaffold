@@ -17,4 +17,4 @@ The gate reading settles on the Orchestrator's deciding run at landing: `format:
 
 ## Terminal
 
-PASS (Orchestrator's read of the one-hunk diff), pending the deciding run at landing.
+PASS (Orchestrator's read of the one-hunk diff), the deciding run at landing read every gate exit 0 (landed as rater `096c465`).

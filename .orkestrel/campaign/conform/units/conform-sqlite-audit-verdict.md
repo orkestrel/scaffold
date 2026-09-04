@@ -32,4 +32,4 @@ Claim 4's counts are writer-reported with the defect-naming tests present at the
 
 ## Terminal
 
-PASS (round 2, objective and checker), pending the deciding run at landing.
+PASS (round 2, objective and checker), the deciding run at landing read every gate exit 0 (landed as sqlite `225bb1c`).

@@ -18,4 +18,4 @@ The gate reading settles on the Orchestrator's deciding run at landing: `format:
 
 ## Terminal
 
-PASS (Orchestrator's read of the prose-only diff), pending the deciding run at landing.
+PASS (Orchestrator's read of the prose-only diff), the deciding run at landing read every gate exit 0 (landed as router `b54e09f`).

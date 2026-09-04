@@ -32,4 +32,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 3 checker after fix round 2; round 2 objective), pending the deciding run at landing.
+PASS (round 3 checker after fix round 2; round 2 objective), the deciding run at landing read every gate exit 0 (landed as middleware `72cdc4d`).
