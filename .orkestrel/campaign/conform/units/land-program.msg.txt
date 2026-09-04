@@ -1,0 +1,8 @@
+Conform program to the fleet rules: one status vocabulary, the partition key, the documented members, the executed fences
+
+`STATUS_PRECEDENCE` leaves for `STATUSES`, `ProgramManagerInterface.size` is `count`, `AggregateInput.by` and `AggregateDefinition.by` are `partition`, `buildNotices` and `buildLimits` are `buildNoticeDeterminations` and `buildLimitDeterminations`, and `tallyProgram` is `tallySubject` (each breaking, no fleet consumer). Every member of `ProgramInterface` and `ProgramManagerInterface` carries its doc block in the fixed forms, with overload notes as single-line comments; the recording engine is a class; the off-contract fixtures and the standard definition live in the setup module; every hand-rolled catch block reads through `captureError`; the guide's Surface and batch fences execute from `tests/guides.test.ts` under `finally`; the `defaults validate to true` case proves the default the old body could not catch; the `AGENTS §` citations, the `via` sites, the counts, and the positional pointers leave the package's prose.
+
+Audit: round 1 (Luna distillate and checker, Sol objective FAIL 2, 4 through the Cursor bench), round 2 (Grok 4.6 distillate, Luna checker PASS on regenerated evidence, Sol objective FAIL 2, 3, 4, 9), round 3 (Grok distillate, Luna checker PASS, Sol objective FAIL 2, 4), round 4 (Grok distillate and checker PASS, Opus objective FAIL 9 on the record); two Sol fix rounds, an Opus fix round sweeping the whole TSDoc surface, and a record-only Sonnet fix round; verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-program-audit-verdict.md` in scaffold).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

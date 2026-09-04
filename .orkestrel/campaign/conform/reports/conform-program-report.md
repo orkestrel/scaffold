@@ -40,19 +40,19 @@ were not touched.
 | program-obj-9   | noop (EXEMPT)            | The documented collapse remains at `src/core/helpers.ts:600-620` and `guides/program.md:350`. Reopening it changes `AggregateGroup.key` and the `formatGroupKey` return type, so it needs its own breaking unit.                                                                                                                                                                                                                                                                                    |
 | program-subj-1  | applied                  | The parenthetical is gone from the affected declarations and prose, including `src/core/types.ts:193,239,250,361`, `src/core/helpers.ts:125`, `src/core/programs/ProgramManager.ts:21,235`, `src/core/programs/Program.ts:166`, `guides/program.md:29,93,153,401,423`, and `guides/README.md:3,58`. The `AGENTS §` sweep is empty.                                                                                                                                                                  |
 | program-subj-2  | applied (BREAKING)       | `STATUS_PRECEDENCE` is deleted. `src/core/helpers.ts:850` and `src/core/validators.ts:266` iterate `STATUSES`; imports are at `src/core/helpers.ts:36` and `src/core/validators.ts:35`; the TSDoc links are at `src/core/helpers.ts:836` and `src/core/validators.ts:251`. The `completeTallies` literal remains. `tests/src/core/programs/Program.test.ts:13,1010-1014` use `STATUSES`.                                                                                                            |
-| program-subj-3  | applied (BREAKING)       | `buildNoticeDeterminations` and `buildLimitDeterminations` are declared at `src/core/helpers.ts:202,242`. `src/core/programs/Program.ts:39-40,329,347,420` imports and calls them. `buildNotice` is unchanged, and `buildNotices` was not reintroduced.                                                                                                                                                                                                                                             |
-| program-subj-4  | applied (BREAKING)       | `src/core/types.ts:404` declares `readonly count: number`; `src/core/programs/ProgramManager.ts:111` implements `get count(): number`. The package tests read `manager.count`, including `tests/src/core/programs/ProgramManager.test.ts:24,31,101,137,162,168,207,312`.                                                                                                                                                                                                                            |
+| program-subj-3  | applied (BREAKING)       | `buildNoticeDeterminations` and `buildLimitDeterminations` are declared at `src/core/helpers.ts:202,242`. `src/core/programs/Program.ts:39-40,342,360,433` imports and calls them. `buildNotice` is unchanged, and `buildNotices` was not reintroduced.                                                                                                                                                                                                                                             |
+| program-subj-4  | applied (BREAKING)       | `src/core/types.ts:403` declares `readonly count: number`; `src/core/programs/ProgramManager.ts:118` implements `get count(): number`. The package tests read `manager.count`, including `tests/src/core/programs/ProgramManager.test.ts:24,31,101,137,162,168,207,312`.                                                                                                                                                                                                                            |
 | program-subj-5  | applied                  | `src/core/errors.ts:44` reads "Determines whether a caught value is a {@link ProgramError}." Nothing else changed. Sweep: `grep -rn "Checks whether" src` returns nothing.                                                                                                                                                                                                                                                                                                                          |
-| program-subj-6  | applied                  | Every member of `ProgramInterface` (`src/core/types.ts:242-358`) and `ProgramManagerInterface` (`src/core/types.ts:393-567`) carries TSDoc, mirrored on `src/core/programs/Program.ts:86-280` and `src/core/programs/ProgramManager.ts:77-325`. The overload notes remain at `src/core/programs/Program.ts:166` and `src/core/programs/ProgramManager.ts:235`.                                                                                                                                      |
+| program-subj-6  | applied                  | Every member of `ProgramInterface` (`src/core/types.ts:242-358`) and `ProgramManagerInterface` (`src/core/types.ts:393-567`) carries TSDoc, mirrored on `src/core/programs/Program.ts:86-280` and `src/core/programs/ProgramManager.ts:77-325`. The overload notes remain at `src/core/programs/Program.ts:179` and `src/core/programs/ProgramManager.ts:242`.                                                                                                                                      |
 | program-subj-7  | applied                  | `guides/program.md:151` Shape cell reads `` `emitter` / `count` + `has` / `program` / `programs` / `add` / `remove` / `destroy`. `` — `count` because program-subj-4 lands in the same campaign.                                                                                                                                                                                                                                                                                                    |
 | program-subj-8  | applied                  | `guides/program.md:316` — `assertProgramDefinition,` is the first entry of the import block, before `assertProgramSubject,`. The guides suite's `imports only real exports in every ts fence` case passes, so the name resolves.                                                                                                                                                                                                                                                                    |
 | program-subj-9  | applied                  | `README.md:24` reads `- Node.js >= 22.12.0`, matching `package.json` `engines.node`. `package.json` was not edited.                                                                                                                                                                                                                                                                                                                                                                                 |
 | program-subj-10 | applied                  | The rewritten token prose is at `src/core/helpers.ts:183-184,217,221,985`, `src/core/programs/ProgramManager.ts:21`, and `guides/program.md:138`.                                                                                                                                                                                                                                                                                                                                                   |
-| program-subj-11 | applied                  | The rewritten prose is at `src/core/helpers.ts:814`, `src/core/validators.ts:344-345`, and `guides/program.md:171,533,553`. The sentence at `guides/program.md:176` names its members.                                                                                                                                                                                                                                                                                                              |
+| program-subj-11 | applied                  | The rewritten prose is at `src/core/helpers.ts:814`, `src/core/validators.ts:344-345`, and `guides/program.md:174,533,932`. The sentence at `guides/program.md:174` names its members ("`completeTallies` writes every `Status` member as a literal record").                                                                                                                                                                                                                                      |
 | program-subj-12 | applied                  | The `through` form appears at `README.md:25`, `guides/program.md:701`, `tests/src/core/helpers.test.ts:1035`, and `tests/setup.ts:1125`. The `via` sweep is empty.                                                                                                                                                                                                                                                                                                                                  |
 | program-subj-13 | applied (BREAKING)       | `AggregateInput.partition` and `AggregateDefinition.partition` are at `src/core/types.ts:52,93`. The implementation reads are at `src/core/helpers.ts:575-576,600-620,691-758,1008-1024`, `src/core/validators.ts:112-115`, and `src/core/programs/Program.ts:382`; representative tests are at `tests/setup.ts:902`, `tests/setup.test.ts:832-834`, `tests/src/core/programs/Program.test.ts:911,935`, `tests/src/core/validators.test.ts:128`, and `tests/src/core/helpers.test.ts:607-623,1088`. |
 | program-subj-14 | applied                  | The defaults use the fixed form at `src/core/types.ts:219,376-377`.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| program-subj-16 | applied (BREAKING)       | `tallySubject` is declared at `src/core/helpers.ts:870`, imported and called at `src/core/programs/Program.ts:46,384`, and used by `tests/src/core/helpers.test.ts:32,767` and `guides/program.md:305`.                                                                                                                                                                                                                                                                                             |
+| program-subj-16 | applied (BREAKING)       | `tallySubject` is declared at `src/core/helpers.ts:870`, imported and called at `src/core/programs/Program.ts:46,397`, and used by `tests/src/core/helpers.test.ts:32,767` and `guides/program.md:305`.                                                                                                                                                                                                                                                                                             |
 | fleet-F1        | applied by program-obj-8 | Folded into that row, which deletes the helper. `tests/setup.ts` has no header comment naming `isBrowserVuePath` and is not export-free, so neither of the row's other shapes fires. No second edit was made. `tests/setup.ts` stays as `setupFiles[0]`, the `setup` project stays in `vite.config.ts`, and `test:setup` stays in the `test` chain — this row removes no axis, so the stop condition does not apply.                                                                                |
 | fleet-F2        | noop                     | `Program` (`src/core/programs/Program.ts:73-90`) declares every `#` field before `id`, `name`, and `definition`. `ProgramManager` (`src/core/programs/ProgramManager.ts:37-48`) declares no `id`. `ProgramError` (`src/core/errors.ts:23-41`) declares no `#` field or `id`.                                                                                                                                                                                                                        |
 
@@ -63,6 +63,7 @@ were not touched.
 | `/home/user/fleet/program/src/core/types.ts`                              | `by` → `partition`, `size` → `count`, complete TSDoc on both interfaces' members, `Default:` form, AGENTS citations deleted                                        |
 | `/home/user/fleet/program/src/core/constants.ts`                          | `STATUS_PRECEDENCE` deleted, `Status` type import narrowed out                                                                                                     |
 | `/home/user/fleet/program/src/core/errors.ts`                             | `isProgramError` opens "Determines whether"                                                                                                                        |
+| `/home/user/fleet/program/src/core/factories.ts`                          | `createProgram`'s `@remarks` for `options.validate`: the boolean form and the "Default: …" form, comment-only                                                     |
 | `/home/user/fleet/program/src/core/helpers.ts`                            | `ruleToPremises`, `buildNoticeDeterminations`, `buildLimitDeterminations`, `tallySubject`, `partition`, `STATUSES`, and the pluralized-token and count prose fixes |
 | `/home/user/fleet/program/src/core/validators.ts`                         | `isAggregateDefinition` keys `partition`, `isTallies` iterates `STATUSES`, count prose fix                                                                         |
 | `/home/user/fleet/program/src/core/programs/Program.ts`                   | renamed helper calls, `partition` reads, mirrored member TSDoc, citation stripped from the overload comment                                                        |
@@ -82,23 +83,24 @@ were not touched.
 ```text
  README.md                                      |  16 +-
  guides/README.md                               |   4 +-
- guides/program.md                              |  94 ++++---
+ guides/program.md                              |  96 ++++---
  src/core/constants.ts                          |  11 +-
  src/core/errors.ts                             |   2 +-
- src/core/helpers.ts                            |  80 +++---
- src/core/programs/Program.ts                   | 144 ++++++++++-
- src/core/programs/ProgramManager.ts            | 184 ++++++++++++-
- src/core/types.ts                              | 295 +++++++++++++++++++--
+ src/core/factories.ts                          |   5 +-
+ src/core/helpers.ts                            |  93 ++++---
+ src/core/programs/Program.ts                   | 164 +++++++++++-
+ src/core/programs/ProgramManager.ts            | 203 ++++++++++++++-
+ src/core/types.ts                              | 319 +++++++++++++++++++++--
  src/core/validators.ts                         |  16 +-
- tests/guides.test.ts                           |  98 ++++++-
- tests/setup.test.ts                            | 129 ++++++++--
+ tests/guides.test.ts                           | 102 +++++++-
+ tests/setup.test.ts                            | 137 ++++++++--
  tests/setup.ts                                 | 340 +++++++++++++++++--------
  tests/src/core/factories.test.ts               |  90 +++----
  tests/src/core/helpers.test.ts                 | 334 ++++++++++--------------
  tests/src/core/programs/Program.test.ts        | 155 +++++------
  tests/src/core/programs/ProgramManager.test.ts | 174 +++++--------
  tests/src/core/validators.test.ts              |  10 +-
- 18 files changed, 1450 insertions(+), 726 deletions(-)
+ 19 files changed, 1529 insertions(+), 742 deletions(-)
 ```
 
 ## Failing-first controls
@@ -142,10 +144,10 @@ vendored `guides/<dep>.md` mirrors are outside it.
 | `\b(STATUS_PRECEDENCE\|buildNotices\|buildLimits\|tallyProgram\|isBrowserVuePath\|buildQualification\|buildDefinition\|ScriptedQualifier\|ScriptedReason\|logicalPremises\|qualificationDefinition\|rulingDefinition\|lineDefinition\|ratingDefinition)\b` over `src tests guides/program.md guides/README.md README.md`                                  | empty                                                                                                                                                                                                                                                      |
 | `\b(status_precedence\|buildnotices\|buildlimits\|tallyprogram\|isbrowservuepath\|buildqualification\|builddefinition\|scriptedqualifier\|scriptedreason\|logicalpremises\|qualificationdefinition\|rulingdefinition\|linedefinition\|ratingdefinition)(s\|es\|ed\|ing)\b` case-insensitive over `src tests guides/program.md guides/README.md README.md` | empty                                                                                                                                                                                                                                                      |
 | `\bby\?\|\.by\b\|[{,] by:\|symbol\.kind`                                                                                                                                                                                                                                                                                                                  | empty                                                                                                                                                                                                                                                      |
-| `\.size\b`                                                                                                                                                                                                                                                                                                                                                | two hits, both `Set.prototype.size` (`src/core/helpers.ts:537`, `tests/setup.test.ts:477`). Permitted — the built-in, not the renamed member.                                                                                                              |
+| `\.size\b`                                                                                                                                                                                                                                                                                                                                                | two hits, both `Set.prototype.size` (`src/core/helpers.ts:537`, `tests/setup.test.ts:479`). Permitted — the built-in, not the renamed member.                                                                                                              |
 | program-subj-1 — `AGENTS §` over `src tests/setup.ts tests/setup.test.ts tests/guides.test.ts tests/src guides/program.md guides/README.md README.md`                                                                                                                                                                                                     | empty                                                                                                                                                                                                                                                      |
 | program-subj-5 — `Checks whether` over `src`                                                                                                                                                                                                                                                                                                              | empty                                                                                                                                                                                                                                                      |
-| program-subj-6 — `@throws \{@link ProgramError\} Thrown when` and `@throws` over `src`                                                                                                                                                                                                                                                                    | 38 rows use "Thrown when"; 40 `@throws` rows exist. The unmatched rows are the pre-existing `src/core/helpers.ts:451,453`, outside this fix round's Owned files.                                                                                           |
+| program-subj-6 — `@throws \{@link ProgramError\} Thrown when` and `@throws` over `src`                                                                                                                                                                                                                                                                    | Every `@throws` row opens "Thrown when": the two patterns match the same lines on the final tree.                                                                                                                                                          |
 | program-subj-7 — `\bsize\b` over `guides/program.md`                                                                                                                                                                                                                                                                                                      | empty                                                                                                                                                                                                                                                      |
 | program-subj-8 — `^\s*assertProgramDefinition,` over `guides/program.md`                                                                                                                                                                                                                                                                                  | `guides/program.md:316` imports the helper used later in the fence.                                                                                                                                                                                        |
 | program-subj-9 — `Node\.js >= 24` over `README.md`                                                                                                                                                                                                                                                                                                        | empty                                                                                                                                                                                                                                                      |
@@ -210,6 +212,11 @@ Run in order, each read bare. Output files are under
 | `npm run build`        | 0    | `gate-4-build.txt`        |
 | `npm test`             | 0    | `gate-5-test.txt`         |
 
+Fix round 3 re-ran `format:check`, `lint:check`, `check`, `test:guides`, and the `setup`
+and `src:core` projects on the tree its own edits produced; the landing's deciding run
+executes the full chain in this table, including `build`, `policy`, and `config`, on the
+final tree.
+
 `npm test` reported `src:core` 216 passed, `policy` 111 passed, `config` 46 passed,
 `setup` 85 passed, `guides` 26 passed. No failure excerpt exists.
 
@@ -219,10 +226,10 @@ reported one diagnostic it could not fix — the unused `Status` type import in
 `src/core/constants.ts` that program-subj-2 created — which was closed by narrowing the
 import, and the pass then ran clean.
 
-`git status --short` lists 18 modified files, every one under Owned, and no untracked
-file. Evidence files written by `node /home/user/scaffold/tmp/work/evidence.mjs program`:
-`/home/user/work/evidence/conform-program.diff` (3982 lines) and
-`/home/user/work/evidence/conform-program.status` (18 entries).
+`git status --short` lists only paths under Owned, and no untracked file. Evidence files
+written by `node /home/user/scaffold/tmp/work/evidence.mjs program`:
+`/home/user/work/evidence/conform-program.diff` and
+`/home/user/work/evidence/conform-program.status`.
 
 ## Deviations
 
@@ -452,3 +459,62 @@ and `fix3-src-core.txt`.
 which this round's sweep modified for the first time. The file is inside the round's owned
 scope (`src/core/**` doc blocks) and the edit is comment-only. No untracked path appears,
 and no vendored file is touched.
+
+## Fix round 4
+
+This round carries the rulings from
+`/home/user/scaffold/.orkestrel/campaign/conform/units/l4/program-objective-r4.md`.
+
+- Claim 9: § Files touched now carries a row for `src/core/factories.ts` (the comment-only
+  `validate` boolean and "Default: …" rewrite), and the diffstat fence is regenerated from
+  `git -C /home/user/fleet/program diff HEAD --stat` on the final tree. Every pointer the
+  refuter named is re-derived: `program-subj-4` reads `src/core/types.ts:403` for
+  `readonly count: number` and `src/core/programs/ProgramManager.ts:118` for
+  `get count(): number`; `program-subj-6` reads the overload notes at
+  `src/core/programs/Program.ts:179` and `src/core/programs/ProgramManager.ts:242`;
+  `program-subj-3` reads the renamed calls at `src/core/programs/Program.ts:342,360,433`;
+  `program-subj-16` reads the `tallySubject` call at `src/core/programs/Program.ts:397`;
+  `program-subj-11` reads the rewritten sentences at `guides/program.md:174,533,932`, and
+  the sentence naming its members sits at `:174`. The program-subj-6 § Sweeps row now states
+  that the two `@throws` patterns match the same lines on the final tree, replacing the
+  stale finder claim. The `.size` § Sweeps row now points to `tests/setup.test.ts:479`.
+- O1: § Gates now states, after the table, that fix round 3 re-ran `format:check`,
+  `lint:check`, `check`, `test:guides`, and the `setup` and `src:core` projects, and that
+  the landing's deciding run executes the full chain in the table, including `build`,
+  `policy`, and `config`, on the final tree.
+- O2: the status sentence now reads "`git status --short` lists only paths under Owned",
+  with no count. The count sweep over the report is recorded following.
+
+Count sweep: `grep -noE '\b[0-9]+ (files|rows|tests|members|entries|paths)\b'` finds three
+hits — the diffstat fence's own `git diff --stat` summary line and, in the Fix round 2
+section, the two counts each stated beside the `grep` command that produced it
+("The command `grep -rnE '@throws {@link ProgramError} Thrown when' src` measured 38
+rows", "The command `grep -rnE '@throws' src` measured 40 rows"). All three are counts
+reported beside the command that produced them, so none is deleted. The number-word sweep
+`\b(one|two|three|four|five|six|seven|eight|nine|ten|dozens|hundreds) (files|rows|tests|
+members|entries|paths|hits)\b` finds one hit, "two hits" in the `.size` § Sweeps row,
+stated beside its pattern in the adjacent column; retained on the same basis.
+
+`git -C /home/user/fleet/program status --short` unchanged from the incoming list:
+
+```text
+ M README.md
+ M guides/README.md
+ M guides/program.md
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/programs/Program.ts
+ M src/core/programs/ProgramManager.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/programs/Program.test.ts
+ M tests/src/core/programs/ProgramManager.test.ts
+ M tests/src/core/validators.test.ts
+```
