@@ -37,6 +37,8 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 | 20:27 | `@orkestrel/template` | `0.0.6` | L2 | accepted at 20:27 with the processing notice; served TEMPLATE-SERVED-AT | release tip `23fcb75`. Uploaded on the layer's one-time codes (`publish-template.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
 | 20:27 | `@orkestrel/websocket` | `0.0.11` | L2 | served `0.0.11` at 20:27 | release tip `a1baf72`. Uploaded on the layer's one-time codes (`publish-websocket.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
 
+| 20:33 | `@orkestrel/guide` | `0.0.17` | L3 | accepted at 20:33 with the processing notice; served `0.0.17` at 20:33 | release tip `7b93a5c`: runtime ranges contract `^0.0.16` and markdown `^0.0.13`. Uploaded on a one-time code (`publish-guide-0.0.17.log.txt`). |
+
 ## The login
 
 The registry answered the web login's polls inconsistently through this host's proxy: the proxy leaves from several addresses, and a poll from an address other than the one that minted the session answers `403 {"message":"forbidden"}`, which npm 10 and npm 11 read as web login unsupported and drop to the legacy prompt. On one kept-alive connection the polls answer `202` every 3 seconds (`instruments/login-diag.sh`). `instruments/login-retry.sh` mints attempts until one survives its first poll and relays that URL; the owner's click landed on the third relayed link at 19:32, and `npm whoami` answered.
