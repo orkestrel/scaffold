@@ -41,7 +41,7 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 
 | 20:42 | `@orkestrel/scaffold` | `0.0.62` | L3 | served `0.0.62` at 20:42 | release tip `aa0d28f4`: runtime ranges moved with L0 to L2; the generated-manifest fixtures and the CLI audit's test-floor advisory moved with the release; `tests/guides.test.ts` reads guide's renamed API. Uploaded on a one-time code (`publish-scaffold-0.0.62.log.txt`). |
 
-| 20:50 | `@orkestrel/server` | `0.0.18` | L3 | accepted at 20:50 with the processing notice; served SERVER-SERVED-AT | release tip `a8ceab3`. Uploaded on one one-time code with the round, server first (`publish-server.log.txt`). |
+| 20:50 | `@orkestrel/server` | `0.0.18` | L3 | accepted at 20:50 with the processing notice; served `0.0.18` at 20:52 | release tip `a8ceab3`. Uploaded on one one-time code with the round, server first (`publish-server.log.txt`). |
 | 20:51 | `@orkestrel/interpret` | `0.0.12` | L3 | accepted at 20:51 with the processing notice | release tip `c9881bb`. Uploaded on one one-time code with the round, server first (`publish-interpret.log.txt`). |
 | 20:51 | `@orkestrel/lsp` | `0.0.6` | L3 | accepted at 20:51 with the processing notice | release tip `ff004ba`. Uploaded on one one-time code with the round, server first (`publish-lsp.log.txt`). |
 | 20:51 | `@orkestrel/qualifier` | `0.0.13` | L3 | served `0.0.13` at 20:51 | release tip `a24b399`. Uploaded on one one-time code with the round, server first (`publish-qualifier.log.txt`). |
@@ -51,7 +51,10 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 | 20:51 | `@orkestrel/sea` | `0.0.14` | L3 | accepted at 20:51 with the processing notice | release tip `a46be1c`. Uploaded on one one-time code with the round, server first (`publish-sea.log.txt`). |
 | 20:51 | `@orkestrel/terminal` | `0.0.14` | L3 | served `0.0.14` at 20:51 | release tip `0037e59`. Uploaded on one one-time code with the round, server first (`publish-terminal.log.txt`). |
 | 20:51 | `@orkestrel/workspace` | `0.0.7` | L3 | served `0.0.7` at 20:51 | release tip `5b6e5ec`. Uploaded on one one-time code with the round, server first (`publish-workspace.log.txt`). |
-| pending | `@orkestrel/browser` | `0.0.15` | L3 | prepared; upload pending | release tip `92f3d7e`: the HAR creator constant moved with the bump. |
+| 20:58 | `@orkestrel/browser` | `0.0.15` | L3 | served `0.0.15` at 20:58 | release tip `92f3d7e`: the HAR creator constant moved with the bump. Uploaded on one one-time code with middleware and mcp (`publish-browser.log.txt`). |
+
+| 20:58 | `@orkestrel/middleware` | `0.0.19` | L3, after server | served `0.0.19` at 20:58 | release tip `615e8d4`: peer ranges `@orkestrel/server` `^0.0.18` and `@orkestrel/database` `^0.0.13`. Uploaded on the same code (`publish-middleware.log.txt`). |
+| 20:58 | `@orkestrel/mcp` | `0.0.28` | L3, after server | accepted at 20:58 with the processing notice | release tip `68b2e28`: peer ranges `@orkestrel/server` `^0.0.18` and `@orkestrel/router` `^0.0.13`. Uploaded on the same code (`publish-mcp.log.txt`). |
 
 ## The login
 

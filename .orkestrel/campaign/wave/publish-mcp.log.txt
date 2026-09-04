@@ -1,0 +1,37 @@
+Script started on 2026-09-04 20:58:19+00:00 [COMMAND="npm publish --ignore-scripts --browser=false --registry=https://registry.npmjs.org/ --otp=674150 < /home/user/work/wave/publish-mcp.fifo" <not executed on terminal>]
+\[1G[0K|[1G[0K/[1G[0K[1mnpm[22m [96mnotice[39m
+/[1G[0K[1mnpm[22m [96mnotice[39m package: @orkestrel/mcp@0.0.28
+/[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Contents[39m
+/[1G[0K[1mnpm[22m [96mnotice[39m 1.1kB LICENSE
+[1mnpm[22m [96mnotice[39m 5.1kB README.md
+[1mnpm[22m [96mnotice[39m 27.7kB dist/src/browser/index.d.ts
+[1mnpm[22m [96mnotice[39m 25.4kB dist/src/browser/index.js
+[1mnpm[22m [96mnotice[39m 38.2kB dist/src/browser/index.js.map
+[1mnpm[22m [96mnotice[39m 311.2kB dist/src/core/index.cjs
+[1mnpm[22m [96mnotice[39m 525.8kB dist/src/core/index.cjs.map
+[1mnpm[22m [96mnotice[39m 309.1kB dist/src/core/index.d.cts
+[1mnpm[22m [96mnotice[39m 309.1kB dist/src/core/index.d.ts
+[1mnpm[22m [96mnotice[39m 291.3kB dist/src/core/index.js
+[1mnpm[22m [96mnotice[39m 516.5kB dist/src/core/index.js.map
+[1mnpm[22m [96mnotice[39m 101.0kB dist/src/server/index.cjs
+[1mnpm[22m [96mnotice[39m 166.0kB dist/src/server/index.cjs.map
+[1mnpm[22m [96mnotice[39m 102.0kB dist/src/server/index.d.cts
+[1mnpm[22m [96mnotice[39m 102.0kB dist/src/server/index.d.ts
+[1mnpm[22m [96mnotice[39m 98.9kB dist/src/server/index.js
+[1mnpm[22m [96mnotice[39m 164.8kB dist/src/server/index.js.map
+[1mnpm[22m [96mnotice[39m 5.6kB package.json
+/[1G[0K[1mnpm[22m [96mnotice[39m [94mTarball Details[39m
+/[1G[0K[1mnpm[22m [96mnotice[39m name: @orkestrel/mcp
+/[1G[0K[1mnpm[22m [96mnotice[39m version: 0.0.28
+/[1G[0K[1mnpm[22m [96mnotice[39m filename: orkestrel-mcp-0.0.28.tgz
+/[1G[0K[1mnpm[22m [96mnotice[39m package size: 792.2 kB
+/[1G[0K[1mnpm[22m [96mnotice[39m unpacked size: 3.1 MB
+/[1G[0K[1mnpm[22m [96mnotice[39m shasum: 954a257b85dad1479a8aa96b09768f3184325498
+/[1G[0K[1mnpm[22m [96mnotice[39m integrity: sha512-g6RLIlcvWPY8z[...]YljHouD6u708A==
+/[1G[0K[1mnpm[22m [96mnotice[39m total files: 18
+/[1G[0K[1mnpm[22m [96mnotice[39m
+/[1G[0K-[1G[0K\[1G[0K|[1G[0K[1mnpm[22m [96mnotice[39m Publishing to https://registry.npmjs.org/ with tag latest and public access
+|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K+ @orkestrel/mcp@0.0.28
+|[1G[0K
+Script done on 2026-09-04 20:58:22+00:00 [COMMAND_EXIT_CODE="0"]
+PUBLISH-EXIT=0
