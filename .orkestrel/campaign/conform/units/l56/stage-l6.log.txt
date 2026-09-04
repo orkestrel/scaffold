@@ -1,0 +1,21 @@
+== ollama 11:10:01
+ollama: @orkestrel/router OK — router-b54e09f.tgz is the installed copy
+ollama: @orkestrel/server OK — server-6dafcea.tgz is the installed copy
+ollama: @orkestrel/sqlite OK — sqlite-87ab520.tgz is the installed copy
+ollama: @orkestrel/test OK — test-a3c06a4.tgz is the installed copy
+ollama: @orkestrel/timeout OK — timeout-426420b.tgz is the installed copy
+ollama: @orkestrel/tool OK — tool-b2111d1.tgz is the installed copy
+ollama: @orkestrel/workflow OK — workflow-affe372.tgz is the installed copy
+ollama: @orkestrel/workspace OK — workspace-be0da27.tgz is the installed copy
+== toolbox 11:11:00
+toolbox: @orkestrel/sqlite OK — sqlite-87ab520.tgz is the installed copy
+toolbox: @orkestrel/sse OK — sse-f80b232.tgz is the installed copy
+toolbox: @orkestrel/terminal OK — terminal-956403d.tgz is the installed copy
+toolbox: @orkestrel/test OK — test-a3c06a4.tgz is the installed copy
+toolbox: @orkestrel/timeout OK — timeout-426420b.tgz is the installed copy
+toolbox: @orkestrel/tool OK — tool-b2111d1.tgz is the installed copy
+toolbox: @orkestrel/workflow OK — workflow-affe372.tgz is the installed copy
+toolbox: @orkestrel/workspace OK — workspace-be0da27.tgz is the installed copy
+== done 11:11:40
+
+[exited with code 0]
