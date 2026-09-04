@@ -34,7 +34,7 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 | 20:25 | `@orkestrel/reason` | `0.0.9` | L2 | served `0.0.9` at 20:25 | release tip `d9a4e8e`. Uploaded on the layer's one-time codes (`publish-reason.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
 | 20:25 | `@orkestrel/router` | `0.0.13` | L2 | accepted at 20:25 with the processing notice; served `0.0.13` at 20:30 | release tip `c8d0ff3`. Uploaded on the layer's one-time codes (`publish-router.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
 | 20:27 | `@orkestrel/table` | `0.0.4` | L2 | served `0.0.4` at 20:27 | release tip `c64e792`. Uploaded on the layer's one-time codes (`publish-table.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
-| 20:27 | `@orkestrel/template` | `0.0.6` | L2 | accepted at 20:27 with the processing notice; served TEMPLATE-SERVED-AT | release tip `23fcb75`. Uploaded on the layer's one-time codes (`publish-template.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
+| 20:27 | `@orkestrel/template` | `0.0.6` | L2 | accepted at 20:27 with the processing notice; served `0.0.6` at 20:30 | release tip `23fcb75`. Uploaded on the layer's one-time codes (`publish-template.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
 | 20:27 | `@orkestrel/websocket` | `0.0.11` | L2 | served `0.0.11` at 20:27 | release tip `a1baf72`. Uploaded on the layer's one-time codes (`publish-websocket.log.txt`); the first code timed out at table, and a second carried table, template, and websocket. |
 
 | 20:33 | `@orkestrel/guide` | `0.0.17` | L3 | accepted at 20:33 with the processing notice; served `0.0.17` at 20:33 | release tip `7b93a5c`: runtime ranges contract `^0.0.16` and markdown `^0.0.13`. Uploaded on a one-time code (`publish-guide-0.0.17.log.txt`). |
@@ -119,6 +119,8 @@ After the last upload, every checkout whose `@orkestrel` development ranges name
 | `workflow` | `52f0448` | 22:15 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
 | `workspace` | `2bf1ca7` | 22:16 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
 
+| 22:35 | `@orkestrel/scaffold` | `0.0.63` | own account, after the closing round | served `0.0.63` at 22:36 | release tip `edeef9ed`: the closing round's development re-pin moved `dist/src` because the compiler embeds the ranges it writes; no vendored byte moved and no runtime dependent, so no cascade. Uploaded on a one-time code (`publish-scaffold-0.0.63.log.txt`). |
+
 ## The login
 
 The registry answered the web login's polls inconsistently through this host's proxy: the proxy leaves from several addresses, and a poll from an address other than the one that minted the session answers `403 {"message":"forbidden"}`, which npm 10 and npm 11 read as web login unsupported and drop to the legacy prompt. On one kept-alive connection the polls answer `202` every 3 seconds (`instruments/login-diag.sh`). `instruments/login-retry.sh` mints attempts until one survives its first poll and relays that URL; the owner's click landed on the third relayed link at 19:32, and `npm whoami` answered.
@@ -126,3 +128,27 @@ The registry answered the web login's polls inconsistently through this host's p
 ## Re-baseline at L0: guide publishes early on its own account
 
 The first L0 visits reddened at `check`: `npm install` restored the registry's `@orkestrel/guide` 0.0.15 over the staged tip, and every consumer's `tests/guides.test.ts` reads the tip's renamed API (`extractFenceImports`, `findMissingSymbols`, `computeSymbolKey`, `symbol.keyword`), which the catalog would publish only at L3. Guide's tip typechecks against the registry's contract 0.0.15 and markdown 0.0.12 (`npm ci` then `npm run check`, exit 0 at 19:39 UTC), so guide takes the same shape as scaffold: it publishes on its own account as 0.0.16 ahead of L0, every consumer's visit re-pins it from the registry, and guide publishes again at its L3 slot after its runtime ranges move. Probe has no such consumer: only probe's own tests import `@orkestrel/probe`. The visits' `scaffold overwrite` output (the refreshed catalog table and guide mirrors, test's `configs/browsers.ts`) is committed per target as "Adopt the vendored host of @orkestrel/scaffold 0.0.61" so the re-run starts from a committed baseline. The visit script's successor (`instruments/prep-one-2.sh`) commits the re-pin and bump before the overwrite, which refuses a tree carrying uncommitted changes.
+
+## Release report
+
+Layers in publish order, each package at its registry-confirmed version (the sweep at 22:36 UTC read every package's served version equal to its release tip's manifest, with no mismatch):
+
+- own account, before L0: scaffold `0.0.61`; guide `0.0.16` (re-baseline: every consumer's guide tests read its renamed API)
+- L0: codec `0.0.2`, contract `0.0.16`, msg `0.0.9`, sse `0.0.6`, test `0.0.13`
+- L1: abort `0.0.9`, budget `0.0.9`, csv `0.0.6`, emitter `0.0.9`, html `0.0.8`, indexeddb `0.0.10`, ndjson `0.0.9`, sqlite `0.0.10`, timeout `0.0.9`, tool `0.0.13`
+- L2: console `0.0.12`, database `0.0.13`, form `0.0.5`, markdown `0.0.13`, pool `0.0.10`, process `0.0.10`, reason `0.0.9`, router `0.0.13`, table `0.0.4`, template `0.0.6`, websocket `0.0.11`
+- L3, own accounts first: scaffold `0.0.62`, guide `0.0.17`; then browser `0.0.15`, interpret `0.0.12`, lsp `0.0.6`, qualifier `0.0.13`, queue `0.0.12`, rater `0.0.13`, relation `0.0.11`, sea `0.0.14`, server `0.0.18`, terminal `0.0.14`, workspace `0.0.7`; after server: middleware `0.0.19`, mcp `0.0.28`
+- L4: brief `0.0.7`, probe `0.0.12`, program `0.0.12`, worker `0.0.11`, workflow `0.0.17`
+- L5: agent `0.0.20`
+- L6: ollama `0.0.14`, toolbox `0.0.12`
+- own account, after the closing round: scaffold `0.0.63`
+
+Bump rulings: every package's `dist/` moved against its published tarball (the fourth inventory of 2026-09-04 and each visit's comparison), and every runtime range moved with the layers below; each release commit carries its ruling and its gate time. Guide's early release and scaffold's third release are the two rulings the plan did not foresee, recorded in the re-baseline and closing-round sections. Peer ranges were treated as ordering edges: middleware and mcp published after server with their peers re-pinned.
+
+Approvals the owner granted: the web login on the third relayed link at 19:32 UTC, and one one-time code per layer or per resumed layer, each recorded beside the row it carried.
+
+Standing readings, not gates: probe's `npm test` under its arming red (8 failed and 221 passed of 229, every failure the arming class); ollama's `test:service`, which needs the `qwen3.5:2b-q4_K_M` model at a local Ollama daemon and is owed on a daemon host per `ROADMAP.md` § 4.
+
+Open after the wave: every target pins `@orkestrel/scaffold` at `^0.0.62` as a development range while the registry serves `0.0.63`; the contract obliges no re-pin for a development bump whose vendored surface did not move, so that alignment is a round the owner can ask for. Every checkout carries its release on `claude/orkestrel-npm-audit-deps-14ibta`, clean and level with its remote; merging to `main` is the owner's.
+
+RELEASE: LANDED
