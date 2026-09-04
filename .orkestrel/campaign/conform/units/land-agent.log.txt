@@ -1,0 +1,7 @@
+agent format:check exit=0
+agent lint:check exit=0
+agent check exit=0
+agent build exit=0
+agent test exit=0
+agent scaffold audit --offline exit=0 clean
+agent committed b5f826b pushed=true paths=40

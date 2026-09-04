@@ -32,4 +32,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 1's refutations closed by fix round 1; round 2's checker confirms the tree on the regenerated evidence; the Orchestrator verified the fix round's delta against the round-1 evidence), pending the deciding run at landing.
+PASS (round 1's refutations closed by fix round 1; round 2's checker confirms the tree on the regenerated evidence; the Orchestrator verified the fix round's delta against the round-1 evidence); landed as b5f826b with the full chain green and the offline audit clean.
