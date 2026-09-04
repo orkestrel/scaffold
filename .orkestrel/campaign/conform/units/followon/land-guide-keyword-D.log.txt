@@ -1,0 +1,142 @@
+15:27:39 database start
+database format:check exit=0
+database lint:check exit=0
+database check exit=0
+database build exit=0
+database test exit=1
+t src:core --project src:browser --project src:server
+
+
+ RUN  v4.1.11 /home/user/fleet/database
+
+································································································································································································································································································································································································································································································································································································································································································································································································3:28:25 PM [vite] (client) Re-optimizing dependencies because lockfile has changed
+·········································································································································································································
+
+ Test Files  25 passed (25)
+      Tests  969 passed (969)
+   Start at  15:28:16
+   Duration  27.31s (transform 4.19s, setup 10.42s, import 2.26s, tests 10.46s, environment 3ms)
+
+
+> @orkestrel/database@0.0.12 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/database
+
+···············································································································
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  15:28:45
+   Duration  2.16s (transform 423ms, setup 287ms, import 768ms, tests 917ms, environment 0ms)
+
+
+> @orkestrel/database@0.0.12 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/fleet/database
+
+··············································
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  15:28:48
+   Duration  3.78s (transform 680ms, setup 303ms, import 1.85s, tests 1.44s, environment 0ms)
+
+
+> @orkestrel/database@0.0.12 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/fleet/database
+
+·······························································
+
+ Test Files  3 passed (3)
+      Tests  63 passed (63)
+   Start at  15:28:54
+   Duration  19.14s (transform 1.26s, setup 1.08s, import 1.04s, tests 17.77s, environment 0ms)
+
+
+> @orkestrel/database@0.0.12 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/database
+
+·xxx················································································
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 81 passed (84)
+   Start at  15:29:14
+   Duration  77.79s (transform 885ms, setup 547ms, import 4.14s, tests 72.87s, environment 0ms)
+
+              ^
+    156|     { name: 'Alpha', kind: 'class' },
+    157|     { name: 'Beta', kind: 'const' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > compiler entry surfaces > tracks add, remove, rename, and kind changes at the entry
+AssertionError: expected [ { name: 'Added', keyword: 'const' } ] to deeply equal [ { name: 'Added', kind: 'const' } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "kind": "const",
++     "keyword": "const",
+      "name": "Added",
+    },
+  ]
+
+ ❯ tests/guides.test.ts:175:86
+    173|   })
+    174|   try {
+    175|    expect(deriveEntrySurfaces(project.config, ['src/index.ts']).get('s…
+       |                                                                                      ^
+    176|     { name: 'Added', kind: 'const' },
+    177|    ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > compiler entry surfaces > ignores exports that are not reachable from the entry
+AssertionError: expected [ Array(1) ] to deeply equal [ { name: 'Public', kind: 'const' } ]
+
+- Expected
++ Received
+
+  [
+    {
+-     "kind": "const",
++     "keyword": "const",
+      "name": "Public",
+    },
+  ]
+
+ ❯ tests/guides.test.ts:202:86
+    200|   })
+    201|   try {
+    202|    expect(deriveEntrySurfaces(project.config, ['src/index.ts']).get('s…
+       |                                                                                      ^
+    203|     { name: 'Public', kind: 'const' },
+    204|    ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+database RED - not committed
+15:30:32 database exit=0
+15:30:32 test start
+test format:check exit=0
+test lint:check exit=0
+test check exit=0
+test build exit=0
+test test exit=0
+test scaffold audit --offline exit=0 clean
+test committed bccbafc pushed=true paths=1
+15:31:45 test exit=0
+LANE-D-DONE

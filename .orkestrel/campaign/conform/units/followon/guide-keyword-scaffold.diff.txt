@@ -1,0 +1,198 @@
+diff --git a/ROADMAP.md b/ROADMAP.md
+index 3233a329..394ff573 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -276,3 +276,193 @@ Each row closes with a red-first proof where a test can hold it.
+   and the `PromptCodec` string-reply seam.
+ - The ticket statuses `pending`, `answered`, and `stopped`. Terminal's `expired` stays refused,
+   because the ledger's `prune` deletes an aged ticket instead of marking it.
++
++## 4. Forward work from the conformance campaign
++
++The publish wave and the next conformance matrix carry the open items from the
++conformance campaign on `claude/orkestrel-npm-audit-deps-14ibta`. Each row
++closes on the condition it names.
++
++### The publish wave's obligations
++
++- **scaffold**, **test**, and **form**: merge `origin/main` into the branch,
++  re-pack, re-stage, and re-pin before packing (`HANDOFF.md:215`).
++- **scaffold**: publish first. Every target re-pins `@orkestrel/scaffold` and
++  runs `repair`, so the vendored host — the `names.md` vocabulary, the
++  `tests.md` helper names, and the single-literal `as const` rule landed as
++  `17e00993` — reaches it (`followons.md:64`, `followons.md:85`).
++- **scaffold**: after the `@orkestrel/guide` re-pin, `tests/guides.test.ts:132,140`
++  reads `symbol.keyword` (`followons.md:98`).
++- **indexeddb**: `scaffold repair` leaves `configs/browsers.ts` matching the
++  published scaffold (`followons.md:12`).
++- **fleet**: each `lint` script is `oxlint --config .oxlintrc.json --fix .`;
++  `--deny-warnings` stays on `lint:check` (`followons.md:36`, `followons.md:66`).
++- **codec**: the registry tarball exports `encodeHex`. **server** re-pins to
++  that release before its own gates and publish (`followons.md:41`,
++  `followons.md:70`, `conform-server-audit-verdict.md:25`).
++- **lsp** and **scaffold**: `npm run test:distribution` exits 0 on the
++  publishing host (`followons.md:64`, `conform-lsp-audit-verdict.md:22`).
++- **ollama**: `npm run test:service` exits 0 on a daemon host (`followons.md:93`,
++  `conform-ollama-audit-verdict.md:17`).
++- **fleet**: refresh these vendored mirrors from the released guide, byte copy,
++  never a rewrite: `guides/guide.md` (no `symbolKey`, `missingSymbols`,
++  `exportsFrom`, `hiddenFrom`, `ExportKind`, or `{ name, kind }`); `guides/queue.md`
++  in worker, workflow, agent, and probe (no `QueueExecution`); `guides/server.md`
++  in ollama, middleware, toolbox, and mcp; `guides/workspace.md` in agent,
++  toolbox, and ollama; `guides/emitter.md` in each emitter consumer;
++  `guides/websocket.md` in mcp and browser; `guides/sqlite.md` in database;
++  `guides/probe.md` (no `createRevisionFile`); `guides/reason.md`,
++  `guides/contract.md`, `guides/emitter.md`, and `guides/guide.md` in rater;
++  `guides/terminal.md` in each terminal consumer (`followons.md:18`, `:26`,
++  `:38`, `:48`, `:49`, `:53`, `:54`, `:69`, `:84`, `:88`, `:98`;
++  `conform-terminal-audit-verdict.md:24`).
++- **middleware**: the publish notes name the removed `UploadedFileInput` type
++  and the renamed `multipartBoundary` option (`followons.md:15`).
++- **timeout**: the publish notes name `Timeout.id` and `Timeout.ms` as
++  prototype getters (`conform-timeout-audit-verdict.md:12`).
++- **worker**: the bump ruling names `spawnThread` → `createThread`, `dispatch`
++  → `Dispatch`, and `QueueExecution` → `QueueContext` (`followons.md:73`).
++
++### The next conformance matrix's rows
++
++- **abort**: transcribe the `README.md:29,34` Usage fence into
++  `tests/guides.test.ts` with `README.md` in `ROOT_FILES`; rule what a
++  transcription's presence guards bind and apply that rule; rule the `Abort`
++  `id` and `signal` public `readonly` fields against § Class order with the
++  `JSON.stringify` bound (`followons.md:89`, `conform-abort-audit-verdict.md:16`).
++- **browser**: add tests for the `buildInstallPaths`, `buildWindowsRoots`, and
++  `buildStoreBases` helpers; `probePathNames` checks the resolver line's file
++  type; the `createAttachedPage` and `readCDPParams` proofs in `tests/setup.ts`
++  fail without those helpers; the `tests/setupServer.ts:455` comment drops the
++  claim word; rule whether a `service` target owes `scripts/service.sh`
++  (`followons.md:50`, `:58`, `:63`, `conform-browser-audit-verdict.md:19-20`).
++- **codec**: each `MEMBERSHIP` row's `reason` field has an executed assertion
++  that names the refusing rule (`followons.md:92`,
++  `conform-codec-audit-verdict.md:19`).
++- **contract**: the guide twins of repaired TSDoc blocks and the past-revision
++  comments at `src/core/combinators.ts:206,811-814` match the source; count
++  residue at the report's `src`, `guides/contract.md`, and `tests` sites is
++  ruled by sense; `category` at `src/core/ShapeValidator.ts:749` is `keyword`;
++  campaign control identifiers are gone from the report's test names;
++  `guides/contract.md` has no banned-sense residue outside that row's `src`
++  set (`followons.md:28`, `conform-contract-audit-verdict.md:20`).
++- **csv**: `tests/distribution.test.ts:159` uses `isObject` from
++  `@orkestrel/contract`; the title at `tests/src/core/helpers.test.ts:850`
++  matches the substitution table (`followons.md:27`,
++  `conform-csv-audit-verdict.md:15`).
++- **emitter**: `tests/guides.test.ts` transcribes the Surface fence at
++  `guides/emitter.md:11-32` with presence guards; `feed.clear('post')` at
++  `:196` has a second event so "only `post`" is distinguishable, an assertion,
++  and a guard (`followons.md:38`, `conform-emitter-audit-verdict.md:21`).
++- **fleet**: after the budget getter repair, each package whose `id` is a
++  prototype getter has the same `JSON.stringify` shape the budget unit
++  documented, or a test that pins it (`followons.md:3`). The `key: () => …`
++  property-arrow shape across `tests/**` is a module-scope factory or method
++  syntax (`followons.md:87`, `conform-agent-audit-verdict.md:25`). Timer
++  lower-bound assertions in workflow, timeout, abort, budget, and queue admit
++  one timer grain of tolerance, or take the start reading from the clock the
++  timer arms on (`followons.md:74`).
++- **guide**: the `DeclarationKeyword` doc phrasing, the `sources()` `@example`
++  showing identity, and the `sources.sources()` fence comment describing a
++  value, each closed by the next matrix's subjective lane (`followons.md:54`,
++  `conform-guide-audit-verdict.md:29`).
++- **indexeddb**: the substitution-table hit at `src/browser/types.ts:42` is
++  gone; after a clean `commit()`, `IndexedDBTransaction.store(name)` does not
++  throw `ABORTED`; the store-cursor seek case captures `onSeek.cause`, asserts
++  a `DOMException`, and aligns `src/browser/types.ts:299-301` and
++  `guides/indexeddb.md:296` with what Chromium reports (`followons.md:34`,
++  `conform-indexeddb-audit-verdict.md:12-16`).
++- **lsp**: the next matrix records what the `lsp-obj-6` generation proofs pin
++  after the binding form removed the release check; the decode accumulator at
++  `tests/src/server/fixtures/protocol.mjs:10` is not module-scope mutable state,
++  or a design round keeps it (`followons.md:51`, `:57`,
++  `conform-lsp-audit-verdict.md:23`).
++- **msg**: the leftover `const data` bindings at
++  `tests/src/core/helpers.test.ts:268,272,276,280`, the private `mutable`
++  binding at `src/core/MSG.ts:770-802`, the msg-subj-13 sites, and the
++  msg-subj-8 sibling vocabulary (`MSG_S_BIG_BLOCK_MARK`, `MSG_L_BIG_BLOCK_SIZE`,
++  `MSG_L_BIG_BLOCK_MARK`, `guides/msg.md:79`) are gone or renamed
++  (`followons.md:29`, `conform-msg-audit-verdict.md:17`).
++- **ndjson**: each `clear()` fence inserts
++  `expect(parser.parse('{"partial"')).toEqual([])` before `parser.clear()`;
++  `guides/ndjson.md:46,51,84` spell `ReadonlyArray<Record<string, unknown>>`,
++  the presence-guard string at `tests/guides.test.ts:221` matches, and the
++  substitution note at `:176-181` is gone (`followons.md:32`, `:33`,
++  `conform-ndjson-audit-verdict.md:13-14`).
++- **ollama**: `OllamaHTTPError.status` does not carry `0` as a no-response
++  sentinel (`src/server/errors.ts:12`, `guides/ollama.md:100`); `readonly name
++= 'ollama'` at `src/server/OllamaProvider.ts:82` is ruled with the fleet
++  public-`readonly` row (`followons.md:94`, `:95`,
++  `conform-ollama-audit-verdict.md:18`).
++- **probe**: `tests/setupServer.test.ts:113-115` uses `readChildEnding`
++  (`followons.md:84`, `conform-probe-audit-verdict.md:24`).
++- **program**: the tagline at `guides/program.md:30` names the published
++  specifier, not `@src/core`; Surface and helper-table descriptions at `:182`
++  and `:286-287` are noun phrases (`followons.md:79`,
++  `conform-program-audit-verdict.md:33`).
++- **queue**: `src/core/validators.ts:51` drops the redundant
++  `isFiniteNumber(value) && isInteger(value)` conjunct (`followons.md:36`,
++  `conform-timeout-audit-verdict.md:15`).
++- **router**: the tally at `tests/src/core/parsers.test.ts:11` names the
++  methods or drops the number word; the tally at
++  `tests/src/core/Router.test.ts:462` names the files or drops the number word
++  (`followons.md:62`).
++- **scaffold**: `scripts/deps.sh` rewrites `node_modules` only when a Claude
++  Code-only variable is set beside `CLAUDE_CODE_REMOTE`, and it refuses to
++  rewrite a tree whose `.package-lock.json` is newer than the lockfile; rule
++  whether `scaffold audit --offline` prints the `integration` advisory, and
++  whether websocket's `tests/integration.test.ts` file is the seed it
++  describes; `.agents/orchestration.md` § Permission floor states the
++  planted-file-surface exception (`followons.md:16`). The
++  `tests/distribution.test.ts` generator template uses `isObject` from
++  `@orkestrel/contract`; the `tests/guides.test.ts` drop-in header names the
++  constants block and the package fence suite, and every fleet package that
++  still carries the old header matches it; `.claude/rules/tests.md` states
++  that a presence guard carries every fence input and documented value a
++  transcription reuses, and that a test binds forbidden input at `unknown`,
++  proves the refusal at the guard, and reaches the throwing call only with a
++  value the signature admits (`followons.md:20`, `:45`, `:49`, `:60`,
++  `conform-html-audit-verdict.md:26`, `conform-relation-audit-verdict.md:21`).
++  The dead `beforeWriteFile` branch at `configs/src/vite.server.config.ts:5-19`
++  is gone; the causal `since` at `tests/distribution.test.ts:28` is `because`;
++  `policy/no-nested-functions` in `.oxlintrc.json` covers `tests/**` or a
++  design round keeps the `src/**` and `app/**` scope (`followons.md:30`, `:48`,
++  `:54`, `conform-guide-audit-verdict.md:26`).
++- **sea**: after the parse loop, a `sizeofcmds` divergence raises `FORMAT`
++  "Malformed Mach-O load command table", so `Injector.ts:1465` is unreachable;
++  the guide `INJECT` clause at `:847` has a PE fixture whose resource leaf RVA
++  sits outside every section; the post-write clauses at `:1228` and `:1636`
++  are drivable through the public API or the guide names that gap
++  (`followons.md:65`, `sea-skip-audit-verdict.md:26`).
++- **server**: `README.md:19` states the same engines floor as `package.json`
++  (`followons.md:15`).
++- **sqlite**: `transact` does not swallow a ROLLBACK fault at
++  `src/server/SQLiteDatabase.ts:108-112` and `:119-123` (`followons.md:26`,
++  `conform-sqlite-audit-verdict.md:26`).
++- **sse**: each `clear()` fence inserts the equivalent partial-frame feed
++  before `parser.clear()` (`followons.md:32`).
++- **table**: `Table` reads `column.meta` once and passes that value into
++  `cloneSchema`, or a design round keeps the accessor path
++  (`followons.md:25`, `conform-table-audit-verdict.md:26`).
++- **terminal**: `PromptClient.url` is ruled with the fleet public-`readonly`
++  row (`src/core/PromptClient.ts:62`); `createLineInput` and
++  `createStreamTarget` in `tests/setupServer.ts` use a third-person first
++  sentence (`followons.md:55`, `conform-terminal-audit-verdict.md:24`).
++- **timeout**: `createReadRecorder` at `tests/setup.ts:21-23` returns a named
++  recorder shape (`followons.md:36`, `conform-timeout-audit-verdict.md:16`).
++- **tool**: a ruling on § Class order against interface-required data members
++  covers the public `readonly` fields at `src/core/tools/Tool.ts:27-34`
++  (`followons.md:35`, `conform-tool-audit-verdict.md:13`).
++- **worker**: replace the bare `§` citations at `src/core/types.ts:21,62`,
++  `src/core/factories.ts:15`, `src/core/Worker.ts:28,36,50`, and
++  `tests/src/server/handlers.test.ts:14` with the named-section form;
++  `guides/worker.md:228` keeps `through`; `guides/worker.md:98,103,198` and
++  the matching prose sites no longer name `QueueExecution` (`followons.md:53`,
++  `:80`, `:82`, `conform-worker-audit-verdict.md:31`).
++- **workflow**: `tests/src/core/RunHolder.test.ts:41` has no nested
++  `readActive`; `errorToMessage` describes a non-Error object by its own keys
++  (`followons.md:74`, `:86`, `conform-agent-audit-verdict.md:24`).
++- **worker**, **workflow**, **agent**, and **probe**: each consumer's prose and local bindings follow queue's `context` vocabulary where they still read `execution` (`followons.md:53`, `conform-queue-audit-verdict.md:22`).
++- **workspace**: the `Determines whether` openers and ragged wraps at
++  `src/core/helpers.ts:23,38` close in the next matrix's subjective lane
++  (`followons.md:90`, `conform-workspace-audit-verdict.md:23`).

@@ -1,0 +1,16 @@
+15:13:29 test start
+test format:check exit=1
+
+> @orkestrel/test@0.0.12 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+tests/guides.test.ts (83ms)
+
+Format issues found in above 1 files. Run without `--check` to fix.
+Finished in 3049ms on 59 files using 4 threads.
+
+test RED - not committed
+15:13:33 test exit=0
+LANE-C-DONE
