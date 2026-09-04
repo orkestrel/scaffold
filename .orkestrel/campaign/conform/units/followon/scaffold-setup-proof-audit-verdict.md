@@ -27,4 +27,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settled on t
 
 ## Terminal
 
-PASS (round 1's refutations closed by fix round 1, verified on the tree and the captures), pending the fix round's deciding run at landing.
+PASS (round 1's refutations closed by fix round 1, verified on the tree and the captures); the fix round landed as d4f96a36 with the full chain green and the canon audit reading recorded.

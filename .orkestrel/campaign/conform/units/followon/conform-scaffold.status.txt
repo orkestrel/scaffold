@@ -1,9 +1,2 @@
- M package.json
- M tests/src/core/compilers.test.ts
- M vite.config.ts
-?? .orkestrel/campaign/conform/briefs/followon/scaffold-setup-proof-audit-brief.md
-?? .orkestrel/campaign/conform/briefs/followon/scaffold-setup-proof-checker-brief.md
-?? .orkestrel/campaign/conform/briefs/followon/scaffold-setup-proof-objective-brief.md
-?? .orkestrel/campaign/conform/units/followon/conform-scaffold.audit.txt
-?? tests/setup.test.ts
-?? tests/setupServer.test.ts
+ M .orkestrel/campaign/conform/units/followon/conform-scaffold.audit.txt
+ M tests/setupServer.test.ts
