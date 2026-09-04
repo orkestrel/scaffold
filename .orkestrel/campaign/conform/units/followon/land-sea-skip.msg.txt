@@ -1,8 +1,0 @@
-Name the host binary's applicability limit as its own error code
-
-`SEAErrorCode` gains `ROOM`, raised where the injector measures the host binary's header room — the PE section-entry site and the Mach-O load-command site — with the messages and context unchanged, so a caller can retry a `ROOM` build on another host and read an `INJECT` code as a defect. The stage-hooks integration proof skips only on `ROOM`; a defect the injector reports under `INJECT` fails it, proved by a planted `#verifyELFNoteMapping` throw. `buildPeFixture` gains a `tight` option whose section table leaves less room than one entry needs, and the PE and Mach-O applicability proofs assert the code and its context. The guide documents `ROOM` against `INJECT`. Widening the union breaks an exhaustive switch in a consumer outside the fleet; no fleet checkout narrows `SEAErrorCode`.
-
-Audit: round 1 (Luna checker PASS, Opus objective FAIL 2 closed by fix round 1) and round 2 (Luna checker FAIL 9 and Opus objective FAIL 9 on the record, closed with O1 to O3 by an Orchestrator-owned fix round 2 under a mutation probe); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/followon/sea-skip-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

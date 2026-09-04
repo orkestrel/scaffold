@@ -1,7 +1,0 @@
-server format:check exit=0
-server lint:check exit=0
-server check exit=0
-server build exit=0
-server test exit=0
-server scaffold audit --offline exit=0 clean
-server committed 6dafcea pushed=true paths=18

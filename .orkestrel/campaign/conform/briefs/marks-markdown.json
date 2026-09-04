@@ -1,1 +1,0 @@
-{ "folded": [], "orchestrator": [], "breaking": [{ "id": "markdown-subj-1", "consumers": [] }], "note": "Luna reconcile distillate 17:19 UTC: no fold, no off-limits or consumer-only repair; MarkdownHandlers -> MarkdownHandlerMap has no source consumer in the fleet or scaffold." }

@@ -1,4 +1,0 @@
-{ "folded": [ { "id": "guide-subj-16", "carrier": "guide-obj-3" }, { "id": "guide-subj-6", "carrier": "guide-obj-5" } ],
-  "orchestrator": [],
-  "breaking": [ { "id": "guide-subj-12", "consumers": [ "every fleet checkout's tests/guides.test.ts (the scaffold-generated drop-in) at the symbol.kind / ExportKind / EXPORT_KINDS / isExportKind sites, scaffold tests/guides.test.ts:132,140, database tests/setupServer.ts:8,205-329 (hand-written), and every vendored guides/guide.md mirror" ] } ],
-  "note": "Luna reconcile distillate 17:46 UTC. guide-subj-2, guide-obj-7, and guide-subj-13 edit the same lines (README.md:125, src/core/Guide.ts:12): distinct defects, one carrier each, applied together line by line. guide-subj-12's consumer edit rides the drop-in template refresh (scaffold's L3 unit) and each package's re-pin at the publish wave; database's hand-written tests/setupServer.ts sites are its own re-pin row." }

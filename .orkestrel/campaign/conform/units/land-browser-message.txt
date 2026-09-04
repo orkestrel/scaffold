@@ -1,8 +1,0 @@
-Conform browser to the fleet rules: the service project, the emitter options, the file writer, the mirrored suites
-
-Live-browser proofs move to a `service` project with `tests/setupService.ts`, whose readiness contract throws and never skips; `test:service` joins `prepublishOnly`. `BrowserPageOptions` and `BrowserContextOptions` carry `on` and `error`, threaded through `isolate` and the context's page attach. `FileBrowserWriter` is the one concrete writer, in its own file and the server barrel. `BrowserEmulationManager` routes offline and headers through `page.network`. `BrowserContext` derives its closed state from `#shutdown`. Every `src/core` module has a mirrored suite driven from shared fixtures in `tests/setup.ts`; elapsed readings use `performance.now()`; the CDP test server names `127.0.0.1`. `attributeOfBrowserNode` is removed in favour of reading the property; `parseBrowserChord`, `findInStore`, `defaultInstallPaths`, `windowsRoots`, and `defaultStoreBases` become `extractBrowserChord`, `findStorePaths`, `buildInstallPaths`, `buildWindowsRoots`, and `buildStoreBases`, with no source consumer in the fleet. The guide gains a method table per behavioural interface with a runnable fence, the `context` and `isolate` events, and the `test` and `probe` mirror paragraphs; `via`, `e.g.`, the causal `since`, and the `AGENTS §` citations leave the prose.
-
-Audit: Grok-first round 1 (Luna distillate, Luna checker PASS, Opus objective PASS with record findings closed by a report-only fix round); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-browser-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

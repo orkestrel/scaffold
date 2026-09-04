@@ -1,8 +1,0 @@
-{
- "folded": [],
- "orchestrator": [],
- "breaking": [
-  { "id": "probe-subj-2", "consumers": [] }
- ],
- "note": "probe-subj-2 renames createRevisionFile to buildRevisionPath with no source consumer; every fleet checkout's vendored guides/probe.md:210 mirror refreshes at the wave, never by hand. Standing condition: npm test is red at the baseline on the Oxlint language-server arming failure (ALLOW_RED_TEST=probe); the unit reports that gate as an observation with the same failure set. Incoming consumer edits: none from the landed rows (probe's tests/guides.test.ts carries no symbol.kind line)."
-}

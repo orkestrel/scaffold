@@ -1,9 +1,0 @@
-workflow format:check exit=0
-workflow lint:check exit=0
-workflow check exit=0
-workflow build exit=0
-workflow test exit=0
-workflow scaffold repair exit=0 (configs/browsers.ts stale): configs/browsers.ts replaced (0-line delta). | 2 written, 44 unchanged, 0 removed in ..
-workflow package.json restored to its pre-repair bytes (the repair's floor bumps wait for the manifest unit)
-workflow scaffold audit --offline exit=0 clean
-workflow committed affe372 pushed=true paths=60

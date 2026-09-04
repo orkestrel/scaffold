@@ -1,7 +1,0 @@
-codec format:check exit=0
-codec lint:check exit=0
-codec check exit=0
-codec build exit=0
-codec test exit=0
-codec scaffold audit --offline exit=0 clean
-codec committed 87040ad pushed=true paths=6

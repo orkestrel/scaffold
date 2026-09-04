@@ -1,8 +1,0 @@
-scaffold format:check exit=0
-scaffold lint:check exit=0
-scaffold check exit=0
-scaffold build exit=0
-scaffold test exit=0
-scaffold scaffold audit --offline exit=127 FINDINGS
-scaffold audit reading recorded, not a gate for the canon checkout
-scaffold committed d4f96a36 pushed=true paths=1

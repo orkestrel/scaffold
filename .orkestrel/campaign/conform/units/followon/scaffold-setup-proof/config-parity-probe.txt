@@ -1,2 +1,0 @@
-without setup => drifted: vite.config.ts
-with setup => drifted: none

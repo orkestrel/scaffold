@@ -1,8 +1,0 @@
-Name the pipeline stages and drop the citations from the interpret prose
-
-`via` and `e.g.` leave the test titles and comments, the `design §N` and `ledger N` citations that resolve to no document are deleted, the `scoreTemplate` fence declares its template with the `Template` type in place of a const assertion, and every sentence that tallied the pipeline stages names `[normalize, extract, clarify, format, generate]` or drops the number, across the tests, the guide, the source doc blocks, and the README.
-
-Audit: Luna checker after the fix round, FAIL 9 on runner tallies ruled permitted measurements; verdict PASS pending this landing (`.orkestrel/campaign/conform/units/followon/interpret-prose-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

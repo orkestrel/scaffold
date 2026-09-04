@@ -1,4 +1,0 @@
-control unmutated (published copy against itself): {"moved":false,"added":[],"removed":[],"changed":[]}
-control whitespace-only: {"moved":false,"added":[],"removed":[],"changed":[]}
-control material mutation: {"moved":true,"added":[],"removed":[],"changed":["src/core/index.js"]}
-abort tip against 0.0.8: {"moved":true,"added":[],"removed":[],"changed":["src/core/index.cjs","src/core/index.d.cts","src/core/index.d.ts","src/core/index.js"]}

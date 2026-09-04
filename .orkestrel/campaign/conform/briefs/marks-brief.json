@@ -1,9 +1,0 @@
-{
- "folded": [],
- "orchestrator": [],
- "breaking": [
-  { "id": "brief-obj-3", "consumers": [] },
-  { "id": "brief-subj-1", "consumers": [] }
- ],
- "note": "brief-subj-5 and brief-subj-6 share the gap block at helpers.ts:100 (the boolean-parameter form and the Default form); both rows stand and the writer applies both forms in one edit at the shared site. brief-obj-3 changes deriveStatement's empty result from '' to undefined with no source consumer; brief-subj-1 renames the thirteen module helpers to the build* form with no source consumer and no mirror hit. Incoming consumer edits: interpret's removed `complete` member (reports/conform-interpret-report.md § Shared-file patches) and guide's `symbol.kind` → `symbol.keyword` line in tests/guides.test.ts, carried by the addendum."
-}

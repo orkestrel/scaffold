@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# PATH shim for a bench lane: logs every npx invocation (time, pid, parent, cwd, argv) and passes it
-# through to the real npx. The Cursor worker starts `npx -y typescript-language-server --stdio` in the
-# lane's checkout on every launch; the log names each such start beside any install it triggers.
-LOG=/home/user/scaffold/tmp/cursor/npm-shim.log
-printf '%s pid=%s ppid=%s cwd=%s npx %s\n' "$(date -u +%H:%M:%S)" "$$" "$PPID" "$PWD" "$*" >> "$LOG"
-exec /opt/node22/bin/npx "$@"

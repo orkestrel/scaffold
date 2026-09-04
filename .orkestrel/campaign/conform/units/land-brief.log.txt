@@ -1,7 +1,0 @@
-brief format:check exit=0
-brief lint:check exit=0
-brief check exit=0
-brief build exit=0
-brief test exit=0
-brief scaffold audit --offline exit=0 clean
-brief committed 71d12f8 pushed=true paths=22

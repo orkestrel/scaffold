@@ -1,7 +1,0 @@
-program format:check exit=0
-program lint:check exit=0
-program check exit=0
-program build exit=0
-program test exit=0
-program scaffold audit --offline exit=0 clean
-program committed be4e5a3 pushed=true paths=19

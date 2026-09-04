@@ -1,8 +1,0 @@
-Conform server to the fleet rules: the address guard, the NEXT code, the codec digest, the renamed parser, the executed fences
-
-`isAddressInfo` moves to `src/server/validators.ts` and checks every member `node:net` declares; the double-`next` guard rejects with `ServerError('NEXT')`; `computeBodyETag` encodes through codec's `encodeHex`; `requestEncoding` is `parseEncoding` (breaking, no fleet importer); `probePort` and `Server.#listen` throw a `TypeError` in place of a `0` sentinel for an address `listen(port)` cannot produce; `Stream` merges caller headers through `Headers.set` so a re-cased key replaces the seam's value; `buildContext` is shared test infrastructure; the guide's flagship fences execute from `tests/guides.test.ts`; `ServerInterface`'s members, the boolean tags, the defaults, and `readBody`'s `undefined` outcomes carry their doc blocks; the README names the engines floor and the shipped formats; every `AGENTS §` citation and every ordinal leaves the package's prose.
-
-Audit: round 1 (Luna distillate and checker PASS, Sol objective FAIL 3, 4 on the record), round 2 (Grok 4.6 distillate, Luna checker PASS, Sol objective FAIL 4, 9), round 3 (Grok 4.6 distillate, Luna checker FAIL 5 twice on surviving citations and PASS between, Sol objective FAIL 3, 4 on the record); four Sol fix rounds through the Cursor bench and two Orchestrator citation removals; verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-server-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

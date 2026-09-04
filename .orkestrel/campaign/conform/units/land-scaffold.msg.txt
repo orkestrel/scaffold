@@ -1,8 +1,0 @@
-Conform scaffold to the fleet rules: the vendored-set prose, the documented compilers, the blueprint proof, the capability skips
-
-The guide names the `file` event in the upstream reader's event list, qualifies the emitter claims, and reads its Surface summaries in the table's form; the README and the guide name the set `HOST_PATHS` holds and the `repair` count leaves the README. The blueprint compilers and `matchesDriftReachability` carry `@example` blocks the distribution proof drives. `createBlueprint` gains its mirrored proof. The write-transaction and helper mode skips read `supportsMode` from `@orkestrel/test/server`. `sanitizeLine` folds a lone carriage return. The `lint` script fixes in place. The checkout's own guide test adopts guide's renamed `fenceImports` and `missingSymbols`. `guides/scaffold.md` is a vendored host path, so `host.json` carries its regenerated digests and the published `dist/host` surface moves with this commit.
-
-Audit: round 1 (Luna distillate, Luna checker FAIL 7 on the generated inventory, Opus objective FAIL 2, 4, closed by an Orchestrator-owned fix round 1), round 2 (Luna distillate, Luna checker PASS, Sol objective FAIL 2 through the Cursor bench, closed by a Sol fix round 2), round 3 (Grok 4.6 distillate, Luna checker FAIL 7 restating the round-1 ruling, Sol objective FAIL 3, 9 on the record, closed by a record-only fix round 3); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-scaffold-audit-verdict.md`).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

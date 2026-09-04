@@ -1,2 +1,0 @@
-0 of 36 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 8.
-integration: integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.

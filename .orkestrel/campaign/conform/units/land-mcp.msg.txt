@@ -1,8 +1,0 @@
-Conform mcp to the fleet rules: the session group, the injected clock, the predicate names, the executed loopback fence
-
-`MCPSessionMiddlewareOptions.capacity` becomes the `session` group and `MCPSessionOptions` gains `clock`, forwarded into every minted session so one injected clock governs the store sweep and the replay log; `push` and `replay` match the declared interface. `MCP_WEBSOCKET_SUBPROTOCOL` lives in core; `isFormElicitationSupported` and `isTaskSupported` are `supportsFormElicitation` and `supportsTask`, proved beside their declaration; `MCPCompletionManagerInterface` is `MCPCompletionInterface`; `MCPTaskOptions.defer` and `MCPSubscriptionOptions.listen` are `deferral` and `producer`. `MCPServer` and `HTTPClientTransport` keep their public members ahead of the private ones, `MessagePortTransport` gains its mirrored proof, `prepublishOnly` runs `check` before `build`, and the guide's loopback fence states the outcome the client returns and executes from `tests/guides.test.ts`. Probe, the one fleet dependent, imports none of the moved symbols and re-pins at the wave.
-
-Audit: round 1 (Luna distillate, Luna checker FAIL 3, Sol objective FAIL 3, 4, 7 through the Cursor bench, closed by a Sol fix round 1), round 2 (Grok 4.6 distillate, Luna checker PASS before and after, Sol objective FAIL 4, closed by a Sol fix round 2 under its own red and green); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-mcp-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

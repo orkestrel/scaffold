@@ -1,1 +1,0 @@
-0 of 33 planned paths drifted from the plan. Audit compared bytes at 23, existence at 4, and nothing at 6.

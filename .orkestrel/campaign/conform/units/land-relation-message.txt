@@ -1,8 +1,0 @@
-Conform relation to the fleet rules: the loaded map, the checked descriptor, the model listeners, the row helpers
-
-`RelationProps` becomes `LoadedMap`; `ModelEventMap` declares no type parameter and `link` and `unlink` carry `Key`; every consumer re-pins at its own release, and no fleet checkout imports either name. `isRelationDescriptor` checks each declared member's type and refuses a relationship outside the union. `RelationManagerOptions.model` carries `on` and `error`, threaded into every vended handle, and the per-call handle lifetime is stated on the interface and in the guide. `#index` and `#group` become the exported `indexRows` and `groupRows` with their proofs and guide rows. The guide's value-claiming fences run in `tests/guides.test.ts`; `isBrowserVuePath` leaves `tests/setup.ts`; `Model` and `RelationManager` carry an `@example` and constructor documentation; `relationship` is the one term for the axis; the README states the runtime floor and the published faces; the `§` citations, `via`, `just`, `now`, `e.g.`, the counts, and the positional pointers leave the prose.
-
-Audit: Grok-first round 1 (Luna distillate, Luna checker PASS, Opus objective PASS with the parsed-descriptor finding closed by a fix round) and round 2 (Luna checker PASS); verdict PASS pending this landing (`.orkestrel/campaign/conform/units/conform-relation-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

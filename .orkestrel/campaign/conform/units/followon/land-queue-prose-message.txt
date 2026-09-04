@@ -1,8 +1,0 @@
-Name the assertions and the context handle in the queue test prose
-
-The store test comments point with `following` and name the internal-name assertion in place of a position; the `MemoryQueueStore` header no longer tallies the store surface; the `QueueContext` doc sentence names the context a handler receives.
-
-Audit: the Orchestrator read the four-hunk diff against the rows; no lane ran for four comment lines (`.orkestrel/campaign/conform/units/followon/queue-prose-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

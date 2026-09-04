@@ -1,9 +1,0 @@
-mcp format:check exit=0
-mcp lint:check exit=0
-mcp check exit=0
-mcp build exit=0
-mcp test exit=0
-mcp scaffold repair exit=0 (configs/browsers.ts stale): configs/browsers.ts replaced (0-line delta). | 2 written, 46 unchanged, 0 removed in ..
-mcp package.json restored to its pre-repair bytes (the repair's floor bumps wait for the manifest unit)
-mcp scaffold audit --offline exit=0 clean
-mcp committed cd631bb pushed=true paths=32

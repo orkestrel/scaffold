@@ -1,8 +1,0 @@
-Name the listener-isolation and emit-safety properties without a claim word
-
-The guide's emitter paragraphs and the model test comment name listener isolation and emit safety as the measured properties the tests pin, in place of `guarantee`.
-
-Audit: the Orchestrator read the diff against the row; no lane ran for three prose lines (`.orkestrel/campaign/conform/units/followon/relation-prose-audit-verdict.md` in scaffold).
-
-Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
-Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

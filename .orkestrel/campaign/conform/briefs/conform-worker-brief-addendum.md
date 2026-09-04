@@ -1,8 +1,0 @@
-# Addendum to the conform-worker brief — incoming consumer edits, taken first
-
-The closure staged for this unit carries the landed tips of queue and guide. Each of the following edits is one a landed unit returned for this package under its report's § Shared-file patches; apply them first, exactly as given, and record each under a `## Consumer edits taken` section of the report with the line now. Line numbers are the reports' and can have moved; read each site before changing it. A vendored `guides/<dep>.md` mirror is never edited by hand: it refreshes at the wave.
-
-1. **queue's `QueueExecution` → `QueueContext`** (`reports/conform-queue-report.md:156-230`): in `src/core/types.ts`, `src/core/Worker.ts`, `src/server/types.ts`, `src/server/Dispatch.ts`, `src/server/helpers.ts`, and `src/server/NodeWorker.ts`, the type import reads `QueueContext`, every `execution: QueueExecution` parameter reads `context: QueueContext`, the `#execution` field reads `#context`, and `WorkerHandler`'s third parameter reads `context`; re-sort each affected named-import list. Then `guides/worker.md` (`:19,98,103,149,152,198,199,204,280,283,427`): the `WorkerHandler` shape row and the `ServeWorkerOptions` Surface row take `QueueContext` and `context`, and the prose sites are read by sense for the same substitution; a fence that changes changes its transcription in `tests/guides.test.ts` in the same edit.
-2. **guide's `symbol.kind` → `symbol.keyword`** (`reports/conform-guide-report.md:154-163`): `tests/guides.test.ts:139` reads `.filter((symbol) => symbol.keyword === 'function')`.
-
-Mirrors refreshed at the wave, not here: `guides/queue.md`, `guides/guide.md`, `guides/emitter.md`, `guides/contract.md`, `guides/database.md`.
