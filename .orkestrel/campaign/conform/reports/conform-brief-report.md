@@ -142,7 +142,7 @@ editing the line back; `test:guides` exit 0, `Tests 20 passed (20)` —
 `grep -rn "PLANTED" . --include=*.ts --include=*.md` (excluding `node_modules`) returns nothing.
 
 Location sweep: `grep -rn "the guide fences, executed" tests/` returns
-`tests/guides.test.ts:335` alone.
+`tests/guides.test.ts:342` alone.
 
 ### brief-subj-1 — applied (BREAKING)
 
@@ -320,6 +320,10 @@ Run in order at the finishing tip, each read bare.
 | `npm --prefix /home/user/fleet/brief run build` | 0 | `brief-proofs/final-4-build.txt` |
 | `npm --prefix /home/user/fleet/brief test` | 0 | `brief-proofs/final-5-test.txt` |
 
+The table's readings were taken at the pre-fix tip of 21:37:33 UTC (`brief-proofs/final-5-test.txt:16`)
+and are superseded by the Orchestrator's deciding run at landing, which executes `format:check`,
+`lint:check`, `check`, `build`, and `test` in order on the final tree.
+
 `npm test` reported `src:core` 281 passed, `policy` 111 passed, `config` 46 passed, `setup` 27
 passed, `guides` 20 passed. No failure excerpt to quote.
 
@@ -365,6 +369,10 @@ Changed signatures:
 - `BriefCompilerInterface.gate` and `BriefManagerInterface.add` are unchanged; only the classes'
   parameter names moved onto the interface's word, which reaches the emitted declaration and editor
   hints.
+- `INTERPRETATION_MEMBERS` no longer carries `'complete'`. Its element type is `keyof Interpretation`,
+  and `@orkestrel/interpret` removed that member, so the published value and its union both lose it.
+  No consumer inside the fleet closure; a registry consumer of `0.0.6` reading `'complete'` from the
+  list drops that read.
 
 No compatibility alias, re-export, or shim was left.
 
@@ -782,3 +790,41 @@ Every gate ran from `/home/user/fleet/brief` after the four rewrites, on 2026-09
 ### Orchestrator integration (00:52 UTC, after fix round 2b returned)
 
 Fix round 2b reported one temporal `once` in a test name outside its scope, `tests/src/core/helpers.test.ts:872` ("once the guard passes", the sense fix round 2b's `src/core/helpers.ts:869` rewrite closed); the Orchestrator rewrote the one word to `after` (`npx oxfmt --check` exit 0). The sample strings at `tests/src/core/integration.test.ts:29` and `tests/src/core/BriefCompiler.test.ts:57` are test data rather than prose and stay.
+
+## Fix round 3
+
+The fix answers the round-2 objective lane's refutations of claims 3 and 6 and its findings O1 and O2
+in `/home/user/scaffold/.orkestrel/campaign/conform/units/l4/brief-objective-r2.md` (the round-2
+checker passed every claim).
+
+### Edits
+
+- **Claim 3** — `src/core/types.ts:168-171`.
+  Before:
+  ```
+   * The cost lands on one migration: `buildCitation` takes `(name, url, note)` where the earlier
+   * `citation` function took `(name, role, url)` — strings in the same positions either way, so a
+   * stale call still compiles and still passes the guard, and only renders wrong. Nothing is
+   * published, so a version bump carries it.
+  ```
+  After:
+  ```
+   * The cost lands on one migration: `buildCitation` takes `(name, url, note)` where the 0.0.6
+   * release took `(name, role, url)` — strings in the same positions either way, so a stale call
+   * still compiles and still passes the guard, and only renders wrong.
+  ```
+- **Claim 6** — report `:369` (now the § Breaking bullet list), added the `INTERPRETATION_MEMBERS`
+  bullet before "No compatibility alias, re-export, or shim was left."
+- **O1** — report § Gates, after the `:315-321` table, added the sentence stating the table's
+  readings were taken at the pre-fix tip of 21:37:33 UTC (`brief-proofs/final-5-test.txt:16`) and
+  are superseded by the Orchestrator's deciding run at landing.
+- **O2** — report `:144-145`: `tests/guides.test.ts:335` corrected to `tests/guides.test.ts:342`
+  (the tree line for `describe('the guide fences, executed'` was confirmed before the edit). No
+  other report line cited `:335` for that block.
+
+### Rulings
+
+- **R1** — ruled: sample strings inside a code fence or a test fixture are data, exempt from the
+  prose substitution table; the guide's rewrite stands and the test strings stay.
+- **R2** — closed by the Orchestrator: the evidence diff is regenerated in text mode and renders
+  `tests/src/core/parsers.test.ts`.
