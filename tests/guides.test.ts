@@ -3,12 +3,12 @@ import { isRecord } from '@orkestrel/contract'
 import {
 	createGuide,
 	createSource,
-	fenceImports,
+	extractFenceImports,
 	findMissing,
 	findUnlisted,
 	isExternalLink,
 	METHODS,
-	missingSymbols,
+	findMissingSymbols,
 	parseManifest,
 	resolveLink,
 	SURFACE,
@@ -99,7 +99,7 @@ describe('guides', () => {
 	it('documents every barrel-reachable export', () => {
 		const undocumented: string[] = []
 		for (const { entry, guide, source } of inspected) {
-			for (const key of missingSymbols(source.surface(), guide.surface())) {
+			for (const key of findMissingSymbols(source.surface(), guide.surface())) {
 				undocumented.push(`${entry.spec}: ${key}`)
 			}
 		}
@@ -109,7 +109,7 @@ describe('guides', () => {
 	it('documents nothing the barrels do not export', () => {
 		const invented: string[] = []
 		for (const { entry, guide, source } of inspected) {
-			for (const key of missingSymbols(guide.surface(), source.surface())) {
+			for (const key of findMissingSymbols(guide.surface(), source.surface())) {
 				invented.push(`${entry.spec}: ${key}`)
 			}
 		}
@@ -129,7 +129,7 @@ describe('guides', () => {
 				}
 			}
 			for (const symbol of source.surface()) {
-				if (symbol.kind !== 'interface' && symbol.kind !== 'class') continue
+				if (symbol.keyword !== 'interface' && symbol.keyword !== 'class') continue
 				const members = source.methods(symbol.name)
 				if (members.length === 0) continue
 				// A class implementing a documented contract is proven against that
@@ -137,7 +137,7 @@ describe('guides', () => {
 				// interface, and the class owes it exactly, nothing missing and nothing
 				// extra. Everything else owes a table of its own.
 				const contract = `${symbol.name}Interface`
-				const implementing = symbol.kind === 'class' && declared.has(contract)
+				const implementing = symbol.keyword === 'class' && declared.has(contract)
 				const owed = implementing ? source.methods(contract).join(', ') : undefined
 				if (owed !== undefined && owed !== members.join(', ')) {
 					drifted.push(`${entry.spec}: ${symbol.name} exposes ${members.join(', ')}, owes ${owed}`)
@@ -185,7 +185,7 @@ describe('guides', () => {
 			const names = source.surface().map((symbol) => symbol.name)
 			for (const fence of guide.fences()) {
 				if (fence.language !== EXAMPLE_LANGUAGE) continue
-				for (const statement of fenceImports(fence.code)) {
+				for (const statement of extractFenceImports(fence.code)) {
 					if (!statement.specifier.startsWith('@orkestrel/scaffold')) continue
 					for (const name of findMissing(statement.names, names)) {
 						undeclared.push(`${entry.spec}: ${statement.specifier} exports no ${name}`)
