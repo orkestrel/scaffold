@@ -1,68 +1,36 @@
-diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
-index 2f64d817..9063e907 100644
---- a/tests/setupServer.test.ts
-+++ b/tests/setupServer.test.ts
-@@ -1,6 +1,6 @@
- import { execFileSync } from 'node:child_process'
- import { existsSync, readFileSync } from 'node:fs'
--import { join } from 'node:path'
-+import { basename, join } from 'node:path'
- import { describe, expect, it } from 'vitest'
- import { requireValue } from '@orkestrel/test'
- import { createScratch } from '@orkestrel/test/server'
-@@ -96,7 +96,9 @@ describe('the workspace anchors', () => {
- 	it('allocates every scratch directory this suite owns under its own prefix', () => {
- 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
- 		try {
--			expect(workspace.path.includes(SCRATCH_PREFIX)).toBe(true)
-+			expect(SCRATCH_PREFIX.includes('/')).toBe(false)
-+			expect(SCRATCH_PREFIX.includes('\\')).toBe(false)
-+			expect(basename(workspace.path).startsWith(SCRATCH_PREFIX)).toBe(true)
- 			expect(existsSync(workspace.path)).toBe(true)
- 		} finally {
- 			workspace.destroy()
-@@ -703,24 +705,28 @@ describe('the upstream fixtures', () => {
- 			'/listed': { status: 200, body: '{}' },
- 			'/held': { status: 200, body: '{}', held: true },
- 		})
--		const answered = await fetch(`${server.base}/listed`)
--		expect(answered.status).toBe(200)
--		await answered.text()
--		const pending = fetch(`${server.base}/held`).then(
--			() => 'answered',
--			() => 'refused',
--		)
--		await server.arrival('/held')
--		await server.destroy()
--		// The held request is the one a suite would otherwise leak, so destroy is what
--		// releases it rather than the caller abandoning it.
--		expect(await pending).toBe('refused')
--		expect(
--			await fetch(`${server.base}/listed`).then(
-+		try {
-+			const answered = await fetch(`${server.base}/listed`)
-+			expect(answered.status).toBe(200)
-+			await answered.text()
-+			const pending = fetch(`${server.base}/held`).then(
- 				() => 'answered',
- 				() => 'refused',
--			),
--		).toBe('refused')
-+			)
-+			await server.arrival('/held')
-+			await server.destroy()
-+			// The held request is the one a suite would otherwise leak, so destroy is what
-+			// releases it rather than the caller abandoning it.
-+			expect(await pending).toBe('refused')
-+			expect(
-+				await fetch(`${server.base}/listed`).then(
-+					() => 'answered',
-+					() => 'refused',
-+				),
-+			).toBe('refused')
-+		} finally {
-+			await server.destroy()
-+		}
- 	})
+diff --git a/.claude/rules/typescript.md b/.claude/rules/typescript.md
+index 170fa23a..e60706ee 100644
+--- a/.claude/rules/typescript.md
++++ b/.claude/rules/typescript.md
+@@ -29,7 +29,10 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
+ - `as const` annotates a literal with its own type and never overrides the checker, so the assertion
+   ban does not reach it. Use it to derive a literal union from a value and to fix a tuple's arity and
+   element types. Do not write it on a value whose contract is already declared; annotate the
+-  declaration instead.
++  declaration instead. A class field that holds one literal keeps `as const`
++  (`readonly code = 'ABORT' as const`): the vendored lint gate's `prefer-as-const` rule refuses the
++  annotated form, and a field whose type is a union of literals is annotated as the preceding
++  sentence states.
  
- 	it('points both endpoints at one loopback base and keeps the writers a run reports through', () => {
+ ## Immutability
+ 
+diff --git a/host.json b/host.json
+index 0e2a2ef2..2e151247 100644
+--- a/host.json
++++ b/host.json
+@@ -442,7 +442,7 @@
+ 			"storage": "claude/rules/typescript.md",
+ 			"destination": ".claude/rules/typescript.md",
+ 			"executable": false,
+-			"digest": "0d8673af8d311276ae6fcbb569fecf32c046830f5dbcd3ab83eb70c9920cbae7"
++			"digest": "0427a66e6005eeb05a31ae4ee6cb1ec5b411ccf39183d14fe979d4728c391b01"
+ 		},
+ 		{
+ 			"storage": "claude/rules/workspace.md",
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "64f7adc48d55fca1195caa87c5105b670ea4d6b35f89936e961991f4ea77f275"
++	"digest": "b4db6a5e119dec8c93ded71dabdfa2adce1f7ecb0666e84249c33bb6c8842e2c"
+ }

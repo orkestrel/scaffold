@@ -1,2 +1,8 @@
+ M .claude/rules/typescript.md
+ M .orkestrel/campaign/conform/ledgers/followons.md
+ M .orkestrel/campaign/conform/units/conform-mcp-audit-verdict.md
+ M .orkestrel/campaign/conform/units/conform-scaffold-audit-verdict.md
  M .orkestrel/campaign/conform/units/followon/conform-scaffold.audit.txt
- M tests/setupServer.test.ts
+ M host.json
+?? .orkestrel/campaign/conform/briefs/followon/server-prose-brief.md
+?? .orkestrel/campaign/conform/units/round-verdict-draft-grok.result.md

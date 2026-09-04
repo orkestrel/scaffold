@@ -35,4 +35,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 1's refutations closed by fix round 1, round 2's by fix round 2, round 3's record refutations by fix round 3; the checkers' claim-7 refutations ruled by the brief's amendment), pending the deciding run at landing.
+PASS (round 1's refutations closed by fix round 1, round 2's by fix round 2, round 3's record refutations by fix round 3; the checkers' claim-7 refutations ruled by the brief's amendment); landed as 2146454a with the full chain green and the canon audit reading recorded.

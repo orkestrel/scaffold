@@ -31,4 +31,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-PASS (round 1's refutations closed by fix round 1, round 2's by fix round 2, the checker passing on the fixed tree), pending the deciding run at landing.
+PASS (round 1's refutations closed by fix round 1, round 2's by fix round 2, the checker passing on the fixed tree); landed as cd631bb with the full chain green and the offline audit clean.
