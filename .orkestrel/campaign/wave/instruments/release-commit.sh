@@ -6,9 +6,9 @@ W=/home/user/work/wave; L=$W/prep-$P.log
 DIR=/home/user/fleet/$P; [ "$P" = scaffold ] && DIR=/home/user/scaffold
 cd "$DIR" || exit 2
 NAME=$(node -p "require('./package.json').name"); NEXT=$(node -p "require('./package.json').version")
-PRIOR=$(grep -o 'committed manifest [0-9.]*' "$L" | head -1 | awk '{print $3}')
-DIST=$(grep -o 'dist against published [^:]*: {.*' "$L" | head -1 | sed 's/dist against published [^:]*: //' | cut -c1-200)
-CHANGED=$(grep -o 'overwrite changed: .*' "$L" | head -1 | sed 's/overwrite changed: //' | tr -s ' ' | sed 's/ M /`/g; s/ *$//' | sed 's/`/, `/g; s/^, //' | sed 's/\([^,]*\)$/\1`/; s/`\([^`,]*\)/`\1`/g' )
+PRIOR=$(grep -o 'registry [0-9.]*' "$L" | head -1 | awk '{print $2}')
+DIST=$(node /home/user/work/distdiff2.mjs "$DIR" "$PRIOR" | cut -c1-200)
+CHANGED=$(grep -o 'overwrite changed: .*' "$L" | head -1 | sed 's/overwrite changed: //' | tr -s ' ' | sed 's/ *M /\n/g' | sed '/^$/d' | sed 's/^ *//; s/ *$//' | sed 's/.*/`&`/' | paste -sd, - | sed 's/,/, /g')
 WHEN=$(grep -o '^[0-9:]* .* prepublishOnly exit=0' "$L" | head -1 | cut -c1-5)
 RANGES=$(node -p "const p=require('./package.json');['dependencies','peerDependencies'].flatMap(k=>Object.entries(p[k]||{}).filter(([n])=>n.startsWith('@orkestrel/')).map(([n,v])=>n+' '+v)).join(', ')||'none'")
 git add -A . > /dev/null 2>&1
