@@ -12,7 +12,7 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 | 19:51 | `@orkestrel/contract` | `0.0.16` | L0 | served `0.0.16` at 19:51 | release tip `2ced48e`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-contract.log.txt`). |
 | 19:52 | `@orkestrel/msg` | `0.0.9` | L0 | served `0.0.9` at 19:52 | release tip `f1ed94a`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-msg.log.txt`). |
 | 19:52 | `@orkestrel/sse` | `0.0.6` | L0 | served `0.0.6` at 19:52 | release tip `f7f21e6`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-sse.log.txt`). |
-| 19:52 | `@orkestrel/test` | `0.0.13` | L0 | accepted at 19:52 with the registry's processing notice; served TEST-SERVED-AT | release tip `b8b0977`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-test.log.txt`). |
+| 19:52 | `@orkestrel/test` | `0.0.13` | L0 | accepted at 19:52 with the registry's processing notice; served `0.0.13` at 19:55 | release tip `b8b0977`. Uploaded back-to-back on one one-time code (`publish-layer.sh`; log `publish-test.log.txt`). |
 
 ## The login
 
