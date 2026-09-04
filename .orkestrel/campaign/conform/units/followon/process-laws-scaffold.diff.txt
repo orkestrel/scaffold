@@ -1,5 +1,5 @@
 diff --git a/.agents/orchestration.md b/.agents/orchestration.md
-index a1c4dcb7..47b69923 100644
+index a1c4dcb7..2d048252 100644
 --- a/.agents/orchestration.md
 +++ b/.agents/orchestration.md
 @@ -452,6 +452,8 @@ The harness bridge names the concrete mechanism for each of these.
@@ -28,13 +28,13 @@ index a1c4dcb7..47b69923 100644
  - Read each criterion against the off-limits list, line by line. Grant the file a criterion needs or
    strike that criterion. A file the change will break that appears in neither list is unscoped.
 +- Where a scope line names the `tests/**` or `src/**` glob, name the paths the `scaffold repair`
-+  command restores as off-limits in the same sentence, and treat a glob that reaches a vendored
-+  file as a grant of that file. Bound a criterion wider than its Sites by the brief's scope.
++  command restores as off-limits in the same sentence. Bound a criterion wider than its Sites by
++  the brief's scope.
  - Scope a unit that changes a mechanism to own the prose describing it. Where a brief scopes that
    prose out, name the carrier and dispatch it before the change ships.
  - Give a small unrelated obligation its own unit.
 diff --git a/.claude/rules/writing.md b/.claude/rules/writing.md
-index 1c4583b2..557b4f7e 100644
+index 1c4583b2..991a284c 100644
 --- a/.claude/rules/writing.md
 +++ b/.claude/rules/writing.md
 @@ -82,8 +82,8 @@ first, and these rules wherever a rule here names no different form for it.
@@ -43,8 +43,8 @@ index 1c4583b2..557b4f7e 100644
  
 -Replace each term in this table with its replacement. Quote a literal code identifier as itself; it
 -is exempt from every row.
-+Replace each term in this table with its replacement. A literal code identifier and a sample string
-+inside a code fence or a test fixture are data: quote each as itself, exempt from every row.
++Replace each term in this table with its replacement. A literal code identifier is data, and so is
++a sample string inside a code fence or a test fixture: quote each as itself, exempt from every row.
  
  | Term                     | Replacement                               |
  | ------------------------ | ----------------------------------------- |

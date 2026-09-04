@@ -111,8 +111,8 @@ Throughout 2026-09-04 the objective lane ran on the Opus `reviewer` as the recor
 - A sample string inside a fence or a fixture is data, exempt from the substitution table; a number word whose sentence names its members is permitted; a `format` homonym stays.
 - A class field holding one literal keeps `as const` under the vendored `prefer-as-const` gate (canon `17e00993`, agent-obj-9 EXEMPT).
 - Probe's standing red is the arming class alone; a timing red under load is re-run alone by the Orchestrator after the unit exits before it is believed.
-- A scaffold landing records the canon audit reading (`npx scaffold` exits 127 in the canon checkout; `node dist/bin/main.js audit --offline` is the reading), and records commit before a scaffold landing's commit step, never during it.
-- A retained log carries `.log.txt` (the root `.gitignore` ignores `*.log`).
+- The canon checkout's own CLI runs through the built `node dist/bin/main.js` entry, never through the `npx` launcher (which resolves no bin there and exits 127), and a scaffold landing records the canon audit reading beside the landing instead of gating the landing on it; records commit before a scaffold landing's commit step, never during it.
+- A retained log is named with the `<unit>.log.txt` pattern, never with a bare `.log` suffix, which the root `.gitignore` file ignores.
 - The `tests/service/**` suites of ollama execute at the wave's pre-publish step on a daemon host; the `status` sentinel and the public `readonly` data fields are next-matrix rows.
 - The guide rename's consumer edit lands with the round, not at the wave: a re-stage that reddens every consumer's typecheck is the evidence that reverses a deferral (`ledgers/followons.md:98`).
 
