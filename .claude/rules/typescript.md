@@ -29,7 +29,10 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 - `as const` annotates a literal with its own type and never overrides the checker, so the assertion
   ban does not reach it. Use it to derive a literal union from a value and to fix a tuple's arity and
   element types. Do not write it on a value whose contract is already declared; annotate the
-  declaration instead.
+  declaration instead. A class field that holds one literal keeps `as const`
+  (`readonly code = 'ABORT' as const`): the vendored lint gate's `prefer-as-const` rule refuses the
+  annotated form, and a field whose type is a union of literals is annotated as the preceding
+  sentence states.
 
 ## Immutability
 
