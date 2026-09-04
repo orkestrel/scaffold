@@ -23,4 +23,4 @@ Claim 8's gate reading is NOT-EVIDENCED by every read-only lane and settles on t
 
 ## Terminal
 
-AUDIT-TERMINAL
+PASS (round 1's refutation closed by fix round 1, verified by the Orchestrator's sweeps on the tree; the R2 guard asserts the `limit` field the buggy form alone mis-reports, the builder's recorded ancillary decision), pending the deciding run at landing.
