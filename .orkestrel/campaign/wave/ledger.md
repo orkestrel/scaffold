@@ -62,6 +62,8 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 | 21:48 | `@orkestrel/worker` | `0.0.11` | L4 | accepted at 21:48 with the processing notice | release tip `6929232`. Uploaded on one one-time code with the layer, after a first code expired unused (`publish-worker.log.txt`). |
 | 21:48 | `@orkestrel/workflow` | `0.0.17` | L4 | accepted at 21:48 with the processing notice | release tip `2e07e2a`. Uploaded on one one-time code with the layer, after a first code expired unused (`publish-workflow.log.txt`). |
 
+| 21:53 | `@orkestrel/agent` | `0.0.20` | L5 | accepted at 21:53 with the processing notice | release tip `841e452`: every runtime range moved. Uploaded on a one-time code (`publish-agent.log.txt`). |
+
 ## The login
 
 The registry answered the web login's polls inconsistently through this host's proxy: the proxy leaves from several addresses, and a poll from an address other than the one that minted the session answers `403 {"message":"forbidden"}`, which npm 10 and npm 11 read as web login unsupported and drop to the legacy prompt. On one kept-alive connection the polls answer `202` every 3 seconds (`instruments/login-diag.sh`). `instruments/login-retry.sh` mints attempts until one survives its first poll and relays that URL; the owner's click landed on the third relayed link at 19:32, and `npm whoami` answered.
