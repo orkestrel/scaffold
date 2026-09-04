@@ -67,6 +67,58 @@ The release runs from `report.md` under the `orkestrel-publish` skill. Rows reco
 | 21:59 | `@orkestrel/toolbox` | `0.0.12` | L6 | served `0.0.12` at 21:59 | release tip `ceeff85`. Uploaded on one one-time code with ollama (`publish-toolbox.log.txt`). |
 | 21:59 | `@orkestrel/ollama` | `0.0.14` | L6 | served `0.0.14` at 21:59 | release tip `7657741`. Every member of `prepublishOnly` exit 0 except `test:service`, recorded: the suite needs the `qwen3.5:2b-q4_K_M` model at a local Ollama daemon this host lacks (`instruments/prep-ollama-gates.sh`); owed on a daemon host per `ROADMAP.md` § 4. Uploaded on the same code (`publish-ollama.log.txt`). |
 
+
+## The closing round: development re-pins
+
+After the last upload, every checkout whose `@orkestrel` development ranges named an older release re-pinned to the registry's caret with no bump (`instruments/repin-dev.sh` over four slices, `instruments/devstale.mjs` the work list): the lockfile regenerated, `prepublishOnly` exit 0, and the rebuilt `dist/` unmoved against the released tarball. Process reddened on a chunking assertion under load and re-ran alone; scaffold's `dist/src` moved with its ranges because the compiler embeds the ranges it writes into generated workspaces, so its re-pin is the release `0.0.63` (no vendored byte moved, nothing depends on scaffold at runtime, so no cascade).
+
+| Package | Re-pin commit | When (UTC) | Ranges moved |
+| --- | --- | --- | --- |
+| `abort` | `8327580` | 22:01 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `brief` | `6d894b1` | 22:03 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `browser` | `2d9902a` | 22:06 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `budget` | `9e6a7e0` | 22:07 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `codec` | `0218daa` | 22:09 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62, `@orkestrel/test:` ^0.0.12→^0.0.13 |
+| `console` | `5354275` | 22:11 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `contract` | `ead0788` | 22:12 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62, `@orkestrel/test:` ^0.0.12→^0.0.13 |
+| `csv` | `386ddbe` | 22:13 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `database` | `d11eff2` | 22:17 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `emitter` | `85bb137` | 22:18 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `form` | `df2a79c` | 22:19 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `guide` | `0c3a77f` | 22:20 | `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `html` | `36c2eb5` | 22:02 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `indexeddb` | `0f59989` | 22:04 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `interpret` | `95d4932` | 22:05 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `lsp` | `70045c0` | 22:06 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `markdown` | `86672cf` | 22:08 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `mcp` | `ac223a6` | 22:11 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `middleware` | `6d8de3c` | 22:13 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `msg` | `2f84a8a` | 22:14 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62, `@orkestrel/test:` ^0.0.12→^0.0.13 |
+| `ndjson` | `98c07d9` | 22:15 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `pool` | `5474ecc` | 22:16 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `process` | `d6742df` | 22:22 | `@orkestrel/guide` ^0.0.16→^0.0.17, `@orkestrel/probe` ^0.0.11→^0.0.12, `@orkestrel/scaffold` ^0.0.61→^0.0.62; committed after the idle re-run cleared a stdout-chunking assertion the shared container reddened |
+| `program` | `b923943` | 22:02 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `qualifier` | `3e7b005` | 22:03 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `queue` | `378bce4` | 22:05 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `rater` | `d4476e1` | 22:06 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `reason` | `8339bd6` | 22:08 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `relation` | `e9cb1b4` | 22:09 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `router` | `68d3622` | 22:11 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `sea` | `bfaf146` | 22:12 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `server` | `ccad969` | 22:14 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `sqlite` | `89c4b69` | 22:15 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `sse` | `805eead` | 22:16 | `@orkestrel/contract:` ^0.0.15→^0.0.16, `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62, `@orkestrel/test:` ^0.0.12→^0.0.13 |
+| `table` | `467e55d` | 22:02 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `template` | `60d2a68` | 22:03 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `terminal` | `d02ac87` | 22:05 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `test` | `9a153b0` | 22:07 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `timeout` | `41e732e` | 22:08 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `tool` | `9ba4d00` | 22:10 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `websocket` | `ea62e8b` | 22:11 | `@orkestrel/guide:` ^0.0.16→^0.0.17, `@orkestrel/probe:` ^0.0.11→^0.0.12, `@orkestrel/scaffold:` ^0.0.61→^0.0.62 |
+| `worker` | `9615ad8` | 22:13 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `workflow` | `52f0448` | 22:15 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+| `workspace` | `2bf1ca7` | 22:16 | `@orkestrel/probe:` ^0.0.11→^0.0.12 |
+
 ## The login
 
 The registry answered the web login's polls inconsistently through this host's proxy: the proxy leaves from several addresses, and a poll from an address other than the one that minted the session answers `403 {"message":"forbidden"}`, which npm 10 and npm 11 read as web login unsupported and drop to the legacy prompt. On one kept-alive connection the polls answer `202` every 3 seconds (`instruments/login-diag.sh`). `instruments/login-retry.sh` mints attempts until one survives its first poll and relays that URL; the owner's click landed on the third relayed link at 19:32, and `npm whoami` answered.
