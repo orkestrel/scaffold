@@ -9,7 +9,7 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, matchesGlob } from 'node:path'
-import * as ts from 'typescript'
+import * as ts from '@typescript/typescript6'
 
 /** A rule the fleet placement instrument can decide from syntax and a file path. */
 export type PolicyRule =

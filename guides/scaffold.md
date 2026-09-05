@@ -1140,6 +1140,9 @@ application-server fleet packages — and each carries the newest triple its sup
 when it was written.
 [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) names that seeded set, so a
 row entering or leaving the manifest moves a test rather than passing unnoticed.
+`@typescript/typescript6` is an installed row because the vendored policy sweep and the generated
+distribution proof call the TypeScript JavaScript API in process, and the `typescript` package
+publishes no such API at its 7 major.
 
 A newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
 question, and a person decides whether the generated toolchain supports it. Inside the declared

@@ -6,7 +6,7 @@ import { CANON_PATHS, HOST_PATHS, replaceManifestRanges } from '@src/core'
 import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import ts from 'typescript'
+import ts from '@typescript/typescript6'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')

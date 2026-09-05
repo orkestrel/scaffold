@@ -9,7 +9,7 @@ import { isRecord, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
-import ts from 'typescript'
+import ts from '@typescript/typescript6'
 import { build, loadConfigFromFile } from 'vite'
 import {
 	ARTIFACT_TEMPLATES,

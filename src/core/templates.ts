@@ -1068,7 +1068,7 @@ import {
 {{transport}}import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-{{launcher}}import ts from 'typescript'
+{{launcher}}import ts from '@typescript/typescript6'
 import { afterAll, describe, expect, it } from 'vitest'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')

@@ -487,13 +487,21 @@ export const DEFAULT_VERSION = '0.0.1'
 /** Names the `engines.node` range a workspace starts with. */
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
-/** Holds the tooling versions scaffold and every generated workspace share. */
+/**
+ * Holds the tooling versions scaffold and every generated workspace share.
+ *
+ * @remarks
+ * `@typescript/typescript6` is a planned dependency of every workspace because the vendored
+ * policy sweep and the generated distribution proof call the TypeScript JavaScript API in
+ * process, and the `typescript` package stops publishing that API at its 7 major.
+ */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/guide': manifest.devDependencies['@orkestrel/guide'],
 	'@orkestrel/probe': manifest.devDependencies['@orkestrel/probe'],
 	'@orkestrel/scaffold': `^${manifest.version}`,
 	'@orkestrel/test': manifest.devDependencies['@orkestrel/test'],
 	'@types/node': manifest.devDependencies['@types/node'],
+	'@typescript/typescript6': manifest.devDependencies['@typescript/typescript6'],
 	oxfmt: manifest.devDependencies.oxfmt,
 	oxlint: manifest.devDependencies.oxlint,
 	typescript: manifest.devDependencies.typescript,

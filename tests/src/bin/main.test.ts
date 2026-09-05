@@ -87,6 +87,10 @@ describe('scaffold', () => {
 				status: 200,
 				body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
 			},
+			'/@typescript%2Ftypescript6': {
+				status: 200,
+				body: buildPackument(BASE_DEV_DEPENDENCIES['@typescript/typescript6']?.slice(1) ?? ''),
+			},
 			'/oxfmt': {
 				status: 200,
 				body: buildPackument(BASE_DEV_DEPENDENCIES.oxfmt?.slice(1) ?? ''),

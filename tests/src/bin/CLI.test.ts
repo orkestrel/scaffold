@@ -121,6 +121,10 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
 	},
+	'/@typescript%2Ftypescript6': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@typescript/typescript6']?.slice(1) ?? ''),
+	},
 	'/oxfmt': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES.oxfmt?.slice(1) ?? ''),
@@ -217,6 +221,10 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	'/@types%2Fnode': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
+	},
+	'/@typescript%2Ftypescript6': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@typescript/typescript6']?.slice(1) ?? ''),
 	},
 	'/@vitejs%2Fplugin-vue': {
 		status: 200,
