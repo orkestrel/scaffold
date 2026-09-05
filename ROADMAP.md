@@ -35,6 +35,18 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   and reads `stale` until the template moves. Rule whether a workspace carrying
   `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
   project the plan already runs in a browser, then move the template and the audit together.
+- **scaffold**, **probe**, and the fleet: the fleet stays on TypeScript 6.0.3 and removes every
+  use of the in-process compiler API, so the later move to 7 is one range change; the ruling of
+  2026-09-05 reverted the bridge and the 7 move from scaffold and probe. Measured 2026-09-05: the
+  `tsc` process (`--noEmit`, `--pretty false`, `--showConfig`, `--incremental`), the parser and
+  transformer `vite` re-exports, the oxlint plugin surface in `configs/policy.ts`, and
+  api-extractor's own engine serve every site the inventory names. The reconciled plan, its
+  routing, and its measurements sit in `.orkestrel/campaign/ts6-api/` until that campaign
+  accepts; it waits on the owner's rulings on the scope of `vite-plugin-dts`, on probe's
+  `Issue.range` and `Project.digest` contract, and on publishing. The same probe unit closes the
+  Oxlint `initialize` deadline the whole probe suite misses on a four-CPU host (the type stage's
+  synchronous program build holds the event loop past `LINT_DEADLINE`; measured 2026-09-05 at
+  `b331d93`), because a spawned `tsc` leaves the loop free.
 - **test**: the browser journey layer resolves interactive targets and named regions, so a
   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
