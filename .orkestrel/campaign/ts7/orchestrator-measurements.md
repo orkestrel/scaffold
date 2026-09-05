@@ -1,0 +1,99 @@
+# Orchestrator measurements for the ts7 campaign
+
+Taken by the Orchestrator on 2026-09-05 in `/home/user/scaffold` (typescript 6.0.3 installed, Node v22.22.2), each with the command that produced it. Nothing here installed into the repository: TypeScript 7.0.2 ran through the `npx` cache and a scratch install under the session scratchpad.
+
+## The registry
+
+```text
+$ npm view typescript dist-tags → latest 7.0.2, rc 7.0.1-rc, next 7.1.0-dev.20260905.1, beta 6.0.0-beta
+$ npm view typescript@7.0.2 exports → ".": "./lib/version.cjs"; "./unstable/sync", "./unstable/async", "./unstable/fs", "./unstable/proto", "./unstable/ast" (+ "/is", "/factory", "/utils", "/scanner", "/visitor", "/clone"); no main, no types
+$ npm view typescript@7.0.2 bin → tsc: bin/tsc; dependencies and optionalDependencies: @typescript/typescript-<platform> 7.0.2 (linux-x64, darwin-arm64, win32-x64, and others)
+$ npm pack typescript@7.0.2 --dry-run → lib/tsc.js (609 B, a launcher that execve's the platform binary), vendor/vscode-jsonrpc, 416 files, no lib/typescript.js
+$ npm view typescript@6.0.3 exports → "./lib/typescript.js"
+$ npm view @typescript/native-preview dist-tags → latest 7.0.0-dev.20260707.2 (bin tsgo)
+$ npm view @typescript/api → E404 (no such package)
+$ peerDependencies.typescript: unplugin-dts@1.1.0 ">=4"; @microsoft/api-extractor@7.59.0 depends on typescript "5.9.3" (bundled); vite-plugin-dts@5.1.0, vitest@5.0.0, vite@latest, oxlint@1.81.0: none declared
+```
+
+## TypeScript 7's tsc over scaffold's own configs (instruments/tsc7-probe.sh)
+
+```text
+$ npx -y -p typescript@7.0.2 tsc --version → Version 7.0.2
+$ npx -y -p typescript@7.0.2 tsc --noEmit -p tsconfig.json → exit 0
+$ … -p configs/src/tsconfig.core.json → exit 0 ; -p configs/src/tsconfig.server.json → exit 0 ; -p configs/src/tsconfig.bin.json → exit 0
+$ npx tsc --noEmit -p tsconfig.json (6.0.3) → exit 0 ; -p configs/src/tsconfig.core.json → exit 0
+$ npx -y -p typescript@7.0.2 tsc -p configs/src/tsconfig.core.json --declaration --emitDeclarationOnly --noEmit false --outDir <scratch>/decl7 → exit 0, 13 .d.ts files
+```
+
+Reading: the type gate (`npm run check`) moves to 7.0.2 with no source or config change, and 7.0.2 emits declarations for the core project.
+
+## The import surface under 7.0.2 (scratch install)
+
+```text
+$ node -e "import('typescript').then(m=>…)" → default: object; keys: default,version,versionMajorMinor; version 7.0.2
+$ import('typescript/unstable/ast') → 409 exports: createScanner, SyntaxKind, ScriptTarget, NodeFlags, forEachLeadingCommentRange, forEachTrailingCommentRange, getJSDocTags, getLeadingCommentRanges, findNextToken, findPrecedingToken, 347 is* guards (unstable/ast/is), visitEachChild, visitNode, visitNodes (unstable/ast/visitor); no createSourceFile, no getJSDocCommentsAndTags
+$ import('typescript/unstable/sync') → API, InternalAPI, Snapshot, Project, Program, Checker, Emitter, NodeHandle, Symbol, DiagnosticCategory, ModuleKind, …
+```
+
+Reading: `import ts from 'typescript'` no longer carries `createSourceFile`, `transpileModule`, `forEachChild`, or any compiler member; every such call in the tree throws under 7.0.2. Parsing text in-process has no replacement in the package; the AST is reached through the native process.
+
+## Node's own type stripping
+
+```text
+$ node --version → v22.22.2
+$ node -e "require('node:module').stripTypeScriptTypes('const x: number = 1 as number; export const y = <T,>(a: T): T => a', {mode:'transform'})" → "const x = 1;\nexport const y = (a)=>a;\n"  (ExperimentalWarning: stripTypeScriptTypes is an experimental feature)
+```
+
+Reading: `ts.transpileModule` over a guide fence has a runtime replacement in the Node the line already requires.
+
+## The sync API over scaffold's core project (instruments/api-probe.mjs)
+
+```text
+$ node api-probe.mjs   (typescript@7.0.2 in a scratch install; cwd /home/user/scaffold)
+projects: 1 project: /home/user/scaffold/configs/src/tsconfig.core.json rootFiles: 13 ms: 62
+sourceFileNames: 105
+sourceFile keys: parent,view,index,_byteIndex,_sourceFile,nodes,… statements: 6
+function declarations: 1 createBlueprint
+node keys: parent,view,index,_byteIndex,_sourceFile
+ast.getJSDocTags: function  ast.getJSDocCommentsAndTags: undefined  ast.getLeadingCommentRanges: function
+node tags: param,param,returns,throws,link,remarks,example
+symbol: ok  symbol proto: …,getJsDocTags,getDocumentationComment
+documentation: "Constructs a Blueprint from a name and the fields that differ from the defaults."
+tags: param="name - The bare workspace name." | param="input - …" | returns="The filled blueprint, …" | throws="{" | link="ScaffoldError} coded `INVALID` …" | remarks="A blueprint is a closed record, …" | example="```ts\nimport { createBlueprint } from '@orkestrel/scaffold…"
+semantic diagnostics (file): 0
+emitter proto: constructor,printNode
+total ms: 61
+```
+
+Reading: `API.updateSnapshot({ openProjects: [config] })` → `Snapshot.getProject(config)` → `project.program.getSourceFile(file)` → statements the `unstable/ast` guards recognise; `ast.getJSDocTags(node)` returns the tags on the node; `project.checker.getSymbolAtLocation(node.name)` → `Symbol.getDocumentationComment(checker)` and `getJsDocTags(checker)` return the summary and the tag texts (the `{@link}` inside a `@throws` splits into a `throws` part and a `link` part, and the summary renders `{@link Blueprint}` as `Blueprint`). The whole round trip over the core project took 61 ms. `Symbol.getDocumentationComment()` without the checker argument throws.
+
+## The declaration build under 7.0.2 (instruments/dts-probe.sh, dts-probe-2.sh)
+
+```text
+$ npx vite build   (scratch project: vite latest, vite-plugin-dts 5.1.0 and 5.0.3, typescript 7.0.2, scaffold's dts options)
+Error: [unplugin-dts] The installed "typescript" package does not provide the JavaScript Compiler API (this happens with TypeScript 7+), and the fallback "@typescript/typescript6" was not found.
+Please install it alongside TypeScript 7:  npm install -D @typescript/typescript6
+This allows TypeScript 7 to be used for compilation while keeping the JS API available for tooling.
+See: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0-beta/
+$ npx vite build   (control: vite-plugin-dts 5.0.3 with typescript 6.0.3) → exit 0, dist/index.d.ts carries the doc block, @remarks, and @example
+$ npm view @typescript/typescript6 → latest 6.0.2, main ./lib/typescript.js ("TypeScript is a language for application scale JavaScript development")
+```
+
+Reading: `unplugin-dts` (both installed lines) resolves the in-process API from `@typescript/typescript6` when the project's `typescript` is 7 or later. That package is Microsoft's bridge: the 6.x JavaScript API published under a scoped name so a project can compile with 7 while its tooling keeps the old API. The second probe (`dts-probe-2.sh`) measures the build with the bridge installed and api-extractor over tsgo-emitted declarations; its results are appended when it returns.
+
+## The web pass (research-report.md, researcher on Sonnet)
+
+Microsoft's 7.0 post (2026-07-08) states 7.0 ships "without shipping an API" and that 7.1 ships "a new (and different) API", so the `unstable/*` surface the 7.0.2 package carries is a preview with no stability promise; the 6.0 post (2026-03-23) lists the deprecations 7.0 removes outright (`--baseUrl`, `--moduleResolution node|node10|classic`, `--module amd|umd|systemjs|none`, `--target es5`, `--downlevelIteration`, `--esModuleInterop false`, `--outFile`) and the changed defaults (`--strict`, `--module esnext`, `--types []`, `--rootDir`); scaffold's tsconfigs use none of the removed options (the `tsc` 7.0.2 runs above exit 0). `vue-tsc` has no TypeScript 7 support yet (vuejs/language-tools issue 5381, open since 2026-05-26). oxlint's type-aware linting runs through `tsgolint`, not the `typescript` package. api-extractor always analyses with its own bundled TypeScript (5.9.3 at 7.59.0). `process.execve` needs Node 22.15 or later; this container runs v22.22.2.
+
+## The declaration build with the bridge (instruments/dts-probe-2.sh)
+
+```text
+$ npm install typescript@7.0.2 @typescript/typescript6@latest vite-plugin-dts@5.0.3   (scratch project)
+typescript 7.0.2 ; @typescript/typescript6 6.0.2 ; vite-plugin-dts 5.0.3 ; unplugin-dts 1.0.3 ; @microsoft/api-extractor 7.59.0
+$ npx vite build → exit 0 ; [unplugin:dts] Start bundling declaration files... Analysis will use the bundled TypeScript version 5.9.3 ; Declaration files built in 577ms ; dist/index.d.ts carries the doc block, @remarks, and @example
+$ (vite-plugin-dts 5.1.0 / unplugin-dts 1.1.0) npx vite build → exit 0 ; Declaration files built in 542ms
+$ node -e "const ts=require('@typescript/typescript6'); …" → version 6.0.3 createSourceFile function transpileModule function forEachChild function sys object
+$ npx api-extractor run --local --config <scratch>/api-extractor.json  (over the 13 .d.ts files tsc 7.0.2 emitted for scaffold core) → exit 1: "Unable to find a package.json file for the project being analyzed" with <scratch>/decl7/package.json present (346 bytes); unreached, and not on the path the bridge keeps working
+```
+
+Reading: the current build path (`vite build` with `vite-plugin-dts`, api-extractor's bundled 5.9.3 for the rollup) works unchanged under TypeScript 7 once `@typescript/typescript6` is declared as a development dependency; `unplugin-dts` resolves the bridge on its own. The bridge is a complete 6.x in-process API, so `import ts from '@typescript/typescript6'` is a drop-in for every test and policy site that imports `typescript` today. The tsgo-emit-plus-direct-api-extractor path was not proven and is not needed while the bridge stands.
