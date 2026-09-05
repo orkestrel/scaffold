@@ -329,7 +329,7 @@ re-run. These rows stay open:
   daemon whose model was not loaded timed out at `OllamaProvider.test.ts`'s
   warmup while the other files passed, and the warm re-run passed every file.
 - **scaffold**: the release-mode distribution proof (`test:distribution -- --mode
-  release`) depends on the npm major that launches it. On 2026-09-05 the packed
+release`) depends on the npm major that launches it. On 2026-09-05 the packed
   consumer's `npm install` exited 1 under npm 10.9.7 with npm's own
   `Cannot read properties of null (reading 'edgesOut')` and exited 0 under
   npm 11.19.1 (`Tests 5 passed (5)`); rule whether the proof launches the npm the
