@@ -296,12 +296,11 @@ releases with every target's re-pin and `repair`, scaffold's
 `tests/guides.test.ts` reading `symbol.keyword`, indexeddb's
 `configs/browsers.ts`, codec's `encodeHex` export with server re-pinned to it,
 `test:distribution` on lsp and scaffold, every vendored mirror refresh
-(scaffold records `64631e31`), and the fleet's `lint` scripts (a development-only
-commit per package on 2026-09-05). These rows stay open:
+(scaffold records `64631e31`), the fleet's `lint` scripts (a development-only
+commit per package on 2026-09-05), and ollama's service suite, which exits 0
+against a local daemon serving `qwen3.5:2b-q4_K_M` on 2026-09-05 after a warm
+re-run. These rows stay open:
 
-- **ollama**: `npm run test:service` exits 0 on a daemon host. The 0.0.14
-  release recorded the suite as needing the `qwen3.5:2b-q4_K_M` model at a
-  local Ollama daemon.
 - **middleware**, **timeout**, **worker**: the 0.0.19, 0.0.9, and 0.0.11
   release commits carry the generic bump ruling and omit the names those rows
   ask for: `UploadedFileInput` removed and `multipartBoundary` renamed;
@@ -325,6 +324,10 @@ commit per package on 2026-09-05). These rows stay open:
 
 ### The next conformance matrix's rows
 
+- **ollama**: the service suite's warmup covers a cold model load, or the suite
+  warms the model before its first file. On 2026-09-05 the first run on a
+  daemon whose model was not loaded timed out at `OllamaProvider.test.ts`'s
+  warmup while the other files passed, and the warm re-run passed every file.
 - **abort**: transcribe the `README.md:29,34` Usage fence into
   `tests/guides.test.ts` with `README.md` in `ROOT_FILES`; rule what a
   transcription's presence guards bind and apply that rule; rule the `Abort`
