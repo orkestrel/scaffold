@@ -1,0 +1,94 @@
+
+> @orkestrel/probe@0.0.12 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/probe@0.0.12 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/probe@0.0.12 build:src
+> npm run build:src:core && npm run build:src:server && npm run build:src:bin
+
+
+> @orkestrel/probe@0.0.12 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 8 modules transformed.
+rendering chunks...
+
+[unplugin:dts] Start generate declaration files...
+[unplugin:dts] Start bundling declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+[unplugin:dts] Declaration files built in 2325ms.
+
+computing gzip size...
+dist/src/core/index.js  32.13 kB │ gzip: 10.10 kB │ map: 40.81 kB
+
+transforming...
+✓ 8 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  33.98 kB │ gzip: 10.27 kB │ map: 41.38 kB
+
+✓ built in 2.61s
+
+> @orkestrel/probe@0.0.12 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/probe@0.0.12 build:src:server
+> vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+vite v8.2.2 building client environment for production...
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+
+[unplugin:dts] Start generate declaration files...
+[unplugin:dts] Start bundling declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+[unplugin:dts] Declaration files built in 4008ms.
+
+computing gzip size...
+dist/src/server/index.js  103.11 kB │ gzip: 27.67 kB │ map: 212.16 kB
+
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  106.85 kB │ gzip: 27.92 kB │ map: 215.06 kB
+
+✓ built in 4.56s
+[33m[PLUGIN_TIMINGS] [0mYour build spent 94% of 4.5s inside plugin hooks (4.2s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - unplugin-dts buildStart (50%, 2.2s, 2 calls)
+  - unplugin-dts writeBundle (40%, 1.8s, 2 calls)
+Those rows are 89% of the build; the rest of the 94% is below.
+Not measurable — 1 hook whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+  - orkestrel-environment-boundary resolveId (46 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+
+> @orkestrel/probe@0.0.12 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+> @orkestrel/probe@0.0.12 build:src:bin
+> vite build --config configs/src/vite.bin.config.ts
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  0.41 kB │ gzip: 0.28 kB │ map: 0.63 kB
+
+✓ built in 30ms

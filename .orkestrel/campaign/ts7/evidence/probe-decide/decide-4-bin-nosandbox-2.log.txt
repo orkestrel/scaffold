@@ -1,0 +1,35 @@
+== bin solo, sandbox disabled, run 2, 17:34:17, node-count=0
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+ ❯ |src:bin| tests/src/bin/main.test.ts (16 tests | 1 failed) 60658ms
+     × answers a rendering past the content bound with the receipt block 3474ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a rendering past the content bound with the receipt block
+AssertionError: expected [ Array(1) ] to have a length of 4 but got 1
+
+- Expected
++ Received
+
+- 4
++ 1
+
+ ❯ tests/src/bin/main.test.ts:767:19
+    765|     if (text === undefined) return
+    766|     const lines = text.split('\n')
+    767|     expect(lines).toHaveLength(4)
+       |                   ^
+    768|     expect(lines[0]).toMatch(/^probe [0-9a-f-]+ \(\d+ ms\)$/)
+    769|     expect(lines[1]).toMatch(/^claim [0-9a-f]+$/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  17:34:17
+   Duration  61.17s (transform 190ms, setup 137ms, import 193ms, tests 60.66s, environment 0ms)
+
+exit=1

@@ -1,0 +1,8 @@
+
+> @orkestrel/probe@0.0.12 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3741ms on 68 files using 4 threads.

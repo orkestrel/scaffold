@@ -1,0 +1,35 @@
+== bin solo, sandbox disabled, run 1, 17:33:14, node-count=0
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+ ❯ |src:bin| tests/src/bin/main.test.ts (16 tests | 1 failed) 60614ms
+     × carries the verdict record beside the rendered text on both eras 3684ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > carries the verdict record beside the rendered text on both eras
+AssertionError: no verdict on {"id":3,"jsonrpc":"2.0","result":{"_meta":{"io.modelcontextprotocol/serverInfo":{"name":"probe","version":"0.0.12"}},"content":[{"text":"The probe could not arm: The Oxlint language server exited with code 0","type":"text"}],"isError":true,"resultType":"complete"}}: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/bin/main.test.ts:555:58
+    553|      if (answer === undefined) continue
+    554|      const record = answer['structuredContent']
+    555|      expect(isVerdict(record), `no verdict on ${frame}`).toBe(true)
+       |                                                          ^
+    556|      if (!isVerdict(record)) continue
+    557|      expect(answer['content']).toStrictEqual([{ type: 'text', text: fo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  17:33:15
+   Duration  61.24s (transform 298ms, setup 161ms, import 282ms, tests 60.61s, environment 0ms)
+
+exit=1

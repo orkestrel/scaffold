@@ -1,0 +1,45 @@
+
+> @orkestrel/probe@0.0.12 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+············x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > guides fences > earns the receipt the guide documents
+ProbeError: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ Probe.#arm src/server/Probe.ts:225:20
+    223|    // run through the same stages under the same deadline, so `The lin…
+    224|    // ms` reads as evidence about the candidate when it is the instrum…
+    225|    const failure = new ProbeError(`The probe could not arm: ${describe…
+       |                    ^
+    226|     origin: 'instrument',
+    227|     code: 'malformed',
+
+Caused by: ProbeError: The Oxlint language server exited with code 0
+ ❯ LintStage.#fault src/server/stages/LintStage.ts:255:10
+ ❯ LintStage.#translate src/server/stages/LintStage.ts:245:16
+ ❯ LintStage.#warmed src/server/stages/LintStage.ts:165:15
+ ❯ LintStage.#inspect src/server/stages/LintStage.ts:117:18
+ ❯ guardStage src/server/helpers.ts:748:10
+ ❯ Probe.#bound src/server/Probe.ts:488:11
+ ❯ Probe.#inspectStage src/server/Probe.ts:458:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { origin: 'instrument', code: 'malformed', context: { stage: 'lint' } }
+Caused by: LSPError: The LSP request 'initialize' exceeded its deadline
+ ❯ LSPClient.#timeoutRequest node_modules/@orkestrel/lsp/dist/src/core/index.js:1323:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'timeout', context: { value: 1 } }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed (13)
+   Start at  17:29:53
+   Duration  3.90s (transform 262ms, setup 31ms, import 394ms, tests 3.30s, environment 0ms)
+

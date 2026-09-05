@@ -204,3 +204,36 @@ $ npm test (17:09:52, node-count=0 at launch, load average 0.00 at 17:19; the th
 ```
 
 Reading: the same Oxlint `initialize` deadline as runs 1 and 2, on more rows this time and on a host reporting no load; the count of red rows moves between runs (four, one, ten) while the message never does, which is the signature of a deadline the language server's start misses under the whole suite's worker fan-out rather than of the change. The deciding solo runs over the final tree, after the round-4 unit exits, are recorded in the following section; the `probe-fix-2` unit's solo runs at 16:50 to 16:55 reddened under the scaffold round-4 builder's concurrent gates and are the unit's own pessimistic reading per `.agents/orchestration.md` § Writing concurrency rule 10.
+
+## Probe deciding chain 4 over the final tree, and the Oxlint `initialize` deadline measured directly
+
+`instruments/probe-decide-4.sh`, detached with `setsid` at 17:26:01 on the idle host (`node-count=0`):
+
+```text
+npm run format:check → exit 0 ; lint:check → exit 0 ; check → exit 0 ; build → exit 0
+bin solo (tests/src/bin/main.test.ts) → exit 1: Tests 1 failed | 15 passed (16); the red row's rendered text "The probe could not arm: The Oxlint language server exited with code 0"
+Probe solo (tests/src/server/Probe.test.ts) → exit 0: Tests 28 passed (28)
+test:guides → exit 1: Tests 1 failed | 12 passed (13); the receipt row on LSPError: The LSP request 'initialize' exceeded its deadline
+test:setup → exit 0 ; test:policy → exit 0 ; test:config → exit 0
+src:core + src:server (the --exclude did not drop Probe.test.ts) → exit 1: Tests 3 failed | 218 passed (221), every red row the same Oxlint initialize deadline
+```
+
+The deadline measured outside vitest, same host, same minute, `instruments/lsp-init-probe.mjs` (spawns `[process.execPath, node_modules/oxlint/bin/oxlint, '--lsp']` from the checkout root and times the `initialize` round trip) and `instruments/lint-stage-probe.mjs` (drives the built `LintStage` against the checkout root through `dist/src/server/index.js`):
+
+```text
+$ node lsp-init-probe.mjs /home/user/fleet/probe 3 (load 2.56) → 631 ms, 314 ms, 392 ms, each answered
+$ node lint-stage-probe.mjs 3 (load 1.83) → ok after 396 ms, 259 ms, 316 ms; issues 0
+LINT_DEADLINE = 2_000 (src/core/constants.ts:112)
+```
+
+Reading: the language server answers `initialize` in under 0.7 s when this session's shell spawns it directly, through the same command and the same stage the tests drive, so the 2 s deadline the tests miss is not the server's own start. The misses occur only under a vitest worker (and under the built bin the worker spawns), and only since the session resumed at 16:32; the same files passed alone at 12:22 and 13:05. The next measurement separates the tool sandbox from the vitest nesting: the bin file alone with the sandbox disabled, then the sandboxed control.
+
+## The deadline's cause: the type warm shares the event loop with the lint warm
+
+```text
+$ (sandbox disabled) npx vitest run --project src:bin tests/src/bin/main.test.ts ×2 → Tests 1 failed | 15 passed (16) both times, a different row each time, each on the Oxlint exit/deadline → the tool sandbox is not the variable
+$ node instruments/type-stage-probe.mjs (idle host, load 0.29) → round 1: constructed in 285 ms; first inspection after 2333 ms (elapsed 2047); round 2 in the same process: constructed in 9 ms; inspection after 1461 ms
+$ git diff b331d93 --stat -- src/server/stages/TypeStage.ts src/server/stages/LintStage.ts src/core/constants.ts → TypeStage.ts 4 lines (the type imports move to the bridge); LintStage.ts and constants.ts unchanged
+```
+
+Reading: `Probe.#arm` boots every stage at once, so the type stage's first inspection, a synchronous TypeScript program build over the workspace that takes 2.0 to 2.3 s cold on this four-CPU host, runs on the same event loop the lint client's 2 s `initialize` deadline (`LINT_DEADLINE`) is timed on. When the build crosses 2 s the deadline timer fires as the loop unblocks, ahead of the answer already sitting in the pipe, and the stage reports the server "exited with code 0" after the client's grace teardown. The language server itself answers in under 0.7 s. Every red row of the deciding runs arms a probe in a cold process (the bin rows, the guides receipt row, the Probe rows that mint a token), and the same rows passed alone at 12:22 and 12:58 when the host built the program faster. The change touches neither the type warm nor the lint deadline, so the race is a pre-existing seam of the probe package on a slow host, recorded here and in the commit message as a successor item: order the lint warm ahead of the type build, or size `LINT_DEADLINE` from the host, in `probe`'s next visit.
