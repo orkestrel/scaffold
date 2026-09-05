@@ -38,14 +38,14 @@ recoverable from git history by hash; no campaign folder is the plan of record.
 - **scaffold**: a generated workspace that selects `app/browser` holds `typescript` at
   `APP_BROWSER_TYPESCRIPT_RANGE` while every other workspace takes the shared 7 floor, because
   `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381, open since
-  2026-05-26) and it is the checker that workspace's own `check:app:browser` script runs. Delete
-  the range, its spread in `blueprintToDevDependencies`, and the guide paragraph naming it when
-  `vue-tsc` runs against 7; that release is the trigger. No fleet package selects that
+  2026-05-26) and it is the checker that workspace's own `check:app:browser` script runs. When
+  `vue-tsc` runs against 7, delete the range, its spread in `blueprintToDevDependencies`, and the
+  guide paragraph naming it; that release is the trigger. No fleet package selects that
   environment, measured 2026-09-05.
 - **scaffold**: the AST-shaped rules in the vendored policy sweep move to the oxlint `policy`
   plugin, which reads a file's AST and needs no in-process compiler.
   `.claude/rules/workspace.md` § Policy instruments already assigns them there, so the move is a
-  law-conformance repair rather than a new rule, and each moved rule ships its `PolicyControl`
+  law-conformance repair rather than an added rule, and each moved rule ships its `PolicyControl`
   entry with a control drawn from outside its membership rule. The trigger is the next visit to
   either instrument.
 - **scaffold**: the ESNext fence transpile in `tests/guides.test.ts` moves from
@@ -80,12 +80,14 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   `@orkestrel/probe`; run `repair`, which restores `tests/setupPolicy.ts` on the bridge; swap the
   specifier in `tests/guides.test.ts` and `tests/distribution.test.ts`; `database` also edits
   `tests/setupServer.ts` and `tests/setupServer.test.ts`, and `lsp` its `tests/setupConformance.ts`;
-  clear `typescriptCompilerFolder` in each published `src` environment's Vite configuration; run
-  the gates; compare the rebuilt `dist/` against the published tarball and bump only on a material
-  diff. The prerequisite is a `probe` release whose `TypeStage` resolves the workspace's bridge
-  where its `typescript` carries no `createProgram`, and widens its optional peer to
-  `^6.0.3 || ^7.0.0`; until that lands, a target on 7 has no `prove` receipt. The trigger is the
-  scaffold release carrying this move, plus the owner's go-ahead.
+  set `bundleTypes.invokeOptions.typescriptCompilerFolder` to `''` in each published `src`
+  environment's Vite configuration (`undefined` fails `TS2375` under `exactOptionalPropertyTypes`,
+  and api-extractor applies the option only when it names a folder); run the gates; compare the
+  rebuilt `dist/` against the published tarball and bump only on a material diff. The prerequisite
+  is a `probe` release whose `TypeStage` resolves the workspace's bridge where its `typescript`
+  carries no `createProgram`, and widens its optional peer to `^6.0.3 || ^7.0.0`; until that lands,
+  a target on 7 has no `prove` receipt. The trigger is the scaffold release carrying this move,
+  plus the owner's go-ahead.
 - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this

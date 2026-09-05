@@ -44,8 +44,9 @@ must satisfy: no added npm package (`AGENTS.md` § Non-negotiable rules); no sec
 analyzer (`AGENTS.md` § Project model); `typescript` `7.0.2` and its `@typescript/typescript6`
 bridge stay on the development edge unless you rule otherwise; guide mirrors stay fetched bytes and
 are never rewritten (`.claude/rules/documentation.md` § Parity); the executed fences at
-`tests/guides.test.ts:212-361` survive; and the guide's checked structure — methods under `## Methods`, one table per interface,
-readonly data properties in the `## Surface` row — is preserved.
+`tests/guides.test.ts:212-361` survive; and the guide's checked structure — methods under
+`## Methods`, one table per interface, readonly data properties in the `## Surface` row —
+is preserved.
 
 Refused on the evidence, each with its reason under § Refused on the evidence: TypeDoc and
 `typedoc-plugin-markdown`, `@microsoft/api-documenter`, the api-extractor doc model as a reader, a
@@ -351,8 +352,9 @@ enabled: false }` at `unplugin-dts.BU1tibsL.mjs:549-554` and this repository con
   that relocates a fence into an `@example` tag relocates that transcription and must name where it
   moves to.
 - **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. `typescript` `7.0.2`
-  already exposes the JSDoc readers through its `unstable/ast` and `unstable/sync` entries, and `@orkestrel/guide`'s `Source` is text-only by
-  construction and explicitly not the compiler API
+  already exposes the JSDoc readers through its `unstable/ast` and `unstable/sync` entries —
+  preview surfaces carrying no stability promise, whose shape 7.1's different API can change — and
+  `@orkestrel/guide`'s `Source` is text-only by construction and explicitly not the compiler API
   (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`). Reading TSDoc is a capability `guide`
   does not have, so an option must place that reader deliberately.
 - **C13 — Markdown generation primitives are already declared runtime dependencies.**
@@ -1029,8 +1031,8 @@ read the diff for any capitalization or collapse that alters a first sentence th
 and flip the key only if the diff is clean.
 
 **The dependency delta is none.** oxfmt `0.65.0`, oxlint `1.80.0`, `typescript` `7.0.2`, and the
-`@typescript/typescript6` bridge are all declared already. Option 3 writes no Markdown, so it needs neither `@orkestrel/markdown` nor
-`@orkestrel/template`.
+`@typescript/typescript6` bridge are all declared already. Option 3 writes no Markdown, so it needs
+neither `@orkestrel/markdown` nor `@orkestrel/template`.
 
 **Option 3 removes no edit site, and that is the whole trade.** It converts a class of silent drift
 into a red gate, and it makes each pair cheap to repair because the correct text is already written
@@ -1157,10 +1159,12 @@ Each risk names the evidence that settles it.
   the flip lands fleet-wide. The measured diff over `src/core/` is the gate on it, read specifically
   for a capitalization or a collapse that alters a first sentence the `-s` rule governs.
 - **A text scan can miss a doc block.** The controls must come from outside the scanner's membership
-  rule: a doc block preceding a declaration but separated from it by a blank line, and a doc block inside a template
-  literal. Where the scan proves unsound, the reader becomes `typescript/unstable/sync`'s
-  `Symbol.getDocumentationComment(checker)`, which a Vitest sweep can import at no dependency cost
-  because `typescript` is already a development dependency. `ts.getJSDocCommentsAndTags` and
+  rule: a doc block preceding a declaration but separated from it by a blank line, and a doc block
+  inside a template literal. Where the scan proves unsound, the reader becomes
+  `typescript/unstable/sync`'s `Symbol.getDocumentationComment(checker)`, which a Vitest sweep can
+  import because `typescript` is already a development dependency; that entry is a preview surface
+  (TypeScript 7.1 ships a different API) and spawns the platform's native compiler binary, so the
+  swap is a measured cost rather than a free one. `ts.getJSDocCommentsAndTags` and
   `ts.displayPartsToString` are gone at the 7 major.
 - **Whether an oxlint plugin rule can report a diagnostic on a comment is unproven here.**
   `context.report(diagnostic)` exists, and no distillate shows a comment as a diagnostic target.

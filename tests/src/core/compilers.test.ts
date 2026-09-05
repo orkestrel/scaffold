@@ -1437,6 +1437,28 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(browser).toContain('a module in a browser subfolder emits')
 	})
 
+	// The override is what lets a rollup on the 7 major resolve a global type at
+	// all, and the byte-identity comparison cannot reach every copy of it: this
+	// repository materializes core and server, so the browser face's copy is
+	// emitted by nothing that comparison reads. The bin face is the control — it
+	// rolls no declaration up, so it carries no override.
+	it("sets the rollup's compiler folder override in every declaration-rolling face", () => {
+		const artifacts = blueprintToConfigArtifacts(
+			buildBlueprint({ src: ['core', 'browser', 'server'], bin: true }),
+		)
+		for (const path of [
+			'configs/src/vite.core.config.ts',
+			'configs/src/vite.browser.config.ts',
+			'configs/src/vite.server.config.ts',
+		]) {
+			const face = artifacts.find((artifact) => artifact.path === path)
+			expect(face?.content).toContain("invokeOptions: { typescriptCompilerFolder: '' },")
+		}
+		const bin = artifacts.find(({ path }) => path === 'configs/src/vite.bin.config.ts')?.content
+		expect(bin).toBeDefined()
+		expect(bin).not.toContain('typescriptCompilerFolder')
+	})
+
 	it('joins the declaration rewrite only while the line it prints fits the width', () => {
 		// The names either side of the width: at 19 characters the joined call
 		// prints exactly on the vendored 100 columns and at 20 it prints one past, so

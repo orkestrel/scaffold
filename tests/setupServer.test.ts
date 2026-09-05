@@ -518,6 +518,34 @@ describe('the upstream fixtures', () => {
 		})
 	})
 
+	it('publishes every version it is given, and names the first under dist-tags', () => {
+		expect(
+			JSON.parse(buildPackument(['0.0.4', '0.0.8'], { peer: { vite: '^8.0.0' } })),
+		).toStrictEqual({
+			'dist-tags': { latest: '0.0.4' },
+			name: '@orkestrel/sample',
+			versions: {
+				'0.0.4': {
+					name: '@orkestrel/sample',
+					version: '0.0.4',
+					peerDependencies: { vite: '^8.0.0' },
+				},
+				'0.0.8': {
+					name: '@orkestrel/sample',
+					version: '0.0.8',
+					peerDependencies: { vite: '^8.0.0' },
+				},
+			},
+		})
+	})
+
+	it('refuses to publish no version, or an unnamed one', () => {
+		const message = 'A packument publishes at least one version, and every version is named'
+		expect(() => buildPackument([])).toThrow(message)
+		expect(() => buildPackument('')).toThrow(message)
+		expect(() => buildPackument([''])).toThrow(message)
+	})
+
 	it('lists every organization package under the access map the registry serves', () => {
 		expect(
 			JSON.parse(buildOrganization(['@orkestrel/router', '@orkestrel/emitter'])),

@@ -1652,9 +1652,10 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
 /**
  * Build the registry packument text a version lookup reads.
  *
- * @param version - The version to publish under `dist-tags.latest`.
- * @param edges - The declared ranges the published version carries; omitted for
- * a packument that declares none.
+ * @param versions - The version to publish, or the versions to publish with the
+ * `dist-tags.latest` one first.
+ * @param edges - The declared ranges every published version carries; omitted
+ * for a packument that declares none.
  * @returns The response body, as the abbreviated packument form the registry
  * serves for `application/vnd.npm.install-v1+json`.
  *
@@ -1666,20 +1667,37 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
  * `peerDependencies` alongside `dist`, `engines`, `name`, and `version` —
  * verified against `registry.npmjs.org` — so every edge kind is writable here
  * and a reader that reads the wrong one is caught.
+ *
+ * A row the product holds at two majors needs a packument publishing both, and
+ * a reader selects a version from the `versions` map rather than from the tag,
+ * so the edges are written onto every record instead of onto the tagged one.
+ * The tag cannot be derived from the map here: ordering the versions would put
+ * the fixture's answer on the same comparator the reader under test uses.
  */
-export function buildPackument(version: string, edges?: TestPackumentEdges): string {
+export function buildPackument(
+	versions: string | readonly string[],
+	edges?: TestPackumentEdges,
+): string {
+	const published = typeof versions === 'string' ? [versions] : versions
+	const latest = published[0]
+	if (latest === undefined || published.some((entry) => entry.length === 0)) {
+		throw new Error('A packument publishes at least one version, and every version is named')
+	}
 	return JSON.stringify({
-		'dist-tags': { latest: version },
+		'dist-tags': { latest },
 		name: '@orkestrel/sample',
-		versions: {
-			[version]: {
-				name: '@orkestrel/sample',
-				version,
-				...(edges?.dependencies === undefined ? {} : { dependencies: edges.dependencies }),
-				...(edges?.development === undefined ? {} : { devDependencies: edges.development }),
-				...(edges?.peer === undefined ? {} : { peerDependencies: edges.peer }),
-			},
-		},
+		versions: Object.fromEntries(
+			published.map((entry) => [
+				entry,
+				{
+					name: '@orkestrel/sample',
+					version: entry,
+					...(edges?.dependencies === undefined ? {} : { dependencies: edges.dependencies }),
+					...(edges?.development === undefined ? {} : { devDependencies: edges.development }),
+					...(edges?.peer === undefined ? {} : { peerDependencies: edges.peer }),
+				},
+			]),
+		),
 	})
 }
 

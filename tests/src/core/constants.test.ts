@@ -188,10 +188,11 @@ describe('shared dependency tables', () => {
 		expect(matchesRange(emitted, '6.0.3')).toBe(false)
 	})
 
-	// The fork, and the control the assertion above needs: a workspace selecting
+	// The fork, and the control the preceding assertion needs: a workspace selecting
 	// `app/browser` checks its Vue sources with `vue-tsc`, which has no TypeScript 7
-	// support, so it receives the ceiling instead of the shared range. The ceiling is
-	// a floor of the same form, so it answers to the same pattern.
+	// support, so it receives `APP_BROWSER_TYPESCRIPT_RANGE` instead of the shared
+	// range. `APP_BROWSER_TYPESCRIPT_RANGE` is a floor of the same form, so it answers
+	// to the same pattern.
 	it('holds a Vue browser workspace at the TypeScript range vue-tsc supports', () => {
 		const emitted = blueprintToDevDependencies(buildBlueprint({ app: ['browser'] })).typescript
 		if (emitted === undefined)

@@ -1146,15 +1146,20 @@ distribution proof call the TypeScript JavaScript API in process, and the `types
 publishes no such API at its 7 major.
 
 `typescript` is a 7 floor, and the declaration rollup analyses with the compiler
-`@microsoft/api-extractor` bundles rather than with it. Each published `src` environment's Vite
-configuration therefore clears the `typescriptCompilerFolder` invoke option: `unplugin-dts` points
-that option at the installed `typescript` package's root, which carries no `lib.*.d.ts` file at the
-7 major, and the rollup then resolves no global type. A workspace that selects `app/browser` takes
+`@microsoft/api-extractor` bundles rather than with the installed `typescript` package. Each
+published `src` environment's Vite configuration therefore sets the `typescriptCompilerFolder`
+invoke option to `''`: `unplugin-dts` points that option at the installed `typescript` package's
+root, which carries no `lib.*.d.ts` file at the 7 major, and the rollup then resolves no global
+type. With the option set to `''`, the rollup resolves global types against the lib files of the
+compiler `@microsoft/api-extractor` bundles, 5.9.3 at 7.59.0. That holds for every generated
+workspace whatever `typescript` major it installs, so a public declaration resolves only the lib
+types that compiler provides. A workspace that selects `app/browser` takes
 `APP_BROWSER_TYPESCRIPT_RANGE` instead of the shared floor, because it checks its Vue sources with
 `vue-tsc` and `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381). That
-workspace's `audit` reports the shared major as a non-blocking `dependencies` question, which is the
-crossed-major reading every foreign row earns; take it as the record of the limit rather than as an
-instruction to raise the range, and the range goes when `vue-tsc` supports 7.
+workspace's `audit` reports a non-blocking `dependencies` question, the crossed-major reading every
+foreign row earns: the workspace declares major 6 while the registry serves a later major. Read that
+question as the record of the limit, not as an instruction to raise the range. The range goes when
+`vue-tsc` supports 7.
 
 A newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
 question, and a person decides whether the generated toolchain supports it. Inside the declared
@@ -1786,7 +1791,7 @@ port, so the run drives nothing external and stays in `test`.
   definitions.
 - [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) — the seeded rows named
   as a set, the floor form every shared table and this manifest carry, and the emitted TypeScript
-  bound.
+  range with the browser workspace's fork of it.
 - [`tests/src/server/Materializer.test.ts`](../tests/src/server/Materializer.test.ts) — every
   mutation verb against a real temporary target and a real vendored root.
 - [`tests/src/server/WriteTransaction.test.ts`](../tests/src/server/WriteTransaction.test.ts) —
