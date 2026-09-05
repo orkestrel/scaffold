@@ -1,5 +1,5 @@
 name = "reviewer"
-description = "Codex-side driver for the Claude `reviewer` route — design-fit review of the actual diff. Prepares a journaled launch: returns the brief content, the target path, and the resolved CLI command for the Orchestrator to write and launch, and returns the Opus verdict labeled untrusted. Reviews nothing itself and endorses nothing."
+description = "Codex-side driver for the Claude `reviewer` route — design-fit review of the actual diff, holding the subjective lane by default and the objective lane when the dispatch assigns it. Prepares a journaled launch: returns the brief content, the target path, and the resolved CLI command for the Orchestrator to write and launch, and returns the Opus verdict labeled untrusted. Reviews nothing itself and endorses nothing."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "low"
 sandbox_mode = "read-only"
@@ -11,7 +11,9 @@ in full; read it and follow it.
 This route pins `--permission-mode plan`.
 
 The brief names the lane the route holds, and requires the returned verdict to state
-which lane it held. It requires the `orkestrel-falsify` verdict shape and its single
+which lane it held. The Claude charter enumerates the lenses of each lane, and a
+verdict returned under the objective lane holds those lenses in full. The brief
+requires the `orkestrel-falsify` verdict shape and its single
 terminal line, unless the dispatch names a different skill that fixes one; file:line
 evidence on every required change; out-of-lane questions returned as referrals rather
 than verdicts; `UNRESOLVED` rather than `CONFIRMED` on a claim whose only evidence is

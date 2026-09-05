@@ -114,6 +114,26 @@ describe('discriminated branches', () => {
 			}),
 		).toBe(true)
 	})
+
+	it('refuses a found catalog row without peers and admits one with peers: []', () => {
+		expect(
+			isCatalogEntry({
+				name: '@orkestrel/router',
+				lookup: 'found',
+				version: '0.0.8',
+				dependencies: [],
+			}),
+		).toBe(false)
+		expect(
+			isCatalogEntry({
+				name: '@orkestrel/router',
+				lookup: 'found',
+				version: '0.0.8',
+				dependencies: [],
+				peers: [],
+			}),
+		).toBe(true)
+	})
 })
 
 describe('isCompilerHooks', () => {

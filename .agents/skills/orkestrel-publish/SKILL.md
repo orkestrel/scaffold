@@ -10,8 +10,9 @@ description: Run an Orkestrel release from layer order to registry confirmation.
 Read the current files in this order:
 
 1. `AGENTS.md` and every applicable `.claude/rules/*.md` file.
-2. `.agents/orchestration.md` § Publishing the fleet and § Long-running commands. Each named
-   section binds every step here.
+2. `.agents/orchestration.md` § Publishing the fleet, § Long-running commands, § Orchestrator and
+   executor, § Writing concurrency, and § Dispatch anatomy. Each named section binds every step
+   here.
 3. The reference the moment needs: [wave.md](references/wave.md) before visiting a repository,
    ruling on a bump, or preparing a layer; [window.md](references/window.md) before running
    `npm login` or any upload.
@@ -42,21 +43,17 @@ following the skill.
    Derive each pin from that reading, never from a local manifest.
 3. **Visit each repository.** Run the visit in [wave.md](references/wave.md) in its stated order,
    in parallel slices of disjoint repositories, each slice serial inside itself.
-4. **Rule on each package's bump.** Apply the triggers in [wave.md](references/wave.md). A package
-   whose published surface did not move takes its re-pin, its gates, and a commit to `main`, and
-   does not publish.
-5. **Prepare the whole layer before authenticating.** Bump, re-pin, install, sweep the self-pins,
-   run each package's own `prepublishOnly` to green, commit, and push. Every one of those steps
-   happens outside the window.
+4. **Rule on each package's bump.** Apply the triggers in [wave.md](references/wave.md) § Rule on
+   the bump; the contract's § What a bump obliges owns the blast radius.
+5. **Prepare the whole layer before authenticating**, in the order [wave.md](references/wave.md)
+   § Prepare a layer fixes. Every one of those steps happens outside the window.
 6. **Reach the approval.** Follow [window.md](references/window.md), and launch the login chain
    only after the user signals they are at the keyboard.
 7. **Authorize and upload.** Follow [window.md](references/window.md). Take the account's one-time
-   code where it has one, because that path opens no window. Where the account answers with no
-   code, the browser authorization opens the five-minute window: open the layer with one package,
-   confirm its upload from the registry, then chase the remaining uploads back-to-back.
-8. **Close the layer from the registry, then prepare the next.** A dependent's new pin cannot
-   install until the version it names exists, so preparation and publication interleave and cannot
-   be batched ahead.
+   code where it has one; § Authorize the upload there fixes that code's life and the layer it
+   carries. Where the account answers with no code, follow § Spend the window there.
+8. **Close the layer from the registry, then prepare the next**, per [wave.md](references/wave.md)
+   § Prepare a layer.
 
 Run that sequence for every layer, from the registry reading to the registry close. Refresh the
 registry evidence between layers rather than carrying the previous round's reading forward.
@@ -71,7 +68,10 @@ Completion requires:
   that section requires;
 - every tarball swap is restored per § Fixing a dependency before it publishes, and no target
   repository is left holding an uncommitted bump or an unpushed commit;
-- every gate that proved a package ran outside the window and against the artifact that shipped.
+- every gate that proved a package ran outside the window and against the artifact that shipped;
+- every gate red at a package's baseline for a cause `ROADMAP.md` already carries is recorded as a
+  standing reading beside the package's row with its carrier, and the release report names it. A
+  standing reading is not a gate the release ran.
 
 Report the layers in publish order, each package with its registry-confirmed version, the bump
 rulings and their evidence, the approvals the user granted, and anything still unpublished. End

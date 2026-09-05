@@ -1,10 +1,10 @@
 # The approval and the upload window
 
 A release needs the user at the keyboard to authenticate the session, and again to authorize each
-upload. An approval URL dies unclicked in under a minute, so mint one only in a
-moment the user can click, and relay it byte for byte. Where the account answers with a one-time
-code, take that code for the upload — it needs no browser authorization and opens no window to
-lose. Where the account has no code, the browser authorization opens a five-minute window, and the
+upload. An approval URL dies unclicked in under a minute, so mint one only in a moment the user can
+click, and relay it byte for byte. Where the account answers with a one-time code, take that code
+for the upload — it needs no browser authorization, and § Authorize the upload states the code's own
+life. Where the account has no code, the browser authorization opens a five-minute window, and the
 rest of the layer either fits inside it or takes another approval.
 
 ## Arm the terminal
@@ -25,8 +25,11 @@ rest of the layer either fits inside it or takes another approval.
   zero.
 - Re-probe `whoami` immediately before the first upload. A stored credential expires mid-session
   and an overnight gap expires it, so a session-start answer does not hold.
-- Read a login log that shows the spinner and then a legacy `Username:` prompt as an expired
-  attempt rather than as a prompt to answer. Kill it by process id and mint a fresh flow.
+- Read a login log that shows the spinner and then a legacy `Username:` prompt as a dead attempt
+  rather than as a prompt to answer: expired, or refused on its first poll per § Read a `403` on the
+  poll. Kill it by the process id recorded at its launch, per `.agents/orchestration.md` § Confirm
+  dead before relaunching. Every publish here runs under the same `script -qfc` form, so a pattern
+  over the process list reaches a live upload as readily as the dead login.
 - On a Windows host, Git Bash ships no `script` binary, so the upload step is operator-driven:
   prepare the layer, prove the gates, surface the exact `npm publish` command, and the operator
   runs it in a real terminal. Everything before and after the upload — bumps, re-pins, gates,
@@ -49,13 +52,17 @@ rest of the layer either fits inside it or takes another approval.
   against `registry.npmjs.org` with `npm` 10.9.7 and `node` 22.22.2: npm polls `GET /-/v1/done`
   every few seconds and takes `202` while the session waits, and the registry answers `403` at
   about 45 seconds. Whether the registry fixes that abandon by elapsed time or by poll count is
-  unmeasured, so plan against the duration.
+  unmeasured, so plan against the duration. A `403` within seconds of the mint is not that abandon;
+  § Read a `403` on the poll names it.
 - Recognise the abandon on each side. The `npm login` command reads the `403` as web login being
   unsupported and drops to its legacy `Username:` prompt. The `npm publish` command exits `E403`
   naming `GET /-/v1/done?authId=`.
 - Never keep a link alive by re-minting on a loop. Each mint invalidates the URL before it, so a
   supervisor that re-mints on expiry makes the link a moving target and every relayed URL is dead
-  on arrival. Mint once per human moment, and mint again only when the user asks.
+  on arrival. Mint once per human moment, and mint again only when the user asks. That ban covers
+  a URL already relayed. While no URL has been relayed, mint attempts until one survives its own
+  first poll, relay that one alone, and kill the rest by process id; § Read a `403` on the poll
+  names the first-poll refusal this answers.
 - Name the login approval and the upload authorization to the user before either arrives, or the
   authorization link reads as the login having failed.
 - Surface each approval URL the moment it appears in the log, and take the **last** one in log
@@ -75,17 +82,23 @@ rest of the layer either fits inside it or takes another approval.
 
 - Take the account's one-time code where the account has one. The
   `npm publish --ignore-scripts --otp=<code>` command uploads with no browser authorization and no
-  poll, so it carries neither a window nor a race. In the `@orkestrel/scaffold` 0.0.56 run on
-  2026-08-27 the browser authorization failed on the 45-second abandon and the one-time code
-  uploaded the package with no retry.
-- Ask for the code at the moment of the upload, and run the upload inside that code's own life. A
-  code read minutes earlier is already spent.
+  poll. The code has its own life: measured on 2026-09-04 against `registry.npmjs.org`, one code
+  carried every upload of a layer started within about a minute of its first use, console at
+  20:25:02 through router at 20:25:58, and the upload started at 20:25:58 was refused `EOTP` at
+  20:26:00; a code read before its layer was ready was refused at its first upload.
+- Prepare the whole layer, then ask for one code at the moment the layer's first upload starts, and
+  chase the layer's uploads back-to-back inside that code's life with no gate between them. A code
+  read minutes earlier is already spent.
+- Read `EOTP` on this path as the code's life ending, never as the contention § Spend the window
+  describes for the browser path: the chain stops at the refused package, and the layer resumes
+  from that package on a fresh code. Never retry the refused upload on the same code.
 - Ask for the code and nothing else. Never ask for a password, an access token, or an auth file.
   `.agents/orchestration.md` § Publishing the fleet owns that law.
 - Arm a one-time-code upload the way § Arm the terminal arms every other publish.
 - Fall back to the browser authorization where the account answers with no code. That path mints
   the `auth/cli/<id>` URL, needs the click inside the session's life, and opens the five-minute
-  window.
+  window. In the `@orkestrel/scaffold` 0.0.56 run on 2026-08-27 that authorization failed on the
+  45-second abandon and the one-time code uploaded the package with no retry.
 - Tell the user that approving an `auth/cli/<id>` URL opens a five-minute window covering the rest
   of the layer.
 
@@ -95,7 +108,8 @@ rest of the layer either fits inside it or takes another approval.
   window, so none of it binds that path.
 - The window opens when the user approves, not when the first publish starts.
 - Open each layer with one package: publish it alone, surface its approval URL the moment the
-  journal shows it, and confirm the upload from the registry before starting the rest.
+  journal shows it, and read its acceptance line in the journal before starting the rest; the
+  registry read confirms it.
 - Then chase the remaining uploads back-to-back in one process with no gap. An upload started
   within seconds of an approval frequently rides that approval, and each one that does not mints
   its own URL.
@@ -127,14 +141,25 @@ the same status. Rule from the evidence, never from which cause reads likelier.
   opened, and the registry closed the session.
 - The user clicked a superseded URL and poisoned the live attempt. The poll fails mid-flight while
   the user is looking at a page that reports success.
+- The registry refused the attempt's first poll, seconds after the mint and before anyone could
+  click, because the poll left from an egress address other than the one that minted the session.
+  npm reads that `403` as web login unsupported and drops to the legacy `Username:` prompt within
+  seconds rather than at 45. Recover by minting attempts on a kept-alive connection until one
+  survives its first poll and relaying that one alone, per § Reach the approval.
 - Tell those causes apart from the log and the user, never from the status alone. A single minted
   URL that nobody opened in time is the abandon. A log carrying a URL the running attempt
-  superseded, with the user reporting a click, is the poisoned attempt.
+  superseded, with the user reporting a click, is the poisoned attempt. A drop within seconds of
+  the mint, before any relay, is the egress refusal.
 - Recover the same way whichever it was: read the registry for the version, confirm no publish
   process is live, then mint exactly one fresh attempt with the user at the keyboard.
 
 ## Read the verdict from the registry
 
+- Read `+ @orkestrel/<name>@<version>` in the upload's own journal as the accepted verdict, and
+  advance the chain on it. The registry's read lags its processing by minutes, which the
+  `Your package is being processed and may take a few minutes to become available.` notice beside
+  that line announces, so a chain keyed on the registry stops on an accepted upload. Read the
+  registry to confirm and to record the layer's close, never to gate the next upload.
 - Read the result from the registry, not from an exit code. A piped `npm publish` reports the exit
   status of the pipeline, and a CDN read straight after a publish can still serve the previous
   version.

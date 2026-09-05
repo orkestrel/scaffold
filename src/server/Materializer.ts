@@ -1119,10 +1119,13 @@ export class Materializer implements MaterializerInterface {
 		for (const [index, layer] of layers.entries()) for (const name of layer) placed.set(name, index)
 		const rows: string[][] = entries.map((entry) => {
 			if (entry.lookup !== 'found') {
-				return [`\`${entry.name}\``, this.#cell(entry.note), '', '']
+				return [`\`${entry.name}\``, this.#cell(entry.note), '', '', '']
 			}
 			const layer = placed.get(entry.name)
 			const edges = entry.dependencies
+				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
+				.join(', ')
+			const peers = entry.peers
 				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
 				.join(', ')
 			return [
@@ -1130,9 +1133,10 @@ export class Materializer implements MaterializerInterface {
 				`\`${entry.version}\``,
 				layer === undefined ? '' : `L${String(layer)}`,
 				edges,
+				peers,
 			]
 		})
-		const headers = ['Package', 'Version', 'Layer', 'Runtime dependencies']
+		const headers = ['Package', 'Version', 'Layer', 'Runtime dependencies', 'Peer dependencies']
 		const widths = headers.map((header, column) => {
 			let width = Math.max(3, header.length)
 			for (const row of rows) width = Math.max(width, row[column]?.length ?? 0)

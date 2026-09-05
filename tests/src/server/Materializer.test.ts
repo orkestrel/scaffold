@@ -1160,6 +1160,7 @@ describe('Materializer catalog', () => {
 							lookup: 'found',
 							version: '0.0.11',
 							dependencies: [],
+							peers: [],
 						},
 						{
 							name: '@orkestrel/agent',
@@ -1169,6 +1170,7 @@ describe('Materializer catalog', () => {
 								{ name: '@orkestrel/contract', range: '^0.0.11' },
 								{ name: '@orkestrel/workflow', range: '^0.0.11' },
 							],
+							peers: [{ name: '@orkestrel/reason', range: '^0.0.8' }],
 						},
 						{ name: '@orkestrel/queue', lookup: 'missing', note: 'No | release' },
 					],
@@ -1177,19 +1179,19 @@ describe('Materializer catalog', () => {
 				expect(result.written).toEqual(['.claude/agents/orkestrel.md'])
 				const text = workspace.read('project/.claude/agents/orkestrel.md')
 				const paddedAgentRow =
-					'| `@orkestrel/agent`    | `0.0.15`      | L1    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` |'
+					'| `@orkestrel/agent`    | `0.0.15`      | L1    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` | `@orkestrel/reason` `^0.0.8` |'
 				const table = [
-					'| Package               | Version       | Layer | Runtime dependencies                                             |',
-					'| --------------------- | ------------- | ----- | ---------------------------------------------------------------- |',
-					'| `@orkestrel/contract` | `0.0.11`      | L0    |                                                                  |',
+					'| Package               | Version       | Layer | Runtime dependencies                                             | Peer dependencies            |',
+					'| --------------------- | ------------- | ----- | ---------------------------------------------------------------- | ---------------------------- |',
+					'| `@orkestrel/contract` | `0.0.11`      | L0    |                                                                  |                              |',
 					paddedAgentRow,
-					'| `@orkestrel/queue`    | No \\| release |       |                                                                  |',
+					'| `@orkestrel/queue`    | No \\| release |       |                                                                  |                              |',
 				].join('\n')
 				expect(text).toBe(
 					CATALOG_AGENT_TEXT.replace('| Package | Version |\n| --- | --- |', `\n${table}\n`),
 				)
 				const unpaddedAgentRow =
-					'| `@orkestrel/agent` | `0.0.15` | L1 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` |'
+					'| `@orkestrel/agent` | `0.0.15` | L1 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` | `@orkestrel/reason` `^0.0.8` |'
 				expect(unpaddedAgentRow).not.toBe(paddedAgentRow)
 				expect(text).not.toContain(unpaddedAgentRow)
 			} finally {
@@ -1209,7 +1211,13 @@ describe('Materializer catalog', () => {
 			const materializer = new Materializer({ host })
 			try {
 				const entries: readonly CatalogEntry[] = [
-					{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
+					{
+						name: '@orkestrel/router',
+						lookup: 'found',
+						version: '0.0.8',
+						dependencies: [],
+						peers: [],
+					},
 				]
 				materializer.catalog(entries, target)
 				const result = materializer.catalog(entries, target)

@@ -190,6 +190,7 @@ export interface TestUpstreamReply {
 export interface TestPackumentEdges {
 	readonly dependencies?: Readonly<Record<string, string>>
 	readonly development?: Readonly<Record<string, string>>
+	readonly peer?: Readonly<Record<string, string>>
 }
 
 /**
@@ -458,13 +459,22 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
 			guard: isCatalogEntries,
 			accepted: [
 				[],
-				[{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] }],
+				[
+					{
+						name: '@orkestrel/router',
+						lookup: 'found',
+						version: '0.0.8',
+						dependencies: [],
+						peers: [],
+					},
+				],
 				[
 					{
 						name: '@orkestrel/agent',
 						lookup: 'found',
 						version: '0.0.15',
 						dependencies: [{ name: '@orkestrel/tool', range: '^0.0.10' }],
+						peers: [],
 					},
 				],
 			],
@@ -1652,10 +1662,10 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
  * Written here as literal registry JSON rather than derived from anything the
  * reader owns, so the reader is measured against the upstream contract instead
  * of against itself. The abbreviated form carries `dist-tags` and a `versions`
- * map whose per-version record holds `dependencies` and `devDependencies`
- * alongside `dist`, `engines`, `name`, and `version` — verified against
- * `registry.npmjs.org` — so both edge kinds are writable here and a reader that
- * reads the wrong one is caught.
+ * map whose per-version record holds `dependencies`, `devDependencies`, and
+ * `peerDependencies` alongside `dist`, `engines`, `name`, and `version` —
+ * verified against `registry.npmjs.org` — so every edge kind is writable here
+ * and a reader that reads the wrong one is caught.
  */
 export function buildPackument(version: string, edges?: TestPackumentEdges): string {
 	return JSON.stringify({
@@ -1667,6 +1677,7 @@ export function buildPackument(version: string, edges?: TestPackumentEdges): str
 				version,
 				...(edges?.dependencies === undefined ? {} : { dependencies: edges.dependencies }),
 				...(edges?.development === undefined ? {} : { devDependencies: edges.development }),
+				...(edges?.peer === undefined ? {} : { peerDependencies: edges.peer }),
 			},
 		},
 	})

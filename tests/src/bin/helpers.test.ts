@@ -580,7 +580,15 @@ describe('fetchToRefusal', () => {
 		expect(fetchToRefusal([], [])).toBeUndefined()
 		expect(
 			fetchToRefusal(
-				[{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] }],
+				[
+					{
+						name: '@orkestrel/emitter',
+						lookup: 'found',
+						version: '0.0.6',
+						dependencies: [],
+						peers: [],
+					},
+				],
 				[{ name: '@orkestrel/emitter', path: 'guides/emitter.md', lookup: 'found', content: '' }],
 			),
 		).toBeUndefined()
@@ -624,7 +632,15 @@ describe('entriesToReleases', () => {
 					{ name: '@orkestrel/emitter', range: '^0.0.5' },
 					{ name: '@orkestrel/router', range: '^0.0.8' },
 				],
-				[{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] }],
+				[
+					{
+						name: '@orkestrel/emitter',
+						lookup: 'found',
+						version: '0.0.6',
+						dependencies: [],
+						peers: [],
+					},
+				],
 			),
 		).toStrictEqual([
 			{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },

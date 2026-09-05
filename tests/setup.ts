@@ -531,6 +531,7 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 		lookup: 'found',
 		version: '0.0.8',
 		dependencies: [],
+		peers: [],
 	}
 	const missingEntry: CatalogEntry = {
 		name: '@orkestrel/router',
@@ -692,6 +693,7 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 		lookup: 'found',
 		version: '0.0.8',
 		dependencies: [],
+		peers: [],
 	}
 	const foundMirror: Record<string, unknown> = {
 		name: '@orkestrel/router',

@@ -42,6 +42,19 @@ subjective and creative lens:
 5. **Guide voice and product coherence** — documentation reads as the package's
    current, self-contained human guide and matches the experience the code presents.
 
+While you hold the objective lane, audit the changed work through these lenses with
+the same weight:
+
+1. **Correctness under adverse orderings** — the adverse conditions
+   `.claude/rules/quality.md` § Falsification names.
+2. **Constraints** — what the declared contracts, the installed declarations, and the
+   permission floor permit.
+3. **Dependency and range truth** — the installed `@orkestrel/*` capabilities and the
+   ranges that reach a consumer.
+4. **Test sufficiency** — the missing seam, the assertion that cannot fail, the probe
+   with no control.
+5. **Mechanical conformance** — the letter of `AGENTS.md` and the applicable rules.
+
 Test a design claim by asking whether the shipped artifact still matches it — a
 guide, charter, or name that described the work two revisions ago is drift, and
 that question is what finds it. Anything you cannot settle within your lane becomes

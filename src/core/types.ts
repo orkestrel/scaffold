@@ -239,10 +239,13 @@ export interface Blueprint {
  * `dependencies` are the RUNTIME edges the published version declares, which is
  * what a publish order is computed over: a runtime bump obliges every dependent
  * to re-pin and republish, while a development bump obliges nothing beyond the
- * repository that declares it. No layer is recorded here, because a layer is a
- * deterministic function of these edges across the whole catalog — a stored one
- * could only disagree with the rows it was derived from. Read it through
- * {@link catalogToLayers}.
+ * repository that declares it. `peers` are the edges the published version
+ * declares under `peerDependencies`. A peer edge orders a dependent the same
+ * way a runtime edge does: at `0.0.x` a caret peer range pins one exact
+ * release, so the peer must be on the registry before the dependent publishes.
+ * No layer is recorded here, because a layer is a deterministic function of
+ * these edges across the whole catalog — a stored one could only disagree with
+ * the rows it was derived from. Read it through {@link catalogToLayers}.
  */
 export type CatalogEntry =
 	| {
@@ -250,6 +253,7 @@ export type CatalogEntry =
 			readonly lookup: 'found'
 			readonly version: string
 			readonly dependencies: readonly Dependency[]
+			readonly peers: readonly Dependency[]
 			readonly note?: never
 	  }
 	| {
@@ -258,6 +262,7 @@ export type CatalogEntry =
 			readonly note: string
 			readonly version?: never
 			readonly dependencies?: never
+			readonly peers?: never
 	  }
 
 /**

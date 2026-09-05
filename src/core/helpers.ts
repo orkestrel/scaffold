@@ -696,9 +696,11 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
  * @remarks
  * A layer is a deterministic function of the catalog's own edges, so it is
  * computed here rather than stored on a row that could disagree with them.
- * Only RUNTIME edges between catalogued packages count: a development
+ * Only RUNTIME and PEER edges between catalogued packages count: a development
  * dependency reaches no consumer, so it constrains nothing about publish order,
- * and an edge leaving the fleet is a package this catalog does not publish.
+ * and an edge leaving the fleet is a package this catalog does not publish. A
+ * peer edge counts like a runtime edge, because a caret peer range at `0.0.x`
+ * names one exact release the dependent cannot publish ahead of.
  *
  * The order matters because these packages are `0.0.x`, where a caret pins one
  * exact release. Publishing a dependent before its dependency leaves the
@@ -725,7 +727,7 @@ export function catalogToLayers(
 	const pending = new Map<string, Set<string>>()
 	for (const entry of entries) {
 		if (entry.lookup !== 'found') continue
-		const edges = entry.dependencies.map((dependency) => dependency.name)
+		const edges = [...entry.dependencies, ...entry.peers].map((dependency) => dependency.name)
 		pending.set(entry.name, new Set(edges.filter((name) => published.has(name))))
 	}
 	const layers: string[][] = []

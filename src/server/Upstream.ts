@@ -591,7 +591,13 @@ export class Upstream implements UpstreamInterface {
 		)
 		const version = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
 		if (version !== undefined) {
-			return { name, lookup: 'found', version, dependencies: this.#edges(outcome.content, version) }
+			return {
+				name,
+				lookup: 'found',
+				version,
+				dependencies: this.#edges(outcome.content, version, 'dependencies'),
+				peers: this.#edges(outcome.content, version, 'peerDependencies'),
+			}
 		}
 		return {
 			name,
@@ -600,21 +606,25 @@ export class Upstream implements UpstreamInterface {
 		}
 	}
 
-	// The runtime edges the published version declares, read from the same
-	// abbreviated packument the version came from rather than from a second
+	// The runtime and peer edges the published version declares, read from the
+	// same abbreviated packument the version came from rather than from a second
 	// request. Development edges are deliberately not read: they reach no
 	// consumer, so they constrain nothing a publish order decides. A packument
 	// that carries no readable edges answers none rather than failing the row,
 	// because a package with no dependencies and a package whose manifest could
 	// not be read both publish first, and the version is what the row promises.
-	#edges(content: string, version: string): readonly Dependency[] {
+	#edges(
+		content: string,
+		version: string,
+		section: 'dependencies' | 'peerDependencies',
+	): readonly Dependency[] {
 		const parsed = parseJSON(content)
 		if (!isRecord(parsed)) return []
 		const versions = parsed.versions
 		if (!isRecord(versions)) return []
 		const manifest = versions[version]
 		if (!isRecord(manifest)) return []
-		const declared = manifest.dependencies
+		const declared = manifest[section]
 		if (!isRecord(declared)) return []
 		const edges: Dependency[] = []
 		for (const [name, range] of Object.entries(declared)) {

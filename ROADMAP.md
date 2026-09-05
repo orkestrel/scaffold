@@ -12,12 +12,22 @@ recoverable from git history by hash; no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
-- **scaffold**: the instruction canon stops reaching targets, so every fleet repository owes one
-  adoption visit. The trigger is the scaffold release that ships the split. Per repository: re-pin
-  `@orkestrel/scaffold` and install, run `scaffold overwrite`, and run the gates. That one run takes
-  the `AGENTS.md` and `CLAUDE.md` pointers and deletes every tracked copy the target still holds at a
-  canon path, so a second `scaffold audit` in the same visit exits `0`. The step lives in
-  `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository.
+- **scaffold**: `scaffold catalog` derives the layers from runtime and peer edges since
+  2026-09-05, so the next scaffold release carries the `Peer dependencies` column to every target;
+  until then a target's table places middleware ahead of server and mcp in server's own round. The
+  peer range itself stays caller-owned (`guides/scaffold.md` § Dependency floors), so a design
+  round rules whether a fleet peer range at `0.0.x` is a floor the verbs raise, whether an
+  optional peer (`peerDependenciesMeta`) orders a dependent the way a required one does, and
+  whether a bump from the registry is a verb; the wave of 2026-09-04 re-pinned the peers and
+  bumped from the registry with an instrument of its own.
+- **scaffold**: a verb that compares the built `dist/` against the published tarball's material
+  content, over the non-map files with whitespace normalized, and refuses when the baseline is
+  absent. The wave ran that comparison for every package in every round with an instrument of its
+  own, and an absent baseline read once as a bump owed until the tarball was fetched.
+- **scaffold**: the `lint` and `format` scripts sit outside the writable manifest region by design
+  (`blueprintToWritableScripts`), so the fleet's `lint` scripts drifted from the template until a
+  manual sweep on 2026-09-05. Rule whether they join the region with the prior template value in
+  `accepted`.
 - **scaffold**: the canonical `setup` Vitest project is node-only (`environment: 'node'`,
   `browser: { enabled: false }`) while `scaffold audit` demands a `tests/setupBrowser.test.ts` proof
   for a module that sets `data-bs-core` on the document, loads Halfmoon, and opens IndexedDB;
@@ -117,15 +127,6 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   closing on its own editing history, imperative TSDoc summaries across `helpers.ts` where the rule
   asks the third person, and the aphoristic register the guide and the test comments share, which a
   design round rules on.
-- **fleet publish wave**: every published package carries unpublished conformance, breaking, and
-  voice changes on `claude/orkestrel-npm-audit-deps-14ibta` (closed 2026-09-02), and the owner
-  holds publishing. The trigger is the owner's release decision. Per the `orkestrel-publish`
-  skill: re-pack from the accepted tips, restore each registry copy before its distribution proof,
-  publish in the layer order the `scaffold catalog` table regenerates, then re-pin each dependent
-  and refresh its vendored guide mirrors layer by layer. Scaffold publishes on its own account
-  first, because its vendored host surface moved (the `names.md` vocabulary, the `tests.md` helper
-  names, and the 2026-09-02 debrief refinements), and every target's adoption visit then runs
-  `scaffold overwrite` under the row above.
 
 ## 2. Design and research records
 
@@ -307,20 +308,19 @@ re-run. These rows stay open:
   `Timeout.id` and `Timeout.ms` as prototype getters; `spawnThread` →
   `createThread`, `dispatch` → `Dispatch`, and `QueueExecution` →
   `QueueContext`. The next release's notes carry them.
-- **scaffold**: `.agents/skills/orkestrel-publish/references/wave.md` and
-  `window.md` take the wave's laws with scaffold's next vendored release.
-  Through a proxy that leaves from several addresses the registry refuses a
-  login poll from an address other than the minting one, so an attempt is
-  minted on a kept-alive connection and retried until it survives its first
-  poll. An upload's outcome is read from the journal's acceptance line, because
-  the registry's read lags behind its processing. One one-time code carries a
-  layer's uploads back-to-back, and a refused package resumes on a fresh code.
-  `scaffold overwrite` refuses uncommitted changes, so the re-pin and bump
-  commit before it, and it moves the toolchain ranges, so the install repeats
-  after it before the gates. A development dependency whose API the consumers'
-  tests read publishes on its own account ahead of its layer and again at its
-  slot. A peer range is an ordering edge. A package whose build embeds its
-  development ranges takes a release from a development re-pin.
+- **scaffold**: the wave's process laws landed in the canon on 2026-09-05 with
+  the wave's debrief: `window.md` (the first-poll `403` through a multi-address
+  egress, the acceptance line as the chain's verdict, the one-time code's life
+  and the layer it carries, the kill by recorded process id), `wave.md` (the
+  preparation commit before `scaffold overwrite`, the early own-account release
+  of a development dependency whose consumers' gates read its tip, the
+  snapshot class in the self-pin sweep, the fetched baseline before the dist
+  comparison), and `.agents/orchestration.md` (the peer edge in the order law,
+  the release-instrument clause). They reach every target with scaffold's next
+  vendored release, which is the owner's. The host fact stays here: this Cloud
+  environment's proxy leaves from several egress addresses (160.79.106.128,
+  .129, .141, and .142 on 2026-09-04), which is what made the registry refuse
+  the login's first poll.
 
 ### The next conformance matrix's rows
 
@@ -328,6 +328,12 @@ re-run. These rows stay open:
   warms the model before its first file. On 2026-09-05 the first run on a
   daemon whose model was not loaded timed out at `OllamaProvider.test.ts`'s
   warmup while the other files passed, and the warm re-run passed every file.
+- **scaffold**: the release-mode distribution proof (`test:distribution -- --mode
+  release`) depends on the npm major that launches it. On 2026-09-05 the packed
+  consumer's `npm install` exited 1 under npm 10.9.7 with npm's own
+  `Cannot read properties of null (reading 'edgesOut')` and exited 0 under
+  npm 11.19.1 (`Tests 5 passed (5)`); rule whether the proof launches the npm the
+  `engines` field names or the field names npm 11.
 - **abort**: transcribe the `README.md:29,34` Usage fence into
   `tests/guides.test.ts` with `README.md` in `ROOT_FILES`; rule what a
   transcription's presence guards bind and apply that rule; rule the `Abort`

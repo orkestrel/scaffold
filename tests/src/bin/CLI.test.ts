@@ -4943,16 +4943,35 @@ describe('CLI catalog', () => {
 			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'live' })
 			expect(result.entries).toStrictEqual([
-				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] },
+				{
+					name: '@orkestrel/emitter',
+					lookup: 'found',
+					version: '0.0.6',
+					dependencies: [],
+					peers: [],
+				},
 				{
 					name: '@orkestrel/guide',
 					lookup: 'found',
 					version: '0.1.0',
 					dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.6' }],
+					peers: [],
 				},
-				{ name: '@orkestrel/probe', lookup: 'found', version: '0.0.1', dependencies: [] },
-				{ name: '@orkestrel/scaffold', lookup: 'found', version: '0.0.26', dependencies: [] },
-				{ name: '@orkestrel/test', lookup: 'found', version: '0.0.2', dependencies: [] },
+				{
+					name: '@orkestrel/probe',
+					lookup: 'found',
+					version: '0.0.1',
+					dependencies: [],
+					peers: [],
+				},
+				{
+					name: '@orkestrel/scaffold',
+					lookup: 'found',
+					version: '0.0.26',
+					dependencies: [],
+					peers: [],
+				},
+				{ name: '@orkestrel/test', lookup: 'found', version: '0.0.2', dependencies: [], peers: [] },
 			])
 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
 				'guides/emitter.md',

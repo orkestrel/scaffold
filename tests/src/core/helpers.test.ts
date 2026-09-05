@@ -497,20 +497,54 @@ describe('catalogToLayers', () => {
 				lookup: 'found',
 				version: '0.0.3',
 				dependencies: [{ name: '@orkestrel/tool', range: '^0.0.2' }],
+				peers: [],
 			},
 			{
 				name: '@orkestrel/tool',
 				lookup: 'found',
 				version: '0.0.2',
 				dependencies: [{ name: '@orkestrel/contract', range: '^0.0.1' }],
+				peers: [],
 			},
-			{ name: '@orkestrel/contract', lookup: 'found', version: '0.0.1', dependencies: [] },
-			{ name: '@orkestrel/reason', lookup: 'found', version: '0.0.5', dependencies: [] },
+			{
+				name: '@orkestrel/contract',
+				lookup: 'found',
+				version: '0.0.1',
+				dependencies: [],
+				peers: [],
+			},
+			{ name: '@orkestrel/reason', lookup: 'found', version: '0.0.5', dependencies: [], peers: [] },
 		]
 		expect(catalogToLayers(entries)).toStrictEqual([
 			['@orkestrel/contract', '@orkestrel/reason'],
 			['@orkestrel/tool'],
 			['@orkestrel/agent'],
+		])
+	})
+
+	it('places a dependent one layer after a peer-only edge, and needs the peer spread to do it', () => {
+		// The negative control: with the `...entry.peers` spread removed from
+		// `catalogToLayers`, middleware never sees the edge to server and both
+		// packages land in the same first round instead.
+		const entries: readonly CatalogEntry[] = [
+			{
+				name: '@orkestrel/middleware',
+				lookup: 'found',
+				version: '0.0.18',
+				dependencies: [],
+				peers: [{ name: '@orkestrel/server', range: '^0.0.18' }],
+			},
+			{
+				name: '@orkestrel/server',
+				lookup: 'found',
+				version: '0.0.18',
+				dependencies: [],
+				peers: [],
+			},
+		]
+		expect(catalogToLayers(entries)).toStrictEqual([
+			['@orkestrel/server'],
+			['@orkestrel/middleware'],
 		])
 	})
 
@@ -524,14 +558,16 @@ describe('catalogToLayers', () => {
 				lookup: 'found',
 				version: '0.0.1',
 				dependencies: [{ name: '@orkestrel/right', range: '^0.0.1' }],
+				peers: [],
 			},
 			{
 				name: '@orkestrel/right',
 				lookup: 'found',
 				version: '0.0.1',
 				dependencies: [{ name: '@orkestrel/left', range: '^0.0.1' }],
+				peers: [],
 			},
-			{ name: '@orkestrel/free', lookup: 'found', version: '0.0.1', dependencies: [] },
+			{ name: '@orkestrel/free', lookup: 'found', version: '0.0.1', dependencies: [], peers: [] },
 		]
 		expect(catalogToLayers(entries)).toStrictEqual([['@orkestrel/free']])
 	})
@@ -548,6 +584,7 @@ describe('catalogToLayers', () => {
 					{ name: 'zod', range: '^3.0.0' },
 					{ name: '@orkestrel/queue', range: '^0.0.1' },
 				],
+				peers: [],
 			},
 			{ name: '@orkestrel/queue', lookup: 'missing', note: 'The package is not published.' },
 			{ name: '@orkestrel/router', lookup: 'failed', note: 'The registry did not answer.' },

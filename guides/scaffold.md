@@ -1083,11 +1083,14 @@ The region holds a table with these columns:
 | `Version`              | The registry's `dist-tags.latest`, or the cause when the lookup found none |
 | `Layer`                | The publish round the edges place the package in, as `L0`, `L1`, …         |
 | `Runtime dependencies` | Each declared runtime edge, as name and range                              |
+| `Peer dependencies`    | Each declared peer edge, as name and range                                 |
 
 The edge-bearing columns come from the same abbreviated packument the version came from, so a
-catalog costs one request per package and no more. Only `dependencies` is read. `devDependencies`
-reaches no consumer of the published package, so it constrains nothing about publish order, and
-reading it would place packages in rounds that do not exist.
+catalog costs one request per package and no more. `dependencies` and `peerDependencies` are read.
+`devDependencies` reaches no consumer of the published package, so it constrains nothing about
+publish order, and reading it would place packages in rounds that do not exist. A peer edge orders
+a dependent the same way a runtime edge does, because a caret peer range at `0.0.x` pins one exact
+release.
 
 The layer is not stored on a row. `catalogToLayers` derives it from the rows' own edges, in the same
 call that writes them, so the layer and the rows cannot disagree:

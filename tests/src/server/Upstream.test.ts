@@ -1114,9 +1114,27 @@ describe('Upstream catalog', () => {
 		const upstream = new Upstream({ registry: { base: server.base } })
 		try {
 			expect(await upstream.catalog()).toStrictEqual([
-				{ name: '@orkestrel/console', lookup: 'found', version: '0.0.4', dependencies: [] },
-				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.5', dependencies: [] },
-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
+				{
+					name: '@orkestrel/console',
+					lookup: 'found',
+					version: '0.0.4',
+					dependencies: [],
+					peers: [],
+				},
+				{
+					name: '@orkestrel/emitter',
+					lookup: 'found',
+					version: '0.0.5',
+					dependencies: [],
+					peers: [],
+				},
+				{
+					name: '@orkestrel/router',
+					lookup: 'found',
+					version: '0.0.8',
+					dependencies: [],
+					peers: [],
+				},
 			])
 		} finally {
 			upstream.destroy()
@@ -1155,6 +1173,38 @@ describe('Upstream catalog', () => {
 						{ name: '@orkestrel/emitter', range: '^0.0.5' },
 						{ name: 'zod', range: '^3.0.0' },
 					],
+					peers: [],
+				},
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reads the peer edges beside the runtime edges and leaves the development edges where they are', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.organization]: {
+				status: 200,
+				body: buildOrganization(['@orkestrel/router']),
+			},
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: buildPackument('0.0.8', {
+					peer: { '@orkestrel/server': '^0.0.18' },
+					development: { vitest: '^4.1.10' },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			expect(await upstream.catalog()).toStrictEqual([
+				{
+					name: '@orkestrel/router',
+					lookup: 'found',
+					version: '0.0.8',
+					dependencies: [],
+					peers: [{ name: '@orkestrel/server', range: '^0.0.18' }],
 				},
 			])
 		} finally {
@@ -1201,8 +1251,15 @@ describe('Upstream catalog', () => {
 					lookup: 'found',
 					version: '0.0.4',
 					dependencies: [{ name: '@orkestrel/router', range: '^0.0.8' }],
+					peers: [],
 				},
-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
+				{
+					name: '@orkestrel/router',
+					lookup: 'found',
+					version: '0.0.8',
+					dependencies: [],
+					peers: [],
+				},
 			])
 		} finally {
 			upstream.destroy()
@@ -1225,7 +1282,13 @@ describe('Upstream catalog', () => {
 			expect(await upstream.catalog()).toStrictEqual([
 				{ name: '@orkestrel/console', lookup: 'missing', note: 'HTTP 404' },
 				{ name: '@orkestrel/emitter', lookup: 'failed', note: 'HTTP 502' },
-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
+				{
+					name: '@orkestrel/router',
+					lookup: 'found',
+					version: '0.0.8',
+					dependencies: [],
+					peers: [],
+				},
 			])
 		} finally {
 			upstream.destroy()

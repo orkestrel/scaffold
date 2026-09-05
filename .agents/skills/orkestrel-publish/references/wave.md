@@ -10,9 +10,11 @@ prepare the next.
 Run the visit in this order. A step that reads generated or installed state is invalid before the
 step that writes it.
 
-1. Re-pin the target's `@orkestrel/scaffold` devDependency and install, so the overwrite runs the
-   current vendored host.
-2. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
+1. Re-pin every `@orkestrel` range to the registry caret (peer ranges included) and install, so
+   the overwrite runs the current vendored host.
+2. Commit the manifest and the lockfile as the preparation commit. `scaffold overwrite` refuses a
+   tree carrying uncommitted changes, and the install left both dirty.
+3. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
    every tracked copy the target still holds at an instruction-canon path. Prove the sweep with a
    second `scaffold audit` that exits `0`.
    - Where the target's `.claude/agents/orkestrel.md` carries a body outside the marker-bounded
@@ -30,12 +32,16 @@ step that writes it.
      rather than waiving past it.
    - A copy the target git-ignores stays a `foreign` finding, so that target never reaches exit `0`
      again. Keep a local MCP server registration outside the repository rather than at `.mcp.json`.
-3. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
+4. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
    published.
-4. Run the full install.
-5. Run the mutating `format` script to converge generated writes.
-6. Run the quality gates.
-7. Compare the rebuilt `dist/` against the published tarball for material content.
+5. Run the full install. The overwrite re-declares the toolchain ranges, so the lockfile the first
+   install regenerated no longer matches the manifest.
+6. Sweep the self-pins, per § Sweep the self-pins: the re-pin moves the snapshot class.
+7. Run the mutating `format` script to converge generated writes.
+8. Run the quality gates.
+9. Fetch the published tarball, then compare the rebuilt `dist/` against it for material content.
+   An absent baseline is an unanswered comparison, never a moved dist: fetch and re-run rather than
+   ruling a bump owed.
 
 Restore any unpublished tarball the target is holding before the quality gates run, per
 `.agents/orchestration.md` § Fixing a dependency before it publishes. A distribution proof run
@@ -69,7 +75,15 @@ final runtime dependency set differs from the published packument.
   per package rather than assuming it: a package that imports its own `package.json` version into
   published code emits that version, so its pre-bump dist is stale the moment the version moves.
   Rebuild after the bump there and pack from the rebuilt tree. The `npm publish --ignore-scripts`
-  command skips `prepack`, so that rebuild is the operator's step rather than the publish's.
+  command skips `prepack`, so that rebuild is the operator's step rather than the publish's. The
+  same holds for a package that writes its declared ranges into published output: its `dist/`
+  moves on a development re-pin, and `.agents/orchestration.md` § What a bump obliges rules that
+  re-pin a release.
+
+One trigger orders rather than bumps. A package the fleet consumes as a development dependency,
+whose consumers' gates read its unpublished tip, publishes on its own account ahead of the layer
+order and again at its own slot after its runtime ranges move: each consumer's visit installs the
+registry copy over any staged tip, so every consumer stays red until that tip is on the registry.
 
 ## Prepare a layer
 
@@ -77,16 +91,22 @@ An unpublished package's first version is `0.0.1`. Do not bump it before that fi
 registry has nothing to serve, so there is no version to move away from, and bumping produces a
 package whose history starts at a number nothing explains.
 
-Prepare a published package's layer in this order:
+Prepare a published package's layer in this order, after the visit has ruled the package's bump:
 
 1. **Bump from what the registry serves, not from the local manifest.** A repository's `version`
    field can sit a release behind what was published from another checkout, and bumping that
    produces a version the registry already holds, which fails on upload after the whole gate chain
    has run. Read the registry first.
-2. **Re-pin every `@orkestrel` range to what the registry serves, and install.**
-3. **Sweep the self-pins**, per the following section.
+2. **Re-pin every `@orkestrel` range to what the registry serves, and install.** The visit's
+   preparation commit already precedes the overwrite; this install regenerates the lockfile for the
+   bumped manifest.
+3. **Sweep the self-pins**, per the following section: the bump moves the version class.
 4. **Run each package's own `prepublishOnly` script to green.**
-5. **Commit and push before the window opens.**
+5. **Write the release commit and push before the window opens.** The preparation commit inside
+   the visit is a different commit at a different moment.
+
+Where an inventory taken before the round already ruled every dist moved, the bump rides the
+visit's first step and these steps fold into the visit, whose comparison then confirms the ruling.
 
 Prepare the next layer only after this one is on the registry. A dependent's new pin cannot
 install until the version it names exists, so preparation and publication interleave and cannot be
@@ -99,12 +119,17 @@ the flag is what stops the gate chain running a second time inside the five minu
 ## Sweep the self-pins
 
 A package's own version appears in its source and its tests as a literal, and a bump falsifies
-every one of them. Run this sweep after the re-pin install, not after the manifest edit.
+every one of them. A snapshot of generated output carries the ranges the package writes rather than
+its own version, and any re-pin, a development one included, falsifies it. Run this sweep after the
+re-pin install, not after the manifest edit.
 
-- `grep` the prior version literal across `tests/` and `src/` in the publishing package, and rule
-  on every hit. A canned packument in a fixture and a looked-up version in a CLI suite carry the
+- Search `tests/` and `src/` in the publishing package for the prior version literal, and rule on
+  every hit. A canned packument in a fixture and a looked-up version in a CLI suite carry the
   version with no tripwire comment beside them, so they surface as a red gate after the bump
   rather than as a planned edit before it.
+- Search `tests/` for the prior range of every re-pinned dependency, and move each snapshot the
+  search hits with the re-pin. A generated-manifest fixture never carries the package's own prior
+  version, so the version sweep cannot reach it.
 - Move a documented tripwire — a golden digest over generated output — in the same change as the
   version bump. That is what the tripwire is for.
 - Re-take a generated artifact's digest after the install, because the generated bytes can derive
@@ -120,4 +145,5 @@ every one of them. Run this sweep after the re-pin install, not after the manife
 
 Refresh the registry evidence between layers and derive each round's pins from it. A pin can only
 name a version the registry already serves, so a dependency shipping in the same window keeps the
-resolvable previous pin and takes its development-only re-pin after the window closes.
+resolvable previous pin and takes its development-only re-pin after the window closes. That re-pin
+takes the self-pin sweep too, because the snapshot class moves with no bump.

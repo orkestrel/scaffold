@@ -138,7 +138,11 @@ Fall back in this order and record the substitution:
   parallelism, independent review, or substantial context justifies it.
 - Dispatch staging, packing, gate-chain invocation, and instrument authorship as units — `builder`
   for a fully specified script, `verifier` for its evidence — each with a brief and an audit like
-  any other unit. Only the commit and the push stay with the Orchestrator.
+  any other unit. The commit and the push stay with the Orchestrator.
+- A release instrument installs, commits, or runs a mutating tree-wide command, which the
+  permission floor bars every role from, so its run is the Orchestrator's tracked command, retained
+  with its log as the authoring unit's acceptance evidence. An upload loop that must run inside a
+  one-time code's life with the user at the keyboard stays with the Orchestrator whole.
 
 ## Roles
 
@@ -427,6 +431,8 @@ The harness bridge names the concrete mechanism for each of these.
   so a report living only in the Orchestrator's context stops the next lane on arrival.
 - Capture the unit's returned report to a file beside its brief under the same unit name, so a
   unit's instruction and its outcome are one pair on disk.
+- Name, inside a report that rests on a bench lane, that lane's journal path and session id, so
+  the provenance survives the journal's sweep.
 - Amend a brief on re-run rather than restating it. A mid-campaign correction produces a successor
   file recording what changed and why, and the original stays. A fix round's brief names the
   findings it carries and where each came from.
@@ -604,7 +610,8 @@ command that outlives the turn that started it. Every law here binds all of them
   byte offset rather than loading it, so an edit that shifts line numbers moves the text under that
   offset and the shell resumes mid-construct. The run dies on a syntax error in a line the script
   does not contain, which reads as a defect in the work rather than as the edit that caused it. Copy
-  the file, edit the copy, and launch the copy for the next run.
+  the file, edit the copy, and launch the copy for the next run. A successor's header names its own
+  file, its own log, and what changed from the file it supersedes.
 - On a Windows host this binds every program-carrying command, not only long ones. Heredocs,
   `node -e`, `node -p`, `&&` chaining, and any argument carrying `${...}` trip the Git Bash
   approval classifier and turn an unattended run into a manual approval prompt. Write the program
@@ -848,9 +855,9 @@ either publishes packages nobody needed to publish or leaves a consumer pinned t
 
 Every package is `0.0.x`, where a caret pins one exact release. A dependent therefore sees a new
 version only after it re-pins and republishes, so the fleet publishes in topological layer order
-derived from runtime `dependencies` alone. Layers exist for a reason a flat pass cannot fix:
-ranges that disagree install duplicate copies of the same package, and the compiler reads them as
-distinct types.
+derived from the runtime `dependencies` and `peerDependencies` edges, never from a development
+edge. Layers exist for a reason a flat pass cannot fix: ranges that disagree install duplicate
+copies of the same package, and the compiler reads them as distinct types.
 
 Read the order from the catalog table in `.claude/agents/orkestrel.md`, which `scaffold catalog`
 regenerates from the registry. Its `Layer` column is the publish round. Regenerate it before
@@ -861,7 +868,9 @@ The tooling packages sit outside that order because nothing depends on them at r
 is a development dependency of every package, including packages it depends on itself, so a runtime
 layering would report a cycle that does not exist. Each package builds against the already-published
 `scaffold`, never against an unpublished one, and a `scaffold` release therefore publishes on its own
-and propagates as files rather than as a cascade.
+and propagates as files rather than as a cascade. A package the fleet consumes as a development
+dependency takes the same shape when its consumers' gates read its unpublished tip;
+`.agents/skills/orkestrel-publish/references/wave.md` § Rule on the bump states that trigger.
 
 `scaffold` also carries a second published surface beside `dist/src`: `package.json` ships
 `dist/host`, the vendored file set every target receives through `repair`.
