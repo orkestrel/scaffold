@@ -144,3 +144,30 @@ $ /home/user/fleet/probe/package.json:116-133 → peerDependencies typescript "^
 ```
 
 Reading: the bridge's own version (6.0.2) is the wrapper's; the compiler it re-exports is a real `typescript@6.x` install aliased as `@typescript/old`, which is why its library files resolve and why its `version` reads 6.0.3. One vendored edit to `tests/setupPolicy.ts` reaches every fleet target through `repair`, because every copy is byte-identical today. `probe`'s `TypeStage` resolves the target workspace's own `typescript`, so a target that moves to 7 loses the `prove` instrument until `probe` releases a fallback to the bridge.
+
+## The probe deciding run (instruments/probe-decide.sh)
+
+The chain in `/home/user/fleet/probe` after both probe units exited and after the Orchestrator's receipt-fence fix (`oxlint@1.80.0` → `oxlint@1.81.0` on the `verdict.receipt` line of `guides/probe.md`), on the 4-CPU container with the four read-only audit lanes reading but no other gate running (`node-count=0` outside the chain).
+
+```text
+npm run format:check → exit 0 in 4s
+npm run lint:check → exit 0 in 1s
+npm run check → exit 0 in 7s
+npm run build → exit 0 in 8s
+npm run test → exit 1 in 124s: Test Files 2 failed | 9 passed (11); Tests 4 failed | 230 passed (234)
+  tests/src/bin/main.test.ts: answers both protocol eras…, carries the verdict record…, answers a rendering past the content bound… — every rendered text is "The probe could not arm: The Oxlint language server exited with code 0"
+  tests/src/server/Probe.test.ts: mints receipts only when every stage executes cleanly… — ProbeError … Caused by: LSPError: The LSP request 'initialize' exceeded its deadline
+solo re-run, tests/src/bin/main.test.ts alone → exit 0: Tests 16 passed (16) in 49.57s
+git status --short → the nine files the two units own, nothing else
+```
+
+Reading: every red row is the same timing failure — the Oxlint language server does not answer `initialize` inside its deadline while the whole suite runs its workers on four CPUs — and the same rows were red in the first unit's run (11:54, before the second unit) and in the second unit's run (12:09), each time on that message. Neither unit touches the lint stage or `oxlint`; the change is the `typescript` loader, the peer range, and the type imports. The bin file alone is green on the idle host. The `Probe.test.ts` file alone is the Orchestrator's second deciding run (`decide-probe-solo.log.txt`), recorded in the following section.
+
+## The second probe deciding run: `Probe.test.ts` alone on the idle host
+
+```text
+$ ps -eo comm | grep -c '^node$' → 0 at launch (12:25:57; the audit lanes were reading, no gate ran)
+$ npx vitest run tests/src/server/Probe.test.ts → exit 0: Test Files 1 passed (1); Tests 28 passed (28); Duration 113.51s
+```
+
+Reading: with the bin file green alone at 12:22 and this file green alone at 12:27, every red row of the whole-suite run passes on the idle host, so the probe checkout's gates read green on the Orchestrator's deciding runs and the whole-suite red is the four-CPU load, not the change. The logs are retained under `evidence/probe-decide/`.

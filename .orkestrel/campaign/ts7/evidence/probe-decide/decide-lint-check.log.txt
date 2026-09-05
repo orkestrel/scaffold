@@ -1,0 +1,4 @@
+
+> @orkestrel/probe@0.0.12 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+

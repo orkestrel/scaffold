@@ -1,0 +1,11 @@
+== solo deciding re-run of tests/src/server/Probe.test.ts on the idle host (node-count=0 at launch, 12:25:57)
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Start at  12:25:58
+   Duration  113.51s (transform 519ms, setup 184ms, import 487ms, tests 112.69s, environment 0ms)
+
+exit=0
