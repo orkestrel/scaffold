@@ -1,0 +1,12 @@
+== A records
+ 25 files changed, 2125 insertions(+)
+== B packument refusal
+ 3 files changed, 95 insertions(+)
+== C prune
+ 163 files changed, 12 insertions(+), 17391 deletions(-)
+== state
+db27153c Prune the TypeScript 7 campaign folders after the ruling to stay on 6.0.3
+773e0285 Refuse an unnamed version in the packument fixture
+15878373 Record the plan to remove the in-process TypeScript API on 6.0.3, and the 7 cleanup's map and gates
+1ed34105 Remove the TypeScript 7 move from scaffold
+6adb0571 Revert the audit fix rounds over stage 2 of the TypeScript 7 move
