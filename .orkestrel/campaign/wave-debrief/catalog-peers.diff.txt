@@ -1,0 +1,640 @@
+diff --git a/.claude/agents/orkestrel.md b/.claude/agents/orkestrel.md
+index 91904046..48a41003 100644
+--- a/.claude/agents/orkestrel.md
++++ b/.claude/agents/orkestrel.md
+@@ -121,7 +121,7 @@ forced `src`/`app` edit or a changed toolchain emit, and the package then bumps
+ account rather than on the dependency's. A superfluous diff obliges nothing.
+ 
+ The `Layer` column in the catalog table is the publish round, derived from the runtime
+-edges in the same row. `L0` depends on nothing else in the fleet and publishes first; each
++and peer edges in the same row. `L0` depends on nothing else in the fleet and publishes first; each
+ later layer publishes only after every layer before it is on the registry. A row with no
+ layer sits in a cycle and cannot be placed in a round at all. Packages in one layer are
+ independent of each other and may publish in any order within it.
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 9e84353c..98df41ee 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -1083,11 +1083,14 @@ The region holds a table with these columns:
+ | `Version`              | The registry's `dist-tags.latest`, or the cause when the lookup found none |
+ | `Layer`                | The publish round the edges place the package in, as `L0`, `L1`, …         |
+ | `Runtime dependencies` | Each declared runtime edge, as name and range                              |
++| `Peer dependencies`    | Each declared peer edge, as name and range                                 |
+ 
+ The edge-bearing columns come from the same abbreviated packument the version came from, so a
+-catalog costs one request per package and no more. Only `dependencies` is read. `devDependencies`
+-reaches no consumer of the published package, so it constrains nothing about publish order, and
+-reading it would place packages in rounds that do not exist.
++catalog costs one request per package and no more. `dependencies` and `peerDependencies` are read.
++`devDependencies` reaches no consumer of the published package, so it constrains nothing about
++publish order, and reading it would place packages in rounds that do not exist. A peer edge orders
++a dependent the same way a runtime edge does, because a caret peer range at `0.0.x` pins one exact
++release.
+ 
+ The layer is not stored on a row. `catalogToLayers` derives it from the rows' own edges, in the same
+ call that writes them, so the layer and the rows cannot disagree:
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 0acc0077..291c8397 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -696,9 +696,11 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
+  * @remarks
+  * A layer is a deterministic function of the catalog's own edges, so it is
+  * computed here rather than stored on a row that could disagree with them.
+- * Only RUNTIME edges between catalogued packages count: a development
++ * Only RUNTIME and PEER edges between catalogued packages count: a development
+  * dependency reaches no consumer, so it constrains nothing about publish order,
+- * and an edge leaving the fleet is a package this catalog does not publish.
++ * and an edge leaving the fleet is a package this catalog does not publish. A
++ * peer edge counts like a runtime edge, because a caret peer range at `0.0.x`
++ * names one exact release the dependent cannot publish ahead of.
+  *
+  * The order matters because these packages are `0.0.x`, where a caret pins one
+  * exact release. Publishing a dependent before its dependency leaves the
+@@ -725,7 +727,7 @@ export function catalogToLayers(
+ 	const pending = new Map<string, Set<string>>()
+ 	for (const entry of entries) {
+ 		if (entry.lookup !== 'found') continue
+-		const edges = entry.dependencies.map((dependency) => dependency.name)
++		const edges = [...entry.dependencies, ...entry.peers].map((dependency) => dependency.name)
+ 		pending.set(entry.name, new Set(edges.filter((name) => published.has(name))))
+ 	}
+ 	const layers: string[][] = []
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 2d4a1a44..87d58aff 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -239,10 +239,13 @@ export interface Blueprint {
+  * `dependencies` are the RUNTIME edges the published version declares, which is
+  * what a publish order is computed over: a runtime bump obliges every dependent
+  * to re-pin and republish, while a development bump obliges nothing beyond the
+- * repository that declares it. No layer is recorded here, because a layer is a
+- * deterministic function of these edges across the whole catalog — a stored one
+- * could only disagree with the rows it was derived from. Read it through
+- * {@link catalogToLayers}.
++ * repository that declares it. `peers` are the edges the published version
++ * declares under `peerDependencies`. A peer edge orders a dependent the same
++ * way a runtime edge does: at `0.0.x` a caret peer range pins one exact
++ * release, so the peer must be on the registry before the dependent publishes.
++ * No layer is recorded here, because a layer is a deterministic function of
++ * these edges across the whole catalog — a stored one could only disagree with
++ * the rows it was derived from. Read it through {@link catalogToLayers}.
+  */
+ export type CatalogEntry =
+ 	| {
+@@ -250,6 +253,7 @@ export type CatalogEntry =
+ 			readonly lookup: 'found'
+ 			readonly version: string
+ 			readonly dependencies: readonly Dependency[]
++			readonly peers: readonly Dependency[]
+ 			readonly note?: never
+ 	  }
+ 	| {
+@@ -258,6 +262,7 @@ export type CatalogEntry =
+ 			readonly note: string
+ 			readonly version?: never
+ 			readonly dependencies?: never
++			readonly peers?: never
+ 	  }
+ 
+ /**
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 9f14b8ab..92248217 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -510,6 +510,7 @@ export const isCatalogEntry: Guard<CatalogEntry> = unionOf(
+ 		lookup: literalOf('found'),
+ 		version: isString,
+ 		dependencies: andOf(isCollection, arrayOf(isDependency)),
++		peers: andOf(isCollection, arrayOf(isDependency)),
+ 	}),
+ 	recordOf({
+ 		name: isDependencyName,
+diff --git a/src/server/Materializer.ts b/src/server/Materializer.ts
+index 80ff2870..189157db 100644
+--- a/src/server/Materializer.ts
++++ b/src/server/Materializer.ts
+@@ -1119,20 +1119,24 @@ export class Materializer implements MaterializerInterface {
+ 		for (const [index, layer] of layers.entries()) for (const name of layer) placed.set(name, index)
+ 		const rows: string[][] = entries.map((entry) => {
+ 			if (entry.lookup !== 'found') {
+-				return [`\`${entry.name}\``, this.#cell(entry.note), '', '']
++				return [`\`${entry.name}\``, this.#cell(entry.note), '', '', '']
+ 			}
+ 			const layer = placed.get(entry.name)
+ 			const edges = entry.dependencies
+ 				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
+ 				.join(', ')
++			const peers = entry.peers
++				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
++				.join(', ')
+ 			return [
+ 				`\`${entry.name}\``,
+ 				`\`${entry.version}\``,
+ 				layer === undefined ? '' : `L${String(layer)}`,
+ 				edges,
++				peers,
+ 			]
+ 		})
+-		const headers = ['Package', 'Version', 'Layer', 'Runtime dependencies']
++		const headers = ['Package', 'Version', 'Layer', 'Runtime dependencies', 'Peer dependencies']
+ 		const widths = headers.map((header, column) => {
+ 			let width = Math.max(3, header.length)
+ 			for (const row of rows) width = Math.max(width, row[column]?.length ?? 0)
+diff --git a/src/server/Upstream.ts b/src/server/Upstream.ts
+index 9c1119d7..8ea193aa 100644
+--- a/src/server/Upstream.ts
++++ b/src/server/Upstream.ts
+@@ -591,7 +591,13 @@ export class Upstream implements UpstreamInterface {
+ 		)
+ 		const version = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
+ 		if (version !== undefined) {
+-			return { name, lookup: 'found', version, dependencies: this.#edges(outcome.content, version) }
++			return {
++				name,
++				lookup: 'found',
++				version,
++				dependencies: this.#edges(outcome.content, version, 'dependencies'),
++				peers: this.#edges(outcome.content, version, 'peerDependencies'),
++			}
+ 		}
+ 		return {
+ 			name,
+@@ -600,21 +606,25 @@ export class Upstream implements UpstreamInterface {
+ 		}
+ 	}
+ 
+-	// The runtime edges the published version declares, read from the same
+-	// abbreviated packument the version came from rather than from a second
++	// The runtime and peer edges the published version declares, read from the
++	// same abbreviated packument the version came from rather than from a second
+ 	// request. Development edges are deliberately not read: they reach no
+ 	// consumer, so they constrain nothing a publish order decides. A packument
+ 	// that carries no readable edges answers none rather than failing the row,
+ 	// because a package with no dependencies and a package whose manifest could
+ 	// not be read both publish first, and the version is what the row promises.
+-	#edges(content: string, version: string): readonly Dependency[] {
++	#edges(
++		content: string,
++		version: string,
++		section: 'dependencies' | 'peerDependencies',
++	): readonly Dependency[] {
+ 		const parsed = parseJSON(content)
+ 		if (!isRecord(parsed)) return []
+ 		const versions = parsed.versions
+ 		if (!isRecord(versions)) return []
+ 		const manifest = versions[version]
+ 		if (!isRecord(manifest)) return []
+-		const declared = manifest.dependencies
++		const declared = manifest[section]
+ 		if (!isRecord(declared)) return []
+ 		const edges: Dependency[] = []
+ 		for (const [name, range] of Object.entries(declared)) {
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 0c681f47..b82bdc54 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -531,6 +531,7 @@ export function buildGuardCases(): readonly TestGuardCase[] {
+ 		lookup: 'found',
+ 		version: '0.0.8',
+ 		dependencies: [],
++		peers: [],
+ 	}
+ 	const missingEntry: CatalogEntry = {
+ 		name: '@orkestrel/router',
+@@ -692,6 +693,7 @@ export function buildUnionCases(): readonly TestUnionCase[] {
+ 		lookup: 'found',
+ 		version: '0.0.8',
+ 		dependencies: [],
++		peers: [],
+ 	}
+ 	const foundMirror: Record<string, unknown> = {
+ 		name: '@orkestrel/router',
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index c1c1c4e9..b4fd5668 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -190,6 +190,7 @@ export interface TestUpstreamReply {
+ export interface TestPackumentEdges {
+ 	readonly dependencies?: Readonly<Record<string, string>>
+ 	readonly development?: Readonly<Record<string, string>>
++	readonly peer?: Readonly<Record<string, string>>
+ }
+ 
+ /**
+@@ -458,13 +459,22 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
+ 			guard: isCatalogEntries,
+ 			accepted: [
+ 				[],
+-				[{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] }],
++				[
++					{
++						name: '@orkestrel/router',
++						lookup: 'found',
++						version: '0.0.8',
++						dependencies: [],
++						peers: [],
++					},
++				],
+ 				[
+ 					{
+ 						name: '@orkestrel/agent',
+ 						lookup: 'found',
+ 						version: '0.0.15',
+ 						dependencies: [{ name: '@orkestrel/tool', range: '^0.0.10' }],
++						peers: [],
+ 					},
+ 				],
+ 			],
+@@ -1652,10 +1662,10 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
+  * Written here as literal registry JSON rather than derived from anything the
+  * reader owns, so the reader is measured against the upstream contract instead
+  * of against itself. The abbreviated form carries `dist-tags` and a `versions`
+- * map whose per-version record holds `dependencies` and `devDependencies`
+- * alongside `dist`, `engines`, `name`, and `version` — verified against
+- * `registry.npmjs.org` — so both edge kinds are writable here and a reader that
+- * reads the wrong one is caught.
++ * map whose per-version record holds `dependencies`, `devDependencies`, and
++ * `peerDependencies` alongside `dist`, `engines`, `name`, and `version` —
++ * verified against `registry.npmjs.org` — so every edge kind is writable here
++ * and a reader that reads the wrong one is caught.
+  */
+ export function buildPackument(version: string, edges?: TestPackumentEdges): string {
+ 	return JSON.stringify({
+@@ -1667,6 +1677,7 @@ export function buildPackument(version: string, edges?: TestPackumentEdges): str
+ 				version,
+ 				...(edges?.dependencies === undefined ? {} : { dependencies: edges.dependencies }),
+ 				...(edges?.development === undefined ? {} : { devDependencies: edges.development }),
++				...(edges?.peer === undefined ? {} : { peerDependencies: edges.peer }),
+ 			},
+ 		},
+ 	})
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index f8fd4ebc..5724bf7e 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -4943,16 +4943,35 @@ describe('CLI catalog', () => {
+ 			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+ 			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'live' })
+ 			expect(result.entries).toStrictEqual([
+-				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] },
++				{
++					name: '@orkestrel/emitter',
++					lookup: 'found',
++					version: '0.0.6',
++					dependencies: [],
++					peers: [],
++				},
+ 				{
+ 					name: '@orkestrel/guide',
+ 					lookup: 'found',
+ 					version: '0.1.0',
+ 					dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.6' }],
++					peers: [],
++				},
++				{
++					name: '@orkestrel/probe',
++					lookup: 'found',
++					version: '0.0.1',
++					dependencies: [],
++					peers: [],
++				},
++				{
++					name: '@orkestrel/scaffold',
++					lookup: 'found',
++					version: '0.0.26',
++					dependencies: [],
++					peers: [],
+ 				},
+-				{ name: '@orkestrel/probe', lookup: 'found', version: '0.0.1', dependencies: [] },
+-				{ name: '@orkestrel/scaffold', lookup: 'found', version: '0.0.26', dependencies: [] },
+-				{ name: '@orkestrel/test', lookup: 'found', version: '0.0.2', dependencies: [] },
++				{ name: '@orkestrel/test', lookup: 'found', version: '0.0.2', dependencies: [], peers: [] },
+ 			])
+ 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
+ 				'guides/emitter.md',
+diff --git a/tests/src/bin/helpers.test.ts b/tests/src/bin/helpers.test.ts
+index 34463d19..78e8f6e5 100644
+--- a/tests/src/bin/helpers.test.ts
++++ b/tests/src/bin/helpers.test.ts
+@@ -580,7 +580,15 @@ describe('fetchToRefusal', () => {
+ 		expect(fetchToRefusal([], [])).toBeUndefined()
+ 		expect(
+ 			fetchToRefusal(
+-				[{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] }],
++				[
++					{
++						name: '@orkestrel/emitter',
++						lookup: 'found',
++						version: '0.0.6',
++						dependencies: [],
++						peers: [],
++					},
++				],
+ 				[{ name: '@orkestrel/emitter', path: 'guides/emitter.md', lookup: 'found', content: '' }],
+ 			),
+ 		).toBeUndefined()
+@@ -624,7 +632,15 @@ describe('entriesToReleases', () => {
+ 					{ name: '@orkestrel/emitter', range: '^0.0.5' },
+ 					{ name: '@orkestrel/router', range: '^0.0.8' },
+ 				],
+-				[{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] }],
++				[
++					{
++						name: '@orkestrel/emitter',
++						lookup: 'found',
++						version: '0.0.6',
++						dependencies: [],
++						peers: [],
++					},
++				],
+ 			),
+ 		).toStrictEqual([
+ 			{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 6b090ce4..11f9c0db 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -497,15 +497,23 @@ describe('catalogToLayers', () => {
+ 				lookup: 'found',
+ 				version: '0.0.3',
+ 				dependencies: [{ name: '@orkestrel/tool', range: '^0.0.2' }],
++				peers: [],
+ 			},
+ 			{
+ 				name: '@orkestrel/tool',
+ 				lookup: 'found',
+ 				version: '0.0.2',
+ 				dependencies: [{ name: '@orkestrel/contract', range: '^0.0.1' }],
++				peers: [],
+ 			},
+-			{ name: '@orkestrel/contract', lookup: 'found', version: '0.0.1', dependencies: [] },
+-			{ name: '@orkestrel/reason', lookup: 'found', version: '0.0.5', dependencies: [] },
++			{
++				name: '@orkestrel/contract',
++				lookup: 'found',
++				version: '0.0.1',
++				dependencies: [],
++				peers: [],
++			},
++			{ name: '@orkestrel/reason', lookup: 'found', version: '0.0.5', dependencies: [], peers: [] },
+ 		]
+ 		expect(catalogToLayers(entries)).toStrictEqual([
+ 			['@orkestrel/contract', '@orkestrel/reason'],
+@@ -514,6 +522,32 @@ describe('catalogToLayers', () => {
+ 		])
+ 	})
+ 
++	it('places a dependent one layer after a peer-only edge, and needs the peer spread to do it', () => {
++		// The negative control: with the `...entry.peers` spread removed from
++		// `catalogToLayers`, middleware never sees the edge to server and both
++		// packages land in the same first round instead.
++		const entries: readonly CatalogEntry[] = [
++			{
++				name: '@orkestrel/middleware',
++				lookup: 'found',
++				version: '0.0.18',
++				dependencies: [],
++				peers: [{ name: '@orkestrel/server', range: '^0.0.18' }],
++			},
++			{
++				name: '@orkestrel/server',
++				lookup: 'found',
++				version: '0.0.18',
++				dependencies: [],
++				peers: [],
++			},
++		]
++		expect(catalogToLayers(entries)).toStrictEqual([
++			['@orkestrel/server'],
++			['@orkestrel/middleware'],
++		])
++	})
++
+ 	it('omits a cycle instead of ordering it', () => {
+ 		// The negative control. Two packages that depend on each other cannot be
+ 		// published in rounds, and an instrument that always answers with every name
+@@ -524,14 +558,16 @@ describe('catalogToLayers', () => {
+ 				lookup: 'found',
+ 				version: '0.0.1',
+ 				dependencies: [{ name: '@orkestrel/right', range: '^0.0.1' }],
++				peers: [],
+ 			},
+ 			{
+ 				name: '@orkestrel/right',
+ 				lookup: 'found',
+ 				version: '0.0.1',
+ 				dependencies: [{ name: '@orkestrel/left', range: '^0.0.1' }],
++				peers: [],
+ 			},
+-			{ name: '@orkestrel/free', lookup: 'found', version: '0.0.1', dependencies: [] },
++			{ name: '@orkestrel/free', lookup: 'found', version: '0.0.1', dependencies: [], peers: [] },
+ 		]
+ 		expect(catalogToLayers(entries)).toStrictEqual([['@orkestrel/free']])
+ 	})
+@@ -548,6 +584,7 @@ describe('catalogToLayers', () => {
+ 					{ name: 'zod', range: '^3.0.0' },
+ 					{ name: '@orkestrel/queue', range: '^0.0.1' },
+ 				],
++				peers: [],
+ 			},
+ 			{ name: '@orkestrel/queue', lookup: 'missing', note: 'The package is not published.' },
+ 			{ name: '@orkestrel/router', lookup: 'failed', note: 'The registry did not answer.' },
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index f29efc55..cf360b05 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -114,6 +114,26 @@ describe('discriminated branches', () => {
+ 			}),
+ 		).toBe(true)
+ 	})
++
++	it('refuses a found catalog row without peers and admits one with peers: []', () => {
++		expect(
++			isCatalogEntry({
++				name: '@orkestrel/router',
++				lookup: 'found',
++				version: '0.0.8',
++				dependencies: [],
++			}),
++		).toBe(false)
++		expect(
++			isCatalogEntry({
++				name: '@orkestrel/router',
++				lookup: 'found',
++				version: '0.0.8',
++				dependencies: [],
++				peers: [],
++			}),
++		).toBe(true)
++	})
+ })
+ 
+ describe('isCompilerHooks', () => {
+diff --git a/tests/src/server/Materializer.test.ts b/tests/src/server/Materializer.test.ts
+index f19689a1..06874270 100644
+--- a/tests/src/server/Materializer.test.ts
++++ b/tests/src/server/Materializer.test.ts
+@@ -1160,6 +1160,7 @@ describe('Materializer catalog', () => {
+ 							lookup: 'found',
+ 							version: '0.0.11',
+ 							dependencies: [],
++							peers: [],
+ 						},
+ 						{
+ 							name: '@orkestrel/agent',
+@@ -1169,6 +1170,7 @@ describe('Materializer catalog', () => {
+ 								{ name: '@orkestrel/contract', range: '^0.0.11' },
+ 								{ name: '@orkestrel/workflow', range: '^0.0.11' },
+ 							],
++							peers: [{ name: '@orkestrel/reason', range: '^0.0.8' }],
+ 						},
+ 						{ name: '@orkestrel/queue', lookup: 'missing', note: 'No | release' },
+ 					],
+@@ -1177,19 +1179,19 @@ describe('Materializer catalog', () => {
+ 				expect(result.written).toEqual(['.claude/agents/orkestrel.md'])
+ 				const text = workspace.read('project/.claude/agents/orkestrel.md')
+ 				const paddedAgentRow =
+-					'| `@orkestrel/agent`    | `0.0.15`      | L1    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` |'
++					'| `@orkestrel/agent`    | `0.0.15`      | L1    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` | `@orkestrel/reason` `^0.0.8` |'
+ 				const table = [
+-					'| Package               | Version       | Layer | Runtime dependencies                                             |',
+-					'| --------------------- | ------------- | ----- | ---------------------------------------------------------------- |',
+-					'| `@orkestrel/contract` | `0.0.11`      | L0    |                                                                  |',
++					'| Package               | Version       | Layer | Runtime dependencies                                             | Peer dependencies            |',
++					'| --------------------- | ------------- | ----- | ---------------------------------------------------------------- | ---------------------------- |',
++					'| `@orkestrel/contract` | `0.0.11`      | L0    |                                                                  |                              |',
+ 					paddedAgentRow,
+-					'| `@orkestrel/queue`    | No \\| release |       |                                                                  |',
++					'| `@orkestrel/queue`    | No \\| release |       |                                                                  |                              |',
+ 				].join('\n')
+ 				expect(text).toBe(
+ 					CATALOG_AGENT_TEXT.replace('| Package | Version |\n| --- | --- |', `\n${table}\n`),
+ 				)
+ 				const unpaddedAgentRow =
+-					'| `@orkestrel/agent` | `0.0.15` | L1 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` |'
++					'| `@orkestrel/agent` | `0.0.15` | L1 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` | `@orkestrel/reason` `^0.0.8` |'
+ 				expect(unpaddedAgentRow).not.toBe(paddedAgentRow)
+ 				expect(text).not.toContain(unpaddedAgentRow)
+ 			} finally {
+@@ -1209,7 +1211,13 @@ describe('Materializer catalog', () => {
+ 			const materializer = new Materializer({ host })
+ 			try {
+ 				const entries: readonly CatalogEntry[] = [
+-					{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
++					{
++						name: '@orkestrel/router',
++						lookup: 'found',
++						version: '0.0.8',
++						dependencies: [],
++						peers: [],
++					},
+ 				]
+ 				materializer.catalog(entries, target)
+ 				const result = materializer.catalog(entries, target)
+diff --git a/tests/src/server/Upstream.test.ts b/tests/src/server/Upstream.test.ts
+index ab5090f9..d21731f5 100644
+--- a/tests/src/server/Upstream.test.ts
++++ b/tests/src/server/Upstream.test.ts
+@@ -1114,9 +1114,27 @@ describe('Upstream catalog', () => {
+ 		const upstream = new Upstream({ registry: { base: server.base } })
+ 		try {
+ 			expect(await upstream.catalog()).toStrictEqual([
+-				{ name: '@orkestrel/console', lookup: 'found', version: '0.0.4', dependencies: [] },
+-				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.5', dependencies: [] },
+-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
++				{
++					name: '@orkestrel/console',
++					lookup: 'found',
++					version: '0.0.4',
++					dependencies: [],
++					peers: [],
++				},
++				{
++					name: '@orkestrel/emitter',
++					lookup: 'found',
++					version: '0.0.5',
++					dependencies: [],
++					peers: [],
++				},
++				{
++					name: '@orkestrel/router',
++					lookup: 'found',
++					version: '0.0.8',
++					dependencies: [],
++					peers: [],
++				},
+ 			])
+ 		} finally {
+ 			upstream.destroy()
+@@ -1155,6 +1173,38 @@ describe('Upstream catalog', () => {
+ 						{ name: '@orkestrel/emitter', range: '^0.0.5' },
+ 						{ name: 'zod', range: '^3.0.0' },
+ 					],
++					peers: [],
++				},
++			])
++		} finally {
++			upstream.destroy()
++			await server.destroy()
++		}
++	})
++
++	it('reads the peer edges beside the runtime edges and leaves the development edges where they are', async () => {
++		const server = await createUpstreamServer({
++			[UPSTREAM_PATHS.organization]: {
++				status: 200,
++				body: buildOrganization(['@orkestrel/router']),
++			},
++			[UPSTREAM_PATHS.router]: {
++				status: 200,
++				body: buildPackument('0.0.8', {
++					peer: { '@orkestrel/server': '^0.0.18' },
++					development: { vitest: '^4.1.10' },
++				}),
++			},
++		})
++		const upstream = new Upstream({ registry: { base: server.base } })
++		try {
++			expect(await upstream.catalog()).toStrictEqual([
++				{
++					name: '@orkestrel/router',
++					lookup: 'found',
++					version: '0.0.8',
++					dependencies: [],
++					peers: [{ name: '@orkestrel/server', range: '^0.0.18' }],
+ 				},
+ 			])
+ 		} finally {
+@@ -1201,8 +1251,15 @@ describe('Upstream catalog', () => {
+ 					lookup: 'found',
+ 					version: '0.0.4',
+ 					dependencies: [{ name: '@orkestrel/router', range: '^0.0.8' }],
++					peers: [],
++				},
++				{
++					name: '@orkestrel/router',
++					lookup: 'found',
++					version: '0.0.8',
++					dependencies: [],
++					peers: [],
+ 				},
+-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
+ 			])
+ 		} finally {
+ 			upstream.destroy()
+@@ -1225,7 +1282,13 @@ describe('Upstream catalog', () => {
+ 			expect(await upstream.catalog()).toStrictEqual([
+ 				{ name: '@orkestrel/console', lookup: 'missing', note: 'HTTP 404' },
+ 				{ name: '@orkestrel/emitter', lookup: 'failed', note: 'HTTP 502' },
+-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
++				{
++					name: '@orkestrel/router',
++					lookup: 'found',
++					version: '0.0.8',
++					dependencies: [],
++					peers: [],
++				},
+ 			])
+ 		} finally {
+ 			upstream.destroy()

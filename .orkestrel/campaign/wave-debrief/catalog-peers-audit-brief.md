@@ -28,13 +28,21 @@ The ruling that a peer edge orders a dependent (the debrief's finding A9) is not
 3. `isCatalogEntry` refuses a found row without `peers` and accepts one with `peers: []`; the missing branch of `CatalogEntry` carries `peers?: never`.
 4. The rendered catalog table carries a `Peer dependencies` column after `Runtime dependencies`, a found row's peers as `` `name` `range` `` comma-joined, an empty fifth cell for a not-found row, and the column padded like the others (the Materializer case asserts the padded row text).
 5. Every sentence about which edges the catalog reads is true of the code after the change: `guides/scaffold.md` § Fleet catalog, the `CatalogEntry` remarks in `src/core/types.ts`, the `catalogToLayers` remarks in `src/core/helpers.ts`, the `#edges` comment in `src/server/Upstream.ts`, and `.claude/agents/orkestrel.md:123-124`. A sentence still saying only `dependencies` is read, or that development edges are the only edges not read, is BROKEN.
-6. `git status --short` lists only paths under the brief's Owned row (including "any further test file `npm run check` reddens", each named in the report); `dist/`, `host.json`, `package.json`, `README.md`, `.agents/**`, `src/bin/**` are untouched.
+6. `git status --short` lists only paths under the brief's Owned row (including "any further test file `npm run check` reddens", each named in the report) plus `host.json`, which the Orchestrator regenerated with `npm run build` after the unit returned (its diff carries the digests of `.claude/agents/orkestrel.md` and `guides/scaffold.md` only); `package.json`, `README.md`, `.agents/**`, `src/bin/**` are untouched.
 7. The changed prose carries no count in prose, no `should`, no `simply`/`just`/`easy`, no `via`, no `e.g.`/`i.e.`/`etc.`, no `currently`/`now`/`new`/`latest` in a dating sense (`.claude/rules/writing.md` § Substitutions, swept case-insensitively over the diff's added lines); each hit is named with its sense.
 8. The diff carries no `any`, no `as` assertion, no non-null assertion, no nested function declaration, every new interface property is `readonly`, the new tests are named for what they prove, and the writer's gate readings in the report name their exit codes (`format:check`, `lint:check`, `check`, `test:src:core`, `test:src:server`, `test:src:bin`, `test:guides`).
 
 ## Output
 
 The `orkestrel-falsify` verdict shape: numbered per-claim verdicts (`CONFIRMED` with the evidence, `BROKEN` with the failing text and the smallest correct fix, `UNRESOLVED` with what would settle it), findings outside the claims, referrals, the claims attacked and held, and exactly one terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>; outside the claims: <finding ids or none>`.
+
+## Orchestrator edits inside the subject
+
+After the unit returned, the Orchestrator ran `npm run build` (exit 0: `build-host: staged 121 file(s)`, `build-inventory: staged 121 file(s) into host.json`), then `npm run test:src:server` (exit 0, `Test Files 5 passed (5)`, `Tests 432 passed (432)`) and `npm run test:src:bin` (exit 0, `Test Files 3 passed (3)`, `Tests 245 passed (245)`) on 2026-09-05, which closes the writer's reported deviation (the stale `host.json` digests). `tmp/units/catalog-peers.status` is re-rendered after that build.
+
+## Standing conditions
+
+While you read, the Orchestrator's canon unit is editing files outside this unit's scope: `.agents/skills/orkestrel-publish/**`, `.agents/orchestration.md`, `.claude/agents/reviewer.md`, `.codex/agents/*.toml`, `ROADMAP.md`, and `.orkestrel/campaign/wave-debrief/**`. Judge claim 6 against `tmp/units/catalog-peers.status` as rendered before those edits, plus that named list; a path outside both is the finding.
 
 ## Execution
 

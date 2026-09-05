@@ -1,0 +1,553 @@
+diff --git a/.agents/orchestration.md b/.agents/orchestration.md
+index 2d048252..ae4c9908 100644
+--- a/.agents/orchestration.md
++++ b/.agents/orchestration.md
+@@ -139,6 +139,11 @@ Fall back in this order and record the substitution:
+ - Dispatch staging, packing, gate-chain invocation, and instrument authorship as units — `builder`
+   for a fully specified script, `verifier` for its evidence — each with a brief and an audit like
+   any other unit. Only the commit and the push stay with the Orchestrator.
++- A release instrument installs, commits, or runs a mutating tree-wide command, which the
++  permission floor bars every role from, so its authorship is the `builder` unit and its run is the
++  Orchestrator's tracked command, retained with its log as that unit's acceptance evidence. An
++  upload loop that must run inside a one-time code's life with the user at the keyboard stays with
++  the Orchestrator whole.
+ 
+ ## Roles
+ 
+@@ -427,6 +432,8 @@ The harness bridge names the concrete mechanism for each of these.
+   so a report living only in the Orchestrator's context stops the next lane on arrival.
+ - Capture the unit's returned report to a file beside its brief under the same unit name, so a
+   unit's instruction and its outcome are one pair on disk.
++- Name, inside a report that rests on a bench lane, that lane's journal path and session id, so
++  the provenance survives the journal's sweep.
+ - Amend a brief on re-run rather than restating it. A mid-campaign correction produces a successor
+   file recording what changed and why, and the original stays. A fix round's brief names the
+   findings it carries and where each came from.
+@@ -604,7 +611,8 @@ command that outlives the turn that started it. Every law here binds all of them
+   byte offset rather than loading it, so an edit that shifts line numbers moves the text under that
+   offset and the shell resumes mid-construct. The run dies on a syntax error in a line the script
+   does not contain, which reads as a defect in the work rather than as the edit that caused it. Copy
+-  the file, edit the copy, and launch the copy for the next run.
++  the file, edit the copy, and launch the copy for the next run. A successor's header names its own
++  file, its own log, and what changed from the file it supersedes.
+ - On a Windows host this binds every program-carrying command, not only long ones. Heredocs,
+   `node -e`, `node -p`, `&&` chaining, and any argument carrying `${...}` trip the Git Bash
+   approval classifier and turn an unattended run into a manual approval prompt. Write the program
+@@ -848,7 +856,9 @@ either publishes packages nobody needed to publish or leaves a consumer pinned t
+ 
+ Every package is `0.0.x`, where a caret pins one exact release. A dependent therefore sees a new
+ version only after it re-pins and republishes, so the fleet publishes in topological layer order
+-derived from runtime `dependencies` alone. Layers exist for a reason a flat pass cannot fix:
++derived from the runtime `dependencies` and `peerDependencies` edges, never from a development
++edge, which reaches no consumer of the published package. Layers exist for a reason a flat pass
++cannot fix:
+ ranges that disagree install duplicate copies of the same package, and the compiler reads them as
+ distinct types.
+ 
+diff --git a/.agents/skills/orkestrel-publish/SKILL.md b/.agents/skills/orkestrel-publish/SKILL.md
+index ed710cc3..61cfa07b 100644
+--- a/.agents/skills/orkestrel-publish/SKILL.md
++++ b/.agents/skills/orkestrel-publish/SKILL.md
+@@ -10,8 +10,9 @@ description: Run an Orkestrel release from layer order to registry confirmation.
+ Read the current files in this order:
+ 
+ 1. `AGENTS.md` and every applicable `.claude/rules/*.md` file.
+-2. `.agents/orchestration.md` § Publishing the fleet and § Long-running commands. Each named
+-   section binds every step here.
++2. `.agents/orchestration.md` § Publishing the fleet, § Long-running commands, § Orchestrator and
++   executor, § Writing concurrency, and § Dispatch anatomy. Each named section binds every step
++   here.
+ 3. The reference the moment needs: [wave.md](references/wave.md) before visiting a repository,
+    ruling on a bump, or preparing a layer; [window.md](references/window.md) before running
+    `npm login` or any upload.
+@@ -42,17 +43,16 @@ following the skill.
+    Derive each pin from that reading, never from a local manifest.
+ 3. **Visit each repository.** Run the visit in [wave.md](references/wave.md) in its stated order,
+    in parallel slices of disjoint repositories, each slice serial inside itself.
+-4. **Rule on each package's bump.** Apply the triggers in [wave.md](references/wave.md). A package
+-   whose published surface did not move takes its re-pin, its gates, and a commit to `main`, and
+-   does not publish.
+-5. **Prepare the whole layer before authenticating.** Bump, re-pin, install, sweep the self-pins,
+-   run each package's own `prepublishOnly` to green, commit, and push. Every one of those steps
+-   happens outside the window.
++4. **Rule on each package's bump.** Apply the triggers in [wave.md](references/wave.md) § Rule on
++   the bump; the contract's § What a bump obliges owns the blast radius.
++5. **Prepare the whole layer before authenticating**, in the order [wave.md](references/wave.md)
++   § Prepare a layer fixes. Every one of those steps happens outside the window.
+ 6. **Reach the approval.** Follow [window.md](references/window.md), and launch the login chain
+    only after the user signals they are at the keyboard.
+ 7. **Authorize and upload.** Follow [window.md](references/window.md). Take the account's one-time
+-   code where it has one, because that path opens no window. Where the account answers with no
+-   code, the browser authorization opens the five-minute window: open the layer with one package,
++   code where it has one; § Authorize the upload there fixes that code's life and the layer it
++   carries. Where the account answers with no code, the browser authorization opens the five-minute
++   window: open the layer with one package,
+    confirm its upload from the registry, then chase the remaining uploads back-to-back.
+ 8. **Close the layer from the registry, then prepare the next.** A dependent's new pin cannot
+    install until the version it names exists, so preparation and publication interleave and cannot
+@@ -71,7 +71,10 @@ Completion requires:
+   that section requires;
+ - every tarball swap is restored per § Fixing a dependency before it publishes, and no target
+   repository is left holding an uncommitted bump or an unpushed commit;
+-- every gate that proved a package ran outside the window and against the artifact that shipped.
++- every gate that proved a package ran outside the window and against the artifact that shipped;
++- every gate red at a package's baseline for a cause `ROADMAP.md` already carries is recorded as a
++  standing reading beside the package's row with its carrier, and the release report names it. A
++  standing reading is not a gate the release ran.
+ 
+ Report the layers in publish order, each package with its registry-confirmed version, the bump
+ rulings and their evidence, the approvals the user granted, and anything still unpublished. End
+diff --git a/.agents/skills/orkestrel-publish/references/wave.md b/.agents/skills/orkestrel-publish/references/wave.md
+index ebf151ab..6a3e4928 100644
+--- a/.agents/skills/orkestrel-publish/references/wave.md
++++ b/.agents/skills/orkestrel-publish/references/wave.md
+@@ -10,9 +10,12 @@ prepare the next.
+ Run the visit in this order. A step that reads generated or installed state is invalid before the
+ step that writes it.
+ 
+-1. Re-pin the target's `@orkestrel/scaffold` devDependency and install, so the overwrite runs the
+-   current vendored host.
+-2. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
++1. Read the registry, bump from what it serves where the package publishes this round, re-pin
++   every `@orkestrel` range to the registry caret (peer ranges included), and install, so the
++   overwrite runs the current vendored host.
++2. Commit the re-pin and the bump as the preparation commit. `scaffold overwrite` refuses a tree
++   carrying uncommitted changes, and the install left the manifest and the lockfile dirty.
++3. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
+    every tracked copy the target still holds at an instruction-canon path. Prove the sweep with a
+    second `scaffold audit` that exits `0`.
+    - Where the target's `.claude/agents/orkestrel.md` carries a body outside the marker-bounded
+@@ -30,12 +33,15 @@ step that writes it.
+      rather than waiving past it.
+    - A copy the target git-ignores stays a `foreign` finding, so that target never reaches exit `0`
+      again. Keep a local MCP server registration outside the repository rather than at `.mcp.json`.
+-3. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
++4. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
+    published.
+-4. Run the full install.
+-5. Run the mutating `format` script to converge generated writes.
+-6. Run the quality gates.
+-7. Compare the rebuilt `dist/` against the published tarball for material content.
++5. Run the full install. The overwrite re-declares the toolchain ranges, so the lockfile the first
++   install regenerated no longer matches the manifest.
++6. Run the mutating `format` script to converge generated writes.
++7. Run the quality gates.
++8. Fetch the published tarball, then compare the rebuilt `dist/` against it for material content.
++   An absent baseline is an unanswered comparison, never a moved dist: fetch and re-run rather than
++   ruling a bump owed.
+ 
+ Restore any unpublished tarball the target is holding before the quality gates run, per
+ `.agents/orchestration.md` § Fixing a dependency before it publishes. A distribution proof run
+@@ -69,7 +75,15 @@ final runtime dependency set differs from the published packument.
+   per package rather than assuming it: a package that imports its own `package.json` version into
+   published code emits that version, so its pre-bump dist is stale the moment the version moves.
+   Rebuild after the bump there and pack from the rebuilt tree. The `npm publish --ignore-scripts`
+-  command skips `prepack`, so that rebuild is the operator's step rather than the publish's.
++  command skips `prepack`, so that rebuild is the operator's step rather than the publish's. The
++  same holds for a package that writes its declared ranges into published output: its `dist/`
++  moves on a development re-pin, and `.agents/orchestration.md` § What a bump obliges rules that
++  re-pin a release.
++
++A third trigger orders rather than bumps. A package the fleet consumes as a development dependency,
++whose consumers' gates read its unpublished tip, publishes on its own account ahead of the layer
++order and again at its own slot after its runtime ranges move: each consumer's visit installs the
++registry copy over any staged tip, so every consumer stays red until that tip is on the registry.
+ 
+ ## Prepare a layer
+ 
+@@ -83,10 +97,12 @@ Prepare a published package's layer in this order:
+    field can sit a release behind what was published from another checkout, and bumping that
+    produces a version the registry already holds, which fails on upload after the whole gate chain
+    has run. Read the registry first.
+-2. **Re-pin every `@orkestrel` range to what the registry serves, and install.**
++2. **Run the visit** in § Visit a repository on each package, whose preparation commit precedes the
++   overwrite.
+ 3. **Sweep the self-pins**, per the following section.
+ 4. **Run each package's own `prepublishOnly` script to green.**
+-5. **Commit and push before the window opens.**
++5. **Write the release commit and push before the window opens.** The preparation commit inside
++   the visit is a different commit at a different moment.
+ 
+ Prepare the next layer only after this one is on the registry. A dependent's new pin cannot
+ install until the version it names exists, so preparation and publication interleave and cannot be
+@@ -99,12 +115,17 @@ the flag is what stops the gate chain running a second time inside the five minu
+ ## Sweep the self-pins
+ 
+ A package's own version appears in its source and its tests as a literal, and a bump falsifies
+-every one of them. Run this sweep after the re-pin install, not after the manifest edit.
++every one of them. A snapshot of generated output carries the ranges the package writes rather than
++its own version, and any re-pin, a development one included, falsifies it. Run this sweep after the
++re-pin install, not after the manifest edit.
+ 
+ - `grep` the prior version literal across `tests/` and `src/` in the publishing package, and rule
+   on every hit. A canned packument in a fixture and a looked-up version in a CLI suite carry the
+   version with no tripwire comment beside them, so they surface as a red gate after the bump
+   rather than as a planned edit before it.
++- `grep` the prior range of every re-pinned dependency across `tests/`, and move each snapshot it
++  hits with the re-pin. A generated-manifest fixture never carries the package's own prior version,
++  so the version sweep cannot reach it.
+ - Move a documented tripwire — a golden digest over generated output — in the same change as the
+   version bump. That is what the tripwire is for.
+ - Re-take a generated artifact's digest after the install, because the generated bytes can derive
+@@ -120,4 +141,5 @@ every one of them. Run this sweep after the re-pin install, not after the manife
+ 
+ Refresh the registry evidence between layers and derive each round's pins from it. A pin can only
+ name a version the registry already serves, so a dependency shipping in the same window keeps the
+-resolvable previous pin and takes its development-only re-pin after the window closes.
++resolvable previous pin and takes its development-only re-pin after the window closes. That re-pin
++takes the self-pin sweep too, because the snapshot class moves with no bump.
+diff --git a/.agents/skills/orkestrel-publish/references/window.md b/.agents/skills/orkestrel-publish/references/window.md
+index c8133e75..0caf7f0e 100644
+--- a/.agents/skills/orkestrel-publish/references/window.md
++++ b/.agents/skills/orkestrel-publish/references/window.md
+@@ -25,8 +25,11 @@ rest of the layer either fits inside it or takes another approval.
+   zero.
+ - Re-probe `whoami` immediately before the first upload. A stored credential expires mid-session
+   and an overnight gap expires it, so a session-start answer does not hold.
+-- Read a login log that shows the spinner and then a legacy `Username:` prompt as an expired
+-  attempt rather than as a prompt to answer. Kill it by process id and mint a fresh flow.
++- Read a login log that shows the spinner and then a legacy `Username:` prompt as a dead attempt
++  rather than as a prompt to answer: expired, or refused on its first poll per § Read a `403` on
++  the poll. Kill it by the process id recorded at its launch, per `.agents/orchestration.md`
++  § Confirm dead before relaunching. Every publish here runs under the same `script -qfc` form, so a
++  pattern over the process list reaches a live upload as readily as the dead login.
+ - On a Windows host, Git Bash ships no `script` binary, so the upload step is operator-driven:
+   prepare the layer, prove the gates, surface the exact `npm publish` command, and the operator
+   runs it in a real terminal. Everything before and after the upload — bumps, re-pins, gates,
+@@ -49,13 +52,17 @@ rest of the layer either fits inside it or takes another approval.
+   against `registry.npmjs.org` with `npm` 10.9.7 and `node` 22.22.2: npm polls `GET /-/v1/done`
+   every few seconds and takes `202` while the session waits, and the registry answers `403` at
+   about 45 seconds. Whether the registry fixes that abandon by elapsed time or by poll count is
+-  unmeasured, so plan against the duration.
++  unmeasured, so plan against the duration. A `403` within seconds of the mint is not that abandon;
++  § Read a `403` on the poll names it.
+ - Recognise the abandon on each side. The `npm login` command reads the `403` as web login being
+   unsupported and drops to its legacy `Username:` prompt. The `npm publish` command exits `E403`
+   naming `GET /-/v1/done?authId=`.
+ - Never keep a link alive by re-minting on a loop. Each mint invalidates the URL before it, so a
+   supervisor that re-mints on expiry makes the link a moving target and every relayed URL is dead
+-  on arrival. Mint once per human moment, and mint again only when the user asks.
++  on arrival. Mint once per human moment, and mint again only when the user asks. That ban covers
++  a URL already relayed. While no URL has been relayed, mint attempts until one survives its own
++  first poll, relay that one alone, and kill the rest by process id; § Read a `403` on the poll
++  names the first-poll refusal this answers.
+ - Name the login approval and the upload authorization to the user before either arrives, or the
+   authorization link reads as the login having failed.
+ - Surface each approval URL the moment it appears in the log, and take the **last** one in log
+@@ -75,11 +82,18 @@ rest of the layer either fits inside it or takes another approval.
+ 
+ - Take the account's one-time code where the account has one. The
+   `npm publish --ignore-scripts --otp=<code>` command uploads with no browser authorization and no
+-  poll, so it carries neither a window nor a race. In the `@orkestrel/scaffold` 0.0.56 run on
+-  2026-08-27 the browser authorization failed on the 45-second abandon and the one-time code
+-  uploaded the package with no retry.
+-- Ask for the code at the moment of the upload, and run the upload inside that code's own life. A
+-  code read minutes earlier is already spent.
++  poll. The code has its own life: measured on 2026-09-04 against `registry.npmjs.org`, one code
++  carried every upload of a layer started within about a minute of its first use, console at
++  20:25:02 through router at 20:25:58, and the upload started at 20:25:58 was refused `EOTP` at
++  20:26:00; a code read before its layer was ready was refused at its first upload. In the
++  `@orkestrel/scaffold` 0.0.56 run on 2026-08-27 the browser authorization failed on the 45-second
++  abandon and the one-time code uploaded the package with no retry.
++- Prepare the whole layer, then ask for one code at the moment the layer's first upload starts, and
++  chase the layer's uploads back-to-back inside that code's life with no gate between them. A code
++  read minutes earlier is already spent.
++- Read `EOTP` on this path as the code's life ending, never as the contention § Spend the window
++  describes for the browser path: the chain stops at the refused package, and the layer resumes
++  from that package on a fresh code. Never retry the refused upload on the same code.
+ - Ask for the code and nothing else. Never ask for a password, an access token, or an auth file.
+   `.agents/orchestration.md` § Publishing the fleet owns that law.
+ - Arm a one-time-code upload the way § Arm the terminal arms every other publish.
+@@ -127,14 +141,25 @@ the same status. Rule from the evidence, never from which cause reads likelier.
+   opened, and the registry closed the session.
+ - The user clicked a superseded URL and poisoned the live attempt. The poll fails mid-flight while
+   the user is looking at a page that reports success.
++- The registry refused the attempt's first poll, seconds after the mint and before anyone could
++  click, because the poll left from an egress address other than the one that minted the session.
++  npm reads that `403` as web login unsupported and drops to the legacy `Username:` prompt within
++  seconds rather than at 45. Recover by minting attempts on a kept-alive connection until one
++  survives its first poll and relaying that one alone, per § Reach the approval.
+ - Tell those causes apart from the log and the user, never from the status alone. A single minted
+   URL that nobody opened in time is the abandon. A log carrying a URL the running attempt
+-  superseded, with the user reporting a click, is the poisoned attempt.
++  superseded, with the user reporting a click, is the poisoned attempt. A drop within seconds of
++  the mint, before any relay, is the egress refusal.
+ - Recover the same way whichever it was: read the registry for the version, confirm no publish
+   process is live, then mint exactly one fresh attempt with the user at the keyboard.
+ 
+ ## Read the verdict from the registry
+ 
++- Read `+ @orkestrel/<name>@<version>` in the upload's own journal as the accepted verdict, and
++  advance the chain on it. The registry's read lags its processing by minutes, which the
++  `Your package is being processed and may take a few minutes to become available.` notice beside
++  that line announces, so a chain keyed on the registry stops on an accepted upload. Read the
++  registry to confirm and to record the layer's close, never to gate the next upload.
+ - Read the result from the registry, not from an exit code. A piped `npm publish` reports the exit
+   status of the pipeline, and a CDN read straight after a publish can still serve the previous
+   version.
+diff --git a/.claude/agents/orkestrel.md b/.claude/agents/orkestrel.md
+index 91904046..e12b1915 100644
+--- a/.claude/agents/orkestrel.md
++++ b/.claude/agents/orkestrel.md
+@@ -43,58 +43,58 @@ so network-controlled descriptions never enter agent instruction context.
+ 
+ <!-- orkestrel:catalog -->
+ 
+-| Package                 | Version  | Layer | Runtime dependencies                                                                                                                                                                                                                                                                                                       |
+-| ----------------------- | -------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `@orkestrel/abort`      | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/agent`      | `0.0.19` | L5    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/queue` `^0.0.11`, `@orkestrel/timeout` `^0.0.8`, `@orkestrel/tool` `^0.0.12`, `@orkestrel/workflow` `^0.0.16`, `@orkestrel/workspace` `^0.0.6`     |
+-| `@orkestrel/brief`      | `0.0.6`  | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/interpret` `^0.0.11`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                                                             |
+-| `@orkestrel/browser`    | `0.0.14` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/html` `^0.0.7`, `@orkestrel/websocket` `^0.0.10`                                                                                                                                                                                               |
+-| `@orkestrel/budget`     | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/codec`      | `0.0.1`  | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/console`    | `0.0.11` | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/contract`   | `0.0.15` | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/csv`        | `0.0.5`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/database`   | `0.0.12` | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/indexeddb` `^0.0.9`, `@orkestrel/sqlite` `^0.0.9`                                                                                                                                                                                              |
+-| `@orkestrel/emitter`    | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/form`       | `0.0.4`  | L2    | `@orkestrel/contract` `^0.0.15`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/guide`      | `0.0.15` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/markdown` `^0.0.12`                                                                                                                                                                                                                                                           |
+-| `@orkestrel/html`       | `0.0.7`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/indexeddb`  | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/interpret`  | `0.0.11` | L3    | `@orkestrel/reason` `^0.0.8`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/template` `^0.0.5`                                                                                                                                                                                               |
+-| `@orkestrel/lsp`        | `0.0.5`  | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/process` `^0.0.8`                                                                                                                                                                                                                              |
+-| `@orkestrel/markdown`   | `0.0.12` | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/html` `^0.0.7`                                                                                                                                                                                                                                                                |
+-| `@orkestrel/mcp`        | `0.0.27` | L3    | `@orkestrel/codec` `^0.0.1`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/process` `^0.0.8`, `@orkestrel/sse` `^0.0.5`, `@orkestrel/tool` `^0.0.12`, `@orkestrel/websocket` `^0.0.10`                                                                                                       |
+-| `@orkestrel/middleware` | `0.0.18` | L2    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/timeout` `^0.0.8`                                                                                                                                                                                                  |
+-| `@orkestrel/msg`        | `0.0.8`  | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/ndjson`     | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/ollama`     | `0.0.13` | L6    | `@orkestrel/agent` `^0.0.19`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/ndjson` `^0.0.8`, `@orkestrel/timeout` `^0.0.8`, `@orkestrel/tool` `^0.0.12`                                                                                                                                      |
+-| `@orkestrel/pool`       | `0.0.9`  | L2    | `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                                                              |
+-| `@orkestrel/probe`      | `0.0.11` | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/lsp` `^0.0.5`, `@orkestrel/mcp` `^0.0.27`, `@orkestrel/queue` `^0.0.11`, `@orkestrel/timeout` `^0.0.8`, `@orkestrel/tool` `^0.0.12`                                                                                                            |
+-| `@orkestrel/process`    | `0.0.9`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/program`    | `0.0.11` | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/qualifier` `^0.0.12`, `@orkestrel/rater` `^0.0.12`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                               |
+-| `@orkestrel/qualifier`  | `0.0.12` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                                                                                               |
+-| `@orkestrel/queue`      | `0.0.11` | L3    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/timeout` `^0.0.8`                                                                                                                                                                |
+-| `@orkestrel/rater`      | `0.0.12` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                                                                                               |
+-| `@orkestrel/reason`     | `0.0.8`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/relation`   | `0.0.10` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                            |
+-| `@orkestrel/router`     | `0.0.12` | L2    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                |
+-| `@orkestrel/scaffold`   | `0.0.60` | L3    | `@orkestrel/console` `^0.0.11`, `@orkestrel/contract` `^0.0.15`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/markdown` `^0.0.12`, `@orkestrel/process` `^0.0.9`, `@orkestrel/template` `^0.0.5`                                                                                                                             |
+-| `@orkestrel/sea`        | `0.0.13` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/process` `^0.0.8`                                                                                                                                                                                                                              |
+-| `@orkestrel/server`     | `0.0.17` | L3    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/codec` `^0.0.1`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/router` `^0.0.12`, `@orkestrel/timeout` `^0.0.8`                                                                                                                                     |
+-| `@orkestrel/sqlite`     | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/sse`        | `0.0.5`  | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/supervisor` | `0.0.1`  | L5    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/database` `^0.0.9`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/workflow` `^0.0.12`                                                                                                                                                                                            |
+-| `@orkestrel/table`      | `0.0.3`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/template`   | `0.0.5`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/terminal`   | `0.0.13` | L3    | `@orkestrel/console` `^0.0.11`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/form` `^0.0.3`, `@orkestrel/sse` `^0.0.5`                                                                                                                                     |
+-| `@orkestrel/test`       | `0.0.12` | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/timeout`    | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/tool`       | `0.0.12` | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/toolbox`    | `0.0.11` | L6    | `@orkestrel/agent` `^0.0.19`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/form` `^0.0.3`, `@orkestrel/relation` `^0.0.10`, `@orkestrel/server` `^0.0.17`, `@orkestrel/terminal` `^0.0.13`, `@orkestrel/tool` `^0.0.12`, `@orkestrel/workflow` `^0.0.16`, `@orkestrel/workspace` `^0.0.6` |
+-| `@orkestrel/websocket`  | `0.0.10` | L2    | `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                                                              |
+-| `@orkestrel/worker`     | `0.0.10` | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/pool` `^0.0.9`, `@orkestrel/queue` `^0.0.11`                                                                                                                                                                  |
+-| `@orkestrel/workflow`   | `0.0.16` | L4    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/queue` `^0.0.11`, `@orkestrel/timeout` `^0.0.8`                                                                                                    |
+-| `@orkestrel/workspace`  | `0.0.6`  | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                            |
++| Package                 | Version  | Layer | Runtime dependencies                                                                                                                                                                                                                                                                                                       | Peer dependencies                                              |
++| ----------------------- | -------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
++| `@orkestrel/abort`      | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/agent`      | `0.0.20` | L5    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/queue` `^0.0.12`, `@orkestrel/timeout` `^0.0.9`, `@orkestrel/tool` `^0.0.13`, `@orkestrel/workflow` `^0.0.17`, `@orkestrel/workspace` `^0.0.7`     |                                                                |
++| `@orkestrel/brief`      | `0.0.7`  | L4    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/interpret` `^0.0.12`, `@orkestrel/reason` `^0.0.9`                                                                                                                                                                                             |                                                                |
++| `@orkestrel/browser`    | `0.0.15` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/html` `^0.0.8`, `@orkestrel/websocket` `^0.0.11`                                                                                                                                                                                               |                                                                |
++| `@orkestrel/budget`     | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/codec`      | `0.0.2`  | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/console`    | `0.0.12` | L2    | `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/contract`   | `0.0.16` | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/csv`        | `0.0.6`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/database`   | `0.0.13` | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/indexeddb` `^0.0.10`, `@orkestrel/sqlite` `^0.0.10`                                                                                                                                                                                            |                                                                |
++| `@orkestrel/emitter`    | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/form`       | `0.0.5`  | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/guide`      | `0.0.17` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/markdown` `^0.0.13`                                                                                                                                                                                                                                                           |                                                                |
++| `@orkestrel/html`       | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/indexeddb`  | `0.0.10` | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/interpret`  | `0.0.12` | L3    | `@orkestrel/reason` `^0.0.9`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/template` `^0.0.6`                                                                                                                                                                                               |                                                                |
++| `@orkestrel/lsp`        | `0.0.6`  | L3    | `@orkestrel/emitter` `^0.0.9`, `@orkestrel/process` `^0.0.10`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/markdown`   | `0.0.13` | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/html` `^0.0.8`                                                                                                                                                                                                                                                                |                                                                |
++| `@orkestrel/mcp`        | `0.0.28` | L4    | `@orkestrel/codec` `^0.0.2`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/process` `^0.0.10`, `@orkestrel/sse` `^0.0.6`, `@orkestrel/tool` `^0.0.13`, `@orkestrel/websocket` `^0.0.11`                                                                                                      | `@orkestrel/router` `^0.0.13`, `@orkestrel/server` `^0.0.18`   |
++| `@orkestrel/middleware` | `0.0.19` | L4    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/timeout` `^0.0.9`                                                                                                                                                                                                  | `@orkestrel/database` `^0.0.13`, `@orkestrel/server` `^0.0.18` |
++| `@orkestrel/msg`        | `0.0.9`  | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/ndjson`     | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/ollama`     | `0.0.14` | L6    | `@orkestrel/agent` `^0.0.20`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/ndjson` `^0.0.9`, `@orkestrel/timeout` `^0.0.9`, `@orkestrel/tool` `^0.0.13`                                                                                                                                      |                                                                |
++| `@orkestrel/pool`       | `0.0.10` | L2    | `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                                                              |                                                                |
++| `@orkestrel/probe`      | `0.0.12` | L5    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/lsp` `^0.0.6`, `@orkestrel/mcp` `^0.0.28`, `@orkestrel/queue` `^0.0.12`, `@orkestrel/timeout` `^0.0.9`, `@orkestrel/tool` `^0.0.13`                                                                                                            | `oxlint` `^1.80.0`, `typescript` `^6.0.3`, `vitest` `^4.1.11`  |
++| `@orkestrel/process`    | `0.0.10` | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/program`    | `0.0.12` | L4    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/qualifier` `^0.0.13`, `@orkestrel/rater` `^0.0.13`, `@orkestrel/reason` `^0.0.9`                                                                                                                                                               |                                                                |
++| `@orkestrel/qualifier`  | `0.0.13` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/reason` `^0.0.9`                                                                                                                                                                                                                               |                                                                |
++| `@orkestrel/queue`      | `0.0.12` | L3    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/timeout` `^0.0.9`                                                                                                                                                                |                                                                |
++| `@orkestrel/rater`      | `0.0.13` | L3    | `@orkestrel/reason` `^0.0.9`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                               |                                                                |
++| `@orkestrel/reason`     | `0.0.9`  | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/relation`   | `0.0.11` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/router`     | `0.0.13` | L2    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                |                                                                |
++| `@orkestrel/scaffold`   | `0.0.63` | L3    | `@orkestrel/console` `^0.0.12`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/markdown` `^0.0.13`, `@orkestrel/process` `^0.0.10`, `@orkestrel/template` `^0.0.6`                                                                                                                            |                                                                |
++| `@orkestrel/sea`        | `0.0.14` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/process` `^0.0.10`                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/server`     | `0.0.18` | L3    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/codec` `^0.0.2`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/router` `^0.0.13`, `@orkestrel/timeout` `^0.0.9`                                                                                                                                     |                                                                |
++| `@orkestrel/sqlite`     | `0.0.10` | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/sse`        | `0.0.6`  | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/supervisor` | `0.0.1`  | L5    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/database` `^0.0.9`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/workflow` `^0.0.12`                                                                                                                                                                                            |                                                                |
++| `@orkestrel/table`      | `0.0.4`  | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/template`   | `0.0.6`  | L2    | `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/terminal`   | `0.0.14` | L3    | `@orkestrel/console` `^0.0.12`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/form` `^0.0.5`, `@orkestrel/sse` `^0.0.6`                                                                                                                                     |                                                                |
++| `@orkestrel/test`       | `0.0.13` | L0    |                                                                                                                                                                                                                                                                                                                            | `vitest` `^4.1.11`                                             |
++| `@orkestrel/timeout`    | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/tool`       | `0.0.13` | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/toolbox`    | `0.0.12` | L6    | `@orkestrel/agent` `^0.0.20`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/form` `^0.0.5`, `@orkestrel/relation` `^0.0.11`, `@orkestrel/server` `^0.0.18`, `@orkestrel/terminal` `^0.0.14`, `@orkestrel/tool` `^0.0.13`, `@orkestrel/workflow` `^0.0.17`, `@orkestrel/workspace` `^0.0.7` |                                                                |
++| `@orkestrel/websocket`  | `0.0.11` | L2    | `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                                                              |                                                                |
++| `@orkestrel/worker`     | `0.0.11` | L4    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/pool` `^0.0.10`, `@orkestrel/queue` `^0.0.12`                                                                                                                                                                 |                                                                |
++| `@orkestrel/workflow`   | `0.0.17` | L4    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/queue` `^0.0.12`, `@orkestrel/timeout` `^0.0.9`                                                                                                    |                                                                |
++| `@orkestrel/workspace`  | `0.0.7`  | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                            |                                                                |
+ 
+ <!-- /orkestrel:catalog -->
+ 
+@@ -121,7 +121,7 @@ forced `src`/`app` edit or a changed toolchain emit, and the package then bumps
+ account rather than on the dependency's. A superfluous diff obliges nothing.
+ 
+ The `Layer` column in the catalog table is the publish round, derived from the runtime
+-edges in the same row. `L0` depends on nothing else in the fleet and publishes first; each
++and peer edges in the same row. `L0` depends on nothing else in the fleet and publishes first; each
+ later layer publishes only after every layer before it is on the registry. A row with no
+ layer sits in a cycle and cannot be placed in a round at all. Packages in one layer are
+ independent of each other and may publish in any order within it.
+diff --git a/.claude/agents/reviewer.md b/.claude/agents/reviewer.md
+index 7785fff3..c84d129d 100644
+--- a/.claude/agents/reviewer.md
++++ b/.claude/agents/reviewer.md
+@@ -42,6 +42,21 @@ subjective and creative lens:
+ 5. **Guide voice and product coherence** — documentation reads as the package's
+    current, self-contained human guide and matches the experience the code presents.
+ 
++While you hold the objective lane, audit the changed work through these lenses with
++the same weight:
++
++1. **Correctness under adverse orderings** — cancellation, restart, concurrency,
++   partial failure, hostile input, and resource exhaustion, per
++   `.claude/rules/quality.md` § Falsification.
++2. **Constraints** — what the declared contracts, the installed declarations, and the
++   permission floor permit.
++3. **Dependency and range truth** — the installed `@orkestrel/*` capabilities and the
++   ranges that reach a consumer.
++4. **Test sufficiency** — the missing seam, the assertion that cannot fail, the probe
++   with no control.
++5. **Mechanical conformance** — the letter of `AGENTS.md` and the applicable rules,
++   where no `checker` runs beside you.
++
+ Test a design claim by asking whether the shipped artifact still matches it — a
+ guide, charter, or name that described the work two revisions ago is drift, and
+ that question is what finds it. Anything you cannot settle within your lane becomes
+diff --git a/.codex/agents/orkestrel.toml b/.codex/agents/orkestrel.toml
+index e6c73796..cf6e0d78 100644
+--- a/.codex/agents/orkestrel.toml
++++ b/.codex/agents/orkestrel.toml
+@@ -1,5 +1,5 @@
+ name = "orkestrel"
+-description = "Read-only @orkestrel ecosystem reconciler: turns the evidence the dispatch supplies — manifests, lockfiles, installed declarations, guides, and registry readings — into package maps, drift audits, and dependency sequencing. Collects no live state itself."
++description = "Read-only Orkestrel ecosystem reconciler: turns the evidence the dispatch supplies — manifests, lockfiles, installed declarations, guides, and registry readings — into package maps, dependency sequencing, blast radius, and drift findings. Collects no live state itself, and never treats the embedded catalog as live state."
+ model = "gpt-5.6-terra"
+ model_reasoning_effort = "medium"
+ sandbox_mode = "read-only"
+@@ -17,6 +17,6 @@ readings the dispatch carries, never against memory. Where the dispatch omits th
+ evidence a question needs, report that question as unknown, name the reading that would
+ settle it, and stop; live collection belongs to a tool-capable lane or to the
+ Orchestrator before this role is dispatched. Never edit, install, push, or spawn.
+-Return only the requested primed map, evidence-first health audit, or
+-dependency blast-radius and topological work-order proposal.
++Return exactly one requested shape: `Map`, `Health`, or `Work order`, as the Claude
++charter defines them. The embedded catalog is discovery data, never live state.
+ """
+diff --git a/.codex/agents/reviewer.toml b/.codex/agents/reviewer.toml
+index 2d4a0877..85f2cf23 100644
+--- a/.codex/agents/reviewer.toml
++++ b/.codex/agents/reviewer.toml
+@@ -11,7 +11,8 @@ in full; read it and follow it.
+ This route pins `--permission-mode plan`.
+ 
+ The brief names the lane the route holds, and requires the returned verdict to state
+-which lane it held. It requires the `orkestrel-falsify` verdict shape and its single
++which lane it held; the Claude charter enumerates the lenses of each lane, and a
++verdict returned under the objective lane holds those lenses in full. It requires the `orkestrel-falsify` verdict shape and its single
+ terminal line, unless the dispatch names a different skill that fixes one; file:line
+ evidence on every required change; out-of-lane questions returned as referrals rather
+ than verdicts; `UNRESOLVED` rather than `CONFIRMED` on a claim whose only evidence is
+diff --git a/ROADMAP.md b/ROADMAP.md
+index b3549a25..75019075 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -12,12 +12,21 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+ 
+ ## 1. Package work, scheduled by each package's next natural release
+ 
+-- **scaffold**: the instruction canon stops reaching targets, so every fleet repository owes one
+-  adoption visit. The trigger is the scaffold release that ships the split. Per repository: re-pin
+-  `@orkestrel/scaffold` and install, run `scaffold overwrite`, and run the gates. That one run takes
+-  the `AGENTS.md` and `CLAUDE.md` pointers and deletes every tracked copy the target still holds at a
+-  canon path, so a second `scaffold audit` in the same visit exits `0`. The step lives in
+-  `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository.
++- **scaffold**: `scaffold catalog` derives the layers from runtime and peer edges since
++  2026-09-05, so the next scaffold release carries the `Peer dependencies` column to every target;
++  until then a target's table places middleware and mcp ahead of server. The peer range itself stays
++  caller-owned (`guides/scaffold.md` § Dependency floors), so a design round rules whether a fleet
++  peer range at `0.0.x` is a floor the verbs raise, and whether a bump from the registry is a verb;
++  the wave of 2026-09-04 re-pinned the peers and bumped from the registry with an instrument of its
++  own.
++- **scaffold**: a verb that compares the built `dist/` against the published tarball's material
++  content, over the non-map files with whitespace normalized, and refuses when the baseline is
++  absent. The wave ran that comparison for every package in every round with an instrument of its
++  own, and an absent baseline read once as a bump owed until the tarball was fetched.
++- **scaffold**: the `lint` and `format` scripts sit outside the writable manifest region by design
++  (`blueprintToWritableScripts`), so the fleet's `lint` scripts drifted from the template until a
++  manual sweep on 2026-09-05. Rule whether they join the region with the prior template value in
++  `accepted`.
+ - **scaffold**: the canonical `setup` Vitest project is node-only (`environment: 'node'`,
+   `browser: { enabled: false }`) while `scaffold audit` demands a `tests/setupBrowser.test.ts` proof
+   for a module that sets `data-bs-core` on the document, loads Halfmoon, and opens IndexedDB;
+@@ -117,15 +126,6 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+   closing on its own editing history, imperative TSDoc summaries across `helpers.ts` where the rule
+   asks the third person, and the aphoristic register the guide and the test comments share, which a
+   design round rules on.
+-- **fleet publish wave**: every published package carries unpublished conformance, breaking, and
+-  voice changes on `claude/orkestrel-npm-audit-deps-14ibta` (closed 2026-09-02), and the owner
+-  holds publishing. The trigger is the owner's release decision. Per the `orkestrel-publish`
+-  skill: re-pack from the accepted tips, restore each registry copy before its distribution proof,
+-  publish in the layer order the `scaffold catalog` table regenerates, then re-pin each dependent
+-  and refresh its vendored guide mirrors layer by layer. Scaffold publishes on its own account
+-  first, because its vendored host surface moved (the `names.md` vocabulary, the `tests.md` helper
+-  names, and the 2026-09-02 debrief refinements), and every target's adoption visit then runs
+-  `scaffold overwrite` under the row above.
+ 
+ ## 2. Design and research records
+ 
+@@ -307,20 +307,19 @@ re-run. These rows stay open:
+   `Timeout.id` and `Timeout.ms` as prototype getters; `spawnThread` →
+   `createThread`, `dispatch` → `Dispatch`, and `QueueExecution` →
+   `QueueContext`. The next release's notes carry them.
+-- **scaffold**: `.agents/skills/orkestrel-publish/references/wave.md` and
+-  `window.md` take the wave's laws with scaffold's next vendored release.
+-  Through a proxy that leaves from several addresses the registry refuses a
+-  login poll from an address other than the minting one, so an attempt is
+-  minted on a kept-alive connection and retried until it survives its first
+-  poll. An upload's outcome is read from the journal's acceptance line, because
+-  the registry's read lags behind its processing. One one-time code carries a
+-  layer's uploads back-to-back, and a refused package resumes on a fresh code.
+-  `scaffold overwrite` refuses uncommitted changes, so the re-pin and bump
+-  commit before it, and it moves the toolchain ranges, so the install repeats
+-  after it before the gates. A development dependency whose API the consumers'
+-  tests read publishes on its own account ahead of its layer and again at its
+-  slot. A peer range is an ordering edge. A package whose build embeds its
+-  development ranges takes a release from a development re-pin.
++- **scaffold**: the wave's process laws landed in the canon on 2026-09-05 with
++  the wave's debrief: `window.md` (the first-poll `403` through a multi-address
++  egress, the acceptance line as the chain's verdict, the one-time code's life
++  and the layer it carries, the kill by recorded process id), `wave.md` (the
++  preparation commit before `scaffold overwrite`, the early own-account release
++  of a development dependency whose consumers' gates read its tip, the
++  snapshot class in the self-pin sweep, the fetched baseline before the dist
++  comparison), and `.agents/orchestration.md` (the peer edge in the order law,
++  the release-instrument clause). They reach every target with scaffold's next
++  vendored release, which is the owner's. The host fact stays here: this Cloud
++  environment's proxy leaves from several egress addresses (160.79.106.128,
++  .129, .141, and .142 on 2026-09-04), which is what made the registry refuse
++  the login's first poll.
+ 
+ ### The next conformance matrix's rows
+ 

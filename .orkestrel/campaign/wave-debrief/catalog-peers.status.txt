@@ -1,0 +1,20 @@
+ M .claude/agents/orkestrel.md
+ M guides/scaffold.md
+ M host.json
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/Materializer.ts
+ M src/server/Upstream.ts
+ M tests/setup.ts
+ M tests/setupServer.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/bin/helpers.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/validators.test.ts
+ M tests/src/server/Materializer.test.ts
+ M tests/src/server/Upstream.test.ts
+?? .orkestrel/campaign/wave-debrief/catalog-peers-report.md
+?? .orkestrel/campaign/wave-debrief/catalog-peers.diff.txt
+?? .orkestrel/campaign/wave-debrief/catalog-peers.status.txt
+?? .orkestrel/campaign/wave-debrief/instraudit-subjective.md
