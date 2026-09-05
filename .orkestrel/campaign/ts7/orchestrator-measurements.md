@@ -97,3 +97,22 @@ $ npx api-extractor run --local --config <scratch>/api-extractor.json  (over the
 ```
 
 Reading: the current build path (`vite build` with `vite-plugin-dts`, api-extractor's bundled 5.9.3 for the rollup) works unchanged under TypeScript 7 once `@typescript/typescript6` is declared as a development dependency; `unplugin-dts` resolves the bridge on its own. The bridge is a complete 6.x in-process API, so `import ts from '@typescript/typescript6'` is a drop-in for every test and policy site that imports `typescript` today. The tsgo-emit-plus-direct-api-extractor path was not proven and is not needed while the bridge stands.
+
+## Rehearsal 1: a scratch copy of scaffold on 7.0.2 with the bridge (instruments/rehearsal.sh)
+
+A `git archive` of `HEAD` in the scratchpad, `typescript` set to `^7.0.2` and `@typescript/typescript6` `^6.0.2` added, the four test files and the distribution-proof template re-pointed from `'typescript'` to `'@typescript/typescript6'`, then `npm install` and each gate.
+
+```text
+format:check, lint:check, check → exit 0 (the type gate runs on tsc 7.0.2 unchanged)
+build → exit 1 at build:src:core: [unplugin-dts] Failed to bundle declaration files due to an API Extractor limitation when analyzing the symbol "Readonly" … Original error: Internal Error: Unable to follow symbol for "Readonly"
+test:policy → exit 0 ; test:guides → exit 0   (the vendored policy sweep and the guides parity suite run on the bridge as-is)
+test:src:core → 6 failed / 384 passed: tests/src/core/constants.test.ts "emits a TypeScript range bounded below 7" (expect(matchesRange(emitted, '7.0.2')).toBe(false)), tests/src/core/compilers.test.ts blueprintToDevDependencies rows and manifest snapshots that carry the `typescript` range (3 snapshots)
+test:src:server, test:setup → git ls-files fails (the copy is not a repository) and readHostFloor reports host.json stale at tests/setupPolicy.ts (build:inventory never ran because build failed earlier)
+test:src:bin → 13 failed: the built entry is absent (dist/bin missing after the build failure)
+test:config → host inventory stale at tests/setupPolicy.ts (same cause)
+test:distribution --mode release (npm 11) → 4 failed: dist/src/server absent (same cause)
+```
+
+Cause of the build failure, read from the installed packages: `unplugin-dts` computes `getTsLibFolder()` as the `typescript` package's root path (`dist/shared/unplugin-dts.BU1tibsL.mjs:253-256`) and passes it to api-extractor as `typescriptCompilerFolder` (`:584-590`, spread after by the user's `invokeOptions`); api-extractor's `CompilerState` then sets `compilerHost.getDefaultLibLocation` to `<that folder>/lib` (`lib-esm/api/CompilerState.js:101-104`). Under 7.0.2 `node_modules/typescript/lib/` holds `getExePath.js`, `tsc.js`, and `version.cjs` and no `lib.*.d.ts`; the 107 library files live in `node_modules/@typescript/typescript-linux-x64/lib/`. The bridge `@typescript/typescript6/lib/` holds `typescript.js`, `typescript.d.ts`, `tsserverlibrary.*`, and `tsc.js`, and no library files either. So the rollup's analysis program has no global lib and cannot resolve `Readonly`. The fix under test in rehearsal 2 is `bundleTypes.invokeOptions.typescriptCompilerFolder: undefined`, which lets api-extractor use its bundled 5.9.3 compiler's own library folder; `unplugin-dts` 1.1.0 carries the same `getTsLibFolder` (`:334-337` in the dts scratch install), so the override is needed on both plugin lines.
+
+Tests that the range bump makes false, to be carried by the implementation unit: the `constants.test.ts` upper-bound assertion and the `compilers.test.ts` manifest snapshots and rows that embed the `typescript` range.
