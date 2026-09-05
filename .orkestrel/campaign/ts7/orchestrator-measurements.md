@@ -171,3 +171,26 @@ $ npx vitest run tests/src/server/Probe.test.ts → exit 0: Test Files 1 passed 
 ```
 
 Reading: with the bin file green alone at 12:22 and this file green alone at 12:27, every red row of the whole-suite run passes on the idle host, so the probe checkout's gates read green on the Orchestrator's deciding runs and the whole-suite red is the four-CPU load, not the change. The logs are retained under `evidence/probe-decide/`.
+
+## The probe lockfile and npm 11 (objective F6 of the probe audit)
+
+```text
+$ npm --version → 10.9.7 ; /opt/npm11/bin/npm --version → 11.19.1
+$ git show b331d93:package-lock.json | grep -c '"libc"' → 16 ; grep -c '"libc"' package-lock.json (after the units' npm 10.9.7 install) → 0
+$ PATH=/opt/npm11/bin:$PATH npm install → exit 0, found 0 vulnerabilities ; libc rows → 0 ; git diff --stat package-lock.json unchanged (34 insertions, 49 deletions against b331d93)
+$ PATH=/opt/npm11/bin:$PATH npm install --package-lock-only --ignore-scripts → exit 0 ; libc rows → 0
+$ (scratch: probe's package.json alone, no lock) PATH=/opt/npm11/bin:$PATH npm install --package-lock-only --ignore-scripts → exit 0 ; libc rows → 26 ; every package present in both ; 66 field differences against the tree's lock, all version/resolved/integrity moves of transitive packages (@jridgewell/sourcemap-codec 1.5.5 → 1.6.0, @oxc-project/types 0.147.0 → 0.148.0, every @rolldown/binding-* 1.2.6 → 1.2.7, …) ; root devDependencies and peerDependencies equal
+$ scaffold's own lock at 47200d6c → 0 libc rows ; guide, test, contract locks → 16 each
+```
+
+Reading: npm 11.19.1 writes `libc` on the entries it resolves fresh and leaves an existing entry as it is, so the rows npm 10.9.7 dropped come back only through a fresh resolution, which also moves transitive versions this change does not own. The lockfile therefore keeps the baseline's versions plus the bridge rows and no `libc` metadata, the same state scaffold's own lock has carried since the wave; the loss is accepted and recorded rather than repaired by hand, which the merge rules forbid for a lockfile.
+
+## Probe deciding run 2: the whole suite after the fix unit and the lockfile pass
+
+```text
+$ npm test (13:01, node-count=0 at launch, the round-2 audit lanes reading) → exit 1: Test Files 1 failed | 10 passed (11); Tests 1 failed | 236 passed (237)
+  tests/src/server/Probe.test.ts: mints receipts only when every stage executes cleanly… — ProbeError: The probe could not arm: The Oxlint language server exited with code 0 … Caused by: LSPError: The LSP request 'initialize' exceeded its deadline
+$ npx vitest run --config vite.config.ts --no-cache --project src:server tests/src/server/Probe.test.ts (13:05:57, node-count=0) → exit 0: Tests 28 passed (28); Duration 97.57s
+```
+
+Reading: the one red row is the standing Oxlint `initialize` deadline under the whole-suite worker load, and it passes alone; every other file, the bin file included, is green in the whole run, and the fix unit's own whole run at 12:58 was green throughout. The probe checkout's gates read green on the deciding runs. Logs under `evidence/probe-decide/decide-2-*.log.txt`.

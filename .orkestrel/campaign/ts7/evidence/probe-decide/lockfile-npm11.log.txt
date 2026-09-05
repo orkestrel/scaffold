@@ -1,0 +1,20 @@
+== npm 11 lockfile regeneration in the probe checkout, 13:02:01
+11.19.1
+
+added 2 packages, and audited 156 packages in 2s
+
+31 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+exit=0
+0
+
+up to date, audited 156 packages in 3s
+
+31 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+lock-only exit=0
+libc rows after --package-lock-only: 0

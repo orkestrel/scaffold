@@ -1,0 +1,54 @@
+== Orchestrator deciding run 2: the whole suite after the fix unit and the npm 11 lockfile pass, 13:03:54, node-count=0
+
+> @orkestrel/probe@0.0.12 test
+> npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+
+
+> @orkestrel/probe@0.0.12 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server --project src:bin
+
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+··················································x·································stderr | tests/src/server/stages/RuntimeStage.test.ts > runtime stage > recycles the resident runner after 64 written specifications, evicts disk caches, and strips the replacement warm's termination listeners
+failed to load config from /tmp/orkestrel-test-C0GQSx/vite.config.ts
+
+·························································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > mints receipts only when every stage executes cleanly, including for a control that shares no path with its case, and returns admitted path issues
+ProbeError: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ Probe.#arm src/server/Probe.ts:225:20
+    223|    // run through the same stages under the same deadline, so `The lin…
+    224|    // ms` reads as evidence about the candidate when it is the instrum…
+    225|    const failure = new ProbeError(`The probe could not arm: ${describe…
+       |                    ^
+    226|     origin: 'instrument',
+    227|     code: 'malformed',
+
+Caused by: ProbeError: The Oxlint language server exited with code 0
+ ❯ LintStage.#fault src/server/stages/LintStage.ts:255:10
+ ❯ LintStage.#translate src/server/stages/LintStage.ts:245:16
+ ❯ LintStage.#warmed src/server/stages/LintStage.ts:165:15
+ ❯ LintStage.#inspect src/server/stages/LintStage.ts:117:18
+ ❯ guardStage src/server/helpers.ts:745:10
+ ❯ Probe.#bound src/server/Probe.ts:488:11
+ ❯ Probe.#inspectStage src/server/Probe.ts:458:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { origin: 'instrument', code: 'malformed', context: { stage: 'lint' } }
+Caused by: LSPError: The LSP request 'initialize' exceeded its deadline
+ ❯ LSPClient.#timeoutRequest node_modules/@orkestrel/lsp/dist/src/core/index.js:1323:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'timeout', context: { value: 1 } }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  1 failed | 236 passed (237)
+   Start at  13:03:54
+   Duration  104.51s (transform 1.61s, setup 682ms, import 2.28s, tests 231.32s, environment 1ms)
+
+exit=1

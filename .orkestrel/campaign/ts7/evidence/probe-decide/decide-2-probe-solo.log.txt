@@ -1,0 +1,11 @@
+== deciding run 2, solo re-run of tests/src/server/Probe.test.ts, 13:05:57, node-count=0
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+
+ Test Files  1 passed (1)
+      Tests  28 passed (28)
+   Start at  13:05:57
+   Duration  97.57s (transform 313ms, setup 107ms, import 315ms, tests 97.03s, environment 0ms)
+
+exit=0
