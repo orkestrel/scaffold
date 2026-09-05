@@ -518,6 +518,12 @@ describe('the upstream fixtures', () => {
 		})
 	})
 
+	it('refuses to publish an unnamed version', () => {
+		expect(() => buildPackument('')).toThrow(
+			'A packument publishes at least one version, and every version is named',
+		)
+	})
+
 	it('lists every organization package under the access map the registry serves', () => {
 		expect(
 			JSON.parse(buildOrganization(['@orkestrel/router', '@orkestrel/emitter'])),

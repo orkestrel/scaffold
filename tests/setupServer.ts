@@ -1657,6 +1657,7 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
  * a packument that declares none.
  * @returns The response body, as the abbreviated packument form the registry
  * serves for `application/vnd.npm.install-v1+json`.
+ * @throws Error - When the version is empty; a packument names every version it publishes.
  *
  * @remarks
  * Written here as literal registry JSON rather than derived from anything the
@@ -1668,6 +1669,9 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
  * and a reader that reads the wrong one is caught.
  */
 export function buildPackument(version: string, edges?: TestPackumentEdges): string {
+	if (version.length === 0) {
+		throw new Error('A packument publishes at least one version, and every version is named')
+	}
 	return JSON.stringify({
 		'dist-tags': { latest: version },
 		name: '@orkestrel/sample',
