@@ -1,0 +1,10 @@
+$ npx oxfmt --config .oxfmtrc.json --check PROPOSAL.md   (after fix round 1)
+All matched files use the correct format.
+Finished in 667ms on 1 files using 4 threads.
+exit=0
+$ wc -l PROPOSAL.md → 1292
+$ grep -c 'policy/summary' PROPOSAL.md → 0
+$ git show <rev>:guides/scaffold.md | wc -l
+43cf8ac8 1770
+2146454a 1795
+c16e3817 1798
