@@ -141,10 +141,13 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 	// the write that asked for it.
 	'/typescript': {
 		status: 200,
-		body: buildPackument([
-			BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '',
-			APP_BROWSER_TYPESCRIPT_RANGE.slice(1),
-		]),
+		body: JSON.stringify({
+			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
+			versions: {
+				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
+				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
+			},
+		}),
 	},
 	'/vite': {
 		status: 200,
@@ -264,10 +267,13 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	// the write that asked for it.
 	'/typescript': {
 		status: 200,
-		body: buildPackument([
-			BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '',
-			APP_BROWSER_TYPESCRIPT_RANGE.slice(1),
-		]),
+		body: JSON.stringify({
+			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
+			versions: {
+				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
+				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
+			},
+		}),
 	},
 	'/vite': {
 		status: 200,
