@@ -1,16 +1,133 @@
 diff --git a/.claude/agents/orkestrel.md b/.claude/agents/orkestrel.md
-index 91904046..48a41003 100644
+index 91904046..e5bf91c4 100644
 --- a/.claude/agents/orkestrel.md
 +++ b/.claude/agents/orkestrel.md
-@@ -121,7 +121,7 @@ forced `src`/`app` edit or a changed toolchain emit, and the package then bumps
+@@ -43,58 +43,58 @@ so network-controlled descriptions never enter agent instruction context.
+ 
+ <!-- orkestrel:catalog -->
+ 
+-| Package                 | Version  | Layer | Runtime dependencies                                                                                                                                                                                                                                                                                                       |
+-| ----------------------- | -------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `@orkestrel/abort`      | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/agent`      | `0.0.19` | L5    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/queue` `^0.0.11`, `@orkestrel/timeout` `^0.0.8`, `@orkestrel/tool` `^0.0.12`, `@orkestrel/workflow` `^0.0.16`, `@orkestrel/workspace` `^0.0.6`     |
+-| `@orkestrel/brief`      | `0.0.6`  | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/interpret` `^0.0.11`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                                                             |
+-| `@orkestrel/browser`    | `0.0.14` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/html` `^0.0.7`, `@orkestrel/websocket` `^0.0.10`                                                                                                                                                                                               |
+-| `@orkestrel/budget`     | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/codec`      | `0.0.1`  | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/console`    | `0.0.11` | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/contract`   | `0.0.15` | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/csv`        | `0.0.5`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/database`   | `0.0.12` | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/indexeddb` `^0.0.9`, `@orkestrel/sqlite` `^0.0.9`                                                                                                                                                                                              |
+-| `@orkestrel/emitter`    | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/form`       | `0.0.4`  | L2    | `@orkestrel/contract` `^0.0.15`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/guide`      | `0.0.15` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/markdown` `^0.0.12`                                                                                                                                                                                                                                                           |
+-| `@orkestrel/html`       | `0.0.7`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/indexeddb`  | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/interpret`  | `0.0.11` | L3    | `@orkestrel/reason` `^0.0.8`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/template` `^0.0.5`                                                                                                                                                                                               |
+-| `@orkestrel/lsp`        | `0.0.5`  | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/process` `^0.0.8`                                                                                                                                                                                                                              |
+-| `@orkestrel/markdown`   | `0.0.12` | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/html` `^0.0.7`                                                                                                                                                                                                                                                                |
+-| `@orkestrel/mcp`        | `0.0.27` | L3    | `@orkestrel/codec` `^0.0.1`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/process` `^0.0.8`, `@orkestrel/sse` `^0.0.5`, `@orkestrel/tool` `^0.0.12`, `@orkestrel/websocket` `^0.0.10`                                                                                                       |
+-| `@orkestrel/middleware` | `0.0.18` | L2    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/timeout` `^0.0.8`                                                                                                                                                                                                  |
+-| `@orkestrel/msg`        | `0.0.8`  | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/ndjson`     | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/ollama`     | `0.0.13` | L6    | `@orkestrel/agent` `^0.0.19`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/ndjson` `^0.0.8`, `@orkestrel/timeout` `^0.0.8`, `@orkestrel/tool` `^0.0.12`                                                                                                                                      |
+-| `@orkestrel/pool`       | `0.0.9`  | L2    | `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                                                              |
+-| `@orkestrel/probe`      | `0.0.11` | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/lsp` `^0.0.5`, `@orkestrel/mcp` `^0.0.27`, `@orkestrel/queue` `^0.0.11`, `@orkestrel/timeout` `^0.0.8`, `@orkestrel/tool` `^0.0.12`                                                                                                            |
+-| `@orkestrel/process`    | `0.0.9`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/program`    | `0.0.11` | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/qualifier` `^0.0.12`, `@orkestrel/rater` `^0.0.12`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                               |
+-| `@orkestrel/qualifier`  | `0.0.12` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                                                                                               |
+-| `@orkestrel/queue`      | `0.0.11` | L3    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/timeout` `^0.0.8`                                                                                                                                                                |
+-| `@orkestrel/rater`      | `0.0.12` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/reason` `^0.0.8`                                                                                                                                                                                                                               |
+-| `@orkestrel/reason`     | `0.0.8`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/relation`   | `0.0.10` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                            |
+-| `@orkestrel/router`     | `0.0.12` | L2    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                |
+-| `@orkestrel/scaffold`   | `0.0.60` | L3    | `@orkestrel/console` `^0.0.11`, `@orkestrel/contract` `^0.0.15`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/markdown` `^0.0.12`, `@orkestrel/process` `^0.0.9`, `@orkestrel/template` `^0.0.5`                                                                                                                             |
+-| `@orkestrel/sea`        | `0.0.13` | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/process` `^0.0.8`                                                                                                                                                                                                                              |
+-| `@orkestrel/server`     | `0.0.17` | L3    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/codec` `^0.0.1`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/router` `^0.0.12`, `@orkestrel/timeout` `^0.0.8`                                                                                                                                     |
+-| `@orkestrel/sqlite`     | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/sse`        | `0.0.5`  | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/supervisor` | `0.0.1`  | L5    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/database` `^0.0.9`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/workflow` `^0.0.12`                                                                                                                                                                                            |
+-| `@orkestrel/table`      | `0.0.3`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/template`   | `0.0.5`  | L2    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                             |
+-| `@orkestrel/terminal`   | `0.0.13` | L3    | `@orkestrel/console` `^0.0.11`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/form` `^0.0.3`, `@orkestrel/sse` `^0.0.5`                                                                                                                                     |
+-| `@orkestrel/test`       | `0.0.12` | L0    |                                                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/timeout`    | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/tool`       | `0.0.12` | L1    | `@orkestrel/contract` `^0.0.13`                                                                                                                                                                                                                                                                                            |
+-| `@orkestrel/toolbox`    | `0.0.11` | L6    | `@orkestrel/agent` `^0.0.19`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/form` `^0.0.3`, `@orkestrel/relation` `^0.0.10`, `@orkestrel/server` `^0.0.17`, `@orkestrel/terminal` `^0.0.13`, `@orkestrel/tool` `^0.0.12`, `@orkestrel/workflow` `^0.0.16`, `@orkestrel/workspace` `^0.0.6` |
+-| `@orkestrel/websocket`  | `0.0.10` | L2    | `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                                                                                              |
+-| `@orkestrel/worker`     | `0.0.10` | L4    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/pool` `^0.0.9`, `@orkestrel/queue` `^0.0.11`                                                                                                                                                                  |
+-| `@orkestrel/workflow`   | `0.0.16` | L4    | `@orkestrel/abort` `^0.0.8`, `@orkestrel/budget` `^0.0.8`, `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`, `@orkestrel/queue` `^0.0.11`, `@orkestrel/timeout` `^0.0.8`                                                                                                    |
+-| `@orkestrel/workspace`  | `0.0.6`  | L3    | `@orkestrel/contract` `^0.0.13`, `@orkestrel/database` `^0.0.12`, `@orkestrel/emitter` `^0.0.8`                                                                                                                                                                                                                            |
++| Package                 | Version  | Layer | Runtime dependencies                                                                                                                                                                                                                                                                                                       | Peer dependencies                                              |
++| ----------------------- | -------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
++| `@orkestrel/abort`      | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/agent`      | `0.0.20` | L5    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/queue` `^0.0.12`, `@orkestrel/timeout` `^0.0.9`, `@orkestrel/tool` `^0.0.13`, `@orkestrel/workflow` `^0.0.17`, `@orkestrel/workspace` `^0.0.7`     |                                                                |
++| `@orkestrel/brief`      | `0.0.7`  | L4    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/interpret` `^0.0.12`, `@orkestrel/reason` `^0.0.9`                                                                                                                                                                                             |                                                                |
++| `@orkestrel/browser`    | `0.0.15` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/html` `^0.0.8`, `@orkestrel/websocket` `^0.0.11`                                                                                                                                                                                               |                                                                |
++| `@orkestrel/budget`     | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/codec`      | `0.0.2`  | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/console`    | `0.0.12` | L2    | `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/contract`   | `0.0.16` | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/csv`        | `0.0.6`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/database`   | `0.0.13` | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/indexeddb` `^0.0.10`, `@orkestrel/sqlite` `^0.0.10`                                                                                                                                                                                            |                                                                |
++| `@orkestrel/emitter`    | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/form`       | `0.0.5`  | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/guide`      | `0.0.17` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/markdown` `^0.0.13`                                                                                                                                                                                                                                                           |                                                                |
++| `@orkestrel/html`       | `0.0.8`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/indexeddb`  | `0.0.10` | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/interpret`  | `0.0.12` | L3    | `@orkestrel/reason` `^0.0.9`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/template` `^0.0.6`                                                                                                                                                                                               |                                                                |
++| `@orkestrel/lsp`        | `0.0.6`  | L3    | `@orkestrel/emitter` `^0.0.9`, `@orkestrel/process` `^0.0.10`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/markdown`   | `0.0.13` | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/html` `^0.0.8`                                                                                                                                                                                                                                                                |                                                                |
++| `@orkestrel/mcp`        | `0.0.28` | L4    | `@orkestrel/codec` `^0.0.2`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/process` `^0.0.10`, `@orkestrel/sse` `^0.0.6`, `@orkestrel/tool` `^0.0.13`, `@orkestrel/websocket` `^0.0.11`                                                                                                      | `@orkestrel/router` `^0.0.13`, `@orkestrel/server` `^0.0.18`   |
++| `@orkestrel/middleware` | `0.0.19` | L4    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/timeout` `^0.0.9`                                                                                                                                                                                                  | `@orkestrel/database` `^0.0.13`, `@orkestrel/server` `^0.0.18` |
++| `@orkestrel/msg`        | `0.0.9`  | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/ndjson`     | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/ollama`     | `0.0.14` | L6    | `@orkestrel/agent` `^0.0.20`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/ndjson` `^0.0.9`, `@orkestrel/timeout` `^0.0.9`, `@orkestrel/tool` `^0.0.13`                                                                                                                                      |                                                                |
++| `@orkestrel/pool`       | `0.0.10` | L2    | `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                                                              |                                                                |
++| `@orkestrel/probe`      | `0.0.12` | L5    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/lsp` `^0.0.6`, `@orkestrel/mcp` `^0.0.28`, `@orkestrel/queue` `^0.0.12`, `@orkestrel/timeout` `^0.0.9`, `@orkestrel/tool` `^0.0.13`                                                                                                            | `oxlint` `^1.80.0`, `typescript` `^6.0.3`, `vitest` `^4.1.11`  |
++| `@orkestrel/process`    | `0.0.10` | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/program`    | `0.0.12` | L4    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/qualifier` `^0.0.13`, `@orkestrel/rater` `^0.0.13`, `@orkestrel/reason` `^0.0.9`                                                                                                                                                               |                                                                |
++| `@orkestrel/qualifier`  | `0.0.13` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/reason` `^0.0.9`                                                                                                                                                                                                                               |                                                                |
++| `@orkestrel/queue`      | `0.0.12` | L3    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/timeout` `^0.0.9`                                                                                                                                                                |                                                                |
++| `@orkestrel/rater`      | `0.0.13` | L3    | `@orkestrel/reason` `^0.0.9`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                               |                                                                |
++| `@orkestrel/reason`     | `0.0.9`  | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/relation`   | `0.0.11` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/router`     | `0.0.13` | L2    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                |                                                                |
++| `@orkestrel/scaffold`   | `0.0.63` | L3    | `@orkestrel/console` `^0.0.12`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/markdown` `^0.0.13`, `@orkestrel/process` `^0.0.10`, `@orkestrel/template` `^0.0.6`                                                                                                                            |                                                                |
++| `@orkestrel/sea`        | `0.0.14` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/process` `^0.0.10`                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/server`     | `0.0.18` | L3    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/codec` `^0.0.2`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/router` `^0.0.13`, `@orkestrel/timeout` `^0.0.9`                                                                                                                                     |                                                                |
++| `@orkestrel/sqlite`     | `0.0.10` | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/sse`        | `0.0.6`  | L0    |                                                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/supervisor` | `0.0.1`  | L5    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/database` `^0.0.9`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/workflow` `^0.0.12`                                                                                                                                                                                            |                                                                |
++| `@orkestrel/table`      | `0.0.4`  | L2    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/template`   | `0.0.6`  | L2    | `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                             |                                                                |
++| `@orkestrel/terminal`   | `0.0.14` | L3    | `@orkestrel/console` `^0.0.12`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/form` `^0.0.5`, `@orkestrel/sse` `^0.0.6`                                                                                                                                     |                                                                |
++| `@orkestrel/test`       | `0.0.13` | L0    |                                                                                                                                                                                                                                                                                                                            | `vitest` `^4.1.11`                                             |
++| `@orkestrel/timeout`    | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/tool`       | `0.0.13` | L1    | `@orkestrel/contract` `^0.0.16`                                                                                                                                                                                                                                                                                            |                                                                |
++| `@orkestrel/toolbox`    | `0.0.12` | L6    | `@orkestrel/agent` `^0.0.20`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/form` `^0.0.5`, `@orkestrel/relation` `^0.0.11`, `@orkestrel/server` `^0.0.18`, `@orkestrel/terminal` `^0.0.14`, `@orkestrel/tool` `^0.0.13`, `@orkestrel/workflow` `^0.0.17`, `@orkestrel/workspace` `^0.0.7` |                                                                |
++| `@orkestrel/websocket`  | `0.0.11` | L2    | `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                                                                                              |                                                                |
++| `@orkestrel/worker`     | `0.0.11` | L4    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/pool` `^0.0.10`, `@orkestrel/queue` `^0.0.12`                                                                                                                                                                 |                                                                |
++| `@orkestrel/workflow`   | `0.0.17` | L4    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/budget` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/queue` `^0.0.12`, `@orkestrel/timeout` `^0.0.9`                                                                                                    |                                                                |
++| `@orkestrel/workspace`  | `0.0.7`  | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                            |                                                                |
+ 
+ <!-- /orkestrel:catalog -->
+ 
+@@ -121,10 +121,10 @@ forced `src`/`app` edit or a changed toolchain emit, and the package then bumps
  account rather than on the dependency's. A superfluous diff obliges nothing.
  
  The `Layer` column in the catalog table is the publish round, derived from the runtime
 -edges in the same row. `L0` depends on nothing else in the fleet and publishes first; each
-+and peer edges in the same row. `L0` depends on nothing else in the fleet and publishes first; each
- later layer publishes only after every layer before it is on the registry. A row with no
- layer sits in a cycle and cannot be placed in a round at all. Packages in one layer are
- independent of each other and may publish in any order within it.
+-later layer publishes only after every layer before it is on the registry. A row with no
+-layer sits in a cycle and cannot be placed in a round at all. Packages in one layer are
+-independent of each other and may publish in any order within it.
++and peer edges in the same row. `L0` depends on nothing else in the fleet and publishes
++first; each later layer publishes only after every layer before it is on the registry. A
++row with no layer sits in a cycle and cannot be placed in a round at all. Packages in
++one layer are independent of each other and may publish in any order within it.
+ 
+ Report a disagreeing pin as a defect, never as drift to tidy later. When packages in
+ one install graph pin different versions of a dependency, npm installs both copies, and the
 diff --git a/guides/scaffold.md b/guides/scaffold.md
 index 9e84353c..98df41ee 100644
 --- a/guides/scaffold.md
@@ -33,6 +150,103 @@ index 9e84353c..98df41ee 100644
  
  The layer is not stored on a row. `catalogToLayers` derives it from the rows' own edges, in the same
  call that writes them, so the layer and the rows cannot disagree:
+diff --git a/host.json b/host.json
+index 2457acd4..65ff5dc6 100644
+--- a/host.json
++++ b/host.json
+@@ -22,7 +22,7 @@
+ 			"storage": "agents/orchestration.md",
+ 			"destination": ".agents/orchestration.md",
+ 			"executable": false,
+-			"digest": "5a03f0752db8449cfaf82c427917b1e9d8b3595313c46659afcfa927ac11cf0f"
++			"digest": "0676818e02ddac9e66d72d46944144579c8db64e2f0d8b8dfd94d9445590fcae"
+ 		},
+ 		{
+ 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
+@@ -262,7 +262,7 @@
+ 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
+ 			"destination": ".agents/skills/orkestrel-publish/SKILL.md",
+ 			"executable": false,
+-			"digest": "7c259c5945838d0fedfd6eaf453bd912f6af802e26e74aebac13810018218c8c"
++			"digest": "6ca128538cd3d19d9355ea02b71751b90f522255aeb9e0b5eb7571e98d93b3ce"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-publish/agents/openai.yaml",
+@@ -274,13 +274,13 @@
+ 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
+ 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
+ 			"executable": false,
+-			"digest": "9f8dbb293bccffbc87751d70b828a8a7e6e6f09fb60ae9fc9f66aeb9f135e906"
++			"digest": "170f222a887927cfb8a6e6acd73c49e9254541c65c98dfac735e916d76424e0d"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-publish/references/window.md",
+ 			"destination": ".agents/skills/orkestrel-publish/references/window.md",
+ 			"executable": false,
+-			"digest": "db102eb706708e887d8abf0d1f1bdd1132850e4dced735fb8c8378595c819ffd"
++			"digest": "04b2e69a542c9824d1d78eff0f6e11896de4623a07241cd6238665b3f7edaf4c"
+ 		},
+ 		{
+ 			"storage": "agents/templates/brief.md",
+@@ -340,7 +340,7 @@
+ 			"storage": "claude/agents/orkestrel.md",
+ 			"destination": ".claude/agents/orkestrel.md",
+ 			"executable": false,
+-			"digest": "b5ad0097d6ec9d4ac23e3d42cba7cc4edfe45f091bf9f53a2c564c7184537fb9"
++			"digest": "8ee866e0b830bf5539e9c09b27c01a4eda0284843ec1b4ed91b7af57387b54e2"
+ 		},
+ 		{
+ 			"storage": "claude/agents/planner.md",
+@@ -358,7 +358,7 @@
+ 			"storage": "claude/agents/reviewer.md",
+ 			"destination": ".claude/agents/reviewer.md",
+ 			"executable": false,
+-			"digest": "c2282266135e7797e778e0192a6a120d24137889a0150ecf4ce1a20df8013797"
++			"digest": "dd70993e8f3c18167e855aad58cab76ed1acc6adb97610cc8e02e04db4801273"
+ 		},
+ 		{
+ 			"storage": "claude/agents/scout.md",
+@@ -562,7 +562,7 @@
+ 			"storage": "codex/agents/orkestrel.toml",
+ 			"destination": ".codex/agents/orkestrel.toml",
+ 			"executable": false,
+-			"digest": "5eeb3a09e67d406f01d163d3fc1411849623113bb361ae4d8d5771725ab1248d"
++			"digest": "e71a2259bfd90689d206021446a550bfd8f477951b4b760a4637ac40ff9da58c"
+ 		},
+ 		{
+ 			"storage": "codex/agents/planner.toml",
+@@ -580,7 +580,7 @@
+ 			"storage": "codex/agents/reviewer.toml",
+ 			"destination": ".codex/agents/reviewer.toml",
+ 			"executable": false,
+-			"digest": "212fbf0df0fffe2e8077ab6e4c2b2c7ce944ed36d6a4eea274a49ec690c9a048"
++			"digest": "4a9797549f8250abbb87de074d8452d837e7550471bc80a67048656ad7ef9358"
+ 		},
+ 		{
+ 			"storage": "codex/agents/scout.toml",
+@@ -676,13 +676,13 @@
+ 			"storage": "guides/guide.md",
+ 			"destination": "guides/guide.md",
+ 			"executable": false,
+-			"digest": "35ff2047e5eeb2d5efec9f6117675fd423762f9620870cb52f7781d42ac58ff7"
++			"digest": "1dfe3282bec2d9c8abc103d1ecac33b1e3ff2007b901249c523995e92604e929"
+ 		},
+ 		{
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "3a97ee2ea9cbf5cc109930a18502b24b3baef3de37e1c22989bd1cc62311a6a1"
++			"digest": "db25195432d3129b9f8e335a1bb63d5f0377aa5649d1623e006c0829c387bb30"
+ 		},
+ 		{
+ 			"storage": "scripts/codex.sh",
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "b5e8423e828cb6d5f811692991de7dc6b5a347388229488a0461bff4e79e11dc"
++	"digest": "505770cd61e894e62e3851b9c175b97adf09f97b6e1b23ef018c6e19336b6367"
+ }
 diff --git a/src/core/helpers.ts b/src/core/helpers.ts
 index 0acc0077..291c8397 100644
 --- a/src/core/helpers.ts

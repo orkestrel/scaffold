@@ -1,5 +1,23 @@
+ M .agents/orchestration.md
+ M .agents/skills/orkestrel-publish/SKILL.md
+ M .agents/skills/orkestrel-publish/references/wave.md
+ M .agents/skills/orkestrel-publish/references/window.md
  M .claude/agents/orkestrel.md
+ M .claude/agents/reviewer.md
+ M .codex/agents/orkestrel.toml
+ M .codex/agents/reviewer.toml
+ M ROADMAP.md
+ M guides/console.md
+ M guides/contract.md
+ M guides/emitter.md
+ M guides/guide.md
+ M guides/html.md
+ M guides/markdown.md
+ M guides/probe.md
+ M guides/process.md
  M guides/scaffold.md
+ M guides/template.md
+ M guides/test.md
  M host.json
  M src/core/helpers.ts
  M src/core/types.ts
@@ -14,7 +32,4 @@
  M tests/src/core/validators.test.ts
  M tests/src/server/Materializer.test.ts
  M tests/src/server/Upstream.test.ts
-?? .orkestrel/campaign/wave-debrief/catalog-peers-report.md
-?? .orkestrel/campaign/wave-debrief/catalog-peers.diff.txt
-?? .orkestrel/campaign/wave-debrief/catalog-peers.status.txt
-?? .orkestrel/campaign/wave-debrief/instraudit-subjective.md
+?? .orkestrel/campaign/wave-debrief/catalog-peers-objective-verdict.md

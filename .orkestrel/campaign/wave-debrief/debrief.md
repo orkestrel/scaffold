@@ -105,3 +105,15 @@ Also satisfied by the wave and struck from `ROADMAP.md` § 1: the scaffold adopt
 - **Roadmap.** § 1 strikes the scaffold adoption-visit row and the fleet publish wave row, both satisfied by the wave, and adds the scaffold rows the artifact audit raised (A1, A2, A6); § 4's scaffold row records the laws landed and keeps the host fact.
 
 The vendored surface moved (`.agents/**`, `.claude/agents/**`, `.codex/agents/**` are in the host inventory), so scaffold's next release carries this canon to every target; that release is the owner's decision and `ROADMAP.md` § 4 carries it.
+
+## Unit audits
+
+**catalog-peers** (`builder` on Sonnet; audited by `reviewer` on Opus holding the objective lane, `catalog-peers-objective-verdict.md`, and by `checker` on Sonnet, `catalog-peers-checker.md`). Claims 1 to 5 and 7 CONFIRMED with adverse inputs (a peer outside the fleet, a duplicated edge name, a peer to a failed row, a packument with every section, a found row missing `peers`, a not-found row's fifth cell); the mutation control re-derived independently of the writer's report. Claims 6 and 8 BROKEN on the record, not the code, and closed without a code change:
+
+- claim 6: the catalog table was regenerated after the build that digested it, so `host.json` was stale and `readHostFloor` reddened again; closed by the rebuild on 2026-09-05 (`npm run build` exit 0, `build-inventory: staged 121 file(s) into host.json`; `npm run test:src:server` exit 0, `Test Files 5 passed (5)`, `Tests 432 passed (432)`; `npm run test:src:bin` exit 0, `Test Files 3 passed (3)`, `Tests 245 passed (245)`), and the diff re-rendered with `host.json` and the table region (`catalog-peers.diff.txt`);
+- claim 8: the report now names exit code 1 for both projects at the writer's own run (`catalog-peers-report.md:76-77`, amended by the writer on request);
+- F1 (`.agents/orchestration.md` order law): landed by the canon unit at `.agents/orchestration.md:859` before this unit ships;
+- R1 (an optional peer as an ordering edge): carried by the `ROADMAP.md` § 1 scaffold row on the peer floor;
+- R2 (a 99-column line in the vendored catalog role's paragraph): re-wrapped at 88 columns.
+
+The verifier's run over the integrated tree is the re-proof.
