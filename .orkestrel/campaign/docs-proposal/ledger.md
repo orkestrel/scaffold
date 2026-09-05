@@ -15,3 +15,8 @@ Bench state at dispatch: Codex dark (`codex: command not found`; every objective
 | Orchestrator probes | Orchestrator | — | tracked commands | — | `orchestrator-measurements.md` | oxfmt Markdown check, core declaration build, `tsc --declaration` probe; the `ROADMAP.md` trailing space fixed as `a74686b8` |
 
 Design round, writer, audit, and verifier rows are appended as they dispatch.
+
+| docs-design (Lens A) | `planner` | Opus 5 | Workflow `wf_50dace1e-3ab`, node `design:A` | `design-brief.md` | `design-A-report.md` | subjective: TSDoc as the single source, guides generated |
+| docs-design (Lens B) | `planner` | Opus 5 | same run, node `design:B` | `design-brief.md` | `design-B-report.md` | subjective: authored narrative with generated reference regions |
+| docs-design (Lens C) | `planner` | Opus 5 | same run, node `design:C` | `design-brief.md` | `design-C-report.md` | subjective: one voice for humans and agents, prose law in lint and format |
+| docs-design (Lens O) | `reviewer` | Opus 5 | same run, node `design:O` | `design-brief.md` | `design-O-report.md` | objective lane on Opus, the recorded substitution for the dark Sol bench; constraints, cost model, falsification, criteria |
