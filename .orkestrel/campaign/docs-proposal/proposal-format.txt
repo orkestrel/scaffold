@@ -1,0 +1,6 @@
+$ npx oxfmt --config .oxfmtrc.json --check PROPOSAL.md
+All matched files use the correct format.
+Finished in 604ms on 1 files using 4 threads.
+exit=0
+$ git status --short
+?? PROPOSAL.md
