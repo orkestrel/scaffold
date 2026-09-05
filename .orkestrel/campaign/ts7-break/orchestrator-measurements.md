@@ -88,3 +88,23 @@ $ node build.mjs with dts({ tsconfig: configs/src/tsconfig.core.json, generator:
 Reading: the `tsgo` generator drives TypeScript 7's own binary and needs no other compiler, but its `rootDir` derivation does not fit a tsconfig that lives under `configs/src/`; whether its options can name the root is the next probe. It is also a new dependency and a second rollup engine beside api-extractor, so it is an option, not the recommendation, unless api-extractor's engine is refused.
 
 The retry with the plugin's `cwd` set to the workspace root fails the same way: `createGenerator` fixes `rootDir: tsconfig ? path.dirname(tsconfig) : cwd` (`dist/index.mjs:325`), so the `tsgo` generator serves only a tsconfig that sits at the source root. A scoped `configs/src/tsconfig.*.json` cannot drive it without a root-level tsconfig per environment or an upstream change.
+
+## The remote source file, the guards, and the async client (`instruments/tsgo-api-ast-probe.mjs`)
+
+```text
+program.getSourceFile(overlay) → a RemoteSourceFile with `text` (209 chars) and `statements`
+each statement carries kind, pos, end, and modifiers (94 = ExportKeyword on the exported function and constant); file.text.slice(pos, end) returns the statement's source text
+the unstable/ast guards apply to remote nodes: isImportDeclaration, isFunctionDeclaration, isVariableStatement, isExportAssignment each true on its statement
+fn.name.text = greet; fn.parameters[0].name.text = name; checker.getDocumentationCommentOfSymbol(symbol) = "Greets."
+async client (typescript/unstable/async): updateSnapshot + getProject + getSemanticDiagnostics(overlay) = 66 ms, no synchronous pipe read on the event loop
+```
+
+Reading: the generated-text lifts in `tests/guides.test.ts` and `tests/src/core/templates.test.ts` have what they read today — statements, export modifiers, names, parameters, statement text — through a scratch project on the `--api` surface without `canHaveModifiers`/`getModifiers`; and the async client serves probe's type stage without holding the host's loop.
+
+## The host inventory (host.json)
+
+Vendored under `configs/`: `configs/helpers.ts`, `configs/policy.ts`, and `.oxlintrc.json`; the `configs/src/vite.*.config.ts` files are package-owned (generated once, never restored by `repair`), so the fleet visit edits them per package. `.oxlintrc.json` being vendored means a package-specific lint override cannot live there.
+
+## Instrument debris, removed
+
+The first declaration-emit run left 13 untracked `.d.ts` files under `src/core/` (the run before the `--outDir` argument was honoured); the objective lane found them; they were removed by name after `git ls-files` confirmed none is tracked. The instruments now write only under the scratchpad.
