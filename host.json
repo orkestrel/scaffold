@@ -682,7 +682,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "ba5a18699b9818d80cd35b5d3acd289391b9adfb6551d3cfcbe74df53985dab8"
+			"digest": "db25195432d3129b9f8e335a1bb63d5f0377aa5649d1623e006c0829c387bb30"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -724,7 +724,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "060e99bfd14ccbd032404631342d1083bc76c6eb706e9c3b300ee158b18b221f"
+			"digest": "e33cc2f49a5bc201e339f50c59d280d36d06a5b687bc080a00b41f09577fa7c7"
 		}
 	],
 	"roots": [
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "f82c70ae51bba20804b30b865e875238e585d2e3aa9720068cdf7e05c5f3f647"
+	"digest": "8312f0dd639b3afc6deacfc36453072b2917b43999ffa951bc4c6397a20b9213"
 }

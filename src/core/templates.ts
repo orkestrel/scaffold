@@ -564,11 +564,6 @@ export default defineConfig(
 							},
 						},
 					},
-					// \`unplugin-dts\` points api-extractor's default library location at the
-					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
-					// major. api-extractor applies the option only when it names a folder, so an
-					// empty one restores the library files of the compiler it bundles.
-					invokeOptions: { typescriptCompilerFolder: '' },
 				},
 			}),
 		],
@@ -603,13 +598,7 @@ export default defineConfig(
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.browser.json'),
-				bundleTypes: {
-					// \`unplugin-dts\` points api-extractor's default library location at the
-					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
-					// major. api-extractor applies the option only when it names a folder, so an
-					// empty one restores the library files of the compiler it bundles.
-					invokeOptions: { typescriptCompilerFolder: '' },
-				},
+				bundleTypes: true,
 				beforeWriteFile: (path, content) => ({
 					content: /[\\\\/]dist[\\\\/]src[\\\\/]browser[\\\\/]index\\.d\\.ts$/.test(path)
 {{replacement}}
@@ -633,13 +622,7 @@ export default defineConfig(
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
-				bundleTypes: {
-					// \`unplugin-dts\` points api-extractor's default library location at the
-					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
-					// major. api-extractor applies the option only when it names a folder, so an
-					// empty one restores the library files of the compiler it bundles.
-					invokeOptions: { typescriptCompilerFolder: '' },
-				},
+				bundleTypes: true,
 				beforeWriteFile: (path, content) => ({
 					content: /[\\\\/]dist[\\\\/]src[\\\\/]server[\\\\/]index\\.d\\.ts$/.test(path)
 {{replacement}}
@@ -1085,7 +1068,7 @@ import {
 {{transport}}import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-{{launcher}}import ts from '@typescript/typescript6'
+{{launcher}}import ts from 'typescript'
 import { afterAll, describe, expect, it } from 'vitest'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')

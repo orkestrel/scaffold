@@ -12,7 +12,6 @@ import { SCRATCH_PREFIX, type TestUpstreamReply } from '../../setupServer.js'
 import { afterAll, describe, expect, it } from 'vitest'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
-	APP_BROWSER_TYPESCRIPT_RANGE,
 	APP_DEV_DEPENDENCIES,
 	ARTIFACT_TEMPLATES,
 	BASE_DEV_DEPENDENCIES,
@@ -122,10 +121,6 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
 	},
-	'/@typescript%2Ftypescript6': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@typescript/typescript6']?.slice(1) ?? ''),
-	},
 	'/oxfmt': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES.oxfmt?.slice(1) ?? ''),
@@ -134,20 +129,9 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES.oxlint?.slice(1) ?? ''),
 	},
-	// The one planned row the product holds at two majors: a workspace selecting
-	// `app/browser` takes the range `vue-tsc` supports while every other workspace
-	// takes the shared one. The registry publishes both, so the fixture serves both;
-	// a single-version packument reports the browser floor as unpublished and refuses
-	// the write that asked for it.
 	'/typescript': {
 		status: 200,
-		body: JSON.stringify({
-			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
-			versions: {
-				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
-				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
-			},
-		}),
+		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
 	},
 	'/vite': {
 		status: 200,
@@ -234,10 +218,6 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@types/node']?.slice(1) ?? ''),
 	},
-	'/@typescript%2Ftypescript6': {
-		status: 200,
-		body: buildPackument(BASE_DEV_DEPENDENCIES['@typescript/typescript6']?.slice(1) ?? ''),
-	},
 	'/@vitejs%2Fplugin-vue': {
 		status: 200,
 		body: buildPackument(APP_BROWSER_DEV_DEPENDENCIES['@vitejs/plugin-vue']?.slice(1) ?? ''),
@@ -260,20 +240,9 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 		status: 200,
 		body: buildPackument(SOURCE_BROWSER_DEV_DEPENDENCIES.playwright?.slice(1) ?? ''),
 	},
-	// The one planned row the product holds at two majors: a workspace selecting
-	// `app/browser` takes the range `vue-tsc` supports while every other workspace
-	// takes the shared one. The registry publishes both, so the fixture serves both;
-	// a single-version packument reports the browser floor as unpublished and refuses
-	// the write that asked for it.
 	'/typescript': {
 		status: 200,
-		body: JSON.stringify({
-			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
-			versions: {
-				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
-				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
-			},
-		}),
+		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
 	},
 	'/vite': {
 		status: 200,
@@ -1200,7 +1169,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^7.0.2",`,
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
 					blocking: false,
 				},
 			])
@@ -1234,7 +1203,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^7.0.2", "vite": "^8.2.2", "vitest": "^4.1.11",`,
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.2.2", "vitest": "^4.1.11",`,
 					blocking: false,
 				},
 			])
@@ -1251,7 +1220,7 @@ describe('CLI audit', () => {
 				'target/package.json',
 				buildTargetManifest(undefined, undefined, {
 					...TARGET_DEV_DEPENDENCIES,
-					typescript: '^7.0.2',
+					typescript: '^6.0.3',
 				}),
 			)
 			const sink = createSink()
@@ -1405,7 +1374,7 @@ describe('CLI audit', () => {
 				'target/package.json',
 				buildTargetManifest(
 					undefined,
-					{ typescript: '~7.4.0' },
+					{ typescript: '~6.4.0' },
 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
 				),
 			)
@@ -1553,7 +1522,7 @@ describe('CLI audit', () => {
 			expect(includedAudit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^7.0.2",`,
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
 					blocking: false,
 				},
 			])

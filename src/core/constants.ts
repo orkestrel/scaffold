@@ -487,21 +487,13 @@ export const DEFAULT_VERSION = '0.0.1'
 /** Names the `engines.node` range a workspace starts with. */
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
-/**
- * Holds the tooling versions scaffold and every generated workspace share.
- *
- * @remarks
- * `@typescript/typescript6` is a planned dependency of every workspace because the vendored
- * policy sweep and the generated distribution proof call the TypeScript JavaScript API in
- * process, and the `typescript` package stops publishing that API at its 7 major.
- */
+/** Holds the tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/guide': manifest.devDependencies['@orkestrel/guide'],
 	'@orkestrel/probe': manifest.devDependencies['@orkestrel/probe'],
 	'@orkestrel/scaffold': `^${manifest.version}`,
 	'@orkestrel/test': manifest.devDependencies['@orkestrel/test'],
 	'@types/node': manifest.devDependencies['@types/node'],
-	'@typescript/typescript6': manifest.devDependencies['@typescript/typescript6'],
 	oxfmt: manifest.devDependencies.oxfmt,
 	oxlint: manifest.devDependencies.oxlint,
 	typescript: manifest.devDependencies.typescript,
@@ -537,16 +529,6 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
 	vue: '^3.5.40',
 	'vue-tsc': '^3.3.7',
 })
-
-/**
- * Names the TypeScript range a private Vue browser application takes instead of the shared one.
- *
- * @remarks
- * A workspace that selects `app/browser` checks its Vue sources with `vue-tsc`, which has no
- * TypeScript 7 support (`vuejs/language-tools` issue 5381). The workspace holds the 6 major so its
- * own check script runs, and this range is removed when `vue-tsc` supports 7.
- */
-export const APP_BROWSER_TYPESCRIPT_RANGE = '^6.0.3'
 
 /**
  * Names the development dependency used only by the optional single-file showcase build.
