@@ -291,43 +291,37 @@ closes on the condition it names.
 
 ### The publish wave's obligations
 
-- **scaffold**, **test**, and **form**: merge `origin/main` into the branch,
-  re-pack, re-stage, and re-pin before packing (`HANDOFF.md:217-220`).
-- **scaffold**: publish first. Every target re-pins `@orkestrel/scaffold` and
-  runs `repair`, so the vendored host — the `names.md` vocabulary, the
-  `tests.md` helper names, and the single-literal `as const` rule landed as
-  `17e00993` — reaches it (`followons.md:64`, `followons.md:85`).
-- **scaffold**: after the `@orkestrel/guide` re-pin, `tests/guides.test.ts:132,140`
-  reads `symbol.keyword` (`followons.md:98`).
-- **indexeddb**: `scaffold repair` leaves `configs/browsers.ts` matching the
-  published scaffold (`followons.md:12`).
-- **fleet**: each `lint` script is `oxlint --config .oxlintrc.json --fix .`;
-  `--deny-warnings` stays on `lint:check` (`followons.md:36`, `followons.md:66`).
-- **codec**: the registry tarball exports `encodeHex`. **server** re-pins to
-  that release before its own gates and publish (`followons.md:41`,
-  `followons.md:70`, `conform-server-audit-verdict.md:25`).
-- **lsp** and **scaffold**: `npm run test:distribution` exits 0 on the
-  publishing host (`followons.md:64`, `conform-lsp-audit-verdict.md:22`).
-- **ollama**: `npm run test:service` exits 0 on a daemon host (`followons.md:93`,
-  `conform-ollama-audit-verdict.md:17`).
-- **fleet**: refresh these vendored mirrors from the released guide, byte copy,
-  never a rewrite: `guides/guide.md` (no `symbolKey`, `missingSymbols`,
-  `exportsFrom`, `hiddenFrom`, `ExportKind`, or `{ name, kind }`); `guides/queue.md`
-  in worker, workflow, agent, and probe (no `QueueExecution`); `guides/server.md`
-  in ollama, middleware, toolbox, and mcp; `guides/workspace.md` in agent,
-  toolbox, and ollama; `guides/emitter.md` in each emitter consumer;
-  `guides/websocket.md` in mcp and browser; `guides/sqlite.md` in database;
-  `guides/probe.md` (no `createRevisionFile`); `guides/reason.md`,
-  `guides/contract.md`, `guides/emitter.md`, and `guides/guide.md` in rater;
-  `guides/terminal.md` in each terminal consumer (`followons.md:18`, `:26`,
-  `:38`, `:48`, `:49`, `:53`, `:54`, `:69`, `:84`, `:88`, `:98`;
-  `conform-terminal-audit-verdict.md:23`).
-- **middleware**: the publish notes name the removed `UploadedFileInput` type
-  and the renamed `multipartBoundary` option (`followons.md:15`).
-- **timeout**: the publish notes name `Timeout.id` and `Timeout.ms` as
-  prototype getters (`conform-timeout-audit-verdict.md:12`).
-- **worker**: the bump ruling names `spawnThread` → `createThread`, `dispatch`
-  → `Dispatch`, and `QueueExecution` → `QueueContext` (`followons.md:73`).
+The wave of 2026-09-04 closed the merge before packing, scaffold's own-account
+releases with every target's re-pin and `repair`, scaffold's
+`tests/guides.test.ts` reading `symbol.keyword`, indexeddb's
+`configs/browsers.ts`, codec's `encodeHex` export with server re-pinned to it,
+`test:distribution` on lsp and scaffold, every vendored mirror refresh
+(scaffold records `64631e31`), and the fleet's `lint` scripts (a development-only
+commit per package on 2026-09-05). These rows stay open:
+
+- **ollama**: `npm run test:service` exits 0 on a daemon host. The 0.0.14
+  release recorded the suite as needing the `qwen3.5:2b-q4_K_M` model at a
+  local Ollama daemon.
+- **middleware**, **timeout**, **worker**: the 0.0.19, 0.0.9, and 0.0.11
+  release commits carry the generic bump ruling and omit the names those rows
+  ask for: `UploadedFileInput` removed and `multipartBoundary` renamed;
+  `Timeout.id` and `Timeout.ms` as prototype getters; `spawnThread` →
+  `createThread`, `dispatch` → `Dispatch`, and `QueueExecution` →
+  `QueueContext`. The next release's notes carry them.
+- **scaffold**: `.agents/skills/orkestrel-publish/references/wave.md` and
+  `window.md` take the wave's laws with scaffold's next vendored release.
+  Through a proxy that leaves from several addresses the registry refuses a
+  login poll from an address other than the minting one, so an attempt is
+  minted on a kept-alive connection and retried until it survives its first
+  poll. An upload's outcome is read from the journal's acceptance line, because
+  the registry's read lags behind its processing. One one-time code carries a
+  layer's uploads back-to-back, and a refused package resumes on a fresh code.
+  `scaffold overwrite` refuses uncommitted changes, so the re-pin and bump
+  commit before it, and it moves the toolchain ranges, so the install repeats
+  after it before the gates. A development dependency whose API the consumers'
+  tests read publishes on its own account ahead of its layer and again at its
+  slot. A peer range is an ordering edge. A package whose build embeds its
+  development ranges takes a release from a development re-pin.
 
 ### The next conformance matrix's rows
 
