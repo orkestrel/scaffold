@@ -194,3 +194,13 @@ $ npx vitest run --config vite.config.ts --no-cache --project src:server tests/s
 ```
 
 Reading: the one red row is the standing Oxlint `initialize` deadline under the whole-suite worker load, and it passes alone; every other file, the bin file included, is green in the whole run, and the fix unit's own whole run at 12:58 was green throughout. The probe checkout's gates read green on the deciding runs. Logs under `evidence/probe-decide/decide-2-*.log.txt`.
+
+## Probe deciding run 3: the whole suite after fix-2, fix-3, and the lockfile pass
+
+```text
+$ npm test (17:09:52, node-count=0 at launch, load average 0.00 at 17:19; the three round-3 audit lanes reading) → exit 1: Test Files 2 failed | 9 passed (11); Tests 10 failed | 227 passed (237)
+  tests/src/bin/main.test.ts: eight rows, every rendered text "The probe could not arm: The Oxlint language server exited with code 0"
+  tests/src/server/Probe.test.ts: mints receipts only when every stage executes cleanly…; retains all stage checks when the runtime stage cannot write its specification — both on LSPError: The LSP request 'initialize' exceeded its deadline
+```
+
+Reading: the same Oxlint `initialize` deadline as runs 1 and 2, on more rows this time and on a host reporting no load; the count of red rows moves between runs (four, one, ten) while the message never does, which is the signature of a deadline the language server's start misses under the whole suite's worker fan-out rather than of the change. The deciding solo runs over the final tree, after the round-4 unit exits, are recorded in the following section; the `probe-fix-2` unit's solo runs at 16:50 to 16:55 reddened under the scaffold round-4 builder's concurrent gates and are the unit's own pessimistic reading per `.agents/orchestration.md` § Writing concurrency rule 10.
