@@ -1,0 +1,57 @@
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+··········xx····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a pinned legacy client through the initialize path
+Error: The probe could not arm: The Oxlint language server exited with code 0
+ ❯ buildCallOutcome node_modules/@orkestrel/mcp/src/core/helpers.ts:627:8
+ ❯ MCPClient.call node_modules/@orkestrel/mcp/src/core/MCPClient.ts:442:9
+ ❯ tests/src/bin/main.test.ts:885:21
+    883|     expect(tools[0]?.description).toContain('measure before proving')
+    884|     expect(tools[0]?.description).toContain("import.meta.env.MODE === …
+    885|     const outcome = await client.call('prove', claim)
+       |                     ^
+    886|     expect(outcome.resultType).toBe('complete')
+    887|     if (outcome.resultType !== 'complete') return
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > preserves worker diagnostics on stderr
+AssertionError: expected { id: 1, jsonrpc: '2.0', …(1) } to match object { Object (id, result) }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "id": 1,
+    "result": {
+      "content": [
+        {
+-         "text": StringMatching /^probe .+receipt probe:/s,
++         "text": "The probe could not arm: The Oxlint language server exited with code 0",
+          "type": "text",
+        },
+      ],
+    },
+  }
+
+ ❯ tests/src/bin/main.test.ts:972:22
+    970|      break
+    971|     }
+    972|     expect(response).toMatchObject({
+       |                      ^
+    973|      id: 1,
+    974|      result: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  12:11:02
+   Duration  51.95s (transform 257ms, setup 135ms, import 239ms, tests 51.43s, environment 0ms)
+

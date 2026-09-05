@@ -1,0 +1,1198 @@
+diff --git a/guides/probe.md b/guides/probe.md
+index 7e6301b..df156b6 100644
+--- a/guides/probe.md
++++ b/guides/probe.md
+@@ -40,7 +40,7 @@ optional field is absent rather than empty.
+ | `Party`             | type      | `'claimant' \| 'workspace' \| 'instrument'` — the party that must act on an issue or a failure.                                                                                             |
+ | `Issue`             | interface | `{ origin, path, message, range? }` — one message a stage reported and the party that must act on it. `range` is a zero-based UTF-16 `LSPRange`, absent when the tool reported no location. |
+ | `Check`             | interface | `{ stage, elapsed, issues }` — one stage's outcome. An empty `issues` list is the clean result; there is no separate pass flag.                                                             |
+-| `Toolchain`         | interface | `{ typescript, oxlint, vitest }` — the resolved versions the verdict was produced with.                                                                                                     |
++| `Toolchain`         | interface | `{ typescript, oxlint, vitest }` — the versions each tool's own manifest publishes in the target workspace, read from those manifests rather than from the module a stage loaded.           |
+ | `Project`           | interface | `{ path, digest }` — the resolved TypeScript project that judged the candidates, and the digest of its compiler options.                                                                    |
+ | `Verdict`           | interface | `{ id, digest, toolchain, project, reason?, case, control, elapsed, receipt? }` — the full result. `Probe.prove` always carries the control reason.                                         |
+ | `ProbeEventMap`     | type      | The observation surface: `arm`, `prove`, `expire`, and `error`.                                                                                                                             |
+@@ -198,32 +198,33 @@ directory against that spelling unfolded.
+ 
+ Pure leaves and workspace readers, from [`helpers.ts`](../src/server/helpers.ts).
+ 
+-| Name                       | Kind     | Signature                                                                                   | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+-| -------------------------- | -------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `normalizePath`            | function | `(path: string) => string`                                                                  | Rewrites a path into the forward-slash spelling this package compares and reports paths in.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+-| `readFaultCode`            | function | `(error: unknown) => string \| undefined`                                                   | Reads the condition code a native fault carries, guarded over every value a caller can catch, and reports `undefined` for a fault carrying no string code.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+-| `escapesRoot`              | function | `(root: string, target: string) => boolean`                                                 | Reports whether one path resolves outside the root it is read against. A target resolving to the root itself is contained.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+-| `resolveWorkspaceFile`     | function | `(workspace: string, target: string, mutate?: boolean) => string`                           | Resolves a workspace-relative path to an absolute one and throws when it escapes the workspace. Under `mutate` it refuses a symbolic link as `workspace`/`refused`, refuses as `claimant`/`refused` an inspection fault whose code is `ENAMETOOLONG` or `ERR_INVALID_ARG_VALUE`, and translates every other native path-inspection fault to `workspace`/`malformed` with the native fault on `cause`. A host that reports an absent-file code for an overlong component instead — Windows reports `ENOENT` — reaches no refusal here, and `isRefusedName` classifies that name at the create. |
+-| `overwriteFile`            | function | `(file: string, text: string) => void`                                                      | Overwrites an existing file through a descriptor opened `O_WRONLY \| O_NOFOLLOW` and truncated through that descriptor, so a symbolic link standing at the final component refuses the open and a target that has gone fails `ENOENT` rather than being recreated. Truncation runs through the descriptor because a Windows host refuses the numeric `O_TRUNC` without `O_CREAT` as `EINVAL`. The final component is open on a host whose Node build defines no `O_NOFOLLOW`.                                                                                                                 |
+-| `isRefusedName`            | function | `(file: string, error: unknown) => boolean`                                                 | Reports whether a fault means the host refuses a caller-supplied name for creation: `ENAMETOOLONG`, `ERR_INVALID_ARG_VALUE` on a path carrying a NUL byte, or `ENOENT` raised while the parent stats as a directory. Never throws, whatever the fault's own property reads do, and applies no length or character policy of its own.                                                                                                                                                                                                                                                          |
+-| `relativeWorkspaceFile`    | function | `(workspace: string, file: string) => string`                                               | Projects an absolute path into the forward-slash workspace-relative form issues expose.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+-| `relativeWorkspaceMessage` | function | `(workspace: string, message: string) => string`                                            | Removes every spelling of the workspace root from the paths a tool's message names, at each path it begins.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+-| `resolveWorkspaceModule`   | function | `(workspace: string, specifier: string) => string`                                          | Resolves one installed module's entry path, or throws a `workspace` failure carrying the native fault as `cause`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+-| `loadWorkspaceModule`      | function | `(workspace: string, specifier: 'typescript' \| 'vitest/node') => typeof import(specifier)` | Loads one installed tool module, or throws a `workspace` failure carrying the native fault as `cause`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `readWorkspaceManifest`    | function | `(workspace: string, name: string) => WorkspaceManifest`                                    | Reads one installed package manifest and its absolute path, translating a native read or parse fault into a `workspace` failure.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `resolveWorkspaceBinary`   | function | `(workspace: string, name: string) => string`                                               | Resolves a package's portable JavaScript entry from its `bin` field, never a `node_modules/.bin` shim.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `inferTypeProject`         | function | `(path: string) => string`                                                                  | Selects the scoped TypeScript project for one candidate path, and throws for a path outside `src` and `app`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+-| `inferTestProject`         | function | `(path: string) => string \| undefined`                                                     | Selects the Vitest project whose environment matches one test path, or `undefined` when none collects it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+-| `inferDocumentLanguage`    | function | `(path: string) => string`                                                                  | Selects the Language Server Protocol language identifier a path's extension names.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+-| `buildRevisionPath`        | function | `(workspace: string, path: string, revision: string) => string`                             | Builds the fresh sibling path one runtime inspection writes its specification to.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+-| `matchesWorkspaceModule`   | function | `(path: string) => boolean`                                                                 | Reports whether a path is a script, TypeScript, Vue, or JSON module Vitest can cache.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+-| `describeUnknown`          | function | `(value: unknown) => string`                                                                | Normalizes a caught or foreign error into readable text.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+-| `guardStage`               | function | `<T>(stage: Stage, operation: Promise<T>) => Promise<T>`                                    | Guards one resident-stage operation, passing a `ProbeError` through unchanged and translating every other failure to `instrument`/`malformed` with the original fault on `cause`.                                                                                                                                                                                                                                                                                                                                                                                                             |
+-| `findRefusedPaths`         | function | `(value: unknown) => readonly string[]`                                                     | Names every draft member of a rejected claim whose `path` the guard refuses and the advertised schema admits.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+-| `normalizeValue`           | function | `(workspace: string, value: unknown) => unknown`                                            | Rewrites every workspace-contained absolute path to its relative form and sorts every record's keys.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+-| `computeDigest`            | function | `(workspace: string, value: unknown) => string`                                             | Digests the normalized value and returns 32 lowercase hex characters.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+-| `captureListeners`         | function | `(emitter: EventEmitter, events: readonly string[]) => ListenerCapture`                     | Records the listeners one emitter carries for a set of events.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+-| `releaseListeners`         | function | `(emitter: EventEmitter, capture: ListenerCapture) => void`                                 | Removes every listener one emitter gained since its capture, across a window nothing else attaches in.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++| Name                       | Kind     | Signature                                                                                                                                                                      | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
++| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `normalizePath`            | function | `(path: string) => string`                                                                                                                                                     | Rewrites a path into the forward-slash spelling this package compares and reports paths in.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
++| `readFaultCode`            | function | `(error: unknown) => string \| undefined`                                                                                                                                      | Reads the condition code a native fault carries, guarded over every value a caller can catch, and reports `undefined` for a fault carrying no string code.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
++| `escapesRoot`              | function | `(root: string, target: string) => boolean`                                                                                                                                    | Reports whether one path resolves outside the root it is read against. A target resolving to the root itself is contained.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
++| `resolveWorkspaceFile`     | function | `(workspace: string, target: string, mutate?: boolean) => string`                                                                                                              | Resolves a workspace-relative path to an absolute one and throws when it escapes the workspace. Under `mutate` it refuses a symbolic link as `workspace`/`refused`, refuses as `claimant`/`refused` an inspection fault whose code is `ENAMETOOLONG` or `ERR_INVALID_ARG_VALUE`, and translates every other native path-inspection fault to `workspace`/`malformed` with the native fault on `cause`. A host that reports an absent-file code for an overlong component instead — Windows reports `ENOENT` — reaches no refusal here, and `isRefusedName` classifies that name at the create. |
++| `overwriteFile`            | function | `(file: string, text: string) => void`                                                                                                                                         | Overwrites an existing file through a descriptor opened `O_WRONLY \| O_NOFOLLOW` and truncated through that descriptor, so a symbolic link standing at the final component refuses the open and a target that has gone fails `ENOENT` rather than being recreated. Truncation runs through the descriptor because a Windows host refuses the numeric `O_TRUNC` without `O_CREAT` as `EINVAL`. The final component is open on a host whose Node build defines no `O_NOFOLLOW`.                                                                                                                 |
++| `isRefusedName`            | function | `(file: string, error: unknown) => boolean`                                                                                                                                    | Reports whether a fault means the host refuses a caller-supplied name for creation: `ENAMETOOLONG`, `ERR_INVALID_ARG_VALUE` on a path carrying a NUL byte, or `ENOENT` raised while the parent stats as a directory. Never throws, whatever the fault's own property reads do, and applies no length or character policy of its own.                                                                                                                                                                                                                                                          |
++| `relativeWorkspaceFile`    | function | `(workspace: string, file: string) => string`                                                                                                                                  | Projects an absolute path into the forward-slash workspace-relative form issues expose.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
++| `relativeWorkspaceMessage` | function | `(workspace: string, message: string) => string`                                                                                                                               | Removes every spelling of the workspace root from the paths a tool's message names, at each path it begins.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
++| `resolveWorkspaceModule`   | function | `(workspace: string, specifier: string) => string`                                                                                                                             | Resolves one installed module's entry path, or throws a `workspace` failure carrying the native fault as `cause`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `loadWorkspaceModule`      | function | `(workspace: string, specifier: 'typescript') => typeof import('@typescript/typescript6')` and `(workspace: string, specifier: 'vitest/node') => typeof import('vitest/node')` | Loads one installed tool module, falling back to the workspace's `@typescript/typescript6` for a `typescript` that carries no in-process compiler API, or throws a `workspace` failure carrying the native fault as `cause`.                                                                                                                                                                                                                                                                                                                                                                  |
++| `readWorkspaceManifest`    | function | `(workspace: string, name: string) => WorkspaceManifest`                                                                                                                       | Reads one installed package manifest and its absolute path, translating a native read or parse fault into a `workspace` failure.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
++| `resolveWorkspaceBinary`   | function | `(workspace: string, name: string) => string`                                                                                                                                  | Resolves a package's portable JavaScript entry from its `bin` field, never a `node_modules/.bin` shim.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++| `inferTypeProject`         | function | `(path: string) => string`                                                                                                                                                     | Selects the scoped TypeScript project for one candidate path, and throws for a path outside `src` and `app`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
++| `inferTestProject`         | function | `(path: string) => string \| undefined`                                                                                                                                        | Selects the Vitest project whose environment matches one test path, or `undefined` when none collects it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
++| `inferDocumentLanguage`    | function | `(path: string) => string`                                                                                                                                                     | Selects the Language Server Protocol language identifier a path's extension names.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
++| `buildRevisionPath`        | function | `(workspace: string, path: string, revision: string) => string`                                                                                                                | Builds the fresh sibling path one runtime inspection writes its specification to.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `collectRangeMajors`       | function | `(range: string) => readonly string[]`                                                                                                                                         | Collects every major version a caret range names, skipping a term that is not one caret version.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
++| `matchesWorkspaceModule`   | function | `(path: string) => boolean`                                                                                                                                                    | Reports whether a path is a script, TypeScript, Vue, or JSON module Vitest can cache.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
++| `describeUnknown`          | function | `(value: unknown) => string`                                                                                                                                                   | Normalizes a caught or foreign error into readable text.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
++| `guardStage`               | function | `<T>(stage: Stage, operation: Promise<T>) => Promise<T>`                                                                                                                       | Guards one resident-stage operation, passing a `ProbeError` through unchanged and translating every other failure to `instrument`/`malformed` with the original fault on `cause`.                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `findRefusedPaths`         | function | `(value: unknown) => readonly string[]`                                                                                                                                        | Names every draft member of a rejected claim whose `path` the guard refuses and the advertised schema admits.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
++| `normalizeValue`           | function | `(workspace: string, value: unknown) => unknown`                                                                                                                               | Rewrites every workspace-contained absolute path to its relative form and sorts every record's keys.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
++| `computeDigest`            | function | `(workspace: string, value: unknown) => string`                                                                                                                                | Digests the normalized value and returns 32 lowercase hex characters.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
++| `captureListeners`         | function | `(emitter: EventEmitter, events: readonly string[]) => ListenerCapture`                                                                                                        | Records the listeners one emitter carries for a set of events.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
++| `releaseListeners`         | function | `(emitter: EventEmitter, capture: ListenerCapture) => void`                                                                                                                    | Removes every listener one emitter gained since its capture, across a window nothing else attaches in.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+ 
+ ## Methods
+ 
+@@ -391,7 +392,7 @@ derivable from the other. These are the pairs this package raises:
+ | `claimant`   | `deadline`  | `ProbeOptions.deadline` expired while the stage was performing claimant-owned work, so the claim outran the budget. That stage was replaced before the next inspection began. The lint stage raises the same pair on its own when the bound its caller supplied stops a diagnostics wait, and a coordinator that armed that bound replaces the pair with its own refusal.                                                                                             |
+ | `workspace`  | `refused`   | A mutation path crosses a symbolic link in the target tree.                                                                                                                                                                                                                                                                                                                                                                                                           |
+ | `workspace`  | `missing`   | The target tree does not install a tool probe resolves from it, or publishes no binary under that tool's name.                                                                                                                                                                                                                                                                                                                                                        |
+-| `workspace`  | `malformed` | The target tree publishes something probe cannot read: an unparsable manifest, a `bin` entry that is not a path, a TypeScript project its own compiler refuses, an unsupported tool version, a mutation path whose existing components cannot be inspected, or a directory it blocks probe from creating for the boot workbench.                                                                                                                                      |
++| `workspace`  | `malformed` | The target tree publishes something probe cannot read: an unparsable manifest, a `bin` entry that is not a path, a TypeScript project its own compiler refuses, a `typescript` carrying no in-process compiler API with no `@typescript/typescript6` able to serve one beside it, an unsupported tool version, a mutation path whose existing components cannot be inspected, or a directory it blocks probe from creating for the boot workbench.                    |
+ | `instrument` | `malformed` | probe's own tooling could not serve: a boot control that did not report red, a language server frame it could not parse, a schema or verdict of its own it could not validate.                                                                                                                                                                                                                                                                                        |
+ | `instrument` | `deadline`  | A stage was not performing claimant-owned work when its budget expired, or a language server did not answer its teardown exchange within the stage's own bound.                                                                                                                                                                                                                                                                                                       |
+ 
+@@ -454,6 +455,30 @@ fails at construction rather than at `prove`.
+   resolves.** probe reads each of them from the target workspace's `package.json`, never from its
+   own dependencies, and reports the resolved versions on `Verdict.toolchain`. A verdict predicts
+   the gate only while probe and the gate read one installed copy of each tool.
++- **That `typescript` carries the in-process compiler API, or `@typescript/typescript6` sits beside
++  it.** The type stage drives the compiler inside this process, and TypeScript 7 publishes no
++  in-process compiler API under the `typescript` specifier. `loadWorkspaceModule` returns the
++  workspace's `typescript` where it exports `createProgram` as a function, and the workspace's
++  `@typescript/typescript6` where it does not — the resolution `unplugin-dts` performs for the same
++  reason. Install that bridge in a workspace on TypeScript 7: `npm install -D @typescript/typescript6`.
++  A bridged workspace's type stage runs the 6.x compiler the bridge republishes rather than the
++  workspace's own 7.x, so a type verdict predicts that workspace's gate only where the two compilers
++  agree. probe's own declarations import the bridge's types, so a consumer that typechecks against
++  them with `skipLibCheck` off installs the bridge too.
++  A workspace whose `typescript` carries no in-process compiler API and whose
++  `@typescript/typescript6` cannot serve one is refused with `origin: 'workspace'` and
++  `code: 'malformed'`:
++  `The workspace's typescript carries no in-process compiler API, and the workspace's @typescript/typescript6 cannot serve one`.
++  A workspace installing no `typescript` at all keeps the `missing` refusal,
++  `The workspace cannot load typescript`.
++  `Probe` reads every major its own `typescript` peer range names, through `collectRangeMajors`, and
++  accepts a workspace whose installed major is one of them, so a TypeScript 7 workspace carrying the
++  bridge is served rather than refused. A major the range names nowhere is refused at `prove` with
++  `The supported TypeScript range is <range>; found <version>`.
++  `Verdict.toolchain` reports the version each tool's own manifest publishes in the target
++  workspace, so `toolchain.typescript` reads that workspace's `typescript` version whatever engine
++  served the type stage: a bridged workspace reports its `7.x`, never the 6.x compiler the bridge
++  republishes.
+ 
+ Declare `@orkestrel/probe` as a development dependency of the workspace it inspects. Its tools are
+ optional peers, resolved from that workspace at construction.
+@@ -595,7 +620,7 @@ const claim: Claim = {
+ const probe = new Probe({ workspace: process.cwd() })
+ const verdict = await probe.prove(claim)
+ verdict.digest // '0806fb30f428edb8ea85adfb4b355441'
+-verdict.receipt // 'probe:0806fb30f428edb8ea85adfb4b355441:type:typescript@6.0.3:oxlint@1.80.0:vitest@4.1.11:configs/src/tsconfig.core.json@3b674fdf121c85efb9ed1bab25ceeec8'
++verdict.receipt // 'probe:0806fb30f428edb8ea85adfb4b355441:type:typescript@6.0.3:oxlint@1.81.0:vitest@4.1.11:configs/src/tsconfig.core.json@3b674fdf121c85efb9ed1bab25ceeec8'
+ await probe.destroy()
+ ```
+ 
+diff --git a/package-lock.json b/package-lock.json
+index ca8bcd4..8d48105 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -26,6 +26,7 @@
+ 				"@orkestrel/scaffold": "^0.0.63",
+ 				"@orkestrel/test": "^0.0.13",
+ 				"@types/node": "^26.4.1",
++				"@typescript/typescript6": "^6.0.2",
+ 				"oxfmt": "^0.66.0",
+ 				"oxlint": "^1.81.0",
+ 				"typescript": "^6.0.3",
+@@ -37,11 +38,15 @@
+ 				"node": "^22.12.0 || >=24.0.0"
+ 			},
+ 			"peerDependencies": {
++				"@typescript/typescript6": "^6.0.2",
+ 				"oxlint": "^1.80.0",
+-				"typescript": "^6.0.3",
++				"typescript": "^6.0.3 || ^7.0.0",
+ 				"vitest": "^4.1.11"
+ 			},
+ 			"peerDependenciesMeta": {
++				"@typescript/typescript6": {
++					"optional": true
++				},
+ 				"oxlint": {
+ 					"optional": true
+ 				},
+@@ -644,9 +649,6 @@
+ 				"arm64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -664,9 +666,6 @@
+ 				"arm64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"musl"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -684,9 +683,6 @@
+ 				"ppc64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -704,9 +700,6 @@
+ 				"riscv64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -724,9 +717,6 @@
+ 				"riscv64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"musl"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -744,9 +734,6 @@
+ 				"s390x"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -764,9 +751,6 @@
+ 				"x64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -784,9 +768,6 @@
+ 				"x64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"musl"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -991,9 +972,6 @@
+ 				"arm64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1011,9 +989,6 @@
+ 				"arm64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"musl"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1031,9 +1006,6 @@
+ 				"ppc64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1051,9 +1023,6 @@
+ 				"riscv64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1071,9 +1040,6 @@
+ 				"riscv64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"musl"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1091,9 +1057,6 @@
+ 				"s390x"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1111,9 +1074,6 @@
+ 				"x64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"glibc"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1131,9 +1091,6 @@
+ 				"x64"
+ 			],
+ 			"dev": true,
+-			"libc": [
+-				"musl"
+-			],
+ 			"license": "MIT",
+ 			"optional": true,
+ 			"os": [
+@@ -1655,6 +1612,34 @@
+ 				"undici-types": "~8.3.0"
+ 			}
+ 		},
++		"node_modules/@typescript/old": {
++			"name": "typescript",
++			"version": "6.0.3",
++			"resolved": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz",
++			"integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
++			"dev": true,
++			"license": "Apache-2.0",
++			"bin": {
++				"tsc": "bin/tsc",
++				"tsserver": "bin/tsserver"
++			},
++			"engines": {
++				"node": ">=14.17"
++			}
++		},
++		"node_modules/@typescript/typescript6": {
++			"version": "6.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript6/-/typescript6-6.0.2.tgz",
++			"integrity": "sha512-mbCddXd+jm7hfx7w2YU64/Av4/NqqeG3GoRZgxPcgoTxYjhrcfJRw9ULch71SS4G+Q3bOXFhRvPqjguN0Hyp5w==",
++			"dev": true,
++			"license": "Apache-2.0",
++			"dependencies": {
++				"@typescript/old": "npm:typescript@^6"
++			},
++			"bin": {
++				"tsc6": "bin/tsc6"
++			}
++		},
+ 		"node_modules/@vitest/expect": {
+ 			"version": "4.1.11",
+ 			"resolved": "https://registry.npmjs.org/@vitest/expect/-/expect-4.1.11.tgz",
+diff --git a/package.json b/package.json
+index 41dadcb..fe0bde6 100644
+--- a/package.json
++++ b/package.json
+@@ -106,6 +106,7 @@
+ 		"@orkestrel/scaffold": "^0.0.63",
+ 		"@orkestrel/test": "^0.0.13",
+ 		"@types/node": "^26.4.1",
++		"@typescript/typescript6": "^6.0.2",
+ 		"oxfmt": "^0.66.0",
+ 		"oxlint": "^1.81.0",
+ 		"typescript": "^6.0.3",
+@@ -114,11 +115,15 @@
+ 		"vitest": "^4.1.11"
+ 	},
+ 	"peerDependencies": {
++		"@typescript/typescript6": "^6.0.2",
+ 		"oxlint": "^1.80.0",
+-		"typescript": "^6.0.3",
++		"typescript": "^6.0.3 || ^7.0.0",
+ 		"vitest": "^4.1.11"
+ 	},
+ 	"peerDependenciesMeta": {
++		"@typescript/typescript6": {
++			"optional": true
++		},
+ 		"oxlint": {
+ 			"optional": true
+ 		},
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 4cd7acd..522c99f 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -232,8 +232,12 @@ export interface Check {
+  *
+  * @remarks
+  * A probe is worth running only when its verdict predicts the gate's verdict, which holds only
+- * when the probe and the gate read one installed copy of each tool. Carrying the resolved versions
+- * on the verdict makes that claim checkable rather than assumed.
++ * when the probe and the gate read one installed copy of each tool. Every member names the version
++ * that tool's own manifest publishes in the target workspace, which is the install the gate runs
++ * against, so the claim is checkable rather than assumed. A bridged workspace is the case that
++ * reading has to be held against: its type stage runs the 6.x compiler `@typescript/typescript6`
++ * republishes rather than the 7.x the workspace's own manifest names, so its type verdict predicts
++ * that workspace's gate only where the two compilers agree.
+  *
+  * @example
+  * ```ts
+@@ -241,7 +245,7 @@ export interface Check {
+  * ```
+  */
+ export interface Toolchain {
+-	/** Names the resolved `typescript` version the type stage ran. */
++	/** Names the `typescript` version the target workspace's own manifest publishes. */
+ 	readonly typescript: string
+ 	/** Names the resolved `oxlint` version the lint stage ran. */
+ 	readonly oxlint: string
+diff --git a/src/server/Probe.ts b/src/server/Probe.ts
+index a581a89..72d4862 100644
+--- a/src/server/Probe.ts
++++ b/src/server/Probe.ts
+@@ -30,6 +30,7 @@ import {
+ import { peerDependencies } from '../../package.json' with { type: 'json' }
+ import {
+ 	buildRevisionPath,
++	collectRangeMajors,
+ 	computeDigest,
+ 	describeUnknown,
+ 	overwriteFile,
+@@ -681,12 +682,15 @@ export class Probe implements ProbeInterface {
+ 		)
+ 	}
+ 
++	// Reads every major the peer range names, not the first one. The range names one term per major
++	// the type stage can serve, and a workspace installing any of them is served: TypeScript 7 with
++	// the `@typescript/typescript6` bridge beside it is the case the second term admits.
+ 	#support(): void {
+ 		const version = this.#toolchain.typescript
+ 		const range = peerDependencies.typescript
+-		const supported = /^\^(\d+)\./u.exec(range)?.[1]
++		const supported = collectRangeMajors(range)
+ 		const found = /^(\d+)\./u.exec(version)?.[1]
+-		if (supported === undefined || found !== supported) {
++		if (found === undefined || !supported.includes(found)) {
+ 			throw new ProbeError(`The supported TypeScript range is ${range}; found ${version}`, {
+ 				origin: 'workspace',
+ 				code: 'malformed',
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index d7bd6f5..c215ee1 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -1,7 +1,7 @@
+ import type { Stage } from '@src/core'
+ import type { ListenerCapture, WorkspaceManifest } from './types.js'
+ import type { EventEmitter } from 'node:events'
+-import type * as TypeScript from 'typescript'
++import type * as TypeScript from '@typescript/typescript6'
+ import type * as VitestNode from 'vitest/node'
+ import {
+ 	closeSync,
+@@ -18,7 +18,7 @@ import { createHash } from 'node:crypto'
+ import { createRequire } from 'node:module'
+ import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
+ import { pathToFileURL } from 'node:url'
+-import { attempt, compileGuard, isArray, isRecord } from '@orkestrel/contract'
++import { attempt, compileGuard, isArray, isFunction, isRecord } from '@orkestrel/contract'
+ import { CLAIM_SHAPE, ProbeError, isDraft } from '@src/core'
+ 
+ /**
+@@ -385,15 +385,26 @@ export function resolveWorkspaceModule(workspace: string, specifier: string): st
+ /**
+  * Loads one installed tool module from a target workspace.
+  *
++ * @remarks
++ * TypeScript 7 publishes no in-process compiler API under the `typescript` specifier: the module
++ * resolves and carries its version alone. Microsoft republishes the 6.x API as
++ * `@typescript/typescript6`, so a `typescript` whose `createProgram` is not a function is answered
++ * from that bridge, which is the resolution `unplugin-dts` performs for the same reason. The
++ * workspace's own `typescript` is preferred wherever it carries the API, so a workspace on 6.x
++ * loads the compiler it installs and no bridge enters the path.
++ *
+  * @param workspace - The target workspace root
+  * @param specifier - The module specifier to load
+- * @returns The installed module
+- * @throws When the workspace cannot load the module
++ * @returns The installed module, or the installed bridge for a `typescript` carrying no in-process
++ * compiler API
++ * @throws When the workspace cannot load the module. Thrown as `workspace`/`malformed` when the
++ * workspace's `typescript` carries no in-process compiler API and its `@typescript/typescript6`
++ * cannot serve one, whether the bridge is absent, unloadable, or loads without the API
+  *
+  * @example
+  * ```ts
+  * const typescript = loadWorkspaceModule(process.cwd(), 'typescript')
+- * console.log(typescript.version)
++ * console.log(typeof typescript.createProgram) // 'function', whatever major the workspace installs
+  * ```
+  */
+ export function loadWorkspaceModule(workspace: string, specifier: 'typescript'): typeof TypeScript
+@@ -402,19 +413,45 @@ export function loadWorkspaceModule(
+ 	workspace: string,
+ 	specifier: 'typescript' | 'vitest/node',
+ ): typeof TypeScript | typeof VitestNode {
+-	const outcome = attempt(() => {
+-		const require = createRequire(resolve(workspace, 'package.json'))
+-		return specifier === 'typescript' ? require('typescript') : require('vitest/node')
+-	})
+-	if (outcome.success) return outcome.value
+-	const error = outcome.error
+-	const missing = readFaultCode(error) === 'MODULE_NOT_FOUND'
+-	throw new ProbeError(`The workspace cannot load ${specifier}`, {
+-		origin: 'workspace',
+-		code: missing ? 'missing' : 'malformed',
+-		context: { name: specifier },
+-		cause: error,
+-	})
++	// One require, so the bridge resolves from the same workspace root the requested specifier did.
++	const require = createRequire(resolve(workspace, 'package.json'))
++	const outcome = attempt(() =>
++		specifier === 'typescript' ? require('typescript') : require('vitest/node'),
++	)
++	if (!outcome.success) {
++		const error = outcome.error
++		const missing = readFaultCode(error) === 'MODULE_NOT_FOUND'
++		throw new ProbeError(`The workspace cannot load ${specifier}`, {
++			origin: 'workspace',
++			code: missing ? 'missing' : 'malformed',
++			context: { name: specifier },
++			cause: error,
++		})
++	}
++	const loaded = outcome.value
++	// `createProgram` is the member the API's absence is read from, because a compiler that publishes
++	// it publishes the rest of the in-process surface this package drives.
++	if (specifier !== 'typescript' || (isRecord(loaded) && isFunction(loaded.createProgram))) {
++		return loaded
++	}
++	const bridged = attempt(() => require('@typescript/typescript6'))
++	if (bridged.success) {
++		// The bridge answers the same reading its workspace's compiler answered, because a bridge
++		// that resolves and publishes no compiler serves this stage no better than the entry it was
++		// asked to stand in for, and returning it unread defers that refusal to the first call.
++		const served: unknown = bridged.value
++		if (isRecord(served) && isFunction(served.createProgram)) return bridged.value
++	}
++	throw new ProbeError(
++		"The workspace's typescript carries no in-process compiler API, and the workspace's @typescript/typescript6 cannot serve one",
++		{
++			origin: 'workspace',
++			code: 'malformed',
++			context: { name: specifier },
++			// A bridge that loaded and cannot serve raises nothing, so there is no fault to carry.
++			...(bridged.success ? {} : { cause: bridged.error }),
++		},
++	)
+ }
+ 
+ /**
+@@ -618,6 +655,36 @@ export function buildRevisionPath(workspace: string, path: string, revision: str
+ 	return `${stem}.probe-${revision}${extension}`
+ }
+ 
++/**
++ * Collects every major version a caret range names.
++ *
++ * @remarks
++ * A range names its supported majors as caret terms separated by `||`, and probe compares a
++ * workspace's installed major against that set. Reading only the first term refuses a major the
++ * range admits, so every term is read. Each term is read whole, so a term this package does not
++ * write — a bare version, a comparator pair, a caret version a second comparator narrows, a
++ * wildcard — names no major here and is skipped rather than throwing, so a range naming no caret
++ * term at all yields an empty collection and the caller refuses every version.
++ *
++ * @param range - The range to read, such as a `peerDependencies` entry
++ * @returns Each major the range's caret terms name, once, in the order the range names them
++ *
++ * @example
++ * ```ts
++ * collectRangeMajors('^6.0.3 || ^7.0.0') // ['6', '7']
++ * collectRangeMajors('^6.0.3') // ['6']
++ * collectRangeMajors('*') // []
++ * ```
++ */
++export function collectRangeMajors(range: string): readonly string[] {
++	const majors = new Set<string>()
++	for (const term of range.split('||')) {
++		const major = /^\^(\d+)\.\d+\.\d+$/u.exec(term.trim())?.[1]
++		if (major !== undefined) majors.add(major)
++	}
++	return [...majors]
++}
++
+ /**
+  * Reports whether a path is a workspace module Vitest can cache.
+  *
+diff --git a/src/server/stages/TypeStage.ts b/src/server/stages/TypeStage.ts
+index a92079a..7dd705f 100644
+--- a/src/server/stages/TypeStage.ts
++++ b/src/server/stages/TypeStage.ts
+@@ -1,6 +1,6 @@
+ import type { Case, Check, Draft, Issue, Project, Stage } from '@src/core'
+ import type { OverlayInterface, TypeStageInterface } from '../types.js'
+-import type * as TypeScript from 'typescript'
++import type * as TypeScript from '@typescript/typescript6'
+ import type {
+ 	CompilerOptions,
+ 	Diagnostic,
+@@ -8,7 +8,7 @@ import type {
+ 	IScriptSnapshot,
+ 	LanguageService,
+ 	LanguageServiceHost,
+-} from 'typescript'
++} from '@typescript/typescript6'
+ import { readdirSync, statSync } from 'node:fs'
+ import { dirname } from 'node:path'
+ import { setTimeout } from 'node:timers/promises'
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 923f194..22a6a05 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -1,4 +1,5 @@
+ import { spawn } from 'node:child_process'
++import { createRequire } from 'node:module'
+ import { resolve } from 'node:path'
+ import { createScratch } from '@orkestrel/test/server'
+ import { describe, expect, it } from 'vitest'
+@@ -13,6 +14,7 @@ import {
+ 	readHostEnding,
+ 	readSignalEnding,
+ 	waitForFixtureServer,
++	writeWorkspaceFixture,
+ } from './setupServer.js'
+ 
+ describe('server test setup', () => {
+@@ -43,6 +45,47 @@ describe('server test setup', () => {
+ 		expect(Object.keys(linked.files)).not.toContain('node_modules/oxlint/fixture.js')
+ 	})
+ 
++	it('writes one workspace publishing the compiler installation a caller selected', () => {
++		const scratch = createScratch({ prefix: 'probe-setup-workspace-' })
++		try {
++			// The default: TypeScript 7 as a workspace installs it, and nothing beside it.
++			const bare = writeWorkspaceFixture(scratch, { version: '7.0.2' })
++			expect(bare).toBe(scratch.path)
++			expect(scratch.has('node_modules/@typescript/typescript6/package.json')).toBe(false)
++			expect(scratch.has('node_modules/oxlint/package.json')).toBe(false)
++			// Each entry is loaded rather than read, because every proof driving this fixture reaches
++			// it through a `require` and a text that cannot be loaded still matches a string.
++			const published: unknown = createRequire(resolve(bare, 'package.json'))('typescript')
++			expect(published).toStrictEqual({ version: '7.0.2' })
++			// Every selection at once, in a second workspace inside the same scratch, which is how a
++			// proof that branches on the installation carries both cases.
++			const equipped = writeWorkspaceFixture(scratch, {
++				root: 'equipped',
++				version: '6.9.9',
++				carried: true,
++				bridged: true,
++				tooled: true,
++			})
++			expect(equipped).toBe(resolve(scratch.path, 'equipped'))
++			const load = createRequire(resolve(equipped, 'package.json'))
++			const carried: unknown = load('typescript')
++			expect(carried).toMatchObject({ version: '6.9.9', createProgram: expect.any(Function) })
++			// The linked bridge is this checkout's own installation, so it answers with a compiler.
++			const bridge: unknown = load('@typescript/typescript6')
++			expect(bridge).toMatchObject({ createProgram: expect.any(Function) })
++			const oxlint: unknown = JSON.parse(
++				scratch.read('equipped/node_modules/oxlint/package.json') ?? '',
++			)
++			expect(oxlint).toMatchObject({ name: 'oxlint', bin: { oxlint: 'fixture.js' } })
++			const vitest: unknown = JSON.parse(
++				scratch.read('equipped/node_modules/vitest/package.json') ?? '',
++			)
++			expect(vitest).toMatchObject({ name: 'vitest', version: '4.1.11' })
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it('builds a fixture server that runs and announces itself', async () => {
+ 		const scratch = createScratch({ files: createLintFixture().files })
+ 		const child = spawn(
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 321f93d..d2a8551 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -3,9 +3,11 @@ import type { ChildProcess } from 'node:child_process'
+ import { spawn } from 'node:child_process'
+ import { statSync, writeFileSync } from 'node:fs'
+ import { resolve } from 'node:path'
++import { fileURLToPath } from 'node:url'
+ import { attempt } from '@orkestrel/contract'
+ import { waitForCondition } from '@orkestrel/test'
+ import { createScratch, supportsDirectoryLinks } from '@orkestrel/test/server'
++import { WORKSPACE_ROOT } from './setup.js'
+ 
+ /** Selects what one built Oxlint language server fixture publishes and how long it answers. */
+ export interface LintFixtureOptions {
+@@ -177,6 +179,80 @@ export function createLintFixture(options?: LintFixtureOptions): LintFixture {
+ 	}
+ }
+ 
++/** Selects what one scratch workspace publishes as the tool installations probe resolves. */
++export interface WorkspaceFixtureOptions {
++	/** Names the version this workspace's `typescript` manifest and entry both publish. */
++	readonly version: string
++	/**
++	 * Whether the `typescript` entry publishes `createProgram`, which is the member probe reads the
++	 * in-process compiler API's presence from. Default: `false`, the shape TypeScript 7 publishes.
++	 */
++	readonly carried?: boolean
++	/**
++	 * Whether `node_modules/@typescript/typescript6` links this checkout's own installed bridge, so
++	 * a fallback loads a real compiler rather than a described one. Default: `false`.
++	 */
++	readonly bridged?: boolean
++	/**
++	 * Whether the `oxlint` and `vitest` installations a `Probe` constructor resolves are written
++	 * beside the compiler. Default: `false`.
++	 */
++	readonly tooled?: boolean
++	/**
++	 * Names this workspace's own directory inside the scratch, so one scratch carries several
++	 * workspaces that differ in what they install. Default: the scratch root itself.
++	 */
++	readonly root?: string
++}
++
++/**
++ * Writes one scratch workspace publishing the tool installations probe resolves from a target.
++ *
++ * @param scratch - The scratch directory that owns the workspace.
++ * @param options - The compiler version and shape, and which installations sit beside it.
++ * @returns The workspace root's absolute path, which is what a `Probe` or a stage is constructed on.
++ * @remarks The `typescript` entry is written as CommonJS under a manifest naming it through `main`,
++ * because `loadWorkspaceModule` reaches it through `createRequire` and that shape needs no exports
++ * map to stay resolvable. The version the manifest publishes is the version the entry publishes, so
++ * a row reading `Probe.toolchain` and a row reading the loaded module read one number.
++ *
++ * The `oxlint` binary this writes exits at once. Every row driving it is answered before a stage
++ * asks that binary for the language server protocol, so a server that starts and ends serves them
++ * all; a row that needs the protocol builds its own through `createLintFixture`.
++ */
++export function writeWorkspaceFixture(
++	scratch: ScratchInterface,
++	options: WorkspaceFixtureOptions,
++): string {
++	const prefix = options.root === undefined ? '' : `${options.root}/`
++	const members =
++		options.carried === true
++			? `{ version: '${options.version}', createProgram() {} }`
++			: `{ version: '${options.version}' }`
++	scratch.write(`${prefix}package.json`, '{"type":"module"}\n')
++	scratch.write(
++		`${prefix}node_modules/typescript/package.json`,
++		`{"name":"typescript","version":"${options.version}","main":"index.js"}\n`,
++	)
++	scratch.write(`${prefix}node_modules/typescript/index.js`, `module.exports = ${members}\n`)
++	if (options.bridged === true) {
++		scratch.link(
++			`${prefix}node_modules/@typescript/typescript6`,
++			resolve(fileURLToPath(WORKSPACE_ROOT), 'node_modules/@typescript/typescript6'),
++		)
++	}
++	if (options.tooled === true) {
++		scratch.write(`${prefix}node_modules/oxlint/package.json`, createLintFixture().manifest)
++		scratch.write(`${prefix}node_modules/oxlint/fixture.js`, 'process.exit(1)\n')
++		scratch.write(
++			`${prefix}node_modules/vitest/package.json`,
++			'{"name":"vitest","version":"4.1.11","type":"module","exports":{"./node":"./node.js","./package.json":"./package.json"}}\n',
++		)
++		scratch.write(`${prefix}node_modules/vitest/node.js`, 'export const createVitest = undefined\n')
++	}
++	return resolve(scratch.path, options.root ?? '.')
++}
++
+ /**
+  * Reads the process id announced by a fixture server.
+  *
+diff --git a/tests/src/core/errors.test.ts b/tests/src/core/errors.test.ts
+index 5b12687..56a4a9a 100644
+--- a/tests/src/core/errors.test.ts
++++ b/tests/src/core/errors.test.ts
+@@ -172,6 +172,7 @@ describe('failure adoption', () => {
+ 	it('classifies every failure path a test can drive without a resident tool', async () => {
+ 		const workspace = createScratch({ prefix: 'probe-adoption-workspace-' })
+ 		const outside = createScratch({ prefix: 'probe-adoption-outside-' })
++		const bridgeless = createScratch({ prefix: 'probe-adoption-bridgeless-' })
+ 		try {
+ 			workspace.write('package.json', '{"name":"target","version":"0.0.0"}\n')
+ 			workspace.write('node_modules/unparsable/package.json', '{ this is not JSON\n')
+@@ -183,6 +184,17 @@ describe('failure adoption', () => {
+ 			)
+ 			outside.write('secret.ts', 'export const SECRET = 1\n')
+ 			workspace.link('link', outside.path)
++			// A workspace on TypeScript 7 with no bridge beside it: the compiler resolves and the
++			// in-process API it is loaded for is not there.
++			bridgeless.write('package.json', '{"name":"target","version":"0.0.0"}\n')
++			bridgeless.write(
++				'node_modules/typescript/package.json',
++				'{"name":"typescript","version":"7.0.2","main":"index.js"}\n',
++			)
++			bridgeless.write(
++				'node_modules/typescript/index.js',
++				"module.exports = { version: '7.0.2', versionMajorMinor: '7.0' }\n",
++			)
+ 
+ 			const drives: readonly Drive[] = [
+ 				[
+@@ -229,6 +241,12 @@ describe('failure adoption', () => {
+ 					'missing',
+ 					() => loadWorkspaceModule(workspace.path, 'typescript'),
+ 				],
++				[
++					'a compiler carrying no in-process API beside no bridge',
++					'workspace',
++					'malformed',
++					() => loadWorkspaceModule(bridgeless.path, 'typescript'),
++				],
+ 				[
+ 					'a manifest the workspace does not publish',
+ 					'workspace',
+@@ -280,6 +298,7 @@ describe('failure adoption', () => {
+ 			expect(isProbeError(translated) && translated.cause instanceof Error).toBe(true)
+ 		} finally {
+ 			const teardown = createTeardown()
++			teardown.add(() => bridgeless.destroy())
+ 			teardown.add(() => outside.destroy())
+ 			teardown.add(() => workspace.destroy())
+ 			await teardown.destroy()
+diff --git a/tests/src/server/Probe.test.ts b/tests/src/server/Probe.test.ts
+index dad678d..e532d58 100644
+--- a/tests/src/server/Probe.test.ts
++++ b/tests/src/server/Probe.test.ts
+@@ -16,13 +16,19 @@ import { spawnSync } from 'node:child_process'
+ import { randomUUID } from 'node:crypto'
+ import { resolve } from 'node:path'
+ import { fileURLToPath } from 'node:url'
+-import { createRecorder, createTeardown, waitForCondition, waitForDelay } from '@orkestrel/test'
++import {
++	captureError,
++	createRecorder,
++	createTeardown,
++	waitForCondition,
++	waitForDelay,
++} from '@orkestrel/test'
+ import { createScratch } from '@orkestrel/test/server'
+ import { peerDependencies } from '../../../package.json' with { type: 'json' }
+-import { Probe, readWorkspaceManifest } from '@src/server'
++import { Probe, collectRangeMajors, readWorkspaceManifest } from '@src/server'
+ import { matchesSpecification } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+-import { createLintFixture } from '../../setupServer.js'
++import { createLintFixture, writeWorkspaceFixture } from '../../setupServer.js'
+ import { WORKSPACE_ROOT } from '../../setup.js'
+ 
+ const ROOT = fileURLToPath(WORKSPACE_ROOT)
+@@ -529,24 +535,37 @@ describe.sequential('probe', () => {
+ 		},
+ 	)
+ 
++	it('refuses a workspace whose typescript carries no in-process compiler API', () => {
++		const scratch = createScratch()
++		const workspace = writeWorkspaceFixture(scratch, { version: '7.0.2', tooled: true })
++		try {
++			// The type stage loads the compiler in its own constructor, which the probe's constructor
++			// runs, so a workspace carrying neither a usable `typescript` nor the bridge is answered
++			// before any claim is made. No probe exists to destroy.
++			expect(captureError(() => new Probe({ workspace }))).toMatchObject({
++				name: 'ProbeError',
++				message:
++					"The workspace's typescript carries no in-process compiler API, and the workspace's @typescript/typescript6 cannot serve one",
++				origin: 'workspace',
++				code: 'malformed',
++				context: { name: 'typescript' },
++			})
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it('names an unsupported TypeScript installation before entering the compiler', async () => {
+ 		const scratch = createScratch()
+-		scratch.write('package.json', '{"type":"module"}\n')
+-		scratch.write(
+-			'node_modules/typescript/package.json',
+-			'{"name":"typescript","version":"7.0.2","type":"module","exports":{".":"./index.js","./package.json":"./package.json"}}\n',
+-		)
+-		scratch.write('node_modules/typescript/index.js', "export const version = '7.0.2'\n")
+-		scratch.write('node_modules/oxlint/package.json', createLintFixture().manifest)
+-		// The refusal this row reads lands before any stage runs, so the binary the manifest names
+-		// never has to answer the protocol and a server that exits at once serves it.
+-		scratch.write('node_modules/oxlint/fixture.js', 'process.exit(1)\n')
+-		scratch.write(
+-			'node_modules/vitest/package.json',
+-			'{"name":"vitest","version":"4.1.11","type":"module","exports":{"./node":"./node.js","./package.json":"./package.json"}}\n',
+-		)
+-		scratch.write('node_modules/vitest/node.js', 'export const createVitest = undefined\n')
+-		const probe = new Probe({ workspace: scratch.path })
++		// A compiler carrying the in-process API at a major the peer range names nowhere. The API is
++		// what separates this refusal from the constructor's: the workspace loads a usable compiler,
++		// and the support check still refuses the version it publishes.
++		const workspace = writeWorkspaceFixture(scratch, {
++			version: '5.9.3',
++			carried: true,
++			tooled: true,
++		})
++		const probe = new Probe({ workspace })
+ 		try {
+ 			await expect(
+ 				probe.prove({
+@@ -570,10 +589,64 @@ describe.sequential('probe', () => {
+ 				}),
+ 			).rejects.toMatchObject({
+ 				name: 'ProbeError',
+-				message: `The supported TypeScript range is ${peerDependencies.typescript}; found 7.0.2`,
++				message: `The supported TypeScript range is ${peerDependencies.typescript}; found 5.9.3`,
+ 				origin: 'workspace',
+ 				code: 'malformed',
+-				context: { name: 'typescript', value: '7.0.2' },
++				context: { name: 'typescript', value: '5.9.3' },
++			})
++		} finally {
++			const teardown = createTeardown()
++			teardown.add(() => scratch.destroy())
++			teardown.add(() => probe.destroy())
++			await teardown.destroy()
++		}
++	})
++
++	it('serves a workspace at every major its own peer range names', async () => {
++		const scratch = createScratch()
++		// TypeScript 7 as a workspace installs it: a manifest version the peer range names, an entry
++		// publishing the version alone, and the bridge beside it carrying the in-process API the type
++		// stage drives.
++		const workspace = writeWorkspaceFixture(scratch, {
++			version: '7.0.2',
++			bridged: true,
++			tooled: true,
++		})
++		expect(collectRangeMajors(peerDependencies.typescript)).toContain('7')
++		const probe = new Probe({ workspace })
++		try {
++			// The bridge serves the stage and the manifest still reports the workspace's own version.
++			expect(probe.toolchain.typescript).toBe('7.0.2')
++			// The claim repeats its case as its control, which is the refusal the coordinator answers
++			// immediately after the support check and before it waits for a stage. Reading that
++			// refusal is what proves the support check admitted this workspace: a refused major
++			// rejects with the range message instead, and never reaches the claim at all.
++			await expect(
++				probe.prove({
++					project: 'tsconfig.json',
++					case: {
++						files: [],
++						test: {
++							path: 'tmp/probe/bridged.test.ts',
++							text: "import { test } from 'vitest'\ntest('passes', () => {})\n",
++						},
++					},
++					control: {
++						files: [],
++						test: {
++							path: 'tmp/probe/bridged.test.ts',
++							text: "import { test } from 'vitest'\ntest('passes', () => {})\n",
++						},
++						stage: 'runtime',
++						reason: 'the test throws',
++					},
++				}),
++			).rejects.toMatchObject({
++				name: 'ProbeError',
++				message:
++					'The control must differ from the case; it carries the same candidate drafts and the same test',
++				origin: 'claimant',
++				code: 'refused',
+ 			})
+ 		} finally {
+ 			const teardown = createTeardown()
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index bcd0efb..a7e0253 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -9,6 +9,7 @@ import { createScratch } from '@orkestrel/test/server'
+ import {
+ 	buildRevisionPath,
+ 	captureListeners,
++	collectRangeMajors,
+ 	computeDigest,
+ 	describeUnknown,
+ 	escapesRoot,
+@@ -34,6 +35,7 @@ import {
+ } from '@src/server'
+ import { CLAIM_SHAPE, ProbeError, isProbeError } from '@src/core'
+ import { describe, expect, it } from 'vitest'
++import { writeWorkspaceFixture } from '../../setupServer.js'
+ import { WORKSPACE_ROOT } from '../../setup.js'
+ 
+ const ROOT = fileURLToPath(WORKSPACE_ROOT)
+@@ -114,6 +116,9 @@ describe('server helper examples', () => {
+ 				buildRevisionPath(ROOT, 'tmp/probe/greeting.test.ts', '4821-9f0c'),
+ 			),
+ 		).toBe('tmp/probe/greeting.test.probe-4821-9f0c.ts')
++		expect(collectRangeMajors('^6.0.3 || ^7.0.0')).toStrictEqual(['6', '7'])
++		expect(collectRangeMajors('^6.0.3')).toStrictEqual(['6'])
++		expect(collectRangeMajors('*')).toStrictEqual([])
+ 		expect(matchesWorkspaceModule('src/core/greeting.ts')).toBe(true)
+ 		expect(matchesWorkspaceModule('src/styles/tokens.css')).toBe(false)
+ 		expect(describeUnknown(new Error('The lint stage has been destroyed'))).toBe(
+@@ -631,9 +636,113 @@ describe('server path helpers', () => {
+ 
+ 	it('loads installed tool modules from the workspace', () => {
+ 		expect(loadWorkspaceModule(ROOT, 'typescript').version).toMatch(/^\d+\.\d+\.\d+/)
++		// The member the documented example claims, which is what the resolution branches on and what
++		// every caller of this overload drives.
++		expect(loadWorkspaceModule(ROOT, 'typescript').createProgram).toBeTypeOf('function')
+ 		expect(loadWorkspaceModule(ROOT, 'vitest/node').createVitest).toBeTypeOf('function')
+ 	})
+ 
++	// A workspace on TypeScript 7 installs a `typescript` whose entry publishes the version alone,
++	// because the in-process compiler API moved out from under that specifier. The bridge each
++	// workspace links is this checkout's own installed `@typescript/typescript6`, so the loaded
++	// fallback is a real compiler rather than a described one. The two workspaces differ only in
++	// whether the entry carries the API, which is the reading the resolution branches on.
++	it('takes the workspace compiler where it carries the API and the bridge where it does not', () => {
++		const scratch = createScratch({ prefix: 'probe-bridge-' })
++		try {
++			const carrier = writeWorkspaceFixture(scratch, {
++				root: 'carrier',
++				version: '6.9.9',
++				carried: true,
++				bridged: true,
++			})
++			const bare = writeWorkspaceFixture(scratch, {
++				root: 'bare',
++				version: '7.0.2',
++				bridged: true,
++			})
++			expect(loadWorkspaceModule(carrier, 'typescript').version).toBe('6.9.9')
++			const bridged = loadWorkspaceModule(bare, 'typescript')
++			expect(bridged.version).toBe('6.0.3')
++			expect(bridged.createProgram).toBeTypeOf('function')
++			expect(bridged.createLanguageService).toBeTypeOf('function')
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('refuses a compiler carrying no in-process API where the workspace installs no bridge', () => {
++		const scratch = createScratch({ prefix: 'probe-bridgeless-' })
++		try {
++			const workspace = writeWorkspaceFixture(scratch, { version: '7.0.2' })
++			const refused = captureError(() => loadWorkspaceModule(workspace, 'typescript'))
++			expect(isProbeError(refused)).toBe(true)
++			expect(refused).toMatchObject({
++				origin: 'workspace',
++				code: 'malformed',
++				context: { name: 'typescript' },
++				cause: expect.any(Error),
++			})
++			expect(describeUnknown(refused)).toContain('@typescript/typescript6')
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	// A bridge that resolves and publishes no compiler is the case a success reading alone admits:
++	// the require answers, so nothing about the fault classifies it, and only the value's own
++	// `createProgram` separates a bridge that serves from one that does not. The refusal carries no
++	// `cause` here, because there is no fault to carry.
++	it('refuses a bridge that resolves and carries no in-process API', () => {
++		const scratch = createScratch({ prefix: 'probe-bridge-bare-' })
++		try {
++			const workspace = writeWorkspaceFixture(scratch, { version: '7.0.2' })
++			// The bridge this row installs is a real module that resolves and publishes its version
++			// alone, which the linked bridge cannot be, so it is written beside the fixture.
++			scratch.write(
++				'node_modules/@typescript/typescript6/package.json',
++				'{"name":"@typescript/typescript6","version":"6.0.2","main":"index.js"}\n',
++			)
++			scratch.write(
++				'node_modules/@typescript/typescript6/index.js',
++				"module.exports = { version: '6.0.2' }\n",
++			)
++			const refused = captureError(() => loadWorkspaceModule(workspace, 'typescript'))
++			expect(isProbeError(refused)).toBe(true)
++			expect(refused).toMatchObject({
++				message:
++					"The workspace's typescript carries no in-process compiler API, and the workspace's @typescript/typescript6 cannot serve one",
++				origin: 'workspace',
++				code: 'malformed',
++				context: { name: 'typescript' },
++			})
++			expect(refused).not.toHaveProperty('cause')
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	// The guide states this refusal beside the one before it, and the two differ in condition as
++	// well as in wording: a workspace installing no `typescript` resolves nothing, so the fault is
++	// the host's absent-module code and the refusal names the load rather than the compiler API.
++	it('refuses a workspace that installs no typescript at all', () => {
++		const scratch = createScratch({ prefix: 'probe-typescriptless-' })
++		try {
++			scratch.write('package.json', '{"type":"module"}\n')
++			const refused = captureError(() => loadWorkspaceModule(scratch.path, 'typescript'))
++			expect(isProbeError(refused)).toBe(true)
++			expect(refused).toMatchObject({
++				message: 'The workspace cannot load typescript',
++				origin: 'workspace',
++				code: 'missing',
++				context: { name: 'typescript' },
++				cause: expect.any(Error),
++			})
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it('reads installed manifests and refuses absent packages', () => {
+ 		const manifest = readWorkspaceManifest(ROOT, 'typescript')
+ 		expect(manifest.path).toContain(join('node_modules', 'typescript', 'package.json'))
+@@ -698,6 +807,23 @@ describe('server text helpers', () => {
+ 		expect(matchesWorkspaceModule('value.css')).toBe(false)
+ 	})
+ 
++	it('reads every caret term a range names and skips a term that names no major', () => {
++		expect(collectRangeMajors('^6.0.3 || ^7.0.0')).toStrictEqual(['6', '7'])
++		expect(collectRangeMajors('^6.0.3||^7.0.0')).toStrictEqual(['6', '7'])
++		expect(collectRangeMajors('   ^7.0.0   ')).toStrictEqual(['7'])
++		// A bare version, a tilde term, and a caret term carrying no minor are each a form this
++		// package does not write, so each names no major and its siblings still answer.
++		expect(collectRangeMajors('^6.0.3 || 7.0.0 || ~8.1.0 || ^9')).toStrictEqual(['6'])
++		// Two terms naming one major answer once, so the collection names each major it admits.
++		expect(collectRangeMajors('^6.0.3 || ^6.4.0')).toStrictEqual(['6'])
++		expect(collectRangeMajors('*')).toStrictEqual([])
++		expect(collectRangeMajors('')).toStrictEqual([])
++		// A comparator pair names no caret major, and neither does a caret version carrying a second
++		// comparator after it: each term is one range this package writes or nothing at all.
++		expect(collectRangeMajors('>=6.0.0 <8.0.0')).toStrictEqual([])
++		expect(collectRangeMajors('^6.0.3 <6.5.0')).toStrictEqual([])
++	})
++
+ 	it('normalizes errors, strings, message records, and other values', () => {
+ 		expect(describeUnknown(new Error('failed'))).toBe('failed')
+ 		expect(describeUnknown('failed')).toBe('failed')
+diff --git a/tests/src/server/stages/TypeStage.test.ts b/tests/src/server/stages/TypeStage.test.ts
+index b91f7df..f4dd9d4 100644
+--- a/tests/src/server/stages/TypeStage.test.ts
++++ b/tests/src/server/stages/TypeStage.test.ts
+@@ -7,6 +7,7 @@ import { createScratch } from '@orkestrel/test/server'
+ import { TypeStage, normalizePath } from '@src/server'
+ import { formatIssue, isProbeError } from '@src/core'
+ import { describe, expect, it } from 'vitest'
++import { writeWorkspaceFixture } from '../../../setupServer.js'
+ import { WORKSPACE_ROOT } from '../../../setup.js'
+ 
+ const ROOT = fileURLToPath(WORKSPACE_ROOT)
+@@ -258,6 +259,53 @@ describe('type stage', () => {
+ 		},
+ 	)
+ 
++	// The bridge serving a real inspection, which no other row reads: this checkout installs a
++	// `typescript` carrying the in-process API, so every row against it takes the workspace branch
++	// and the bridged rows elsewhere stop at the loaded module. This workspace's own entry publishes
++	// the version alone, so the diagnostic below can have come from nothing but the compiler
++	// `@typescript/typescript6` republishes.
++	it(
++		'inspects through the bridge where the workspace compiler carries no API',
++		{ timeout: 60_000 },
++		async () => {
++			const scratch = createScratch({ prefix: 'probe-type-bridged-' })
++			const workspace = writeWorkspaceFixture(scratch, { version: '7.0.2', bridged: true })
++			scratch.write(
++				'tsconfig.json',
++				'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","strict":true,"types":[]},"files":["src/core/value.ts"]}\n',
++			)
++			scratch.write(
++				'configs/src/tsconfig.core.json',
++				'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","strict":true,"types":[]},"files":["../../src/core/value.ts"]}\n',
++			)
++			scratch.write('src/core/value.ts', 'export const VALUE = 1\n')
++			const stage = new TypeStage(workspace)
++			const test = { path: 'tmp/probe/bridged.test.ts', text: 'export {}\n' }
++			try {
++				const refused = await stage.inspect({
++					files: [{ path: 'src/core/value.ts', text: "export const VALUE: number = 'text'\n" }],
++					test,
++				})
++				expect(refused.issues).toEqual([
++					expect.objectContaining({
++						path: 'src/core/value.ts',
++						message: expect.stringContaining("Type 'string' is not assignable to type 'number'"),
++					}),
++				])
++				const clean = await stage.inspect({
++					files: [{ path: 'src/core/value.ts', text: 'export const VALUE = 1\n' }],
++					test,
++				})
++				expect(clean.issues).toStrictEqual([])
++			} finally {
++				const teardown = createTeardown()
++				teardown.add(() => scratch.destroy())
++				teardown.add(() => stage.destroy())
++				await teardown.destroy()
++			}
++		},
++	)
++
+ 	it(
+ 		'infers one project for equivalent spellings of a resolved candidate',
+ 		{ timeout: 60_000 },

@@ -1,0 +1,14 @@
+
+> @orkestrel/probe@0.0.12 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+··············································
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  12:09:52
+   Duration  2.06s (transform 366ms, setup 28ms, import 987ms, tests 898ms, environment 0ms)
+

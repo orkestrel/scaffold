@@ -1,0 +1,359 @@
+diff --git a/PROPOSAL.md b/PROPOSAL.md
+index 415109d0..46d3a93a 100644
+--- a/PROPOSAL.md
++++ b/PROPOSAL.md
+@@ -44,8 +44,9 @@ must satisfy: no added npm package (`AGENTS.md` § Non-negotiable rules); no sec
+ analyzer (`AGENTS.md` § Project model); `typescript` `7.0.2` and its `@typescript/typescript6`
+ bridge stay on the development edge unless you rule otherwise; guide mirrors stay fetched bytes and
+ are never rewritten (`.claude/rules/documentation.md` § Parity); the executed fences at
+-`tests/guides.test.ts:212-361` survive; and the guide's checked structure — methods under `## Methods`, one table per interface,
+-readonly data properties in the `## Surface` row — is preserved.
++`tests/guides.test.ts:212-361` survive; and the guide's checked structure — methods under
++`## Methods`, one table per interface, readonly data properties in the `## Surface` row —
++is preserved.
+ 
+ Refused on the evidence, each with its reason under § Refused on the evidence: TypeDoc and
+ `typedoc-plugin-markdown`, `@microsoft/api-documenter`, the api-extractor doc model as a reader, a
+@@ -351,8 +352,9 @@ enabled: false }` at `unplugin-dts.BU1tibsL.mjs:549-554` and this repository con
+   that relocates a fence into an `@example` tag relocates that transcription and must name where it
+   moves to.
+ - **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. `typescript` `7.0.2`
+-  already exposes the JSDoc readers through its `unstable/ast` and `unstable/sync` entries, and `@orkestrel/guide`'s `Source` is text-only by
+-  construction and explicitly not the compiler API
++  already exposes the JSDoc readers through its `unstable/ast` and `unstable/sync` entries —
++  preview surfaces carrying no stability promise, whose shape 7.1's different API can change — and
++  `@orkestrel/guide`'s `Source` is text-only by construction and explicitly not the compiler API
+   (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`). Reading TSDoc is a capability `guide`
+   does not have, so an option must place that reader deliberately.
+ - **C13 — Markdown generation primitives are already declared runtime dependencies.**
+@@ -1029,8 +1031,8 @@ read the diff for any capitalization or collapse that alters a first sentence th
+ and flip the key only if the diff is clean.
+ 
+ **The dependency delta is none.** oxfmt `0.65.0`, oxlint `1.80.0`, `typescript` `7.0.2`, and the
+-`@typescript/typescript6` bridge are all declared already. Option 3 writes no Markdown, so it needs neither `@orkestrel/markdown` nor
+-`@orkestrel/template`.
++`@typescript/typescript6` bridge are all declared already. Option 3 writes no Markdown, so it needs
++neither `@orkestrel/markdown` nor `@orkestrel/template`.
+ 
+ **Option 3 removes no edit site, and that is the whole trade.** It converts a class of silent drift
+ into a red gate, and it makes each pair cheap to repair because the correct text is already written
+@@ -1157,10 +1159,12 @@ Each risk names the evidence that settles it.
+   the flip lands fleet-wide. The measured diff over `src/core/` is the gate on it, read specifically
+   for a capitalization or a collapse that alters a first sentence the `-s` rule governs.
+ - **A text scan can miss a doc block.** The controls must come from outside the scanner's membership
+-  rule: a doc block preceding a declaration but separated from it by a blank line, and a doc block inside a template
+-  literal. Where the scan proves unsound, the reader becomes `typescript/unstable/sync`'s
+-  `Symbol.getDocumentationComment(checker)`, which a Vitest sweep can import at no dependency cost
+-  because `typescript` is already a development dependency. `ts.getJSDocCommentsAndTags` and
++  rule: a doc block preceding a declaration but separated from it by a blank line, and a doc block
++  inside a template literal. Where the scan proves unsound, the reader becomes
++  `typescript/unstable/sync`'s `Symbol.getDocumentationComment(checker)`, which a Vitest sweep can
++  import because `typescript` is already a development dependency; that entry is a preview surface
++  (TypeScript 7.1 ships a different API) and spawns the platform's native compiler binary, so the
++  swap is a measured cost rather than a free one. `ts.getJSDocCommentsAndTags` and
+   `ts.displayPartsToString` are gone at the 7 major.
+ - **Whether an oxlint plugin rule can report a diagnostic on a comment is unproven here.**
+   `context.report(diagnostic)` exists, and no distillate shows a comment as a diagnostic target.
+diff --git a/ROADMAP.md b/ROADMAP.md
+index 80b9edda..5aa394f9 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -38,14 +38,14 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+ - **scaffold**: a generated workspace that selects `app/browser` holds `typescript` at
+   `APP_BROWSER_TYPESCRIPT_RANGE` while every other workspace takes the shared 7 floor, because
+   `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381, open since
+-  2026-05-26) and it is the checker that workspace's own `check:app:browser` script runs. Delete
+-  the range, its spread in `blueprintToDevDependencies`, and the guide paragraph naming it when
+-  `vue-tsc` runs against 7; that release is the trigger. No fleet package selects that
++  2026-05-26) and it is the checker that workspace's own `check:app:browser` script runs. When
++  `vue-tsc` runs against 7, delete the range, its spread in `blueprintToDevDependencies`, and the
++  guide paragraph naming it; that release is the trigger. No fleet package selects that
+   environment, measured 2026-09-05.
+ - **scaffold**: the AST-shaped rules in the vendored policy sweep move to the oxlint `policy`
+   plugin, which reads a file's AST and needs no in-process compiler.
+   `.claude/rules/workspace.md` § Policy instruments already assigns them there, so the move is a
+-  law-conformance repair rather than a new rule, and each moved rule ships its `PolicyControl`
++  law-conformance repair rather than an added rule, and each moved rule ships its `PolicyControl`
+   entry with a control drawn from outside its membership rule. The trigger is the next visit to
+   either instrument.
+ - **scaffold**: the ESNext fence transpile in `tests/guides.test.ts` moves from
+@@ -80,12 +80,14 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+   `@orkestrel/probe`; run `repair`, which restores `tests/setupPolicy.ts` on the bridge; swap the
+   specifier in `tests/guides.test.ts` and `tests/distribution.test.ts`; `database` also edits
+   `tests/setupServer.ts` and `tests/setupServer.test.ts`, and `lsp` its `tests/setupConformance.ts`;
+-  clear `typescriptCompilerFolder` in each published `src` environment's Vite configuration; run
+-  the gates; compare the rebuilt `dist/` against the published tarball and bump only on a material
+-  diff. The prerequisite is a `probe` release whose `TypeStage` resolves the workspace's bridge
+-  where its `typescript` carries no `createProgram`, and widens its optional peer to
+-  `^6.0.3 || ^7.0.0`; until that lands, a target on 7 has no `prove` receipt. The trigger is the
+-  scaffold release carrying this move, plus the owner's go-ahead.
++  set `bundleTypes.invokeOptions.typescriptCompilerFolder` to `''` in each published `src`
++  environment's Vite configuration (`undefined` fails `TS2375` under `exactOptionalPropertyTypes`,
++  and api-extractor applies the option only when it names a folder); run the gates; compare the
++  rebuilt `dist/` against the published tarball and bump only on a material diff. The prerequisite
++  is a `probe` release whose `TypeStage` resolves the workspace's bridge where its `typescript`
++  carries no `createProgram`, and widens its optional peer to `^6.0.3 || ^7.0.0`; until that lands,
++  a target on 7 has no `prove` receipt. The trigger is the scaffold release carrying this move,
++  plus the owner's go-ahead.
+ - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
+   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
+   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index f5c8c2c5..67c44f53 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -1146,15 +1146,20 @@ distribution proof call the TypeScript JavaScript API in process, and the `types
+ publishes no such API at its 7 major.
+ 
+ `typescript` is a 7 floor, and the declaration rollup analyses with the compiler
+-`@microsoft/api-extractor` bundles rather than with it. Each published `src` environment's Vite
+-configuration therefore clears the `typescriptCompilerFolder` invoke option: `unplugin-dts` points
+-that option at the installed `typescript` package's root, which carries no `lib.*.d.ts` file at the
+-7 major, and the rollup then resolves no global type. A workspace that selects `app/browser` takes
++`@microsoft/api-extractor` bundles rather than with the installed `typescript` package. Each
++published `src` environment's Vite configuration therefore sets the `typescriptCompilerFolder`
++invoke option to `''`: `unplugin-dts` points that option at the installed `typescript` package's
++root, which carries no `lib.*.d.ts` file at the 7 major, and the rollup then resolves no global
++type. With the option set to `''`, the rollup resolves global types against the lib files of the
++compiler `@microsoft/api-extractor` bundles, 5.9.3 at 7.59.0. That holds for every generated
++workspace whatever `typescript` major it installs, so a public declaration resolves only the lib
++types that compiler provides. A workspace that selects `app/browser` takes
+ `APP_BROWSER_TYPESCRIPT_RANGE` instead of the shared floor, because it checks its Vue sources with
+ `vue-tsc` and `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381). That
+-workspace's `audit` reports the shared major as a non-blocking `dependencies` question, which is the
+-crossed-major reading every foreign row earns; take it as the record of the limit rather than as an
+-instruction to raise the range, and the range goes when `vue-tsc` supports 7.
++workspace's `audit` reports a non-blocking `dependencies` question, the crossed-major reading every
++foreign row earns: the workspace declares major 6 while the registry serves a later major. Read that
++question as the record of the limit, not as an instruction to raise the range. The range goes when
++`vue-tsc` supports 7.
+ 
+ A newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
+ question, and a person decides whether the generated toolchain supports it. Inside the declared
+@@ -1786,7 +1791,7 @@ port, so the run drives nothing external and stays in `test`.
+   definitions.
+ - [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) — the seeded rows named
+   as a set, the floor form every shared table and this manifest carry, and the emitted TypeScript
+-  bound.
++  range with the browser workspace's fork of it.
+ - [`tests/src/server/Materializer.test.ts`](../tests/src/server/Materializer.test.ts) — every
+   mutation verb against a real temporary target and a real vendored root.
+ - [`tests/src/server/WriteTransaction.test.ts`](../tests/src/server/WriteTransaction.test.ts) —
+diff --git a/host.json b/host.json
+index e5a3a701..90287c29 100644
+--- a/host.json
++++ b/host.json
+@@ -682,7 +682,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "ba5a18699b9818d80cd35b5d3acd289391b9adfb6551d3cfcbe74df53985dab8"
++			"digest": "101bb9b76bdb3dc21df61ca4a33307119cb1e0c78f2f12378a9bc3478a5335d5"
+ 		},
+ 		{
+ 			"storage": "scripts/codex.sh",
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "f82c70ae51bba20804b30b865e875238e585d2e3aa9720068cdf7e05c5f3f647"
++	"digest": "725e2fe18126ff0fbf95d8929b2ee49c8330df4d2e191ebc9e205642f0f14fe3"
+ }
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 9063e907..6663904a 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -518,6 +518,34 @@ describe('the upstream fixtures', () => {
+ 		})
+ 	})
+ 
++	it('publishes every version it is given, and names the first under dist-tags', () => {
++		expect(
++			JSON.parse(buildPackument(['0.0.4', '0.0.8'], { peer: { vite: '^8.0.0' } })),
++		).toStrictEqual({
++			'dist-tags': { latest: '0.0.4' },
++			name: '@orkestrel/sample',
++			versions: {
++				'0.0.4': {
++					name: '@orkestrel/sample',
++					version: '0.0.4',
++					peerDependencies: { vite: '^8.0.0' },
++				},
++				'0.0.8': {
++					name: '@orkestrel/sample',
++					version: '0.0.8',
++					peerDependencies: { vite: '^8.0.0' },
++				},
++			},
++		})
++	})
++
++	it('refuses to publish no version, or an unnamed one', () => {
++		const message = 'A packument publishes at least one version, and every version is named'
++		expect(() => buildPackument([])).toThrow(message)
++		expect(() => buildPackument('')).toThrow(message)
++		expect(() => buildPackument([''])).toThrow(message)
++	})
++
+ 	it('lists every organization package under the access map the registry serves', () => {
+ 		expect(
+ 			JSON.parse(buildOrganization(['@orkestrel/router', '@orkestrel/emitter'])),
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index b4fd5668..1cd29ff9 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1652,9 +1652,10 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
+ /**
+  * Build the registry packument text a version lookup reads.
+  *
+- * @param version - The version to publish under `dist-tags.latest`.
+- * @param edges - The declared ranges the published version carries; omitted for
+- * a packument that declares none.
++ * @param versions - The version to publish, or the versions to publish with the
++ * `dist-tags.latest` one first.
++ * @param edges - The declared ranges every published version carries; omitted
++ * for a packument that declares none.
+  * @returns The response body, as the abbreviated packument form the registry
+  * serves for `application/vnd.npm.install-v1+json`.
+  *
+@@ -1666,20 +1667,37 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
+  * `peerDependencies` alongside `dist`, `engines`, `name`, and `version` —
+  * verified against `registry.npmjs.org` — so every edge kind is writable here
+  * and a reader that reads the wrong one is caught.
++ *
++ * A row the product holds at two majors needs a packument publishing both, and
++ * a reader selects a version from the `versions` map rather than from the tag,
++ * so the edges are written onto every record instead of onto the tagged one.
++ * The tag cannot be derived from the map here: ordering the versions would put
++ * the fixture's answer on the same comparator the reader under test uses.
+  */
+-export function buildPackument(version: string, edges?: TestPackumentEdges): string {
++export function buildPackument(
++	versions: string | readonly string[],
++	edges?: TestPackumentEdges,
++): string {
++	const published = typeof versions === 'string' ? [versions] : versions
++	const latest = published[0]
++	if (latest === undefined || published.some((entry) => entry.length === 0)) {
++		throw new Error('A packument publishes at least one version, and every version is named')
++	}
+ 	return JSON.stringify({
+-		'dist-tags': { latest: version },
++		'dist-tags': { latest },
+ 		name: '@orkestrel/sample',
+-		versions: {
+-			[version]: {
+-				name: '@orkestrel/sample',
+-				version,
+-				...(edges?.dependencies === undefined ? {} : { dependencies: edges.dependencies }),
+-				...(edges?.development === undefined ? {} : { devDependencies: edges.development }),
+-				...(edges?.peer === undefined ? {} : { peerDependencies: edges.peer }),
+-			},
+-		},
++		versions: Object.fromEntries(
++			published.map((entry) => [
++				entry,
++				{
++					name: '@orkestrel/sample',
++					version: entry,
++					...(edges?.dependencies === undefined ? {} : { dependencies: edges.dependencies }),
++					...(edges?.development === undefined ? {} : { devDependencies: edges.development }),
++					...(edges?.peer === undefined ? {} : { peerDependencies: edges.peer }),
++				},
++			]),
++		),
+ 	})
+ }
+ 
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index 6d5b1759..cf5497a4 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -141,13 +141,10 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
+ 	// the write that asked for it.
+ 	'/typescript': {
+ 		status: 200,
+-		body: JSON.stringify({
+-			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
+-			versions: {
+-				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
+-				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
+-			},
+-		}),
++		body: buildPackument([
++			BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '',
++			APP_BROWSER_TYPESCRIPT_RANGE.slice(1),
++		]),
+ 	},
+ 	'/vite': {
+ 		status: 200,
+@@ -267,13 +264,10 @@ const AUDIT_REGISTRY = await createUpstreamServer({
+ 	// the write that asked for it.
+ 	'/typescript': {
+ 		status: 200,
+-		body: JSON.stringify({
+-			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
+-			versions: {
+-				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
+-				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
+-			},
+-		}),
++		body: buildPackument([
++			BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '',
++			APP_BROWSER_TYPESCRIPT_RANGE.slice(1),
++		]),
+ 	},
+ 	'/vite': {
+ 		status: 200,
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index fabcdf5e..bdd9cf70 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -1437,6 +1437,28 @@ describe('blueprintToRootVite fixed proofs', () => {
+ 		expect(browser).toContain('a module in a browser subfolder emits')
+ 	})
+ 
++	// The override is what lets a rollup on the 7 major resolve a global type at
++	// all, and the byte-identity comparison cannot reach every copy of it: this
++	// repository materializes core and server, so the browser face's copy is
++	// emitted by nothing that comparison reads. The bin face is the control — it
++	// rolls no declaration up, so it carries no override.
++	it("sets the rollup's compiler folder override in every declaration-rolling face", () => {
++		const artifacts = blueprintToConfigArtifacts(
++			buildBlueprint({ src: ['core', 'browser', 'server'], bin: true }),
++		)
++		for (const path of [
++			'configs/src/vite.core.config.ts',
++			'configs/src/vite.browser.config.ts',
++			'configs/src/vite.server.config.ts',
++		]) {
++			const face = artifacts.find((artifact) => artifact.path === path)
++			expect(face?.content).toContain("invokeOptions: { typescriptCompilerFolder: '' },")
++		}
++		const bin = artifacts.find(({ path }) => path === 'configs/src/vite.bin.config.ts')?.content
++		expect(bin).toBeDefined()
++		expect(bin).not.toContain('typescriptCompilerFolder')
++	})
++
+ 	it('joins the declaration rewrite only while the line it prints fits the width', () => {
+ 		// The names either side of the width: at 19 characters the joined call
+ 		// prints exactly on the vendored 100 columns and at 20 it prints one past, so
+diff --git a/tests/src/core/constants.test.ts b/tests/src/core/constants.test.ts
+index 9ea66c52..3d10afab 100644
+--- a/tests/src/core/constants.test.ts
++++ b/tests/src/core/constants.test.ts
+@@ -188,10 +188,11 @@ describe('shared dependency tables', () => {
+ 		expect(matchesRange(emitted, '6.0.3')).toBe(false)
+ 	})
+ 
+-	// The fork, and the control the assertion above needs: a workspace selecting
++	// The fork, and the control the preceding assertion needs: a workspace selecting
+ 	// `app/browser` checks its Vue sources with `vue-tsc`, which has no TypeScript 7
+-	// support, so it receives the ceiling instead of the shared range. The ceiling is
+-	// a floor of the same form, so it answers to the same pattern.
++	// support, so it receives `APP_BROWSER_TYPESCRIPT_RANGE` instead of the shared
++	// range. `APP_BROWSER_TYPESCRIPT_RANGE` is a floor of the same form, so it answers
++	// to the same pattern.
+ 	it('holds a Vue browser workspace at the TypeScript range vue-tsc supports', () => {
+ 		const emitted = blueprintToDevDependencies(buildBlueprint({ app: ['browser'] })).typescript
+ 		if (emitted === undefined)

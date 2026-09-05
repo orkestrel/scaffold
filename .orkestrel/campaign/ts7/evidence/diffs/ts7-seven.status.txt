@@ -1,0 +1,19 @@
+ M PROPOSAL.md
+ M ROADMAP.md
+ M configs/src/vite.core.config.ts
+ M configs/src/vite.server.config.ts
+ M guides/scaffold.md
+ M host.json
+ M package-lock.json
+ M package.json
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/core/templates.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/constants.test.ts
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+?? .orkestrel/campaign/ts7/probe-2-brief.md
+?? .orkestrel/campaign/ts7/probe-report.md
+?? .orkestrel/campaign/ts7/seven-report.md

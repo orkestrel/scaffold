@@ -1,0 +1,16 @@
+ M .orkestrel/campaign/ts7/ledger.md
+ M PROPOSAL.md
+ M ROADMAP.md
+ M guides/scaffold.md
+ M host.json
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/constants.test.ts
+?? .orkestrel/campaign/ts7/probe-audit-verdict.md
+?? .orkestrel/campaign/ts7/probe-fix-brief.md
+?? .orkestrel/campaign/ts7/probe-fix-report.md
+?? .orkestrel/campaign/ts7/seven-audit-verdict.md
+?? .orkestrel/campaign/ts7/seven-fix-brief.md
+?? .orkestrel/campaign/ts7/seven-fix-report.md

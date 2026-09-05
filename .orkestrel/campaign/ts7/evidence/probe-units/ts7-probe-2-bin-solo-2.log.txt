@@ -1,0 +1,444 @@
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+····x···········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers both protocol eras without exposing worker output on stdout
+AssertionError: expected [ …(6) ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   ObjectContaining {
++ [
++   {
+      "id": 1,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "capabilities": {
++         "tools": {},
++       },
+        "protocolVersion": "2025-06-18",
+        "serverInfo": {
+          "name": "probe",
+          "version": "0.0.12",
+        },
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 2,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
+        "tools": [
+-         ObjectContaining {
++         {
++           "description": "Answers whether a TypeScript edit compiles, lints, and passes its test in this workspace — call it before relying on such a claim, instead of reasoning or writing a throwaway probe. Supply the edit you believe is correct and an edit that must break with the stage it breaks at; the closing line is a receipt only when the case ran clean and the control broke exactly at its declared stage, and no receipt otherwise. For a performance claim, measure before proving: write a guarded bench block — if (import.meta.env.MODE === 'benchmark') — beside the probe test, run the workspace bench script, and record only magnitudes; a settled ratio then proves here as an ordinary runtime claim.",
++           "inputSchema": {
++             "additionalProperties": false,
++             "description": "One claim: the project, the case, and the control that must break.",
++             "properties": {
++               "case": {
++                 "additionalProperties": false,
++                 "description": "The drafts a claim asserts about, and the test that exercises them.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                 ],
++                 "type": "object",
++               },
++               "control": {
++                 "additionalProperties": false,
++                 "description": "A case that must fail, naming the stage where it must fail and why.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "reason": {
++                     "description": "Why the control fails at that stage.",
++                     "minLength": 1,
++                     "type": "string",
++                   },
++                   "stage": {
++                     "description": "The stage this control must fail at.",
++                     "enum": [
++                       "type",
++                       "lint",
++                       "runtime",
++                     ],
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                   "stage",
++                   "reason",
++                 ],
++                 "type": "object",
++               },
++               "project": {
++                 "description": "Workspace-relative TypeScript project the candidate drafts are checked against.",
++                 "minLength": 1,
++                 "type": "string",
++               },
++             },
++             "required": [
++               "project",
++               "case",
++               "control",
++             ],
++             "type": "object",
++           },
+            "name": "prove",
+          },
+        ],
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 3,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.12",
++         },
++       },
++       "cacheScope": "private",
++       "resultType": "complete",
+        "tools": [
+-         ObjectContaining {
++         {
++           "description": "Answers whether a TypeScript edit compiles, lints, and passes its test in this workspace — call it before relying on such a claim, instead of reasoning or writing a throwaway probe. Supply the edit you believe is correct and an edit that must break with the stage it breaks at; the closing line is a receipt only when the case ran clean and the control broke exactly at its declared stage, and no receipt otherwise. For a performance claim, measure before proving: write a guarded bench block — if (import.meta.env.MODE === 'benchmark') — beside the probe test, run the workspace bench script, and record only magnitudes; a settled ratio then proves here as an ordinary runtime claim.",
++           "inputSchema": {
++             "additionalProperties": false,
++             "description": "One claim: the project, the case, and the control that must break.",
++             "properties": {
++               "case": {
++                 "additionalProperties": false,
++                 "description": "The drafts a claim asserts about, and the test that exercises them.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                 ],
++                 "type": "object",
++               },
++               "control": {
++                 "additionalProperties": false,
++                 "description": "A case that must fail, naming the stage where it must fail and why.",
++                 "properties": {
++                   "files": {
++                     "description": "The candidate drafts the test imports.",
++                     "items": {
++                       "additionalProperties": false,
++                       "description": "One proposed file a claim carries.",
++                       "properties": {
++                         "path": {
++                           "description": "Workspace-relative path, which need not exist.",
++                           "minLength": 1,
++                           "type": "string",
++                         },
++                         "text": {
++                           "description": "The file's full contents.",
++                           "type": "string",
++                         },
++                       },
++                       "required": [
++                         "path",
++                         "text",
++                       ],
++                       "type": "object",
++                     },
++                     "type": "array",
++                   },
++                   "reason": {
++                     "description": "Why the control fails at that stage.",
++                     "minLength": 1,
++                     "type": "string",
++                   },
++                   "stage": {
++                     "description": "The stage this control must fail at.",
++                     "enum": [
++                       "type",
++                       "lint",
++                       "runtime",
++                     ],
++                   },
++                   "test": {
++                     "additionalProperties": false,
++                     "description": "One proposed file a claim carries.",
++                     "properties": {
++                       "path": {
++                         "description": "Workspace-relative path, which need not exist.",
++                         "minLength": 1,
++                         "type": "string",
++                       },
++                       "text": {
++                         "description": "The file's full contents.",
++                         "type": "string",
++                       },
++                     },
++                     "required": [
++                       "path",
++                       "text",
++                     ],
++                     "type": "object",
++                   },
++                 },
++                 "required": [
++                   "files",
++                   "test",
++                   "stage",
++                   "reason",
++                 ],
++                 "type": "object",
++               },
++               "project": {
++                 "description": "Workspace-relative TypeScript project the candidate drafts are checked against.",
++                 "minLength": 1,
++                 "type": "string",
++               },
++             },
++             "required": [
++               "project",
++               "case",
++               "control",
++             ],
++             "type": "object",
++           },
+            "name": "prove",
+          },
+        ],
++       "ttlMs": 60000,
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 4,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.12",
++         },
++       },
+        "content": [
+-         ObjectContaining {
+-           "text": StringMatching /^probe .+receipt probe:/s,
++         {
++           "text": "The probe could not arm: The Oxlint language server exited with code 0",
+            "type": "text",
+          },
+        ],
++       "isError": true,
++       "resultType": "complete",
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 5,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.12",
++         },
++       },
+        "content": [
+-         ObjectContaining {
+-           "text": StringMatching /^probe .+receipt probe:/s,
++         {
++           "text": "The probe could not arm: The Oxlint language server exited with code 0",
+            "type": "text",
+          },
+        ],
++       "isError": true,
++       "resultType": "complete",
+      },
+    },
+-   ObjectContaining {
++   {
+      "id": 6,
+-     "result": ObjectContaining {
++     "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "probe",
++           "version": "0.0.12",
++         },
++       },
+        "content": [
+-         ObjectContaining {
+-           "text": StringMatching /^probe .+receipt probe:/s,
++         {
++           "text": "The probe could not arm: The Oxlint language server exited with code 0",
+            "type": "text",
+          },
+        ],
++       "isError": true,
++       "resultType": "complete",
+      },
+    },
+  ]
+
+ ❯ tests/src/bin/main.test.ts:412:23
+    410|     expect(Buffer.concat(errors).toString('utf8')).not.toContain('Erro…
+    411|     const responses: readonly unknown[] = lines.map((line) => JSON.par…
+    412|     expect(responses).toEqual(
+       |                       ^
+    413|      expect.arrayContaining([
+    414|       expect.objectContaining({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  12:12:15
+   Duration  51.59s (transform 182ms, setup 123ms, import 169ms, tests 51.16s, environment 0ms)
+

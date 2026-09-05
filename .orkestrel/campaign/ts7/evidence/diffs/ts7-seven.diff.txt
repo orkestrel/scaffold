@@ -1,0 +1,956 @@
+diff --git a/PROPOSAL.md b/PROPOSAL.md
+index e6ba6568..415109d0 100644
+--- a/PROPOSAL.md
++++ b/PROPOSAL.md
+@@ -41,10 +41,10 @@ release cycle before ruling on Option 2.
+ 
+ Every option meets these constraints, which are stated in full under § The constraints every option
+ must satisfy: no added npm package (`AGENTS.md` § Non-negotiable rules); no second source-language
+-analyzer (`AGENTS.md` § Project model); `typescript` `6.0.3` stays on the development edge unless you
+-rule otherwise; guide mirrors stay fetched bytes and are never rewritten
+-(`.claude/rules/documentation.md` § Parity); the executed fences at `tests/guides.test.ts:212-361`
+-survive; and the guide's checked structure — methods under `## Methods`, one table per interface,
++analyzer (`AGENTS.md` § Project model); `typescript` `7.0.2` and its `@typescript/typescript6`
++bridge stay on the development edge unless you rule otherwise; guide mirrors stay fetched bytes and
++are never rewritten (`.claude/rules/documentation.md` § Parity); the executed fences at
++`tests/guides.test.ts:212-361` survive; and the guide's checked structure — methods under `## Methods`, one table per interface,
+ readonly data properties in the `## Surface` row — is preserved.
+ 
+ Refused on the evidence, each with its reason under § Refused on the evidence: TypeDoc and
+@@ -243,21 +243,21 @@ sentence-truth class. The `birth` substance disagreement, the `Encodes`/`Encode`
+ The table gives each tool at its installed version, what it reads, what it emits, what it lints or
+ formats, whether an oxlint JS plugin can reach it, and whether using it declares a package.
+ 
+-| Tool                                  | Installed version                              | Parses                                                                                                                                                                             | Emits                                                                                        | Lints or formats                                                                                                                                                           | Reachable from a JS plugin                     | Dependency delta                                                                               |
+-| ------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+-| `@microsoft/tsdoc`                    | `0.16.0`, transitive only                      | TSDoc into a `DocComment` tree                                                                                                                                                     | Plain text and TSDoc                                                                         | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
+-| `@microsoft/api-extractor`            | `7.59.0`, declared                             | TypeScript declarations and their TSDoc                                                                                                                                            | `.d.ts` rollup; an `.api.md` report; an `.api.json` doc model when `docModel.enabled` is set | no                                                                                                                                                                         | not applicable                                 | none, and the doc model needs a second configured invocation                                   |
+-| `@microsoft/api-extractor-model`      | `7.33.11`, transitive only                     | `.api.json`, exposing `tsdocComment` per item                                                                                                                                      | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
+-| `typescript`                          | `6.0.3`, development edge                      | JSDoc through `ts.getJSDocTags` (`typescript.d.ts:8750`), `ts.getJSDocCommentsAndTags` (`:8889`), `Symbol.getDocumentationComment` (`:6548`), `ts.displayPartsToString` (`:11426`) | Declarations that keep the whole doc block                                                   | no                                                                                                                                                                         | not applicable                                 | none as a development edge; a runtime import moves it                                          |
+-| `oxlint`                              | `1.80.0`, declared                             | JS, JSX, TS, TSX, and DTS only (`plugins-dev.d.ts:4129`)                                                                                                                           | no                                                                                           | JSDoc structure rules; comment text through `getAllComments` (`plugins-dev.d.ts:2697`) and `CommentType.value` (`:1315-1318`), reported through `context.report` (`:3835`) | yes, for source comment text; no, for Markdown | none                                                                                           |
+-| `oxfmt`                               | `0.65.0`, declared                             | JS, TS, JSON, YAML, Markdown, MDX, and more                                                                                                                                        | Formatted bytes                                                                              | Formats Markdown today; the `jsdoc` option normalizes doc comments and defaults to disabled                                                                                | not applicable                                 | none                                                                                           |
+-| `@orkestrel/guide`                    | `^0.0.17`, development edge fleet-wide         | Text-only line scanners, explicitly not the compiler API (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`)                                                               | Check populations, no Markdown                                                               | The catalog checks                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| `@orkestrel/markdown`                 | Runtime edge of scaffold and guide             | `parseDocument`, `parseProvenance` keeping source spans                                                                                                                            | `renderMarkdown`, canonical Markdown                                                         | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| `@orkestrel/template`                 | Runtime edge of scaffold                       | Template definitions                                                                                                                                                               | `fillTemplate`                                                                               | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| TypeDoc and `typedoc-plugin-markdown` | Not installed                                  | TSDoc plus unenforced JSDoc tags                                                                                                                                                   | HTML natively; Markdown through the plugin                                                   | no                                                                                                                                                                         | not applicable                                 | `typedoc` `0.28.20` adds `lunr`, `yaml`, `minimatch`, `markdown-it`, and `@gerrit0/mini-shiki` |
+-| `@microsoft/api-documenter`           | Not installed, `7.30.13` on the registry       | `.api.json`                                                                                                                                                                        | Markdown and DocFX YAML                                                                      | no                                                                                                                                                                         | not applicable                                 | Adds a package and its dependencies                                                            |
+-| Vale, textlint, markdownlint          | Not installed                                  | Prose                                                                                                                                                                              | no                                                                                           | Prose rules; Vale reaches comment text inside source through `comment.line` and `comment.block` scopes                                                                     | not applicable                                 | Each adds a package or a separate binary                                                       |
+-| `llms.txt`                            | Not installed, because it is a file convention | no                                                                                                                                                                                 | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| Tool                                  | Installed version                              | Parses                                                                                                                              | Emits                                                                                        | Lints or formats                                                                                                                                                           | Reachable from a JS plugin                     | Dependency delta                                                                               |
++| ------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
++| `@microsoft/tsdoc`                    | `0.16.0`, transitive only                      | TSDoc into a `DocComment` tree                                                                                                      | Plain text and TSDoc                                                                         | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
++| `@microsoft/api-extractor`            | `7.59.0`, declared                             | TypeScript declarations and their TSDoc                                                                                             | `.d.ts` rollup; an `.api.md` report; an `.api.json` doc model when `docModel.enabled` is set | no                                                                                                                                                                         | not applicable                                 | none, and the doc model needs a second configured invocation                                   |
++| `@microsoft/api-extractor-model`      | `7.33.11`, transitive only                     | `.api.json`, exposing `tsdocComment` per item                                                                                       | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
++| `typescript`                          | `7.0.2`, development edge                      | JSDoc through `typescript/unstable/ast`'s `getJSDocTags` and `typescript/unstable/sync`'s `Symbol.getDocumentationComment(checker)` | Declarations that keep the whole doc block                                                   | no                                                                                                                                                                         | not applicable                                 | none as a development edge; a runtime import moves it                                          |
++| `oxlint`                              | `1.80.0`, declared                             | JS, JSX, TS, TSX, and DTS only (`plugins-dev.d.ts:4129`)                                                                            | no                                                                                           | JSDoc structure rules; comment text through `getAllComments` (`plugins-dev.d.ts:2697`) and `CommentType.value` (`:1315-1318`), reported through `context.report` (`:3835`) | yes, for source comment text; no, for Markdown | none                                                                                           |
++| `oxfmt`                               | `0.65.0`, declared                             | JS, TS, JSON, YAML, Markdown, MDX, and more                                                                                         | Formatted bytes                                                                              | Formats Markdown today; the `jsdoc` option normalizes doc comments and defaults to disabled                                                                                | not applicable                                 | none                                                                                           |
++| `@orkestrel/guide`                    | `^0.0.17`, development edge fleet-wide         | Text-only line scanners, explicitly not the compiler API (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`)                | Check populations, no Markdown                                                               | The catalog checks                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| `@orkestrel/markdown`                 | Runtime edge of scaffold and guide             | `parseDocument`, `parseProvenance` keeping source spans                                                                             | `renderMarkdown`, canonical Markdown                                                         | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| `@orkestrel/template`                 | Runtime edge of scaffold                       | Template definitions                                                                                                                | `fillTemplate`                                                                               | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| TypeDoc and `typedoc-plugin-markdown` | Not installed                                  | TSDoc plus unenforced JSDoc tags                                                                                                    | HTML natively; Markdown through the plugin                                                   | no                                                                                                                                                                         | not applicable                                 | `typedoc` `0.28.20` adds `lunr`, `yaml`, `minimatch`, `markdown-it`, and `@gerrit0/mini-shiki` |
++| `@microsoft/api-documenter`           | Not installed, `7.30.13` on the registry       | `.api.json`                                                                                                                         | Markdown and DocFX YAML                                                                      | no                                                                                                                                                                         | not applicable                                 | Adds a package and its dependencies                                                            |
++| Vale, textlint, markdownlint          | Not installed                                  | Prose                                                                                                                               | no                                                                                           | Prose rules; Vale reaches comment text inside source through `comment.line` and `comment.block` scopes                                                                     | not applicable                                 | Each adds a package or a separate binary                                                       |
++| `llms.txt`                            | Not installed, because it is a file convention | no                                                                                                                                  | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+ 
+ **Every fetched precedent keeps the comment on the declaration.** Rust, Go, Python, Elixir,
+ Deno/JSR, and Java each attach documentation to the symbol it describes, in the same source file
+@@ -350,8 +350,8 @@ enabled: false }` at `unplugin-dts.BU1tibsL.mjs:549-554` and this repository con
+   returns what the guide says it returns" and requires transcribing each flagship fence. An option
+   that relocates a fence into an `@example` tag relocates that transcription and must name where it
+   moves to.
+-- **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. `typescript` `6.0.3`
+-  already exposes the JSDoc readers named under C5, and `@orkestrel/guide`'s `Source` is text-only by
++- **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. `typescript` `7.0.2`
++  already exposes the JSDoc readers through its `unstable/ast` and `unstable/sync` entries, and `@orkestrel/guide`'s `Source` is text-only by
+   construction and explicitly not the compiler API
+   (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`). Reading TSDoc is a capability `guide`
+   does not have, so an option must place that reader deliberately.
+@@ -406,9 +406,11 @@ walks a declaration's leading doc-comment chain: `Source.examples()`
+ (`/home/user/fleet/guide/src/core/sources/Source.ts:115-120`) reaches `extractExampleLines` and
+ `extractExamples` (`helpers.ts:1398`, `:1492`). A first-sentence reader is an extension of that same
+ scan, not a second analyzer, which keeps C12 satisfied and the dependency delta at none. The
+-TypeScript compiler API stays the **control** the scanner is measured against — `ts.getJSDocTags`,
+-`ts.getJSDocCommentsAndTags`, `Symbol.getDocumentationComment` — and is never a shipped import,
+-because a `scaffold` verb importing `typescript` would move it onto scaffold's runtime edge (C1, C5).
++TypeScript compiler API stays the **control** the scanner is measured against —
++`typescript/unstable/ast`'s `getJSDocTags` and `typescript/unstable/sync`'s
++`Symbol.getDocumentationComment(checker)`, which returns a string rather than display parts and read
++the summary and every tag over the core project in 61 ms — and is never a shipped import, because a
++`scaffold` verb importing `typescript` would move it onto scaffold's runtime edge (C1, C5).
+ 
+ **The render lives in `@orkestrel/guide`, and scaffold seeds and vendors.** The proposed shape is a
+ `render` direction beside the existing `Guide` and `Source` extraction — a single-word entity API per
+@@ -1026,8 +1028,8 @@ becomes mandatory the moment the key is set. Run `oxfmt --write` over a copy of
+ read the diff for any capitalization or collapse that alters a first sentence the `-s` rule governs,
+ and flip the key only if the diff is clean.
+ 
+-**The dependency delta is none.** oxfmt `0.65.0`, oxlint `1.80.0`, and `typescript` `6.0.3` are all
+-declared already. Option 3 writes no Markdown, so it needs neither `@orkestrel/markdown` nor
++**The dependency delta is none.** oxfmt `0.65.0`, oxlint `1.80.0`, `typescript` `7.0.2`, and the
++`@typescript/typescript6` bridge are all declared already. Option 3 writes no Markdown, so it needs neither `@orkestrel/markdown` nor
+ `@orkestrel/template`.
+ 
+ **Option 3 removes no edit site, and that is the whole trade.** It converts a class of silent drift
+@@ -1156,9 +1158,10 @@ Each risk names the evidence that settles it.
+   for a capitalization or a collapse that alters a first sentence the `-s` rule governs.
+ - **A text scan can miss a doc block.** The controls must come from outside the scanner's membership
+   rule: a doc block preceding a declaration but separated from it by a blank line, and a doc block inside a template
+-  literal. Where the scan proves unsound, the reader becomes `ts.getJSDocCommentsAndTags`
+-  (`typescript.d.ts:8889`) and `ts.displayPartsToString` (`:11426`), which a Vitest sweep can import
+-  at no dependency cost because `typescript` is already a development dependency.
++  literal. Where the scan proves unsound, the reader becomes `typescript/unstable/sync`'s
++  `Symbol.getDocumentationComment(checker)`, which a Vitest sweep can import at no dependency cost
++  because `typescript` is already a development dependency. `ts.getJSDocCommentsAndTags` and
++  `ts.displayPartsToString` are gone at the 7 major.
+ - **Whether an oxlint plugin rule can report a diagnostic on a comment is unproven here.**
+   `context.report(diagnostic)` exists, and no distillate shows a comment as a diagnostic target.
+   A throwaway rule settles it, and it is the cheapest probe in this proposal.
+diff --git a/ROADMAP.md b/ROADMAP.md
+index eaab8ac4..80b9edda 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -35,6 +35,34 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+   and reads `stale` until the template moves. Rule whether a workspace carrying
+   `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
+   project the plan already runs in a browser, then move the template and the audit together.
++- **scaffold**: a generated workspace that selects `app/browser` holds `typescript` at
++  `APP_BROWSER_TYPESCRIPT_RANGE` while every other workspace takes the shared 7 floor, because
++  `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381, open since
++  2026-05-26) and it is the checker that workspace's own `check:app:browser` script runs. Delete
++  the range, its spread in `blueprintToDevDependencies`, and the guide paragraph naming it when
++  `vue-tsc` runs against 7; that release is the trigger. No fleet package selects that
++  environment, measured 2026-09-05.
++- **scaffold**: the AST-shaped rules in the vendored policy sweep move to the oxlint `policy`
++  plugin, which reads a file's AST and needs no in-process compiler.
++  `.claude/rules/workspace.md` § Policy instruments already assigns them there, so the move is a
++  law-conformance repair rather than a new rule, and each moved rule ships its `PolicyControl`
++  entry with a control drawn from outside its membership rule. The trigger is the next visit to
++  either instrument.
++- **scaffold**: the ESNext fence transpile in `tests/guides.test.ts` moves from
++  `@typescript/typescript6` to `node:module`'s `stripTypeScriptTypes` after a probe measures its
++  construct coverage — an enum, a namespace, a parameter property, and `import =` — and reads the
++  Node minor that added it. Node v22.22.2 carries it, measured 2026-09-05, and nothing lower is
++  measured. The CommonJS transpile in the same file stays on the bridge, because stripping types
++  emits no module transform. The trigger is that probe.
++- **scaffold**: the checker-level readers move from `@typescript/typescript6` to
++  `typescript/unstable/sync` — the generated distribution proof's template, `database`'s program
++  builds, `probe`'s `TypeStage`, and the documentation proposal's control path — one unit per
++  subject, none of them a prerequisite for the move to 7. Each carries a re-read obligation at
++  TypeScript 7.1, which Microsoft states ships a different API, and each renames that entry's
++  `Symbol` export on import, because the name shadows the global. The reader itself changes shape:
++  `Symbol.getDocumentationComment(checker)` takes the checker and returns a string, and it throws
++  without that argument. The round trip over scaffold's core project read the summary and every
++  tag in 61 ms, measured 2026-09-05. The trigger is each subject's next visit.
+ - **test**: the browser journey layer resolves interactive targets and named regions, so a
+   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
+   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
+@@ -45,6 +73,19 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+   rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
+   2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
+   adopts the real entry declaration, at a toolchain revisit.
++- **fleet**: each target moves `typescript` to `^7.0.2` by hand, because no scaffold verb crosses a
++  major (`guides/scaffold.md` § Dependency floors). Per target: add `@typescript/typescript6` and
++  raise `typescript` in `package.json`, then install, all of it before `repair`, because a missing
++  planned package refuses the `configs` and `tests` groups; re-pin `@orkestrel/scaffold` and
++  `@orkestrel/probe`; run `repair`, which restores `tests/setupPolicy.ts` on the bridge; swap the
++  specifier in `tests/guides.test.ts` and `tests/distribution.test.ts`; `database` also edits
++  `tests/setupServer.ts` and `tests/setupServer.test.ts`, and `lsp` its `tests/setupConformance.ts`;
++  clear `typescriptCompilerFolder` in each published `src` environment's Vite configuration; run
++  the gates; compare the rebuilt `dist/` against the published tarball and bump only on a material
++  diff. The prerequisite is a `probe` release whose `TypeStage` resolves the workspace's bridge
++  where its `typescript` carries no `createProgram`, and widens its optional peer to
++  `^6.0.3 || ^7.0.0`; until that lands, a target on 7 has no `prove` receipt. The trigger is the
++  scaffold release carrying this move, plus the owner's go-ahead.
+ - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
+   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
+   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
+diff --git a/configs/src/vite.core.config.ts b/configs/src/vite.core.config.ts
+index 0a488474..3b57f314 100644
+--- a/configs/src/vite.core.config.ts
++++ b/configs/src/vite.core.config.ts
+@@ -19,6 +19,11 @@ export default defineConfig(
+ 							},
+ 						},
+ 					},
++					// `unplugin-dts` points api-extractor's default library location at the
++					// installed `typescript` package's root, which ships no `lib.*.d.ts` at the 7
++					// major. api-extractor applies the option only when it names a folder, so an
++					// empty one restores the library files of the compiler it bundles.
++					invokeOptions: { typescriptCompilerFolder: '' },
+ 				},
+ 			}),
+ 		],
+diff --git a/configs/src/vite.server.config.ts b/configs/src/vite.server.config.ts
+index 07f5e032..3a6282e8 100644
+--- a/configs/src/vite.server.config.ts
++++ b/configs/src/vite.server.config.ts
+@@ -11,7 +11,13 @@ export default defineConfig(
+ 		plugins: [
+ 			dts({
+ 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
+-				bundleTypes: true,
++				bundleTypes: {
++					// `unplugin-dts` points api-extractor's default library location at the
++					// installed `typescript` package's root, which ships no `lib.*.d.ts` at the 7
++					// major. api-extractor applies the option only when it names a folder, so an
++					// empty one restores the library files of the compiler it bundles.
++					invokeOptions: { typescriptCompilerFolder: '' },
++				},
+ 				beforeWriteFile: (path, content) => ({
+ 					content: /[\\/]dist[\\/]src[\\/]server[\\/]index\.d\.ts$/.test(path)
+ 						? content.replaceAll(/(?:\.\.\/)+core\/index\.[jt]s/g, '@orkestrel/scaffold')
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index a75e0ccd..f5c8c2c5 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -104,6 +104,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | Name                              | Kind  | Summary                                                                                          |
+ | --------------------------------- | ----- | ------------------------------------------------------------------------------------------------ |
+ | `APP_BROWSER_DEV_DEPENDENCIES`    | const | The development dependencies a private Vue browser application adds.                             |
++| `APP_BROWSER_TYPESCRIPT_RANGE`    | const | The TypeScript range a private Vue browser application takes instead of the shared one.          |
+ | `APP_DEV_DEPENDENCIES`            | const | The development dependency every private `app` environment adds.                                 |
+ | `APP_MATRIX`                      | const | The configuration and runtime-entry settings each private `app` environment contributes, frozen. |
+ | `APP_SERVER_DEV_DEPENDENCIES`     | const | The development dependencies a private server application adds.                                  |
+@@ -1144,6 +1145,17 @@ row entering or leaving the manifest moves a test rather than passing unnoticed.
+ distribution proof call the TypeScript JavaScript API in process, and the `typescript` package
+ publishes no such API at its 7 major.
+ 
++`typescript` is a 7 floor, and the declaration rollup analyses with the compiler
++`@microsoft/api-extractor` bundles rather than with it. Each published `src` environment's Vite
++configuration therefore clears the `typescriptCompilerFolder` invoke option: `unplugin-dts` points
++that option at the installed `typescript` package's root, which carries no `lib.*.d.ts` file at the
++7 major, and the rollup then resolves no global type. A workspace that selects `app/browser` takes
++`APP_BROWSER_TYPESCRIPT_RANGE` instead of the shared floor, because it checks its Vue sources with
++`vue-tsc` and `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381). That
++workspace's `audit` reports the shared major as a non-blocking `dependencies` question, which is the
++crossed-major reading every foreign row earns; take it as the record of the limit rather than as an
++instruction to raise the range, and the range goes when `vue-tsc` supports 7.
++
+ A newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
+ question, and a person decides whether the generated toolchain supports it. Inside the declared
+ major the verbs raise the floor themselves, which is what makes the caret's own width beside the
+diff --git a/host.json b/host.json
+index 899316ce..e5a3a701 100644
+--- a/host.json
++++ b/host.json
+@@ -682,7 +682,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "a96b221d4403d61bf6b688eafee7fd2594f822adaab4d52d6a40c03221173b19"
++			"digest": "ba5a18699b9818d80cd35b5d3acd289391b9adfb6551d3cfcbe74df53985dab8"
+ 		},
+ 		{
+ 			"storage": "scripts/codex.sh",
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "36b651d7ec58300eb0441fe8eae6961e6dfc0de216567a1bba61571b6f5e5964"
++	"digest": "f82c70ae51bba20804b30b865e875238e585d2e3aa9720068cdf7e05c5f3f647"
+ }
+diff --git a/package-lock.json b/package-lock.json
+index 7f8a353c..99a4bc3c 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -31,7 +31,7 @@
+ 				"oxfmt": "^0.65.0",
+ 				"oxlint": "^1.80.0",
+ 				"playwright": "^1.62.1",
+-				"typescript": "^6.0.3",
++				"typescript": "^7.0.2",
+ 				"vite": "^8.2.2",
+ 				"vite-plugin-dts": "^5.0.3",
+ 				"vitest": "^4.1.11"
+@@ -1657,6 +1657,346 @@
+ 				"node": ">=14.17"
+ 			}
+ 		},
++		"node_modules/@typescript/typescript-aix-ppc64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-aix-ppc64/-/typescript-aix-ppc64-7.0.2.tgz",
++			"integrity": "sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==",
++			"cpu": [
++				"ppc64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"aix"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-darwin-arm64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-darwin-arm64/-/typescript-darwin-arm64-7.0.2.tgz",
++			"integrity": "sha512-gowzar9MwS/aRWp6f3a4KUqzRjAZjOsmGNCM6LcTgXum+dBfgsBVMN+AgvOCCbguXyick6LJhpBszxMebJ8syA==",
++			"cpu": [
++				"arm64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"darwin"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-darwin-x64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-darwin-x64/-/typescript-darwin-x64-7.0.2.tgz",
++			"integrity": "sha512-SZ9xZInqApNlNGc9s0W1VSsktYSOe9cFqNOIqmN1Gs8SmkjKZYFt017G4VwPxASInODuAdbTW7sXiFUf893RgA==",
++			"cpu": [
++				"x64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"darwin"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-freebsd-arm64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-freebsd-arm64/-/typescript-freebsd-arm64-7.0.2.tgz",
++			"integrity": "sha512-W5NH4y/J0plIIS5b2xvTEkU7JFxyqdMAOgf+Ilhl0vHQXKO5dZoxd+C/jEtq56c4F3wk71RB4BMRQ2XdI+bwYQ==",
++			"cpu": [
++				"arm64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"freebsd"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-freebsd-x64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-freebsd-x64/-/typescript-freebsd-x64-7.0.2.tgz",
++			"integrity": "sha512-UMGDx5sTpzNw3WiPebH7l90IWfJggEd+egHt/q6p7/Cm3zqoV7VxkGXt+3DxPIw8CcmvAB0j3sVVfbhX+M4Tpw==",
++			"cpu": [
++				"x64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"freebsd"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-arm": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-arm/-/typescript-linux-arm-7.0.2.tgz",
++			"integrity": "sha512-gffT3xPz9sR7j/YJExkyPntrI0P2EP9XbOyWzth2/Gs0RstK+90RBcO0ncXoXy/beYll1SXw846Nf2zdnEz0QQ==",
++			"cpu": [
++				"arm"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-arm64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-arm64/-/typescript-linux-arm64-7.0.2.tgz",
++			"integrity": "sha512-Qh4eU4/y3yDjnfjjyPYihMj5/ODIlmt+Bzu17OI+fiSRDW57QmU5SiN63exPRNJPKUzcc1INa1NXdrJ+MqHjUQ==",
++			"cpu": [
++				"arm64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-loong64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-loong64/-/typescript-linux-loong64-7.0.2.tgz",
++			"integrity": "sha512-uEHck9i8hoAzXPiYRib1O7miOnz23SxIeVl6F4LXox+qov1K35jHcEW6VHKvZI+pyvl7fZEP4MCU5LYvIq1GuQ==",
++			"cpu": [
++				"loong64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-mips64el": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-mips64el/-/typescript-linux-mips64el-7.0.2.tgz",
++			"integrity": "sha512-R4KvAMnE43W5Qeqb0Ly56O3mWMWIAgsMyz36DCaycd5nbg/9kzm0liw3JocfRqyJY0KPmzFjbswozXyW0DnIYA==",
++			"cpu": [
++				"mips64el"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-ppc64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-ppc64/-/typescript-linux-ppc64-7.0.2.tgz",
++			"integrity": "sha512-DORx5b3sd/4S7eayxm4FQv+A7CrkUIGRaHiwI8oiHTAI1fAPWhF4J0vAlkC8biAlHSVVwxMQ3tjZ2/DVbnQiiA==",
++			"cpu": [
++				"ppc64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-riscv64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-riscv64/-/typescript-linux-riscv64-7.0.2.tgz",
++			"integrity": "sha512-wf0jqEDOjrPRnKwYRyyJDRo11KMbvMFrU+q4zqKyChODBzvlkbhNQfKvLxQCcwTpdDaXSHZTVuh0JoCrKCUMHQ==",
++			"cpu": [
++				"riscv64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-s390x": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-s390x/-/typescript-linux-s390x-7.0.2.tgz",
++			"integrity": "sha512-IkwJc3L7yhytWd/ewjyxNDfOmswCm9GWMJT/ue/dU4aZNbwZeYAetq42VyLmsmSjvoX7z74X6ZaYCtzAr0EuGw==",
++			"cpu": [
++				"s390x"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-linux-x64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-linux-x64/-/typescript-linux-x64-7.0.2.tgz",
++			"integrity": "sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==",
++			"cpu": [
++				"x64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"linux"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-netbsd-arm64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-netbsd-arm64/-/typescript-netbsd-arm64-7.0.2.tgz",
++			"integrity": "sha512-+polYF4MF04aPpO5FTkHran9yUQDSXqy5GiSDKpsll5jy3l3+g9QLhpf39T+ePtefhXLOGrLl0QIjkQP6VnelA==",
++			"cpu": [
++				"arm64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"netbsd"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-netbsd-x64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-netbsd-x64/-/typescript-netbsd-x64-7.0.2.tgz",
++			"integrity": "sha512-8YIT0EHM/3dq10ZOVF/A7pc/YSMtbcecct4rWtexrnSCHOPcpC2KTLXfTCR6vDpnSiY12heNb1GiN/wu+T/FyA==",
++			"cpu": [
++				"x64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"netbsd"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-openbsd-arm64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-openbsd-arm64/-/typescript-openbsd-arm64-7.0.2.tgz",
++			"integrity": "sha512-APT8+ClYnuYm1u9+kgGXoMj2VzWzcymwh2gNSQVySHfkRDGOTVkoWLjCmOQSaO+PoqQ57B0flRp9SA+7GnnkzQ==",
++			"cpu": [
++				"arm64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"openbsd"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-openbsd-x64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-openbsd-x64/-/typescript-openbsd-x64-7.0.2.tgz",
++			"integrity": "sha512-yX7s+Q0Dln0Dt9tEzZsAjXXR/+ytBM7AlglaqyeMPxQszJ1JhlJdZ6jLA+IzldHtflX81em7lDao1xXu+aRRkg==",
++			"cpu": [
++				"x64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"openbsd"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-sunos-x64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-sunos-x64/-/typescript-sunos-x64-7.0.2.tgz",
++			"integrity": "sha512-dLJDGaLZ1D4HPQn62u1n8mBDkJREwMsAkCdkwd4Ieqw+x3TUyTsqY0YiBCtE6H6OzzgGk3iuZ3vFWRS+E8/d1g==",
++			"cpu": [
++				"x64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"sunos"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-win32-arm64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-win32-arm64/-/typescript-win32-arm64-7.0.2.tgz",
++			"integrity": "sha512-Gyl1Vy6OsWesLzmq+EP0Fb7b4Nid5232AvcA2SFcdYreldpNtYFFofPjnt62y9hQy7VTaZp65ICJjuAQRaVcIQ==",
++			"cpu": [
++				"arm64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"win32"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
++		"node_modules/@typescript/typescript-win32-x64": {
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/@typescript/typescript-win32-x64/-/typescript-win32-x64-7.0.2.tgz",
++			"integrity": "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g==",
++			"cpu": [
++				"x64"
++			],
++			"dev": true,
++			"license": "Apache-2.0",
++			"optional": true,
++			"os": [
++				"win32"
++			],
++			"engines": {
++				"node": ">=16.20.0"
++			}
++		},
+ 		"node_modules/@typescript/typescript6": {
+ 			"version": "6.0.2",
+ 			"resolved": "https://registry.npmjs.org/@typescript/typescript6/-/typescript6-6.0.2.tgz",
+@@ -3125,17 +3465,38 @@
+ 			}
+ 		},
+ 		"node_modules/typescript": {
+-			"version": "6.0.3",
+-			"resolved": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz",
+-			"integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
++			"version": "7.0.2",
++			"resolved": "https://registry.npmjs.org/typescript/-/typescript-7.0.2.tgz",
++			"integrity": "sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==",
+ 			"dev": true,
+ 			"license": "Apache-2.0",
+ 			"bin": {
+-				"tsc": "bin/tsc",
+-				"tsserver": "bin/tsserver"
++				"tsc": "bin/tsc"
+ 			},
+ 			"engines": {
+-				"node": ">=14.17"
++				"node": ">=16.20.0"
++			},
++			"optionalDependencies": {
++				"@typescript/typescript-aix-ppc64": "7.0.2",
++				"@typescript/typescript-darwin-arm64": "7.0.2",
++				"@typescript/typescript-darwin-x64": "7.0.2",
++				"@typescript/typescript-freebsd-arm64": "7.0.2",
++				"@typescript/typescript-freebsd-x64": "7.0.2",
++				"@typescript/typescript-linux-arm": "7.0.2",
++				"@typescript/typescript-linux-arm64": "7.0.2",
++				"@typescript/typescript-linux-loong64": "7.0.2",
++				"@typescript/typescript-linux-mips64el": "7.0.2",
++				"@typescript/typescript-linux-ppc64": "7.0.2",
++				"@typescript/typescript-linux-riscv64": "7.0.2",
++				"@typescript/typescript-linux-s390x": "7.0.2",
++				"@typescript/typescript-linux-x64": "7.0.2",
++				"@typescript/typescript-netbsd-arm64": "7.0.2",
++				"@typescript/typescript-netbsd-x64": "7.0.2",
++				"@typescript/typescript-openbsd-arm64": "7.0.2",
++				"@typescript/typescript-openbsd-x64": "7.0.2",
++				"@typescript/typescript-sunos-x64": "7.0.2",
++				"@typescript/typescript-win32-arm64": "7.0.2",
++				"@typescript/typescript-win32-x64": "7.0.2"
+ 			}
+ 		},
+ 		"node_modules/ufo": {
+diff --git a/package.json b/package.json
+index d1cdb311..8d7a8548 100644
+--- a/package.json
++++ b/package.json
+@@ -112,7 +112,7 @@
+ 		"oxfmt": "^0.65.0",
+ 		"oxlint": "^1.80.0",
+ 		"playwright": "^1.62.1",
+-		"typescript": "^6.0.3",
++		"typescript": "^7.0.2",
+ 		"vite": "^8.2.2",
+ 		"vite-plugin-dts": "^5.0.3",
+ 		"vitest": "^4.1.11"
+diff --git a/src/core/compilers.ts b/src/core/compilers.ts
+index 492271aa..1a06bec8 100644
+--- a/src/core/compilers.ts
++++ b/src/core/compilers.ts
+@@ -26,6 +26,7 @@ import {
+ import { fillTemplate } from '@orkestrel/template'
+ import {
+ 	APP_BROWSER_DEV_DEPENDENCIES,
++	APP_BROWSER_TYPESCRIPT_RANGE,
+ 	APP_DEV_DEPENDENCIES,
+ 	APP_MATRIX,
+ 	APP_SERVER_DEV_DEPENDENCIES,
+@@ -193,6 +194,10 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
+  * the peer's floor states what consumers may supply rather than what this workspace
+  * develops against.
+  *
++ * The `app/browser` axis is the one that lowers a shared pin rather than adding
++ * to it: a workspace checking Vue sources takes the TypeScript range `vue-tsc`
++ * supports.
++ *
+  * A peer is declared here as well as under `peerDependencies`, because a peer is
+  * not installed by the workspace that declares it and developing against one
+  * requires it present. A runtime dependency is the opposite case and is removed:
+@@ -220,6 +225,9 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
+ 		...(blueprint.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
+ 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
+ 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
++		// After the shared table on purpose: this row lowers the TypeScript range rather
++		// than adding one.
++		...(blueprint.app.includes('browser') ? { typescript: APP_BROWSER_TYPESCRIPT_RANGE } : {}),
+ 		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
+ 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
+ 	}
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index b12117c7..737acbaa 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -538,6 +538,16 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
+ 	'vue-tsc': '^3.3.7',
+ })
+ 
++/**
++ * Names the TypeScript range a private Vue browser application takes instead of the shared one.
++ *
++ * @remarks
++ * A workspace that selects `app/browser` checks its Vue sources with `vue-tsc`, which has no
++ * TypeScript 7 support (`vuejs/language-tools` issue 5381). The workspace holds the 6 major so its
++ * own check script runs, and this range is removed when `vue-tsc` supports 7.
++ */
++export const APP_BROWSER_TYPESCRIPT_RANGE = '^6.0.3'
++
+ /**
+  * Names the development dependency used only by the optional single-file showcase build.
+  *
+diff --git a/src/core/templates.ts b/src/core/templates.ts
+index fbb62555..6c45646c 100644
+--- a/src/core/templates.ts
++++ b/src/core/templates.ts
+@@ -564,6 +564,11 @@ export default defineConfig(
+ 							},
+ 						},
+ 					},
++					// \`unplugin-dts\` points api-extractor's default library location at the
++					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
++					// major. api-extractor applies the option only when it names a folder, so an
++					// empty one restores the library files of the compiler it bundles.
++					invokeOptions: { typescriptCompilerFolder: '' },
+ 				},
+ 			}),
+ 		],
+@@ -598,7 +603,13 @@ export default defineConfig(
+ 		plugins: [
+ 			dts({
+ 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.browser.json'),
+-				bundleTypes: true,
++				bundleTypes: {
++					// \`unplugin-dts\` points api-extractor's default library location at the
++					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
++					// major. api-extractor applies the option only when it names a folder, so an
++					// empty one restores the library files of the compiler it bundles.
++					invokeOptions: { typescriptCompilerFolder: '' },
++				},
+ 				beforeWriteFile: (path, content) => ({
+ 					content: /[\\\\/]dist[\\\\/]src[\\\\/]browser[\\\\/]index\\.d\\.ts$/.test(path)
+ {{replacement}}
+@@ -622,7 +633,13 @@ export default defineConfig(
+ 		plugins: [
+ 			dts({
+ 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
+-				bundleTypes: true,
++				bundleTypes: {
++					// \`unplugin-dts\` points api-extractor's default library location at the
++					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
++					// major. api-extractor applies the option only when it names a folder, so an
++					// empty one restores the library files of the compiler it bundles.
++					invokeOptions: { typescriptCompilerFolder: '' },
++				},
+ 				beforeWriteFile: (path, content) => ({
+ 					content: /[\\\\/]dist[\\\\/]src[\\\\/]server[\\\\/]index\\.d\\.ts$/.test(path)
+ {{replacement}}
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index b300d7d2..6d5b1759 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -12,6 +12,7 @@ import { SCRATCH_PREFIX, type TestUpstreamReply } from '../../setupServer.js'
+ import { afterAll, describe, expect, it } from 'vitest'
+ import {
+ 	APP_BROWSER_DEV_DEPENDENCIES,
++	APP_BROWSER_TYPESCRIPT_RANGE,
+ 	APP_DEV_DEPENDENCIES,
+ 	ARTIFACT_TEMPLATES,
+ 	BASE_DEV_DEPENDENCIES,
+@@ -133,9 +134,20 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
+ 		status: 200,
+ 		body: buildPackument(BASE_DEV_DEPENDENCIES.oxlint?.slice(1) ?? ''),
+ 	},
++	// The one planned row the product holds at two majors: a workspace selecting
++	// `app/browser` takes the range `vue-tsc` supports while every other workspace
++	// takes the shared one. The registry publishes both, so the fixture serves both;
++	// a single-version packument reports the browser floor as unpublished and refuses
++	// the write that asked for it.
+ 	'/typescript': {
+ 		status: 200,
+-		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
++		body: JSON.stringify({
++			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
++			versions: {
++				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
++				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
++			},
++		}),
+ 	},
+ 	'/vite': {
+ 		status: 200,
+@@ -248,9 +260,20 @@ const AUDIT_REGISTRY = await createUpstreamServer({
+ 		status: 200,
+ 		body: buildPackument(SOURCE_BROWSER_DEV_DEPENDENCIES.playwright?.slice(1) ?? ''),
+ 	},
++	// The one planned row the product holds at two majors: a workspace selecting
++	// `app/browser` takes the range `vue-tsc` supports while every other workspace
++	// takes the shared one. The registry publishes both, so the fixture serves both;
++	// a single-version packument reports the browser floor as unpublished and refuses
++	// the write that asked for it.
+ 	'/typescript': {
+ 		status: 200,
+-		body: buildPackument(BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? ''),
++		body: JSON.stringify({
++			'dist-tags': { latest: BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '' },
++			versions: {
++				[APP_BROWSER_TYPESCRIPT_RANGE.slice(1)]: {},
++				[BASE_DEV_DEPENDENCIES.typescript?.slice(1) ?? '']: {},
++			},
++		}),
+ 	},
+ 	'/vite': {
+ 		status: 200,
+@@ -1177,7 +1200,7 @@ describe('CLI audit', () => {
+ 			expect(audit.questions).toStrictEqual([
+ 				{
+ 					field: 'dependencies',
+-					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
++					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^7.0.2",`,
+ 					blocking: false,
+ 				},
+ 			])
+@@ -1211,7 +1234,7 @@ describe('CLI audit', () => {
+ 			expect(audit.questions).toStrictEqual([
+ 				{
+ 					field: 'dependencies',
+-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.2.2", "vitest": "^4.1.11",`,
++					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^7.0.2", "vite": "^8.2.2", "vitest": "^4.1.11",`,
+ 					blocking: false,
+ 				},
+ 			])
+@@ -1228,7 +1251,7 @@ describe('CLI audit', () => {
+ 				'target/package.json',
+ 				buildTargetManifest(undefined, undefined, {
+ 					...TARGET_DEV_DEPENDENCIES,
+-					typescript: '^6.0.3',
++					typescript: '^7.0.2',
+ 				}),
+ 			)
+ 			const sink = createSink()
+@@ -1382,7 +1405,7 @@ describe('CLI audit', () => {
+ 				'target/package.json',
+ 				buildTargetManifest(
+ 					undefined,
+-					{ typescript: '~6.4.0' },
++					{ typescript: '~7.4.0' },
+ 					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+ 				),
+ 			)
+@@ -1530,7 +1553,7 @@ describe('CLI audit', () => {
+ 			expect(includedAudit.questions).toStrictEqual([
+ 				{
+ 					field: 'dependencies',
+-					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
++					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^7.0.2",`,
+ 					blocking: false,
+ 				},
+ 			])
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index e5ba87d1..fabcdf5e 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -449,7 +449,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
+ 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
+ 		)
+ 
+-		expect(planned.typescript).toBe('^6.0.3')
++		expect(planned.typescript).toBe('^7.0.2')
+ 	})
+ 
+ 	it('emits a conditional toolchain pin beside a foreign peer floor', () => {
+@@ -477,7 +477,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
+ 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
+ 		)
+ 
+-		expect(manifest).toContain('"typescript": "^6.0.3"')
++		expect(manifest).toContain('"typescript": "^7.0.2"')
+ 		expect(manifest).toContain('"peerDependencies": {\n\t\t"typescript": ">=6.0.0"\n\t}')
+ 	})
+ 
+diff --git a/tests/src/core/constants.test.ts b/tests/src/core/constants.test.ts
+index 2690a330..9ea66c52 100644
+--- a/tests/src/core/constants.test.ts
++++ b/tests/src/core/constants.test.ts
+@@ -176,15 +176,29 @@ describe('shared dependency tables', () => {
+ 		expect(ORKESTREL_RANGE_PATTERN.test(pinned.slice(1))).toBe(false)
+ 	})
+ 
+-	// The generated TypeScript configuration and declaration pipeline are proven
+-	// only below TypeScript 7, and the range a workspace actually receives is the
+-	// emitted one. Read there, it must name major 6 and admit no 7.x release.
+-	it('emits a TypeScript range bounded below 7', () => {
++	// The range a workspace receives is the emitted one, so it is read there rather
++	// than from the table the emitter read. A workspace whose gate is `tsc` takes the
++	// shared range.
++	it('emits the shared TypeScript range at the 7 major', () => {
+ 		const emitted = blueprintToDevDependencies(buildBlueprint()).typescript
++		if (emitted === undefined)
++			throw new Error('The emitted development dependencies carry no TypeScript')
++		expect(extractRangeMajor(emitted)).toBe(7)
++		expect(matchesRange(emitted, '7.0.2')).toBe(true)
++		expect(matchesRange(emitted, '6.0.3')).toBe(false)
++	})
++
++	// The fork, and the control the assertion above needs: a workspace selecting
++	// `app/browser` checks its Vue sources with `vue-tsc`, which has no TypeScript 7
++	// support, so it receives the ceiling instead of the shared range. The ceiling is
++	// a floor of the same form, so it answers to the same pattern.
++	it('holds a Vue browser workspace at the TypeScript range vue-tsc supports', () => {
++		const emitted = blueprintToDevDependencies(buildBlueprint({ app: ['browser'] })).typescript
+ 		if (emitted === undefined)
+ 			throw new Error('The emitted development dependencies carry no TypeScript')
+ 		expect(extractRangeMajor(emitted)).toBe(6)
+ 		expect(matchesRange(emitted, '7.0.2')).toBe(false)
++		expect(TOOLCHAIN_RANGE_PATTERN.test(emitted)).toBe(true)
+ 	})
+ })
+ 
+diff --git a/tests/src/core/fixtures/setup-false-manifest.txt b/tests/src/core/fixtures/setup-false-manifest.txt
+index 007d54d3..fb300ffe 100644
+--- a/tests/src/core/fixtures/setup-false-manifest.txt
++++ b/tests/src/core/fixtures/setup-false-manifest.txt
+@@ -70,7 +70,7 @@
+ 		"@typescript/typescript6": "^6.0.2",
+ 		"oxfmt": "^0.65.0",
+ 		"oxlint": "^1.80.0",
+-		"typescript": "^6.0.3",
++		"typescript": "^7.0.2",
+ 		"vite": "^8.2.2",
+ 		"vite-plugin-dts": "^5.0.3",
+ 		"vitest": "^4.1.11"
+diff --git a/tests/src/core/fixtures/source-manifest.txt b/tests/src/core/fixtures/source-manifest.txt
+index 007d54d3..fb300ffe 100644
+--- a/tests/src/core/fixtures/source-manifest.txt
++++ b/tests/src/core/fixtures/source-manifest.txt
+@@ -70,7 +70,7 @@
+ 		"@typescript/typescript6": "^6.0.2",
+ 		"oxfmt": "^0.65.0",
+ 		"oxlint": "^1.80.0",
+-		"typescript": "^6.0.3",
++		"typescript": "^7.0.2",
+ 		"vite": "^8.2.2",
+ 		"vite-plugin-dts": "^5.0.3",
+ 		"vitest": "^4.1.11"

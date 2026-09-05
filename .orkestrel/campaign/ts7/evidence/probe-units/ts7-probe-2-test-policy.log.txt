@@ -1,0 +1,14 @@
+
+> @orkestrel/probe@0.0.12 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+···············································································································
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  12:09:50
+   Duration  1.37s (transform 278ms, setup 33ms, import 666ms, tests 523ms, environment 0ms)
+
