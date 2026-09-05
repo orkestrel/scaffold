@@ -20,3 +20,4 @@ Design round, writer, audit, and verifier rows are appended as they dispatch.
 | docs-design (Lens B) | `planner` | Opus 5 | same run, node `design:B` | `design-brief.md` | `design-B-report.md` | subjective: authored narrative with generated reference regions |
 | docs-design (Lens C) | `planner` | Opus 5 | same run, node `design:C` | `design-brief.md` | `design-C-report.md` | subjective: one voice for humans and agents, prose law in lint and format |
 | docs-design (Lens O) | `reviewer` | Opus 5 | same run, node `design:O` | `design-brief.md` | `design-O-report.md` | objective lane on Opus, the recorded substitution for the dark Sol bench; constraints, cost model, falsification, criteria |
+| docs-proposal | `implementer` | Opus 5 | native subagent | `proposal-brief.md` | `proposal-report.md` | writes `PROPOSAL.md` from `reconciliation.md`; the Orchestrator's reconciliation is the unit's ruling input |
