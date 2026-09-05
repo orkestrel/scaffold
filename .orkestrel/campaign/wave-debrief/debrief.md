@@ -129,3 +129,17 @@ The verifier's run over the integrated tree is the re-proof.
 - the ragged wraps are reflowed (subjective F5, objective F9), `grep` is no longer a verb (subjective F6), the 2026-08-27 anecdote sits on the fallback bullet (subjective F7), and the roadmap row states mcp's placement precisely (objective F7).
 
 R-A (the inventory's currency) closes with the build after the last canon edit; R-C (the vendored-byte obligation) stays the owner's release, as `ROADMAP.md` § 4 records.
+
+## Re-proof evidence
+
+The independent `verifier` on Sonnet ran the gate chain on the integrated tree on 2026-09-05 (`verify-debrief-report.md`): `npm run format:check` exit 0, `npm run lint:check` exit 0, `npm run check` exit 0, `npm run build` exit 0, `npm test` exit 0 — `GATES: GREEN`. Its observation, `npm run test:distribution -- --mode release`, exited 1 at the packed consumer's install (`tests/distribution.test.ts:905`, `expected 1 to be +0`). The Orchestrator's deciding runs on the host: under npm 10.9.7 the same install exits 1 inside npm itself (`npm error Cannot read properties of null (reading 'edgesOut')`, reproduced outside vitest on the generated `proof` workspace with the packed tarball as its scaffold devDependency); under npm 11.19.1 the install exits 0 (`added 150 packages`) and the proof exits 0 (`Test Files 1 passed (1)`, `Tests 5 passed (5)`), which is the toolchain the wave ran every gate under (`PATH=/opt/npm11/bin:$PATH` in every instrument). Carried to `ROADMAP.md` § 4's next-matrix rows as a scaffold row.
+
+The generated-workspace projects inside `npm test` (`test:setup`, `test:config`, `test:guides`, `test:policy`) consumed the refined host inventory and passed, which is the propagation proof for new workspaces; the fleet targets receive it with scaffold's next vendored release.
+
+## Disposition
+
+Every finding in § Findings has a carrier: a canon edit landed in this commit, a roadmap row, the `catalog-peers` unit, this file with its reason, or a drop with the refuting evidence. The canon delta is committed and pushed to the branch and to `main`. Open beyond this debrief: the scaffold release that vendors the canon (the owner's), the middleware, timeout, and worker publish notes and the next-matrix rows `ROADMAP.md` § 4 carries, and the three-application campaign under `.orkestrel/campaign/`, untouched.
+
+Retire this folder through `.agents/skills/orkestrel-debrief/references/retention.md` on the owner's go-ahead: the carry check closes (every open item names its carrier above), the promotion check closes (the process laws sit in the skill references and the contract, the product truth in `guides/scaffold.md`, the decisions in the landing commit), the measurement check closes (each number here carries its date and its run), and `tmp/units/`, `tmp/cursor/`, and the Orchestrator's scratchpad copies are the launch copies the sweep removes.
+
+DEBRIEF: FOLDED
