@@ -132,3 +132,15 @@ host.json: rebuilt by build:inventory (2 lines change: the tests/setupPolicy.ts 
 ```
 
 Reading: the move is a bounded change in scaffold — the two dependency lines in `package.json`, the bridge in the shared dependency table, the import swap at five sites plus the template, the `invokeOptions` override in the two checked-in vite configs and the two `dts` templates, the range literals in the tests and fixtures, and the rebuilt `host.json` — after which every gate the rehearsal ran is green except the ones the unchanged templates fail, which the same change closes.
+
+## Settled after the design round
+
+```text
+$ npm view @typescript/typescript6 versions → ["6.0.0","6.0.1","6.0.2"]
+$ node -e "const ts=require('@typescript/typescript6'); …" (rehearsal install) → bridge lib version 6.0.3 | getDefaultLibFilePath: …/node_modules/@typescript/old/lib/lib.esnext.full.d.ts | exists: true
+$ @typescript/typescript6/package.json → dependencies { "@typescript/old": "npm:typescript@^6" }, files bin, lib, LICENSE.txt, README.md
+$ md5sum tests/setupPolicy.ts against every /home/user/fleet/<package>/tests/setupPolicy.ts → identical=48 differing=[]
+$ /home/user/fleet/probe/package.json:116-133 → peerDependencies typescript "^6.0.3" (optional), engines "^22.12.0 || >=24.0.0"; src/server/helpers.ts:399-407 loadWorkspaceModule(workspace, 'typescript') → createRequire(workspace/package.json)('typescript')
+```
+
+Reading: the bridge's own version (6.0.2) is the wrapper's; the compiler it re-exports is a real `typescript@6.x` install aliased as `@typescript/old`, which is why its library files resolve and why its `version` reads 6.0.3. One vendored edit to `tests/setupPolicy.ts` reaches every fleet target through `repair`, because every copy is byte-identical today. `probe`'s `TypeStage` resolves the target workspace's own `typescript`, so a target that moves to 7 loses the `prove` instrument until `probe` releases a fallback to the bridge.
