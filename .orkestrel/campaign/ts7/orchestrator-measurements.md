@@ -237,3 +237,12 @@ $ git diff b331d93 --stat -- src/server/stages/TypeStage.ts src/server/stages/Li
 ```
 
 Reading: `Probe.#arm` boots every stage at once, so the type stage's first inspection, a synchronous TypeScript program build over the workspace that takes 2.0 to 2.3 s cold on this four-CPU host, runs on the same event loop the lint client's 2 s `initialize` deadline (`LINT_DEADLINE`) is timed on. When the build crosses 2 s the deadline timer fires as the loop unblocks, ahead of the answer already sitting in the pipe, and the stage reports the server "exited with code 0" after the client's grace teardown. The language server itself answers in under 0.7 s. Every red row of the deciding runs arms a probe in a cold process (the bin rows, the guides receipt row, the Probe rows that mint a token), and the same rows passed alone at 12:22 and 12:58 when the host built the program faster. The change touches neither the type warm nor the lint deadline, so the race is a pre-existing seam of the probe package on a slow host, recorded here and in the commit message as a successor item: order the lint warm ahead of the type build, or size `LINT_DEADLINE` from the host, in `probe`'s next visit.
+
+## The fix-5 presence check over the final probe tree
+
+```text
+$ grep -n "Names the tool versions the target workspace's installed manifests publish, read at construction." src/core/types.ts → 453
+$ grep -n -A1 "Every selection at once" tests/setupServer.test.ts → 71-72, the comment wrapped by the formatter: "Every selection at once: the workspace a proof that branches on the installation / reaches for its equipped case."
+$ grep -rnE "resolved (tool )?version|versions resolved" src/ guides/probe.md → no match
+$ grep -nE "both cases" src/core/types.ts → 98 and 469, the case-and-control sense, not the split row
+```
