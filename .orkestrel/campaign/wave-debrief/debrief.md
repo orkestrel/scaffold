@@ -117,3 +117,15 @@ The vendored surface moved (`.agents/**`, `.claude/agents/**`, `.codex/agents/**
 - R2 (a 99-column line in the vendored catalog role's paragraph): re-wrapped at 88 columns.
 
 The verifier's run over the integrated tree is the re-proof.
+
+**canon** (the Orchestrator's own edits; audited by `reviewer` on Opus holding the subjective lane, `canon-audit-subjective.md`, `reviewer` on Opus holding the objective lane, `canon-audit-objective.md`, and `checker` on Sonnet, `canon-audit-checker.md`). Claims 4, 6, 7, and 8 held on both lanes; the checker passed 5, 6, and 7. Every broken claim and every finding took the auditor's prescription verbatim, so the round closes on the re-rendered diff, the writing sweep, and the verifier's run rather than on a fresh audit round:
+
+- the ordinal in the landed bump trigger (checker F1, subjective claim 2, objective claims 2 and 5) reads "One trigger orders rather than bumps";
+- the checker carve-out on the reviewer's mechanical-conformance lens (subjective claim 1, objective F5) is struck, and the adverse-condition list points at `.claude/rules/quality.md` § Falsification instead of copying it (objective claim 3);
+- the skill's browser-path copy of § Spend the window and its copy of the layer-interleaving sentence (subjective claim 3, objective F3 and F6) are pointers; § Spend the window reads the acceptance line before the rest of the layer and the file's opening no longer says the code opens no window (objective F3 and F4);
+- the two overlapping orders (subjective F1 and R1, objective claim 3 and F1, R-B): the visit re-pins without bumping and sweeps the self-pins after its install; § Prepare a layer bumps after the visit has ruled, re-pins and installs, sweeps the version class, gates, and writes the release commit; the inventory-ruled shortcut that folds the layer into the visit is stated once;
+- the release-instrument clause leads with the run rather than restating the authorship bullet, "Only" is dropped from the bullet it contradicted, the order law's development-edge clause is trimmed to its owner, and the contract carries a pointer to the ordering trigger the skill states (subjective F4 and R2, objective F2 and claim 3);
+- the Codex `reviewer` mirror's description names both lanes and its spliced sentence is split and re-wrapped (subjective F2 and F3, objective F8);
+- the ragged wraps are reflowed (subjective F5, objective F9), `grep` is no longer a verb (subjective F6), the 2026-08-27 anecdote sits on the fallback bullet (subjective F7), and the roadmap row states mcp's placement precisely (objective F7).
+
+R-A (the inventory's currency) closes with the build after the last canon edit; R-C (the vendored-byte obligation) stays the owner's release, as `ROADMAP.md` § 4 records.
