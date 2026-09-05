@@ -104,6 +104,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | Name                              | Kind  | Summary                                                                                          |
 | --------------------------------- | ----- | ------------------------------------------------------------------------------------------------ |
 | `APP_BROWSER_DEV_DEPENDENCIES`    | const | The development dependencies a private Vue browser application adds.                             |
+| `APP_BROWSER_TYPESCRIPT_RANGE`    | const | The TypeScript range a private Vue browser application takes instead of the shared one.          |
 | `APP_DEV_DEPENDENCIES`            | const | The development dependency every private `app` environment adds.                                 |
 | `APP_MATRIX`                      | const | The configuration and runtime-entry settings each private `app` environment contributes, frozen. |
 | `APP_SERVER_DEV_DEPENDENCIES`     | const | The development dependencies a private server application adds.                                  |
@@ -1143,6 +1144,17 @@ row entering or leaving the manifest moves a test rather than passing unnoticed.
 `@typescript/typescript6` is an installed row because the vendored policy sweep and the generated
 distribution proof call the TypeScript JavaScript API in process, and the `typescript` package
 publishes no such API at its 7 major.
+
+`typescript` is a 7 floor, and the declaration rollup analyses with the compiler
+`@microsoft/api-extractor` bundles rather than with it. Each published `src` environment's Vite
+configuration therefore clears the `typescriptCompilerFolder` invoke option: `unplugin-dts` points
+that option at the installed `typescript` package's root, which carries no `lib.*.d.ts` file at the
+7 major, and the rollup then resolves no global type. A workspace that selects `app/browser` takes
+`APP_BROWSER_TYPESCRIPT_RANGE` instead of the shared floor, because it checks its Vue sources with
+`vue-tsc` and `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381). That
+workspace's `audit` reports the shared major as a non-blocking `dependencies` question, which is the
+crossed-major reading every foreign row earns; take it as the record of the limit rather than as an
+instruction to raise the range, and the range goes when `vue-tsc` supports 7.
 
 A newer major is never crossed for you. `audit` reports one as a non-blocking `dependencies`
 question, and a person decides whether the generated toolchain supports it. Inside the declared

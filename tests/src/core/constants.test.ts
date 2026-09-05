@@ -176,15 +176,29 @@ describe('shared dependency tables', () => {
 		expect(ORKESTREL_RANGE_PATTERN.test(pinned.slice(1))).toBe(false)
 	})
 
-	// The generated TypeScript configuration and declaration pipeline are proven
-	// only below TypeScript 7, and the range a workspace actually receives is the
-	// emitted one. Read there, it must name major 6 and admit no 7.x release.
-	it('emits a TypeScript range bounded below 7', () => {
+	// The range a workspace receives is the emitted one, so it is read there rather
+	// than from the table the emitter read. A workspace whose gate is `tsc` takes the
+	// shared range.
+	it('emits the shared TypeScript range at the 7 major', () => {
 		const emitted = blueprintToDevDependencies(buildBlueprint()).typescript
+		if (emitted === undefined)
+			throw new Error('The emitted development dependencies carry no TypeScript')
+		expect(extractRangeMajor(emitted)).toBe(7)
+		expect(matchesRange(emitted, '7.0.2')).toBe(true)
+		expect(matchesRange(emitted, '6.0.3')).toBe(false)
+	})
+
+	// The fork, and the control the assertion above needs: a workspace selecting
+	// `app/browser` checks its Vue sources with `vue-tsc`, which has no TypeScript 7
+	// support, so it receives the ceiling instead of the shared range. The ceiling is
+	// a floor of the same form, so it answers to the same pattern.
+	it('holds a Vue browser workspace at the TypeScript range vue-tsc supports', () => {
+		const emitted = blueprintToDevDependencies(buildBlueprint({ app: ['browser'] })).typescript
 		if (emitted === undefined)
 			throw new Error('The emitted development dependencies carry no TypeScript')
 		expect(extractRangeMajor(emitted)).toBe(6)
 		expect(matchesRange(emitted, '7.0.2')).toBe(false)
+		expect(TOOLCHAIN_RANGE_PATTERN.test(emitted)).toBe(true)
 	})
 })
 

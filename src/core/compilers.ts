@@ -26,6 +26,7 @@ import {
 import { fillTemplate } from '@orkestrel/template'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
+	APP_BROWSER_TYPESCRIPT_RANGE,
 	APP_DEV_DEPENDENCIES,
 	APP_MATRIX,
 	APP_SERVER_DEV_DEPENDENCIES,
@@ -193,6 +194,10 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  * the peer's floor states what consumers may supply rather than what this workspace
  * develops against.
  *
+ * The `app/browser` axis is the one that lowers a shared pin rather than adding
+ * to it: a workspace checking Vue sources takes the TypeScript range `vue-tsc`
+ * supports.
+ *
  * A peer is declared here as well as under `peerDependencies`, because a peer is
  * not installed by the workspace that declares it and developing against one
  * requires it present. A runtime dependency is the opposite case and is removed:
@@ -220,6 +225,9 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		...(blueprint.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
+		// After the shared table on purpose: this row lowers the TypeScript range rather
+		// than adding one.
+		...(blueprint.app.includes('browser') ? { typescript: APP_BROWSER_TYPESCRIPT_RANGE } : {}),
 		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 	}

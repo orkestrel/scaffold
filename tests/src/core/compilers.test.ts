@@ -449,7 +449,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
 		)
 
-		expect(planned.typescript).toBe('^6.0.3')
+		expect(planned.typescript).toBe('^7.0.2')
 	})
 
 	it('emits a conditional toolchain pin beside a foreign peer floor', () => {
@@ -477,7 +477,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
 		)
 
-		expect(manifest).toContain('"typescript": "^6.0.3"')
+		expect(manifest).toContain('"typescript": "^7.0.2"')
 		expect(manifest).toContain('"peerDependencies": {\n\t\t"typescript": ">=6.0.0"\n\t}')
 	})
 

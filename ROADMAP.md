@@ -35,6 +35,34 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   and reads `stale` until the template moves. Rule whether a workspace carrying
   `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
   project the plan already runs in a browser, then move the template and the audit together.
+- **scaffold**: a generated workspace that selects `app/browser` holds `typescript` at
+  `APP_BROWSER_TYPESCRIPT_RANGE` while every other workspace takes the shared 7 floor, because
+  `vue-tsc` has no TypeScript 7 support (`vuejs/language-tools` issue 5381, open since
+  2026-05-26) and it is the checker that workspace's own `check:app:browser` script runs. Delete
+  the range, its spread in `blueprintToDevDependencies`, and the guide paragraph naming it when
+  `vue-tsc` runs against 7; that release is the trigger. No fleet package selects that
+  environment, measured 2026-09-05.
+- **scaffold**: the AST-shaped rules in the vendored policy sweep move to the oxlint `policy`
+  plugin, which reads a file's AST and needs no in-process compiler.
+  `.claude/rules/workspace.md` § Policy instruments already assigns them there, so the move is a
+  law-conformance repair rather than a new rule, and each moved rule ships its `PolicyControl`
+  entry with a control drawn from outside its membership rule. The trigger is the next visit to
+  either instrument.
+- **scaffold**: the ESNext fence transpile in `tests/guides.test.ts` moves from
+  `@typescript/typescript6` to `node:module`'s `stripTypeScriptTypes` after a probe measures its
+  construct coverage — an enum, a namespace, a parameter property, and `import =` — and reads the
+  Node minor that added it. Node v22.22.2 carries it, measured 2026-09-05, and nothing lower is
+  measured. The CommonJS transpile in the same file stays on the bridge, because stripping types
+  emits no module transform. The trigger is that probe.
+- **scaffold**: the checker-level readers move from `@typescript/typescript6` to
+  `typescript/unstable/sync` — the generated distribution proof's template, `database`'s program
+  builds, `probe`'s `TypeStage`, and the documentation proposal's control path — one unit per
+  subject, none of them a prerequisite for the move to 7. Each carries a re-read obligation at
+  TypeScript 7.1, which Microsoft states ships a different API, and each renames that entry's
+  `Symbol` export on import, because the name shadows the global. The reader itself changes shape:
+  `Symbol.getDocumentationComment(checker)` takes the checker and returns a string, and it throws
+  without that argument. The round trip over scaffold's core project read the summary and every
+  tag in 61 ms, measured 2026-09-05. The trigger is each subject's next visit.
 - **test**: the browser journey layer resolves interactive targets and named regions, so a
   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
@@ -45,6 +73,19 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
   2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
   adopts the real entry declaration, at a toolchain revisit.
+- **fleet**: each target moves `typescript` to `^7.0.2` by hand, because no scaffold verb crosses a
+  major (`guides/scaffold.md` § Dependency floors). Per target: add `@typescript/typescript6` and
+  raise `typescript` in `package.json`, then install, all of it before `repair`, because a missing
+  planned package refuses the `configs` and `tests` groups; re-pin `@orkestrel/scaffold` and
+  `@orkestrel/probe`; run `repair`, which restores `tests/setupPolicy.ts` on the bridge; swap the
+  specifier in `tests/guides.test.ts` and `tests/distribution.test.ts`; `database` also edits
+  `tests/setupServer.ts` and `tests/setupServer.test.ts`, and `lsp` its `tests/setupConformance.ts`;
+  clear `typescriptCompilerFolder` in each published `src` environment's Vite configuration; run
+  the gates; compare the rebuilt `dist/` against the published tarball and bump only on a material
+  diff. The prerequisite is a `probe` release whose `TypeStage` resolves the workspace's bridge
+  where its `typescript` carries no `createProgram`, and widens its optional peer to
+  `^6.0.3 || ^7.0.0`; until that lands, a target on 7 has no `prove` receipt. The trigger is the
+  scaffold release carrying this move, plus the owner's go-ahead.
 - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this

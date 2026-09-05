@@ -564,6 +564,11 @@ export default defineConfig(
 							},
 						},
 					},
+					// \`unplugin-dts\` points api-extractor's default library location at the
+					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
+					// major. api-extractor applies the option only when it names a folder, so an
+					// empty one restores the library files of the compiler it bundles.
+					invokeOptions: { typescriptCompilerFolder: '' },
 				},
 			}),
 		],
@@ -598,7 +603,13 @@ export default defineConfig(
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.browser.json'),
-				bundleTypes: true,
+				bundleTypes: {
+					// \`unplugin-dts\` points api-extractor's default library location at the
+					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
+					// major. api-extractor applies the option only when it names a folder, so an
+					// empty one restores the library files of the compiler it bundles.
+					invokeOptions: { typescriptCompilerFolder: '' },
+				},
 				beforeWriteFile: (path, content) => ({
 					content: /[\\\\/]dist[\\\\/]src[\\\\/]browser[\\\\/]index\\.d\\.ts$/.test(path)
 {{replacement}}
@@ -622,7 +633,13 @@ export default defineConfig(
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
-				bundleTypes: true,
+				bundleTypes: {
+					// \`unplugin-dts\` points api-extractor's default library location at the
+					// installed \`typescript\` package's root, which ships no \`lib.*.d.ts\` at the 7
+					// major. api-extractor applies the option only when it names a folder, so an
+					// empty one restores the library files of the compiler it bundles.
+					invokeOptions: { typescriptCompilerFolder: '' },
+				},
 				beforeWriteFile: (path, content) => ({
 					content: /[\\\\/]dist[\\\\/]src[\\\\/]server[\\\\/]index\\.d\\.ts$/.test(path)
 {{replacement}}

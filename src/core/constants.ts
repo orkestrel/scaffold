@@ -539,6 +539,16 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
 })
 
 /**
+ * Names the TypeScript range a private Vue browser application takes instead of the shared one.
+ *
+ * @remarks
+ * A workspace that selects `app/browser` checks its Vue sources with `vue-tsc`, which has no
+ * TypeScript 7 support (`vuejs/language-tools` issue 5381). The workspace holds the 6 major so its
+ * own check script runs, and this range is removed when `vue-tsc` supports 7.
+ */
+export const APP_BROWSER_TYPESCRIPT_RANGE = '^6.0.3'
+
+/**
  * Names the development dependency used only by the optional single-file showcase build.
  *
  * @example
