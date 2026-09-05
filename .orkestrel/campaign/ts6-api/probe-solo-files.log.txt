@@ -1,0 +1,22 @@
+node-count=1 load=0.75 start=22:25:48
+== tests/src/bin/main.test.ts alone (22:25:48)
+exit=0
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Duration  44.83s (transform 240ms, setup 124ms, import 226ms, tests 44.36s, environment 0ms)
+== tests/src/server/Probe.test.ts alone (22:26:34)
+exit=0
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Duration  103.57s (transform 298ms, setup 116ms, import 323ms, tests 102.99s, environment 0ms)
+end=22:28:18
+
+== per-file logs
+-- solo-main
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Duration  44.83s (transform 240ms, setup 124ms, import 226ms, tests 44.36s, environment 0ms)
+-- solo-Probe
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Duration  103.57s (transform 298ms, setup 116ms, import 323ms, tests 102.99s, environment 0ms)

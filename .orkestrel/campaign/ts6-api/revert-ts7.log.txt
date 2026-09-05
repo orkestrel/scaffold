@@ -1,0 +1,76 @@
+== scaffold, 22:09:12
+a884603b Reconcile the design lanes into the plan for the full TypeScript 7 break
+Auto-merging .orkestrel/campaign/ts7/ledger.md
+CONFLICT (content): Merge conflict in .orkestrel/campaign/ts7/ledger.md
+error: could not revert 70f42aa7... Close the audit rounds over stage 2 of the TypeScript 7 move
+hint: after resolving the conflicts, mark the corrected paths
+hint: with 'git add <paths>' or 'git rm <paths>'
+revert exit=1
+M  .orkestrel/campaign/ts7/audit-probe-fix-2-brief.md
+D  .orkestrel/campaign/ts7/audit-scaffold-fix-3-brief.md
+D  .orkestrel/campaign/ts7/audit-scaffold-fix-3-checker.md
+UU .orkestrel/campaign/ts7/ledger.md
+D  .orkestrel/campaign/ts7/probe-fix-2-report.md
+D  .orkestrel/campaign/ts7/seven-fix-3-audit-verdict.md
+D  .orkestrel/campaign/ts7/seven-fix-3-report.md
+D  .orkestrel/campaign/ts7/verify-scaffold-fix-3-brief.md
+D  .orkestrel/campaign/ts7/verify-scaffold-fix-3-report.md
+M  PROPOSAL.md
+M  ROADMAP.md
+M  guides/scaffold.md
+M  host.json
+M  tests/setupServer.test.ts
+M  tests/setupServer.ts
+M  tests/src/bin/CLI.test.ts
+M  tests/src/core/compilers.test.ts
+M  tests/src/core/constants.test.ts
+?? .orkestrel/campaign/ts6-api/
+error: Committing is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+U	.orkestrel/campaign/ts7/ledger.md
+commit exit=128
+a884603b Reconcile the design lanes into the plan for the full TypeScript 7 break
+8c3e88aa Open the scoping campaign for the full TypeScript 7 break: the fleet sweep, the research, and the measurements
+110:		"@typescript/typescript6": "^6.0.2",
+115:		"typescript": "^7.0.2",
+== scaffold npm install (npm 11), 22:09:12
+npm error For a full report see:
+npm error /root/.npm/_logs/2026-09-05T22_09_14_447Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-05T22_09_14_447Z-debug-0.log
+install exit=1
+typescript 7.0.2
+bridge still installed
+M  .orkestrel/campaign/ts7/audit-probe-fix-2-brief.md
+D  .orkestrel/campaign/ts7/audit-scaffold-fix-3-brief.md
+D  .orkestrel/campaign/ts7/audit-scaffold-fix-3-checker.md
+UU .orkestrel/campaign/ts7/ledger.md
+D  .orkestrel/campaign/ts7/probe-fix-2-report.md
+== probe, 22:09:16
+9331ef4 Load the compiler through @typescript/typescript6 when the workspace's typescript is 7
+revert exit=0
+M  guides/probe.md
+M  package-lock.json
+M  package.json
+M  src/core/types.ts
+M  src/core/validators.ts
+M  src/server/Probe.ts
+M  src/server/helpers.ts
+M  src/server/stages/TypeStage.ts
+M  tests/setupServer.test.ts
+M  tests/setupServer.ts
+M  tests/src/core/errors.test.ts
+M  tests/src/server/Probe.test.ts
+M  tests/src/server/helpers.test.ts
+M  tests/src/server/stages/TypeStage.test.ts
+commit exit=0
+bc11e66 Remove the bridge loader and the widened peer from probe
+9331ef4 Load the compiler through @typescript/typescript6 when the workspace's typescript is 7
+== probe npm install (npm 11), 22:09:17
+
+removed 4 packages in 640ms
+install exit=0
+typescript 6.0.3
+bridge gone
+== done, 22:09:18

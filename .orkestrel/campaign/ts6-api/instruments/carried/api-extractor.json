@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+  "projectFolder": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts7-break/emit7",
+  "mainEntryPointFilePath": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts7-break/emit7/out/index.d.ts",
+  "compiler": { "overrideTsconfig": { "compilerOptions": { "types": ["node"], "lib": ["ESNext", "WebWorker"], "skipLibCheck": true, "target": "ESNext", "module": "ESNext", "moduleResolution": "bundler" }, "files": ["/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts7-break/emit7/out/index.d.ts"] } },
+  "apiReport": { "enabled": false }, "docModel": { "enabled": false }, "tsdocMetadata": { "enabled": false },
+  "dtsRollup": { "enabled": true, "untrimmedFilePath": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts7-break/emit7/rollup/index.d.ts" },
+  "messages": { "extractorMessageReporting": { "default": { "logLevel": "warning" } }, "compilerMessageReporting": { "default": { "logLevel": "warning" } }, "tsdocMessageReporting": { "default": { "logLevel": "none" } } }
+}

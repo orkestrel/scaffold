@@ -1,0 +1,67 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "lib": [
+            "esnext",
+            "webworker"
+        ],
+        "types": [],
+        "moduleDetection": "force",
+        "resolveJsonModule": true,
+        "strict": true,
+        "verbatimModuleSyntax": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
+        "exactOptionalPropertyTypes": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitOverride": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "noEmit": false,
+        "paths": {
+            "@src/core": [
+                "./src/core/index.ts"
+            ],
+            "@src/server": [
+                "./src/server/index.ts"
+            ]
+        },
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "rootDir": "../../src/core",
+        "outDir": "../../dist/src/core",
+        "isolatedModules": true,
+        "preserveConstEnums": true
+    },
+    "files": [
+        "../../src/core/Compiler.ts",
+        "../../src/core/cloners.ts",
+        "../../src/core/compilers.ts",
+        "../../src/core/constants.ts",
+        "../../src/core/errors.ts",
+        "../../src/core/factories.ts",
+        "../../src/core/helpers.ts",
+        "../../src/core/index.ts",
+        "../../src/core/parsers.ts",
+        "../../src/core/shapers.ts",
+        "../../src/core/templates.ts",
+        "../../src/core/types.ts",
+        "../../src/core/validators.ts"
+    ],
+    "include": [
+        "../../src/core/**/*.cts",
+        "../../src/core/**/*.mts",
+        "../../src/core/**/*.ts",
+        "../../src/core/**/*.tsx"
+    ],
+    "exclude": [
+        "../../node_modules",
+        "../../dist",
+        "../../tmp"
+    ]
+}

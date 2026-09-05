@@ -1,0 +1,19 @@
+parseSync: errors=0 comments=1 keys=program,module,comments,errors
+ImportDeclaration            @orkestrel/contract  params=[] return= exportKind= start=0 end=46 text="import { isRecord } from '@orkestrel/contract'"
+ImportDeclaration            vite                 params=[] return= exportKind= start=47 end=85 text="import type { UserConfig } from 'vite'"
+ExportNamedDeclaration       greet                params=[name] return=TSStringKeyword exportKind=value start=101 end=171 text="export function greet(name: string): string { return `hello "
+ExportNamedDeclaration       config               params=[] return=UserConfig exportKind=value start=172 end=229 text="export const config = (): UserConfig => ({ plugins: [] })"
+VariableDeclaration                               params=[] return= exportKind= start=230 end=246 text="const hidden = 1"
+ExportDefaultDeclaration                          params=[] return= exportKind=value start=247 end=268 text="export default hidden"
+ExportNamedDeclaration       Mode                 params=[] return= exportKind=value start=269 end=303 text="export enum Mode { Fast = 'fast' }"
+ExportNamedDeclaration       Shapes               params=[] return= exportKind=value start=304 end=354 text="export namespace Shapes { export const sides = 4 }"
+ExportNamedDeclaration       Point                params=[] return= exportKind=value start=355 end=412 text="export class Point { constructor(readonly x: number) {} }"
+TSImportEqualsDeclaration                         params=[] return= exportKind= start=413 end=443 text="import fs = require('node:fs')"
+ExportNamedDeclaration       exists               params=[] return= exportKind=value start=444 end=486 text="export const exists = typeof fs.existsSync"
+comments: [{"type":"Block","value":"* Greets. ","start":86,"end":100}]
+== transformWithOxc over the fence corpus
+enumeration: ok "export let Mode = /* @__PURE__ */ function(Mode) {\n\tMode[\"Fast\"] = \"fast\";\n\tMode[\"Slow\"] = \"slow\";\n\treturn Mode;\n}({});\nexport const 
+namespace: ok "export let Shapes;\n(function(_Shapes) {\n\tconst sides = _Shapes.sides = 4;\n})(Shapes || (Shapes = {}));\n"
+parameterProperty: ok "export class Point {\n\tx;\n\tconstructor(x) {\n\t\tthis.x = x;\n\t}\n}\n"
+importEquals: ok "const fs = require(\"node:fs\");\nexport const exists = typeof fs.existsSync;\n"
+plain: ok "export const value = 1;\nexport function name(text) {\n\treturn text;\n}\n"
