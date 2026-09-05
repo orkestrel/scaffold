@@ -98,7 +98,7 @@ index ed710cc3..61cfa07b 100644
  Report the layers in publish order, each package with its registry-confirmed version, the bump
  rulings and their evidence, the approvals the user granted, and anything still unpublished. End
 diff --git a/.agents/skills/orkestrel-publish/references/wave.md b/.agents/skills/orkestrel-publish/references/wave.md
-index ebf151ab..6a3e4928 100644
+index ebf151ab..69c4471d 100644
 --- a/.agents/skills/orkestrel-publish/references/wave.md
 +++ b/.agents/skills/orkestrel-publish/references/wave.md
 @@ -10,9 +10,12 @@ prepare the next.
@@ -148,7 +148,7 @@ index ebf151ab..6a3e4928 100644
 +  moves on a development re-pin, and `.agents/orchestration.md` § What a bump obliges rules that
 +  re-pin a release.
 +
-+A third trigger orders rather than bumps. A package the fleet consumes as a development dependency,
++One trigger orders rather than bumps. A package the fleet consumes as a development dependency,
 +whose consumers' gates read its unpublished tip, publishes on its own account ahead of the layer
 +order and again at its own slot after its runtime ranges move: each consumer's visit installs the
 +registry copy over any staged tip, so every consumer stays red until that tip is on the registry.
