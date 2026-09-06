@@ -1,0 +1,28 @@
+Run the type stage's compiler as a process over a mirror of the workspace
+
+TypeStage no longer loads the TypeScript language service. Construction sweeps a mirror a dead
+host left under tmp/type/, copies the workspace's regular files into a fresh one keyed by process
+id and a UUID, and warms each declared project's incremental state there. Every inspection
+refreshes the mirror by content digest, writes each draft and the test at its mirrored path, and
+runs the workspace's own tsc through process.execPath with --noEmit --pretty false over a scratch
+project written beside the mirrored project it extends, so the extended chain resolves unchanged;
+scanDiagnostics reads the printed diagnostics into zero-based UTF-16 points, and the diagnostics
+decide, never the exit code, which the supported majors disagree on. A diagnostic against a .json
+file the workspace holds, or against no file, is the workspace's fault; every other diagnostic is
+the claimant's, so a red workspace earns no receipt. Project.digest is the digest of the
+compilerOptions record tsc --showConfig prints over the mirrored project. A symbolic link is not
+carried into the mirror. Teardown ends the compiler by process tree on Windows and by signal
+elsewhere, and the runtime stage shares collectWorkspaceFiles and matchesLiveProcess with it.
+
+The public surface moves: Overlay takes no options, Diagnostic, ProjectConfig, Execution,
+TYPE_MIRROR, scanDiagnostics, collectWorkspaceFiles, matchesLiveProcess, filterUniqueIssues,
+parseProjectConfig, and parseRevisionOwner are new, loadWorkspaceModule is loadWorkspaceVitest,
+and the typescript peer stays at ^6.0.3 with no bridge. The guide states the mirror, the point
+range, the digest's source, the warm's floor, and the cost readings of 2026-09-06.
+
+Unit U7 (implementer, Opus 5) with its builder fix units, audit rounds of a subjective and an
+objective Opus reviewer lane with a checker and a verifier each, and the Orchestrator's idle-host
+timing readings; records under scaffold's .orkestrel/campaign/ts6-api/.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
