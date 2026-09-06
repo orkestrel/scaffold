@@ -165,3 +165,16 @@ host at 11:53 UTC, four processors: load average 1.84 (1 min), 4.09 (5 min), 3.2
 ```
 
 Reading: under a saturated host the 15 s budget expired the type stage's own warm (the arming control), which the case's comment names as the outcome a budget under the floor produces. The idle-host reading of 11:00 UTC passed the row (`u7-probe-solo.log.txt`); the deciding reading is the solo run launched at 11:53 UTC (`u7-fix-probe-solo.log.txt`). The guide's § Cost advises leaving room for a contended host, and a 15 s budget over a 12 s warm leaves 3 s, so the row is a fixture budget carried to U7-fix-d if the solo run passes.
+
+## The serialization fixture under load, and alone (2026-09-06, probe checkout)
+
+```text
+fix-d verifier, whole suite beside the U4 audit lanes and U4's scoped runs:
+  tests/src/server/Probe.test.ts > serializes project resolution against a live type inspection
+  ProbeError: No inputs were found in config file 'projects/tsconfig.b.json' … from TypeStage.#configure via Probe.#resolve
+Orchestrator, the case alone (u7-serialization-solo.log.txt):
+  npx vitest run … tests/src/server/Probe.test.ts -t "serializes project resolution"
+  Tests 1 passed | 25 skipped (26)   Duration 25.97 s   EXIT:0
+```
+
+Reading: `Probe.#resolve` admits through the same admission the type inspection holds, so the second claim queues behind whichever step the first claim is in when it arrives. The fixture proves the second claim 100 ms after the first and rewrites the second project 20 ms later; the first claim's `--showConfig` read costs about 100 ms idle (`orchestrator-measurements.md` § The `tsc` command) and more under load, and fix-a added a mirror refresh before it, so under a saturated host the second claim queued behind the first claim's resolution, ran its own resolution before the rewrite, and read the malformed project. The class is timing, carried to U7-fix-e as a fixture wait that clears the resolution.
