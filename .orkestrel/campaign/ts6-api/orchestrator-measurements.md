@@ -115,3 +115,42 @@ Closing the research lane's open question: `tsc 7.0.2 --declaration --emitDeclar
 - **M15** (`m15-report.md`): the two-direction shape names the member in every case under `bundler`, `node16`, and `nodenext` — a missing runtime key as TS2741 on `declared = published`, an extra runtime key and a type-only name as TS2741 on `surfaced: Record<keyof typeof published, true> = declared`; the one-direction shape the design sketched exits 0 on an extra runtime key. U4 writes both directions.
 - **M8/M13** (`m8m13-report.md`): under the CLI a rule reads `context.filename` (absolute), `context.sourceCode.text`, `getAllComments()`, and a declaration's doc comment through `getCommentsBefore(node)`; `getJSDocComment` exists and throws. `RuleTester` parses TypeScript nodes but resolves a case's `filename` against oxlint's own package directory, so a moved placement rule keys on the path's suffix and its `RuleTester` cases carry the suffix; `PolicyContext` gains `filename` and `sourceCode`.
 - **M3/M4** (`m3m4-report.md`): the case table and the cross-major differences are in the report; U7's parser is briefed from it.
+
+## `--showConfig` on a configuration fault, and its printed paths (2026-09-06, probe checkout, 6.0.3)
+
+```text
+scratch tsconfig.json with "bogus": true, cwd the scratch:
+  node node_modules/typescript/bin/tsc --showConfig -p tsconfig.json
+  stdout: tsconfig.json(1,40): error TS5023: Unknown compiler option 'bogus'.
+  stderr: (empty)      exit 1      no JSON printed
+probe's own root tsconfig.json and configs/src/tsconfig.core.json:
+  --showConfig prints no absolute path (grep -c "/home" → 0); rootDir, outDir, and paths are spelled relative to the project file
+```
+
+Reading: `parseProjectConfig` over stdout alone separates a printed configuration from a fault on 6.0.3 with no read of the exit code, which is what U7-fix-a edit 1 relies on; on 7.0.2 the same call prints the recovered configuration (`m3m4-report.md` § Differences), so `resolve` returns a digest there and `inspect` raises from the check run on either major. `normalizeValue`'s path rewrite reaches only an absolute path a project declares itself.
+
+## The U7 verifier's red row alone (2026-09-06, probe checkout)
+
+```text
+verifier, whole suite beside the U3-fix builder and three audit lanes:
+  tests/src/server/Probe.test.ts > expires only the active inspection, cleans its revision, and serves a queued claim
+  AssertionError at :696 — expirations.calls carried two claims, expected [[hanging]]
+Orchestrator, the file alone after the lanes exited (u7-probe-solo.log.txt):
+  npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/Probe.test.ts
+  Test Files 1 passed (1)   Tests 26 passed (26)   Duration 387.13 s   EXIT:0
+```
+
+Reading: the queued claim's own 15 s budget expired under load, so the row is the timing class `.agents/orchestration.md` § Writing concurrency rule 10 names, and the solo run is the deciding reading. M5 over the rebuilt `dist` follows U7-fix-b.
+
+## The core rollup against U1's after U3-fix (2026-09-06, scaffold checkout, the verifier's build)
+
+```text
+grep -c nameToRewrite dist/src/core/index.d.ts                       → 0
+grep -c nameToRewrite <scratchpad>/ts6/u1/scaffold-core/rollup.d.ts  → 3
+diff dist/src/core/index.d.ts <u1 rollup>: hunk 1246-1248 is the vites.src.{core,browser,server} seed literals
+  (declarationRollup on the left, vite-plugin-dts on the right); hunk 2632a2633-2662 is nameToRewrite's declaration
+  on the right only.
+cmp dist/src/server/index.d.ts <u1 rollup>                            → exit 0
+```
+
+Reading: the verifier's report (`u3-fix-verify-report.md` § 8) read the second hunk backwards — it names `nameToRewrite` as present in the current build, while the `>` lines are U1's baseline. The current rollup differs from U1's only by the seed literals this unit changed and the helper it deleted, both by design, and the server rollup is byte-identical.

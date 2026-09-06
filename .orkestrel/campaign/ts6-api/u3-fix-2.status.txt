@@ -1,0 +1,60 @@
+ M .claude/rules/workspace.md
+ M .orkestrel/campaign/ts6-api/ledger.md
+ M .orkestrel/campaign/ts6-api/orchestrator-measurements.md
+ M configs/helpers.ts
+ M configs/src/vite.core.config.ts
+ M configs/src/vite.server.config.ts
+ M guides/scaffold.md
+ M host.json
+ M src/core/compilers.ts
+ M src/core/helpers.ts
+ M src/core/templates.ts
+ M tests/config.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/helpers.test.ts
+?? .orkestrel/campaign/ts6-api/instruments/commit-u2.sh
+?? .orkestrel/campaign/ts6-api/instruments/commit-u3.sh
+?? .orkestrel/campaign/ts6-api/instruments/u7-integration.sh
+?? .orkestrel/campaign/ts6-api/u3-audit-brief.md
+?? .orkestrel/campaign/ts6-api/u3-audit-checker.md
+?? .orkestrel/campaign/ts6-api/u3-audit-objective.md
+?? .orkestrel/campaign/ts6-api/u3-audit-subjective.md
+?? .orkestrel/campaign/ts6-api/u3-audit-verdict.md
+?? .orkestrel/campaign/ts6-api/u3-declaration-rollup-report.md
+?? .orkestrel/campaign/ts6-api/u3-declaration-rollup.diff.txt
+?? .orkestrel/campaign/ts6-api/u3-declaration-rollup.status.txt
+?? .orkestrel/campaign/ts6-api/u3-fix-2-brief.md
+?? .orkestrel/campaign/ts6-api/u3-fix-2.full.diff.txt
+?? .orkestrel/campaign/ts6-api/u3-fix-2.status.txt
+?? .orkestrel/campaign/ts6-api/u3-fix-audit-brief.md
+?? .orkestrel/campaign/ts6-api/u3-fix-audit-checker.md
+?? .orkestrel/campaign/ts6-api/u3-fix-audit-objective.md
+?? .orkestrel/campaign/ts6-api/u3-fix-audit-subjective.md
+?? .orkestrel/campaign/ts6-api/u3-fix-audit-verdict.md
+?? .orkestrel/campaign/ts6-api/u3-fix-brief.md
+?? .orkestrel/campaign/ts6-api/u3-fix-report.md
+?? .orkestrel/campaign/ts6-api/u3-fix-verify-brief.md
+?? .orkestrel/campaign/ts6-api/u3-fix-verify-report.md
+?? .orkestrel/campaign/ts6-api/u3-fix.diff.txt
+?? .orkestrel/campaign/ts6-api/u3-fix.status.txt
+?? .orkestrel/campaign/ts6-api/u3-verify-brief.md
+?? .orkestrel/campaign/ts6-api/u3-verify-report.md
+?? .orkestrel/campaign/ts6-api/u7-audit-brief.md
+?? .orkestrel/campaign/ts6-api/u7-audit-checker.md
+?? .orkestrel/campaign/ts6-api/u7-audit-objective.md
+?? .orkestrel/campaign/ts6-api/u7-audit-subjective.md
+?? .orkestrel/campaign/ts6-api/u7-audit-verdict.md
+?? .orkestrel/campaign/ts6-api/u7-fix-a-brief.md
+?? .orkestrel/campaign/ts6-api/u7-fix-a-report.md
+?? .orkestrel/campaign/ts6-api/u7-fix-a.diff.txt
+?? .orkestrel/campaign/ts6-api/u7-fix-a.status.txt
+?? .orkestrel/campaign/ts6-api/u7-fix-b-brief.md
+?? .orkestrel/campaign/ts6-api/u7-integration-brief.md
+?? .orkestrel/campaign/ts6-api/u7-integration-report.md
+?? .orkestrel/campaign/ts6-api/u7-probe-rest.log.txt
+?? .orkestrel/campaign/ts6-api/u7-probe-solo.log.txt
+?? .orkestrel/campaign/ts6-api/u7-probe-typestage-report.md
+?? .orkestrel/campaign/ts6-api/u7-probe-typestage.diff.txt
+?? .orkestrel/campaign/ts6-api/u7-probe-typestage.status.txt
+?? .orkestrel/campaign/ts6-api/u7-verify-brief.md
+?? .orkestrel/campaign/ts6-api/u7-verify-report.md

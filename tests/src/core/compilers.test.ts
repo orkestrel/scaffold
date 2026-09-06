@@ -1401,10 +1401,10 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(showcase).toContain('\t\t: []\n\treturn {\n')
 	})
 
-	// Both published faces are rolled up by vite-plugin-dts and both reach core
-	// through a relative source path, so each carries the rewrite and each explains
-	// it where a reader of that file meets it.
-	it('explains the declaration rewrite in every emitted published face', () => {
+	// Both published faces roll up through `declarationRollup`, and both reach core
+	// through the shared `rewriteCoreSpecifier`, so each carries the same call and
+	// comment where a reader of that file meets it.
+	it('reaches core through the rewrite in every emitted published face', () => {
 		const artifacts = blueprintToConfigArtifacts(
 			buildBlueprint({ src: ['core', 'browser', 'server'] }),
 		)
@@ -1413,51 +1413,10 @@ describe('blueprintToRootVite fixed proofs', () => {
 			'configs/src/vite.server.config.ts',
 		]) {
 			const face = artifacts.find((artifact) => artifact.path === path)
+			expect(face?.content).toContain('declarationRollup({')
+			expect(face?.content).toContain('rewrite: rewriteCoreSpecifier,')
 			expect(face?.content).toContain(
-				'vite-plugin-dts rolls this face into one declaration, and the roll-up reaches',
-			)
-			expect(face?.content).toContain('final roll-up only')
-			expect(face?.content).toContain('beforeWriteFile: (path, content) => ({')
-		}
-		const browser = artifacts.find(
-			({ path }) => path === 'configs/src/vite.browser.config.ts',
-		)?.content
-		const server = artifacts.find(
-			({ path }) => path === 'configs/src/vite.server.config.ts',
-		)?.content
-		// Each face guards its own roll-up, so neither rewrite can fire on the other's
-		// declaration. The browser comment names the nested case as well, because a
-		// browser subfolder is where the escaping path actually comes from.
-		expect(browser).toContain(
-			'content: /[\\\\/]dist[\\\\/]src[\\\\/]browser[\\\\/]index\\.d\\.ts$/.test(path)\n',
-		)
-		expect(server).toContain(
-			'content: /[\\\\/]dist[\\\\/]src[\\\\/]server[\\\\/]index\\.d\\.ts$/.test(path)\n',
-		)
-		expect(browser).toContain('a module in a browser subfolder emits')
-	})
-
-	it('joins the declaration rewrite only while the line it prints fits the width', () => {
-		// The names either side of the width: at 19 characters the joined call
-		// prints exactly on the vendored 100 columns and at 20 it prints one past, so
-		// the branch is observable only at that pair. Every longer name the gate
-		// admits, up to `MAX_NAME_LENGTH`, takes the wrapped form. Both faces fill the
-		// same span from one derivation, so the pair is asserted on both.
-		for (const path of [
-			'configs/src/vite.browser.config.ts',
-			'configs/src/vite.server.config.ts',
-		]) {
-			const fitted = blueprintToConfigArtifacts(
-				buildBlueprint({ name: 'a'.repeat(19), src: ['core', 'browser', 'server'] }),
-			).find((artifact) => artifact.path === path)
-			expect(fitted?.content).toContain(
-				`\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g, '@orkestrel/${'a'.repeat(19)}')\n`,
-			)
-			const wrapped = blueprintToConfigArtifacts(
-				buildBlueprint({ name: 'a'.repeat(20), src: ['core', 'browser', 'server'] }),
-			).find((artifact) => artifact.path === path)
-			expect(wrapped?.content).toContain(
-				`\t\t\t\t\t\t? content.replaceAll(\n\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g,\n\t\t\t\t\t\t\t\t'@orkestrel/${'a'.repeat(20)}',\n\t\t\t\t\t\t\t)\n`,
+				"// The roll-up reaches src/core through a specifier the tarball does not carry, so the rewrite\n// externalizes core through the package's own published root export, on the final roll-up alone.",
 			)
 		}
 	})

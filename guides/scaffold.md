@@ -235,7 +235,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `matchesPrintWidth`         | function | Test whether one emitted line fits the vendored formatter width.              |
 | `matchesRange`              | function | Test whether a declared range already admits a published version.             |
 | `nameToGuide`               | function | Derive the guide mirror path a package name answers for.                      |
-| `nameToRewrite`             | function | Derive the declaration rewrite a published face's `beforeWriteFile` applies.  |
 | `planToSummary`             | function | Project a plan into its tally by artifact origin.                             |
 | `selectGroups`              | function | Select the groups a compile covers, in plan order.                            |
 | `selectHostPaths`           | function | Select the host paths a named workspace vendors.                              |

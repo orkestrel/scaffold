@@ -61,9 +61,11 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
 - `configs/src/` and `configs/app/`: thin per-target wrappers, including optional
   `configs/src/*bin*` files. Shared logic remains in root configs.
 - `configs/helpers.ts`, `configs/browsers.ts`, and `configs/policy.ts`: the only permitted leaves
-  under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf. Each
-  `configs/src/*.config.ts` imports the root config rather than a leaf, so shared build logic stays
-  in one place.
+  under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf, so no
+  `configs/types.ts` exists for one to import: each keeps its own types, data, and functions in its
+  one file, and the centralized-kind placement in `.claude/rules/architecture.md` does not reach a
+  leaf. Each `configs/src/*.config.ts` imports the root config rather than a leaf, so shared build
+  logic stays in one place.
 - Keep `configs/helpers.ts` free of any dependency a core-only workspace does not declare. It is
   vendored byte-identical to every workspace, so an import there must resolve in all of them.
   `configs/browsers.ts` exists for that reason: it imports `playwright` and
@@ -71,8 +73,7 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
 - Keep `configs/policy.ts` free of imports entirely. It is the workspace's oxlint plugin, the lint
   instrument of the policy law, and it is vendored byte-identical to every workspace including a
   core-only one, so a module that imports nothing at all is the only form that resolves in all of
-  them. Because it may import nothing, keep its own types, data, and functions in that one file: the
-  centralized-kind placement in `.claude/rules/architecture.md` does not reach it.
+  them.
 - When a file is vendored byte-identical, import nothing that fails to resolve in any target. Import
   no `@orkestrel/*` package from it: every such package is itself a target and cannot depend on
   itself.

@@ -448,7 +448,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "9cde6462b32cf2bb92321b0a4b896b5b0d565aea8202af15407345025e86989e"
+			"digest": "658afc51c177256fd00a097759dbf1265ebe173568a7bf7c4f12914c2b7ea622"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -604,7 +604,7 @@
 			"storage": "configs/helpers.ts",
 			"destination": "configs/helpers.ts",
 			"executable": false,
-			"digest": "cb43bf1dcd9aef3f806a3189ad74777366b59ff1f8e1a03868b02cae5919747f"
+			"digest": "22eb907e6f46c648d148528a9f167cfbeb042cc5a24ed1aa5f2942ef690dbf0f"
 		},
 		{
 			"storage": "configs/policy.ts",
@@ -682,7 +682,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "219a4aa8738332a3352e6158c377dbf09f3c98d881dc3f4d3503684712725f83"
+			"digest": "307ca8be7e43710866c4401caafeccb75244c6c5bb48319c62b0485a183ec90d"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -712,7 +712,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "6fb209f5a9a8ec6321cd570d77020b07923ea5cc9201fb8b7766abea9929c9af"
+			"digest": "cf74bd80e7ccea25d9dc57442fdb277e83ce4d5e91ee1441ddc8f8b0841fea85"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "df714d11dbc785463987a06154fb0d761949ab065dba4c039a45e24560beef40"
+	"digest": "1cb851c3bdaee835df1e65b77252f3efb311f9f1768c3707060644aecdc59cec"
 }

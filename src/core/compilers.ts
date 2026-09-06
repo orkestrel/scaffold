@@ -64,7 +64,6 @@ import {
 	inferGroup,
 	matchesEngines,
 	matchesPrintWidth,
-	nameToRewrite,
 	serializeTypeScriptString,
 	selectHostPaths,
 	srcToRoot,
@@ -927,15 +926,11 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 			let content: string = CONFIG_TEMPLATES.vites.src.core
 			if (path === 'configs/src/tsconfig.core.json') content = CONFIG_TEMPLATES.tsconfigs.src.core
 			else if (path === 'configs/src/vite.browser.config.ts') {
-				content = fillTemplate(CONFIG_TEMPLATES.vites.src.browser, {
-					replacement: nameToRewrite(blueprint.name),
-				})
+				content = CONFIG_TEMPLATES.vites.src.browser
 			} else if (path === 'configs/src/tsconfig.browser.json') {
 				content = CONFIG_TEMPLATES.tsconfigs.src.browser
 			} else if (path === 'configs/src/vite.server.config.ts') {
-				content = fillTemplate(CONFIG_TEMPLATES.vites.src.server, {
-					replacement: nameToRewrite(blueprint.name),
-				})
+				content = CONFIG_TEMPLATES.vites.src.server
 			} else if (path === 'configs/src/tsconfig.server.json') {
 				content = CONFIG_TEMPLATES.tsconfigs.src.server
 			}

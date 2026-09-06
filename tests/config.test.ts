@@ -7,12 +7,14 @@ import {
 	globSync,
 	mkdtempSync,
 	mkdirSync,
+	readdirSync,
 	readFileSync,
 	realpathSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { build, createServer, loadConfigFromFile } from 'vite'
@@ -49,6 +51,15 @@ import {
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+// A declaration roll-up loads the extractor package, which only a workspace publishing source from
+// `src` installs. The resolution below is the mechanism its proof is conditioned on.
+let extractorPath: string | undefined
+try {
+	extractorPath = createRequire(import.meta.url).resolve('@microsoft/api-extractor')
+} catch {
+	extractorPath = undefined
+}
 
 describe('root configuration', () => {
 	it('resolves every declared alias to its real entry', () => {
@@ -1494,8 +1505,10 @@ describe('configuration helpers', () => {
 			'ENVIRONMENT_MODULE_BYTES',
 			'PACKAGE_MANIFEST_BYTES',
 			'WORKSPACE_ROOT',
+			'buildExtractorOverride',
 			'containedPath',
 			'decodeAssetSource',
+			'declarationRollup',
 			'enforceBuildLog',
 			'enforceOutputPath',
 			'environmentAssetSources',
@@ -1505,8 +1518,10 @@ describe('configuration helpers', () => {
 			'fileSystemPath',
 			'hasAsciiUrlControl',
 			'isBoundaryExemptModule',
+			'isExtractorModule',
 			'isOutsideWorkspacePath',
 			'isPackageBoundary',
+			'isStringList',
 			'isStylesheetPath',
 			'isWorkspaceBoundaryModule',
 			'outputBoundary',
@@ -1514,8 +1529,11 @@ describe('configuration helpers', () => {
 			'packageNameOf',
 			'packageRootForResolved',
 			'packageRootOf',
+			'parseProjectScope',
 			'physicalPath',
 			'readBoundedFile',
+			'readCompilerOutput',
+			'rewriteCoreSpecifier',
 			'sourceFallback',
 			'trustedPackageRootFor',
 			'workspacePath',
@@ -1713,4 +1731,244 @@ describe('configuration helpers', () => {
 			rmSync(workspace, { recursive: true, force: true })
 		}
 	})
+
+	it('reads the compiler scope and fixed extractor override a declaration roll-up requires', () => {
+		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
+		const project = resolve(root, 'configs/src/tsconfig.core.json')
+		const declared: unknown = JSON.parse(readFileSync(project, 'utf8'))
+		if (typeof declared !== 'object' || declared === null) {
+			throw new Error('The core project is not a TypeScript configuration record')
+		}
+		const declaredOptions: unknown = Object.getOwnPropertyDescriptor(
+			declared,
+			'compilerOptions',
+		)?.value
+		if (typeof declaredOptions !== 'object' || declaredOptions === null) {
+			throw new Error('The core project carries no compiler options')
+		}
+		const declaredLib: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'lib')?.value
+		const declaredTypes: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'types')?.value
+		if (!configHelpers.isStringList(declaredLib) || !configHelpers.isStringList(declaredTypes)) {
+			throw new Error('The core project declares no lib or types')
+		}
+
+		const scope = configHelpers.parseProjectScope(
+			configHelpers.readCompilerOutput(compiler, ['--showConfig', '-p', project]),
+			project,
+		)
+		if (scope === undefined) throw new Error('The core project resolved no compiler scope')
+		// The compiler lowercases every resolved library name, so the committed project is the
+		// second mechanism this reading is compared against rather than the reading itself.
+		expect(scope.lib.map((entry) => entry.toLowerCase())).toStrictEqual(
+			declaredLib.map((entry) => entry.toLowerCase()),
+		)
+		expect(scope.types).toStrictEqual(declaredTypes)
+		expect(scope.root).toBe(resolve(root, 'src/core'))
+
+		expect(configHelpers.parseProjectScope('not a configuration', project)).toBeUndefined()
+		expect(
+			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[],"types":[]}}', project),
+		).toBeUndefined()
+		expect(
+			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[1],"rootDir":"."}}', project),
+		).toBeUndefined()
+		expect(() =>
+			configHelpers.readCompilerOutput(compiler, [
+				'--showConfig',
+				'-p',
+				resolve(root, 'configs/src/tsconfig.absent.json'),
+			]),
+		).toThrow('The declaration compiler failed')
+
+		expect(configHelpers.isStringList(['a', 'b'])).toBe(true)
+		expect(configHelpers.isStringList([])).toBe(true)
+		expect(configHelpers.isStringList(['a', 1])).toBe(false)
+		expect(configHelpers.isStringList('a')).toBe(false)
+
+		// The extractor runs its own bundled engine, so this override is the whole option set the
+		// roll-up may hand it: passing more leaves that engine unable to follow a symbol.
+		expect(
+			configHelpers.buildExtractorOverride('/w/dist/index.d.ts', ['esnext'], ['node']),
+		).toStrictEqual({
+			compilerOptions: {
+				types: ['node'],
+				lib: ['esnext'],
+				target: 'ESNext',
+				module: 'ESNext',
+				moduleResolution: 'bundler',
+				skipLibCheck: true,
+				strict: true,
+			},
+			files: ['/w/dist/index.d.ts'],
+		})
+
+		const name = configHelpers.packageManifestName(configHelpers.WORKSPACE_ROOT)
+		if (name === undefined) throw new Error('The workspace manifest names no package')
+		expect(configHelpers.rewriteCoreSpecifier("from '@src/core'")).toBe(`from '${name}'`)
+		expect(configHelpers.rewriteCoreSpecifier("from '../../core/index.js'")).toBe(`from '${name}'`)
+		expect(configHelpers.rewriteCoreSpecifier("from './sibling.js'")).toBe("from './sibling.js'")
+
+		// The mechanism the roll-up proof's skip reads: an absent package rejects resolution.
+		expect(() => createRequire(import.meta.url).resolve('@absent/declaration-extractor')).toThrow(
+			'Cannot find module',
+		)
+
+		expect(configHelpers.isExtractorModule(undefined)).toBe(false)
+		expect(configHelpers.isExtractorModule({ Extractor: {}, ExtractorConfig: {} })).toBe(false)
+		expect(
+			configHelpers.isExtractorModule({
+				Extractor: () => undefined,
+				ExtractorConfig: () => undefined,
+			}),
+		).toBe(false)
+		expect(
+			configHelpers.isExtractorModule({
+				Extractor: Object.assign(() => undefined, { invoke: () => undefined }),
+				ExtractorConfig: Object.assign(() => undefined, { prepare: () => undefined }),
+			}),
+		).toBe(true)
+
+		// The guard reads `invoke` and `prepare` through the prototype chain, as its remarks state.
+		expect(
+			configHelpers.isExtractorModule({
+				Extractor: Object.setPrototypeOf(() => undefined, { invoke: () => undefined }),
+				ExtractorConfig: Object.setPrototypeOf(() => undefined, { prepare: () => undefined }),
+			}),
+		).toBe(true)
+	})
+
+	// A hoisted install can place the extractor anywhere `require.resolve` reaches, so the skip
+	// control compares against the path resolution actually returned rather than a fixed layout.
+	it.skipIf(extractorPath === undefined)('finds the resolved extractor on disk', () => {
+		if (extractorPath === undefined) throw new Error('The extractor resolution left no path')
+		expect(existsSync(extractorPath)).toBe(true)
+	})
+
+	it.skipIf(extractorPath !== undefined)('rejects resolving the unavailable extractor', () => {
+		expect(() => createRequire(import.meta.url).resolve('@microsoft/api-extractor')).toThrow(
+			'Cannot find module',
+		)
+	})
+
+	// The roll-up loads the declaration extractor, which only a workspace publishing source from
+	// `src` installs. Where `require.resolve` rejects that package, this proof does not apply.
+	it.skipIf(extractorPath === undefined)(
+		'rolls one face into a single declaration and rewrites its core specifier',
+		async () => {
+			const scratch = createPolicyScratch({ prefix: 'orkestrel-config-rollup-' })
+			// The hook's temporary declaration emit is proven removed: no name beginning
+			// `orkestrel-declarations-` present after the builds that was absent before them.
+			const before = new Set(
+				readdirSync(tmpdir()).filter((entry) => entry.startsWith('orkestrel-declarations-')),
+			)
+			try {
+				const workspace = scratch.path
+				const project = join(workspace, 'tsconfig.json')
+				const source = join(workspace, 'source', 'server', 'index.ts')
+				scratch.write(
+					'tsconfig.json',
+					JSON.stringify({
+						compilerOptions: {
+							target: 'ESNext',
+							module: 'ESNext',
+							moduleResolution: 'bundler',
+							lib: ['ESNext'],
+							types: [],
+							strict: true,
+							verbatimModuleSyntax: true,
+							skipLibCheck: true,
+							declaration: true,
+							emitDeclarationOnly: true,
+							noEmit: false,
+							rootDir: './source',
+							outDir: './emit',
+							paths: { '@src/core': ['./source/core/index.ts'] },
+						},
+						include: ['./source/server/**/*.ts'],
+					}),
+				)
+				scratch.write(
+					'source/core/index.ts',
+					'export interface FixtureLabel {\n\treadonly label: string\n}\n',
+				)
+				scratch.write(
+					'source/server/index.ts',
+					"import type { FixtureLabel } from '@src/core'\n\nexport interface FixtureRecord {\n\treadonly label: FixtureLabel\n\treadonly count: number\n}\n",
+				)
+
+				const name = configHelpers.packageManifestName(configHelpers.WORKSPACE_ROOT)
+				if (name === undefined) throw new Error('The workspace manifest names no package')
+				const rewritten = join(workspace, 'rewritten')
+				const kept = join(workspace, 'kept')
+				const builds = [
+					{ output: rewritten, rewrite: true },
+					{ output: kept, rewrite: false },
+				]
+				for (const face of builds) {
+					await build({
+						root: workspace,
+						configFile: false,
+						logLevel: 'silent',
+						publicDir: false,
+						plugins: [
+							configHelpers.declarationRollup(
+								face.rewrite
+									? { project, rewrite: configHelpers.rewriteCoreSpecifier }
+									: { project },
+							),
+						],
+						build: {
+							write: true,
+							outDir: face.output,
+							lib: {
+								entry: source,
+								formats: ['es'],
+								fileName: () => 'index.js',
+							},
+							rolldownOptions: { external: [/^node:/u, /^@orkestrel\//u] },
+						},
+					})
+				}
+
+				const idle = join(workspace, 'idle')
+				const serving = configHelpers.declarationRollup({
+					project,
+					rewrite: configHelpers.rewriteCoreSpecifier,
+				})
+				const configure = serving.configResolved
+				const close = serving.closeBundle
+				if (typeof configure !== 'function' || typeof close !== 'function') {
+					throw new Error('The declaration roll-up exposes no build hooks')
+				}
+				Reflect.apply(configure, undefined, [
+					{ command: 'serve', root: workspace, build: { outDir: idle, lib: { entry: source } } },
+				])
+				await Reflect.apply(close, undefined, [])
+
+				const after = readdirSync(tmpdir()).filter((entry) =>
+					entry.startsWith('orkestrel-declarations-'),
+				)
+				expect(after.every((entry) => before.has(entry))).toBe(true)
+
+				// The face ships exactly one declaration: the emit's scratch tree leaves with it.
+				expect(globSync('**/*.d.ts', { cwd: rewritten })).toStrictEqual(['index.d.ts'])
+				expect(existsSync(join(rewritten, 'declarations'))).toBe(false)
+				expect(globSync('**/*.d.ts', { cwd: kept })).toStrictEqual(['index.d.ts'])
+				expect(existsSync(join(kept, 'declarations'))).toBe(false)
+				expect(existsSync(idle)).toBe(false)
+
+				const rolled = readFileSync(join(rewritten, 'index.d.ts'), 'utf8')
+				expect(rolled).toContain('FixtureRecord')
+				expect(rolled).toContain(`from '${name}'`)
+				expect(rolled).not.toContain('@src/core')
+
+				// The control: the same face without a rewrite ships the specifier the extractor kept.
+				const control = readFileSync(join(workspace, 'kept', 'index.d.ts'), 'utf8')
+				expect(control).toContain('@src/core')
+				expect(control).not.toContain(`from '${name}'`)
+			} finally {
+				scratch.destroy()
+			}
+		},
+	)
 })

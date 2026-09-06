@@ -1,0 +1,1242 @@
+diff --git a/.claude/rules/workspace.md b/.claude/rules/workspace.md
+index 86328ce9..408d4d04 100644
+--- a/.claude/rules/workspace.md
++++ b/.claude/rules/workspace.md
+@@ -61,9 +61,11 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
+ - `configs/src/` and `configs/app/`: thin per-target wrappers, including optional
+   `configs/src/*bin*` files. Shared logic remains in root configs.
+ - `configs/helpers.ts`, `configs/browsers.ts`, and `configs/policy.ts`: the only permitted leaves
+-  under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf. Each
+-  `configs/src/*.config.ts` imports the root config rather than a leaf, so shared build logic stays
+-  in one place.
++  under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf, so no
++  `configs/types.ts` exists for one to import: each keeps its own types, data, and functions in its
++  one file, and the centralized-kind placement in `.claude/rules/architecture.md` does not reach a
++  leaf. Each `configs/src/*.config.ts` imports the root config rather than a leaf, so shared build
++  logic stays in one place.
+ - Keep `configs/helpers.ts` free of any dependency a core-only workspace does not declare. It is
+   vendored byte-identical to every workspace, so an import there must resolve in all of them.
+   `configs/browsers.ts` exists for that reason: it imports `playwright` and
+@@ -71,8 +73,7 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
+ - Keep `configs/policy.ts` free of imports entirely. It is the workspace's oxlint plugin, the lint
+   instrument of the policy law, and it is vendored byte-identical to every workspace including a
+   core-only one, so a module that imports nothing at all is the only form that resolves in all of
+-  them. Because it may import nothing, keep its own types, data, and functions in that one file: the
+-  centralized-kind placement in `.claude/rules/architecture.md` does not reach it.
++  them.
+ - When a file is vendored byte-identical, import nothing that fails to resolve in any target. Import
+   no `@orkestrel/*` package from it: every such package is itself a target and cannot depend on
+   itself.
+diff --git a/.orkestrel/campaign/ts6-api/ledger.md b/.orkestrel/campaign/ts6-api/ledger.md
+index 7e82a315..c103d3ed 100644
+--- a/.orkestrel/campaign/ts6-api/ledger.md
++++ b/.orkestrel/campaign/ts6-api/ledger.md
+@@ -25,3 +25,22 @@ Bench state at dispatch (2026-09-05, 21:50 UTC; unchanged at the 2026-09-06 resu
+ | U2-fix-2 | `builder` | Sonnet | Agent dispatch, sole writer in `/home/user/scaffold`, every edit prescribed | `u2-fix-2-brief.md` (successor of `u2-fix-brief.md`) | `u2-fix-2-report.md` (on return) | round 3: the wiring reader's name and guard, the prose carriers, the anchoring precondition, the case suffix and fixture comment |
+ | U2-fix-2 audit (subjective, objective, checker) + verify | `reviewer` ×2, `checker`, `verifier` | Opus 5, Opus 5, Sonnet, Sonnet | Workflow `wf_a1a82d9b-4d8`, nodes `u2fix2:<lane>` | `u2-fix-2-audit-brief.md`, `u2-fix-2-verify-brief.md` | `u2-fix-2-audit-{subjective,objective,checker}.md`, `u2-fix-2-verify-report.md`, `u2-fix-2-audit-verdict.md` | every claim PASS on both reviewer lanes, GATES: GREEN; the checker's claim-7 FAIL refuted by the round-2 diff; four one-line prescriptions carried to the Orchestrator's integration edit U2-fix-3 |
+ | U2-fix-3 (integration) + check + verify | Orchestrator; `checker`, `verifier` | Fable; Sonnet, Sonnet | `instruments/u2-fix-3.sh` applied the four prescribed one-line edits; Workflow `wf_752591d6-9ba`, nodes `u2fix3:checker` and `u2fix3:verify` | `u2-fix-3-brief.md`, `u2-fix-3-check-brief.md`, `u2-fix-3-verify-brief.md` | `u2-fix-3-report.md`, `u2-fix-3-checker.md`, `u2-fix-3-verify-report.md`, `u2-fix-3.diff.txt`, `u2-fix-3.status.txt` | checker PASS on every claim; GATES: GREEN with `host.json` regenerated and the whole suite green; U2 accepted and committed |
++| U2 landing and push | Orchestrator | — | `instruments/commit-u2.sh` staged the unit's files and the campaign folder by path into `305af0c6`; the branch pushed and `main` fast-forwarded (`1113809f..305af0c6`) | — | `commit-u2.log` | the standing instruction routes every landing to `main`; the tree on `main` is green and self-consistent with `vite-plugin-dts` still installed until U3 and U6 |
++| U3 declaration-rollup | `implementer` | Opus 5 | Agent dispatch, sole writer in `/home/user/scaffold` on the U2 baseline | `u3-declaration-rollup-brief.md` | `u3-declaration-rollup-report.md` (on return) | Sol's unit by work class, on the Opus `implementer` while the Codex bench is dark; the recipe U1 proved |
++| U7 probe-typestage (returned) | `implementer` | Opus 5 | the unit's own run: `test:src:server` green with the Oxlint `initialize` rows now passing; whole-suite red rows named (the bin rows drive the pre-change `dist/bin/main.js`, one runtime timeout under load) | `u7-probe-typestage-brief.md` | `u7-probe-typestage-report.md`, `u7-probe-typestage.diff.txt`, `u7-probe-typestage.status.txt` | two `RuntimeStage.ts` patches returned for serial integration; decisions 1 to 7 flagged for the lanes; M5 and the whole-suite reading are the Orchestrator's after the verifier's `build` |
++| U7 integration | Orchestrator | Fable | `instruments/u7-integration.sh` applied U7's two `RuntimeStage.ts` patches verbatim with the import bookkeeping; the file's format and lint checks, `npm run check`, and the runtime stage's suite alone (40 passed) green | `u7-integration-brief.md` | `u7-integration-report.md` | audited as claim 12 of the U7 round |
++| U7 audit (subjective, objective, checker) + verify | `reviewer` ×2, `checker`, `verifier` | Opus 5, Opus 5, Sonnet, Sonnet | Workflow `wf_0476a681-8e9`, nodes `u7:<lane>` and `u7:verify` (the probe chain, whose `build` rebuilds `dist/bin/main.js` for the bin rows) | `u7-audit-brief.md`, `u7-verify-brief.md` | `u7-audit-{subjective,objective,checker}.md`, `u7-verify-report.md`, `u7-audit-verdict.md` | objective lane on Opus, the recorded substitution; the claims include the integration patches and the unit's flagged decisions |
++| U3 declaration-rollup (returned) | `implementer` | Opus 5 | the unit's own run: both faces byte-identical to U1's rollups (`cmp` exit 0), format, lint, and check green, `test:config` red on the host-inventory case alone | `u3-declaration-rollup-brief.md` | `u3-declaration-rollup-report.md`, `u3-declaration-rollup.diff.txt`, `u3-declaration-rollup.status.txt` | the load is a literal `createRequire` call inside the hook on a measured tsc-versus-lint conflict with `import()`; the audit brief's claim 1 carries that ruling |
++| U3 audit (subjective, objective, checker) + verify | `reviewer` ×2, `checker`, `verifier` | Opus 5, Opus 5, Sonnet, Sonnet | Workflow `wf_09893849-681`, nodes `u3:<lane>` and `u3:verify`, beside the U7 round on the same host | `u3-audit-brief.md`, `u3-verify-brief.md` | `u3-audit-{subjective,objective,checker}.md`, `u3-verify-report.md`, `u3-audit-verdict.md` | objective lane on Opus, the recorded substitution |
++| U7 and U3 audit relaunch | Orchestrator | — | both rounds died on the session limit (reset 07:50 UTC, 2026-09-06) before any lane returned; relaunched at 10:34 UTC by resuming `wf_0476a681-8e9` and `wf_09893849-681` with nothing cached | the same briefs | the same report paths | the trees were unchanged between the failure and the relaunch |
++| U3 audit round 1 (returned) | `reviewer` ×2, `checker`, `verifier` | Opus 5, Opus 5, Sonnet, Sonnet | Workflow `wf_09893849-681` after the relaunch | `u3-audit-brief.md`, `u3-verify-brief.md` | `u3-audit-{subjective,objective,checker}.md`, `u3-verify-report.md`, `u3-audit-verdict.md` | FAIL 7 (the proof drives hooks by hand) and 11 (`both` tallies), GATES: RED on the seed parity row; claim 6 settled by the Orchestrator's own `cmp` after the verifier's build; the seeds and `nameToRewrite` re-baselined from U6 into U3-fix |
++| U3-fix | `builder` | Sonnet | Agent dispatch, sole writer in `/home/user/scaffold`, every edit prescribed | `u3-fix-brief.md` | `u3-fix-report.md` (on return) | the seeds mirror the real configs, the real-build proof, the temporary scratch, the named members, the waiver sentence |
++| U7 audit round 1 (returned) | `reviewer` ×2, `checker`, `verifier` | Opus 5, Opus 5, Sonnet, Sonnet | Workflow `wf_0476a681-8e9` after the relaunch; the verifier's `npm test` ran beside the U3-fix builder and the audit lanes | `u7-audit-brief.md`, `u7-verify-brief.md` | `u7-audit-{subjective,objective,checker}.md`, `u7-verify-report.md`, `u7-audit-verdict.md`, `u7-probe-solo.log.txt` | subjective FAIL 4, 5, 7; objective FAIL 4, 5, 14; checker FAIL 7; GATES: RED on one `Probe.test.ts` expiry row under load, green alone (26 passed, 387 s); claim 4 ruled a brief-wording falsification with no code change; the substantiated findings carried to U7-fix-a (code) and U7-fix-b (prose) |
++| U3-fix (returned) | `builder` | Sonnet | the unit's own run: format, lint, `check`, `test:src:core` (385 passed), `test:guides` green; `test:config` red on the host-inventory row alone; server rollup byte-identical to U1's, core rollup moved inside the seed literals by design | `u3-fix-brief.md` | `u3-fix-report.md`, `u3-fix.diff.txt`, `u3-fix.status.txt` | two flagged deviations (the obsolete width-wrap test deleted; the skip control split for `no-conditional-expect`) carried as claims 11 and 12 of the round-2 brief |
++| U3-fix audit (subjective, objective, checker) | `reviewer` ×2, `checker` | Opus 5, Opus 5, Sonnet | Workflow `wf_bf6a977b-49d`, nodes `u3-fix-audit:<lane>`; the verifier follows alone once probe's idle-host readings are taken | `u3-fix-audit-brief.md` | `u3-fix-audit-{subjective,objective,checker}.md` | objective lane on Opus, the recorded substitution; claim 10 restated to the seed-literal divergence the fix report names |
++| U7-fix-a | `builder` | Sonnet | Agent dispatch, sole writer in `/home/user/fleet/probe`, every edit prescribed | `u7-fix-a-brief.md` | `u7-fix-a-report.md` (on return) | `#configure` and `#check` read text not status, draft-membership classification, path projection, one shared walk, the symbolic-link ruling pinned, parser shapes pinned, `Diagnostic.code` removed, `loadWorkspaceVitest`, the private renames |
++| U7-fix-b | `builder` | Sonnet | serial after U7-fix-a in the same checkout | `u7-fix-b-brief.md` | `u7-fix-b-report.md` (on return) | the resident-service prose sweep, the `Issue` row, the Prerequisites row, the Cost count, one digest per project |
++| U3-fix audit round 2 (returned) + verify | `reviewer` ×2, `checker`, `verifier` | Opus 5, Opus 5, Sonnet, Sonnet | Workflow `wf_bf6a977b-49d`; the verifier as its own dispatch after probe's idle-host readings | `u3-fix-audit-brief.md`, `u3-fix-verify-brief.md` | `u3-fix-audit-{subjective,objective,checker}.md`, `u3-fix-verify-report.md`, `u3-fix-audit-verdict.md` | both reviewer lanes FAIL 9 (the waiver's home and reason); checker PASS; GATES: GREEN over every project; the rollup clause settled by the Orchestrator's own `cmp` and `grep` reading; A, B, C and two objective findings carried to U3-fix-2; D and the `config` budget carried to U6 |
++| U3-fix-2 | `builder` | Sonnet | Agent dispatch, sole writer in `/home/user/scaffold`, every edit a lane's prescription verbatim | `u3-fix-2-brief.md` | `u3-fix-2-report.md` (on return) | closes with `checker` and `verifier` per the verbatim-prescription rule; the fixture-root unknown named for edit 5 |
++| U7-fix-a (returned) | `builder` | Sonnet | the unit's own scoped runs: format, lint, root and server `tsc` green; `helpers.test.ts` 49, `parsers.test.ts` 8, `errors.test.ts` 8, `TypeStage.test.ts` 25 (40 s), `RuntimeStage.test.ts` 40 passed alone | `u7-fix-a-brief.md` | `u7-fix-a-report.md`, `u7-fix-a.diff.txt`, `u7-fix-a.status.txt` | every edit landed, no deviation; the names U7-fix-b relies on (`loadWorkspaceVitest`, `collectWorkspaceFiles`) confirmed in `src/server/helpers.ts` and the guide before the second unit launched |
++| U7-fix-b (dispatched) | `builder` | Sonnet | Agent dispatch, sole writer in `/home/user/fleet/probe` after U7-fix-a exited | `u7-fix-b-brief.md` | `u7-fix-b-report.md` (on return) | the prose sweep and the digest fixtures |
+diff --git a/.orkestrel/campaign/ts6-api/orchestrator-measurements.md b/.orkestrel/campaign/ts6-api/orchestrator-measurements.md
+index e850adec..6c008b54 100644
+--- a/.orkestrel/campaign/ts6-api/orchestrator-measurements.md
++++ b/.orkestrel/campaign/ts6-api/orchestrator-measurements.md
+@@ -115,3 +115,42 @@ Closing the research lane's open question: `tsc 7.0.2 --declaration --emitDeclar
+ - **M15** (`m15-report.md`): the two-direction shape names the member in every case under `bundler`, `node16`, and `nodenext` — a missing runtime key as TS2741 on `declared = published`, an extra runtime key and a type-only name as TS2741 on `surfaced: Record<keyof typeof published, true> = declared`; the one-direction shape the design sketched exits 0 on an extra runtime key. U4 writes both directions.
+ - **M8/M13** (`m8m13-report.md`): under the CLI a rule reads `context.filename` (absolute), `context.sourceCode.text`, `getAllComments()`, and a declaration's doc comment through `getCommentsBefore(node)`; `getJSDocComment` exists and throws. `RuleTester` parses TypeScript nodes but resolves a case's `filename` against oxlint's own package directory, so a moved placement rule keys on the path's suffix and its `RuleTester` cases carry the suffix; `PolicyContext` gains `filename` and `sourceCode`.
+ - **M3/M4** (`m3m4-report.md`): the case table and the cross-major differences are in the report; U7's parser is briefed from it.
++
++## `--showConfig` on a configuration fault, and its printed paths (2026-09-06, probe checkout, 6.0.3)
++
++```text
++scratch tsconfig.json with "bogus": true, cwd the scratch:
++  node node_modules/typescript/bin/tsc --showConfig -p tsconfig.json
++  stdout: tsconfig.json(1,40): error TS5023: Unknown compiler option 'bogus'.
++  stderr: (empty)      exit 1      no JSON printed
++probe's own root tsconfig.json and configs/src/tsconfig.core.json:
++  --showConfig prints no absolute path (grep -c "/home" → 0); rootDir, outDir, and paths are spelled relative to the project file
++```
++
++Reading: `parseProjectConfig` over stdout alone separates a printed configuration from a fault on 6.0.3 with no read of the exit code, which is what U7-fix-a edit 1 relies on; on 7.0.2 the same call prints the recovered configuration (`m3m4-report.md` § Differences), so `resolve` returns a digest there and `inspect` raises from the check run on either major. `normalizeValue`'s path rewrite reaches only an absolute path a project declares itself.
++
++## The U7 verifier's red row alone (2026-09-06, probe checkout)
++
++```text
++verifier, whole suite beside the U3-fix builder and three audit lanes:
++  tests/src/server/Probe.test.ts > expires only the active inspection, cleans its revision, and serves a queued claim
++  AssertionError at :696 — expirations.calls carried two claims, expected [[hanging]]
++Orchestrator, the file alone after the lanes exited (u7-probe-solo.log.txt):
++  npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/Probe.test.ts
++  Test Files 1 passed (1)   Tests 26 passed (26)   Duration 387.13 s   EXIT:0
++```
++
++Reading: the queued claim's own 15 s budget expired under load, so the row is the timing class `.agents/orchestration.md` § Writing concurrency rule 10 names, and the solo run is the deciding reading. M5 over the rebuilt `dist` follows U7-fix-b.
++
++## The core rollup against U1's after U3-fix (2026-09-06, scaffold checkout, the verifier's build)
++
++```text
++grep -c nameToRewrite dist/src/core/index.d.ts                       → 0
++grep -c nameToRewrite <scratchpad>/ts6/u1/scaffold-core/rollup.d.ts  → 3
++diff dist/src/core/index.d.ts <u1 rollup>: hunk 1246-1248 is the vites.src.{core,browser,server} seed literals
++  (declarationRollup on the left, vite-plugin-dts on the right); hunk 2632a2633-2662 is nameToRewrite's declaration
++  on the right only.
++cmp dist/src/server/index.d.ts <u1 rollup>                            → exit 0
++```
++
++Reading: the verifier's report (`u3-fix-verify-report.md` § 8) read the second hunk backwards — it names `nameToRewrite` as present in the current build, while the `>` lines are U1's baseline. The current rollup differs from U1's only by the seed literals this unit changed and the helper it deleted, both by design, and the server rollup is byte-identical.
+diff --git a/configs/helpers.ts b/configs/helpers.ts
+index 81a1a9f7..87349146 100644
+--- a/configs/helpers.ts
++++ b/configs/helpers.ts
+@@ -1,18 +1,24 @@
+ import type { Plugin, Rolldown } from 'vite'
+ import { parseSync, transformWithOxc, Visitor } from 'vite'
+ import { fileURLToPath } from 'node:url'
+-import { isBuiltin } from 'node:module'
++import { spawnSync } from 'node:child_process'
++import { createRequire, isBuiltin } from 'node:module'
++import { tmpdir } from 'node:os'
+ import {
+ 	closeSync,
+ 	constants as FS_CONSTANTS,
+ 	existsSync,
+ 	fstatSync,
+ 	lstatSync,
++	mkdtempSync,
+ 	openSync,
++	readFileSync,
+ 	readSync,
+ 	realpathSync,
++	rmSync,
++	writeFileSync,
+ } from 'node:fs'
+-import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
++import { dirname, isAbsolute, join, relative, resolve as resolvePath, sep } from 'node:path'
+ 
+ export function hasAsciiUrlControl(value: string): boolean {
+ 	for (const character of value) {
+@@ -435,6 +441,300 @@ export function outputBoundary(output: string): Plugin {
+ 	}
+ }
+ 
++/** The compiler scope a face resolves to, as its declaration emit and its roll-up both read it. */
++export interface ProjectScope {
++	readonly lib: readonly string[]
++	readonly types: readonly string[]
++	readonly root: string
++}
++
++/** The `overrideTsconfig` a declaration roll-up hands the extractor, and every option it may read. */
++export interface ExtractorOverride {
++	readonly compilerOptions: {
++		readonly types: readonly string[]
++		readonly lib: readonly string[]
++		readonly target: string
++		readonly module: string
++		readonly moduleResolution: string
++		readonly skipLibCheck: boolean
++		readonly strict: boolean
++	}
++	readonly files: readonly string[]
++}
++
++/** The extractor exports a declaration roll-up dereferences, named as that package publishes them. */
++export interface ExtractorModule {
++	readonly Extractor: { readonly invoke: (config: unknown, options: unknown) => unknown }
++	readonly ExtractorConfig: { readonly prepare: (options: unknown) => unknown }
++}
++
++/**
++ * Configures one published face's declaration roll-up.
++ *
++ * @remarks
++ * `project` is the absolute path of that face's TypeScript project file. `types` overrides the
++ * `types` the extractor's own program reads, and defaults to the face's resolved `types`. `rewrite`
++ * receives the finished roll-up and returns what the face ships; a face that omits it ships the
++ * roll-up as the extractor wrote it.
++ */
++export interface DeclarationRollupOptions {
++	readonly project: string
++	readonly types?: readonly string[]
++	readonly rewrite?: (content: string) => string
++}
++
++/**
++ * Checks whether a value is a list of strings.
++ *
++ * @param value - The value to check.
++ * @returns True if the value is an array whose every member is a string; false otherwise.
++ */
++export function isStringList(value: unknown): value is readonly string[] {
++	return Array.isArray(value) && value.every((entry: unknown) => typeof entry === 'string')
++}
++
++/**
++ * Checks whether a value exposes the extractor entry a declaration roll-up calls.
++ *
++ * @param value - The loaded extractor module.
++ * @returns True if the value carries the `Extractor.invoke` and `ExtractorConfig.prepare` entry
++ * points; false otherwise.
++ *
++ * @remarks
++ * The guard reads each member through `Reflect.get`. A loader can hand back a module object whose
++ * members are reachable only through its prototype, so an own-descriptor read misses them and
++ * refuses a module that carries `Extractor.invoke` and `ExtractorConfig.prepare`.
++ */
++export function isExtractorModule(value: unknown): value is ExtractorModule {
++	if (typeof value !== 'object' || value === null) return false
++	const extractor: unknown = Reflect.get(value, 'Extractor')
++	const configuration: unknown = Reflect.get(value, 'ExtractorConfig')
++	if (typeof extractor !== 'function' || typeof configuration !== 'function') return false
++	return (
++		typeof Reflect.get(extractor, 'invoke') === 'function' &&
++		typeof Reflect.get(configuration, 'prepare') === 'function'
++	)
++}
++
++/**
++ * Returns the standard output of the workspace TypeScript compiler run as a process.
++ *
++ * @param compiler - The absolute path of the compiler's JavaScript entry.
++ * @param args - The compiler arguments that follow that entry.
++ * @returns The compiler's standard output.
++ * @throws An error carrying the compiler's own output when it fails or exits non-zero.
++ */
++export function readCompilerOutput(compiler: string, args: readonly string[]): string {
++	const result = spawnSync(process.execPath, [compiler, ...args], {
++		cwd: WORKSPACE_ROOT,
++		encoding: 'utf8',
++	})
++	if (result.error !== undefined || result.status !== 0) {
++		throw new Error(
++			`[orkestrel-declaration-rollup] The declaration compiler failed:\n${result.stdout ?? ''}${result.stderr ?? ''}`,
++		)
++	}
++	return result.stdout ?? ''
++}
++
++/**
++ * Parses a `tsc --showConfig` reading into the compiler scope a face's roll-up requires.
++ *
++ * @param text - The compiler's `--showConfig` output.
++ * @param project - The absolute path of the project file that produced that output.
++ * @returns That scope with `root` resolved against the project file, or `undefined` when the
++ * project resolves no `lib`, no `types`, or no `rootDir`.
++ */
++export function parseProjectScope(text: string, project: string): ProjectScope | undefined {
++	try {
++		const parsed: unknown = JSON.parse(text)
++		if (typeof parsed !== 'object' || parsed === null) return undefined
++		const options: unknown = Object.getOwnPropertyDescriptor(parsed, 'compilerOptions')?.value
++		if (typeof options !== 'object' || options === null) return undefined
++		const lib: unknown = Object.getOwnPropertyDescriptor(options, 'lib')?.value
++		const types: unknown = Object.getOwnPropertyDescriptor(options, 'types')?.value
++		const root: unknown = Object.getOwnPropertyDescriptor(options, 'rootDir')?.value
++		if (!isStringList(lib) || !isStringList(types) || typeof root !== 'string') return undefined
++		return { lib, types, root: resolvePath(dirname(project), root) }
++	} catch {
++		return undefined
++	}
++}
++
++/**
++ * Builds the `overrideTsconfig` the extractor analyses one emitted face entry under.
++ *
++ * @param entry - The absolute path of the emitted declaration entry.
++ * @param lib - The face's own resolved `lib`.
++ * @param types - The `types` the extractor's program reads.
++ * @returns That override.
++ *
++ * @remarks
++ * The extractor runs its own bundled compiler engine, so the override carries the face's resolved
++ * `lib` and `types` and nothing else the face resolved. Passing the face's full options, a `paths`
++ * table, or a `typescriptCompilerFolder` leaves that engine unable to follow a symbol.
++ */
++export function buildExtractorOverride(
++	entry: string,
++	lib: readonly string[],
++	types: readonly string[],
++): ExtractorOverride {
++	return {
++		compilerOptions: {
++			types,
++			lib,
++			target: 'ESNext',
++			module: 'ESNext',
++			moduleResolution: 'bundler',
++			skipLibCheck: true,
++			strict: true,
++		},
++		files: [entry],
++	}
++}
++
++/**
++ * Rewrites every core specifier in a roll-up to the workspace package's published name.
++ *
++ * @param content - The finished roll-up.
++ * @returns That roll-up with each core specifier replaced.
++ * @throws An error when the workspace manifest names no package.
++ *
++ * @remarks
++ * A browser or server face reaches core through an `@src/core` alias or a relative core path, and
++ * the extractor keeps either external and writes it through unchanged. Neither spelling exists in
++ * the published tarball, so both become the package's own root export. A core face passes no
++ * `rewrite` at all, because that face's declarations quote both spellings as documentation.
++ */
++export function rewriteCoreSpecifier(content: string): string {
++	const name = packageManifestName(WORKSPACE_ROOT)
++	if (name === undefined) {
++		throw new Error('[orkestrel-declaration-rollup] The workspace manifest names no package')
++	}
++	return content.replaceAll(/(?:\.\.\/)+core\/index\.[jt]s/g, name).replaceAll('@src/core', name)
++}
++
++/**
++ * Rolls one published face's declarations into the single file that face ships.
++ *
++ * @param options - The face's roll-up options.
++ * @returns The Vite plugin that performs that roll-up.
++ *
++ * @remarks
++ * At `closeBundle`, after Vite has written every format of the face, the plugin emits the face's
++ * declarations with the workspace compiler run as a process into a scratch directory made fresh
++ * under the host temporary directory, hands the emitted entry to the extractor's own engine,
++ * applies `rewrite`, and removes the scratch directory. Keeping the scratch outside the face's own
++ * output means its unconditional removal can never take a sibling the face already published, such
++ * as its own `declarations` folder. The extractor is a publishing workspace's development
++ * dependency, so this vendored leaf defers loading it to that hook: a workspace that publishes no
++ * library installs no extractor, never reaches the hook, and never resolves the package at build
++ * or at check.
++ */
++export function declarationRollup(options: DeclarationRollupOptions): Plugin {
++	let output = WORKSPACE_ROOT
++	let source = ''
++	let build = false
++	return {
++		name: 'orkestrel-declaration-rollup',
++		configResolved(config) {
++			build = config.command === 'build'
++			output = resolvePath(config.root, config.build.outDir)
++			source =
++				config.build.lib !== false && typeof config.build.lib.entry === 'string'
++					? config.build.lib.entry
++					: ''
++		},
++		closeBundle() {
++			if (!build) return
++			const declaration = source.replace(/\.tsx?$/, '.d.ts')
++			if (declaration === source) {
++				throw new Error(
++					'[orkestrel-declaration-rollup] The face must build one TypeScript library entry',
++				)
++			}
++			const load = createRequire(import.meta.url)
++			const compiler = load.resolve('typescript/bin/tsc')
++			const scope = parseProjectScope(
++				readCompilerOutput(compiler, ['--showConfig', '-p', options.project]),
++				options.project,
++			)
++			if (scope === undefined) {
++				throw new Error(
++					'[orkestrel-declaration-rollup] The face project must resolve its lib, types, and root',
++				)
++			}
++			const scratch = mkdtempSync(join(tmpdir(), 'orkestrel-declarations-'))
++			const rollup = resolvePath(output, 'index.d.ts')
++			try {
++				readCompilerOutput(compiler, [
++					'-p',
++					options.project,
++					'--declaration',
++					'--emitDeclarationOnly',
++					'--noEmit',
++					'false',
++					'--outDir',
++					scratch,
++				])
++				const entry = resolvePath(scratch, relative(scope.root, declaration))
++				// A literal `import()` of the extractor reddens `tsc` in a workspace that does not
++				// install it, and a variable specifier reddens `import/no-dynamic-require`, so the
++				// literal `createRequire` call is the form that clears every gate in an app-only
++				// workspace.
++				const loaded: unknown = load('@microsoft/api-extractor')
++				if (!isExtractorModule(loaded)) {
++					throw new Error(
++						'[orkestrel-declaration-rollup] The declaration extractor exposes no entry point',
++					)
++				}
++				const prepared: unknown = loaded.ExtractorConfig.prepare({
++					configObject: {
++						projectFolder: WORKSPACE_ROOT,
++						mainEntryPointFilePath: entry,
++						bundledPackages: [],
++						compiler: {
++							overrideTsconfig: buildExtractorOverride(
++								entry,
++								scope.lib,
++								options.types ?? scope.types,
++							),
++						},
++						apiReport: { enabled: false },
++						docModel: { enabled: false },
++						tsdocMetadata: { enabled: false },
++						dtsRollup: { enabled: true, untrimmedFilePath: rollup },
++						messages: {
++							compilerMessageReporting: { default: { logLevel: 'none' } },
++							extractorMessageReporting: { default: { logLevel: 'none' } },
++							tsdocMessageReporting: { default: { logLevel: 'none' } },
++						},
++					},
++					configObjectFullPath: resolvePath(WORKSPACE_ROOT, 'api-extractor.json'),
++					packageJsonFullPath: resolvePath(WORKSPACE_ROOT, 'package.json'),
++				})
++				const outcome: unknown = loaded.Extractor.invoke(prepared, {
++					localBuild: true,
++					showVerboseMessages: false,
++					showDiagnostics: false,
++				})
++				const succeeded: unknown =
++					typeof outcome === 'object' && outcome !== null
++						? Reflect.get(outcome, 'succeeded')
++						: undefined
++				if (succeeded !== true) {
++					throw new Error('[orkestrel-declaration-rollup] The declaration roll-up failed')
++				}
++				if (options.rewrite !== undefined) {
++					writeFileSync(rollup, options.rewrite(readFileSync(rollup, 'utf8')), 'utf8')
++				}
++			} finally {
++				rmSync(scratch, { recursive: true, force: true })
++			}
++		},
++	}
++}
++
+ export function decodeAssetSource(source: string): string | undefined {
+ 	try {
+ 		return decodeURI(source)
+diff --git a/configs/src/vite.core.config.ts b/configs/src/vite.core.config.ts
+index 0a488474..1083eca7 100644
+--- a/configs/src/vite.core.config.ts
++++ b/configs/src/vite.core.config.ts
+@@ -1,6 +1,5 @@
+ import { defineConfig, mergeConfig } from 'vite'
+-import dts from 'vite-plugin-dts'
+-import { environmentBoundary, outputBoundary } from '../helpers.js'
++import { declarationRollup, environmentBoundary, outputBoundary } from '../helpers.js'
+ import { peers, srcCore, resolveWorkspacePath } from '../../vite.config.ts'
+ 
+ export default defineConfig(
+@@ -9,17 +8,9 @@ export default defineConfig(
+ 		plugins: [
+ 			outputBoundary('dist/src/core'),
+ 			environmentBoundary('src/core'),
+-			dts({
+-				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.core.json'),
+-				bundleTypes: {
+-					extractorConfig: {
+-						compiler: {
+-							overrideTsconfig: {
+-								compilerOptions: { types: ['node'] },
+-							},
+-						},
+-					},
+-				},
++			declarationRollup({
++				project: resolveWorkspacePath('configs/src/tsconfig.core.json'),
++				types: ['node'],
+ 			}),
+ 		],
+ 		build: {
+diff --git a/configs/src/vite.server.config.ts b/configs/src/vite.server.config.ts
+index 07f5e032..ea37163f 100644
+--- a/configs/src/vite.server.config.ts
++++ b/configs/src/vite.server.config.ts
+@@ -1,22 +1,15 @@
+ import { defineConfig, mergeConfig } from 'vite'
+-import dts from 'vite-plugin-dts'
++import { declarationRollup, rewriteCoreSpecifier } from '../helpers.js'
+ import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
+ 
+-// vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
+-// src/core through a relative source path the tarball does not carry. The
+-// following rewrite externalizes core through the package's own published root
+-// export, on the final roll-up only.
++// The roll-up reaches src/core through a specifier the tarball does not carry, so the rewrite
++// externalizes core through the package's own published root export, on the final roll-up alone.
+ export default defineConfig(
+ 	mergeConfig(srcServer(), {
+ 		plugins: [
+-			dts({
+-				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
+-				bundleTypes: true,
+-				beforeWriteFile: (path, content) => ({
+-					content: /[\\/]dist[\\/]src[\\/]server[\\/]index\.d\.ts$/.test(path)
+-						? content.replaceAll(/(?:\.\.\/)+core\/index\.[jt]s/g, '@orkestrel/scaffold')
+-						: content,
+-				}),
++			declarationRollup({
++				project: resolveWorkspacePath('configs/src/tsconfig.server.json'),
++				rewrite: rewriteCoreSpecifier,
+ 			}),
+ 		],
+ 	}),
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 4c90783d..5de0c22a 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -235,7 +235,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `matchesPrintWidth`         | function | Test whether one emitted line fits the vendored formatter width.              |
+ | `matchesRange`              | function | Test whether a declared range already admits a published version.             |
+ | `nameToGuide`               | function | Derive the guide mirror path a package name answers for.                      |
+-| `nameToRewrite`             | function | Derive the declaration rewrite a published face's `beforeWriteFile` applies.  |
+ | `planToSummary`             | function | Project a plan into its tally by artifact origin.                             |
+ | `selectGroups`              | function | Select the groups a compile covers, in plan order.                            |
+ | `selectHostPaths`           | function | Select the host paths a named workspace vendors.                              |
+diff --git a/host.json b/host.json
+index 89cc8c91..be2e1ee8 100644
+--- a/host.json
++++ b/host.json
+@@ -448,7 +448,7 @@
+ 			"storage": "claude/rules/workspace.md",
+ 			"destination": ".claude/rules/workspace.md",
+ 			"executable": false,
+-			"digest": "9cde6462b32cf2bb92321b0a4b896b5b0d565aea8202af15407345025e86989e"
++			"digest": "00774f271395c7de1418bc977788df0a884194718485a0d5c0d82bf31a3e533c"
+ 		},
+ 		{
+ 			"storage": "claude/rules/writing.md",
+@@ -604,7 +604,7 @@
+ 			"storage": "configs/helpers.ts",
+ 			"destination": "configs/helpers.ts",
+ 			"executable": false,
+-			"digest": "cb43bf1dcd9aef3f806a3189ad74777366b59ff1f8e1a03868b02cae5919747f"
++			"digest": "22eb907e6f46c648d148528a9f167cfbeb042cc5a24ed1aa5f2942ef690dbf0f"
+ 		},
+ 		{
+ 			"storage": "configs/policy.ts",
+@@ -682,7 +682,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "219a4aa8738332a3352e6158c377dbf09f3c98d881dc3f4d3503684712725f83"
++			"digest": "307ca8be7e43710866c4401caafeccb75244c6c5bb48319c62b0485a183ec90d"
+ 		},
+ 		{
+ 			"storage": "scripts/codex.sh",
+@@ -712,7 +712,7 @@
+ 			"storage": "tests/config.test.ts",
+ 			"destination": "tests/config.test.ts",
+ 			"executable": false,
+-			"digest": "6fb209f5a9a8ec6321cd570d77020b07923ea5cc9201fb8b7766abea9929c9af"
++			"digest": "90f64af98a0a6a0f15a9b92df10027ed3034adcbddf382af3ff8292145b452d5"
+ 		},
+ 		{
+ 			"storage": "tests/policy.test.ts",
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "df714d11dbc785463987a06154fb0d761949ab065dba4c039a45e24560beef40"
++	"digest": "dd0d06dee33b80ebbda541c23230a256a159093181fcf8df371a6c42a4902608"
+ }
+diff --git a/src/core/compilers.ts b/src/core/compilers.ts
+index 492271aa..8f1ebd21 100644
+--- a/src/core/compilers.ts
++++ b/src/core/compilers.ts
+@@ -64,7 +64,6 @@ import {
+ 	inferGroup,
+ 	matchesEngines,
+ 	matchesPrintWidth,
+-	nameToRewrite,
+ 	serializeTypeScriptString,
+ 	selectHostPaths,
+ 	srcToRoot,
+@@ -927,15 +926,11 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
+ 			let content: string = CONFIG_TEMPLATES.vites.src.core
+ 			if (path === 'configs/src/tsconfig.core.json') content = CONFIG_TEMPLATES.tsconfigs.src.core
+ 			else if (path === 'configs/src/vite.browser.config.ts') {
+-				content = fillTemplate(CONFIG_TEMPLATES.vites.src.browser, {
+-					replacement: nameToRewrite(blueprint.name),
+-				})
++				content = CONFIG_TEMPLATES.vites.src.browser
+ 			} else if (path === 'configs/src/tsconfig.browser.json') {
+ 				content = CONFIG_TEMPLATES.tsconfigs.src.browser
+ 			} else if (path === 'configs/src/vite.server.config.ts') {
+-				content = fillTemplate(CONFIG_TEMPLATES.vites.src.server, {
+-					replacement: nameToRewrite(blueprint.name),
+-				})
++				content = CONFIG_TEMPLATES.vites.src.server
+ 			} else if (path === 'configs/src/tsconfig.server.json') {
+ 				content = CONFIG_TEMPLATES.tsconfigs.src.server
+ 			}
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 291c8397..6e27438e 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -408,47 +408,6 @@ export function matchesPrintWidth(line: string): boolean {
+ 	return line.replaceAll('\t', ' '.repeat(TAB_WIDTH)).length <= PRINT_WIDTH
+ }
+ 
+-/**
+- * Derives the declaration rewrite a published face's `beforeWriteFile` applies.
+- *
+- * @param name - The workspace's own bare package name.
+- * @returns The ternary consequent an emitted `vite.{browser,server}.config.ts`
+- * fills its `{{replacement}}` span with, indented for that span.
+- *
+- * @remarks
+- * `vite-plugin-dts` rolls a face into one declaration and keeps each source
+- * module's own relative depth, so a nested module emits a path that escapes
+- * `dist/src` and a flat one resolves only by luck. Both faces rewrite the same
+- * relative core path to the package's published root export, so the branch is
+- * derived once here. The extension alternation is what the permitted import
+- * spellings produce: an `@src/core` alias resolves to the core source module and
+- * prints `.ts`, while a relative import prints the `.js` specifier it was
+- * written with. The formatter keeps the call on one line only while the line it
+- * prints measures inside the vendored width, and the workspace name is what
+- * varies, so the shape is chosen by measuring the candidate: a tab prints as the
+- * vendored two columns, and the gate admits a name long enough to push the
+- * joined call past 100.
+- *
+- * @example
+- * ```ts
+- * import { nameToRewrite } from '@orkestrel/scaffold'
+- *
+- * nameToRewrite('router').includes("'@orkestrel/router'") // true
+- * ```
+- */
+-export function nameToRewrite(name: string): string {
+-	const specifier = serializeTypeScriptString(`@orkestrel/${name}`)
+-	const pattern = '/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g'
+-	const joined = `\t\t\t\t\t\t? content.replaceAll(${pattern}, ${specifier})`
+-	if (matchesPrintWidth(joined)) return joined
+-	return [
+-		'\t\t\t\t\t\t? content.replaceAll(',
+-		`\t\t\t\t\t\t\t\t${pattern},`,
+-		`\t\t\t\t\t\t\t\t${specifier},`,
+-		'\t\t\t\t\t\t\t)',
+-	].join('\n')
+-}
+-
+ /**
+  * Selects the single published environment a package root points at.
+  *
+diff --git a/src/core/templates.ts b/src/core/templates.ts
+index b6e420be..a9a75a51 100644
+--- a/src/core/templates.ts
++++ b/src/core/templates.ts
+@@ -544,8 +544,7 @@ export const probe = (): UserConfig => ({
+ 	vites: Object.freeze({
+ 		src: Object.freeze({
+ 			core: `import { defineConfig, mergeConfig } from 'vite'
+-import dts from 'vite-plugin-dts'
+-import { environmentBoundary, outputBoundary } from '../helpers.js'
++import { declarationRollup, environmentBoundary, outputBoundary } from '../helpers.js'
+ import { peers, srcCore, resolveWorkspacePath } from '../../vite.config.ts'
+ 
+ export default defineConfig(
+@@ -554,17 +553,9 @@ export default defineConfig(
+ 		plugins: [
+ 			outputBoundary('dist/src/core'),
+ 			environmentBoundary('src/core'),
+-			dts({
+-				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.core.json'),
+-				bundleTypes: {
+-					extractorConfig: {
+-						compiler: {
+-							overrideTsconfig: {
+-								compilerOptions: { types: ['node'] },
+-							},
+-						},
+-					},
+-				},
++			declarationRollup({
++				project: resolveWorkspacePath('configs/src/tsconfig.core.json'),
++				types: ['node'],
+ 			}),
+ 		],
+ 		build: {
+@@ -585,49 +576,34 @@ export default defineConfig(
+ )
+ `,
+ 			browser: `import { defineConfig, mergeConfig } from 'vite'
+-import dts from 'vite-plugin-dts'
++import { declarationRollup, rewriteCoreSpecifier } from '../helpers.js'
+ import { srcBrowser, resolveWorkspacePath } from '../../vite.config.ts'
+ 
+-// vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
+-// src/core through a relative source path the tarball does not carry. The path
+-// keeps each source module's own depth, so a module in a browser subfolder emits
+-// one that leaves dist/src entirely. The following rewrite externalizes core
+-// through the package's own published root export, on the final roll-up only.
++// The roll-up reaches src/core through a specifier the tarball does not carry, so the rewrite
++// externalizes core through the package's own published root export, on the final roll-up alone.
+ export default defineConfig(
+ 	mergeConfig(srcBrowser(), {
+ 		plugins: [
+-			dts({
+-				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.browser.json'),
+-				bundleTypes: true,
+-				beforeWriteFile: (path, content) => ({
+-					content: /[\\\\/]dist[\\\\/]src[\\\\/]browser[\\\\/]index\\.d\\.ts$/.test(path)
+-{{replacement}}
+-						: content,
+-				}),
++			declarationRollup({
++				project: resolveWorkspacePath('configs/src/tsconfig.browser.json'),
++				rewrite: rewriteCoreSpecifier,
+ 			}),
+ 		],
+ 	}),
+ )
+ `,
+ 			server: `import { defineConfig, mergeConfig } from 'vite'
+-import dts from 'vite-plugin-dts'
++import { declarationRollup, rewriteCoreSpecifier } from '../helpers.js'
+ import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
+ 
+-// vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
+-// src/core through a relative source path the tarball does not carry. The
+-// following rewrite externalizes core through the package's own published root
+-// export, on the final roll-up only.
++// The roll-up reaches src/core through a specifier the tarball does not carry, so the rewrite
++// externalizes core through the package's own published root export, on the final roll-up alone.
+ export default defineConfig(
+ 	mergeConfig(srcServer(), {
+ 		plugins: [
+-			dts({
+-				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
+-				bundleTypes: true,
+-				beforeWriteFile: (path, content) => ({
+-					content: /[\\\\/]dist[\\\\/]src[\\\\/]server[\\\\/]index\\.d\\.ts$/.test(path)
+-{{replacement}}
+-						: content,
+-				}),
++			declarationRollup({
++				project: resolveWorkspacePath('configs/src/tsconfig.server.json'),
++				rewrite: rewriteCoreSpecifier,
+ 			}),
+ 		],
+ 	}),
+diff --git a/tests/config.test.ts b/tests/config.test.ts
+index 2d8090f6..5181f07a 100644
+--- a/tests/config.test.ts
++++ b/tests/config.test.ts
+@@ -7,12 +7,14 @@ import {
+ 	globSync,
+ 	mkdtempSync,
+ 	mkdirSync,
++	readdirSync,
+ 	readFileSync,
+ 	realpathSync,
+ 	rmSync,
+ 	writeFileSync,
+ } from 'node:fs'
+ import { createRequire } from 'node:module'
++import { tmpdir } from 'node:os'
+ import { dirname, join, resolve } from 'node:path'
+ import { fileURLToPath, pathToFileURL } from 'node:url'
+ import { build, createServer, loadConfigFromFile } from 'vite'
+@@ -50,6 +52,15 @@ import { describe, expect, it } from 'vitest'
+ 
+ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+ 
++// A declaration roll-up loads the extractor package, which only a workspace publishing source from
++// `src` installs. The resolution below is the mechanism its proof is conditioned on.
++let extractorPath: string | undefined
++try {
++	extractorPath = createRequire(import.meta.url).resolve('@microsoft/api-extractor')
++} catch {
++	extractorPath = undefined
++}
++
+ describe('root configuration', () => {
+ 	it('resolves every declared alias to its real entry', () => {
+ 		const aliases = configuration.resolve?.alias
+@@ -1494,8 +1505,10 @@ describe('configuration helpers', () => {
+ 			'ENVIRONMENT_MODULE_BYTES',
+ 			'PACKAGE_MANIFEST_BYTES',
+ 			'WORKSPACE_ROOT',
++			'buildExtractorOverride',
+ 			'containedPath',
+ 			'decodeAssetSource',
++			'declarationRollup',
+ 			'enforceBuildLog',
+ 			'enforceOutputPath',
+ 			'environmentAssetSources',
+@@ -1505,8 +1518,10 @@ describe('configuration helpers', () => {
+ 			'fileSystemPath',
+ 			'hasAsciiUrlControl',
+ 			'isBoundaryExemptModule',
++			'isExtractorModule',
+ 			'isOutsideWorkspacePath',
+ 			'isPackageBoundary',
++			'isStringList',
+ 			'isStylesheetPath',
+ 			'isWorkspaceBoundaryModule',
+ 			'outputBoundary',
+@@ -1514,8 +1529,11 @@ describe('configuration helpers', () => {
+ 			'packageNameOf',
+ 			'packageRootForResolved',
+ 			'packageRootOf',
++			'parseProjectScope',
+ 			'physicalPath',
+ 			'readBoundedFile',
++			'readCompilerOutput',
++			'rewriteCoreSpecifier',
+ 			'sourceFallback',
+ 			'trustedPackageRootFor',
+ 			'workspacePath',
+@@ -1713,4 +1731,244 @@ describe('configuration helpers', () => {
+ 			rmSync(workspace, { recursive: true, force: true })
+ 		}
+ 	})
++
++	it('reads the compiler scope and fixed extractor override a declaration roll-up requires', () => {
++		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
++		const project = resolve(root, 'configs/src/tsconfig.core.json')
++		const declared: unknown = JSON.parse(readFileSync(project, 'utf8'))
++		if (typeof declared !== 'object' || declared === null) {
++			throw new Error('The core project is not a TypeScript configuration record')
++		}
++		const declaredOptions: unknown = Object.getOwnPropertyDescriptor(
++			declared,
++			'compilerOptions',
++		)?.value
++		if (typeof declaredOptions !== 'object' || declaredOptions === null) {
++			throw new Error('The core project carries no compiler options')
++		}
++		const declaredLib: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'lib')?.value
++		const declaredTypes: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'types')?.value
++		if (!configHelpers.isStringList(declaredLib) || !configHelpers.isStringList(declaredTypes)) {
++			throw new Error('The core project declares no lib or types')
++		}
++
++		const scope = configHelpers.parseProjectScope(
++			configHelpers.readCompilerOutput(compiler, ['--showConfig', '-p', project]),
++			project,
++		)
++		if (scope === undefined) throw new Error('The core project resolved no compiler scope')
++		// The compiler lowercases every resolved library name, so the committed project is the
++		// second mechanism this reading is compared against rather than the reading itself.
++		expect(scope.lib.map((entry) => entry.toLowerCase())).toStrictEqual(
++			declaredLib.map((entry) => entry.toLowerCase()),
++		)
++		expect(scope.types).toStrictEqual(declaredTypes)
++		expect(scope.root).toBe(resolve(root, 'src/core'))
++
++		expect(configHelpers.parseProjectScope('not a configuration', project)).toBeUndefined()
++		expect(
++			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[],"types":[]}}', project),
++		).toBeUndefined()
++		expect(
++			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[1],"rootDir":"."}}', project),
++		).toBeUndefined()
++		expect(() =>
++			configHelpers.readCompilerOutput(compiler, [
++				'--showConfig',
++				'-p',
++				resolve(root, 'configs/src/tsconfig.absent.json'),
++			]),
++		).toThrow('The declaration compiler failed')
++
++		expect(configHelpers.isStringList(['a', 'b'])).toBe(true)
++		expect(configHelpers.isStringList([])).toBe(true)
++		expect(configHelpers.isStringList(['a', 1])).toBe(false)
++		expect(configHelpers.isStringList('a')).toBe(false)
++
++		// The extractor runs its own bundled engine, so this override is the whole option set the
++		// roll-up may hand it: passing more leaves that engine unable to follow a symbol.
++		expect(
++			configHelpers.buildExtractorOverride('/w/dist/index.d.ts', ['esnext'], ['node']),
++		).toStrictEqual({
++			compilerOptions: {
++				types: ['node'],
++				lib: ['esnext'],
++				target: 'ESNext',
++				module: 'ESNext',
++				moduleResolution: 'bundler',
++				skipLibCheck: true,
++				strict: true,
++			},
++			files: ['/w/dist/index.d.ts'],
++		})
++
++		const name = configHelpers.packageManifestName(configHelpers.WORKSPACE_ROOT)
++		if (name === undefined) throw new Error('The workspace manifest names no package')
++		expect(configHelpers.rewriteCoreSpecifier("from '@src/core'")).toBe(`from '${name}'`)
++		expect(configHelpers.rewriteCoreSpecifier("from '../../core/index.js'")).toBe(`from '${name}'`)
++		expect(configHelpers.rewriteCoreSpecifier("from './sibling.js'")).toBe("from './sibling.js'")
++
++		// The mechanism the roll-up proof's skip reads: an absent package rejects resolution.
++		expect(() => createRequire(import.meta.url).resolve('@absent/declaration-extractor')).toThrow(
++			'Cannot find module',
++		)
++
++		expect(configHelpers.isExtractorModule(undefined)).toBe(false)
++		expect(configHelpers.isExtractorModule({ Extractor: {}, ExtractorConfig: {} })).toBe(false)
++		expect(
++			configHelpers.isExtractorModule({
++				Extractor: () => undefined,
++				ExtractorConfig: () => undefined,
++			}),
++		).toBe(false)
++		expect(
++			configHelpers.isExtractorModule({
++				Extractor: Object.assign(() => undefined, { invoke: () => undefined }),
++				ExtractorConfig: Object.assign(() => undefined, { prepare: () => undefined }),
++			}),
++		).toBe(true)
++
++		// The guard reads `invoke` and `prepare` through the prototype chain, as its remarks state.
++		expect(
++			configHelpers.isExtractorModule({
++				Extractor: Object.setPrototypeOf(() => undefined, { invoke: () => undefined }),
++				ExtractorConfig: Object.setPrototypeOf(() => undefined, { prepare: () => undefined }),
++			}),
++		).toBe(true)
++	})
++
++	// A hoisted install can place the extractor anywhere `require.resolve` reaches, so the skip
++	// control compares against the path resolution actually returned rather than a fixed layout.
++	it.skipIf(extractorPath === undefined)('finds the resolved extractor on disk', () => {
++		if (extractorPath === undefined) throw new Error('The extractor resolution left no path')
++		expect(existsSync(extractorPath)).toBe(true)
++	})
++
++	it.skipIf(extractorPath !== undefined)('rejects resolving the unavailable extractor', () => {
++		expect(() => createRequire(import.meta.url).resolve('@microsoft/api-extractor')).toThrow(
++			'Cannot find module',
++		)
++	})
++
++	// The roll-up loads the declaration extractor, which only a workspace publishing source from
++	// `src` installs. Where `require.resolve` rejects that package, this proof does not apply.
++	it.skipIf(extractorPath === undefined)(
++		'rolls one face into a single declaration and rewrites its core specifier',
++		async () => {
++			const scratch = createPolicyScratch({ prefix: 'orkestrel-config-rollup-' })
++			// The hook's temporary declaration emit is proven removed: no name beginning
++			// `orkestrel-declarations-` present after the builds that was absent before them.
++			const before = new Set(
++				readdirSync(tmpdir()).filter((entry) => entry.startsWith('orkestrel-declarations-')),
++			)
++			try {
++				const workspace = scratch.path
++				const project = join(workspace, 'tsconfig.json')
++				const source = join(workspace, 'source', 'server', 'index.ts')
++				scratch.write(
++					'tsconfig.json',
++					JSON.stringify({
++						compilerOptions: {
++							target: 'ESNext',
++							module: 'ESNext',
++							moduleResolution: 'bundler',
++							lib: ['ESNext'],
++							types: [],
++							strict: true,
++							verbatimModuleSyntax: true,
++							skipLibCheck: true,
++							declaration: true,
++							emitDeclarationOnly: true,
++							noEmit: false,
++							rootDir: './source',
++							outDir: './emit',
++							paths: { '@src/core': ['./source/core/index.ts'] },
++						},
++						include: ['./source/server/**/*.ts'],
++					}),
++				)
++				scratch.write(
++					'source/core/index.ts',
++					'export interface FixtureLabel {\n\treadonly label: string\n}\n',
++				)
++				scratch.write(
++					'source/server/index.ts',
++					"import type { FixtureLabel } from '@src/core'\n\nexport interface FixtureRecord {\n\treadonly label: FixtureLabel\n\treadonly count: number\n}\n",
++				)
++
++				const name = configHelpers.packageManifestName(configHelpers.WORKSPACE_ROOT)
++				if (name === undefined) throw new Error('The workspace manifest names no package')
++				const rewritten = join(workspace, 'rewritten')
++				const kept = join(workspace, 'kept')
++				const builds = [
++					{ output: rewritten, rewrite: true },
++					{ output: kept, rewrite: false },
++				]
++				for (const face of builds) {
++					await build({
++						root: workspace,
++						configFile: false,
++						logLevel: 'silent',
++						publicDir: false,
++						plugins: [
++							configHelpers.declarationRollup(
++								face.rewrite
++									? { project, rewrite: configHelpers.rewriteCoreSpecifier }
++									: { project },
++							),
++						],
++						build: {
++							write: true,
++							outDir: face.output,
++							lib: {
++								entry: source,
++								formats: ['es'],
++								fileName: () => 'index.js',
++							},
++							rolldownOptions: { external: [/^node:/u, /^@orkestrel\//u] },
++						},
++					})
++				}
++
++				const idle = join(workspace, 'idle')
++				const serving = configHelpers.declarationRollup({
++					project,
++					rewrite: configHelpers.rewriteCoreSpecifier,
++				})
++				const configure = serving.configResolved
++				const close = serving.closeBundle
++				if (typeof configure !== 'function' || typeof close !== 'function') {
++					throw new Error('The declaration roll-up exposes no build hooks')
++				}
++				Reflect.apply(configure, undefined, [
++					{ command: 'serve', root: workspace, build: { outDir: idle, lib: { entry: source } } },
++				])
++				await Reflect.apply(close, undefined, [])
++
++				const after = readdirSync(tmpdir()).filter((entry) =>
++					entry.startsWith('orkestrel-declarations-'),
++				)
++				expect(after.every((entry) => before.has(entry))).toBe(true)
++
++				// The face ships exactly one declaration: the emit's scratch tree leaves with it.
++				expect(globSync('**/*.d.ts', { cwd: rewritten })).toStrictEqual(['index.d.ts'])
++				expect(existsSync(join(rewritten, 'declarations'))).toBe(false)
++				expect(globSync('**/*.d.ts', { cwd: kept })).toStrictEqual(['index.d.ts'])
++				expect(existsSync(join(kept, 'declarations'))).toBe(false)
++				expect(existsSync(idle)).toBe(false)
++
++				const rolled = readFileSync(join(rewritten, 'index.d.ts'), 'utf8')
++				expect(rolled).toContain('FixtureRecord')
++				expect(rolled).toContain(`from '${name}'`)
++				expect(rolled).not.toContain('@src/core')
++
++				// The control: the same face without a rewrite ships the specifier the extractor kept.
++				const control = readFileSync(join(workspace, 'kept', 'index.d.ts'), 'utf8')
++				expect(control).toContain('@src/core')
++				expect(control).not.toContain(`from '${name}'`)
++			} finally {
++				scratch.destroy()
++			}
++		},
++	)
+ })
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index e5ba87d1..1e8eca7c 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -1401,10 +1401,10 @@ describe('blueprintToRootVite fixed proofs', () => {
+ 		expect(showcase).toContain('\t\t: []\n\treturn {\n')
+ 	})
+ 
+-	// Both published faces are rolled up by vite-plugin-dts and both reach core
+-	// through a relative source path, so each carries the rewrite and each explains
+-	// it where a reader of that file meets it.
+-	it('explains the declaration rewrite in every emitted published face', () => {
++	// Both published faces roll up through `declarationRollup`, and both reach core
++	// through the shared `rewriteCoreSpecifier`, so each carries the same call and
++	// comment where a reader of that file meets it.
++	it('reaches core through the rewrite in every emitted published face', () => {
+ 		const artifacts = blueprintToConfigArtifacts(
+ 			buildBlueprint({ src: ['core', 'browser', 'server'] }),
+ 		)
+@@ -1413,51 +1413,10 @@ describe('blueprintToRootVite fixed proofs', () => {
+ 			'configs/src/vite.server.config.ts',
+ 		]) {
+ 			const face = artifacts.find((artifact) => artifact.path === path)
++			expect(face?.content).toContain('declarationRollup({')
++			expect(face?.content).toContain('rewrite: rewriteCoreSpecifier,')
+ 			expect(face?.content).toContain(
+-				'vite-plugin-dts rolls this face into one declaration, and the roll-up reaches',
+-			)
+-			expect(face?.content).toContain('final roll-up only')
+-			expect(face?.content).toContain('beforeWriteFile: (path, content) => ({')
+-		}
+-		const browser = artifacts.find(
+-			({ path }) => path === 'configs/src/vite.browser.config.ts',
+-		)?.content
+-		const server = artifacts.find(
+-			({ path }) => path === 'configs/src/vite.server.config.ts',
+-		)?.content
+-		// Each face guards its own roll-up, so neither rewrite can fire on the other's
+-		// declaration. The browser comment names the nested case as well, because a
+-		// browser subfolder is where the escaping path actually comes from.
+-		expect(browser).toContain(
+-			'content: /[\\\\/]dist[\\\\/]src[\\\\/]browser[\\\\/]index\\.d\\.ts$/.test(path)\n',
+-		)
+-		expect(server).toContain(
+-			'content: /[\\\\/]dist[\\\\/]src[\\\\/]server[\\\\/]index\\.d\\.ts$/.test(path)\n',
+-		)
+-		expect(browser).toContain('a module in a browser subfolder emits')
+-	})
+-
+-	it('joins the declaration rewrite only while the line it prints fits the width', () => {
+-		// The names either side of the width: at 19 characters the joined call
+-		// prints exactly on the vendored 100 columns and at 20 it prints one past, so
+-		// the branch is observable only at that pair. Every longer name the gate
+-		// admits, up to `MAX_NAME_LENGTH`, takes the wrapped form. Both faces fill the
+-		// same span from one derivation, so the pair is asserted on both.
+-		for (const path of [
+-			'configs/src/vite.browser.config.ts',
+-			'configs/src/vite.server.config.ts',
+-		]) {
+-			const fitted = blueprintToConfigArtifacts(
+-				buildBlueprint({ name: 'a'.repeat(19), src: ['core', 'browser', 'server'] }),
+-			).find((artifact) => artifact.path === path)
+-			expect(fitted?.content).toContain(
+-				`\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g, '@orkestrel/${'a'.repeat(19)}')\n`,
+-			)
+-			const wrapped = blueprintToConfigArtifacts(
+-				buildBlueprint({ name: 'a'.repeat(20), src: ['core', 'browser', 'server'] }),
+-			).find((artifact) => artifact.path === path)
+-			expect(wrapped?.content).toContain(
+-				`\t\t\t\t\t\t? content.replaceAll(\n\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g,\n\t\t\t\t\t\t\t\t'@orkestrel/${'a'.repeat(20)}',\n\t\t\t\t\t\t\t)\n`,
++				"// The roll-up reaches src/core through a specifier the tarball does not carry, so the rewrite\n// externalizes core through the package's own published root export, on the final roll-up alone.",
+ 			)
+ 		}
+ 	})
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 11f9c0db..1d27e1ff 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,7 +1,7 @@
+ import type { CatalogEntry, Finding, Group, Ownership } from '@src/core'
+ import { readFileSync } from 'node:fs'
+ import { resolve } from 'node:path'
+-import { isNumber, isRecord } from '@orkestrel/contract'
++import { isRecord } from '@orkestrel/contract'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	artifactToFinding,
+@@ -34,9 +34,7 @@ import {
+ 	matchesPrintWidth,
+ 	matchesRange,
+ 	MAX_MANIFEST_BYTES,
+-	MAX_NAME_LENGTH,
+ 	nameToGuide,
+-	nameToRewrite,
+ 	planToSummary,
+ 	PRINT_WIDTH,
+ 	selectGroups,
+@@ -271,91 +269,6 @@ describe('matchesPrintWidth', () => {
+ 	})
+ })
+ 
+-describe('nameToRewrite', () => {
+-	// The rewrite is emitted text, so the regex it carries is measured by running
+-	// it rather than by reading it: the spellings a published face's roll-up
+-	// actually prints, and a control the rewrite must leave alone.
+-	it('rewrites every relative core path the roll-up prints, and nothing else', () => {
+-		const source = /content\.replaceAll\(\s*(?<pattern>\/.+\/)g,\s*'(?<specifier>[^']+)'/su.exec(
+-			nameToRewrite('router'),
+-		)
+-		expect(source?.groups?.specifier).toBe('@orkestrel/router')
+-		const pattern = source?.groups?.pattern
+-		if (pattern === undefined) throw new Error('Expected an emitted replaceAll pattern')
+-		const rewrite = new RegExp(pattern.slice(1, -1), 'g')
+-		expect("import { A } from '../core/index.ts'".replace(rewrite, 'X')).toBe(
+-			"import { A } from 'X'",
+-		)
+-		expect("import { A } from '../../core/index.ts'".replace(rewrite, 'X')).toBe(
+-			"import { A } from 'X'",
+-		)
+-		expect("import { A } from '../../core/index.js'".replace(rewrite, 'X')).toBe(
+-			"import { A } from 'X'",
+-		)
+-		// The control is a specifier from outside the population the rewrite covers:
+-		// a sibling face's own module, which resolves inside dist/src already and
+-		// which a rewrite reaching it would break.
+-		expect("import { A } from './drivers/Driver.js'".replace(rewrite, 'X')).toBe(
+-			"import { A } from './drivers/Driver.js'",
+-		)
+-		expect("import { A } from '@orkestrel/contract'".replace(rewrite, 'X')).toBe(
+-			"import { A } from '@orkestrel/contract'",
+-		)
+-	})
+-
+-	// The width the branch is decided against is the vendored formatter's own
+-	// `printWidth`, read from the configuration a generated workspace receives, so
+-	// the boundary is measured against that file rather than against a number this
+-	// test also chose.
+-	it('joins the call only while the line it prints fits the vendored width', () => {
+-		const vendored: unknown = JSON.parse(readFileSync(resolve('.oxfmtrc.json'), 'utf8'))
+-		if (!isRecord(vendored)) throw new Error('Expected the vendored formatter configuration')
+-		const width = vendored.printWidth
+-		const columns = vendored.tabWidth
+-		if (!isNumber(width) || !isNumber(columns)) throw new Error('Expected a width and a tab width')
+-		// Every name the gate admits, sorted by the shape its rewrite takes, so the
+-		// boundary is the population's own edge rather than a length this test picked.
+-		const joined = new Map<number, number>()
+-		const wrapped: number[] = []
+-		for (let length = 1; length <= MAX_NAME_LENGTH; length += 1) {
+-			const rewrite = nameToRewrite('a'.repeat(length))
+-			const printed = rewrite.replaceAll('\t', ' '.repeat(columns)).length
+-			if (rewrite.includes('\n')) wrapped.push(length)
+-			else joined.set(length, printed)
+-		}
+-		const boundary = Math.max(...joined.keys())
+-		expect([...joined].filter(([, printed]) => printed > width)).toStrictEqual([])
+-		expect([...joined.keys()]).toStrictEqual(
+-			Array.from({ length: boundary }, (_unused, index) => index + 1),
+-		)
+-		expect(wrapped.at(0)).toBe(boundary + 1)
+-		expect(wrapped).toHaveLength(MAX_NAME_LENGTH - boundary)
+-		expect(boundary).toBe(19)
+-		// The longest joined name prints exactly on the width, so the branch sits on
+-		// the edge rather than short of it.
+-		expect(joined.get(boundary)).toBe(width)
+-		expect(nameToRewrite('a'.repeat(boundary))).toBe(
+-			`\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g, '@orkestrel/${'a'.repeat(19)}')`,
+-		)
+-		expect(nameToRewrite('a'.repeat(boundary + 1))).toBe(
+-			[
+-				'\t\t\t\t\t\t? content.replaceAll(',
+-				'\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g,',
+-				`\t\t\t\t\t\t\t\t'@orkestrel/${'a'.repeat(20)}',`,
+-				'\t\t\t\t\t\t\t)',
+-			].join('\n'),
+-		)
+-	})
+-
+-	it('escapes a name through the one TypeScript string boundary', () => {
+-		expect(nameToRewrite("it's")).toContain("'@orkestrel/it\\'s'")
+-	})
+-
+-	it('repeats its answer and leaves its input untouched', () => {
+-		expect(nameToRewrite('router')).toBe(nameToRewrite('router'))
+-	})
+-})
+-
+ describe('serializeTypeScriptString', () => {
+ 	it('escapes every character that can leave a single-quoted literal', () => {
+ 		expect(serializeTypeScriptString("a'b\\c\n\t\u2028\u2029")).toBe(

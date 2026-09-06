@@ -1,0 +1,185 @@
+--- a/.claude/rules/workspace.md (after U3-fix)
++++ b/.claude/rules/workspace.md (after U3-fix-2)
+@@ -61,9 +61,11 @@
+ - `configs/src/` and `configs/app/`: thin per-target wrappers, including optional
+   `configs/src/*bin*` files. Shared logic remains in root configs.
+ - `configs/helpers.ts`, `configs/browsers.ts`, and `configs/policy.ts`: the only permitted leaves
+-  under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf. Each
+-  `configs/src/*.config.ts` imports the root config rather than a leaf, so shared build logic stays
+-  in one place.
++  under `configs/`. Each imports nothing from the workspace, which is what keeps it a leaf, so no
++  `configs/types.ts` exists for one to import: each keeps its own types, data, and functions in its
++  one file, and the centralized-kind placement in `.claude/rules/architecture.md` does not reach a
++  leaf. Each `configs/src/*.config.ts` imports the root config rather than a leaf, so shared build
++  logic stays in one place.
+ - Keep `configs/helpers.ts` free of any dependency a core-only workspace does not declare. It is
+   vendored byte-identical to every workspace, so an import there must resolve in all of them.
+   `configs/browsers.ts` exists for that reason: it imports `playwright` and
+@@ -71,9 +73,7 @@
+ - Keep `configs/policy.ts` free of imports entirely. It is the workspace's oxlint plugin, the lint
+   instrument of the policy law, and it is vendored byte-identical to every workspace including a
+   core-only one, so a module that imports nothing at all is the only form that resolves in all of
+-  them. Because it may import nothing, keep its own types, data, and functions in that one file, and
+-  extend that waiver to `configs/helpers.ts` as well: the centralized-kind placement in
+-  `.claude/rules/architecture.md` does not reach either vendored leaf.
++  them.
+ - When a file is vendored byte-identical, import nothing that fails to resolve in any target. Import
+   no `@orkestrel/*` package from it: every such package is itself a target and cannot depend on
+   itself.
+--- a/src/core/templates.ts (after U3-fix)
++++ b/src/core/templates.ts (after U3-fix-2)
+@@ -579,8 +579,8 @@
+ import { declarationRollup, rewriteCoreSpecifier } from '../helpers.js'
+ import { srcBrowser, resolveWorkspacePath } from '../../vite.config.ts'
+ 
+-// The roll-up reaches src/core through a source path the tarball does not carry, so the rewrite
+-// externalizes core through the package's own root export, on the final roll-up alone.
++// The roll-up reaches src/core through a specifier the tarball does not carry, so the rewrite
++// externalizes core through the package's own published root export, on the final roll-up alone.
+ export default defineConfig(
+ 	mergeConfig(srcBrowser(), {
+ 		plugins: [
+--- a/tests/config.test.ts (after U3-fix)
++++ b/tests/config.test.ts (after U3-fix-2)
+@@ -7,12 +7,14 @@
+ 	globSync,
+ 	mkdtempSync,
+ 	mkdirSync,
++	readdirSync,
+ 	readFileSync,
+ 	realpathSync,
+ 	rmSync,
+ 	writeFileSync,
+ } from 'node:fs'
+ import { createRequire } from 'node:module'
++import { tmpdir } from 'node:os'
+ import { dirname, join, resolve } from 'node:path'
+ import { fileURLToPath, pathToFileURL } from 'node:url'
+ import { build, createServer, loadConfigFromFile } from 'vite'
+@@ -52,12 +54,11 @@
+ 
+ // A declaration roll-up loads the extractor package, which only a workspace publishing source from
+ // `src` installs. The resolution below is the mechanism its proof is conditioned on.
+-let extractorResolved = true
+-let extractorPath = ''
++let extractorPath: string | undefined
+ try {
+ 	extractorPath = createRequire(import.meta.url).resolve('@microsoft/api-extractor')
+ } catch {
+-	extractorResolved = false
++	extractorPath = undefined
+ }
+ 
+ describe('root configuration', () => {
+@@ -1826,15 +1827,24 @@
+ 				ExtractorConfig: Object.assign(() => undefined, { prepare: () => undefined }),
+ 			}),
+ 		).toBe(true)
++
++		// The guard reads `invoke` and `prepare` through the prototype chain, as its remarks state.
++		expect(
++			configHelpers.isExtractorModule({
++				Extractor: Object.setPrototypeOf(() => undefined, { invoke: () => undefined }),
++				ExtractorConfig: Object.setPrototypeOf(() => undefined, { prepare: () => undefined }),
++			}),
++		).toBe(true)
+ 	})
+ 
+ 	// A hoisted install can place the extractor anywhere `require.resolve` reaches, so the skip
+ 	// control compares against the path resolution actually returned rather than a fixed layout.
+-	it.skipIf(!extractorResolved)('finds the resolved extractor on disk', () => {
++	it.skipIf(extractorPath === undefined)('finds the resolved extractor on disk', () => {
++		if (extractorPath === undefined) throw new Error('The extractor resolution left no path')
+ 		expect(existsSync(extractorPath)).toBe(true)
+ 	})
+ 
+-	it.skipIf(extractorResolved)('rejects resolving the unavailable extractor', () => {
++	it.skipIf(extractorPath !== undefined)('rejects resolving the unavailable extractor', () => {
+ 		expect(() => createRequire(import.meta.url).resolve('@microsoft/api-extractor')).toThrow(
+ 			'Cannot find module',
+ 		)
+@@ -1842,18 +1852,21 @@
+ 
+ 	// The roll-up loads the declaration extractor, which only a workspace publishing source from
+ 	// `src` installs. Where `require.resolve` rejects that package, this proof does not apply.
+-	it.skipIf(!extractorResolved)(
++	it.skipIf(extractorPath === undefined)(
+ 		'rolls one face into a single declaration and rewrites its core specifier',
+ 		async () => {
+-			mkdirSync(resolve(root, 'tmp'), { recursive: true })
+-			const workspace = mkdtempSync(join(resolve(root, 'tmp'), 'config-rollup-'))
++			const scratch = createPolicyScratch({ prefix: 'orkestrel-config-rollup-' })
++			// The hook's temporary declaration emit is proven removed: no name beginning
++			// `orkestrel-declarations-` present after the builds that was absent before them.
++			const before = new Set(
++				readdirSync(tmpdir()).filter((entry) => entry.startsWith('orkestrel-declarations-')),
++			)
+ 			try {
++				const workspace = scratch.path
+ 				const project = join(workspace, 'tsconfig.json')
+ 				const source = join(workspace, 'source', 'server', 'index.ts')
+-				mkdirSync(join(workspace, 'source', 'core'), { recursive: true })
+-				mkdirSync(join(workspace, 'source', 'server'), { recursive: true })
+-				writeFileSync(
+-					project,
++				scratch.write(
++					'tsconfig.json',
+ 					JSON.stringify({
+ 						compilerOptions: {
+ 							target: 'ESNext',
+@@ -1873,17 +1886,14 @@
+ 						},
+ 						include: ['./source/server/**/*.ts'],
+ 					}),
+-					'utf8',
+ 				)
+-				writeFileSync(
+-					join(workspace, 'source', 'core', 'index.ts'),
++				scratch.write(
++					'source/core/index.ts',
+ 					'export interface FixtureLabel {\n\treadonly label: string\n}\n',
+-					'utf8',
+ 				)
+-				writeFileSync(
+-					source,
++				scratch.write(
++					'source/server/index.ts',
+ 					"import type { FixtureLabel } from '@src/core'\n\nexport interface FixtureRecord {\n\treadonly label: FixtureLabel\n\treadonly count: number\n}\n",
+-					'utf8',
+ 				)
+ 
+ 				const name = configHelpers.packageManifestName(configHelpers.WORKSPACE_ROOT)
+@@ -1935,6 +1945,11 @@
+ 				])
+ 				await Reflect.apply(close, undefined, [])
+ 
++				const after = readdirSync(tmpdir()).filter((entry) =>
++					entry.startsWith('orkestrel-declarations-'),
++				)
++				expect(after.every((entry) => before.has(entry))).toBe(true)
++
+ 				// The face ships exactly one declaration: the emit's scratch tree leaves with it.
+ 				expect(globSync('**/*.d.ts', { cwd: rewritten })).toStrictEqual(['index.d.ts'])
+ 				expect(existsSync(join(rewritten, 'declarations'))).toBe(false)
+@@ -1952,7 +1967,7 @@
+ 				expect(control).toContain('@src/core')
+ 				expect(control).not.toContain(`from '${name}'`)
+ 			} finally {
+-				rmSync(workspace, { recursive: true, force: true })
++				scratch.destroy()
+ 			}
+ 		},
+ 	)
+--- a/tests/src/core/compilers.test.ts (after U3-fix)
++++ b/tests/src/core/compilers.test.ts (after U3-fix-2)
+@@ -1416,9 +1416,8 @@
+ 			expect(face?.content).toContain('declarationRollup({')
+ 			expect(face?.content).toContain('rewrite: rewriteCoreSpecifier,')
+ 			expect(face?.content).toContain(
+-				"the tarball does not carry, so the rewrite\n// externalizes core through the package's own",
++				"// The roll-up reaches src/core through a specifier the tarball does not carry, so the rewrite\n// externalizes core through the package's own published root export, on the final roll-up alone.",
+ 			)
+-			expect(face?.content).toContain('root export, on the final roll-up alone.')
+ 		}
+ 	})
+ 
