@@ -192,3 +192,31 @@ grep -c "from 'typescript'|transpileModule|createProgram" → 0
 ```
 
 Reading: `repair` writes the presence-owned proof back where it is missing, byte for byte what the materializer wrote from the same template, and the regenerated proof names no compiler API. The U4-fix verifier re-runs the same instrument over the fixed template.
+
+## M5: whole `prove` calls over probe's own workspace after the fix rounds (2026-09-06 17:29 UTC, `m5-final.log.txt`)
+
+```text
+node m5-prove.mjs 3   (dist built 17:17 UTC by the fix-f verifier; load average 1.64 over the last minute, U5 running in scaffold)
+construct: 324 ms; PROBE_DEADLINE=30000
+prove 1: 16299 ms; receipt minted   (the first prove pays the type stage's warm)
+prove 2:  4408 ms; receipt minted
+prove 3:  4306 ms; receipt minted
+destroy: 16 ms; total 25354 ms
+```
+
+Reading: a warm `prove` over the flagship claim costs about 4.3 s to 4.4 s on this host with the compiler spawned per selected project for the case and the control, against the 437 ms to 495 ms the guide's § Cost recorded for the resident language service on 2026-08-20; the first `prove` after construction pays the warm (about 12 s over this repository) and lands near 16 s. `PROBE_DEADLINE` (30 s) clears both with room. The guide's warm-prove row is stale and is carried to U7-fix-g.
+
+## The final solo readings (2026-09-06 17:28 UTC, `u7-final-solo.log.txt`)
+
+`RuntimeStage.test.ts` alone: 40 passed in 20.3 s (the fix-f verifier's one red row, a FIFO-gated case at its 60 s budget under U5's load); `test:policy` 111, `test:config` 46, `test:setup` 9, `test:guides` 13, each green alone over the final tree.
+
+## M6: boot and warm `prove` through the built entry, driven as a line client (2026-09-06 17:40 UTC, `m6-boot.log.txt`, `instruments/m6/m6-boot.mjs`)
+
+```text
+node m6-boot.mjs 3   (a fresh spawn of dist/bin/main.js per round, cwd probe; newline-delimited JSON-RPC: initialize, notifications/initialized, tools/call prove twice; U5 running in scaffold)
+round 1: initialize answered at 526 ms; boot to first answered tools/call 16786 ms [receipt minted]; warm prove 5692 ms [receipt minted]; child exit 0
+round 2: initialize answered at 561 ms; boot to first answered tools/call 16712 ms [receipt minted]; warm prove 4509 ms [receipt minted]; child exit 0
+round 3: initialize answered at 497 ms; boot to first answered tools/call 16154 ms [receipt minted]; warm prove 4211 ms [receipt minted]; child exit 0
+```
+
+Reading: over the built entry the handshake answers in about 0.5 s, the first answered `tools/call` lands at 16.2 s to 16.8 s (arming's warm, about 12 s over this repository, plus one `prove`), and a warm `prove` round trip costs 4.2 s to 5.7 s. The guide's § Cost boot row (4.1 s to 4.4 s) and warm-prove row (437 ms to 495 ms) were taken on 2026-08-20 over the resident language service and are stale; both are carried to U7-fix-g with these readings, and the answered-`initialize` reading joins the table because a harness's handshake timeout reads it.

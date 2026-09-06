@@ -29,3 +29,13 @@ Recorded, no carrier: subjective E1 and objective F3 (`u7-fix-a.diff.txt` was th
 `u7-fix-verify-report.md`: format, lint, `check`, `build` green; `npm test` red on the expiry row under a saturated host (load average above 4 on four processors), the row green alone twice (`u7-probe-solo.log.txt` 387 s; `u7-fix-probe-solo.log.txt` 379 s). The authoritative reading is the fix-d round's verifier.
 
 VERDICT: PASS on the claims, with the round's findings carried to U7-fix-d; the checker's reading and the fix-d closure decide acceptance
+
+## Closure over fixes d to g
+
+The checker and the verifier closed each fix round in place of a fresh reviewer round, because every fix adopted the round's prescriptions verbatim (`.claude/rules/quality.md` § Rounds and verdicts); the interdiff slice of each round is the checker's subject, and each verifier ran the whole probe chain beside other work.
+
+- **Fix-d** (`u7-fix-d-checker.md`): VERDICT: PASS over the round-2 claims and the fix-d edits together, with claim 13's letter reading. Verifier (`u7-fix-d-verify-report.md`): GATES: RED on `format:check` (the guide's method table after the widened row) and on the serialization fixture under load; the fixture green alone (`u7-serialization-solo.log.txt`, 26 s); the table carried to fix-e.
+- **Fix-e** (`u7-fix-e-checker.md`): PASS on claims 1 and 2; FAIL 3 on the report alone, whose deviation compared the formatter's write against `HEAD` rather than the post-fix-d tree; the slice shows the write scoped as prescribed, and the record carries the refutation. Verifier (`u7-fix-e-verify-report.md`): format, lint, `check`, `build` green; `npm test` red on two `Probe.test.ts` rows of the timing class beside the U4 closure chain, carried to fix-f.
+- **Fix-f** (`u7-fix-f-checker.md`): VERDICT: PASS, the two race guards raised beside the budgets they lose to ruled right. Verifier (`u7-fix-f-verify-report.md`): format, lint, `check`, `build` green; `npm test` red on one `RuntimeStage.test.ts` FIFO row at its 60 s budget under U5's load, green alone (`u7-final-solo.log.txt`, 40 passed in 20.3 s); `test:policy`, `test:config`, `test:setup`, and `test:guides` green alone over the same tree.
+- **Timing readings** (`orchestrator-measurements.md` § M5 and § M6): a warm `prove` costs 4.2 s to 5.7 s through the built entry and about 4.3 s in process; the first answered `tools/call` lands at 16.2 s to 16.8 s after the spawn; `PROBE_DEADLINE` (30 s) clears both. The guide's stale boot and warm-prove rows are fix-g's subject.
+- **Fix-g**: pending its checker and verifier.

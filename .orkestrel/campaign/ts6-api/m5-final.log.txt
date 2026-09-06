@@ -1,0 +1,5 @@
+construct: 324 ms; PROBE_DEADLINE=30000
+prove 1: 16299 ms; receipt=minted; reason=a string literal assigned to a number must not compile; issues=[]
+prove 2: 4408 ms; receipt=minted; reason=a string literal assigned to a number must not compile; issues=[]
+prove 3: 4306 ms; receipt=minted; reason=a string literal assigned to a number must not compile; issues=[]
+destroy: 16 ms; total 25354 ms

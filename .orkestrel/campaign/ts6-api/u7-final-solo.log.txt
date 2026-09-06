@@ -1,0 +1,36 @@
+== RuntimeStage.test.ts alone
+
+ Test Files  1 passed (1)
+      Tests  40 passed (40)
+   Start at  17:28:48
+   Duration  20.29s (transform 623ms, setup 176ms, import 808ms, tests 19.13s, environment 0ms)
+
+EXIT:0
+== npm run test:policy
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  17:29:09
+   Duration  1.41s (transform 225ms, setup 29ms, import 611ms, tests 613ms, environment 0ms)
+
+EXIT:0
+== npm run test:config
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  17:29:11
+   Duration  2.20s (transform 399ms, setup 30ms, import 1.07s, tests 935ms, environment 0ms)
+
+EXIT:0
+== npm run test:setup
+ Test Files  2 passed (2)
+      Tests  9 passed (9)
+   Start at  17:29:14
+   Duration  774ms (transform 84ms, setup 48ms, import 138ms, tests 480ms, environment 0ms)
+
+EXIT:0
+== npm run test:guides
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  17:29:15
+   Duration  17.10s (transform 320ms, setup 29ms, import 448ms, tests 16.46s, environment 0ms)
+
+EXIT:0
