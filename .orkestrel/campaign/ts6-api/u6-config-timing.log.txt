@@ -1,0 +1,149 @@
+
+ RUN  v4.1.11 /home/user/scaffold
+
+ ✓ |config| tests/config.test.ts > root configuration > resolves every declared alias to its real entry 3ms
+ ✓ |config| tests/config.test.ts > root configuration > registers every workspace project with its fixed include and setup files 14ms
+ ✓ |config| tests/config.test.ts > root configuration > emits every project as a factory so the release mode reaches its proof 1ms
+ ✓ |config| tests/config.test.ts > root configuration > keeps Vitest invocation fields out of project configurations 3ms
+ ✓ |config| tests/config.test.ts > root configuration > requires and validates every selected target wrapper 529ms
+ ✓ |config| tests/config.test.ts > root configuration > registers proof scripts in the correct gate 1ms
+ ✓ |config| tests/config.test.ts > root configuration > rebuilds publishing workspaces before packing 1ms
+ × |config| tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes 828ms
+   → The committed host inventory is stale at .oxlintrc.json, guides/scaffold.md
+ ✓ |config| tests/config.test.ts > root configuration > keeps policy rules active across every linted workspace path 3ms
+ ✓ |config| tests/config.test.ts > root configuration > omits the audit-confirmed dead policy type exports 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > valid > accepts recorders 29ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > valid > accepts non-framework members 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > valid > accepts unlisted framework members 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > invalid > rejects module mocking [membership: named vi and jest module APIs] 2ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > invalid > rejects computed module mocking [membership: named vi and jest module APIs] 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > invalid > rejects template module mocking [membership: named vi and jest module APIs] 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > invalid > rejects spy factories [membership: named vi and jest spy APIs] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > invalid > rejects fake clocks [membership: named vi and jest clock APIs] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-mocking > invalid > rejects environment stubs [membership: named vi and jest stub APIs] 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-keyword-privacy > valid > accepts runtime-private fields 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-keyword-privacy > valid > accepts unannotated members 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-keyword-privacy > invalid > rejects private properties [membership: keyword-annotated class members] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-keyword-privacy > invalid > rejects private methods [membership: keyword-annotated class members] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-keyword-privacy > invalid > rejects protected properties [membership: keyword-annotated class members] 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-keyword-privacy > invalid > rejects protected methods [membership: keyword-annotated class members] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > valid > accepts a module-scope function 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > valid > accepts an anonymous callback passed directly 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > valid > accepts an anonymous arrow returned directly 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > valid > accepts the sanctioned policy visitor delegation 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > valid > accepts function syntax inside a class expression 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > valid > accepts class accessors inside a factory 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > invalid > accepts object accessors while rejecting nested function expressions 2ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > invalid > rejects a local function declaration 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > invalid > rejects a function assigned to a local binding 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > invalid > rejects a named function expression argument 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > invalid > rejects a callback parameter default function 2ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > invalid > rejects an assignment two direct callbacks down 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-nested-functions > invalid > rejects a function assigned inside a class-declaration method 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-hidden-declaration > valid > accepts an exported centralized declaration 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-hidden-declaration > valid > accepts a hidden declaration outside a centralized file 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-hidden-declaration > invalid > rejects a hidden helper [membership: declarations in a centralized file without an export] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-hidden-declaration > invalid > rejects a hidden constant [membership: declarations in a centralized file without an export] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-type > valid > accepts an interface in types.ts 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-type > valid > accepts an interface in an ambient declaration file 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-type > valid > accepts an interface in an ambient module declaration file 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-type > valid > accepts an interface in an ambient CommonJS declaration file 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-type > invalid > rejects an interface beside helpers [membership: top-level type declarations outside types.ts] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-type > invalid > rejects a type alias in an environment module [membership: top-level type declarations outside types.ts] 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-class > valid > accepts a class in the file named for it 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-class > valid > accepts an error class in errors.ts 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-class > invalid > rejects a class that differs from its file [membership: classes outside errors.ts whose name differs from the filename] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-class > invalid > rejects a class in a camelCase file [membership: classes outside errors.ts whose name differs from the filename] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-data > valid > accepts module data in constants.ts 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-data > valid > accepts a helper namespace in helpers.ts 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-data > invalid > rejects data beside handlers [membership: module data whose file is absent from the data register] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-data > invalid > rejects data in an implementation file [membership: module data whose file is absent from the data register] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > valid > accepts a function in a function-kind file 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > valid > accepts a module in a registered function domain 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > valid > accepts a callback passed directly as an argument 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > valid > accepts a function returned directly through a concise body 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > valid > accepts functions returned directly through callback control flow 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > valid > accepts a function returned by a return statement inside a callback 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > valid > accepts a method of a top-level class 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects a function module in an unregistered folder [membership: module function syntax whose file is absent from the function register] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects a property-held arrow in a route table [membership: module function syntax whose file is absent from the function register] 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects a callback parameter default function [membership: module function syntax that is neither a direct callback nor a direct result] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects an assignment inside a direct callback [membership: module function syntax that is neither a direct callback nor a direct result] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects a destructured callback parameter default function [membership: module function syntax that is neither a direct callback nor a direct result] 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects an assignment inside callback control flow [membership: module function syntax that is neither a direct callback nor a direct result] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects a declaration inside a direct callback [membership: module function syntax that is neither a direct callback nor a direct result] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects an assignment two direct callbacks down [membership: module function syntax that is neither a direct callback nor a direct result] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misplaced-function > invalid > rejects a function in a nested folder whose suffix matches a registered domain [membership: module function syntax whose file is absent from the function register] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-constant > valid > accepts a frozen upper-case constant 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-constant > valid > accepts a lower-case binding outside constants.ts 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-constant > invalid > rejects a mutable constant [membership: variable statements in constants.ts that are not const] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-constant > invalid > rejects a lower-case constant [membership: declarations in constants.ts outside UPPER_SNAKE_CASE] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-constant > invalid > rejects a bare collection constant [membership: declarations in constants.ts with a direct array or object literal] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-parser > valid > accepts a parse-prefixed coercer 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-parser > valid > accepts an unprefixed function outside parsers.ts 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-parser > invalid > rejects an unprefixed coercer [membership: parsers.ts functions whose name does not start with parse] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-parser > invalid > rejects an unprefixed assigned coercer [membership: parsers.ts functions whose name does not start with parse] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-factory > valid > accepts a create-prefixed factory 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-factory > valid > accepts an unprefixed function outside factories.ts 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-factory > invalid > rejects an unprefixed factory [membership: factories.ts functions whose name does not start with create] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-misnamed-factory > invalid > rejects an unprefixed assigned factory [membership: factories.ts functions whose name does not start with create] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-domain > valid > accepts a registered function module carrying imports and one named export 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-domain > valid > accepts a module outside every registered domain 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-domain > valid > accepts a nested folder whose suffix matches a registered domain 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-domain > invalid > rejects a module whose function differs from its file [membership: direct camelCase modules in a registered function-domain folder] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-domain > invalid > rejects a hidden domain function [membership: direct camelCase modules in a registered function-domain folder] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-malformed-domain > invalid > rejects a file named for a registered domain [membership: source files whose stem is a registered function-domain name] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-host-line-endings > valid > accepts a split on the line-ending pattern 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-host-line-endings > valid > accepts a locally declared line-ending constant 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-host-line-endings > valid > accepts a namespace import that reads no line ending 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-host-line-endings > invalid > rejects a payload trimmed before it is split [membership: split calls carrying a line-feed literal] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-host-line-endings > invalid > rejects a templated line-feed split [membership: split calls carrying a line-feed literal] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-host-line-endings > invalid > rejects a read of the host line ending [membership: EOL reads on a binding named os] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > no-host-line-endings > invalid > rejects an EOL import from the host module [membership: named EOL specifiers imported from node:os] 0ms
+ ✓ |config| tests/config.test.ts > policy plugin > registers handlers as a function kind and routes as a data kind 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > enables every plugin rule over the population its law names 1ms
+ ✓ |config| tests/config.test.ts > policy plugin > loads every configured policy rule through the real binary 607ms
+ ✓ |config| tests/config.test.ts > configuration helpers > exposes every helper this proof requires 2ms
+ ✓ |config| tests/config.test.ts > configuration helpers > fails broken import-meta builds and forwards every other log 1ms
+ ✓ |config| tests/config.test.ts > configuration helpers > resolves contained workspace paths and refuses a real outside sibling 3ms
+ ✓ |config| tests/config.test.ts > configuration helpers > reads bounded files and resolves package roots from real manifests 3ms
+ ✓ |config| tests/config.test.ts > configuration helpers > classifies module boundaries and extracts static asset sources 5ms
+ ✓ |config| tests/config.test.ts > configuration helpers > reports environment and output boundary errors with legal controls 2ms
+ ✓ |config| tests/config.test.ts > configuration helpers > drives each plugin through its real Vite hooks 85ms
+ ✓ |config| tests/config.test.ts > configuration helpers > reads the compiler scope and fixed extractor override a declaration roll-up requires 253ms
+stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+ ✓ |config| tests/config.test.ts > configuration helpers > finds the resolved extractor on disk 0ms
+ ↓ |config| tests/config.test.ts > configuration helpers > rejects resolving the unavailable extractor
+stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+ ✓ |config| tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier 2276ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+Error: The committed host inventory is stale at .oxlintrc.json, guides/scaffold.md
+ ❯ tests/config.test.ts:718:12
+    716|       if (!generatedIndex.has(destination)) stale.push(destination)
+    717|      }
+    718|      throw new Error(
+       |            ^
+    719|       `The committed host inventory is stale at ${stale.length > 0 ? s…
+    720|      )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 110 passed | 1 skipped (112)
+   Start at  21:32:35
+   Duration  7.71s (transform 806ms, setup 606ms, import 1.48s, tests 4.70s, environment 0ms)
+
+
+real	0m12.605s
+user	0m8.083s
+sys	0m2.659s

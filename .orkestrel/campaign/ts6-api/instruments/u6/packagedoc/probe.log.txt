@@ -1,0 +1,24 @@
+emitted entry:
+/**
+ * The probe fixture's core entry.
+ *
+ * @packageDocumentation
+ */
+export * from './types.js';
+
+Analysis will use the bundled TypeScript version 5.9.3
+succeeded: true
+rollup:
+/**
+ * The probe fixture's core entry.
+ *
+ * @packageDocumentation
+ */
+
+export declare interface Greeting {
+    readonly text: string;
+}
+
+export { }
+
+carries @packageDocumentation: true

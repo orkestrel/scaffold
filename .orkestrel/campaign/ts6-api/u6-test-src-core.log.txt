@@ -1,0 +1,21 @@
+
+> @orkestrel/scaffold@0.0.63 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+········································································································································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-kBrupR/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from /home/user/scaffold/tmp/scaffold-e2-peers-kBrupR/malformed/vite.config.ts
+
+·························
+
+ Test Files  9 passed (9)
+      Tests  385 passed (385)
+   Start at  21:39:34
+   Duration  18.13s (transform 2.03s, setup 1.92s, import 1.31s, tests 17.05s, environment 1ms)
+

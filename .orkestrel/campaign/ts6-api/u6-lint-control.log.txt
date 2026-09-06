@@ -1,0 +1,6 @@
+== violating population (expect a diagnostic per file) ==
+src/server/subpath.ts:1:1: error eslint(no-restricted-imports): 'typescript/lib/typescript.js' import is restricted from being used by a pattern. help: the in-process compiler API is not a surface the fleet uses
+src/core/violation.ts:1:1: error eslint(no-restricted-imports): 'typescript' import is restricted from being used by a pattern. help: the in-process compiler API is not a surface the fleet uses
+violating exit: 1
+== control (expect exit 0) ==
+control exit: 0

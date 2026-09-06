@@ -1,0 +1,18 @@
+# U6 install — 2026-09-06T21:44:15Z
+$ grep -c vite-plugin-dts package.json package-lock.json (before)
+package.json:0
+package-lock.json:3
+$ npm --version
+10.9.7
+$ npm install --no-audit --no-fund
+
+removed 29 packages in 730ms
+$ grep -c vite-plugin-dts package.json package-lock.json (after)
+package.json:0
+package-lock.json:0
+$ git diff --stat -- package.json package-lock.json
+ package-lock.json | 372 ------------------------------------------------------
+ package.json      |   1 -
+ 2 files changed, 373 deletions(-)
+$ ls node_modules/vite-plugin-dts
+ls: cannot access 'node_modules/vite-plugin-dts': No such file or directory

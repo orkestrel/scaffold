@@ -10,7 +10,7 @@ Unit U6 made scaffold's seeds, constants, manifest, lint configuration, guide, r
 
 ## Review evidence
 
-The actual diff and status of the scaffold checkout: `/home/user/scaffold/.orkestrel/campaign/ts6-api/u6-scaffold-seeds.diff.txt` and `u6-scaffold-seeds.status.txt`. Read the diff in full; read the changed files at their new state where the diff is not enough. The lockfile and `host.json` changes are the Orchestrator's tracked install and build, recorded in `u6-install.log.txt`, and are outside the unit's claims.
+The actual diff and status of the scaffold checkout: `/home/user/scaffold/.orkestrel/campaign/ts6-api/u6-scaffold-seeds.diff.txt` and `u6-scaffold-seeds.status.txt`. Read the diff in full; read the changed files at their new state where the diff is not enough. The lockfile change is the Orchestrator's tracked install (`u6-install.log.txt`: `npm install` removed the plugin and its exclusive dependencies, 373 lockfile lines), and the `host.json` and `dist/` changes are the verifier's build; both are outside the unit's claims. The verifier runs beside this round and, for its lint control, plants `import ts from 'typescript'` as the first line of `src/core/helpers.ts` for a few seconds and removes it; a `typescript` import at that file's first line during this round is that plant, not the diff's, and the diff capture is authoritative for what the unit wrote.
 
 ## Claims to falsify (verdict per claim: PASS, FAIL with `file:line` evidence, or CANNOT RULE with what is missing)
 

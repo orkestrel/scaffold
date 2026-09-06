@@ -1,0 +1,14 @@
+
+> @orkestrel/scaffold@0.0.63 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+·················
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  21:39:30
+   Duration  3.96s (transform 841ms, setup 563ms, import 720ms, tests 2.49s, environment 0ms)
+
