@@ -10,7 +10,7 @@
 			"storage": "CLAUDE.md",
 			"destination": "CLAUDE.md",
 			"executable": false,
-			"digest": "3428bb67c466f2880aab56f4a95129e482b6abf0b99e93e738ad790f578413ee"
+			"digest": "14c69316111917d29c42caed161d7983ff9eca488a7182d36fa0b04166e4f971"
 		},
 		{
 			"storage": "LICENSE",
@@ -664,7 +664,7 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "a0bb3e7bdd092bb75d88aaf72c82af668f05064bde93b8f985f9516fb001ee9f"
+			"digest": "dd08fb209bb55d9241631d843066080e7785d6dd203cbb8666fe64924d93dd7c"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
@@ -682,7 +682,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "307ca8be7e43710866c4401caafeccb75244c6c5bb48319c62b0485a183ec90d"
+			"digest": "4848e6652386cc3e9afe31257b3bf29f16d46cc14169942997bc9831a3cbc83f"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "1cb851c3bdaee835df1e65b77252f3efb311f9f1768c3707060644aecdc59cec"
+	"digest": "587e7a08b7f1ab4fceb91b02ebef5b39a506b4651404e8b3a199e6761aa1d2d2"
 }

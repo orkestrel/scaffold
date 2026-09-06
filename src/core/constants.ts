@@ -502,12 +502,14 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 })
 
 /**
- * Lists the development dependencies that emit declarations for published source or an
- * executable.
+ * Lists the development dependencies that roll declarations up for published source.
+ *
+ * @remarks
+ * The toolchain runs the compiler it already installs as a command, emitting one declaration per
+ * module, and the extractor rolls that emit into the single file each published face ships.
  */
 export const DECLARATION_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@microsoft/api-extractor': manifest.devDependencies['@microsoft/api-extractor'],
-	'vite-plugin-dts': manifest.devDependencies['vite-plugin-dts'],
 })
 
 /** Lists the development dependencies a published browser `src` environment adds. */

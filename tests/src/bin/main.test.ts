@@ -106,10 +106,6 @@ describe('scaffold', () => {
 					versions: { '8.2.0': {}, '8.2.3': {}, '9.0.0': {} },
 				}),
 			},
-			'/vite-plugin-dts': {
-				status: 200,
-				body: buildPackument(DECLARATION_DEV_DEPENDENCIES['vite-plugin-dts']?.slice(1) ?? ''),
-			},
 			'/vitest': {
 				status: 200,
 				body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),

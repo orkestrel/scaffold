@@ -405,7 +405,6 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: ['core'], app: [] }))
 
 		expect(planned['@microsoft/api-extractor']).toBe('^7.59.0')
-		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
 	})
 
 	it('omits library publishing tools from an app-only workspace', () => {
@@ -414,14 +413,12 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		)
 
 		expect(planned['@microsoft/api-extractor']).toBeUndefined()
-		expect(planned['vite-plugin-dts']).toBeUndefined()
 	})
 
 	it('keeps library publishing tools in an executable workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
 
 		expect(planned['@microsoft/api-extractor']).toBe('^7.59.0')
-		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
 	})
 
 	it('keeps the browser application toolchain in an app-only workspace', async () => {

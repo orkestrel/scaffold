@@ -118,7 +118,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CONFIG_TEMPLATES`                | const | Formatter-stable template text for every configuration artifact.                                 |
 | `CONFORMANCE_TEST_PATH`           | const | The official-tooling drift proof whose presence makes a workspace `conformance`.                 |
 | `CONTROL_CHARACTER_PATTERN`       | const | Unicode controls, formatting controls, and line and paragraph separators rejected in text.       |
-| `DECLARATION_DEV_DEPENDENCIES`    | const | The development dependencies that emit declarations for published source or an executable.       |
+| `DECLARATION_DEV_DEPENDENCIES`    | const | The development dependencies that roll declarations up for published source.                     |
 | `DEFAULT_ENGINES`                 | const | The `engines.node` range a workspace starts with.                                                |
 | `DEFAULT_VERSION`                 | const | The version a workspace starts at.                                                               |
 | `DEPENDENCY_NAME_PATTERN`         | const | The runtime dependency name syntax: the `@orkestrel` scope and a bare name.                      |
@@ -1360,6 +1360,19 @@ except the manifest.
 - One host artifact per vendored path the workspace selects. A vendored directory is one planned
   path that expands into the files the data root stores beneath it.
 
+A workspace publishing a `src` environment rolls each published face's declarations up from that
+face's own Vite config. The seeded config calls `declarationRollup` from the vendored
+`configs/helpers.ts`, which runs the workspace's own compiler as a command —
+`--declaration --emitDeclarationOnly` into a scratch directory outside the tree — and hands the
+emitted entry declaration to API Extractor, which rolls the face into the one `index.d.ts` beside
+its bundle. The extractor analyses with the compiler engine it bundles rather than the one the
+workspace installs, so a publishing workspace declares `@microsoft/api-extractor` and imports no
+compiler API of its own. The browser and server faces pass `rewriteCoreSpecifier`: the compiler
+emits the `@src/core` specifier unrewritten and the extractor keeps it external, so the rewrite
+replaces it with the workspace's own published name and a consumer of the packed face reaches core
+through the root export the tarball declares. The seeded `bin` config calls no roll-up, because an
+executable ships no declarations.
+
 `planToSummary` reports the tally rather than a number written down here:
 
 ```ts
@@ -1667,6 +1680,16 @@ one answered first. That is what drives a `require`-only subpath declaring its t
 `require`, and what admits a conventional subpath that publishes no `types` condition but ships the
 adjacent declaration TypeScript substitutes from its runtime target.
 
+An entry's published names are checked against its own declarations by the type system rather than
+by a walk the proof carries. Each drive writes the runtime's own key list into a generated consumer
+module as a literal and lets the workspace's compiler judge that module under the driver's own
+resolution, in both directions. `Record<keyof typeof entry, true>` takes the literal, so a name the
+declarations carry and the runtime does not lands there. `Record<keyof typeof published, true>`
+takes that record back, so a name the runtime carries and the declarations do not, and a name the
+declarations publish as a type alone, land there instead. One direction alone passes on a runtime
+key the declarations lack, which is why the consumer carries both, and each diagnostic names the
+member that moved.
+
 A subpath is undeclared when it resolves no declaration and names a runtime target, which is a
 defect, because a consumer importing it compiles against nothing under `node16`. A target is a
 runtime target when its own file name carries no extension at all, or carries `.js`, `.mjs`,
@@ -1787,7 +1810,12 @@ port, so the run drives nothing external and stays in `test`.
   rendering, and the failure envelope.
 - [`tests/src/bin/main.test.ts`](../tests/src/bin/main.test.ts) — the process entry point.
 - [`tests/policy.test.ts`](../tests/policy.test.ts) — the path- and text-shaped policy laws:
-  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges.
+  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges. The
+  syntax-shaped laws are not here: each is a rule of the vendored oxlint plugin
+  `configs/policy.ts`, which reads one file's declarations and reports through the linter.
+- [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration's aliases, projects,
+  and outputs, every plugin rule against a case pair drawn from inside and outside its membership
+  boundary, and the declaration roll-up over a real face.
 - [`tests/guides.test.ts`](../tests/guides.test.ts) — this guide's bijection with the barrels.
 
 ## See also

@@ -35,28 +35,53 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   and reads `stale` until the template moves. Rule whether a workspace carrying
   `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
   project the plan already runs in a browser, then move the template and the audit together.
-- **scaffold**, **probe**, and the fleet: the fleet stays on TypeScript 6.0.3 and removes every
-  use of the in-process compiler API, so the later move to 7 is one range change; the ruling of
-  2026-09-05 reverted the bridge and the 7 move from scaffold and probe. Measured 2026-09-05: the
-  `tsc` process (`--noEmit`, `--pretty false`, `--showConfig`, `--incremental`), the parser and
-  transformer `vite` re-exports, the oxlint plugin surface in `configs/policy.ts`, and
-  api-extractor's own engine serve every site the inventory names. The reconciled plan, its
-  routing, and its measurements sit in `.orkestrel/campaign/ts6-api/` until that campaign
-  accepts; it waits on the owner's rulings on the scope of `vite-plugin-dts`, on probe's
-  `Issue.range` and `Project.digest` contract, and on publishing. The same probe unit closes the
-  Oxlint `initialize` deadline the whole probe suite misses on a four-CPU host (the type stage's
-  synchronous program build holds the event loop past `LINT_DEADLINE`; measured 2026-09-05 at
-  `b331d93`), because a spawned `tsc` leaves the loop free.
+- **scaffold**, **probe**, and the fleet: the campaign's invariant is a fleet on TypeScript 6.0.3
+  that reaches the compiler as the `tsc` command alone, so the later move to 7 is one range change.
+  Scaffold's own
+  sites landed on 2026-09-06: the policy plugin took the syntax-shaped rules, `declarationRollup`
+  replaced the declaration plugin, the generated distribution proof judges an installed entry
+  through the type system, the generated-text readers moved to the parser `vite` re-exports, and
+  the vendored `.oxlintrc.json` restricts the `typescript` specifier in every population it
+  governs. What remains is probe's acceptance — its type stage runs `tsc` as a process, which also
+  closes the Oxlint `initialize` deadline the whole probe suite misses on a four-CPU host, because
+  a spawned compiler leaves the event loop free — and then the fleet visit, one package at a time
+  in catalog layer order: re-pin scaffold and probe, `repair`, point the package's own
+  `configs/src/vite.*.config.ts` at `declarationRollup`, rebuild, diff `dist/` against the
+  published tarball, and bump on a material diff. Every face's roll-up moves on its import lines
+  when the declaration plugin goes, so every `src`-publishing package bumps at its visit.
+- **scaffold**: the classifier drive harness is duplicated across `tests/guides.test.ts` and
+  `tests/src/core/templates.test.ts` — the same transform, scratch pair, `createRequire` load, and
+  answer check, differing only in the scratch root. Consolidate it into one exported drive in
+  `tests/setupServer.ts` beside `readStatements`, at the next pass over either file.
+- **scaffold**: `declarationRollup` reads the extractor's `succeeded` field, which cannot see an
+  error the configuration routes at `logLevel: none`, so a roll-up that dropped a message reports
+  success. The distribution proof over the shipped roll-up is the indirect guard; a
+  `messageCallback` tally is the candidate mechanism. Rule on it at the next roll-up change.
+- **scaffold**: `inspectPolicyConfiguration` and `inspectPolicyWiring` read one file and their
+  names no longer divide the subject — the fixed-rule severity and ignore-pattern reading against
+  the caller-supplied rule-and-population coverage reading. Name them by the question each answers,
+  or merge them into one reader, at the next policy-sweep change.
+- **scaffold**: TSDoc first sentences on the module helpers in `configs/policy.ts` and
+  `tests/setupPolicy.ts` open with a noun phrase where `.claude/rules/typescript.md` fixes a
+  third-person verb. Rule whether the letter binds a one-line TSDoc on a module helper, then sweep
+  both files on the ruling.
+- **scaffold**: `DECLARATION_DEV_DEPENDENCIES` is planned for a `bin` blueprint
+  (`src/core/compilers.ts`) while the seeded `bin` config rolls no declarations, so an
+  executable-only workspace installs an extractor nothing runs. Rule whether the planner keeps that
+  row for `bin`, at the next planner change; a change moves generated manifests and their pins.
 - **test**: the browser journey layer resolves interactive targets and named regions, so a
   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
   `text-white text-opacity-75` copy stays an open limit. Add a reader that resolves a rendered
   text node by its content within a named region for `readContrast`, with a negative control,
   at the layer's next release.
-- **fleet**: an entry module's `@packageDocumentation` never reaches the published declaration
-  rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
-  2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
-  adopts the real entry declaration, at a toolchain revisit.
+- **fleet**: scaffold's own entry module carries no `@packageDocumentation` comment, so its roll-up
+  ships none, and no other package's entry has been read for one. The pipeline no longer refuses the
+  comment: `declarationRollup` hands API Extractor the entry declaration the compiler emitted rather
+  than the synthetic comment-free entry the previous plugin built, and a probe of the same chain
+  (the compiler's emit, then API Extractor under the plugin's own override set) over a fixture face
+  on 2026-09-06 carried the comment into the roll-up; the shipped plugin itself was not driven.
+  Decide whether each published entry gets one, at each package's next release.
 - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this

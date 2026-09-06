@@ -137,10 +137,6 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
 	},
-	'/vite-plugin-dts': {
-		status: 200,
-		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['vite-plugin-dts']?.slice(1) ?? ''),
-	},
 	'/vitest': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),
@@ -247,10 +243,6 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	'/vite': {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
-	},
-	'/vite-plugin-dts': {
-		status: 200,
-		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['vite-plugin-dts']?.slice(1) ?? ''),
 	},
 	'/vite-plugin-singlefile': {
 		status: 200,
@@ -1060,7 +1052,7 @@ describe('CLI audit', () => {
 							...APP_DEV_DEPENDENCIES,
 							...APP_BROWSER_DEV_DEPENDENCIES,
 						},
-						['@microsoft/api-extractor', 'vite-plugin-dts'],
+						['@microsoft/api-extractor'],
 					),
 				),
 			)
@@ -1101,7 +1093,7 @@ describe('CLI audit', () => {
 							...APP_DEV_DEPENDENCIES,
 							...APP_BROWSER_DEV_DEPENDENCIES,
 						},
-						['@microsoft/api-extractor', '@orkestrel/test', 'vite-plugin-dts'],
+						['@microsoft/api-extractor', '@orkestrel/test'],
 					),
 				),
 			)
