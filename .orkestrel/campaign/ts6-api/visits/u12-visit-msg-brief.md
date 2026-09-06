@@ -1,21 +1,21 @@
-# Unit brief — U12 fleet-visit-browser (phase A, before the releases)
+# Unit brief — U12 fleet-visit-msg (phase A, before the releases)
 
 ## Role and engine
 
-`builder`, Sonnet. Perform the assignment directly and spawn nothing. You are the sole writer in `/home/user/fleet/browser` for the life of this unit.
+`builder`, Sonnet. Perform the assignment directly and spawn nothing. You are the sole writer in `/home/user/fleet/msg` for the life of this unit.
 
 ## Objective
 
-Move `browser` off `vite-plugin-dts` onto the `declarationRollup` plugin the vendored `configs/helpers.ts` supplies, regenerate its distribution proof from the scaffold head start already installed, and prove the fast gates and the build, so that the phase B visit after scaffold's and probe's releases has only the re-pin, the lockfile, the whole-suite gates, and the bump left.
+Move `msg` off `vite-plugin-dts` onto the `declarationRollup` plugin the vendored `configs/helpers.ts` supplies, regenerate its distribution proof from the scaffold head start already installed, and prove the fast gates and the build, so that the phase B visit after scaffold's and probe's releases has only the re-pin, the lockfile, the whole-suite gates, and the bump left.
 
 ## Context
 
 - Read first: `/home/user/scaffold/AGENTS.md` § Non-negotiable rules, `/home/user/scaffold/.agents/orchestration.md` § Publishing the fleet (never edit a vendored file inside a target), `/home/user/scaffold/.claude/rules/workspace.md` § Configuration authority.
 - The Orchestrator installed scaffold's packed head start into this checkout with `npm install --no-save <TARBALL>` before this unit launched (its log is retained in the campaign record, not in this checkout), so `node_modules/@orkestrel/scaffold` is the unreleased tip carrying the `declarationRollup` helper, the lint restriction on the `typescript` specifier, and the parser-shaped distribution proof; `package.json` still pins `@orkestrel/scaffold` at `^0.0.63` and `package-lock.json` is untouched. Do not run a bare `npm install`: it restores the registry copy over the head start. Do not edit the scaffold or probe ranges.
 - The seed each package-owned config must mirror is in scaffold's `src/core/templates.ts` (the `vites.src.<face>` strings, about lines 545 to 610), and the installed head start carries the same seeds compiled into `node_modules/@orkestrel/scaffold/dist/src/core/index.js`. Two `dts(` shapes exist in the fleet. The core face's `dts({ tsconfigPath, bundleTypes: { extractorConfig: { compiler: { overrideTsconfig: { compilerOptions: { types: ['node'] } } } } } })` becomes `declarationRollup({ project: resolveWorkspacePath('configs/src/tsconfig.core.json'), types: ['node'] })`, with `declarationRollup` imported from `'../helpers.js'` beside the helpers the file already imports there. A server or browser face's `dts({ tsconfigPath, bundleTypes: true, beforeWriteFile: (path, content) => ({ ... }) })`, whose inline rewrite maps the core specifier onto the package name, becomes `declarationRollup({ project: resolveWorkspacePath('configs/src/tsconfig.<face>.json'), rewrite: rewriteCoreSpecifier })` with `rewriteCoreSpecifier` imported from `'../helpers.js'` beside `declarationRollup`; the inline `beforeWriteFile` function and its comment go, and the seed's own two-line comment above `export default` replaces it. In each case the `vite-plugin-dts` import goes and nothing else in the file changes.
-- This checkout's faces: `core server` (`configs/src/vite.<face>.config.ts` per face). `A prior run of this brief completed steps 2 and 3 (the manifest row is gone and both face configs call `declarationRollup`) and was refused the deletion; the Orchestrator then removed the old proof and ran `repair` and `audit` (no drift), so `tests/distribution.test.ts` is already regenerated when you start and `git status --short` shows the prior run's edits. Confirm each of those states rather than redoing them, run `audit --offline` yourself, then continue from step 5.`
+- This checkout's faces: `core` (`configs/src/vite.<face>.config.ts` per face). ``
 - `repair` regenerates the distribution proof only where the file is absent. The Orchestrator removed the old compiler-shaped proof with `git rm` before this unit launched, because the host's command classifier refuses that deletion to a unit; `tests/distribution.test.ts` is absent when you start (`git status --short` shows it as `D`), and `repair` writes the parser-shaped proof back.
-- Host: Linux, bash, Node v22.22.2; commands run from `/home/user/fleet/browser`; `npm --version` is 10 unless `PATH=/opt/npm11/bin:$PATH` is set, and the distribution proof runs under npm 11. The host's command classifier refuses `npx scaffold ...`, so run the installed head start's own binary, `node node_modules/@orkestrel/scaffold/dist/bin/main.js <command> --offline`, which is the same file `npx scaffold` resolves to.
+- Host: Linux, bash, Node v22.22.2; commands run from `/home/user/fleet/msg`; `npm --version` is 10 unless `PATH=/opt/npm11/bin:$PATH` is set, and the distribution proof runs under npm 11. The host's command classifier refuses `npx scaffold ...`, so run the installed head start's own binary, `node node_modules/@orkestrel/scaffold/dist/bin/main.js <command> --offline`, which is the same file `npx scaffold` resolves to.
 
 ## Scope
 
