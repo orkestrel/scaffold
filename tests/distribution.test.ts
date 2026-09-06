@@ -6,7 +6,7 @@ import { CANON_PATHS, HOST_PATHS, replaceManifestRanges } from '@src/core'
 import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
-import ts from 'typescript'
+import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -302,7 +302,7 @@ describe('installed package consumer', () => {
 		)
 	})
 
-	it('answers every example its shipped declarations print exactly as printed', () => {
+	it('answers every example its shipped declarations print exactly as printed', async () => {
 		const workspace = createScratch({ prefix: 'scaffold-e4-examples-' })
 		try {
 			const driven: string[] = []
@@ -424,12 +424,15 @@ describe('installed package consumer', () => {
 						if (/^\s*(import|declare|export)\b/u.test(line)) continue
 						source.push(line)
 					}
-					// An example is TypeScript, so the real compiler erases its types
-					// rather than a pattern written here guessing at them.
+					// An example is TypeScript, so the transformer this workspace already
+					// declares erases its types rather than a pattern written here guessing at
+					// them. The name it is transformed under carries the extension, which is
+					// what selects the TypeScript syntax it strips.
+					const transformed = await transformWithOxc(source.join('\n'), 'example.ts', {
+						target: 'esnext',
+					})
 					blocks.push({
-						source: ts.transpileModule(source.join('\n'), {
-							compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ESNext },
-						}).outputText,
+						source: transformed.code,
 						claims: spans.map((span) => span.id),
 					})
 				}

@@ -34,3 +34,9 @@ Recorded, no carrier: objective F3 (any stderr byte is an instrument fault; fail
 `u4-verify-report.md`: `GATES: GREEN`. The U4-fix round's verifier is the authoritative reading over the fixed template, with the retained instruments run independently.
 
 VERDICT: FAIL 8, with the round's findings carried to U4-fix; claims 3 and 6 closed by retention and the independent re-run the closure round takes
+
+## Closure — U4-fix and U4-fix-2 (checker and verifier)
+
+`u4-fix-checker.md`: PASS on every claim over both slices (the require-drive guard and its comment, one scratch project per surface, the `Entry.declaration` booleans, the `BROWSER_DRIVER` binding with the helper folded, the prose sweep, the classifier fixture's shape, scope honesty). `u4-fix-verify-report.md`: `GATES: GREEN` — format, lint, `check`, `build`, `npm test` over every project, `test:distribution` under npm 11; the retained instruments run independently: `regenerate.sh` reports `repair` writing the removed proof back byte-identical with no compiler name in it, and `proof.sh` reports the emitted proof green over the staged copy with each planted control firing a `TS2741` naming its member (`PLANTED_EXTRA` on the `surfaced` line, `PLANTED_DECLARED` on the `declared` line). Claims 3 and 6 are thereby closed on independent execution. U4 is accepted and lands with its records.
+
+VERDICT: PASS — U4 accepted after U4-fix-2
