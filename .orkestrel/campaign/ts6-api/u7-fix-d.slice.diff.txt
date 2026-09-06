@@ -1,0 +1,388 @@
+--- a/guides/probe.md (after U7-fix-c)
++++ b/guides/probe.md (after U7-fix-d)
+@@ -258,7 +258,7 @@
+ 
+ | Method    | Returns            | Behavior                                                                                                                                                                                                            |
+ | --------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `inspect` | `Promise<Check>`   | Inspects one case against a caller-named project, or against the project each candidate path infers. A diagnostic naming a project file, and one naming no file at all, raises a `workspace` / `malformed` failure. |
++| `inspect` | `Promise<Check>`   | Inspects one case against a caller-named project, or against the project each candidate path infers. A diagnostic naming a project file, and one naming no file at all, raises a `workspace` / `malformed` failure, unless the `.json` file is one the claim itself drafted. |
+ | `resolve` | `Promise<Project>` | Resolves one project to the resolved path and options digest the stage applies for it, read from the compiler's own `--showConfig` printout against the workspace copy of that project.                             |
+ 
+ #### `LintStageInterface`
+@@ -705,13 +705,13 @@
+ itself.
+ 
+ The project digest is the digest of the `compilerOptions` member of `tsc --showConfig -p <project>`,
+-read against the mirrored copy of that project with the mirror as the current directory, so the
+-digest and the check read one set of files, and canonicalized by `computeDigest`. A relative path
+-the project declares that escapes the workspace root resolves against the mirror's own ancestors,
+-and the mirror carries nothing such a path names. It still **moves with the TypeScript version**,
+-because a compiler decides which options it resolves and how it spells them. That is contained
+-rather than surprising: the token already names `typescript@<version>`, so any policy pinning a
+-digest already pins the version.
++read against the mirrored copy of the project with the mirror as the current directory, so the
++digest and the check read one set of files. `computeDigest` canonicalizes the record: a relative
++path the project declares that escapes the workspace root resolves against the mirror's own
++ancestors, and the mirror carries nothing such a path names. It still **moves with the TypeScript
++version**, because a compiler decides which options it resolves and how it spells them. That is
++contained rather than surprising: the token already names `typescript@<version>`, so any policy
++pinning a digest already pins the version.
+ 
+ Further limits belong beside those:
+ 
+@@ -1001,12 +1001,12 @@
+   `destroy()`. A server that accepts the connection and answers nothing is released the same way.
+   The type stage holds no bound and needs none for its own tools: it terminates the compiler it
+   spawned — by process tree on Windows, where no cooperative signal reaches a child — waits for the
+-  warm it started, and then deletes its mirror. The runtime stage holds no bound either, so a `vitest.close()` that
+-  never settles is bounded by the coordinator instead: `Probe.destroy` races each stage's teardown
+-  against `ProbeOptions.deadline` and proceeds when the budget expires. What an abandoned tool still
+-  holds it holds until this process ends, so that bound buys the signal path rather than the
+-  resource — `destroy()` settles for a caller that set a budget it can wait for, instead of hanging
+-  behind a stage that will not close.
++  warm it started, and then deletes its mirror. The runtime stage holds no bound either, so a
++  `vitest.close()` that never settles is bounded by the coordinator instead: `Probe.destroy` races
++  each stage's teardown against `ProbeOptions.deadline` and proceeds when the budget expires. What
++  an abandoned tool still holds it holds until this process ends, so that bound buys the signal path
++  rather than the resource — `destroy()` settles for a caller that set a budget it can wait for,
++  instead of hanging behind a stage that will not close.
+ - **Termination.** `ProbeServer.start` answers `SIGINT` and `SIGTERM` by destroying the server, and
+   they are the whole set: no evidence names a harness that ends a stdio child any other way, and
+   a configurable set would be a supported way to spell the leak this closes. Another signal arriving
+--- a/src/core/types.ts (after U7-fix-c)
++++ b/src/core/types.ts (after U7-fix-d)
+@@ -475,7 +475,7 @@
+ 	/**
+ 	 * Tears down every stage and releases the processes and the mirror they hold.
+ 	 *
+-	 * @returns A promise that settles when every engine has released its resources
++	 * @returns A promise that settles after every stage has released its resources
+ 	 */
+ 	destroy(): Promise<void>
+ }
+--- a/src/server/stages/RuntimeStage.ts (after U7-fix-c)
++++ b/src/server/stages/RuntimeStage.ts (after U7-fix-d)
+@@ -699,10 +699,10 @@
+ 	// Vite keys its module graph on the forward-slash spelling of a resolved id, and `invalidateFile`
+ 	// looks that key up exactly. `collectWorkspaceFiles` builds each path with `join` and the overlay
+ 	// holds paths `resolve` produced, so on a host whose separator is a backslash the native spelling
+-	// matches no key, the invalidation is dropped without an error, and the resident runner serves the previous
+-	// module. Read the host separator rather than the platform name, and rewrite only where it is a
+-	// backslash: a backslash is a legal filename character on a host whose separator is a forward
+-	// slash, so rewriting there would turn a key Vite holds into one it does not.
++	// matches no key, the invalidation is dropped without an error, and the resident runner serves
++	// the previous module. Read the host separator rather than the platform name, and rewrite only
++	// where it is a backslash: a backslash is a legal filename character on a host whose separator is
++	// a forward slash, so rewriting there would turn a key Vite holds into one it does not.
+ 	#invalidate(vitest: Vitest, path: string): void {
+ 		const id = sep === '\\' ? normalizePath(path) : path
+ 		vitest.invalidateFile(id)
+--- a/src/server/stages/TypeStage.ts (after U7-fix-c)
++++ b/src/server/stages/TypeStage.ts (after U7-fix-d)
+@@ -63,9 +63,9 @@
+  *
+  * The diagnostics decide the outcome, never the exit code, which the supported compiler majors
+  * disagree on. A diagnostic naming a project file, and one naming no file at all, is the target
+- * tree's own configuration fault and raises rather than reporting; every other diagnostic is a
+- * claimant issue at the point the compiler reported, which is the extent the plain-text output
+- * carries.
++ * tree's own configuration fault and raises rather than reporting, unless the `.json` file is one
++ * the claim itself drafted; every other diagnostic is a claimant issue at the point the compiler
++ * reported, which is the extent the plain-text output carries.
+  *
+  * @example
+  * ```ts
+@@ -181,6 +181,10 @@
+ 			else drafts.push(candidate.draft)
+ 		}
+ 		this.#progress += 1
++		// Every selected project's configuration is read before any draft lands in the mirror, so a
++		// claim drafting its own project file cannot move the digest that project resolves to.
++		for (const selected of groups.keys()) await this.#configure(selected)
++		this.#refuseDestroyed()
+ 		try {
+ 			this.#refresh()
+ 			this.#drafts.add(this.#place(subject.test.text, test))
+--- a/src/server/types.ts (after U7-fix-c)
++++ b/src/server/types.ts (after U7-fix-d)
+@@ -129,11 +129,10 @@
+  *
+  * @remarks
+  * A stage records every candidate the inspection carries before it reads any of them, and clears
+- * the set when the inspection ends, whatever ended it. The entity names no tool: the lint stage's
+- * document protocol and the runtime stage's module resolver each read one candidate set through
+- * their own adapters rather than through one shared filesystem, and the type stage holds no
+- * overlay because it writes each draft into its mirror as a real file. Paths are absolute and the
+- * stage resolves them, because only the stage knows the
++ * the set when the inspection ends, whatever ended it. The runtime stage's module resolver reads
++ * one candidate set through its adapter and is the stage that holds an overlay; the type stage
++ * writes each draft into its mirror and the lint stage opens each draft as a document, so neither
++ * holds one. Paths are absolute and the stage resolves them, because only the stage knows the
+  * workspace a candidate's declared path is relative to. `revision` identifies the set, so a
+  * resident tool that caches by version reads fresh text for a path this overlay holds and reads
+  * disk again after `clear`.
+--- a/tests/src/server/Probe.test.ts (after U7-fix-c)
++++ b/tests/src/server/Probe.test.ts (after U7-fix-d)
+@@ -20,7 +20,7 @@
+ import { createScratch } from '@orkestrel/test/server'
+ import { peerDependencies } from '../../../package.json' with { type: 'json' }
+ import { Probe, readWorkspaceManifest } from '@src/server'
+-import { matchesSpecification } from '@src/core'
++import { PROBE_DEADLINE, matchesSpecification } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { createLintFixture } from '../../setupServer.js'
+ import { WORKSPACE_ROOT } from '../../setup.js'
+@@ -625,9 +625,9 @@
+ 		},
+ 	)
+ 
+-	// The budget clears the type stage's own warm, which builds each declared project's incremental
+-	// state before the first inspection answers. A budget under that floor expires arming rather than
+-	// the claim this case is about.
++	// The budget is the package default, which clears the type stage's warm with the room a contended
++	// host needs; a budget near the warm's floor records the arming control's expiry ahead of the
++	// hanging claim's, which a saturated host showed twice on 2026-09-06.
+ 	it(
+ 		'expires only the active inspection, cleans its revision, and serves a queued claim',
+ 		{ timeout: 180_000 },
+@@ -636,7 +636,7 @@
+ 			const failures = createRecorder<[unknown]>()
+ 			const probe = new Probe({
+ 				workspace: ROOT,
+-				deadline: 15_000,
++				deadline: PROBE_DEADLINE,
+ 				on: { expire: expirations.handler, error: failures.handler },
+ 			})
+ 			const hanging: Claim = {
+@@ -690,7 +690,7 @@
+ 					reason: expect.objectContaining({
+ 						origin: 'claimant',
+ 						code: 'deadline',
+-						message: 'The runtime stage exceeded 15000 ms',
++						message: `The runtime stage exceeded ${PROBE_DEADLINE} ms`,
+ 					}),
+ 				})
+ 				expect(expirations.calls).toStrictEqual([[hanging]])
+--- a/tests/src/server/helpers.test.ts (after U7-fix-c)
++++ b/tests/src/server/helpers.test.ts (after U7-fix-d)
+@@ -838,7 +838,7 @@
+ 		expect(scanDiagnostics(crlf)).toStrictEqual(scanDiagnostics(lf))
+ 	})
+ 
+-	it('lowers each UTF-16 column by one for three diagnostics sharing one line', () => {
++	it('lowers the one-based line and column to zero-based over three located lines', () => {
+ 		const text = [
+ 			'src/a.ts(1,7): error TS1127: Invalid character.',
+ 			'src/a.ts(1,10): error TS1127: Invalid character.',
+--- a/tests/src/server/stages/TypeStage.test.ts (after U7-fix-c)
++++ b/tests/src/server/stages/TypeStage.test.ts (after U7-fix-d)
+@@ -318,7 +318,7 @@
+ 
+ 	// The mirror carries a regular file, never a symbolic link, so a file reached only through one is
+ 	// absent from the mirror and the compiler reports what its absence causes.
+-	it.skipIf(!LINKS)(
++	it.runIf(LINKS)(
+ 		'reports a claimant issue for an import reachable only through a symbolic link',
+ 		{ timeout: 60_000 },
+ 		async () => {
+@@ -750,6 +750,48 @@
+ 		},
+ 	)
+ 
++	// `#inspect` reads every selected project's configuration before it places any draft, so a claim
++	// drafting the very project file it is checked against cannot move the digest that project
++	// resolves to.
++	it(
++		"resolves a project's digest before an inspection's own draft of that project can move it",
++		{ timeout: 60_000 },
++		async () => {
++			const scratch = createScratch({ prefix: 'probe-type-digest-order-' })
++			scratch.write('package.json', '{"type":"module"}\n')
++			scratch.link('node_modules', resolve(ROOT, 'node_modules'))
++			scratch.write('tsconfig.json', STRICT)
++			scratch.write('src/value.ts', 'export const VALUE = 1\n')
++			const project = 'projects/tsconfig.extra.json'
++			scratch.write(project, '{"compilerOptions":{"strict":true}}\n')
++			scratch.write('projects/value.ts', 'export const VALUE = 1\n')
++			const first = new TypeStage(scratch.path)
++			let digest: string
++			try {
++				digest = (await first.resolve(project)).digest
++			} finally {
++				await first.destroy()
++			}
++			const second = new TypeStage(scratch.path)
++			try {
++				await second.inspect(
++					{
++						files: [
++							{ path: project, text: '{"compilerOptions":{"strict":false}}\n' },
++							{ path: 'projects/value.ts', text: 'export const VALUE = 1\n' },
++						],
++						test: { path: 'tmp/probe/digest-order.test.ts', text: 'export {}\n' },
++					},
++					project,
++				)
++				const after = await second.resolve(project)
++				expect(after.digest).toBe(digest)
++			} finally {
++				await second.destroy()
++			}
++		},
++	)
++
+ 	it(
+ 		'refuses to resolve a project that escapes the workspace or has been torn down',
+ 		{
+@@ -870,6 +912,47 @@
+ 		},
+ 	)
+ 
++	// A drafted `.json` file is the claimant's like any other draft, so a diagnostic against it is
++	// reported rather than raised as the target tree's own fault.
++	it(
++		'reports a malformed drafted json file as the claimants own issue',
++		{ timeout: 60_000 },
++		async () => {
++			const scratch = createScratch({ prefix: 'probe-type-drafted-json-' })
++			scratch.write('package.json', '{"type":"module"}\n')
++			scratch.link('node_modules', resolve(ROOT, 'node_modules'))
++			scratch.write(
++				'tsconfig.json',
++				'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","types":[],"strict":true,"resolveJsonModule":true},"include":["src/**/*.ts"]}\n',
++			)
++			scratch.write('src/value.ts', 'export const VALUE = 1\n')
++			const stage = new TypeStage(scratch.path)
++			try {
++				const check = await stage.inspect(
++					{
++						files: [
++							{ path: 'src/settings.json', text: '{ "name": \n' },
++							{ path: 'src/reader.ts', text: 'export const READING = 1\n' },
++						],
++						test: { path: 'tmp/probe/drafted-json.test.ts', text: 'export {}\n' },
++					},
++					'tsconfig.json',
++				)
++				expect(check.issues.length).toBeGreaterThan(0)
++				expect(
++					check.issues.every(
++						(issue) => issue.origin === 'claimant' && issue.path === 'src/settings.json',
++					),
++				).toBe(true)
++			} finally {
++				const teardown = createTeardown()
++				teardown.add(() => scratch.destroy())
++				teardown.add(() => stage.destroy())
++				await teardown.destroy()
++			}
++		},
++	)
++
+ 	it(
+ 		'raises a project fault the compiler reports against no file',
+ 		{ timeout: 60_000 },
+@@ -939,6 +1022,103 @@
+ 				})
+ 			} finally {
+ 				const teardown = createTeardown()
++				teardown.add(() => scratch.destroy())
++				teardown.add(() => stage.destroy())
++				await teardown.destroy()
++			}
++		},
++	)
++
++	// `#check`'s reading: no diagnostic and a non-zero or absent status is the instrument's own
++	// fault, whatever the reason, so a compiler stub that exits without printing one is reported
++	// as `origin: 'instrument'` rather than as a claimant or workspace fault.
++	it(
++		'reports a non-zero exit with no diagnostic as an instrument fault',
++		{ timeout: 60_000 },
++		async () => {
++			const scratch = createScratch({ prefix: 'probe-type-instrument-exit-' })
++			scratch.write('package.json', '{"type":"module"}\n')
++			scratch.write(
++				'node_modules/typescript/package.json',
++				'{"name":"typescript","version":"6.0.3","bin":{"tsc":"bin/tsc"}}\n',
++			)
++			scratch.write(
++				'node_modules/typescript/bin/tsc',
++				[
++					'const args = process.argv.slice(2)',
++					"if (args.includes('--showConfig')) {",
++					'\tprocess.stdout.write(JSON.stringify({ compilerOptions: { strict: true }, files: [] }))',
++					'\tprocess.exit(0)',
++					'}',
++					'process.exit(3)',
++					'',
++				].join('\n'),
++			)
++			scratch.write('tsconfig.json', STRICT)
++			scratch.write('src/value.ts', 'export const VALUE = 1\n')
++			const stage = new TypeStage(scratch.path)
++			try {
++				const failure: unknown = await stage
++					.inspect({
++						files: [],
++						test: { path: 'tmp/probe/instrument-exit.test.ts', text: 'export {}\n' },
++					})
++					.catch((error: unknown) => error)
++				expect(isProbeError(failure)).toBe(true)
++				expect(failure).toMatchObject({
++					origin: 'instrument',
++					code: 'malformed',
++					message: 'The compiler reported no diagnostic and exited 3',
++				})
++			} finally {
++				const teardown = createTeardown()
++				teardown.add(() => scratch.destroy())
++				teardown.add(() => stage.destroy())
++				await teardown.destroy()
++			}
++		},
++	)
++
++	it(
++		'reports a signal-ended check run with no diagnostic as an instrument fault',
++		{ timeout: 60_000 },
++		async () => {
++			const scratch = createScratch({ prefix: 'probe-type-instrument-signal-' })
++			scratch.write('package.json', '{"type":"module"}\n')
++			scratch.write(
++				'node_modules/typescript/package.json',
++				'{"name":"typescript","version":"6.0.3","bin":{"tsc":"bin/tsc"}}\n',
++			)
++			scratch.write(
++				'node_modules/typescript/bin/tsc',
++				[
++					'const args = process.argv.slice(2)',
++					"if (args.includes('--showConfig')) {",
++					'\tprocess.stdout.write(JSON.stringify({ compilerOptions: { strict: true }, files: [] }))',
++					'\tprocess.exit(0)',
++					'}',
++					"process.kill(process.pid, 'SIGTERM')",
++					'',
++				].join('\n'),
++			)
++			scratch.write('tsconfig.json', STRICT)
++			scratch.write('src/value.ts', 'export const VALUE = 1\n')
++			const stage = new TypeStage(scratch.path)
++			try {
++				const failure: unknown = await stage
++					.inspect({
++						files: [],
++						test: { path: 'tmp/probe/instrument-signal.test.ts', text: 'export {}\n' },
++					})
++					.catch((error: unknown) => error)
++				expect(isProbeError(failure)).toBe(true)
++				expect(failure).toMatchObject({
++					origin: 'instrument',
++					code: 'malformed',
++					message: 'The compiler reported no diagnostic and was ended by a signal',
++				})
++			} finally {
++				const teardown = createTeardown()
+ 				teardown.add(() => scratch.destroy())
+ 				teardown.add(() => stage.destroy())
+ 				await teardown.destroy()
