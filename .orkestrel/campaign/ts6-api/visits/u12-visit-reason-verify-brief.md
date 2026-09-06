@@ -1,10 +1,10 @@
-# Verify brief — U12 fleet-visit-<PACKAGE> (phase A), the independent cheap gates
+# Verify brief — U12 fleet-visit-reason (phase A), the independent cheap gates
 
 ## Role and engine
 
 `verifier`, Sonnet, a native Claude Code subagent. Perform the assignment directly and spawn nothing. Fix nothing; never edit a source file; never run `npm install` (it restores the registry copy over the installed head start), `git checkout`, `git restore`, `git stash`, `git reset`, `git clean`, a tree-wide `format`, or lint `--fix`; never commit; never publish.
 
-## Commands, from `/home/user/fleet/<PACKAGE>`, in this order
+## Commands, from `/home/user/fleet/reason`, in this order
 
 1. `git log --oneline -1` and `git status --short`
 2. `grep -rn "vite-plugin-dts" package.json configs/src` (expected no line) and `grep -c "declarationRollup(" configs/src/vite.*.config.ts`
@@ -15,8 +15,8 @@
 7. `npm run check`
 8. `ls dist/src/*/index.d.ts`, then `ls dist/src/*/index.d.cts` only where `package.json`'s `exports` map carries a `require` condition (a browser face ships ES alone and no `.d.cts`; report the exports map's conditions per face beside the listing)
 
-For each: the exact command, its exit code, and its last lines. Report a red result as it stands; do not re-run anything. <EXTRA>
+For each: the exact command, its exit code, and its last lines. Report a red result as it stands; do not re-run anything. 
 
 ## Output
 
-A gate report with every command, then one terminal line: `GATES: GREEN` or `GATES: RED <command>`, where step 2 and step 3 decide the line when they print a line. Return it as your final message and write it to `/home/user/fleet/<PACKAGE>/tmp/units/ts6-u12-visit-verify-report.md`. No process diary.
+A gate report with every command, then one terminal line: `GATES: GREEN` or `GATES: RED <command>`, where step 2 and step 3 decide the line when they print a line. Return it as your final message and write it to `/home/user/fleet/reason/tmp/units/ts6-u12-visit-verify-report.md`. No process diary.

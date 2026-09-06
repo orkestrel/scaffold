@@ -1,7 +1,7 @@
  M .oxlintrc.json
  M configs/helpers.ts
  M configs/policy.ts
- M configs/src/vite.browser.config.ts
+ M configs/src/vite.core.config.ts
  M package.json
  M tests/config.test.ts
 D  tests/distribution.test.ts

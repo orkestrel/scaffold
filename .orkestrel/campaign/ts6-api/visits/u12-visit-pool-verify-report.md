@@ -1,16 +1,16 @@
-# Verify report — U12 fleet-visit-browser (phase A), the independent cheap gates
+# Gate report — U12 fleet-visit-pool (phase A), the independent cheap gates
 
-## 1. `git log --oneline -1` && `git status --short`
+## 1. `git log --oneline -1` and `git status --short`
 
 Exit 0.
 
 ```
-52947e2 Align the lint script with the host's shape
+904f22a Align the lint script with the host's shape
+----
  M .oxlintrc.json
  M configs/helpers.ts
  M configs/policy.ts
  M configs/src/vite.core.config.ts
- M configs/src/vite.server.config.ts
  M package.json
  M tests/config.test.ts
 D  tests/distribution.test.ts
@@ -22,13 +22,12 @@ D  tests/distribution.test.ts
 
 ## 2. `grep -rn "vite-plugin-dts" package.json configs/src` and `grep -c "declarationRollup(" configs/src/vite.*.config.ts`
 
-First grep: exit 1, no line printed (expected).
+`grep -rn "vite-plugin-dts" package.json configs/src`: exit 1, no line printed (expected).
 
-Second grep: exit 0.
+`grep -c "declarationRollup(" configs/src/vite.*.config.ts`: the glob matches one file, `configs/src/vite.core.config.ts`. Count: 1.
 
 ```
-configs/src/vite.core.config.ts:1
-configs/src/vite.server.config.ts:1
+1
 ```
 
 ## 3. `head -20 tests/distribution.test.ts | grep -n "typescript"`
@@ -40,7 +39,7 @@ Exit 1, no line printed (expected).
 Exit 0.
 
 ```
-0 of 40 planned paths drifted from the plan. Audit compared bytes at 25, existence at 5, and nothing at 10.
+0 of 34 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6.
 ```
 
 ## 5. `npm run format:check`
@@ -48,13 +47,9 @@ Exit 0.
 Exit 0.
 
 ```
-> @orkestrel/browser@0.0.15 format:check
-> oxfmt --config .oxfmtrc.json --check .
-
 Checking formatting...
-
 All matched files use the correct format.
-Finished in 3395ms on 135 files using 4 threads.
+Finished in 2264ms on 38 files using 4 threads.
 ```
 
 ## 6. `npm run lint:check`
@@ -62,7 +57,7 @@ Finished in 3395ms on 135 files using 4 threads.
 Exit 0.
 
 ```
-> @orkestrel/browser@0.0.15 lint:check
+> @orkestrel/pool@0.0.10 lint:check
 > oxlint --config .oxlintrc.json --deny-warnings .
 ```
 
@@ -71,17 +66,14 @@ Exit 0.
 Exit 0.
 
 ```
-> @orkestrel/browser@0.0.15 check
+> @orkestrel/pool@0.0.10 check
 > tsc --noEmit --project tsconfig.json && npm run check:src
 
-> @orkestrel/browser@0.0.15 check:src
-> npm run check:src:core && npm run check:src:server
+> @orkestrel/pool@0.0.10 check:src
+> npm run check:src:core
 
-> @orkestrel/browser@0.0.15 check:src:core
+> @orkestrel/pool@0.0.10 check:src:core
 > tsc --noEmit -p configs/src/tsconfig.core.json
-
-> @orkestrel/browser@0.0.15 check:src:server
-> tsc --noEmit -p configs/src/tsconfig.server.json
 ```
 
 ## 8. `ls dist/src/*/index.d.ts dist/src/*/index.d.cts`
@@ -91,8 +83,12 @@ Exit 0.
 ```
 dist/src/core/index.d.cts
 dist/src/core/index.d.ts
-dist/src/server/index.d.cts
-dist/src/server/index.d.ts
 ```
+
+## Anomalies
+
+- `git status --short` shows `tests/distribution.test.ts` staged for deletion (`D`) alongside an
+  untracked copy at the same path (`??`), a preexisting working-tree state, not caused by this
+  verification run.
 
 GATES: GREEN
