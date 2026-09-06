@@ -1,0 +1,31 @@
+--- a/guides/probe.md (after U7-fix-d)
++++ b/guides/probe.md (after U7-fix-e)
+@@ -256,10 +256,10 @@
+ 
+ #### `TypeStageInterface`
+ 
+-| Method    | Returns            | Behavior                                                                                                                                                                                                            |
+-| --------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| Method    | Returns            | Behavior                                                                                                                                                                                                                                                                     |
++| --------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `inspect` | `Promise<Check>`   | Inspects one case against a caller-named project, or against the project each candidate path infers. A diagnostic naming a project file, and one naming no file at all, raises a `workspace` / `malformed` failure, unless the `.json` file is one the claim itself drafted. |
+-| `resolve` | `Promise<Project>` | Resolves one project to the resolved path and options digest the stage applies for it, read from the compiler's own `--showConfig` printout against the workspace copy of that project.                             |
++| `resolve` | `Promise<Project>` | Resolves one project to the resolved path and options digest the stage applies for it, read from the compiler's own `--showConfig` printout against the mirrored copy of that project, with the mirror as the current directory.                                             |
+ 
+ #### `LintStageInterface`
+ 
+--- a/tests/src/server/Probe.test.ts (after U7-fix-d)
++++ b/tests/src/server/Probe.test.ts (after U7-fix-e)
+@@ -945,7 +945,11 @@
+ 					probe.emitter.on('error', (error) => failed(error))
+ 				})
+ 				const inspecting = probe.prove(first)
+-				await waitForDelay(100)
++				// The first claim's project resolution costs about 100 ms idle and more under
++				// load, and the second claim must queue behind the first claim's inspection
++				// rather than its resolution, so the wait clears the resolution on a contended
++				// host; the inspection of the heavy drafts outlasts it by seconds.
++				await waitForDelay(1_000)
+ 				const resolving = probe.prove(second)
+ 				void resolving.catch(() => {})
+ 				await waitForDelay(20)
