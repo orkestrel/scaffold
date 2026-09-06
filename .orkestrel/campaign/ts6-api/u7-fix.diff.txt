@@ -623,7 +623,7 @@ index e88dd79..868c3f6 100644
   * ```
   */
 diff --git a/src/core/types.ts b/src/core/types.ts
-index 4cd7acd..f3cd127 100644
+index 4cd7acd..6ff3748 100644
 --- a/src/core/types.ts
 +++ b/src/core/types.ts
 @@ -176,10 +176,11 @@ export type Party = (typeof PROBE_PARTIES)[number]
@@ -700,6 +700,24 @@ index 4cd7acd..f3cd127 100644
   *
   * @example
   * ```ts
+@@ -454,7 +457,7 @@ export interface ProbeInterface {
+ 	 * @remarks
+ 	 * A control carrying the case's files and the case's test byte for byte is refused at admission,
+ 	 * with `origin: 'claimant'` and `code: 'refused'`. No stage inspects such a claim: the refusal
+-	 * answers before the resident stages are awaited, so it reads the same in every workspace state.
++	 * answers before any stage is awaited, so it reads the same in every workspace state.
+ 	 * Such a control can only break by nondeterminism, so the receipt it would earn attests a
+ 	 * falsification that never happened, and a flake-earned receipt is the worst answer this package
+ 	 * can return. The refusal compares the bytes of each side's files and test rather than the digest
+@@ -470,7 +473,7 @@ export interface ProbeInterface {
+ 	 */
+ 	prove(claim: Claim): Promise<Verdict>
+ 	/**
+-	 * Tears down the resident engines and releases the processes they hold.
++	 * Tears down every stage and releases the processes and the mirror they hold.
+ 	 *
+ 	 * @returns A promise that settles when every engine has released its resources
+ 	 */
 diff --git a/src/server/Overlay.ts b/src/server/Overlay.ts
 index eb4fbed..72f6a49 100644
 --- a/src/server/Overlay.ts
@@ -818,7 +836,7 @@ index eb4fbed..72f6a49 100644
 -	}
  }
 diff --git a/src/server/Probe.ts b/src/server/Probe.ts
-index a581a89..c34dc14 100644
+index a581a89..62287ac 100644
 --- a/src/server/Probe.ts
 +++ b/src/server/Probe.ts
 @@ -41,7 +41,7 @@ import { RuntimeStage } from './stages/RuntimeStage.js'
@@ -839,6 +857,15 @@ index a581a89..c34dc14 100644
  	 *
  	 * @param options - Workspace, deadline, and initial observation hooks
  	 */
+@@ -297,7 +297,7 @@ export class Probe implements ProbeInterface {
+ 				files: [],
+ 				test: typeTest,
+ 				stage: 'type',
+-				reason: 'the imported type changed after the resident type host cached it',
++				reason: 'the imported type changed on disk between the two inspections',
+ 			},
+ 		}
+ 		const runtimeClaim: Claim = {
 diff --git a/src/server/helpers.ts b/src/server/helpers.ts
 index d7bd6f5..2278959 100644
 --- a/src/server/helpers.ts
@@ -2309,7 +2336,7 @@ index a92079a..4097ea8 100644
  	}
  }
 diff --git a/src/server/types.ts b/src/server/types.ts
-index 82b9989..381c011 100644
+index 82b9989..db748ad 100644
 --- a/src/server/types.ts
 +++ b/src/server/types.ts
 @@ -1,4 +1,5 @@
@@ -2519,6 +2546,26 @@ index 82b9989..381c011 100644
 +	 * stage has already been destroyed
  	 */
  	resolve(project: string): Promise<Project>
+ }
+@@ -275,8 +343,8 @@ export interface WorkspaceManifest {
+  * The server owns the process it runs in. `start` seizes standard input and standard output for
+  * the transport and registers the termination handlers a harness signals, so a host that starts one
+  * has already given the process to it. `destroy` reverses all of that and tears the probe down with
+- * it, which is why there is no verb that stops serving and leaves the resident engines running: a
+- * probe nothing is reading from holds its resident tools for nobody.
++ * it, which is why there is no verb that stops serving and leaves the stages standing: a probe
++ * nothing is reading from holds its tools and its mirror for nobody.
+  *
+  * @example
+  * ```ts
+@@ -312,7 +380,7 @@ export interface ProbeServerInterface {
+ 	 * `start` and when something else is reading it at release, and a stream nothing had read yet
+ 	 * and nothing else reads is paused.
+ 	 *
+-	 * @returns A promise that settles after the probe releases its resident engines
++	 * @returns A promise that settles after the probe releases every stage's tool and mirror
+ 	 */
+ 	destroy(): Promise<void>
  }
 diff --git a/tests/src/core/errors.test.ts b/tests/src/core/errors.test.ts
 index 5b12687..2724c87 100644
