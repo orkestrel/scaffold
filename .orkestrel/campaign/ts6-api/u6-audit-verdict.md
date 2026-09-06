@@ -30,3 +30,9 @@ Ruled, no carrier needed:
 Every scaffold gate is green over U6's tree (the verifier's chain, then the Orchestrator's `npm test` after the hook's reinstall settled and `build:inventory` refreshed the inventory). The fix round closes with a checker on its slice and a verifier over `format:check`, `lint:check` with a `tests/` plant, `check`, `build`, `test:src:core`, `test:policy`, `test:config`, and `test:guides`.
 
 VERDICT: PASS on claims 1, 3, 7, and 8; FAIL 2 on the report alone, 4, 5, and 6 carried to U6-fix; the fix-round closure decides acceptance
+
+## Closure over U6-fix
+
+The fix adopted the round's prescriptions and the verdict's rulings verbatim, so it closed with a checker on its slice and a verifier over the gates that read the changed files (`.claude/rules/quality.md` § Rounds and verdicts). Checker (`u6-fix-checker.md`): VERDICT: PASS on every claim. Verifier (`u6-fix-verify-report.md`): `format:check`, `lint:check`, the planted type-only import under `tests/setup.ts` reddening `lint:check` with the restriction's message and leaving no residue, `check`, `build` (the inventory regenerated for the vendored bytes that moved again), `test:src:core` 385, `test:policy` 77, `test:config` 111, `test:guides` 17; GATES: GREEN. With the U6 verifier's chain and the Orchestrator's own test run (`u6-npm-test-solo.log.txt`, `u6-npm-test-rest.log.txt`), every scaffold gate is green over the tree that lands.
+
+VERDICT: PASS — U6 accepted after U6-fix
