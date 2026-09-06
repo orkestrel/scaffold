@@ -220,3 +220,16 @@ round 3: initialize answered at 497 ms; boot to first answered tools/call 16154 
 ```
 
 Reading: over the built entry the handshake answers in about 0.5 s, the first answered `tools/call` lands at 16.2 s to 16.8 s (arming's warm, about 12 s over this repository, plus one `prove`), and a warm `prove` round trip costs 4.2 s to 5.7 s. The guide's § Cost boot row (4.1 s to 4.4 s) and warm-prove row (437 ms to 495 ms) were taken on 2026-08-20 over the resident language service and are stale; both are carried to U7-fix-g with these readings, and the answered-`initialize` reading joins the table because a harness's handshake timeout reads it.
+
+## M7: the parser's span unit (2026-09-06 17:57 UTC, `m7-spans.log.txt`, `instruments/m7/m7-spans.mjs`)
+
+```text
+node m7-spans.mjs   (vite 8.2.2's parseSync over a source carrying an em dash and a curly quote before the declaration)
+errors: 0
+statement slice: "export const factory = (mode: Mode): UserConfig => value"
+param slice: "mode: Mode"
+returns slice: "UserConfig"
+utf16 length 103 utf8 bytes 107 program.end 103
+```
+
+Reading: `parseSync` reports `start` and `end` as UTF-16 code-unit offsets (the program's `end` equals the string's `length`, four short of its byte length, and every slice lands exactly), so `readStatements`'s `source.slice(node.start, node.end)` is right on a non-ASCII source. The objective lane's F1 names a risk the parser does not carry; the case it prescribes is adopted as the reader's control in U5-fix so a parser that changed its unit would redden it.

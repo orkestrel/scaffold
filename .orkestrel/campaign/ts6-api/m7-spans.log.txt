@@ -1,0 +1,6 @@
+errors: 0
+statement slice: "export const factory = (mode: Mode): UserConfig => value"
+param slice: "mode: Mode"
+returns slice: "UserConfig"
+utf16 length 103 utf8 bytes 107 program.end 103
+vite 8.2.2 oxc-parser not resolvable from scaffold
