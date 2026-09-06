@@ -246,3 +246,13 @@ Reading: `parseSync` reports `start` and `end` as UTF-16 code-unit offsets (the 
 ```
 
 Reading: the verifier's `npm test` red is a host condition, not U6's: the session resume that followed the Orchestrator's turn boundary re-armed `scripts/deps.sh`, whose lockfile-digest marker no longer matched the regenerated `package-lock.json`, so it reinstalled `node_modules` under the running suite. The marker now matches the lockfile, so the next resume skips. The rest of the test chain never ran in that report and is the Orchestrator's own tracked run (`u6-npm-test-solo.log.txt`). The process rule lands in `CLAUDE.md` § Claude Code Cloud with this record.
+
+## The `config` project under contention (2026-09-06 21:59 UTC, `u6-config-contended.log.txt`)
+
+```text
+npx vitest run --project config  beside  npx vitest run --project src:core, started together (load 0.08 before, 0.76 after)
+config:   111 passed | 1 skipped, 7.49 s; the roll-up case 2587 ms (2276 ms idle in the unit's reading), the inventory case 1426 ms, the linter's capped cases under 400 ms each
+src:core: 385 passed, 19.04 s
+```
+
+Reading: the `config` project's binding case stays the linter pair's worst case (two 15 s caps) rather than the roll-up, and under a concurrent suite the roll-up costs about 2.6 s. The 60,000 ms budget U6 set clears the capped pair with 30 s of room on this reading, so it stands, sized from a contended run as `.claude/rules/tests.md` § Expensive proofs requires; the rationale names the compiler and the extractor spawns in U6-fix.

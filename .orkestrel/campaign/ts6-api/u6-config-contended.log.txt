@@ -1,0 +1,18 @@
+# config project beside src:core, concurrently — 2026-09-06T21:59:49Z; load before: 0.08 0.27 0.49
+config exit: 0
+[1]-  Done                    ( npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project config > "$SP/u6-config-contended.config.txt" 2>&1; echo "config exit: $?" )
+src:core exit: 0
+[2]+  Done                    ( npx vitest run --config vite.config.ts --no-cache --project src:core > "$SP/u6-config-contended.core.txt" 2>&1; echo "src:core exit: $?" )
+load after: 0.76 0.42 0.54
+--- config verbose (the slow rows and the summary)
+ ✓ |config| tests/config.test.ts > root configuration > requires and validates every selected target wrapper 679ms
+ ✓ |config| tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes 1426ms
+ ✓ |config| tests/config.test.ts > policy plugin > loads every configured policy rule through the real binary 590ms
+ ✓ |config| tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier 2587ms
+ Test Files  1 passed (1)
+      Tests  111 passed | 1 skipped (112)
+   Duration  7.49s (transform 1.09s, setup 708ms, import 870ms, tests 5.71s, environment 0ms)
+--- src:core summary
+ Test Files  9 passed (9)
+      Tests  385 passed (385)
+   Duration  19.04s (transform 2.48s, setup 2.44s, import 1.55s, tests 17.86s, environment 1ms)
