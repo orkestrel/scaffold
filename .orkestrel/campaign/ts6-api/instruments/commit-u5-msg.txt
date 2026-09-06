@@ -1,0 +1,24 @@
+Read generated TypeScript through Vite's parser in the scaffold suites
+
+tests/setupServer.ts exports readStatements, which parses a source through the parseSync Vite
+re-exports, refuses a source the parser reports an error for, and returns each top-level
+statement with the declaration it wraps, its export kind, its import specifier, its bindings with
+their parameter and return-type slices, its source slice, and a function declaration's own
+statements. tests/guides.test.ts and tests/src/core/templates.test.ts read the emitted
+distribution proof and the generated configs through it, transform every lifted fence with
+transformWithOxc, and drive each classifier as a scratch .mjs pair under a directory unique per
+drive, loaded in process through createRequire because import/no-dynamic-require refuses every
+dynamic-import spelling of a non-literal specifier. No test imports typescript or node:vm.
+
+The findParameters proof reads an emitted browser config in place of raw template text the
+parser refuses, and reads the applicationBrowser declaration through the reader, asserted
+present and unexported, before asserting the empty finding. tests/setupServer.test.ts covers the
+reader, its refusal, a formatter-wrapped declaration an anchored pattern reports nothing for, and
+a non-ASCII source before the declaration, which pins the parser's spans as UTF-16 code units.
+The drives narrow their answers with the contract package's isArray and keep no clone.
+
+Unit U5 (implementer, Opus 5) with a builder fix unit, audited by a subjective and an objective
+Opus reviewer lane with a checker and a verifier; records under .orkestrel/campaign/ts6-api/.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

@@ -35,3 +35,9 @@ Ruled, no carrier needed:
 `u5-verify-report.md`: GATES: GREEN over the whole chain. The fix round closes with a checker on its slice and a verifier over the gates that read the changed files.
 
 VERDICT: PASS on the claims, with the round's findings carried to U5-fix; the fix-round closure decides acceptance
+
+## Closure over U5-fix
+
+The fix adopted the round's prescriptions verbatim, so it closed with a checker on its slice and a verifier over the gates that read the changed files (`.claude/rules/quality.md` § Rounds and verdicts). Checker (`u5-fix-checker.md`): VERDICT: PASS on every claim, the two narrowings criterion 2's grep reached beyond the edit list included (the same guard swap, no assertion or behaviour changed). Verifier (`u5-fix-verify-report.md`): `format:check`, `lint:check`, `check`, `test:setup` (74 passed, one more than U5's 73: the span control), `test:guides` (17), `test:src:core` (385) green; GATES: GREEN. The whole chain ran green over U5's tree before the fix (`u5-verify-report.md`), and the fix changed three test files that these gates read.
+
+VERDICT: PASS — U5 accepted after U5-fix
