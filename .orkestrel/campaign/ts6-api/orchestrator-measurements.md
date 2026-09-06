@@ -68,3 +68,50 @@ node type-stage-probe.mjs → first inspection after 2333 ms cold, 1461 ms warm 
 ```
 
 Reading: `Probe.#arm` boots every stage at once, so the type stage's synchronous program build runs on the same event loop the lint client's `initialize` deadline is timed on; when the build crosses 2 s the timer fires ahead of the answer already in the pipe. The seam predates the 7 work (the reverted tree at `b331d93` carries it) and is the in-process compiler use the plan's U7 replaces with a spawned `tsc`, which leaves the loop free. The deciding solo runs of the red files on the reverted tree are recorded in `probe-solo-files.log.txt`.
+
+## M16: a vendored or generated test may import `vite` (settled by evidence, 2026-09-06)
+
+```text
+$ grep -n "from 'vite'" tests/config.test.ts → 18: import { build, createServer, loadConfigFromFile } from 'vite'
+$ grep -n "from 'vite'" configs/helpers.ts → 1 (type-only), 2: import { parseSync, transformWithOxc, Visitor } from 'vite'
+verify-scaffold-report.md: npm run lint:check → exit 0 over the same tree
+```
+
+Reading: the vendored lint configuration admits a `vite` import in `tests/**` and in `configs/**` today, so the parser-based readers and the `transformWithOxc` fences add no lint exception.
+
+## The declaration chain, absorbed (Grok, 2026-09-06; `dts-absorb-distillate.md`)
+
+`vite-plugin-dts` 5.0.3 re-exports `unplugin-dts` 1.0.3. Its emit is in-process: `loadTs()` takes the workspace `typescript` and calls `ts.createProgram` then `program.emit`, and when that package exposes no `createProgram` (the TypeScript 7 shape) it falls back to `@typescript/typescript6`, the banned bridge, then throws. The rollup is `@microsoft/api-extractor` `Extractor.invoke`, which runs its own bundled `typescript` 5.9.3 whatever `typescriptCompilerFolder` names; that folder only points the default-lib location, never the engine. So the single declaration file per face is produced by api-extractor's own engine on either major; the only site TypeScript 7 breaks is the emit, which `tsc --declaration --emitDeclarationOnly` replaces as a process.
+
+Reading for the owner's question: the single `.d.ts` per face is kept with or without `vite-plugin-dts`. Keeping the plugin holds the fleet on the bridge at the 7 move; replacing its emit with `tsc` and calling api-extractor directly keeps the same rollup and needs no bridge. The plan removes the plugin. U1 measures the reproduction on 6.0.3 before U3 is briefed.
+
+Grok's containment read DIRTY because the target's SessionStart hook launched `npx -y typescript-language-server --stdio` at lane start (recorded in `tmp/cursor/npm-shim.log`) and the diff also caught this session's own untracked campaign files; `git status` shows no bench write to a tracked file.
+
+## U1: the declaration rollup reproduced on 6.0.3 without the plugin (2026-09-06; `instruments/u1/`, `u1-declaration-baseline.log.txt`)
+
+```text
+per face: tsc 6.0.3 -p configs/src/tsconfig.<face>.json --declaration --emitDeclarationOnly --noEmit false --outDir <scratch>
+          then api-extractor 7.59.0 Extractor.invoke over the emitted entry, its own bundled 5.9.3 engine and its own lib,
+          overrideTsconfig = { types (core: ['node']; other faces: the face's own resolved types), lib: the face's own resolved lib,
+          target/module ESNext, moduleResolution bundler, skipLibCheck, strict }, files: [entry], bundledPackages: [],
+          dtsRollup.untrimmedFilePath, every report off; then on a server or browser face the literal `@src/core` specifier
+          (tsc emits it unrewritten, api-extractor keeps it external because the override carries no paths) is replaced by the package name
+                    rollup lines = shipped lines   material diff (whitespace, comments, blanks dropped)
+  scaffold core          3419 = 3419                 10 lines, every one `import` → `import type`; 0 other
+  scaffold server        2610 = 2610                 30 lines, every one the import class; 0 other
+  console core           2429 = 2429                  6 lines, the import class; 0 other
+  console browser         231 = 231                   6 lines, the import class; 0 other
+  console server          471 = 471                  10 lines, the import class; 0 other
+  no checkout received a write (git status clean in scaffold and console)
+```
+
+Reading: every face's single declaration file is reproduced from `tsc` emit plus api-extractor's own engine, with the declarations byte-equal after normalization and the only movement in the import lines, where the direct run writes `import type` for a symbol used as a type everywhere and the plugin's `staticImport` step had flattened it to `import`. That movement is the plugin's loss, not the recipe's, and it is the material class § What a bump obliges names: every `src`-publishing package's rollup changes on its import lines when the plugin goes, so each bumps on its own account at its visit. Two attempts that failed and why: passing the face's full resolved options (`allowImportingTsExtensions`, `paths`) with `typescriptCompilerFolder` pointed at 6.0.3 made the bundled engine unable to follow `Readonly`; hard-coding `types: []` on the server face made it unable to follow `NodeJS`. The recipe takes `lib` and `types` from the face's own `--showConfig` and nothing else.
+
+Closing the research lane's open question: `tsc 7.0.2 --declaration --emitDeclarationOnly` already emitted scaffold's core declaration tree and api-extractor rolled it up (the carried reading from the break scoping), so the later 7 move keeps this chain unchanged.
+
+## M2, M3/M4, M8/M13, M15 (2026-09-06; the unit reports beside this file)
+
+- **M2** (`m2-instrument-report.md`, the unit's own reading under load): cold 3182 ms; warm 475; `touch-all` 489 (mtime-only changes keep reuse, so the buildinfo keys on content); `draft-replace` 602; `draft-add` 565 with the planted TS2322 reported; `refresh-all` (every file re-copied) 464; warm after refresh 457. Reuse survives the mirror refresh the type stage performs.
+- **M15** (`m15-report.md`): the two-direction shape names the member in every case under `bundler`, `node16`, and `nodenext` — a missing runtime key as TS2741 on `declared = published`, an extra runtime key and a type-only name as TS2741 on `surfaced: Record<keyof typeof published, true> = declared`; the one-direction shape the design sketched exits 0 on an extra runtime key. U4 writes both directions.
+- **M8/M13** (`m8m13-report.md`): under the CLI a rule reads `context.filename` (absolute), `context.sourceCode.text`, `getAllComments()`, and a declaration's doc comment through `getCommentsBefore(node)`; `getJSDocComment` exists and throws. `RuleTester` parses TypeScript nodes but resolves a case's `filename` against oxlint's own package directory, so a moved placement rule keys on the path's suffix and its `RuleTester` cases carry the suffix; `PolicyContext` gains `filename` and `sourceCode`.
+- **M3/M4** (`m3m4-report.md`): the case table and the cross-major differences are in the report; U7's parser is briefed from it.

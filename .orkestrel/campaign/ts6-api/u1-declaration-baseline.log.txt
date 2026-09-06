@@ -1,0 +1,247 @@
+== scaffold core: tsc --version Version 6.0.3
+tsc-emit exit=0 files=13 entry=yes
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+invoke succeeded=true errors=0 warnings=0
+invoke-exit=0
+rollup-lines=3419 shipped-lines=3419
+-- material diff (shipped < vs > reproduced), first 40 lines:
+1,5c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONValue } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONValue } from '@orkestrel/contract';
+material-diff-lines=10
+-- import-line diff:
+1,5c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONValue } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONValue } from '@orkestrel/contract';
+
+== scaffold server: tsc --version Version 6.0.3
+tsc-emit exit=0 files=20 entry=yes
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+invoke succeeded=true errors=0 warnings=0
+invoke-exit=0
+rollup-lines=2610 shipped-lines=2610
+-- material diff (shipped < vs > reproduced), first 40 lines:
+1,15c1,15
+< import { Audit } from '@orkestrel/scaffold';
+< import { CatalogEntry } from '@orkestrel/scaffold';
+< import { Dependency } from '@orkestrel/scaffold';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Group } from '@orkestrel/scaffold';
+< import { Guard } from '@orkestrel/contract';
+< import { HostFile } from '@orkestrel/scaffold';
+< import { Lookup } from '@orkestrel/scaffold';
+< import { ManifestRegionSet } from '@orkestrel/scaffold';
+< import { Mirror } from '@orkestrel/scaffold';
+< import { Plan } from '@orkestrel/scaffold';
+< import { Release } from '@orkestrel/scaffold';
+< import { Snapshot } from '@orkestrel/scaffold';
+---
+> import type { Audit } from '@orkestrel/scaffold';
+> import type { CatalogEntry } from '@orkestrel/scaffold';
+> import type { Dependency } from '@orkestrel/scaffold';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Group } from '@orkestrel/scaffold';
+> import type { Guard } from '@orkestrel/contract';
+> import type { HostFile } from '@orkestrel/scaffold';
+> import type { Lookup } from '@orkestrel/scaffold';
+> import type { ManifestRegionSet } from '@orkestrel/scaffold';
+> import type { Mirror } from '@orkestrel/scaffold';
+> import type { Plan } from '@orkestrel/scaffold';
+> import type { Release } from '@orkestrel/scaffold';
+> import type { Snapshot } from '@orkestrel/scaffold';
+material-diff-lines=30
+-- import-line diff:
+1,15c1,15
+< import { Audit } from '@orkestrel/scaffold';
+< import { CatalogEntry } from '@orkestrel/scaffold';
+< import { Dependency } from '@orkestrel/scaffold';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Group } from '@orkestrel/scaffold';
+< import { Guard } from '@orkestrel/contract';
+< import { HostFile } from '@orkestrel/scaffold';
+< import { Lookup } from '@orkestrel/scaffold';
+< import { ManifestRegionSet } from '@orkestrel/scaffold';
+< import { Mirror } from '@orkestrel/scaffold';
+< import { Plan } from '@orkestrel/scaffold';
+< import { Release } from '@orkestrel/scaffold';
+< import { Snapshot } from '@orkestrel/scaffold';
+---
+> import type { Audit } from '@orkestrel/scaffold';
+> import type { CatalogEntry } from '@orkestrel/scaffold';
+> import type { Dependency } from '@orkestrel/scaffold';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Group } from '@orkestrel/scaffold';
+> import type { Guard } from '@orkestrel/contract';
+> import type { HostFile } from '@orkestrel/scaffold';
+> import type { Lookup } from '@orkestrel/scaffold';
+> import type { ManifestRegionSet } from '@orkestrel/scaffold';
+> import type { Mirror } from '@orkestrel/scaffold';
+> import type { Plan } from '@orkestrel/scaffold';
+
+== console core: tsc --version Version 6.0.3
+tsc-emit exit=0 files=15 entry=yes
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+invoke succeeded=true errors=0 warnings=0
+invoke-exit=0
+rollup-lines=2429 shipped-lines=2429
+-- material diff (shipped < vs > reproduced), first 40 lines:
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+material-diff-lines=6
+-- import-line diff:
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+
+== console browser: tsc --version Version 6.0.3
+tsc-emit exit=0 files=20 entry=yes
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+invoke succeeded=true errors=0 warnings=0
+invoke-exit=0
+rollup-lines=231 shipped-lines=231
+-- material diff (shipped < vs > reproduced), first 40 lines:
+1,3c1,3
+< import { Attribute } from '@orkestrel/console';
+< import { Color } from '@orkestrel/console';
+< import { SinkInterface } from '@orkestrel/console';
+---
+> import type { Attribute } from '@orkestrel/scaffold';
+> import type { Color } from '@orkestrel/scaffold';
+> import type { SinkInterface } from '@orkestrel/scaffold';
+material-diff-lines=6
+-- import-line diff:
+1,3c1,3
+< import { Attribute } from '@orkestrel/console';
+< import { Color } from '@orkestrel/console';
+< import { SinkInterface } from '@orkestrel/console';
+---
+> import type { Attribute } from '@orkestrel/scaffold';
+> import type { Color } from '@orkestrel/scaffold';
+> import type { SinkInterface } from '@orkestrel/scaffold';
+
+== console server: tsc --version Version 6.0.3
+tsc-emit exit=0 files=22 entry=yes
+}
+
+Node.js v22.22.2
+invoke-exit=0
+node:fs:440
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/u1/console-server/rollup.d.ts'
+    at Object.readFileSync (node:fs:440:20)
+    at [eval]:1:33
+    at runScriptInThisContext (node:internal/vm:209:10)
+    at node:internal/process/execution:446:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:444:60)
+    at evalFunction (node:internal/process/execution:279:30)
+    at evalTypeScript (node:internal/process/execution:291:3)
+    at node:internal/main/eval_string:74:3 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/u1/console-server/rollup.d.ts'
+}
+
+Node.js v22.22.2
+/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/u1/baseline.sh: line 23: /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/u1/console-server/rollup.d.ts: No such file or directory
+rollup-lines= shipped-lines=471
+-- material diff (shipped < vs > reproduced), first 40 lines:
+grep: /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/u1/console-server/rollup.d.ts: No such file or directory
+1,75d0
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { LogLevel } from '@orkestrel/console';
+< import { SinkInterface } from '@orkestrel/console';
+< export declare interface CapturedChunk {
+<     readonly level: StreamLevel;
+<     readonly text: string;
+<     readonly time: number;
+< }
+< export declare function createServerSink(options?: ServerSinkOptions): ServerSinkInterface;
+< export declare function decodeChunk(chunk: unknown, encoding?: unknown): string;
+< export declare const DEFAULT_COLUMNS = 80;
+< export declare const DEFAULT_STREAM_LIMIT = 1000;
+< export declare function inferColumns(target: StreamTargetInterface): number;
+< export declare function inferStyled(target: StreamTargetInterface, environment: Readonly<Record<string, string | undefined>>): boolean;
+< export declare function isBufferEncoding(encoding: unknown): encoding is BufferEncoding;
+< export declare function isStreamTarget(value: unknown): value is StreamTargetInterface;
+< export declare class ProcessCapture implements ProcessCaptureInterface {
+<     #private;
+<     constructor(options?: ProcessCaptureOptions);
+<     get emitter(): EmitterInterface<ProcessCaptureEventMap>;
+<     get active(): boolean;
+<     start(): void;
+<     stop(): void;
+<     messages(): readonly CapturedChunk[];
+<     messages(level: StreamLevel): readonly CapturedChunk[];
+<     clear(): void;
+<     destroy(): void;
+< }
+< export declare type ProcessCaptureEventMap = {
+<     readonly capture: readonly [chunk: CapturedChunk];
+<     readonly start: readonly [];
+<     readonly stop: readonly [];
+< };
+< export declare interface ProcessCaptureInterface {
+<     readonly emitter: EmitterInterface<ProcessCaptureEventMap>;
+<     readonly active: boolean;
+<     start(): void;
+grep: /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/u1/console-server/rollup.d.ts: No such file or directory
+material-diff-lines=75
+-- import-line diff:
+grep: /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/u1/console-server/rollup.d.ts: No such file or directory
+1,5d0
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { LogLevel } from '@orkestrel/console';
+< import { SinkInterface } from '@orkestrel/console';
+
+== leftover check (no writes into any checkout tree)
+/home/user/scaffold: 
+/home/user/fleet/console: 
