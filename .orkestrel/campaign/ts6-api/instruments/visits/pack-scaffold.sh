@@ -8,9 +8,9 @@ LOG="$SP/pack/pack-scaffold.log.txt"; mkdir -p "$SP/pack"
   echo "# pack-scaffold — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "\$ git log --oneline -1"; git log --oneline -1
   echo "\$ git status --short | wc -l"; git status --short | wc -l
-  echo "\$ ls dist/host/configs/helpers.ts dist/host/.oxlintrc.json"; ls -l dist/host/configs/helpers.ts dist/host/.oxlintrc.json
+  echo "\$ ls dist/host/configs/helpers.ts dist/host/.oxlintrc.json"; ls -l dist/host/configs/helpers.ts dist/host/dotfiles/oxlintrc.json
   echo "\$ grep -c declarationRollup dist/host/configs/helpers.ts"; grep -c declarationRollup dist/host/configs/helpers.ts
-  echo "\$ grep -c '\"typescript\"' dist/host/.oxlintrc.json"; grep -c '"typescript"' dist/host/.oxlintrc.json || true
+  echo "\$ grep -c '\"typescript\"' dist/host/.oxlintrc.json"; grep -c '"typescript"' dist/host/dotfiles/oxlintrc.json || true
   echo "\$ npm pack --pack-destination $SP/pack"; PATH=/opt/npm11/bin:$PATH npm pack --pack-destination "$SP/pack" 2>&1 | tail -3
   echo "\$ ls -l $SP/pack/*.tgz"; ls -l "$SP"/pack/*.tgz
 } | tee "$LOG"

@@ -1,0 +1,19 @@
+# pack-scaffold — 2026-09-06T22:11:22Z
+$ git log --oneline -1
+c85baac7 Accept U6 after its fix round
+$ git status --short | wc -l
+0
+$ ls dist/host/configs/helpers.ts dist/host/.oxlintrc.json
+-rw-r--r-- 1 root root 39606 Sep  6 22:08 dist/host/configs/helpers.ts
+-rw-r--r-- 1 root root 17091 Sep  6 22:08 dist/host/dotfiles/oxlintrc.json
+$ grep -c declarationRollup dist/host/configs/helpers.ts
+1
+$ grep -c '"typescript"' dist/host/.oxlintrc.json
+1
+$ npm pack --pack-destination /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack
+npm notice total files: 139
+npm notice
+orkestrel-scaffold-0.0.63.tgz
+$ ls -l /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/*.tgz
+-rw-r--r-- 1 root root  287162 Sep  6 22:11 /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/orkestrel-probe-0.0.12.tgz
+-rw-r--r-- 1 root root 1135106 Sep  6 22:11 /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/orkestrel-scaffold-0.0.63.tgz

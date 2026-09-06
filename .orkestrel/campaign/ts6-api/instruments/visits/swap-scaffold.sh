@@ -12,6 +12,6 @@ cd "$TARGET"
   echo "\$ npm install --no-save --no-audit --no-fund $TARBALL"
   npm install --no-save --no-audit --no-fund "$TARBALL" 2>&1 | tail -3
   echo "installed after: $(node -e "console.log(require('@orkestrel/scaffold/package.json').version)")"
-  echo "head start present: $(grep -c "declarationRollup" node_modules/@orkestrel/scaffold/dist/host/configs/helpers.ts || true) declarationRollup hits in the vendored helpers; $(grep -c "\"typescript\"" node_modules/@orkestrel/scaffold/dist/host/.oxlintrc.json || true) typescript restrictions in the vendored lint config"
+  echo "head start present: $(grep -c "declarationRollup" node_modules/@orkestrel/scaffold/dist/host/configs/helpers.ts || true) declarationRollup hits in the vendored helpers; $(grep -c '\^typescript' node_modules/@orkestrel/scaffold/dist/host/dotfiles/oxlintrc.json || true) typescript restrictions in the vendored lint config"
   echo "manifest/lockfile diff: $(git diff --stat -- package.json package-lock.json | tail -1)"
 } | tee "$LOG"

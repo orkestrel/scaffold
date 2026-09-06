@@ -1,0 +1,13 @@
+# pack-probe — 2026-09-06T22:10:53Z
+$ git log --oneline -1
+d24de2e Run the type stage's compiler as a process over a mirror of the workspace
+$ git status --short | wc -l
+0
+$ grep -c scanDiagnostics dist/src/server/index.d.ts
+3
+$ npm pack --pack-destination /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack
+npm notice total files: 17
+npm notice
+orkestrel-probe-0.0.12.tgz
+$ ls -l /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/orkestrel-probe-*.tgz
+-rw-r--r-- 1 root root 287162 Sep  6 22:11 /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/orkestrel-probe-0.0.12.tgz
