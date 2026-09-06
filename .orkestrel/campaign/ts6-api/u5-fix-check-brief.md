@@ -20,6 +20,8 @@ The fix's slice as an interdiff: `/home/user/scaffold/.orkestrel/campaign/ts6-ap
 4. The new case is named for what it proves, its source carries an em dash and a curly quote before the declaration, it asserts the encoded byte length exceeds `source.length` before the slices, and its `text` and `declarations` assertions match the M7 reading verbatim.
 5. The slice touches only `tests/src/core/templates.test.ts`, `tests/guides.test.ts`, and `tests/setupServer.test.ts`; `tests/setupServer.ts` is unchanged from U5's exit; no `any`, assertion, suppression, or nested function beyond an anonymous callback passed directly as an argument was added; and the report's before/after lines match the slice.
 
+6. The two narrowings the report names beyond edit 3 — `driveModule`'s `Array.isArray(answers)` in `tests/src/core/templates.test.ts` and the guide-audit question-list guard in `tests/guides.test.ts`, with `readings` retyped from `Question[][]` to `Array<readonly Question[]>` — change no assertion and no behaviour, are the same narrowing the brief names, and were reached by criterion 2's whole-file grep rather than by the unit widening its own scope.
+
 ## Output
 
 Per claim, the verdict and its evidence (`file:line`). Then one terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>`. No process diary.

@@ -1,0 +1,180 @@
+--- a/tests/src/core/templates.test.ts
++++ b/tests/src/core/templates.test.ts
+@@ -5,7 +5,7 @@
+ import { createRequire } from 'node:module'
+ import { join, resolve } from 'node:path'
+ import { pathToFileURL } from 'node:url'
+-import { isRecord, isString } from '@orkestrel/contract'
++import { isArray, isRecord, isString } from '@orkestrel/contract'
+ import { requireValue } from '@orkestrel/test'
+ import { createScratch } from '@orkestrel/test/server'
+ import { fillTemplate, isTemplateError } from '@orkestrel/template'
+@@ -252,7 +252,7 @@
+ 		{ stdio: 'pipe', encoding: 'utf8' },
+ 	)
+ 	const answers: unknown = JSON.parse(output)
+-	if (!Array.isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
++	if (!isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
+ 	return answers
+ }
+ 
+@@ -324,7 +324,8 @@
+ // drive changes it to `null`. Each drive writes into a temporary directory of its
+ // own, so the loader keys the module on a path it has not seen and hands back a
+ // fresh instance rather than a cached one, and the call list is a second module
+-// that imports the first — nothing here is evaluated from a string. The load runs
++// that imports the first, so the loader evaluates real modules over a real specifier
++// graph in place of a `vm` context. The load runs
+ // through `createRequire` for the reason `configs/helpers.ts` records at its own
+ // deferred load: a variable specifier reddens `import/no-dynamic-require`, and Node
+ // loads an ES module through `require` from 22.12.0 on, which is `MINIMUM_NODE_VERSION`.
+@@ -342,10 +343,10 @@
+ 		)
+ 		const load = createRequire(import.meta.url)
+ 		const driven: unknown = load(join(workspace.path, 'drive.mjs'))
+-		if (!isRecord(driven) || !Array.isArray(driven.answers)) {
++		if (!isRecord(driven) || !isArray(driven.answers)) {
+ 			throw new Error('The emitted classifier drive exported no answer list')
+ 		}
+-		return structuredClone(driven.answers)
++		return driven.answers
+ 	} finally {
+ 		workspace.destroy()
+ 	}
+@@ -966,10 +967,19 @@
+ 		// leaves it outside the population rather than exempting it. It is read from an
+ 		// emitted configuration rather than from the template text it is emitted from:
+ 		// that text still carries its placeholders, so it is not a module a parser reads.
++		// The assertion below reads the declaration through the same reader the rule
++		// depends on and asserts it unexported, so an absent statement reddens it
++		// rather than leaving the empty finding vacuous.
+ 		const browser = requireValue(
+ 			buildModules(createBlueprint('sample', { app: ['browser'] })).get('vite.config.ts'),
+ 		)
+-		expect(browser).toContain('function applicationBrowser(showcase: boolean): UserConfig {')
++		const applicationBrowser = readStatements(browser, 'vite.config.ts').find((statement) =>
++			statement.declarations.some(({ name }) => name === 'applicationBrowser'),
++		)
++		expect(applicationBrowser?.declarations).toStrictEqual([
++			{ name: 'applicationBrowser', parameters: ['showcase: boolean'], returns: 'UserConfig' },
++		])
++		expect(applicationBrowser?.exported).toBeUndefined()
+ 		expect(findParameters(browser)).toStrictEqual([])
+ 
+ 		const inspected = new Map<string, number>()
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,5 +1,5 @@
+ import type { Question } from '@src/core'
+-import { isRecord } from '@orkestrel/contract'
++import { isArray, isRecord } from '@orkestrel/contract'
+ import {
+ 	createGuide,
+ 	createSource,
+@@ -258,7 +258,7 @@
+ 	return
+ }
+ `
+-			const readings: Question[][] = []
++			const readings: Array<readonly Question[]> = []
+ 			for (const content of [ARTIFACT_TEMPLATES.tests.global, retained]) {
+ 				workspace.write('target/tests/setupGlobal.ts', content)
+ 				const sink = createSink()
+@@ -276,7 +276,7 @@
+ 				const parsed: unknown = JSON.parse(requireValue(sink.output[0]))
+ 				if (
+ 					!isRecord(parsed) ||
+-					!Array.isArray(parsed.questions) ||
++					!isArray(parsed.questions) ||
+ 					!parsed.questions.every(isQuestion)
+ 				) {
+ 					throw new Error('The guide audit returned no question list')
+@@ -347,8 +347,9 @@
+ 			expected.push('./valid.cjs', ['./valid.cjs'], target, [target])
+ 		}
+ 		// The lifted declarations are loaded as the ES module their own text says they
+-		// are, and the call list is a second module that imports them, so nothing here
+-		// is evaluated from a string. The load runs through `createRequire` for the
++		// are, and the call list is a second module that imports them, so the loader
++		// evaluates real modules over a real specifier graph in place of a `vm`
++		// context. The load runs through `createRequire` for the
+ 		// reason `configs/helpers.ts` records at its own deferred load: a variable
+ 		// specifier reddens `import/no-dynamic-require`, and Node loads an ES module
+ 		// through `require` from 22.12.0 on, which is `MINIMUM_NODE_VERSION`.
+@@ -366,11 +367,11 @@
+ 			)
+ 			const load = createRequire(import.meta.url)
+ 			const driven: unknown = load(join(workspace.path, 'drive.mjs'))
+-			if (!isRecord(driven) || !Array.isArray(driven.answers)) {
++			if (!isRecord(driven) || !isArray(driven.answers)) {
+ 				throw new Error('The emitted classifier drive exported no answer list')
+ 			}
+ 
+-			expect(structuredClone(driven.answers)).toStrictEqual(expected)
++			expect(driven.answers).toStrictEqual(expected)
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -494,21 +494,27 @@
+ 		])
+ 		// The slice is the statement's own extent, so a lift writing it into another
+ 		// module carries the export keyword and the whole body across with it.
+-		expect(statements[4]?.text).toBe(
++		const build = statements.find((statement) =>
++			statement.declarations.some(({ name }) => name === 'build'),
++		)
++		expect(build?.text).toBe(
+ 			'export function build(input: string, count: number): Mode {\n\tconst inner = join(input, String(count))\n\treturn inner\n}',
+ 		)
++		expect(build?.body.map(({ syntax, declarations }) => ({ syntax, declarations }))).toStrictEqual(
++			[
++				{
++					syntax: 'VariableDeclaration',
++					declarations: [{ name: 'inner', parameters: [], returns: undefined }],
++				},
++				{ syntax: 'ReturnStatement', declarations: [] },
++			],
++		)
++		// Every statement carrying a body is the function declaration it was read
++		// from, so a caller reading one is reading a function's own statements
++		// rather than whatever the projection reached last.
+ 		expect(
+-			statements[4]?.body.map(({ syntax, declarations }) => ({ syntax, declarations })),
+-		).toStrictEqual([
+-			{
+-				syntax: 'VariableDeclaration',
+-				declarations: [{ name: 'inner', parameters: [], returns: undefined }],
+-			},
+-			{ syntax: 'ReturnStatement', declarations: [] },
+-		])
+-		// Every other statement carries no body, so a caller reading one is reading a
+-		// function's own statements rather than whatever the projection reached last.
+-		expect(statements.filter(({ body }) => body.length > 0)).toHaveLength(1)
++			statements.filter(({ body }) => body.length > 0).map(({ syntax }) => syntax),
++		).toStrictEqual(['FunctionDeclaration'])
+ 	})
+ 
+ 	it('refuses a source the parser reports an error for', () => {
+@@ -518,6 +524,20 @@
+ 		expect(readStatements('export const value = 1\n', 'broken.ts')).toHaveLength(1)
+ 	})
+ 
++	it('slices by code unit, so a non-ASCII character before the declaration moves nothing', () => {
++		const source =
++			'// an em dash — and a curly quote ’ before it\nexport const factory = (mode: Mode): UserConfig => value\n'
++		// The fixture carries an em dash and a curly quote, each wider than one code
++		// unit in UTF-8, so this assertion fails if either is later stripped and the
++		// case would otherwise pass on an all-ASCII source that proves nothing.
++		expect(new TextEncoder().encode(source).length).toBeGreaterThan(source.length)
++		const [statement] = readStatements(source, 'proof.ts')
++		expect(statement?.text).toBe('export const factory = (mode: Mode): UserConfig => value')
++		expect(statement?.declarations).toStrictEqual([
++			{ name: 'factory', parameters: ['mode: Mode'], returns: 'UserConfig' },
++		])
++	})
++
+ 	it('reads a wrapped declaration an anchored signature pattern reports nothing for', () => {
+ 		// The vendored formatter breaks a signature that passes the print width across
+ 		// lines. A pattern written for the printed spelling goes blind on the wrapped
