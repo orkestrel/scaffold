@@ -1,0 +1,55 @@
+# Plan — guide and TSDoc parity
+
+Reconciled by the Orchestrator from `design-subjective.md` (planner, Opus 5) and `design-objective.md` (reviewer, Opus 5, the recorded substitution for the dark Sol bench) on `design-brief.md`, under the owner's rulings in `rulings.md`.
+
+## The ruling, restated as the invariant
+
+A package's guide and its TSDoc agree wherever both carry the same fact, and `tests/guides.test.ts` refuses the tree while they disagree, naming both sites. Neither side generates the other. A developer moves either side and runs `npm run docs` to carry the change across, in the direction they choose; the gate never writes.
+
+## Decisions
+
+1. **The compared unit is the description paragraph, not the first sentence.** The objective lane's reading stands: a guide cell already carries the whole description paragraph (`guides/scaffold.md:438` against `src/core/types.ts:615`), and a first-sentence projection would delete the idempotence contract. The TSDoc side is the text from the block's opening to its first block tag; the guide side is the `Summary` cell. `.claude/rules/typescript.md`'s first-sentence voice rule keeps binding the paragraph's first sentence on both sides.
+2. **The transform is stated and small.** On the TSDoc side: `{@link X}` and `{@link A.b}` render as the code token of their target text; continuation markers and line breaks collapse to single spaces. On the guide side: inline emphasis drops to its text, a link drops to its text, and `\|` unescapes. Code spans stay code spans on both sides. Inflected link targets such as `{@link Question}s` are refused at the source by the voice gate rather than rendered. Outside the comparison, each stated in the guide package's guide: `@param`, `@returns` against the `Returns` column (a type against a description), `@remarks` against narrative, and the H1 tagline (until a package declares `@packageDocumentation`, when the tagline gains a partner).
+3. **Every Surface and Methods table carries one compared column named `Summary`**, located by header text the way `Kind` is located; `Shape`, `Signature`, `Value`, and `Returns` are guide-only data columns beside it. A table without a `Summary` column, a row without a code-span name, and a row the export grammar cannot pair are findings, never silent skips. No marker-bounded regions: the table's rows are the region.
+4. **Examples pair by title.** A titled TSDoc `@example` claims the guide fence under the heading of the same text, and the two bodies must be the same code after the doc-comment unwrapping; an untitled `@example` stays presence evidence for the existing EX check. Where a pair disagrees today, the guide fence wins on content because the suite executes it, and the TSDoc adopts it. `GuideFence` gains its heading's text as `title`.
+5. **The readers and the gate live in `@orkestrel/guide`, per entry.** `SurfaceSymbol` gains an optional `summary`; `MethodEntry { name, summary? }` replaces the bare method name in `MethodGroup.methods` and in `SourceInterface.methods`; `SourceExample { name, title?, code }` replaces the example name list; `Drift { key, guide?, source? }` and `findDrift(guide, source)` name a disagreement with both sides and an absence as `undefined`. The comparison is per symbol over the pairing the existing bijection computes, never over table bytes, because `renderMarkdown` emits one-space-padded tables against column-aligned committed bytes and a byte gate would red on padding.
+6. **The projection and the propagation.** `renderSurface`, `renderMethods`, and `renderExample` produce Markdown text from source entries; `replaceSummary` and `replaceExample` splice text into a doc block; all return text and write nothing. The vendored `scripts/docs.ts` seed runs them as `npm run docs` (prints drift) and `npm run docs -- --to guide` or `--to source` (rewrites the named side through `@orkestrel/markdown`'s provenance spans, then the caller formats). The gate imports the readers and `findDrift` and no writer.
+7. **The voice gate.** `policy/no-imperative-summary` and `policy/no-banned-term` in the vendored `configs/policy.ts`, reading comment text through a `PolicyContext` widened with the comment surface (re-declared structurally, because that file imports nothing; the negative control is the evidence the declaration matches); the Markdown term sweep in the vendored `tests/setupPolicy.ts` over guides, README, rules, and skills, excluding mirrors, fence bodies, and code tokens; one frozen denylist in `tests/setupPolicy.ts` with a currency check against `.claude/rules/writing.md` § Substitutions. `.oxfmtrc.json`'s `jsdoc` stays unset until the rewrite probe reports no first-sentence change.
+8. **`src/bin` stays outside the compared population** (the manifest's own statement); the usage-alignment assertion is its parity and the voice rules reach its doc blocks. **The README shrinks**: the pitch, the install line, the runtime line, and one fence; the verb, flag, and exit-code lists go and link to the guide; the pitch equals the guide's H1 blockquote through a new `Guide.tagline()` reader, compared in scaffold's own gate.
+9. **Order.** `@orkestrel/guide` readers, renderers, and its own guide first (in the `guide` checkout; its guide reaches scaffold as a fetched mirror, never by editing scaffold's copy); then scaffold's policy rules, the rule amendments landed in the same change as their gate, the gate, the seed, and scaffold's own convergence (including the `birth` substance and the `Compiler` example, by hand); then the fleet, one writer per checkout, each converging its guide, its TSDoc, and its `tests/guides.test.ts` (which is package-owned and hand-edited; `probe` hand-rolls its harness and gets its own unit).
+10. **Publishing.** `@orkestrel/guide` bumps and publishes for `render`; `@orkestrel/scaffold` bumps for the vendored bytes and the seed; every fleet package that converges its TSDoc moves its declaration file, which is a published-surface move, so it bumps — the owner rules whether that republish rides the API-removal wave already prepared (hold phase B until each package converges) or follows it as a second wave.
+
+## Units
+
+| Unit | Role (engine) | Checkout | Owns | After | Acceptance |
+| --- | --- | --- | --- | --- | --- |
+| P1–P8 | Orchestrator | host | `instruments/` | — | the probes below, each with its control, recorded in `orchestrator-measurements.md` |
+| D1 `guide-readers` | `implementer` (Opus 5; Sol's unit, substitution recorded) | `/home/user/fleet/guide` | `src/core/types.ts`, `helpers.ts`, `Guide.ts`, `sources/Source.ts`, `shapers.ts`, `validators.ts`, `guides/guide.md`, `tests/**` | P2, P6 | the description reader, the `Summary` locator, the fence title, `MethodEntry`, `SourceExample`, `Drift`, `findDrift`, `tagline`; a permanent control against `parseSync` comments in the suite; the package's gates green |
+| D2 `guide-render` | `implementer` (Opus 5) | `/home/user/fleet/guide` | `helpers.ts`, `types.ts`, `guides/guide.md`, `tests/**` | D1, P1 | `renderSurface`, `renderMethods`, `renderExample`, `replaceSummary`, `replaceExample` round-trip through the readers; a two-table fixture byte-stable; `oxfmt --check` green on the rendered text |
+| D3 `scaffold-policy` | `implementer` (Opus 5; Sol's unit) | `/home/user/scaffold` | `configs/policy.ts`, `tests/setupPolicy.ts`, `tests/policy.test.ts` | P5 | both rules with a control from outside their membership; the sweep over Markdown with its exclusions each controlled; `lint:check`, `test:policy` green |
+| D4 `scaffold-gate` | `implementer` (Opus 5; Sol's unit) | `/home/user/scaffold` | `tests/guides.test.ts`, `.claude/rules/documentation.md`, `.claude/rules/typescript.md` | D1, D2 published or head-started | SQ, MQ, EQ, RQ each red on a planted disagreement in a file the unit did not touch; the rule amendments landed with the gate |
+| D5 `scaffold-seed` | `builder` (Sonnet) | `/home/user/scaffold` | `scripts/docs.ts`, `src/core/constants.ts` (`HOST_PATHS`), `src/core/templates.ts`, `package.json` | D4 | `npm run docs` prints drift and rewrites either side; `scaffold audit` reports no drift |
+| D6 `scaffold-converge` | `implementer` (Opus 5) | `/home/user/scaffold` | `guides/scaffold.md`, `README.md`, doc blocks under `src/**` | D4, D5, P3 | every scaffold gate green under the new checks; the `birth` and `Compiler` disagreements closed by hand |
+| D7.n `fleet-<package>` | `implementer` (Opus 5) per checkout | one checkout each | its guide, its doc blocks, its `tests/guides.test.ts`, its pins | the guide and scaffold releases | its gates green under the new checks; its bump per decision 10 |
+
+Every nontrivial unit takes the subjective and objective lanes on numbered falsifiable claims, with a checker where the criteria are mechanical.
+
+## Probes before the first unit
+
+- P1 render fidelity: `renderMarkdown` over a committed table against the committed bytes, with a hand-edited cell as the control.
+- P2 description extraction against `parseSync` comments by range, over an overload set, a blank-line-separated block, a block inside a template literal, and a re-export barrel; misses reported as sites.
+- P3 the first equality run over scaffold's own guide, as a site list (Surface and Methods cells against doc paragraphs under decision 2's transform).
+- P4 the `jsdoc` rewrite over a copy of `src/core/`, read for any first-sentence change, per checkout's oxfmt version.
+- P5 an oxlint rule reporting a diagnostic on a comment, per checkout's oxlint version.
+- P6 `parseProvenance` spans for a table node and a fence node in the installed `@orkestrel/markdown`.
+- P7 `@example` against the executed fence for `createBlueprint`, `Materializer`, and `Compiler`, with the transcription site that moves.
+- P8 whether a doc-comment-only edit moves `dist/src/core/index.d.ts` materially (the evidence decision 10 turns on).
+
+## Exit criterion
+
+The campaign ends when each closes as implemented, repaired, retained, or intentionally excluded on evidence: the readers on both sides in `@orkestrel/guide` with their controls; `findDrift` naming both sides; the renderers and replacers round-tripping and formatter-stable; the voice rules and the sweep with controls; the rule amendments landed with the gate; scaffold green under SQ, MQ, EQ, and RQ with its known disagreements closed; `npm run docs` propagating in each direction with the gate calling no writer; each fleet package green under the same checks or excluded with its reason; the owner's publish ruling applied.
+
+## For the owner
+
+- Decision 10's publish question: whether the fleet's TSDoc convergence rides the API-removal release wave (hold phase B per package until it converges, one republish) or follows it (two republishes).
+- The README shrink (decision 8), ruled here with the subjective lane; say so if the npm landing page must keep its verb list.
