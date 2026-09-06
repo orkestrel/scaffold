@@ -1,16 +1,15 @@
 import type { Blueprint, Environment } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { runInNewContext } from 'node:vm'
-import { isRecord, isString } from '@orkestrel/contract'
+import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
-import ts from 'typescript'
-import { build, loadConfigFromFile } from 'vite'
+import { build, loadConfigFromFile, transformWithOxc } from 'vite'
 import {
 	ARTIFACT_TEMPLATES,
 	blueprintToConfigArtifacts,
@@ -26,6 +25,7 @@ import {
 	TAB_WIDTH,
 } from '@src/core'
 import { BROWSER_RESOLVER_EXPORTS } from '../../setup.js'
+import { readStatements } from '../../setupServer.js'
 import { describe, expect, it } from 'vitest'
 
 // The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as
@@ -252,7 +252,7 @@ function driveModule(file: string, binding: string, calls: readonly string[]): r
 		{ stdio: 'pipe', encoding: 'utf8' },
 	)
 	const answers: unknown = JSON.parse(output)
-	if (!Array.isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
+	if (!isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
 	return answers
 }
 
@@ -318,127 +318,120 @@ const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> 
 	[`classifier.isModule('./dist/src/core/index.d.cts')`, false],
 ]
 
-// The lifted declarations, written where a real Node process can load them. The
-// TypeScript parser reads them off the emitted text, so a formatting change moves
-// nothing here and a renamed declaration fails loudly.
-function stageClassifier(
-	workspace: ScratchInterface,
-	content: string,
-	declarations: readonly string[] = CLASSIFIER_DECLARATIONS,
-): string {
-	workspace.write('classifier.ts', extractDeclarations(content, declarations))
-	return join(workspace.path, 'classifier.ts')
+// The emitted classifier driven in this process, as the ES module the parser's own
+// text says it is. This driver stays separate from `driveModule`: the classifier
+// assertions distinguish `undefined`, while the JSON transport of a real module
+// drive changes it to `null`. Each drive writes into a temporary directory of its
+// own, so the loader keys the module on a path it has not seen and hands back a
+// fresh instance rather than a cached one, and the call list is a second module
+// that imports the first, so the loader evaluates real modules over a real specifier
+// graph in place of a `vm` context. The load runs
+// through `createRequire` for the reason `configs/helpers.ts` records at its own
+// deferred load: a variable specifier reddens `import/no-dynamic-require`, and Node
+// loads an ES module through `require` from 22.12.0 on, which is `MINIMUM_NODE_VERSION`.
+async function driveClassifier(
+	source: string,
+	calls: readonly string[],
+): Promise<readonly unknown[]> {
+	const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-drive-' })
+	try {
+		const transformed = await transformWithOxc(source, 'classifier.ts', { target: 'esnext' })
+		workspace.write('classifier.mjs', transformed.code)
+		workspace.write(
+			'drive.mjs',
+			`import * as classifier from './classifier.mjs'\nexport const answers = [${calls.join(', ')}]\n`,
+		)
+		const load = createRequire(import.meta.url)
+		const driven: unknown = load(join(workspace.path, 'drive.mjs'))
+		if (!isRecord(driven) || !isArray(driven.answers)) {
+			throw new Error('The emitted classifier drive exported no answer list')
+		}
+		return driven.answers
+	} finally {
+		workspace.destroy()
+	}
 }
 
-// The emitted classifier driven in this process after TypeScript removes its type
-// syntax. This driver stays separate from `driveModule`: the classifier assertions
-// distinguish `undefined`, while the JSON transport of a real module drive changes
-// it to `null`. A fresh VM context gives each drive an isolated module instance.
-function driveClassifier(file: string, calls: readonly string[]): readonly unknown[] {
-	const compiled = ts.transpileModule(readFileSync(file, 'utf8'), {
-		compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ESNext },
-	})
-	const classifier: Record<string, unknown> = {}
-	runInNewContext(compiled.outputText, {
-		dirname,
-		existsSync,
-		exports: classifier,
-		join,
-		readFileSync,
-		statSync,
-	})
-	const answers: unknown = runInNewContext(`[${calls.join(', ')}]`, { classifier })
-	if (!Array.isArray(answers)) throw new Error('The emitted classifier driver returned no list')
-	return structuredClone(answers)
-}
-
-// The generated distribution proof lifted into one scratch module for a direct
-// classifier drive.
-function stageDistributionClassifier(workspace: ScratchInterface): string {
+// The emitted distribution proof, whose text every lift below reads.
+function buildDistributionProof(): string {
 	const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
 		({ path }) => path === 'tests/distribution.test.ts',
 	)
-	return stageClassifier(workspace, requireValue(proof?.content))
+	return requireValue(proof?.content)
+}
+
+// The generated distribution proof lifted into one module for a direct classifier
+// drive.
+function buildDistributionClassifier(): string {
+	return extractDeclarations(buildDistributionProof(), CLASSIFIER_DECLARATIONS)
 }
 
 // The statements that classify one installed exports map, lifted from the emitted
 // `buildStage` body. Packing and installing are outside this drive; the staged
 // manifest and installed root are its real inputs, and every pushed record is the
 // emitted statement's own value.
-function stageDistributionClassification(workspace: ScratchInterface): string {
-	const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
-		({ path }) => path === 'tests/distribution.test.ts',
+function buildDistributionClassification(): string {
+	const content = buildDistributionProof()
+	const carried = ['entries', 'targets', 'subpaths', 'undeclared', 'excluded']
+	const stage = readStatements(content, 'proof.ts').find(
+		(statement) =>
+			statement.syntax === 'FunctionDeclaration' &&
+			statement.declarations.some(({ name }) => name === 'buildStage'),
 	)
-	const content = requireValue(proof?.content)
-	const source = ts.createSourceFile('proof.ts', content, ts.ScriptTarget.ESNext, true)
-	const stage = source.statements.find(
-		(statement): statement is ts.FunctionDeclaration =>
-			ts.isFunctionDeclaration(statement) && statement.name?.text === 'buildStage',
+	if (stage === undefined) throw new Error('The emitted proof declares no buildStage body')
+	const declarations = stage.body.filter(
+		(statement) =>
+			statement.syntax === 'VariableDeclaration' &&
+			statement.declarations.some(({ name }) => carried.includes(name)),
 	)
-	if (stage?.body === undefined) throw new Error('The emitted proof declares no buildStage body')
-	const declarations = stage.body.statements.filter((statement) => {
-		if (!ts.isVariableStatement(statement)) return false
-		return statement.declarationList.declarations.some(
-			(declaration) =>
-				ts.isIdentifier(declaration.name) &&
-				['entries', 'targets', 'subpaths', 'undeclared', 'excluded'].includes(
-					declaration.name.text,
-				),
-		)
-	})
-	const walk = stage.body.statements.find(ts.isForOfStatement)
-	const declared = declarations.flatMap((statement) => readDeclaredNames(statement))
-	const missing = ['entries', 'targets', 'subpaths', 'undeclared', 'excluded'].filter(
-		(name) => !declared.includes(name),
+	const walk = stage.body.find(({ syntax }) => syntax === 'ForOfStatement')
+	const declared = declarations.flatMap(({ declarations: bindings }) =>
+		bindings.map(({ name }) => name),
 	)
+	const missing = carried.filter((name) => !declared.includes(name))
 	if (missing.length > 0 || walk === undefined) {
 		throw new Error('The emitted buildStage carries no complete classification walk')
 	}
-	const classifier = extractDeclarations(content, CLASSIFIER_DECLARATIONS)
-	const lifted = `${classifier}
+	return `${extractDeclarations(content, CLASSIFIER_DECLARATIONS)}
 export function classifyStage(
 	manifest: Readonly<Record<string, unknown>>,
 	installed: string,
 	name: string,
 ): unknown {
-${declarations.map((statement) => statement.getText(source)).join('\n')}
-${walk.getText(source)}
+${declarations.map(({ text }) => text).join('\n')}
+${walk.text}
 	return { entries, targets, subpaths, undeclared, excluded }
 }
 `
-	workspace.write('classification.ts', lifted)
-	return join(workspace.path, 'classification.ts')
 }
 
 // One module carrying the named top-level declarations of another, in source order
 // so a constant still precedes the function reading it, and exporting each name.
+// The parser reads the names and the extents, so a formatter that rewrapped a
+// declaration moves nothing here and a renamed declaration fails loudly. The lifted
+// module also carries the proof's own `node:` imports, because a lifted declaration
+// reaches the real filesystem through them; every other import the proof declares
+// belongs to the suite around those declarations rather than to the declarations
+// themselves.
 function extractDeclarations(content: string, names: readonly string[]): string {
-	const source = ts.createSourceFile('proof.ts', content, ts.ScriptTarget.ESNext, true)
+	const statements = readStatements(content, 'proof.ts')
+	const imports = statements
+		.filter(
+			({ syntax, specifier }) =>
+				syntax === 'ImportDeclaration' && (specifier ?? '').startsWith('node:'),
+		)
+		.map(({ text }) => text)
 	const lifted = new Map<string, string>()
-	for (const statement of source.statements) {
-		for (const name of readDeclaredNames(statement)) {
-			if (names.includes(name)) lifted.set(name, statement.getText(source))
+	for (const statement of statements) {
+		for (const { name } of statement.declarations) {
+			if (names.includes(name)) lifted.set(name, statement.text)
 		}
 	}
 	const missing = names.filter((name) => !lifted.has(name))
 	if (missing.length > 0) {
 		throw new Error(`The emitted proof declares no ${missing.join(', ')}`)
 	}
-	return `${[...lifted.values()].join('\n\n')}\n\nexport { ${names.join(', ')} }\n`
-}
-
-// The names one top-level statement binds, for the function and variable statements
-// a lift can carry. Every other statement binds nothing a caller can name.
-function readDeclaredNames(statement: ts.Statement): readonly string[] {
-	if (ts.isFunctionDeclaration(statement)) {
-		return statement.name === undefined ? [] : [statement.name.text]
-	}
-	if (!ts.isVariableStatement(statement)) return []
-	const names: string[] = []
-	for (const declaration of statement.declarationList.declarations) {
-		if (ts.isIdentifier(declaration.name)) names.push(declaration.name.text)
-	}
-	return names
+	return `${imports.join('\n')}\n\n${[...lifted.values()].join('\n\n')}\n\nexport { ${names.join(', ')} }\n`
 }
 
 // One `resolveBrowser` call, written as the driver evaluates it. The platform is
@@ -530,32 +523,20 @@ function findWide(content: string): readonly string[] {
 }
 
 // Every project factory in a module that still declares a parameter, read off the
-// TypeScript parser rather than off the text: the question is what a declaration
-// carries, and a pattern reports on one spelling of it. Membership is an exported
-// top-level declaration whose return type is `UserConfig`, which is what Vitest
-// calls as a project row. `applicationBrowser` takes the showcase switch and is not
-// exported, so the same rule leaves it outside the population rather than exempting
-// it.
+// parser rather than off the text: the question is what a declaration carries, and
+// a pattern reports on one spelling of it. Membership is a value-exported top-level
+// declaration whose return type is `UserConfig`, which is what Vitest calls as a
+// project row. `applicationBrowser` takes the showcase switch and is not exported,
+// so the same rule leaves it outside the population rather than exempting it, and
+// the emitted `resolveWorkspacePath` declares parameters under a return type of
+// `string`, which the same rule leaves outside it too.
 function findParameters(content: string): readonly string[] {
-	const source = ts.createSourceFile('vite.config.ts', content, ts.ScriptTarget.ESNext, true)
 	const carried: string[] = []
-	for (const statement of source.statements) {
-		const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined
-		if (!(modifiers ?? []).some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) {
-			continue
-		}
-		if (ts.isFunctionDeclaration(statement)) {
-			if (statement.type?.getText(source) !== 'UserConfig') continue
-			if (statement.parameters.length > 0) carried.push(requireValue(statement.name?.text))
-			continue
-		}
-		if (!ts.isVariableStatement(statement)) continue
-		for (const declaration of statement.declarationList.declarations) {
-			const initializer = declaration.initializer
-			if (initializer === undefined || !ts.isArrowFunction(initializer)) continue
-			if (initializer.type?.getText(source) !== 'UserConfig') continue
-			if (initializer.parameters.length === 0 || !ts.isIdentifier(declaration.name)) continue
-			carried.push(declaration.name.text)
+	for (const statement of readStatements(content, 'vite.config.ts')) {
+		if (statement.exported !== 'value') continue
+		for (const declaration of statement.declarations) {
+			if (declaration.returns !== 'UserConfig' || declaration.parameters.length === 0) continue
+			carried.push(declaration.name)
 		}
 	}
 	return carried
@@ -982,7 +963,24 @@ describe('emitted workspaces under their own gates', () => {
 		expect(planted).not.toBe(CONFIG_TEMPLATES.factories.policy)
 		expect(findParameters(planted)).toStrictEqual(['policy'])
 		expect(findParameters(CONFIG_TEMPLATES.factories.policy)).toStrictEqual([])
-		expect(findParameters(CONFIG_TEMPLATES.factories.app.browser)).toStrictEqual([])
+		// `applicationBrowser` declares a parameter and is not exported, so the rule
+		// leaves it outside the population rather than exempting it. It is read from an
+		// emitted configuration rather than from the template text it is emitted from:
+		// that text still carries its placeholders, so it is not a module a parser reads.
+		// The assertion below reads the declaration through the same reader the rule
+		// depends on and asserts it unexported, so an absent statement reddens it
+		// rather than leaving the empty finding vacuous.
+		const browser = requireValue(
+			buildModules(createBlueprint('sample', { app: ['browser'] })).get('vite.config.ts'),
+		)
+		const applicationBrowser = readStatements(browser, 'vite.config.ts').find((statement) =>
+			statement.declarations.some(({ name }) => name === 'applicationBrowser'),
+		)
+		expect(applicationBrowser?.declarations).toStrictEqual([
+			{ name: 'applicationBrowser', parameters: ['showcase: boolean'], returns: 'UserConfig' },
+		])
+		expect(applicationBrowser?.exported).toBeUndefined()
+		expect(findParameters(browser)).toStrictEqual([])
 
 		const inspected = new Map<string, number>()
 		const carried: string[] = []
@@ -1294,13 +1292,13 @@ describe('emitted distribution classifier', () => {
 	// to read is a subpath published without measurement: the walkers answer nothing
 	// for it, the proof files it as excluded, and the totality assertion stays green
 	// because the subpath is accounted for.
-	it('reads a fallback list, a declaration under require, and an extensionless module', () => {
+	it('reads a fallback list, a declaration under require, and an extensionless module', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-classifier-',
 		})
 		try {
-			const file = stageDistributionClassifier(workspace)
+			const classifier = buildDistributionClassifier()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/x.d.ts', 'export const value: number\n')
 			workspace.write('installed/x.d.cts', 'export const value: number\n')
@@ -1323,8 +1321,8 @@ describe('emitted distribution classifier', () => {
 					{ module: undefined, commonjs: undefined, browser: undefined },
 				],
 			]
-			const answers = driveClassifier(
-				file,
+			const answers = await driveClassifier(
+				classifier,
 				cases.map(([call]) => call),
 			)
 
@@ -1334,35 +1332,26 @@ describe('emitted distribution classifier', () => {
 		}
 	}, 20_000)
 
-	it('classifies native addon targets as modules', () => {
-		const workspace = createScratch({
-			parent: ensureTmpRoot(),
-			prefix: 'scaffold-e2-native-addon-',
-		})
-		try {
-			const file = stageDistributionClassifier(workspace)
-			const answers = driveClassifier(file, [
-				`classifier.isModule('./dist/addon.node')`,
-				`classifier.isModule('./dist/module.wasm')`,
-			])
+	it('classifies native addon targets as modules', async () => {
+		const answers = await driveClassifier(buildDistributionClassifier(), [
+			`classifier.isModule('./dist/addon.node')`,
+			`classifier.isModule('./dist/module.wasm')`,
+		])
 
-			expect(answers).toStrictEqual([true, false])
-		} finally {
-			workspace.destroy()
-		}
+		expect(answers).toStrictEqual([true, false])
 	})
 
-	it('resolves each runtime against its consumer declaration', () => {
+	it('resolves each runtime against its consumer declaration', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-dual-declaration-',
 		})
 		try {
-			const file = stageDistributionClassifier(workspace)
+			const classifier = buildDistributionClassifier()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/x.d.mts', 'export const value: number\n')
 			workspace.write('installed/x.d.cts', 'export const value: number\n')
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: { types: './x.d.cts', default: './x.cjs' } }, ${JSON.stringify(installed)})`,
 				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: './missing.cjs' }, ${JSON.stringify(installed)})`,
 			])
@@ -1376,13 +1365,13 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('resolves declarations from explicit and adjacent targets that exist', () => {
+	it('resolves declarations from explicit and adjacent targets that exist', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-declaration-substitution-',
 		})
 		try {
-			const file = stageDistributionClassifier(workspace)
+			const classifier = buildDistributionClassifier()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/index.d.cts', 'export const value: number\n')
 			workspace.write('installed/index.d.mts', 'export const value: number\n')
@@ -1390,7 +1379,7 @@ describe('emitted distribution classifier', () => {
 			const missingTypes = `{ require: { types: './missing.d.cts', default: './index.cjs' } }`
 			const fallback = `{ require: ['../outside.cjs', './index.cjs'] }`
 			const absent = workspace.ensure('absent')
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.readDeclaration(${conventional}, ${JSON.stringify(installed)})`,
 				`classifier.readDeclaration(${missingTypes}, ${JSON.stringify(installed)})`,
 				`classifier.readDeclaration(${fallback}, ${JSON.stringify(installed)})`,
@@ -1408,19 +1397,19 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it("resolves Node import and browser exports under each driver's conditions", () => {
+	it("resolves Node import and browser exports under each driver's conditions", async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-driver-conditions-',
 		})
 		try {
-			const file = stageDistributionClassifier(workspace)
+			const classifier = buildDistributionClassifier()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/node.d.mts', 'export const value: number\n')
 			workspace.write('installed/node.d.cts', 'export const value: number\n')
 			workspace.write('installed/default.d.ts', 'export const value: number\n')
 			const entry = `{ node: { import: { types: './node.d.mts', default: './node.mjs' }, require: { types: './node.d.cts', default: './node.cjs' } }, browser: './browser.js', default: { types: './default.d.ts', default: './default.js' } }`
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.readDeclaration(${entry}, ${JSON.stringify(installed)})`,
 				`classifier.resolveTarget(${entry}, classifier.RUNTIME_CONDITIONS.module)`,
 				`classifier.resolveTarget(${entry}, classifier.RUNTIME_CONDITIONS.browser)`,
@@ -1441,13 +1430,13 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('separates the CommonJS runtime format from declaration compatibility', () => {
+	it('separates the CommonJS runtime format from declaration compatibility', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-declaration-format-',
 		})
 		try {
-			const file = stageDistributionClassifier(workspace)
+			const classifier = buildDistributionClassifier()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/nested/package.json', '{ "type": "commonjs" }\n')
@@ -1474,7 +1463,7 @@ describe('emitted distribution classifier', () => {
 			const nested = `{ types: './nested/feature.d.ts', require: './feature.mjs' }`
 			const malformed = `{ types: './malformed/feature.d.ts', require: './feature.mjs' }`
 			const directory = `{ types: './directory/index.d.ts', require: './feature.mjs' }`
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.resolvesCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
 				`classifier.resolvesCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
 				`classifier.resolvesCommonJS(${synchronized}, ${JSON.stringify(installed)})`,
@@ -1510,13 +1499,13 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('classifies staged exports by browser reachability and runtime format', () => {
+	it('classifies staged exports by browser reachability and runtime format', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-stage-classification-',
 		})
 		try {
-			const file = stageDistributionClassification(workspace)
+			const classifier = buildDistributionClassification()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/common.d.cts', 'export const value: number\n')
@@ -1558,7 +1547,7 @@ describe('emitted distribution classifier', () => {
 					'./package.json': './package.json',
 				},
 			}
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.classifyStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'sample-package')`,
 			])
 
@@ -1705,13 +1694,13 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('excludes browser artifacts from the CommonJS claim assertion', () => {
+	it('excludes browser artifacts from the CommonJS claim assertion', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-commonjs-unclaimed-',
 		})
 		try {
-			const file = stageDistributionClassification(workspace)
+			const classifier = buildDistributionClassification()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "commonjs" }\n')
 			workspace.write('installed/dist/src/browser/index.d.ts', 'export const value: number\n')
@@ -1733,7 +1722,7 @@ describe('emitted distribution classifier', () => {
 					},
 				},
 			}
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(unclaimed)}, ${JSON.stringify(installed)}, 'unclaimed').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
 				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
 				`classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries.map((entry) => ({ commonjs: entry.commonjs, required: entry.required }))`,
@@ -1745,13 +1734,13 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('names an incompatible declaration under an explicit CommonJS claim', () => {
+	it('names an incompatible declaration under an explicit CommonJS claim', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-commonjs-untypable-',
 		})
 		try {
-			const file = stageDistributionClassification(workspace)
+			const classifier = buildDistributionClassification()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/module.d.mts', 'export const value: number\n')
@@ -1766,7 +1755,7 @@ describe('emitted distribution classifier', () => {
 					'.': { require: { types: './common.d.cts', default: './runtime.cjs' } },
 				},
 			}
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(incompatible)}, ${JSON.stringify(installed)}, 'incompatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
 				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(compatible)}, ${JSON.stringify(installed)}, 'compatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
 			])
@@ -1777,13 +1766,13 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('keeps an invalid non-list CommonJS target for the runtime drive to report', () => {
+	it('keeps an invalid non-list CommonJS target for the runtime drive to report', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-invalid-commonjs-target-',
 		})
 		try {
-			const file = stageDistributionClassification(workspace)
+			const classifier = buildDistributionClassification()
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/index.d.cts', 'export const value: number\n')
@@ -1794,7 +1783,7 @@ describe('emitted distribution classifier', () => {
 					},
 				},
 			}
-			const answers = driveClassifier(file, [
+			const answers = await driveClassifier(classifier, [
 				`classifier.classifyStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'invalid-target').entries.map((entry) => ({ subpath: entry.subpath, commonjs: entry.commonjs, required: entry.required }))`,
 			])
 			const consumer = workspace.ensure('consumer')
@@ -1816,45 +1805,33 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('skips invalid package targets only inside fallback arrays', () => {
-		const workspace = createScratch({
-			parent: ensureTmpRoot(),
-			prefix: 'scaffold-e2-package-target-',
-		})
-		try {
-			const file = stageDistributionClassifier(workspace)
-			const answers = driveClassifier(file, [
-				`classifier.resolveTarget(['../outside.cjs', './valid.cjs'], ['import'])`,
-				`classifier.collectTargets(['../outside.cjs', './valid.cjs'])`,
-				`classifier.resolveTarget('../outside.cjs', ['import'])`,
-				`classifier.collectTargets('../outside.cjs')`,
-				`classifier.resolveTarget(['./x/../outside.cjs', './valid.cjs'], ['import'])`,
-				`classifier.resolveTarget(['./x//missing.cjs', './valid.cjs'], ['import'])`,
-				`classifier.resolveTarget(['./x%2fmissing.cjs', './valid.cjs'], ['import'])`,
-			])
+	it('skips invalid package targets only inside fallback arrays', async () => {
+		const answers = await driveClassifier(buildDistributionClassifier(), [
+			`classifier.resolveTarget(['../outside.cjs', './valid.cjs'], ['import'])`,
+			`classifier.collectTargets(['../outside.cjs', './valid.cjs'])`,
+			`classifier.resolveTarget('../outside.cjs', ['import'])`,
+			`classifier.collectTargets('../outside.cjs')`,
+			`classifier.resolveTarget(['./x/../outside.cjs', './valid.cjs'], ['import'])`,
+			`classifier.resolveTarget(['./x//missing.cjs', './valid.cjs'], ['import'])`,
+			`classifier.resolveTarget(['./x%2fmissing.cjs', './valid.cjs'], ['import'])`,
+		])
 
-			expect(answers).toStrictEqual([
-				'./valid.cjs',
-				['./valid.cjs'],
-				'../outside.cjs',
-				['../outside.cjs'],
-				'./valid.cjs',
-				'./x//missing.cjs',
-				'./x%2fmissing.cjs',
-			])
-		} finally {
-			workspace.destroy()
-		}
+		expect(answers).toStrictEqual([
+			'./valid.cjs',
+			['./valid.cjs'],
+			'../outside.cjs',
+			['../outside.cjs'],
+			'./valid.cjs',
+			'./x//missing.cjs',
+			'./x%2fmissing.cjs',
+		])
 	})
 
 	// The control on the lift itself: a name the proof does not declare stops the
 	// extraction, so a drive above reports on declarations that were really carried
 	// across rather than on a module that quietly lost them.
 	it('refuses to lift a declaration the emitted proof does not carry', () => {
-		const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
-			({ path }) => path === 'tests/distribution.test.ts',
-		)
-		const content = requireValue(proof?.content)
+		const content = buildDistributionProof()
 
 		expect(() => extractDeclarations(content, ['resolveTarget', 'resolveNothing'])).toThrow(
 			'declares no resolveNothing',

@@ -10,10 +10,12 @@ import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode, Snapshot } fro
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
+import type { ESTree } from 'vite'
 import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
+import { parseSync } from 'vite'
 import {
 	CATALOG_AGENT_PATH,
 	CATALOG_CLOSING_MARKER,
@@ -206,6 +208,47 @@ export interface TestPackumentEdges {
 export interface TestVendoredFile {
 	readonly path: string
 	readonly content: string
+}
+
+/**
+ * One binding a parsed statement declares, with the shape a lift reads from it.
+ *
+ * @remarks
+ * `parameters` and `returns` are the source slices the parser's own spans name,
+ * so a declaration the formatter wrapped across lines reports the same values a
+ * single-line one does. A binding whose value is not a function carries no
+ * parameter and no return type.
+ */
+export interface TestDeclaration {
+	readonly name: string
+	readonly parameters: readonly string[]
+	readonly returns: string | undefined
+}
+
+/**
+ * One statement of a parsed module, projected onto the fields a lift reads.
+ *
+ * @remarks
+ * `syntax` names the declaration a named export wraps rather than the wrapper,
+ * so an exported declaration and a bare one read alike and `exported` carries
+ * the export kind on its own. A default export reports as
+ * `ExportDefaultDeclaration`, because what it exports need not be a statement.
+ * `declarations` covers the bindings a function declaration and a variable
+ * declaration introduce; every other statement declares nothing a lift can name.
+ * `specifier` is the module an import or a re-export names, which is what tells
+ * a lift whether carrying the statement across into another module keeps
+ * resolving. `text` is the statement's own source slice, which is what a lift
+ * writes into the module it drives. `body` carries the statements a function
+ * declaration's own body holds, projected the same way, and is empty for every
+ * other statement.
+ */
+export interface TestStatement {
+	readonly syntax: ESTree.Statement['type']
+	readonly exported: 'value' | 'type' | undefined
+	readonly specifier: string | undefined
+	readonly declarations: readonly TestDeclaration[]
+	readonly text: string
+	readonly body: readonly TestStatement[]
 }
 
 /**
@@ -817,6 +860,102 @@ export function readErrorMessage(call: () => unknown): string | undefined {
 	} catch (error) {
 		return isScaffoldError(error) ? error.message : undefined
 	}
+}
+
+/**
+ * Reads a module's statements off the parser Vite re-exports.
+ *
+ * @param source - The module text to parse.
+ * @param name - The filename the parser reads the source language from.
+ * @returns The program's top-level statements, in source order.
+ *
+ * @throws Thrown when the parser reports an error, naming the first one.
+ *
+ * @remarks
+ * The subject is what a declaration carries, so a parser answers it and a
+ * pattern does not: a pattern reports on one spelling of a declaration and goes
+ * blind on the rest, and the vendored formatter wraps a declaration across as
+ * many lines as its width needs. Every field is read from the parser's own
+ * nodes and spans, so a reformatted source moves none of them.
+ *
+ * @example
+ * ```ts
+ * const [statement] = readStatements('export const value = 1\n', 'module.ts')
+ * statement?.syntax // 'VariableDeclaration'
+ * statement?.exported // 'value'
+ * ```
+ */
+export function readStatements(source: string, name: string): readonly TestStatement[] {
+	const parsed = parseSync(name, source)
+	const [refusal] = parsed.errors
+	if (refusal !== undefined) throw new Error(`The parser refused ${name}: ${refusal.message}`)
+	const read: TestStatement[] = []
+	const pending: Array<{
+		readonly statements: readonly ESTree.Statement[]
+		readonly into: TestStatement[]
+	}> = [{ statements: parsed.program.body, into: read }]
+	while (pending.length > 0) {
+		const frame = pending.pop()
+		if (frame === undefined) break
+		for (const statement of frame.statements) {
+			const wrapped =
+				statement.type === 'ExportNamedDeclaration' ? statement.declaration : statement
+			const declaration = wrapped === null ? undefined : wrapped
+			const bindings: Array<{
+				readonly name: string
+				readonly shape: ESTree.Function | ESTree.ArrowFunctionExpression | undefined
+			}> = []
+			const body: TestStatement[] = []
+			if (declaration?.type === 'FunctionDeclaration') {
+				if (declaration.id !== null)
+					bindings.push({ name: declaration.id.name, shape: declaration })
+				if (declaration.body !== null)
+					pending.push({ statements: declaration.body.body, into: body })
+			} else if (declaration?.type === 'VariableDeclaration') {
+				for (const declarator of declaration.declarations) {
+					if (declarator.id.type !== 'Identifier') continue
+					const initializer = declarator.init
+					const shape =
+						initializer?.type === 'ArrowFunctionExpression' ||
+						initializer?.type === 'FunctionExpression'
+							? initializer
+							: undefined
+					bindings.push({ name: declarator.id.name, shape })
+				}
+			}
+			const declarations: TestDeclaration[] = []
+			for (const binding of bindings) {
+				const annotation = binding.shape?.returnType?.typeAnnotation
+				declarations.push({
+					name: binding.name,
+					parameters: (binding.shape?.params ?? []).map((parameter) =>
+						source.slice(parameter.start, parameter.end),
+					),
+					returns:
+						annotation === undefined ? undefined : source.slice(annotation.start, annotation.end),
+				})
+			}
+			frame.into.push({
+				syntax: declaration?.type ?? statement.type,
+				exported:
+					statement.type === 'ExportNamedDeclaration' ||
+					statement.type === 'ExportDefaultDeclaration' ||
+					statement.type === 'ExportAllDeclaration'
+						? (statement.exportKind ?? 'value')
+						: undefined,
+				specifier:
+					statement.type === 'ImportDeclaration' ||
+					statement.type === 'ExportNamedDeclaration' ||
+					statement.type === 'ExportAllDeclaration'
+						? statement.source?.value
+						: undefined,
+				declarations,
+				text: source.slice(statement.start, statement.end),
+				body,
+			})
+		}
+	}
+	return read
 }
 
 /**

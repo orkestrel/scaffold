@@ -1,5 +1,5 @@
 import type { Question } from '@src/core'
-import { isRecord } from '@orkestrel/contract'
+import { isArray, isRecord } from '@orkestrel/contract'
 import {
 	createGuide,
 	createSource,
@@ -26,14 +26,14 @@ import {
 	ScaffoldError,
 } from '@src/core'
 import { globSync, readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { runInNewContext } from 'node:vm'
-import ts from 'typescript'
+import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
 import { renderUsage } from '../src/bin/helpers.js'
 import { CLI } from '../src/bin/CLI.js'
-import { buildTargetManifest, createSink, createStagedHost } from './setupServer.js'
+import { buildTargetManifest, createSink, createStagedHost, readStatements } from './setupServer.js'
 
 // The inventory the extractor reflects over. `Source` never touches disk, so the
 // consumer gathers the files; the root is resolved from this module rather than
@@ -258,7 +258,7 @@ describe('guide examples', () => {
 	return
 }
 `
-			const readings: Question[][] = []
+			const readings: Array<readonly Question[]> = []
 			for (const content of [ARTIFACT_TEMPLATES.tests.global, retained]) {
 				workspace.write('target/tests/setupGlobal.ts', content)
 				const sink = createSink()
@@ -276,7 +276,7 @@ describe('guide examples', () => {
 				const parsed: unknown = JSON.parse(requireValue(sink.output[0]))
 				if (
 					!isRecord(parsed) ||
-					!Array.isArray(parsed.questions) ||
+					!isArray(parsed.questions) ||
 					!parsed.questions.every(isQuestion)
 				) {
 					throw new Error('The guide audit returned no question list')
@@ -299,7 +299,7 @@ describe('guide examples', () => {
 		}
 	})
 
-	it('skips rejected package targets only while traversing fallback lists', () => {
+	it('skips rejected package targets only while traversing fallback lists', async () => {
 		const markdown = requireValue(files['guides/scaffold.md'])
 		expect(markdown).toContain(
 			'`node_modules` segment is skipped rather than resolved or collected',
@@ -308,12 +308,6 @@ describe('guide examples', () => {
 			({ path }) => path === 'tests/distribution.test.ts',
 		)
 		const content = requireValue(proof?.content)
-		const source = ts.createSourceFile(
-			'distribution.test.ts',
-			content,
-			ts.ScriptTarget.ESNext,
-			true,
-		)
 		const names = [
 			'isRecord',
 			'isList',
@@ -322,23 +316,20 @@ describe('guide examples', () => {
 			'resolveTarget',
 			'collectTargets',
 		]
+		// The parser names the declarations and their extents, so the lift carries the
+		// emitted text whatever width the formatter printed it at, and a name the proof
+		// stopped declaring fails the order assertion rather than thinning the drive.
 		const declarations: string[] = []
 		const declared: string[] = []
-		for (const statement of source.statements) {
-			if (!ts.isFunctionDeclaration(statement) || statement.name === undefined) continue
-			if (!names.includes(statement.name.text)) continue
-			declared.push(statement.name.text)
-			declarations.push(statement.getText(source))
+		for (const statement of readStatements(content, 'distribution.test.ts')) {
+			if (statement.syntax !== 'FunctionDeclaration') continue
+			for (const { name } of statement.declarations) {
+				if (!names.includes(name)) continue
+				declared.push(name)
+				declarations.push(statement.text)
+			}
 		}
 		expect(declared).toStrictEqual(names)
-		const compiled = ts.transpileModule(
-			`${declarations.join('\n\n')}\n\nexport { ${names.join(', ')} }\n`,
-			{
-				compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ESNext },
-			},
-		)
-		const classifier: Record<string, unknown> = {}
-		runInNewContext(compiled.outputText, { exports: classifier })
 		const calls: string[] = []
 		const expected: unknown[] = []
 		for (const target of [
@@ -355,9 +346,35 @@ describe('guide examples', () => {
 			)
 			expected.push('./valid.cjs', ['./valid.cjs'], target, [target])
 		}
-		const answers: unknown = runInNewContext(`[${calls.join(', ')}]`, { classifier })
-		if (!Array.isArray(answers)) throw new Error('The emitted classifier returned no answer list')
-		expect(structuredClone(answers)).toStrictEqual(expected)
+		// The lifted declarations are loaded as the ES module their own text says they
+		// are, and the call list is a second module that imports them, so the loader
+		// evaluates real modules over a real specifier graph in place of a `vm`
+		// context. The load runs through `createRequire` for the
+		// reason `configs/helpers.ts` records at its own deferred load: a variable
+		// specifier reddens `import/no-dynamic-require`, and Node loads an ES module
+		// through `require` from 22.12.0 on, which is `MINIMUM_NODE_VERSION`.
+		const workspace = createScratch({ prefix: 'scaffold-guide-classifier-' })
+		try {
+			const transformed = await transformWithOxc(
+				`${declarations.join('\n\n')}\n\nexport { ${names.join(', ')} }\n`,
+				'classifier.ts',
+				{ target: 'esnext' },
+			)
+			workspace.write('classifier.mjs', transformed.code)
+			workspace.write(
+				'drive.mjs',
+				`import * as classifier from './classifier.mjs'\nexport const answers = [${calls.join(', ')}]\n`,
+			)
+			const load = createRequire(import.meta.url)
+			const driven: unknown = load(join(workspace.path, 'drive.mjs'))
+			if (!isRecord(driven) || !isArray(driven.answers)) {
+				throw new Error('The emitted classifier drive exported no answer list')
+			}
+
+			expect(driven.answers).toStrictEqual(expected)
+		} finally {
+			workspace.destroy()
+		}
 	})
 
 	it('documents declaration substitution and each runtime condition set', () => {

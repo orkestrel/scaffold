@@ -61,6 +61,7 @@ import {
 	readErrorCode,
 	readErrorMessage,
 	readRejectionCode,
+	readStatements,
 	REFUSED_MANIFEST_TEXT,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
@@ -417,6 +418,149 @@ describe('the refusal readers', () => {
 		).toBe('FETCH')
 		expect(await readRejectionCode(() => Promise.reject(new Error('plain')))).toBe(undefined)
 		expect(await readRejectionCode(() => Promise.resolve('a resolved value'))).toBe(undefined)
+	})
+})
+
+describe('the parsed statement reader', () => {
+	it('reads the export kind, the bindings, and the source slice of each top-level statement', () => {
+		const source = [
+			"import { join } from 'node:path'",
+			'export type Mode = string',
+			'const hidden = 1',
+			'export const value: number = hidden',
+			'export function build(input: string, count: number): Mode {',
+			'\tconst inner = join(input, String(count))',
+			'\treturn inner',
+			'}',
+			'export const factory = (): Mode => value',
+			'export default value',
+			'',
+		].join('\n')
+
+		const statements = readStatements(source, 'module.ts')
+
+		expect(
+			statements.map(({ syntax, exported, specifier, declarations }) => ({
+				syntax,
+				exported,
+				specifier,
+				declarations,
+			})),
+		).toStrictEqual([
+			{
+				syntax: 'ImportDeclaration',
+				exported: undefined,
+				specifier: 'node:path',
+				declarations: [],
+			},
+			{
+				syntax: 'TSTypeAliasDeclaration',
+				exported: 'type',
+				specifier: undefined,
+				declarations: [],
+			},
+			{
+				syntax: 'VariableDeclaration',
+				exported: undefined,
+				specifier: undefined,
+				declarations: [{ name: 'hidden', parameters: [], returns: undefined }],
+			},
+			{
+				syntax: 'VariableDeclaration',
+				exported: 'value',
+				specifier: undefined,
+				declarations: [{ name: 'value', parameters: [], returns: undefined }],
+			},
+			{
+				syntax: 'FunctionDeclaration',
+				exported: 'value',
+				specifier: undefined,
+				declarations: [
+					{ name: 'build', parameters: ['input: string', 'count: number'], returns: 'Mode' },
+				],
+			},
+			{
+				syntax: 'VariableDeclaration',
+				exported: 'value',
+				specifier: undefined,
+				declarations: [{ name: 'factory', parameters: [], returns: 'Mode' }],
+			},
+			{
+				syntax: 'ExportDefaultDeclaration',
+				exported: 'value',
+				specifier: undefined,
+				declarations: [],
+			},
+		])
+		// The slice is the statement's own extent, so a lift writing it into another
+		// module carries the export keyword and the whole body across with it.
+		const build = statements.find((statement) =>
+			statement.declarations.some(({ name }) => name === 'build'),
+		)
+		expect(build?.text).toBe(
+			'export function build(input: string, count: number): Mode {\n\tconst inner = join(input, String(count))\n\treturn inner\n}',
+		)
+		expect(build?.body.map(({ syntax, declarations }) => ({ syntax, declarations }))).toStrictEqual(
+			[
+				{
+					syntax: 'VariableDeclaration',
+					declarations: [{ name: 'inner', parameters: [], returns: undefined }],
+				},
+				{ syntax: 'ReturnStatement', declarations: [] },
+			],
+		)
+		// Every statement carrying a body is the function declaration it was read
+		// from, so a caller reading one is reading a function's own statements
+		// rather than whatever the projection reached last.
+		expect(
+			statements.filter(({ body }) => body.length > 0).map(({ syntax }) => syntax),
+		).toStrictEqual(['FunctionDeclaration'])
+	})
+
+	it('refuses a source the parser reports an error for', () => {
+		expect(() => readStatements('export const = 1\n', 'broken.ts')).toThrow(
+			'The parser refused broken.ts',
+		)
+		expect(readStatements('export const value = 1\n', 'broken.ts')).toHaveLength(1)
+	})
+
+	it('slices by code unit, so a non-ASCII character before the declaration moves nothing', () => {
+		const source =
+			'// an em dash — and a curly quote ’ before it\nexport const factory = (mode: Mode): UserConfig => value\n'
+		// The fixture carries an em dash and a curly quote, each wider than one code
+		// unit in UTF-8, so this assertion fails if either is later stripped and the
+		// case would otherwise pass on an all-ASCII source that proves nothing.
+		expect(new TextEncoder().encode(source).length).toBeGreaterThan(source.length)
+		const [statement] = readStatements(source, 'proof.ts')
+		expect(statement?.text).toBe('export const factory = (mode: Mode): UserConfig => value')
+		expect(statement?.declarations).toStrictEqual([
+			{ name: 'factory', parameters: ['mode: Mode'], returns: 'UserConfig' },
+		])
+	})
+
+	it('reads a wrapped declaration an anchored signature pattern reports nothing for', () => {
+		// The vendored formatter breaks a signature that passes the print width across
+		// lines. A pattern written for the printed spelling goes blind on the wrapped
+		// one and reports an empty finding, which reads exactly like a clean source.
+		const signature = /^export function (?<name>\w+)\([^)\n]*\): (?<returns>\w+) \{$/mu
+		const printed =
+			'export function resolveWorkspacePath(relativePath: string): string {\n\treturn relativePath\n}\n'
+		const wrapped =
+			'export function resolveWorkspacePath(\n\trelativePath: string,\n\tbase: string,\n): string {\n\treturn relativePath\n}\n'
+
+		expect(signature.exec(printed)?.groups?.name).toBe('resolveWorkspacePath')
+		expect(signature.exec(printed)?.groups?.returns).toBe('string')
+		expect(signature.exec(wrapped)).toBe(null)
+		expect(readStatements(printed, 'vite.config.ts')[0]?.declarations).toStrictEqual([
+			{ name: 'resolveWorkspacePath', parameters: ['relativePath: string'], returns: 'string' },
+		])
+		expect(readStatements(wrapped, 'vite.config.ts')[0]?.declarations).toStrictEqual([
+			{
+				name: 'resolveWorkspacePath',
+				parameters: ['relativePath: string', 'base: string'],
+				returns: 'string',
+			},
+		])
 	})
 })
 
