@@ -1,0 +1,15 @@
+<!-- workflow wf_a1a82d9b-4d8, agent a86d4b7ef7c23b85f, captured from journal.jsonl -->
+
+**Claim 3** (`isPolicyRecord`): PASS. `/home/user/scaffold/tests/setupPolicy.ts:230-233` — exported once, type predicate, no assertion, placed beside `normalizePolicyPath`, both readers (`inspectPolicyConfiguration`, `inspectPolicyWiring`) route through it (confirmed at diff lines 2574, 2584, 2595, 2606, 2627, 2636, 2645), and `tests/policy.test.ts:1899-1904` gives it its own control.
+
+**Claim 4** (`pathToPolicyRelative`): PASS. `/home/user/scaffold/configs/policy.ts:425-430` strips trailing separator (`.replace(/\/+$/u, '')`) and the TSDoc block (lines 417-424) states the anchoring precondition, the unanchored fallback, and the unfolded drive-letter case.
+
+**Claim 5** (nested-folder invalid case, `debugger` fixture comment): PASS. `/home/user/scaffold/tests/config.test.ts:1127` carries the same `[membership: module function syntax whose file is absent from the function register]` suffix its siblings at `:1079` and `:1085` carry; `:1376-1378` names the `debugger` statement as the arrival control the root `no-debugger` rule reports.
+
+**Claim 2** (rename, controls, real-configuration split): PASS. No occurrence of `inspectPolicyPopulations` remains (confirmed by grep); `/home/user/scaffold/tests/policy.test.ts:1-37` imports `inspectPolicyWiring`/`isPolicyRecord` and no longer imports `policyPlugin`, `POLICY_PLACEMENT_GLOBS`, `POLICY_ENDING_GLOBS`, or `readFileSync`; `:1880-1905` adds the prescribed controls; `tests/config.test.ts`'s parity case `enables every plugin rule over the population its law names` (diff line 1517) is untouched and still proves the real configuration.
+
+**Claim 6** (round-2 claims 1–12 still hold): PASS on spot check — `configs/policy.ts` carries no imports (`no matches` for `^import`), `FUNCTION_RULE` and the rule table are intact (`configs/policy.ts:876,1015`), architecture prose and single construction path unaffected by round-3's edits.
+
+**Claim 7** (scope honesty): **FAIL**. `/home/user/scaffold/guides/scaffold.md:1790-1791` now reads "the path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges" — wording introduced by round-3 edit 2 (`u2-fix-2-brief.md:22`) and not present in any round before this one, since round-2's verdict recorded the Proves-cell defect as still open ("Carried: round 3, the bare clause"). Yet `guides/scaffold.md` is explicitly off-limits in the round-3 brief (`u2-fix-2-brief.md:33`: "Off-limits: every other file, `host.json` and `guides/scaffold.md` included"), and the fix report (`u2-fix-2-report.md:203-206`) claims this unit "did not touch" the file, a claim the report's own "Flags on my own claims" section (lines 221-226) admits it never verified against a clean baseline. The matching wording is strong evidence this file was edited in round 3 in violation of its off-limits status; at minimum the report's exculpatory claim is unverified and cannot stand as evidence it wasn't.
+
+VERDICT: FAIL 7

@@ -50,7 +50,7 @@ Use only the centralized files an environment needs.
 - Every declaration in a centralized file is exported. Fold away a trivial single-use declaration or export/test it; never leave it hidden.
 - The only permitted non-exported module-scope declarations are in a runtime entrypoint that must be self-contained and cannot import siblings, such as raw source loaded in a worker. Explain that necessity in a comment.
 - A runtime entry—`src/bin/main.ts`, `app/browser/main.ts`, `app/server/main.ts`—is a fixed name, not a centralized kind file. Both the data rule and the function rule reach it, so it declares no module-scope constant and no module-scope function: it imports what it needs and runs. The preceding self-contained exception covers only an entrypoint that cannot import siblings.
-- Perform a cleanup sweep after implementation: no stray implementation-file declarations, non-exported/wrong-kind centralized declarations, prohibited nested declarations, duplicate implementations, compatibility aliases, superfluous wrappers, stale imports/barrel rows, or untested extracted functions.
+- Perform a cleanup pass after implementation: no stray implementation-file declarations, non-exported/wrong-kind centralized declarations, prohibited nested declarations, duplicate implementations, compatibility aliases, superfluous wrappers, stale imports/barrel rows, or untested extracted functions.
 
 ## Kind purity
 
@@ -96,55 +96,61 @@ Use only the centralized files an environment needs.
   and referenced by name, never to a function expression written in place. Neither file mixes kinds and the
   route set stays readable as data.
 
-### What the policy sweep proves
+### What the policy instruments prove
 
-The fleet policy sweep (`tests/policy.test.ts`, `tests/setupPolicy.ts`) enforces syntactic
-placement: a declaration of a given syntactic kind appears only in a file permitted to hold that
-kind. It reads declaration syntax and file name, never meaning.
+The `policy` Oxlint plugin (`configs/policy.ts`) enforces syntactic placement: a declaration of a
+given syntactic kind appears only in a file permitted to hold that kind. The fleet policy sweep
+(`tests/policy.test.ts`, `tests/setupPolicy.ts`) enforces what a path or a text reading decides.
+The plugin reads declaration syntax and file name; the sweep reads paths and workspace text;
+neither reads meaning.
 
-- It proves that a module function sits in a function-kind file, that module data sits in a
+- The plugin proves that a module function sits in a function-kind file, that module data sits in a
   data-kind file, that every centralized declaration is exported, that a class sits in its matching
   implementation or errors file, and that `constants.ts` declares only UPPER_SNAKE_CASE consts with
   no bare collection literal.
-- It proves that no source, test, config, or script file carries an `eslint-disable` or
+- The sweep proves that no source, test, config, or script file carries an `eslint-disable` or
   `oxlint-disable` directive.
-- It proves that every `.claude/rules/*.md` file has a rule-map row in `AGENTS.md` and that every
-  row resolves to a file.
-- It proves the host portability rules that are path- or text-shaped over the populations
-  `POLICY_PORTABILITY_GLOB` and `POLICY_PORTABILITY_SOURCE_GLOB` name: no path segment carries a
-  Windows reserved device name, a character Windows refuses, a trailing dot or space, or a sibling
-  differing only by case; no `package.json` script names a `.sh` file; and no source in the parsed
-  population trims a payload before splitting it on `'\n'`, reads `os.EOL`, or imports `EOL` from
-  `node:os`.
-- It cannot write a filename the host refuses. A Windows host rejects `<`, folds a case collision
-  into one file, and turns `:` into an alternate data stream, so those boundaries are proven from a
-  path population rather than from written files.
-- It does not prove a collection is frozen. It reads the declaration, never the value a call
-  returns, so `Object.freeze([…])` and any other call initializer are one syntax to it. The freeze
-  obligation in the earlier kind-purity rules binds regardless; only the bare literal is mechanical.
-- It does not tell one function kind from another. Every centralized file that permits functions
-  reads the same to it apart from the `parse*` and `create*` name forms: `cloners.ts`, `combinators.ts`,
-  `compilers.ts`, `errors.ts`, `factories.ts`, `handlers.ts`, `helpers.ts`, `inferers.ts`,
-  `middlewares.ts`, `parsers.ts`, `relations.ts`, `schemas.ts`, `seeders.ts`, `shapers.ts`, and
-  `validators.ts`. That list is exhaustive, a new function kind joins it, and no later version of
-  the sweep claims more.
-- It reports no `data` violation in `helpers.ts`. The kind rules place a camelCase namespace of
-  functions there, and a namespace of callables is not separable from a data table by declaration
-  syntax, so `DATA_EXEMPT_FILES` in `tests/setupPolicy.ts` excludes the file. Ordinary module data
-  there — `export const RETRIES = 3` — is unreported; the earlier constants rule binds regardless.
-- It inspects no ambient declaration file: `.d.ts`, `.d.mts`, and `.d.cts` are all outside its
-  reach. An ambient declaration file is not a module in the kind table, so it sits outside the
-  parsed population entirely rather than being exempted from the `type` rule.
-- It does not inspect class-expression members. A function assigned inside a class-expression
-  method is unreported; the earlier functions rule still binds, and cleanup and review enforce it.
-- The cleanup sweep and independent review prove kind purity across those files. A helper misfiled
+- The sweep proves that every `.claude/rules/*.md` file has a rule-map row in `AGENTS.md` and that
+  every row resolves to a file.
+- The sweep proves the host portability rules that are path- or text-shaped over the population
+  `POLICY_PORTABILITY_GLOB` names: no path segment carries a Windows reserved device name, a
+  character Windows refuses, a trailing dot or space, or a sibling differing only by case; and no
+  `package.json` script names a `.sh` file.
+- The plugin proves, over the population `POLICY_ENDING_GLOBS` names, that no source trims a
+  payload before splitting it on `'\n'`, reads `os.EOL`, or imports `EOL` from `node:os`.
+- The sweep cannot write a filename the host refuses. A Windows host rejects `<`, folds a case
+  collision into one file, and turns `:` into an alternate data stream, so those boundaries are
+  proven from a path population rather than from written files.
+- The plugin does not prove a collection is frozen. It reads the declaration, never the value a
+  call returns, so `Object.freeze([…])` and any other call initializer are one syntax to it. The
+  freeze obligation in the earlier kind-purity rules binds regardless; only the bare literal is
+  mechanical.
+- The plugin does not tell one function kind from another. Every centralized file that permits
+  functions reads the same to it apart from the `parse*` and `create*` name forms: `cloners.ts`,
+  `combinators.ts`, `compilers.ts`, `errors.ts`, `factories.ts`, `handlers.ts`, `helpers.ts`,
+  `inferers.ts`, `middlewares.ts`, `parsers.ts`, `relations.ts`, `schemas.ts`, `seeders.ts`,
+  `shapers.ts`, and `validators.ts`. That list is exhaustive, a new function kind joins it, and no
+  later version of the plugin claims more.
+- The plugin reports no `data` violation in `helpers.ts`. The kind rules place a camelCase
+  namespace of functions there, and a namespace of callables is not separable from a data table by
+  declaration syntax, so `DATA_EXEMPT_FILES` in `configs/policy.ts` excludes the file. Ordinary
+  module data there — `export const RETRIES = 3` — is unreported; the earlier constants rule binds
+  regardless.
+- No placement or line-ending rule inspects an ambient declaration file: `.d.ts`, `.d.mts`, and
+  `.d.cts` are outside their reach. The lint population reaches those files, and each of those
+  rules refuses the file by its name, because an ambient declaration file is not a module in the
+  kind table.
+- The plugin does not inspect class-expression members. A function assigned inside a
+  class-expression method is unreported; the earlier functions rule still binds, and cleanup and
+  review enforce it.
+- The cleanup pass and independent review prove kind purity across those files. A helper misfiled
   as a parser, a coercer misfiled as a guard, a compiler misfiled as a factory, and a shaper
-  misfiled as a cloner are review findings, not red tests.
-- It does not decide barrel membership. It parses each file alone and resolves no module, so it
-  cannot tell whether a declaration is reachable from its barrel. That question belongs to each
-  package's `tests/guides.test.ts`, which imports the barrel and gets real resolution. Do not add
-  module resolution here to duplicate it.
-- The kind table is mandatory whether or not a test can see the violation.
+  misfiled as a cloner are review findings, not instrument diagnostics.
+- The plugin does not decide barrel membership. It parses each file alone and resolves no module,
+  so it cannot tell whether a declaration is reachable from its barrel. That question belongs to
+  each package's `tests/guides.test.ts`, which imports the barrel and gets real resolution. Do not
+  add module resolution here to duplicate it.
+- The kind table is mandatory whether or not an instrument can see the violation.
 
 ## Wrapper test
 
@@ -214,7 +220,7 @@ Store child managers in `#` fields and expose readonly getters typed as their in
 
 - A word is either a centralized kind or a domain folder, never both.
 - A folder named for a centralized kind—`helpers/`, `validators/`, `handlers/`—is that kind's file, not a folder.
-- `FUNCTION_DOMAIN_FOLDERS` in the fleet-canon register (`tests/setupPolicy.ts`) registers the
+- `FUNCTION_DOMAIN_FOLDERS` in the fleet-canon register (`configs/policy.ts`) registers the
   folder paths whose direct modules are function modules. Registration makes a path eligible and
   fixes the declaration shape checked there; it judges nothing about what a module does.
 - Never infer a function domain from a folder's name; a camelCase module inside an unregistered

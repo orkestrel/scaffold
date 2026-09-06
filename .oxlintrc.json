@@ -90,6 +90,26 @@
 			}
 		},
 		{
+			"files": ["app/**/*.{cts,mts,ts,tsx}", "src/**/*.{cts,mts,ts,tsx}"],
+			"rules": {
+				"policy/no-hidden-declaration": "error",
+				"policy/no-misplaced-type": "error",
+				"policy/no-misplaced-class": "error",
+				"policy/no-misplaced-data": "error",
+				"policy/no-misplaced-function": "error",
+				"policy/no-malformed-constant": "error",
+				"policy/no-misnamed-parser": "error",
+				"policy/no-misnamed-factory": "error",
+				"policy/no-malformed-domain": "error"
+			}
+		},
+		{
+			"files": ["app/**/*.ts", "configs/**/*.ts", "src/**/*.ts"],
+			"rules": {
+				"policy/no-host-line-endings": "error"
+			}
+		},
+		{
 			"files": ["*.vue"],
 			"rules": {
 				"import/no-default-export": "off",

@@ -163,3 +163,8 @@ The owner ruled: keep one declaration file per published face (with or without `
 - **Bump plan.** Every `src`-publishing package's rollup moves on its import lines when the plugin goes, so each bumps at its visit; U1 struck no exception.
 - **M16** settled by evidence: a vendored or generated test may import `vite`.
 - **Owed after U7 exits:** M5 (a whole `prove` call against `PROBE_DEADLINE` on the idle host) and the Orchestrator's solo re-run of M2.
+
+## Carry list for U6 (roadmap rows the U2 rounds revealed)
+
+- The policy readers: after the wiring reader's rename, `inspectPolicyConfiguration` and `inspectPolicyWiring` are two readers of one file whose names no longer divide the subject (the fixed-rule severity and ignore-pattern reading against the caller-supplied rule-and-population coverage reading); a successor ruling names them by question or merges them (`u2-fix-2-audit-subjective.md` F2).
+- TSDoc first sentences on module helpers in `configs/policy.ts` and `tests/setupPolicy.ts` open with a noun phrase where `.claude/rules/typescript.md` fixes a third-person verb; rule whether the letter binds a one-line TSDoc on a module helper, then sweep (`u2-fix-2-audit-subjective.md` referral).

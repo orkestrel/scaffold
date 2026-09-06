@@ -1787,8 +1787,8 @@ port, so the run drives nothing external and stays in `test`.
 - [`tests/src/bin/helpers.test.ts`](../tests/src/bin/helpers.test.ts) — command-line reading, usage
   rendering, and the failure envelope.
 - [`tests/src/bin/main.test.ts`](../tests/src/bin/main.test.ts) — the process entry point.
-- [`tests/policy.test.ts`](../tests/policy.test.ts) — the syntactic coding and placement law over
-  every source file.
+- [`tests/policy.test.ts`](../tests/policy.test.ts) — the path- and text-shaped policy laws:
+  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges.
 - [`tests/guides.test.ts`](../tests/guides.test.ts) — this guide's bijection with the barrels.
 
 ## See also

@@ -50,7 +50,7 @@ its own:
 
 | Path                         | Proves                                                                                                                         |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `tests/policy.test.ts`       | Every source file obeys the syntactic coding and placement law                                                                 |
+| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges   |
 | `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                          |
 | `tests/guides.test.ts`       | Every documented API exists, every public API is documented, and every executable fence returns what the guide says it returns |
 | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                  |
@@ -105,7 +105,8 @@ The kinds split by which tool has to see the probe:
 
 - A **type probe** is read by `tsc`, whose scoped project includes only its own environment, so it
   lives in the source tree beside what it measures. Delete it before the unit returns; a leaked one
-  fails the placement sweep, because a probe filename is not a centralized kind file.
+  fails the `policy` plugin's placement rules, because a probe filename is not a centralized kind
+  file.
 - A **runtime probe** is collected by a Vitest project, so it lives in `tmp/probe/` and runs through
   the `probe` project. `tmp/` is ignored by git, so no probe enters a commit by accident, and every
   test script names its project, so no gate runs the `probe` project.

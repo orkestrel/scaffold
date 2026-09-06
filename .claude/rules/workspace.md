@@ -123,16 +123,16 @@ environment axis is one project per src/app axis × environment:
 The workspace-proof axis is cross-cutting. Each proof covers the whole workspace rather than
 one environment, so each is its own project:
 
-| Project        | Files                        | Proves                                                                                            | Gate                                  |
-| -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `policy`       | `tests/policy.test.ts`       | Every source file obeys the syntactic coding and placement law                                    | `test`                                |
-| `config`       | `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs                                    | `test`                                |
-| `setup`        | `tests/setup*.test.ts`       | Reusable behavior exported from the root test setup modules works as the consuming suites require | `test`                                |
-| `guides`       | `tests/guides.test.ts`       | Every documented API exists and every public API is documented                                    | `test`                                |
-| `conformance`  | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                     | `test`                                |
-| `distribution` | `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                               | `prepublishOnly`; absent when private |
-| `integration`  | `tests/integration.test.ts`  | The package's features work together end to end across environments                               | `test`                                |
-| `service`      | `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                   | `prepublishOnly`; `test` when private |
+| Project        | Files                        | Proves                                                                                                                       | Gate                                  |
+| -------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `policy`       | `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges | `test`                                |
+| `config`       | `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs                                                               | `test`                                |
+| `setup`        | `tests/setup*.test.ts`       | Reusable behavior exported from the root test setup modules works as the consuming suites require                            | `test`                                |
+| `guides`       | `tests/guides.test.ts`       | Every documented API exists and every public API is documented                                                               | `test`                                |
+| `conformance`  | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                | `test`                                |
+| `distribution` | `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                          | `prepublishOnly`; absent when private |
+| `integration`  | `tests/integration.test.ts`  | The package's features work together end to end across environments                                                          | `test`                                |
+| `service`      | `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                              | `prepublishOnly`; `test` when private |
 
 - Define the `setup` project only when a root file matches `tests/setup*.test.ts`, exact-case.
   Include every matching file. When registered, emit `test:setup` and run it from `test`. When no

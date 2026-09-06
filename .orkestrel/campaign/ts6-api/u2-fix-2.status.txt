@@ -1,0 +1,39 @@
+ M .claude/rules/architecture.md
+ M .claude/rules/tests.md
+ M .claude/rules/workspace.md
+ M .orkestrel/campaign/ts6-api/ledger.md
+ M .oxlintrc.json
+ M configs/policy.ts
+ M guides/scaffold.md
+ M host.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+?? .orkestrel/campaign/ts6-api/u2-audit-brief.md
+?? .orkestrel/campaign/ts6-api/u2-audit-checker.md
+?? .orkestrel/campaign/ts6-api/u2-audit-objective.md
+?? .orkestrel/campaign/ts6-api/u2-audit-subjective.md
+?? .orkestrel/campaign/ts6-api/u2-audit-verdict.md
+?? .orkestrel/campaign/ts6-api/u2-fix-2-audit-brief.md
+?? .orkestrel/campaign/ts6-api/u2-fix-2-brief.md
+?? .orkestrel/campaign/ts6-api/u2-fix-2-report.md
+?? .orkestrel/campaign/ts6-api/u2-fix-2-verify-brief.md
+?? .orkestrel/campaign/ts6-api/u2-fix-2.status.txt
+?? .orkestrel/campaign/ts6-api/u2-fix-audit-brief.md
+?? .orkestrel/campaign/ts6-api/u2-fix-audit-checker.md
+?? .orkestrel/campaign/ts6-api/u2-fix-audit-objective.md
+?? .orkestrel/campaign/ts6-api/u2-fix-audit-subjective.md
+?? .orkestrel/campaign/ts6-api/u2-fix-audit-verdict.md
+?? .orkestrel/campaign/ts6-api/u2-fix-brief.md
+?? .orkestrel/campaign/ts6-api/u2-fix-report.md
+?? .orkestrel/campaign/ts6-api/u2-fix-verify-brief.md
+?? .orkestrel/campaign/ts6-api/u2-fix-verify-report.md
+?? .orkestrel/campaign/ts6-api/u2-fix.diff.txt
+?? .orkestrel/campaign/ts6-api/u2-fix.status.txt
+?? .orkestrel/campaign/ts6-api/u2-policy-plugin-brief.md
+?? .orkestrel/campaign/ts6-api/u2-policy-plugin-report.md
+?? .orkestrel/campaign/ts6-api/u2-policy-plugin.diff.txt
+?? .orkestrel/campaign/ts6-api/u2-policy-plugin.status.txt
+?? .orkestrel/campaign/ts6-api/u2-verify-brief.md
+?? .orkestrel/campaign/ts6-api/u2-verify-report.md
+?? .orkestrel/campaign/ts6-api/u7-probe-typestage-brief.md
