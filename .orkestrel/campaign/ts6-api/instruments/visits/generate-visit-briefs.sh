@@ -18,5 +18,12 @@ for n in "$@"; do
   mkdir -p "$d/tmp/units" "$SP/visits/briefs"
   sed -e "s|<PACKAGE>|$n|g" -e "s|<FACES>|$faces|g" -e "s|<SCAFFOLD_RANGE>|$RANGE|g" -e "s|<EXTRA>|$extra|g" "$SP/visits/visit-brief-template.md" > "$SP/visits/briefs/ts6-u12-visit-$n-brief.md"
   cp "$SP/visits/briefs/ts6-u12-visit-$n-brief.md" "$d/tmp/units/ts6-u12-visit-brief.md"
+  vextra=""
+  case "$n" in
+    database) vextra="Step 6 is expected red on \`tests/setupServer.ts\` and \`tests/setupServer.test.ts\` alone (U10's importers); report that red as the standing condition and let it decide the terminal line only if another file is named." ;;
+    lsp) vextra="Step 6 is expected red on \`tests/setupConformance.ts\` alone (U11's importer); report that red as the standing condition and let it decide the terminal line only if another file is named." ;;
+  esac
+  sed -e "s|<PACKAGE>|$n|g" -e "s|<EXTRA>|$vextra|g" "$SP/visits/visit-verify-template.md" > "$SP/visits/briefs/ts6-u12-visit-$n-verify-brief.md"
+  cp "$SP/visits/briefs/ts6-u12-visit-$n-verify-brief.md" "$d/tmp/units/ts6-u12-visit-verify-brief.md"
   echo "$n: faces=[$faces] extra=$([ -n "$extra" ] && echo yes || echo no)"
 done

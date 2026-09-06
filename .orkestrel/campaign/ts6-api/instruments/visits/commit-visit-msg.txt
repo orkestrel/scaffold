@@ -1,0 +1,10 @@
+Move the declaration roll-up onto the vendored helper and regenerate the proof
+
+Phase A of the fleet visit under scaffold's packed head start: vite-plugin-dts leaves the
+manifest, each package-owned face config calls declarationRollup from the vendored helpers, and
+repair regenerates the distribution proof through the type system and restores the vendored
+files the head start carries. The lockfile and the scaffold and probe ranges move at phase B,
+after the releases.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

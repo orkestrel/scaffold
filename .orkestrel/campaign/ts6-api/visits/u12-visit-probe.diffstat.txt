@@ -1,0 +1,12 @@
+ .oxlintrc.json                    |   69 +++
+ configs/helpers.ts                |  304 ++++++++++-
+ configs/policy.ts                 |  731 ++++++++++++++++++++++++-
+ configs/src/vite.core.config.ts   |   17 +-
+ configs/src/vite.server.config.ts |   19 +-
+ package.json                      |    1 -
+ tests/config.test.ts              |  783 ++++++++++++++++++++++++++-
+ tests/distribution.test.ts        |  281 +++++++---
+ tests/policy.test.ts              |  202 ++-----
+ tests/setupPolicy.ts              | 1078 +++----------------------------------
+ vite.config.ts                    |    7 +-
+ 11 files changed, 2164 insertions(+), 1328 deletions(-)

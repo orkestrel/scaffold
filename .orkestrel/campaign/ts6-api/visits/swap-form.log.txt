@@ -1,0 +1,9 @@
+# swap-scaffold form — 2026-09-06T22:19:38Z
+range replaced: "@orkestrel/scaffold": "^0.0.63"
+installed before: 0.0.63
+$ npm install --no-save --no-audit --no-fund /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/orkestrel-scaffold-0.0.63.tgz
+
+changed 1 package in 1s
+installed after: 0.0.63
+head start present: 1 declarationRollup hits in the vendored helpers; 8 typescript restrictions in the vendored lint config
+manifest/lockfile diff: 
