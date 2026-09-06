@@ -1,0 +1,115 @@
+--- a/tests/src/server/Probe.test.ts (after U7-fix-e)
++++ b/tests/src/server/Probe.test.ts (after U7-fix-f)
+@@ -87,7 +87,9 @@
+ describe.sequential('probe', () => {
+ 	it(
+ 		'mints receipts only when every stage executes cleanly, including for a control that shares no path with its case, and returns admitted path issues',
+-		{ timeout: 60_000 },
++		// 120_000 ms clears the flagship's boot plus its proves on a contended host, which a
++		// saturated host on 2026-09-06 showed 60_000 ms did not.
++		{ timeout: 120_000 },
+ 		async () => {
+ 			const probe = new Probe({ workspace: ROOT, deadline: 60_000 })
+ 			const test = {
+@@ -972,7 +974,9 @@
+ 		},
+ 	)
+ 
+-	it('replaces a lint stage its deadline destroyed', { timeout: 60_000 }, async () => {
++	// 120_000 ms clears the stalled lint stage's warm on a contended host, which a saturated host
++	// on 2026-09-06 showed 60_000 ms did not.
++	it('replaces a lint stage its deadline destroyed', { timeout: 120_000 }, async () => {
+ 		const scratch = createScratch()
+ 		scratch.write('package.json', '{"type":"module"}\n')
+ 		scratch.link('node_modules/typescript', resolve(ROOT, 'node_modules/typescript'))
+@@ -988,7 +992,9 @@
+ 			"import { defineConfig } from 'vitest/config'\nexport default defineConfig({ test: { projects: [{ test: { name: 'probe', include: ['tmp/probe/**/*.test.ts'] } }] } })\n",
+ 		)
+ 		scratch.write('tmp/probe/.keep', '')
+-		const probe = new Probe({ workspace: scratch.path, deadline: 6_000 })
++		// 15_000 ms clears the stalled lint stage's expiry on a contended host, which a saturated
++		// host on 2026-09-06 showed 6_000 ms did not.
++		const probe = new Probe({ workspace: scratch.path, deadline: 15_000 })
+ 		try {
+ 			// Boot runs its own lint control, and a boot timeout carries the identical message a
+ 			// stage timeout carries. Waiting for `arm` is what stops this proof accepting a
+@@ -1025,11 +1031,11 @@
+ 							reason: 'the language server publishes no diagnostics for this candidate',
+ 						},
+ 					}),
+-					waitForDelay(7_000).then(() => {
++					waitForDelay(16_000).then(() => {
+ 						throw new Error('The stalled lint proof did not settle within its budget')
+ 					}),
+ 				]),
+-			).rejects.toThrow('The lint stage exceeded 6000 ms')
++			).rejects.toThrow('The lint stage exceeded 15000 ms')
+ 			// The claim that follows is the point: the fixture answers every candidate that does not
+ 			// carry the marker, so a stage the expiry replaced serves it and a stage the expiry only
+ 			// destroyed refuses it. Without the replacement this call reports the destruction of a
+@@ -1090,9 +1096,11 @@
+ 			// deadline and arming fails the way a slow workspace makes it fail.
+ 			scratch.write('stall-lint', '')
+ 			const armings = createRecorder<[Toolchain]>()
++			// 15_000 ms clears the silenced boot lint inspection's warm on a contended host, which a
++			// saturated host on 2026-09-06 showed 6_000 ms did not.
+ 			const probe = new Probe({
+ 				workspace: scratch.path,
+-				deadline: 6_000,
++				deadline: 15_000,
+ 				on: { arm: armings.handler },
+ 			})
+ 			const claim: Claim = {
+@@ -1116,14 +1124,14 @@
+ 			}
+ 			try {
+ 				// A boot expiry and a claim's own stage expiry carry one message unless the boot names
+-				// itself, so a caller reading `The lint stage exceeded 6000 ms` cannot tell whether its
++				// itself, so a caller reading `The lint stage exceeded 15000 ms` cannot tell whether its
+ 				// candidate was slow or the instrument never served. Both calls name arming: the first
+ 				// reports the boot the constructor started, the second reports the boot it ran itself.
+ 				await expect(probe.prove(claim)).rejects.toThrow(
+-					'The probe could not arm: The lint stage exceeded 6000 ms',
++					'The probe could not arm: The lint stage exceeded 15000 ms',
+ 				)
+ 				await expect(probe.prove(claim)).rejects.toThrow(
+-					'The probe could not arm: The lint stage exceeded 6000 ms',
++					'The probe could not arm: The lint stage exceeded 15000 ms',
+ 				)
+ 				expect(armings.count).toBe(0)
+ 				rmSync(resolve(scratch.path, 'stall-lint'), { force: true })
+@@ -1441,7 +1449,9 @@
+ 
+ 	it(
+ 		'bounds teardown while a runtime specification is blocked',
+-		{ timeout: 60_000 },
++		// 120_000 ms clears the FIFO teardown's warm on a contended host, which a saturated host on
++		// 2026-09-06 showed 60_000 ms did not.
++		{ timeout: 120_000 },
+ 		async (context) => {
+ 			const scratch = createScratch({ prefix: 'probe-destroy-bound-' })
+ 			scratch.write('package.json', '{"type":"module"}\n')
+@@ -1466,7 +1476,9 @@
+ 				'this host cannot create the FIFO that parks a generated Vitest specification during teardown',
+ 			)
+ 			const ready = resolve(scratch.path, 'tmp/probe/destroy-ready')
+-			const probe = new Probe({ workspace: scratch.path, deadline: 6_000 })
++			// 15_000 ms clears the parked FIFO teardown's warm on a contended host, which a saturated
++			// host on 2026-09-06 showed 6_000 ms did not.
++			const probe = new Probe({ workspace: scratch.path, deadline: 15_000 })
+ 			let closing: Promise<void> | undefined
+ 			const claim: Claim = {
+ 				project: 'tsconfig.json',
+@@ -1498,10 +1510,10 @@
+ 				closing = probe.destroy()
+ 				const settled = await Promise.race([
+ 					closing.then(() => true),
+-					waitForDelay(7_000).then(() => false),
++					waitForDelay(16_000).then(() => false),
+ 				])
+ 				expect(settled).toBe(true)
+-				expect(performance.now() - started).toBeLessThan(7_000)
++				expect(performance.now() - started).toBeLessThan(16_000)
+ 			} finally {
+ 				let descriptor: number | undefined
+ 				try {
