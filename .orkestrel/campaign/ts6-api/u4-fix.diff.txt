@@ -1,0 +1,162 @@
+--- a/src/core/templates.ts (after U4)
++++ b/src/core/templates.ts (after U4-fix)
+@@ -1071,10 +1071,6 @@
+ // Node and the miss is silent.
+ const BROWSER_OUTPUT = './dist/src/browser/'
+ const ABSENT_SUBPATH = '/no-subpath-is-published-under-this-name'
+-// The driver a bundled consumer reads declarations under. A browser application
+-// compiles through a bundler, so the browser drive answers under this one alone,
+-// and naming it here is what keeps that selection tied to the driver it selects.
+-const BUNDLER = 'bundler'
+ // A compiler diagnostic that says where it is: the path relative to the directory
+ // the compiler ran in, the 1-based line and column, the code, and the message. The
+ // diagnostics are the verdict rather than the exit code, which differs between the
+@@ -1154,29 +1150,40 @@
+ 		conditions: DECLARATION_CONDITIONS,
+ 	},
+ 	{
+-		label: BUNDLER,
++		label: 'bundler',
+ 		resolution: 'bundler',
+ 		module: 'esnext',
+ 		conditions: BUNDLER_CONDITIONS,
+ 	},
+ ]
+ 
++// The driver a bundled consumer reads declarations under. A browser application
++// compiles through a bundler, so the browser drive answers under this one alone,
++// and naming it here is what keeps that selection tied to the driver it selects.
++function requireDriver(label: string): Resolution {
++	const driver = RESOLUTIONS.find((candidate) => candidate.label === label)
++	if (driver === undefined) throw new Error(\`RESOLUTIONS carries no '\${label}' row\`)
++	return driver
++}
++const BROWSER_DRIVER = requireDriver('bundler')
++
+ const FORMATS: ReadonlyArray<readonly [extension: string, format: Format]> = [
+ 	['ts', 'module'],
+ 	['cts', 'commonjs'],
+ ]
+ 
+ // One published subpath, resolved to what this proof can drive: the specifier a
+-// consumer writes, the declarations its consumer formats name, whether its target
+-// is a browser bundle, and whether it answers \`import\` and \`require\` at all.
++// consumer writes, whether the declarations its consumer formats resolve at all,
++// whether its target is a browser bundle, and whether it answers \`import\` and
++// \`require\` at all.
+ interface Entry {
+ 	readonly subpath: string
+ 	readonly specifier: string
+ 	readonly mapping: unknown
+ 	readonly declaration: {
+-		readonly module: string | undefined
+-		readonly commonjs: string | undefined
+-		readonly browser: string | undefined
++		readonly module: boolean
++		readonly commonjs: boolean
++		readonly browser: boolean
+ 	}
+ 	readonly browser: boolean
+ 	readonly module: boolean
+@@ -1434,7 +1441,14 @@
+ // against. Each field uses the conditions of the TypeScript consumer paired with
+ // that runtime. A JavaScript target resolves through TypeScript's adjacent
+ // declaration substitution rather than standing in for the declaration itself.
+-function readDeclaration(entry: unknown, installed: string): Entry['declaration'] {
++function readDeclaration(
++	entry: unknown,
++	installed: string,
++): {
++	readonly module: string | undefined
++	readonly commonjs: string | undefined
++	readonly browser: string | undefined
++} {
+ 	return {
+ 		module: resolveDeclaration(entry, DECLARATION_CONDITIONS.module, installed),
+ 		commonjs: resolveDeclaration(entry, DECLARATION_CONDITIONS.commonjs, installed),
+@@ -1560,8 +1574,8 @@
+ // Each names the member it is about, so the failure says which export moved.
+ function checkSurface(stage: Stage, surface: Surface): readonly string[] {
+ 	const slug = surface.entry.subpath.replaceAll(/[^\\w]+/gu, '-')
+-	const name = \`surface.\${surface.driver.label}\${slug}\`
+-	const module = \`\${name}.\${surface.extension}\`
++	const name = \`surface.\${surface.driver.label}\${slug}.\${surface.extension}\`
++	const module = \`\${name}\`
+ 	const keys = surface.published.map((key) => \`\${JSON.stringify(key)}: true\`).join(', ')
+ 	writeFile(
+ 		join(stage.consumer, module),
+@@ -1667,11 +1681,9 @@
+ 			specifier: subpath === '.' ? name : \`\${name}\${subpath.slice(1)}\`,
+ 			mapping: entry,
+ 			declaration: {
+-				module: declaration.module === undefined ? undefined : join(installed, declaration.module),
+-				commonjs:
+-					declaration.commonjs === undefined ? undefined : join(installed, declaration.commonjs),
+-				browser:
+-					declaration.browser === undefined ? undefined : join(installed, declaration.browser),
++				module: declaration.module !== undefined,
++				commonjs: declaration.commonjs !== undefined,
++				browser: declaration.browser !== undefined,
+ 			},
+ 			browser,
+ 			module: imported !== undefined && !(browser && imported === browserTarget),
+@@ -1884,7 +1896,7 @@
+ 				// The exports-map walk resolved a declaration a typed importer reads, so an
+ 				// entry reaching this drive without one is reported for that rather than for
+ 				// what a consumer of a missing declaration goes on to say.
+-				if (entry.declaration.module === undefined) {
++				if (!entry.declaration.module) {
+ 					throw new Error(\`\${entry.subpath} publishes no import declaration\`)
+ 				}
+ 				const published = driveRuntime(stage, entry.specifier, ESM_DRIVER)
+@@ -1901,15 +1913,17 @@
+ 			'publishes what it declares to a Node require, and no more',
+ 			(context) => {
+ 				const stage = requireStage(context)
+-				if (entry.declaration.commonjs === undefined) {
++				if (!entry.declaration.commonjs) {
+ 					throw new Error(\`\${entry.subpath} publishes no require declaration\`)
+ 				}
+ 				const published = driveRuntime(stage, entry.specifier, CJS_DRIVER)
+-				// A subpath \`require\` resolves to a module no typed CommonJS consumer can
+-				// compile against carries no declared side to compare here, and whether it
+-				// may publish one at all is the untypable set's question rather than this
+-				// drive's. The runtime drive above ran either way.
+-				const reported = selectDrivers(entry, 'commonjs').flatMap((driver) =>
++				// A subpath whose \`require\` resolves to a module that no typed CommonJS
++				// consumer can compile against carries no declared side to compare here, and
++				// whether it may publish one at all is the untypable set's question rather
++				// than this drive's. The preceding runtime drive ran either way.
++				const drivers = selectDrivers(entry, 'commonjs')
++				expect(drivers).not.toStrictEqual([])
++				const reported = drivers.flatMap((driver) =>
+ 					checkSurface(stage, { entry, extension: 'cts', published, driver }),
+ 				)
+ 				expect(reported).toStrictEqual([])
+@@ -2029,7 +2043,7 @@
+ 			'publishes what it declares to a real browser, and no more [requires a browser]',
+ 			async (context) => {
+ 				const stage = requireStage(context)
+-				if (entry.declaration.browser === undefined) {
++				if (!entry.declaration.browser) {
+ 					throw new Error(\`\${entry.subpath} publishes no browser declaration\`)
+ 				}
+ 				const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+@@ -2043,11 +2057,12 @@
+ 					const published = await readBrowserExports(browser, bundle)
+ 					// A browser consumer reads the installed declarations through a bundler, so
+ 					// that is the one driver this face answers under.
+-					const drivers = RESOLUTIONS.filter((driver) => driver.label === BUNDLER)
+-					expect(drivers.map((driver) => driver.label)).toStrictEqual([BUNDLER])
+-					const reported = drivers.flatMap((driver) =>
+-						checkSurface(stage, { entry, extension: 'ts', published, driver }),
+-					)
++					const reported = checkSurface(stage, {
++						entry,
++						extension: 'ts',
++						published,
++						driver: BROWSER_DRIVER,
++					})
+ 					expect(reported).toStrictEqual([])
+ 				} finally {
+ 					await browser.close()
