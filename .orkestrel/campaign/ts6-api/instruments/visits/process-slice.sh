@@ -12,9 +12,10 @@ for n in "$@"; do
   ( cd "$d" && git status --short > "$REC/u12-visit-$n.status.txt" && git diff --stat > "$REC/u12-visit-$n.diffstat.txt" )
   gates=$( [ -f "$v" ] && grep -E "^GATES:" "$v" | tail -1 || echo "GATES: (no verify report)" )
   dev=$( [ -f "$r" ] && { grep -A3 -i "^## Deviation" "$r" | grep -qi "none" && echo none || echo "see report"; } || echo "no report" )
-  fails=$( [ -f "$r" ] && grep -c "FAIL" "$r" || echo "?" )
+  fails=$( [ -f "$r" ] && { grep -c "FAIL" "$r" 2>/dev/null || true; } || echo "?" )
   echo "== $n: $gates; deviations: $dev; FAIL mentions in the report: $fails"
-  if [ "$gates" = "GATES: GREEN" ] && [ "$dev" = "none" ] && [ "$fails" = "0" ]; then
+  accepted=$( [ -f "$SP/visits/accepted-deviations.txt" ] && grep -cx "$n" "$SP/visits/accepted-deviations.txt" || echo 0 )
+  if [ "$gates" = "GATES: GREEN" ] && { [ "$dev" = "none" ] || [ "$accepted" != "0" ]; } && [ "$fails" = "0" ]; then
     bash "$SP/visits/commit-visit.sh" "$d" 2>&1 | sed "s/^/   /"
   else
     echo "   refused: left uncommitted for the Orchestrator's reading"
