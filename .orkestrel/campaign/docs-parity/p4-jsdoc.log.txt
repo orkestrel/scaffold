@@ -1,0 +1,15 @@
+Finished in 13ms on 13 files using 4 threads.
+changed files: 11
+<  * The draft stage assembles the artifacts the selected groups cover. The gate
+<  * stage measures the blueprint, its overrides, and the drafted artifacts, and
+<  * refuses on a blocking question. The pin stage gives the plan its content
+<  * identity. Every stage records its input and its output, and a failed stage
+<  * records the coded reason beside them; the stages after a failed one never run,
+<  * so the records stop where the compile stopped.
+<  *
+<  * The compile fails closed on one rule: a scaffolding carries a plan exactly
+<  * when no question blocks. A refused blueprint is answered rather than raised,
+<  * so a caller reads the refusal from the value it asked for.
+<  *
+<  * Both entry points snapshot each caller-supplied value and then guard the
+files with word-level changes: 11 (of 11 rewritten)

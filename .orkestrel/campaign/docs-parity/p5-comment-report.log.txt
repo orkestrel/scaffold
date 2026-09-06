@@ -1,0 +1,8 @@
+--- scaffold's oxlint:
+COMMENTS [{"type":"Block","keys":"type,value,start,end,range,loc","value":"*\n * Encodes text as bytes.\n *"}]
+src/sample.ts:1:1: error probe(comment): comment reported by node
+src/sample.ts:1:1: error probe(comment): comment reported by loc
+--- guide's oxlint:
+COMMENTS [{"type":"Block","keys":"type,value,start,end,range,loc","value":"*\n * Encodes text as bytes.\n *"}]
+src/sample.ts:1:1: error probe(comment): comment reported by node
+src/sample.ts:1:1: error probe(comment): comment reported by loc

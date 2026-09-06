@@ -1,0 +1,4 @@
+Finished in 221ms on 1 files using 4 threads.
+| Name                | Kind | Summary                                
+matches the committed first row: yes
+whole table matches the committed table: yes

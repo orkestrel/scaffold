@@ -1,0 +1,946 @@
+# P3 — 2026-09-06T23:52:44.790Z; guide Surface rows 293, Methods rows 22; exported declarations read 293; doc blocks attached to exports 293; regex '/** … */ export' blocks 306
+## Surface: equal 0, differ 293, no Summary column 0, no doc block 0, unpaired 0
+- Surface Artifact: guides/scaffold.md:56 vs src/core/types.ts:414
+    guide:  One file in a plan, discriminated by how its content is produced and what scaffold claims of it.
+    source: Represents one file in a plan, discriminated by how its content is produced and what scaffold claims of it.
+- Surface BuildFormat: guides/scaffold.md:57 vs src/core/types.ts:6
+    guide:  One module format a published library environment builds.
+    source: Names one module format a published library environment builds.
+- Surface CatalogEntry: guides/scaffold.md:58 vs src/core/types.ts:230
+    guide:  One package row of the fleet catalog.
+    source: Represents one package row of the fleet catalog.
+- Surface CompileStage: guides/scaffold.md:59 vs src/core/types.ts:67
+    guide:  The compile phases, in the order they run.
+    source: Names the compile phases, in the order they run.
+- Surface CompilerEventMap: guides/scaffold.md:60 vs src/core/types.ts:579
+    guide:  The compiler's observation channel.
+    source: Represents the compiler's observation channel.
+- Surface HostFile: guides/scaffold.md:61 vs src/core/types.ts:295
+    guide:  One vendored file read from the repository, beside the target bytes it answers for.
+    source: Represents one vendored file read from the repository, beside the target bytes it answers for.
+- Surface Drift: guides/scaffold.md:62 vs src/core/types.ts:43
+    guide:  How one target path compares to the artifact planned for it.
+    source: Names how one target path compares to the artifact planned for it.
+- Surface Environment: guides/scaffold.md:63 vs src/core/types.ts:3
+    guide:  One environment a generated workspace selects on its `src` or `app` axis.
+    source: Names one environment a generated workspace selects on its `src` or `app` axis.
+- Surface Finding: guides/scaffold.md:64 vs src/core/types.ts:444
+    guide:  One drift verdict against a target path.
+    source: Represents one drift verdict against a target path.
+- Surface Group: guides/scaffold.md:65 vs src/core/types.ts:33
+    guide:  The artifact group a plan selects over.
+    source: Names the artifact group a plan selects over.
+- Surface Lookup: guides/scaffold.md:66 vs src/core/types.ts:53
+    guide:  How an upstream lookup resolved: found, missing, unmatched, or failed.
+    source: Names whether an upstream lookup produced an answer.
+- Surface Mirror: guides/scaffold.md:67 vs src/core/types.ts:327
+    guide:  One dependency guide fetched from upstream, beside the local mirror it answers for.
+    source: Represents one dependency guide fetched from upstream, beside the local mirror it answers for.
+- Surface Origin: guides/scaffold.md:68 vs src/core/types.ts:9
+    guide:  How an artifact's content is produced.
+    source: Names how an artifact's content is produced.
+- Surface Ownership: guides/scaffold.md:69 vs src/core/types.ts:20
+    guide:  What scaffold claims at an artifact's path.
+    source: Names what scaffold claims at an artifact's path.
+- Surface Release: guides/scaffold.md:70 vs src/core/types.ts:268
+    guide:  One declared dependency range measured against a registry release.
+    source: Represents one declared dependency range measured against a registry release.
+- Surface ScaffoldErrorCode: guides/scaffold.md:71 vs src/core/types.ts:70
+    guide:  The coded reasons a scaffold error is raised.
+    source: Names the coded reasons a scaffold error is raised.
+- Surface Snapshot: guides/scaffold.md:72 vs src/core/types.ts:425
+    guide:  Exact lowercase hexadecimal target bytes keyed by artifact-relative path.
+    source: Holds exact lowercase hexadecimal target bytes keyed by artifact-relative path.
+- Surface AppDefinition: guides/scaffold.md:78 vs src/core/types.ts:81
+    guide:  The configuration and runtime-entry settings one private `app` environment contributes.
+    source: Describes the configuration and runtime-entry settings one private `app` environment contributes.
+- Surface ArtifactBase: guides/scaffold.md:79 vs src/core/types.ts:359
+    guide:  The fields every planned file carries.
+    source: Describes the fields every planned file carries.
+- Surface Audit: guides/scaffold.md:80 vs src/core/types.ts:503
+    guide:  The whole comparison of a plan against a target's current content.
+    source: Represents the whole comparison of a plan against a target's current content.
+- Surface Blueprint: guides/scaffold.md:81 vs src/core/types.ts:181
+    guide:  The closed, JSON-serializable workspace specification.
+    source: Represents the closed, JSON-serializable workspace specification.
+- Surface CompileFailure: guides/scaffold.md:82 vs src/core/types.ts:543
+    guide:  The coded reason one compile stage failed.
+    source: Represents the coded reason one compile stage failed.
+- Surface CompileRecord: guides/scaffold.md:83 vs src/core/types.ts:549
+    guide:  The input and output snapshot of one compile stage.
+    source: Holds the input and output snapshot of one compile stage.
+- Surface CompilerInterface: guides/scaffold.md:84 vs src/core/types.ts:594
+    guide:  The compilation contract: pure, synchronous, and host-independent.
+    source: Describes the compilation contract: pure, synchronous, and host-independent.
+- Surface CompilerOptions: guides/scaffold.md:85 vs src/core/types.ts:588
+    guide:  Options for the compiler.
+    source: Represents the options for the compiler.
+- Surface ContentArtifact: guides/scaffold.md:86 vs src/core/types.ts:406
+    guide:  A text file produced by the template or computed compilation path.
+    source: Represents a text file produced by the template or computed compilation path.
+- Surface Dependency: guides/scaffold.md:87 vs src/core/types.ts:110
+    guide:  One runtime `@orkestrel/*` dependency of a generated workspace.
+    source: Represents one runtime `@orkestrel/*` dependency of a generated workspace.
+- Surface DependencyPinSet: guides/scaffold.md:88 vs src/core/types.ts:130
+    guide:  The runtime and development dependency sections a range writer may change.
+    source: Describes the dependency sections a range-writing operation may change.
+- Surface HostArtifact: guides/scaffold.md:89 vs src/core/types.ts:367
+    guide:  A file byte-copied from the vendored data root, planned before its bytes are read.
+    source: Represents a file byte-copied from the vendored data root, planned before its bytes are read.
+- Surface HydratedArtifact: guides/scaffold.md:90 vs src/core/types.ts:388
+    guide:  A vendored file whose exact bytes have been read, so its content can be compared.
+    source: Represents a vendored file whose exact bytes have been read, so its content can be compared.
+- Surface ManifestDependencySet: guides/scaffold.md:91 vs src/core/types.ts:123
+    guide:  The runtime, development, and peer declarations read from an existing manifest.
+    source: Describes the dependency sections read from an existing package manifest.
+- Surface ManifestRegionSet: guides/scaffold.md:92 vs src/core/types.ts:153
+    guide:  The manifest regions a writing operation may change.
+    source: Describes the manifest regions a writing operation may change.
+- Surface ManifestScript: guides/scaffold.md:93 vs src/core/types.ts:136
+    guide:  One manifest script a region-writing operation may replace.
+    source: Represents one manifest script a region-writing operation may replace.
+- Surface Override: guides/scaffold.md:94 vs src/core/types.ts:166
+    guide:  One artifact override.
+    source: Represents one artifact override.
+- Surface Plan: guides/scaffold.md:95 vs src/core/types.ts:428
+    guide:  The compiled, ordered artifact list and the selection it covers.
+    source: Holds the compiled, ordered artifact list and the selection it covers.
+- Surface PlanSummary: guides/scaffold.md:96 vs src/core/types.ts:532
+    guide:  The tally of one plan by artifact origin.
+    source: Represents the tally of one plan by artifact origin.
+- Surface Question: guides/scaffold.md:97 vs src/core/types.ts:517
+    guide:  One validation issue raised against a blueprint or a plan.
+    source: Represents one validation issue raised against a blueprint or a plan.
+- Surface Scaffolding: guides/scaffold.md:98 vs src/core/types.ts:562
+    guide:  The replayable outcome of one compile.
+    source: Represents the replayable outcome of one compile.
+- Surface SrcDefinition: guides/scaffold.md:99 vs src/core/types.ts:73
+    guide:  The build and export settings one published `src` environment contributes.
+    source: Describes the build and export settings one published `src` environment contributes.
+- Surface ViteMachinery: guides/scaffold.md:100 vs src/core/types.ts:91
+    guide:  Which host-specific pipelines a generated root Vite configuration carries.
+    source: Names which host-specific pipelines a generated root Vite configuration carries.
+- Surface APP_BROWSER_DEV_DEPENDENCIES: guides/scaffold.md:106 vs src/core/constants.ts:526
+    guide:  The development dependencies a private Vue browser application adds.
+    source: Lists the development dependencies a private Vue browser application adds.
+- Surface APP_DEV_DEPENDENCIES: guides/scaffold.md:107 vs src/core/constants.ts:521
+    guide:  The development dependency every private `app` environment adds.
+    source: Names the development dependency every private `app` environment adds.
+- Surface APP_MATRIX: guides/scaffold.md:108 vs src/core/constants.ts:70
+    guide:  The configuration and runtime-entry settings each private `app` environment contributes, frozen.
+    source: Holds the configuration and runtime-entry settings each private `app` environment contributes, frozen.
+- Surface APP_SERVER_DEV_DEPENDENCIES: guides/scaffold.md:109 vs src/core/constants.ts:549
+    guide:  The development dependencies a private server application adds.
+    source: Lists the development dependencies a private server application adds.
+- Surface ARTIFACT_TEMPLATES: guides/scaffold.md:110 vs src/core/templates.ts:967
+    guide:  Formatter-stable template text for source, test, document, guide, and service artifacts.
+    source: Holds formatter-stable template text for source, test, document, guide, and service artifacts.
+- Surface BASE_DEV_DEPENDENCIES: guides/scaffold.md:111 vs src/core/constants.ts:490
+    guide:  The tooling versions scaffold and every generated workspace share.
+    source: Holds the tooling versions scaffold and every generated workspace share.
+- Surface BIN_CONFIGS: guides/scaffold.md:112 vs src/core/constants.ts:102
+    guide:  The configuration files a workspace that ships its own executable adds, frozen.
+    source: Lists the configuration files a workspace that ships its own executable adds, frozen.
+- Surface BIN_ENTRY_PATH: guides/scaffold.md:113 vs src/core/constants.ts:108
+    guide:  The executable entry whose presence makes a workspace `bin`.
+    source: Names the executable entry whose presence makes a workspace `bin`.
+- Surface CANON_PATHS: guides/scaffold.md:114 vs src/core/constants.ts:155
+    guide:  The instruction-canon paths staged for reading rather than for a target, frozen.
+    source: Lists the instruction-canon paths staged for reading rather than for a target, frozen.
+- Surface CATALOG_AGENT_PATH: guides/scaffold.md:115 vs src/core/constants.ts:265
+    guide:  The agent file whose marker-bounded package table the catalog verb alone owns.
+    source: Names the agent file whose marker-bounded package table the catalog verb alone owns.
+- Surface CATALOG_CLOSING_MARKER: guides/scaffold.md:116 vs src/core/constants.ts:292
+    guide:  The marker closing the package table inside the catalog agent file.
+    source: Names the marker closing the package table inside `CATALOG_AGENT_PATH`.
+- Surface CATALOG_OPENING_MARKER: guides/scaffold.md:117 vs src/core/constants.ts:281
+    guide:  The marker opening the package table inside the catalog agent file.
+    source: Names the marker opening the package table inside `CATALOG_AGENT_PATH`.
+- Surface CONFIG_TEMPLATES: guides/scaffold.md:118 vs src/core/templates.ts:10
+    guide:  Formatter-stable template text for every configuration artifact.
+    source: Holds formatter-stable template text for every configuration artifact.
+- Surface CONFORMANCE_TEST_PATH: guides/scaffold.md:119 vs src/core/constants.ts:332
+    guide:  The official-tooling drift proof whose presence makes a workspace `conformance`.
+    source: Names the official-tooling drift proof whose presence makes a workspace `conformance`.
+- Surface CONTROL_CHARACTER_PATTERN: guides/scaffold.md:120 vs src/core/constants.ts:407
+    guide:  Unicode controls, formatting controls, and line and paragraph separators rejected in text.
+    source: Matches the Unicode controls, formatting controls, and line and paragraph separators rejected in text.
+- Surface DECLARATION_DEV_DEPENDENCIES: guides/scaffold.md:121 vs src/core/constants.ts:504
+    guide:  The development dependencies that roll declarations up for published source.
+    source: Lists the development dependencies that roll declarations up for published source.
+- Surface DEFAULT_ENGINES: guides/scaffold.md:122 vs src/core/constants.ts:487
+    guide:  The `engines.node` range a workspace starts with.
+    source: Names the `engines.node` range a workspace starts with.
+- Surface DEFAULT_VERSION: guides/scaffold.md:123 vs src/core/constants.ts:484
+    guide:  The version a workspace starts at.
+    source: Names the version a workspace starts at.
+- Surface DEPENDENCY_NAME_PATTERN: guides/scaffold.md:124 vs src/core/constants.ts:350
+    guide:  The runtime dependency name syntax: the `@orkestrel` scope and a bare name.
+    source: Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.
+- Surface DISTRIBUTION_TEST_PATH: guides/scaffold.md:125 vs src/core/constants.ts:310
+    guide:  The generated packed-package proof every publishing workspace is planned at.
+    source: Names the generated packed-package proof every publishing workspace is planned at.
+- Surface ENGINES_PATTERN: guides/scaffold.md:126 vs src/core/constants.ts:401
+    guide:  The minimum-Node engine syntax a blueprint declares.
+    source: Matches the minimum-Node engine syntax a blueprint declares.
+- Surface ENVIRONMENTS: guides/scaffold.md:127 vs src/core/constants.ts:4
+    guide:  The `Environment` values, frozen.
+    source: Lists the `Environment` values, frozen.
+- Surface EXECUTABLE_PATHS: guides/scaffold.md:128 vs src/core/constants.ts:217
+    guide:  The vendored paths a target receives with its executable bit set, frozen.
+    source: Lists the vendored paths a target receives with its executable bit set, frozen.
+- Surface EXTRA_RANGE_PATTERN: guides/scaffold.md:129 vs src/core/constants.ts:387
+    guide:  The registry-only semver subset accepted for a development extra's range.
+    source: Matches the registry-only semver subset accepted for a development extra's range.
+- Surface FLOOR_RANGE_PATTERN: guides/scaffold.md:130 vs src/core/constants.ts:391
+    guide:  The exact `major.minor.patch` floor accepted for a foreign peer's range.
+    source: Matches the exact `major.minor.patch` floor accepted for a foreign peer's range.
+- Surface FOREIGN_NAME_PATTERN: guides/scaffold.md:131 vs src/core/constants.ts:361
+    guide:  The package name syntax for a dependency this package does not publish.
+    source: Matches the package name syntax for a dependency this package does not publish.
+- Surface GLOBAL_SETUP_PATH: guides/scaffold.md:132 vs src/core/constants.ts:304
+    guide:  The shared Vitest global-setup module whose presence makes a workspace `global`.
+    source: Names the shared Vitest global-setup module whose presence makes a workspace `global`.
+- Surface GROUPS: guides/scaffold.md:133 vs src/core/constants.ts:15
+    guide:  The `Group` values in plan order, frozen.
+    source: Lists the `Group` values in plan order, frozen.
+- Surface GUIDES_TEST_PATH: guides/scaffold.md:134 vs src/core/constants.ts:307
+    guide:  The guide-parity proof whose presence selects the planned `guides` project.
+    source: Names the guide-parity proof whose presence selects the planned `guides` project.
+- Surface HEX_PATTERN: guides/scaffold.md:135 vs src/core/constants.ts:404
+    guide:  Exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.
+    source: Matches exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.
+- Surface HOST_PATHS: guides/scaffold.md:136 vs src/core/constants.ts:111
+    guide:  The paths a target receives from the vendored data root, frozen.
+    source: Lists the paths a target receives from the vendored data root, frozen.
+- Surface HOST_INVENTORY_PATH: guides/scaffold.md:137 vs src/core/constants.ts:203
+    guide:  The repository-relative path where the committed vendored-file inventory is served.
+    source: Names the repository-relative path where the committed vendored-file inventory is served.
+- Surface INTEGRATION_TEST_PATH: guides/scaffold.md:138 vs src/core/constants.ts:323
+    guide:  The cross-environment composition proof whose presence makes a workspace `integration`.
+    source: Names the cross-environment composition proof whose presence makes a workspace `integration`.
+- Surface INVALID_PATH_CHARACTER_PATTERN: guides/scaffold.md:139 vs src/core/constants.ts:413
+    guide:  Visible characters a target-relative path and a Markdown path cell both forbid.
+    source: Matches the visible characters a target-relative path and a Markdown path cell both forbid.
+- Surface MANIFEST_PATH: guides/scaffold.md:140 vs src/core/constants.ts:329
+    guide:  The manifest path every compiler plan emits with birth ownership.
+    source: Names the manifest path every compiler plan emits with birth ownership.
+- Surface MAX_ARTIFACT_BYTES: guides/scaffold.md:141 vs src/core/constants.ts:449
+    guide:  Maximum bytes accepted for one artifact.
+    source: Caps the bytes accepted for one artifact.
+- Surface MAX_ARTIFACT_HEX_LENGTH: guides/scaffold.md:142 vs src/core/constants.ts:452
+    guide:  Maximum length of the hexadecimal string carrying one artifact's bytes.
+    source: Caps the length of the hexadecimal string carrying one artifact's bytes.
+- Surface MAX_AUDIT_FINDINGS: guides/scaffold.md:143 vs src/core/constants.ts:446
+    guide:  Maximum findings one audit can produce from a bounded plan and snapshot.
+    source: Caps the findings one audit can produce from a bounded plan and snapshot.
+- Surface MAX_COLLECTION_ITEMS: guides/scaffold.md:144 vs src/core/constants.ts:437
+    guide:  Maximum items accepted in one public collection.
+    source: Caps the items accepted in one public collection.
+- Surface MAX_DEPENDENCY_NAME_LENGTH: guides/scaffold.md:145 vs src/core/constants.ts:425
+    guide:  Maximum dependency package name length, scope included, as the registry caps it.
+    source: Sets the maximum dependency package name length, scope included, as the registry caps it.
+- Surface MAX_MANIFEST_BYTES: guides/scaffold.md:146 vs src/core/constants.ts:475
+    guide:  Maximum bytes accepted for one package or vendored-host manifest.
+    source: Caps the bytes accepted for one package or vendored-host manifest.
+- Surface MAX_NAME_LENGTH: guides/scaffold.md:147 vs src/core/constants.ts:416
+    guide:  Maximum bare workspace name length.
+    source: Caps the bare workspace name length.
+- Surface MAX_PATH_LENGTH: guides/scaffold.md:148 vs src/core/constants.ts:434
+    guide:  Maximum length of one path, matching the longest a supported filesystem accepts.
+    source: Caps the length of one path, matching the longest a supported filesystem accepts.
+- Surface MAX_RANGE_LENGTH: guides/scaffold.md:149 vs src/core/constants.ts:428
+    guide:  Maximum length of one declared package range.
+    source: Caps the length of one declared package range.
+- Surface MAX_REGISTRY_BYTES: guides/scaffold.md:150 vs src/core/constants.ts:455
+    guide:  Maximum decoded bytes accepted from one registry response.
+    source: Caps the decoded bytes accepted from one registry response.
+- Surface MAX_SCRIPT_LENGTH: guides/scaffold.md:151 vs src/core/constants.ts:431
+    guide:  Maximum length of one manifest script name or command.
+    source: Caps the length of one manifest script name or command.
+- Surface MAX_TOTAL_ARTIFACT_BYTES: guides/scaffold.md:152 vs src/core/constants.ts:478
+    guide:  Maximum bytes retained across one whole plan or audit.
+    source: Caps the bytes retained across one whole plan or audit.
+- Surface MAX_TOTAL_REGISTRY_BYTES: guides/scaffold.md:153 vs src/core/constants.ts:466
+    guide:  Maximum decoded bytes accepted across one registry-reading call.
+    source: Caps the decoded bytes accepted across one registry-reading call.
+- Surface MINIMUM_NODE_VERSION: guides/scaffold.md:154 vs src/core/constants.ts:481
+    guide:  The oldest Node version the generated toolchain supports.
+    source: Names the oldest Node version the generated toolchain supports.
+- Surface NAME_PATTERN: guides/scaffold.md:155 vs src/core/constants.ts:347
+    guide:  The bare workspace name syntax: lowercase alphanumeric with hyphens, letter first.
+    source: Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first.
+- Surface ORCHESTRATION_PATH_NAMES: guides/scaffold.md:156 vs src/core/constants.ts:256
+    guide:  The exact root filenames that wire an agent bench rather than the toolchain, frozen.
+    source: Lists the exact root filenames that wire an agent bench rather than the toolchain, frozen.
+- Surface ORCHESTRATION_PATH_PREFIXES: guides/scaffold.md:157 vs src/core/constants.ts:237
+    guide:  The path prefixes whose contents instruct or wire an agent, frozen.
+    source: Lists the path prefixes whose contents instruct or wire an agent, frozen.
+- Surface ORKESTREL_RANGE_PATTERN: guides/scaffold.md:158 vs src/core/constants.ts:376
+    guide:  The exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.
+    source: Matches the exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.
+- Surface PRINT_WIDTH: guides/scaffold.md:159 vs src/core/constants.ts:440
+    guide:  Columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.
+    source: Caps the columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.
+- Surface RELEASE_PROOF_COMMAND: guides/scaffold.md:160 vs src/core/constants.ts:313
+    guide:  The `prepublishOnly` row that runs the packed-package proof against a real registry.
+    source: Names the `prepublishOnly` row that runs the packed-package proof against a real registry.
+- Surface SERVICE_SCRIPT_PATH: guides/scaffold.md:161 vs src/core/constants.ts:301
+    guide:  The provisioner skeleton a workspace with declared service vendors is given once.
+    source: Names the provisioner skeleton a workspace with declared service vendors is given once.
+- Surface SERVICE_SETUP_PATH: guides/scaffold.md:162 vs src/core/constants.ts:335
+    guide:  The live-service readiness module whose presence makes a workspace `service`.
+    source: Names the live-service readiness module whose presence makes a workspace `service`.
+- Surface SERVICE_TEST_INCLUDE: guides/scaffold.md:163 vs src/core/constants.ts:338
+    guide:  The include the live-service project covers, which is a directory rather than one proof.
+    source: Names the include the live-service project covers, which is a directory rather than one proof.
+- Surface SHOWCASE_CONFIG_PATH: guides/scaffold.md:164 vs src/core/constants.ts:344
+    guide:  The Vite wrapper whose presence makes a workspace `showcase`.
+    source: Names the Vite wrapper whose presence makes a workspace `showcase`.
+- Surface SHOWCASE_DEV_DEPENDENCIES: guides/scaffold.md:165 vs src/core/constants.ts:535
+    guide:  The development dependency used only by the optional single-file showcase build.
+    source: Names the development dependency used only by the optional single-file showcase build.
+- Surface SOURCE_BROWSER_DEV_DEPENDENCIES: guides/scaffold.md:166 vs src/core/constants.ts:515
+    guide:  The development dependencies a published browser `src` environment adds.
+    source: Lists the development dependencies a published browser `src` environment adds.
+- Surface SRC_MATRIX: guides/scaffold.md:167 vs src/core/constants.ts:33
+    guide:  The build and export settings each published `src` environment contributes, frozen.
+    source: Holds the build and export settings each published `src` environment contributes, frozen.
+- Surface TAB_WIDTH: guides/scaffold.md:168 vs src/core/constants.ts:443
+    guide:  Columns one tab occupies when the formatter measures a line, matching `tabWidth`.
+    source: Sets the columns one tab occupies when the formatter measures a line, matching `tabWidth`.
+- Surface VERSION_PATTERN: guides/scaffold.md:169 vs src/core/constants.ts:373
+    guide:  The exact `major.minor.patch` version syntax a blueprint declares.
+    source: Matches the exact `major.minor.patch` version syntax a blueprint declares.
+- Surface WORKSPACE_OWNED_PATHS: guides/scaffold.md:170 vs src/core/constants.ts:206
+    guide:  The vendored paths whose present bytes belong to each workspace, frozen.
+    source: Lists the vendored paths whose present bytes belong to each workspace, frozen.
+- Surface isArtifact: guides/scaffold.md:176 vs src/core/validators.ts:306
+    guide:  Narrow a value to an `Artifact`.
+    source: Narrows a value to an `Artifact`.
+- Surface isAudit: guides/scaffold.md:177 vs src/core/validators.ts:452
+    guide:  Narrow a value to an `Audit`.
+    source: Narrows a value to an `Audit`.
+- Surface isBlueprint: guides/scaffold.md:178 vs src/core/validators.ts:264
+    guide:  Narrow a value to a `Blueprint`.
+    source: Narrows a value to a `Blueprint`.
+- Surface isCatalogEntry: guides/scaffold.md:179 vs src/core/validators.ts:500
+    guide:  Narrow a value to a `CatalogEntry`.
+    source: Narrows a value to a `CatalogEntry`.
+- Surface isCollection: guides/scaffold.md:180 vs src/core/validators.ts:124
+    guide:  Narrow a value to an array within the limit one public collection accepts.
+    source: Narrows a value to an array within the limit one public collection accepts.
+- Surface isCompilerHooks: guides/scaffold.md:181 vs src/core/validators.ts:555
+    guide:  Narrow a value to the compiler's initial listener record.
+    source: Narrows a value to the compiler's initial listener record.
+- Surface isCompilerOptions: guides/scaffold.md:182 vs src/core/validators.ts:574
+    guide:  Narrow a value to `CompilerOptions`.
+    source: Narrows a value to `CompilerOptions`.
+- Surface isContent: guides/scaffold.md:183 vs src/core/validators.ts:112
+    guide:  Narrow a value to text this package will accept as one artifact's content.
+    source: Narrows a value to text this package will accept as one artifact's content.
+- Surface isDependency: guides/scaffold.md:184 vs src/core/validators.ts:200
+    guide:  Narrow a value to a `Dependency`.
+    source: Narrows a value to a `Dependency`.
+- Surface isDependencyName: guides/scaffold.md:185 vs src/core/validators.ts:177
+    guide:  Narrow a value to the scoped package name a runtime dependency carries.
+    source: Narrows a value to the scoped package name a runtime dependency carries.
+- Surface isEnvironment: guides/scaffold.md:186 vs src/core/validators.ts:148
+    guide:  Narrow a value to one `Environment` a workspace may select.
+    source: Narrows a value to one `Environment` a workspace may select.
+- Surface isFinding: guides/scaffold.md:187 vs src/core/validators.ts:406
+    guide:  Narrow a value to a `Finding`.
+    source: Narrows a value to a `Finding`.
+- Surface isGroup: guides/scaffold.md:188 vs src/core/validators.ts:161
+    guide:  Narrow a value to one `Group` a plan selects over.
+    source: Narrows a value to one `Group` a plan selects over.
+- Surface isGroups: guides/scaffold.md:189 vs src/core/validators.ts:174
+    guide:  Narrow a value to a bounded group selection.
+    source: Narrows a value to a bounded group selection.
+- Surface isHex: guides/scaffold.md:190 vs src/core/validators.ts:91
+    guide:  Narrow a value to exact lowercase hexadecimal bytes within one artifact's limit.
+    source: Narrows a value to exact lowercase hexadecimal bytes within one artifact's limit.
+- Surface isManifestScript: guides/scaffold.md:191 vs src/core/validators.ts:225
+    guide:  Narrow a value to a `ManifestScript`.
+    source: Narrows a value to a `ManifestScript`.
+- Surface isMirror: guides/scaffold.md:192 vs src/core/validators.ts:469
+    guide:  Narrow a value to a `Mirror`.
+    source: Narrows a value to a `Mirror`.
+- Surface isOverride: guides/scaffold.md:193 vs src/core/validators.ts:248
+    guide:  Narrow a value to an `Override`.
+    source: Narrows a value to an `Override`.
+- Surface isPath: guides/scaffold.md:194 vs src/core/validators.ts:55
+    guide:  Narrow a value to a logical target-relative path.
+    source: Narrows a value to a logical target-relative path.
+- Surface isPlan: guides/scaffold.md:195 vs src/core/validators.ts:360
+    guide:  Narrow a value to a `Plan`.
+    source: Narrows a value to a `Plan`.
+- Surface isQuestion: guides/scaffold.md:196 vs src/core/validators.ts:386
+    guide:  Narrow a value to a `Question`.
+    source: Narrows a value to a `Question`.
+- Surface isScaffoldError: guides/scaffold.md:197 vs src/core/errors.ts:56
+    guide:  Narrow a caught value to a `ScaffoldError`.
+    source: Narrows a caught value to a `ScaffoldError`.
+- Surface isSnapshot: guides/scaffold.md:198 vs src/core/validators.ts:522
+    guide:  Narrow a value to a `Snapshot`.
+    source: Narrows a value to a `Snapshot`.
+- Surface parseBlueprint: guides/scaffold.md:204 vs src/core/parsers.ts:4
+    guide:  Coerce an untrusted value to a `Blueprint`.
+    source: Coerces an untrusted value to a `Blueprint`.
+- Surface parseCompilerOptions: guides/scaffold.md:205 vs src/core/parsers.ts:71
+    guide:  Coerce an untrusted value to `CompilerOptions`.
+    source: Coerces an untrusted value to `CompilerOptions`.
+- Surface parseGroups: guides/scaffold.md:206 vs src/core/parsers.ts:27
+    guide:  Coerce an untrusted value to a group selection.
+    source: Coerces an untrusted value to a group selection.
+- Surface parseSnapshot: guides/scaffold.md:207 vs src/core/parsers.ts:50
+    guide:  Coerce an untrusted value to a `Snapshot`.
+    source: Coerces an untrusted value to a `Snapshot`.
+- Surface artifactToFinding: guides/scaffold.md:213 vs src/core/helpers.ts:562
+    guide:  Project one planned artifact and the bytes found at its path into a verdict.
+    source: Projects one planned artifact and the bytes found at its path into a verdict.
+- Surface artifactToHex: guides/scaffold.md:214 vs src/core/helpers.ts:489
+    guide:  Project an artifact to the exact bytes it claims, as hexadecimal.
+    source: Projects an artifact to the exact bytes it claims, as hexadecimal.
+- Surface bytesToHex: guides/scaffold.md:215 vs src/core/helpers.ts:35
+    guide:  Encode bytes as exact lowercase hexadecimal text.
+    source: Encodes bytes as exact lowercase hexadecimal text.
+- Surface catalogToLayers: guides/scaffold.md:216 vs src/core/helpers.ts:648
+    guide:  Project a catalog into the layers it publishes in.
+    source: Projects a catalog into the layers it publishes in.
+- Surface cloneValue: guides/scaffold.md:217 vs src/core/cloners.ts:4
+    guide:  Snapshot an untrusted value into exact JSON data the caller owns.
+    source: Snapshots an untrusted value into exact JSON data the caller owns.
+- Surface compareVersions: guides/scaffold.md:218 vs src/core/helpers.ts:802
+    guide:  Compare two versions by their numeric components.
+    source: Compares two versions by their numeric components.
+- Surface computeBytes: guides/scaffold.md:219 vs src/core/helpers.ts:83
+    guide:  Count the UTF-8 bytes text encodes to.
+    source: Counts the UTF-8 bytes text encodes to.
+- Surface computeHash: guides/scaffold.md:220 vs src/core/helpers.ts:112
+    guide:  Compute the deterministic content identity of text.
+    source: Computes the deterministic content identity of text.
+- Surface contentToHex: guides/scaffold.md:221 vs src/core/helpers.ts:60
+    guide:  Encode text as the exact lowercase hexadecimal form of its UTF-8 bytes.
+    source: Encodes text as the exact lowercase hexadecimal form of its UTF-8 bytes.
+- Surface extractRangeMajor: guides/scaffold.md:222 vs src/core/helpers.ts:772
+    guide:  Extract the major component of an admitted dependency range.
+    source: Extracts the major component of an admitted dependency range.
+- Surface extractVersion: guides/scaffold.md:223 vs src/core/helpers.ts:743
+    guide:  Extract the major, minor, and patch components of an exact version.
+    source: Extracts the major, minor, and patch components of an exact version.
+- Surface inferDrift: guides/scaffold.md:224 vs src/core/helpers.ts:519
+    guide:  Infer how one target path compares to the artifact planned for it.
+    source: Infers how one target path compares to the artifact planned for it.
+- Surface inferGroup: guides/scaffold.md:225 vs src/core/helpers.ts:277
+    guide:  Infer the `Group` a path belongs to.
+    source: Infers the `Group` a path belongs to.
+- Surface isCanonPath: guides/scaffold.md:226 vs src/core/helpers.ts:195
+    guide:  Test whether a path belongs to the instruction canon a target reads.
+    source: Checks whether a path belongs to the instruction canon a target reads rather than holds.
+- Surface isDeferredPath: guides/scaffold.md:227 vs src/core/helpers.ts:171
+    guide:  Test whether another surface owns the vendored bytes at a path.
+    source: Checks whether another surface owns the vendored bytes at a path.
+- Surface isFloorPath: guides/scaffold.md:228 vs src/core/helpers.ts:250
+    guide:  Test whether a destination's floor bytes survive a live overlay.
+    source: Checks whether a destination's floor bytes survive a live overlay.
+- Surface isRetainedPath: guides/scaffold.md:229 vs src/core/helpers.ts:225
+    guide:  Test whether another surface owns a target's present bytes at a path.
+    source: Checks whether a target's present bytes at a path are owned by another surface.
+- Surface manifestToDependencies: guides/scaffold.md:230 vs src/core/helpers.ts:953
+    guide:  Project a manifest's `@orkestrel/*` declarations into separate section lists.
+    source: Projects a package manifest's text to the `@orkestrel/*` packages each dependency section declares.
+- Surface manifestToName: guides/scaffold.md:231 vs src/core/helpers.ts:922
+    guide:  Project a package manifest's text to its own name.
+    source: Projects a package manifest's text to its own name.
+- Surface matchesDriftReachability: guides/scaffold.md:232 vs src/core/helpers.ts:606
+    guide:  Test whether `inferDrift` could have produced a finding for an ownership.
+    source: Tests whether `inferDrift` could have produced a finding for an ownership.
+- Surface matchesEngines: guides/scaffold.md:233 vs src/core/helpers.ts:896
+    guide:  Test whether a declared engines floor is at or above the supported minimum.
+    source: Tests whether a declared engines floor is at or above the supported minimum.
+- Surface matchesOrchestrationPath: guides/scaffold.md:234 vs src/core/helpers.ts:144
+    guide:  Test whether a path instructs or wires an agent rather than the toolchain.
+    source: Tests whether a path instructs or wires an agent rather than the toolchain.
+- Surface matchesPrintWidth: guides/scaffold.md:235 vs src/core/helpers.ts:386
+    guide:  Test whether one emitted line fits the vendored formatter width.
+    source: Tests whether one emitted line fits the vendored formatter width.
+- Surface matchesRange: guides/scaffold.md:236 vs src/core/helpers.ts:838
+    guide:  Test whether a declared range already admits a published version.
+    source: Tests whether a declared range already admits a published version.
+- Surface nameToGuide: guides/scaffold.md:237 vs src/core/helpers.ts:360
+    guide:  Derive the guide mirror path a package name answers for.
+    source: Derives the guide mirror path a package name answers for.
+- Surface planToSummary: guides/scaffold.md:238 vs src/core/helpers.ts:703
+    guide:  Project a plan into its tally by artifact origin.
+    source: Projects a plan into its tally by artifact origin.
+- Surface selectGroups: guides/scaffold.md:239 vs src/core/helpers.ts:463
+    guide:  Select the groups a compile covers, in plan order.
+    source: Selects the groups a compile covers, in plan order.
+- Surface selectHostPaths: guides/scaffold.md:240 vs src/core/helpers.ts:439
+    guide:  Select the host paths a named workspace vendors.
+    source: Selects the host paths a named workspace vendors.
+- Surface serializeTypeScriptString: guides/scaffold.md:241 vs src/core/helpers.ts:316
+    guide:  Serialize one string as a single-quoted TypeScript literal.
+    source: Serializes one string as a single-quoted TypeScript literal.
+- Surface srcToRoot: guides/scaffold.md:242 vs src/core/helpers.ts:411
+    guide:  Select the single published environment a package root points at.
+    source: Selects the single published environment a package root points at.
+- Surface applyOverrides: guides/scaffold.md:248 vs src/core/compilers.ts:1559
+    guide:  Replace the content of every drafted artifact an override names.
+    source: Replaces the content of every drafted artifact an override names.
+- Surface artifactsToQuestions: guides/scaffold.md:249 vs src/core/compilers.ts:2416
+    guide:  Measure a drafted artifact list against the laws a whole plan decides.
+    source: Measures a drafted artifact list against the laws a whole plan decides.
+- Surface blueprintToConfigArtifacts: guides/scaffold.md:250 vs src/core/compilers.ts:880
+    guide:  Compile every artifact in the `configs` group.
+    source: Compiles every artifact in the `configs` group.
+- Surface blueprintToDevDependencies: guides/scaffold.md:251 vs src/core/compilers.ts:179
+    guide:  Project a blueprint into the development dependencies its manifest declares.
+    source: Projects a blueprint into the development dependencies its manifest declares.
+- Surface blueprintToDocumentArtifacts: guides/scaffold.md:252 vs src/core/compilers.ts:1410
+    guide:  Compile the generated workspace's root documentation.
+    source: Compiles the generated workspace's root documentation.
+- Surface blueprintToGuideArtifacts: guides/scaffold.md:253 vs src/core/compilers.ts:1353
+    guide:  Compile the generated workspace's guide index.
+    source: Compiles the generated workspace's guide index.
+- Surface blueprintToMachinery: guides/scaffold.md:254 vs src/core/compilers.ts:570
+    guide:  Derive the host-specific machinery a generated root Vite configuration carries.
+    source: Derives the host-specific machinery a generated root Vite configuration carries.
+- Surface blueprintToManifest: guides/scaffold.md:255 vs src/core/compilers.ts:467
+    guide:  Compile a blueprint into its `package.json` content.
+    source: Compiles a blueprint into its `package.json` content.
+- Surface blueprintToOrchestrationArtifacts: guides/scaffold.md:256 vs src/core/compilers.ts:1473
+    guide:  Compile the blueprint-dependent orchestration artifacts.
+    source: Compiles the blueprint-dependent orchestration artifacts.
+- Surface blueprintToQuestions: guides/scaffold.md:257 vs src/core/compilers.ts:2216
+    guide:  Measure a blueprint against every law its own fields decide.
+    source: Measures a blueprint against every law its own fields decide.
+- Surface blueprintToRootTsconfig: guides/scaffold.md:258 vs src/core/compilers.ts:607
+    guide:  Compile the root TypeScript configuration for a blueprint.
+    source: Compiles the root TypeScript configuration for a blueprint.
+- Surface blueprintToRootVite: guides/scaffold.md:259 vs src/core/compilers.ts:640
+    guide:  Compile the root Vite and Vitest configuration for a blueprint.
+    source: Compiles the root Vite and Vitest configuration for a blueprint.
+- Surface blueprintToScripts: guides/scaffold.md:260 vs src/core/compilers.ts:238
+    guide:  Project a blueprint into the scripts its manifest declares.
+    source: Projects a blueprint into the scripts its manifest declares.
+- Surface blueprintToSourceArtifacts: guides/scaffold.md:261 vs src/core/compilers.ts:1065
+    guide:  Compile every artifact in the `source` group.
+    source: Compiles every artifact in the `source` group.
+- Surface blueprintToTestArtifacts: guides/scaffold.md:262 vs src/core/compilers.ts:1151
+    guide:  Compile every artifact in the `tests` group that is not vendored from the host.
+    source: Compiles every artifact in the `tests` group that is not vendored from the host.
+- Surface blueprintToWritableScripts: guides/scaffold.md:263 vs src/core/compilers.ts:411
+    guide:  Project a blueprint into the manifest scripts a region write may replace.
+    source: Projects a blueprint into the manifest scripts a region write may replace.
+- Surface dependenciesToQuestions: guides/scaffold.md:264 vs src/core/compilers.ts:2148
+    guide:  Measure one declared package list against the name and range syntax it accepts.
+    source: Measures one declared package list against the name and range syntax it accepts.
+- Surface nameToHostArtifacts: guides/scaffold.md:265 vs src/core/compilers.ts:1513
+    guide:  Compile the vendored host artifacts a named workspace plans.
+    source: Compiles the vendored host artifacts a named workspace plans.
+- Surface overridesToQuestions: guides/scaffold.md:266 vs src/core/compilers.ts:2487
+    guide:  Measure a blueprint's overrides against the artifacts drafted for it.
+    source: Measures a blueprint's overrides against the artifacts drafted for it.
+- Surface pathToCondition: guides/scaffold.md:267 vs src/core/compilers.ts:73
+    guide:  Build one `exports` condition block for a built environment.
+    source: Builds one `exports` condition block for a built environment.
+- Surface planToFindings: guides/scaffold.md:268 vs src/core/compilers.ts:2106
+    guide:  Compare a plan against a target's current content.
+    source: Compares a plan against a target's current content.
+- Surface planToHash: guides/scaffold.md:269 vs src/core/compilers.ts:2066
+    guide:  Compute a plan's content identity.
+    source: Computes a plan's content identity.
+- Surface replaceManifestRanges: guides/scaffold.md:270 vs src/core/compilers.ts:1595
+    guide:  Replace runtime and development ranges without reading or writing peer fields.
+    source: Replaces declared dependency ranges in package manifest text.
+- Surface replaceManifestScripts: guides/scaffold.md:271 vs src/core/compilers.ts:1776
+    guide:  Replace named script values, refusing a value the region does not accept.
+    source: Replaces named script values in package manifest text.
+- Surface replacePlanRanges: guides/scaffold.md:272 vs src/core/compilers.ts:2026
+    guide:  Replace writable ranges in a plan's manifest and recompute its identity.
+    source: Replaces dependency ranges in a plan's manifest and recomputes its identity.
+- Surface srcToEntry: guides/scaffold.md:273 vs src/core/compilers.ts:104
+    guide:  Project a published selection into the manifest's entry fields.
+    source: Projects a published selection into the manifest's entry fields.
+- Surface srcToExports: guides/scaffold.md:274 vs src/core/compilers.ts:139
+    guide:  Project a published selection into the manifest's `exports` map.
+    source: Projects a published selection into the manifest's `exports` map.
+- Surface createBlueprint: guides/scaffold.md:280 vs src/core/factories.ts:7
+    guide:  Construct a `Blueprint` from a name and the fields that differ from the defaults.
+    source: Constructs a `Blueprint` from a name and the fields that differ from the defaults.
+- Surface Compiler: guides/scaffold.md:286 vs src/core/Compiler.ts:41
+    guide:  The compile spine: draft, gate, pin, run in that order over a blueprint.
+    source: Represents the compile spine: draft, gate, pin, run in that order over a blueprint.
+- Surface ScaffoldError: guides/scaffold.md:287 vs src/core/errors.ts:3
+    guide:  The one error this package throws, carrying the coded reason it was raised.
+    source: Represents the one error this package throws, carrying the coded reason it was raised.
+- Surface MaterializerEventMap: guides/scaffold.md:298 vs src/server/types.ts:31
+    guide:  The materializer's observation channel.
+    source: Represents the materializer's observation channel.
+- Surface UpstreamEventMap: guides/scaffold.md:299 vs src/server/types.ts:294
+    guide:  The upstream reader's observation channel.
+    source: Represents the upstream reader's observation channel.
+- Surface BytesReadResult: guides/scaffold.md:305 vs src/server/types.ts:390
+    guide:  The outcome of one bounded read whose body is taken as exact bytes.
+    source: Reports the outcome of one bounded read whose body is taken as exact bytes.
+- Surface Host: guides/scaffold.md:306 vs src/server/types.ts:90
+    guide:  A whole vendored host supplied as a value rather than read from a directory.
+    source: Represents a whole vendored host supplied as a value: the membership beside the bytes filling it.
+- Surface HostInventory: guides/scaffold.md:307 vs src/server/types.ts:359
+    guide:  The committed vendored-file inventory as one call's reads are decided against.
+    source: Represents the committed vendored-file inventory as one call's reads are decided against.
+- Surface HostManifest: guides/scaffold.md:308 vs src/server/types.ts:73
+    guide:  The complete vendored-host inventory.
+    source: Represents the complete vendored-host inventory.
+- Surface ManifestEntry: guides/scaffold.md:309 vs src/server/types.ts:58
+    guide:  One file record of the vendored host's manifest, including its exact-byte digest.
+    source: Represents one file record of the vendored host's manifest.
+- Surface MaterializeResult: guides/scaffold.md:310 vs src/server/types.ts:15
+    guide:  The outcome of one mutation of a target.
+    source: Reports the outcome of one mutation of a target.
+- Surface MaterializerInterface: guides/scaffold.md:311 vs src/server/types.ts:177
+    guide:  The mutation contract: the package's only filesystem writer.
+    source: Describes the mutation contract: the package's only filesystem writer.
+- Surface MaterializerOptions: guides/scaffold.md:312 vs src/server/types.ts:40
+    guide:  Options for the materializer.
+    source: Represents the options for the materializer.
+- Surface ReadAllowance: guides/scaffold.md:313 vs src/server/types.ts:344
+    guide:  The byte allowance one whole upstream call spends across every read it makes.
+    source: Represents the byte allowance one whole upstream call spends across every read it makes.
+- Surface TextReadResult: guides/scaffold.md:314 vs src/server/types.ts:376
+    guide:  The outcome of one bounded read whose body is taken as text.
+    source: Reports the outcome of one bounded read whose body is taken as text.
+- Surface Worktree: guides/scaffold.md:315 vs src/server/types.ts:111
+    guide:  What git reports about a target's working tree.
+    source: Describes what git reports about a target's working tree.
+- Surface UpstreamInterface: guides/scaffold.md:316 vs src/server/types.ts:405
+    guide:  The upstream contract: the package's only network reader, and it never writes.
+    source: Describes the upstream contract: the package's only network reader, and it never writes.
+- Surface UpstreamOptions: guides/scaffold.md:317 vs src/server/types.ts:311
+    guide:  Options for the upstream reader.
+    source: Represents the options for the upstream reader.
+- Surface WriteAnchor: guides/scaffold.md:318 vs src/server/types.ts:157
+    guide:  One physical directory identity captured across a write transaction.
+    source: Represents one physical directory identity captured across a write transaction.
+- Surface WriteDirectoryResult: guides/scaffold.md:319 vs src/server/types.ts:171
+    guide:  The final directory anchor of a write transaction and the subset one call created.
+    source: Reports the final directory anchor of a write transaction and the subset one call created.
+- Surface WriteExpectation: guides/scaffold.md:320 vs src/server/types.ts:130
+    guide:  One destination snapshot captured before a write and required to survive it.
+    source: Represents one destination snapshot captured before a write and required to survive it.
+- Surface WritePrecondition: guides/scaffold.md:321 vs src/server/types.ts:147
+    guide:  The narrower caller-observed destination state a write transaction must still match.
+    source: Describes the narrower caller-observed destination state a write transaction must still match.
+- Surface BRANCH_PATTERN: guides/scaffold.md:327 vs src/server/constants.ts:42
+    guide:  The Git branch syntax the repository endpoint accepts.
+    source: Matches the Git branch syntax the repository endpoint accepts.
+- Surface DEFAULT_BRANCH: guides/scaffold.md:328 vs src/server/constants.ts:123
+    guide:  The repository branch a raw content read addresses when a caller names none.
+    source: Holds the repository branch a raw content read addresses when a caller names none.
+- Surface DEFAULT_REGISTRY_BASE: guides/scaffold.md:329 vs src/server/constants.ts:120
+    guide:  The registry a version read addresses when a caller names none.
+    source: Holds the registry a version read addresses when a caller names none.
+- Surface DEFAULT_REPOSITORY_BASE: guides/scaffold.md:330 vs src/server/constants.ts:117
+    guide:  The raw content host a repository read addresses when a caller names none.
+    source: Holds the raw content host a repository read addresses when a caller names none.
+- Surface DEFAULT_UPSTREAM_CONCURRENCY: guides/scaffold.md:331 vs src/server/constants.ts:135
+    guide:  The simultaneous upstream requests a reader opens with.
+    source: Sets the simultaneous upstream requests a reader opens with, under `MAX_UPSTREAM_CONCURRENCY`.
+- Surface DEFAULT_UPSTREAM_RETRIES: guides/scaffold.md:332 vs src/server/constants.ts:141
+    guide:  The retries one upstream request is given when a caller names none.
+    source: Sets the retries one upstream request is given when a caller names none.
+- Surface DEFAULT_UPSTREAM_TIMEOUT: guides/scaffold.md:333 vs src/server/constants.ts:126
+    guide:  The timeout one upstream request is given when a caller names none, in milliseconds.
+    source: Sets the timeout one upstream request is given when a caller names none, in milliseconds.
+- Surface DIGEST_PATTERN: guides/scaffold.md:334 vs src/server/constants.ts:32
+    guide:  The exact SHA-256 syntax a digest is stated in: sixty-four lowercase hexadecimal digits.
+    source: Matches the exact SHA-256 syntax a digest is stated in: sixty-four lowercase hexadecimal digits.
+- Surface DRIVE_PATTERN: guides/scaffold.md:335 vs src/server/constants.ts:1
+    guide:  The drive prefix a Windows host path may open with.
+    source: Matches the drive prefix a Windows host path may open with.
+- Surface INVALID_SEGMENT_CHARACTER_PATTERN: guides/scaffold.md:336 vs src/server/constants.ts:11
+    guide:  Visible characters no host path segment may carry.
+    source: Matches the visible characters no host path segment may carry.
+- Surface MANIFEST_NAME: guides/scaffold.md:337 vs src/server/constants.ts:106
+    guide:  The reserved metadata name a staged vendored host writes at its own root.
+    source: Reserves the metadata name a staged vendored host writes at its own root.
+- Surface MAX_BRANCH_LENGTH: guides/scaffold.md:338 vs src/server/constants.ts:88
+    guide:  Maximum characters one repository branch may carry.
+    source: Caps the characters one repository branch may carry.
+- Surface MAX_ENDPOINT_LENGTH: guides/scaffold.md:339 vs src/server/constants.ts:85
+    guide:  Maximum characters one caller-supplied upstream endpoint may carry.
+    source: Caps the characters one caller-supplied upstream endpoint may carry.
+- Surface MAX_INVENTORY_PATHS: guides/scaffold.md:340 vs src/server/constants.ts:73
+    guide:  Maximum paths one target's working-tree inventory may report.
+    source: Caps the paths one target's working-tree inventory may report.
+- Surface MAX_PATH_DEPTH: guides/scaffold.md:341 vs src/server/constants.ts:63
+    guide:  Maximum segments one host path may carry.
+    source: Caps the segments one host path may carry.
+- Surface MAX_PATH_SEGMENT_BYTES: guides/scaffold.md:342 vs src/server/constants.ts:53
+    guide:  Maximum UTF-8 bytes one host path segment may encode to.
+    source: Caps the UTF-8 bytes one host path segment may encode to.
+- Surface MAX_UPSTREAM_CONCURRENCY: guides/scaffold.md:343 vs src/server/constants.ts:91
+    guide:  Maximum simultaneous upstream requests.
+    source: Caps the simultaneous upstream requests.
+- Surface MAX_UPSTREAM_RETRIES: guides/scaffold.md:344 vs src/server/constants.ts:100
+    guide:  Maximum retries one upstream request may be given after a transport fault.
+    source: Caps the retries one upstream request may be given after a transport fault.
+- Surface MAX_UPSTREAM_TIMEOUT: guides/scaffold.md:345 vs src/server/constants.ts:103
+    guide:  Maximum timeout one upstream request may be given, in milliseconds.
+    source: Caps the timeout one upstream request may be given, in milliseconds.
+- Surface ORKESTREL_SCOPE: guides/scaffold.md:346 vs src/server/constants.ts:150
+    guide:  The npm scope and repository owner the fleet's packages and sources are published under.
+    source: Names the npm scope and repository owner the fleet's packages and sources are published under.
+- Surface PACKUMENT_MEDIA_TYPE: guides/scaffold.md:347 vs src/server/constants.ts:169
+    guide:  The media type that selects the registry's abbreviated packument.
+    source: Names the media type that selects the registry's abbreviated packument.
+- Surface RESERVED_SEGMENT_PATTERN: guides/scaffold.md:348 vs src/server/constants.ts:21
+    guide:  The Windows device names that stay reserved even when an extension follows.
+    source: Matches the Windows device names that stay reserved even when an extension follows.
+- Surface SCAFFOLD_REPOSITORY: guides/scaffold.md:349 vs src/server/constants.ts:156
+    guide:  The repository this package's own vendored files are served from.
+    source: Names the repository this package's own vendored files are served from.
+- Surface UNREADABLE_VERSION_NOTE: guides/scaffold.md:350 vs src/server/constants.ts:166
+    guide:  The note a release carries when its packument names no readable latest version.
+    source: Holds the note a release carries when its packument names no readable latest version.
+- Surface isBranch: guides/scaffold.md:356 vs src/server/validators.ts:186
+    guide:  Narrow a value to a Git branch the repository endpoint accepts.
+    source: Narrows a value to a Git branch the repository endpoint accepts.
+- Surface isCatalogEntries: guides/scaffold.md:357 vs src/server/validators.ts:287
+    guide:  Narrow a value to a bounded list of fleet catalog rows.
+    source: Narrows a value to a bounded list of fleet catalog rows.
+- Surface isDependencies: guides/scaffold.md:358 vs src/server/validators.ts:257
+    guide:  Narrow a value to a bounded list of declared runtime dependencies.
+    source: Narrows a value to a bounded list of declared runtime dependencies.
+- Surface isDependencyNames: guides/scaffold.md:359 vs src/server/validators.ts:217
+    guide:  Narrow a value to a bounded list of `@orkestrel` package names.
+    source: Narrows a value to a bounded list of `@orkestrel` package names.
+- Surface isDigest: guides/scaffold.md:360 vs src/server/validators.ts:131
+    guide:  Narrow a value to one exact SHA-256 digest.
+    source: Narrows a value to one exact SHA-256 digest.
+- Surface isEndpoint: guides/scaffold.md:361 vs src/server/validators.ts:176
+    guide:  Narrow a value to a bounded upstream endpoint.
+    source: Narrows a value to a bounded upstream endpoint.
+- Surface isFilesystemPath: guides/scaffold.md:362 vs src/server/validators.ts:59
+    guide:  Narrow a value to a path naming a location on this host.
+    source: Narrows a value to a path naming a location on this host.
+- Surface isHost: guides/scaffold.md:363 vs src/server/validators.ts:335
+    guide:  Narrow a value to one whole vendored host supplied as a value.
+    source: Narrows a value to one `Host`.
+- Surface isHostManifest: guides/scaffold.md:364 vs src/server/validators.ts:321
+    guide:  Narrow a value to one `HostManifest`.
+    source: Narrows a value to one `HostManifest`.
+- Surface isInventory: guides/scaffold.md:365 vs src/server/validators.ts:149
+    guide:  Narrow a value to a working-tree inventory within the limit one target may report.
+    source: Narrows a value to a working-tree inventory within the limit one target may report.
+- Surface isManifestEntry: guides/scaffold.md:366 vs src/server/validators.ts:293
+    guide:  Narrow a value to one `ManifestEntry`.
+    source: Narrows a value to one `ManifestEntry`.
+- Surface isManifestRegionSet: guides/scaffold.md:367 vs src/server/validators.ts:263
+    guide:  Narrow a value to one `ManifestRegionSet`.
+    source: Narrows a value to one `ManifestRegionSet`.
+- Surface isMaterializerHooks: guides/scaffold.md:368 vs src/server/validators.ts:381
+    guide:  Narrow a value to the materializer's initial listener record.
+    source: Narrows a value to the materializer's initial listener record.
+- Surface isMaterializerOptions: guides/scaffold.md:369 vs src/server/validators.ts:400
+    guide:  Narrow a value to `MaterializerOptions`.
+    source: Narrows a value to `MaterializerOptions`.
+- Surface isMirrors: guides/scaffold.md:370 vs src/server/validators.ts:284
+    guide:  Narrow a value to a bounded list of fetched guide mirrors.
+    source: Narrows a value to a bounded list of fetched guide mirrors.
+- Surface isPaths: guides/scaffold.md:371 vs src/server/validators.ts:238
+    guide:  Narrow a value to a bounded list of target-relative paths.
+    source: Narrows a value to a bounded list of target-relative paths.
+- Surface isWorktree: guides/scaffold.md:372 vs src/server/validators.ts:359
+    guide:  Narrow a value to a `Worktree`.
+    source: Narrows a value to a `Worktree`.
+- Surface isTimeout: guides/scaffold.md:373 vs src/server/validators.ts:207
+    guide:  Narrow a value to a per-request timeout in milliseconds.
+    source: Narrows a value to a per-request timeout in milliseconds.
+- Surface isUpstreamHooks: guides/scaffold.md:374 vs src/server/validators.ts:422
+    guide:  Narrow a value to the upstream reader's initial listener record.
+    source: Narrows a value to the upstream reader's initial listener record.
+- Surface isUpstreamOptions: guides/scaffold.md:375 vs src/server/validators.ts:440
+    guide:  Narrow a value to `UpstreamOptions`.
+    source: Narrows a value to `UpstreamOptions`.
+- Surface computeDigest: guides/scaffold.md:381 vs src/server/helpers.ts:226
+    guide:  Compute the SHA-256 digest of text.
+    source: Computes the SHA-256 digest of text.
+- Surface computeFileDigest: guides/scaffold.md:382 vs src/server/helpers.ts:405
+    guide:  Compute the SHA-256 digest of one file's exact bytes.
+    source: Computes the SHA-256 digest of one file's exact bytes.
+- Surface computeManifestDigest: guides/scaffold.md:383 vs src/server/helpers.ts:273
+    guide:  Compute the digest of a vendored host's declared membership.
+    source: Computes the digest of a vendored host's declared membership.
+- Surface filesToHost: guides/scaffold.md:384 vs src/server/helpers.ts:1279
+    guide:  Overlay host-owned live files onto the installed vendored floor.
+    source: Assembles a whole vendored host from live files and the installed floor.
+- Surface hexToDigest: guides/scaffold.md:385 vs src/server/helpers.ts:251
+    guide:  Project exact bytes stated in hexadecimal to their SHA-256 digest.
+    source: Projects exact bytes stated in hexadecimal to their SHA-256 digest.
+- Surface isExactCaseFile: guides/scaffold.md:386 vs src/server/helpers.ts:342
+    guide:  Test whether a physical file's path matches every on-disk segment exactly.
+    source: Tests whether a path is a physical file with exact on-disk casing.
+- Surface isPhysicalDirectory: guides/scaffold.md:387 vs src/server/helpers.ts:381
+    guide:  Test whether a path is a physical directory this package will read or write into.
+    source: Tests whether a path is a physical directory this package will read or write into.
+- Surface isPhysicalFile: guides/scaffold.md:388 vs src/server/helpers.ts:312
+    guide:  Test whether a path is a physical file this package will read or replace.
+    source: Tests whether a path is a physical file this package will read or replace.
+- Surface isVacant: guides/scaffold.md:389 vs src/server/helpers.ts:581
+    guide:  Test whether a target is safe to write a fresh workspace into.
+    source: Tests whether a target is safe to write a fresh workspace into.
+- Surface listCanonPaths: guides/scaffold.md:390 vs src/server/helpers.ts:833
+    guide:  List the canon paths a target holds, filtered to a plan's groups.
+    source: Lists the canon paths a target holds, filtered to a plan's groups.
+- Surface listDirectories: guides/scaffold.md:391 vs src/server/helpers.ts:727
+    guide:  List a directory's descendant directories as sorted root-relative paths.
+    source: Lists a directory's descendant directories as sorted root-relative paths.
+- Surface listFiles: guides/scaffold.md:392 vs src/server/helpers.ts:620
+    guide:  List a directory's files as sorted root-relative paths.
+    source: Lists a directory's files as sorted root-relative paths.
+- Surface matchesAnchor: guides/scaffold.md:393 vs src/server/helpers.ts:1754
+    guide:  Test whether a captured directory is still the same directory.
+    source: Tests whether a captured directory is still the same directory.
+- Surface matchesExecutablePath: guides/scaffold.md:394 vs src/server/helpers.ts:168
+    guide:  Test whether a vendored path is one a target receives executable.
+    source: Tests whether a vendored path is one a target receives executable.
+- Surface matchesExpectation: guides/scaffold.md:395 vs src/server/helpers.ts:1834
+    guide:  Test whether a destination still holds what was captured of it.
+    source: Tests whether a destination still holds what was captured of it.
+- Surface matchesGitPath: guides/scaffold.md:396 vs src/server/helpers.ts:78
+    guide:  Test whether a path addresses a target's own repository metadata.
+    source: Tests whether a path addresses a target's own repository metadata.
+- Surface matchesMissingPath: guides/scaffold.md:397 vs src/server/helpers.ts:54
+    guide:  Test whether a caught filesystem error reports an absent path.
+    source: Tests whether a caught filesystem error reports an absent path.
+- Surface matchesPrecondition: guides/scaffold.md:398 vs src/server/helpers.ts:1867
+    guide:  Test whether a destination still matches the narrower state a caller observed.
+    source: Tests whether a destination still matches the narrower state a caller observed.
+- Surface matchesProtectedPath: guides/scaffold.md:399 vs src/server/helpers.ts:104
+    guide:  Test whether a target-relative path is one no verb may delete.
+    source: Tests whether a target-relative path is one no verb may delete.
+- Surface matchesSensitivePath: guides/scaffold.md:400 vs src/server/helpers.ts:137
+    guide:  Test whether a path names local configuration or a credential.
+    source: Tests whether a path names local configuration or a credential.
+- Surface pathToStorage: guides/scaffold.md:401 vs src/server/helpers.ts:195
+    guide:  Project a target-relative path to the storage name a vendored host holds it under.
+    source: Projects a target-relative path to the storage name a vendored host holds it under.
+- Surface pruneEmptiedDirectories: guides/scaffold.md:402 vs src/server/helpers.ts:877
+    guide:  Remove every directory one set of deletions emptied.
+    source: Removes every directory one set of deletions emptied.
+- Surface readAnchor: guides/scaffold.md:403 vs src/server/helpers.ts:1727
+    guide:  Capture one directory's physical identity.
+    source: Captures one directory's physical identity.
+- Surface readExpectation: guides/scaffold.md:404 vs src/server/helpers.ts:1783
+    guide:  Capture what one destination holds before a write.
+    source: Captures what one destination holds before a write.
+- Surface readFileHex: guides/scaffold.md:405 vs src/server/helpers.ts:934
+    guide:  Read one contained file as its exact bytes in lowercase hexadecimal.
+    source: Reads one contained file as its exact bytes in lowercase hexadecimal.
+- Surface readFileText: guides/scaffold.md:406 vs src/server/helpers.ts:1010
+    guide:  Read one contained file as bounded UTF-8 text.
+    source: Reads one contained file as bounded UTF-8 text.
+- Surface readHostFloor: guides/scaffold.md:407 vs src/server/helpers.ts:1186
+    guide:  Read the installed vendored host floor as a verified value.
+    source: Reads the installed vendored host floor as a value.
+- Surface readHostManifest: guides/scaffold.md:408 vs src/server/helpers.ts:1123
+    guide:  Read a vendored host's manifest, when it carries one.
+    source: Reads a vendored host's manifest, when it carries one.
+- Surface readManifestEntry: guides/scaffold.md:409 vs src/server/helpers.ts:1241
+    guide:  Derive one vendored-host manifest entry from a file in a checkout.
+    source: Derives one vendored-host manifest entry from a file in a checkout.
+- Surface readSnapshot: guides/scaffold.md:410 vs src/server/helpers.ts:1047
+    guide:  Read a target's current bytes at the paths a plan claims.
+    source: Reads a target's current bytes at the paths a plan claims.
+- Surface resolveContainedPath: guides/scaffold.md:411 vs src/server/helpers.ts:532
+    guide:  Resolve a root-relative path and refuse one that leaves its root.
+    source: Resolves a root-relative path and refuses one that leaves its root.
+- Surface resolveRealPath: guides/scaffold.md:412 vs src/server/helpers.ts:454
+    guide:  Resolve a path through the real filesystem, keeping the part that does not exist yet.
+    source: Resolves a path through the real filesystem, keeping the part that does not exist yet.
+- Surface stageBytes: guides/scaffold.md:413 vs src/server/helpers.ts:1349
+    guide:  Stage the named destinations of a value host into a private root.
+    source: Stages the named destinations of a value host into a private root.
+- Surface stageHost: guides/scaffold.md:414 vs src/server/helpers.ts:1438
+    guide:  Stage a vendored host root from a real checkout.
+    source: Stages a vendored host root from a real checkout.
+- Surface stageInventory: guides/scaffold.md:415 vs src/server/helpers.ts:1651
+    guide:  Stage the committed vendored-file inventory from a real checkout.
+    source: Stages the committed inventory of the files a vendored host carries.
+- Surface Materializer: guides/scaffold.md:421 vs src/server/Materializer.ts:84
+    guide:  The mutation spine: read the vendored host, re-derive the target, stage, swap.
+    source: Represents the mutation spine: read the vendored host, re-derive the target, stage, swap.
+- Surface Upstream: guides/scaffold.md:422 vs src/server/Upstream.ts:71
+    guide:  The reading spine: one bounded, unauthenticated, redirect-free request per answer.
+    source: Represents the reading spine: one bounded, unauthenticated, redirect-free request per answer.
+- Surface WriteTransaction: guides/scaffold.md:423 vs src/server/WriteTransaction.ts:37
+    guide:  One staged, reversible mutation of one target directory.
+    source: Represents one staged, reversible mutation of one target directory.
+## Methods: equal 0, differ 21, no Summary column 0, no doc block 1, unpaired 0
+- Methods CompilerInterface.compile: guides/scaffold.md:436 vs src/core/types.ts:597
+    guide:  Compile a blueprint into a plan through the draft, gate, and pin stages.
+    source: Compiles a blueprint into a plan through the draft, gate, and pin stages.
+- Methods CompilerInterface.audit: guides/scaffold.md:437 vs src/core/types.ts:605
+    guide:  Compile a blueprint and compare its plan to a target's current content.
+    source: Compiles a blueprint and compares its plan to a target's current content.
+- Methods CompilerInterface.destroy: guides/scaffold.md:438 vs src/core/types.ts:614
+    guide:  Tear the compiler down. Every later call throws, and teardown is idempotent.
+    source: Tears the compiler down. Every later call throws, and teardown is idempotent.
+- Methods MaterializerInterface.audit: guides/scaffold.md:444 vs src/server/types.ts:188
+    guide:  Compare a plan with a target through the vendored host that will repair it.
+    source: Compares a plan with a target through the vendored host that will repair it.
+- Methods MaterializerInterface.materialize: guides/scaffold.md:445 vs src/server/types.ts:196
+    guide:  Write a plan into a vacant target.
+    source: Writes a plan into a vacant target.
+- Methods MaterializerInterface.repair: guides/scaffold.md:446 vs src/server/types.ts:204
+    guide:  Write a plan into an existing target, guided by an audit of it.
+    source: Writes a plan into an existing target, guided by an audit of it.
+- Methods MaterializerInterface.mirror: guides/scaffold.md:447 vs src/server/types.ts:227
+    guide:  Write fetched dependency guides to their local mirrors.
+    source: Writes fetched dependency guides to their local mirrors.
+- Methods MaterializerInterface.catalog: guides/scaffold.md:448 vs src/server/types.ts:235
+    guide:  Rewrite the marker-bounded package table in the target's catalog agent file.
+    source: Rewrites the marker-bounded package table in the target's catalog agent file.
+- Methods MaterializerInterface.declare: guides/scaffold.md:449 vs src/server/types.ts:243
+    guide:  Rewrite the manifest regions the caller names: the ranges and the scripts.
+    source: Rewrites the manifest regions the caller names in the target's manifest.
+- Methods MaterializerInterface.remove: guides/scaffold.md:450 vs src/server/types.ts:257
+    guide:  Re-derive and delete the tracked files the plan does not own.
+    source: Re-derives and deletes the tracked files the plan does not own.
+- Methods MaterializerInterface.destroy: guides/scaffold.md:451 vs src/server/types.ts:286
+    guide:  Tear the materializer down. Every later call throws, and teardown is idempotent.
+    source: Tears the materializer down. Every later call throws, and teardown is idempotent.
+- Methods UpstreamInterface.lookup: guides/scaffold.md:457 vs src/server/types.ts:421
+    guide:  Look up the newest release each declared range admits.
+    source: Looks up the newest release each declared range admits.
+- Methods UpstreamInterface.fetch: guides/scaffold.md:458 vs src/server/types.ts:428
+    guide:  Fetch each named package's guide, beside the local mirror it answers for.
+    source: Fetches each named package's guide, beside the local mirror it answers for.
+- Methods UpstreamInterface.read: guides/scaffold.md:459 vs src/server/types.ts:436
+    guide:  Read each named vendored file from the repository, beside the target bytes it answers for.
+    source: Reads each named vendored file from the repository, beside the target bytes it answers for.
+- Methods UpstreamInterface.catalog: guides/scaffold.md:460 vs src/server/types.ts:444
+    guide:  Catalog the published fleet from the registry's organization package list.
+    source: Catalogs the published fleet from the registry's organization package list.
+- Methods UpstreamInterface.destroy: guides/scaffold.md:461 vs src/server/types.ts:450
+    guide:  Tear the reader down, aborting every request in flight.
+    source: Tears the reader down, aborting every request in flight. Teardown is idempotent.
+- Methods WriteTransaction.write: guides/scaffold.md:467 vs src/server/WriteTransaction.ts:226
+    guide:  Stage one text file.
+    source: Stages one text file.
+- Methods WriteTransaction.copy: guides/scaffold.md:468 vs src/server/WriteTransaction.ts:264
+    guide:  Stage one byte-for-byte copy in executable or non-executable destination mode.
+    source: Stages one byte-for-byte copy of a file that already exists on this host.
+- Methods WriteTransaction.establish: declaration carries no doc block (guides/scaffold.md:469)
+- Methods WriteTransaction.remove: guides/scaffold.md:470 vs src/server/WriteTransaction.ts:351
+    guide:  Mark one file for deletion at commit.
+    source: Marks one file for deletion at commit.
+- Methods WriteTransaction.commit: guides/scaffold.md:471 vs src/server/WriteTransaction.ts:374
+    guide:  Promote every staged file and take every marked file, or roll the whole call back.
+    source: Promotes every staged file and takes every marked file, or rolls the whole call back.
+- Methods WriteTransaction.discard: guides/scaffold.md:472 vs src/server/WriteTransaction.ts:427
+    guide:  Abandon the transaction and remove everything it created.
+    source: Abandons the transaction and removes everything it created.

@@ -1,0 +1,10 @@
+committed table lines: 19 | rendered lines: 18
+byte-identical: false
+first committed line: "| Name                | Kind | Summary                                          "
+first rendered line: "| Name | Kind | Summary |"
+control (edited cell re-rendered differs from committed): false
+exports carrying "Provenance": codeSpanShape, createCodeSpanContract, isCodeSpanNode, parseProvenance, projectSpan
+in-cell edit diffs the render: false
+padded form re-renders to itself (idempotent): true
+control row: "| `Artifact`          | type | One file in a plan, discrimin" | edited word: One
+in-cell edit diffs the render: true

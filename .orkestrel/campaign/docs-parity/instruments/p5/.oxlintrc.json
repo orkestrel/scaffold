@@ -1,0 +1,4 @@
+{
+	"jsPlugins": [{ "name": "probe", "specifier": "./plugin.mjs" }],
+	"rules": { "probe/comment": "error" }
+}
