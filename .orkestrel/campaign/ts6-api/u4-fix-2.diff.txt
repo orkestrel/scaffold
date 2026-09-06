@@ -1,0 +1,110 @@
+--- a/src/core/templates.ts (after U4-fix)
++++ b/src/core/templates.ts (after U4-fix-2)
+@@ -1160,12 +1160,8 @@
+ // The driver a bundled consumer reads declarations under. A browser application
+ // compiles through a bundler, so the browser drive answers under this one alone,
+ // and naming it here is what keeps that selection tied to the driver it selects.
+-function requireDriver(label: string): Resolution {
+-	const driver = RESOLUTIONS.find((candidate) => candidate.label === label)
+-	if (driver === undefined) throw new Error(\`RESOLUTIONS carries no '\${label}' row\`)
+-	return driver
+-}
+-const BROWSER_DRIVER = requireDriver('bundler')
++const BROWSER_DRIVER = RESOLUTIONS.find((candidate) => candidate.label === 'bundler')
++if (BROWSER_DRIVER === undefined) throw new Error("RESOLUTIONS carries no 'bundler' row")
+ 
+ const FORMATS: ReadonlyArray<readonly [extension: string, format: Format]> = [
+ 	['ts', 'module'],
+--- a/tests/src/core/templates.test.ts (after U4-fix)
++++ b/tests/src/core/templates.test.ts (after U4-fix-2)
+@@ -1570,9 +1570,9 @@
+ 							specifier: 'sample-package/decl-cts-rt-mjs',
+ 							mapping: manifest.exports['./decl-cts-rt-mjs'],
+ 							declaration: {
+-								module: undefined,
+-								commonjs: join(installed, './common.d.cts'),
+-								browser: undefined,
++								module: false,
++								commonjs: true,
++								browser: false,
+ 							},
+ 							browser: false,
+ 							module: false,
+@@ -1584,9 +1584,9 @@
+ 							specifier: 'sample-package/decl-mts-rt-cjs',
+ 							mapping: manifest.exports['./decl-mts-rt-cjs'],
+ 							declaration: {
+-								module: undefined,
+-								commonjs: join(installed, './module.d.mts'),
+-								browser: undefined,
++								module: false,
++								commonjs: true,
++								browser: false,
+ 							},
+ 							browser: false,
+ 							module: false,
+@@ -1598,9 +1598,9 @@
+ 							specifier: 'sample-package/invalid',
+ 							mapping: manifest.exports['./invalid'],
+ 							declaration: {
+-								module: undefined,
+-								commonjs: join(installed, './invalid.d.cts'),
+-								browser: undefined,
++								module: false,
++								commonjs: true,
++								browser: false,
+ 							},
+ 							browser: false,
+ 							module: false,
+@@ -1612,9 +1612,9 @@
+ 							specifier: 'sample-package/esm-only',
+ 							mapping: manifest.exports['./esm-only'],
+ 							declaration: {
+-								module: join(installed, './esm.d.mts'),
+-								commonjs: undefined,
+-								browser: join(installed, './esm.d.mts'),
++								module: true,
++								commonjs: false,
++								browser: true,
+ 							},
+ 							browser: false,
+ 							module: true,
+@@ -1626,9 +1626,9 @@
+ 							specifier: 'sample-package/browser',
+ 							mapping: manifest.exports['./browser'],
+ 							declaration: {
+-								module: join(installed, './browser.d.ts'),
+-								commonjs: join(installed, './browser.d.ts'),
+-								browser: join(installed, './browser.d.ts'),
++								module: true,
++								commonjs: true,
++								browser: true,
+ 							},
+ 							browser: true,
+ 							module: true,
+@@ -1640,9 +1640,9 @@
+ 							specifier: 'sample-package/module-sync',
+ 							mapping: manifest.exports['./module-sync'],
+ 							declaration: {
+-								module: join(installed, './sync.d.cts'),
+-								commonjs: join(installed, './sync.d.cts'),
+-								browser: join(installed, './sync.d.cts'),
++								module: true,
++								commonjs: true,
++								browser: true,
+ 							},
+ 							browser: false,
+ 							module: true,
+@@ -1654,9 +1654,9 @@
+ 							specifier: 'sample-package/node-addons',
+ 							mapping: manifest.exports['./node-addons'],
+ 							declaration: {
+-								module: join(installed, './addon.d.cts'),
+-								commonjs: join(installed, './addon.d.cts'),
+-								browser: join(installed, './addon.d.cts'),
++								module: true,
++								commonjs: true,
++								browser: true,
+ 							},
+ 							browser: false,
+ 							module: true,
