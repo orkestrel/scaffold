@@ -1,0 +1,33 @@
+# npm test over U6's tree after the resume hook's npm ci — 2026-09-06T21:51:22Z; load: 0.39 0.79 0.68
+> @orkestrel/scaffold@0.0.63 test
+> @orkestrel/scaffold@0.0.63 test:src:core
+ RUN  v4.1.11 /home/user/scaffold
+failed to load config from /home/user/scaffold/tmp/scaffold-e2-peers-HCXC1b/malformed/vite.config.ts
+ Test Files  9 passed (9)
+      Tests  385 passed (385)
+   Duration  18.06s (transform 2.36s, setup 2.05s, import 1.40s, tests 16.92s, environment 2ms)
+> @orkestrel/scaffold@0.0.63 test:src:server
+ RUN  v4.1.11 /home/user/scaffold
+ Test Files  5 passed (5)
+      Tests  432 passed (432)
+   Duration  2.97s (transform 2.19s, setup 3.58s, import 446ms, tests 3.38s, environment 1ms)
+> @orkestrel/scaffold@0.0.63 test:src:bin
+ RUN  v4.1.11 /home/user/scaffold
+ Test Files  3 passed (3)
+      Tests  245 passed (245)
+   Duration  16.37s (transform 2.53s, setup 3.29s, import 420ms, tests 16.10s, environment 0ms)
+> @orkestrel/scaffold@0.0.63 test:policy
+ RUN  v4.1.11 /home/user/scaffold
+ Test Files  1 passed (1)
+      Tests  77 passed (77)
+   Duration  1.03s (transform 395ms, setup 410ms, import 71ms, tests 356ms, environment 0ms)
+> @orkestrel/scaffold@0.0.63 test:config
+ RUN  v4.1.11 /home/user/scaffold
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |config| tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+Error: The committed host inventory is stale at CLAUDE.md
+    718|      throw new Error(
+ Test Files  1 failed (1)
+      Tests  1 failed | 110 passed | 1 skipped (112)
+   Duration  6.36s (transform 833ms, setup 609ms, import 631ms, tests 4.91s, environment 0ms)
+exit: 1
