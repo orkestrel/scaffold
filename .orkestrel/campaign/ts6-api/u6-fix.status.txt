@@ -1,0 +1,18 @@
+ M .oxlintrc.json
+ M PROPOSAL.md
+ M ROADMAP.md
+ M guides/scaffold.md
+ M host.json
+ M package-lock.json
+ M package.json
+ M src/core/constants.ts
+ M src/core/templates.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/bin/main.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+ M vite.config.ts
+?? .orkestrel/campaign/ts6-api/u6-fix-report.md
+?? .orkestrel/campaign/ts6-api/u6-fix.diff.txt
+?? .orkestrel/campaign/ts6-api/u6-fix.status.txt

@@ -1,0 +1,202 @@
+--- a/PROPOSAL.md
++++ b/PROPOSAL.md
+@@ -243,22 +243,22 @@
+ The table gives each tool at its installed version, what it reads, what it emits, what it lints or
+ formats, whether an oxlint JS plugin can reach it, and whether using it declares a package.
+ 
+-| Tool                                  | Installed version                              | Parses                                                                                                                                    | Emits                                                                                        | Lints or formats                                                                                                                                                           | Reachable from a JS plugin                     | Dependency delta                                                                               |
+-| ------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+-| `@microsoft/tsdoc`                    | `0.16.0`, transitive only                      | TSDoc into a `DocComment` tree                                                                                                            | Plain text and TSDoc                                                                         | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
+-| `@microsoft/api-extractor`            | `7.59.0`, declared                             | TypeScript declarations and their TSDoc                                                                                                   | `.d.ts` rollup; an `.api.md` report; an `.api.json` doc model when `docModel.enabled` is set | no                                                                                                                                                                         | not applicable                                 | none, and the doc model needs a second configured invocation                                   |
+-| `@microsoft/api-extractor-model`      | `7.33.11`, transitive only                     | `.api.json`, exposing `tsdocComment` per item                                                                                             | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
+-| `typescript`                          | `6.0.3`, development edge                      | Nothing a reader can call: the fleet runs it as the `tsc` command, and no in-process compiler API is available on either major it targets | Declarations that keep the whole doc block                                                   | no                                                                                                                                                                         | no                                             | none as a development edge                                                                     |
+-| `vite`                                | `8.2.2`, declared fleet-wide                   | TypeScript into an AST through `parseSync`, carrying each declaration's export kind and range and every comment with its own range        | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none; the vendored `configs/helpers.ts` already reads it                                       |
+-| `oxlint`                              | `1.80.0`, declared                             | JS, JSX, TS, TSX, and DTS only (`plugins-dev.d.ts:4129`)                                                                                  | no                                                                                           | JSDoc structure rules; comment text through `getAllComments` (`plugins-dev.d.ts:2697`) and `CommentType.value` (`:1315-1318`), reported through `context.report` (`:3835`) | yes, for source comment text; no, for Markdown | none                                                                                           |
+-| `oxfmt`                               | `0.65.0`, declared                             | JS, TS, JSON, YAML, Markdown, MDX, and more                                                                                               | Formatted bytes                                                                              | Formats Markdown today; the `jsdoc` option normalizes doc comments and defaults to disabled                                                                                | not applicable                                 | none                                                                                           |
+-| `@orkestrel/guide`                    | `^0.0.17`, development edge fleet-wide         | Text-only line scanners, explicitly not the compiler API (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`)                      | Check populations, no Markdown                                                               | The catalog checks                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| `@orkestrel/markdown`                 | Runtime edge of scaffold and guide             | `parseDocument`, `parseProvenance` keeping source spans                                                                                   | `renderMarkdown`, canonical Markdown                                                         | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| `@orkestrel/template`                 | Runtime edge of scaffold                       | Template definitions                                                                                                                      | `fillTemplate`                                                                               | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| TypeDoc and `typedoc-plugin-markdown` | Not installed                                  | TSDoc plus unenforced JSDoc tags                                                                                                          | HTML natively; Markdown through the plugin                                                   | no                                                                                                                                                                         | not applicable                                 | `typedoc` `0.28.20` adds `lunr`, `yaml`, `minimatch`, `markdown-it`, and `@gerrit0/mini-shiki` |
+-| `@microsoft/api-documenter`           | Not installed, `7.30.13` on the registry       | `.api.json`                                                                                                                               | Markdown and DocFX YAML                                                                      | no                                                                                                                                                                         | not applicable                                 | Adds a package and its dependencies                                                            |
+-| Vale, textlint, markdownlint          | Not installed                                  | Prose                                                                                                                                     | no                                                                                           | Prose rules; Vale reaches comment text inside source through `comment.line` and `comment.block` scopes                                                                     | not applicable                                 | Each adds a package or a separate binary                                                       |
+-| `llms.txt`                            | Not installed, because it is a file convention | no                                                                                                                                        | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| Tool                                  | Installed version                              | Parses                                                                                                                                                                                                            | Emits                                                                                        | Lints or formats                                                                                                                                                           | Reachable from a JS plugin                     | Dependency delta                                                                               |
++| ------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
++| `@microsoft/tsdoc`                    | `0.16.0`, transitive only                      | TSDoc into a `DocComment` tree                                                                                                                                                                                    | Plain text and TSDoc                                                                         | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
++| `@microsoft/api-extractor`            | `7.59.0`, declared                             | TypeScript declarations and their TSDoc                                                                                                                                                                           | `.d.ts` rollup; an `.api.md` report; an `.api.json` doc model when `docModel.enabled` is set | no                                                                                                                                                                         | not applicable                                 | none, and the doc model needs a second configured invocation                                   |
++| `@microsoft/api-extractor-model`      | `7.33.11`, transitive only                     | `.api.json`, exposing `tsdocComment` per item                                                                                                                                                                     | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
++| `typescript`                          | `6.0.3`, development edge                      | Nothing a reader may call: 6.0.3 ships the in-process API and 7 drops it, so the fleet reaches the compiler as the `tsc` command by ruling and the vendored lint configuration refuses the `typescript` specifier | Declarations that keep the whole doc block                                                   | no                                                                                                                                                                         | no                                             | none as a development edge                                                                     |
++| `vite`                                | `8.2.2`, declared fleet-wide                   | TypeScript into an AST through `parseSync`, carrying each declaration's export kind and range and every comment with its own range                                                                                | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none; the vendored `configs/helpers.ts` already reads it                                       |
++| `oxlint`                              | `1.80.0`, declared                             | JS, JSX, TS, TSX, and DTS only (`plugins-dev.d.ts:4129`)                                                                                                                                                          | no                                                                                           | JSDoc structure rules; comment text through `getAllComments` (`plugins-dev.d.ts:2697`) and `CommentType.value` (`:1315-1318`), reported through `context.report` (`:3835`) | yes, for source comment text; no, for Markdown | none                                                                                           |
++| `oxfmt`                               | `0.65.0`, declared                             | JS, TS, JSON, YAML, Markdown, MDX, and more                                                                                                                                                                       | Formatted bytes                                                                              | Formats Markdown today; the `jsdoc` option normalizes doc comments and defaults to disabled                                                                                | not applicable                                 | none                                                                                           |
++| `@orkestrel/guide`                    | `^0.0.17`, development edge fleet-wide         | Text-only line scanners, explicitly not the compiler API (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`)                                                                                              | Check populations, no Markdown                                                               | The catalog checks                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| `@orkestrel/markdown`                 | Runtime edge of scaffold and guide             | `parseDocument`, `parseProvenance` keeping source spans                                                                                                                                                           | `renderMarkdown`, canonical Markdown                                                         | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| `@orkestrel/template`                 | Runtime edge of scaffold                       | Template definitions                                                                                                                                                                                              | `fillTemplate`                                                                               | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| TypeDoc and `typedoc-plugin-markdown` | Not installed                                  | TSDoc plus unenforced JSDoc tags                                                                                                                                                                                  | HTML natively; Markdown through the plugin                                                   | no                                                                                                                                                                         | not applicable                                 | `typedoc` `0.28.20` adds `lunr`, `yaml`, `minimatch`, `markdown-it`, and `@gerrit0/mini-shiki` |
++| `@microsoft/api-documenter`           | Not installed, `7.30.13` on the registry       | `.api.json`                                                                                                                                                                                                       | Markdown and DocFX YAML                                                                      | no                                                                                                                                                                         | not applicable                                 | Adds a package and its dependencies                                                            |
++| Vale, textlint, markdownlint          | Not installed                                  | Prose                                                                                                                                                                                                             | no                                                                                           | Prose rules; Vale reaches comment text inside source through `comment.line` and `comment.block` scopes                                                                     | not applicable                                 | Each adds a package or a separate binary                                                       |
++| `llms.txt`                            | Not installed, because it is a file convention | no                                                                                                                                                                                                                | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+ 
+ **Every fetched precedent keeps the comment on the declaration.** Rust, Go, Python, Elixir,
+ Deno/JSR, and Java each attach documentation to the symbol it describes, in the same source file
+@@ -351,9 +351,10 @@
+   returns what the guide says it returns" and requires transcribing each flagship fence. An option
+   that relocates a fence into an `@example` tag relocates that transcription and must name where it
+   moves to.
+-- **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. No in-process compiler
+-  API is available on either TypeScript major the fleet targets, so the reader that resolves a doc
+-  comment structurally is the parser `vite` re-exports, which the vendored `configs/helpers.ts`
++- **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. The fleet reaches the compiler as the `tsc` command by ruling, because the in-process API 6.0.3
++  ships is gone on 7 and the vendored lint configuration refuses the `typescript` specifier, so the
++  reader that resolves a doc comment structurally is the parser `vite` re-exports, which the
++  vendored `configs/helpers.ts`
+   already drives (`configs/helpers.ts:2`). `@orkestrel/guide`'s `Source` is text-only by
+   construction and states so of itself
+   (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`). Reading TSDoc is a capability `guide`
+@@ -726,7 +727,7 @@
+ **The extractor choice decides the dependency delta, and it must be stated honestly.** The
+ text-only scanner path — the same `@orkestrel/guide` extension Option 1 uses — keeps the delta at
+ none and needs no build. The parser path resolves the barrel's `export *` edges and each exported
+-declaration's leading block comment exactly, through `parseSync` from `vite` over the barrel and
++declaration's leading block comment by the ranges `parseSync` from `vite` reports over the barrel and
+ each declaring file — and a shipped `scaffold` verb importing `vite` moves an existing development
+ dependency onto scaffold's runtime edge, enlarging the installed closure of every consumer of
+ `@orkestrel/scaffold/server`. That needs your explicit request under `AGENTS.md` § Non-negotiable
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -35,8 +35,9 @@
+   and reads `stale` until the template moves. Rule whether a workspace carrying
+   `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
+   project the plan already runs in a browser, then move the template and the audit together.
+-- **scaffold**, **probe**, and the fleet: the fleet stays on TypeScript 6.0.3 and reaches the
+-  compiler as the `tsc` command alone, so the later move to 7 is one range change. Scaffold's own
++- **scaffold**, **probe**, and the fleet: the campaign's invariant is a fleet on TypeScript 6.0.3
++  that reaches the compiler as the `tsc` command alone, so the later move to 7 is one range change.
++  Scaffold's own
+   sites landed on 2026-09-06: the policy plugin took the syntax-shaped rules, `declarationRollup`
+   replaced the declaration plugin, the generated distribution proof judges an installed entry
+   through the type system, the generated-text readers moved to the parser `vite` re-exports, and
+@@ -54,7 +55,7 @@
+   `tests/setupServer.ts` beside `readStatements`, at the next pass over either file.
+ - **scaffold**: `declarationRollup` reads the extractor's `succeeded` field, which cannot see an
+   error the configuration routes at `logLevel: none`, so a roll-up that dropped a message reports
+-  success. The distribution proof over the shipped roll-up is the indirect guard today; a
++  success. The distribution proof over the shipped roll-up is the indirect guard; a
+   `messageCallback` tally is the candidate mechanism. Rule on it at the next roll-up change.
+ - **scaffold**: `inspectPolicyConfiguration` and `inspectPolicyWiring` read one file and their
+   names no longer divide the subject — the fixed-rule severity and ignore-pattern reading against
+@@ -64,18 +65,23 @@
+   `tests/setupPolicy.ts` open with a noun phrase where `.claude/rules/typescript.md` fixes a
+   third-person verb. Rule whether the letter binds a one-line TSDoc on a module helper, then sweep
+   both files on the ruling.
++- **scaffold**: `DECLARATION_DEV_DEPENDENCIES` is planned for a `bin` blueprint
++  (`src/core/compilers.ts`) while the seeded `bin` config rolls no declarations, so an
++  executable-only workspace installs an extractor nothing runs. Rule whether the planner keeps that
++  row for `bin`, at the next planner change; a change moves generated manifests and their pins.
+ - **test**: the browser journey layer resolves interactive targets and named regions, so a
+   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
+   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
+   `text-white text-opacity-75` copy stays an open limit. Add a reader that resolves a rendered
+   text node by its content within a named region for `readContrast`, with a negative control,
+   at the layer's next release.
+-- **fleet**: no published entry module carries a `@packageDocumentation` comment, so no roll-up
+-  ships one. The pipeline no longer refuses it: `declarationRollup` hands API Extractor the entry
+-  declaration the compiler emitted rather than the synthetic comment-free entry the previous
+-  plugin built. Measured 2026-09-06 in scaffold: a fixture face emitted by `tsc` and rolled up by
+-  API Extractor under the plugin's own options carried the comment into the roll-up. Decide whether
+-  each published entry gets one, at each package's next release.
++- **fleet**: scaffold's own entry module carries no `@packageDocumentation` comment, so its roll-up
++  ships none, and no other package's entry has been read for one. The pipeline no longer refuses the
++  comment: `declarationRollup` hands API Extractor the entry declaration the compiler emitted rather
++  than the synthetic comment-free entry the previous plugin built, and a probe of the same chain
++  (the compiler's emit, then API Extractor under the plugin's own override set) over a fixture face
++  on 2026-09-06 carried the comment into the roll-up; the shipped plugin itself was not driven.
++  Decide whether each published entry gets one, at each package's next release.
+ - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
+   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
+   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
+--- a/.oxlintrc.json
++++ b/.oxlintrc.json
+@@ -431,6 +431,27 @@
+ 					}
+ 				]
+ 			}
++		},
++		{
++			"files": [
++				"tests/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}",
++				"configs/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}",
++				"scripts/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}",
++				"*.{cjs,cts,js,mjs,mts,ts}"
++			],
++			"rules": {
++				"no-restricted-imports": [
++					"error",
++					{
++						"patterns": [
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							}
++						]
++					}
++				]
++			}
+ 		}
+ 	]
+ }
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -502,12 +502,11 @@
+ })
+ 
+ /**
+- * Lists the development dependencies that roll declarations up for published source or an
+- * executable.
++ * Lists the development dependencies that roll declarations up for published source.
+  *
+  * @remarks
+- * The compiler emits one declaration per module as a command the toolchain already installs, and
+- * the extractor rolls that emit into the single file each published face ships.
++ * The toolchain runs the compiler it already installs as a command, emitting one declaration per
++ * module, and the extractor rolls that emit into the single file each published face ships.
+  */
+ export const DECLARATION_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+ 	'@microsoft/api-extractor': manifest.devDependencies['@microsoft/api-extractor'],
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -118,7 +118,7 @@
+ | `CONFIG_TEMPLATES`                | const | Formatter-stable template text for every configuration artifact.                                 |
+ | `CONFORMANCE_TEST_PATH`           | const | The official-tooling drift proof whose presence makes a workspace `conformance`.                 |
+ | `CONTROL_CHARACTER_PATTERN`       | const | Unicode controls, formatting controls, and line and paragraph separators rejected in text.       |
+-| `DECLARATION_DEV_DEPENDENCIES`    | const | The development dependencies that roll declarations up for published source or an executable.    |
++| `DECLARATION_DEV_DEPENDENCIES`    | const | The development dependencies that roll declarations up for published source.                     |
+ | `DEFAULT_ENGINES`                 | const | The `engines.node` range a workspace starts with.                                                |
+ | `DEFAULT_VERSION`                 | const | The version a workspace starts at.                                                               |
+ | `DEPENDENCY_NAME_PATTERN`         | const | The runtime dependency name syntax: the `@orkestrel` scope and a bare name.                      |
+--- a/src/core/templates.ts
++++ b/src/core/templates.ts
+@@ -317,8 +317,8 @@
+ 		environment: 'node',
+ 		browser: { enabled: false },
+ 		// A config test validates every target wrapper, spawns the real linter twice under
+-		// 15-second child caps, and, where the workspace installs the extractor, drives a
+-		// declaration roll-up that spawns the compiler too, so this budget clears each under load.
++		// 15-second child caps, and rolls one face up through the compiler and the extractor it
++		// spawns, so this budget clears the capped pair with room for a contended host.
+ 		testTimeout: 60_000,
+ 	},
+ })
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -151,8 +151,8 @@
+ 		environment: 'node',
+ 		browser: { enabled: false },
+ 		// A config test validates every target wrapper, spawns the real linter twice under
+-		// 15-second child caps, and, where the workspace installs the extractor, drives a
+-		// declaration roll-up that spawns the compiler too, so this budget clears each under load.
++		// 15-second child caps, and rolls one face up through the compiler and the extractor it
++		// spawns, so this budget clears the capped pair with room for a contended host.
+ 		testTimeout: 60_000,
+ 	},
+ })

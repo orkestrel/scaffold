@@ -1,0 +1,1139 @@
+diff --git a/.oxlintrc.json b/.oxlintrc.json
+index 7efdd398..483c955e 100644
+--- a/.oxlintrc.json
++++ b/.oxlintrc.json
+@@ -143,6 +143,10 @@
+ 								"regex": "\\\\",
+ 								"message": "import paths must use portable forward slashes"
+ 							},
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							},
+ 							{
+ 								"regex": "^(?:@app(?:[/?#]|$)|(?:\\.\\./)+app(?:[/?#]|$))",
+ 								"message": "src environments must not depend on private app modules"
+@@ -187,6 +191,10 @@
+ 								"regex": "\\\\",
+ 								"message": "import paths must use portable forward slashes"
+ 							},
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							},
+ 							{
+ 								"regex": "^(?:@app(?:[/?#]|$)|(?:\\.\\./)+app(?:[/?#]|$))",
+ 								"message": "src environments must not depend on private app modules"
+@@ -227,6 +235,10 @@
+ 								"regex": "\\\\",
+ 								"message": "import paths must use portable forward slashes"
+ 							},
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							},
+ 							{
+ 								"regex": "^(?:@app(?:[/?#]|$)|(?:\\.\\./)+app(?:[/?#]|$))",
+ 								"message": "src environments must not depend on private app modules"
+@@ -271,6 +283,10 @@
+ 								"regex": "\\\\",
+ 								"message": "import paths must use portable forward slashes"
+ 							},
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							},
+ 							{
+ 								"regex": "\\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:[?#]|$)",
+ 								"message": "app/core must not import browser stylesheets"
+@@ -311,6 +327,10 @@
+ 								"regex": "\\\\",
+ 								"message": "import paths must use portable forward slashes"
+ 							},
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							},
+ 							{
+ 								"regex": "^(?:node:|(?:_(?:http_(?:agent|client|common|incoming|outgoing|server)|stream_(?:duplex|passthrough|readable|transform|wrap|writable)|tls_(?:common|wrap))|assert(?:/strict)?|async_hooks|buffer|child_process|cluster|console|constants|crypto|dgram|diagnostics_channel|dns(?:/promises)?|domain|events|fs(?:/promises)?|http|http2|https|inspector(?:/promises)?|module|net|os|path(?:/(?:posix|win32))?|perf_hooks|process|punycode|querystring|readline(?:/promises)?|repl|sqlite|stream(?:/(?:consumers|promises|web))?|string_decoder|sys|timers(?:/promises)?|tls|trace_events|tty|url|util(?:/types)?|v8|vm|wasi|worker_threads|zlib)(?:[/?#]|$)|@app/server(?:[/?#]|$)|@src/server(?:[/?#]|$)|@orkestrel/[^/]+/server(?:[/?#]|$)|(?:\\.\\./)+(?:server|src/server|app/server)(?:[/?#]|$))",
+ 								"message": "app/browser must not depend on Node or server-only modules"
+@@ -347,6 +367,10 @@
+ 								"regex": "\\\\",
+ 								"message": "import paths must use portable forward slashes"
+ 							},
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							},
+ 							{
+ 								"regex": "\\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:[?#]|$)",
+ 								"message": "app/server must not import browser stylesheets"
+@@ -387,6 +411,10 @@
+ 								"regex": "\\\\",
+ 								"message": "import paths must use portable forward slashes"
+ 							},
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							},
+ 							{
+ 								"regex": "\\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:[?#]|$)",
+ 								"message": "src/bin must not import browser stylesheets"
+@@ -403,6 +431,27 @@
+ 					}
+ 				]
+ 			}
++		},
++		{
++			"files": [
++				"tests/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}",
++				"configs/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}",
++				"scripts/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}",
++				"*.{cjs,cts,js,mjs,mts,ts}"
++			],
++			"rules": {
++				"no-restricted-imports": [
++					"error",
++					{
++						"patterns": [
++							{
++								"regex": "^typescript(?:[/?#]|$)",
++								"message": "the in-process compiler API is not a surface the fleet uses"
++							}
++						]
++					}
++				]
++			}
+ 		}
+ 	]
+ }
+diff --git a/PROPOSAL.md b/PROPOSAL.md
+index e6ba6568..2371b40a 100644
+--- a/PROPOSAL.md
++++ b/PROPOSAL.md
+@@ -243,21 +243,22 @@ sentence-truth class. The `birth` substance disagreement, the `Encodes`/`Encode`
+ The table gives each tool at its installed version, what it reads, what it emits, what it lints or
+ formats, whether an oxlint JS plugin can reach it, and whether using it declares a package.
+ 
+-| Tool                                  | Installed version                              | Parses                                                                                                                                                                             | Emits                                                                                        | Lints or formats                                                                                                                                                           | Reachable from a JS plugin                     | Dependency delta                                                                               |
+-| ------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+-| `@microsoft/tsdoc`                    | `0.16.0`, transitive only                      | TSDoc into a `DocComment` tree                                                                                                                                                     | Plain text and TSDoc                                                                         | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
+-| `@microsoft/api-extractor`            | `7.59.0`, declared                             | TypeScript declarations and their TSDoc                                                                                                                                            | `.d.ts` rollup; an `.api.md` report; an `.api.json` doc model when `docModel.enabled` is set | no                                                                                                                                                                         | not applicable                                 | none, and the doc model needs a second configured invocation                                   |
+-| `@microsoft/api-extractor-model`      | `7.33.11`, transitive only                     | `.api.json`, exposing `tsdocComment` per item                                                                                                                                      | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
+-| `typescript`                          | `6.0.3`, development edge                      | JSDoc through `ts.getJSDocTags` (`typescript.d.ts:8750`), `ts.getJSDocCommentsAndTags` (`:8889`), `Symbol.getDocumentationComment` (`:6548`), `ts.displayPartsToString` (`:11426`) | Declarations that keep the whole doc block                                                   | no                                                                                                                                                                         | not applicable                                 | none as a development edge; a runtime import moves it                                          |
+-| `oxlint`                              | `1.80.0`, declared                             | JS, JSX, TS, TSX, and DTS only (`plugins-dev.d.ts:4129`)                                                                                                                           | no                                                                                           | JSDoc structure rules; comment text through `getAllComments` (`plugins-dev.d.ts:2697`) and `CommentType.value` (`:1315-1318`), reported through `context.report` (`:3835`) | yes, for source comment text; no, for Markdown | none                                                                                           |
+-| `oxfmt`                               | `0.65.0`, declared                             | JS, TS, JSON, YAML, Markdown, MDX, and more                                                                                                                                        | Formatted bytes                                                                              | Formats Markdown today; the `jsdoc` option normalizes doc comments and defaults to disabled                                                                                | not applicable                                 | none                                                                                           |
+-| `@orkestrel/guide`                    | `^0.0.17`, development edge fleet-wide         | Text-only line scanners, explicitly not the compiler API (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`)                                                               | Check populations, no Markdown                                                               | The catalog checks                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| `@orkestrel/markdown`                 | Runtime edge of scaffold and guide             | `parseDocument`, `parseProvenance` keeping source spans                                                                                                                            | `renderMarkdown`, canonical Markdown                                                         | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| `@orkestrel/template`                 | Runtime edge of scaffold                       | Template definitions                                                                                                                                                               | `fillTemplate`                                                                               | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+-| TypeDoc and `typedoc-plugin-markdown` | Not installed                                  | TSDoc plus unenforced JSDoc tags                                                                                                                                                   | HTML natively; Markdown through the plugin                                                   | no                                                                                                                                                                         | not applicable                                 | `typedoc` `0.28.20` adds `lunr`, `yaml`, `minimatch`, `markdown-it`, and `@gerrit0/mini-shiki` |
+-| `@microsoft/api-documenter`           | Not installed, `7.30.13` on the registry       | `.api.json`                                                                                                                                                                        | Markdown and DocFX YAML                                                                      | no                                                                                                                                                                         | not applicable                                 | Adds a package and its dependencies                                                            |
+-| Vale, textlint, markdownlint          | Not installed                                  | Prose                                                                                                                                                                              | no                                                                                           | Prose rules; Vale reaches comment text inside source through `comment.line` and `comment.block` scopes                                                                     | not applicable                                 | Each adds a package or a separate binary                                                       |
+-| `llms.txt`                            | Not installed, because it is a file convention | no                                                                                                                                                                                 | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| Tool                                  | Installed version                              | Parses                                                                                                                                                                                                            | Emits                                                                                        | Lints or formats                                                                                                                                                           | Reachable from a JS plugin                     | Dependency delta                                                                               |
++| ------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
++| `@microsoft/tsdoc`                    | `0.16.0`, transitive only                      | TSDoc into a `DocComment` tree                                                                                                                                                                                    | Plain text and TSDoc                                                                         | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
++| `@microsoft/api-extractor`            | `7.59.0`, declared                             | TypeScript declarations and their TSDoc                                                                                                                                                                           | `.d.ts` rollup; an `.api.md` report; an `.api.json` doc model when `docModel.enabled` is set | no                                                                                                                                                                         | not applicable                                 | none, and the doc model needs a second configured invocation                                   |
++| `@microsoft/api-extractor-model`      | `7.33.11`, transitive only                     | `.api.json`, exposing `tsdocComment` per item                                                                                                                                                                     | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | Declaring it is a manifest change                                                              |
++| `typescript`                          | `6.0.3`, development edge                      | Nothing a reader may call: 6.0.3 ships the in-process API and 7 drops it, so the fleet reaches the compiler as the `tsc` command by ruling and the vendored lint configuration refuses the `typescript` specifier | Declarations that keep the whole doc block                                                   | no                                                                                                                                                                         | no                                             | none as a development edge                                                                     |
++| `vite`                                | `8.2.2`, declared fleet-wide                   | TypeScript into an AST through `parseSync`, carrying each declaration's export kind and range and every comment with its own range                                                                                | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none; the vendored `configs/helpers.ts` already reads it                                       |
++| `oxlint`                              | `1.80.0`, declared                             | JS, JSX, TS, TSX, and DTS only (`plugins-dev.d.ts:4129`)                                                                                                                                                          | no                                                                                           | JSDoc structure rules; comment text through `getAllComments` (`plugins-dev.d.ts:2697`) and `CommentType.value` (`:1315-1318`), reported through `context.report` (`:3835`) | yes, for source comment text; no, for Markdown | none                                                                                           |
++| `oxfmt`                               | `0.65.0`, declared                             | JS, TS, JSON, YAML, Markdown, MDX, and more                                                                                                                                                                       | Formatted bytes                                                                              | Formats Markdown today; the `jsdoc` option normalizes doc comments and defaults to disabled                                                                                | not applicable                                 | none                                                                                           |
++| `@orkestrel/guide`                    | `^0.0.17`, development edge fleet-wide         | Text-only line scanners, explicitly not the compiler API (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`)                                                                                              | Check populations, no Markdown                                                               | The catalog checks                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| `@orkestrel/markdown`                 | Runtime edge of scaffold and guide             | `parseDocument`, `parseProvenance` keeping source spans                                                                                                                                                           | `renderMarkdown`, canonical Markdown                                                         | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| `@orkestrel/template`                 | Runtime edge of scaffold                       | Template definitions                                                                                                                                                                                              | `fillTemplate`                                                                               | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
++| TypeDoc and `typedoc-plugin-markdown` | Not installed                                  | TSDoc plus unenforced JSDoc tags                                                                                                                                                                                  | HTML natively; Markdown through the plugin                                                   | no                                                                                                                                                                         | not applicable                                 | `typedoc` `0.28.20` adds `lunr`, `yaml`, `minimatch`, `markdown-it`, and `@gerrit0/mini-shiki` |
++| `@microsoft/api-documenter`           | Not installed, `7.30.13` on the registry       | `.api.json`                                                                                                                                                                                                       | Markdown and DocFX YAML                                                                      | no                                                                                                                                                                         | not applicable                                 | Adds a package and its dependencies                                                            |
++| Vale, textlint, markdownlint          | Not installed                                  | Prose                                                                                                                                                                                                             | no                                                                                           | Prose rules; Vale reaches comment text inside source through `comment.line` and `comment.block` scopes                                                                     | not applicable                                 | Each adds a package or a separate binary                                                       |
++| `llms.txt`                            | Not installed, because it is a file convention | no                                                                                                                                                                                                                | no                                                                                           | no                                                                                                                                                                         | not applicable                                 | none                                                                                           |
+ 
+ **Every fetched precedent keeps the comment on the declaration.** Rust, Go, Python, Elixir,
+ Deno/JSR, and Java each attach documentation to the symbol it describes, in the same source file
+@@ -308,10 +309,10 @@ proposal is scored against them.
+ - **C5 — TSDoc is already a shipped surface, and the doc model is not wired.**
+   `dist/src/core/index.d.ts` measured at 229169 bytes carries `@remarks` 129, `@example` 87, and
+   `{@link` 77 (`grep -c` over the built rollup), and plain `npx tsc --declaration
+---emitDeclarationOnly` keeps the whole block. Separately, `unplugin-dts` hard-codes `docModel: {
+-enabled: false }` at `unplugin-dts.BU1tibsL.mjs:549-554` and this repository configures no
+-  `docModel`, so a doc-model path needs a second api-extractor invocation with its own configuration
+-  and a build inside the documentation loop.
++--emitDeclarationOnly` keeps the whole block. Separately, the vendored roll-up
++  `declarationRollup` invokes api-extractor with `docModel: { enabled: false }`
++  (`configs/helpers.ts:704`), so a doc-model path needs a second api-extractor invocation with its
++  own configuration and a build inside the documentation loop.
+ - **C6 — A mirror is fetched bytes and is never rewritten.** `guides/README.md:33-37` states that
+   every `guides/<name>.md` file is byte-identical to that package's `main`, and
+   `src/core/constants.ts:122-123` states that a workspace never mirrors its own guide, which is why
+@@ -350,9 +351,12 @@ enabled: false }` at `unplugin-dts.BU1tibsL.mjs:549-554` and this repository con
+   returns what the guide says it returns" and requires transcribing each flagship fence. An option
+   that relocates a fence into an `@example` tag relocates that transcription and must name where it
+   moves to.
+-- **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. `typescript` `6.0.3`
+-  already exposes the JSDoc readers named under C5, and `@orkestrel/guide`'s `Source` is text-only by
+-  construction and explicitly not the compiler API
++- **C12 — No second source-language analyzer.** `AGENTS.md` § Project model. The fleet reaches the compiler as the `tsc` command by ruling, because the in-process API 6.0.3
++  ships is gone on 7 and the vendored lint configuration refuses the `typescript` specifier, so the
++  reader that resolves a doc comment structurally is the parser `vite` re-exports, which the
++  vendored `configs/helpers.ts`
++  already drives (`configs/helpers.ts:2`). `@orkestrel/guide`'s `Source` is text-only by
++  construction and states so of itself
+   (`/home/user/fleet/guide/src/core/sources/Source.ts:24-28`). Reading TSDoc is a capability `guide`
+   does not have, so an option must place that reader deliberately.
+ - **C13 — Markdown generation primitives are already declared runtime dependencies.**
+@@ -406,9 +410,10 @@ walks a declaration's leading doc-comment chain: `Source.examples()`
+ (`/home/user/fleet/guide/src/core/sources/Source.ts:115-120`) reaches `extractExampleLines` and
+ `extractExamples` (`helpers.ts:1398`, `:1492`). A first-sentence reader is an extension of that same
+ scan, not a second analyzer, which keeps C12 satisfied and the dependency delta at none. The
+-TypeScript compiler API stays the **control** the scanner is measured against — `ts.getJSDocTags`,
+-`ts.getJSDocCommentsAndTags`, `Symbol.getDocumentationComment` — and is never a shipped import,
+-because a `scaffold` verb importing `typescript` would move it onto scaffold's runtime edge (C1, C5).
++parser `vite` re-exports stays the **control** the scanner is measured against — `parseSync` returns
++each exported declaration with its own range and every comment with its own range, so the leading
++block comment attaches to the declaration by position — and is never a shipped import, because a
++`scaffold` verb importing `vite` would move it onto scaffold's runtime edge (C1, C5).
+ 
+ **The render lives in `@orkestrel/guide`, and scaffold seeds and vendors.** The proposed shape is a
+ `render` direction beside the existing `Guide` and `Source` extraction — a single-word entity API per
+@@ -633,7 +638,7 @@ it.
+ Each risk names the evidence that settles it, and the coverage risk names the drifts Option 1 leaves
+ open.
+ 
+-- **The scanner's miss rate against the compiler API is unmeasured.** `Source` is text-only by
++- **The scanner's miss rate against the parser is unmeasured.** `Source` is text-only by
+   construction, and a doc block on an overload set, on a re-exported symbol, or inside a template
+   literal is the risk. Scaffold's `src/core/index.ts` is re-exports only, so the scanner must follow
+   each row to its declaring file. Settle it with the probe named under § Probes before the first unit,
+@@ -721,14 +726,13 @@ the same model, so one sentence reaches every artifact.
+ 
+ **The extractor choice decides the dependency delta, and it must be stated honestly.** The
+ text-only scanner path — the same `@orkestrel/guide` extension Option 1 uses — keeps the delta at
+-none and needs no build. The TypeScript compiler API path resolves the barrel's export set and each
+-symbol's doc comment exactly, through `ts.createProgram`, `checker.getExportsOfModule`,
+-`Symbol.getDocumentationComment` (`typescript.d.ts:6548`), `Symbol.getJsDocTags` (`:6549`), and
+-`ts.displayPartsToString` (`:11426`) — and a shipped `scaffold` verb importing `typescript` moves an
+-existing development dependency onto scaffold's runtime edge, enlarging the installed closure of
+-every consumer of `@orkestrel/scaffold/server`. That needs your explicit request under `AGENTS.md` §
+-Non-negotiable rules, and it is one of the decisions named under § Recommendation and order. The
+-api-extractor doc model is refused as a reader on C5's evidence.
++none and needs no build. The parser path resolves the barrel's `export *` edges and each exported
++declaration's leading block comment by the ranges `parseSync` from `vite` reports over the barrel and
++each declaring file — and a shipped `scaffold` verb importing `vite` moves an existing development
++dependency onto scaffold's runtime edge, enlarging the installed closure of every consumer of
++`@orkestrel/scaffold/server`. That needs your explicit request under `AGENTS.md` § Non-negotiable
++rules, and it is one of the decisions named under § Recommendation and order. The api-extractor doc
++model is refused as a reader on C5's evidence.
+ 
+ **Markdown text comes from the declared runtime primitives.** `renderMarkdown` writes canonical
+ Markdown, `parseProvenance` locates spans, and `fillTemplate` fills the fixed section scaffolding,
+@@ -1156,9 +1160,9 @@ Each risk names the evidence that settles it.
+   for a capitalization or a collapse that alters a first sentence the `-s` rule governs.
+ - **A text scan can miss a doc block.** The controls must come from outside the scanner's membership
+   rule: a doc block preceding a declaration but separated from it by a blank line, and a doc block inside a template
+-  literal. Where the scan proves unsound, the reader becomes `ts.getJSDocCommentsAndTags`
+-  (`typescript.d.ts:8889`) and `ts.displayPartsToString` (`:11426`), which a Vitest sweep can import
+-  at no dependency cost because `typescript` is already a development dependency.
++  literal. Where the scan proves unsound, the reader becomes `parseSync` from `vite`, taking each
++  exported declaration's leading block comment by range, which a Vitest sweep can import at no
++  dependency cost because `vite` is already a development dependency.
+ - **Whether an oxlint plugin rule can report a diagnostic on a comment is unproven here.**
+   `context.report(diagnostic)` exists, and no distillate shows a comment as a diagnostic target.
+   A throwaway rule settles it, and it is the cheapest probe in this proposal.
+@@ -1233,10 +1237,10 @@ These decisions are yours before the first unit is dispatched.
+   `tests/guides.test.ts`. That keeps `@orkestrel/guide` on its development edge and keeps `typescript`
+   where it is. The alternative is a `scaffold` verb, which is a runtime-surface change with a
+   per-target `repair` behind it.
+-- **Whether `typescript` may ever move to a runtime edge.** It is a development dependency today. The
+-  compiler-API extractor is the only reader that resolves a doc comment exactly rather than by text
++- **Whether `vite` may ever move to a runtime edge.** It is a development dependency today. The
++  parser extractor is the only reader that resolves a doc comment by range rather than by text
+   scan, and importing it from `src/server` enlarges the installed closure of every consumer of
+-  `@orkestrel/scaffold/server`. The recommended path never needs it — the compiler API stays the
++  `@orkestrel/scaffold/server`. The recommended path never needs it — the parser stays the
+   control the scanner is measured against — so answer this only if the scanner's measured miss rate is
+   nonzero and matters.
+ 
+@@ -1248,7 +1252,7 @@ Each refusal names its one reason and the pointer that establishes it.
+ | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+ | TypeDoc and `typedoc-plugin-markdown`   | Declaring a package without your explicit request. `typedoc` `0.28.20` adds `lunr`, `yaml`, `minimatch`, `markdown-it`, and `@gerrit0/mini-shiki`                                                                          | `AGENTS.md` § Non-negotiable rules; `tmp/units/docs-research-web-report.md` § Distillate  |
+ | `@microsoft/api-documenter`             | Declaring a package without your explicit request                                                                                                                                                                          | `AGENTS.md` § Non-negotiable rules; `tmp/units/docs-research-web-report.md` § Evidence 2b |
+-| The api-extractor doc model as a reader | `unplugin-dts` invokes api-extractor with `docModel: { enabled: false }`, so reading the model needs a second configured invocation and a build inside the documentation loop                                              | `unplugin-dts.BU1tibsL.mjs:549-554`; constraint C5                                        |
++| The api-extractor doc model as a reader | The vendored `declarationRollup` invokes api-extractor with `docModel: { enabled: false }`, so reading the model needs a second configured invocation and a build inside the documentation loop                            | `configs/helpers.ts:704`; constraint C5                                                   |
+ | A split `guides/reference.md` file      | `Upstream.#guideURL` fetches one path per package, so every fleet mirror would arrive without its reference half, silently                                                                                                 | `src/server/Upstream.ts:737-740`; `guides/README.md:33-37`                                |
+ | A frozen `SUMMARY_VERBS` opener table   | A second wording that must be maintained and can be wrong, where C9 requires any transform to be specified and tested. Verbatim derivation avoids the transform entirely                                                   | Constraint C9; `.claude/rules/documentation.md:35` as amended                             |
+ | `llms.txt` as an authored second index  | A competing instruction copy, where `AGENTS.md`, the rule map, and `guides/README.md` are the agent's entry already. Permitted only as a _generated_ digest under Option 2's multi-render, where a crawler consumer exists | `.claude/rules/documentation.md` § Authority and workflow                                 |
+@@ -1261,8 +1265,8 @@ dispatched; the oxlint one gates Option 3.
+ 
+ 1. **The scanner's miss rate.** Run the extended scanner over `src/core/types.ts`,
+    `src/core/helpers.ts`, `src/server/Materializer.ts`, and `src/bin/CLI.ts`, and diff its extracted
+-   first sentences against `ts.getJSDocCommentsAndTags` on the same files. A nonzero miss rate selects
+-   the carry-forward fallback for the affected package and reopens the `typescript` decision.
++   first sentences against the parser's own comment reader on the same files. A nonzero miss rate
++   selects the carry-forward fallback for the affected package and reopens the `vite` decision.
+ 2. **The first regeneration's diff.** Render the `## Surface` regions and diff them against the
+    committed `guides/scaffold.md`, reading which cells change under the amended
+    `.claude/rules/documentation.md:35`. This is the gate on Stage 1.
+diff --git a/ROADMAP.md b/ROADMAP.md
+index 5c1afedd..e6b02552 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -35,28 +35,53 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+   and reads `stale` until the template moves. Rule whether a workspace carrying
+   `tests/setupBrowser.ts` receives a browser-enabled `setup` project or the browser proof joins a
+   project the plan already runs in a browser, then move the template and the audit together.
+-- **scaffold**, **probe**, and the fleet: the fleet stays on TypeScript 6.0.3 and removes every
+-  use of the in-process compiler API, so the later move to 7 is one range change; the ruling of
+-  2026-09-05 reverted the bridge and the 7 move from scaffold and probe. Measured 2026-09-05: the
+-  `tsc` process (`--noEmit`, `--pretty false`, `--showConfig`, `--incremental`), the parser and
+-  transformer `vite` re-exports, the oxlint plugin surface in `configs/policy.ts`, and
+-  api-extractor's own engine serve every site the inventory names. The reconciled plan, its
+-  routing, and its measurements sit in `.orkestrel/campaign/ts6-api/` until that campaign
+-  accepts; it waits on the owner's rulings on the scope of `vite-plugin-dts`, on probe's
+-  `Issue.range` and `Project.digest` contract, and on publishing. The same probe unit closes the
+-  Oxlint `initialize` deadline the whole probe suite misses on a four-CPU host (the type stage's
+-  synchronous program build holds the event loop past `LINT_DEADLINE`; measured 2026-09-05 at
+-  `b331d93`), because a spawned `tsc` leaves the loop free.
++- **scaffold**, **probe**, and the fleet: the campaign's invariant is a fleet on TypeScript 6.0.3
++  that reaches the compiler as the `tsc` command alone, so the later move to 7 is one range change.
++  Scaffold's own
++  sites landed on 2026-09-06: the policy plugin took the syntax-shaped rules, `declarationRollup`
++  replaced the declaration plugin, the generated distribution proof judges an installed entry
++  through the type system, the generated-text readers moved to the parser `vite` re-exports, and
++  the vendored `.oxlintrc.json` restricts the `typescript` specifier in every population it
++  governs. What remains is probe's acceptance — its type stage runs `tsc` as a process, which also
++  closes the Oxlint `initialize` deadline the whole probe suite misses on a four-CPU host, because
++  a spawned compiler leaves the event loop free — and then the fleet visit, one package at a time
++  in catalog layer order: re-pin scaffold and probe, `repair`, point the package's own
++  `configs/src/vite.*.config.ts` at `declarationRollup`, rebuild, diff `dist/` against the
++  published tarball, and bump on a material diff. Every face's roll-up moves on its import lines
++  when the declaration plugin goes, so every `src`-publishing package bumps at its visit.
++- **scaffold**: the classifier drive harness is duplicated across `tests/guides.test.ts` and
++  `tests/src/core/templates.test.ts` — the same transform, scratch pair, `createRequire` load, and
++  answer check, differing only in the scratch root. Consolidate it into one exported drive in
++  `tests/setupServer.ts` beside `readStatements`, at the next pass over either file.
++- **scaffold**: `declarationRollup` reads the extractor's `succeeded` field, which cannot see an
++  error the configuration routes at `logLevel: none`, so a roll-up that dropped a message reports
++  success. The distribution proof over the shipped roll-up is the indirect guard; a
++  `messageCallback` tally is the candidate mechanism. Rule on it at the next roll-up change.
++- **scaffold**: `inspectPolicyConfiguration` and `inspectPolicyWiring` read one file and their
++  names no longer divide the subject — the fixed-rule severity and ignore-pattern reading against
++  the caller-supplied rule-and-population coverage reading. Name them by the question each answers,
++  or merge them into one reader, at the next policy-sweep change.
++- **scaffold**: TSDoc first sentences on the module helpers in `configs/policy.ts` and
++  `tests/setupPolicy.ts` open with a noun phrase where `.claude/rules/typescript.md` fixes a
++  third-person verb. Rule whether the letter binds a one-line TSDoc on a module helper, then sweep
++  both files on the ruling.
++- **scaffold**: `DECLARATION_DEV_DEPENDENCIES` is planned for a `bin` blueprint
++  (`src/core/compilers.ts`) while the seeded `bin` config rolls no declarations, so an
++  executable-only workspace installs an extractor nothing runs. Rule whether the planner keeps that
++  row for `bin`, at the next planner change; a change moves generated manifests and their pins.
+ - **test**: the browser journey layer resolves interactive targets and named regions, so a
+   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
+   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
+   `text-white text-opacity-75` copy stays an open limit. Add a reader that resolves a rendered
+   text node by its content within a named region for `readContrast`, with a negative control,
+   at the layer's next release.
+-- **fleet**: an entry module's `@packageDocumentation` never reaches the published declaration
+-  rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
+-  2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
+-  adopts the real entry declaration, at a toolchain revisit.
++- **fleet**: scaffold's own entry module carries no `@packageDocumentation` comment, so its roll-up
++  ships none, and no other package's entry has been read for one. The pipeline no longer refuses the
++  comment: `declarationRollup` hands API Extractor the entry declaration the compiler emitted rather
++  than the synthetic comment-free entry the previous plugin built, and a probe of the same chain
++  (the compiler's emit, then API Extractor under the plugin's own override set) over a fixture face
++  on 2026-09-06 carried the comment into the roll-up; the shipped plugin itself was not driven.
++  Decide whether each published entry gets one, at each package's next release.
+ - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
+   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
+   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 5de0c22a..c4adaf9c 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -118,7 +118,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `CONFIG_TEMPLATES`                | const | Formatter-stable template text for every configuration artifact.                                 |
+ | `CONFORMANCE_TEST_PATH`           | const | The official-tooling drift proof whose presence makes a workspace `conformance`.                 |
+ | `CONTROL_CHARACTER_PATTERN`       | const | Unicode controls, formatting controls, and line and paragraph separators rejected in text.       |
+-| `DECLARATION_DEV_DEPENDENCIES`    | const | The development dependencies that emit declarations for published source or an executable.       |
++| `DECLARATION_DEV_DEPENDENCIES`    | const | The development dependencies that roll declarations up for published source.                     |
+ | `DEFAULT_ENGINES`                 | const | The `engines.node` range a workspace starts with.                                                |
+ | `DEFAULT_VERSION`                 | const | The version a workspace starts at.                                                               |
+ | `DEPENDENCY_NAME_PATTERN`         | const | The runtime dependency name syntax: the `@orkestrel` scope and a bare name.                      |
+@@ -1360,6 +1360,19 @@ except the manifest.
+ - One host artifact per vendored path the workspace selects. A vendored directory is one planned
+   path that expands into the files the data root stores beneath it.
+ 
++A workspace publishing a `src` environment rolls each published face's declarations up from that
++face's own Vite config. The seeded config calls `declarationRollup` from the vendored
++`configs/helpers.ts`, which runs the workspace's own compiler as a command —
++`--declaration --emitDeclarationOnly` into a scratch directory outside the tree — and hands the
++emitted entry declaration to API Extractor, which rolls the face into the one `index.d.ts` beside
++its bundle. The extractor analyses with the compiler engine it bundles rather than the one the
++workspace installs, so a publishing workspace declares `@microsoft/api-extractor` and imports no
++compiler API of its own. The browser and server faces pass `rewriteCoreSpecifier`: the compiler
++emits the `@src/core` specifier unrewritten and the extractor keeps it external, so the rewrite
++replaces it with the workspace's own published name and a consumer of the packed face reaches core
++through the root export the tarball declares. The seeded `bin` config calls no roll-up, because an
++executable ships no declarations.
++
+ `planToSummary` reports the tally rather than a number written down here:
+ 
+ ```ts
+@@ -1667,6 +1680,16 @@ one answered first. That is what drives a `require`-only subpath declaring its t
+ `require`, and what admits a conventional subpath that publishes no `types` condition but ships the
+ adjacent declaration TypeScript substitutes from its runtime target.
+ 
++An entry's published names are checked against its own declarations by the type system rather than
++by a walk the proof carries. Each drive writes the runtime's own key list into a generated consumer
++module as a literal and lets the workspace's compiler judge that module under the driver's own
++resolution, in both directions. `Record<keyof typeof entry, true>` takes the literal, so a name the
++declarations carry and the runtime does not lands there. `Record<keyof typeof published, true>`
++takes that record back, so a name the runtime carries and the declarations do not, and a name the
++declarations publish as a type alone, land there instead. One direction alone passes on a runtime
++key the declarations lack, which is why the consumer carries both, and each diagnostic names the
++member that moved.
++
+ A subpath is undeclared when it resolves no declaration and names a runtime target, which is a
+ defect, because a consumer importing it compiles against nothing under `node16`. A target is a
+ runtime target when its own file name carries no extension at all, or carries `.js`, `.mjs`,
+@@ -1787,7 +1810,12 @@ port, so the run drives nothing external and stays in `test`.
+   rendering, and the failure envelope.
+ - [`tests/src/bin/main.test.ts`](../tests/src/bin/main.test.ts) — the process entry point.
+ - [`tests/policy.test.ts`](../tests/policy.test.ts) — the path- and text-shaped policy laws:
+-  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges.
++  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges. The
++  syntax-shaped laws are not here: each is a rule of the vendored oxlint plugin
++  `configs/policy.ts`, which reads one file's declarations and reports through the linter.
++- [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration's aliases, projects,
++  and outputs, every plugin rule against a case pair drawn from inside and outside its membership
++  boundary, and the declaration roll-up over a real face.
+ - [`tests/guides.test.ts`](../tests/guides.test.ts) — this guide's bijection with the barrels.
+ 
+ ## See also
+diff --git a/host.json b/host.json
+index fdc857c0..10ea4ad1 100644
+--- a/host.json
++++ b/host.json
+@@ -10,7 +10,7 @@
+ 			"storage": "CLAUDE.md",
+ 			"destination": "CLAUDE.md",
+ 			"executable": false,
+-			"digest": "3428bb67c466f2880aab56f4a95129e482b6abf0b99e93e738ad790f578413ee"
++			"digest": "14c69316111917d29c42caed161d7983ff9eca488a7182d36fa0b04166e4f971"
+ 		},
+ 		{
+ 			"storage": "LICENSE",
+@@ -664,7 +664,7 @@
+ 			"storage": "dotfiles/oxlintrc.json",
+ 			"destination": ".oxlintrc.json",
+ 			"executable": false,
+-			"digest": "a0bb3e7bdd092bb75d88aaf72c82af668f05064bde93b8f985f9516fb001ee9f"
++			"digest": "742307ac1c9bc2d7b5cbceb76c6ef76337c71e4d6a84bb4402f0db9ef8162c93"
+ 		},
+ 		{
+ 			"storage": "dotfiles/prettierignore",
+@@ -682,7 +682,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "307ca8be7e43710866c4401caafeccb75244c6c5bb48319c62b0485a183ec90d"
++			"digest": "c0673d6905cfab557997cb9a8a14d204c92aa779dcf7a09ad8b69d658fd8abeb"
+ 		},
+ 		{
+ 			"storage": "scripts/codex.sh",
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "1cb851c3bdaee835df1e65b77252f3efb311f9f1768c3707060644aecdc59cec"
++	"digest": "8bee7dc95337721f468c8f0dd3821b453f214b9d6dba42e4aa21fe1b2544de3e"
+ }
+diff --git a/package-lock.json b/package-lock.json
+index a443bd80..4a9cd33e 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -32,7 +32,6 @@
+ 				"playwright": "^1.62.1",
+ 				"typescript": "^6.0.3",
+ 				"vite": "^8.2.2",
+-				"vite-plugin-dts": "^5.0.3",
+ 				"vitest": "^4.1.11"
+ 			},
+ 			"engines": {
+@@ -46,38 +45,6 @@
+ 			"dev": true,
+ 			"license": "MIT"
+ 		},
+-		"node_modules/@jridgewell/gen-mapping": {
+-			"version": "0.3.13",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz",
+-			"integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/sourcemap-codec": "^1.5.0",
+-				"@jridgewell/trace-mapping": "^0.3.24"
+-			}
+-		},
+-		"node_modules/@jridgewell/remapping": {
+-			"version": "2.3.5",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz",
+-			"integrity": "sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/gen-mapping": "^0.3.5",
+-				"@jridgewell/trace-mapping": "^0.3.24"
+-			}
+-		},
+-		"node_modules/@jridgewell/resolve-uri": {
+-			"version": "3.1.2",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+-			"integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
+-			"dev": true,
+-			"license": "MIT",
+-			"engines": {
+-				"node": ">=6.0.0"
+-			}
+-		},
+ 		"node_modules/@jridgewell/sourcemap-codec": {
+ 			"version": "1.5.5",
+ 			"resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
+@@ -85,17 +52,6 @@
+ 			"dev": true,
+ 			"license": "MIT"
+ 		},
+-		"node_modules/@jridgewell/trace-mapping": {
+-			"version": "0.3.31",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
+-			"integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/resolve-uri": "^3.1.0",
+-				"@jridgewell/sourcemap-codec": "^1.4.14"
+-			}
+-		},
+ 		"node_modules/@microsoft/api-extractor": {
+ 			"version": "7.59.0",
+ 			"resolved": "https://registry.npmjs.org/@microsoft/api-extractor/-/api-extractor-7.59.0.tgz",
+@@ -1452,36 +1408,6 @@
+ 			"dev": true,
+ 			"license": "MIT"
+ 		},
+-		"node_modules/@rollup/pluginutils": {
+-			"version": "5.4.0",
+-			"resolved": "https://registry.npmjs.org/@rollup/pluginutils/-/pluginutils-5.4.0.tgz",
+-			"integrity": "sha512-MfPp06CjRLfXQ3wY0R8vJDYBy/MvVcc9OulEfR0B8Iv9ko+GCNaRZ+EpJYFl27LhKsZK0o420sYCRHCjfCgeUg==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@types/estree": "^1.0.0",
+-				"estree-walker": "^2.0.2",
+-				"picomatch": "^4.0.2"
+-			},
+-			"engines": {
+-				"node": ">=14.0.0"
+-			},
+-			"peerDependencies": {
+-				"rollup": "^1.20.0||^2.0.0||^3.0.0||^4.0.0"
+-			},
+-			"peerDependenciesMeta": {
+-				"rollup": {
+-					"optional": true
+-				}
+-			}
+-		},
+-		"node_modules/@rollup/pluginutils/node_modules/estree-walker": {
+-			"version": "2.0.2",
+-			"resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-2.0.2.tgz",
+-			"integrity": "sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/@rushstack/node-core-library": {
+ 			"version": "5.24.0",
+ 			"resolved": "https://registry.npmjs.org/@rushstack/node-core-library/-/node-core-library-5.24.0.tgz",
+@@ -1801,48 +1727,6 @@
+ 				"url": "https://opencollective.com/vitest"
+ 			}
+ 		},
+-		"node_modules/@volar/language-core": {
+-			"version": "2.4.28",
+-			"resolved": "https://registry.npmjs.org/@volar/language-core/-/language-core-2.4.28.tgz",
+-			"integrity": "sha512-w4qhIJ8ZSitgLAkVay6AbcnC7gP3glYM3fYwKV3srj8m494E3xtrCv6E+bWviiK/8hs6e6t1ij1s2Endql7vzQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@volar/source-map": "2.4.28"
+-			}
+-		},
+-		"node_modules/@volar/source-map": {
+-			"version": "2.4.28",
+-			"resolved": "https://registry.npmjs.org/@volar/source-map/-/source-map-2.4.28.tgz",
+-			"integrity": "sha512-yX2BDBqJkRXfKw8my8VarTyjv48QwxdJtvRgUpNE5erCsgEUdI2DsLbpa+rOQVAJYshY99szEcRDmyHbF10ggQ==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/@volar/typescript": {
+-			"version": "2.4.28",
+-			"resolved": "https://registry.npmjs.org/@volar/typescript/-/typescript-2.4.28.tgz",
+-			"integrity": "sha512-Ja6yvWrbis2QtN4ClAKreeUZPVYMARDYZl9LMEv1iQ1QdepB6wn0jTRxA9MftYmYa4DQ4k/DaSZpFPUfxl8giw==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@volar/language-core": "2.4.28",
+-				"path-browserify": "^1.0.1",
+-				"vscode-uri": "^3.0.8"
+-			}
+-		},
+-		"node_modules/acorn": {
+-			"version": "8.18.0",
+-			"resolved": "https://registry.npmjs.org/acorn/-/acorn-8.18.0.tgz",
+-			"integrity": "sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"bin": {
+-				"acorn": "bin/acorn"
+-			},
+-			"engines": {
+-				"node": ">=0.4.0"
+-			}
+-		},
+ 		"node_modules/ajv": {
+ 			"version": "8.18.0",
+ 			"resolved": "https://registry.npmjs.org/ajv/-/ajv-8.18.0.tgz",
+@@ -1946,20 +1830,6 @@
+ 				"node": ">=18"
+ 			}
+ 		},
+-		"node_modules/compare-versions": {
+-			"version": "6.1.1",
+-			"resolved": "https://registry.npmjs.org/compare-versions/-/compare-versions-6.1.1.tgz",
+-			"integrity": "sha512-4hm4VPpIecmlg59CHXnRDnqGplJFrbLG4aFEl5vl6cK1u76ws3LLvX7ikFnTDl5vo39sjWD6AaDPYodJp/NNHg==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/confbox": {
+-			"version": "0.2.4",
+-			"resolved": "https://registry.npmjs.org/confbox/-/confbox-0.2.4.tgz",
+-			"integrity": "sha512-ysOGlgTFbN2/Y6Cg3Iye8YKulHw+R2fNXHrgSmXISQdMnomY6eNDprVdW9R5xBguEqI954+S6709UyiO7B+6OQ==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/convert-source-map": {
+ 			"version": "2.0.0",
+ 			"resolved": "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz",
+@@ -1967,24 +1837,6 @@
+ 			"dev": true,
+ 			"license": "MIT"
+ 		},
+-		"node_modules/debug": {
+-			"version": "4.4.3",
+-			"resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+-			"integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"ms": "^2.1.3"
+-			},
+-			"engines": {
+-				"node": ">=6.0"
+-			},
+-			"peerDependenciesMeta": {
+-				"supports-color": {
+-					"optional": true
+-				}
+-			}
+-		},
+ 		"node_modules/detect-libc": {
+ 			"version": "2.1.2",
+ 			"resolved": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
+@@ -2042,13 +1894,6 @@
+ 				"node": ">=12.0.0"
+ 			}
+ 		},
+-		"node_modules/exsolve": {
+-			"version": "1.1.1",
+-			"resolved": "https://registry.npmjs.org/exsolve/-/exsolve-1.1.1.tgz",
+-			"integrity": "sha512-9U/jZUgjnSGyntRr6y5Muu1MJcwFl6kPu7k8qLF0IMNfLqvw0NZ4nnVDq0RVoZ0RvCyumib4Ez3KYrVfilrw+g==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/fast-deep-equal": {
+ 			"version": "3.1.3",
+ 			"resolved": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
+@@ -2214,13 +2059,6 @@
+ 				"graceful-fs": "^4.1.6"
+ 			}
+ 		},
+-		"node_modules/kolorist": {
+-			"version": "1.8.0",
+-			"resolved": "https://registry.npmjs.org/kolorist/-/kolorist-1.8.0.tgz",
+-			"integrity": "sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/lightningcss": {
+ 			"version": "1.33.0",
+ 			"resolved": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz",
+@@ -2482,24 +2320,6 @@
+ 				"url": "https://opencollective.com/parcel"
+ 			}
+ 		},
+-		"node_modules/local-pkg": {
+-			"version": "1.2.1",
+-			"resolved": "https://registry.npmjs.org/local-pkg/-/local-pkg-1.2.1.tgz",
+-			"integrity": "sha512-++gUqRDEvcnN6Zhqrr+y/CkVEHhlrR96vZn3nZZPYzMcBUyBtTKzB9NadClFIsIVSsu+3i9tfk/erqy9kAmt7Q==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"mlly": "^1.7.4",
+-				"pkg-types": "^2.3.0",
+-				"quansync": "^0.2.11"
+-			},
+-			"engines": {
+-				"node": ">=14"
+-			},
+-			"funding": {
+-				"url": "https://github.com/sponsors/antfu"
+-			}
+-		},
+ 		"node_modules/magic-string": {
+ 			"version": "0.30.21",
+ 			"resolved": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+@@ -2526,38 +2346,6 @@
+ 				"url": "https://github.com/sponsors/isaacs"
+ 			}
+ 		},
+-		"node_modules/mlly": {
+-			"version": "1.8.2",
+-			"resolved": "https://registry.npmjs.org/mlly/-/mlly-1.8.2.tgz",
+-			"integrity": "sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"acorn": "^8.16.0",
+-				"pathe": "^2.0.3",
+-				"pkg-types": "^1.3.1",
+-				"ufo": "^1.6.3"
+-			}
+-		},
+-		"node_modules/mlly/node_modules/confbox": {
+-			"version": "0.1.8",
+-			"resolved": "https://registry.npmjs.org/confbox/-/confbox-0.1.8.tgz",
+-			"integrity": "sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/mlly/node_modules/pkg-types": {
+-			"version": "1.3.1",
+-			"resolved": "https://registry.npmjs.org/pkg-types/-/pkg-types-1.3.1.tgz",
+-			"integrity": "sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"confbox": "^0.1.8",
+-				"mlly": "^1.7.4",
+-				"pathe": "^2.0.1"
+-			}
+-		},
+ 		"node_modules/mrmime": {
+ 			"version": "2.0.1",
+ 			"resolved": "https://registry.npmjs.org/mrmime/-/mrmime-2.0.1.tgz",
+@@ -2568,13 +2356,6 @@
+ 				"node": ">=10"
+ 			}
+ 		},
+-		"node_modules/ms": {
+-			"version": "2.1.3",
+-			"resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+-			"integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/nanoid": {
+ 			"version": "3.3.18",
+ 			"resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz",
+@@ -2709,13 +2490,6 @@
+ 				}
+ 			}
+ 		},
+-		"node_modules/path-browserify": {
+-			"version": "1.0.1",
+-			"resolved": "https://registry.npmjs.org/path-browserify/-/path-browserify-1.0.1.tgz",
+-			"integrity": "sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/path-parse": {
+ 			"version": "1.0.7",
+ 			"resolved": "https://registry.npmjs.org/path-parse/-/path-parse-1.0.7.tgz",
+@@ -2750,18 +2524,6 @@
+ 				"url": "https://github.com/sponsors/jonschlinkert"
+ 			}
+ 		},
+-		"node_modules/pkg-types": {
+-			"version": "2.3.1",
+-			"resolved": "https://registry.npmjs.org/pkg-types/-/pkg-types-2.3.1.tgz",
+-			"integrity": "sha512-y+ichcgc2LrADuhLNAx8DFjVfgz91pRxfZdI3UDhxHvcVEZsenLO+7XaU5vOp0u/7V/wZ+plyuQxtrDlZJ+yeg==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"confbox": "^0.2.4",
+-				"exsolve": "^1.0.8",
+-				"pathe": "^2.0.3"
+-			}
+-		},
+ 		"node_modules/playwright": {
+ 			"version": "1.62.1",
+ 			"resolved": "https://registry.npmjs.org/playwright/-/playwright-1.62.1.tgz",
+@@ -2833,23 +2595,6 @@
+ 				"node": "^10 || ^12 || >=14"
+ 			}
+ 		},
+-		"node_modules/quansync": {
+-			"version": "0.2.11",
+-			"resolved": "https://registry.npmjs.org/quansync/-/quansync-0.2.11.tgz",
+-			"integrity": "sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==",
+-			"dev": true,
+-			"funding": [
+-				{
+-					"type": "individual",
+-					"url": "https://github.com/sponsors/antfu"
+-				},
+-				{
+-					"type": "individual",
+-					"url": "https://github.com/sponsors/sxzz"
+-				}
+-			],
+-			"license": "MIT"
+-		},
+ 		"node_modules/require-from-string": {
+ 			"version": "2.0.2",
+ 			"resolved": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
+@@ -3109,13 +2854,6 @@
+ 				"node": ">=14.17"
+ 			}
+ 		},
+-		"node_modules/ufo": {
+-			"version": "1.6.4",
+-			"resolved": "https://registry.npmjs.org/ufo/-/ufo-1.6.4.tgz",
+-			"integrity": "sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/undici-types": {
+ 			"version": "8.3.0",
+ 			"resolved": "https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz",
+@@ -3133,76 +2871,6 @@
+ 				"node": ">= 10.0.0"
+ 			}
+ 		},
+-		"node_modules/unplugin": {
+-			"version": "2.3.11",
+-			"resolved": "https://registry.npmjs.org/unplugin/-/unplugin-2.3.11.tgz",
+-			"integrity": "sha512-5uKD0nqiYVzlmCRs01Fhs2BdkEgBS3SAVP6ndrBsuK42iC2+JHyxM05Rm9G8+5mkmRtzMZGY8Ct5+mliZxU/Ww==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/remapping": "^2.3.5",
+-				"acorn": "^8.15.0",
+-				"picomatch": "^4.0.3",
+-				"webpack-virtual-modules": "^0.6.2"
+-			},
+-			"engines": {
+-				"node": ">=18.12.0"
+-			}
+-		},
+-		"node_modules/unplugin-dts": {
+-			"version": "1.0.3",
+-			"resolved": "https://registry.npmjs.org/unplugin-dts/-/unplugin-dts-1.0.3.tgz",
+-			"integrity": "sha512-/GR887wfG4r1cWyt1UZsLRuMIjsmEbGkS9yJrz+0dsToHAYUD5CTyP3JMGVLv25j9K0mJcwAVvZno/aTuSUvNg==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@rollup/pluginutils": "^5.1.4",
+-				"@volar/typescript": "^2.4.26",
+-				"compare-versions": "^6.1.1",
+-				"debug": "^4.4.0",
+-				"kolorist": "^1.8.0",
+-				"local-pkg": "^1.1.1",
+-				"magic-string": "^0.30.17",
+-				"unplugin": "^2.3.2"
+-			},
+-			"peerDependencies": {
+-				"@microsoft/api-extractor": ">=7",
+-				"@rspack/core": "^1",
+-				"@vue/language-core": "^3.1.5",
+-				"esbuild": "*",
+-				"rolldown": "*",
+-				"rollup": ">=3",
+-				"typescript": ">=4",
+-				"vite": ">=3",
+-				"webpack": "^4 || ^5"
+-			},
+-			"peerDependenciesMeta": {
+-				"@microsoft/api-extractor": {
+-					"optional": true
+-				},
+-				"@rspack/core": {
+-					"optional": true
+-				},
+-				"@vue/language-core": {
+-					"optional": true
+-				},
+-				"esbuild": {
+-					"optional": true
+-				},
+-				"rolldown": {
+-					"optional": true
+-				},
+-				"rollup": {
+-					"optional": true
+-				},
+-				"vite": {
+-					"optional": true
+-				},
+-				"webpack": {
+-					"optional": true
+-				}
+-			}
+-		},
+ 		"node_modules/vite": {
+ 			"version": "8.2.2",
+ 			"resolved": "https://registry.npmjs.org/vite/-/vite-8.2.2.tgz",
+@@ -3281,32 +2949,6 @@
+ 				}
+ 			}
+ 		},
+-		"node_modules/vite-plugin-dts": {
+-			"version": "5.0.3",
+-			"resolved": "https://registry.npmjs.org/vite-plugin-dts/-/vite-plugin-dts-5.0.3.tgz",
+-			"integrity": "sha512-gIth6NdCEHWPiiRMCK3N6C8WjvdsrtEQrmsiG8h6Ov+lFP+b07Y+wcs9H0H7n146l0PDTYK4cQN1vgeG1pMdRQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"unplugin-dts": "1.0.3"
+-			},
+-			"peerDependencies": {
+-				"@microsoft/api-extractor": ">=7",
+-				"rollup": ">=3",
+-				"vite": ">=3"
+-			},
+-			"peerDependenciesMeta": {
+-				"@microsoft/api-extractor": {
+-					"optional": true
+-				},
+-				"rollup": {
+-					"optional": true
+-				},
+-				"vite": {
+-					"optional": true
+-				}
+-			}
+-		},
+ 		"node_modules/vite/node_modules/fsevents": {
+ 			"version": "2.3.3",
+ 			"resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
+@@ -3412,20 +3054,6 @@
+ 				}
+ 			}
+ 		},
+-		"node_modules/vscode-uri": {
+-			"version": "3.2.0",
+-			"resolved": "https://registry.npmjs.org/vscode-uri/-/vscode-uri-3.2.0.tgz",
+-			"integrity": "sha512-m2gXo3bn0G1kT9InzMf07fTbqMbGtyckj3bH5ktLO+1Ssv+yiATZ4dhwaQv9UZWxJh6E9IFGnQyjgWVDWVBDrg==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/webpack-virtual-modules": {
+-			"version": "0.6.2",
+-			"resolved": "https://registry.npmjs.org/webpack-virtual-modules/-/webpack-virtual-modules-0.6.2.tgz",
+-			"integrity": "sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/why-is-node-running": {
+ 			"version": "2.3.0",
+ 			"resolved": "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz",
+diff --git a/package.json b/package.json
+index 2df0ea56..7ff07ae8 100644
+--- a/package.json
++++ b/package.json
+@@ -113,7 +113,6 @@
+ 		"playwright": "^1.62.1",
+ 		"typescript": "^6.0.3",
+ 		"vite": "^8.2.2",
+-		"vite-plugin-dts": "^5.0.3",
+ 		"vitest": "^4.1.11"
+ 	},
+ 	"engines": {
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 3fad7c94..24330b5f 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -502,12 +502,14 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
+ })
+ 
+ /**
+- * Lists the development dependencies that emit declarations for published source or an
+- * executable.
++ * Lists the development dependencies that roll declarations up for published source.
++ *
++ * @remarks
++ * The toolchain runs the compiler it already installs as a command, emitting one declaration per
++ * module, and the extractor rolls that emit into the single file each published face ships.
+  */
+ export const DECLARATION_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+ 	'@microsoft/api-extractor': manifest.devDependencies['@microsoft/api-extractor'],
+-	'vite-plugin-dts': manifest.devDependencies['vite-plugin-dts'],
+ })
+ 
+ /** Lists the development dependencies a published browser `src` environment adds. */
+diff --git a/src/core/templates.ts b/src/core/templates.ts
+index 5e8101b5..07022c4d 100644
+--- a/src/core/templates.ts
++++ b/src/core/templates.ts
+@@ -316,9 +316,10 @@ export function appBrowser(): UserConfig {
+ 		setupFiles: ['./tests/setup.ts'],
+ 		environment: 'node',
+ 		browser: { enabled: false },
+-		// A config test validates every target wrapper and runs the real linter twice with
+-		// 15-second child caps, so this budget clears both caps and reports their diagnostics.
+-		testTimeout: 45_000,
++		// A config test validates every target wrapper, spawns the real linter twice under
++		// 15-second child caps, and rolls one face up through the compiler and the extractor it
++		// spawns, so this budget clears the capped pair with room for a contended host.
++		testTimeout: 60_000,
+ 	},
+ })
+ `,
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index 5724bf7e..1545dbbd 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -137,10 +137,6 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
+ 		status: 200,
+ 		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
+ 	},
+-	'/vite-plugin-dts': {
+-		status: 200,
+-		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['vite-plugin-dts']?.slice(1) ?? ''),
+-	},
+ 	'/vitest': {
+ 		status: 200,
+ 		body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),
+@@ -248,10 +244,6 @@ const AUDIT_REGISTRY = await createUpstreamServer({
+ 		status: 200,
+ 		body: buildPackument(BASE_DEV_DEPENDENCIES.vite?.slice(1) ?? ''),
+ 	},
+-	'/vite-plugin-dts': {
+-		status: 200,
+-		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['vite-plugin-dts']?.slice(1) ?? ''),
+-	},
+ 	'/vite-plugin-singlefile': {
+ 		status: 200,
+ 		body: buildPackument(SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile']?.slice(1) ?? ''),
+@@ -1060,7 +1052,7 @@ describe('CLI audit', () => {
+ 							...APP_DEV_DEPENDENCIES,
+ 							...APP_BROWSER_DEV_DEPENDENCIES,
+ 						},
+-						['@microsoft/api-extractor', 'vite-plugin-dts'],
++						['@microsoft/api-extractor'],
+ 					),
+ 				),
+ 			)
+@@ -1101,7 +1093,7 @@ describe('CLI audit', () => {
+ 							...APP_DEV_DEPENDENCIES,
+ 							...APP_BROWSER_DEV_DEPENDENCIES,
+ 						},
+-						['@microsoft/api-extractor', '@orkestrel/test', 'vite-plugin-dts'],
++						['@microsoft/api-extractor', '@orkestrel/test'],
+ 					),
+ 				),
+ 			)
+diff --git a/tests/src/bin/main.test.ts b/tests/src/bin/main.test.ts
+index 8024c36b..9a689cc0 100644
+--- a/tests/src/bin/main.test.ts
++++ b/tests/src/bin/main.test.ts
+@@ -106,10 +106,6 @@ describe('scaffold', () => {
+ 					versions: { '8.2.0': {}, '8.2.3': {}, '9.0.0': {} },
+ 				}),
+ 			},
+-			'/vite-plugin-dts': {
+-				status: 200,
+-				body: buildPackument(DECLARATION_DEV_DEPENDENCIES['vite-plugin-dts']?.slice(1) ?? ''),
+-			},
+ 			'/vitest': {
+ 				status: 200,
+ 				body: buildPackument(BASE_DEV_DEPENDENCIES.vitest?.slice(1) ?? ''),
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index 1e8eca7c..bcd9f5ab 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -405,7 +405,6 @@ describe('blueprintToDevDependencies compile tooling', () => {
+ 		const planned = blueprintToDevDependencies(buildBlueprint({ src: ['core'], app: [] }))
+ 
+ 		expect(planned['@microsoft/api-extractor']).toBe('^7.59.0')
+-		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
+ 	})
+ 
+ 	it('omits library publishing tools from an app-only workspace', () => {
+@@ -414,14 +413,12 @@ describe('blueprintToDevDependencies compile tooling', () => {
+ 		)
+ 
+ 		expect(planned['@microsoft/api-extractor']).toBeUndefined()
+-		expect(planned['vite-plugin-dts']).toBeUndefined()
+ 	})
+ 
+ 	it('keeps library publishing tools in an executable workspace', () => {
+ 		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
+ 
+ 		expect(planned['@microsoft/api-extractor']).toBe('^7.59.0')
+-		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
+ 	})
+ 
+ 	it('keeps the browser application toolchain in an app-only workspace', async () => {
+diff --git a/tests/src/core/fixtures/setup-false-manifest.txt b/tests/src/core/fixtures/setup-false-manifest.txt
+index 51fe7cab..f0b5be8d 100644
+--- a/tests/src/core/fixtures/setup-false-manifest.txt
++++ b/tests/src/core/fixtures/setup-false-manifest.txt
+@@ -71,7 +71,6 @@
+ 		"oxlint": "^1.80.0",
+ 		"typescript": "^6.0.3",
+ 		"vite": "^8.2.2",
+-		"vite-plugin-dts": "^5.0.3",
+ 		"vitest": "^4.1.11"
+ 	},
+ 	"engines": {
+diff --git a/tests/src/core/fixtures/source-manifest.txt b/tests/src/core/fixtures/source-manifest.txt
+index 51fe7cab..f0b5be8d 100644
+--- a/tests/src/core/fixtures/source-manifest.txt
++++ b/tests/src/core/fixtures/source-manifest.txt
+@@ -71,7 +71,6 @@
+ 		"oxlint": "^1.80.0",
+ 		"typescript": "^6.0.3",
+ 		"vite": "^8.2.2",
+-		"vite-plugin-dts": "^5.0.3",
+ 		"vitest": "^4.1.11"
+ 	},
+ 	"engines": {
+diff --git a/vite.config.ts b/vite.config.ts
+index 138e0ebc..c0f9566e 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -150,9 +150,10 @@ export const config = (): UserConfig => ({
+ 		setupFiles: ['./tests/setup.ts'],
+ 		environment: 'node',
+ 		browser: { enabled: false },
+-		// A config test validates every target wrapper and runs the real linter twice with
+-		// 15-second child caps, so this budget clears both caps and reports their diagnostics.
+-		testTimeout: 45_000,
++		// A config test validates every target wrapper, spawns the real linter twice under
++		// 15-second child caps, and rolls one face up through the compiler and the extractor it
++		// spawns, so this budget clears the capped pair with room for a contended host.
++		testTimeout: 60_000,
+ 	},
+ })
+ 
