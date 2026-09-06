@@ -53,3 +53,9 @@ follows it. This file adds only what Claude Code does differently, and cannot we
   ChatGPT approval in the browser.
 - `scripts/codex.sh` only reports readiness. It never installs, authenticates, logs out, reads the
   auth cache, or performs a model call.
+- `scripts/deps.sh` runs `npm ci --ignore-scripts` on every session start and resume whose
+  `package-lock.json` digest differs from `node_modules/.orkestrel-lock.sha256`, and a resume
+  follows every turn boundary. After a tracked command changes the lockfile in this checkout,
+  write the lockfile's SHA-256 digest to that marker in the same turn, before any unit or gate runs
+  here. A marker left stale reinstalls `node_modules` under a live suite on the next resume, and the
+  suite reports a missing package that is present a moment later.

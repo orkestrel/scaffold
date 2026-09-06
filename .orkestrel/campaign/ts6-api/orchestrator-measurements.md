@@ -233,3 +233,16 @@ utf16 length 103 utf8 bytes 107 program.end 103
 ```
 
 Reading: `parseSync` reports `start` and `end` as UTF-16 code-unit offsets (the program's `end` equals the string's `length`, four short of its byte length, and every slice lands exactly), so `readStatements`'s `source.slice(node.start, node.end)` is right on a non-ASCII source. The objective lane's F1 names a risk the parser does not carry; the case it prescribes is adopted as the reader's control in U5-fix so a parser that changed its unit would redden it.
+
+## The resume hook's `npm ci` under a live gate run (2026-09-06 21:47 UTC, `~/.npm/_logs/2026-09-06T21_47_02_166Z-debug-0.log`)
+
+```text
+21:44:15  the Orchestrator's tracked `npm install` regenerated package-lock.json (29 packages removed)
+21:46:56  the U6 verifier's `npm test` began (`test:src:core` first)
+21:47:02  scripts/deps.sh (SessionStart:resume hook) found the lockfile digest marker stale and ran `npm ci --ignore-scripts` in /home/user/scaffold
+21:47:14  node_modules/playwright/index.js rewritten; node_modules/.package-lock.json 21:47:15
+21:46:57  → the five browser-resolver cases in tests/src/core/templates.test.ts failed with ERR_MODULE_NOT_FOUND on /home/user/scaffold/node_modules/playwright/index.js; the `&&` chain stopped there
+21:49:55  the Orchestrator's solo re-run of those cases: 5 passed | 27 skipped, 13.9 s
+```
+
+Reading: the verifier's `npm test` red is a host condition, not U6's: the session resume that followed the Orchestrator's turn boundary re-armed `scripts/deps.sh`, whose lockfile-digest marker no longer matched the regenerated `package-lock.json`, so it reinstalled `node_modules` under the running suite. The marker now matches the lockfile, so the next resume skips. The rest of the test chain never ran in that report and is the Orchestrator's own tracked run (`u6-npm-test-solo.log.txt`). The process rule lands in `CLAUDE.md` § Claude Code Cloud with this record.
