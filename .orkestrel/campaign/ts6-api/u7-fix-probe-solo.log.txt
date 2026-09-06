@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/user/fleet/probe
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  11:52:58
+   Duration  379.18s (transform 580ms, setup 154ms, import 577ms, tests 378.29s, environment 0ms)
+
+EXIT:0

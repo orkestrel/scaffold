@@ -154,3 +154,14 @@ cmp dist/src/server/index.d.ts <u1 rollup>                            → exit 0
 ```
 
 Reading: the verifier's report (`u3-fix-verify-report.md` § 8) read the second hunk backwards — it names `nameToRewrite` as present in the current build, while the `>` lines are U1's baseline. The current rollup differs from U1's only by the seed literals this unit changed and the helper it deleted, both by design, and the server rollup is byte-identical.
+
+## The expiry row under load, a second time (2026-09-06, probe checkout, the U7-fix verifier)
+
+```text
+verifier, whole suite beside the U7-fix audit lanes and the U4 implementer in scaffold:
+  tests/src/server/Probe.test.ts > expires only the active inspection, cleans its revision, and serves a queued claim
+  expirations.calls carried the arming control claim (arm-type.probe-…) before the hanging claim; 15 s budget
+host at 11:53 UTC, four processors: load average 1.84 (1 min), 4.09 (5 min), 3.28 (15 min); five node processes above 50 % each
+```
+
+Reading: under a saturated host the 15 s budget expired the type stage's own warm (the arming control), which the case's comment names as the outcome a budget under the floor produces. The idle-host reading of 11:00 UTC passed the row (`u7-probe-solo.log.txt`); the deciding reading is the solo run launched at 11:53 UTC (`u7-fix-probe-solo.log.txt`). The guide's § Cost advises leaving room for a contended host, and a 15 s budget over a 12 s warm leaves 3 s, so the row is a fixture budget carried to U7-fix-d if the solo run passes.
