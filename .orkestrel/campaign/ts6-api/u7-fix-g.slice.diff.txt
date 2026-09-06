@@ -1,0 +1,34 @@
+--- a/guides/probe.md
++++ b/guides/probe.md
+@@ -1042,16 +1042,17 @@
+ 
+ ## Cost
+ 
+-The following measurements decide whether a harness's timeout is right. The type-stage readings were
+-taken on 2026-09-06 and the rest on 2026-08-20, over this repository as the target workspace, on
++The following measurements decide whether a harness's timeout is right. They were taken on
++2026-09-06, over this repository as the target workspace, on
+ Linux 6.18.44 x64 with 4 processors, Node 22.22.2, TypeScript 6.0.3, Oxlint 1.81.0, and Vitest
+ 4.1.11, with other work running beside them. Read them as the shape of the cost on comparable
+ hardware rather than as a figure another host reproduces.
+ 
+ | What                                                                     | Measured                     |
+ | ------------------------------------------------------------------------ | ---------------------------- |
+-| Boot: spawning `dist/bin/main.js` to the first answered `tools/call`     | 4.1 s to 4.4 s over 4 runs   |
+-| One warm `prove` over the flagship claim, client round trip              | 437 ms to 495 ms over 4 runs |
++| Boot: spawning `dist/bin/main.js` to the answered `initialize`           | 497 ms to 561 ms over 3 runs |
++| Boot: spawning `dist/bin/main.js` to the first answered `tools/call`     | 16.2 s to 16.8 s over 3 runs |
++| One warm `prove` over the flagship claim, client round trip              | 4.2 s to 5.7 s over 3 runs   |
+ | Type stage: construction to the `arm` event over this repository         | 12.2 s                       |
+ | Type stage: the declared projects warmed together, cold                  | 4.6 s                        |
+ | Type stage: the declared projects warmed together again                  | 2.5 s                        |
+@@ -1066,7 +1067,8 @@
+ `PROBE_DEADLINE` of 30,000 ms clears it with room for a contended host.
+ 
+ Boot is dominated by arming, which runs its real controls through every stage before the service
+-answers. A client whose timeout is tighter than boot reports a hang that is a wait.
++answers. The first answered `tools/call` also carries one `prove`, so it lands about one warm call
++after the `arm` event. A client whose timeout is tighter than boot reports a hang that is a wait.
+ Handshake requests answer immediately; only `tools/call` waits on arming.
+ 
+ `prove` runs the case through every stage and then the control through every stage, in sequence, so
