@@ -181,7 +181,7 @@ These supersede the D3 report's symbol tables, which were taken before its resum
 | `tester.run('no-malformed-summary', VOICE_RULE, …)` | `tests/config.test.ts:1338` |
 | accepts a word from the stop set after the opener (relabelled here) | `tests/config.test.ts:1383` |
 | accepts a block tag naming the symbol after the description (added here) | `tests/config.test.ts:1389` |
-| rejects an opener from the stop set (relabelled here) | `tests/config.test.ts:1402` |
+| rejects an opener from the stop set (relabelled here) | `tests/config.test.ts:1416` (the report cited `:1402`; corrected by the Orchestrator on the checker's reading) |
 | `tester.run('no-banned-term', TERM_RULE, …)` | `tests/config.test.ts:1444` |
 | blanks a matched region without moving a line break | `tests/config.test.ts:1650` |
 | blanks every code, tag, and address region while holding each later offset | `tests/config.test.ts:1655` |

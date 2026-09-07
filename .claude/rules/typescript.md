@@ -77,6 +77,11 @@ type Result<T, E = Error> = Success<T> | Failure<E>
 - Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.
 - The first sentence states what the symbol does in the third person with an `-s` verb — `Creates`,
   `Returns`, `Checks whether` — and never repeats the symbol's name.
+- `policy/no-malformed-summary` reads that first sentence over every doc block a top-level export
+  declaration follows, and refuses an opening word that is not a third-person `-s` verb and a
+  sentence naming the declared symbol. A word ending in `s` that the rule's stop set does not name
+  passes whether or not it is a verb — a plural noun such as `Files` included — so read the sentence
+  in review as well.
 - Describe a boolean parameter as "If `true`, …; if `false`, …", and a boolean return as
   "True if …; false otherwise".
 - Write a default as "Default: …" and a thrown error as "Thrown when …".

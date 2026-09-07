@@ -9,9 +9,17 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, matchesGlob } from 'node:path'
+import { stripPolicyCode, textToPolicyHits } from '../configs/policy.js'
 
 /** Names a rule the fleet sweep decides from workspace text and paths. */
-export type PolicyRule = 'bridge' | 'mirror' | 'portability' | 'rules' | 'skill' | 'suppression'
+export type PolicyRule =
+	| 'bridge'
+	| 'mirror'
+	| 'portability'
+	| 'prose'
+	| 'rules'
+	| 'skill'
+	| 'suppression'
 
 /** Describes one workspace file a physical control writes. */
 export interface PolicySource {
@@ -151,6 +159,8 @@ export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
 export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
 	'policy/no-mocking',
 	'policy/no-keyword-privacy',
+	'policy/no-malformed-summary',
+	'policy/no-banned-term',
 	'typescript/parameter-properties',
 	'typescript/explicit-member-accessibility',
 ])
@@ -223,6 +233,39 @@ export const POLICY_RULE_MAP_HEADING = '## Rule map'
 
 /** Names the workspace manifest whose scripts run on every supported host. */
 export const POLICY_MANIFEST_FILE = 'package.json'
+
+/** Lists the directory names the prose sweep never descends into. */
+export const POLICY_PROSE_EXCLUSIONS: readonly string[] = Object.freeze([
+	'.git',
+	'.orkestrel',
+	'dist',
+	'node_modules',
+	'tmp',
+])
+
+/** Matches a top-level guide path and captures the package short name it is written for. */
+export const POLICY_MIRROR_PATTERN = /^guides\/([^/]+)\.md$/u
+
+/** Names the guide a workspace holds as its own index rather than as a mirror. */
+export const POLICY_GUIDE_MAP = 'README'
+
+/** Names the rule file whose substitution table is the denylist's source. */
+export const POLICY_TERM_FILE = '.claude/rules/writing.md'
+
+/** Names the heading that opens the substitution table. */
+export const POLICY_TERM_HEADING = '## Substitutions'
+
+/**
+ * Names the catalog agent file whose table registers every fleet package.
+ *
+ * @remarks
+ * The path is written here rather than read from the scaffold constant that plans it, because this
+ * module is vendored byte-identical into every workspace and imports nothing from the package.
+ */
+export const POLICY_CATALOG_FILE = '.claude/agents/orkestrel.md'
+
+/** Names the heading that opens the package catalog. */
+export const POLICY_CATALOG_HEADING = '## Package catalog'
 
 /**
  * Normalizes platform separators for stable matching and diagnostics.
@@ -1296,6 +1339,204 @@ export function inspectPolicyScripts(root: string): readonly PolicyViolation[] {
 }
 
 /**
+ * Reads every authored Markdown path in one workspace, sorted by path.
+ *
+ * @remarks
+ * The walk descends the whole tree apart from the directory names
+ * {@link POLICY_PROSE_EXCLUSIONS} lists, which hold installed packages, built output, scratch
+ * work, and campaign records rather than prose this workspace authors.
+ *
+ * @param root - The workspace root to read.
+ * @returns Every workspace-relative Markdown path, sorted by path.
+ */
+export function readPolicyProse(root: string): readonly string[] {
+	const paths: string[] = []
+	const pending: string[] = ['']
+	while (pending.length > 0) {
+		const relative = pending.pop() ?? ''
+		for (const entry of readdirSync(join(root, relative), { withFileTypes: true })) {
+			const path = relative === '' ? entry.name : `${relative}/${entry.name}`
+			if (entry.isDirectory()) {
+				if (!POLICY_PROSE_EXCLUSIONS.includes(entry.name)) pending.push(path)
+				continue
+			}
+			if (entry.name.endsWith('.md')) paths.push(normalizePolicyPath(path))
+		}
+	}
+	return paths.sort()
+}
+
+/**
+ * Reads the short name one workspace manifest declares, its scope removed.
+ *
+ * @param root - The workspace root to read.
+ * @returns The manifest name after its scope, or undefined where no manifest declares one.
+ */
+export function readPolicyPackage(root: string): string | undefined {
+	if (!isPolicyFile(root, POLICY_MANIFEST_FILE)) return undefined
+	let manifest: unknown
+	try {
+		manifest = JSON.parse(readFileSync(join(root, POLICY_MANIFEST_FILE), 'utf8'))
+	} catch {
+		return undefined
+	}
+	if (!isPolicyRecord(manifest)) return undefined
+	const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
+	if (typeof name !== 'string') return undefined
+	return name.slice(name.lastIndexOf('/') + 1)
+}
+
+/**
+ * Reads every package short name the catalog table registers.
+ *
+ * @remarks
+ * A workspace holds this file because the `catalog` verb refuses a target that lacks it, and a
+ * workspace that has not received one yet registers no package, so the read yields an empty list
+ * there rather than failing.
+ *
+ * @param root - The workspace root to read.
+ * @returns Each catalog row's package short name, its scope removed, in table order.
+ */
+export function readPolicyCatalog(root: string): readonly string[] {
+	if (!isPolicyFile(root, POLICY_CATALOG_FILE)) return []
+	const lines = readFileSync(join(root, POLICY_CATALOG_FILE), 'utf8')
+		.replaceAll('\r\n', '\n')
+		.split('\n')
+	const heading = lines.indexOf(POLICY_CATALOG_HEADING)
+	if (heading === -1) return []
+	const names: string[] = []
+	for (let index = heading + 1; index < lines.length; index += 1) {
+		const line = lines[index]
+		if (line === undefined || line.startsWith('## ')) break
+		const cell = line.match(/^\|\s*`([^`]+)`\s*\|/u)?.[1]
+		if (cell !== undefined) names.push(cell.slice(cell.lastIndexOf('/') + 1))
+	}
+	return names
+}
+
+/**
+ * Reads the guide name one prose path carries when that guide is another package's to account for.
+ *
+ * @remarks
+ * A top-level `guides/<name>.md` path yields its name unless the name is the guide index or this
+ * workspace's own package; every other path yields undefined. {@link isPolicyMirror} and
+ * {@link isPolicyStray} split that name by catalog membership.
+ *
+ * @param root - The workspace root the path belongs to.
+ * @param path - The workspace-relative prose path to read.
+ * @returns The guide's name, or undefined where the path is not a top-level guide another package
+ * could own.
+ */
+export function readPolicyGuide(root: string, path: string): string | undefined {
+	const name = normalizePolicyPath(path).match(POLICY_MIRROR_PATTERN)?.[1]
+	if (name === undefined || name === POLICY_GUIDE_MAP) return undefined
+	return name === readPolicyPackage(root) ? undefined : name
+}
+
+/**
+ * Reports whether one prose path is a top-level guide the catalog registers to another package.
+ *
+ * @remarks
+ * A mirror is fetched bytes rather than authored prose, so the term sweep leaves it to the package
+ * that wrote it. The catalog table is the evidence, and it is the only evidence: the workspace's own
+ * guide and the guide index are authored here, and a top-level guide the catalog does not register
+ * is a finding rather than a silent exclusion.
+ *
+ * @param root - The workspace root the path belongs to.
+ * @param path - The workspace-relative prose path to judge.
+ * @returns True if the path is a top-level guide the catalog registers to a package other than this
+ * one; false otherwise.
+ */
+export function isPolicyMirror(root: string, path: string): boolean {
+	const name = readPolicyGuide(root, path)
+	return name !== undefined && readPolicyCatalog(root).includes(name)
+}
+
+/**
+ * Reports whether one prose path is a top-level guide no evidence accounts for.
+ *
+ * @param root - The workspace root the path belongs to.
+ * @param path - The workspace-relative prose path to judge.
+ * @returns True if the path is a top-level guide that is neither this package's own, nor the index,
+ * nor a catalog row; false otherwise.
+ */
+export function isPolicyStray(root: string, path: string): boolean {
+	const name = readPolicyGuide(root, path)
+	return name !== undefined && !readPolicyCatalog(root).includes(name)
+}
+
+/**
+ * Inspects every authored Markdown file for a term the substitution table bans unconditionally.
+ *
+ * @remarks
+ * Each file is stripped of its fenced blocks, its inline code spans, its link tags, and its URLs
+ * before the match, by the same reader the comment rule uses, so a term inside one of those regions
+ * is not prose. Stripping holds every offset, so the reported line is the line in the file.
+ *
+ * A top-level guide the catalog registers to another package is a mirror and is skipped, and a
+ * top-level guide no evidence accounts for reports instead, so an exclusion is never silent.
+ *
+ * @param root - The workspace root to inspect.
+ * @returns Every unaccounted-guide violation, then every banned-term violation in path and offset
+ * order.
+ */
+export function inspectPolicyProse(root: string): readonly PolicyViolation[] {
+	const violations: PolicyViolation[] = []
+	for (const path of readPolicyProse(root)) {
+		if (isPolicyStray(root, path)) {
+			violations.push(
+				createPolicyViolation(
+					'prose',
+					path,
+					"guide is the package's own, the map, or a catalog row",
+				),
+			)
+		}
+		if (isPolicyMirror(root, path)) continue
+		const prose = stripPolicyCode(readFileSync(join(root, path), 'utf8'))
+		for (const hit of textToPolicyHits(prose)) {
+			violations.push(
+				createPolicyViolation(
+					'prose',
+					path,
+					`prose carries no banned term: ${hit.term.term} (${hit.term.replacement})`,
+					prose.slice(0, hit.index).split('\n').length,
+				),
+			)
+		}
+	}
+	return violations
+}
+
+/**
+ * Reads every term the substitution table's first column registers.
+ *
+ * @remarks
+ * Each row's first cell carries its terms as code spans, so the read takes the backticked tokens
+ * and drops the parenthetical qualifier a row writes beside one.
+ *
+ * @param content - The raw rule text carrying the substitution table.
+ * @returns Each registered term, in table order.
+ */
+export function readPolicyTerms(content: string): readonly string[] {
+	const lines = content.replaceAll('\r\n', '\n').split('\n')
+	const heading = lines.indexOf(POLICY_TERM_HEADING)
+	if (heading === -1) return []
+	const terms: string[] = []
+	for (let index = heading + 1; index < lines.length; index += 1) {
+		const line = lines[index]
+		if (line === undefined || line.startsWith('## ')) break
+		const cell = line.match(/^\|([^|]*)\|/u)?.[1]
+		if (cell === undefined) continue
+		for (const match of cell.matchAll(/`([^`]+)`/gu)) {
+			const term = match[1]
+			if (term !== undefined) terms.push(term)
+		}
+	}
+	return terms
+}
+
+/**
  * Inspects every host portability rule across one workspace.
  *
  * @param root - The workspace root to inspect.
@@ -1313,7 +1554,7 @@ export function inspectPolicyPortability(root: string): readonly PolicyViolation
  * Inspects every policy rule across one workspace.
  *
  * @param root - The workspace root to inspect.
- * @returns Every mirror, suppression, skill, bridge, and portability violation.
+ * @returns Every mirror, suppression, skill, bridge, portability, and prose violation.
  */
 export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[] {
 	return [
@@ -1322,6 +1563,7 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
 		...inspectSkillFamily(root),
 		...inspectSkillBridges(root),
 		...inspectPolicyPortability(root),
+		...inspectPolicyProse(root),
 	]
 }
 
@@ -1935,6 +2177,26 @@ export function createPolicyRuleMap(rules: readonly string[]): string {
 	)
 }
 
+/**
+ * Creates catalog agent text whose package table names an explicit package set.
+ *
+ * @param names - The package short names the catalog registers.
+ * @returns Catalog agent text carrying one package table.
+ */
+export function createPolicyCatalog(names: readonly string[]): string {
+	return (
+		[
+			'# Orkestrel',
+			'',
+			POLICY_CATALOG_HEADING,
+			'',
+			'| Package | Version |',
+			'| ------- | ------- |',
+			...names.map((name) => `| \`@orkestrel/${name}\` | \`0.0.1\` |`),
+		].join('\n') + '\n'
+	)
+}
+
 /** Lists the physical controls for every rule-map parity assertion the workspace route reaches. */
 export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	{
@@ -1961,6 +2223,140 @@ export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 				]),
 			},
 			{ path: `${POLICY_RULE_ROOT}/sample.md`, content: '# Sample\n' },
+		],
+	},
+])
+
+/** Holds the manifest one prose control writes, naming the package its own guide belongs to. */
+export const PROSE_POLICY_MANIFEST = '{\n\t"name": "@orkestrel/sample"\n}\n'
+
+/**
+ * Lists the physical controls for every prose-population boundary the workspace route reaches.
+ *
+ * @remarks
+ * Each control that attacks an exclusion also writes the arrival file, whose different term proves
+ * the sweep ran over the control workspace rather than reporting nothing because it found nothing.
+ */
+export const PROSE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+	{
+		label: 'rejects a banned term in the workspace front page',
+		membership: 'authored Markdown outside the excluded directories and the guide mirrors',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: 'README.md', content: '# Front page\n\nA reader should meet this term.\n' },
+		],
+	},
+	{
+		label: 'rejects a banned term in the package guide',
+		membership: 'the top-level guide whose name matches the manifest name',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: 'guides/sample.md', content: '# Sample\n\nA reader should meet this term.\n' },
+		],
+	},
+	{
+		label: 'rejects a banned term in a rule file',
+		membership: 'authored Markdown below a dot directory the sweep descends into',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{
+				path: `${POLICY_RULE_ROOT}/sample.md`,
+				content: '# Sample\n\nA reader should meet this term.\n',
+			},
+			{
+				path: POLICY_RULE_MAP_FILE,
+				content: createPolicyRuleMap([`${POLICY_RULE_ROOT}/sample.md`]),
+			},
+		],
+	},
+	{
+		label: 'accepts a banned term inside a fenced block',
+		membership: 'fenced regions, whose lines are code rather than prose',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: via (through, by using)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+			{
+				path: 'guides/README.md',
+				content: '# Index\n\n```text\nshould inside a fence\n```\n',
+			},
+		],
+	},
+	{
+		label: 'accepts a banned term inside a code span a line break runs through',
+		membership: 'inline code spans, whose text is a token rather than prose',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: via (through, by using)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+			{
+				path: 'guides/README.md',
+				content: '# Index\n\nA span `that\nspans lines with should` here.\n',
+			},
+		],
+	},
+	{
+		label: 'accepts a banned term in a guide the catalog registers to another package',
+		membership: 'top-level guides the catalog registers to a package other than this one',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: via (through, by using)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: POLICY_CATALOG_FILE, content: createPolicyCatalog(['other', 'sample']) },
+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+			{ path: 'guides/other.md', content: '# Other\n\nA reader should meet this term.\n' },
+		],
+	},
+	{
+		label: 'rejects a top-level guide the catalog does not register',
+		membership: 'top-level guides that are neither this package, nor the index, nor a catalog row',
+		rule: 'prose',
+		message: "guide is the package's own, the map, or a catalog row",
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: POLICY_CATALOG_FILE, content: createPolicyCatalog(['other', 'sample']) },
+			{ path: 'guides/stray.md', content: '# Stray\n\nA reader reads this guide.\n' },
+		],
+	},
+	{
+		label: 'accepts a banned term inside an installed package',
+		membership: 'Markdown below a directory name the sweep never descends into',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: via (through, by using)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+			{
+				path: 'node_modules/sample/README.md',
+				content: '# Installed\n\nA reader should meet this term.\n',
+			},
+		],
+	},
+	{
+		label: 'accepts a banned term inside scratch work',
+		membership: 'Markdown below a directory name the sweep never descends into',
+		rule: 'prose',
+		line: 3,
+		message: 'prose carries no banned term: via (through, by using)',
+		files: [
+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+			{ path: 'tmp/notes.md', content: '# Notes\n\nA reader should meet this term.\n' },
 		],
 	},
 ])

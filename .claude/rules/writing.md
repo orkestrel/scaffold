@@ -107,6 +107,10 @@ a sample string inside a code fence or a test fixture: quote each as itself, exe
 | `blacklist`, `whitelist` | `denylist`, `allowlist`                   |
 | `master`, `slave`        | `primary`, `replica`                      |
 
+- `policy/no-banned-term` reads every comment and the prose sweep in `tests/setupPolicy.ts` reads
+  every authored Markdown file, and each matches the rows this table bans unconditionally. The rule
+  and the sweep leave `now`, `new`, `latest`, `once`, `since`, and `master` unmatched because those
+  rows carry a permitted sense, so rule a hit in one of those rows yourself.
 - Sweep case-insensitively and across inflections when checking prose against the preceding table. A
   pattern for `easy` reaches neither `Easy` nor `easier`, and a temporal `once` most often appears
   as a sentence-initial `Once`.

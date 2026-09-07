@@ -983,7 +983,7 @@ through `sourceCode.getAllComments()` (`plugins-dev.d.ts:2697`) and `CommentType
 
 Treat each id as a proposal the first unit settles, the way the `render` name is a proposal. Each
 sibling names what it refuses — `no-mocking`, `no-keyword-privacy`, `no-nested-functions` — so the
-first unit may take that form instead and land `no-imperative-summary` and `no-banned-term`.
+first unit may take that form instead and land `no-malformed-summary` and `no-banned-term`.
 
 Each visitor stays a one-line context-binding arrow delegating to a module-scope `report{Noun}`
 function, per `.claude/rules/workspace.md` § Policy instruments, and each ships a `PolicyControl`

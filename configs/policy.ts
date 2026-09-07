@@ -38,9 +38,40 @@ export interface PolicyBinding {
 	readonly name: string | undefined
 }
 
+/** Describes one comment the comment rules read out of a linted file. */
+export interface PolicyComment extends PolicyNode {
+	readonly type: 'Block' | 'Line' | 'Shebang'
+	readonly value: string
+}
+
+/** Lists the Oxlint source-text operations the comment rules read. */
+export interface PolicySourceCode {
+	readonly text: string
+	getAllComments(): readonly PolicyComment[]
+}
+
+/** Pairs one doc block with the declared name its first sentence must not repeat. */
+export interface PolicyDoc {
+	readonly comment: PolicyComment
+	readonly name: string | undefined
+}
+
+/** Describes one banned term, the prose it matches, and the replacement its row names. */
+export interface PolicyTerm {
+	readonly term: string
+	readonly pattern: RegExp
+	readonly replacement: string
+}
+
+/** Pairs one banned-term match with the offset it starts at. */
+export interface PolicyHit {
+	readonly term: PolicyTerm
+	readonly index: number
+}
+
 /** Describes one diagnostic a policy rule emits. */
 export interface PolicyDiagnostic {
-	readonly node: PolicyExpression
+	readonly node: PolicyNode
 	readonly messageId: string
 	readonly data?: Readonly<Record<string, string>>
 }
@@ -50,6 +81,7 @@ export interface PolicyContext {
 	readonly filename: string
 	/** Names the directory Oxlint resolves `filename` against. */
 	readonly cwd: string
+	readonly sourceCode: PolicySourceCode
 	report(diagnostic: PolicyDiagnostic): void
 }
 
@@ -216,6 +248,134 @@ export const POLICY_CONSTANT_PATTERN = /^[A-Z][A-Z0-9_]*$/u
 
 /** Matches the file name shape a direct module of a registered function domain takes. */
 export const POLICY_DOMAIN_PATTERN = /^[a-z][A-Za-z0-9]*\.ts$/u
+
+/** Matches a first word that reads as a third-person verb. */
+export const POLICY_VOICE_PATTERN = /^[A-Z][a-z]*s$/u
+
+/** Matches the boundary a description paragraph's first sentence ends at. */
+export const POLICY_SENTENCE_PATTERN = /\.\s|\.$/u
+
+/** Matches the continuation marker a doc block repeats on each line after its opening. */
+export const POLICY_MARKER_PATTERN = /^\s*\*\s?/u
+
+/** Matches one line break in any host's form. */
+export const POLICY_BREAK_PATTERN = /\r\n|\r|\n/u
+
+/** Matches a fenced code block, opening run through closing run. */
+export const POLICY_FENCE_PATTERN = /^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gmu
+
+/** Matches an inline code span, including one a line break runs through. */
+export const POLICY_SPAN_PATTERN = /(`+)(?!`)[\s\S]*?[^`]\1(?!`)/gu
+
+/** Matches a link or inherited-documentation tag, whose target is a symbol rather than prose. */
+export const POLICY_TAG_PATTERN = /\{@(?:linkcode|linkplain|link|inheritDoc)\b[^}]*\}/giu
+
+/** Matches a URL, whose segments are an address rather than prose. */
+export const POLICY_URL_PATTERN = /https?:\/\/\S+/gu
+
+/**
+ * Lists the words ending in `s` that open a sentence without being a third-person verb.
+ *
+ * @remarks
+ * The voice rule reads a first word rather than a parsed verb, so a demonstrative, a pronoun, an
+ * adverb, and a singular noun ending in `s` each need naming here to stay refused.
+ */
+export const POLICY_VOICE_STOPWORDS: readonly string[] = Object.freeze([
+	'Access',
+	'Across',
+	'Address',
+	'Alias',
+	'Always',
+	'Analysis',
+	'Assess',
+	'Basis',
+	'Bias',
+	'Bus',
+	'Business',
+	'Canvas',
+	'Chaos',
+	'Class',
+	'Compress',
+	'Cross',
+	'Discuss',
+	'Dismiss',
+	'Express',
+	'Focus',
+	'Gas',
+	'Guess',
+	'Harness',
+	'Its',
+	'Lens',
+	'Miss',
+	'Numerous',
+	'Pass',
+	'Perhaps',
+	'Plus',
+	'Press',
+	'Previous',
+	'Process',
+	'Progress',
+	'Series',
+	'Sometimes',
+	'Status',
+	'Success',
+	'This',
+	'Thus',
+	'Unless',
+	'Various',
+	'Was',
+	'Whereas',
+	'Witness',
+	'Yes',
+])
+
+/**
+ * Lists every substitution-table row whose ban is unconditional, beside its replacement.
+ *
+ * @remarks
+ * Each pattern is case-insensitive, word-bounded, and global, and carries the inflections its row
+ * reaches.
+ */
+export const POLICY_BANNED_TERMS: readonly PolicyTerm[] = Object.freeze([
+	{ term: 'should', pattern: /\bshould\b/giu, replacement: 'must, can, might, or the imperative' },
+	{ term: 'simply', pattern: /\bsimply\b/giu, replacement: 'delete' },
+	{ term: 'easy', pattern: /\beas(?:y|ier|iest|ily)\b/giu, replacement: 'delete' },
+	{ term: 'just', pattern: /\bjust\b/giu, replacement: 'delete' },
+	{ term: 'currently', pattern: /\bcurrently\b/giu, replacement: 'delete, or give the date' },
+	{ term: 'utilize', pattern: /\butiliz(?:e|es|ed|ing|ation)\b/giu, replacement: 'use' },
+	{ term: 'leverage', pattern: /\bleverag(?:e|es|ed|ing)\b/giu, replacement: 'use' },
+	{ term: 'via', pattern: /\bvia\b/giu, replacement: 'through, by using' },
+	{ term: 'in order to', pattern: /\bin order to\b/giu, replacement: 'to' },
+	{ term: 'e.g.', pattern: /\be\.g\./giu, replacement: 'for example' },
+	{ term: 'i.e.', pattern: /\bi\.e\./giu, replacement: 'that is' },
+	{ term: 'etc.', pattern: /\betc\./giu, replacement: 'bound the list, or recast the sentence' },
+	{ term: 'performant', pattern: /\bperformant\b/giu, replacement: 'the measured property' },
+	{ term: 'robust', pattern: /\brobust(?:ly|ness)?\b/giu, replacement: 'the measured property' },
+	{ term: 'allows you to', pattern: /\ballows you to\b/giu, replacement: 'lets you' },
+	{ term: 'and/or', pattern: /\band\/or\b/giu, replacement: 'and, or, or both' },
+	{ term: 'please', pattern: /\bplease\b/giu, replacement: 'delete' },
+	{ term: 'sanity check', pattern: /\bsanity[ -]check/giu, replacement: 'quick check' },
+	{ term: 'dummy', pattern: /\bdumm(?:y|ies)\b/giu, replacement: 'placeholder' },
+	{ term: 'blacklist', pattern: /\bblacklist(?:s|ed|ing)?\b/giu, replacement: 'denylist' },
+	{ term: 'whitelist', pattern: /\bwhitelist(?:s|ed|ing)?\b/giu, replacement: 'allowlist' },
+	{ term: 'slave', pattern: /\bslave\b/giu, replacement: 'replica' },
+])
+
+/**
+ * Lists every substitution-table row a reader rules by sense, which no pattern matches.
+ *
+ * @remarks
+ * Each row carries a permitted sense: a date value, a version value, a causal clause, and the name
+ * a replication topology takes. The currency check proves each row is registered here.
+ */
+export const POLICY_JUDGED_TERMS: readonly string[] = Object.freeze([
+	'now',
+	'new',
+	'latest',
+	'once',
+	'since',
+	'master',
+])
 
 /** Returns the file name a policy rule keys on, read from either host separator. */
 export function pathToPolicyFile(filename: string): string {
@@ -524,6 +684,164 @@ export function importsPolicyTerminator(node: PolicyExpression): boolean {
 		(element) =>
 			element.type === 'ImportSpecifier' && identifierToPolicyName(element.imported) === 'EOL',
 	)
+}
+
+/**
+ * Blanks every character of a matched region, holding its length and its line breaks.
+ *
+ * @param text - The matched region to blank.
+ * @returns The region with each character outside a line break replaced by a space.
+ */
+export function blankPolicyText(text: string): string {
+	return text.replace(/[^\n]/gu, ' ')
+}
+
+/**
+ * Blanks the regions of a text whose content is code, an address, or a symbol rather than prose.
+ *
+ * @remarks
+ * A fenced block, an inline code span a line break runs through, a link tag, and a URL each carry
+ * tokens a reader is meant to copy rather than read, so a banned term inside one is not prose. Each
+ * region is blanked in place, so every offset the caller reports stays the offset in the original
+ * text.
+ *
+ * @param text - The prose to strip, with any continuation marker already removed.
+ * @returns The same text with every code, tag, and address region replaced by spaces.
+ */
+export function stripPolicyCode(text: string): string {
+	const fenced = text.replace(POLICY_FENCE_PATTERN, blankPolicyText)
+	const spanned = fenced.replace(POLICY_SPAN_PATTERN, blankPolicyText)
+	const tagged = spanned.replace(POLICY_TAG_PATTERN, blankPolicyText)
+	return tagged.replace(POLICY_URL_PATTERN, blankPolicyText)
+}
+
+/**
+ * Reads every banned term a stripped text carries, in offset order.
+ *
+ * @param text - The prose to read, already stripped of its code regions.
+ * @returns One hit per match, each naming its row and the offset the match starts at.
+ */
+export function textToPolicyHits(text: string): readonly PolicyHit[] {
+	const hits: PolicyHit[] = []
+	for (const term of POLICY_BANNED_TERMS) {
+		for (const match of text.matchAll(term.pattern)) hits.push({ term, index: match.index })
+	}
+	return hits.sort((left, right) => left.index - right.index)
+}
+
+/**
+ * Reads one doc block's description paragraph, which ends at its first block tag.
+ *
+ * @param comment - The doc block to read.
+ * @returns The description with continuation markers removed and whitespace collapsed.
+ */
+export function commentToPolicyParagraph(comment: PolicyComment): string {
+	const description: string[] = []
+	for (const line of comment.value.split(POLICY_BREAK_PATTERN)) {
+		const text = line.replace(POLICY_MARKER_PATTERN, '')
+		if (text.trimStart().startsWith('@')) break
+		description.push(text)
+	}
+	return description.join(' ').replace(/\s+/gu, ' ').trim()
+}
+
+/**
+ * Reads the opening word of a description paragraph, punctuation removed.
+ *
+ * @param paragraph - The collapsed description paragraph.
+ * @returns The paragraph's first word reduced to its letters, empty where it has none.
+ */
+export function paragraphToPolicyOpener(paragraph: string): string {
+	const first = paragraph.match(/^\S+/u)?.[0] ?? ''
+	return first.replace(/[^A-Za-z]/gu, '')
+}
+
+/**
+ * Reports whether an opening word reads as a third-person verb.
+ *
+ * @param word - The opening word to judge.
+ * @returns True if the word ends in `s` and names no registered non-verb; false otherwise.
+ */
+export function isPolicyVoiced(word: string): boolean {
+	return POLICY_VOICE_PATTERN.test(word) && !POLICY_VOICE_STOPWORDS.includes(word)
+}
+
+/**
+ * Pairs every exported top-level statement with the doc block written directly above it.
+ *
+ * @remarks
+ * A statement takes the last comment that closes before it, and takes it only where that comment is
+ * a doc block and nothing but whitespace separates the two. A blank line between them is still
+ * whitespace, so the pairing survives one.
+ *
+ * @param node - The program node whose top-level statements are read.
+ * @param sourceCode - The source-text reader supplying the comments and the text between them.
+ * @returns One entry per documented export, each naming its block and its declared symbol.
+ */
+export function programToPolicyDocs(
+	node: PolicyExpression,
+	sourceCode: PolicySourceCode,
+): readonly PolicyDoc[] {
+	const comments = sourceCode.getAllComments()
+	const docs: PolicyDoc[] = []
+	for (const statement of programToPolicyStatements(node)) {
+		if (!statement.type.startsWith('Export')) continue
+		const start = statement.range[0]
+		let previous: PolicyComment | undefined
+		for (const comment of comments) {
+			if (comment.range[1] <= start) previous = comment
+		}
+		if (previous === undefined || previous.type !== 'Block') continue
+		if (!previous.value.startsWith('*')) continue
+		if (sourceCode.text.slice(previous.range[1], start).trim() !== '') continue
+		const declaration = statement.declaration
+		docs.push({
+			comment: previous,
+			name:
+				identifierToPolicyName(declaration?.id) ??
+				identifierToPolicyName(declaration?.declarations?.[0]?.id),
+		})
+	}
+	return docs
+}
+
+/** Reports a doc block whose first sentence is not a third-person summary of its own symbol. */
+export function reportVoice(context: PolicyContext, doc: PolicyDoc): void {
+	const paragraph = commentToPolicyParagraph(doc.comment)
+	if (!isPolicyVoiced(paragraphToPolicyOpener(paragraph))) {
+		context.report({ node: doc.comment, messageId: 'voice' })
+	}
+	const name = doc.name
+	if (name === undefined) return
+	const sentence = paragraph.split(POLICY_SENTENCE_PATTERN)[0] ?? ''
+	const repeat = new RegExp(`(?<![\\w$])${name.replaceAll('$', '\\$')}(?![\\w$])`, 'u')
+	if (repeat.test(sentence)) {
+		context.report({ node: doc.comment, messageId: 'name', data: { name } })
+	}
+}
+
+/** Reports every voice failure among the doc blocks one program's exports carry. */
+export function reportDocs(context: PolicyContext, node: PolicyExpression): void {
+	for (const doc of programToPolicyDocs(node, context.sourceCode)) reportVoice(context, doc)
+}
+
+/** Reports every banned term one comment's prose carries. */
+export function reportTerm(context: PolicyContext, comment: PolicyComment): void {
+	const lines = comment.value
+		.split(POLICY_BREAK_PATTERN)
+		.map((line) => line.replace(POLICY_MARKER_PATTERN, ''))
+	for (const hit of textToPolicyHits(stripPolicyCode(lines.join('\n')))) {
+		context.report({
+			node: comment,
+			messageId: 'term',
+			data: { term: hit.term.term, replacement: hit.term.replacement },
+		})
+	}
+}
+
+/** Reports every banned term the comments of one linted file carry. */
+export function reportComments(context: PolicyContext): void {
+	for (const comment of context.sourceCode.getAllComments()) reportTerm(context, comment)
 }
 
 /** Reports function syntax nested inside another function body. */
@@ -1013,6 +1331,46 @@ export const ENDING_RULE: PolicyRuleInterface = {
 	},
 }
 
+/** Bans a doc block above an export whose first sentence is not a third-person summary. */
+export const VOICE_RULE: PolicyRuleInterface = {
+	meta: {
+		type: 'problem',
+		docs: {
+			description:
+				'Disallow a description paragraph that opens on a word other than a third-person verb, and one that names the symbol it documents.',
+		},
+		messages: {
+			voice:
+				'Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.',
+			name: 'State what the symbol does without naming {{name}} in the first sentence.',
+		},
+	},
+	create(context) {
+		return {
+			Program: (node) => reportDocs(context, node),
+		}
+	},
+}
+
+/** Bans a comment carrying a term the substitution table bans unconditionally. */
+export const TERM_RULE: PolicyRuleInterface = {
+	meta: {
+		type: 'problem',
+		docs: {
+			description:
+				'Disallow an unconditionally banned substitution-table term in comment prose, outside code spans, fenced blocks, link tags, and URLs.',
+		},
+		messages: {
+			term: 'Replace {{term}} in this comment: {{replacement}}.',
+		},
+	},
+	create(context) {
+		return {
+			Program: () => reportComments(context),
+		}
+	},
+}
+
 /** Declares the workspace Oxlint plugin. */
 export default {
 	meta: { name: 'policy' },
@@ -1030,5 +1388,7 @@ export default {
 		'no-misnamed-factory': FACTORY_RULE,
 		'no-malformed-domain': DOMAIN_RULE,
 		'no-host-line-endings': ENDING_RULE,
+		'no-malformed-summary': VOICE_RULE,
+		'no-banned-term': TERM_RULE,
 	},
 }

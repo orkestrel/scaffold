@@ -1010,6 +1010,18 @@ each of which selects its project by being written. Scaffold content-owns `tests
 `tests/policy.test.ts`, and `tests/config.test.ts`; `repair` and `overwrite` restore those files when
 their bytes drift or the files are missing.
 
+`tests/policy.test.ts` proves the path- and text-shaped laws, and the vendored oxlint plugin
+`configs/policy.ts` carries the syntax-shaped ones: `policy/no-malformed-summary` reads the doc
+block preceding each export, and `policy/no-banned-term` reads every comment for a term
+`.claude/rules/writing.md` § Substitutions bans unconditionally. The prose sweep in
+`tests/setupPolicy.ts` reads every authored Markdown file for the same terms through the
+`POLICY_BANNED_TERMS` denylist the rule and the sweep share, and `tests/policy.test.ts` proves that
+denylist against the table wherever the workspace authors it. The sweep skips a top-level guide the
+package catalog in `.claude/agents/orkestrel.md` registers to another package, because a mirror is
+fetched bytes rather than prose this workspace wrote, and it reports a top-level guide that is
+neither this package's own, nor `guides/README.md`, nor a catalog row, so an exclusion always
+carries its evidence.
+
 `tests/distribution.test.ts` is the one proof scaffold generates, and the one test artifact it
 claims by presence. Generation is the line, not writing: scaffold writes the vendored
 `tests/policy.test.ts` and `tests/config.test.ts` proofs too, and restores them, but those are the
@@ -1810,9 +1822,9 @@ port, so the run drives nothing external and stays in `test`.
   rendering, and the failure envelope.
 - [`tests/src/bin/main.test.ts`](../tests/src/bin/main.test.ts) — the process entry point.
 - [`tests/policy.test.ts`](../tests/policy.test.ts) — the path- and text-shaped policy laws:
-  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges. The
-  syntax-shaped laws are not here: each is a rule of the vendored oxlint plugin
-  `configs/policy.ts`, which reads one file's declarations and reports through the linter.
+  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, bridges, and the prose
+  sweep over every authored Markdown file. The syntax-shaped laws are the rules of the vendored
+  oxlint plugin `configs/policy.ts`, proven in `tests/config.test.ts`.
 - [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration's aliases, projects,
   and outputs, every plugin rule against a case pair drawn from inside and outside its membership
   boundary, and the declaration roll-up over a real face.
