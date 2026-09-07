@@ -1,0 +1,42 @@
+== timeout P.1 landing 2026-09-07T15:24:01Z, version 0.0.10
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 448ms
+EXIT 0
+== lockfile root version
+0.0.10 / 0.0.10
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupPolicy.ts | 572 ++++++++++++++++++++++++++++++++++++++++++++-------
+ tsconfig.json        |   3 +-
+ 10 files changed, 1522 insertions(+), 559 deletions(-)
+== stage by path
+ 11 files changed, 1976 insertions(+), 559 deletions(-)
+== committed
+9b09bac Prepare timeout for the equality gate
+(status end)

@@ -1,0 +1,21 @@
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/contract.md
+ M package-lock.json
+ M package.json
+ M src/core/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/ContractCompiler.test.ts
+ M tests/src/core/ShapeValidator.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/inferers.test.ts
+ M tests/src/core/integration.test.ts
+ M tests/src/core/shapers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts

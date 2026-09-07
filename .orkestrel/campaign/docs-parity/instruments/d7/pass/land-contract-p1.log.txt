@@ -1,0 +1,62 @@
+== contract P.1 landing 2026-09-07T15:23:48Z, version 0.0.17
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/contract.md
+ M package.json
+ M src/core/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/ContractCompiler.test.ts
+ M tests/src/core/ShapeValidator.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/inferers.test.ts
+ M tests/src/core/integration.test.ts
+ M tests/src/core/shapers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 445ms
+EXIT 0
+== lockfile root version
+0.0.17 / 0.0.17
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/contract.md
+ M package-lock.json
+ M package.json
+ M src/core/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/ContractCompiler.test.ts
+ M tests/src/core/ShapeValidator.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/inferers.test.ts
+ M tests/src/core/integration.test.ts
+ M tests/src/core/shapers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/core/shapers.test.ts          |  12 +-
+ tsconfig.json                           |   3 +-
+ 20 files changed, 1773 insertions(+), 790 deletions(-)
+== stage by path
+ 21 files changed, 2227 insertions(+), 790 deletions(-)
+== committed
+b8f5839 Prepare contract for the equality gate
+(status end)
