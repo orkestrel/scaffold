@@ -102,3 +102,20 @@ instruments/d3/d3-gates-probe.sh:10  export PATH=/opt/npm11/bin:$PATH         (t
 ```
 
 Reading: the first red is the hand-pinned vendored list at `tests/distribution.test.ts:250-285`, which lacks `scripts/docs.ts` — a file D5's brief failed to scope as one the change makes false; D5-fix-2 adds the row. The second red reproduces with the registry scaffold, without the guide dependency, and on a bare `vitest ^4.1.11` install, and clears with peer resolution disabled: it is npm 10.9.7's `#loadPeerSet` crash on `vitest`'s peer set, not this change's. The D3 probe ran the proof under npm 11.19.1 from `/opt/npm11/bin`, and the D5 verify brief had dropped that standing condition; it is restored, and the deciding run under npm 11 (`instruments/d5/distribution-deciding-npm11.log.txt`) rules the case.
+
+## P14 — the guide checkout under scaffold's tip (2026-09-07, for D7.guide)
+
+```text
+$ cd /home/user/scaffold && npm pack --json --ignore-scripts --pack-destination <scratch>/packed      (tip 81ed3321)
+orkestrel-scaffold-0.0.63.tgz 1158136 bytes, 140 entries                       (dist/host/scripts/docs.ts inside; the version unbumped)
+$ npm pack @orkestrel/guide@0.0.17 && grep -c "findDrift\|locateComment\|replaceCell" package/dist/src/core/index.d.ts
+0                                                                              (the registry's 0.0.17 exports none of the readers)
+$ grep -n '"@orkestrel/scaffold"' package.json
+81:		"@orkestrel/scaffold": "^0.0.63",                                           (the replaced range; the registry's 0.0.63 was installed before)
+$ PATH=/opt/npm11/bin:$PATH npm install --no-save --ignore-scripts --no-audit --no-fund <scratch>/packed/orkestrel-scaffold-0.0.63.tgz
+install exit 0; node_modules/@orkestrel/scaffold/dist/host/scripts/docs.ts present; the guide's tree clean after the install
+$ node node_modules/@orkestrel/scaffold/dist/bin/main.js audit --offline --json      (instruments/d7/guide-audit-offline.json)
+exit 1: stale tsconfig.json, configs/helpers.ts, configs/policy.ts, .oxlintrc.json, tests/setupPolicy.ts, tests/policy.test.ts, tests/config.test.ts; missing scripts/docs.ts; package.json aligned; everything else aligned
+```
+
+Reading: the guide checkout's head start of scaffold is the unpublished tip at the published version number, so the replaced range (`^0.0.63`) is recorded here and the registry copy is restored before any release gate (`npm ci` restores it). `repair` from the installed entry would write the vendored files D3 and D5 changed (the policy plugin and its proofs, the lint config, the root `tsconfig.json` with the own-specifier entry, and the seed); it reports the manifest aligned, so whether the `docs` script is appended by `repair` or added by hand is a measurement the D7.guide unit takes at its first write. The registry's guide carries no reader, which is the dependency-order red scaffold's distribution proof shows.
