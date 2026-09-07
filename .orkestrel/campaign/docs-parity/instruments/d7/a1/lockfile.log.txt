@@ -1,0 +1,2 @@
+== lockfile-only install after A.1 (npm 11): up to date, EXIT 0
+root version 0.0.9 -> 0.0.10 at :3 and :9; 30 stale node_modules entries dropped (the vite-plugin-dts subtree the manifest no longer declares); marker written

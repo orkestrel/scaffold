@@ -1,0 +1,13 @@
+Take scaffold's vendored delta and the docs seed, adapt the drop-in to the guide's records, and bump to 0.0.10
+
+`repair --offline` from scaffold's tip writes the policy plugin with its
+proofs, the lint configuration, the root tsconfig's own-specifier entry,
+the `docs` script, and `scripts/docs.ts`. The guide's 0.0.18 readers
+return records where 0.0.17 returned strings, so each `findMissing` and
+`findUnexampled` call in the drop-in maps a record to its name. The one
+comment the vendored voice rule reads red drops its banned term. The
+lockfile carries the bump and drops the `vite-plugin-dts` subtree the
+manifest stopped declaring.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
