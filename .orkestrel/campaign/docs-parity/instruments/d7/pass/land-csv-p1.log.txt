@@ -1,0 +1,56 @@
+== csv P.1 landing 2026-09-07T15:12:53Z, version 0.0.7
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/csv.md
+ M package.json
+ M src/core/CSV.ts
+ M src/core/helpers.ts
+ M src/core/inferers.ts
+ M src/core/shapers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/shapers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 659ms
+EXIT 0
+== lockfile root version
+0.0.7 / 0.0.7
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/csv.md
+ M package-lock.json
+ M package.json
+ M src/core/CSV.ts
+ M src/core/helpers.ts
+ M src/core/inferers.ts
+ M src/core/shapers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/shapers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/core/shapers.test.ts |   2 +-
+ tsconfig.json                  |   3 +-
+ 17 files changed, 1546 insertions(+), 583 deletions(-)
+== stage by path
+ 18 files changed, 2000 insertions(+), 583 deletions(-)
+== committed
+50c9dcc Prepare csv for the equality gate
+(status end)

@@ -1,0 +1,48 @@
+== emitter P.1 landing 2026-09-07T15:12:56Z, version 0.0.10
+== status before install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/emitter.md
+ M package.json
+ M src/core/Emitter.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 550ms
+EXIT 0
+== lockfile root version
+0.0.10 / 0.0.10
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/emitter.md
+ M package-lock.json
+ M package.json
+ M src/core/Emitter.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupPolicy.ts | 572 ++++++++++++++++++++++++++++++++++++++++++++-------
+ tsconfig.json        |   3 +-
+ 13 files changed, 1526 insertions(+), 563 deletions(-)
+== stage by path
+ 14 files changed, 1980 insertions(+), 563 deletions(-)
+== committed
+3c0e3de Prepare emitter for the equality gate
+(status end)

@@ -1,0 +1,46 @@
+== budget P.1 landing 2026-09-07T15:12:50Z, version 0.0.10
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/budget.md
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 505ms
+EXIT 0
+== lockfile root version
+0.0.10 / 0.0.10
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/budget.md
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupPolicy.ts | 572 ++++++++++++++++++++++++++++++++++++++++++++-------
+ tsconfig.json        |   3 +-
+ 12 files changed, 1527 insertions(+), 564 deletions(-)
+== stage by path
+ 13 files changed, 1981 insertions(+), 564 deletions(-)
+== committed
+3e77fe5 Prepare budget for the equality gate
+(status end)

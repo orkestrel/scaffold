@@ -1,0 +1,18 @@
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/csv.md
+ M package-lock.json
+ M package.json
+ M src/core/CSV.ts
+ M src/core/helpers.ts
+ M src/core/inferers.ts
+ M src/core/shapers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/shapers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
