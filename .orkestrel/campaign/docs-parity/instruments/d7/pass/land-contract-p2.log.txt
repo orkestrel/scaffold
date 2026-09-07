@@ -1,0 +1,22 @@
+== contract p2 landing 2026-09-07T16:00:06Z over b8f5839
+== status
+ M README.md
+ M guides/contract.md
+ M src/core/combinators.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts  |   9 +
+ tests/guides.test.ts    |  80 ++++-
+ 12 files changed, 793 insertions(+), 416 deletions(-)
+== stage by path
+ 12 files changed, 793 insertions(+), 416 deletions(-)
+== committed
+681d37d Converge contract under the equality gate
+(status end)

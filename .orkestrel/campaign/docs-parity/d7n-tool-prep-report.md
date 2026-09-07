@@ -231,3 +231,10 @@ None. `repair` wrote exactly the P21 list, every before-text in item 2 was found
 voice diagnostic named `tests/setup.ts` (in scope, not off-limits), `test:policy` stayed green
 throughout with no `prose` finding in `guides/**` or `README.md`, and every gate other than `docs`
 reads green.
+
+
+---
+
+## Orchestrator annotation (slice 4a audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a pin description in words the file does not carry or a stale line, the tree is authoritative. The report stands as the unit's evidence with this note.

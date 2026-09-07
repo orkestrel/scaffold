@@ -278,3 +278,10 @@ No residual disagreement needed the P16 comparator's terms to dismiss; the final
   the spec path has one home in the file.
 - `### Classes` names the class files in its intro even though each H3 section repeats its own
   file link, matching `/home/user/fleet/guide/guides/guide.md:202-213`.
+
+
+---
+
+## Orchestrator annotation (slice 4a audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a pin description in words the file does not carry or a stale line, the tree is authoritative. The report stands as the unit's evidence with this note.

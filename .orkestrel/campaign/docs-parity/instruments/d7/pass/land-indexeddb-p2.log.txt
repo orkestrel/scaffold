@@ -1,0 +1,19 @@
+== indexeddb p2 landing 2026-09-07T15:59:19Z over 585a405
+== status
+ M README.md
+ M guides/indexeddb.md
+ M src/browser/IndexedDBTransaction.ts
+ M src/browser/IndexedDBTransactionStore.ts
+ M src/browser/errors.ts
+ M src/browser/factories.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M tests/guides.test.ts
+ src/browser/types.ts                     |  64 +++++--
+ tests/guides.test.ts                     |  80 +++++++-
+ 9 files changed, 316 insertions(+), 181 deletions(-)
+== stage by path
+ 9 files changed, 316 insertions(+), 181 deletions(-)
+== committed
+b157a60 Converge indexeddb under the equality gate
+(status end)

@@ -191,3 +191,10 @@ None. `--to guide` located every cell the run reported, including the `TimeoutOp
 ## Deviation state
 
 No deviation. Every cell the seed had to locate was located, the titled body fit its block, no test outside `tests/guides.test.ts` went red, no vendored file needed an edit, no reader returned a shape the brief does not describe, and no disagreement survived the doc-block rewrites under the P16 comparator.
+
+
+---
+
+## Orchestrator annotation (slice 4a audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a pin description in words the file does not carry or a stale line, the tree is authoritative. The report stands as the unit's evidence with this note.
