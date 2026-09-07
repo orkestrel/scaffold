@@ -1,4 +1,4 @@
-# Verify brief — D5 scaffold-seed with D5-fix (scaffold)
+# Verify brief — D5 scaffold-seed with D5-fix and D5-fix-2 (scaffold)
 
 ## Role and engine
 
@@ -26,9 +26,9 @@
 10. `npm run build`
 11. `sha256sum host.json && npm run build:inventory && sha256sum host.json` (expected: the same digest before and after)
 11a. `node dist/bin/main.js audit --groups configs --offline; echo EXIT $?` (expected: exit 0, `tsconfig.json` aligned; the online run adds registry-floor findings against `package.json` that predate this round)
-11b. `grep -n "cannot depend on itself" .claude/rules/workspace.md; grep -c "@orkestrel/scaffold" tsconfig.json` (expected: nothing from the first, `2` from the second)
+11b. `grep -n "cannot depend on itself" .claude/rules/workspace.md; grep -c "@orkestrel/scaffold" tsconfig.json; grep -n "DOCS_SEED_PATH" src/core/constants.ts src/core/compilers.ts; grep -n "'scripts/docs.ts'" src/core/compilers.ts tests/distribution.test.ts` (expected: nothing from the first, `2` from the second, the declaration and both reads from the third, only the `tests/distribution.test.ts` row from the fourth)
 12. `npm run test:guides` (expected RED on exactly the two cases `keeps every compared summary and example equal to its source` and `opens the README with the guide tagline`, every other case green; report the failing case names and the last lines; that reading is GREEN, and any other red case is RED)
-13. `PATH=/opt/npm11/bin:$PATH npm run test:distribution` (after `PATH=/opt/npm11/bin:$PATH npm --version`, expected 11.x)
+13. `PATH=/opt/npm11/bin:$PATH npm run test:distribution` (after `PATH=/opt/npm11/bin:$PATH npm --version`, expected 11.x; expected exit 0 after D5-fix-2's row)
 14. `node --experimental-strip-types scripts/docs.ts > tmp/units/docs-d5-verify-seed-run.txt 2>&1; echo EXIT $?` (expected: exit 1; report the first 5 and the last 5 lines of the file; this is an observation, GREEN at exit 1)
 15. `node --experimental-strip-types scripts/docs.ts --to nowhere; echo EXIT $?` (expected: one usage line and exit 2)
 16. `git status --short`
