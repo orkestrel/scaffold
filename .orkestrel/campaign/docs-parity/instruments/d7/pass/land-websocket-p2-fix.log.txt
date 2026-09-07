@@ -1,0 +1,19 @@
+== websocket p2-fix landing 2026-09-07T21:04:40Z over f28272b
+== status
+ M guides/websocket.md
+ M src/server/NodeWebSocket.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/parsers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts         |  33 +++++-----
+ tests/guides.test.ts        |  43 ++++++++------
+ 9 files changed, 216 insertions(+), 121 deletions(-)
+== stage by path
+ 9 files changed, 216 insertions(+), 121 deletions(-)
+== committed
+3f9e229 Refine websocket's convergence on the audit's findings
+(status end)

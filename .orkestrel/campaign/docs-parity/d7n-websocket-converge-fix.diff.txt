@@ -1,0 +1,699 @@
+diff --git a/guides/websocket.md b/guides/websocket.md
+index a348969..43e0f89 100644
+--- a/guides/websocket.md
++++ b/guides/websocket.md
+@@ -5,7 +5,7 @@
+ > handshake, the masked and unmasked frame codec, ping and pong, and the close handshake,
+ > and surfacing every message on an owned `emitter`.
+ 
+-After an HTTP server hands you an upgraded socket, this wrapper turns that raw byte stream into a typed, observable connection, and it reaches for no third-party package to do it: [`node:crypto`](https://nodejs.org/api/crypto.html) supplies the one handshake hash and `@orkestrel/emitter` the typed emitter. The wrapper has no knowledge of MCP, JSON-RPC, reconnection, heartbeats, or any message schema — those belong to a _message_ transport built one layer up, and this is only the wire. The codec and the boundary guards are pure exported functions, pinned against [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455)'s worked byte vectors and malformed-input cases, and the [`NodeWebSocket`](#nodewebsocketinterface) class is the thin stateful driver that runs them over a [`node:stream`](https://nodejs.org/api/stream.html) Duplex. Keeping the codec pure and the wrapper minimal is the lean-native-wrapper discipline: a small typed surface over native power, with the hard parts exported as testable units. Source: [`src/server`](../src/server). Surfaced through the `@src/server` barrel.
++After an HTTP server hands you an upgraded socket, this wrapper turns that raw byte stream into a typed, observable connection, and its only runtime dependency is `@orkestrel/emitter`, which supplies the typed emitter; [`node:crypto`](https://nodejs.org/api/crypto.html) supplies the one handshake hash. The wrapper has no knowledge of MCP, JSON-RPC, reconnection, heartbeats, or any message schema — those belong to a _message_ transport built one layer up, and this is only the wire. The codec and the boundary guards are pure exported functions, pinned against [RFC 6455](https://datatracker.ietf.org/doc/html/rfc6455)'s worked byte vectors and malformed-input cases, and the [`NodeWebSocket`](#nodewebsocketinterface) class is the thin stateful driver that runs them over a [`node:stream`](https://nodejs.org/api/stream.html) Duplex. Keeping the codec pure and the wrapper minimal is the lean-native-wrapper discipline: a small typed surface over native power, with the hard parts exported as testable units. Source: [`src/server`](../src/server). Surfaced through the `@src/server` barrel.
+ 
+ ## Surface
+ 
+@@ -72,42 +72,46 @@ Narrow the header before the call. `sec-websocket-key` is typed `string | undefi
+ 
+ ### Constants
+ 
+-| API                                 | Kind  | Summary                                                                                                                               |
+-| ----------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------- |
+-| `WEBSOCKET_GUID`                    | const | Names the RFC 6455 GUID concatenated to a client's `Sec-WebSocket-Key` before the accept hash.                                        |
+-| `WEBSOCKET_VERSION`                 | const | Names the WebSocket protocol version this wrapper speaks (`Sec-WebSocket-Version: 13`).                                               |
+-| `WEBSOCKET_OPCODE_TEXT`             | const | Names the text frame opcode — a UTF-8 payload (RFC 6455 §5.6).                                                                        |
+-| `WEBSOCKET_OPCODE_BINARY`           | const | Names the binary frame opcode — a raw byte payload (RFC 6455 §5.6).                                                                   |
+-| `WEBSOCKET_OPCODE_CONTINUATION`     | const | Names the continuation frame opcode — the next fragment of an open data message (RFC 6455 §5.4).                                      |
+-| `WEBSOCKET_OPCODE_CLOSE`            | const | Names the close frame opcode — a control frame ending the connection (RFC 6455 §5.5.1).                                               |
+-| `WEBSOCKET_OPCODE_PING`             | const | Names the ping frame opcode — a control frame the peer must answer with a pong (RFC 6455 §5.5.2).                                     |
+-| `WEBSOCKET_OPCODE_PONG`             | const | Names the pong frame opcode — a control frame answering a ping (RFC 6455 §5.5.3).                                                     |
+-| `WEBSOCKET_READY_CONNECTING`        | const | Names the ready state for a connecting WebSocket (before the handshake completes).                                                    |
+-| `WEBSOCKET_READY_OPEN`              | const | Names the ready state for an open WebSocket (the handshake completed; frames flow).                                                   |
+-| `WEBSOCKET_READY_CLOSING`           | const | Names the ready state for a closing WebSocket (a close frame was sent or received).                                                   |
+-| `WEBSOCKET_READY_CLOSED`            | const | Names the ready state for a closed WebSocket (the socket ended).                                                                      |
+-| `WEBSOCKET_CLOSE_NORMAL`            | const | Names the normal-closure status code (RFC 6455 §7.4.1) — the default `close` code.                                                    |
+-| `WEBSOCKET_CLOSE_PROTOCOL`          | const | Names the protocol-error status code (RFC 6455 §7.4.1) — a framing/state rule was violated.                                           |
+-| `WEBSOCKET_CLOSE_UNSUPPORTED`       | const | Names the unsupported-data status code (RFC 6455 §7.4.1) — the endpoint received a data type it cannot accept.                        |
+-| `WEBSOCKET_CLOSE_INVALID`           | const | Names the invalid-frame-payload-data status code (RFC 6455 §7.4.1) — for example non-UTF-8 text or an unparseable close reason.       |
+-| `WEBSOCKET_CLOSE_TOO_BIG`           | const | Names the message-too-big status code (RFC 6455 §7.4.1) — a reassembled message exceeded the payload cap.                             |
+-| `WEBSOCKET_MAX_PAYLOAD`             | const | Names the default cap on both an inbound frame's declared length and a reassembled message's total byte count (100 MiB).              |
+-| `WEBSOCKET_CLOSE_TIMEOUT_MS`        | const | Names the default close-handshake timeout in milliseconds — how long `close` waits for the peer's echo.                               |
+-| `WEBSOCKET_CONTROL_MAX_LENGTH`      | const | Names the maximum control-frame payload length in bytes (RFC 6455 §5.5).                                                              |
+-| `WEBSOCKET_CLOSE_REASON_MAX_LENGTH` | const | Names the maximum UTF-8 close-reason length after the two-byte status code.                                                           |
+-| `WEBSOCKET_FAIL_TIMEOUT_MS`         | const | Names the flush grace in milliseconds a validation-breach close frame is given before the hard teardown fallback destroys the socket. |
++A `Shape` cell holds the constant's declared type.
++
++| API                                 | Kind  | Shape                 | Summary                                                                                                                                     |
++| ----------------------------------- | ----- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
++| `WEBSOCKET_GUID`                    | const | `string`              | Names the accept GUID concatenated to a client's `Sec-WebSocket-Key` before the accept hash, '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'.        |
++| `WEBSOCKET_VERSION`                 | const | `string`              | Names the supported protocol version, '13'.                                                                                                 |
++| `WEBSOCKET_OPCODE_TEXT`             | const | `number`              | Names the text frame opcode, 0x01.                                                                                                          |
++| `WEBSOCKET_OPCODE_BINARY`           | const | `number`              | Names the binary frame opcode, 0x02.                                                                                                        |
++| `WEBSOCKET_OPCODE_CONTINUATION`     | const | `number`              | Names the continuation frame opcode, 0x00.                                                                                                  |
++| `WEBSOCKET_OPCODE_CLOSE`            | const | `number`              | Names the close frame opcode, 0x08.                                                                                                         |
++| `WEBSOCKET_OPCODE_PING`             | const | `number`              | Names the ping frame opcode, 0x09.                                                                                                          |
++| `WEBSOCKET_OPCODE_PONG`             | const | `number`              | Names the pong frame opcode, 0x0a.                                                                                                          |
++| `WEBSOCKET_READY_CONNECTING`        | const | `WebSocketReadyState` | Names the connecting ready state, 0.                                                                                                        |
++| `WEBSOCKET_READY_OPEN`              | const | `WebSocketReadyState` | Names the open ready state, 1.                                                                                                              |
++| `WEBSOCKET_READY_CLOSING`           | const | `WebSocketReadyState` | Names the closing ready state, 2.                                                                                                           |
++| `WEBSOCKET_READY_CLOSED`            | const | `WebSocketReadyState` | Names the closed ready state, 3.                                                                                                            |
++| `WEBSOCKET_CLOSE_NORMAL`            | const | `number`              | Names the normal-closure status code, 1000.                                                                                                 |
++| `WEBSOCKET_CLOSE_PROTOCOL`          | const | `number`              | Names the protocol-error status code, 1002.                                                                                                 |
++| `WEBSOCKET_CLOSE_UNSUPPORTED`       | const | `number`              | Names the unsupported-data status code, 1003.                                                                                               |
++| `WEBSOCKET_CLOSE_INVALID`           | const | `number`              | Names the invalid-frame-payload-data status code, 1007.                                                                                     |
++| `WEBSOCKET_CLOSE_TOO_BIG`           | const | `number`              | Names the message-too-big status code, 1009.                                                                                                |
++| `WEBSOCKET_MAX_PAYLOAD`             | const | `number`              | Names the default cap on both an inbound frame's declared length and a reassembled message's total byte count, 104,857,600 bytes (100 MiB). |
++| `WEBSOCKET_CLOSE_TIMEOUT_MS`        | const | `number`              | Names the default close-handshake timeout, 30,000 milliseconds — how long `close` waits for the peer's echo.                                |
++| `WEBSOCKET_CONTROL_MAX_LENGTH`      | const | `number`              | Names the maximum control-frame payload length, 125 bytes.                                                                                  |
++| `WEBSOCKET_CLOSE_REASON_MAX_LENGTH` | const | `number`              | Names the maximum UTF-8 close-reason length after the two-byte status code, 123.                                                            |
++| `WEBSOCKET_FAIL_TIMEOUT_MS`         | const | `number`              | Names the flush grace, 1,000 milliseconds, a validation-breach close frame is given before the hard teardown fallback destroys the socket.  |
+ 
+ ### Types
+ 
+-| API                      | Kind      | Summary                                                                                                                                                                                          |
+-| ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `WebSocketReadyState`    | type      | Represents a WebSocket ready state — the browser-compatible `0` connecting, `1` open, `2` closing, and `3` closed.                                                                               |
+-| `WebSocketFrame`         | interface | Represents a parsed RFC 6455 frame — the structured result of decoding one frame off the wire.                                                                                                   |
+-| `WebSocketEncodeOptions` | interface | Represents the options for `encodeWebSocketFrame` — how a frame is masked on the wire.                                                                                                           |
+-| `WebSocketErrorCode`     | type      | Represents the subject a `WebSocketError` names as refused — `OPTION`, `LIMIT`, `CLOSE`, or `FRAME`.                                                                                             |
+-| `NodeWebSocketEventMap`  | type      | Represents the event map a `NodeWebSocketInterface` emitter carries — `open`, `message`, `close`, `error`, `ping`, and `pong`.                                                                   |
+-| `NodeWebSocketOptions`   | interface | Represents the options for `createNodeWebSocket` — the upgraded `socket`, the `key` that selects server or client mode, and the listeners, caps, and cancellation signal the wrapper runs under. |
+-| `NodeWebSocketInterface` | interface | Represents the behavioral contract a server-native WebSocket exposes over a raw upgraded socket — the `emitter` and `readyState` data members plus `send`, `ping`, `close`, and `destroy`.       |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                      | Kind      | Shape                                                                          | Summary                                                                                                                                                                                          |
++| ------------------------ | --------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `WebSocketReadyState`    | type      | `0 \| 1 \| 2 \| 3`                                                             | Represents a WebSocket ready state — the stage a connection has reached between the handshake and the socket's end.                                                                              |
++| `WebSocketFrame`         | interface | `{ fin, opcode, payload, consumed, masked, rsv }`                              | Represents a parsed RFC 6455 frame — the structured result of decoding one frame off the wire.                                                                                                   |
++| `WebSocketEncodeOptions` | interface | `{ masked?, mask? }`                                                           | Represents the options for `encodeWebSocketFrame` — how a frame is masked on the wire.                                                                                                           |
++| `WebSocketErrorCode`     | type      | `'OPTION' \| 'LIMIT' \| 'CLOSE' \| 'FRAME'`                                    | Represents the subject a `WebSocketError` names as refused.                                                                                                                                      |
++| `NodeWebSocketEventMap`  | type      | `{ open, message, close, error, ping, pong }`                                  | Represents the event map a `NodeWebSocketInterface` emitter carries.                                                                                                                             |
++| `NodeWebSocketOptions`   | interface | `{ socket, key?, head?, protocol?, on?, error?, payload?, timeout?, signal? }` | Represents the options for `createNodeWebSocket` — the upgraded `socket`, the `key` that selects server or client mode, and the listeners, caps, and cancellation signal the wrapper runs under. |
++| `NodeWebSocketInterface` | interface | `{ emitter, readyState } plus send, ping, close, destroy`                      | Represents the behavioral contract a server-native WebSocket exposes over a raw upgraded socket.                                                                                                 |
+ 
+ Frame payloads are raw `Buffer`s off the wire; a text frame decodes to a `string` at the boundary, and the untyped socket `data` chunk is narrowed to a `Buffer` with a guard, never an assertion.
+ 
+@@ -133,7 +137,7 @@ These invariants hold across `src/server` ↔ `websocket.md`:
+ 3. **The codec and boundary guards are pure and exhaustively pinned.** The helpers are tested against RFC 6455's worked vectors, malformed handshake values, non-canonical length encodings, truncation at every byte, and seeded round trips. `parseWebSocketFrame` returns `undefined` on an **incomplete** buffer (the caller accumulates across `data` chunks); `encode` and `parse` are exact inverses for valid frames.
+ 4. **Server vs. client is the single `key` decision.** A canonical 16-byte-base64 `key` (the client's `Sec-WebSocket-Key`) selects server mode: the wrapper writes the `101 Switching Protocols` handshake with `Sec-WebSocket-Accept: computeWebSocketAccept(key)` and sends **unmasked** frames. No `key` is client mode: no handshake is written and every outgoing frame is **masked** — RFC 6455 §5.3 mandates client→server masking. A negotiated `protocol` is accepted only in server mode and must pass `isWebSocketProtocol`; a malformed constructor option throws an `OPTION`-coded `WebSocketError` before the wrapper writes to or assumes ownership of the socket.
+ 5. **One accumulation buffer, drained frame by frame.** Incoming `data` chunks append to a buffer that is decoded with `parseWebSocketFrame` in a loop, slicing each frame's `consumed` bytes off the front and re-parsing until a partial frame remains. Every iteration independently checks canonical encoding and the declared payload cap, including the second and later frames in one chunk. Dispatch by opcode: a data frame (text, binary, or `WEBSOCKET_OPCODE_CONTINUATION`) buffers its fragments and emits one `message` (decoded UTF-8) at `fin`; a ping emits `ping` and is **auto-answered with a pong**; a pong emits `pong`; a close is echoed back (RFC 6455 §5.5.1), ends the socket, and emits the final `close`.
+-6. **Observable, and a faulty listener can never sink the socket.** The wrapper exposes a typed `emitter` it owns by composition; listener isolation is the emitter's job. Two error channels stay distinct: an underlying socket fault emits the map's domain `error` event and terminates the wrapper, whereas a listener that _throws_ is caught by the emitter and routed to its own `error` handler (the `error` constructor option), never re-entered as a domain event. Every terminal path detaches only the wrapper's domain `data` / `close` / `error` listeners and leaves one durable no-op socket `error` sink, so a late peer RST cannot become an uncaught Node exception; caller-owned listeners remain untouched.
++6. **Observable, and a faulty listener can never sink the socket.** The wrapper exposes a typed `emitter` it owns by composition; listener isolation is the emitter's job. The error channels stay distinct: an underlying socket fault emits the map's domain `error` event and terminates the wrapper, whereas a listener that _throws_ is caught by the emitter and routed to its own `error` handler (the `error` constructor option), never re-entered as a domain event. Every terminal path detaches only the wrapper's domain `data` / `close` / `error` listeners and leaves one durable no-op socket `error` sink, so a late peer RST cannot become an uncaught Node exception; caller-owned listeners remain untouched.
+ 7. **A malformed or over-limit peer fails the connection, never the process.** `matchesWebSocketCanonical` rejects non-minimal extended lengths and a set 64-bit high bit with `WEBSOCKET_CLOSE_PROTOCOL`; `measureWebSocketFrame` rejects each frame whose declared length exceeds `payload` (default `WEBSOCKET_MAX_PAYLOAD`) before its bytes are buffered, and the same cap applies to a reassembled fragmented message's total size — either cap breach closes `WEBSOCKET_CLOSE_TOO_BIG`. A text payload that fails `parseUTF8` closes `WEBSOCKET_CLOSE_INVALID`; a received close code that fails `isCloseCode` closes `WEBSOCKET_CLOSE_PROTOCOL`; a fragmented or oversized control frame, nonzero `rsv`, reserved opcode, or wrong mask direction also closes `WEBSOCKET_CLOSE_PROTOCOL`. `close()` uses a configurable timeout so a silent peer cannot leak the handle open. Validation failures flush their close frame before the hard-teardown fallback destroys the socket.
+ 8. **An `AbortSignal` is an external cancellation seam.** `signal` (composing with `@orkestrel/abort` / `@orkestrel/timeout`'s native `AbortSignal`s) tears the socket down through `destroy()` on abort — immediately after construction if already aborted, otherwise on the signal's `abort` event. The listener is removed on every terminal path (`#finish` and `destroy`) so a long-lived, shared signal never accumulates listeners from closed sockets.
+ 
+@@ -191,8 +195,9 @@ server.on('upgrade', (request, socket, head) => {
+ 		socket,
+ 		key,
+ 		head, // any bytes already buffered after the upgrade headers
++		on: { message: (text) => ws.send(`echo: ${text}`) }, // wired before the first frame arrives
+ 	})
+-	ws.emitter.on('message', (text) => ws.send(`echo: ${text}`))
++	ws.emitter.on('message', (text) => log('echoed', text)) // a second observer of the same event
+ 	ws.emitter.on('close', (code, reason) => log('closed', code, reason))
+ })
+ ```
+diff --git a/src/server/NodeWebSocket.ts b/src/server/NodeWebSocket.ts
+index 1e62e74..4616f97 100644
+--- a/src/server/NodeWebSocket.ts
++++ b/src/server/NodeWebSocket.ts
+@@ -47,14 +47,14 @@ import {
+  * and surfacing every event on an owned `emitter`.
+  *
+  * @remarks
+- * Created by `createNodeWebSocket`. When given a client `key` it runs in SERVER mode —
++ * Created by `createNodeWebSocket`. When given a client `key` it runs in server mode —
+  * it writes the `101 Switching Protocols` handshake (`computeWebSocketAccept(key)`) and
+- * emits `open`; given no key it runs in CLIENT mode (no handshake, frames masked). It
++ * emits `open`; given no key it runs in client mode (no handshake, frames masked). It
+  * then listens on the socket's `data`, accumulating bytes in `#buffer` and decoding
+  * every complete frame with {@link parseWebSocketFrame} (slicing `consumed` and
+- * re-parsing the remainder): a TEXT frame — reassembling continuation fragments across
+- * `fin: false` frames — decodes to UTF-8 and emits `message`; a PING is auto-answered
+- * with a PONG and emits `ping`; a PONG emits `pong`; a CLOSE is echoed and ends the
++ * re-parsing the remainder): a text frame — reassembling continuation fragments across
++ * `fin: false` frames — decodes to UTF-8 and emits `message`; a ping is auto-answered
++ * with a pong and emits `ping`; a pong emits `pong`; a close frame is echoed and ends the
+  * socket, emitting `close`. `send` writes a text frame, `ping` a ping, `close` a close
+  * frame; `destroy` tears down immediately. It owns a typed `#emitter` by composition, and
+  * the emitter isolates a throwing listener and routes the error to its own `error` handler
+@@ -102,8 +102,8 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 	 * Creates a WebSocket wrapper over an already-upgraded Duplex socket.
+ 	 *
+ 	 * @remarks
+-	 * `key` selects the mode: present runs SERVER mode and writes the `101 Switching
+-	 * Protocols` handshake, omitted runs CLIENT mode and masks every outgoing frame.
++	 * `key` selects the mode: present runs server mode and writes the `101 Switching
++	 * Protocols` handshake, omitted runs client mode and masks every outgoing frame.
+ 	 * {@link NodeWebSocketOptions} describes every member.
+ 	 *
+ 	 * @param options - The {@link NodeWebSocketOptions} the wrapper is built from
+@@ -185,8 +185,8 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		// `@orkestrel/timeout`'s native AbortSignals) — wired last so an already-aborted
+ 		// signal tears the socket down only after the rest of construction has run. The
+ 		// preceding head replay can itself synchronously terminate the socket (a complete
+-		// CLOSE frame or an RFC violation routes through `#fail`/`#close` -> `#finish`),
+-		// which flushes the close frame GRACEFULLY through `#socket.end()`. In that case skip
++		// close frame or an RFC violation routes through `#fail`/`#close` -> `#finish`),
++		// which flushes the close frame gracefully through `#socket.end()`. In that case skip
+ 		// the seam entirely: forcing `destroy()` would discard that flushing frame (the
+ 		// loss `#fail` is engineered to avoid), and there is no live socket to attach to.
+ 		if (this.#readyState !== WEBSOCKET_READY_CLOSED) {
+@@ -262,7 +262,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		// Detach before destroy so a destroy-time error reaches the terminal sink.
+ 		this.#detach()
+ 		this.#signal?.removeEventListener('abort', this.#abortListener)
+-		// `#finish` no-ops after the state is already CLOSED (for example after `#fail` armed
++		// `#finish` no-ops after the state is already closed (for example after `#fail` armed
+ 		// the hard-teardown fallback), so the timer is cleared here unconditionally rather
+ 		// than relying on it.
+ 		clearTimeout(this.#closeTimer)
+@@ -370,8 +370,9 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		this.#fragmentBytes = 0
+ 	}
+ 
+-	// Handle a validated CLOSE frame: decode it (which itself may `#fail` on an invalid
+-	// code/reason), then — if still OPEN — echo the peer's payload verbatim and end.
++	// Handle a validated close frame: decode it (which itself may `#fail` on an invalid
++	// code/reason), then — if the socket is still open — echo the peer's payload verbatim
++	// and end.
+ 	#close(payload: Buffer): void {
+ 		const valid = this.#decodeClose(payload)
+ 		if (!valid) return
+@@ -389,10 +390,10 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 	// The single funnel for every RFC 6455 validation breach: close with `code`, `#detach`
+ 	// the domain listeners (the connection is protocol-dead — RFC 6455 permits discarding
+ 	// further input after sending close, and this also stops a post-fail socket `error`
+-	// emitting AFTER the terminal `close` event), write the close frame, then flush + half
++	// emitting after the terminal `close` event), write the close frame, then flush + half
+ 	// -close through `end()` (never a synchronous `destroy()`, which can discard the buffered
+ 	// close frame and leave the peer seeing 1006 instead of the intended code) before
+-	// finishing. The hard-teardown fallback is armed AFTER `#finish` so `#finish`'s
++	// finishing. The hard-teardown fallback is armed after `#finish` so `#finish`'s
+ 	// `clearTimeout` cannot kill it; the normal path destroys the moment the write buffer
+ 	// flushes (the `end()` callback), the unref'd timer is only the malicious-peer backstop.
+ 	#fail(code: number, reason?: string): void {
+@@ -489,7 +490,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 		return true
+ 	}
+ 
+-	// Transition to CLOSED one time only (idempotent), clear the close-handshake timer, and emit
++	// Transition to the closed state one time only (idempotent), clear the close-handshake timer, and emit
+ 	// the final `close` with the last known code/reason.
+ 	#finish(): void {
+ 		if (this.#readyState === WEBSOCKET_READY_CLOSED) return
+@@ -502,7 +503,7 @@ export class NodeWebSocket implements NodeWebSocketInterface {
+ 	}
+ 
+ 	// Append `bytes` to the accumulation buffer, then drain every complete frame. `#drain`
+-	// preflights canonical encoding and the declared payload cap on EACH iteration, so
++	// preflights canonical encoding and the declared payload cap on each iteration, so
+ 	// every coalesced frame receives the same validation. Shared by `#handleData` and head replay.
+ 	#ingest(bytes: Buffer): void {
+ 		this.#buffer = Buffer.concat([this.#buffer, bytes])
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 102b2e1..addedde 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -2,13 +2,13 @@ import type { WebSocketReadyState } from './types.js'
+ 
+ // The WebSocket wrapper's wire constants — the RFC 6455
+ // magic values the codec and the handshake are built on: the accept GUID, the
+-// supported protocol version, the frame opcodes, the four ready states, and the
++// supported protocol version, the frame opcodes, the ready states, and the
+ // normal-closure status code. Every member is exported; the codec helpers and the
+ // `NodeWebSocket` wrapper read them by name rather than re-spelling the bit values.
+ 
+ /**
+- * Names the RFC 6455 GUID concatenated to a client's `Sec-WebSocket-Key` before the
+- * accept hash.
++ * Names the accept GUID concatenated to a client's `Sec-WebSocket-Key` before the accept
++ * hash, '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'.
+  *
+  * @remarks
+  * The base64-encoded SHA-1 of that concatenation is the `Sec-WebSocket-Accept` response
+@@ -17,63 +17,138 @@ import type { WebSocketReadyState } from './types.js'
+  */
+ export const WEBSOCKET_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+ 
+-/** Names the WebSocket protocol version this wrapper speaks (`Sec-WebSocket-Version: 13`). */
++/**
++ * Names the supported protocol version, '13'.
++ *
++ * @remarks
++ * The value this wrapper speaks, carried by the `Sec-WebSocket-Version` handshake header.
++ */
+ export const WEBSOCKET_VERSION = '13'
+ 
+-/** Names the text frame opcode — a UTF-8 payload (RFC 6455 §5.6). */
++/**
++ * Names the text frame opcode, 0x01.
++ *
++ * @remarks
++ * A UTF-8 payload (RFC 6455 §5.6).
++ */
+ export const WEBSOCKET_OPCODE_TEXT = 0x01
+ 
+-/** Names the binary frame opcode — a raw byte payload (RFC 6455 §5.6). */
++/**
++ * Names the binary frame opcode, 0x02.
++ *
++ * @remarks
++ * A raw byte payload (RFC 6455 §5.6).
++ */
+ export const WEBSOCKET_OPCODE_BINARY = 0x02
+ 
+-/** Names the continuation frame opcode — the next fragment of an open data message (RFC 6455 §5.4). */
++/**
++ * Names the continuation frame opcode, 0x00.
++ *
++ * @remarks
++ * The next fragment of an open data message (RFC 6455 §5.4).
++ */
+ export const WEBSOCKET_OPCODE_CONTINUATION = 0x00
+ 
+-/** Names the close frame opcode — a control frame ending the connection (RFC 6455 §5.5.1). */
++/**
++ * Names the close frame opcode, 0x08.
++ *
++ * @remarks
++ * A control frame ending the connection (RFC 6455 §5.5.1).
++ */
+ export const WEBSOCKET_OPCODE_CLOSE = 0x08
+ 
+-/** Names the ping frame opcode — a control frame the peer must answer with a pong (RFC 6455 §5.5.2). */
++/**
++ * Names the ping frame opcode, 0x09.
++ *
++ * @remarks
++ * A control frame the peer must answer with a pong (RFC 6455 §5.5.2).
++ */
+ export const WEBSOCKET_OPCODE_PING = 0x09
+ 
+-/** Names the pong frame opcode — a control frame answering a ping (RFC 6455 §5.5.3). */
++/**
++ * Names the pong frame opcode, 0x0a.
++ *
++ * @remarks
++ * A control frame answering a ping (RFC 6455 §5.5.3).
++ */
+ export const WEBSOCKET_OPCODE_PONG = 0x0a
+ 
+-/** Names the ready state for a connecting WebSocket (before the handshake completes). */
++/**
++ * Names the connecting ready state, 0.
++ *
++ * @remarks
++ * The state a WebSocket holds before its handshake completes.
++ */
+ export const WEBSOCKET_READY_CONNECTING: WebSocketReadyState = 0
+ 
+-/** Names the ready state for an open WebSocket (the handshake completed; frames flow). */
++/**
++ * Names the open ready state, 1.
++ *
++ * @remarks
++ * The state a WebSocket holds after the handshake completes and while frames flow.
++ */
+ export const WEBSOCKET_READY_OPEN: WebSocketReadyState = 1
+ 
+-/** Names the ready state for a closing WebSocket (a close frame was sent or received). */
++/**
++ * Names the closing ready state, 2.
++ *
++ * @remarks
++ * The state a WebSocket holds after a close frame is sent or received.
++ */
+ export const WEBSOCKET_READY_CLOSING: WebSocketReadyState = 2
+ 
+-/** Names the ready state for a closed WebSocket (the socket ended). */
++/**
++ * Names the closed ready state, 3.
++ *
++ * @remarks
++ * The state a WebSocket holds after the socket ends.
++ */
+ export const WEBSOCKET_READY_CLOSED: WebSocketReadyState = 3
+ 
+-/** Names the normal-closure status code (RFC 6455 §7.4.1) — the default `close` code. */
++/**
++ * Names the normal-closure status code, 1000.
++ *
++ * @remarks
++ * The default `close` code (RFC 6455 §7.4.1).
++ */
+ export const WEBSOCKET_CLOSE_NORMAL = 1000
+ 
+-/** Names the protocol-error status code (RFC 6455 §7.4.1) — a framing/state rule was violated. */
++/**
++ * Names the protocol-error status code, 1002.
++ *
++ * @remarks
++ * Sent when a framing or state rule was violated (RFC 6455 §7.4.1).
++ */
+ export const WEBSOCKET_CLOSE_PROTOCOL = 1002
+ 
+ /**
+- * Names the unsupported-data status code (RFC 6455 §7.4.1) — the endpoint received a data
+- * type it cannot accept.
++ * Names the unsupported-data status code, 1003.
+  *
+  * @remarks
+- * For example binary on a text-only endpoint.
++ * Sent when the endpoint received a data type it cannot accept (RFC 6455 §7.4.1), for
++ * example binary on a text-only endpoint.
+  */
+ export const WEBSOCKET_CLOSE_UNSUPPORTED = 1003
+ 
+-/** Names the invalid-frame-payload-data status code (RFC 6455 §7.4.1) — for example non-UTF-8 text or an unparseable close reason. */
++/**
++ * Names the invalid-frame-payload-data status code, 1007.
++ *
++ * @remarks
++ * Sent for non-UTF-8 text or an unparseable close reason (RFC 6455 §7.4.1).
++ */
+ export const WEBSOCKET_CLOSE_INVALID = 1007
+ 
+-/** Names the message-too-big status code (RFC 6455 §7.4.1) — a reassembled message exceeded the payload cap. */
++/**
++ * Names the message-too-big status code, 1009.
++ *
++ * @remarks
++ * Sent when a reassembled message exceeded the payload cap (RFC 6455 §7.4.1).
++ */
+ export const WEBSOCKET_CLOSE_TOO_BIG = 1009
+ 
+ /**
+  * Names the default cap on both an inbound frame's declared length and a reassembled
+- * message's total byte count (100 MiB).
++ * message's total byte count, 104,857,600 bytes (100 MiB).
+  *
+  * @remarks
+  * The same value the `ws` package defaults to. Either breach closes
+@@ -82,8 +157,8 @@ export const WEBSOCKET_CLOSE_TOO_BIG = 1009
+ export const WEBSOCKET_MAX_PAYLOAD = 104_857_600
+ 
+ /**
+- * Names the default close-handshake timeout in milliseconds — how long `close` waits for
+- * the peer's echo.
++ * Names the default close-handshake timeout, 30,000 milliseconds — how long `close` waits
++ * for the peer's echo.
+  *
+  * @remarks
+  * After it expires the wrapper tears the socket down, so a silent peer cannot leak the
+@@ -92,8 +167,8 @@ export const WEBSOCKET_MAX_PAYLOAD = 104_857_600
+ export const WEBSOCKET_CLOSE_TIMEOUT_MS = 30_000
+ 
+ /**
+- * Names the flush grace in milliseconds a validation-breach close frame is given before
+- * the hard teardown fallback destroys the socket.
++ * Names the flush grace, 1,000 milliseconds, a validation-breach close frame is given
++ * before the hard teardown fallback destroys the socket.
+  *
+  * @remarks
+  * Armed after `#fail` writes the close frame, so the frame drains through the socket's
+@@ -102,8 +177,19 @@ export const WEBSOCKET_CLOSE_TIMEOUT_MS = 30_000
+  */
+ export const WEBSOCKET_FAIL_TIMEOUT_MS = 1_000
+ 
+-/** Names the maximum control-frame payload length in bytes (RFC 6455 §5.5). */
++/**
++ * Names the maximum control-frame payload length, 125 bytes.
++ *
++ * @remarks
++ * The cap RFC 6455 §5.5 sets on every control frame's payload.
++ */
+ export const WEBSOCKET_CONTROL_MAX_LENGTH = 125
+ 
+-/** Names the maximum UTF-8 close-reason length after the two-byte status code. */
++/**
++ * Names the maximum UTF-8 close-reason length after the two-byte status code, 123.
++ *
++ * @remarks
++ * What is left of {@link WEBSOCKET_CONTROL_MAX_LENGTH} after the close frame's status
++ * code.
++ */
+ export const WEBSOCKET_CLOSE_REASON_MAX_LENGTH = WEBSOCKET_CONTROL_MAX_LENGTH - 2
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 040288e..2830f51 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -7,7 +7,7 @@ import type { WebSocketErrorCode } from './types.js'
+ // control payload, an unsendable close code, an unrepresentable frame header — and
+ // each throws before it writes a byte: an OPTION before the wrapper assumes ownership
+ // of the socket, a LIMIT and a CLOSE without writing a frame or moving `readyState`,
+-// and a FRAME out of the pure encoder, which touches no socket. A PEER's protocol
++// and a FRAME out of the pure encoder, which touches no socket. A peer's protocol
+ // violation is not an error: it closes the connection with the matching
+ // `WEBSOCKET_CLOSE_*` status code instead.
+ 
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index f10bdf8..c96b44d 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -31,8 +31,9 @@ import { NodeWebSocket } from './NodeWebSocket.js'
+  * 		socket,
+  * 		key,
+  * 		head, // any bytes already buffered after the upgrade headers
++ * 		on: { message: (text) => ws.send(`echo: ${text}`) }, // wired before the first frame arrives
+  * 	})
+- * 	ws.emitter.on('message', (text) => ws.send(`echo: ${text}`))
++ * 	ws.emitter.on('message', (text) => log('echoed', text)) // a second observer of the same event
+  * 	ws.emitter.on('close', (code, reason) => log('closed', code, reason))
+  * })
+  * ```
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index a911fa0..5cd5cc8 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -113,7 +113,7 @@ export function matchesWebSocketCanonical(buffer: Buffer): boolean | undefined {
+  * the 7-bit form below 126, the `126` + 16-bit form below 65 536, or the `127` +
+  * 64-bit form beyond; when `masked` is set the mask bit is set, a 4-byte key (supplied
+  * through `options.mask`, else random) is written, and the payload is XOR-masked. Server→
+- * client frames are unmasked (the default); pass `masked: true` to encode a CLIENT
++ * client frames are unmasked (the default); pass `masked: true` to encode a client
+  * frame (for example to feed the parser in a test). A `string` payload is encoded as
+  * UTF-8. Returns one contiguous `Buffer` (header + payload), so the wrapper writes it
+  * with a single `socket.write`. Pure.
+diff --git a/src/server/parsers.ts b/src/server/parsers.ts
+index f43fe1b..cff46b6 100644
+--- a/src/server/parsers.ts
++++ b/src/server/parsers.ts
+@@ -15,7 +15,7 @@ import type { WebSocketFrame } from './types.js'
+  * Reads the FIN bit and opcode (byte 0), the mask bit and 7-bit payload length (byte
+  * 1) — extended to a 16-bit length when the 7-bit field is `126`, or a 64-bit length
+  * when it is `127` — the optional 4-byte mask key, then the payload, XOR-unmasking it
+- * against the key when the mask bit is set (client→server frames MUST be masked, RFC
++ * against the key when the mask bit is set (client→server frames must be masked, RFC
+  * 6455 §5.3; an unmasked frame still decodes, leaving the payload as-is, so the caller
+  * can enforce policy). The incomplete answer comes the moment the buffer is too short
+  * for the part it is up to: the length prefix, the mask, or the full payload.
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 78b5c71..f696ecb 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -2,10 +2,10 @@ import type { Duplex } from 'node:stream'
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ 
+ // The lean server-native WebSocket surface — a typed wrapper over a raw upgraded
+-// `node:stream` Duplex socket that speaks ONLY the RFC 6455 wire protocol. It
++// `node:stream` Duplex socket that speaks only the RFC 6455 wire protocol. It
+ // exposes the WebSocket framing the rest of the codebase cannot express — the
+ // handshake, masked/unmasked frames, ping/pong, close — and nothing above it: this
+-// wrapper has NO knowledge of MCP, JSON-RPC, or any message schema (that is the
++// wrapper has no knowledge of MCP, JSON-RPC, or any message schema (that is the
+ // transport one layer up). It is the lean-native-wrapper sibling of the SQLite and
+ // IndexedDB wrappers: a minimal interface over native power, errors surfaced through
+ // the emitter, the codec a set of pure, exported, unit-tested helpers. This file is the
+@@ -18,8 +18,8 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ // === Ready state
+ 
+ /**
+- * Represents a WebSocket ready state — the browser-compatible `0` connecting, `1` open,
+- * `2` closing, and `3` closed.
++ * Represents a WebSocket ready state — the stage a connection has reached between the
++ * handshake and the socket's end.
+  *
+  * @remarks
+  * The same numbering the DOM `WebSocket.readyState` uses, so the wrapper reads like the
+@@ -38,7 +38,7 @@ export type WebSocketReadyState = 0 | 1 | 2 | 3
+  * the already-unmasked application data; `consumed` is the total byte count the frame
+  * occupied (header + mask + payload), so the caller slices it off the front of its
+  * accumulation buffer and re-parses the remainder. `masked` is the mask bit off byte 1
+- * (client→server frames MUST be masked, RFC 6455 §5.1); `rsv` is the three reserved
++ * (client→server frames must be masked, RFC 6455 §5.1); `rsv` is the three reserved
+  * bits off byte 0 packed into a single 0–7 value (RFC 6455 §5.2) — non-zero means an
+  * extension the wrapper does not negotiate, so the caller rejects it. Produced by
+  * {@link parseWebSocketFrame}.
+@@ -56,8 +56,8 @@ export interface WebSocketFrame {
+  * Represents the options for {@link encodeWebSocketFrame} — how a frame is masked on the wire.
+  *
+  * @remarks
+- * `masked` toggles the mask bit (server→client frames are NOT masked, the default;
+- * client→server frames MUST be, RFC 6455 §5.3). `mask` supplies an explicit 4-byte
++ * `masked` toggles the mask bit (server→client frames are not masked, the default;
++ * client→server frames must be, RFC 6455 §5.3). `mask` supplies an explicit 4-byte
+  * mask key (deterministic, for tests); when `masked` is true and `mask` is omitted a
+  * random key is generated.
+  */
+@@ -69,8 +69,7 @@ export interface WebSocketEncodeOptions {
+ // === Errors
+ 
+ /**
+- * Represents the subject a `WebSocketError` names as refused — `OPTION`, `LIMIT`,
+- * `CLOSE`, or `FRAME`.
++ * Represents the subject a `WebSocketError` names as refused.
+  *
+  * @remarks
+  * `OPTION` — a {@link NodeWebSocketOptions} member was refused at construction
+@@ -87,14 +86,13 @@ export type WebSocketErrorCode = 'OPTION' | 'LIMIT' | 'CLOSE' | 'FRAME'
+ // === Events
+ 
+ /**
+- * Represents the event map a {@link NodeWebSocketInterface} emitter carries — `open`,
+- * `message`, `close`, `error`, `ping`, and `pong`.
++ * Represents the event map a {@link NodeWebSocketInterface} emitter carries.
+  *
+  * @remarks
+  * `open` — the handshake completed and the socket is ready. `message` — a text frame
+  * arrived (its decoded UTF-8 string). `close` — the connection ended, carrying the
+  * labeled `[code, reason]` tuple (each `undefined` when the peer sent none). `error` —
+- * the underlying socket faulted (a DOMAIN event and then terminates the wrapper).
++ * the underlying socket faulted (a domain event, and then terminates the wrapper).
+  * `ping` / `pong` — a control frame arrived (a ping is auto-answered with a pong).
+  * Listener isolation is the emitter's: a listener throw is routed to the emitter's
+  * `error` handler (the `error` option), never onto this map, so a buggy observer
+@@ -118,14 +116,14 @@ export type NodeWebSocketEventMap = {
+  *
+  * @remarks
+  * `socket` is the upgraded `node:stream` Duplex (the raw TCP stream after the HTTP
+- * upgrade). `key` is the client's `Sec-WebSocket-Key`: present it to run in SERVER
+- * mode — the wrapper writes the `101 Switching Protocols` handshake and sends UNMASKED
+- * frames; omit it for CLIENT mode — no handshake is written and frames are MASKED (RFC
++ * upgrade). `key` is the client's `Sec-WebSocket-Key`: present it to run in server
++ * mode — the wrapper writes the `101 Switching Protocols` handshake and sends unmasked
++ * frames; omit it for client mode — no handshake is written and frames are masked (RFC
+  * 6455 §5.3). `head` is any bytes buffered after the upgrade headers (replayed through
+  * the parser). `protocol` is a negotiated subprotocol to echo in the handshake. `on`
+  * wires initial listeners at construction — the reserved `on` option; `error` is the
+  * emitter's listener-error handler, where a listener throw routes. `payload` caps
+- * both a single inbound frame's declared length AND the total bytes of a reassembled
++ * both a single inbound frame's declared length and the total bytes of a reassembled
+  * fragmented message (default `WEBSOCKET_MAX_PAYLOAD`) — a breach closes 1009. `timeout`
+  * is how long the wrapper waits, after sending a close frame, for the peer's echo before
+  * it gives up and tears the socket down (default `WEBSOCKET_CLOSE_TIMEOUT_MS`). `signal`
+@@ -152,8 +150,7 @@ export interface NodeWebSocketOptions {
+ 
+ /**
+  * Represents the behavioral contract a server-native WebSocket exposes over a raw
+- * upgraded socket — the `emitter` and `readyState` data members plus `send`, `ping`,
+- * `close`, and `destroy`.
++ * upgraded socket.
+  *
+  * @remarks
+  * Created by `createNodeWebSocket`. In server mode it writes the RFC 6455 handshake
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 33eba6b..49b0af1 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,8 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes. The flagship-fence
+-// transcriptions at the end of the file assert the values each fence's comments claim:
+-// change a fence, change the transcription beside it.
++// package's own, and are the only part a sibling package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -21,7 +19,7 @@ import {
+ 	resolveLink,
+ } from '@orkestrel/guide'
+ import { readFileSync } from 'node:fs'
+-import { requireValue } from '@orkestrel/test'
++import { createRecorder, requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
+ import {
+ 	computeWebSocketAccept,
+@@ -45,9 +43,8 @@ const MODULES = Object.freeze({ '@orkestrel/websocket': 'src/server', '@src/serv
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the `names no symbol internal that the barrel
+- * already exports` assertion fails when a name here stops being stranded, so the list
+- * cannot rot.
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
++ * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+@@ -219,19 +216,19 @@ for (const entry of manifest) {
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface).map((example) => example.name)
+-							: source
+-									.examples(group.interface)
+-									.map((example) => example.name)
+-									.concat(source.examples(entity).map((example) => example.name))
+ 					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+@@ -273,10 +270,10 @@ for (const entry of manifest) {
+ // executed transcription breaks on it. The `## Surface` and `## Patterns` fences take an
+ // upgraded socket from a live `node:http` server, so they run here over the in-memory
+ // Duplex pair `tests/setupServer.ts` builds, which is the same real bidirectional socket
+-// without the listener.
++// without the listener. Change a fence, change the transcription beside it.
+ 
+ // The canonical `Sec-WebSocket-Key` of RFC 6455 §1.3, standing in for the request header
+-// the two server-mode fences read.
++// each server-mode fence reads.
+ const FENCE_KEY = 'dGhlIHNhbXBsZSBub25jZQ=='
+ 
+ describe('flagship fences', () => {
+@@ -314,20 +311,28 @@ describe('flagship fences', () => {
+ 		expect(closes).toEqual([1000])
+ 	})
+ 
+-	it('the Patterns fence echoes through an `emitter` listener attached after construction', async () => {
++	it('the Patterns fence echoes from its construction hook and hands the same message to a second observer', async () => {
+ 		const [server, client] = duplexPair()
+ 		const collector = readClientFrames(client)
++		const observed = createRecorder<readonly [message: string]>()
+ 
+-		const ws = createNodeWebSocket({ socket: server, key: FENCE_KEY })
+-		ws.emitter.on('message', (text) => ws.send(`echo: ${text}`))
++		const ws = createNodeWebSocket({
++			socket: server,
++			key: FENCE_KEY,
++			on: { message: (text) => ws.send(`echo: ${text}`) }, // wired before the first frame arrives
++		})
++		ws.emitter.on('message', observed.handler) // a second observer of the same event
+ 		await flushSocket()
+ 
+ 		client.write(encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'pattern', { masked: true }))
+ 		await flushSocket()
+ 
++		// One echo, not two: the fence's later listener observes the message and the
++		// construction hook is what answers it.
+ 		expect(collector.frames.map((frame) => frame.payload.toString('utf-8'))).toEqual([
+ 			'echo: pattern',
+ 		])
++		expect(observed.calls).toEqual([['pattern']])
+ 		ws.destroy()
+ 	})
+ 
