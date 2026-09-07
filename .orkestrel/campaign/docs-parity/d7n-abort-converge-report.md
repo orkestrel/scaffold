@@ -315,3 +315,7 @@ the doc block held the titled body, no test outside `tests/guides.test.ts` went 
 file needed an edit, and no reader returned an undescribed shape. The brief-fact corrections
 under § Reader and seed defects met are recorded for the Orchestrator; none of them required a
 decision the brief had not already settled.
+
+## A.3 corrections (the Orchestrator)
+
+Citations read against the committed tree: `### Classes` sits at `guides/abort.md:44` and the `### Create and abort` heading at `:87` (the § Tests edit shifted both by two lines after the check ran); the `Shape` convention sentence sits at `/home/user/fleet/guide/guides/guide.md:28`. The uniqueness check is heading-scoped (`grep -n '^#\+ Create and abort'`), because the § Tests prose this unit added mentions the title. The lanes read counts in this report's prose (the class table's row, the paragraph pair); each is struck. The titling edit preceded the `--to guide` run whose `reported: 2` names the pair, and is recorded here as its own step.

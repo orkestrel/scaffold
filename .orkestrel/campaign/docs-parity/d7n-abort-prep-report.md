@@ -119,7 +119,7 @@ Hunk:
  		}
 ```
 
-No mapping repeated inside one `describe` beyond the two `entity` bindings already present in the drop-in, so no extra `const` was introduced.
+No extra `const` was introduced (A.3 correction: the sentence stated a count, and the subjective lane read the `group.methods` mapping repeated at three sites inside one `describe`; the fix round hoists it).
 
 ## Item 3: the voice site
 
@@ -232,3 +232,7 @@ rows read: 1, disagreements found: 9
 Exit 1 (expected; the worklist the converge unit carries forward).
 
 No deviation.
+
+## A.3 corrections (the Orchestrator)
+
+`d7n-abort-prep.diff.txt` was captured before the Orchestrator's lockfile-only install, so it carries no `package-lock.json` hunk; the commit `7d8b1dd` carries the root version `0.0.10` and drops the `vite-plugin-dts` subtree (`instruments/d7/a1/lockfile.log.txt`).

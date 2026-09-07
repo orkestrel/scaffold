@@ -1,0 +1,68 @@
+Lane held: objective (the recorded substitution for the dark Sol bench).
+
+## Per-claim verdicts
+
+**1. A.1's change set — PASS, with one sub-fact unattributable.**
+`d7n-abort-prep.diff.txt` carries exactly `.oxlintrc.json`, `configs/helpers.ts`, `configs/policy.ts`, `package.json`, `tests/config.test.ts`, `tests/guides.test.ts`, `tests/policy.test.ts`, `tests/setupPolicy.ts`, `tests/src/core/Abort.test.ts`, `tsconfig.json` (`diff --git` lines at `:1`, `:16`, `:55`, `:1074`, `:1096`, `:1550`, `:1632`, `:1798`, `:2820`, `:2833`), and `d7n-abort-prep.status.txt:11` adds untracked `scripts/docs.ts`. That set is the P19 repair list (`d7n-abort-prep-report.md:10-19`) plus `tests/guides.test.ts` and `tests/src/core/Abort.test.ts`. `package.json` moves only the version (`diff:1081-1082`) and the `docs` script row (`diff:1091-1092`). No `@orkestrel/*` range moved: `/home/user/fleet/abort/package.json:74` and `:78-81` still read `^0.0.16`, `^0.0.17`, `^0.0.12`, `^0.0.63`, `^0.0.13`, and `package-lock.json:12-19` mirrors them. `/home/user/fleet/abort/package-lock.json:3` reads `0.0.10` and the file carries no `vite-plugin-dts` node, with `d7n-abort-converge.status.txt` showing A.2 did not touch it — so the root-version change is forced into `7d8b1dd`. The `vite-plugin-dts` drop is not attributable from the supplied evidence; see the referral.
+
+**2. The record adaptation — PASS.**
+Every `findMissing` and `findUnexampled` call in `/home/user/fleet/abort/tests/guides.test.ts` passes names: `:160`, `:168`, `:178`, `:215`, `:239`, `:256`. Each `MethodEntry` reaches `.map((method) => method.name)` (`:152`, `:162`, `:169`, `:179-180`, `:240`) and each `SourceExample` reaches `.map((example) => example.name)` (`:218`, `:233`, `:236-237`). The record-shaped readers that legitimately keep records — `findMissingSymbols` (`:130`, `:138`, `:141`, `:144`), `findUnlisted` (`:123`) — are untouched, so no case's compared key changed. `d7n-abort-prep-report.md:187-194` records `test:guides` at `22 passed`, against P19's `5 failed | 17 passed` on the unadapted tree (`orchestrator-measurements.md:208-209`).
+
+**3. The voice site — PASS.**
+`d7n-abort-prep.diff.txt:2824-2831` is the whole `tests/src/core/Abort.test.ts` hunk: `not just a pair` → `not a pair` at old line 108, matching the single `policy/no-banned-term` diagnostic P19 recorded (`orchestrator-measurements.md:206`). The unit's other non-vendored hunk, `tests/guides.test.ts` (`diff:1554-1631`), changes no comment line.
+
+**4. The headers — PASS.**
+`/home/user/fleet/abort/guides/abort.md:27`, `:33`, `:40`, `:46` head `API | Kind | Summary`; `:52` heads `Type | Kind | Shape | Summary`; `:67` heads `Method | Returns | Summary`. No column outside `Kind`, `Shape`, `Returns` sits beside `Summary`. `### Entities` became `### Classes` at `:44`.
+
+**5. Cell-to-block equality and fact retention — PASS.**
+Each cell equals its block's description paragraph after whitespace collapse: `abort.md:29` ↔ `src/core/factories.ts:5-6`; `:35` ↔ `src/core/helpers.ts:6-7`; `:36` ↔ `src/core/helpers.ts:84-85`; `:42` ↔ `src/core/validators.ts:2-3`; `:48` ↔ `src/core/Abort.ts:5-6`; `:54` ↔ `src/core/types.ts:2`; `:55` ↔ `src/core/types.ts:16-17`; `:69` ↔ `src/core/types.ts:30-31`. `AbortOptions` keeps its literal in `Shape` (`:54`) and its em-dash clause is carried verb-first by `types.ts:2`. Facts the old cells carried survive in their blocks: `createAbort`'s optional `id` and parent `signal` at `factories.ts:14`, its `AbortInterface` return at `:15`; `abort`'s reason and default-`AbortError` clause at `types.ts:33-35`; `isAbortSignal`'s native-brand basis at `validators.ts:5-6`.
+Qualification, ruled non-falsifying: `AbortInterface`'s `Shape` cell dropped the data-member-versus-method classification, and that classification is in neither the `Shape` column nor the block. It is not a dropped fact, because `abort.md:57` carried the same classification before A.2 and is unchanged by it (`d7n-abort-converge.diff.txt:96`, a context line); A.2 removed a duplicate rather than a carrier.
+
+**6. The titled pair — PASS.**
+Exactly one titled `@example` exists under `src/core/**`: `src/core/factories.ts:20`, `@example Create and abort`. The others are untitled (`helpers.ts:20`, `helpers.ts:101`, `factories.ts:30`, `validators.ts:14`, `Abort.ts:23`). `### Create and abort` occurs once as a heading, at `guides/abort.md:87`. The bodies are equal line for line — `factories.ts:22-27` against `abort.md:90-95` — and both fences are `ts`. The block body carries no three-backtick run and no `*/`.
+
+**7. The tagline, the pitch, and the displaced sentences — PASS.**
+`guides/abort.md:3-5` and `README.md:3-5` are the same three lines with the same breaks, one noun phrase, no link, no bold run. Every sentence of the old blockquote other than the tagline's own opening sits in `guides/abort.md:7`: the `id`/`signal`/parent-link sentence with its bold run, "Async layers bound their work against a `signal`.", "Deliberately thin." with both `does **not**` sentences, the native-observation sentence, and the `Source:` line. The README's onboarding stays at `README.md:7-10` and `:38-49`.
+
+**8. The gate cases — PASS.**
+The equality case sits inside the manifest loop's `describe` at `tests/guides.test.ts:195-203`. The pin sits at file scope at `:80-99`, filtering both sides to `string[]` through the local type predicate `isTitle` (`:51-53`) and naming both title sets in its failure line (`:96`). The README case carries two `not.toBeUndefined()` guards before `toBe` (`:112-114`). `d7n-abort-converge-report.md:16-36` records all three red on the unconverged tree with their first lines, and `:186` records `Tests 25 passed (25)` after. The equality case binds rather than passing vacuously: a lost `Summary` header reddens as `guide absent` rows, exactly as the baseline reading shows for the two Types rows (`report:33-34`).
+
+**9. Doc blocks unchanged outside their permitted regions — PASS.**
+`d7n-abort-converge.diff.txt:124-191` shows every `src/core` change inside a description paragraph (`helpers.ts` twice, `types.ts` once, `validators.ts` once) or an `@example` title and body (`factories.ts`). No `@remarks` line and no code token moved.
+
+**10. Scope honesty — PASS.**
+`d7n-abort-converge.diff.txt` and `d7n-abort-converge.status.txt` both list only `README.md`, `guides/abort.md`, `src/core/factories.ts`, `src/core/helpers.ts`, `src/core/types.ts`, `src/core/validators.ts`, `tests/guides.test.ts`.
+
+**11. The gate readings — PASS.**
+`d7n-abort-converge-report.md:168` gives `npm run docs` exit 0 at `rows read: 1, disagreements found: 0`; `:179-187` gives the scoped `oxfmt --check`, the scoped and directory-scoped `oxlint`, `npm run check`, `npm run test:guides`, and `npm run test:policy`, each named with its command and reading. Every `docs` reading in the report shows `rows read: 1` — `:39`, `:92`, `:115`, `:168-170`. The lint gate, which prints nothing on success, is proved by a control drawn from outside the population that returned the `no-malformed-summary` diagnostic and exit 1 (`:190-194`).
+
+**12. Report honesty — FAIL.**
+Citation mismatch: `d7n-abort-converge-report.md:69` cites `/home/user/fleet/guide/guides/guide.md:24` for the precedent "a `Shape` cell lists an interface's property names alone". That sentence is at `/home/user/fleet/guide/guides/guide.md:28`; line 24 is the blank line between `## Surface` (`:23`) and `### Types` (`:25`). What right looks like: cite `:28`, or cite the range `:27-28` that carries the `### Types` preamble.
+Counts in prose, against `AGENTS.md` § Writing ("NEVER state a count … rows, members … are such sets") and the converge brief's own `Output` line (`d7n-abort-converge-brief.md:52`, "No count in prose"):
+- `d7n-abort-converge-report.md:60` — "its one row's `Kind` being `class`". Right: "the `Abort` row's `Kind` is `class`".
+- `d7n-abort-converge-report.md:140` — "one block rather than the pair the blockquote carried". Right: name the two paragraphs, or write "rather than the paragraph break the blockquote carried".
+- `d7n-abort-prep-report.md:122` — "beyond the two `entity` bindings already present in the drop-in". Right: "beyond the `entity` bindings the drop-in already declares in each `guide.methods()` loop".
+
+**13. Reader and seed defects — PASS.**
+The report names no reader or seed defect (`d7n-abort-converge-report.md:227-228`, `:259-260`) and names three brief-fact corrections. Each is real on its evidence, and none blocks the guide's release:
+- `written: 8, reported: 2` against the brief's `written: 6, reported: 3` (`report:231-239`). Real: `d7n-abort-converge-brief.md:22` carries the prediction, and `orchestrator-measurements.md:210` shows P19 took it with the Types table left at `Type | Kind | Shape`. Non-blocking — a brief prediction taken from a partial state, not a reader fault.
+- The titled block is the create-and-abort `@example`, not the block at baseline `factories.ts:29` (`report:241-250`). Real: baseline `:29` is the untitled parent-link block (current `src/core/factories.ts:30`, confirmed by the `+1` line shift the body rewrite introduces at `d7n-abort-converge.diff.txt:134-138`), while `### Create and abort` demonstrates the create-and-abort example. Non-blocking — a brief ambiguity the unit resolved the only way that keeps both examples.
+- The seed compares the pitch outside `findDrift` (`report:252-257`). Real and exact: `/home/user/fleet/abort/scripts/docs.ts:413-426` runs the pitch comparison after the row loop, pushing to the same worklist and incrementing the same `found` tally, so `findDrift` never sees the pair. Non-blocking — working as `@orkestrel/guide` is built, and the drop-in's README case covers it. See finding E for the obligation it creates.
+
+## Findings outside the claims
+
+**A. `guides/abort.md:57` carries a banned reference word.** "(Surface rows, above)" — `.claude/rules/writing.md` § Code tokens, references, and links requires `preceding`, `following`, `earlier`, or `later`. Neither `policy/no-banned-term` nor the prose sweep matches that row, so nothing catches it. The report discloses it (`d7n-abort-converge-report.md:292-297`) and leaves it out of scope, correctly. Right: a successor unit owning abort's prose replaces `above` with `preceding`; the guide's release should not carry the pilot's shape with this uncorrected, because every fleet package copies the shape.
+
+**B. The heading-uniqueness check no longer reproduces on the tree it certifies.** `d7n-abort-converge-report.md:105-106` states `grep -n 'Create and abort' guides/abort.md README.md` "returns `guides/abort.md:85` alone, so the heading text occurs once in the document". On the tip that grep returns two lines: the heading at `guides/abort.md:87` and the § Tests prose at `guides/abort.md:146`, which the same unit added. The pairing is still safe, because `createGuide` reads fence headings rather than prose. Right: state the check heading-scoped — `grep -n '^### Create and abort'` — so it reproduces after the unit's own § Tests edit.
+
+**C. The titling step's position in the sequence is unrecorded.** Criterion 3's `--to guide` reads `disagreements found: 10 … reported: 2` with the reported rows named as the titled pair and the pitch (`d7n-abort-converge-report.md:92-95`), which requires the `@example Create and abort` title to have been in `src/core/factories.ts` before that run. Criterion 4 (`:98-119`) presents the titling as the following step. The arithmetic is internally consistent only under the earlier ordering. Right: record the titling edit as its own step with the run that followed it, so a reader can reconcile `9 → 10` disagreements without reconstructing it.
+
+**D. The lint control was planted and removed without a brief naming it.** `d7n-abort-converge-report.md:190-194` records the unit creating a control file in the orchestrator scratchpad and deleting it in the next command. `.agents/orchestration.md` § Permission floor requires a dispatch that has a unit plant a line to prove an instrument can fail to name the file and how the plant is removed; `d7n-abort-converge-brief.md` names neither. No checkout file was touched, so nothing was destroyed. Right: brief the control file and its removal, or have the Orchestrator take the control reading after the unit exits.
+
+**E. The pitch gate is a drop-in case, not a `findDrift` row, and the fleet must be told.** `scripts/docs.ts:413-426` owns the pitch comparison; `findDrift` does not. A package that copies the readers without the README case at `tests/guides.test.ts:106-115` gets no pitch gate at all, and its `test:guides` will be green while its README pitch drifts. Right: the guide's check catalog names the pitch check as a drop-in case with its own identifier, so no consumer reads `findDrift` coverage as covering the pitch.
+
+## Referral to the Orchestrator
+
+Claim 1's `vite-plugin-dts` sub-fact is outside what the dispatch's evidence settles. `d7n-abort-prep.diff.txt` carries no `package-lock.json` hunk, `d7n-abort-prep.status.txt` does not list the file, and `d7n-abort-prep-report.md:142` states "`package-lock.json` was not edited". The tree at `41f893b` shows `package-lock.json:3` at `0.0.10` with no `vite-plugin-dts` node, and `d7n-abort-converge.status.txt` shows A.2 left the file alone, which forces the root-version change into `7d8b1dd` but leaves the subtree drop attributable to any earlier commit. Supply `git show --stat 7d8b1dd` with the lockfile hunk, or rule the attribution yourself. I read no commit and ran no command.
+
+VERDICT: FAIL 12
