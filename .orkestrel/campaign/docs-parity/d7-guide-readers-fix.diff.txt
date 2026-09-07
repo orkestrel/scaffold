@@ -1,0 +1,68 @@
+diff --git a/guides/guide.md b/guides/guide.md
+index bc5e44a..a2ba701 100644
+--- a/guides/guide.md
++++ b/guides/guide.md
+@@ -425,6 +425,8 @@ physical record is returned once as the candidate. `extractExamples` and `extrac
+ adjacency parser and apply their distinct declaration-head and callable-member grammars only to
+ `code`. `extractExamples` dedupes by name and title, so a `type` and a `const` sharing one name
+ contribute the first block of a title rather than one block each.
++`collectTitles` reads a module's head blocks before its documented members' blocks, so where a head
++and a member carry one title the head's block answers.
+ 
+ Across the `.ts` module keys under each selected directory, excluding its root `index.ts` and
+ every `*.test.ts`, `collectKeys` matches
+@@ -553,7 +555,7 @@ guard so a renamed heading fails loudly instead of passing on an empty extractio
+ - **MQ — Methods summary equality.** The same comparison per `MethodGroup`, over the members
+   `group.methods` and `source.methods(group.interface)` both carry, keyed `Owner.member`.
+ - **EQ — Example equality.** Every titled guide fence against the `@example` block of the same title,
+-  body and fence language together. The block is a declaration head's own — a `type`, `interface`,
++  body and fence language together. The block is an exported declaration head's own — a `type`, `interface`,
+   `const`, `function`, or `class` head at column zero — or a documented `class` or `interface`
+   member's, so a head's titled block is compared the way a member's is. The pairing is per title
+   across the document, not per heading: the
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 2f413ad..f51624e 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -2087,10 +2087,10 @@ export function collectExamples(comment: string, name: string): readonly SourceE
+  * text, each named for the declaration its block documents. Shared adjacency comes from
+  * {@link extractSourceComments} and each block is read by {@link collectExamples}; head
+  * membership is the {@link collectKeys} key of the documented record under every keyword that
+- * grammar heads, so comment and template payload cannot qualify and the head grammar stays the
+- * one every reader here shares. A member key carries a dot and a head key does not, so a
+- * member's block belongs to {@link extractExampleMethods} instead. A head carrying several
+- * blocks contributes each.
++ * grammar admits at column zero, so comment and template payload cannot qualify and the head
++ * grammar stays the one every reader here shares. A member key carries a dot and a head key
++ * does not, so a member's block belongs to {@link extractExampleMethods} instead. A head
++ * carrying several blocks contributes each.
+  *
+  * @param source - The file's source text
+  * @returns The exported declaration heads' `@example` blocks, in file order, deduplicated by name and title
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 0522c31..a92c9f2 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -379,8 +379,7 @@ export interface SourceInterface {
+ 	 * association. Declaration and callable
+ 	 * member eligibility comes from aligned projected code while genuine JSDoc
+ 	 * evidence retains its source columns. The head's own block belongs to the
+-	 * no-argument overload instead, so the overloads split the axis at the
+-	 * declaration head against its members.
++	 * no-argument overload instead.
+ 	 *
+ 	 * @remarks
+ 	 * This overload reads only the named declaration's own body, in the first
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 9580d2c..bc6ffc3 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1773,7 +1773,7 @@ describe('extractExamples', () => {
+ 			'export class Widget {}',
+ 			'',
+ 		].join('\n')
+-		expect(extractExamples(source)).toEqual([{ name: 'Widget', code: 'new Widget()' }])
++		expect(extractExamples(source)).toStrictEqual([{ name: 'Widget', code: 'new Widget()' }])
+ 		expect(extractExamples('export class Widget {}\n')).toEqual([])
+ 	})
+ 
