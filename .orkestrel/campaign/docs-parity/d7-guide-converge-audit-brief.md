@@ -33,6 +33,12 @@ You run no command and edit nothing. Read the actual diff and status first, then
 11. The report's gate readings — `npm run build && npm run docs` exit 0 with no line printed; `format:check`, `lint:check`, `check`, `test:src:core`, `test:guides` green — are quoted from runs the report names.
 12. Report honesty: every `file:line` citation matches the tree the unit left, and the report states no count in prose.
 
+## Amendments (after the unit returned)
+
+- **Claim 5 is amended.** The unit stopped on `findDrift`'s fence: its body carries a literal `*/` (the source it documents is itself a doc comment), which no `/** … */` block can enclose, and `replaceExample` guards backtick runs only, so the `--to source` write emitted a `src/core/helpers.ts` that did not parse (`d7-guide-converge-report.md` § Deviation). The unit restored the block and left the fence unpaired. Rule on that: whether the fence's body must carry `*/` (the hypothesis that no rewrite keeps both its meaning and its enclosability), and whether the restored block is byte-identical to the committed one. The titled pairs under this claim are therefore `createGuide`, `createSource`, `createSourceManager`, `extractSourceLines`, and the `GuideInterface.tagline` member block, and the unpaired set gains "Compare a guide against the source it documents".
+- **The `*/` guard in `replaceExample`** is a defect in the readers' surface the unit did not own; it is a successor item, not a finding against this unit. Record any evidence you meet about its shape (the `\`\`\`` guard at `src/core/helpers.ts`, the guide sentence stating the refusal).
+- **The unit's flagged claims** (the `Source` class block split into description and `@remarks`; the README `## Checks` gaining an equality row; `manifestEntryShape`'s authored `Shape` cell; three cells whose orientation clause was dropped; the widest cells after the write) are each yours to rule on under the claim they touch, with what right looks like where you disagree.
+
 ## Output
 
 Per claim: PASS, FAIL, or CANNOT RULE with the evidence. Then findings outside the claims, each with what right looks like. Close with exactly one terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>`. Open with `Lane held: <lane>`. No process diary. Perform the assignment directly and spawn nothing.
