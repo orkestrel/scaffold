@@ -11,6 +11,7 @@ tip=$(git rev-parse --short HEAD); ver=$(node -p "require('./package.json').vers
 facts=$(bash $SCR/facts.sh $n)
 p21=$(awk -v n="$n" '$0 ~ "^### "n" \\(" {f=1} f && /^### / && $0 !~ "^### "n" \\(" {f=0} f' $SCR/p21/p21-fleet-readings.log.txt $SCR/p21/p21b-fleet-readings.log.txt 2>/dev/null)
 hs=$(cat $SCR/headstart/$n.log.txt 2>/dev/null || echo "(head start not yet installed)")
+prose=$(cat $SCR/p21/prose-$n.txt 2>/dev/null); [ -z "$prose" ] && prose="(none captured beyond the P21 section; read the run)"
 p20=$(grep "^$n |" /home/user/scaffold/.orkestrel/campaign/docs-parity/instruments/d7/p20/p20-fleet-repair-lint.log.txt | cut -d'|' -f2- | sed 's/^ //')
 probe_item=""; probe_scope=""
 if [ "$n" = probe ]; then
@@ -45,6 +46,12 @@ $p21
 - The \`0.0.18\` readers return records: \`guide.methods()\` groups carry \`methods: readonly MethodEntry[]\` (each with \`name\`), \`source.methods(name)\` returns \`readonly MethodEntry[]\`, \`source.examples()\` and \`source.examples(name)\` return \`readonly SourceExample[]\` (each with \`name\`). \`findMissing\` and \`findUnexampled\` take names. The accepted adaptation of this same drop-in is at \`/home/user/fleet/abort/tests/guides.test.ts:145-215\` (a sibling package's suite: \`members\` and \`documented\` bound once per \`describe\`, the mapped \`examples\` bound once in the examples loop); copy its shape, not its constants.
 - The vendored voice rule (\`policy/no-malformed-summary\`: a doc block's description paragraph opens with a third-person verb ending in \`s\` and does not name the symbol it documents in its first sentence; \`policy/no-banned-term\`: no unconditionally banned substitution-table term in comment prose outside code spans, fenced blocks, link tags, and URLs) reads every doc block and comment after \`repair\`. P20 read after \`repair\` in a scratch clone: $p20.
 - \`npm run format\` after editing; the acceptance gate is \`format:check\`. Run every script with \`npm run\`; \`node\` is v22.
+- The prose sweep's hits in \`guides/**\` and \`README.md\` on this checkout after \`repair\`, each as line, message, path (taken by the Orchestrator in a scratch clone; the line numbers are those of the committed tree):
+
+\`\`\`text
+$prose
+\`\`\`
+
 - A banned term inside a string literal the rule does not read needs no edit. A Markdown fixture under \`tests/\` is swept by the prose sweep in \`tests/setupPolicy.ts\`, so its text and the assertion that reads it move together.
 
 $facts

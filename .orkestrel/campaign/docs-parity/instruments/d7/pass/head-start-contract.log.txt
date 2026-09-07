@@ -1,0 +1,15 @@
+== contract 2026-09-07T14:57:39Z tarball sha256 85031b9260758fe3
+== before
+0.0.18
+(status end)
+== replaced range
+75:		"@orkestrel/guide": "^0.0.17",
+== install
+
+up to date in 574ms
+EXIT 0
+== after
+0.0.18
+9
+(status end)
+== note: this log is the second, idempotent run of head-start.sh contract; the first run read 0.0.17 before and printed 'removed 30 packages, and changed 2 packages in 1s', EXIT 0, 0.0.18 after — the same transition as codec's log

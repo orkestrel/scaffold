@@ -1,0 +1,50 @@
+== msg P.1 landing 2026-09-07T14:58:46Z, version 0.0.10
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/msg.md
+ M package.json
+ M src/core/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 495ms
+EXIT 0
+== lockfile root version
+0.0.10 / 0.0.10
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/msg.md
+ M package-lock.json
+ M package.json
+ M src/core/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/core/helpers.test.ts |   2 +-
+ tsconfig.json                  |   3 +-
+ 14 files changed, 1533 insertions(+), 570 deletions(-)
+== stage by path
+ 15 files changed, 1987 insertions(+), 570 deletions(-)
+== committed
+1e83f24 Prepare msg for the equality gate
+(status end)
