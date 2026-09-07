@@ -7,8 +7,8 @@ Every item is applied. The gates run green, and the observations read as the bri
 - **O1** — `Entry.bundled` and `Entry.declaration.bundled` renamed `browsable`: declaration
   (`src/core/templates.ts:1182`, `:1184`), the `buildStage` local and its reads
   (`:1674`, `:1676`, `:1687`, `:1689`), the pushed record (`:1685`), the unreachable filter
-  (`:1841`), the browser drive's gate and demand (`:2042`, `:2046`), the guard fragment's filter
-  (`:2089`), and the pinned occurrences in `tests/src/core/templates.test.ts:1563-1653`. Every
+  (`:1841`), the browser drive's gate and demand (`:2041`, `:2045`), the guard fragment's filter
+  (`:2088`), and the pinned occurrences in `tests/src/core/templates.test.ts:1563-1653`. Every
   Vite-bundle sense (`:1984`, `:2005`, `:2034`) and every Playwright bundled-browsers sense
   (`:688-960`) is unchanged.
 - **O2** — `Entry`'s member order now reads `subpath`, `specifier`, `mapping`,
@@ -131,3 +131,5 @@ dispatched over.
   measured at 99 columns for `bundled`. The split keeps every named member and local at its
   required name and adds one intermediate local the brief's file:line list does not mention. It is
   reported here rather than silently folded into O1's edit list.
+
+_Annotated by the Orchestrator after the closure round (`d6b-fix-checker.md` claims 4 and 6): the intermediate local this report names `overrides` was renamed `shadowed` by the Orchestrator after the report was written (`d6b-fix-integration.md`), so the quoted lines read `shadowed` in the file; the browser drive's gate and demand sit at `:2041` and `:2045` and the guard's filter at `:2088`._

@@ -14,3 +14,15 @@ Lanes: subjective `reviewer` (Opus 5, the writer's engine, the Sol bench dark; t
 - Dropped on the record: none.
 
 VERDICT: FAIL 1, 2, 5 — D6b-fix briefed; the landing waits on its closure (checker and the landing verifier again).
+
+## Round 2 (2026-09-07, the closure of D6b-fix) — acceptance
+
+Lanes: `checker` (Sonnet) on `d6b-fix-check-brief.md`, the landing `verifier` (Sonnet) on `landing-verify-brief.md`; Workflow `wf_84dc9689-b9a`. The Opus lane did not run this round: D6b-fix applied the subjective lane's round-1 prescriptions verbatim, which the checker reads mechanically; that is this round's reason. Records: `d6b-fix-checker.md` (FAIL 4, 6), `landing-verify-2-report.md` (`GATES: GREEN`: the whole chain under npm 11, every project green, the distribution proof red on exactly the expected case, the configs audit aligned).
+
+- Checker 1, 2, 3, 5 PASS: `browsable` at every site, the member order, the two comments verbatim, the scope exact.
+- Checker 4 FAIL on the claim's wording: the width fix split one expression into two statements with a new local, which the checker reads as behaviour-equivalent; the claim said "identifiers, member order, and comments only". Ruling: accepted; the split is the brief's deviation carried through and the Orchestrator's claim was narrower than the brief.
+- Checker 6 FAIL: the builder's report cites the local as `overrides`, its name before the Orchestrator's rename to `shadowed` (`d6b-fix-integration.md`), and three citations sit one line off. Annotated in the retained report.
+- The name `shadowed` is the Orchestrator's own ruling under `.claude/rules/names.md` § General vocabulary (a boolean reads as an assertion; the require target is shadowed by the browser target), unaudited by a design lane and recorded as such.
+- Dropped on the record: none.
+
+**VERDICT: PASS — D6b accepted with D6b-fix.** The joint landing of D4, D5, D6, and D6b follows, by path, through `instruments/landing/land.sh`.
