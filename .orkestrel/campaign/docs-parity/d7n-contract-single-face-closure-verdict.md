@@ -4,8 +4,8 @@ Workflows `wf_9b984352-c14` (2026-09-07, cut short by the session limit) and `wf
 
 | Package | Tip | Checker | Verifier | Ruling |
 | --- | --- | --- | --- | --- |
-| contract | `6e9942a` | FAIL 2 (counts in the report's prose; every fix item verified, the `isArray` remark on the right symbol this round) | GATES: RED 8 — `npm test` read a JSONCloner bound at 2700 ms against 2000 and two 5 s timeouts in `src:core` under the host's load; every other command green, `docs` at zero | open until the Orchestrator's re-run of those files alone, on a quiet host |
+| contract | `6e9942a` | FAIL 2 (counts in the report's prose; every fix item verified, the `isArray` remark on the right symbol this round) | GATES: RED 8 — `npm test` read a JSONCloner bound at 2700 ms against 2000 and two 5 s timeouts in `src:core` under the host's load; every other command green, `docs` at zero | closed: the Orchestrator's re-run of `JSONCloner.test.ts`, `ShapeValidator.test.ts`, and `compilers.test.ts` alone (`vitest run --project src:core`, load average 0.56 at start) read `Test Files 3 passed (3)`, `Tests 327 passed (327)`, exit 0 on 2026-09-07 20:37 UTC; the report annotated |
 | sqlite | `691d024` | PASS | GATES: GREEN | closed |
 | indexeddb | `5d29c45` | FAIL 2 (a count in the report's prose; every fix item verified, the grown fence on both sides) | GATES: GREEN | closed; the report annotated |
 
-sqlite and indexeddb push to the branch and `main` at the tips named; contract pushes after its re-run reads green.
+sqlite and indexeddb push to the branch and `main` at the tips named; contract pushed to the branch and `main` at `6e9942a` after that reading.

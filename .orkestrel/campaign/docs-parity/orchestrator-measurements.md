@@ -250,3 +250,16 @@ $ p23-parity-controls.sh / p23b-parity-controls.sh   (a scratch clone per packag
 ```
 
 Reading: on every converged package the gate compares every documented declaration and every documented method, and every way a side can drift reddens both the seed and the suite. The first script's block control edited a `@remarks` line in abort and msg, which the comparison leaves unread by Ruling 7's design, so the successor plants it on the description's first line. Outside the gate by design: an implementing class's own method blocks (`Abort.abort`, `SSEParser.parse/flush/clear` carry none; the interface's block is the documented contract the Methods table compares), and every untitled fence (executed by the flagship tests, compared by nothing). P23 runs on every package after its converge unit lands, before its audit, as the Orchestrator's tracked command.
+
+## The deciding re-run of contract's timing cases (2026-09-07 20:37 UTC)
+
+The closure `verifier` read `npm test` red in contract's `src:core` under the host's load: `JSONCloner.test.ts` bounding at 2700 ms against 2000, and 5 s timeouts in `ShapeValidator.test.ts` and `compilers.test.ts`. Alone on a quiet host (load average 0.56 at start, 1.54 at the end):
+
+```text
+$ npx vitest run --config vite.config.ts --project src:core tests/src/core/JSONCloner.test.ts tests/src/core/ShapeValidator.test.ts tests/src/core/compilers.test.ts
+ Test Files  3 passed (3)
+      Tests  327 passed (327)
+exit 0
+```
+
+Reading: the reds were load, not the tree; contract closes on this run.
