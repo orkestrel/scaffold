@@ -1,0 +1,5 @@
+ M README.md
+ M guides/codec.md
+ M src/core/helpers.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts

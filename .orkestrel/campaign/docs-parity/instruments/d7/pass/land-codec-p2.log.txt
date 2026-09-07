@@ -1,0 +1,15 @@
+== codec p2 landing 2026-09-07T15:17:28Z over 583338c
+== status
+ M README.md
+ M guides/codec.md
+ M src/core/helpers.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |  67 ++++++++++-------
+ tests/guides.test.ts   |  77 ++++++++++++++++++-
+ 5 files changed, 279 insertions(+), 203 deletions(-)
+== stage by path
+ 5 files changed, 279 insertions(+), 203 deletions(-)
+== committed
+d216f4d Converge codec under the equality gate
+(status end)
