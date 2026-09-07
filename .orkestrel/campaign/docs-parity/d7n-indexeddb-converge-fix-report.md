@@ -364,3 +364,7 @@ Recorded against the capability that owns them, not reopened here:
 - The `Feature-detecting before opening a database` fence has no executed transcription in
   `tests/src/browser/integration.test.ts`, so its index-backed read is asserted by no behavioural
   proof. Every other flagship fence has one. `tests/src/browser/**` is off-limits to this unit.
+
+---
+
+**Orchestrator annotation (closure, 2026-09-07):** the closure `checker` read a count in this report's prose (lines 197-198). The tree is authoritative; the report stands annotated.
