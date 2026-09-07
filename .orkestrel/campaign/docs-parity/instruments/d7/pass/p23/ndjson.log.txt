@@ -1,0 +1,89 @@
+### ndjson at 2ec2186, guide guides/ndjson.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  31 passed (31)
+   test:guides exit 0
+-- census
+   guides/ndjson.md surface {"equal":3,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":2,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class NDJSONParser methods 2 grouped false undescribed ["clear","parse"]
+   owner interface NDJSONParserInterface methods 2 grouped true undescribed []
+   examples titledFences 4 titledExamples ["createNDJSONParser:Factories"] pairs ["Factories"]
+-- sites: surface row guides/ndjson.md:44; methods row guides/ndjson.md:85; title src/core/factories.ts:11
+-- control A: one Surface Summary cell altered (guides/ndjson.md:44)
+guides/ndjson.md interface NDJSONParserInterface: guide "Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a consumer holds — a `parse` that turns each string chunk into the complete records decoded so far, and a `clear` that drops the buffered partial line. Control." source "Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a consumer holds — a `parse` that turns each string chunk into the complete records decoded so far, and a `clear` that drops the buffered partial line."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > NDJSON > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 17ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/ndjson.md:85)
+guides/ndjson.md NDJSONParserInterface.parse: guide "Appends `chunk` to the buffer and returns every complete `\\n`-terminated line parsed to a record, skipping a malformed or non-record line; the trailing partial line is retained for the next call, so a line split across a chunk boundary is reassembled when its closing `\\n` arrives. Control." source "Appends `chunk` to the buffer and returns every complete `\\n`-terminated line parsed to a record, skipping a malformed or non-record line; the trailing partial line is retained for the next call, so a line split across a chunk boundary is reassembled when its closing `\\n` arrives."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > NDJSON > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an
+guides/ndjson.md function createNDJSONParser: guide "Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an `NDJSONParserInterface` — a fresh `NDJSONParser` holding the buffer, so a caller holds the published contract rather than the class." source "Control Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an `NDJSONParserInterface` — a fresh `NDJSONParser` holding the buffer, so a caller holds the published contract rather than the class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > NDJSON > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/NDJSONParser.ts:5:  * Control Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing
+guides/ndjson.md class NDJSONParser: guide "Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing `NDJSONParserInterface` over a private buffer the instance owns — each `parse` call returns the records completed so far and reassembles a record split across chunk boundaries." source "Control Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing `NDJSONParserInterface` over a private buffer the instance owns — each `parse` call returns the records completed so far and reassembles a record split across chunk boundaries."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > NDJSON > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 20ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:11)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 30 passed (31)
+× pairs at least one example title across the guide and the source 22ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/ndjson.md Factories: guide "ts\nimport { createNDJSONParser } from '@orkestrel/ndjson'\n\nconst parser = createNDJSONParser()\nparser.parse('{\"a\":1}\\n{\"b\":2}\\n') // [{ a: 1 }, { b: 2 }]" source "ts\nimport { createNDJSONParser } from '@orkestrel/ndjson' // control\n\nconst parser = createNDJSONParser()\nparser.parse('{\"a\":1}\\n{\"b\":2}\\n') // [{ a: 1 }, { b: 2 }]"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > NDJSON > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 24ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/ndjson.md pitch: readme "Control: A stateful newline-delimited-JSON (NDJSON) stream parser: a self-contained handle that turns string chunks into the complete records decoded so far, and never throws on a malformed, blank, or non-record line." tagline "A stateful newline-delimited-JSON (NDJSON) stream parser: a self-contained handle that turns string chunks into the complete records decoded so far, and never throws on a malformed, blank, or non-record line."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A stateful newline-delimited…' to be 'A stateful newline-delimited-JSON (ND…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 30 passed (31)
+× opens the README with the guide tagline 12ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/ndjson.md interface NDJSONParserInterface: guide absent source "Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a consumer holds — a `parse` that turns each string chunk into the complete records decoded so far, and a `clear` that drops the buffered partial line."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > NDJSON > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

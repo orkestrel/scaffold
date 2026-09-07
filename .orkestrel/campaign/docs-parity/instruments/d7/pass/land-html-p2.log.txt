@@ -1,0 +1,20 @@
+== html p2 landing 2026-09-07T15:50:15Z over 00f44e5
+== status
+ M README.md
+ M guides/html.md
+ M src/core/HTML.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |  27 +++--
+ tests/guides.test.ts   |  75 +++++++++++++-
+ 10 files changed, 509 insertions(+), 265 deletions(-)
+== stage by path
+ 10 files changed, 509 insertions(+), 265 deletions(-)
+== committed
+ded7138 Converge html under the equality gate
+(status end)

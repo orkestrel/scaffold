@@ -1,0 +1,52 @@
+== router P.1 landing 2026-09-07T15:50:28Z, version 0.0.14
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/browser/types.ts
+ M src/core/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 600ms
+EXIT 0
+== lockfile root version
+0.0.14 / 0.0.14
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M src/browser/types.ts
+ M src/core/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupServer.ts  |  14 +-
+ tsconfig.json         |   5 +-
+ 15 files changed, 1564 insertions(+), 584 deletions(-)
+== stage by path
+ 16 files changed, 2018 insertions(+), 584 deletions(-)
+== committed
+4101a0b Prepare router for the equality gate
+(status end)

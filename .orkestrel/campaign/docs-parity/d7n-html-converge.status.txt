@@ -1,0 +1,10 @@
+ M README.md
+ M guides/html.md
+ M src/core/HTML.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts

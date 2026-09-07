@@ -1,0 +1,20 @@
+== sqlite p2 landing 2026-09-07T15:50:15Z over 555609c
+== status
+ M README.md
+ M guides/sqlite.md
+ M src/server/SQLiteDatabase.ts
+ M src/server/SQLiteStatement.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts           |  87 ++++++++++++++++++++--------------
+ tests/guides.test.ts          |  75 +++++++++++++++++++++++++++++-
+ 10 files changed, 223 insertions(+), 120 deletions(-)
+== stage by path
+ 10 files changed, 223 insertions(+), 120 deletions(-)
+== committed
+3b211a0 Converge sqlite under the equality gate
+(status end)

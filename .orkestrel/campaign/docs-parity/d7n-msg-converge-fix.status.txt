@@ -1,0 +1,2 @@
+ M guides/msg.md
+ M src/core/factories.ts
