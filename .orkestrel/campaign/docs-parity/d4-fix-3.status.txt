@@ -1,0 +1,5 @@
+ M .claude/rules/documentation.md
+ M .claude/rules/tests.md
+ M .claude/rules/workspace.md
+ M host.json
+ M tests/guides.test.ts
