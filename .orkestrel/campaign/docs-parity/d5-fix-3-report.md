@@ -7,17 +7,17 @@
 
 ## M2. The no-op tally case
 
-- `tests/src/core/compilers.test.ts:2053-2071` (`SEED_OVERLAP_CHILD`) — added a third Surface row `| \`frame\` | function | Frames a widget for the panel. |`, byte-identical to the parent row's cell at `tests/src/core/compilers.test.ts:2045`.
-- `tests/src/core/compilers.test.ts:2374-2379` (`reported.lines`, the no-direction run) — updated to the measured three-line array: the parent's `frame` drift, the child's `paint` drift, and the new duplicate child `frame` drift, with `rows read: 2, disagreements found: 3`.
-- `tests/src/core/compilers.test.ts:2395-2399` (`written.lines`, the `--to source` run) — updated the closing line to the measured `rows read: 2, disagreements found: 3, written: 2, reported: 0`, keeping the whole-file assertion (`toBe(SEED_OVERLAP_WRITTEN)`), the one-`wrote`-line assertion, and the clean-re-report assertion (`disagreements found: 0`) unchanged.
+- `tests/src/core/compilers.test.ts:2091-2107` (`SEED_OVERLAP_CHILD`) — added a third Surface row `| \`frame\` | function | Frames a widget for the panel. |`, byte-identical to the parent row's cell at `tests/src/core/compilers.test.ts:2045`.
+- `tests/src/core/compilers.test.ts:2439-2444` (`reported.lines`, the no-direction run) — updated to the measured three-line array: the parent's `frame` drift, the child's `paint` drift, and the new duplicate child `frame` drift, with `rows read: 2, disagreements found: 3`.
+- `tests/src/core/compilers.test.ts:2445-2449` (`written.lines`, the `--to source` run) — updated the closing line to the measured `rows read: 2, disagreements found: 3, written: 2, reported: 0`, keeping the whole-file assertion (`toBe(SEED_OVERLAP_WRITTEN)`), the one-`wrote`-line assertion, and the clean-re-report assertion (`disagreements found: 0`) unchanged.
 - Measured closing line: `rows read: 2, disagreements found: 3, written: 2, reported: 0`. The duplicate `frame` drift in the child row takes the no-op branch at `scripts/docs.ts:355` (`if (spliced === text) continue`) once the parent row has already rewritten that shared block, so `found` counts it while `written` and `reported` do not.
 
 ## M3. The silent pitch limbs
 
 - `tests/src/core/compilers.test.ts:2015-2022` — added `SEED_NAMELESS_MANIFEST` (a copy of `SEED_MANIFEST` with the `name` field deleted) and `SEED_NAMELESS` (`SEED_REPORTED` with that manifest).
 - `tests/src/core/compilers.test.ts:2024-2039` — added `SEED_UNOWNED_INDEX` (an index whose one row's spec is `guides/component.md`, never `guides/widget.md`) and `SEED_UNOWNED` (a manifest naming `widget`, a `guides/component.md` file, and no `guides/widget.md`), so `readShortName` resolves `widget` but no row's `spec` is `guides/widget.md`.
-- `tests/src/core/compilers.test.ts:2358-2372` — case `carries no pitch line for a manifest declaring no name`, over `SEED_NAMELESS`, asserting the exact line array (the standing `no doc block carries the key` drift alone, `rows read: 1, disagreements found: 1, written: 0, reported: 1`) and `run.status` `1`.
-- `tests/src/core/compilers.test.ts:2374-2388` — case `carries no pitch line for a manifest naming a guide the index does not index under its own spec`, over `SEED_UNOWNED`, asserting the same shape under `guides/component.md`.
+- `tests/src/core/compilers.test.ts:2380` — case `carries no pitch line for a manifest declaring no name`, over `SEED_NAMELESS`, asserting the exact line array (the standing `no doc block carries the key` drift alone, `rows read: 1, disagreements found: 1, written: 0, reported: 1`) and `run.status` `1`.
+- `tests/src/core/compilers.test.ts:2396` — case `carries no pitch line for a manifest naming a guide the index does not index under its own spec`, over `SEED_UNOWNED`, asserting the same shape under `guides/component.md`.
 - Both cases ran green on the first measured run; no adjustment was needed.
 
 ## M4. The write run's closing line
@@ -92,3 +92,5 @@ All rows outside the four owned files (`scripts/docs.ts`, `tests/src/core/compil
 - The M2 rows in the no-direction and `--to source` runs were derived by first running the test red against a guessed expectation, reading the actual output, and then setting the assertion to that measured value — the standard is a proof against real output, not a derivation restated as an assertion.
 
 No count of a growable set appears above; every number given is a value from a specific named run.
+
+_Citations corrected by the Orchestrator after the closure round (`d5-fix-3-checker.md` claim 6): the `SEED_OVERLAP_CHILD` range, the two closing-line assertions, and the two pitch cases; the M4 sentence was rewritten by the Orchestrator after the same round (`d5-fix-3-integration.md`)._

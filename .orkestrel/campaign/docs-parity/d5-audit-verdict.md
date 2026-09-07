@@ -37,3 +37,14 @@ Lanes: objective `reviewer` (Opus 5, the recorded substitution for the dark Sol 
 - Dropped on the record: none.
 
 VERDICT: FAIL 8 (citations, corrected) — D5-fix-3 briefed as a `builder` round; acceptance follows its checker and the verifier.
+
+## Round 3 (2026-09-07, the closure of D5-fix-3) — acceptance
+
+Lanes: `checker` (Sonnet) on `d5-fix-3-check-brief.md`, `verifier` (Sonnet) on `d5-verify-brief.md`; Workflow `wf_65205b22-a11`. The Opus lanes did not run this round: D5-fix-3 was a fully specified `builder` unit whose four items the objective lane fixed in round 2 (F1 to F4), so the checker reads them mechanically; that is this round's own reason. Records: `d5-fix-3-checker.md` (FAIL 4, 6), `d5-verify-3-report.md` (`GATES: GREEN`; `test:distribution` under npm 11.19.1 at 77.36 s with every case green; `test:guides` red on exactly the two D4 cases).
+
+- Checker 1, 2, 3, 5 PASS: `collectCells`, the duplicate-row case with the measured closing line, the two silent-pitch cases, and the scope.
+- Checker 4 FAIL: the M4 sentence stated a count ("two further values"). Corrected by the Orchestrator in place (`d5-fix-3-integration.md`), the inventory regenerated, the policy sweep and the format check green after.
+- Checker 6 FAIL: the builder's report cited pre-M3 line numbers for the M2 and M3 sites. Corrected in the retained report.
+- Dropped on the record: none.
+
+**VERDICT: PASS — D5 accepted with D5-fix, D5-fix-2, and D5-fix-3.** The seed, its wiring, the rule and its allowlist gate, the own-specifier entries, and the guides-gated selection stay uncommitted on this tree and land with D4 and D6 in one commit by path. Findings carried out of D5 to their carriers: F-a (the inventory omits `app/**`) to D7.n; the `scripts/` grouping to the next change to the group inference; the spawn proofs' home (`src:core`) to the next change to the Vitest projects; the registry-floor findings of the online configs audit to the next dependency visit.
