@@ -1,0 +1,10 @@
+Name the README pitch check in the catalog
+
+The check catalog gains the RQ row: the blockquote under the README's H1
+equals the guide's tagline, both read through `tagline()`, outside
+`findDrift` and gated by the drop-in's README case with its guard against
+a missing blockquote. § Tests and the README's check list name it beside
+the equality checks.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
