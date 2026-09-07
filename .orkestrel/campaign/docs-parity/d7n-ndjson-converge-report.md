@@ -226,3 +226,10 @@ went unexplained.
 - **`parse`'s caveat became a `@remarks` on the interface member**, not on the class, because the
   member's description is the cell the `## Methods` table compares.
 - **No lint control was planted**, per the template correction; the Orchestrator takes that reading.
+
+
+---
+
+## Orchestrator annotation (slice 3 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban (and, in html's converge report, two sentences disagreeing on the `distill` sites); the tree is authoritative. The report stands as the unit's evidence with this note.

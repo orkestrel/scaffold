@@ -710,3 +710,10 @@ every gate other than `docs` reads green.
 ## Wall clock
 
 First command 2026-09-07T15:14:48Z, last command 2026-09-07T15:20:47Z: 5 minutes 59 seconds.
+
+
+---
+
+## Orchestrator annotation (slice 3 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban (and, in html's converge report, two sentences disagreeing on the `distill` sites); the tree is authoritative. The report stands as the unit's evidence with this note.

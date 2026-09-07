@@ -1,0 +1,34 @@
+Lane held: checker ndjson
+
+**Claim 14 — PASS.** `d7n-ndjson-prep.status.txt` lists exactly `.oxlintrc.json`, `configs/helpers.ts`, `configs/policy.ts`, `package-lock.json`, `package.json`, `tests/config.test.ts`, `tests/guides.test.ts`, `tests/policy.test.ts`, `tests/setup.ts`, `tests/setupPolicy.ts`, `tests/src/core/NDJSONParser.test.ts`, `tsconfig.json`, and untracked `scripts/docs.ts` — the P.1 repair list plus `tests/guides.test.ts`, the voice-rule files, and the version/lockfile bump. `d7n-ndjson-prep.diff.txt:1605-1626` shows `package.json`'s only changes are the version bump and the added `docs` script row; `@orkestrel/contract`'s range is untouched and the diff carries no hunk touching `@orkestrel/guide`'s declared range.
+
+**Claim 15 — FAIL.** The methods loop correctly binds `members`/`documented` once per group above its `describe` (`/home/user/fleet/ndjson/tests/guides.test.ts:150-153`, matching `/home/user/fleet/abort/tests/guides.test.ts:147-150`). The examples loop does not: ndjson binds `documented` and `examples` inside the `it` callback (`tests/guides.test.ts:212-227`), while the pilot binds both at the loop's own scope, above the `describe` (`/home/user/fleet/abort/tests/guides.test.ts:209-219`). This is the shape claim 15 requires and ndjson does not carry it.
+
+**Claim 16 — PASS.** `tests/setup.ts:30-33` and `:44-48` open with third-person verb forms (`Feeds`, `Builds`) with every fact of the original sentence retained (P.1 report's before/after hunks); `tests/setup.ts:69-72` likewise (`Splits`). `tests/src/core/NDJSONParser.test.ts:497` applies only the `just` substitution-table row (`// still just its own record` → `// still its own record`), moving no code token and no assertion value.
+
+**Claim 17 — PASS.** `/home/user/fleet/ndjson/guides/ndjson.md:42-44` (`Type|Kind|Shape|Summary`), `:59-61` (`API|Kind|Summary`), `:72-74` (`### Classes`, `API|Kind|Summary`), `:83-86` (`Method|Returns|Summary`) — every table heads `Summary` beside only permitted columns. The sole all-class table (`### Entities` → `### Classes`) carries its one row; no H3-documented class section exists, so that clause is vacuously satisfied. The `Types` table's convention sentence sits at `:40`.
+
+**Claim 18 — PASS.** Every `Summary` cell (`guides/ndjson.md:44,61,74,85,86`) equals the corresponding doc-block description paragraph in `src/core/types.ts`, `src/core/factories.ts`, `src/core/NDJSONParser.ts` per `d7n-ndjson-converge.diff.txt`. The `parse` caveat moved into `@remarks` on the interface member (`src/core/types.ts` diff hunk) rather than being dropped. No description restates its own `@remarks`.
+
+**Claim 19 — PASS.** `grep -n '^#\+ Factories'` and `'^#\+ Surface'` in the converge report each return one line; `@example Factories` on `createNDJSONParser` (`src/core/factories.ts` diff) equals the fence under `### Factories` (`guides/ndjson.md:63-68`) exactly; the body carries no three-backtick run or doc-comment terminator. Only that block is titled.
+
+**Claim 20 — PASS.** `guides/ndjson.md:3-5` and `README.md:3-5` are byte-identical (`diff <(sed -n '3,5p' ...)` in the report reports no difference), plain text, no link, no bold. The displaced sentences sit in the guide's opening prose (`guides/ndjson.md:7-21`); the README's opening paragraph (`README.md:7-9`) does not restate the tagline's clauses, and `## Install`/`## Requirements`/`## Usage` stay unchanged (confirmed against the tree).
+
+**Claim 21 — PASS.** The equality case sits inside the manifest loop's `describe(entry.concept)` (`tests/guides.test.ts:184-192`). The pin (`:75-97`) is byte-identical to the pilot's guard-and-continue form at `/home/user/fleet/abort/tests/guides.test.ts:72-94`, no local predicate, both-sides failure line present. The README case (`:104-113`) carries two `not.toBeUndefined()` guards before `toBe`. `README.md` is in `ROOT_FILES` (`:48`); `GUIDE_SPEC` is declared (`:34`). The converge report's Criterion 1 quotes each case's failing line on the unconverged tree and Criterion 7 quotes the green run after.
+
+**Claim 22 — FAIL.** `guides/ndjson.md`'s headings are exactly `# NDJSON`, `## Surface`, `### Types`, `### Factories`, `### Classes`, `## Methods`, `#### NDJSONParserInterface` — no `## Tests` section exists anywhere in the file. The converge report itself concedes this ("§ Tests was not added ... `guides/ndjson.md` carries no `## Tests` section, and adding one is outside this unit's criteria"). Claim 22 requires the guide to carry a `## Tests` section naming the equality gate descriptively; it does not.
+
+**Claim 23 — PASS.** `d7n-ndjson-converge.status.txt` lists only `README.md`, `guides/ndjson.md`, `src/core/NDJSONParser.ts`, `src/core/factories.ts`, `src/core/types.ts`, `tests/guides.test.ts`; the diff confirms every `src/**` hunk sits inside a doc comment, moving no code token.
+
+**Claim 24 — PASS.** The converge report's Criteria 6 and 7 present each gate as a literal command paired with its literal output (`npm run docs` → `rows read: 1, disagreements found: 0`; `--to guide`/`--to source` → `written: 0`; `oxfmt --check`, `oxlint`, `check`, `test:guides`, `test:policy` each with their output line), satisfying the claim's requirement that these readings are quoted from named runs. This rules only the citation form; it does not independently confirm the gates actually passed, since the report is self-quoting.
+
+**Claim 25 — FAIL.** `d7n-ndjson-converge-report.md`'s Criterion 1 states "The three cases, as landed: ..." — a count of a set the writing rules explicitly name (`AGENTS.md` § Writing lists "cases" as a banned count noun). This is a count stated in report prose, breaching "neither report states a count in prose."
+
+**Claim 26 — PASS.** The converge report's "Reader and seed defects met" section states "None," so the reports name no defect; the claim is satisfied vacuously.
+
+## Findings outside the claims
+
+- **Report count violation (ndjson, `d7n-ndjson-converge-report.md`, Criterion 1):** "The three cases" restates a count of a growable set (test cases). What right looks like: name the tests by what they prove ("the equality case, the pin, and the README case, as landed:") rather than counting them.
+- **Shape-cell idiom departure from the brief's literal wording (ndjson, `guides/ndjson.md:44`):** the P.2 brief's "What is fixed" says a table carrying `Shape` keeps "the type literal ... in Shape" while the clause moves to the doc block; the unit instead replaced the literal signature (`parse(chunk: string): readonly Record<string, unknown>[]` + `clear()`) with a different idiom (`{ parse, clear }`), justified in the report as matching "the pilot's idiom." This is a design-fit question — whether the fleet's Shape convention is verbatim-literal-retention or brace-idiom-restatement — that the subjective/objective lanes, not the checker, should rule on.
+
+VERDICT: FAIL 15, 22, 25

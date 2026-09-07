@@ -48,3 +48,11 @@ A converge unit owns each doc block whole — the description paragraph, `@remar
 ## Ruling 12 (2026-09-07, the Orchestrator, on slice 2's subjective F3): one `Shape` idiom fleet-wide
 
 A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member, its call-signature members after `plus`, and a type alias's own type literal with a union's arms escaped as `\|`; a member's type never appears in the cell, because the declaration carries it and the guide's reader reaches it through the row's name. The convention sentence above every table that carries the column states this one idiom, and a row that spells a member's type, a prose description, or a call signature with its return type is rewritten to it. Where a row's literal names a documented alias (`scope?: TokenScope`), the alias's own row spells the union.
+
+## Ruling 13 (2026-09-07, the Orchestrator, on slice 3's F-1 and the objective lane's first finding): the drop-in's canonical text
+
+The shared drop-in is the pilot's `/home/user/fleet/abort/tests/guides.test.ts` outside the constants block, with two corrections the pilot itself takes in its own fix: the `INTERNAL` doc block reads "the assertion that follows it fails when a name here stops being stranded" (no ordinal, no `below`), and the equality case sits before the import walk inside the manifest loop. The examples case is named `documents an example for every Surface function`; the mapped `examples` binding maps each side then concatenates. A package's drop-in matches that text byte for byte outside its constants, so the next drop-in update is a copy.
+
+## Ruling 14 (2026-09-07, the Orchestrator, on slice 3's N-1): an example converges toward the fuller demonstration
+
+Where the titled `@example` and its fence differ in what they demonstrate, the side that lacks the demonstration is extended and the other is kept; a line is never deleted from either side to make them equal. The fence is what a guide reader runs, the block is what an IDE reader sees, and both carry the whole demonstration.

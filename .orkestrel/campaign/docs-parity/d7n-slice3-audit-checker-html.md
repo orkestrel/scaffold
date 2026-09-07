@@ -1,0 +1,35 @@
+Lane held: checker html
+
+**Claim 1 — PASS.** `d7n-html-prep.status.txt` lists exactly `.oxlintrc.json`, `configs/helpers.ts`, `configs/policy.ts`, `guides/html.md`, `package-lock.json`, `package.json`, `src/core/HTML.ts`, `src/core/constants.ts`, `tests/config.test.ts`, `tests/guides.test.ts`, `tests/policy.test.ts`, `tests/setup.ts`, `tests/setupPolicy.ts`, `tsconfig.json`, plus untracked `scripts/docs.ts`. This matches the P.1 repair list + `tests/guides.test.ts` + the voice/prose files the report names (`tests/setup.ts`, `src/core/HTML.ts`, `src/core/constants.ts`, `guides/html.md`) + `package.json` version. `d7n-html-prep.diff.txt` shows `@orkestrel/contract`/`@orkestrel/guide` ranges unchanged (`^0.0.16`, `^0.0.17`).
+
+**Claim 2 — PASS.** `tests/guides.test.ts:196-217` matches the pilot shape at `/home/user/fleet/abort/tests/guides.test.ts:145-215`: `members`/`documented` bound once per `describe` (line 196-197), `examples` bound once above the examples `describe` (line 242-249), `findMissing`/`findUnexampled` all receive name arrays. P.1 report quotes `test:guides` — `Tests 32 passed (32)`.
+
+**Claim 3 — PASS.** `d7n-html-prep-report.md` items 3 show before/after hunks in `tests/setup.ts` (noun→verb openers), `src/core/HTML.ts:40` (drops the named symbol), `src/core/constants.ts:469` (`just as`→`the way`), `guides/html.md:318` (`just` deleted). Facts preserved in each; no code token moved (confirmed no non-comment hunks in this file in `d7n-html-prep.diff.txt`).
+
+**Claim 4 — PASS.** `guides/html.md:18,48,74,89,98,140,151,160,174` each head `Summary` beside only `Kind`/`Shape`/`Value`/`Signature`/`Returns`. `### Classes` (line 155) is the only all-class table, `HTML` (the sole H3-documented class) carries a row. The `Shape` idiom sentence sits in `### Types`'s intro (line 16); the `Value` convention sentence sits in `### Constants`'s intro (line 46).
+
+**Claim 5 — PASS.** `d7n-html-converge-report.md` Criterion 3 names every hand-rewritten block by file; `HTMLScan`/`HTMLHandlerMap` type literals confirmed moved to `Shape` (see claim 9 note on scope of that change); distinct descriptions confirmed by spot-check of `### Types` and `### Constants` rows in `guides/html.md`.
+
+**Claim 6 — PASS.** `src/core/factories.ts:19` carries `@example Parse, then query`; `guides/html.md:352-366` is the sole `### Parse, then query` fence (heading occurs once), and the fence body (lines 354-366) equals the `@example` body verbatim. No triple-backtick or `*/` inside the body.
+
+**Claim 7 — PASS.** `guides/html.md:3-6` and `README.md:3-6` carry the identical blockquote, one noun phrase, no link, no bold. The displaced sentence ("The source is `src/core`...") sits in the guide's opening prose (`guides/html.md:8`, appended). README's onboarding paragraph (`README.md:8-11`) is retained content distinct from the tagline's clauses.
+
+**Claim 8 — PASS.** `tests/guides.test.ts:281-289` (equality case inside `describe(entry.concept)`), `:121-143` (file-scope pin, guard-and-continue, no local predicate, both-sides failure line), `:150-159` (README case, two `not.toBeUndefined()` guards), `:94` (`README.md` in `ROOT_FILES`), `:80` (`GUIDE_SPEC`). `d7n-html-converge-report.md` Criterion 1 quotes each case's red failure line and the green re-run.
+
+**Claim 9 — FAIL.**
+- Non-`Summary`-cell exception: the report itself states (Criterion 3) that `HTMLScan`'s `Shape` cell changed from `` `HTMLScan<TNode extends HTMLNode>` = `{ node: TNode, next: number }` `` to `` `{ node: TNode, next: number }` ``, and `HTMLHandlerMap`'s `Shape` cell changed from prose to `` `{ document, element, text, comment, doctype }` ``. Both are content changes to a non-`Summary` cell beyond width and the brief's header renames, contradicting the claim's "equals its baseline text apart from width, except the headers the brief renames."
+- All-caps emphasis: `guides/html.md:36` carries `ALREADY` (from `src/core/types.ts:259`, pre-existing) and `guides/html.md:40` carries `REPLACES` (pre-existing doc block, unchanged by this unit). More materially, `src/core/constants.ts` diff (`d7n-html-converge.diff.txt:631`) shows the unit's own hand rewrite of `BOILERPLATE_ELEMENTS`'s `@remarks` introducing new text "dropped WITH their children" — a newly authored all-caps word, not carried from baseline. This directly falsifies "no all-caps emphasis" for owned prose.
+
+**Claim 10 — PASS.** `d7n-html-converge.status.txt` lists exactly `README.md`, `guides/html.md`, `src/core/HTML.ts`, `src/core/constants.ts`, `src/core/factories.ts`, `src/core/helpers.ts`, `src/core/parsers.ts`, `src/core/types.ts`, `src/core/validators.ts`, `tests/guides.test.ts` — all within the claim's named set (doc-block hunks under `src/**`). Spot-checked diffs (`HTML.ts`, `constants.ts`, `factories.ts`, `helpers.ts`) show only comment-region changes.
+
+**Claim 11 — PASS.** `d7n-html-converge-report.md` Criterion 6 quotes `npm run docs` → `rows read: 1, disagreements found: 0`; `--to guide`/`--to source` → `written: 0, reported: 0`. Criterion 7 quotes `oxfmt --check`, scoped `oxlint`, `check`, `format:check`, `test:guides` (35 passed), `test:policy` (90 passed | 1 skipped) all exit 0.
+
+**Claim 12 — FAIL.** `.claude/rules/writing.md` and `AGENTS.md` § Writing ban stating a count in developer-facing prose, including reports. `d7n-html-converge-report.md:4-5` states "One source defect surfaced through the gate... the `distill` order in **two doc blocks** contradicted the code," and line 272 states "Repaired at the **three sites** carrying the wrong order." These are counts of growable sets (defects, doc blocks, sites) stated in authored prose, not quoted command output.
+
+**Claim 13 — PASS.** The one named defect (the `distill` pass-order contradiction) is real: `src/core/HTML.ts:255-267` (report's citation) and `guides/html.md` § The distill pass both state the sanitize-with-defaults-before-re-root order, and the pre-fix doc-block text (`src/core/types.ts`, `src/core/HTML.ts`, quoted in the report) stated the opposite order. It was repaired within this same unit (re-propagated, `docs` reads `disagreements found: 0` after), so it does not block the guide's release.
+
+**Findings outside the claims:**
+- The README's new onboarding sentence ("Create a handle with the `createHTML` function, query it with `find` and `filter`, reshape it with `map`, `sanitize`, or `distill`...") paraphrases functions the tagline also names (sanitize, distill, render). It is not a verbatim restatement of the tagline's clauses, so it does not fail claim 7 as worded, but a subjective lane should confirm this crosses the "without restating the tagline's clauses" line as intended — right looks like the onboarding naming *what a developer does first*, not re-describing what the package *is*, which this text does.
+- `TABLE_CELL_ELEMENTS`'s rewritten `@remarks` (`src/core/constants.ts`) reads "so it can narrow this allowlisted attribute the way it narrows URL attributes without a per-element policy mechanism" — carried from P.1's voice-rule fix; confirmed present verbatim, no drift introduced by P.2.
+
+VERDICT: FAIL 9 12
