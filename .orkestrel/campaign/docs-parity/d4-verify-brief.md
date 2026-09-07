@@ -6,7 +6,7 @@
 
 ## Commands, from `/home/user/scaffold`, in this order
 
-1. `grep -n "findDrift\|tagline" tests/guides.test.ts` (expected: the import and the two cases); `grep -c "map((entry) => entry.name)" tests/guides.test.ts` (expected: 5)
+1. `grep -n "findDrift\|tagline" tests/guides.test.ts` (expected: the import and the two cases); `grep -c "map((method) => method.name)" tests/guides.test.ts` (expected: 5)
 2. `grep -n "findDrift\|tagline\|locateComment" node_modules/@orkestrel/guide/dist/src/core/index.d.ts | head -5` (expected: lines; an empty result means the head start is gone and is RED)
 3. `npm run format:check`
 4. `npm run lint:check`
