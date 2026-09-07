@@ -1,0 +1,60 @@
+== status before ==
+ M .claude/rules/documentation.md
+ M .claude/rules/tests.md
+ M .claude/rules/workspace.md
+ M README.md
+ M guides/scaffold.md
+ M host.json
+ M package.json
+ M src/core/Compiler.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/templates.ts
+ M src/core/types.ts
+ M src/server/Materializer.ts
+ M src/server/Upstream.ts
+ M src/server/helpers.ts
+ M tests/distribution.test.ts
+ M tests/guides.test.ts
+ M tests/setupServer.ts
+ M tests/src/core/Compiler.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/templates.test.ts
+ M tests/src/server/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== staged ==
+ .claude/rules/documentation.md   |  11 +-
+ .claude/rules/tests.md           |  20 +-
+ .claude/rules/workspace.md       |  30 +-
+ README.md                        | 121 +-----
+ guides/scaffold.md               | 788 +++++++++++++++++++++------------------
+ host.json                        |  16 +-
+ package.json                     |   1 +
+ scripts/docs.ts                  | 454 ++++++++++++++++++++++
+ src/core/Compiler.ts             |  10 +-
+ src/core/compilers.ts            |  92 ++++-
+ src/core/constants.ts            |  19 +-
+ src/core/errors.ts               |   6 +-
+ src/core/factories.ts            |  12 +-
+ src/core/helpers.ts              |   7 +-
+ src/core/templates.ts            |  70 ++--
+ src/core/types.ts                |   6 +-
+ src/server/Materializer.ts       |   4 +-
+ src/server/Upstream.ts           |   2 +
+ src/server/helpers.ts            |   4 +-
+ tests/distribution.test.ts       |   9 +-
+ tests/guides.test.ts             |  73 +++-
+ tests/setupServer.ts             |   2 +-
+ tests/src/core/Compiler.test.ts  |   4 +-
+ tests/src/core/compilers.test.ts | 722 ++++++++++++++++++++++++++++++++++-
+ tests/src/core/helpers.test.ts   |  28 ++
+ tests/src/core/templates.test.ts | 108 +++---
+ tests/src/server/helpers.test.ts |  60 ++-
+ tsconfig.json                    |   4 +-
+ 28 files changed, 2020 insertions(+), 663 deletions(-)
+a0a47058 Land the documentation-parity gate, the seed, and scaffold's convergence
