@@ -1,0 +1,2 @@
+== Orchestrator's lint control after A.2-fix (a scratchpad file, never in the checkout)
+npx oxlint --config .oxlintrc.json --deny-warnings <scratch>/control.ts → error policy(no-malformed-summary), EXIT 1; the file removed

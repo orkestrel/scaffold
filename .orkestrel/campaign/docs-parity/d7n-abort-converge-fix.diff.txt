@@ -1,0 +1,286 @@
+diff --git a/README.md b/README.md
+index c6e36eb..5386d29 100644
+--- a/README.md
++++ b/README.md
+@@ -4,10 +4,10 @@
+ > carries a trace `id`, exposes a standard `AbortSignal`, and links to a parent signal so one
+ > cancellation cascades through a tree of handles.
+ 
+-Async work — a fetch, a timeout, a queue task — links into one handle to observe
+-cancellation: hand `abort.signal` to anything that already accepts an
+-`AbortSignal`, call `abort()` to cancel, and pass a parent `signal` to cascade one
+-cancellation across every linked handle. Part of the `@orkestrel` line.
++Create a handle with the `createAbort` function, hand its signal to the fetch,
++stream, or queue task the handle bounds, and call `abort()` to cancel that work.
++Pass a parent handle's signal where the work is a step of a larger job you
++cancel as a whole. Part of the `@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/abort.md b/guides/abort.md
+index 9270551..69f1191 100644
+--- a/guides/abort.md
++++ b/guides/abort.md
+@@ -4,7 +4,15 @@
+ > carries a trace `id`, exposes a standard `AbortSignal`, and links to a parent signal so one
+ > cancellation cascades through a tree of handles.
+ 
+-An `Abort` carries a trace `id`, exposes a standard `AbortSignal` you hand to any cancellable API, and can be **linked to a parent signal** so it fires when either its own `abort()` is called or the parent aborts — cancellation cascades through a tree of handles with no listener bookkeeping. Async layers bound their work against a `signal`. Deliberately thin. It does **not** re-implement cancellation machinery — the native `AbortController` is the engine; `Abort` only adds a traceable `id` and parent-linking on top. It does **not** wrap the signal in a bespoke interface, so it stays interoperable with `fetch`, streams, and every Web API that already speaks `AbortSignal`. The native signal is the complete observation contract: consumers inspect `aborted` and `reason` or subscribe to its standard `abort` event. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
++The native signal is the complete observation contract: hand it to any cancellable API, inspect
++`aborted` and `reason`, or subscribe to its standard `abort` event. Where a parent was given, that
++signal fires when either the handle's own `abort()` is called or the parent aborts, with no
++listener bookkeeping to write. Async layers bound their work against a `signal`. Deliberately
++thin. It does **not** re-implement cancellation machinery — the native `AbortController` is the
++engine; `Abort` only adds a traceable `id` and parent-linking on top. It does **not** wrap the
++signal in a bespoke interface, so it stays interoperable with `fetch`, streams, and every Web API
++that already speaks `AbortSignal`. Source: [`src/core`](../src/core). Surfaced through the
++`@src/core` barrel.
+ 
+ ## Surface
+ 
+@@ -24,9 +32,9 @@ Construction is a strict JavaScript boundary. `validateAbortOptions` normalizes
+ 
+ ### Factories
+ 
+-| API           | Kind     | Summary                                                                                                                                    |
+-| ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `createAbort` | function | Creates a cancellation handle — a thin, traceable wrapper over a native `AbortController` whose `signal` can be linked to a parent signal. |
++| API           | Kind     | Summary                                                                                                                                                                                                                                       |
++| ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `createAbort` | function | Creates a cancellation handle from validated options and returns it as an `AbortInterface` — a resolved trace `id` and a `signal` already linked to any parent given, so a caller holds the published contract rather than the `Abort` class. |
+ 
+ ### Helpers
+ 
+@@ -43,18 +51,20 @@ Construction is a strict JavaScript boundary. `validateAbortOptions` normalizes
+ 
+ ### Classes
+ 
+-| API     | Kind  | Summary                                                                                                                                               |
+-| ------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Abort` | class | Represents a cancellation handle — a thin, traceable wrapper over a native `AbortController` whose exposed `signal` can be linked to a parent signal. |
++| API     | Kind  | Summary                                                                                                                                                                                                |
++| ------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `Abort` | class | Implements `AbortInterface` over a private `AbortController` the instance owns, resolving the trace `id` at construction and exposing either that controller's own `signal` or one linked to a parent. |
+ 
+ ### Types
+ 
+-| Type             | Kind      | Shape                                   | Summary                                                                                                                                       |
+-| ---------------- | --------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `AbortOptions`   | interface | `{ id?: string; signal?: AbortSignal }` | Represents the options for `createAbort` and `Abort` construction.                                                                            |
+-| `AbortInterface` | interface | `id` / `signal` / `aborted` / `abort`   | Represents a cancellation handle — a thin, traceable wrapper over a native `AbortController` whose `signal` can be linked to a parent signal. |
++A `Shape` cell holds an interface's members in braces, and a type alias's value.
+ 
+-The `id`, `signal`, and `aborted` members of `AbortInterface` are `readonly` data members (Surface rows, above) — its call-signature method is documented under [Methods](#methods).
++| Type             | Kind      | Shape                                   | Summary                                                                                                                                                                                                |
++| ---------------- | --------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `AbortOptions`   | interface | `{ id?: string; signal?: AbortSignal }` | Represents the options for `createAbort` and `Abort` construction.                                                                                                                                     |
++| `AbortInterface` | interface | `{ id, signal, aborted, abort }`        | Represents the cancellation contract a consumer holds — a traceable `id`, the exposed `AbortSignal`, an `aborted` reading of it, and an idempotent `abort` that cancels the work bound to that signal. |
++
++The `id`, `signal`, and `aborted` members of `AbortInterface` are `readonly` data members (Surface rows, earlier) — its call-signature method is documented under [Methods](#methods).
+ 
+ ## Methods
+ 
+diff --git a/src/core/Abort.ts b/src/core/Abort.ts
+index 7239d4b..16b5ed4 100644
+--- a/src/core/Abort.ts
++++ b/src/core/Abort.ts
+@@ -2,8 +2,9 @@ import type { AbortInterface, AbortOptions } from './types.js'
+ import { linkSignal, validateAbortOptions } from './helpers.js'
+ 
+ /**
+- * Represents a cancellation handle — a thin, traceable wrapper over a native
+- * `AbortController` whose exposed `signal` can be linked to a parent signal.
++ * Implements {@link AbortInterface} over a private `AbortController` the instance owns,
++ * resolving the trace `id` at construction and exposing either that controller's own
++ * `signal` or one linked to a parent.
+  *
+  * @remarks
+  * - **Own controller.** The instance owns a private `AbortController`; `abort`
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index c33f560..1b0eae1 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,8 +2,9 @@ import type { AbortInterface, AbortOptions } from './types.js'
+ import { Abort } from './Abort.js'
+ 
+ /**
+- * Creates a cancellation handle — a thin, traceable wrapper over a native
+- * `AbortController` whose `signal` can be linked to a parent signal.
++ * Creates a cancellation handle from validated options and returns it as an
++ * {@link AbortInterface} — a resolved trace `id` and a `signal` already linked to any
++ * parent given, so a caller holds the published contract rather than the `Abort` class.
+  *
+  * @remarks
+  * The created handle's `signal` fires when its own `abort()` is called; when
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index c972a54..4565375 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -8,8 +8,7 @@ import { isAbortSignal } from './validators.js'
+  *
+  * @remarks
+  * Omitted options normalize to a fresh empty object. Otherwise each property is
+- * read exactly once before validation. The returned object is a fresh copy and
+- * omits absent optional properties. No controller or signal composition begins
++ * read exactly once before validation. No controller or signal composition begins
+  * at this boundary.
+  *
+  * @param options - Potentially untrusted abort options
+@@ -85,9 +84,8 @@ export function validateAbortOptions(options?: AbortOptions): AbortOptions {
+  * `AbortSignal.any([own, parent])` when a parent is given.
+  *
+  * @remarks
+- * When `parent` is `undefined`, the own signal is returned unchanged. When a
+- * parent is given, the result is `AbortSignal.any([own, parent])`, which fires
+- * on EITHER the own signal aborting or the parent aborting — without
++ * When `parent` is `undefined`, the own signal is returned unchanged. The combined
++ * signal fires on EITHER the own signal aborting or the parent aborting — without
+  * re-implementing listener wiring. A parent that has ALREADY aborted makes the
+  * combined signal born aborted (carrying the parent's reason).
+  *
+diff --git a/src/core/types.ts b/src/core/types.ts
+index c4a90e6..fa2e8e5 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -13,8 +13,9 @@ export interface AbortOptions {
+ }
+ 
+ /**
+- * Represents a cancellation handle — a thin, traceable wrapper over a native
+- * `AbortController` whose `signal` can be linked to a parent signal.
++ * Represents the cancellation contract a consumer holds — a traceable `id`, the exposed
++ * `AbortSignal`, an `aborted` reading of it, and an idempotent `abort` that cancels the
++ * work bound to that signal.
+  *
+  * @remarks
+  * The native `signal` is the complete interoperable observation surface.
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index ae04757..979d697 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -4,8 +4,7 @@
+  *
+  * @remarks
+  * The platform `AbortSignal.prototype.aborted` getter performs the native brand
+- * check. Calling it through `Reflect.apply` rejects structural spoofs while
+- * the contained boundary keeps the guard total for hostile or revoked proxies.
++ * check, and `Reflect.apply` calls it inside a contained boundary.
+  *
+  * @param value - The value to inspect.
+  * @returns True if the platform getter accepts `value` as an
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index b89086f..85b2b17 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -44,14 +44,6 @@ const INTERNAL: readonly string[] = Object.freeze([])
+ /** Root-level files these checks read. `readInventory` walks directories only. */
+ const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+-// The title filter the pin below applies to both sides. `@orkestrel/contract` exports
+-// `isNonEmptyString`, which this package could import; the predicate is declared here
+-// because this file is a drop-in copied whole into packages that declare no contract
+-// dependency, and one shape travels further than one import.
+-function isTitle(value: string | undefined): value is string {
+-	return value !== undefined && value.length > 0
+-}
+-
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+ 	...readInventory(root, ['src', 'guides', 'tests'], { extensions: ['.ts', '.md'] }),
+@@ -83,12 +75,15 @@ it('pairs at least one example title across the guide and the source', () => {
+ 	const declared = source
+ 		.examples()
+ 		.map((example) => example.title)
+-		.filter(isTitle)
+-	const headings = guide
+-		.fences()
+-		.map((fence) => fence.title)
+-		.filter(isTitle)
+-	const paired = headings.filter((title) => declared.includes(title))
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
+ 	const unpaired =
+ 		paired.length > 0
+ 			? []
+@@ -150,26 +145,17 @@ for (const entry of manifest) {
+ 
+ 		for (const group of guide.methods()) {
+ 			const members = source.methods(group.interface).map((method) => method.name)
++			const documented = group.methods.map((method) => method.name)
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			describe(`${group.interface}`, () => {
+ 				it('documents at least one method', () => {
+ 					expect(group.methods.length).toBeGreaterThan(0)
+ 				})
+ 				it('documents every interface method', () => {
+-					expect(
+-						findMissing(
+-							members,
+-							group.methods.map((method) => method.name),
+-						),
+-					).toEqual([])
++					expect(findMissing(members, documented)).toEqual([])
+ 				})
+ 				it('documents no phantom method', () => {
+-					expect(
+-						findMissing(
+-							group.methods.map((method) => method.name),
+-							members,
+-						),
+-					).toEqual([])
++					expect(findMissing(documented, members)).toEqual([])
+ 				})
+ 				it(`${entity} exposes no undocumented method`, () => {
+ 					const extra =
+@@ -177,7 +163,7 @@ for (const entry of manifest) {
+ 							? []
+ 							: findMissing(
+ 									source.methods(entity).map((method) => method.name),
+-									group.methods.map((method) => method.name),
++									documented,
+ 								)
+ 					expect(extra).toEqual([])
+ 				})
+@@ -222,26 +208,21 @@ for (const entry of manifest) {
+ 
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
++			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface).map((example) => example.name)
+-							: source
+-									.examples(group.interface)
+-									.map((example) => example.name)
+-									.concat(source.examples(entity).map((example) => example.name))
+-					expect(
+-						findUnexampled(
+-							group.methods.map((method) => method.name),
+-							fences,
+-							examples,
+-						),
+-					).toEqual([])
++					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+ 		}
