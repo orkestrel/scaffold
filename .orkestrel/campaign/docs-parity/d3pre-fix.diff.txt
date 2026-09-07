@@ -1,0 +1,2866 @@
+diff --git a/.agents/orchestration.md b/.agents/orchestration.md
+index 56419d37..3122ed86 100644
+--- a/.agents/orchestration.md
++++ b/.agents/orchestration.md
+@@ -269,13 +269,12 @@ edits, formatter and build races, cache phantoms, and validation cross-talk.
+ 6. After integration, clear shared caches if needed, then have one independent `verifier` run the
+    authoritative tree-wide sweep. A writer's self-report never establishes green.
+ 7. The Orchestrator's own sweep is a writing dispatch and queues behind the units that own those
+-   files. A script that fixes one thing across every target is the easiest way to break the
+-   serialization rule,
+-   because it does not feel like a dispatch — nobody was named, no brief was written, and it
+-   finishes in seconds. It still writes into trees a live unit owns, and a unit whose brief it
+-   invalidates will repair the same drift the other way and report a state that is already false.
+-   Run it before the units, or after them, or send the decision to every unit in flight per the
+-   mid-campaign rule under **Dispatch anatomy**. Never beside them.
++   files. A script that fixes one thing across every target is the most direct way to break the
++   serialization rule, because it does not feel like a dispatch — nobody was named, no brief was
++   written, and it finishes in seconds. It still writes into trees a live unit owns, and a unit
++   whose brief it invalidates will repair the same drift the other way and report a state that is
++   already false. Run it before the units, or after them, or send the decision to every unit in
++   flight per the mid-campaign rule under **Dispatch anatomy**. Never beside them.
+ 8. A fleet pass that records a per-target status commits only the targets it recorded green. Reading
+    "is the tree dirty" instead of "did this target pass" pushes a red target the moment one exists,
+    and a flake makes that look like it worked. Refuse the failed row, name it, and re-run it alone
+@@ -305,7 +304,7 @@ each CLI first (`codex --version`; `agent --version`, falling back to `agent.cmd
+ run the bench's authentication-state check where it exposes one. Neither answer is liveness. A
+ version string proves the binary is installed, and an authentication-state check reads stored
+ credentials, so both pass while the account is out of quota, while the routed model is unavailable to
+-it, while the server has already revoked the credential the check just read, and inside a sandbox
++it, while the server has already revoked the credential the check read, and inside a sandbox
+ with the network denied. Record a bench live only on a bounded round-tripped model call that came
+ back, and record what came back beside the routing decision. Probes are read-only, and the role file
+ owns each bench's exact probe.
+@@ -366,7 +365,7 @@ longer holds.
+      plan did not consider; **unchanged**.
+    - Redraw the dependency order. Strike a unit whose subject a later unit deletes. State the new
+      prerequisite of a unit that acquired one.
+-   - Walk the remaining units once and ask of each whether what just landed still supports it. A
++   - Walk the remaining units once and ask of each whether what landed still supports it. A
+      decision taken inside a unit can remove a later unit's foundation, and the unit that took it
+      cannot see that.
+    - Re-baseline when a probe overturns a decision the plan rests on, not only at a phase boundary.
+diff --git a/.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md b/.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+index 6bc9e72c..9960a802 100644
+--- a/.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
++++ b/.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+@@ -203,7 +203,7 @@ $utilities: map-merge(
+ @import 'bootstrap/scss/utilities/api';
+ ```
+ 
+-Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a step (e.g. a `vh-50` the design truly needs).
++Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a step (for example, a `vh-50` the design truly needs).
+ 
+ ## Forms in Production
+ 
+@@ -211,7 +211,7 @@ Remove with `map-remove($utilities, "width")` or set the key to `null`. This is
+ 
+ - **Top-aligned labels by default** — the evidence (eye-tracking form research) shows fastest completion and the cleanest single-column scan, and they survive narrow screens without reflow. Reserve left-aligned labels for dense read-back forms where vertical compression matters more than speed.
+ - Visible label or `.form-floating` — never placeholder-only (disappears on input, fails accessibility).
+-- **Do not say the same thing twice.** When the host already names the request — a card heading, a dialog title, a section header stating the question — the form associates with that name via `aria-labelledby` instead of repeating the prompt in its own label. Repetition reads as separate questions to a screen-reader user and as clutter to everyone else.
++- **Do not say the same thing twice.** When the host already names the request — a card heading, a dialog title, a section header stating the question — the form associates with that name through `aria-labelledby` instead of repeating the prompt in its own label. Repetition reads as separate questions to a screen-reader user and as clutter to everyone else.
+ - One column beats multi-column for completion; use the form grid (`row g-3` + `col-md-*`) only for genuinely paired fields (city/state/zip).
+ 
+ ```html
+@@ -237,7 +237,7 @@ Remove with `map-remove($utilities, "width")` or set the key to `null`. This is
+ - Once a field is in an error state, re-validate as the user types so they see the fix land.
+ - Always re-check everything on submit. Keep the submit button **enabled** — a disabled submit hides _what is_ wrong; a validating submit shows it.
+ - On failed submit of a long form, render an **error summary** at the top (focus it; link each item to its field) _and_ inline messages at each field — never summary-only, never inline-only.
+-- Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field `aria-invalid="true"`. Never report errors via tooltip-on-hover.
++- Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field `aria-invalid="true"`. Never report errors through a hover tooltip.
+ 
+ ### Bootstrap validation mechanics
+ 
+@@ -274,7 +274,7 @@ Client-side, the documented pattern:
+ </script>
+ ```
+ 
+-**Documented limitation (enterprise-critical):** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to assistive technologies**. For accessible flows use the server-side pattern — apply `.is-invalid` / `.is-valid` directly (no `.was-validated` parent needed), with `.invalid-feedback` linked via `aria-describedby` — or rely on native browser validation.
++**Documented limitation (enterprise-critical):** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to assistive technologies**. For accessible flows use the server-side pattern — apply `.is-invalid` / `.is-valid` directly (no `.was-validated` parent needed), with `.invalid-feedback` linked through `aria-describedby` — or rely on native browser validation.
+ 
+ ```html
+ <input
+@@ -290,7 +290,7 @@ Client-side, the documented pattern:
+ </div>
+ ```
+ 
+-Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid-tooltip` and `.invalid-tooltip` need a `position-relative` parent. Validation colors are mode-adaptive via `--bs-form-valid-color`, `--bs-form-valid-border-color`, `--bs-form-invalid-color`, `--bs-form-invalid-border-color`.
++Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid-tooltip` and `.invalid-tooltip` need a `position-relative` parent. Validation colors are mode-adaptive through `--bs-form-valid-color`, `--bs-form-valid-border-color`, `--bs-form-invalid-color`, `--bs-form-invalid-border-color`.
+ 
+ ### Autosave vs explicit save
+ 
+@@ -498,7 +498,7 @@ Give header cells an **opaque background** (`bg-body-secondary` or a `.table-*`
+ ```
+ 
+ - **Row actions:** 1–3 high-frequency actions inline; the rest behind a per-row kebab (dropdown). Hover-only reveal fails touch and keyboard — keep at least the overflow trigger always visible and ≥24px.
+-- **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming the row ("Select INV-1042"). When selection > 0, swap the toolbar's content in place for a contextual bar — "3 selected", the batch actions, and a clear-selection escape — never push the layout down (layout-shifting chrome is an anti-pattern). Announce the count via a polite live region.
++- **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming the row ("Select INV-1042"). When selection > 0, swap the toolbar's content in place for a contextual bar — "3 selected", the batch actions, and a clear-selection escape — never push the layout down (layout-shifting chrome is an anti-pattern). Announce the count through a polite live region.
+ - **Pagination vs scrolling:** paginate when users need position, totals, deep links, and "go to page N" — most enterprise CRUD. Virtualize (windowed rendering) for long uniform lists where scrolling is natural. True infinite scroll is for exploratory feeds only — never where users need a footer or a findable end.
+ - **Responsive, ranked:** (1) _priority columns_ — hide low-value columns per breakpoint (`d-none d-lg-table-cell`), always keeping the identifying + decision columns; (2) _horizontal scroll_ (`table-responsive`) when every column matters — remember it clips dropdowns; (3) _card-ify_ into label:value stacks below `md` for low row counts. Never card-ify a wide comparison table — comparison is the point.
+ - **Table states:** loading → **skeleton rows** matching the real column count/widths (a centered spinner collapses the layout); empty → distinguish _no data yet_ (invite the first action) from _no results for these filters_ (offer "Clear filters"); error → inline retry inside the table region, header and toolbar preserved.
+@@ -532,12 +532,12 @@ Design **every one** for every data surface: ideal (populated), empty, loading,
+ 
+ ### Feedback discipline
+ 
+-| Channel                       | Use for                                                                          | Never for                                          |
+-| ----------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------- |
+-| **Toast**                     | Transient confirmation of a just-completed action; auto-dismiss; `role="status"` | Errors needing action; anything the user must read |
+-| **Inline alert**              | Feedback tied to a specific field/section/action; persists in context            | App-wide conditions                                |
+-| **Banner** (page-level alert) | Persistent page/app conditions — outage, trial expiring, permissions             | Action confirmations                               |
+-| **Modal / alertdialog**       | Blocking decisions the user must resolve now                                     | FYIs, success messages                             |
++| Channel                       | Use for                                                                                       | Never for                                          |
++| ----------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------- |
++| **Toast**                     | Transient confirmation of an action that finished a moment ago; auto-dismiss; `role="status"` | Errors needing action; anything the user must read |
++| **Inline alert**              | Feedback tied to a specific field/section/action; persists in context                         | App-wide conditions                                |
++| **Banner** (page-level alert) | Persistent page/app conditions — outage, trial expiring, permissions                          | Action confirmations                               |
++| **Modal / alertdialog**       | Blocking decisions the user must resolve now                                                  | FYIs, success messages                             |
+ 
+ Blocking errors are never toasts. Keep the acting verb consistent across the flow: the "Publish" button confirms with "Published".
+ 
+@@ -555,7 +555,7 @@ Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only
+ 
+ ## RTL
+ 
+-- Enable per page: `<html lang="ar" dir="rtl">` + the RTL stylesheet `bootstrap.rtl.min.css` (built from the same source via RTLCSS). RTL support is documented as experimental.
++- Enable per page: `<html lang="ar" dir="rtl">` + the RTL stylesheet `bootstrap.rtl.min.css` (built from the same source through RTLCSS). RTL support is documented as experimental.
+ - The logical properties model is why the utilities say start/end: `ms-*`/`me-*`, `ps-*`/`pe-*`, `text-start`/`text-end`, `float-start`/`float-end`, `offcanvas-start`/`end` all flip automatically. **Never write `left`/`right` positioning or physical margins in custom CSS** — use logical properties (`margin-inline-start`, `inset-inline-end`) so your custom rules flip too.
+ - Caveats: shipping LTR+RTL simultaneously costs significant extra CSS; the breadcrumb divider needs `$breadcrumb-divider-flipped`; source Sass can embed RTLCSS directives (`/* rtl: … */`) for value swaps like font stacks.
+ 
+@@ -563,13 +563,13 @@ Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only
+ 
+ - Hide chrome, keep the data: `d-print-none` on nav, sidebars, toolbars, action buttons; the report/table itself stays printable.
+ - `d-print-block`/`d-print-table` can resurface content hidden on screen (a print-only header with report title/date).
+-- Print-check data screens users will export: collapse interactive affordances (sort carets, checkboxes) via `d-print-none`, and prefer `table-bordered` legibility over hover/stripe effects that may not print.
++- Print-check data screens users will export: collapse interactive affordances (sort carets, checkboxes) through `d-print-none`, and prefer `table-bordered` legibility over hover/stripe effects that may not print.
+ 
+ ## Performance
+ 
+ - **Ship one CSS system and no more.** Bootstrap plus a second framework (or a parallel bespoke layer) doubles payload and guarantees specificity fights.
+-- **Compressed, the full build is cheap; incomplete builds are not.** Trimming via a Sass-subset build (import only the parts used — see [Theming](#theming--design-tokens)) is the sanctioned diet. Aggressive purge tools are the risky one: Bootstrap adds classes **at runtime** (`show`, `showing`, `fade`, `collapsing`, `modal-open`, `modal-backdrop`, `offcanvas-backdrop`, tooltip/popover generated markup) — purging without safelisting them ships UIs whose modals silently stop rendering. If you purge, safelist every JS-toggled class and test every overlay.
+-- **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable via `currentColor`, no font flash) over the icon font; load only the icons used.
++- **Compressed, the full build is cheap; incomplete builds are not.** Trimming through a Sass-subset build (import only the parts used — see [Theming](#theming--design-tokens)) is the sanctioned diet. Aggressive purge tools are the risky one: Bootstrap adds classes **at runtime** (`show`, `showing`, `fade`, `collapsing`, `modal-open`, `modal-backdrop`, `offcanvas-backdrop`, tooltip/popover generated markup) — purging without safelisting them ships UIs whose modals silently stop rendering. If you purge, safelist every JS-toggled class and test every overlay.
++- **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable through `currentColor`, no font flash) over the icon font; load only the icons used.
+ - **JS:** the bundle is small, but only load it where behavior exists; per-component ESM imports (`bootstrap/js/dist/modal`) trim further in bundlers.
+ - **Fonts:** each display face is a payload decision; subset and `font-display: swap` characterful faces, and let the data face fall back to the system stack when the brief allows.
+ 
+diff --git a/.agents/skills/enterprise-bootstrap/references/frontend-design.md b/.agents/skills/enterprise-bootstrap/references/frontend-design.md
+index 8bba8e94..01ba2f6d 100644
+--- a/.agents/skills/enterprise-bootstrap/references/frontend-design.md
++++ b/.agents/skills/enterprise-bootstrap/references/frontend-design.md
+@@ -57,7 +57,7 @@ product's, and keep the data surfaces disciplined and conventional enough to rea
+ 
+ ## Process: brainstorm, explore, plan, critique, build, critique again
+ 
+-Calibrate against the looks AI-generated design currently clusters around: (1) a warm cream
++Calibrate against the looks AI-generated design clusters around: (1) a warm cream
+ background (near #F4F1EA) with a high-contrast serif display and a terracotta accent; (2) a
+ near-black background with a single bright acid-green or vermilion accent; (3) a broadsheet-style
+ layout with hairline rules, zero border-radius, and dense newspaper-like columns. Each is
+@@ -81,8 +81,8 @@ only once the plan is specific to this brief, then follow the revised plan exact
+ color and type decision from it.
+ 
+ Structure your CSS selector specificities deliberately when writing the code. Classes cancel each
+-other out easily, especially a type-based selector like `.section` against an element-based selector
+-like `.cta`, and the padding and margin between sections is where it happens most.
++other out, especially a type-based selector like `.section` against an element-based selector like
++`.cta`, and the padding and margin between sections is where it happens most.
+ 
+ Do this planning and iteration in your thinking. Show the user a direction only once it satisfies
+ the brief and the quality floor below.
+@@ -103,9 +103,9 @@ reads it.
+ 
+ ## Writing in design
+ 
+-Keep a word only where it makes the design easier to understand, and therefore easier to use. Bring
+-the same intentionality to copy as to spacing and color. Before writing anything, decide what the
+-design needs to say, and how to say it so the person can navigate the experience.
++Keep a word only where it helps the reader understand the design, and so use it.
++Bring the same intentionality to copy as to spacing and color. Before writing anything, decide what
++the design needs to say, and how to say it so the person can navigate the experience.
+ 
+ Write from the end user's side of the screen. Name things by what people control and recognize,
+ never by how the system is built: a person manages notifications, not webhook config. Describe what
+diff --git a/.agents/skills/enterprise-bootstrap/references/utilities.md b/.agents/skills/enterprise-bootstrap/references/utilities.md
+index d18edb6c..bdfa0087 100644
+--- a/.agents/skills/enterprise-bootstrap/references/utilities.md
++++ b/.agents/skills/enterprise-bootstrap/references/utilities.md
+@@ -162,7 +162,7 @@ For borders that must stay visible in both color modes, prefer the `border-*-sub
+ 
+ ### Sizing
+ 
+-Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, `.min-vh-75`, etc.; add missing steps via the utilities API if a project truly needs them — see [bootstrap-reference.md](bootstrap-reference.md)):
++Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, or `.min-vh-75`; add missing steps through the utilities API if a project truly needs them — see [bootstrap-reference.md](bootstrap-reference.md)):
+ 
+ ```css
+ /* Width / height (percent of parent) */
+@@ -288,12 +288,12 @@ Helpers are single-purpose classes that sit alongside utilities.
+ 
+ - **`.visually-hidden`** — hide visually, keep for screen readers (icon-button labels, table caption text, "Danger:" prefixes).
+ - **`.visually-hidden-focusable`** — hidden until focused; the skip-link class. Never combine with `.visually-hidden`.
+-- **`.stretched-link`** — makes a whole `position-relative` container (e.g. a card) the click target of one inner link, without wrapping everything in `<a>`.
++- **`.stretched-link`** — makes a whole `position-relative` container (for example, a card) the click target of one inner link, without wrapping everything in `<a>`.
+ - **`.ratio .ratio-16x9`** (also `1x1`, `4x3`, `21x9`, or `--bs-aspect-ratio`) — responsive embeds/iframes.
+ - **`.vstack` / `.hstack gap-*`** — shorthand vertical/horizontal flex stacks for quick toolbars and side rails.
+ - **`.vr`** — vertical rule divider inside an `.hstack` or flex row.
+-- **`.focus-ring`** (+ `.focus-ring-primary` … per theme color) — opt-in focus ring for custom interactive elements; tune via `--bs-focus-ring-width` (.25rem), `--bs-focus-ring-opacity` (.25), `--bs-focus-ring-color`, `--bs-focus-ring-x/y/blur`. Use it instead of `outline: none` hacks so keyboard focus stays visible.
+-- **`.icon-link`** (+ `.icon-link-hover`) — pairs a Bootstrap Icon SVG with a text link; icon auto-sizes to 1em; give decorative icons `aria-hidden="true"`. Hover shift via `--bs-icon-link-transform`.
++- **`.focus-ring`** (+ `.focus-ring-primary` … per theme color) — opt-in focus ring for custom interactive elements; tune through `--bs-focus-ring-width` (.25rem), `--bs-focus-ring-opacity` (.25), `--bs-focus-ring-color`, `--bs-focus-ring-x/y/blur`. Use it instead of `outline: none` hacks so keyboard focus stays visible.
++- **`.icon-link`** (+ `.icon-link-hover`) — pairs a Bootstrap Icon SVG with a text link; icon auto-sizes to 1em; give decorative icons `aria-hidden="true"`. Hover shift through `--bs-icon-link-transform`.
+ 
+ ## Enterprise notes (utilities)
+ 
+diff --git a/.agents/skills/orkestrel-debrief/references/field-testing.md b/.agents/skills/orkestrel-debrief/references/field-testing.md
+index 0c43350a..e561abcf 100644
+--- a/.agents/skills/orkestrel-debrief/references/field-testing.md
++++ b/.agents/skills/orkestrel-debrief/references/field-testing.md
+@@ -8,10 +8,10 @@ model consumes.
+ Test from the top down, and do not stop at the tier that passes:
+ 
+ 1. **Frontier** (the harness's default model) — proves the surface works at all.
+-2. **Mid tier** (e.g. a codex mechanical model) — proves the surface survives a harness's
+-   schema abbreviation and a model that reads less carefully.
+-3. **Small harness-native** (e.g. Haiku, a codex high-volume model) — the acceptance
+-   tier: these must walk the surface unaided, or the surface is not done.
++2. **Mid tier** (for example, a codex mechanical model) — proves the surface survives a
++   harness's schema abbreviation and a model that reads less carefully.
++3. **Small harness-native** (for example, Haiku or a codex high-volume model) — the
++   acceptance tier: these must walk the surface unaided, or the surface is not done.
+ 4. **Local floor** (a quantized 2B-class model through a real tool-calling client) — not
+    an acceptance gate; a stochastic probe that exposes teaching gaps nothing else hits.
+    Its residual failures must be provably consumer-floor (malformed emission, attention
+@@ -29,7 +29,7 @@ Test from the top down, and do not stop at the tier that passes:
+ - **Caps and journals.** Every pass runs as a tracked background command under a hard
+   time cap with its transcript journaled; the journal is the evidence of record.
+ 
+-## Capture the reasoning, not just the calls
++## Capture the reasoning, not the calls alone
+ 
+ Where the runtime exposes thinking (local runtimes expose it directly; harness stream
+ formats carry interstitial text), record it. The call log shows WHAT failed; the trace
+diff --git a/.agents/skills/orkestrel-falsify/references/reconcile.md b/.agents/skills/orkestrel-falsify/references/reconcile.md
+index f14ef24d..681dbc47 100644
+--- a/.agents/skills/orkestrel-falsify/references/reconcile.md
++++ b/.agents/skills/orkestrel-falsify/references/reconcile.md
+@@ -120,7 +120,7 @@ leaves this round is the procedure.
+ 
+ When a round certifies an instrument — a pin, an identity check, a generated sweep — the controls
+ are usually drawn from whatever the instrument obviously covers, because that is where the examples
+-are easiest to construct. That sampling proves discrimination _within_ the population and is
++take the least construction. That sampling proves discrimination _within_ the population and is
+ routinely reported as proof the instrument works.
+ 
+ So before running controls, write down the instrument's **membership rule** in one sentence, then
+diff --git a/.claude/rules/architecture.md b/.claude/rules/architecture.md
+index 132d8ea2..048da7a7 100644
+--- a/.claude/rules/architecture.md
++++ b/.claude/rules/architecture.md
+@@ -299,7 +299,7 @@ export * from './greeters/Greeter.js'
+ - Keep everything generic/reusable and free of unrelated-project logic.
+ - Do not expand the capability set without concrete need. Once that capability exists intentionally,
+   its reusable top-level exports follow the earlier barrel rule without a second consumer gate.
+-- Do not remove structural files because they are currently empty.
++- Do not remove structural files because they are empty.
+ - Prefer the smallest complete implementation that preserves architecture.
+ - No deprecation aliases, compatibility shims, or backward-compatibility branches; update all consumers atomically.
+ - No polling/busy loops or recursive microtasks as architecture. Park idle work on an event/abort wakeup and yield long work in cooperative quanta.
+diff --git a/.claude/rules/quality.md b/.claude/rules/quality.md
+index f36af3cd..132d4fc0 100644
+--- a/.claude/rules/quality.md
++++ b/.claude/rules/quality.md
+@@ -67,7 +67,7 @@ A review that reads a diff finds what the diff shows. A review that tries to bre
+ - State an instrument's coverage beside its result. A conclusion inherits the instrument's scope, not the question's. An unstated coverage claim is read as complete, and it never is. A search proves something about the paths it walked, so name them.
+ - Match the instrument to the question. A text search reports on text, so a claim about declarations, call sites, or structure needs the compiler or a parser instead. A pattern written for one spelling of a construct reports on that spelling alone. A path check answers relative to the directory it runs from, so resolve the inputs against their own base before reading a miss as a finding.
+ - Name the rival reading the instrument must exclude, and show it reports differently under that reading. Give independent measurements independent state: one counter shared across members reports read order and per-member read count identically, so a result consistent with both measured neither.
+-- Report a question unanswered rather than answering it with a weaker instrument. A fallback that measures something adjacent returns a confident wrong answer, and nothing downstream can tell that answer from the real one — searching commit messages for a release when the question is where a version changed will match some release, just not the one asked about. Name the substitute and what it actually measures, or say the question is open.
++- Report a question unanswered rather than answering it with a weaker instrument. A fallback that measures something adjacent returns a confident wrong answer, and nothing downstream can tell that answer from the real one — searching commit messages for a release when the question is where a version changed will match some release, but not the one asked about. Name the substitute and what it actually measures, or say the question is open.
+ - State what the controls established and what they did not. An instrument certified only from the inside is trusted exactly where it has never been tested.
+ - Treat a gap between what an instrument says it checks and what it actually matches as a defect in the instrument, not as a documented limit. A recorded blind spot buys trust only when everything outside it is genuinely covered.
+ - Measure the product, not the harness. A recorded baseline that counts something about its own fixture is not evidence about the shipped surface, however often a guide quotes it.
+diff --git a/AGENTS.md b/AGENTS.md
+index 3811827c..fddc41b9 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -68,7 +68,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
+ - **No nested functions.** Extract function declarations and assignments from bodies. The only exceptions are an anonymous callback passed directly as an argument and an anonymous function returned directly as a result.
+ - **Functional core, imperative shell.** Export pure leaves. Keep stateful or defining orchestration as class methods. Classes compose behavior; they do not forward 1:1 to helpers.
+ - **No superfluous wrappers.** A wrapper must add a boundary, invariant, composition, translation, lifecycle, or materially narrower contract. Otherwise use or rename the real symbol and update every consumer.
+-- **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, never a later visibility gate. Once an intentional reusable capability exists, expose its top-level source exports through the correct environment barrel regardless of which consumers currently use them, so developers receive the same supported mechanisms the package uses. Remove a symbol only when the capability itself should not exist. Prefer one minimal interface and one shared engine, allowing native backend overrides only for genuine faster paths.
++- **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, never a later visibility gate. Once an intentional reusable capability exists, expose its top-level source exports through the correct environment barrel regardless of which consumers use them, so developers receive the same supported mechanisms the package uses. Remove a symbol only when the capability itself must not exist. Prefer one minimal interface and one shared engine, allowing native backend overrides only for genuine faster paths.
+ - **No compatibility shims.** This is greenfield. Update every consumer in the same change.
+ - **Mechanism, not product policy.** Framework code supplies reusable mechanisms and stops before application decisions.
+ - **No polling architecture.** Park idle work on events and abort signals. Yield long work cooperatively.
+@@ -101,7 +101,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
+ 7. **Document:** update the guide, examples, and parity contract.
+ 8. **Verify:** audit discovery, deferrals, and package contents as applicable. Run the required gates and read their actual output before claiming success.
+ 
+-Quality gates before commit, in order. The acceptance gate is the non-mutating variant; run the mutating `lint` and then `format` first only to converge, then prove with the checks. `lint --fix` rewrites code and its output is not formatter-clean, so a `format` that ran before it leaves `format:check` failing on the file `lint` just rewrote:
++Quality gates before commit, in order. The acceptance gate is the non-mutating variant; run the mutating `lint` and then `format` first only to converge, then prove with the checks. `lint --fix` rewrites code and its output is not formatter-clean, so a `format` that ran before it leaves `format:check` failing on the file `lint` rewrote:
+ 
+ ```text
+ npm run format:check → npm run lint:check → npm run check → npm run build → npm test
+diff --git a/ROADMAP.md b/ROADMAP.md
+index e6b02552..0f05806a 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -61,14 +61,16 @@ recoverable from git history by hash; no campaign folder is the plan of record.
+   names no longer divide the subject — the fixed-rule severity and ignore-pattern reading against
+   the caller-supplied rule-and-population coverage reading. Name them by the question each answers,
+   or merge them into one reader, at the next policy-sweep change.
+-- **scaffold**: TSDoc first sentences on the module helpers in `configs/policy.ts` and
+-  `tests/setupPolicy.ts` open with a noun phrase where `.claude/rules/typescript.md` fixes a
+-  third-person verb. Rule whether the letter binds a one-line TSDoc on a module helper, then sweep
+-  both files on the ruling.
+ - **scaffold**: `DECLARATION_DEV_DEPENDENCIES` is planned for a `bin` blueprint
+   (`src/core/compilers.ts`) while the seeded `bin` config rolls no declarations, so an
+   executable-only workspace installs an extractor nothing runs. Rule whether the planner keeps that
+   row for `bin`, at the next planner change; a change moves generated manifests and their pins.
++- **scaffold**: the module helpers in `configs/helpers.ts`, `POLICY_SUPPRESSION_DIRECTIVE` in
++  `tests/setupPolicy.ts`, and `SCRATCH_PREFIX` in `tests/setupServer.ts` carry no doc block, so the
++  voice rules reach nothing there. The P10 probe reports each as `NODOC`; its remaining `NODOC`
++  lines sit inside the template text `src/core/templates.ts` and `src/core/compilers.ts` generate,
++  which is string data rather than a comment. Give each undocumented export a doc block at the next
++  pass over its file.
+ - **test**: the browser journey layer resolves interactive targets and named regions, so a
+   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
+   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's
+diff --git a/configs/helpers.ts b/configs/helpers.ts
+index 87349146..98368083 100644
+--- a/configs/helpers.ts
++++ b/configs/helpers.ts
+@@ -441,14 +441,20 @@ export function outputBoundary(output: string): Plugin {
+ 	}
+ }
+ 
+-/** The compiler scope a face resolves to, as its declaration emit and its roll-up both read it. */
++/**
++ * Describes the compiler scope a face resolves to, as its declaration emit and its roll-up both
++ * read it.
++ */
+ export interface ProjectScope {
+ 	readonly lib: readonly string[]
+ 	readonly types: readonly string[]
+ 	readonly root: string
+ }
+ 
+-/** The `overrideTsconfig` a declaration roll-up hands the extractor, and every option it may read. */
++/**
++ * Describes the `overrideTsconfig` a declaration roll-up hands the extractor, and every option it
++ * may read.
++ */
+ export interface ExtractorOverride {
+ 	readonly compilerOptions: {
+ 		readonly types: readonly string[]
+@@ -462,7 +468,10 @@ export interface ExtractorOverride {
+ 	readonly files: readonly string[]
+ }
+ 
+-/** The extractor exports a declaration roll-up dereferences, named as that package publishes them. */
++/**
++ * Lists the extractor exports a declaration roll-up dereferences, named as that package publishes
++ * them.
++ */
+ export interface ExtractorModule {
+ 	readonly Extractor: { readonly invoke: (config: unknown, options: unknown) => unknown }
+ 	readonly ExtractorConfig: { readonly prepare: (options: unknown) => unknown }
+diff --git a/configs/policy.ts b/configs/policy.ts
+index 4bbc05c5..631e8692 100644
+--- a/configs/policy.ts
++++ b/configs/policy.ts
+@@ -1,10 +1,10 @@
+-/** The syntax-node fields supplied to every policy visitor. */
++/** Describes the syntax-node fields supplied to every policy visitor. */
+ export interface PolicyNode {
+ 	readonly type: string
+ 	readonly range: [number, number]
+ }
+ 
+-/** The expression fields inspected by the policy rules. */
++/** Describes the expression fields the policy rules inspect. */
+ export interface PolicyExpression extends PolicyNode {
+ 	readonly parent?: PolicyExpression | null
+ 	readonly name?: unknown
+@@ -32,41 +32,41 @@ export interface PolicyExpression extends PolicyNode {
+ 	readonly imported?: PolicyExpression
+ }
+ 
+-/** One declared module function paired with the name a prefix rule reads. */
++/** Pairs one declared module function with the name a prefix rule reads. */
+ export interface PolicyBinding {
+ 	readonly node: PolicyExpression
+ 	readonly name: string | undefined
+ }
+ 
+-/** One diagnostic emitted by a policy rule. */
++/** Describes one diagnostic a policy rule emits. */
+ export interface PolicyDiagnostic {
+ 	readonly node: PolicyExpression
+ 	readonly messageId: string
+ 	readonly data?: Readonly<Record<string, string>>
+ }
+ 
+-/** The Oxlint context operations used by the policy rules. */
++/** Lists the Oxlint context operations the policy rules use. */
+ export interface PolicyContext {
+ 	readonly filename: string
+-	/** The directory Oxlint resolves `filename` against. */
++	/** Names the directory Oxlint resolves `filename` against. */
+ 	readonly cwd: string
+ 	report(diagnostic: PolicyDiagnostic): void
+ }
+ 
+-/** The rule documentation fields supplied to Oxlint. */
++/** Describes the rule documentation fields supplied to Oxlint. */
+ export interface PolicyDocs {
+ 	readonly [key: string]: unknown
+ 	readonly description: string
+ }
+ 
+-/** The rule metadata fields supplied to Oxlint. */
++/** Describes the rule metadata fields supplied to Oxlint. */
+ export interface PolicyMeta {
+ 	readonly type: 'problem'
+ 	readonly docs: PolicyDocs
+ 	readonly messages: Readonly<Record<string, string>>
+ }
+ 
+-/** The Oxlint visitor entries used by the policy rules. */
++/** Lists the Oxlint visitor entries the policy rules use. */
+ export interface PolicyVisitor {
+ 	readonly [key: string]: ((node: PolicyNode) => void) | undefined
+ 	readonly Program?: (node: PolicyNode) => void
+@@ -91,13 +91,13 @@ export interface PolicyVisitor {
+ 	readonly VariableDeclaration?: (node: PolicyNode) => void
+ }
+ 
+-/** The complete behavior exposed by one policy rule. */
++/** Describes the complete behavior one policy rule exposes. */
+ export interface PolicyRuleInterface {
+ 	readonly meta: PolicyMeta
+ 	create(context: PolicyContext): PolicyVisitor
+ }
+ 
+-/** Every centralized module named by the architecture kind table. */
++/** Lists every centralized module the architecture kind table names. */
+ export const CENTRAL_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'cloners.ts',
+ 	'combinators.ts',
+@@ -122,7 +122,7 @@ export const CENTRAL_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'validators.ts',
+ ])
+ 
+-/** The exhaustive centralized-file set that permits module functions. */
++/** Lists the exhaustive centralized-file set that permits module functions. */
+ export const FUNCTION_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'cloners.ts',
+ 	'combinators.ts',
+@@ -141,7 +141,7 @@ export const FUNCTION_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'validators.ts',
+ ])
+ 
+-/** Centralized files that permit module data by declaration syntax. */
++/** Lists the centralized files that permit module data by declaration syntax. */
+ export const DATA_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'combinators.ts',
+ 	'constants.ts',
+@@ -155,30 +155,30 @@ export const DATA_SOURCE_FILES: readonly string[] = Object.freeze([
+ ])
+ 
+ /**
+- * Files excluded from the module-data rule because their namespace values hold helper behavior.
+- * This exclusion also permits unrelated module data such as `export const RETRIES = 3`.
++ * Lists the files excluded from the module-data rule because their namespace values hold helper
++ * behavior. This exclusion also permits unrelated module data such as `export const RETRIES = 3`.
+  */
+ export const DATA_EXEMPT_FILES: readonly string[] = Object.freeze(['helpers.ts'])
+ 
+-/** Fleet-registered folders whose direct modules each contain one named function. */
++/** Lists the fleet-registered folders whose direct modules each contain one named function. */
+ export const FUNCTION_DOMAIN_FOLDERS: readonly string[] = Object.freeze([
+ 	'app/browser/composables',
+ 	'src/server/execution',
+ ])
+ 
+-/** The registered function-domain names no source file may take as its stem. */
++/** Lists the registered function-domain names no source file may take as its stem. */
+ export const FUNCTION_DOMAIN_NAMES: readonly string[] = Object.freeze(
+ 	FUNCTION_DOMAIN_FOLDERS.map((folder) => folder.slice(folder.lastIndexOf('/') + 1)),
+ )
+ 
+-/** Every ambient declaration suffix the placement and line-ending rules leave uninspected. */
++/** Lists every ambient declaration suffix the placement and line-ending rules leave uninspected. */
+ export const POLICY_AMBIENT_SUFFIXES: readonly string[] = Object.freeze([
+ 	'.d.cts',
+ 	'.d.mts',
+ 	'.d.ts',
+ ])
+ 
+-/** TypeScript source extensions whose declaration syntax the placement rules read. */
++/** Lists the TypeScript source extensions whose declaration syntax the placement rules read. */
+ export const POLICY_SOURCE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'cts',
+ 	'mts',
+@@ -186,35 +186,44 @@ export const POLICY_SOURCE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'tsx',
+ ])
+ 
+-/** The lint populations the placement rules run over, as the Oxlint configuration declares them. */
++/**
++ * Matches the lint populations the placement rules run over, as the Oxlint configuration declares
++ * them.
++ */
+ export const POLICY_PLACEMENT_GLOBS: readonly string[] = Object.freeze([
+ 	`app/**/*.{${POLICY_SOURCE_EXTENSIONS.join(',')}}`,
+ 	`src/**/*.{${POLICY_SOURCE_EXTENSIONS.join(',')}}`,
+ ])
+ 
+-/** The lint population the line-ending rule runs over, as the Oxlint configuration declares it. */
++/**
++ * Matches the lint population the line-ending rule runs over, as the Oxlint configuration declares
++ * it.
++ */
+ export const POLICY_ENDING_GLOBS: readonly string[] = Object.freeze([
+ 	'app/**/*.ts',
+ 	'configs/**/*.ts',
+ 	'src/**/*.ts',
+ ])
+ 
+-/** The file name shape an implementation file takes, holding the class that matches its stem. */
++/**
++ * Matches the file name shape an implementation file takes, holding the class that matches its
++ * stem.
++ */
+ export const POLICY_CLASS_PATTERN = /^[A-Z][A-Za-z0-9]*\.ts$/u
+ 
+-/** The name shape every constants.ts declaration takes. */
++/** Matches the name shape every constants.ts declaration takes. */
+ export const POLICY_CONSTANT_PATTERN = /^[A-Z][A-Z0-9_]*$/u
+ 
+-/** The file name shape a direct module of a registered function domain takes. */
++/** Matches the file name shape a direct module of a registered function domain takes. */
+ export const POLICY_DOMAIN_PATTERN = /^[a-z][A-Za-z0-9]*\.ts$/u
+ 
+-/** The file name a policy rule keys on, read from either host separator. */
++/** Returns the file name a policy rule keys on, read from either host separator. */
+ export function pathToPolicyFile(filename: string): string {
+ 	const normalized = filename.replaceAll('\\', '/')
+ 	return normalized.slice(normalized.lastIndexOf('/') + 1)
+ }
+ 
+-/** The folder path a policy rule keys on, read from either host separator. */
++/** Returns the folder path a policy rule keys on, read from either host separator. */
+ export function pathToPolicyFolder(filename: string): string {
+ 	const normalized = filename.replaceAll('\\', '/')
+ 	const boundary = normalized.lastIndexOf('/')
+@@ -222,12 +231,12 @@ export function pathToPolicyFolder(filename: string): string {
+ }
+ 
+ /**
+- * The workspace-relative path when the file sits under the directory the linter resolved it
++ * Returns the workspace-relative path when the file sits under the directory the linter resolved it
+  * against, else the path as given. The linter resolves each file against its own directory, the
+  * workspace root under the `lint` scripts and its package directory under `RuleTester`, so a file
+  * outside that directory keeps its path and matches no registered domain folder, because a
+- * registered folder is workspace-relative. For a workspace at the filesystem root the prefix is
+- * the separator alone. A drive-letter case difference between the two arguments is not folded.
++ * registered folder is workspace-relative. For a workspace at the filesystem root the prefix is the
++ * separator alone. A drive-letter case difference between the two arguments is not folded.
+  */
+ export function pathToPolicyRelative(filename: string, cwd: string): string {
+ 	const normalizedFile = filename.replaceAll('\\', '/')
+@@ -236,20 +245,20 @@ export function pathToPolicyRelative(filename: string, cwd: string): string {
+ 	return normalizedFile.startsWith(prefix) ? normalizedFile.slice(prefix.length) : normalizedFile
+ }
+ 
+-/** The extensionless stem of one policy file name. */
++/** Returns the extensionless stem of one policy file name. */
+ export function fileToPolicyStem(file: string): string {
+ 	const boundary = file.lastIndexOf('.')
+ 	return boundary <= 0 ? file : file.slice(0, boundary)
+ }
+ 
+-/** Whether a path names an ambient declaration file, which no policy rule inspects. */
++/** Reports whether a path names an ambient declaration file, which no policy rule inspects. */
+ export function isPolicyAmbient(filename: string): boolean {
+ 	const file = pathToPolicyFile(filename)
+ 	return POLICY_AMBIENT_SUFFIXES.some((suffix) => file.endsWith(suffix))
+ }
+ 
+ /**
+- * Whether a path is a direct module of a fleet-registered function domain.
++ * Reports whether a path is a direct module of a fleet-registered function domain.
+  *
+  * The registered folder is a workspace-relative path, compared by equality after the linter's own
+  * directory is stripped from the given path.
+@@ -267,7 +276,7 @@ export function isPolicyDomain(filename: string, cwd: string): boolean {
+ 	)
+ }
+ 
+-/** The identifier name a node carries, or `undefined` for any other syntax. */
++/** Returns the identifier name a node carries, or `undefined` for any other syntax. */
+ export function identifierToPolicyName(
+ 	node: PolicyExpression | null | undefined,
+ ): string | undefined {
+@@ -275,7 +284,7 @@ export function identifierToPolicyName(
+ 	return typeof node.name === 'string' ? node.name : undefined
+ }
+ 
+-/** The literal text a node carries, through a single-quasi template literal. */
++/** Returns the literal text a node carries, through a single-quasi template literal. */
+ export function expressionToPolicyText(
+ 	node: PolicyExpression | null | undefined,
+ ): string | undefined {
+@@ -295,21 +304,21 @@ export function expressionToPolicyText(
+ 	return typeof cooked === 'string' ? cooked : typeof raw === 'string' ? raw : undefined
+ }
+ 
+-/** The single body expression a node holds, excluding a statement list. */
++/** Returns the single body expression a node holds, excluding a statement list. */
+ export function expressionToPolicyBody(node: PolicyExpression): PolicyExpression | undefined {
+ 	const body = node.body
+ 	if (body === undefined) return undefined
+ 	return 'type' in body ? body : undefined
+ }
+ 
+-/** The top-level statements a program holds. */
++/** Returns the top-level statements a program holds. */
+ export function programToPolicyStatements(node: PolicyExpression): readonly PolicyExpression[] {
+ 	const body = node.body
+ 	if (body === undefined || 'type' in body) return []
+ 	return body
+ }
+ 
+-/** The declaration a top-level statement holds, through either export form. */
++/** Returns the declaration a top-level statement holds, through either export form. */
+ export function statementToPolicyDeclaration(node: PolicyExpression): PolicyExpression | undefined {
+ 	if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration') {
+ 		return node.declaration
+@@ -317,7 +326,7 @@ export function statementToPolicyDeclaration(node: PolicyExpression): PolicyExpr
+ 	return node
+ }
+ 
+-/** Whether a statement sits at module scope, through either export form. */
++/** Reports whether a statement sits at module scope, through either export form. */
+ export function isPolicyTop(node: PolicyExpression): boolean {
+ 	const parent = node.parent
+ 	if (parent === undefined || parent === null) return false
+@@ -328,7 +337,7 @@ export function isPolicyTop(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a policy expression is runtime function syntax. */
++/** Reports whether a policy expression is runtime function syntax. */
+ export function isPolicyFunction(node: PolicyExpression): boolean {
+ 	return (
+ 		node.type === 'FunctionDeclaration' ||
+@@ -337,17 +346,17 @@ export function isPolicyFunction(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a node declares a module function, including a signature without a body. */
++/** Reports whether a node declares a module function, including a signature without a body. */
+ export function isPolicyDeclaredFunction(node: PolicyExpression): boolean {
+ 	return node.type === 'FunctionDeclaration' || node.type === 'TSDeclareFunction'
+ }
+ 
+-/** Whether a policy function is anonymous. */
++/** Reports whether a policy function is anonymous. */
+ export function isPolicyAnonymous(node: PolicyExpression): boolean {
+ 	return node.type === 'ArrowFunctionExpression' || node.id === null
+ }
+ 
+-/** Return the outermost parenthesized expression holding a policy function. */
++/** Returns the outermost parenthesized expression holding a policy function. */
+ export function functionToPolicyPosition(node: PolicyExpression): PolicyExpression {
+ 	let position = node
+ 	while (position.parent?.type === 'ParenthesizedExpression') {
+@@ -356,7 +365,7 @@ export function functionToPolicyPosition(node: PolicyExpression): PolicyExpressi
+ 	return position
+ }
+ 
+-/** Whether a policy function is an anonymous callback passed directly as an argument. */
++/** Reports whether a policy function is an anonymous callback passed directly as an argument. */
+ export function isPolicyCallback(node: PolicyExpression): boolean {
+ 	if (!isPolicyAnonymous(node)) return false
+ 	const position = functionToPolicyPosition(node)
+@@ -367,7 +376,7 @@ export function isPolicyCallback(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a policy function is an anonymous function returned directly as a result. */
++/** Reports whether a policy function is an anonymous function returned directly as a result. */
+ export function isPolicyResult(node: PolicyExpression): boolean {
+ 	if (!isPolicyAnonymous(node)) return false
+ 	const position = functionToPolicyPosition(node)
+@@ -378,7 +387,7 @@ export function isPolicyResult(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether an Oxlint function expression represents method syntax. */
++/** Reports whether an Oxlint function expression represents method syntax. */
+ export function isPolicyMethod(node: PolicyExpression): boolean {
+ 	const parent = node.parent
+ 	return (
+@@ -390,7 +399,10 @@ export function isPolicyMethod(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a policy function sits inside another function before any class-expression boundary. */
++/**
++ * Reports whether a policy function sits inside another function before any class-expression
++ * boundary.
++ */
+ export function hasPolicyFunctionAncestor(node: PolicyExpression): boolean {
+ 	let parent = node.parent
+ 	let method = false
+@@ -406,7 +418,7 @@ export function hasPolicyFunctionAncestor(node: PolicyExpression): boolean {
+ 	return method
+ }
+ 
+-/** Whether an arrow is the policy plugin's sanctioned visitor-table delegation. */
++/** Reports whether an arrow is the policy plugin's sanctioned visitor-table delegation. */
+ export function isPolicyVisitor(node: PolicyExpression): boolean {
+ 	const body = expressionToPolicyBody(node)
+ 	if (
+@@ -443,7 +455,7 @@ export function isPolicyVisitor(node: PolicyExpression): boolean {
+ }
+ 
+ /**
+- * Return the module-scope statement that owns a policy function, or `undefined` when none does.
++ * Returns the module-scope statement that owns a policy function, or `undefined` when none does.
+  *
+  * A class declaration or class expression on the way up ends the search, because the placement law
+  * reads module regions rather than class members.
+@@ -460,7 +472,7 @@ export function functionToPolicyRegion(node: PolicyExpression): PolicyExpression
+ 	return undefined
+ }
+ 
+-/** Every module function a top-level statement declares, paired with its declared name. */
++/** Lists every module function a top-level statement declares, paired with its declared name. */
+ export function statementToPolicyBindings(node: PolicyExpression): readonly PolicyBinding[] {
+ 	if (isPolicyDeclaredFunction(node)) {
+ 		return [{ node, name: identifierToPolicyName(node.id) }]
+@@ -477,7 +489,7 @@ export function statementToPolicyBindings(node: PolicyExpression): readonly Poli
+ 	return bindings
+ }
+ 
+-/** Whether a call trims a whole payload before splitting it on a line feed. */
++/** Reports whether a call trims a whole payload before splitting it on a line feed. */
+ export function isPolicySplit(node: PolicyExpression): boolean {
+ 	if (node.type !== 'CallExpression' || node.arguments?.length !== 1) return false
+ 	const split = node.callee
+@@ -494,7 +506,7 @@ export function isPolicySplit(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether an expression reads the host line ending from a binding named os. */
++/** Reports whether an expression reads the host line ending from a binding named os. */
+ export function isPolicyTerminator(node: PolicyExpression): boolean {
+ 	return (
+ 		node.type === 'MemberExpression' &&
+@@ -504,7 +516,7 @@ export function isPolicyTerminator(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether an import declaration takes the EOL member from the host module. */
++/** Reports whether an import declaration takes the EOL member from the host module. */
+ export function importsPolicyTerminator(node: PolicyExpression): boolean {
+ 	const specifier = expressionToPolicyText(node.source)
+ 	if (specifier !== 'node:os' && specifier !== 'os') return false
+@@ -514,7 +526,7 @@ export function importsPolicyTerminator(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Report function syntax nested inside another function body. */
++/** Reports function syntax nested inside another function body. */
+ export function reportNested(context: PolicyContext, node: PolicyExpression): void {
+ 	if (
+ 		!hasPolicyFunctionAncestor(node) ||
+@@ -528,7 +540,7 @@ export function reportNested(context: PolicyContext, node: PolicyExpression): vo
+ 	context.report({ node, messageId: 'nested' })
+ }
+ 
+-/** Report banned calls on the named Vitest and Jest framework objects. */
++/** Reports banned calls on the named Vitest and Jest framework objects. */
+ export function reportMocking(context: PolicyContext, node: PolicyExpression): void {
+ 	const callee = node.callee
+ 	if (
+@@ -572,7 +584,7 @@ export function reportMocking(context: PolicyContext, node: PolicyExpression): v
+ 	}
+ }
+ 
+-/** Report TypeScript privacy keywords on class members. */
++/** Reports TypeScript privacy keywords on class members. */
+ export function reportPrivacy(context: PolicyContext, node: PolicyExpression): void {
+ 	if (node.accessibility === 'private' || node.accessibility === 'protected') {
+ 		context.report({
+@@ -583,7 +595,7 @@ export function reportPrivacy(context: PolicyContext, node: PolicyExpression): v
+ 	}
+ }
+ 
+-/** Report a centralized declaration that carries no export. */
++/** Reports a centralized declaration that carries no export. */
+ export function reportHidden(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (!CENTRAL_SOURCE_FILES.includes(pathToPolicyFile(context.filename))) return
+@@ -591,14 +603,14 @@ export function reportHidden(context: PolicyContext, node: PolicyExpression): vo
+ 	context.report({ node, messageId: 'hidden' })
+ }
+ 
+-/** Report a type declaration outside types.ts. */
++/** Reports a type declaration outside types.ts. */
+ export function reportType(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) === 'types.ts') return
+ 	context.report({ node, messageId: 'type' })
+ }
+ 
+-/** Report a class whose file neither names it nor collects errors. */
++/** Reports a class whose file neither names it nor collects errors. */
+ export function reportClass(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	const file = pathToPolicyFile(context.filename)
+@@ -612,7 +624,7 @@ export function reportClass(context: PolicyContext, node: PolicyExpression): voi
+ 	context.report({ node, messageId: 'class' })
+ }
+ 
+-/** Report module data outside a data-kind file. */
++/** Reports module data outside a data-kind file. */
+ export function reportData(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	const file = pathToPolicyFile(context.filename)
+@@ -624,7 +636,7 @@ export function reportData(context: PolicyContext, node: PolicyExpression): void
+ 	}
+ }
+ 
+-/** Report module function syntax outside a function-kind file. */
++/** Reports module function syntax outside a function-kind file. */
+ export function reportFunction(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (FUNCTION_SOURCE_FILES.includes(pathToPolicyFile(context.filename))) return
+@@ -640,7 +652,7 @@ export function reportFunction(context: PolicyContext, node: PolicyExpression):
+ 	context.report({ node, messageId: 'function' })
+ }
+ 
+-/** Report a constants.ts declaration that is mutable, misnamed, or a bare collection. */
++/** Reports a constants.ts declaration that is mutable, misnamed, or a bare collection. */
+ export function reportConstant(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) !== 'constants.ts') return
+@@ -657,7 +669,7 @@ export function reportConstant(context: PolicyContext, node: PolicyExpression):
+ 	}
+ }
+ 
+-/** Report a parsers.ts function whose name lacks the parse prefix. */
++/** Reports a parsers.ts function whose name lacks the parse prefix. */
+ export function reportParser(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) !== 'parsers.ts') return
+@@ -668,7 +680,7 @@ export function reportParser(context: PolicyContext, node: PolicyExpression): vo
+ 	}
+ }
+ 
+-/** Report a factories.ts function whose name lacks the create prefix. */
++/** Reports a factories.ts function whose name lacks the create prefix. */
+ export function reportFactory(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) !== 'factories.ts') return
+@@ -679,7 +691,7 @@ export function reportFactory(context: PolicyContext, node: PolicyExpression): v
+ 	}
+ }
+ 
+-/** Report a registered function domain taken as a file, or a malformed module inside one. */
++/** Reports a registered function domain taken as a file, or a malformed module inside one. */
+ export function reportDomain(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	const file = pathToPolicyFile(context.filename)
+@@ -708,20 +720,20 @@ export function reportDomain(context: PolicyContext, node: PolicyExpression): vo
+ 	if (implementations !== 1 || malformed > 0) context.report({ node, messageId: 'module' })
+ }
+ 
+-/** Report source that reads the host line ending or splits arrived text before trimming it. */
++/** Reports source that reads the host line ending or splits arrived text before trimming it. */
+ export function reportEnding(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (isPolicySplit(node)) context.report({ node, messageId: 'split' })
+ 	if (isPolicyTerminator(node)) context.report({ node, messageId: 'terminator' })
+ }
+ 
+-/** Report an import that takes the host line ending from the operating-system module. */
++/** Reports an import that takes the host line ending from the operating-system module. */
+ export function reportEndingImport(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (importsPolicyTerminator(node)) context.report({ node, messageId: 'terminator' })
+ }
+ 
+-/** Ban function declarations and assignments inside another function body. */
++/** Bans function declarations and assignments inside another function body. */
+ export const NESTED_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -742,7 +754,7 @@ export const NESTED_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban framework mocking, spying, fake clocks, and global or environment stubs. */
++/** Bans framework mocking, spying, fake clocks, and global or environment stubs. */
+ export const MOCKING_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -765,7 +777,7 @@ export const MOCKING_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban compile-time-only TypeScript privacy keywords on class members. */
++/** Bans compile-time-only TypeScript privacy keywords on class members. */
+ export const PRIVACY_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -789,7 +801,7 @@ export const PRIVACY_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a centralized declaration that no export reaches. */
++/** Bans a centralized declaration that no export reaches. */
+ export const HIDDEN_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -815,7 +827,7 @@ export const HIDDEN_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a type declaration outside its module's types.ts. */
++/** Bans a type declaration outside its module's types.ts. */
+ export const TYPE_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -836,7 +848,7 @@ export const TYPE_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a class outside the implementation file that names it. */
++/** Bans a class outside the implementation file that names it. */
+ export const CLASS_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -854,7 +866,7 @@ export const CLASS_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban module data outside a data-kind file. */
++/** Bans module data outside a data-kind file. */
+ export const DATA_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -872,7 +884,7 @@ export const DATA_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban module function syntax outside a function-kind file. */
++/** Bans module function syntax outside a function-kind file. */
+ export const FUNCTION_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -895,7 +907,7 @@ export const FUNCTION_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a constants.ts declaration that is mutable, misnamed, or a bare collection. */
++/** Bans a constants.ts declaration that is mutable, misnamed, or a bare collection. */
+ export const CONSTANT_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -916,7 +928,7 @@ export const CONSTANT_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a parsers.ts function whose name lacks the parse prefix. */
++/** Bans a parsers.ts function whose name lacks the parse prefix. */
+ export const PARSER_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -937,7 +949,7 @@ export const PARSER_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a factories.ts function whose name lacks the create prefix. */
++/** Bans a factories.ts function whose name lacks the create prefix. */
+ export const FACTORY_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -958,7 +970,7 @@ export const FACTORY_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a malformed module in a registered function domain, and a file named for one. */
++/** Bans a malformed module in a registered function domain, and a file named for one. */
+ export const DOMAIN_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -979,7 +991,7 @@ export const DOMAIN_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban host-specific line-ending handling. */
++/** Bans host-specific line-ending handling. */
+ export const ENDING_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -1001,7 +1013,7 @@ export const ENDING_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** The workspace Oxlint plugin. */
++/** Declares the workspace Oxlint plugin. */
+ export default {
+ 	meta: { name: 'policy' },
+ 	rules: {
+diff --git a/host.json b/host.json
+index 9e71d449..be045d58 100644
+--- a/host.json
++++ b/host.json
+@@ -4,7 +4,7 @@
+ 			"storage": "AGENTS.md",
+ 			"destination": "AGENTS.md",
+ 			"executable": false,
+-			"digest": "43ce847aa96a525919dbe948a2311214c312d58069054800577e5aff89024f08"
++			"digest": "365f62b880fac923347c8e78482bc8130559a15e5434e4aeb5cbd46b853ea6f6"
+ 		},
+ 		{
+ 			"storage": "CLAUDE.md",
+@@ -22,7 +22,7 @@
+ 			"storage": "agents/orchestration.md",
+ 			"destination": ".agents/orchestration.md",
+ 			"executable": false,
+-			"digest": "4f07f1929ffa4170644b428781788e361468b1d1cfb62a97bac737d8c8dbe151"
++			"digest": "fd0b8846e67041e251e30009311b444cea8199f036c822ba9fc1a313ecfdfd69"
+ 		},
+ 		{
+ 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
+@@ -40,7 +40,7 @@
+ 			"storage": "agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
+ 			"destination": ".agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
+ 			"executable": false,
+-			"digest": "2221c8fddbf0474c9fbf39b5411275e27127940338b20e7626e5fac18f62c5f0"
++			"digest": "98379b5905cba4cc3725df7ddd8fd9ec19dce75ff89e68499b20ac27c53478c7"
+ 		},
+ 		{
+ 			"storage": "agents/skills/enterprise-bootstrap/references/components.md",
+@@ -52,7 +52,7 @@
+ 			"storage": "agents/skills/enterprise-bootstrap/references/frontend-design.md",
+ 			"destination": ".agents/skills/enterprise-bootstrap/references/frontend-design.md",
+ 			"executable": false,
+-			"digest": "96bbc411f56b748f71d67238b8b10e8a04fe303853930c24035de0dc3428e307"
++			"digest": "8ce1985267316610f4b68582cc993fa2d3f3a504e3e7f2c35e9d9d0e982891a1"
+ 		},
+ 		{
+ 			"storage": "agents/skills/enterprise-bootstrap/references/inputs.md",
+@@ -70,7 +70,7 @@
+ 			"storage": "agents/skills/enterprise-bootstrap/references/utilities.md",
+ 			"destination": ".agents/skills/enterprise-bootstrap/references/utilities.md",
+ 			"executable": false,
+-			"digest": "d3a60ead829b6059e656795d388d74320ccfd6667d805a106fbed6cf778ba7b4"
++			"digest": "0601721056882a7d45bfaa9ca0a03aa39e1259876f16546d4bf19b4b9496e023"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-align-packages/SKILL.md",
+@@ -124,7 +124,7 @@
+ 			"storage": "agents/skills/orkestrel-debrief/references/field-testing.md",
+ 			"destination": ".agents/skills/orkestrel-debrief/references/field-testing.md",
+ 			"executable": false,
+-			"digest": "196f803242195df9cd9d2d32a3502ba22445877506f1573f12a428387808578f"
++			"digest": "986896359716e315f1e0859c7190fe459c5a0ea86c0ed772c9fa5e42bd6a8171"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-debrief/references/instruction-audit.md",
+@@ -160,7 +160,7 @@
+ 			"storage": "agents/skills/orkestrel-falsify/references/reconcile.md",
+ 			"destination": ".agents/skills/orkestrel-falsify/references/reconcile.md",
+ 			"executable": false,
+-			"digest": "6880bc120f07bd1a20aa02596e550c3c5f5c66a241e9b40f7558ee144988db3b"
++			"digest": "fb3caa752883b151f83c95a2626ed11aebc653b07c3bf1baa1ace884f34b541f"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-harden-package/SKILL.md",
+@@ -388,7 +388,7 @@
+ 			"storage": "claude/rules/architecture.md",
+ 			"destination": ".claude/rules/architecture.md",
+ 			"executable": false,
+-			"digest": "1c953f2bdd2a94fc29f58e2338a288b4829b6138098856a6169244bd115e2ec4"
++			"digest": "2251fd693958c004e2a9e6087bf9248e43290694eb6488e3faa436a296d15320"
+ 		},
+ 		{
+ 			"storage": "claude/rules/browser.md",
+@@ -424,7 +424,7 @@
+ 			"storage": "claude/rules/quality.md",
+ 			"destination": ".claude/rules/quality.md",
+ 			"executable": false,
+-			"digest": "e99ef9fca7a0224e19f657eb52301314624bd0364c21faebe3ae1f1e6428b72a"
++			"digest": "dc334e2d167f6688d78b79d8214e1635098559331700e5516215a7fec0d95c25"
+ 		},
+ 		{
+ 			"storage": "claude/rules/styles.md",
+@@ -604,13 +604,13 @@
+ 			"storage": "configs/helpers.ts",
+ 			"destination": "configs/helpers.ts",
+ 			"executable": false,
+-			"digest": "22eb907e6f46c648d148528a9f167cfbeb042cc5a24ed1aa5f2942ef690dbf0f"
++			"digest": "85934473e279bbd955e23c7d8596db6c8798a1f44ed451506e7b3abd9fcfe9e1"
+ 		},
+ 		{
+ 			"storage": "configs/policy.ts",
+ 			"destination": "configs/policy.ts",
+ 			"executable": false,
+-			"digest": "c4f56bd60f28142e25d89b9e7cfbbc0a4c903c0b0cd4478f00ad4fcb10043091"
++			"digest": "d2c7ff200ab884cf3fe59a981e926114a368b2d474a912fc7ff9ffda8901a307"
+ 		},
+ 		{
+ 			"storage": "cursor/mcp.json",
+@@ -724,7 +724,7 @@
+ 			"storage": "tests/setupPolicy.ts",
+ 			"destination": "tests/setupPolicy.ts",
+ 			"executable": false,
+-			"digest": "068785557b720c462e3a1ed32fc60ea659e2855347187ea648f2707ca12eebb2"
++			"digest": "b67a8f7a21ea8b50f4e41fd135e18f60b944be09efc0db924c920e7f426153da"
+ 		}
+ 	],
+ 	"roots": [
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "587e7a08b7f1ab4fceb91b02ebef5b39a506b4651404e8b3a199e6761aa1d2d2"
++	"digest": "f8b93d4320ffa3a328931ef220c289ec86eb6c83c406597e980f572da8961afa"
+ }
+diff --git a/src/server/Materializer.ts b/src/server/Materializer.ts
+index 189157db..558dad2d 100644
+--- a/src/server/Materializer.ts
++++ b/src/server/Materializer.ts
+@@ -846,7 +846,7 @@ export class Materializer implements MaterializerInterface {
+ 		return hex
+ 	}
+ 
+-	// The audit is a preview of the same comparison this call just made, so they
++	// The audit is a preview of the same comparison this call made, so they
+ 	// must agree on every path the plan owns. A wider audit may also carry foreign
+ 	// paths, which belong to the deletion verb and say nothing here.
+ 	#reconfirm(derived: readonly Finding[], preview: readonly Finding[], target: string): void {
+@@ -925,7 +925,7 @@ export class Materializer implements MaterializerInterface {
+ 		}
+ 	}
+ 
+-	// Bind one destination to what this call just observed at it. The digest is
++	// Bind one destination to what this call observed at it. The digest is
+ 	// taken directly rather than derived from the observation, because a digest
+ 	// over bytes nobody re-read would only restate what the comparison already
+ 	// proved.
+diff --git a/tests/setup.ts b/tests/setup.ts
+index b82bdc54..02fd9dc0 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -72,7 +72,7 @@ import {
+ } from '@src/core'
+ 
+ /**
+- * One adversarial value every total guard, parser, and cloner must survive.
++ * Describes one adversarial value every total guard, parser, and cloner must survive.
+  *
+  * @remarks
+  * `owned` records whether `cloneValue` can take ownership of the value. A
+@@ -87,7 +87,7 @@ export interface TestHostileCase {
+ }
+ 
+ /**
+- * One guard under test, with what it must accept and what it may admit.
++ * Describes one guard under test, with what it must accept and what it may admit.
+  *
+  * @remarks
+  * `admits` names the hostile labels this guard answers `true` for. It is the
+@@ -101,7 +101,7 @@ export interface TestGuardCase {
+ 	readonly admits: readonly string[]
+ }
+ 
+-/** One coercer under test, beside the guard it is derived from. */
++/** Describes one coercer under test, beside the guard it is derived from. */
+ export interface TestParserCase {
+ 	readonly name: string
+ 	readonly parse: (value: unknown) => unknown
+@@ -110,7 +110,7 @@ export interface TestParserCase {
+ 	readonly refused: readonly unknown[]
+ }
+ 
+-/** One candidate path the portable-path law decides. */
++/** Describes one candidate path the portable-path law decides. */
+ export interface TestPathCase {
+ 	readonly label: string
+ 	readonly path: string
+@@ -118,7 +118,7 @@ export interface TestPathCase {
+ }
+ 
+ /**
+- * One value carrying a key its union branch forbids, beside its sound twin.
++ * Describes one value carrying a key its union branch forbids, beside its sound twin.
+  *
+  * @remarks
+  * The records differ by exactly one key, which the suite checks, so a
+@@ -131,14 +131,14 @@ export interface TestUnionCase {
+ 	readonly refused: Record<string, unknown>
+ }
+ 
+-/** One helper call whose determinism and input independence are measured. */
++/** Describes one helper call whose determinism and input independence are measured. */
+ export interface TestPurityCase {
+ 	readonly helper: string
+ 	readonly call: () => unknown
+ 	readonly inputs: readonly unknown[]
+ }
+ 
+-/** One declared range measured against a reported version. */
++/** Describes one declared range measured against a reported version. */
+ export interface TestRangeCase {
+ 	readonly range: string
+ 	readonly latest: string
+@@ -146,7 +146,7 @@ export interface TestRangeCase {
+ }
+ 
+ /**
+- * An instance whose prototype the hostile matrix severs.
++ * Describes an instance whose prototype the hostile matrix severs.
+  *
+  * @remarks
+  * Constructed rather than written as a record, so the reparented case measures
+@@ -157,7 +157,7 @@ export class TestSample {
+ }
+ 
+ /**
+- * Build a valid inert blueprint, with focused field replacements.
++ * Builds a valid inert blueprint, with focused field replacements.
+  *
+  * @param fields - The blueprint fields to replace on the returned value.
+  * @returns A blueprint carrying the requested fields over minimal defaults.
+@@ -201,7 +201,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
+ }
+ 
+ /**
+- * Build a valid inert runtime dependency, with focused field replacements.
++ * Builds a valid inert runtime dependency, with focused field replacements.
+  *
+  * @param fields - The dependency fields to replace on the returned value.
+  * @returns A dependency carrying the requested fields over minimal defaults.
+@@ -211,7 +211,7 @@ export function buildDependency(fields?: Partial<Dependency>): Dependency {
+ }
+ 
+ /**
+- * Build a valid inert artifact override, with focused field replacements.
++ * Builds a valid inert artifact override, with focused field replacements.
+  *
+  * @param fields - The override fields to replace on the returned value.
+  * @returns An override carrying the requested fields over minimal defaults.
+@@ -221,7 +221,7 @@ export function buildOverride(fields?: Partial<Override>): Override {
+ }
+ 
+ /**
+- * Build a valid inert question, with focused field replacements.
++ * Builds a valid inert question, with focused field replacements.
+  *
+  * @param fields - The question fields to replace on the returned value.
+  * @returns A question carrying the requested fields over minimal defaults.
+@@ -231,7 +231,7 @@ export function buildQuestion(fields?: Partial<Question>): Question {
+ }
+ 
+ /**
+- * Build a planned host artifact whose bytes have not been read.
++ * Builds a planned host artifact whose bytes have not been read.
+  *
+  * @param fields - The artifact fields to replace on the returned value.
+  * @returns A host artifact carrying the requested fields over minimal defaults.
+@@ -241,7 +241,7 @@ export function buildHostArtifact(fields?: Partial<HostArtifact>): HostArtifact
+ }
+ 
+ /**
+- * Build a planned host artifact whose vendored bytes have been read.
++ * Builds a planned host artifact whose vendored bytes have been read.
+  *
+  * @param fields - The artifact fields to replace on the returned value.
+  * @returns A hydrated artifact carrying the requested fields over minimal defaults.
+@@ -258,7 +258,7 @@ export function buildHydratedArtifact(fields?: Partial<HydratedArtifact>): Hydra
+ }
+ 
+ /**
+- * Build a planned artifact whose text this package produces.
++ * Builds a planned artifact whose text this package produces.
+  *
+  * @param fields - The artifact fields to replace on the returned value.
+  * @returns A content artifact carrying the requested fields over minimal defaults.
+@@ -275,7 +275,7 @@ export function buildContentArtifact(fields?: Partial<ContentArtifact>): Content
+ }
+ 
+ /**
+- * Build a valid inert plan, with focused field replacements.
++ * Builds a valid inert plan, with focused field replacements.
+  *
+  * @param fields - The plan fields to replace on the returned value.
+  * @returns A plan carrying the requested fields over minimal defaults.
+@@ -290,7 +290,7 @@ export function buildPlan(fields?: Partial<Plan>): Plan {
+ }
+ 
+ /**
+- * Build a valid inert target snapshot.
++ * Builds a valid inert target snapshot.
+  *
+  * @returns One path keyed to the exact hexadecimal bytes of its content.
+  */
+@@ -299,7 +299,7 @@ export function buildSnapshot(): Snapshot {
+ }
+ 
+ /**
+- * Build a valid inert finding against a destination that holds no file.
++ * Builds a valid inert finding against a destination that holds no file.
+  *
+  * @returns A missing finding, the one branch that records no observed bytes.
+  */
+@@ -308,7 +308,7 @@ export function buildFinding(): Finding {
+ }
+ 
+ /**
+- * Build a valid inert audit carrying one finding and one question.
++ * Builds a valid inert audit carrying one finding and one question.
+  *
+  * @returns An audit over a single missing destination.
+  */
+@@ -317,7 +317,7 @@ export function buildAudit(): Audit {
+ }
+ 
+ /**
+- * Build the compiler's initial listener record.
++ * Builds the compiler's initial listener record.
+  *
+  * @returns A hooks record wiring one real listener to the `compile` event.
+  */
+@@ -326,7 +326,7 @@ export function buildHooks(): EmitterHooks<CompilerEventMap> {
+ }
+ 
+ /**
+- * Build a valid inert compiler option bag.
++ * Builds a valid inert compiler option bag.
+  *
+  * @returns Options carrying the hooks record and no error handler.
+  */
+@@ -334,28 +334,28 @@ export function buildCompilerOptions(): CompilerOptions {
+ 	return { on: buildHooks() }
+ }
+ 
+-/** The trap table whose key enumeration throws. */
++/** Holds the trap table whose key enumeration throws. */
+ export const THROWING_KEYS_TRAP: ProxyHandler<object> = {
+ 	ownKeys() {
+ 		throw new Error('ownKeys trap')
+ 	},
+ }
+ 
+-/** The trap table whose property read throws. */
++/** Holds the trap table whose property read throws. */
+ export const THROWING_GET_TRAP: ProxyHandler<object> = {
+ 	get() {
+ 		throw new Error('get trap')
+ 	},
+ }
+ 
+-/** The trap table whose prototype read throws. */
++/** Holds the trap table whose prototype read throws. */
+ export const THROWING_PROTOTYPE_TRAP: ProxyHandler<object> = {
+ 	getPrototypeOf() {
+ 		throw new Error('getPrototypeOf trap')
+ 	},
+ }
+ 
+-/** The descriptor that installs a throwing accessor over a guarded property. */
++/** Holds the descriptor that installs a throwing accessor over a guarded property. */
+ export const THROWING_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
+ 	enumerable: true,
+ 	configurable: true,
+@@ -364,7 +364,7 @@ export const THROWING_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
+ 	},
+ }
+ 
+-/** The descriptor that installs an accessor answering a value a guard would accept. */
++/** Holds the descriptor that installs an accessor answering a value a guard would accept. */
+ export const BENIGN_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
+ 	enumerable: true,
+ 	configurable: true,
+@@ -374,7 +374,7 @@ export const BENIGN_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
+ }
+ 
+ /**
+- * Every name the emitted `configs/browsers.ts` publishes, in emission order.
++ * Lists every name the emitted `configs/browsers.ts` publishes, in emission order.
+  *
+  * @remarks
+  * The emitted root configuration reaches `resolveBrowser` and
+@@ -399,12 +399,12 @@ export const BROWSER_RESOLVER_EXPORTS: readonly string[] = Object.freeze([
+ 	'resolveBrowser',
+ ])
+ 
+-/** A package manifest declaring one fleet package per section, and one foreign name. */
++/** Holds a package manifest declaring one fleet package per section, and one foreign name. */
+ export const MANIFEST_SAMPLE =
+ 	'{"name":"@orkestrel/sample","dependencies":{"@orkestrel/emitter":"^0.0.5","vite":"~8.2.0"},"devDependencies":{"@orkestrel/emitter":"^9.9.9","@orkestrel/guide":"^0.0.9"}}'
+ 
+ /**
+- * Build the adversarial values every total boundary in this package must survive.
++ * Builds the adversarial values every total boundary in this package must survive.
+  *
+  * @returns One case per hostile construction, freshly built.
+  *
+@@ -460,7 +460,7 @@ export function buildHostileCases(): readonly TestHostileCase[] {
+ }
+ 
+ /**
+- * Select one hostile case by its label.
++ * Selects one hostile case by its label.
+  *
+  * @param label - The case label to select.
+  * @returns The freshly built case.
+@@ -473,7 +473,7 @@ export function selectHostileCase(label: string): TestHostileCase {
+ }
+ 
+ /**
+- * Count a value's own enumerable keys without containing a hostile read.
++ * Counts a value's own enumerable keys without containing a hostile read.
+  *
+  * @param value - The value to read.
+  * @returns The number of own enumerable string keys.
+@@ -490,7 +490,7 @@ export function readKeyCount(value: unknown): number {
+ }
+ 
+ /**
+- * Build every guard this package publishes, with what each must accept.
++ * Builds every guard this package publishes, with what each must accept.
+  *
+  * @returns One case per guard, freshly built.
+  */
+@@ -635,7 +635,7 @@ export function buildGuardCases(): readonly TestGuardCase[] {
+ }
+ 
+ /**
+- * Build every coercer this package publishes, beside the guard it derives from.
++ * Builds every coercer this package publishes, beside the guard it derives from.
+  *
+  * @returns One case per parser, freshly built.
+  */
+@@ -673,7 +673,7 @@ export function buildParserCases(): readonly TestParserCase[] {
+ }
+ 
+ /**
+- * Build the values whose sole defect is one key a union branch forbids.
++ * Builds the values whose sole defect is one key a union branch forbids.
+  *
+  * @returns One case per forbidden key, each paired with its sound twin.
+  */
+@@ -786,7 +786,7 @@ export function buildUnionCases(): readonly TestUnionCase[] {
+ }
+ 
+ /**
+- * Build one call of every helper this package publishes.
++ * Builds one call of every helper this package publishes.
+  *
+  * @returns One case per helper, each freshly built with the inputs it reads.
+  *
+@@ -840,7 +840,7 @@ export function buildPurityCases(): readonly TestPurityCase[] {
+ 	]
+ }
+ 
+-/** Every candidate the portable-path law decides, with the verdict it owes. */
++/** Lists every candidate the portable-path law decides, with the verdict it owes. */
+ export const PATH_CASES: readonly TestPathCase[] = [
+ 	{ label: 'parent traversal', path: '../secrets', accepted: false },
+ 	{ label: 'nested parent traversal', path: 'configs/../../secrets', accepted: false },
+@@ -864,7 +864,7 @@ export const PATH_CASES: readonly TestPathCase[] = [
+ 	{ label: 'dotted directory', path: '.claude/rules/names.md', accepted: true },
+ ]
+ 
+-/** Every declared range measured against a reported version, with the verdict it owes. */
++/** Lists every declared range measured against a reported version, with the verdict it owes. */
+ export const RANGE_CASES: readonly TestRangeCase[] = [
+ 	{ range: '^0.0.5', latest: '0.0.5', satisfied: true },
+ 	{ range: '^0.0.5', latest: '0.0.7', satisfied: false },
+diff --git a/tests/setupPolicy.ts b/tests/setupPolicy.ts
+index 8e117f78..fa7373b0 100644
+--- a/tests/setupPolicy.ts
++++ b/tests/setupPolicy.ts
+@@ -10,16 +10,16 @@ import {
+ import { tmpdir } from 'node:os'
+ import { basename, dirname, join, matchesGlob } from 'node:path'
+ 
+-/** A rule the fleet sweep decides from workspace text and paths. */
++/** Names a rule the fleet sweep decides from workspace text and paths. */
+ export type PolicyRule = 'bridge' | 'mirror' | 'portability' | 'rules' | 'skill' | 'suppression'
+ 
+-/** One workspace file written by a physical control. */
++/** Describes one workspace file a physical control writes. */
+ export interface PolicySource {
+ 	readonly path: string
+ 	readonly content: string
+ }
+ 
+-/** One policy failure reported by the sweep. */
++/** Describes one policy failure the sweep reports. */
+ export interface PolicyViolation {
+ 	readonly rule: PolicyRule
+ 	readonly path: string
+@@ -27,7 +27,7 @@ export interface PolicyViolation {
+ 	readonly message: string
+ }
+ 
+-/** One physical negative control, including the population boundary it attacks. */
++/** Describes one physical negative control, including the population boundary it attacks. */
+ export interface PolicyControl {
+ 	readonly label: string
+ 	readonly membership: string
+@@ -75,7 +75,7 @@ export function createPolicyScratch(options: { readonly prefix: string }): Polic
+ 	}
+ }
+ 
+-/** Parsed skill frontmatter and the exact scalar source used for bridge comparison. */
++/** Holds parsed skill frontmatter and the exact scalar source used for bridge comparison. */
+ export interface SkillFrontmatter {
+ 	readonly keys: readonly string[]
+ 	readonly name: string | undefined
+@@ -86,29 +86,29 @@ export interface SkillFrontmatter {
+ 	}
+ }
+ 
+-/** The directory whose immediate child directories form the complete skill family. */
++/** Names the directory whose immediate child directories form the complete skill family. */
+ export const SKILL_FAMILY_ROOT = '.agents/skills'
+ 
+-/** The directory whose immediate child directories form the Claude skill bridge family. */
++/** Names the directory whose immediate child directories form the Claude skill bridge family. */
+ export const SKILL_BRIDGE_ROOT = '.claude/skills'
+ 
+-/** Minimal valid skill text for physical family controls. */
++/** Holds the minimal valid skill text for physical family controls. */
+ export const SKILL_POLICY_TEXT =
+ 	'---\nname: sample\ndescription: Use this skill for a policy fixture.\n---\n\n# Skill\n'
+ 
+-/** Skill text naming one reference for physical family controls. */
++/** Holds skill text naming one reference for physical family controls. */
+ export const SKILL_REFERENCE_TEXT = `${SKILL_POLICY_TEXT}\nRead references/example.md.\n`
+ 
+-/** Minimal valid provider bridge text for physical bridge controls. */
++/** Holds the minimal valid provider bridge text for physical bridge controls. */
+ export const SKILL_BRIDGE_TEXT = `${SKILL_POLICY_TEXT}\nRead \`.agents/skills/sample/SKILL.md\`.\n`
+ 
+-/** Canonical skill metadata whose values each carry YAML's escaped apostrophe. */
++/** Holds canonical skill metadata whose values each carry YAML's escaped apostrophe. */
+ export const SKILL_APOSTROPHE_METADATA =
+ 	"interface:\n  display_name: 'Owner''s Fixture'\n" +
+ 	"  short_description: 'Exercise the family''s apostrophe rule'\n" +
+ 	"  default_prompt: 'Use $sample for this fixture''s value.'\n"
+ 
+-/** Every extension through which a mirrored test can name a module. */
++/** Lists every extension through which a mirrored test can name a module. */
+ export const POLICY_MODULE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'cts',
+ 	'mts',
+@@ -119,31 +119,35 @@ export const POLICY_MODULE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'css',
+ ])
+ 
+-/** Module extensions whose extensionless stem can resolve a leading-underscore partial. */
++/**
++ * Lists the module extensions whose extensionless stem can resolve a leading-underscore partial.
++ */
+ export const POLICY_PARTIAL_EXTENSIONS: readonly string[] = Object.freeze(['scss', 'css'])
+ 
+-/** The reserved stem prefix whose mirrored module can resolve inside the tests axis. */
++/** Names the reserved stem prefix whose mirrored module can resolve inside the tests axis. */
+ export const POLICY_TESTS_MODULE_PREFIX = 'setup'
+ 
+-/** The complete module population available to mirrored tests under either workspace axis. */
++/**
++ * Matches the complete module population available to mirrored tests under either workspace axis.
++ */
+ export const POLICY_MODULE_GLOB = `{app,src}/**/*.{${POLICY_MODULE_EXTENSIONS.join(',')}}`
+ 
+-/** The tests-axis setup module population available to mirrored tests. */
++/** Matches the tests-axis setup module population available to mirrored tests. */
+ export const POLICY_TESTS_MODULE_GLOB = `tests/**/${POLICY_TESTS_MODULE_PREFIX}*.ts`
+ 
+-/** The mirrored module-test population inspected under either workspace axis. */
++/** Matches the mirrored module-test population inspected under either workspace axis. */
+ export const POLICY_TEST_GLOB = 'tests/{app,src}/**/*.test.ts'
+ 
+ // Compose suppression tokens so the instrument does not report its own definitions or controls.
+ export const POLICY_SUPPRESSION_DIRECTIVE = ['oxlint', '-disable'].join('')
+ 
+-/** Source, test, config, and script files inspected for lint suppression directives. */
++/** Matches the source, test, config, and script files inspected for lint suppression directives. */
+ export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
+ 	'{src,app,tests,configs,scripts}/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
+ 	'*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
+ ])
+ 
+-/** Rules whose workspace-wide lint wiring must not be weakened by configuration. */
++/** Lists the rules whose workspace-wide lint wiring must not be weakened by configuration. */
+ export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
+ 	'policy/no-mocking',
+ 	'policy/no-keyword-privacy',
+@@ -151,7 +155,7 @@ export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
+ 	'typescript/explicit-member-accessibility',
+ ])
+ 
+-/** Linted workspace roots that ignore patterns must not reach. */
++/** Lists the linted workspace roots that ignore patterns must not reach. */
+ export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
+ 	'src',
+ 	'app',
+@@ -159,13 +163,16 @@ export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
+ 	'configs',
+ ])
+ 
+-/** Either lint suppression token the text sweep refuses. */
++/** Matches either lint suppression token the text sweep refuses. */
+ export const POLICY_SUPPRESSION_PATTERN = new RegExp(
+ 	[['eslint', '-disable'].join(''), POLICY_SUPPRESSION_DIRECTIVE].join('|'),
+ 	'u',
+ )
+ 
+-/** The workspace-authored path population inspected for a name a Windows checkout cannot hold. */
++/**
++ * Matches the workspace-authored path population inspected for a name a Windows checkout cannot
++ * hold.
++ */
+ export const POLICY_PORTABILITY_GLOB: readonly string[] = Object.freeze([
+ 	'{src,app,configs,tests,scripts,guides}/**/*',
+ 	'{.agents,.claude,.codex,.cursor,.github}/**/*',
+@@ -173,7 +180,7 @@ export const POLICY_PORTABILITY_GLOB: readonly string[] = Object.freeze([
+ 	'.*',
+ ])
+ 
+-/** Every device name Windows reserves, whatever extension the segment carries. */
++/** Lists every device name Windows reserves, whatever extension the segment carries. */
+ export const POLICY_RESERVED_NAMES: readonly string[] = Object.freeze([
+ 	'aux',
+ 	'com1',
+@@ -199,26 +206,26 @@ export const POLICY_RESERVED_NAMES: readonly string[] = Object.freeze([
+ 	'prn',
+ ])
+ 
+-/** Every character Windows refuses inside a path segment. */
++/** Matches every character Windows refuses inside a path segment. */
+ export const POLICY_RESERVED_PATTERN = /[<>:"|?*]/u
+ 
+-/** A shell script named as a complete path token inside a manifest script. */
++/** Matches a shell script named as a complete path token inside a manifest script. */
+ export const POLICY_SHELL_PATTERN = /\.sh\b/u
+ 
+-/** The directory whose direct Markdown files form the complete rule family. */
++/** Names the directory whose direct Markdown files form the complete rule family. */
+ export const POLICY_RULE_ROOT = '.claude/rules'
+ 
+-/** The root instruction file whose rule map registers the rule family. */
++/** Names the root instruction file whose rule map registers the rule family. */
+ export const POLICY_RULE_MAP_FILE = 'AGENTS.md'
+ 
+-/** The heading that opens the root instruction file's rule map table. */
++/** Names the heading that opens the root instruction file's rule map table. */
+ export const POLICY_RULE_MAP_HEADING = '## Rule map'
+ 
+-/** The workspace manifest whose scripts run on every supported host. */
++/** Names the workspace manifest whose scripts run on every supported host. */
+ export const POLICY_MANIFEST_FILE = 'package.json'
+ 
+ /**
+- * Normalize platform separators for stable matching and diagnostics.
++ * Normalizes platform separators for stable matching and diagnostics.
+  *
+  * @param path - The workspace-relative path to normalize.
+  * @returns The path with forward slashes and no duplicate separators.
+@@ -227,13 +234,16 @@ export function normalizePolicyPath(path: string): string {
+ 	return path.replaceAll('\\', '/').replace(/\/+/gu, '/')
+ }
+ 
+-/** Whether a parsed configuration value is a plain record rather than an array or a primitive. */
++/**
++ * Reports whether a parsed configuration value is a plain record rather than an array or a
++ * primitive.
++ */
+ export function isPolicyRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+ 	return typeof value === 'object' && value !== null && !Array.isArray(value)
+ }
+ 
+ /**
+- * Create one stable violation for an inspection result.
++ * Creates one stable violation for an inspection result.
+  *
+  * @param rule - The rule that failed.
+  * @param path - The workspace-relative source path.
+@@ -251,7 +261,7 @@ export function createPolicyViolation(
+ }
+ 
+ /**
+- * Derive the extensionless module stem for one mirrored module test.
++ * Derives the extensionless module stem for one mirrored module test.
+  *
+  * @param path - The workspace-relative test path.
+  * @returns The extensionless module stem, or `undefined` for a reserved scope test.
+@@ -264,7 +274,7 @@ export function testToPolicyStem(path: string): string | undefined {
+ }
+ 
+ /**
+- * The candidate set is every module name a registered language resolves for a stem.
++ * Lists every module name a registered language resolves for a stem.
+  *
+  * @param stem - The extensionless workspace-relative module stem.
+  * @returns Direct modules, partial modules, then a matching tests-axis setup module.
+@@ -282,7 +292,7 @@ export function stemToPolicyCandidates(stem: string): readonly string[] {
+ }
+ 
+ /**
+- * Inspect mirrored test paths against an explicit module-path population.
++ * Inspects mirrored test paths against an explicit module-path population.
+  *
+  * @param tests - The module-test paths to inspect.
+  * @param modules - The existing module paths in every registered language.
+@@ -312,7 +322,7 @@ export function inspectPolicyMirrorPaths(
+ }
+ 
+ /**
+- * Inspect every mirrored module test beneath one workspace.
++ * Inspects every mirrored module test beneath one workspace.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every missing mirror violation in test-path order.
+@@ -327,7 +337,7 @@ export function inspectPolicyMirrors(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect code-shaped workspace files for lint suppression directives.
++ * Inspects code-shaped workspace files for lint suppression directives.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every suppression occurrence in path and line order.
+@@ -355,7 +365,7 @@ export function inspectPolicySuppressions(root: string): readonly PolicyViolatio
+ }
+ 
+ /**
+- * Inspect the lint configuration that keeps policy rules active across the workspace.
++ * Inspects the lint configuration that keeps policy rules active across the workspace.
+  *
+  * @param configuration - The parsed Oxlint configuration to inspect.
+  * @returns Every wiring violation in rule and configuration order.
+@@ -421,7 +431,7 @@ export function inspectPolicyConfiguration(configuration: unknown): readonly str
+ }
+ 
+ /**
+- * Inspect the lint configuration that keeps every named rule and population wired.
++ * Inspects the lint configuration that keeps every named rule and population wired.
+  *
+  * @param configuration - The parsed Oxlint configuration to inspect.
+  * @param rules - Every rule id that some top-level or override rules record must enable.
+@@ -470,7 +480,7 @@ export function inspectPolicyWiring(
+ }
+ 
+ /**
+- * Resolve an exact-case directory beneath a physical root.
++ * Resolves an exact-case directory beneath a physical root.
+  *
+  * @param root - The physical directory from which resolution starts.
+  * @param path - The relative directory path to resolve.
+@@ -491,7 +501,7 @@ export function resolvePolicyDirectory(root: string, path: string): string | und
+ }
+ 
+ /**
+- * Whether an exact-case path resolves to a regular file beneath a physical root.
++ * Reports whether an exact-case path resolves to a regular file beneath a physical root.
+  *
+  * @param root - The physical directory from which resolution starts.
+  * @param path - The relative file path to inspect.
+@@ -508,7 +518,7 @@ export function isPolicyFile(root: string, path: string): boolean {
+ }
+ 
+ /**
+- * Read the immediate child directories beneath one workspace-relative path.
++ * Reads the immediate child directories beneath one workspace-relative path.
+  *
+  * @param root - The workspace root to inspect.
+  * @param path - The workspace-relative parent directory.
+@@ -524,7 +534,7 @@ export function readPolicyDirectories(root: string, path: string): readonly stri
+ }
+ 
+ /**
+- * Discover the skill family from immediate directories in the workspace tree.
++ * Discovers the skill family from immediate directories in the workspace tree.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns The sorted directory names that belong to the skill family.
+@@ -534,7 +544,7 @@ export function readSkillFamily(root: string): readonly string[] {
+ }
+ 
+ /**
+- * Parse one skill document's frontmatter without interpreting arbitrary body lines as keys.
++ * Parses one skill document's frontmatter without interpreting arbitrary body lines as keys.
+  *
+  * @param content - The raw SKILL.md text.
+  * @returns The parsed fields and exact scalar source, or `undefined` for an unsupported shape.
+@@ -619,7 +629,7 @@ export function parseSkillFrontmatter(content: string): SkillFrontmatter | undef
+ }
+ 
+ /**
+- * Test whether a description carries a sentence that begins with the case-sensitive word `Use`.
++ * Reports whether a description carries a sentence that begins with the case-sensitive word `Use`.
+  *
+  * @param description - The parsed skill description.
+  * @returns True when the description contains the canonical trigger sentence.
+@@ -629,7 +639,7 @@ export function matchesSkillTrigger(description: string): boolean {
+ }
+ 
+ /**
+- * Read the direct Markdown files owned by one skill's references directory.
++ * Reads the direct Markdown files owned by one skill's references directory.
+  *
+  * @param root - The workspace root to inspect.
+  * @param name - The discovered skill directory name.
+@@ -645,7 +655,7 @@ export function readSkillReferences(root: string, name: string): readonly string
+ }
+ 
+ /**
+- * Create metadata in the canonical skill interface shape.
++ * Creates metadata in the canonical skill interface shape.
+  *
+  * @param name - The skill token the default prompt invokes.
+  * @returns Canonical skill interface metadata ending in one newline.
+@@ -662,7 +672,7 @@ export function createSkillMetadata(name: string): string {
+ }
+ 
+ /**
+- * Parse the default prompt from the canonical skill interface shape.
++ * Parses the default prompt from the canonical skill interface shape.
+  *
+  * Each value is a non-empty single-quoted scalar in which `''` carries an apostrophe.
+  *
+@@ -683,7 +693,7 @@ export function parseSkillPrompt(content: string): string | undefined {
+ }
+ 
+ /**
+- * Test whether a default prompt names one skill's token in complete form.
++ * Reports whether a default prompt names one skill's token in complete form.
+  *
+  * A skill directory name is lowercase letters and hyphens, so a match followed by either continues
+  * a longer name and names a different skill.
+@@ -702,7 +712,7 @@ export function matchesSkillToken(prompt: string, name: string): boolean {
+ }
+ 
+ /**
+- * Extract the direct Markdown reference paths named in one skill document.
++ * Extracts the direct Markdown reference paths named in one skill document.
+  *
+  * @param content - The raw SKILL.md text.
+  * @returns Each distinct references/name.md token in sorted order.
+@@ -776,7 +786,7 @@ export function inspectSkillTemplateTODOs(
+ }
+ 
+ /**
+- * Inspect one discovered skill's required files, metadata, token, and references.
++ * Inspects one discovered skill's required files, metadata, token, and references.
+  *
+  * @param root - The workspace root to inspect.
+  * @param name - The discovered skill directory name.
+@@ -966,7 +976,7 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
+ }
+ 
+ /**
+- * Inspect every immediate member of the discovered skill family.
++ * Inspects every immediate member of the discovered skill family.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every skill-family violation in directory and invariant order.
+@@ -978,7 +988,7 @@ export function inspectSkillFamily(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect one provider bridge against its canonical skill twin.
++ * Inspects one provider bridge against its canonical skill twin.
+  *
+  * @param root - The workspace root to inspect.
+  * @param name - The shared canonical and bridge directory name.
+@@ -1066,7 +1076,7 @@ export function inspectBridge(root: string, name: string): readonly PolicyViolat
+ }
+ 
+ /**
+- * Inspect the provider bridge set and every bridge shared with the canonical skill family.
++ * Inspects the provider bridge set and every bridge shared with the canonical skill family.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every bridge-set and bridge-content violation in directory order.
+@@ -1105,7 +1115,7 @@ export function inspectSkillBridges(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Read every rule path the root instruction file's rule map registers.
++ * Reads every rule path the root instruction file's rule map registers.
+  *
+  * @param content - The raw root instruction text.
+  * @returns Each backticked first cell beneath the rule map heading, in table order.
+@@ -1125,7 +1135,7 @@ export function readPolicyRuleMap(content: string): readonly string[] {
+ }
+ 
+ /**
+- * Inspect the discovered rule family against the root instruction file's rule map.
++ * Inspects the discovered rule family against the root instruction file's rule map.
+  *
+  * A workspace with no rule file has no rule map to keep, so the population is empty there.
+  *
+@@ -1161,7 +1171,7 @@ export function inspectPolicyRuleMap(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect an explicit path population for a name a Windows checkout cannot hold.
++ * Inspects an explicit path population for a name a Windows checkout cannot hold.
+  *
+  * Each path is read through its own final segment, because the population lists every directory as
+  * its own entry. A Windows host refuses the reserved characters and folds a case collision into one
+@@ -1218,7 +1228,7 @@ export function inspectPolicyFilenamePaths(paths: readonly string[]): readonly P
+ }
+ 
+ /**
+- * Read the workspace-authored path population, directories included.
++ * Reads the workspace-authored path population, directories included.
+  *
+  * @param root - The workspace root to read.
+  * @returns Every authored path, sorted by path.
+@@ -1228,7 +1238,7 @@ export function readPolicyPaths(root: string): readonly string[] {
+ }
+ 
+ /**
+- * Inspect the workspace-authored path population for a name a Windows checkout cannot hold.
++ * Inspects the workspace-authored path population for a name a Windows checkout cannot hold.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every unusable-name and case-collision violation in path order.
+@@ -1238,7 +1248,7 @@ export function inspectPolicyFilenames(root: string): readonly PolicyViolation[]
+ }
+ 
+ /**
+- * Parse the manifest's script record without interpreting any other manifest field.
++ * Parses the manifest's script record without interpreting any other manifest field.
+  *
+  * @param content - The raw package.json text.
+  * @returns Each script name and its command, in manifest order.
+@@ -1262,7 +1272,7 @@ export function parsePolicyScripts(content: string): ReadonlyMap<string, string>
+ }
+ 
+ /**
+- * Inspect every manifest script for a shell file no Windows host runs.
++ * Inspects every manifest script for a shell file no Windows host runs.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every shell-script violation in manifest order.
+@@ -1286,7 +1296,7 @@ export function inspectPolicyScripts(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect every host portability rule across one workspace.
++ * Inspects every host portability rule across one workspace.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every rule-map, filename, and manifest-script violation.
+@@ -1300,7 +1310,7 @@ export function inspectPolicyPortability(root: string): readonly PolicyViolation
+ }
+ 
+ /**
+- * Inspect every policy rule across one workspace.
++ * Inspects every policy rule across one workspace.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every mirror, suppression, skill, bridge, and portability violation.
+@@ -1316,7 +1326,7 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
+ }
+ 
+ /**
+- * Write a control to a real temporary workspace and run the production sweep over it.
++ * Writes a control to a real temporary workspace and runs the production sweep over it.
+  *
+  * The control's rule selects the sweep: `skill` inspects the canonical family, `bridge` inspects
+  * provider bridges, and every other rule inspects the whole workspace route.
+@@ -1343,7 +1353,7 @@ export function inspectPolicyControl(control: PolicyControl): readonly PolicyVio
+ 	}
+ }
+ 
+-/** Physical negative controls, one for each rule the sweep claims to enforce. */
++/** Lists the physical negative controls, one for each rule the sweep claims to enforce. */
+ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a suppression directive in a scanned source file',
+@@ -1413,7 +1423,7 @@ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** Physical in-family controls for every skill-family assertion class. */
++/** Lists the physical in-family controls for every skill-family assertion class. */
+ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a SKILL.md without frontmatter',
+@@ -1689,7 +1699,7 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** Physical controls for provider-bridge assertions. */
++/** Lists the physical controls for provider-bridge assertions. */
+ export const BRIDGE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a canonical skill without a provider bridge',
+@@ -1818,7 +1828,9 @@ export const BRIDGE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** An in-family skill whose metadata values carry escaped apostrophes, proving they parse. */
++/**
++ * Describes an in-family skill whose metadata values carry escaped apostrophes, proving they parse.
++ */
+ export const SKILL_POLICY_APOSTROPHE: PolicyControl = Object.freeze({
+ 	label: 'accepts escaped apostrophes in agents/openai.yaml values',
+ 	membership: 'immediate directories beneath .agents/skills',
+@@ -1829,7 +1841,9 @@ export const SKILL_POLICY_APOSTROPHE: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A folded description containing a colon, proving continuation lines do not become keys. */
++/**
++ * Describes a folded description containing a colon, proving continuation lines do not become keys.
++ */
+ export const SKILL_POLICY_FOLDED: PolicyControl = Object.freeze({
+ 	label: 'accepts a folded description containing a colon',
+ 	membership: 'folded description scalars in discovered skill frontmatter',
+@@ -1844,7 +1858,7 @@ export const SKILL_POLICY_FOLDED: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A healthy skill reference whose prose carries the documented backticked TODO form. */
++/** Describes a healthy skill reference whose prose carries the documented backticked TODO form. */
+ export const SKILL_POLICY_BACKTICKED: PolicyControl = Object.freeze({
+ 	label: 'accepts a backticked TODO in skill prose',
+ 	membership: 'TODO occurrences inside matched inline backtick spans in discovered skill documents',
+@@ -1859,7 +1873,7 @@ export const SKILL_POLICY_BACKTICKED: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A healthy skill whose fenced example carries a template-TODO spelling. */
++/** Describes a healthy skill whose fenced example carries a template-TODO spelling. */
+ export const SKILL_POLICY_FENCED: PolicyControl = Object.freeze({
+ 	label: 'accepts a TODO in a three-space-indented fenced skill example',
+ 	membership:
+@@ -1876,7 +1890,7 @@ export const SKILL_POLICY_FENCED: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A folded description whose blank scalar line separates its paragraphs. */
++/** Describes a folded description whose blank scalar line separates its paragraphs. */
+ export const SKILL_POLICY_PARAGRAPHS: PolicyControl = Object.freeze({
+ 	label: 'accepts a folded description containing two paragraphs',
+ 	membership: 'folded description scalars in discovered skill frontmatter',
+@@ -1891,7 +1905,9 @@ export const SKILL_POLICY_PARAGRAPHS: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A bridge skill outside the discovered family, used to prove the membership boundary. */
++/**
++ * Describes a bridge skill outside the discovered family, used to prove the membership boundary.
++ */
+ export const SKILL_POLICY_EXCLUSION: PolicyControl = Object.freeze({
+ 	label: 'excludes .claude/skills from the skill family',
+ 	membership: 'directories outside .agents/skills',
+@@ -1900,7 +1916,7 @@ export const SKILL_POLICY_EXCLUSION: PolicyControl = Object.freeze({
+ })
+ 
+ /**
+- * Create root instruction text whose rule map names an explicit rule set.
++ * Creates root instruction text whose rule map names an explicit rule set.
+  *
+  * @param rules - The workspace-relative rule paths the map registers.
+  * @returns Root instruction text carrying one rule map table.
+@@ -1919,7 +1935,7 @@ export function createPolicyRuleMap(rules: readonly string[]): string {
+ 	)
+ }
+ 
+-/** Physical controls for every rule-map parity assertion the workspace route reaches. */
++/** Lists the physical controls for every rule-map parity assertion the workspace route reaches. */
+ export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a rule file the rule map omits',
+@@ -1949,7 +1965,7 @@ export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** Physical controls for every portability assertion the workspace route reaches. */
++/** Lists the physical controls for every portability assertion the workspace route reaches. */
+ export const PORTABILITY_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a reserved device name',
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 44791276..5b51bfb0 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -81,7 +81,7 @@ import {
+ } from './setup.js'
+ 
+ /**
+- * One command line beside the exact command it denotes.
++ * Describes one command line beside the exact command it denotes.
+  *
+  * @remarks
+  * `command` is written whole rather than as a patch over a default, so a test
+@@ -95,7 +95,7 @@ export interface TestCommandCase {
+ }
+ 
+ /**
+- * One command line that denotes no command, beside what its refusal must name.
++ * Describes one command line that denotes no command, beside what its refusal must name.
+  *
+  * @remarks
+  * `mention` is the exact substring the message owes the reader — the word that
+@@ -109,7 +109,7 @@ export interface TestUsageCase {
+ }
+ 
+ /**
+- * One audit beside whether the executable reads it as a clean run.
++ * Describes one audit beside whether the executable reads it as a clean run.
+  *
+  * @remarks
+  * `clean` is a verdict rather than an exit code, so the table states the domain
+@@ -122,7 +122,7 @@ export interface TestAuditCase {
+ 	readonly clean: boolean
+ }
+ 
+-/** One boundary value a server guard decides, with the verdict it owes. */
++/** Describes one boundary value a server guard decides, with the verdict it owes. */
+ export interface TestBoundaryCase {
+ 	readonly label: string
+ 	readonly guard: (value: unknown) => boolean
+@@ -130,28 +130,28 @@ export interface TestBoundaryCase {
+ 	readonly accepted: boolean
+ }
+ 
+-/** One path a classifying predicate decides, with the verdict it owes. */
++/** Describes one path a classifying predicate decides, with the verdict it owes. */
+ export interface TestMatchCase {
+ 	readonly label: string
+ 	readonly path: string
+ 	readonly matched: boolean
+ }
+ 
+-/** One target-relative path beside the vendored storage name it maps to. */
++/** Describes one target-relative path beside the vendored storage name it maps to. */
+ export interface TestStorageCase {
+ 	readonly label: string
+ 	readonly path: string
+ 	readonly storage: string
+ }
+ 
+-/** One text beside the digest a conforming SHA-256 owes it. */
++/** Describes one text beside the digest a conforming SHA-256 owes it. */
+ export interface TestDigestCase {
+ 	readonly label: string
+ 	readonly content: string
+ 	readonly digest: string
+ }
+ 
+-/** One caller-supplied upstream endpoint, with the verdict the reader's law owes it. */
++/** Describes one caller-supplied upstream endpoint, with the verdict the reader's law owes it. */
+ export interface TestEndpointCase {
+ 	readonly label: string
+ 	readonly base: string
+@@ -159,7 +159,7 @@ export interface TestEndpointCase {
+ }
+ 
+ /**
+- * One scripted HTTP reply the upstream fixture serves at one exact path.
++ * Describes one scripted HTTP reply the upstream fixture serves at one exact path.
+  *
+  * @remarks
+  * Every field maps onto a real part of the response, so the fixture never
+@@ -181,7 +181,7 @@ export interface TestUpstreamReply {
+ }
+ 
+ /**
+- * The declared range sets a published version carries in a packument.
++ * Describes the declared range sets a published version carries in a packument.
+  *
+  * @remarks
+  * Named for the manifest keys the registry serves rather than for what a reader
+@@ -196,7 +196,7 @@ export interface TestPackumentEdges {
+ }
+ 
+ /**
+- * One vendored file the repository fixture serves, beside the path it serves it at.
++ * Describes one vendored file the repository fixture serves, beside the path it serves it at.
+  *
+  * @remarks
+  * `path` is the target-relative destination, which the raw content host also
+@@ -211,7 +211,7 @@ export interface TestVendoredFile {
+ }
+ 
+ /**
+- * One binding a parsed statement declares, with the shape a lift reads from it.
++ * Describes one binding a parsed statement declares, with the shape a lift reads from it.
+  *
+  * @remarks
+  * `parameters` and `returns` are the source slices the parser's own spans name,
+@@ -226,7 +226,7 @@ export interface TestDeclaration {
+ }
+ 
+ /**
+- * One statement of a parsed module, projected onto the fields a lift reads.
++ * Describes one statement of a parsed module, projected onto the fields a lift reads.
+  *
+  * @remarks
+  * `syntax` names the declaration a named export wraps rather than the wrapper,
+@@ -252,7 +252,7 @@ export interface TestStatement {
+ }
+ 
+ /**
+- * A real HTTP server on loopback, scripted per path.
++ * Describes a real HTTP server on loopback, scripted per path.
+  *
+  * @remarks
+  * `paths` is every request line the server received, in arrival order, so a
+@@ -274,7 +274,7 @@ export interface TestUpstreamInterface {
+ }
+ 
+ /**
+- * The repository root, resolved from this file rather than from the process.
++ * Names the repository root, resolved from this file rather than from the process.
+  *
+  * @remarks
+  * Anchoring here is what keeps a loader independent of the directory the runner
+@@ -286,7 +286,7 @@ export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
+ export const SCRATCH_PREFIX = 'orkestrel-scaffold-'
+ 
+ /**
+- * List the tracked paths this repository records as executable.
++ * Lists the tracked paths this repository records as executable.
+  *
+  * @returns The repository-relative paths git holds at mode `100755`, sorted.
+  *
+@@ -318,7 +318,7 @@ export function listExecutablePaths(): readonly string[] {
+ }
+ 
+ /**
+- * Whether this run's temporary directories resolve a recased name.
++ * Reports whether this run's temporary directories resolve a recased name.
+  *
+  * @remarks
+  * Derived from the shipped `supportsCase` probe, which writes two names differing
+@@ -334,7 +334,7 @@ export function listExecutablePaths(): readonly string[] {
+ export const CASE_FOLDING: boolean = !supportsCase()
+ 
+ /**
+- * Build a valid inert vendored-host manifest entry, with focused field replacements.
++ * Builds a valid inert vendored-host manifest entry, with focused field replacements.
+  *
+  * @param fields - The entry fields to replace on the returned value.
+  * @returns An entry carrying the requested fields over minimal defaults.
+@@ -345,7 +345,7 @@ export function buildManifestEntry(fields?: Partial<ManifestEntry>): ManifestEnt
+ }
+ 
+ /**
+- * Build a valid inert vendored-host manifest, with focused field replacements.
++ * Builds a valid inert vendored-host manifest, with focused field replacements.
+  *
+  * @param fields - The manifest fields to replace on the returned value.
+  * @returns A manifest carrying the requested fields over minimal defaults.
+@@ -367,7 +367,7 @@ export function buildHostManifest(fields?: Partial<HostManifest>): HostManifest
+ }
+ 
+ /**
+- * Build a valid inert git working-tree state, with focused field replacements.
++ * Builds a valid inert git working-tree state, with focused field replacements.
+  *
+  * @param fields - The worktree fields to replace on the returned value.
+  * @returns A worktree carrying the requested fields over minimal defaults.
+@@ -377,7 +377,7 @@ export function buildWorktree(fields?: Partial<Worktree>): Worktree {
+ }
+ 
+ /**
+- * Build a valid inert materializer option bag, with focused field replacements.
++ * Builds a valid inert materializer option bag, with focused field replacements.
+  *
+  * @param fields - The option fields to replace on the returned value.
+  * @returns Options carrying the requested fields over minimal defaults.
+@@ -393,7 +393,7 @@ export function buildMaterializerOptions(
+ }
+ 
+ /**
+- * Build a valid inert upstream option bag, with focused field replacements.
++ * Builds a valid inert upstream option bag, with focused field replacements.
+  *
+  * @param fields - The option fields to replace on the returned value.
+  * @returns Options carrying the requested fields over minimal defaults.
+@@ -416,7 +416,7 @@ export function buildUpstreamOptions(fields?: Partial<UpstreamOptions>): Upstrea
+ }
+ 
+ /**
+- * Build every guard the server face publishes, with what each must accept.
++ * Builds every guard the server face publishes, with what each must accept.
+  *
+  * @returns One case per guard, freshly built.
+  *
+@@ -569,7 +569,7 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
+ }
+ 
+ /**
+- * Every candidate the host-path law decides, with the verdict it owes.
++ * Lists every candidate the host-path law decides, with the verdict it owes.
+  *
+  * @remarks
+  * The multi-byte pair is what proves the segment ceiling counts bytes rather
+@@ -627,7 +627,7 @@ export const FILESYSTEM_PATH_CASES: readonly TestPathCase[] = [
+ ]
+ 
+ /**
+- * Build every boundary value the server's option, manifest, and inventory laws decide.
++ * Builds every boundary value the server's option, manifest, and inventory laws decide.
+  *
+  * @returns One case per boundary, freshly built.
+  *
+@@ -825,7 +825,7 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
+ }
+ 
+ /**
+- * Run a call and report the coded reason it refused.
++ * Runs a call and reports the coded reason it refused.
+  *
+  * @param call - The call under test.
+  * @returns The raised error's code, or `undefined` when the call returned
+@@ -847,7 +847,7 @@ export function readErrorCode(call: () => unknown): ScaffoldErrorCode | undefine
+ }
+ 
+ /**
+- * Read the message from one synchronous scaffold refusal.
++ * Reads the message from one synchronous scaffold refusal.
+  *
+  * @param call - The operation expected to raise a scaffold error.
+  * @returns The scaffold error's message, or `undefined` when the call returned
+@@ -959,7 +959,7 @@ export function readStatements(source: string, name: string): readonly TestState
+ }
+ 
+ /**
+- * Build a vendored-host manifest that matches its own membership.
++ * Builds a vendored-host manifest that matches its own membership.
+  *
+  * @param fields - The membership to replace on the returned value.
+  * @returns A manifest whose digest is computed from the membership it carries.
+@@ -986,7 +986,7 @@ export function buildStagedManifest(fields?: Partial<Omit<HostManifest, 'digest'
+ }
+ 
+ /**
+- * Write a real vendored host root a reader can be measured against.
++ * Writes a real vendored host root a reader can be measured against.
+  *
+  * @param workspace - The temporary workspace the root is written into.
+  * @param relative - The workspace-relative directory to write it at.
+@@ -1012,7 +1012,7 @@ export function createHostRoot(
+ }
+ 
+ /**
+- * Stage this checkout's real vendored host into a temporary workspace.
++ * Stages this checkout's real vendored host into a temporary workspace.
+  *
+  * @param workspace - The temporary workspace that receives the staged root.
+  * @returns The staged host root's absolute path.
+@@ -1029,7 +1029,7 @@ export function createStagedHost(workspace: ScratchInterface): string {
+ }
+ 
+ /**
+- * Every text whose SHA-256 is a published, externally checkable value.
++ * Lists every text whose SHA-256 is a published, externally checkable value.
+  *
+  * @remarks
+  * The digest law's anchor. Every case but the multi-byte one is a published
+@@ -1061,7 +1061,7 @@ export const DIGEST_CASES: readonly TestDigestCase[] = [
+ 	},
+ ]
+ 
+-/** Every path the repository-metadata rule decides, with the verdict it owes. */
++/** Lists every path the repository-metadata rule decides, with the verdict it owes. */
+ export const GIT_PATH_CASES: readonly TestMatchCase[] = [
+ 	{ label: 'the metadata directory itself', path: '.git', matched: true },
+ 	{ label: 'a file inside it', path: '.git/config', matched: true },
+@@ -1075,7 +1075,7 @@ export const GIT_PATH_CASES: readonly TestMatchCase[] = [
+ 	{ label: 'an unrelated dotted directory', path: '.claude/rules/names.md', matched: false },
+ ]
+ 
+-/** Every path the deletion deny-list decides, with the verdict it owes. */
++/** Lists every path the deletion deny-list decides, with the verdict it owes. */
+ export const PROTECTED_PATH_CASES: readonly TestMatchCase[] = [
+ 	{ label: 'a published source file', path: 'src/core/index.ts', matched: true },
+ 	{ label: 'a private application file', path: 'app/server/main.ts', matched: true },
+@@ -1094,7 +1094,7 @@ export const PROTECTED_PATH_CASES: readonly TestMatchCase[] = [
+ 	},
+ ]
+ 
+-/** Every path the vendoring deny-list decides, with the verdict it owes. */
++/** Lists every path the vendoring deny-list decides, with the verdict it owes. */
+ export const SENSITIVE_PATH_CASES: readonly TestMatchCase[] = [
+ 	{ label: 'a registry credential file', path: '.npmrc', matched: true },
+ 	{ label: 'a nested registry credential file', path: 'packages/router/.npmrc', matched: true },
+@@ -1118,7 +1118,7 @@ export const SENSITIVE_PATH_CASES: readonly TestMatchCase[] = [
+ ]
+ 
+ /**
+- * Build the vendored membership the writers are measured against.
++ * Builds the vendored membership the writers are measured against.
+  *
+  * @param fields - The membership to replace on the returned value.
+  * @returns A manifest whose digest is computed from the membership it carries.
+@@ -1158,7 +1158,7 @@ export function buildVendoredManifest(
+ }
+ 
+ /**
+- * One command-line word carrying every byte a refusal must not pass on.
++ * Holds one command-line word carrying every byte a refusal must not pass on.
+  *
+  * @remarks
+  * Hostile classes in one token, because a refusal quotes the word that
+@@ -1171,11 +1171,11 @@ export function buildVendoredManifest(
+  */
+ export const HOSTILE_ARGUMENT = '\u001b[31mpull\u0007\u007f\nforged'
+ 
+-/** Every byte {@link HOSTILE_ARGUMENT} carries that a written line must not. */
++/** Lists every byte {@link HOSTILE_ARGUMENT} carries that a written line must not. */
+ export const HOSTILE_BYTES: readonly string[] = ['\u001b', '\u0007', '\u007f', '\n']
+ 
+ /**
+- * Initialize a real git repository at a path.
++ * Initializes a real git repository at a path.
+  *
+  * @param path - The directory to make a repository.
+  * @returns Nothing.
+@@ -1191,7 +1191,7 @@ export function createRepository(path: string): void {
+ }
+ 
+ /**
+- * The destinations one executable run wrote to, and the options that wired them.
++ * Describes the destinations one executable run wrote to, and the options that wired them.
+  *
+  * @remarks
+  * `output` and `diagnostic` are the lines each handler received, in the order it
+@@ -1206,7 +1206,7 @@ export interface TestSinkInterface {
+ }
+ 
+ /**
+- * Create the recording destinations one executable run writes to.
++ * Creates the recording destinations one executable run writes to.
+  *
+  * @returns The sink, whose `options` drive the run and whose lists are read after it.
+  *
+@@ -1235,7 +1235,7 @@ export function createSink(): TestSinkInterface {
+ }
+ 
+ /**
+- * The staged paths that are directories rather than files.
++ * Lists the staged paths that are directories rather than files.
+  *
+  * @remarks
+  * `CANON_PATHS` mixes files and directories and says which is which nowhere,
+@@ -1257,7 +1257,7 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
+ ]
+ 
+ /**
+- * Every path a release stages, the vendored set and the instruction canon together.
++ * Lists every path a release stages, the vendored set and the instruction canon together.
+  *
+  * @remarks
+  * The stager walks `HOST_PATHS` and `CANON_PATHS` alike, so a checkout fixture
+@@ -1271,7 +1271,7 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
+ export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
+ 
+ /**
+- * Build the manifest a vendored root storing every planned path declares.
++ * Builds the manifest a vendored root storing every planned path declares.
+  *
+  * @returns A manifest whose digest is computed from the membership it carries.
+  *
+@@ -1299,7 +1299,7 @@ export function buildFleetManifest(): HostManifest {
+ }
+ 
+ /**
+- * Write a real checkout carrying every staged path, as the stager reads one.
++ * Writes a real checkout carrying every staged path, as the stager reads one.
+  *
+  * @param workspace - The temporary workspace the checkout is written into.
+  * @param relative - The workspace-relative directory to write it at.
+@@ -1330,7 +1330,7 @@ export function createCheckout(workspace: ScratchInterface, relative: string): s
+ }
+ 
+ /**
+- * Build the manifest a host staged from {@link createCheckout} must declare.
++ * Builds the manifest a host staged from {@link createCheckout} must declare.
+  *
+  * @returns A manifest whose digest is computed from the membership it carries.
+  *
+@@ -1376,7 +1376,7 @@ export function buildCheckoutManifest(): HostManifest {
+ }
+ 
+ /**
+- * Write a vendored root carrying every planned path, and the target beside it.
++ * Writes a vendored root carrying every planned path, and the target beside it.
+  *
+  * @param workspace - The temporary workspace both roots are written into.
+  * @returns The host root's absolute path and the target directory's absolute path.
+@@ -1400,7 +1400,7 @@ export function createFleet(workspace: ScratchInterface): {
+ }
+ 
+ /**
+- * Write a fleet beside a target that already carries a rewritable catalog file.
++ * Writes a fleet beside a target that already carries a rewritable catalog file.
+  *
+  * @param workspace - The temporary workspace both roots are written into.
+  * @returns The host root's absolute path and the target directory's absolute path.
+@@ -1427,7 +1427,7 @@ export function createCatalogFleet(workspace: ScratchInterface): {
+ }
+ 
+ /**
+- * Put every file in a target under git's control, without committing.
++ * Puts every file in a target under git's control, without committing.
+  *
+  * @param path - The repository to track the files of.
+  * @returns Nothing.
+@@ -1445,7 +1445,7 @@ export function trackFiles(path: string): void {
+ }
+ 
+ /**
+- * Commit everything {@link trackFiles} staged, so a run reads a clean tree.
++ * Commits everything {@link trackFiles} staged, so a run reads a clean tree.
+  *
+  * @param path - The repository to commit.
+  * @returns Nothing.
+@@ -1480,24 +1480,24 @@ export function commitFiles(path: string): void {
+ }
+ 
+ /**
+- * How many artifacts the compiler itself supplies for a plan selecting `src/core` alone.
++ * Lists the artifacts the compiler itself supplies for a plan selecting `src/core` alone.
+  *
+  * @remarks
+  * Every artifact no vendored entry answers for: the computed manifest plus each
+- * template the blueprint's own axes select. Counted from a real compile rather
+- * than summed from parts, because the generated set grows every time the emitter
+- * gains a group and a hand-written sum goes stale on each one. Repeated
++ * template the blueprint's own axes select. Read from a real compile rather
++ * than assembled by hand, because the generated set grows every time the emitter
++ * gains a group and a hand-written list goes stale on each one. Repeated
+  * staleness rounds are what produced this shape.
+  */
+ export const CORE_GENERATED = (
+ 	new Compiler().compile(createBlueprint('sample', { src: ['core'] })).plan?.artifacts ?? []
+ ).filter((artifact) => artifact.origin !== 'host')
+ 
+-/** How many artifacts the compiler supplies for a `src/core` plan. */
++/** Counts the artifacts the compiler supplies for a `src/core` plan. */
+ export const CORE_GENERATED_COUNT = CORE_GENERATED.length
+ 
+ /**
+- * How many paths a fleet target's plan claims once the vendored host has hydrated it.
++ * Counts the paths a fleet target's plan claims once the vendored host has hydrated it.
+  *
+  * @remarks
+  * Each term names a real source. The vendored membership comes from
+@@ -1518,12 +1518,12 @@ export const CORE_GENERATED_COUNT = CORE_GENERATED.length
+ export const FLEET_ARTIFACT_COUNT = buildFleetManifest().entries.length + CORE_GENERATED_COUNT
+ 
+ /**
+- * How many planned paths a repair leaves alone because the workspace owns them.
++ * Lists the planned paths a repair leaves alone because the workspace owns them.
+  *
+  * @remarks
+  * A birth-owned artifact is written once, when the workspace is created, and is
+  * the consumer's from then on. Repair restores drift and must not overwrite one,
+- * so this is exactly what its `skipped` list carries. Counted from the plan so
++ * so this is exactly what its `skipped` list carries. Read from the plan so
+  * it tracks the emitter: the set grew the moment generated source, test and
+  * documentation artifacts existed.
+  */
+@@ -1531,11 +1531,11 @@ export const FLEET_BIRTH_PATHS = CORE_GENERATED.filter(
+ 	(artifact) => artifact.ownership === 'birth',
+ ).map((artifact) => artifact.path)
+ 
+-/** How many planned paths a repair skips because the workspace owns them. */
++/** Counts the planned paths a repair skips because the workspace owns them. */
+ export const FLEET_BIRTH_COUNT = FLEET_BIRTH_PATHS.length
+ 
+ /**
+- * Build the plan {@link buildVendoredManifest} answers for.
++ * Builds the plan {@link buildVendoredManifest} answers for.
+  *
+  * @param fields - The plan fields to replace on the returned value.
+  * @returns A plan carrying one computed artifact and every vendored shape.
+@@ -1567,7 +1567,7 @@ export function buildVendoredPlan(fields?: Partial<Plan>): Plan {
+ }
+ 
+ /**
+- * Compile the default blueprint through the real compiler with its default selection.
++ * Compiles the default blueprint through the real compiler with its default selection.
+  *
+  * @returns The complete plan produced by the compiler.
+  */
+@@ -1583,7 +1583,7 @@ export function buildCompiledPlan(): Plan {
+ }
+ 
+ /**
+- * Build the audit a target is in, declaring which paths the caller made stale.
++ * Builds the audit a target is in, declaring which paths the caller made stale.
+  *
+  * @param target - The target directory to read.
+  * @param paths - The plan-relative paths the audit covers.
+@@ -1622,7 +1622,7 @@ export function buildTargetAudit(
+ }
+ 
+ /**
+- * The catalog agent file as a target carries it, markers and surrounding prose included.
++ * Holds the catalog agent file as a target carries it, markers and surrounding prose included.
+  *
+  * @remarks
+  * The marker pair is read from the shared constants the writer reads, so the
+@@ -1643,7 +1643,7 @@ export const CATALOG_AGENT_TEXT = [
+ ].join('\n')
+ 
+ /**
+- * The catalog agent file carrying a package table a reader can list names from.
++ * Holds the catalog agent file carrying a package table a reader can list names from.
+  *
+  * @remarks
+  * The rows are what {@link CATALOG_AGENT_TEXT} deliberately lacks. The trailing
+@@ -1663,13 +1663,13 @@ export const CATALOG_AGENT_ROWS_TEXT = [
+ 	'',
+ ].join('\n')
+ 
+-/** The development dependencies planned for the fixture's published core environment. */
++/** Lists the development dependencies planned for the fixture's published core environment. */
+ export const TARGET_DEV_DEPENDENCIES = blueprintToDevDependencies(
+ 	createBlueprint('sample', { src: ['core'] }),
+ )
+ 
+ /**
+- * Build a target manifest with focused dependency-section replacements.
++ * Builds a target manifest with focused dependency-section replacements.
+  *
+  * @param blueprint - The workspace shape whose scripts and tools are planned.
+  * @param dependencies - The value to place at `dependencies`.
+@@ -1700,7 +1700,7 @@ export function buildTargetManifest(
+ }
+ 
+ /**
+- * Remove selected dependency names from an inert manifest section.
++ * Removes selected dependency names from an inert manifest section.
+  *
+  * @param dependencies - The section to copy.
+  * @param names - The names to omit.
+@@ -1713,7 +1713,7 @@ export function omitDependencies(
+ 	return Object.fromEntries(Object.entries(dependencies).filter(([name]) => !names.includes(name)))
+ }
+ 
+-/** A target manifest declaring its planned scripts, tools, fleet packages, and an extra. */
++/** Holds a target manifest declaring its planned scripts, tools, fleet packages, and an extra. */
+ export const TARGET_MANIFEST_TEXT = buildTargetManifest(
+ 	undefined,
+ 	{
+@@ -1724,7 +1724,7 @@ export const TARGET_MANIFEST_TEXT = buildTargetManifest(
+ )
+ 
+ /**
+- * A target manifest whose own name the compile gate refuses.
++ * Holds a target manifest whose own name the compile gate refuses.
+  *
+  * @remarks
+  * A target describes its own blueprint, so a name it cannot generate from is the
+@@ -1742,7 +1742,7 @@ export const REFUSED_MANIFEST_TEXT = `${JSON.stringify(
+ )}\n`
+ 
+ /**
+- * Every caller-supplied endpoint the reader's scheme and host law decides.
++ * Lists every caller-supplied endpoint the reader's scheme and host law decides.
+  *
+  * @remarks
+  * `isEndpoint` bounds length and nothing else, so every case here is a string
+@@ -1789,7 +1789,7 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
+ ]
+ 
+ /**
+- * Build the registry packument text a version lookup reads.
++ * Builds the registry packument text a version lookup reads.
+  *
+  * @param version - The version to publish under `dist-tags.latest`.
+  * @param edges - The declared ranges the published version carries; omitted for
+@@ -1827,7 +1827,7 @@ export function buildPackument(version: string, edges?: TestPackumentEdges): str
+ }
+ 
+ /**
+- * Build the registry organization package-list text a catalog reads.
++ * Builds the registry organization package-list text a catalog reads.
+  *
+  * @param names - The published package names the organization lists.
+  * @returns The response body, as the flat name-to-access map the registry serves.
+@@ -1837,12 +1837,12 @@ export function buildOrganization(names: readonly string[]): string {
+ }
+ 
+ /**
+- * The vendored files the repository fixture serves, keyed for a test to name one.
++ * Lists the vendored files the repository fixture serves, keyed for a test to name one.
+  *
+  * @remarks
+  * `orchestration` carries a leading-dot directory and `mirror` is a guide the
+  * mirror verb owns, so the set covers the two paths whose handling differs from
+- * a plain root file rather than only the easy case.
++ * a plain root file rather than only the case that needs no special handling.
+  */
+ export const VENDORED_FILES = Object.freeze({
+ 	agents: Object.freeze({ path: 'AGENTS.md', content: '# Agents\n' }),
+@@ -1855,7 +1855,7 @@ export const VENDORED_FILES = Object.freeze({
+ })
+ 
+ /**
+- * Build the committed inventory text a vendored read is decided against.
++ * Builds the committed inventory text a vendored read is decided against.
+  *
+  * @param files - The vendored files the inventory declares, in declaration order.
+  * @returns The manifest body, carrying a per-file digest and a membership digest over that exact order.
+@@ -1877,7 +1877,7 @@ export function buildInventory(files: readonly TestVendoredFile[]): string {
+ }
+ 
+ /**
+- * Build the raw-repository replies for the installed vendored host.
++ * Builds the raw-repository replies for the installed vendored host.
+  *
+  * @param floor - The installed floor whose inventory and host-owned bytes the
+  * repository serves.
+@@ -1912,7 +1912,7 @@ export function buildInstalledHostReplies(
+ }
+ 
+ /**
+- * Build the target snapshot a vendored read is held to.
++ * Builds the target snapshot a vendored read is held to.
+  *
+  * @param files - The files the target holds, with the exact bytes it holds.
+  * @returns Those bytes as hexadecimal, keyed by the same paths.
+@@ -1922,7 +1922,7 @@ export function buildVendoredSnapshot(files: readonly TestVendoredFile[]): Snaps
+ }
+ 
+ /**
+- * Write one scripted reply onto a real HTTP response.
++ * Writes one scripted reply onto a real HTTP response.
+  *
+  * @param response - The open server response to answer on.
+  * @param reply - The scripted status, body, and transfer form.
+@@ -1950,7 +1950,7 @@ export function writeUpstreamReply(response: ServerResponse, reply: TestUpstream
+ }
+ 
+ /**
+- * Start a real HTTP server on loopback, scripted per request path.
++ * Starts a real HTTP server on loopback, scripted per request path.
+  *
+  * @param replies - The reply to serve at each exact request path.
+  * @returns The running fixture, which the caller destroys in a `finally`.
+@@ -2028,7 +2028,7 @@ export async function createUpstreamServer(
+ }
+ 
+ /**
+- * The exact request paths the upstream contract puts a reader at.
++ * Lists the exact request paths the upstream contract puts a reader at.
+  *
+  * @remarks
+  * Written from the registry's and the raw-content host's own canonical forms
+@@ -2063,7 +2063,7 @@ export const UPSTREAM_PATHS = Object.freeze({
+ })
+ 
+ /**
+- * The exact request paths a fleet target's own declared set puts the executable at.
++ * Lists the exact request paths a fleet target's own declared set puts the executable at.
+  *
+  * @remarks
+  * {@link UPSTREAM_PATHS} states the canonical forms the reader is measured
+@@ -2100,7 +2100,7 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
+ })
+ 
+ /**
+- * Wire one executable run to a recording sink and one loopback fixture.
++ * Wires one executable run to a recording sink and one loopback fixture.
+  *
+  * @param sink - The destinations the run writes to.
+  * @param base - The fixture's base URL, which both upstream endpoints address.
+@@ -2117,7 +2117,7 @@ export function buildCLIOptions(sink: TestSinkInterface, base: string): CLIOptio
+ }
+ 
+ /**
+- * Run an asynchronous call and report the coded reason it refused.
++ * Runs an asynchronous call and reports the coded reason it refused.
+  *
+  * @param call - The call under test.
+  * @returns The rejected error's code, or `undefined` when the call resolved or
+@@ -2139,7 +2139,7 @@ export async function readRejectionCode(
+ 	}
+ }
+ 
+-/** Every target-relative path the storage mapping decides, beside what it maps to. */
++/** Lists every target-relative path the storage mapping decides, beside what it maps to. */
+ export const STORAGE_PATH_CASES: readonly TestStorageCase[] = [
+ 	{ label: 'a root dotfile', path: '.gitignore', storage: 'dotfiles/gitignore' },
+ 	{
+@@ -2158,7 +2158,7 @@ export const STORAGE_PATH_CASES: readonly TestStorageCase[] = [
+ 	},
+ ]
+ 
+-/** Every command line the executable accepts, beside the exact command it denotes. */
++/** Lists every command line the executable accepts, beside the exact command it denotes. */
+ export const COMMAND_CASES: readonly TestCommandCase[] = [
+ 	{
+ 		label: 'new with only its name',
+@@ -2248,7 +2248,7 @@ export const COMMAND_CASES: readonly TestCommandCase[] = [
+ 	},
+ ]
+ 
+-/** Every command line that denotes no command, beside what its refusal must name. */
++/** Lists every command line that denotes no command, beside what its refusal must name. */
+ export const USAGE_CASES: readonly TestUsageCase[] = [
+ 	{ label: 'no arguments at all', argv: [], mention: 'No command given' },
+ 	{ label: 'a retired verb', argv: ['pull'], mention: "Unknown command 'pull'" },
+@@ -2288,7 +2288,7 @@ export const USAGE_CASES: readonly TestUsageCase[] = [
+ 	},
+ ]
+ 
+-/** Every audit shape the exit-code rule decides, with the verdict it owes. */
++/** Lists every audit shape the exit-code rule decides, with the verdict it owes. */
+ export const AUDIT_EXIT_CASES: readonly TestAuditCase[] = [
+ 	{ label: 'an audit that found nothing', audit: { findings: [], questions: [] }, clean: true },
+ 	{
+@@ -2336,7 +2336,7 @@ export const AUDIT_EXIT_CASES: readonly TestAuditCase[] = [
+ ]
+ 
+ /**
+- * Build the shortest command line that exercises one option against one verb.
++ * Builds the shortest command line that exercises one option against one verb.
+  *
+  * @param verb - The verb the line invokes.
+  * @param option - The option token, as usage displays it.
+diff --git a/tests/src/core/templates.test.ts b/tests/src/core/templates.test.ts
+index 8a6b0ef4..e0872f13 100644
+--- a/tests/src/core/templates.test.ts
++++ b/tests/src/core/templates.test.ts
+@@ -755,7 +755,7 @@ describe('configuration templates', () => {
+ })
+ 
+ // A generated workspace vendors `format:check` and `lint:check` and runs both on
+-// the bytes `new` just wrote, so the emitted text is measured against the vendored
++// the bytes `new` wrote, so the emitted text is measured against the vendored
+ // rules directly here. Each instrument's population is every (blueprint, module)
+ // pair the matrix emits — the sum `MODULE_EMITTERS` totals, over every blueprint
+ // `buildSelections` returns — and each sweep states that population as
+@@ -1022,7 +1022,7 @@ describe('emitted workspaces under their own gates', () => {
+ 	})
+ 
+ 	// A generated workspace's own `check` script runs `tsc` over the configuration
+-	// `new` just wrote, so both browser masks are measured against Vite and
++	// `new` wrote, so both browser masks are measured against Vite and
+ 	// Vitest's real published types rather than against a description of them.
+ 	it('emits browser configurations their own typecheck accepts', () => {
+ 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-types-' })
