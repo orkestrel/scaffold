@@ -1,0 +1,81 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-csv",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/csv.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 81,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 7,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "CSV",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "CSVInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Parse and query",
+     "Rewrite with map, then render back",
+     "Reduce into an accumulator",
+     "Streaming rows",
+     "Handling errors without strict",
+     "strict mode throws the first error",
+     "Exporting a portable schema",
+     "Contract-backed row validation",
+     "Guarding an adopted table",
+     "Tokenizer leaves directly"
+    ],
+    "titledExamples": [
+     "createCSV:Parse and query"
+    ],
+    "pairs": [
+     "Parse and query"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

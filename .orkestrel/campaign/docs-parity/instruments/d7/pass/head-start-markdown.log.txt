@@ -1,0 +1,14 @@
+== markdown 2026-09-07T15:33:18Z tarball sha256 85031b9260758fe3
+== before
+0.0.17
+(status end)
+== replaced range
+80:		"@orkestrel/guide": "^0.0.17",
+== install
+
+removed 30 packages, and changed 2 packages in 1s
+EXIT 0
+== after
+0.0.18
+9
+(status end)

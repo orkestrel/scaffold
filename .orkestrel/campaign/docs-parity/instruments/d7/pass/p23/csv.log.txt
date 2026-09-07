@@ -1,0 +1,91 @@
+### csv at 5a24ea5, guide guides/csv.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  34 passed (34)
+   test:guides exit 0
+-- census
+   guides/csv.md surface {"equal":81,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":7,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class CSV methods 7 grouped false undescribed []
+   owner interface CSVInterface methods 7 grouped true undescribed []
+   examples titledFences 11 titledExamples ["createCSV:Parse and query"] pairs ["Parse and query"]
+-- sites: surface row guides/csv.md:46; methods row guides/csv.md:226; title src/core/factories.ts:22
+-- control A: one Surface Summary cell altered (guides/csv.md:46)
+guides/csv.md type Row: guide "Represents a CSV row - a plain record of column values keyed by column name. Control." source "Represents a CSV row - a plain record of column values keyed by column name."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > CSV > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 244ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/csv.md:226)
+guides/csv.md CSVInterface.find: guide "Finds the first row matching `predicate`, called with each row and its index in table order. Control." source "Finds the first row matching `predicate`, called with each row and its index in table order."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > CSV > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 244ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a working {@link CSVInterface} from a CSV string or an
+guides/csv.md function createCSV: guide "Creates a working `CSVInterface` from a CSV string or an already-parsed `CSVTable`." source "Control Creates a working `CSVInterface` from a CSV string or an already-parsed `CSVTable`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > CSV > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 242ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/CSV.ts:16:  * Control Wraps a typed {@link CSVTable} with the query (`find` / `filter` /
+guides/csv.md class CSV: guide "Wraps a typed `CSVTable` with the query (`find` / `filter` / `reduce`), rewrite (`map`), streaming, and export operations `CSVInterface` declares." source "Control Wraps a typed `CSVTable` with the query (`find` / `filter` / `reduce`), rewrite (`map`), streaming, and export operations `CSVInterface` declares."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > CSV > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 258ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:22)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 33 passed (34)
+× pairs at least one example title across the guide and the source 52ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/csv.md Parse and query: guide "ts\nimport { createCSV } from '@orkestrel/csv'\n\nconst csv = createCSV('name,age\\nAda,36\\nGrace,85', { infer: true })\ncsv.table // { columns: ['name', 'age'], rows: [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }] }\n\nconst ada = csv.find((row) => row.name === 'Ada') // Row | undefined\nconst adults = csv.filter((row) => Number(row.age) >= 40) // readonly Row[]" source "ts\nimport { createCSV } from '@orkestrel/csv' // control\n\nconst csv = createCSV('name,age\\nAda,36\\nGrace,85', { infer: true })\ncsv.table // { columns: ['name', 'age'], rows: [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }] }\n\nconst ada = csv.find((row) => row.name === 'Ada') // Row | undefined\nconst adults = csv.filter((row) => Number(row.age) >= 40) // readonly Row[]"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > CSV > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 289ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/csv.md pitch: readme "Control: A types-first RFC 4180 CSV parser and renderer — a hand-written, single-pass tokenizer that turns CSV text into a typed `CSVTable`, and a stateful `CSV` workspace that wraps that table with query, rewrite, streaming, and export operations." tagline "A types-first RFC 4180 CSV parser and renderer — a hand-written, single-pass tokenizer that turns CSV text into a typed `CSVTable`, and a stateful `CSV` workspace that wraps that table with query, rewrite, streaming, and export operations."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A types-first RFC 4180 CSV p…' to be 'A types-first RFC 4180 CSV parser and…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 33 passed (34)
+× opens the README with the guide tagline 24ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/csv.md interface TableExport: guide absent source "Represents a CSV's portable definition, produced by `CSVInterface.export` - the unit of schema exchange across environments."
+guides/csv.md type CSVErrorCode: guide absent source "Names a machine-readable `CSVError` code."
+guides/csv.md interface CSVInterface: guide absent source "Represents a parsed, queryable CSV document - the typed `CSVTable` plus the query, rewrite, and export operations over it."
+rows read: 1, disagreements found: 24
+   docs exit 1
+AssertionError: expected [ …(24) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > CSV > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 240ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

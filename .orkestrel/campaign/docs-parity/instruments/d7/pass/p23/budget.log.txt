@@ -1,0 +1,91 @@
+### budget at 2b7400f, guide guides/budget.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  29 passed (29)
+   test:guides exit 0
+-- census
+   guides/budget.md surface {"equal":15,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":3,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Budget methods 3 grouped false undescribed ["clear","consume","start"]
+   owner interface BudgetInterface methods 3 grouped true undescribed []
+   examples titledFences 5 titledExamples ["createBudget:Race work against the ceiling"] pairs ["Race work against the ceiling"]
+-- sites: surface row guides/budget.md:32; methods row guides/budget.md:82; title src/core/factories.ts:26
+-- control A: one Surface Summary cell altered (guides/budget.md:32)
+guides/budget.md function createBudget: guide "Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a `consumer`, whose native signal aborts the moment the tally reaches that ceiling. Control." source "Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a `consumer`, whose native signal aborts the moment the tally reaches that ceiling."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Budget > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 38ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/budget.md:82)
+guides/budget.md BudgetInterface.start: guide "Re-arms a fresh per-request `signal` without resetting the cumulative tally, arming it already aborted when `consumed` has reached `max`. Control." source "Re-arms a fresh per-request `signal` without resetting the cumulative tally, arming it already aborted when `consumed` has reached `max`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Budget > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 37ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a
+guides/budget.md function createBudget: guide "Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a `consumer`, whose native signal aborts the moment the tally reaches that ceiling." source "Control Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a `consumer`, whose native signal aborts the moment the tally reaches that ceiling."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Budget > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 46ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Budget.ts:7:  * Control Implements `BudgetInterface` over a private `AbortController` the instance owns,
+guides/budget.md class Budget: guide "Implements `BudgetInterface` over a private `AbortController` the instance owns, aborting the composed signal the moment `consumed` reaches the `max` ceiling." source "Control Implements `BudgetInterface` over a private `AbortController` the instance owns, aborting the composed signal the moment `consumed` reaches the `max` ceiling."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Budget > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 56ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:26)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 28 passed (29)
+× pairs at least one example title across the guide and the source 24ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/budget.md Race work against the ceiling: guide "ts\nimport { createBudget } from '@orkestrel/budget'\n\nconst budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })\nbudget.start()\nbudget.signal.addEventListener('abort', () => abortStream(), { once: true })\n\nfor await (const chunk of stream) {\n\tif (budget.signal.aborted) break // the ceiling was crossed mid-stream\n\tbudget.consume(chunk.byteLength)\n\tprocess(chunk)\n}" source "ts\nimport { createBudget } from '@orkestrel/budget' // control\n\nconst budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })\nbudget.start()\nbudget.signal.addEventListener('abort', () => abortStream(), { once: true })\n\nfor await (const chunk of stream) {\n\tif (budget.signal.aborted) break // the ceiling was crossed mid-stream\n\tbudget.consume(chunk.byteLength)\n\tprocess(chunk)\n}"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Budget > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 32ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/budget.md pitch: readme "Control: The cost primitive: a cumulative consumption tally against a ceiling that exposes an `AbortSignal` firing the moment `consumed` reaches `max`." tagline "The cost primitive: a cumulative consumption tally against a ceiling that exposes an `AbortSignal` firing the moment `consumed` reaches `max`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The cost primitive: a cumula…' to be 'The cost primitive: a cumulative cons…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 28 passed (29)
+× opens the README with the guide tagline 17ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/budget.md function createBudget: guide absent source "Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a `consumer`, whose native signal aborts the moment the tally reaches that ceiling."
+guides/budget.md function createTokenConsumer: guide absent source "Creates a validated unary consumer that charges one selected `TokenUsage` field."
+guides/budget.md function createTokenBudget: guide absent source "Creates a token budget as a `BudgetInterface<TokenUsage>` charging one validated `scope` field per provider call."
+rows read: 1, disagreements found: 3
+   docs exit 1
+AssertionError: expected [ …(3) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Budget > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 34ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0
