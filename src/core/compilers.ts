@@ -36,6 +36,7 @@ import {
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
 	DISTRIBUTION_TEST_PATH,
+	DOCS_SEED_PATH,
 	ENVIRONMENTS,
 	EXTRA_RANGE_PATTERN,
 	FLOOR_RANGE_PATTERN,
@@ -346,7 +347,10 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	scripts['test:policy'] = `${vitest} --project policy`
 	scripts['test:config'] = `${vitest} --project config`
 	if (blueprint.setup) scripts['test:setup'] = `${vitest} --project setup`
-	if (blueprint.guides) scripts['test:guides'] = `${vitest} --project guides`
+	if (blueprint.guides) {
+		scripts['test:guides'] = `${vitest} --project guides`
+		scripts.docs = `node --experimental-strip-types ${DOCS_SEED_PATH}`
+	}
 	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
 	scripts['test:probe'] =
 		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
@@ -416,9 +420,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  *
  * @remarks
  * Every direct `test:<project>` script is writable, together with the probe and
- * benchmark workbench scripts. Publishing adds the pack and publication
- * lifecycle scripts. Aggregate test scripts and maintainer-owned gate chains
- * stay outside the region.
+ * benchmark workbench scripts. A workspace carrying guides adds `docs`, the
+ * documentation-parity seed the same fact selects `test:guides` by, so a target
+ * that gains the proof gains the propagation beside it. Publishing adds the pack
+ * and publication lifecycle scripts. Aggregate test scripts and maintainer-owned
+ * gate chains stay outside the region.
  *
  * `accepted` carries each generated predecessor the region can replace. The
  * pack hook accepts the build chain emitted before it delegated to `build`. The
@@ -441,7 +447,8 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 	const scripts = blueprintToScripts(blueprint)
 	const writable: ManifestScript[] = []
 	for (const [name, command] of Object.entries(scripts)) {
-		if (!name.startsWith('test:') || name === 'test:src' || name === 'test:app') continue
+		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
+		if (!direct && name !== 'docs') continue
 		writable.push({ name, command, accepted: [] })
 	}
 	const prepack = scripts.prepack
@@ -610,6 +617,21 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
  * @param blueprint - The workspace specification.
  * @returns Formatter-stable `tsconfig.json` text.
  *
+ * @remarks
+ * `paths` carries the workspace's own published specifiers beside the `@src` and
+ * `@app` aliases, mapped to source. The published set is what
+ * {@link srcToExports} publishes, read the same way here so the two never name
+ * different subpaths, and the `app` axis publishes nothing so it maps nothing.
+ * A package's own name resolves inside its own checkout through that `exports`
+ * map, to the built `dist/` entry, so a module importing it would make the root
+ * typecheck depend on a build; mapping the specifier to source is what keeps
+ * `npm run check` independent of `npm run build`. The root Vite configuration
+ * derives its `alias` record from every `paths` entry, so the same specifiers
+ * resolve to source under Vitest, and every subpath is emitted before the bare
+ * specifier: an alias record is matched in declaration order and a bare pattern
+ * also matches its own subpaths, so the reverse order would resolve
+ * `@orkestrel/<name>/server` through the core entry.
+ *
  * @example
  * ```ts
  * import { blueprintToRootTsconfig, createBlueprint } from '@orkestrel/scaffold'
@@ -620,19 +642,39 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
  * ```
  */
 export function blueprintToRootTsconfig(blueprint: Blueprint): string {
-	const aliases: string[] = []
+	const aliases: Array<[string, string]> = []
 	for (const environment of ENVIRONMENTS) {
 		if (blueprint.src.includes(environment)) {
-			aliases.push(`"@src/${environment}": ["./src/${environment}/index.ts"]`)
+			aliases.push([`@src/${environment}`, `./src/${environment}/index.ts`])
 		}
 	}
 	for (const environment of ENVIRONMENTS) {
 		if (blueprint.app.includes(environment)) {
-			aliases.push(`"@app/${environment}": ["./app/${environment}/index.ts"]`)
+			aliases.push([`@app/${environment}`, `./app/${environment}/index.ts`])
 		}
 	}
+	const root = srcToRoot(blueprint.src)
+	if (root === undefined) {
+		for (const environment of ENVIRONMENTS) {
+			if (environment === 'core' || !blueprint.src.includes(environment)) continue
+			const subpath = SRC_MATRIX[environment].path.slice(1)
+			aliases.push([`@orkestrel/${blueprint.name}${subpath}`, `./src/${environment}/index.ts`])
+		}
+	}
+	if (blueprint.src.length > 0) {
+		aliases.push([`@orkestrel/${blueprint.name}`, `./src/${root ?? 'core'}/index.ts`])
+	}
 	const paths = aliases
-		.map((alias, index) => `\t\t\t${alias}${index === aliases.length - 1 ? '' : ','}`)
+		.map(([specifier, target], index) => {
+			const separator = index === aliases.length - 1 ? '' : ','
+			const line = `\t\t\t"${specifier}": ["${target}"]${separator}`
+			// A published specifier carries the package name, and npm accepts one long
+			// enough to push the entry past the formatter's width. oxfmt breaks such an
+			// entry over its own lines, so emitting the flat form would leave the generated
+			// file outside the fixed point the emit corpus holds it to.
+			if (matchesPrintWidth(line)) return line
+			return `\t\t\t"${specifier}": [\n\t\t\t\t"${target}"\n\t\t\t]${separator}`
+		})
 		.join('\n')
 	return fillTemplate(CONFIG_TEMPLATES.root.tsconfig, { paths })
 }
@@ -1511,11 +1553,11 @@ export function blueprintToOrchestrationArtifacts(
 }
 
 /**
- * Compiles the vendored host artifacts a named workspace plans.
+ * Compiles the vendored host artifacts a workspace plans.
  *
- * @param name - The target workspace's own bare package name.
- * @returns One artifact per vendored path in `HOST_PATHS` order, then the
- * catalog file.
+ * @param blueprint - The workspace specification.
+ * @returns One artifact per selected vendored path in `HOST_PATHS` order, then
+ * the catalog file.
  *
  * @remarks
  * Every artifact is claimed by presence, which is the strongest claim a pure
@@ -1538,17 +1580,26 @@ export function blueprintToOrchestrationArtifacts(
  * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
  * pointers {@link blueprintToDocumentArtifacts} emits name.
  *
+ * The documentation-parity seed is vendored like every other hook. The `docs`
+ * script {@link blueprintToScripts} emits and the `guides` project the root
+ * configuration registers select with `guides`, so a workspace that indexes
+ * no guides carries the seed and no script that runs it; `npm run check`
+ * there still resolves the seed's import, because every workspace declares
+ * `@orkestrel/guide`.
+ *
  * @example
  * ```ts
- * import { nameToHostArtifacts } from '@orkestrel/scaffold'
+ * import { blueprintToHostArtifacts, createBlueprint, DOCS_SEED_PATH } from '@orkestrel/scaffold'
  *
- * nameToHostArtifacts('router').some((artifact) => artifact.path === '.claude/settings.json') // true
- * nameToHostArtifacts('router').some((artifact) => artifact.path === '.claude/agents/orkestrel.md') // true
- * nameToHostArtifacts('router').some((artifact) => artifact.path === 'guides/router.md') // false
+ * const blueprint = createBlueprint('router')
+ *
+ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === DOCS_SEED_PATH) // true
+ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'guides/router.md') // false
  * ```
  */
-export function nameToHostArtifacts(name: string): readonly Artifact[] {
-	return [...selectHostPaths(HOST_PATHS, name), CATALOG_AGENT_PATH].map((path): Artifact => ({
+export function blueprintToHostArtifacts(blueprint: Blueprint): readonly Artifact[] {
+	const selected = selectHostPaths(HOST_PATHS, blueprint.name)
+	return [...selected, CATALOG_AGENT_PATH].map((path): Artifact => ({
 		path,
 		group: inferGroup(path),
 		ownership: 'presence',
@@ -1593,7 +1644,8 @@ export function applyOverrides(
 }
 
 /**
- * Replaces declared dependency ranges in package manifest text.
+ * Replaces the runtime and development dependency ranges in package manifest text, and never a
+ * peer range.
  *
  * @param manifest - The manifest text to compile.
  * @param pins - The runtime and development names and replacement ranges.

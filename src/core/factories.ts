@@ -33,12 +33,18 @@ import { parseBlueprint } from './parsers.js'
  * and let the answers disagree, so a blueprint the gate will
  * refuse is still constructible.
  *
- * @example
+ * @example Blueprint
  * ```ts
  * import { createBlueprint } from '@orkestrel/scaffold'
  *
- * createBlueprint('router', { src: ['core'] }).version // '0.0.1'
- * createBlueprint('Router').name // 'Router' — the gate refuses it, this does not
+ * const blueprint = createBlueprint('router', {
+ * 	src: ['core', 'server'],
+ * 	dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+ * 	bin: true,
+ * })
+ *
+ * blueprint.version // '0.0.1'
+ * blueprint.engines // '>=22.12.0'
  * ```
  */
 export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'name'>>): Blueprint {

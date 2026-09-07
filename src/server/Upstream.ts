@@ -107,6 +107,8 @@ import {
  *
  * const upstream = new Upstream({ registry: { timeout: 5_000 } })
  * const releases = await upstream.lookup([{ name: '@orkestrel/emitter', range: '^0.0.5' }])
+ *
+ * releases.filter((release) => release.lookup === 'found')
  * upstream.destroy()
  * ```
  */

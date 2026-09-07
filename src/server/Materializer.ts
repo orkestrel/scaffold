@@ -122,7 +122,9 @@ import { WriteTransaction } from './WriteTransaction.js'
  * declare const plan: Plan
  *
  * const materializer = new Materializer({ host: './dist/host' })
- * materializer.materialize(plan, './packages/router')
+ * const result = materializer.materialize(plan, './packages/router')
+ *
+ * result.written // every path created
  * materializer.destroy()
  * ```
  */

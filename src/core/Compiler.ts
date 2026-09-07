@@ -23,12 +23,12 @@ import {
 	blueprintToConfigArtifacts,
 	blueprintToDocumentArtifacts,
 	blueprintToGuideArtifacts,
+	blueprintToHostArtifacts,
 	blueprintToManifest,
 	blueprintToOrchestrationArtifacts,
 	blueprintToQuestions,
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
-	nameToHostArtifacts,
 	overridesToQuestions,
 	planToFindings,
 	planToHash,
@@ -71,11 +71,13 @@ import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from
  *
  * @example
  * ```ts
- * import { createBlueprint, Compiler } from '@orkestrel/scaffold'
+ * import { Compiler, createBlueprint } from '@orkestrel/scaffold'
  *
  * const compiler = new Compiler()
  * const scaffolding = compiler.compile(createBlueprint('router', { src: ['core'] }))
- * scaffolding.plan?.hash?.length // 16
+ *
+ * scaffolding.plan?.artifacts // every planned file, in group order
+ * scaffolding.stages // one CompileRecord per stage that ran
  * compiler.destroy()
  * ```
  */
@@ -294,7 +296,7 @@ export class Compiler implements CompilerInterface {
 			...blueprintToGuideArtifacts(blueprint),
 			...blueprintToDocumentArtifacts(blueprint),
 			...blueprintToOrchestrationArtifacts(blueprint),
-			...nameToHostArtifacts(blueprint.name),
+			...blueprintToHostArtifacts(blueprint),
 		]
 	}
 

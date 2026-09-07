@@ -1476,7 +1476,7 @@ describe('emitted distribution classifier', () => {
 				`classifier.resolvesCommonJS(${directory}, ${JSON.stringify(installed)})`,
 				`classifier.declaresCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
 				`classifier.declaresCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
-				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual}, commonjs: true }, { subpath: './module', mapping: ${module}, commonjs: false }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
+				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual}, loadable: true }, { subpath: './module', mapping: ${module}, loadable: false }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
 			])
 
 			expect(answers).toStrictEqual([
@@ -1559,98 +1559,98 @@ describe('emitted distribution classifier', () => {
 							specifier: 'sample-package/decl-cts-rt-mjs',
 							mapping: manifest.exports['./decl-cts-rt-mjs'],
 							declaration: {
-								module: false,
-								commonjs: true,
-								browser: false,
+								importable: false,
+								requirable: true,
+								browsable: false,
 							},
-							browser: false,
-							module: false,
-							commonjs: false,
-							required: true,
+							browsable: false,
+							importable: false,
+							requirable: true,
+							loadable: false,
 						},
 						{
 							subpath: './decl-mts-rt-cjs',
 							specifier: 'sample-package/decl-mts-rt-cjs',
 							mapping: manifest.exports['./decl-mts-rt-cjs'],
 							declaration: {
-								module: false,
-								commonjs: true,
-								browser: false,
+								importable: false,
+								requirable: true,
+								browsable: false,
 							},
-							browser: false,
-							module: false,
-							commonjs: true,
-							required: true,
+							browsable: false,
+							importable: false,
+							requirable: true,
+							loadable: true,
 						},
 						{
 							subpath: './invalid',
 							specifier: 'sample-package/invalid',
 							mapping: manifest.exports['./invalid'],
 							declaration: {
-								module: false,
-								commonjs: true,
-								browser: false,
+								importable: false,
+								requirable: true,
+								browsable: false,
 							},
-							browser: false,
-							module: false,
-							commonjs: true,
-							required: true,
+							browsable: false,
+							importable: false,
+							requirable: true,
+							loadable: true,
 						},
 						{
 							subpath: './esm-only',
 							specifier: 'sample-package/esm-only',
 							mapping: manifest.exports['./esm-only'],
 							declaration: {
-								module: true,
-								commonjs: false,
-								browser: true,
+								importable: true,
+								requirable: false,
+								browsable: true,
 							},
-							browser: false,
-							module: true,
-							commonjs: false,
-							required: false,
+							browsable: false,
+							importable: true,
+							requirable: false,
+							loadable: false,
 						},
 						{
 							subpath: './browser',
 							specifier: 'sample-package/browser',
 							mapping: manifest.exports['./browser'],
 							declaration: {
-								module: true,
-								commonjs: true,
-								browser: true,
+								importable: true,
+								requirable: true,
+								browsable: true,
 							},
-							browser: true,
-							module: true,
-							commonjs: false,
-							required: false,
+							browsable: true,
+							importable: true,
+							requirable: false,
+							loadable: false,
 						},
 						{
 							subpath: './module-sync',
 							specifier: 'sample-package/module-sync',
 							mapping: manifest.exports['./module-sync'],
 							declaration: {
-								module: true,
-								commonjs: true,
-								browser: true,
+								importable: true,
+								requirable: true,
+								browsable: true,
 							},
-							browser: false,
-							module: true,
-							commonjs: false,
-							required: true,
+							browsable: false,
+							importable: true,
+							requirable: true,
+							loadable: false,
 						},
 						{
 							subpath: './node-addons',
 							specifier: 'sample-package/node-addons',
 							mapping: manifest.exports['./node-addons'],
 							declaration: {
-								module: true,
-								commonjs: true,
-								browser: true,
+								importable: true,
+								requirable: true,
+								browsable: true,
 							},
-							browser: false,
-							module: true,
-							commonjs: true,
-							required: true,
+							browsable: false,
+							importable: true,
+							requirable: true,
+							loadable: true,
 						},
 					],
 					targets: [
@@ -1725,10 +1725,10 @@ describe('emitted distribution classifier', () => {
 			const answers = await driveClassifier(classifier, [
 				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(unclaimed)}, ${JSON.stringify(installed)}, 'unclaimed').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
 				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
-				`classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries.map((entry) => ({ commonjs: entry.commonjs, required: entry.required }))`,
+				`classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries.map((entry) => ({ loadable: entry.loadable, requirable: entry.requirable }))`,
 			])
 
-			expect(answers).toStrictEqual([[], [], [{ commonjs: false, required: false }]])
+			expect(answers).toStrictEqual([[], [], [{ loadable: false, requirable: false }]])
 		} finally {
 			workspace.destroy()
 		}
@@ -1784,7 +1784,7 @@ describe('emitted distribution classifier', () => {
 				},
 			}
 			const answers = await driveClassifier(classifier, [
-				`classifier.classifyStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'invalid-target').entries.map((entry) => ({ subpath: entry.subpath, commonjs: entry.commonjs, required: entry.required }))`,
+				`classifier.classifyStage(${JSON.stringify(manifest)}, ${JSON.stringify(installed)}, 'invalid-target').entries.map((entry) => ({ subpath: entry.subpath, loadable: entry.loadable, requirable: entry.requirable }))`,
 			])
 			const consumer = workspace.ensure('consumer')
 			workspace.write('consumer/package.json', '{ "private": true }\n')
@@ -1793,7 +1793,7 @@ describe('emitted distribution classifier', () => {
 				`${JSON.stringify({ name: 'invalid-target', exports: manifest.exports }, undefined, '\t')}\n`,
 			)
 
-			expect(answers).toStrictEqual([[{ subpath: '.', commonjs: true, required: true }]])
+			expect(answers).toStrictEqual([[{ subpath: '.', loadable: true, requirable: true }]])
 			expect(() =>
 				execFileSync(process.execPath, ['--eval', "require('invalid-target')"], {
 					cwd: consumer,

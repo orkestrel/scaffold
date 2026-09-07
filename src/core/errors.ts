@@ -25,12 +25,12 @@ import type { ScaffoldErrorCode } from './types.js'
  *
  * @example
  * ```ts
- * import { ScaffoldError, isScaffoldError } from '@orkestrel/scaffold'
+ * import { isScaffoldError, ScaffoldError } from '@orkestrel/scaffold'
  *
  * try {
- * 	throw new ScaffoldError('INVALID', 'Blueprint is not an exact record')
+ * 	throw new ScaffoldError('TARGET', 'The target carries no readable manifest.')
  * } catch (error) {
- * 	if (isScaffoldError(error)) error.code // 'INVALID'
+ * 	if (isScaffoldError(error)) error.code // 'TARGET'
  * }
  * ```
  */

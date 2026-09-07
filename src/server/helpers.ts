@@ -1486,11 +1486,11 @@ export function stageBytes(
  * such a path is skipped. A path either list names itself is curated data
  * rather than discovery, so it is staged or the stage is refused.
  *
- * @example
+ * @example Vendored data root
  * ```ts
  * import { stageHost } from '@orkestrel/scaffold/server'
  *
- * stageHost(process.cwd(), 'dist/host').length // the files staged
+ * stageHost(process.cwd(), 'dist/host') // one ManifestEntry per file staged
  * ```
  */
 export function stageHost(checkout: string, host: string): readonly ManifestEntry[] {

@@ -51,7 +51,7 @@ export type Group =
 export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
 
 /**
- * Names whether an upstream lookup produced an answer.
+ * Names how an upstream lookup resolved: found, missing, unmatched, or failed.
  *
  * @remarks
  * `found` carries the answer. `missing` is an upstream `404`, which is a
@@ -120,14 +120,14 @@ export interface Dependency {
 	readonly optional?: boolean
 }
 
-/** Describes the dependency sections read from an existing package manifest. */
+/** Describes the runtime, development, and peer sections read from an existing package manifest. */
 export interface ManifestDependencySet {
 	readonly runtime: readonly Dependency[]
 	readonly development: readonly Dependency[]
 	readonly peer: readonly Dependency[]
 }
 
-/** Describes the dependency sections a range-writing operation may change. */
+/** Describes the runtime and development sections a range-writing operation may change. */
 export interface DependencyPinSet {
 	readonly runtime: readonly Dependency[]
 	readonly development: readonly Dependency[]

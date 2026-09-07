@@ -4,6 +4,7 @@ import {
 	createGuide,
 	createSource,
 	extractFenceImports,
+	findDrift,
 	findMissing,
 	findUnlisted,
 	isExternalLink,
@@ -122,15 +123,21 @@ describe('guides', () => {
 			const documented = guide.methods().map((group) => group.interface)
 			const declared = new Set(source.surface().map((symbol) => symbol.name))
 			for (const group of guide.methods()) {
-				const listed = [...group.methods].sort().join(', ')
-				const members = source.methods(group.interface).join(', ')
+				const listed = group.methods
+					.map((method) => method.name)
+					.sort()
+					.join(', ')
+				const members = source
+					.methods(group.interface)
+					.map((method) => method.name)
+					.join(', ')
 				if (listed !== members) {
 					drifted.push(`${entry.spec}: ${group.interface} documents ${listed}, declares ${members}`)
 				}
 			}
 			for (const symbol of source.surface()) {
 				if (symbol.keyword !== 'interface' && symbol.keyword !== 'class') continue
-				const members = source.methods(symbol.name)
+				const members = source.methods(symbol.name).map((method) => method.name)
 				if (members.length === 0) continue
 				// A class implementing a documented contract is proven against that
 				// contract instead of documented twice: the guide's table belongs to the
@@ -138,7 +145,12 @@ describe('guides', () => {
 				// extra. Everything else owes a table of its own.
 				const contract = `${symbol.name}Interface`
 				const implementing = symbol.keyword === 'class' && declared.has(contract)
-				const owed = implementing ? source.methods(contract).join(', ') : undefined
+				const owed = implementing
+					? source
+							.methods(contract)
+							.map((method) => method.name)
+							.join(', ')
+					: undefined
 				if (owed !== undefined && owed !== members.join(', ')) {
 					drifted.push(`${entry.spec}: ${symbol.name} exposes ${members.join(', ')}, owes ${owed}`)
 				}
@@ -148,6 +160,55 @@ describe('guides', () => {
 			}
 		}
 		expect(drifted).toEqual([])
+	})
+
+	// The equality gate: a `Summary` cell against its export's description paragraph, a
+	// titled fence against the `@example` of that title. `findDrift` owns the comparison
+	// and names both sides; converge the two sides with `npm run docs`, never by weakening
+	// this assertion. `findDrift` pairs an example only where a title is present on both
+	// sides, so an untitled `@example` block is outside this case. Each collected line is
+	// the spec, the key, and each side's text or `absent` — the same worklist
+	// `npm run docs` prints, so a failure here is read the way that command's output is.
+	it('keeps every compared summary and example equal to its source', () => {
+		const disagreeing: string[] = []
+		for (const { entry, guide, source } of inspected) {
+			for (const drift of findDrift(guide, source)) {
+				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
+				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
+				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
+			}
+		}
+		expect(disagreeing).toEqual([])
+	})
+
+	// The example half of the equality case is silent over an empty population: with no
+	// title on both sides `findDrift` compares no pair and the case passes on the summaries
+	// alone. This pins the population the guide's own row contributes, so removing every
+	// `@example` title reddens the suite instead of quietly retiring half the gate.
+	it('pairs at least one example title across the guide and the source', () => {
+		const documented = requireValue(
+			inspected.find(({ entry }) => entry.spec === 'guides/scaffold.md'),
+		)
+		const titled = new Set(documented.source.examples().map((example) => example.title))
+		const paired: string[] = []
+		for (const fence of documented.guide.fences()) {
+			if (fence.title !== undefined && titled.has(fence.title)) paired.push(fence.title)
+		}
+		expect(paired.length).toBeGreaterThan(0)
+	})
+
+	// The README's pitch and the guide's tagline are one text, each read as the blockquote
+	// under its file's H1. `README.md` is outside the concept index, so the reader is
+	// applied to it directly rather than through an `inspected` record.
+	it('opens the README with the guide tagline', () => {
+		const pitch = createGuide(requireValue(files['README.md'])).tagline()
+		const documented = requireValue(
+			inspected.find(({ entry }) => entry.spec === 'guides/scaffold.md'),
+		)
+		const tagline = documented.guide.tagline()
+		expect(pitch).not.toBeUndefined()
+		expect(tagline).not.toBeUndefined()
+		expect(pitch).toBe(tagline)
 	})
 
 	it('publishes HostFile without the former Copy row type', () => {
@@ -163,7 +224,9 @@ describe('guides', () => {
 	})
 
 	it('publishes read without the former files reader method', () => {
-		const methods = inspected.flatMap(({ source }) => source.methods('UpstreamInterface'))
+		const methods = inspected.flatMap(({ source }) =>
+			source.methods('UpstreamInterface').map((method) => method.name),
+		)
 		expect(methods).toContain('read')
 		expect(methods).not.toContain('files')
 	})

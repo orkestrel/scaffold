@@ -1282,7 +1282,7 @@ export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
  * `HOST_PATHS`, and a host that does not carry one of them refuses the write, so
  * a fixture driving the executable needs the complete set rather than a sample.
  *
- * `nameToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to that selection, so
+ * `blueprintToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to that selection, so
  * the manifest declares it too: a host missing it refuses every verb the moment
  * the plan is hydrated. It is the only canon destination a host declares, because
  * the pointers a plan claims there carry their own content, and `HOST_PATHS`

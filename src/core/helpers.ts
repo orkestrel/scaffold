@@ -223,7 +223,7 @@ export function isCanonPath(path: string): boolean {
 }
 
 /**
- * Checks whether a target's present bytes at a path are owned by another surface.
+ * Checks whether another surface owns a target's present bytes at a path.
  *
  * @param path - The target-relative path to test.
  * @returns True if the path is a {@link WORKSPACE_OWNED_PATHS} member or a
@@ -670,11 +670,12 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
  * placed in an order that would be wrong. An absent name is the report: compare
  * the returned names against the catalog to find one.
  *
- * @example
+ * @example Fleet catalog
  * ```ts
  * import { catalogToLayers } from '@orkestrel/scaffold'
  *
- * catalogToLayers(entries)[0] // the names that depend on nothing in the fleet
+ * const layers = catalogToLayers(entries)
+ * layers[0] // the names that depend on nothing else in the fleet
  * ```
  */
 export function catalogToLayers(

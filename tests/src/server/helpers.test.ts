@@ -16,6 +16,7 @@ import { Worker } from 'node:worker_threads'
 import { arrayOf, isRecord, isString } from '@orkestrel/contract'
 import {
 	ARTIFACT_TEMPLATES,
+	BASE_DEV_DEPENDENCIES,
 	CANON_PATHS,
 	contentToHex,
 	EXECUTABLE_PATHS,
@@ -172,9 +173,14 @@ describe('matchesExecutablePath', () => {
 })
 
 describe('vendored imports', () => {
-	it('keeps every vendored JavaScript and TypeScript module independent of Orkestrel packages', () => {
-		const orkestrelImportPattern =
-			/\b(?:from\s*|(?:import|require)\s*\(\s*)(['"`])@orkestrel\/[^'"`]+\1/u
+	// A vendored module resolves in every workspace or it dies in the target that
+	// received it, and what resolves everywhere is a `node:` module or a package
+	// `BASE_DEV_DEPENDENCIES` declares. A declared Orkestrel package resolves in its
+	// own checkout too, through the `exports` map its manifest publishes, so the set
+	// this reads against is the declaration rather than the scope. Any other
+	// `@orkestrel/*` package is undeclared wherever it lands.
+	it('imports only Orkestrel packages every workspace declares from each vendored module', () => {
+		const specifierPattern = /\b(?:from|import|require)\s*\(?\s*(['"`])(@orkestrel\/[^'"`]+)\1/gu
 		const paths = HOST_PATHS.flatMap((path) => {
 			const source = join(WORKSPACE_ROOT, path)
 			if (!existsSync(source)) return []
@@ -188,15 +194,51 @@ describe('vendored imports', () => {
 			// Only JavaScript and TypeScript module extensions can carry resolvable imports.
 			return /\.[cm]?[jt]s$/u.test(path) ? [path] : []
 		}).sort()
-		const imported: string[] = []
-		expect(orkestrelImportPattern.test("import { value } from '@orkestrel/test/server'")).toBe(true)
-		expect(orkestrelImportPattern.test('await import(`@orkestrel/test/server`)')).toBe(true)
+		// The controls, drawn from outside the vendored set, carry the two specifier
+		// forms a module writes and both sides of the ruling. Without them a reader
+		// that extracts nothing and an allowlist that admits everything each report
+		// the same clean vendored list.
+		const controls = [
+			{ path: 'control/from.ts', content: "import { value } from '@orkestrel/test/server'" },
+			{ path: 'control/dynamic.ts', content: 'await import(`@orkestrel/test/server`)' },
+			{ path: 'control/guide.ts', content: "import { findDrift } from '@orkestrel/guide'" },
+			{ path: 'control/console.ts', content: "import { render } from '@orkestrel/console'" },
+		]
 		expect(paths.length).toBeGreaterThan(0)
 		expect(paths).toContain('tests/config.test.ts')
-		for (const path of paths) {
-			const content = readFileSync(join(WORKSPACE_ROOT, path), 'utf8')
-			if (orkestrelImportPattern.test(content)) imported.push(path)
+		expect(paths).toContain('scripts/docs.ts')
+		const modules = [
+			...paths.map((path) => ({
+				path,
+				content: readFileSync(join(WORKSPACE_ROOT, path), 'utf8'),
+				vendored: true,
+			})),
+			...controls.map((control) => ({ ...control, vendored: false })),
+		]
+		const imported: string[] = []
+		const controlled: string[] = []
+		for (const module of modules) {
+			for (const match of module.content.matchAll(specifierPattern)) {
+				const specifier = match[2]
+				if (specifier === undefined) throw new Error('A match carried no specifier capture')
+				// A subpath names no package of its own, so the ruling reads the scope and
+				// the first segment: `@orkestrel/test/server` is declared when
+				// `@orkestrel/test` is.
+				const declared = Object.hasOwn(
+					BASE_DEV_DEPENDENCIES,
+					specifier.split('/').slice(0, 2).join('/'),
+				)
+				if (!module.vendored) {
+					controlled.push(`${module.path}: ${specifier} ${declared ? 'declared' : 'undeclared'}`)
+				} else if (!declared) imported.push(`${module.path}: ${specifier}`)
+			}
 		}
+		expect(controlled).toStrictEqual([
+			'control/from.ts: @orkestrel/test/server declared',
+			'control/dynamic.ts: @orkestrel/test/server declared',
+			'control/guide.ts: @orkestrel/guide declared',
+			'control/console.ts: @orkestrel/console undeclared',
+		])
 		expect(imported).toEqual([])
 	})
 })

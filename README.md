@@ -1,26 +1,7 @@
 # @orkestrel/scaffold
 
-Compile a workspace specification into an ordered list of files, compare that list to a real
-directory, and write the difference.
-
-Every `@orkestrel` repository shares one toolchain, one set of agent instructions, and one set of
-root dotfiles. Scaffold ships that shared set as data inside the package and gives it verbs: create
-a workspace from it, report how a workspace differs from it, and write the difference back.
-
-The set splits by how a repository meets it. Each target carries its own copy of the paths it
-selects from the vendored set — its licence, its harness permission file, its session-start hooks,
-its policy register, its policy proof, its policy plugin, its configuration leaf and its proof, its
-root dotfiles, and the guide mirrors it starts from, never its own guide — and the verbs write
-them and compare them. A bench probe hook reports whether a bench CLI resolves, and the dependency
-hook installs the lockfile's closure in a remote session; what wires a bench stays in the canon,
-and a session reads it at its primary root. The instruction canon — the coding and
-orchestration contracts, the rules, the skills, the templates, the transport contracts, the agent
-roles, the bench configuration, and the MCP registrations — is published for reading instead, from a
-scaffold checkout sitting beside the repository, or from
-`node_modules/@orkestrel/scaffold/dist/host/` in the installed package. Every target carries the
-`AGENTS.md` and `CLAUDE.md` pointers that name where to read it, and the
-`.claude/agents/orkestrel.md` catalog file the `catalog` verb rewrites. Anything else a target holds
-at a canon path is a superseded copy, and `overwrite` deletes it.
+> A compiler that turns a workspace specification into an ordered list of files, compares that list
+> to a real directory, and writes the difference.
 
 ## Install
 
@@ -36,73 +17,25 @@ npx @orkestrel/scaffold --help
 
 ## Verbs
 
-Authority is the verb's: every verb except `audit` writes when it is typed, and no
-option grants a write. Exit codes are `0` clean, `1` drift or failure, and `2` usage error.
+Authority is the verb's: every verb except `audit` writes when it is typed, and no option grants a
+write. The guide's [Command line](guides/scaffold.md#command-line) section specifies each verb, its
+options, its defaults, and the exit codes.
 
-`--target <path>` points any verb at another directory; the working directory is the default.
-`--json` replaces the report with one machine-readable value on standard output.
-
-### `new` — scaffold a workspace
-
-```sh
-npx scaffold new router --src core,server
-```
-
-Writes a complete workspace into `./router`: its manifest, its build configuration, empty barrels
-for each selected environment, its tests, its documentation, the `AGENTS.md` and `CLAUDE.md`
-pointers, and every vendored file. `--app` selects private application environments on an
-independent axis, and `--deps` names `@orkestrel/*` runtime dependencies, each pinned to the
-registry's latest release. `--bin` adds the command-line entry, its test, and its scoped build
-configuration.
-
-### `audit` — report how a target compares to its plan
-
-```sh
-npx scaffold audit --groups configs,orchestration
-```
-
-Writes nothing. Reports one row per path that differs, and exits `1` when anything does. Omit
-`--groups` to cover every group.
-
-### `repair` — write back what drifted
-
-```sh
-npx scaffold repair
-```
-
-Restores each planned path the target is missing or has let drift, then re-audits. A file the
-workspace owns — its source, its own proofs, its README — is written once at creation and is never
-rewritten here. Not everything is owned that way: `tests/distribution.test.ts` is restored when it
-is absent and left alone when the workspace has replaced it, and the manifest's script region is
-rewritten when its chain is the one scaffold generated and refused without a write when it is not.
-
-### `catalog` — refresh the package table and the guide mirrors
-
-```sh
-npx scaffold catalog --all
-```
-
-Reads the organization's published package list, rewrites the marker-bounded table in
-`.claude/agents/orkestrel.md`, and fetches each package's guide into its local mirror. Without
-`--all` it fetches only the guides the target declares as dependencies.
-
-### `overwrite` — repair, catalog, delete, and re-pin
-
-```sh
-npx scaffold overwrite --dirty
-```
-
-Everything `repair` and `catalog` do, plus the steps only this verb carries: it deletes tracked
-files the plan does not own, and it rewrites the `@orkestrel/*` ranges in the manifest to the
-registry's latest releases. The deletion covers a stray beneath a vendored directory and a superseded
-instruction copy alike, so one run repairs the pointers and sweeps the canon paths a release moved.
-It needs a git repository, and it refuses a tree carrying uncommitted changes unless `--dirty` waives
-that refusal.
+- `new` writes a whole workspace into a target that holds nothing the plan would collide with.
+- `audit` writes nothing, and reports one row per path that differs.
+- `repair` writes each planned path the target is missing or has let drift, and the manifest's range
+  and script regions.
+- `catalog` rewrites the package table in the target's catalog agent file, and refetches the guide
+  mirrors.
+- `overwrite` does everything `repair` and `catalog` do, then deletes what the plan does not own and
+  re-declares the dependency ranges.
 
 ## Library
 
 The entry points split by host. `@orkestrel/scaffold` is host-independent: it compiles, gates, and
-compares.
+compares. `@orkestrel/scaffold/server` is Node-only and holds everything that touches the filesystem
+or the network: `Materializer` writes a plan into a target, `Upstream` reads the registry and the
+guide host, and `WriteTransaction` stages and swaps a set of files with rollback.
 
 ```ts
 import { Compiler, createBlueprint } from '@orkestrel/scaffold'
@@ -115,26 +48,8 @@ scaffolding.questions // the advice the compile could not settle
 compiler.destroy()
 ```
 
-A plan says the workspace can be built. It does not decide whether to create it: a caller
-creating a fresh workspace refuses on any question beside the plan, blocking or not, exactly as
-`new` does. [`guides/scaffold.md`](guides/scaffold.md) states that rule and what it covers.
-
-`@orkestrel/scaffold/server` is Node-only and holds everything that touches the filesystem or the
-network: `Materializer` writes a plan into a target, `Upstream` reads the registry and
-the guide host, and `WriteTransaction` stages and swaps a set of files with rollback.
-
-```ts
-import type { Plan } from '@orkestrel/scaffold'
-import { Materializer } from '@orkestrel/scaffold/server'
-
-declare const plan: Plan
-
-const materializer = new Materializer()
-const result = materializer.materialize(plan, './packages/router')
-
-result.written // every path created
-materializer.destroy()
-```
+A plan says the workspace can be built. It does not decide whether to create it: a caller creating a
+fresh workspace refuses on any question beside the plan, blocking or not, exactly as `new` does.
 
 ## Guide
 

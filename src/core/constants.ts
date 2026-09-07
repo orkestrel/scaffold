@@ -108,16 +108,20 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
 /** Names the executable entry whose presence makes a workspace `bin`. */
 export const BIN_ENTRY_PATH = 'src/bin/main.ts'
 
+/** Names the vendored module `npm run docs` runs. */
+export const DOCS_SEED_PATH = 'scripts/docs.ts'
+
 /**
  * Lists the paths a target receives from the vendored data root, frozen.
  *
  * @remarks
  * These are the files the fleet shares verbatim, and each target holds a copy
  * of the paths it selects: the licence, the harness permission file, the
- * session-start hooks, the shared policy register, the shared policy proof,
- * the shared policy plugin, the shared configuration leaf and its proof, the
- * byte-identical root dotfiles, and the guide mirrors a generated workspace
- * starts from. A directory entry vendors everything beneath it.
+ * session-start hooks, the documentation-parity seed, the shared policy
+ * register, the shared policy proof, the shared policy plugin, the shared
+ * configuration leaf and its proof, the byte-identical root dotfiles, and the
+ * guide mirrors a generated workspace starts from. A directory entry vendors
+ * everything beneath it.
  *
  * A plan carries the subset its target selects, which is why the list is a
  * candidate set rather than a plan: a workspace never mirrors its own guide.
@@ -126,7 +130,7 @@ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
  * its rules, its skills, its agent roles, its bench configuration, and its MCP
  * registrations from {@link CANON_PATHS} inside the installed package, so no
  * file scaffold leaves in a target names a path the target does not hold.
- * `nameToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to what this list
+ * `blueprintToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to what this list
  * selects, which is what keeps the list itself disjoint from the canon.
  */
 export const HOST_PATHS: readonly string[] = Object.freeze([
@@ -136,6 +140,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'scripts/cursor.sh',
 	'scripts/codex.sh',
 	'scripts/ollama.sh',
+	DOCS_SEED_PATH,
 	'tests/setupPolicy.ts',
 	'tests/policy.test.ts',
 	'tests/config.test.ts',
@@ -175,7 +180,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
  *
  * The plan claims paths inside the canon deliberately, and each has a reason.
  * `blueprintToDocumentArtifacts` claims `AGENTS.md` and `CLAUDE.md` as this
- * package's own template pointers. `nameToHostArtifacts` claims
+ * package's own template pointers. `blueprintToHostArtifacts` claims
  * {@link CATALOG_AGENT_PATH}, because the catalog verb refuses a target that
  * lacks the file and repair restores its absence.
  *
@@ -267,7 +272,7 @@ export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.
  *
  * @remarks
  * A plan claims it at a canon path, because the catalog verb refuses a target
- * that lacks the file. `nameToHostArtifacts` appends it to the vendored
+ * that lacks the file. `blueprintToHostArtifacts` appends it to the vendored
  * selection, and it reaches a release through the `.claude/agents` directory in
  * {@link CANON_PATHS} rather than through {@link HOST_PATHS}, which is what
  * keeps the two lists disjoint.

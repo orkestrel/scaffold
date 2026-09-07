@@ -68,10 +68,10 @@ describe('Compiler artifacts', () => {
 			origin: 'template',
 			content: expect.stringContaining('installed package consumer'),
 		})
-		expect(plan.artifacts).toHaveLength(39)
+		expect(plan.artifacts).toHaveLength(40)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'computed')).toHaveLength(1)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(17)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(21)
+		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(22)
 	})
 
 	// The canon left the vendored set, so the root instruction documents are

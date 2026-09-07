@@ -48,16 +48,16 @@ paths:
 A proof that covers the workspace instead of one module has a fixed location, so no package invents
 its own:
 
-| Path                         | Proves                                                                                                                         |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges   |
-| `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                          |
-| `tests/guides.test.ts`       | Every documented API exists, every public API is documented, and every executable fence returns what the guide says it returns |
-| `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                  |
-| `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                            |
-| `tests/integration.test.ts`  | The package's features work together end to end across environments                                                            |
-| `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                      |
-| `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                |
+| Path                         | Proves                                                                                                                                                                                       |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                 |
+| `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                        |
+| `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns |
+| `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                |
+| `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          |
+| `tests/integration.test.ts`  | The package's features work together end to end across environments                                                                                                                          |
+| `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
+| `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                                                                              |
 
 - Put each root `tests/setup*.test.ts` proof in the `setup` project. Keep its assertions on
   exported test-infrastructure behavior: do not duplicate production behavior there, and do not

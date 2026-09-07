@@ -1171,21 +1171,22 @@ const FORMATS: ReadonlyArray<readonly [extension: string, format: Format]> = [
 
 // One published subpath, resolved to what this proof can drive: the specifier a
 // consumer writes, whether the declarations its consumer formats resolve at all,
-// whether its target is a browser bundle, and whether it answers \`import\` and
-// \`require\` at all.
+// whether the exports map answers the browser condition with a target of its own,
+// whether it answers \`import\` and \`require\` at all, and whether the target that
+// \`require\` answers with is one that a CommonJS consumer loads.
 interface Entry {
 	readonly subpath: string
 	readonly specifier: string
 	readonly mapping: unknown
 	readonly declaration: {
-		readonly module: boolean
-		readonly commonjs: boolean
-		readonly browser: boolean
+		readonly importable: boolean
+		readonly requirable: boolean
+		readonly browsable: boolean
 	}
-	readonly browser: boolean
-	readonly module: boolean
-	readonly commonjs: boolean
-	readonly required: boolean
+	readonly browsable: boolean
+	readonly importable: boolean
+	readonly requirable: boolean
+	readonly loadable: boolean
 }
 
 // The installed tree every claim is read from. Every subpath the exports map names
@@ -1458,7 +1459,7 @@ function selectEntries(entries: readonly Entry[], conditions: readonly string[])
 	return entries.filter(
 		(entry) =>
 			resolveTarget(entry.mapping, conditions) !== undefined &&
-			(!conditions.includes('require') || entry.commonjs),
+			(!conditions.includes('require') || entry.loadable),
 	)
 }
 
@@ -1471,13 +1472,13 @@ function selectDrivers(entry: Entry, format: Format): readonly Resolution[] {
 	)
 }
 
-// Require-loadable entries that declare CommonJS support but a typed CommonJS
-// consumer cannot compile against. A default branch resolving under the require
-// condition set makes no CommonJS claim.
+// Requirable entries that declare CommonJS support but a typed CommonJS consumer
+// cannot compile against. A default branch resolving under the require condition
+// set makes no CommonJS claim.
 function selectUntypable(entries: readonly Entry[], installed: string): readonly Entry[] {
 	return entries.filter(
 		(entry) =>
-			entry.required &&
+			entry.requirable &&
 			isRecord(entry.mapping) &&
 			Object.hasOwn(entry.mapping, 'require') &&
 			!declaresCommonJS(entry.mapping, installed),
@@ -1667,25 +1668,26 @@ function buildStage(): Stage {
 			else excluded.push(subpath)
 			continue
 		}
-		const imported = resolveTarget(entry, RUNTIME_CONDITIONS.module)
-		const requiredTarget = resolveTarget(entry, RUNTIME_CONDITIONS.commonjs)
+		const importTarget = resolveTarget(entry, RUNTIME_CONDITIONS.module)
+		const requireTarget = resolveTarget(entry, RUNTIME_CONDITIONS.commonjs)
 		const browserTarget = resolveTarget(entry, RUNTIME_CONDITIONS.browser)
-		const browser = resolvesBrowser(entry)
-		const required = requiredTarget !== undefined && !(browser && requiredTarget === browserTarget)
-		const commonjs = required && resolvesCommonJS(entry, installed)
+		const browsable = resolvesBrowser(entry)
+		const shadowed = browsable && requireTarget === browserTarget
+		const requirable = requireTarget !== undefined && !shadowed
+		const loadable = requirable && resolvesCommonJS(entry, installed)
 		entries.push({
 			subpath,
 			specifier: subpath === '.' ? name : \`\${name}\${subpath.slice(1)}\`,
 			mapping: entry,
 			declaration: {
-				module: declaration.module !== undefined,
-				commonjs: declaration.commonjs !== undefined,
-				browser: declaration.browser !== undefined,
+				importable: declaration.module !== undefined,
+				requirable: declaration.commonjs !== undefined,
+				browsable: declaration.browser !== undefined,
 			},
-			browser,
-			module: imported !== undefined && !(browser && imported === browserTarget),
-			commonjs,
-			required,
+			browsable,
+			importable: importTarget !== undefined && !(browsable && importTarget === browserTarget),
+			requirable,
+			loadable,
 		})
 	}
 	return { consumer, installed, archives, entries, subpaths, undeclared, excluded, targets }
@@ -1836,7 +1838,7 @@ describe('installed package consumer', () => {
 		// loads it. Each later drive retires itself for that entry, so this assertion names
 		// the subpath rather than counting it as driven.
 		const unreachable = stage.entries.filter(
-			(entry) => !entry.module && !entry.required && !entry.browser,
+			(entry) => !entry.importable && !entry.requirable && !entry.browsable,
 		)
 		expect(unreachable.map((entry) => entry.subpath)).toStrictEqual([])
 		const untypable = selectUntypable(stage.entries, stage.installed)
@@ -1886,14 +1888,14 @@ describe('installed package consumer', () => {
 
 for (const entry of STAGE?.entries ?? []) {
 	describe(\`installed entry \${entry.subpath}\`, () => {
-		it.runIf(entry.module)(
+		it.runIf(entry.importable)(
 			'publishes what it declares to a Node import, and no more',
 			(context) => {
 				const stage = requireStage(context)
 				// The exports-map walk resolved a declaration a typed importer reads, so an
 				// entry reaching this drive without one is reported for that rather than for
 				// what a consumer of a missing declaration goes on to say.
-				if (!entry.declaration.module) {
+				if (!entry.declaration.importable) {
 					throw new Error(\`\${entry.subpath} publishes no import declaration\`)
 				}
 				const published = driveRuntime(stage, entry.specifier, ESM_DRIVER)
@@ -1906,11 +1908,11 @@ for (const entry of STAGE?.entries ?? []) {
 			},
 		)
 
-		it.runIf(entry.required)(
+		it.runIf(entry.requirable)(
 			'publishes what it declares to a Node require, and no more',
 			(context) => {
 				const stage = requireStage(context)
-				if (!entry.declaration.commonjs) {
+				if (!entry.declaration.requirable) {
 					throw new Error(\`\${entry.subpath} publishes no require declaration\`)
 				}
 				const published = driveRuntime(stage, entry.specifier, CJS_DRIVER)
@@ -2036,11 +2038,11 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 }
 `,
 			drive: `
-		it.runIf(entry.browser)(
+		it.runIf(entry.browsable)(
 			'publishes what it declares to a real browser, and no more [requires a browser]',
 			async (context) => {
 				const stage = requireStage(context)
-				if (!entry.declaration.browser) {
+				if (!entry.declaration.browsable) {
 					throw new Error(\`\${entry.subpath} publishes no browser declaration\`)
 				}
 				const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
@@ -2083,7 +2085,7 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 	// file and runs the \`repair\` verb, which writes the variant carrying that branch.
 	it('publishes no browser face this proof cannot drive [requires the registry]', (context) => {
 		const stage = requireStage(context)
-		const faces = stage.entries.filter((entry) => entry.browser)
+		const faces = stage.entries.filter((entry) => entry.browsable)
 		expect(faces.map((entry) => entry.subpath)).toStrictEqual([])
 	})
 `,

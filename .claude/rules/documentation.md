@@ -32,7 +32,16 @@ Documentation is an enforced contract, not explanatory decoration. The Writing r
 - Every public export is documented.
 - TypeScript, SCSS, Markdown, tests, and showcase remain aligned.
 - A parity failure identifies drift; never suppress or weaken the test.
-- The TSDoc voice rule governs a doc block; a guide tagline and a Surface-row description are noun phrases.
+- A guide `Summary` cell equals its export's doc-block description paragraph, both read in the form
+  the `findDrift` function compares (a `{@link}` tag written as its target's code token, whitespace
+  collapsed, a code span's boundary whitespace trimmed); a titled `@example` equals the guide fence
+  under the heading of that title; and the README pitch equals the guide's tagline.
+  `tests/guides.test.ts` asserts each through the `findDrift` function and the `tagline` method
+  that `@orkestrel/guide` exports; converge the two sides with `npm run docs`, never by weakening
+  the gate.
+- The TSDoc voice rule governs a doc block, and a `Summary` cell carries that block's description
+  paragraph, so the same voice governs the cell. A guide tagline and a README pitch are noun
+  phrases, and each is the blockquote under its file's H1.
 - A vendored dependency guide is a mirror. Its relative links address the upstream tree and resolve to nothing here, so they are outside local-link parity. Refresh a mirror rather than rewriting it: a rewritten copy is a translation, and no comparison against the fetched bytes can check it.
 - Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns. A `// false` beside a call that returns `true` is a defect of the same kind as a wrong return value, and it reaches every consumer who installs the package. That proof has a home: `tests/guides.test.ts` executes the flagship fences, per `.claude/rules/tests.md`. An ordered behaviour with no gate is not a gate.
   Asserting that the sentence appears is not asserting that it is true. `expect(text).toContain('a spawn fault reports null')` passes unchanged when the code starts returning something else, so it guards the documentation's presence and nothing about the behaviour. Where a prose claim about behaviour sits under no fence, add the executed assertion that would break if the claim went false, and keep the substring check only as a presence guard beside it. A row whose close condition names a behaviour does not close on a substring.

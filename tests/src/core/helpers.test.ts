@@ -13,7 +13,9 @@ import {
 	computeBytes,
 	computeHash,
 	contentToHex,
+	DOCS_SEED_PATH,
 	extractRangeMajor,
+	EXECUTABLE_PATHS,
 	extractVersion,
 	GROUPS,
 	HOST_PATHS,
@@ -173,6 +175,24 @@ describe('isCanonPath', () => {
 			),
 		).toHaveLength(1)
 	})
+
+	// The documentation seed is the one vendored script node runs rather than a
+	// shell invokes, so it takes the vendored set and leaves the executable set
+	// alone. A declaration in both would ship it at 0755 and claim an interpreter
+	// it has no shebang for. The shell hook beside it is the control each reading
+	// needs, drawn from the same directory.
+	it('vendors the documentation seed without an executable bit or a canon claim', () => {
+		// The path has one home, and the vendored set reads it: the literal here is
+		// what the constant must carry, so a moved seed reports rather than drifting
+		// apart from the `docs` command and the artifact filter that read it too.
+		expect(DOCS_SEED_PATH).toBe('scripts/docs.ts')
+		expect(HOST_PATHS).toContain('scripts/docs.ts')
+		expect(EXECUTABLE_PATHS).not.toContain('scripts/docs.ts')
+		expect(isCanonPath('scripts/docs.ts')).toBe(false)
+		expect(HOST_PATHS).toContain('scripts/deps.sh')
+		expect(EXECUTABLE_PATHS).toContain('scripts/deps.sh')
+		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
+	})
 })
 
 describe('isRetainedPath', () => {
@@ -288,6 +308,14 @@ describe('selectHostPaths', () => {
 
 	it('keeps every candidate for a workspace that vendors no guide of its own', () => {
 		expect(selectHostPaths(HOST_PATHS, 'router')).toStrictEqual(HOST_PATHS)
+	})
+
+	// The name is the whole selection this helper makes. The documentation seed is
+	// selected like every other vendored hook, with no guides gate anywhere in the
+	// selection path, so the seed is a candidate here for a workspace of every shape.
+	it('keeps the documentation seed a candidate whatever else selects it', () => {
+		expect(selectHostPaths(HOST_PATHS, 'router')).toContain('scripts/docs.ts')
+		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
 	})
 
 	// The selection reads `HOST_PATHS` alone, so no canon member reaches it: a
