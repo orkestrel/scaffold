@@ -256,3 +256,7 @@ src:core: 385 passed, 19.04 s
 ```
 
 Reading: the `config` project's binding case stays the linter pair's worst case (two 15 s caps) rather than the roll-up, and under a concurrent suite the roll-up costs about 2.6 s. The 60,000 ms budget U6 set clears the capped pair with 30 s of room on this reading, so it stands, sized from a contended run as `.claude/rules/tests.md` § Expensive proofs requires; the rationale names the compiler and the extractor spawns in U6-fix.
+
+## A second `--no-save` tarball install restores the registry copy of the first (`visits/swap-both-database.log.txt`)
+
+`database` received scaffold's head start at 22:19 UTC (8 `^typescript` restrictions in the vendored lint config) and probe's at 22:21 UTC through a second `npm install --no-save <tarball>`; the second install reconciled the tree against the lockfile and put the registry `@orkestrel/scaffold` 0.0.63 back (0 restrictions, `resolved` at the registry) while leaving probe's `file:` install in place. The readiness check before slice 6 read it. Installing both tarballs in one invocation (`instruments/visits/swap-both.sh`) leaves both head starts present with the manifest and lockfile untouched. Reading: a checkout that takes more than one head start takes them in one `npm install --no-save` call; the slice 6 brief for `database` holds again.

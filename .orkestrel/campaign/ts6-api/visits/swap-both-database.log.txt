@@ -1,0 +1,10 @@
+# swap-both database — 2026-09-07T00:41:54Z
+ranges replaced: "@orkestrel/scaffold": "^0.0.63" "@orkestrel/probe": "^0.0.12"
+installed before: scaffold 0.0.63 (0 restrictions), probe 0.0.12
+$ npm install --no-save --no-audit --no-fund /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/orkestrel-scaffold-0.0.63.tgz /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/ts6/pack/orkestrel-probe-0.0.12.tgz
+
+changed 1 package in 3s
+installed after: scaffold 0.0.63, probe 0.0.12
+scaffold head start present: 1 declarationRollup hits in the vendored helpers; 8 typescript restrictions in the vendored lint config
+probe head start present: 0 files importing typescript in probe's dist (the head start has none); resolved "resolved": "file:../../../../tmp/claude-0/-home-user-scaffo
+manifest/lockfile diff: 
