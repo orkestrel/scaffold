@@ -1,0 +1,199 @@
+
+> @orkestrel/scaffold@0.0.63 test:src:bin
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+············································································································scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+
+options
+  --src <list>                   the published library environments to build: core, browser, server
+  --app <list>                   the private application environments to build: core, browser, server
+  --bin                          scaffold a command-line executable at src/bin/main.ts
+  --deps <list>                  the @orkestrel/* packages the workspace depends on
+  --groups <list>                the artifact groups to cover; every group when absent
+  --all                          fetch a guide for every package the organization publishes, not the declared ones alone
+  --dirty                        delete from a tree carrying uncommitted changes
+  --offline                      use the distributed dependency and vendored-host floors without reading upstream
+  --from <path>                  read the data root from a local path instead of the bundled one; catalog alone accepts it more than once
+  --target <path>                the directory the verb operates on; the working directory when absent
+  --json                         emit one machine-readable value instead of a report
+  ORKESTREL_SCAFFOLD_REGISTRY    the registry base mapped to upstream.registry.base
+  ORKESTREL_SCAFFOLD_REPOSITORY  the repository base mapped to upstream.repository.base
+
+exit codes
+  0  clean
+  1  drift or failure
+  2  usage error
+····························xx········x·············································x·x·x··x····················x························
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI new > writes every planned path into a vacant target and reports what it wrote
+AssertionError: expected 'Scaffolded widget into /tmp/orkestrel…' to contain '35'
+
+- Expected
++ Received
+
+- 35
++ Scaffolded widget into /tmp/orkestrel-scaffold-o75k52/fresh.
++ 34 written, 0 unchanged, 0 removed in /tmp/orkestrel-scaffold-o75k52/fresh.
+
+ ❯ tests/src/bin/CLI.test.ts:512:35
+    510|    expect(sink.diagnostic).toStrictEqual([])
+    511|    expect(workspace.read('fresh/package.json')).toContain('widget')
+    512|    expect(sink.output.join('\n')).toContain(String(FLEET_ARTIFACT_COUN…
+       |                                   ^
+    513|   } finally {
+    514|    workspace.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI new > emits one machine-readable value naming every path it wrote
+AssertionError: expected [ 'package.json', …(33) ] to have a length of 35 but got 34
+
+- Expected
++ Received
+
+- 35
++ 34
+
+ ❯ tests/src/bin/CLI.test.ts:538:27
+    536|    expect(sink.output).toHaveLength(1)
+    537|    const result: NewResult = JSON.parse(sink.output[0] ?? '')
+    538|    expect(result.written).toHaveLength(FLEET_ARTIFACT_COUNT)
+       |                           ^
+    539|    expect(result.written).toContain('package.json')
+    540|    expect(result.removed).toStrictEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > takes the host live when every declared digest matches and takes the floor when the repository is dark
+AssertionError: expected [ …(2) ] to strictly equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    "/orkestrel/scaffold/refs/heads/main/host.json",
++   "/orkestrel/scaffold/refs/heads/main/scripts/docs.ts",
+  ]
+
+ ❯ tests/src/bin/CLI.test.ts:729:6
+    727|    expect
+    728|     .soft(live.paths.filter((path) => path.startsWith('/orkestrel/scaf…
+    729|     .toStrictEqual(['/orkestrel/scaffold/refs/heads/main/host.json'])
+       |      ^
+    730|
+    731|    workspace.write('host-baseline/AGENTS.md', '# Drifted\n')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports drift against a target that carries none of its planned paths
+AssertionError: expected '28 of 34 planned paths drifted from t…' to contain 'of 35 planned'
+
+Expected: "of 35 planned"
+Received: "28 of 34 planned paths drifted from the plan. Audit compared bytes at 0, existence at 28, and nothing at 6."
+
+ ❯ tests/src/bin/CLI.test.ts:2814:37
+    2812|    expect(code).toBe(EXIT_DRIFT)
+    2813|    expect(sink.output.join('\n')).toContain('AGENTS.md')
+    2814|    expect(sink.output.at(-1) ?? '').toContain(`of ${String(FLEET_ARTIF…
+       |                                     ^
+    2815|   } finally {
+    2816|    workspace.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI audit > emits one audit as the machine-readable value, every finding on a hydrated path
+AssertionError: expected [ …(34) ] to have a length of 35 but got 34
+
+- Expected
++ Received
+
+- 35
++ 34
+
+ ❯ tests/src/bin/CLI.test.ts:2901:27
+    2899|    expect(sink.output).toHaveLength(1)
+    2900|    const audit: Audit = JSON.parse(sink.output[0] ?? '')
+    2901|    expect(audit.findings).toHaveLength(FLEET_ARTIFACT_COUNT)
+       |                           ^
+    2902|    expect(audit.findings.some((finding) => finding.drift === 'missing'…
+    2903|    // Every finding sits on a file the host stores, which is the compa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI audit > counts a foreign path apart from the planned paths it reports on
+AssertionError: expected [ …(34) ] to have a length of 35 but got 34
+
+- Expected
++ Received
+
+- 35
++ 34
+
+ ❯ tests/src/bin/CLI.test.ts:3045:20
+    3043|     'presence',
+    3044|    ])
+    3045|    expect(planned).toHaveLength(FLEET_ARTIFACT_COUNT)
+       |                    ^
+    3046|    expect(bytes.length + existence.length + nothing.length).toBe(plann…
+    3047|    expect(report.output.at(-1)).toBe(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a clean run against the workspace new just wrote, and writes nothing itself
+AssertionError: expected '0 of 34 planned paths drifted from th…' to contain '0 of 35'
+
+Expected: "0 of 35"
+Received: "0 of 34 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6."
+
+ ❯ tests/src/bin/CLI.test.ts:3310:37
+    3308|    ])
+    3309|    expect(code).toBe(EXIT_CLEAN)
+    3310|    expect(sink.output.at(-1) ?? '').toContain(`0 of ${String(FLEET_ART…
+       |                                     ^
+    3311|   } finally {
+    3312|    workspace.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI repair > repairs at its default selection and earns a clean exit, the canon claim included
+AssertionError: expected [ 'tsconfig.json', …(28) ] to have a length of 30 but got 29
+
+- Expected
++ Received
+
+- 30
++ 29
+
+ ❯ tests/src/bin/CLI.test.ts:4087:27
+    4085|    // Every hydrated path but the manifest, which is claimed by birth …
+    4086|    // therefore never rewritten.
+    4087|    expect(result.written).toHaveLength(FLEET_ARTIFACT_COUNT - FLEET_BI…
+       |                           ^
+    4088|    expect(result.skipped).toStrictEqual(FLEET_BIRTH_PATHS)
+    4089|    expect(result.audit.findings).toHaveLength(FLEET_ARTIFACT_COUNT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  8 failed | 237 passed (245)
+   Start at  08:53:25
+   Duration  17.17s (transform 2.95s, setup 3.79s, import 515ms, tests 16.79s, environment 0ms)
+
+EXIT 1

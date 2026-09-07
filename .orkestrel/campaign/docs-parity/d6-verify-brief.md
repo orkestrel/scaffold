@@ -21,11 +21,12 @@
 7. `npm run test:policy`
 8. `npm run test:guides` (expected: exit 0, every case green; report the case list's totals)
 9. `npm run test:src:core`
+9a. `npm run test:src:bin`
 10. `npm run test:src:server`
 11. `npm run test:config`
 12. `npm run build`
 13. `sha256sum host.json && npm run build:inventory && sha256sum host.json` (expected: the same digest before and after)
-14. `PATH=/opt/npm11/bin:$PATH npm --version` (expected 11.x) then `PATH=/opt/npm11/bin:$PATH npm test` (the whole suite; expected exit 0; report the totals and the duration)
+14. `PATH=/opt/npm11/bin:$PATH npm --version` (expected 11.x) then `PATH=/opt/npm11/bin:$PATH npm test` (the whole suite; expected exit 0; report the totals and the duration), then `PATH=/opt/npm11/bin:$PATH npm run test:distribution` (expected exit 0; `npm test` does not include it)
 15. `git status --short`
 
 For each: the exact command, its exit code, and its last lines. Do not re-run anything.
