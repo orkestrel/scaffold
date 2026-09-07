@@ -38,6 +38,10 @@ The reviewer lanes and the checker run no command and edit nothing. Every lane p
 8. `npm run build && npm run docs` — expected exit 0 and one line `rows read: 1, disagreements found: 0`
 9. `npm run docs -- --to guide` and `npm run docs -- --to source` — each expected `written: 0, reported: 0`; then `git status --short` unchanged from command 1
 
+## Amendment (after the unit returned)
+
+The brief's item 1 instructed an `@returns` text that spelled `*/` inside the doc block, which ends the block; the unit recorded the parse failure and named the terminator instead (`a body carrying the doc-comment terminator`), while the guide's two Markdown sentences spell `*/` literally. Claim 3 reads on that form: the doc block names the terminator, the guide spells it. The brief's instruction, not the unit, was the defect.
+
 ## Output
 
 Reviewer lanes and checker: per claim PASS, FAIL, or CANNOT RULE with `file:line`, findings outside the claims, one terminal line `VERDICT: PASS` or `VERDICT: FAIL <claims>`; open with `Lane held: <lane>` as the very first line. Verifier: per command the exit code and its last lines, the per-project totals, anomalies; terminal line `GATES: GREEN` when commands 2 through 9 read as expected, else `GATES: RED <commands>`; open with `Lane held: verifier`.
