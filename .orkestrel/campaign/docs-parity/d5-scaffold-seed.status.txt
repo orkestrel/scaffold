@@ -1,0 +1,12 @@
+ M .claude/rules/documentation.md
+ M .claude/rules/tests.md
+ M .claude/rules/workspace.md
+ M guides/scaffold.md
+ M host.json
+ M package.json
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M tests/guides.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/helpers.test.ts
+?? scripts/docs.ts
