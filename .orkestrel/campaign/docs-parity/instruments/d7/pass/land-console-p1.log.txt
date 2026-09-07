@@ -1,0 +1,55 @@
+== console P.1 landing 2026-09-07T15:48:41Z, version 0.0.13
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/core/constants.ts
+ M src/server/constants.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 503ms
+EXIT 0
+== lockfile root version
+0.0.13 / 0.0.13
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== deps marker rewritten
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M src/core/constants.ts
+ M src/server/constants.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/core/helpers.test.ts |   2 +-
+ tsconfig.json                  |   5 +-
+ 16 files changed, 1569 insertions(+), 587 deletions(-)
+== stage by path
+ 17 files changed, 2023 insertions(+), 587 deletions(-)
+== committed
+f93a2f4 Prepare console for the equality gate
+(status end)
