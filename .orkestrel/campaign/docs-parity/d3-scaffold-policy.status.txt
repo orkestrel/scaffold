@@ -1,0 +1,11 @@
+ M .claude/rules/typescript.md
+ M .claude/rules/writing.md
+ M .oxlintrc.json
+ M configs/policy.ts
+ M guides/scaffold.md
+ M host.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+?? .orkestrel/campaign/docs-parity/d3-scaffold-policy.diff.txt
+?? .orkestrel/campaign/docs-parity/d3-scaffold-policy.status.txt
