@@ -1,0 +1,18 @@
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/reason.md
+ M package-lock.json
+ M package.json
+ M src/core/builders/managers/FactorManager.ts
+ M src/core/reasoners/SymbolicReasoner.ts
+ M src/core/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/reasoners/InferentialReasoner.test.ts
+ M tsconfig.json
+?? scripts/docs.ts

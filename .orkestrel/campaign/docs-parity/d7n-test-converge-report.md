@@ -292,3 +292,10 @@ loop; the shadowed `own` was resolved by renaming the local to `carrier`; the `R
 `[Limits](#limits)` pointer and the `@orkestrel/contract` divergence moved into the convention
 sentence under the core Types table, so the link still resolves and the fact still reaches a guide
 reader.
+
+
+---
+
+## Orchestrator annotation (test audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban; every citation held against the tree. The report stands as the unit's evidence with this note.

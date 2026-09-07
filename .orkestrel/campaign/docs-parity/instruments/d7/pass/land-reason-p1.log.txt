@@ -1,0 +1,57 @@
+== reason P.1 landing 2026-09-07T15:55:50Z, version 0.0.10
+== status before install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/reason.md
+ M package.json
+ M src/core/builders/managers/FactorManager.ts
+ M src/core/reasoners/SymbolicReasoner.ts
+ M src/core/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/reasoners/InferentialReasoner.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 456ms
+EXIT 0
+== lockfile root version
+0.0.10 / 0.0.10
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== deps marker rewritten
+== status after install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/reason.md
+ M package-lock.json
+ M package.json
+ M src/core/builders/managers/FactorManager.ts
+ M src/core/reasoners/SymbolicReasoner.ts
+ M src/core/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/reasoners/InferentialReasoner.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ .../src/core/reasoners/InferentialReasoner.test.ts |   6 +-
+ tsconfig.json                                      |   3 +-
+ 17 files changed, 1586 insertions(+), 607 deletions(-)
+== stage by path
+ 18 files changed, 2040 insertions(+), 607 deletions(-)
+== committed
+b4f2e92 Prepare reason for the equality gate
+(status end)

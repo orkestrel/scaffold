@@ -352,3 +352,10 @@ Exit 1 — expected; this is the converge unit's worklist.
 ## Deviations
 
 None. `repair` wrote exactly the P21 list. Every voice diagnostic and every `test:policy` prose hit named a file inside scope. Every gate other than `docs` read green.
+
+
+---
+
+## Orchestrator annotation (test audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban; every citation held against the tree. The report stands as the unit's evidence with this note.

@@ -1,0 +1,47 @@
+== websocket P.1 landing 2026-09-07T15:55:48Z, version 0.0.12
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 452ms
+EXIT 0
+== lockfile root version
+0.0.12 / 0.0.12
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== deps marker rewritten
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupServer.ts |  16 +-
+ tsconfig.json        |   3 +-
+ 12 files changed, 1555 insertions(+), 577 deletions(-)
+== stage by path
+ 13 files changed, 2009 insertions(+), 577 deletions(-)
+== committed
+4472093 Prepare websocket for the equality gate
+(status end)
