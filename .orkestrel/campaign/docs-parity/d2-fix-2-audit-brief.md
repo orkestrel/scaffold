@@ -2,7 +2,7 @@
 
 ## Lanes
 
-The objective lane (`reviewer`, Opus 5, the recorded substitution for the dark Sol bench) on claims 1 to 3, and a `checker` (Sonnet) on every claim's mechanical part. The dispatch names which you hold. Read only this brief and the evidence it names; run no command; edit nothing; perform the assignment directly and spawn nothing. Rule on every claim from your lane, and write CANNOT RULE with what is missing where the claim is another lane's.
+The objective lane (`reviewer`, Opus 5, the recorded substitution for the dark Sol bench) on claims 1 to 3, 5, and 6, and a `checker` (Sonnet) on every claim's mechanical part. The dispatch names which you hold. Read only this brief and the evidence it names; run no command; edit nothing; perform the assignment directly and spawn nothing. Rule on every claim from your lane, and write CANNOT RULE with what is missing where the claim is another lane's.
 
 ## Subject
 
@@ -14,7 +14,9 @@ The third round (`d2-fix-2-brief.md`, edits H1 to H7) over `@orkestrel/guide` at
 2. **H1, the controls.** `collectKeys` has cases over the D1 control fixtures and a member fixture; a corpus-scale member control requires, for every `Owner.member` key `extractDeclaration` with `extractMemberMethods` reports over this package's `src/`, that `locateComment`'s located block carries that member's summary; both controls are discriminating (a planted divergence in the member or owner rule reddens the corpus control — the report shows the reading).
 3. **H2, H3, H6, prose accuracy.** `spliceSpan`'s `@param span` names both producers; the sentence at `src/core/helpers.ts:1688-1690` reads as the brief quotes; the `normalizeSummary` TSDoc states the delimiter set on its own terms with no `buildCell` appositive or a requalified one, and the guide's clause list agrees.
 4. **H4, H5.** No `below` or `above` pointer remains in the owned files; `extractBlocks` and `extractSummary` replace `readBlocks` and `readSummary` at every site.
-5. **H7 and scope.** The report cites `src/core/helpers.ts:1721-1723` for the over-length token sentence and `tests/guides.test.ts:401` for the transcription guard; the cache sentence is backed by a named search with its result or dropped; the status file lists only the owned set; every `file:line` the report cites matches the files at their new state; no count appears in the report's prose; the `collectKeys` guide row exists.
+5. **The two decisions the report flags.** `extractBodyLines` (`src/core/helpers.ts:1983`) is a leaf both member readers need — the body inside an owner head, closed at a column-zero `}` — exported with cases and a guide row rather than duplicated; rule whether it earns its export under the no-superfluous-wrapper law or is a wrapper the two readers can hold inline. `extractExampleMethods` and `extractExamples` were routed through `collectKeys` too, with `extractExamples`' `function`-only population preserved by narrowing the key to the `function ` prefix; rule whether the population is unchanged (the tip's cases and the corpus controls are the evidence) and whether the routing follows from H1's outcome.
+6. **The unproven rule.** `locateComment`'s comment at `src/core/helpers.ts:2890-2892` says the authoritative span is the last one a contiguous JSDoc run opens, and the report's mutation D shows no case discriminates it; rule whether that rule is right for a doc block immediately followed by another with no code line between, and whether it stays recorded for the next change or needs a case now.
+7. **H7 and scope.** The report cites `src/core/helpers.ts:1721-1723` for the over-length token sentence and `tests/guides.test.ts:401` for the transcription guard; the cache sentence is backed by a named search with its result or dropped; the status file lists only the owned set; every `file:line` the report cites matches the files at their new state; no count appears in the report's prose; the `collectKeys` guide row exists.
 
 ## Output
 

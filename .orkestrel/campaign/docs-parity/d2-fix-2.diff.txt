@@ -1,0 +1,3160 @@
+diff --git a/guides/guide.md b/guides/guide.md
+index f0c80f9..a37b642 100644
+--- a/guides/guide.md
++++ b/guides/guide.md
+@@ -67,6 +67,7 @@ extractor and link check is keyed on, from [`constants.ts`](../src/core/constant
+ | `KIND`             | const | `'Kind'` — the header text of the column a `## Surface` table's declaration keyword is read from.                                                           |
+ | `SUMMARY`          | const | `'Summary'` — the header text of the column a `## Surface` or `## Methods` table's compared description paragraph is read from.                             |
+ | `EXTERNAL_SCHEMES` | const | `readonly string[]` — `['http:', 'https:', 'mailto:', 'tel:']`; a link with one of these prefixes is never filesystem-resolved.                             |
++| `WRAP_WIDTH`       | const | `100` — the default character budget a rewritten doc block's description paragraph wraps inside, counting a tab as one character.                           |
+ 
+ ### Helpers
+ 
+@@ -75,53 +76,75 @@ the declaration, member, JSDoc, and guide-document grammars built on it, and the
+ path primitives `Guide`, `Source`, `parsers.ts`, and a consumer's parity test all reach for
+ directly.
+ 
+-| Name                    | Kind     | Signature                                                                                                 | Behavior                                                                                                                                                                                                                                          |
+-| ----------------------- | -------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `normalizeDirectories`  | function | `(module: GuideModule) => readonly string[]`                                                              | Canonicalizes through `resolvePath`, uses `'.'` for root, and removes duplicates in first-seen order.                                                                                                                                             |
+-| `computeModuleKey`      | function | `(module: GuideModule) => string`                                                                         | The stable cache key for a module scope — its normalized directories joined by NUL, so two spellings of one module share a key and no directory boundary can collide with directory text.                                                         |
+-| `selectModuleKeys`      | function | `(files: Readonly<Record<string, string>>, module: GuideModule) => readonly string[]`                     | Selects exact canonical-segment opaque `.ts` keys under any scope and excludes every selected exact `index.ts` plus `*.test.ts`; sorted.                                                                                                          |
+-| `hasCanonicalSegments`  | function | `(key: string) => boolean`                                                                                | Rejects empty, `.` and `..` slash-separated segments without normalization while retaining ordinary dotfiles.                                                                                                                                     |
+-| `computeSymbolKey`      | function | `(symbol: SurfaceSymbol) => string`                                                                       | The bijection key for a surface symbol — `${keyword} ${name}` — so a symbol comparison diffs (name, keyword) pairs, not names alone.                                                                                                              |
+-| `findMissing`           | function | `(names: readonly string[], source: readonly string[]) => readonly string[]`                              | The names present in `names` but absent from `source` — the set-difference behind a both-directions bijection assertion.                                                                                                                          |
+-| `findMissingSymbols`    | function | `(symbols: readonly SurfaceSymbol[], source: readonly SurfaceSymbol[]) => readonly string[]`              | The `computeSymbolKey` set-difference between two symbol lists.                                                                                                                                                                                   |
+-| `extractSourceLines`    | function | `(source: string) => readonly SourceLine[]`                                                               | Equal-length physical source, code, and JSDoc projection with bounded literal Unicode identifier slash state.                                                                                                                                     |
+-| `extractExports`        | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | Direct declaration-keyword exports over projected lines with an uninterrupted column-zero head; projection never widens membership.                                                                                                               |
+-| `extractHidden`         | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | The non-exported mirror with the same projected, uninterrupted column-zero head and declaration-keyword population.                                                                                                                               |
+-| `joinHead`              | function | `(lines: readonly string[], start: number) => DeclarationHead \| undefined`                               | Joins a declaration head starting at `start` into one space-separated line, consuming lines until the first ending in `{`.                                                                                                                        |
+-| `escapeRegExp`          | function | `(value: string) => string`                                                                               | Escapes every regex metacharacter in a literal string so it reads as text inside a larger `RegExp` source — `extractDeclaration`'s head grammar and `findUnexampled`'s word-boundary search both splice a caller-supplied name through it.        |
+-| `extractDeclaration`    | function | `(source: string, keyword: DeclarationKeyword, name: string) => Declaration \| undefined`                 | Locates one real `export class` / `export interface` head in projected lines and returns its raw body and its `extends` bases together, or `undefined` when the file declares no such head.                                                       |
+-| `extractMemberMethods`  | function | `(lines: readonly string[]) => readonly MethodEntry[]`                                                    | Matches callable members on one projection of the body, each with its own doc block's description paragraph; commented candidates, getters, setters, `static`, and `#` privates never count.                                                      |
+-| `extractSourceComments` | function | `(lines: readonly SourceLine[]) => readonly SourceComment[]`                                              | Every eligible genuine JSDoc block paired with the physical record it documents — the one walk every doc-block reader shares.                                                                                                                     |
+-| `normalizeComment`      | function | `(comment: string) => string`                                                                             | One genuine JSDoc span's unwrapped body: opener, closing marker, continuation markers, and the block's leading indentation removed, per-line trailing whitespace trimmed.                                                                         |
+-| `normalizeSummary`      | function | `(text: string) => string`                                                                                | The compared form of a description paragraph — `{@link}` targets rendered as code tokens, whitespace collapsed, the ends trimmed.                                                                                                                 |
+-| `maskFences`            | function | `(text: string) => string`                                                                                | One doc block's unwrapped text with every fenced body replaced by aligned spaces, so a tag search reads the block's structure and never its example code.                                                                                         |
+-| `collectSummaries`      | function | `(lines: readonly SourceLine[]) => ReadonlyMap<SourceLine, string>`                                       | The description paragraph of every documented record, keyed by the record; a block carrying no description contributes no entry.                                                                                                                  |
+-| `collectExamples`       | function | `(comment: string, name: string) => readonly SourceExample[]`                                             | The `@example` blocks one doc block's unwrapped text carries, each with its title, its fence language, and its body.                                                                                                                              |
+-| `extractExampleLines`   | function | `(lines: readonly SourceLine[]) => readonly SourceLine[]`                                                 | The `extractSourceComments` walk filtered to the blocks carrying an `@example` tag opening a line at its first non-blank column, projected to the records they document.                                                                          |
+-| `extractExamples`       | function | `(source: string) => readonly SourceExample[]`                                                            | The exported functions' `@example` blocks, matched against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                              |
+-| `extractExampleMethods` | function | `(lines: readonly string[]) => readonly SourceExample[]`                                                  | The callable members' `@example` blocks, matched against the same shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                       |
+-| `selectSectionBlocks`   | function | `(document: MarkdownDocument, heading: string) => readonly BlockNode[]`                                   | The block nodes under a named `##` heading, up to the next `##`-or-higher heading (or the document's end).                                                                                                                                        |
+-| `extractTagline`        | function | `(document: MarkdownDocument) => string \| undefined`                                                     | The text of the blockquote following the document's H1, or `undefined` when a heading intervenes first.                                                                                                                                           |
+-| `extractSurface`        | function | `(document: MarkdownDocument) => readonly SurfaceSymbol[]`                                                | Every `## Surface` identifier: each table's rows union every backticked H3 entity heading, deduped by `computeSymbolKey`, each row carrying its `Summary` cell when the table has that column.                                                    |
+-| `extractMethods`        | function | `(document: MarkdownDocument) => readonly MethodGroup[]`                                                  | One `MethodGroup` per documented behavioral interface in `## Methods` — an H4 code span sets the interface, the following table lists its entries.                                                                                                |
+-| `extractUnnamed`        | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every `## Surface` or `## Methods` row whose first cell carries no code span — the rows `extractSurface` and `extractMethods` skip for want of a name, each returned as its cells' text on one line.                                              |
+-| `extractLinks`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every link href in the guide document, including table cells — a full, depth-first AST walk.                                                                                                                                                      |
+-| `extractTests`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | The relative test links declared under `## Tests`.                                                                                                                                                                                                |
+-| `extractFences`         | function | `(document: MarkdownDocument) => readonly GuideFence[]`                                                   | Every fenced code block anywhere in the guide document, tagged or not, each carrying its nearest preceding heading as `title` — a full AST walk with no language filter.                                                                          |
+-| `isExternalLink`        | function | `(href: string) => boolean`                                                                               | Whether a guides-parity link check skips a link `href` — an external scheme (`EXTERNAL_SCHEMES`) or a bare `#` anchor.                                                                                                                            |
+-| `resolveLink`           | function | `(file: string, target: string) => string`                                                                | Derives a declaring file's directory, including workspace-root files, then delegates to `resolvePath`.                                                                                                                                            |
+-| `resolvePath`           | function | `(directory: string, target: string) => string`                                                           | Sole dot-segment reducer; returns `'.'` when no segment remains and preserves every excess leading parent.                                                                                                                                        |
+-| `findFirstCode`         | function | `(nodes: readonly InlineNode[]) => string \| undefined`                                                   | The first code-span value found by descending an inline node list, following into `emphasis`, `link`, and `image` children.                                                                                                                       |
+-| `normalizeIdentifier`   | function | `(code: string) => string`                                                                                | The identifier prefix of a code-span text — everything before its first `<`, trimmed (strips generic-parameter annotation).                                                                                                                       |
+-| `findColumnIndex`       | function | `(table: TableNode, header: string) => number \| undefined`                                               | The index of the column whose header text is `header`, found by that text so a table's columns survive reordering.                                                                                                                                |
+-| `extractCellText`       | function | `(cell: readonly InlineNode[]) => string`                                                                 | One table cell's compared text, code spans kept as code spans while emphasis and a link drop to their text and an image drops to its alternative text.                                                                                            |
+-| `extractCellLinks`      | function | `(cell: readonly InlineNode[]) => readonly string[]`                                                      | The link hrefs found within one table cell's inline content, in walk order.                                                                                                                                                                       |
+-| `findUnexampled`        | function | `(names: readonly string[], fences: readonly string[], examples: readonly string[]) => readonly string[]` | The names with no fence mention (word boundary) and no `@example` membership — the EX check's core comparison.                                                                                                                                    |
+-| `findUnlisted`          | function | `(fences: readonly GuideFence[], languages: readonly string[]) => readonly GuideFence[]`                  | The fences whose language the caller did not list, plus every untagged fence — an untagged fence has no language to list.                                                                                                                         |
+-| `extractFenceImports`   | function | `(fence: string) => readonly FenceImport[]`                                                               | Parses a fence's brace `import` statements into per-specifier imported identifier names — the FI check's core comparison. Brace bindings only: a default, namespace, side-effect, or mixed `import Default, { named }` statement is not surfaced. |
+-| `collectTitles`         | function | `(guide: GuideInterface, source: SourceInterface) => ReadonlyMap<string, SourceExample>`                  | The titled `@example` blocks a guide's documented surface reaches, keyed by title, the first block of a title answering for it.                                                                                                                   |
+-| `computeDrift`          | function | `(key: string, guide: string \| undefined, source: string \| undefined) => Drift \| undefined`            | One compared key's guide text and source text as a `Drift`, or `undefined` only when both sides carry the same text; the side carrying no text is omitted, and neither side carrying text reports the key alone.                                  |
+-| `findDrift`             | function | `(guide: GuideInterface, source: SourceInterface) => readonly Drift[]`                                    | Every disagreement between a guide and its source — Surface rows, Methods rows, then the first titled fence of each heading — naming both sites.                                                                                                  |
++| Name                    | Kind     | Signature                                                                                                 | Behavior                                                                                                                                                                                                                                                                                      |
++| ----------------------- | -------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `normalizeDirectories`  | function | `(module: GuideModule) => readonly string[]`                                                              | Canonicalizes through `resolvePath`, uses `'.'` for root, and removes duplicates in first-seen order.                                                                                                                                                                                         |
++| `computeModuleKey`      | function | `(module: GuideModule) => string`                                                                         | The stable cache key for a module scope — its normalized directories joined by NUL, so two spellings of one module share a key and no directory boundary can collide with directory text.                                                                                                     |
++| `selectModuleKeys`      | function | `(files: Readonly<Record<string, string>>, module: GuideModule) => readonly string[]`                     | Selects exact canonical-segment opaque `.ts` keys under any scope and excludes every selected exact `index.ts` plus `*.test.ts`; sorted.                                                                                                                                                      |
++| `hasCanonicalSegments`  | function | `(key: string) => boolean`                                                                                | Rejects empty, `.` and `..` slash-separated segments without normalization while retaining ordinary dotfiles.                                                                                                                                                                                 |
++| `computeSymbolKey`      | function | `(symbol: SurfaceSymbol) => string`                                                                       | The bijection key for a surface symbol — `${keyword} ${name}` — so a symbol comparison diffs (name, keyword) pairs, not names alone.                                                                                                                                                          |
++| `findMissing`           | function | `(names: readonly string[], source: readonly string[]) => readonly string[]`                              | The names present in `names` but absent from `source` — the set-difference behind a both-directions bijection assertion.                                                                                                                                                                      |
++| `findMissingSymbols`    | function | `(symbols: readonly SurfaceSymbol[], source: readonly SurfaceSymbol[]) => readonly string[]`              | The `computeSymbolKey` set-difference between two symbol lists.                                                                                                                                                                                                                               |
++| `extractSourceLines`    | function | `(source: string) => readonly SourceLine[]`                                                               | Equal-length physical source, code, and JSDoc projection with bounded literal Unicode identifier slash state.                                                                                                                                                                                 |
++| `extractExports`        | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | Direct declaration-keyword exports over projected lines with an uninterrupted column-zero head; projection never widens membership.                                                                                                                                                           |
++| `extractHidden`         | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | The non-exported mirror with the same projected, uninterrupted column-zero head and declaration-keyword population.                                                                                                                                                                           |
++| `joinHead`              | function | `(lines: readonly string[], start: number) => DeclarationHead \| undefined`                               | Joins a declaration head starting at `start` into one space-separated line, consuming lines until the first ending in `{`.                                                                                                                                                                    |
++| `escapeRegExp`          | function | `(value: string) => string`                                                                               | Escapes every regex metacharacter in a literal string so it reads as text inside a larger `RegExp` source — `extractDeclaration`'s head grammar and `findUnexampled`'s word-boundary search both splice a caller-supplied name through it.                                                    |
++| `extractDeclaration`    | function | `(source: string, keyword: DeclarationKeyword, name: string) => Declaration \| undefined`                 | Locates one real `export class` / `export interface` head in projected lines and returns its raw body and its `extends` bases together, or `undefined` when the file declares no such head.                                                                                                   |
++| `extractMemberMethods`  | function | `(lines: readonly string[]) => readonly MethodEntry[]`                                                    | Matches callable members on one projection of the body, each with its own doc block's description paragraph; commented candidates, getters, setters, `static`, and `#` privates never count.                                                                                                  |
++| `extractSourceComments` | function | `(lines: readonly SourceLine[]) => readonly SourceComment[]`                                              | Every eligible genuine JSDoc block paired with the physical record it documents — the one walk every doc-block reader shares.                                                                                                                                                                 |
++| `normalizeComment`      | function | `(comment: string) => string`                                                                             | One genuine JSDoc span's unwrapped body: opener, closing marker, continuation markers, and the block's leading indentation removed, per-line trailing whitespace trimmed.                                                                                                                     |
++| `unwrapComment`         | function | `(comment: string) => readonly string[]`                                                                  | The same unwrapping as one content line per physical line, aligned with `comment.split('\n')`, so an index found in it addresses the same line of the span it was built from.                                                                                                                 |
++| `buildComment`          | function | `(lines: readonly string[], indent: string) => string`                                                    | One genuine JSDoc span built from its content lines — the inverse of `unwrapComment`, each line behind a continuation marker at `indent` and an empty line as the bare marker.                                                                                                                |
++| `wrapText`              | function | `(text: string, width: number) => readonly string[]`                                                      | One paragraph wrapped into greedy lines no longer than `width`; a word longer than `width` takes its own line rather than being split.                                                                                                                                                        |
++| `normalizeSummary`      | function | `(text: string) => string`                                                                                | The compared form of a description paragraph — single-backtick code spans located first, `{@link}` targets outside them rendered as code tokens, whitespace collapsed, the ends trimmed, and each located span's own boundary whitespace trimmed.                                             |
++| `maskFences`            | function | `(text: string) => string`                                                                                | One doc block's unwrapped text with every fenced body replaced by aligned spaces, so a tag search reads the block's structure and never its example code.                                                                                                                                     |
++| `collectSummaries`      | function | `(lines: readonly SourceLine[]) => ReadonlyMap<SourceLine, string>`                                       | The description paragraph of every documented record, keyed by the record; a block carrying no description contributes no entry.                                                                                                                                                              |
++| `extractBodyLines`      | function | `(lines: readonly string[]) => readonly SourceLine[]`                                                     | A declaration body's aligned physical records, read inside an owner head the reader supplies so each callable member keys to its owner; that head's own record opens the projection.                                                                                                          |
++| `collectKeys`           | function | `(lines: readonly SourceLine[]) => ReadonlyMap<SourceLine, string>`                                       | The compared key of every record a key names — a `computeSymbolKey` symbol key for a column-zero `export` head, an `Owner.member` key for a one-tab callable member inside one — keyed by the record; the owner closes at the first column-zero `}`.                                          |
++| `collectExamples`       | function | `(comment: string, name: string) => readonly SourceExample[]`                                             | The `@example` blocks one doc block's unwrapped text carries, each with its title, its fence language, and its body.                                                                                                                                                                          |
++| `extractExampleLines`   | function | `(lines: readonly SourceLine[]) => readonly SourceLine[]`                                                 | The `extractSourceComments` walk filtered to the blocks carrying an `@example` tag opening a line at its first non-blank column, projected to the records they document.                                                                                                                      |
++| `extractExamples`       | function | `(source: string) => readonly SourceExample[]`                                                            | The exported functions' `@example` blocks, matched against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                                          |
++| `extractExampleMethods` | function | `(lines: readonly string[]) => readonly SourceExample[]`                                                  | The callable members' `@example` blocks, matched against the same shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                                   |
++| `selectSectionBlocks`   | function | `(document: MarkdownDocument, heading: string) => readonly BlockNode[]`                                   | The block nodes under a named `##` heading, up to the next `##`-or-higher heading (or the document's end).                                                                                                                                                                                    |
++| `extractTagline`        | function | `(document: MarkdownDocument) => string \| undefined`                                                     | The text of the blockquote following the document's H1, or `undefined` when a heading intervenes first.                                                                                                                                                                                       |
++| `extractSurface`        | function | `(document: MarkdownDocument) => readonly SurfaceSymbol[]`                                                | Every `## Surface` identifier: each table's rows union every backticked H3 entity heading, deduped by `computeSymbolKey`, each row carrying its `Summary` cell when the table has that column.                                                                                                |
++| `extractMethods`        | function | `(document: MarkdownDocument) => readonly MethodGroup[]`                                                  | One `MethodGroup` per documented behavioral interface in `## Methods` — an H4 code span sets the interface, the following table lists its entries.                                                                                                                                            |
++| `collectGroups`         | function | `(document: MarkdownDocument) => ReadonlyMap<TableNode, string>`                                          | Each `## Methods` table keyed to the interface its H4 names, in document order — the node-addressed form a rewrite locates a row's table through.                                                                                                                                             |
++| `extractUnnamed`        | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every `## Surface` or `## Methods` row whose first cell carries no code span — the rows `extractSurface` and `extractMethods` skip for want of a name, each returned as its cells' text on one line.                                                                                          |
++| `extractLinks`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every link href in the guide document, including table cells — a full, depth-first AST walk.                                                                                                                                                                                                  |
++| `extractTests`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | The relative test links declared under `## Tests`.                                                                                                                                                                                                                                            |
++| `extractFences`         | function | `(document: MarkdownDocument) => readonly GuideFence[]`                                                   | Every fenced code block anywhere in the guide document, tagged or not, each carrying its nearest preceding heading as `title` — a full AST walk with no language filter.                                                                                                                      |
++| `collectFences`         | function | `(document: MarkdownDocument) => ReadonlyMap<CodeBlockNode, GuideFence>`                                  | Each fenced code block keyed by its own node, paired with the `GuideFence` `extractFences` reports for it — the node-addressed form a rewrite reads a fence's source region through.                                                                                                          |
++| `isExternalLink`        | function | `(href: string) => boolean`                                                                               | Whether a guides-parity link check skips a link `href` — an external scheme (`EXTERNAL_SCHEMES`) or a bare `#` anchor.                                                                                                                                                                        |
++| `resolveLink`           | function | `(file: string, target: string) => string`                                                                | Derives a declaring file's directory, including workspace-root files, then delegates to `resolvePath`.                                                                                                                                                                                        |
++| `resolvePath`           | function | `(directory: string, target: string) => string`                                                           | Sole dot-segment reducer; returns `'.'` when no segment remains and preserves every excess leading parent.                                                                                                                                                                                    |
++| `findFirstCode`         | function | `(nodes: readonly InlineNode[]) => string \| undefined`                                                   | The first code-span value found by descending an inline node list, following into `emphasis`, `link`, and `image` children.                                                                                                                                                                   |
++| `normalizeIdentifier`   | function | `(code: string) => string`                                                                                | The identifier prefix of a code-span text — everything before its first `<`, trimmed (strips generic-parameter annotation).                                                                                                                                                                   |
++| `findColumnIndex`       | function | `(table: TableNode, header: string) => number \| undefined`                                               | The index of the column whose header text is `header`, found by that text so a table's columns survive reordering.                                                                                                                                                                            |
++| `extractRowSymbol`      | function | `(table: TableNode, row: number) => SurfaceSymbol \| undefined`                                           | One `## Surface` row's symbol — its code-span name, its `Kind` keyword, and its `Summary` cell; `undefined` for a row with no code-span name and for a row whose `Kind` text is no `ExportKeyword`.                                                                                           |
++| `extractRowEntry`       | function | `(table: TableNode, row: number) => MethodEntry \| undefined`                                             | One `## Methods` row's entry — its code-span name and its `Summary` cell; `undefined` for a row with no code-span name.                                                                                                                                                                       |
++| `extractRowSummary`     | function | `(table: TableNode, row: number) => string \| undefined`                                                  | One row's compared summary, read through `extractCellText` and `normalizeSummary`; `undefined` when the table has no `Summary` column and when the cell is empty.                                                                                                                             |
++| `extractCellText`       | function | `(cell: readonly InlineNode[]) => string`                                                                 | One table cell's compared text, code spans kept as code spans while emphasis and a link drop to their text and an image drops to its alternative text.                                                                                                                                        |
++| `buildCell`             | function | `(text: string) => readonly InlineNode[]`                                                                 | One cell's inline nodes built from its compared text — the inverse of `extractCellText`; a single-backtick run whose text has no inner backtick and no boundary space becomes a code span and every other character becomes literal text.                                                     |
++| `extractCellLinks`      | function | `(cell: readonly InlineNode[]) => readonly string[]`                                                      | The link hrefs found within one table cell's inline content, in walk order.                                                                                                                                                                                                                   |
++| `findUnexampled`        | function | `(names: readonly string[], fences: readonly string[], examples: readonly string[]) => readonly string[]` | The names with no fence mention (word boundary) and no `@example` membership — the EX check's core comparison.                                                                                                                                                                                |
++| `findUnlisted`          | function | `(fences: readonly GuideFence[], languages: readonly string[]) => readonly GuideFence[]`                  | The fences whose language the caller did not list, plus every untagged fence — an untagged fence has no language to list.                                                                                                                                                                     |
++| `extractFenceImports`   | function | `(fence: string) => readonly FenceImport[]`                                                               | Parses a fence's brace `import` statements into per-specifier imported identifier names — the FI check's core comparison. Brace bindings only: a default, namespace, side-effect, or mixed `import Default, { named }` statement is not surfaced.                                             |
++| `collectTitles`         | function | `(guide: GuideInterface, source: SourceInterface) => ReadonlyMap<string, SourceExample>`                  | The titled `@example` blocks a guide's documented surface reaches, keyed by title, the first block of a title answering for it.                                                                                                                                                               |
++| `computeDrift`          | function | `(key: string, guide: string \| undefined, source: string \| undefined) => Drift \| undefined`            | One compared key's guide text and source text as a `Drift`, or `undefined` only when both sides carry the same text; the side carrying no text is omitted, and neither side carrying text reports the key alone.                                                                              |
++| `findDrift`             | function | `(guide: GuideInterface, source: SourceInterface) => readonly Drift[]`                                    | Every disagreement between a guide and its source — Surface rows, Methods rows, then the first titled fence of each heading — naming both sites.                                                                                                                                              |
++| `renderSurface`         | function | `(symbols: readonly SurfaceSymbol[]) => string`                                                           | A `Name` / `Kind` / `Summary` table rendered from the symbols a source declares, one row per symbol; a symbol with no summary renders an empty cell.                                                                                                                                          |
++| `renderMethods`         | function | `(group: MethodGroup) => string`                                                                          | One `## Methods` group rendered as its `####` code-span heading and a `Name` / `Summary` table, one row per documented member.                                                                                                                                                                |
++| `renderExample`         | function | `(example: SourceExample) => string`                                                                      | One `@example` block rendered as the guide fence it pairs with — an H3 heading carrying its title, then a fence carrying its language and code; an untitled block renders the fence alone.                                                                                                    |
++| `buildTable`            | function | `(table: TableNode, row: number, column: number, text: string) => TableNode`                              | A copy of a table with one cell's inline content rebuilt from `text`; every other cell, the header, and the alignment row are shared.                                                                                                                                                         |
++| `buildFence`            | function | `(example: SourceExample) => CodeBlockNode`                                                               | The fenced code block one `@example` block renders as, untagged when the block names no language.                                                                                                                                                                                             |
++| `spliceSpan`            | function | `(source: string, span: MarkdownSpan, replacement: string) => string`                                     | `source` with the region `span` addresses written over by `replacement`, every byte outside it travelling unchanged.                                                                                                                                                                          |
++| `replaceCell`           | function | `(guide: string, key: string, summary: string) => string \| undefined`                                    | A guide's text with one compared cell replaced, the key named the way `findDrift` names it; `undefined` when the key reaches no cell, and the guide byte for byte when the row already carries the summary.                                                                                   |
++| `replaceFence`          | function | `(guide: string, title: string, example: SourceExample) => string \| undefined`                           | A guide's text with the first fence of `title` taking the block's language and code; `undefined` when no fence carries the title, and the guide byte for byte when the fence already carries that body.                                                                                       |
++| `replaceSummary`        | function | `(comment: string, summary: string, width?: number) => string \| undefined`                               | One doc block's raw text with its description paragraph replaced and re-wrapped inside `width`, every tag line and the blank separator kept; the block byte for byte when it already carries the summary, and `undefined` for a text that is no doc block and for a summary carrying no word. |
++| `replaceExample`        | function | `(comment: string, example: SourceExample) => string \| undefined`                                        | One doc block's raw text with the body of the `@example` tag of that title replaced by a fence of the block's language and code; `undefined` for a text that is no doc block, for a title no tag carries, and for code the emitted three-backtick fence cannot enclose.                       |
++| `locateComment`         | function | `(text: string, key: string) => MarkdownSpan \| undefined`                                                | The character region of the doc block a compared key attaches to inside one file's text, indentation included — the span a caller slices, rewrites, and splices back through `spliceSpan`; `undefined` when no block carries the key.                                                         |
+ 
+ ### Parsers
+ 
+@@ -320,22 +343,36 @@ records an `@example` documents. `extractTagline` reads the blockquote following
+ One transform reads both sides, so its clauses are stated once and each fires wherever its input
+ occurs rather than on a side reserved for it:
+ 
+-- `{@link X}` and `{@link A.b}` become the code token of the target text.
+-- `{@link X | text}` becomes the code token of `text`.
++- Every single-backtick code span — one backtick per side, no inner backtick, no adjacent backtick — is located, before any other clause runs.
++- `{@link X}` and `{@link A.b}` become the code token of the target text, outside a located span.
++- `{@link X | text}` becomes the code token of `text`, outside a located span.
+ - Emphasis — `**text**` and `_text_` — drops to its text.
+ - A link, `[text](target)`, drops to `text`.
+ - An image, `![text](target)`, drops to its alternative text.
+ - `\|` unescapes.
+ - Every run of whitespace, a continuation marker and a line break included, collapses to one space.
+ - The leading and trailing whitespace trims.
+-- A code span stays a code span.
++- A code span stays a code span, and the whitespace at each end of a located span's own content trims; a span whose content is all whitespace keeps one space.
+ 
+ Nothing else is transformed. Emphasis, a link, an image, and `\|` are markdown syntax the parser
+ resolves, so those clauses reach only a guide cell; `{@link Widget}` is ordinary text, so a guide cell carrying that token
+-rewrites to `` `Widget` `` exactly as a doc block's paragraph does. The `extractCellText` function
++rewrites to `` `Widget` `` exactly as a doc block's paragraph does, while the same token written
++inside a code span stays literal on both sides. The `extractCellText` function
+ reads the markdown nodes and `normalizeSummary` reads the text tokens, and both sides end in
+ `normalizeSummary`.
+ 
++The order is what makes the clauses agree. Locating spans first keeps a delimiter the `{@link}`
++expansion inserts from reading as an authored one; trimming a span's boundary last, after the
++whitespace collapse, judges a span wrapped across two physical lines on the characters the parser
++judged. The trim is symmetric because the markdown parser is not: it strips one space from each end
++of a code span only when both ends carry one, so trimming every boundary space on the source side
++is the rule that meets a guide cell however it was written.
++
++A code span delimited by more than one backtick sits outside the compared form and travels
++untouched, as does a code span whose own text carries a backtick. The form spells every span with
++one backtick per side, so neither can be written back: a summary carrying either cannot converge,
++and the construct belongs in prose instead.
++
+ The compared unit is the description paragraph, not its first sentence: on the source side the doc
+ block's text from its opening to its first block tag, and on the guide side the `Summary` cell. A
+ block tag opens a line whose first non-blank character is `@`, so a tag written past one space after
+@@ -389,9 +426,13 @@ adjacency parser and apply their distinct exported-function and callable-member
+ `code`.
+ 
+ Across the `.ts` module keys under each selected directory, excluding its root `index.ts` and
+-every `*.test.ts`, `extractExports` matches
+-`^export (?:async )?(function\*?|class|const|interface|type) (\w+)` per projected line, deduped by
+-(keyword, name). `extractHidden` applies the same declaration-keyword head grammar without
++every `*.test.ts`, `collectKeys` matches
++`^export (?:async )?(function\*?|class|const|interface|type) (\w+)` per projected line and keys that
++line by `computeSymbolKey`; `extractExports` reads those keys, splits each at its one space, and
++dedupes by (keyword, name). `collectKeys` is the package's one key grammar, and `extractExports`,
++`extractExamples`, `extractMemberMethods`, `extractExampleMethods`, and `locateComment` each read
++their own part out of the same map, so a change to the head shape or to the member shape reaches
++every one of them. `extractHidden` applies the same declaration-keyword head grammar without
+ `export`. Comment and
+ template payload, enums, `let`, `var`, and other TypeScript declaration forms are outside these
+ populations; enum exclusion describes reflection scope, not a general package-policy ban.
+@@ -402,8 +443,9 @@ returns that one head's aligned raw body and its `extends` bases as a single `De
+ clause on the same declaration. Its identifier is escaped through `escapeRegExp` before it enters
+ the head grammar, so a name carrying a regex metacharacter is literal text rather than a wildcard
+ or a thrown `SyntaxError`. A head that opens no column-zero close is skipped and the scan
+-continues. `extractMemberMethods` projects that body once and matches
+-`^\t(?:async )?\*?(\w+)(<[^>]*>)?\??\(` against those body lines — plain / `async` /
++continues. `extractMemberMethods` projects that body once through `extractBodyLines`, which reads it
++inside an owner head so each member keys to its owner, and `collectKeys` matches
++`^\t(?:async )?\*?(\w+)\??(?:<.*>)?\(` against those body lines — plain / `async` /
+ generator / optional methods count; getters, setters, `static` members, and `#` privates
+ never match (their keyword or sigil breaks the `name(` shape), and `constructor` is filtered
+ out of `Source.methods`. Every balanced `<...>` span is removed from the head before its `extends`
+@@ -474,7 +516,7 @@ guard so a renamed heading fails loudly instead of passing on an empty extractio
+   cell carries no code span. `extractSurface` and `extractMethods` key a row on that code span, so a
+   row without one enters neither `guide.surface()` nor a `MethodGroup`, no bijection leg can report
+   it, and this check names the row instead of letting it go in silence. A finding is the row's cells
+-  read through `extractCellText` and joined by ` | `. Guard: RN reads table rows, so a guide
++  read through `extractCellText` and joined by `` ` | ` ``. Guard: RN reads table rows, so a guide
+   documenting its surface with backticked H3 entity headings and no `## Surface` table gives RN
+   nothing to read, and SB's `guide.surface().length > 0` covers that surface instead.
+ - **LI — Link integrity.** `guide.links()`, dropping `isExternalLink` hrefs, `resolveLink`
+@@ -531,6 +573,60 @@ directions; a barrel-only declaration outside `selectModuleKeys()` must be missi
+ a correlated commented declaration must remain absent from direct and barrel populations while
+ failing Guide-to-barrel; and a workspace-root `index.ts` hop must reach its real terminal symbol.
+ 
++## The renderers and the replacers
++
++The readers say where a guide and its source disagree; the renderers and the replacers carry a
++change across. Every one of them returns text and writes nothing, so the gate that reads
++`findDrift` calls no writer and a package's suite can never rewrite the tree it is checking. A
++script you write reads the file, chooses the direction, and writes the result back; this package
++gives that script the text to write and never opens a file itself.
++
++`renderSurface`, `renderMethods`, and `renderExample` produce fresh guide text from source
++entries — a `Name` / `Kind` / `Summary` table, a `####` group and its `Name` / `Summary` table,
++and a titled fence. Each builds a markdown node and renders it through the parser's own
++`renderMarkdown`, so the text it returns is the text the package parses back. Each renders the
++block a guide section contains rather than the section itself, because a guide documents its
++surface in several tables under their own sub-headings: reading a render back therefore parses it
++under the section heading its caller supplies, so `extractSurface` reads
++`'## Surface\n\n' + renderSurface(symbols)` back to the symbols it was rendered from, and
++`extractMethods` reads `'## Methods\n\n' + renderMethods(group)` back to the group.
++`renderExample` needs no such heading, because `extractFences` scopes a fence to no section. The
++render is one-space padded whatever the committed guide's column alignment was, so the checkout's
++own formatter re-aligns it and the comparison stays on parsed entries rather than on bytes.
++
++`replaceCell` and `replaceFence` rewrite one node inside a guide that already exists. Each locates
++its node through the readers — `extractRowSymbol` and `collectGroups` for a row, `collectFences`
++for a fence — reads that node's source region from the parser's provenance, rebuilds the node, and
++splices the render over the region through `spliceSpan`. Only the located node's own region is
++rewritten, so every byte of the guide outside it travels unchanged.
++
++`replaceSummary` and `replaceExample` rewrite one doc block's raw text — its description paragraph,
++or the body of the `@example` tag carrying a given title. `locateComment` is how a caller finds
++that block: it takes a file's text and a compared key and returns the block's own character region,
++which the caller slices, hands to a replacer, and splices back through `spliceSpan`. `unwrapComment`
++gives one content line per physical line, so the rewrite addresses the lines it replaces and keeps
++every other line: the tag lines, the blank separator before the first tag, the block's indentation,
++and its continuation markers. A replaced description re-wraps inside the caller's `width`, defaulting
++to `WRAP_WIDTH`, because a doc block's own wrapping is not recoverable from its text.
++
++Every replacer reports a miss the same way. `undefined` means "not replaced", and it covers a
++key that reaches no row, a table carrying no `Summary` column, a title no fence or tag carries, a
++text that is no doc block, a summary carrying no word, and code the emitted three-backtick fence
++cannot enclose. A caller reports the key it could not place instead of writing a file it could not
++read back.
++
++Every replacement whose target already carries the value returns its input byte for byte. That is
++what lets a package run the propagation over a tree that has no drift and see no file move: a
++re-render would re-pad a table and a re-wrap would move most doc blocks, and neither is a change
++anyone asked for. The identity reads both sides through the compared form, so handing a replacer
++text the form still moves writes once and is a fixed point on the next run.
++
++Direction is the developer's, with one rule: **the guide fence wins on example content**, because a
++package's suite executes its guide's fences and nothing executes a doc comment. So a disagreeing
++example travels from the guide into the doc block, and a disagreeing summary travels whichever way
++the developer names. The gate reports and never writes; neither this package's readers nor its
++renderers decide.
++
+ ## The pure file-inventory model
+ 
+ Neither `Guide` nor `Source` ever imports `node:fs` or any other I/O primitive — `Source`'s
+@@ -645,6 +741,24 @@ const source = createSource({
+ findDrift(guide, source) // [{ key: 'function walk', guide: 'Walks the tree.', source: 'Walks a tree.' }]
+ ```
+ 
++### Carry a summary across into the guide
++
++```ts
++import { replaceCell, replaceSummary } from '@orkestrel/guide'
++
++const guide =
++	'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |'
++
++// The guide's text back, with that one cell replaced and every byte outside the table unchanged.
++replaceCell(guide, 'function walk', 'Walks a tree.')
++// '## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks a tree. |'
++replaceCell(guide, 'function phantom', 'Absent.') // undefined — no row carries that key
++replaceCell(guide, 'function walk', 'Walks the tree.') === guide // true — the row already carries it
++
++// The other direction: one doc block's raw text, its description paragraph replaced.
++replaceSummary('/** Walks the tree. */', 'Walks a tree.') // '/** Walks a tree. */'
++```
++
+ ### Read a guide's tagline
+ 
+ ```ts
+@@ -682,7 +796,7 @@ their compared column `Shape`, `Signature`, `Behavior`, `Builds`, and `Returns`
+ `Summary` column in a later change, and until then the catalog's SQ, MQ, and EQ rows describe checks
+ this repository does not run against its own guide.
+ 
+-- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — direct `SourceLine`, lexical, and JSDoc-alignment invariants; projected declaration-keyword direct/hidden reflection; genuine JSDoc example adjacency and faux JSDoc exclusion; every guide-document extractor; the compared form clause by clause on both sides; the `Summary` locator over a reordered header and a table without the column; the nameless-row finding against a name the reader reads through emphasis; a block tag written past one space after the continuation marker, and a tag-shaped line inside a fenced body left to the example code; the fenced-body projection `maskFences` returns; fence titles and the tagline; `findDrift` with a negative control drawn from the symbols the bijection legs already report, a planted disagreement of each kind, and a later fence under one heading left outside the comparison; the doc-block reader against `parseSync`'s own reading, which names the shape the reader misses; canonical-key, runtime-name, `resolvePath`, and `resolveLink` invariants; all remaining helper leaves.
++- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — direct `SourceLine`, lexical, and JSDoc-alignment invariants; projected declaration-keyword direct/hidden reflection; genuine JSDoc example adjacency and faux JSDoc exclusion; every guide-document extractor; the compared form clause by clause on both sides; the `Summary` locator over a reordered header and a table without the column; the nameless-row finding against a name the reader reads through emphasis; a block tag written past one space after the continuation marker, and a tag-shaped line inside a fenced body left to the example code; the fenced-body projection `maskFences` returns; fence titles and the tagline; `findDrift` with a negative control drawn from the symbols the bijection legs already report, a planted disagreement of each kind, and a later fence under one heading left outside the comparison; the doc-block reader against `parseSync`'s own reading, which names the shape the reader misses; the compared cell built back from its text, over every doc-block summary this package ships; the compared form's code-span clause converging a padded, a one-sided, and an all-whitespace span from either side, leaving a link token inside a span literal, and leaving a multi-backtick span untouched; the corpus this package ships carrying a floor of blocks, read at its raw spans through the aligned JSDoc projection and checked against the blocks `extractSourceComments` attaches; the renderers round-tripping through the readers that own them and the render read the same as the column-aligned committed form; each replacer's located node rewritten with every byte outside it unchanged, its miss returning `undefined`, and its identity case byte-stable over every described doc block this package ships and a fixed point on the second run, with a control from outside each replacer's membership; the one key grammar `collectKeys` reports over the control fixtures and a member fixture, its owner closing at a column-zero brace, and the keyword and member name each reader splits back out of it; `locateComment` over an overload set, a member key, an owner closed at its brace, a CRLF file, and the shapes the attaching reader misses, then a rewrite spliced back and read through `collectSummaries`, and every `Owner.member` key this package's own source declares located back to the block carrying that member's summary; canonical-key, runtime-name, `resolvePath`, and `resolveLink` invariants; all remaining helper leaves.
+ - [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) — `parseManifest` row parsing, malformed-row skipping, one-versus-many Source canonicalization, and nested manifest directories.
+ - [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — `isExportKeyword` / `isSurfaceSymbol` / `isMethodEntry` / `isSourceExample` / `isDrift` / `isMethodGroup` / `isManifestEntry`.
+ - [`tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) — per-shape guard exactness, JSON Schema essentials, seeded generate round-trips, parse rebuilds.
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index e665e44..352cc32 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -48,6 +48,22 @@ export const SUMMARY: string = 'Summary'
+  */
+ export const MANIFEST: string = 'By concept'
+ 
++/**
++ * Holds the default character budget a rewritten doc block's description paragraph wraps
++ * inside — the greatest number of characters a re-wrapped line may carry, counted from the
++ * line's first character with a tab counting as one, so a wrapped line reads
++ * `${indent} * ${text}` and never passes that count.
++ *
++ * @remarks
++ * The budget counts characters, not rendered columns. A block indented with tabs therefore
++ * measures each tab as one character, and a formatter that renders a tab wider reads the same
++ * line as longer; a caller whose formatter measures differently passes its own width instead of
++ * taking this default. A doc block's own wrapping is not recoverable from its text either — the
++ * blocks this package's own source carries are hand-wrapped, and no single greedy width
++ * reproduces them — so a rewrite cannot infer a per-block width and falls back to this budget.
++ */
++export const WRAP_WIDTH: number = 100
++
+ /**
+  * Lists the link `href` schemes a guides-parity link check skips as external — a link
+  * with one of these prefixes (or a bare `#` anchor, handled separately in
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 7136fa8..4878077 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1,4 +1,11 @@
+-import type { BlockNode, InlineNode, MarkdownDocument, TableNode } from '@orkestrel/markdown'
++import type {
++	BlockNode,
++	CodeBlockNode,
++	InlineNode,
++	MarkdownDocument,
++	MarkdownSpan,
++	TableNode,
++} from '@orkestrel/markdown'
+ import type {
+ 	Declaration,
+ 	DeclarationHead,
+@@ -17,6 +24,8 @@ import type {
+ 	SurfaceSymbol,
+ } from './types.js'
+ import {
++	coalesceText,
++	createMarkdown,
+ 	flattenText,
+ 	isBlockquoteNode,
+ 	isCodeBlockNode,
+@@ -27,10 +36,19 @@ import {
+ 	isLinkNode,
+ 	isParagraphNode,
+ 	isTableNode,
++	renderMarkdown,
+ 	walkNodes,
+ } from '@orkestrel/markdown'
+ import { isNonEmptyString } from '@orkestrel/contract'
+-import { EXTERNAL_SCHEMES, KIND, METHODS, SUMMARY, SURFACE, TESTS } from './constants.js'
++import {
++	EXTERNAL_SCHEMES,
++	KIND,
++	METHODS,
++	SUMMARY,
++	SURFACE,
++	TESTS,
++	WRAP_WIDTH,
++} from './constants.js'
+ import { isExportKeyword } from './validators.js'
+ 
+ /**
+@@ -970,6 +988,50 @@ export function extractCellText(cell: readonly InlineNode[]): string {
+ 	return text
+ }
+ 
++/**
++ * Builds one table cell's inline content from its compared text — the inverse of
++ * {@link extractCellText}. A single-backtick run whose text carries no inner backtick and
++ * neither a leading nor a trailing space becomes a code span; every other character, a backtick
++ * included, becomes literal text, which `renderMarkdown` escapes so the rendered cell parses back
++ * to the text this function was given.
++ *
++ * @remarks
++ * The compared form spells every code span with one backtick per side, because
++ * {@link extractCellText} emits `` `${value}` `` whatever delimiter the source used. A run this
++ * function refuses is therefore a run no parsed cell produced, and emitting it as text is what
++ * keeps the projection total: reading the rendered cell back through {@link extractCellText}
++ * returns the text, so a rendered row and a hand-written row compare the same. A code span whose
++ * own text carries a backtick or a boundary space is outside the compared form's fidelity in
++ * either direction, and this function writes it as text rather than guessing a delimiter.
++ *
++ * @param text - The cell's compared text, as {@link extractCellText} returns it
++ * @returns The cell's inline nodes, in text order
++ *
++ * @example
++ * ```ts
++ * buildCell('Holds a `Widget`.')
++ * // [{ element: 'text', value: 'Holds a ' }, { element: 'codeSpan', value: 'Widget' }, { element: 'text', value: '.' }]
++ * ```
++ */
++export function buildCell(text: string): readonly InlineNode[] {
++	const nodes: InlineNode[] = []
++	const spans = /`([^`]+)`/g
++	let cursor = 0
++	let span: RegExpExecArray | null
++
++	while ((span = spans.exec(text)) !== null) {
++		const value = span[1]
++		if (value === undefined) continue
++		if (span.index > cursor) nodes.push({ element: 'text', value: text.slice(cursor, span.index) })
++		if (value.trim() === value) nodes.push({ element: 'codeSpan', value })
++		else nodes.push({ element: 'text', value: span[0] })
++		cursor = span.index + span[0].length
++	}
++	if (cursor < text.length) nodes.push({ element: 'text', value: text.slice(cursor) })
++
++	return coalesceText(nodes)
++}
++
+ /**
+  * Finds the index of the column whose header text is `header` so a table's columns survive
+  * reordering. The match is exact and case-sensitive — a table without that exact header
+@@ -1000,10 +1062,11 @@ export function findColumnIndex(table: TableNode, header: string): number | unde
+ }
+ 
+ /**
+- * Extracts the module-scope exports declared in one file's source text — matches
+- * `export (async)? (function(\*)?|class|const|interface|type) Name`, deduped
+- * by (keyword, name). A generator export (`export function* walk`) scans as the
+- * `function` keyword — its trailing `*` is stripped before the
++ * Extracts the module-scope exports declared in one file's source text — the declaration keys
++ * {@link collectKeys} reports, each split back into the keyword and name that built it, deduped
++ * by (keyword, name). That one grammar matches
++ * `export (async)? (function(\*)?|class|const|interface|type) Name`; a generator export
++ * (`export function* walk`) keys as the `function` keyword, its trailing `*` stripped before the
+  * {@link ExportKeyword} check.
+  * Scanning uses {@link extractSourceLines}, so comment and template payload is
+  * excluded while its uninterrupted column-zero head remains required; preserved
+@@ -1025,19 +1088,21 @@ export function extractExports(source: string): readonly SurfaceSymbol[] {
+ 	const seen = new Set<string>()
+ 	const lines = extractSourceLines(source)
+ 	const summaries = collectSummaries(lines)
++	const keys = collectKeys(lines)
+ 
+ 	for (const line of lines) {
+-		const match = line.code.match(
+-			/^export (?:async )?(function\*?|class|const|interface|type) (\w+)/,
+-		)
+-		const rawKeyword = match?.[1]
+-		const name = match?.[2]
+-		const keyword = rawKeyword === undefined ? undefined : rawKeyword.replace(/\*$/, '')
+-		if (!isNonEmptyString(keyword) || !isNonEmptyString(name) || !isExportKeyword(keyword)) continue
++		const key = keys.get(line)
++		if (key === undefined || seen.has(key)) continue
++
++		// A declaration key is `${keyword} ${name}`, so its one space splits it back into the pair
++		// that built it. A member key carries no space, so its keyword reads empty and the keyword
++		// guard drops it here — no second head pattern excludes it.
++		const space = key.indexOf(' ')
++		const keyword = key.slice(0, Math.max(space, 0))
++		if (!isExportKeyword(keyword)) continue
+ 
+-		const key = `${keyword} ${name}`
+-		if (seen.has(key)) continue
+ 		seen.add(key)
++		const name = key.slice(space + 1)
+ 		const summary = summaries.get(line)
+ 		symbols.push({ name, keyword, ...(summary === undefined ? {} : { summary }) })
+ 	}
+@@ -1219,10 +1284,11 @@ export function extractDeclaration(
+  * Selects the member lines declaring a callable member: plain, `async`, generator
+  * (`*`), and optional (`records?(`) methods all count; getters, setters,
+  * `static` members, and `#` privates never do (their keyword or `#` breaks
+- * the `name(` shape). Matching runs once over projected lines so commented
+- * method-like payload never becomes eligible. Each member carries its own doc block's
+- * description paragraph, read through {@link collectSummaries}; the first declaration of a
+- * name answers for it.
++ * the `name(` shape). The grammar is {@link collectKeys}'s, read once over
++ * {@link extractBodyLines}'s projection of the body, so commented method-like payload never
++ * becomes eligible and each member keys to the owner head that projection supplies. Each member
++ * carries its own doc block's description paragraph, read through {@link collectSummaries}; the
++ * first declaration of a name answers for it.
+  *
+  * @param lines - A declaration's body lines
+  * @returns The declared members, deduplicated by name and sorted by name
+@@ -1234,14 +1300,19 @@ export function extractDeclaration(
+  */
+ export function extractMemberMethods(lines: readonly string[]): readonly MethodEntry[] {
+ 	const methods = new Map<string, MethodEntry>()
+-	const projected = extractSourceLines(lines.join('\n'))
++	const projected = extractBodyLines(lines)
+ 	const summaries = collectSummaries(projected)
++	const keys = collectKeys(projected)
+ 
+ 	for (const line of projected) {
+-		const method = line.code.match(/^\t(?:async )?\*?(\w+)\??(<.*>)?\(/)
+-		const name = method?.[1]
+-		if (name === undefined || methods.has(name)) continue
+-
++		// A member key is `${owner}.${member}`, so its dot splits the member name back out and a
++		// declaration key, which carries none, drops out here.
++		const key = keys.get(line) ?? ''
++		const dot = key.indexOf('.')
++		if (dot < 0) continue
++
++		const name = key.slice(dot + 1)
++		if (methods.has(name)) continue
+ 		const summary = summaries.get(line)
+ 		methods.set(name, { name, ...(summary === undefined ? {} : { summary }) })
+ 	}
+@@ -1287,6 +1358,90 @@ export function selectSectionBlocks(
+ 	return blocks
+ }
+ 
++/**
++ * Extracts one `## Surface` table row's symbol — its column 0 code span as the name, its
++ * {@link KIND} column as the keyword, and its {@link SUMMARY} column as the compared summary
++ * when the table has that column. A row with no code-span name and a row whose `Kind` text is
++ * no {@link ExportKeyword} have no symbol to key, so each returns `undefined`.
++ *
++ * @param table - The table to read
++ * @param row - The index of the row within {@link TableNode.rows}
++ * @returns The row's symbol, or `undefined` when the row keys none
++ *
++ * @example
++ * ```ts
++ * extractRowSymbol(table, 0) // { name: 'walk', keyword: 'function', summary: 'Walks the tree.' }
++ * ```
++ */
++export function extractRowSymbol(table: TableNode, row: number): SurfaceSymbol | undefined {
++	const cells = table.rows[row]
++	if (cells === undefined) return undefined
++
++	const nameCell = cells[0]
++	const rawName = nameCell === undefined ? undefined : findFirstCode(nameCell)
++	const name = rawName === undefined ? undefined : normalizeIdentifier(rawName)
++	if (name === undefined) return undefined
++
++	const column = findColumnIndex(table, KIND)
++	const kindCell = column === undefined ? undefined : cells[column]
++	const keyword =
++		kindCell === undefined ? '' : flattenText({ element: 'paragraph', children: kindCell }).trim()
++	if (!isExportKeyword(keyword)) return undefined
++
++	const summary = extractRowSummary(table, row)
++	return { name, keyword, ...(summary === undefined ? {} : { summary }) }
++}
++
++/**
++ * Extracts one `## Methods` table row's entry — its column 0 code span as the name and its
++ * {@link SUMMARY} column as the compared summary when the table has that column. A row with no
++ * code-span name has no member to key, so it returns `undefined`.
++ *
++ * @param table - The table to read
++ * @param row - The index of the row within {@link TableNode.rows}
++ * @returns The row's entry, or `undefined` when the row keys none
++ *
++ * @example
++ * ```ts
++ * extractRowEntry(table, 0) // { name: 'walk', summary: 'Walks the tree.' }
++ * ```
++ */
++export function extractRowEntry(table: TableNode, row: number): MethodEntry | undefined {
++	const cells = table.rows[row]
++	if (cells === undefined) return undefined
++
++	const cell = cells[0]
++	const rawName = cell === undefined ? undefined : findFirstCode(cell)
++	const name = rawName === undefined ? undefined : normalizeIdentifier(rawName)
++	if (name === undefined) return undefined
++
++	const summary = extractRowSummary(table, row)
++	return { name, ...(summary === undefined ? {} : { summary }) }
++}
++
++/**
++ * Extracts one row's compared summary — its {@link SUMMARY} column read through
++ * {@link extractCellText} and {@link normalizeSummary}. A table with no such column and a row
++ * whose cell is empty each carry no summary and return `undefined` rather than an empty string,
++ * so {@link findDrift} reports the absence.
++ *
++ * @param table - The table to read
++ * @param row - The index of the row within {@link TableNode.rows}
++ * @returns The row's compared summary, or `undefined` when it carries none
++ *
++ * @example
++ * ```ts
++ * extractRowSummary(table, 0) // 'Walks the tree.'
++ * ```
++ */
++export function extractRowSummary(table: TableNode, row: number): string | undefined {
++	const described = findColumnIndex(table, SUMMARY)
++	const cells = table.rows[row]
++	const cell = described === undefined || cells === undefined ? undefined : cells[described]
++	const summary = cell === undefined ? '' : normalizeSummary(extractCellText(cell))
++	return summary.length === 0 ? undefined : summary
++}
++
+ /**
+  * Extracts every `## Surface` identifier the guide documents — each table row's column 0
+  * code span (the name) paired with its `Kind` column (located by header text)
+@@ -1311,29 +1466,9 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+ 
+ 	for (const block of selectSectionBlocks(document, SURFACE)) {
+ 		if (isTableNode(block)) {
+-			const column = findColumnIndex(block, KIND)
+-			const described = findColumnIndex(block, SUMMARY)
+-			for (const row of block.rows) {
+-				const nameCell = row[0]
+-				const rawName = nameCell === undefined ? undefined : findFirstCode(nameCell)
+-				const name = rawName === undefined ? undefined : normalizeIdentifier(rawName)
+-				if (name === undefined) continue
+-
+-				const kindCell = column === undefined ? undefined : row[column]
+-				const kindText =
+-					kindCell === undefined
+-						? ''
+-						: flattenText({ element: 'paragraph', children: kindCell }).trim()
+-				if (!isExportKeyword(kindText)) continue
+-
+-				const summaryCell = described === undefined ? undefined : row[described]
+-				const summary =
+-					summaryCell === undefined ? '' : normalizeSummary(extractCellText(summaryCell))
+-				const symbol: SurfaceSymbol = {
+-					name,
+-					keyword: kindText,
+-					...(summary.length === 0 ? {} : { summary }),
+-				}
++			for (let row = 0; row < block.rows.length; row += 1) {
++				const symbol = extractRowSymbol(block, row)
++				if (symbol === undefined) continue
+ 				const key = computeSymbolKey(symbol)
+ 				if (seen.has(key)) continue
+ 				seen.add(key)
+@@ -1374,6 +1509,36 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+  */
+ export function extractMethods(document: MarkdownDocument): readonly MethodGroup[] {
+ 	const groups: MethodGroup[] = []
++
++	for (const [table, name] of collectGroups(document)) {
++		const methods: MethodEntry[] = []
++		for (let row = 0; row < table.rows.length; row += 1) {
++			const entry = extractRowEntry(table, row)
++			if (entry !== undefined) methods.push(entry)
++		}
++		groups.push({ interface: name, methods })
++	}
++
++	return groups
++}
++
++/**
++ * Collects each `## Methods` table keyed to the interface its `####` heading names — an H4
++ * carrying a code span sets the current interface and the table immediately following claims it,
++ * so a heading with no table and a table with no heading before it contribute nothing. The map
++ * iterates in document order and a node keys itself, so a repeated identical table keeps its own
++ * entry.
++ *
++ * @param document - The parsed guide document
++ * @returns One entry per documented `## Methods` table, in document order
++ *
++ * @example
++ * ```ts
++ * collectGroups(document).values().next().value // 'GuideInterface'
++ * ```
++ */
++export function collectGroups(document: MarkdownDocument): ReadonlyMap<TableNode, string> {
++	const groups = new Map<TableNode, string>()
+ 	let current: string | undefined
+ 
+ 	for (const block of selectSectionBlocks(document, METHODS)) {
+@@ -1384,20 +1549,7 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
+ 		}
+ 
+ 		if (isTableNode(block) && current !== undefined) {
+-			const methods: MethodEntry[] = []
+-			const described = findColumnIndex(block, SUMMARY)
+-			for (const row of block.rows) {
+-				const cell = row[0]
+-				const rawName = cell === undefined ? undefined : findFirstCode(cell)
+-				const name = rawName === undefined ? undefined : normalizeIdentifier(rawName)
+-				if (name === undefined) continue
+-
+-				const summaryCell = described === undefined ? undefined : row[described]
+-				const summary =
+-					summaryCell === undefined ? '' : normalizeSummary(extractCellText(summaryCell))
+-				methods.push({ name, ...(summary.length === 0 ? {} : { summary }) })
+-			}
+-			groups.push({ interface: current, methods })
++			groups.set(block, current)
+ 			current = undefined
+ 		}
+ 	}
+@@ -1496,21 +1648,55 @@ export function extractTests(document: MarkdownDocument): readonly string[] {
+  * ```
+  */
+ export function normalizeComment(comment: string): string {
++	return unwrapComment(comment).join('\n').replace(/^\n+/, '').replace(/\n+$/, '')
++}
++
++/**
++ * Unwraps one genuine JSDoc span into one content line per physical line — the `/**` opener,
++ * the closing marker, each line's continuation marker, and per-line trailing whitespace removed,
++ * with a line's own indentation past the marker kept. The result is aligned with
++ * `comment.split('\n')`, so an index found in it addresses the same physical line of the span it
++ * was built from, which is what lets a rewrite keep every line it does not replace.
++ * {@link normalizeComment} is this projection joined and trimmed at its ends.
++ *
++ * @param comment - One complete genuine JSDoc span's raw text
++ * @returns One content line per physical line of the span
++ *
++ * @example
++ * ```ts
++ * unwrapComment('/**' + '\n * Walks.\n *' + '/') // ['', 'Walks.', '']
++ * ```
++ */
++export function unwrapComment(comment: string): readonly string[] {
+ 	const body = /^[ \t]*\/\*([\s\S]*?)\*\/[ \t]*$/.exec(comment)?.[1] ?? comment
+-	return body
+-		.split('\n')
+-		.map((line) => line.replace(/^[ \t]*\*[ \t]?/, '').replace(/[ \t]+$/, ''))
+-		.join('\n')
+-		.replace(/^\n+/, '')
+-		.replace(/\n+$/, '')
++	return body.split('\n').map((line) => line.replace(/^[ \t]*\*[ \t]?/, '').replace(/[ \t]+$/, ''))
+ }
+ 
+ /**
+  * Returns the canonical compared form of a description paragraph — `{@link Target}` and
+- * `{@link Target | label}` become the code token of the label or the target text, and every
+- * run of whitespace, including a collapsed continuation marker and a line break, becomes one
+- * space, with the ends trimmed. A code span stays a code span. The guide's side and the
+- * source's side read through this one form.
++ * `{@link Target | label}` become the code token of the label or the target text, every run of
++ * whitespace, including a collapsed continuation marker and a line break, becomes one space,
++ * the ends trim, and a code span keeps its delimiters while its own boundary whitespace goes.
++ * The guide's side and the source's side read through this one form.
++ *
++ * @remarks
++ * The clauses land in a fixed order, because each one decides what the next one sees. Every
++ * single-backtick code span — one backtick per side, no inner backtick, no adjacent backtick —
++ * is located first, so a delimiter the `{@link}` expansion inserts afterwards is never mistaken
++ * for an authored one. The expansion then runs outside those spans
++ * only, so a `{@link}` written inside a code span stays literal on both sides. Whitespace
++ * collapses next, which is what makes a span wrapped across two physical lines comparable at
++ * all. The boundary trim runs last, inside each located span: the markdown parser strips one
++ * space from each end of a code span it reads, and this trim is the symmetric rule that meets
++ * it, so `` ` | ` ``, `` ` |` ``, and `` `|` `` all reach `` `|` `` from either side. A span
++ * whose content is all whitespace keeps one space, because a parser strips nothing from that
++ * one.
++ *
++ * A code span delimited by more than one backtick is outside the compared form's representable
++ * set and travels untouched, as does a code span whose own text carries a backtick: the form
++ * spells every span with one backtick per side, so neither can be written back. A summary that
++ * needs one of those constructs takes another shape: name the construct in prose rather than
++ * expecting the comparison to converge it.
+  *
+  * @param text - A doc block's description paragraph, or a guide cell's flattened text
+  * @returns The compared form of that text
+@@ -1518,14 +1704,85 @@ export function normalizeComment(comment: string): string {
+  * @example
+  * ```ts
+  * normalizeSummary('Creates a\n{@link Widget}.') // 'Creates a `Widget`.'
++ * normalizeSummary('cells joined by ` | `.') // 'cells joined by `|`.'
+  * ```
+  */
+ export function normalizeSummary(text: string): string {
+-	return text
+-		.replace(/\{@link\s+[^}|]*\|\s*([^}]*?)\s*\}/g, '`$1`')
+-		.replace(/\{@link\s+([^}|]*?)\s*\}/g, '`$1`')
+-		.replace(/\s+/g, ' ')
+-		.trim()
++	const parts = text.split(/((?<!`)`[^`]+`(?!`))/)
++	let normalized = ''
++
++	for (let index = 0; index < parts.length; index += 1) {
++		const part = parts[index] ?? ''
++		if (index % 2 === 0) {
++			normalized += part
++				.replace(/\{@link\s+[^}|]*\|\s*([^}]*?)\s*\}/g, '`$1`')
++				.replace(/\{@link\s+([^}|]*?)\s*\}/g, '`$1`')
++			continue
++		}
++		const value = part.slice(1, -1).replace(/\s+/g, ' ').trim()
++		normalized += `\`${value.length === 0 ? ' ' : value}\``
++	}
++
++	return normalized.replace(/\s+/g, ' ').trim()
++}
++
++/**
++ * Wraps one paragraph into greedy lines no longer than `width` characters. Every run of
++ * whitespace separates words, and a word longer than `width` takes its own line rather than
++ * being split, so a long code token or URL survives the wrap intact.
++ *
++ * @param text - The paragraph to wrap
++ * @param width - The greatest length a returned line may reach
++ * @returns The wrapped lines, in order, or an empty list when `text` carries no word
++ *
++ * @example
++ * ```ts
++ * wrapText('one two three', 8) // ['one two', 'three']
++ * ```
++ */
++export function wrapText(text: string, width: number): readonly string[] {
++	const lines: string[] = []
++	let current = ''
++
++	for (const word of text.split(/\s+/)) {
++		if (word.length === 0) continue
++		if (current.length === 0) current = word
++		else if (current.length + 1 + word.length <= width) current += ` ${word}`
++		else {
++			lines.push(current)
++			current = word
++		}
++	}
++	if (current.length > 0) lines.push(current)
++
++	return lines
++}
++
++/**
++ * Builds one genuine JSDoc span from its content lines — the inverse of {@link unwrapComment}.
++ * Each line is emitted at `indent` behind a continuation marker, an empty line as the bare
++ * marker so no line carries trailing whitespace, and the leading and trailing empty lines are
++ * dropped because the opener and the closer take those physical lines.
++ *
++ * @param lines - The span's content lines, as {@link unwrapComment} returns them
++ * @param indent - The whitespace the span opens at
++ * @returns The span's raw text, opener and closer included
++ *
++ * @example
++ * ```ts
++ * buildComment(['Walks.'], '') // '/**\n * Walks.\n *' + '/'
++ * ```
++ */
++export function buildComment(lines: readonly string[], indent: string): string {
++	const content = [...lines]
++	while (content[0] === '') content.shift()
++	while (content[content.length - 1] === '') content.pop()
++
++	const raw = [`${indent}/**`]
++	for (const line of content) raw.push(line.length === 0 ? `${indent} *` : `${indent} * ${line}`)
++	raw.push(`${indent} */`)
++
++	return raw.join('\n')
+ }
+ 
+ /**
+@@ -1703,6 +1960,82 @@ export function collectSummaries(lines: readonly SourceLine[]): ReadonlyMap<Sour
+ 	return summaries
+ }
+ 
++/**
++ * Extracts the aligned physical records of a declaration's body, read inside an owner head this
++ * function supplies, so a callable member in the body carries the `Owner.member` key
++ * {@link collectKeys} reports for it. A body read on its own carries no head, and the member
++ * grammar attaches a member to the head enclosing it.
++ *
++ * @remarks
++ * The supplied head is an `export interface` line, so the projection opens with that head's own
++ * record and every body line follows it in order. A column-zero `}` among the body lines closes
++ * the supplied head and leaves every later member unkeyed; a body {@link extractDeclaration}
++ * returns carries none, because that reader ends a body at the first one.
++ *
++ * @param lines - A declaration's body lines
++ * @returns The supplied head's record, then one record per body line
++ *
++ * @example
++ * ```ts
++ * extractBodyLines(['\twalk(): void'])[1]?.code // '\twalk(): void'
++ * ```
++ */
++export function extractBodyLines(lines: readonly string[]): readonly SourceLine[] {
++	return extractSourceLines(['export interface Owner {', ...lines].join('\n'))
++}
++
++/**
++ * Collects the compared key of every physical record a key names — a {@link computeSymbolKey}
++ * symbol key for a column-zero `export` declaration head, an `Owner.member` key for a one-tab
++ * callable member inside one — keyed by the record itself. A record no key names contributes no
++ * entry.
++ *
++ * @remarks
++ * This is the package's one key grammar, and each keyed reader projects its own part back out of
++ * it: {@link extractExports} splits a declaration key at its one space,
++ * {@link extractMemberMethods} and {@link extractExampleMethods} split a member key at its dot,
++ * and {@link locateComment} matches a caller's key against the whole map. A change to the head
++ * shape or to the member shape reaches every one of them at once.
++ *
++ * An owner opens at a column-zero `export class` or `export interface` head and closes at the
++ * first column-zero `}`, so a member declared past that brace keys nothing. A column-zero
++ * declaration carrying any other keyword closes the owner it follows, because a member belongs to
++ * the head enclosing it. Reading runs over {@link extractSourceLines}'s projection, so a head or
++ * a member written inside a comment or a template literal keys nothing.
++ *
++ * @param lines - Aligned physical source-line records
++ * @returns One entry per record a key names, in file order
++ *
++ * @example
++ * ```ts
++ * const keys = collectKeys(extractSourceLines('export class Widget {\n\twalk(): void\n}'))
++ * Array.from(keys.values()) // ['class Widget', 'Widget.walk']
++ * ```
++ */
++export function collectKeys(lines: readonly SourceLine[]): ReadonlyMap<SourceLine, string> {
++	const keys = new Map<SourceLine, string>()
++	let owner: string | undefined
++
++	for (const line of lines) {
++		const head = /^export (?:async )?(function\*?|class|const|interface|type) (\w+)/.exec(line.code)
++		const keyword = head?.[1]?.replace(/\*$/, '')
++		const name = head?.[2]
++		if (isNonEmptyString(keyword) && isNonEmptyString(name) && isExportKeyword(keyword)) {
++			keys.set(line, computeSymbolKey({ name, keyword }))
++			owner = keyword === 'class' || keyword === 'interface' ? name : undefined
++			continue
++		}
++		if (line.code === '}') {
++			owner = undefined
++			continue
++		}
++		const member = /^\t(?:async )?\*?(\w+)\??(?:<.*>)?\(/.exec(line.code)?.[1]
++		if (owner !== undefined && isNonEmptyString(member)) keys.set(line, `${owner}.${member}`)
++	}
++
++	return keys
++}
++
+ /**
+  * Collects the `@example` blocks one doc block's unwrapped text carries, each named for the
+  * declaration or member the block documents. The text after the tag becomes the block's
+@@ -1753,8 +2086,9 @@ export function collectExamples(comment: string, name: string): readonly SourceE
+  * Extracts the `@example` blocks carried by the exported functions in one file's source text,
+  * each named for the function its block documents. Shared adjacency comes from
+  * {@link extractSourceComments} and each block is read by {@link collectExamples};
+- * exported-function membership is matched against the aligned code projection, so comment and
+- * template payload cannot qualify. A function carrying several blocks contributes each.
++ * exported-function membership is the {@link collectKeys} key of the documented record, narrowed
++ * to the `function` keyword, so comment and template payload cannot qualify and the head grammar
++ * stays the one every reader here shares. A function carrying several blocks contributes each.
+  *
+  * @param source - The file's source text
+  * @returns The exported functions' `@example` blocks, in file order, deduplicated by name and title
+@@ -1769,16 +2103,20 @@ export function collectExamples(comment: string, name: string): readonly SourceE
+ export function extractExamples(source: string): readonly SourceExample[] {
+ 	const examples: SourceExample[] = []
+ 	const seen = new Set<string>()
++	const lines = extractSourceLines(source)
++	const keys = collectKeys(lines)
+ 
+-	for (const comment of extractSourceComments(extractSourceLines(source))) {
+-		const match = comment.line.code.match(/^export (?:async )?function\*? (\w+)/)
+-		const name = match?.[1]
+-		if (!isNonEmptyString(name)) continue
++	for (const comment of extractSourceComments(lines)) {
++		// Only the `function` keyword carries an `@example` into a guide fence, so the declaration
++		// key is read for that keyword and its name is the text past the one space.
++		const key = keys.get(comment.line) ?? ''
++		if (!key.startsWith('function ')) continue
+ 
++		const name = key.slice('function '.length)
+ 		for (const example of collectExamples(comment.text, name)) {
+-			const key = `${name}\n${example.title ?? ''}`
+-			if (seen.has(key)) continue
+-			seen.add(key)
++			const entry = `${name}\n${example.title ?? ''}`
++			if (seen.has(entry)) continue
++			seen.add(entry)
+ 			examples.push(example)
+ 		}
+ 	}
+@@ -1788,9 +2126,10 @@ export function extractExamples(source: string): readonly SourceExample[] {
+ 
+ /**
+  * Extracts the `@example` blocks carried by the callable members of a declaration body (per
+- * {@link extractMemberMethods}' grammar), each named for the member its block documents.
+- * Shared adjacency comes from {@link extractSourceComments} and each block is read by
+- * {@link collectExamples}; member membership is matched against aligned projected code.
++ * {@link collectKeys}' grammar, the same one {@link extractMemberMethods} reads), each named for
++ * the member its block documents. Shared adjacency comes from {@link extractSourceComments} and
++ * each block is read by {@link collectExamples}; member membership is the key
++ * {@link extractBodyLines}'s projection gives the documented record.
+  *
+  * @param lines - A declaration's body lines
+  * @returns The members' `@example` blocks, deduplicated by name and title and sorted by name
+@@ -1804,16 +2143,19 @@ export function extractExamples(source: string): readonly SourceExample[] {
+ export function extractExampleMethods(lines: readonly string[]): readonly SourceExample[] {
+ 	const examples: SourceExample[] = []
+ 	const seen = new Set<string>()
++	const projected = extractBodyLines(lines)
++	const keys = collectKeys(projected)
+ 
+-	for (const comment of extractSourceComments(extractSourceLines(lines.join('\n')))) {
+-		const method = comment.line.code.match(/^\t(?:async )?\*?(\w+)\??(<.*>)?\(/)
+-		const name = method?.[1]
+-		if (!isNonEmptyString(name)) continue
++	for (const comment of extractSourceComments(projected)) {
++		const key = keys.get(comment.line) ?? ''
++		const dot = key.indexOf('.')
++		if (dot < 0) continue
+ 
++		const name = key.slice(dot + 1)
+ 		for (const example of collectExamples(comment.text, name)) {
+-			const key = `${name}\n${example.title ?? ''}`
+-			if (seen.has(key)) continue
+-			seen.add(key)
++			const entry = `${name}\n${example.title ?? ''}`
++			if (seen.has(entry)) continue
++			seen.add(entry)
+ 			examples.push(example)
+ 		}
+ 	}
+@@ -1837,7 +2179,26 @@ export function extractExampleMethods(lines: readonly string[]): readonly Source
+  * ```
+  */
+ export function extractFences(document: MarkdownDocument): readonly GuideFence[] {
+-	const fences: GuideFence[] = []
++	return Array.from(collectFences(document).values())
++}
++
++/**
++ * Collects each fenced code block keyed by its own node, paired with the {@link GuideFence}
++ * {@link extractFences} reports for it — the node-addressed form a rewrite needs, so a caller
++ * that located a fence by title can read that node's source region back from the parser. The map
++ * iterates in document order and a node keys itself, so a repeated identical fence keeps its own
++ * entry.
++ *
++ * @param document - The parsed guide document
++ * @returns One entry per fenced code block, in document order
++ *
++ * @example
++ * ```ts
++ * Array.from(collectFences(document).values()) // [{ language: 'ts', code: 'walk()' }]
++ * ```
++ */
++export function collectFences(document: MarkdownDocument): ReadonlyMap<CodeBlockNode, GuideFence> {
++	const fences = new Map<CodeBlockNode, GuideFence>()
+ 	let title = ''
+ 
+ 	for (const node of walkNodes(document)) {
+@@ -1846,7 +2207,7 @@ export function extractFences(document: MarkdownDocument): readonly GuideFence[]
+ 			continue
+ 		}
+ 		if (isCodeBlockNode(node)) {
+-			fences.push({
++			fences.set(node, {
+ 				language: node.lang,
+ 				code: node.code,
+ 				...(title.length === 0 ? {} : { title }),
+@@ -2025,3 +2386,533 @@ export function collectTitles(
+ 
+ 	return titled
+ }
++
++/**
++ * Builds a copy of `table` with one cell's inline content rebuilt from `text` through
++ * {@link buildCell}. Every other cell keeps its own nodes, so a rewrite touches the one cell it
++ * names and the header and the alignment row travel unchanged.
++ *
++ * @param table - The table to copy
++ * @param row - The index of the row to rewrite within {@link TableNode.rows}
++ * @param column - The index of the cell to rewrite within that row
++ * @param text - The cell's new compared text
++ * @returns The rewritten table
++ *
++ * @example
++ * ```ts
++ * buildTable(table, 0, 2, 'Walks the tree.').rows[0]?.[2] // [{ element: 'text', value: 'Walks the tree.' }]
++ * ```
++ */
++export function buildTable(table: TableNode, row: number, column: number, text: string): TableNode {
++	return {
++		element: 'table',
++		header: table.header,
++		rows: table.rows.map((cells, index) =>
++			index === row
++				? cells.map((cell, position) => (position === column ? buildCell(text) : cell))
++				: cells,
++		),
++		align: table.align,
++	}
++}
++
++/**
++ * Builds the fenced code block one `@example` block renders as — its code inside a fence
++ * carrying its language, and an untagged fence when the block names none.
++ *
++ * @param example - The block to render
++ * @returns The fence node
++ *
++ * @example
++ * ```ts
++ * buildFence({ name: 'walk', code: 'walk()', language: 'ts' }) // { element: 'codeBlock', code: 'walk()', lang: 'ts' }
++ * ```
++ */
++export function buildFence(example: SourceExample): CodeBlockNode {
++	return {
++		element: 'codeBlock',
++		code: example.code,
++		...(example.language === undefined ? {} : { lang: example.language }),
++	}
++}
++
++/**
++ * Splices `replacement` into `source` over the region `span` addresses, and returns the result.
++ * The text before the region and the text after it travel byte for byte, so a rewrite that
++ * addresses one node's region changes nothing else in the document.
++ *
++ * @param source - The text to rewrite
++ * @param span - The half-open region to replace: the region `MarkdownInterface.span` reports
++ * for a markdown node, or the one {@link locateComment} reports for a doc block
++ * @param replacement - The text to write over that region
++ * @returns The rewritten text
++ *
++ * @example
++ * ```ts
++ * spliceSpan('one two three', { start: 4, end: 7 }, 'TWO') // 'one TWO three'
++ * ```
++ */
++export function spliceSpan(source: string, span: MarkdownSpan, replacement: string): string {
++	return source.slice(0, span.start) + replacement + source.slice(span.end)
++}
++
++/**
++ * Renders a `## Surface` table from the symbols a source declares — a `Name`, {@link KIND}, and
++ * {@link SUMMARY} table with one row per symbol, the name as a code span, the keyword as its
++ * text, and the summary through {@link buildCell}. A symbol carrying no summary renders an empty
++ * cell, which {@link extractSurface} reads back as an absent summary.
++ *
++ * @remarks
++ * The render carries no `## Surface` heading, because a guide documents its surface in several
++ * tables under their own sub-headings and one of them is what this function produces. Reading the
++ * render back therefore parses it under that heading. `renderMarkdown` pads every cell to one
++ * space, so the render is not the committed column-aligned bytes; the checkout's formatter
++ * re-aligns the table and the reader compares parsed entries rather than bytes.
++ *
++ * @param symbols - The symbols to document, in row order
++ * @returns The table's markdown source, with no trailing newline
++ *
++ * @example
++ * ```ts
++ * renderSurface([{ name: 'walk', keyword: 'function', summary: 'Walks the tree.' }])
++ * // '| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |'
++ * ```
++ */
++export function renderSurface(symbols: readonly SurfaceSymbol[]): string {
++	return renderMarkdown({
++		element: 'table',
++		header: [
++			[{ element: 'text', value: 'Name' }],
++			[{ element: 'text', value: KIND }],
++			[{ element: 'text', value: SUMMARY }],
++		],
++		rows: symbols.map((symbol) => [
++			[{ element: 'codeSpan', value: symbol.name }],
++			[{ element: 'text', value: symbol.keyword }],
++			buildCell(symbol.summary ?? ''),
++		]),
++		align: [null, null, null],
++	})
++}
++
++/**
++ * Renders one `## Methods` group — the `####` heading naming the interface as a code span, then
++ * a `Name` and {@link SUMMARY} table with one row per documented member. A member carrying no
++ * summary renders an empty cell, which {@link extractMethods} reads back as an absent summary.
++ *
++ * @remarks
++ * The render carries no `## Methods` heading, for the reason {@link renderSurface} states:
++ * a guide documents one group per interface under that one section heading.
++ *
++ * @param group - The interface and its members
++ * @returns The heading and table's markdown source, with no trailing newline
++ *
++ * @example
++ * ```ts
++ * renderMethods({ interface: 'WidgetInterface', methods: [{ name: 'walk', summary: 'Walks.' }] })
++ * // '#### `WidgetInterface`\n\n| Name | Summary |\n| --- | --- |\n| `walk` | Walks. |'
++ * ```
++ */
++export function renderMethods(group: MethodGroup): string {
++	return renderMarkdown({
++		element: 'document',
++		children: [
++			{ element: 'heading', level: 4, children: [{ element: 'codeSpan', value: group.interface }] },
++			{
++				element: 'table',
++				header: [[{ element: 'text', value: 'Name' }], [{ element: 'text', value: SUMMARY }]],
++				rows: group.methods.map((entry) => [
++					[{ element: 'codeSpan', value: entry.name }],
++					buildCell(entry.summary ?? ''),
++				]),
++				align: [null, null],
++			},
++		],
++	})
++}
++
++/**
++ * Renders one `@example` block as the guide fence it pairs with — an H3 heading carrying the
++ * block's title, then a fence carrying its language and its code. An untitled block renders the
++ * fence alone, because a fence pairs on its nearest preceding heading and an untitled block
++ * claims none.
++ *
++ * @remarks
++ * The title renders as literal text rather than markdown, so a title carrying backticks or
++ * emphasis reads back through {@link extractFences} as the text the `@example` tag carried.
++ * The heading level is 3 because a guide documents its examples one level under a `##` section;
++ * {@link extractFences} pairs on the nearest preceding heading of any level, so the level is
++ * presentation rather than pairing.
++ *
++ * @param example - The block to render
++ * @returns The heading and fence's markdown source, with no trailing newline
++ *
++ * @example
++ * ```ts
++ * renderExample({ name: 'walk', title: 'Walk a tree', code: 'walk()', language: 'ts' })
++ * // an H3 heading of 'Walk a tree', then a fence tagged `ts` carrying `walk()`
++ * ```
++ */
++export function renderExample(example: SourceExample): string {
++	const fence = buildFence(example)
++	return renderMarkdown({
++		element: 'document',
++		children:
++			example.title === undefined
++				? [fence]
++				: [
++						{
++							element: 'heading',
++							level: 3,
++							children: [{ element: 'text', value: example.title }],
++						},
++						fence,
++					],
++	})
++}
++
++/**
++ * Replaces one compared cell in a guide's text and returns the whole guide back. `key` names the
++ * row the way {@link findDrift} names it — a {@link computeSymbolKey} key for a `## Surface` row,
++ * an `Owner.member` key for a `## Methods` row — and the row's {@link SUMMARY} cell becomes
++ * `summary`. Only the table's own source region is rewritten, so every byte outside it travels
++ * unchanged.
++ *
++ * @remarks
++ * A row the key does not reach, a table carrying no {@link SUMMARY} column, and a document whose
++ * parse recorded no region for the table are each a miss, and a miss returns `undefined` rather
++ * than throwing, so a caller reports the key it could not place — the one meaning `undefined`
++ * carries in every replacer here. A row already carrying `summary` returns the guide byte for
++ * byte, because a rewrite would re-pad the whole table for no change; that identity reads both
++ * sides through {@link normalizeSummary}, so a caller passing text the compared form still moves
++ * is a fixed point on the second run rather than a row rewritten forever. The rewritten table
++ * renders one-space padded whatever padding it carried, so the checkout's formatter re-aligns it.
++ *
++ * @param guide - The guide's markdown source
++ * @param key - The compared key naming the row
++ * @param summary - The row's new compared text
++ * @returns The guide's text with that cell replaced, or `undefined` when the key reaches no cell
++ *
++ * @example
++ * ```ts
++ * replaceCell('## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks. |', 'function walk', 'Walks a tree.')
++ * // '## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks a tree. |'
++ * ```
++ */
++export function replaceCell(guide: string, key: string, summary: string): string | undefined {
++	const markdown = createMarkdown(guide)
++	const document = markdown.document
++	let located: TableNode | undefined
++	let index = -1
++
++	for (const block of selectSectionBlocks(document, SURFACE)) {
++		if (located !== undefined || !isTableNode(block)) continue
++		for (let row = 0; row < block.rows.length && located === undefined; row += 1) {
++			const symbol = extractRowSymbol(block, row)
++			if (symbol === undefined || computeSymbolKey(symbol) !== key) continue
++			located = block
++			index = row
++		}
++	}
++
++	for (const [table, owner] of collectGroups(document)) {
++		if (located !== undefined) break
++		for (let row = 0; row < table.rows.length && located === undefined; row += 1) {
++			const entry = extractRowEntry(table, row)
++			if (entry === undefined || `${owner}.${entry.name}` !== key) continue
++			located = table
++			index = row
++		}
++	}
++
++	if (located === undefined) return undefined
++	const column = findColumnIndex(located, SUMMARY)
++	if (column === undefined) return undefined
++	if ((extractRowSummary(located, index) ?? '') === normalizeSummary(summary)) return guide
++
++	const span = markdown.span(located)
++	if (span === undefined) return undefined
++	return spliceSpan(guide, span, renderMarkdown(buildTable(located, index, column, summary)))
++}
++
++/**
++ * Replaces one titled fence in a guide's text and returns the whole guide back. The first fence
++ * carrying `title` — the pairing {@link findDrift} compares on — takes `example`'s language and
++ * code. Only the fence's own source region is rewritten, so every byte outside it travels
++ * unchanged.
++ *
++ * @remarks
++ * A title no fence carries and a document whose parse recorded no region for the fence are each a
++ * miss, and a miss returns `undefined` rather than throwing — the one meaning `undefined` carries
++ * in every replacer here. A fence already carrying that language and code returns the guide
++ * byte for byte. A later fence of the same title is outside the pairing and is never rewritten,
++ * which is the rule {@link findDrift} compares under.
++ *
++ * @param guide - The guide's markdown source
++ * @param title - The heading text the fence pairs on
++ * @param example - The block whose language and code the fence takes
++ * @returns The guide's text with that fence replaced, or `undefined` when no fence carries the title
++ *
++ * @example
++ * ```ts
++ * replaceFence(guide, 'Walk', { name: 'walk', title: 'Walk', code: 'walk()', language: 'ts' })
++ * // the guide's text with the fence under its `### Walk` heading carrying `walk()`
++ * ```
++ */
++export function replaceFence(
++	guide: string,
++	title: string,
++	example: SourceExample,
++): string | undefined {
++	const markdown = createMarkdown(guide)
++	let located: CodeBlockNode | undefined
++	let current: GuideFence | undefined
++
++	for (const [node, fence] of collectFences(markdown.document)) {
++		if (located !== undefined || fence.title !== title) continue
++		located = node
++		current = fence
++	}
++
++	if (located === undefined || current === undefined) return undefined
++	if (current.code === example.code && current.language === example.language) return guide
++
++	const span = markdown.span(located)
++	if (span === undefined) return undefined
++	return spliceSpan(guide, span, renderMarkdown(buildFence(example)))
++}
++
++/**
++ * Replaces one doc block's description paragraph with `summary` and returns the whole block back.
++ * The paragraph is the block's text before its first block tag, and it re-wraps inside `width`;
++ * the blank line before the first tag, every tag line, the block's indentation, and its
++ * continuation markers all survive.
++ *
++ * @remarks
++ * A miss returns `undefined`, the one meaning `undefined` carries in every replacer here, so a
++ * caller reports the block it could not rewrite. Text that opens with no
++ * `/**` is no doc block: a single-star `/*` comment reaches this function only by a caller's
++ * mistake, and reshaping it into a doc block would be a silent edit. A `summary` carrying no word
++ * names no paragraph to write, and deleting the block's description on that argument would erase
++ * documentation on the strength of an absent value — a caller with nothing to write writes
++ * nothing.
++ *
++ * A block already carrying `summary` returns byte for byte, which is what keeps a propagation
++ * that finds no drift from rewriting the file: a doc block's own wrapping is not recoverable from
++ * its text, so re-wrapping an unchanged paragraph would move most blocks this package's source
++ * carries. That identity reads both sides through {@link normalizeSummary}, and it holds for a
++ * block carrying no tag as much as for a block carrying several. A block written on one physical
++ * line stays on one line while `summary` still fits inside `width`, and expands otherwise.
++ *
++ * `width` counts characters from the line's first, a tab counting as one, so a wrapped line reads
++ * `${indent} * ${text}` and never passes that count. A caller whose formatter measures a tab as
++ * more than one column passes a smaller width rather than taking the default.
++ *
++ * @param comment - One complete genuine JSDoc span's raw text, as it sits in the file
++ * @param summary - The block's new description paragraph
++ * @param width - The character budget a re-wrapped line stays inside. Default: {@link WRAP_WIDTH}
++ * @returns The block's raw text with that paragraph replaced, or `undefined` for a text that is
++ * no doc block and for a `summary` carrying no word
++ *
++ * @example
++ * ```ts
++ * replaceSummary('/**' + ' Walks. *' + '/', 'Walks a tree.') // '/**' + ' Walks a tree. *' + '/'
++ * ```
++ */
++export function replaceSummary(
++	comment: string,
++	summary: string,
++	width: number = WRAP_WIDTH,
++): string | undefined {
++	if (!/^[ \t]*\/\*\*/.test(comment)) return undefined
++	const content = unwrapComment(comment)
++	const indent = /^[ \t]*/.exec(comment)?.[0] ?? ''
++	const wrapped = wrapText(summary, width - indent.length - 3)
++	if (wrapped.length === 0) return undefined
++
++	const masked = maskFences(content.join('\n')).split('\n')
++	let tag = -1
++	for (let index = 0; index < masked.length && tag < 0; index += 1) {
++		if (/^[ \t]*@\w/.test(masked[index] ?? '')) tag = index
++	}
++
++	const described = content.slice(0, tag < 0 ? content.length : tag).join('\n')
++	if (normalizeSummary(described) === normalizeSummary(summary)) return comment
++
++	const tail = tag < 0 ? [] : content.slice(tag)
++	if (tail.length === 0 && wrapped.length === 1 && content.length === 1) {
++		const single = `${indent}/** ${wrapped[0] ?? ''} */`
++		if (single.length <= width) return single
++	}
++
++	const lines = [...wrapped]
++	if (tail.length > 0) lines.push('')
++	return buildComment([...lines, ...tail], indent)
++}
++
++/**
++ * Replaces the body of one titled `@example` tag in a doc block's raw text and returns the whole
++ * block back. The tag carrying `example`'s title takes a fence of its language and its code;
++ * every other tag, the description paragraph, the block's indentation, and its continuation
++ * markers all survive.
++ *
++ * @remarks
++ * A miss returns `undefined`, the one meaning `undefined` carries in every replacer here, so a
++ * caller reports the block it could not rewrite. Text that opens with no
++ * `/**` is no doc block, for the reason {@link replaceSummary} states. A block carrying no
++ * `@example` tag of that title has nowhere to write, so an untitled tag and a tag carrying
++ * another title are each left alone, and an `example` naming no title misses a block whose tags
++ * all carry one. Code carrying a run of three or more backticks is a body the emitted fence
++ * cannot enclose: the fence is three backticks, {@link maskFences} ends a body at the first line
++ * opening a run at least as long, and {@link collectExamples} reads to the first such run
++ * whatever column it sits at, so writing that body would truncate it and turn a following
++ * `@`-line into a tag. Refusing keeps the rewrite total over the bodies it can spell.
++ *
++ * A tag already carrying that language and code returns byte for byte. {@link maskFences} keeps
++ * the current body's own lines out of the tag search, so a fenced body carrying a tag-shaped line
++ * does not end the body early. The body ends at its last line carrying text, so the blank line
++ * separating it from the next tag survives.
++ *
++ * @param comment - One complete genuine JSDoc span's raw text, as it sits in the file
++ * @param example - The block whose language and code the tag's body takes
++ * @returns The block's raw text with that body replaced, or `undefined` for a text that is no
++ * doc block, for a title no `@example` tag carries, and for code the emitted fence cannot enclose
++ *
++ * @example
++ * ```ts
++ * replaceExample('/**' + '\n * @example Walk\n * old()\n *' + '/', { name: 'walk', title: 'Walk', code: 'walk()', language: 'ts' })
++ * // the same block, its `@example Walk` body now a fence tagged `ts` carrying `walk()`
++ * ```
++ */
++export function replaceExample(comment: string, example: SourceExample): string | undefined {
++	if (!/^[ \t]*\/\*\*/.test(comment)) return undefined
++	if (example.code.includes('```')) return undefined
++	const content = unwrapComment(comment)
++	const masked = maskFences(content.join('\n')).split('\n')
++	const title = example.title ?? ''
++	let start = -1
++
++	for (let index = 0; index < masked.length && start < 0; index += 1) {
++		const tag = /^[ \t]*@example(?=[ \t]|$)[ \t]*(.*)$/.exec(masked[index] ?? '')
++		if (tag !== null && (tag[1] ?? '').trim() === title) start = index
++	}
++	if (start < 0) return undefined
++
++	const current = collectExamples(content.join('\n'), example.name).find(
++		(entry) => (entry.title ?? '') === title,
++	)
++	if (
++		current !== undefined &&
++		current.code === example.code &&
++		current.language === example.language
++	) {
++		return comment
++	}
++
++	let end = content.length
++	for (let index = start + 1; index < masked.length && end === content.length; index += 1) {
++		if (/^[ \t]*@\w/.test(masked[index] ?? '')) end = index
++	}
++	while (end > start + 1 && (content[end - 1] ?? '').length === 0) end -= 1
++
++	const indent = /^[ \t]*/.exec(comment)?.[0] ?? ''
++	const body = [`\`\`\`${example.language ?? ''}`, ...example.code.split('\n'), '```']
++	return buildComment([...content.slice(0, start + 1), ...body, ...content.slice(end)], indent)
++}
++
++/**
++ * Locates the doc block a compared key attaches to inside one file's text and returns the block's
++ * own character region, so a caller can `slice` the block, rewrite it through
++ * {@link replaceSummary} or {@link replaceExample}, and write the result back through
++ * {@link spliceSpan}. `key` names the pair the way {@link findDrift} names it — a
++ * {@link computeSymbolKey} key for a declaration, an `Owner.member` key for an interface or class
++ * member.
++ *
++ * @remarks
++ * Attachment is {@link extractSourceComments}'s, not a second reading of the file: that walk
++ * pairs each eligible block with the physical record it documents, and this function keeps the
++ * record {@link collectKeys} gives `key`. The keys are that one grammar's — the map
++ * {@link extractExports} and {@link extractMemberMethods} each read their own part out of — so
++ * this function runs no head pattern, no member pattern, and no owner-close rule of its own, and
++ * a change to any of them reaches the locator too. So a block
++ * this function reaches is exactly a block whose summary {@link collectSummaries} reports, and a
++ * block it misses is one the comparison never had: a block a blank line separates from its
++ * declaration attaches to the blank line, and a block written inside a template literal or a
++ * string is no genuine span at all. The first block whose record carries the key answers for it,
++ * as the first declaration of a name does everywhere else.
++ *
++ * The region runs from the start of the opener's line, the block's indentation included, to the
++ * character past its closing marker — the raw text {@link replaceSummary} and
++ * {@link replaceExample} each document as the span "as it sits in the file", so a caller slices,
++ * rewrites, and splices with no adjustment and the rewrite keeps the indentation it found. A
++ * block that source material precedes on its own line starts at the opener instead. The region
++ * is read off the aligned JSDoc projection rather than searched for in the text, so an opener
++ * written inside a string never yields one, and line offsets come from
++ * {@link extractSourceLines}'s own records under its stated LF-or-CRLF terminator rule, so a
++ * CRLF file reports the offsets its own bytes carry.
++ *
++ * @param text - One file's whole source text
++ * @param key - The compared key naming the declaration or the member
++ * @returns The block's half-open character region, or `undefined` when no block carries the key
++ *
++ * @example
++ * ```ts
++ * const text = '/**' + ' Walks. *' + '/\nexport function walk(): void {}\n'
++ * locateComment(text, 'function walk') // { start: 0, end: 13 }
++ * ```
++ */
++export function locateComment(text: string, key: string): MarkdownSpan | undefined {
++	const lines = extractSourceLines(text)
++	const keys = collectKeys(lines)
++	const offsets: number[] = []
++	const positions = new Map<SourceLine, number>()
++	let offset = 0
++
++	for (let index = 0; index < lines.length; index += 1) {
++		const line = lines[index]
++		if (line === undefined) continue
++		offsets.push(offset)
++		positions.set(line, index)
++		const after = offset + line.source.length
++		offset = after + (text.startsWith('\r\n', after) ? 2 : 1)
++	}
++
++	for (const comment of extractSourceComments(lines)) {
++		if (keys.get(comment.line) !== key) continue
++		const close = (positions.get(comment.line) ?? 0) - 1
++		const closing = lines[close]?.jsdoc
++		const end = closing === undefined ? -1 : closing.lastIndexOf('*/')
++		if (end < 0) continue
++
++		let first = close
++		while (first > 0 && lines[first - 1]?.jsdoc !== undefined) first -= 1
++
++		// The run's spans are read forward, because an opener written inside a span — an
++		// `@example` quoting one — is body text rather than a second block, and a backward
++		// search would stop at it. The authoritative span is the last one the run opens.
++		let inside = false
++		let line = -1
++		let column = -1
++		for (let index = first; index <= close; index += 1) {
++			const projection = lines[index]?.jsdoc ?? ''
++			let cursor = 0
++			while (cursor < projection.length) {
++				const at = projection.indexOf(inside ? '*/' : '/**', cursor)
++				if (at < 0) break
++				if (!inside) {
++					line = index
++					column = at
++				}
++				cursor = at + (inside ? 2 : 3)
++				inside = !inside
++			}
++		}
++		if (line < 0) continue
++
++		const source = lines[line]?.source ?? ''
++		const start = source.slice(0, column).trim() === '' ? 0 : column
++		return { start: (offsets[line] ?? 0) + start, end: (offsets[close] ?? 0) + end + 2 }
++	}
++
++	return undefined
++}
+diff --git a/src/core/types.ts b/src/core/types.ts
+index a42a1bb..dc6868a 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -124,8 +124,8 @@ export interface ManifestEntry {
+ }
+ 
+ /**
+- * Represents one `#### \`Interface\`` block in a guide's `## Methods` section — the
+- * documented member names of one behavioral interface.
++ * Represents one behavioral interface a guide's `## Methods` section documents — the H4
++ * heading naming that interface as a code span, and the member entries its table lists.
+  */
+ export interface MethodGroup {
+ 	/** Holds the backticked interface name. */
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 4256cd8..7cb7f4e 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,7 @@
+ // The self-dogfooding drop-in: the exact consumer-side footprint this package
+ // ships, run against this repository's own guides/README.md manifest.
+ 
++import type { SurfaceSymbol } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import {
+ 	createGuide,
+@@ -13,6 +14,9 @@ import {
+ 	findUnlisted,
+ 	isExternalLink,
+ 	findDrift,
++	replaceCell,
++	replaceSummary,
++	renderSurface,
+ 	findMissingSymbols,
+ 	parseManifest,
+ 	resolveLink,
+@@ -367,6 +371,62 @@ describe('flagship fences', () => {
+ 		)
+ 	})
+ 
++	it('carries a summary across into the guide and into a doc block', () => {
++		const guide =
++			'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |'
++
++		expect(replaceCell(guide, 'function walk', 'Walks a tree.')).toBe(
++			'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks a tree. |',
++		)
++		expect(replaceCell(guide, 'function phantom', 'Absent.')).toBeUndefined()
++		expect(replaceCell(guide, 'function walk', 'Walks the tree.') === guide).toBe(true)
++		expect(replaceSummary('/** Walks the tree. */', 'Walks a tree.')).toBe('/** Walks a tree. */')
++	})
++
++	// The guide states the renderers' round trip as a caller's obligation rather than as a
++	// property of the render alone: each renders the block a section contains, so reading one
++	// back parses it under the heading the caller supplies. This assertion is what breaks if
++	// that obligation changes; the transcription check beside it only guards the sentence.
++	it('reads a rendered Surface table back under the section heading its caller supplies', () => {
++		const symbols: readonly SurfaceSymbol[] = [
++			{ name: 'walk', keyword: 'function', summary: 'Walks the tree.' },
++			{ name: 'Widget', keyword: 'class', summary: 'Represents a widget.' },
++		]
++		const rendered = renderSurface(symbols)
++
++		expect(createGuide(rendered).surface()).toEqual([])
++		expect(createGuide(`## Surface\n\n${rendered}`).surface()).toEqual(symbols)
++	})
++
++	it('carries the caller-obligation sentence the round trip proves', () => {
++		expect(guideText).toContain(
++			"`extractSurface` reads\n`'## Surface\\n\\n' + renderSurface(symbols)` back to the symbols it was rendered from",
++		)
++		expect(guideText).toContain('The gate reports and never writes')
++	})
++
++	it('carries the propagation fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			"\t'## Surface\\n\\n| Name | Kind | Summary |\\n| --- | --- | --- |\\n| `walk` | function | Walks the tree. |'",
++		)
++		expect(guideText).toContain(
++			"// The guide's text back, with that one cell replaced and every byte outside the table unchanged.",
++		)
++		expect(guideText).toContain("replaceCell(guide, 'function walk', 'Walks a tree.')")
++		expect(guideText).toContain(
++			"// '## Surface\\n\\n| Name | Kind | Summary |\\n| --- | --- | --- |\\n| `walk` | function | Walks a tree. |'",
++		)
++		expect(guideText).toContain(
++			"replaceCell(guide, 'function phantom', 'Absent.') // undefined — no row carries that key",
++		)
++		expect(guideText).toContain(
++			"replaceCell(guide, 'function walk', 'Walks the tree.') === guide // true — the row already carries it",
++		)
++		expect(guideText).toContain(
++			"replaceSummary('/** Walks the tree. */', 'Walks a tree.') // '/** Walks a tree. */'",
++		)
++	})
++
+ 	it('reads the tagline from the blockquote following the H1', () => {
+ 		const guide = createGuide('# Widget\n\n> A widget toolkit.\n\n## Surface\n')
+ 
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 2b87928..7437898 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,11 +1,19 @@
+-import type { SourceLine, SurfaceSymbol } from '@src/core'
++import type { MethodGroup, SourceExample, SourceLine, SurfaceSymbol } from '@src/core'
+ import {
++	buildCell,
++	buildComment,
++	buildFence,
++	buildTable,
+ 	collectExamples,
++	collectFences,
++	collectGroups,
++	collectKeys,
+ 	collectSummaries,
+ 	collectTitles,
+ 	computeDrift,
+ 	createGuide,
+ 	createSource,
++	extractBodyLines,
+ 	extractCellLinks,
+ 	extractCellText,
+ 	extractDeclaration,
+@@ -20,6 +28,9 @@ import {
+ 	extractSurface,
+ 	extractTests,
+ 	extractFenceImports,
++	extractRowEntry,
++	extractRowSummary,
++	extractRowSymbol,
+ 	extractSourceComments,
+ 	extractTagline,
+ 	extractUnnamed,
+@@ -36,8 +47,20 @@ import {
+ 	hasCanonicalSegments,
+ 	extractHidden,
+ 	joinHead,
++	locateComment,
+ 	escapeRegExp,
+ 	findColumnIndex,
++	renderExample,
++	renderMethods,
++	renderSurface,
++	replaceCell,
++	replaceExample,
++	replaceFence,
++	replaceSummary,
++	spliceSpan,
++	unwrapComment,
++	wrapText,
++	WRAP_WIDTH,
+ 	extractMemberMethods,
+ 	findMissingSymbols,
+ 	normalizeDirectories,
+@@ -47,7 +70,7 @@ import {
+ 	selectModuleKeys,
+ 	computeSymbolKey,
+ } from '@src/core'
+-import { createMarkdown } from '@orkestrel/markdown'
++import { createMarkdown, isTableNode, renderMarkdown } from '@orkestrel/markdown'
+ import { parseSync } from 'vite'
+ import { describe, expect, it } from 'vitest'
+ import { requireTable, requireText } from '../../setup.js'
+@@ -2014,6 +2037,65 @@ describe('normalizeSummary', () => {
+ 			'Represents one documented symbol.',
+ 		)
+ 	})
++
++	// The code-span clause. The markdown parser strips one space from each end of a code span
++	// it reads, and only when both ends carry one; the clause is the symmetric rule that meets
++	// it from either side, so a padded span, a one-sided span, and a bare span converge.
++	it('converges a padded, a one-sided, and a bare code span on the same form', () => {
++		const forms = ['` | `', '` |`', '`| `', '`|`'].map((span) =>
++			normalizeSummary(`cells joined by ${span}, in order.`),
++		)
++		expect(forms).toEqual(Array.from({ length: 4 }, () => 'cells joined by `|`, in order.'))
++	})
++
++	// The guide side reaches the clause after the parser has already stripped a code span's
++	// symmetric boundary space, and the source side reaches it with that space still in the
++	// text. Both spellings must land on the same form, or a doc block and the cell documenting
++	// it drift for as long as either carries a padded span. A raw `|` cannot ride in a
++	// hand-written cell — it splits the row at parse time — so the padded span here is a name.
++	it('converges the guide side and the source side on a padded and a one-sided span', () => {
++		for (const written of ['a ` Widget ` span', 'a ` Widget` span', 'a `Widget ` span']) {
++			const cell = requireTable(
++				['| Name | Summary |', '| --- | --- |', `| \`a\` | ${written} |`, ''].join('\n'),
++			).rows[0]?.[1]
++			expect(cell).toBeDefined()
++			expect(normalizeSummary(extractCellText(cell ?? []))).toBe('a `Widget` span')
++			expect(normalizeSummary(written)).toBe('a `Widget` span')
++		}
++	})
++
++	it('keeps one space for a span whose content is all whitespace', () => {
++		expect(normalizeSummary('a ` ` span')).toBe('a ` ` span')
++		expect(normalizeSummary('a `   ` span')).toBe('a ` ` span')
++	})
++
++	it('leaves a link token inside a code span literal and expands the one outside it', () => {
++		expect(normalizeSummary('a `{@link Widget}` token and a {@link Widget} token')).toBe(
++			'a `{@link Widget}` token and a `Widget` token',
++		)
++	})
++
++	it('leaves a span delimited by more than one backtick untouched', () => {
++		expect(normalizeSummary('a ``Target`` span')).toBe('a ``Target`` span')
++		expect(normalizeSummary('a `` Target `` span')).toBe('a `` Target `` span')
++	})
++
++	it('collapses a span wrapped across two physical lines before trimming its boundary', () => {
++		expect(normalizeSummary('reads ` a\nb ` back')).toBe('reads `a b` back')
++	})
++
++	it('is a fixed point on its own output', () => {
++		const texts = [
++			'cells joined by ` | `, in order.',
++			'a ` ` span',
++			'a `{@link Widget}` token and a {@link Widget} token',
++			'a ``Target`` span',
++			'reads ` a\nb ` back',
++		]
++		expect(texts.map((text) => normalizeSummary(normalizeSummary(text)))).toEqual(
++			texts.map((text) => normalizeSummary(text)),
++		)
++	})
+ })
+ 
+ describe('extractCellText', () => {
+@@ -2695,7 +2777,7 @@ describe('collectTitles', () => {
+ // The text reader claims to attach a doc block to the declaration it documents.
+ // `parseSync` from `vite` answers the same question with a real parser — comments
+ // by range against declaration positions — so the two readings can disagree, and
+-// the cases below say exactly where the text reader is allowed to. `vite` is a
++// the following cases say exactly where the text reader is allowed to. `vite` is a
+ // development dependency and this import never reaches `src/**`, which stays
+ // free of a compiler and a parser.
+ 
+@@ -2763,47 +2845,72 @@ function readTextSummaries(source: string): ReadonlyMap<string, string> {
+ 	return summaries
+ }
+ 
+-describe('the doc-block reader against the parser', () => {
+-	const OVERLOADS = [
+-		'/**',
+-		' * Reads one value.',
+-		' */',
+-		'export function read(): string',
+-		'export function read(name: string): string',
+-		'export function read(name?: string): string {',
+-		"\treturn name ?? ''",
+-		'}',
+-		'',
+-	].join('\n')
+-	const SEPARATED = [
+-		'/**',
+-		' * Walks the tree.',
+-		' */',
+-		'',
+-		'export function walk(): void {}',
+-		'',
+-	].join('\n')
+-	const TEMPLATE = [
+-		'/**',
+-		' * Holds a sample module.',
+-		' */',
+-		'export const sample = `',
+-		'/**',
+-		' * Ghosts a widget.',
+-		' */',
+-		'export function ghost() {}',
+-		'`',
+-		'',
+-	].join('\n')
+-	const BARREL = [
+-		'/**',
+-		' * Re-exports the widget module.',
+-		' */',
+-		"export * from './types.js'",
+-		"export * from './helpers.js'",
+-		'',
+-	].join('\n')
++// The control fixtures both key readings and the locator run against: an overload set, a block a
++// blank line separates from its declaration, a block written inside a template literal, a
++// re-export-only barrel, and an owner carrying documented members followed by a declaration
++// outside it. One copy, because the two readings must meet the same text to be comparable.
++const OVERLOADS = [
++	'/**',
++	' * Reads one value.',
++	' */',
++	'export function read(): string',
++	'export function read(name: string): string',
++	'export function read(name?: string): string {',
++	"\treturn name ?? ''",
++	'}',
++	'',
++].join('\n')
++const SEPARATED = [
++	'/**',
++	' * Walks the tree.',
++	' */',
++	'',
++	'export function walk(): void {}',
++	'',
++].join('\n')
++const TEMPLATE = [
++	'/**',
++	' * Holds a sample module.',
++	' */',
++	'export const sample = `',
++	'/**',
++	' * Ghosts a widget.',
++	' */',
++	'export function ghost() {}',
++	'`',
++	'',
++].join('\n')
++const BARREL = [
++	'/**',
++	' * Re-exports the widget module.',
++	' */',
++	"export * from './types.js'",
++	"export * from './helpers.js'",
++	'',
++].join('\n')
++const MEMBERS = [
++	'/**',
++	' * Represents a widget.',
++	' */',
++	'export interface WidgetInterface {',
++	'\t/**',
++	'\t * Walks the tree.',
++	'\t */',
++	'\twalk(): void',
++	'\t/**',
++	'\t * Renders the widget.',
++	'\t */',
++	'\trender(): string',
++	'}',
++	'',
++	'/**',
++	' * Reads a widget.',
++	' */',
++	'export function read(): void {}',
++	'',
++].join('\n')
+ 
++describe('the doc-block reader against the parser', () => {
+ 	it('agrees with the parser on an overload set', () => {
+ 		expect(readTextSummaries(OVERLOADS)).toEqual(readParsedSummaries(OVERLOADS))
+ 		expect(readParsedSummaries(OVERLOADS)).toEqual(new Map([['read', 'Reads one value.']]))
+@@ -2837,3 +2944,1209 @@ describe('the doc-block reader against the parser', () => {
+ 		expect(missed).toEqual([SEPARATED])
+ 	})
+ })
++
++// ── The renderers and the replacers ───────────────────────────────────────────
++// `renderSurface` / `renderMethods` / `renderExample` produce guide text from source
++// entries; `replaceCell` / `replaceFence` rewrite one located node inside an existing
++// guide's text; `locateComment` finds one doc block's region inside a file and
++// `replaceSummary` / `replaceExample` rewrite that block's text. Every one returns text or
++// offsets and writes nothing. The following cases prove each round trip through the reader
++// that owns it, and prove the properties a propagation depends on: a rewrite changes no byte
++// outside the node it names, a rewrite whose target already carries the value changes no byte
++// at all, and a miss reports itself as `undefined` rather than as a silent no-op.
++
++// This package's own source, read as the corpus the compared form must survive. A summary
++// invented for a test proves the case it was written for; the doc blocks the package ships
++// prove the population a propagation actually meets.
++const SOURCE = readInventory(new URL('../../../src/', import.meta.url), ['.'], {
++	extensions: ['.ts'],
++})
++
++// Every genuine doc block this package ships, at its raw span — the whole physical lines the
++// block occupies, so the indentation and the continuation markers a rewrite must preserve are
++// in the corpus. The boundaries come from `extractSourceLines`'s own aligned JSDoc projection,
++// which retains a real span at its exact columns and withholds an opener written inside a
++// string or a template literal; a scan of the file text cannot tell those apart. The case
++// `covers every doc block extractSourceComments attaches` is what proves this walk and the
++// reader that attaches blocks agree on the population.
++function extractBlocks(text: string): readonly string[] {
++	const blocks: string[] = []
++	const lines = extractSourceLines(text)
++	let open = -1
++
++	for (let index = 0; index < lines.length; index += 1) {
++		const projection = lines[index]?.jsdoc
++		if (projection === undefined) {
++			open = -1
++			continue
++		}
++		if (open < 0) open = index
++		if (!projection.includes('*/')) continue
++		blocks.push(
++			lines
++				.slice(open, index + 1)
++				.map((line) => line.source)
++				.join('\n'),
++		)
++		open = -1
++	}
++
++	return blocks
++}
++
++const CORPUS = Object.values(SOURCE).flatMap((text) => extractBlocks(text))
++
++// The floors are read from what `src/` ships, so the corpus cannot silently collapse to a
++// handful of blocks and leave every case over it passing on nothing. They are floors rather
++// than totals: this package's source gains doc blocks, and a total would reprice itself on
++// every edit. The run that set them read 173 blocks, every one of them described.
++const CORPUS_FLOOR = 150
++const DESCRIBED_FLOOR = 150
++
++// The same kind of floor for the documented members `extractDeclaration` and
++// `extractMemberMethods` report over `src/`, which is the population the member half of the
++// locator's control runs over. The run that set it read 16 such members.
++const MEMBER_FLOOR = 12
++
++function extractSummary(comment: string): string {
++	const content = unwrapComment(comment)
++	const masked = maskFences(content.join('\n')).split('\n')
++	const tag = masked.findIndex((line) => /^[ \t]*@\w/.test(line))
++	return normalizeSummary(content.slice(0, tag < 0 ? content.length : tag).join('\n'))
++}
++
++// A column-aligned copy of `@orkestrel/scaffold`'s committed guide: the head of its
++// `## Surface` types table and its whole `CompilerInterface` methods table, with the prose
++// between them. Column alignment is the point — a rewrite re-pads the table it rewrites,
++// so the bytes outside that one table are what prove the splice stayed inside its span.
++const GUIDE = [
++	'# Scaffold',
++	'',
++	'> Generates and audits a workspace.',
++	'',
++	'## Surface',
++	'',
++	'### Core',
++	'',
++	'#### Types',
++	'',
++	'| Name               | Kind | Summary                                                                                          |',
++	'| ------------------ | ---- | ------------------------------------------------------------------------------------------------ |',
++	'| `Artifact`         | type | One file in a plan, discriminated by how its content is produced and what scaffold claims of it. |',
++	'| `BuildFormat`      | type | One module format a published library environment builds.                                        |',
++	'| `CatalogEntry`     | type | One package row of the fleet catalog.                                                            |',
++	'| `CompileStage`     | type | The compile phases, in the order they run.                                                       |',
++	"| `CompilerEventMap` | type | The compiler's observation channel.                                                              |",
++	'',
++	'## Methods',
++	'',
++	"`Compiler` implements `CompilerInterface`. Each class exposes exactly its interface's members.",
++	'',
++	'#### `CompilerInterface`',
++	'',
++	'| Method    | Summary                                                                      |',
++	'| --------- | ---------------------------------------------------------------------------- |',
++	'| `compile` | Compile a blueprint into a plan through the draft, gate, and pin stages.     |',
++	"| `audit`   | Compile a blueprint and compare its plan to a target's current content.      |",
++	'| `destroy` | Tear the compiler down. Every later call throws, and teardown is idempotent. |',
++	'',
++].join('\n')
++
++// The same guide with the compared column renamed, so `findColumnIndex` locates nothing —
++// the shape a package that has not adopted the column yet still carries.
++const UNCOMPARED = GUIDE.replace(/Summary  /g, 'Behavior ').replace(
++	'| Method    | Summary  ',
++	'| Method    | Behavior ',
++)
++
++describe('the corpus this package ships', () => {
++	it('carries a floor of blocks and of described blocks', () => {
++		expect(CORPUS.length).toBeGreaterThanOrEqual(CORPUS_FLOOR)
++		expect(
++			CORPUS.filter((comment) => extractSummary(comment).length > 0).length,
++		).toBeGreaterThanOrEqual(DESCRIBED_FLOOR)
++	})
++
++	it('covers every doc block extractSourceComments attaches', () => {
++		const missed = Object.entries(SOURCE).flatMap(([key, text]) => {
++			const read = new Set(extractBlocks(text).map((comment) => normalizeComment(comment)))
++			return extractSourceComments(extractSourceLines(text))
++				.filter((comment) => !read.has(comment.text))
++				.map((comment) => `${key}: ${comment.text.slice(0, 40)}`)
++		})
++		expect(missed).toEqual([])
++	})
++
++	// The instrument must be able to fail: a walk that took whole lines from the file text
++	// rather than from the JSDoc projection reads an opener inside a template literal as a
++	// block, and the reader that attaches blocks never reports it.
++	it('leaves an opener written inside a template literal out of the corpus', () => {
++		const text = [
++			'/**',
++			' * Holds a sample module.',
++			' */',
++			'export const sample = `',
++			'/**',
++			' * Ghosts a widget.',
++			' */',
++			'export function ghost() {}',
++			'`',
++			'',
++		].join('\n')
++		expect(extractBlocks(text)).toEqual([['/**', ' * Holds a sample module.', ' */'].join('\n')])
++		expect(text.split('\n').filter((line) => line === '/**').length).toBe(2)
++	})
++})
++
++describe('buildCell', () => {
++	it('inverts extractCellText on plain text and on a code span', () => {
++		expect(buildCell('Holds a `Widget`.')).toEqual([
++			{ element: 'text', value: 'Holds a ' },
++			{ element: 'codeSpan', value: 'Widget' },
++			{ element: 'text', value: '.' },
++		])
++	})
++
++	it('reads a leading and a trailing code span', () => {
++		expect(buildCell('`a` and `b`')).toEqual([
++			{ element: 'codeSpan', value: 'a' },
++			{ element: 'text', value: ' and ' },
++			{ element: 'codeSpan', value: 'b' },
++		])
++	})
++
++	it('keeps a run whose text carries a boundary space as literal text', () => {
++		expect(buildCell('joined by ` | `.')).toEqual([{ element: 'text', value: 'joined by ` | `.' }])
++		expect(buildCell('` | `')).toEqual([{ element: 'text', value: '` | `' }])
++	})
++
++	it('keeps a lone backtick and an empty run as literal text', () => {
++		expect(buildCell('a ` here')).toEqual([{ element: 'text', value: 'a ` here' }])
++		expect(buildCell('an `` empty')).toEqual([{ element: 'text', value: 'an `` empty' }])
++	})
++
++	it('reads the inner delimiter of a doubled run and leaves the outer backticks as text', () => {
++		expect(buildCell('``Target``')).toEqual([
++			{ element: 'text', value: '`' },
++			{ element: 'codeSpan', value: 'Target' },
++			{ element: 'text', value: '`' },
++		])
++	})
++
++	it('renders every doc block summary this package ships back to itself', () => {
++		const moved = CORPUS.map(extractSummary)
++			.filter((summary) => summary.length > 0)
++			.filter((summary) => {
++				const rendered = renderSurface([{ name: 'walk', keyword: 'function', summary }])
++				const [read] = extractSurface(createMarkdown(`## Surface\n\n${rendered}`).document)
++				return read?.summary !== summary
++			})
++		expect(moved).toEqual([])
++	})
++
++	it('reads a summary the compared form cannot spell back as the text it was given', () => {
++		// The control: `*stars*` is emphasis to a markdown parser and literal text to a doc
++		// block, so a cell built by parsing the summary as markdown would lose the markers.
++		const summary = 'A summary with *stars* and _underscores_ and [brackets].'
++		const rendered = renderSurface([{ name: 'walk', keyword: 'function', summary }])
++		expect(rendered).toContain('\\*stars\\*')
++		const [read] = extractSurface(createMarkdown(`## Surface\n\n${rendered}`).document)
++		expect(read?.summary).toBe(summary)
++	})
++})
++
++describe('wrapText', () => {
++	it('fills greedily to the width', () => {
++		expect(wrapText('one two three', 8)).toEqual(['one two', 'three'])
++	})
++
++	it('gives a word longer than the width its own line rather than splitting it', () => {
++		expect(wrapText('a longwordbeyondthewidth b', 6)).toEqual(['a', 'longwordbeyondthewidth', 'b'])
++	})
++
++	// The boundary the over-length clause turns on, and the consequence a caller inherits: a
++	// token the width cannot hold stands alone and passes the width, so "every line stays
++	// inside the width" holds for a text whose longest token fits and for no other.
++	it('stands an over-length token alone and lets that one line pass the width', () => {
++		expect(wrapText('abcdef gh', 6)).toEqual(['abcdef', 'gh'])
++		expect(wrapText('abcdefg hi', 6)).toEqual(['abcdefg', 'hi'])
++		expect(Math.max(...wrapText('abcdefg hi', 6).map((line) => line.length))).toBe(7)
++	})
++
++	it('collapses every whitespace run and returns nothing for a wordless text', () => {
++		expect(wrapText('  one \n two  ', 40)).toEqual(['one two'])
++		expect(wrapText('  \n  ', 40)).toEqual([])
++	})
++})
++
++describe('unwrapComment and buildComment', () => {
++	it('projects and rebuilds the shortest span it is given', () => {
++		expect(unwrapComment(['/**', ' * Walks.', ' */'].join('\n'))).toEqual(['', 'Walks.', ''])
++		expect(buildComment(['Walks.'], '')).toBe(['/**', ' * Walks.', ' */'].join('\n'))
++	})
++
++	it('projects one content line per physical line', () => {
++		const comment = ['\t/**', '\t * Walks.', '\t *', '\t * @param x - A value', '\t */'].join('\n')
++		expect(unwrapComment(comment)).toEqual(['', 'Walks.', '', '@param x - A value', ''])
++		expect(unwrapComment(comment).length).toBe(comment.split('\n').length)
++	})
++
++	// `buildComment` writes the opener and the closer on their own lines, so the population is
++	// every block this package writes across several lines. A block written on one line is
++	// `replaceSummary`'s own shape decision, proven over the same corpus there.
++	it('rebuilds every doc block this package writes across several lines, byte for byte', () => {
++		const spans = CORPUS.filter((comment) => comment.includes('\n'))
++		expect(spans.length).toBeGreaterThan(0)
++		const moved = spans.filter((comment) => {
++			const indent = /^[ \t]*/.exec(comment)?.[0] ?? ''
++			return buildComment(unwrapComment(comment), indent) !== comment
++		})
++		expect(moved).toEqual([])
++	})
++
++	it('emits an empty content line as a bare marker, so no line carries trailing whitespace', () => {
++		expect(buildComment(['Walks.', '', '@returns Nothing'], '')).toBe(
++			['/**', ' * Walks.', ' *', ' * @returns Nothing', ' */'].join('\n'),
++		)
++	})
++})
++
++describe('extractRowSymbol, extractRowEntry, and extractRowSummary', () => {
++	const table = requireTable(
++		[
++			'| Name | Kind | Summary |',
++			'| --- | --- | --- |',
++			'| `walk` | function | Walks the tree. |',
++			'| `Widget` | class | |',
++			'| no name | type | Absent. |',
++			'| `Wrong` | enum | Absent. |',
++		].join('\n'),
++	)
++
++	it('reads a row as a symbol with its keyword and its summary', () => {
++		expect(extractRowSymbol(table, 0)).toEqual({
++			name: 'walk',
++			keyword: 'function',
++			summary: 'Walks the tree.',
++		})
++	})
++
++	it('leaves an empty summary cell absent rather than empty', () => {
++		expect(extractRowSymbol(table, 1)).toEqual({ name: 'Widget', keyword: 'class' })
++		expect(extractRowSummary(table, 1)).toBeUndefined()
++	})
++
++	it('keys no symbol for a row with no code-span name and none for an unknown keyword', () => {
++		expect(extractRowSymbol(table, 2)).toBeUndefined()
++		expect(extractRowSymbol(table, 3)).toBeUndefined()
++	})
++
++	it('reads a member entry from the same row grammar', () => {
++		expect(extractRowEntry(table, 0)).toEqual({ name: 'walk', summary: 'Walks the tree.' })
++		expect(extractRowEntry(table, 2)).toBeUndefined()
++	})
++
++	it('reads no summary from a table with no Summary column', () => {
++		const uncompared = requireTable(
++			['| Name | Kind | Behavior |', '| --- | --- | --- |', '| `walk` | function | Walks. |'].join(
++				'\n',
++			),
++		)
++		expect(extractRowSummary(uncompared, 0)).toBeUndefined()
++		expect(extractRowSymbol(uncompared, 0)).toEqual({ name: 'walk', keyword: 'function' })
++	})
++
++	it('reads no row past the last row of the table', () => {
++		expect(extractRowSymbol(table, 9)).toBeUndefined()
++		expect(extractRowEntry(table, 9)).toBeUndefined()
++		expect(extractRowSummary(table, 9)).toBeUndefined()
++	})
++})
++
++describe('collectGroups and collectFences', () => {
++	it('keys each Methods table to the interface its H4 names, in document order', () => {
++		const document = createMarkdown(GUIDE).document
++		const groups = Array.from(collectGroups(document).values())
++		expect(groups).toEqual(['CompilerInterface'])
++	})
++
++	it('keeps two identical tables and two identical fences as two entries', () => {
++		const document = createMarkdown(
++			[
++				'## Methods',
++				'',
++				'#### `A`',
++				'',
++				'| Name | Summary |',
++				'| --- | --- |',
++				'| `walk` | Walks. |',
++				'',
++				'#### `B`',
++				'',
++				'| Name | Summary |',
++				'| --- | --- |',
++				'| `walk` | Walks. |',
++				'',
++				'### One',
++				'',
++				'```ts',
++				'same()',
++				'```',
++				'',
++				'### Two',
++				'',
++				'```ts',
++				'same()',
++				'```',
++				'',
++			].join('\n'),
++		).document
++		expect(Array.from(collectGroups(document).values())).toEqual(['A', 'B'])
++		expect(Array.from(collectFences(document).values())).toEqual([
++			{ language: 'ts', code: 'same()', title: 'One' },
++			{ language: 'ts', code: 'same()', title: 'Two' },
++		])
++	})
++
++	it('reports the same fences extractFences returns, in the same order', () => {
++		const document = createMarkdown(requireText(FIXTURES, 'good/guides/src/widget.md')).document
++		expect(Array.from(collectFences(document).values())).toEqual(extractFences(document))
++	})
++})
++
++describe('spliceSpan, buildTable, and buildFence', () => {
++	it('writes over the region and keeps every byte outside it', () => {
++		expect(spliceSpan('one two three', { start: 4, end: 7 }, 'TWO')).toBe('one TWO three')
++	})
++
++	it('rebuilds one cell and shares every other cell of the table', () => {
++		const table = requireTable(
++			['| Name | Kind | Summary |', '| --- | --- | --- |', '| `walk` | function | Walks. |'].join(
++				'\n',
++			),
++		)
++		const rebuilt = buildTable(table, 0, 2, 'Walks a tree.')
++		expect(rebuilt.rows[0]?.[2]).toEqual([{ element: 'text', value: 'Walks a tree.' }])
++		expect(rebuilt.rows[0]?.[0]).toBe(table.rows[0]?.[0])
++		expect(rebuilt.header).toBe(table.header)
++		expect(table.rows[0]?.[2]).toEqual([{ element: 'text', value: 'Walks.' }])
++	})
++
++	it('builds a tagged fence and an untagged one', () => {
++		expect(buildFence({ name: 'walk', code: 'walk()', language: 'ts' })).toEqual({
++			element: 'codeBlock',
++			code: 'walk()',
++			lang: 'ts',
++		})
++		expect(buildFence({ name: 'walk', code: 'walk()' })).toEqual({
++			element: 'codeBlock',
++			code: 'walk()',
++		})
++	})
++})
++
++describe('renderSurface', () => {
++	const symbols: readonly SurfaceSymbol[] = [
++		{ name: 'walk', keyword: 'function', summary: 'Walks the tree.' },
++		{ name: 'Widget', keyword: 'class', summary: 'Represents one `Widget` in a plan.' },
++		{ name: 'DEFAULT', keyword: 'const' },
++	]
++
++	it('round-trips every symbol back through extractSurface', () => {
++		const rendered = renderSurface(symbols)
++		expect(extractSurface(createMarkdown(`## Surface\n\n${rendered}`).document)).toEqual(symbols)
++	})
++
++	it('renders the header the reader locates its columns by', () => {
++		expect(renderSurface([{ name: 'walk', keyword: 'function', summary: 'Walks the tree.' }])).toBe(
++			'| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |',
++		)
++	})
++
++	it('re-renders its own output byte for byte', () => {
++		const rendered = renderSurface(symbols)
++		expect(renderMarkdown(createMarkdown(rendered).document)).toBe(rendered)
++	})
++
++	// The render pads every cell to one space while the committed guide is column-aligned, so
++	// the reader must be blind to the padding — which is why the equality gate compares parsed
++	// entries and never bytes.
++	it('reads the padded render and the column-aligned table to the same symbols', () => {
++		const aligned = extractSurface(createMarkdown(GUIDE).document)
++		const rendered = renderSurface(aligned)
++		expect(rendered).toContain('| `Artifact` | type |')
++		expect(GUIDE).toContain('| `Artifact`         | type |')
++		expect(extractSurface(createMarkdown(`## Surface\n\n${rendered}`).document)).toEqual(aligned)
++	})
++
++	it('renders no row for an empty symbol list', () => {
++		expect(extractSurface(createMarkdown(`## Surface\n\n${renderSurface([])}`).document)).toEqual(
++			[],
++		)
++	})
++})
++
++describe('renderMethods', () => {
++	const group: MethodGroup = {
++		interface: 'WidgetInterface',
++		methods: [{ name: 'walk', summary: 'Walks the tree.' }, { name: 'reset' }],
++	}
++
++	it('round-trips the group back through extractMethods', () => {
++		const rendered = renderMethods(group)
++		expect(extractMethods(createMarkdown(`## Methods\n\n${rendered}`).document)).toEqual([group])
++	})
++
++	it('renders the interface as the H4 code span the reader keys on', () => {
++		expect(
++			renderMethods({
++				interface: 'WidgetInterface',
++				methods: [{ name: 'walk', summary: 'Walks.' }],
++			}),
++		).toBe('#### `WidgetInterface`\n\n| Name | Summary |\n| --- | --- |\n| `walk` | Walks. |')
++	})
++
++	it('re-renders its own output byte for byte', () => {
++		const rendered = renderMethods(group)
++		expect(renderMarkdown(createMarkdown(rendered).document)).toBe(rendered)
++	})
++})
++
++describe('renderExample', () => {
++	it('round-trips a titled block back through extractFences', () => {
++		const example: SourceExample = {
++			name: 'walk',
++			title: 'Walk a tree',
++			code: 'walk()\nwalk()',
++			language: 'ts',
++		}
++		expect(extractFences(createMarkdown(renderExample(example)).document)).toEqual([
++			{ language: 'ts', code: example.code, title: example.title },
++		])
++	})
++
++	it('renders no heading for an untitled block', () => {
++		const example: SourceExample = { name: 'walk', code: 'walk()', language: 'ts' }
++		expect(renderExample(example)).toBe('```ts\nwalk()\n```')
++		expect(extractFences(createMarkdown(renderExample(example)).document)).toEqual([
++			{ language: 'ts', code: 'walk()' },
++		])
++	})
++
++	it('keeps a title carrying backticks as the text the tag carried', () => {
++		const example: SourceExample = {
++			name: 'walk',
++			title: 'Construct a `Guide`',
++			code: 'walk()',
++			language: 'ts',
++		}
++		const [fence] = extractFences(createMarkdown(renderExample(example)).document)
++		expect(fence?.title).toBe('Construct a `Guide`')
++	})
++
++	it('widens the fence past a fenced body the code carries', () => {
++		const example: SourceExample = { name: 'walk', code: '```\ninner\n```', language: 'md' }
++		expect(extractFences(createMarkdown(renderExample(example)).document)).toEqual([
++			{ language: 'md', code: '```\ninner\n```' },
++		])
++	})
++})
++
++describe('replaceCell', () => {
++	it('replaces one Surface cell and keeps every byte outside the table', () => {
++		const markdown = createMarkdown(GUIDE)
++		const [table] = markdown.filter(isTableNode)
++		const span = table === undefined ? undefined : markdown.span(table)
++		expect(span).toBeDefined()
++
++		const result = replaceCell(GUIDE, 'type Artifact', 'Names one file in a plan.')
++		expect(result).toBeDefined()
++		expect(result?.slice(0, span?.start)).toBe(GUIDE.slice(0, span?.start))
++		expect(result?.slice((result?.length ?? 0) - (GUIDE.length - (span?.end ?? 0)))).toBe(
++			GUIDE.slice(span?.end),
++		)
++	})
++
++	it('changes the one row it names and no other row', () => {
++		const result = replaceCell(GUIDE, 'type Artifact', 'Names one file in a plan.') ?? ''
++		const before = extractSurface(createMarkdown(GUIDE).document)
++		const after = extractSurface(createMarkdown(result).document)
++		expect(after[0]).toEqual({
++			name: 'Artifact',
++			keyword: 'type',
++			summary: 'Names one file in a plan.',
++		})
++		expect(after.slice(1)).toEqual(before.slice(1))
++	})
++
++	it('replaces one Methods cell by its Owner.member key', () => {
++		const result = replaceCell(GUIDE, 'CompilerInterface.audit', 'Audits a target.') ?? ''
++		expect(extractMethods(createMarkdown(result).document)).toEqual([
++			{
++				interface: 'CompilerInterface',
++				methods: [
++					{
++						name: 'compile',
++						summary: 'Compile a blueprint into a plan through the draft, gate, and pin stages.',
++					},
++					{ name: 'audit', summary: 'Audits a target.' },
++					{
++						name: 'destroy',
++						summary: 'Tear the compiler down. Every later call throws, and teardown is idempotent.',
++					},
++				],
++			},
++		])
++		expect(result).toContain('| `Artifact`         | type |')
++	})
++
++	it('returns the guide byte for byte when the row already carries the summary', () => {
++		expect(replaceCell(GUIDE, 'type CatalogEntry', 'One package row of the fleet catalog.')).toBe(
++			GUIDE,
++		)
++	})
++
++	// The identity reads both sides through the compared form, so a caller handing over text
++	// the form still moves writes once and stops. Comparing the argument raw against a
++	// normalized cell would rewrite the row on every run, and no case passing compared-form
++	// text can see that.
++	it('is a fixed point on the second run for a summary the compared form moves', () => {
++		for (const summary of [
++			'One  package  row  of  the fleet catalog,  in order.',
++			'One package row of the {@link Fleet} catalog, in order.',
++			'One package row of the ` | ` fleet catalog, in order.',
++		]) {
++			const first = replaceCell(GUIDE, 'type CatalogEntry', summary)
++			expect(first).toBeDefined()
++			expect(first).not.toBe(GUIDE)
++			expect(replaceCell(first ?? '', 'type CatalogEntry', summary)).toBe(first)
++		}
++	})
++
++	it('returns undefined for a key no row carries', () => {
++		expect(replaceCell(GUIDE, 'type Phantom', 'Absent.')).toBeUndefined()
++		expect(replaceCell(GUIDE, 'CompilerInterface.phantom', 'Absent.')).toBeUndefined()
++		expect(replaceCell(GUIDE, 'class Artifact', 'Absent.')).toBeUndefined()
++	})
++
++	it('returns undefined for a table carrying no Summary column', () => {
++		expect(extractSurface(createMarkdown(UNCOMPARED).document)[0]?.summary).toBeUndefined()
++		expect(replaceCell(UNCOMPARED, 'type Artifact', 'Absent.')).toBeUndefined()
++		expect(replaceCell(UNCOMPARED, 'CompilerInterface.audit', 'Absent.')).toBeUndefined()
++	})
++
++	// The control, drawn from outside the membership rule "a row of a Surface or Methods
++	// table": a class documented by a backticked H3 entity heading enters `guide.surface()`
++	// through a heading rather than a row, so it keys a symbol no cell answers for.
++	it('returns undefined for a symbol the guide documents outside a table', () => {
++		const heading = GUIDE.replace(
++			'## Methods',
++			'### `Compiler`\n\nThe implementing class.\n\n## Methods',
++		)
++		expect(extractSurface(createMarkdown(heading).document)).toContainEqual({
++			name: 'Compiler',
++			keyword: 'class',
++		})
++		expect(replaceCell(heading, 'class Compiler', 'Absent.')).toBeUndefined()
++	})
++})
++
++describe('replaceFence', () => {
++	const FENCED = [
++		'# Guide',
++		'',
++		'### Walk a tree',
++		'',
++		'```ts',
++		'old()',
++		'```',
++		'',
++		'Prose between the fences.',
++		'',
++		'```ts',
++		'later()',
++		'```',
++		'',
++	].join('\n')
++
++	it('replaces the fence of that title and keeps every byte outside it', () => {
++		const result = replaceFence(FENCED, 'Walk a tree', {
++			name: 'walk',
++			title: 'Walk a tree',
++			code: 'walk()',
++			language: 'ts',
++		})
++		expect(result).toBe(FENCED.replace('old()', 'walk()'))
++	})
++
++	it('leaves a later fence of the same title outside the pairing', () => {
++		const repeated = FENCED.replace('Prose between the fences.', '### Walk a tree')
++		const result =
++			replaceFence(repeated, 'Walk a tree', {
++				name: 'walk',
++				title: 'Walk a tree',
++				code: 'walk()',
++				language: 'ts',
++			}) ?? ''
++		expect(result).toContain('walk()')
++		expect(result).toContain('later()')
++	})
++
++	it('replaces the fence language with the body', () => {
++		const result =
++			replaceFence(FENCED, 'Walk a tree', {
++				name: 'walk',
++				title: 'Walk a tree',
++				code: 'walk()',
++				language: 'js',
++			}) ?? ''
++		expect(extractFences(createMarkdown(result).document)[0]).toEqual({
++			language: 'js',
++			code: 'walk()',
++			title: 'Walk a tree',
++		})
++	})
++
++	it('returns the guide byte for byte when the fence already carries that body', () => {
++		expect(
++			replaceFence(FENCED, 'Walk a tree', {
++				name: 'walk',
++				title: 'Walk a tree',
++				code: 'old()',
++				language: 'ts',
++			}),
++		).toBe(FENCED)
++	})
++
++	// The control, drawn from outside the membership rule "a fence carrying that title":
++	// a fence no heading precedes carries none, so no title reaches it.
++	it('returns undefined for a title no fence carries and for a fence with no title', () => {
++		expect(
++			replaceFence(FENCED, 'Absent', { name: 'walk', code: 'walk()', language: 'ts' }),
++		).toBeUndefined()
++		const untitled = '```ts\nold()\n```\n'
++		expect(extractFences(createMarkdown(untitled).document)[0]?.title).toBeUndefined()
++		expect(
++			replaceFence(untitled, 'Walk a tree', { name: 'walk', code: 'walk()', language: 'ts' }),
++		).toBeUndefined()
++	})
++})
++
++describe('replaceSummary', () => {
++	const TAGGED = [
++		'\t/**',
++		'\t * Walks the tree.',
++		'\t *',
++		'\t * @remarks',
++		'\t * The walk is depth-first.',
++		'\t *',
++		'\t * @param tree - The tree to walk',
++		'\t * @returns Nothing',
++		'\t *',
++		'\t * @example First',
++		'\t * ```ts',
++		'\t * walk(tree)',
++		'\t * ```',
++		'\t *',
++		'\t * @example Second',
++		'\t * ```ts',
++		'\t * walk(other)',
++		'\t * ```',
++		'\t */',
++	].join('\n')
++
++	it('replaces the description and leaves every tag line, the separator, and the markers', () => {
++		const result = replaceSummary(TAGGED, 'Walks a tree depth-first, yielding every node it meets.')
++		expect(result?.split('\n').slice(0, 4)).toEqual([
++			'\t/**',
++			'\t * Walks a tree depth-first, yielding every node it meets.',
++			'\t *',
++			'\t * @remarks',
++		])
++		expect(result?.split('\n').slice(3)).toEqual(TAGGED.split('\n').slice(3))
++	})
++
++	it('reads the new description back through the reader that compares it', () => {
++		const summary = 'Walks a tree depth-first, yielding every node it meets.'
++		expect(extractSummary(replaceSummary(TAGGED, summary) ?? '')).toBe(summary)
++	})
++
++	it('wraps a long description inside the default budget', () => {
++		const summary = Array.from({ length: 40 }, (_unused, index) => `word${index}`).join(' ')
++		const result = replaceSummary(TAGGED, summary) ?? ''
++		const wrapped = result.split('\n').filter((line) => line.startsWith('\t * word'))
++		expect(wrapped.length).toBeGreaterThan(1)
++		expect(Math.max(...result.split('\n').map((line) => line.length))).toBeLessThanOrEqual(
++			WRAP_WIDTH,
++		)
++		expect(extractSummary(result)).toBe(summary)
++	})
++
++	it('wraps at the width its caller names instead of the default', () => {
++		const summary = Array.from({ length: 40 }, (_unused, index) => `word${index}`).join(' ')
++		const narrow = replaceSummary(TAGGED, summary, 40) ?? ''
++		const wide = replaceSummary(TAGGED, summary) ?? ''
++		expect(Math.max(...narrow.split('\n').map((line) => line.length))).toBeLessThanOrEqual(40)
++		expect(narrow.split('\n').length).toBeGreaterThan(wide.split('\n').length)
++		expect(extractSummary(narrow)).toBe(summary)
++	})
++
++	// The width is a character budget, and a token it cannot hold stands on its own line and
++	// passes it — `wrapText`'s documented exception, reaching the caller here.
++	it('lets a token longer than the budget pass it on its own line', () => {
++		const token = 'a'.repeat(WRAP_WIDTH)
++		const result = replaceSummary('/** Short. */', `Holds ${token}.`) ?? ''
++		expect(result.split('\n')).toContain(` * ${token}.`)
++		expect(Math.max(...result.split('\n').map((line) => line.length))).toBeGreaterThan(WRAP_WIDTH)
++	})
++
++	it('returns every described doc block this package ships byte for byte when the summary is its own', () => {
++		const described = CORPUS.filter((comment) => extractSummary(comment).length > 0)
++		expect(described.length).toBeGreaterThanOrEqual(DESCRIBED_FLOOR)
++		const moved = described.filter(
++			(comment) => replaceSummary(comment, extractSummary(comment)) !== comment,
++		)
++		expect(moved).toEqual([])
++	})
++
++	// The instrument must be able to fail: the same corpus with a summary that is not the
++	// block's own must move every block that carries a description.
++	it('moves every doc block carrying a description when the summary is not its own', () => {
++		const described = CORPUS.filter((comment) => extractSummary(comment).length > 0)
++		expect(described.length).toBeGreaterThanOrEqual(DESCRIBED_FLOOR)
++		const kept = described.filter(
++			(comment) => replaceSummary(comment, 'A different summary.') === comment,
++		)
++		expect(kept).toEqual([])
++	})
++
++	it('keeps a one-line block on one line while the summary still fits', () => {
++		expect(replaceSummary('\t/** Holds the identifier. */', 'Holds the name.')).toBe(
++			'\t/** Holds the name. */',
++		)
++		expect(replaceSummary('/** Walks. */', 'Walks a tree.')).toBe('/** Walks a tree. */')
++	})
++
++	it('expands a one-line block whose new summary passes the width', () => {
++		const summary = Array.from({ length: 20 }, (_unused, index) => `word${index}`).join(' ')
++		const result = replaceSummary('/** Short. */', summary) ?? ''
++		expect(result.split('\n')[0]).toBe('/**')
++		expect(extractSummary(result)).toBe(summary)
++	})
++
++	it('writes the description into a block that carries only tags', () => {
++		const tagsOnly = ['/**', ' * @returns Nothing', ' */'].join('\n')
++		expect(replaceSummary(tagsOnly, 'Walks the tree.')).toBe(
++			['/**', ' * Walks the tree.', ' *', ' * @returns Nothing', ' */'].join('\n'),
++		)
++	})
++
++	it('returns a block carrying no tag byte for byte when the summary is its own', () => {
++		const tagless = ['/**', ' * Walks the tree.', ' */'].join('\n')
++		expect(replaceSummary(tagless, 'Walks the tree.')).toBe(tagless)
++		expect(replaceSummary(tagless, 'Walks a tree.')).toBe(
++			['/**', ' * Walks a tree.', ' */'].join('\n'),
++		)
++	})
++
++	// A summary carrying no word names no paragraph to write, so the block keeps the
++	// documentation it has. Deleting the description on an absent value is the erasure this
++	// refusal exists to stop, and a block carrying no tag is where it did the most damage.
++	it('returns undefined for a summary carrying no word and deletes no description', () => {
++		const tagless = ['/**', ' * Walks the tree.', ' */'].join('\n')
++		expect(replaceSummary(TAGGED, '')).toBeUndefined()
++		expect(replaceSummary(TAGGED, '   \n  ')).toBeUndefined()
++		expect(replaceSummary(tagless, '')).toBeUndefined()
++	})
++
++	// The control, drawn from outside the membership rule "a genuine JSDoc span": a
++	// single-star block comment is not one, and reshaping it into one would be a silent edit.
++	it('returns undefined for a single-star block comment and for a line comment', () => {
++		expect(replaceSummary('/* Walks the tree. */', 'Walks a tree.')).toBeUndefined()
++		expect(replaceSummary('// Walks the tree.', 'Walks a tree.')).toBeUndefined()
++	})
++})
++
++describe('replaceExample', () => {
++	const TAGGED = [
++		'\t/**',
++		'\t * Walks the tree.',
++		'\t *',
++		'\t * @param tree - The tree to walk',
++		'\t *',
++		'\t * @example First',
++		'\t * ```ts',
++		'\t * walk(tree)',
++		'\t * ```',
++		'\t *',
++		'\t * @example Second',
++		'\t * ```ts',
++		'\t * walk(other)',
++		'\t * ```',
++		'\t */',
++	].join('\n')
++
++	it('replaces the body of the tag carrying that title and leaves the other tag alone', () => {
++		const result = replaceExample(TAGGED, {
++			name: 'walk',
++			title: 'First',
++			code: 'walk(root)\nwalk(leaf)',
++			language: 'js',
++		})
++		expect(result).toBe(
++			[
++				'\t/**',
++				'\t * Walks the tree.',
++				'\t *',
++				'\t * @param tree - The tree to walk',
++				'\t *',
++				'\t * @example First',
++				'\t * ```js',
++				'\t * walk(root)',
++				'\t * walk(leaf)',
++				'\t * ```',
++				'\t *',
++				'\t * @example Second',
++				'\t * ```ts',
++				'\t * walk(other)',
++				'\t * ```',
++				'\t */',
++			].join('\n'),
++		)
++	})
++
++	it('reads the new body back through the reader that compares it', () => {
++		const example: SourceExample = {
++			name: 'walk',
++			title: 'Second',
++			code: 'walk(root)',
++			language: 'ts',
++		}
++		const result = replaceExample(TAGGED, example)
++		expect(collectExamples(normalizeComment(result ?? ''), 'walk')).toContainEqual(example)
++	})
++
++	it('returns the block byte for byte when the tag already carries that body', () => {
++		expect(
++			replaceExample(TAGGED, {
++				name: 'walk',
++				title: 'First',
++				code: 'walk(tree)',
++				language: 'ts',
++			}),
++		).toBe(TAGGED)
++	})
++
++	it('returns undefined for a title no tag carries and for an untitled request', () => {
++		expect(
++			replaceExample(TAGGED, { name: 'walk', title: 'Third', code: 'walk()', language: 'ts' }),
++		).toBeUndefined()
++		expect(replaceExample(TAGGED, { name: 'walk', code: 'walk()', language: 'ts' })).toBeUndefined()
++		expect(TAGGED).toContain('@example First')
++		expect(TAGGED).toContain('@example Second')
++	})
++
++	// The emitted fence is three backticks, and `collectExamples` reads a body to the first
++	// such run. Writing a body that carries one would truncate it and turn the `@returns` line
++	// after it into the body's end, so the replacement refuses instead of writing a block the
++	// reader cannot read back.
++	it('returns undefined for code the emitted fence cannot enclose', () => {
++		const example: SourceExample = {
++			name: 'walk',
++			title: 'First',
++			code: '```md\ninner\n```',
++			language: 'md',
++		}
++		expect(replaceExample(TAGGED, example)).toBeUndefined()
++		expect(replaceExample(TAGGED, { ...example, code: '~~~md\ninner\n~~~' })).toBeDefined()
++	})
++
++	it('replaces the untitled tag of a block whose tag carries no title', () => {
++		const untitled = ['/**', ' * @example', ' * ```ts', ' * old()', ' * ```', ' */'].join('\n')
++		expect(replaceExample(untitled, { name: 'walk', code: 'walk()', language: 'ts' })).toBe(
++			['/**', ' * @example', ' * ```ts', ' * walk()', ' * ```', ' */'].join('\n'),
++		)
++	})
++
++	it('keeps a tag-shaped line inside the current body out of the tag search', () => {
++		const masked = [
++			'/**',
++			' * @example First',
++			' * ```ts',
++			' * // @param is example code, not a tag',
++			' * old()',
++			' * ```',
++			' *',
++			' * @returns Nothing',
++			' */',
++		].join('\n')
++		expect(
++			replaceExample(masked, { name: 'walk', title: 'First', code: 'walk()', language: 'ts' }),
++		).toBe(
++			[
++				'/**',
++				' * @example First',
++				' * ```ts',
++				' * walk()',
++				' * ```',
++				' *',
++				' * @returns Nothing',
++				' */',
++			].join('\n'),
++		)
++	})
++
++	// The controls, drawn from outside the membership rule "a genuine JSDoc span carrying an
++	// `@example` tag of that title": a block with no such tag, and a single-star comment.
++	it('returns undefined for a block with no @example tag and for a single-star block comment', () => {
++		const none = ['/**', ' * Walks the tree.', ' *', ' * @returns Nothing', ' */'].join('\n')
++		expect(replaceExample(none, { name: 'walk', title: 'First', code: 'walk()' })).toBeUndefined()
++		expect(
++			replaceExample('/* @example First */', { name: 'walk', title: 'First', code: 'walk()' }),
++		).toBeUndefined()
++	})
++})
++
++// A one-tab callable inside a declaration that owns no members: the head keyword decides, so the
++// owner the interface opened is closed by the `const` head and the member under it keys nothing.
++const UNOWNED = [
++	'export interface Widget {',
++	'\twalk(): void',
++	'}',
++	'export const table = {',
++	'\tghost(): void {},',
++	'}',
++	'',
++].join('\n')
++
++describe('extractBodyLines', () => {
++	it('opens the projection with the owner head it supplies', () => {
++		const projected = extractBodyLines(['\twalk(): void'])
++		expect(projected.map((line) => line.code)).toEqual([
++			'export interface Owner {',
++			'\twalk(): void',
++		])
++	})
++
++	it('gives a body member the owner key the supplied head names', () => {
++		const keys = collectKeys(extractBodyLines(['\twalk(): void', '\trender(): string']))
++		expect(Array.from(keys.values())).toEqual(['interface Owner', 'Owner.walk', 'Owner.render'])
++	})
++
++	// The one boundary the supplied head carries: a column-zero `}` closes it, the same rule
++	// `collectKeys` runs over a whole file. `extractDeclaration` ends a body at the first one, so a
++	// body it returns never reaches this.
++	it('leaves a member past a column-zero brace unkeyed, because that brace closes the head', () => {
++		const keys = collectKeys(extractBodyLines(['\twalk(): void', '}', '\tghost(): void']))
++		expect(Array.from(keys.values())).toEqual(['interface Owner', 'Owner.walk'])
++		expect(extractMemberMethods(['\twalk(): void', '}', '\tghost(): void'])).toEqual([
++			{ name: 'walk' },
++		])
++	})
++})
++
++describe('collectKeys', () => {
++	// Every head of an overload set keys, because the map addresses physical records rather than
++	// names; deduping by (keyword, name) is `extractExports`'s own step over these values.
++	it('keys every column-zero export head by its symbol key, one entry per record', () => {
++		expect(Array.from(collectKeys(extractSourceLines(OVERLOADS)).values())).toEqual([
++			'function read',
++			'function read',
++			'function read',
++		])
++	})
++
++	it('keys a declaration a blank line separates from its block, which the block reader misses', () => {
++		expect(Array.from(collectKeys(extractSourceLines(SEPARATED)).values())).toEqual([
++			'function walk',
++		])
++	})
++
++	it('keys no head written inside a template literal', () => {
++		expect(Array.from(collectKeys(extractSourceLines(TEMPLATE)).values())).toEqual(['const sample'])
++	})
++
++	it('keys nothing in a re-export-only barrel, which declares no head', () => {
++		expect(Array.from(collectKeys(extractSourceLines(BARREL)).values())).toEqual([])
++	})
++
++	it('keys a one-tab callable member by Owner.member and closes the owner at its brace', () => {
++		expect(Array.from(collectKeys(extractSourceLines(MEMBERS)).values())).toEqual([
++			'interface WidgetInterface',
++			'WidgetInterface.walk',
++			'WidgetInterface.render',
++			'function read',
++		])
++	})
++
++	it('keys a class and its member the way its own documented example states', () => {
++		const keys = collectKeys(extractSourceLines('export class Widget {\n\twalk(): void\n}'))
++		expect(Array.from(keys.values())).toEqual(['class Widget', 'Widget.walk'])
++	})
++
++	it('closes an owner at a head carrying any other keyword', () => {
++		expect(Array.from(collectKeys(extractSourceLines(UNOWNED)).values())).toEqual([
++			'interface Widget',
++			'Widget.walk',
++			'const table',
++		])
++	})
++
++	it('strips a generator marker before keying, as the symbol key spells it', () => {
++		const source = 'export async function* walk() {}\nexport class Widget {}\n'
++		expect(Array.from(collectKeys(extractSourceLines(source)).values())).toEqual([
++			'function walk',
++			'class Widget',
++		])
++	})
++
++	// The projection each reader splits back out of the key it reads. A test named for the split
++	// rather than for one reader, because the same key serves all of them.
++	it('carries the keyword and the member name each reader splits back out of it', () => {
++		expect(extractExports(MEMBERS)).toEqual([
++			{ name: 'WidgetInterface', keyword: 'interface', summary: 'Represents a widget.' },
++			{ name: 'read', keyword: 'function', summary: 'Reads a widget.' },
++		])
++		expect(
++			extractMemberMethods(extractDeclaration(MEMBERS, 'interface', 'WidgetInterface')?.body ?? []),
++		).toEqual([
++			{ name: 'render', summary: 'Renders the widget.' },
++			{ name: 'walk', summary: 'Walks the tree.' },
++		])
++	})
++})
++
++describe('locateComment', () => {
++	it('reports the region of the block its declaration key names', () => {
++		const text = ['/**', ' * Walks. ', ' */', 'export function walk(): void {}', ''].join('\n')
++		const span = locateComment(text, 'function walk')
++		expect(span).toBeDefined()
++		expect(text.slice(span?.start, span?.end)).toBe(['/**', ' * Walks. ', ' */'].join('\n'))
++	})
++
++	it('reports the region its own documented example states', () => {
++		const text = '/** Walks. */\nexport function walk(): void {}\n'
++		expect(locateComment(text, 'function walk')).toEqual({ start: 0, end: 13 })
++	})
++
++	it('reaches the first head of an overload set', () => {
++		const span = locateComment(OVERLOADS, 'function read')
++		expect(OVERLOADS.slice(span?.start, span?.end)).toBe(
++			['/**', ' * Reads one value.', ' */'].join('\n'),
++		)
++	})
++
++	it('reports a member region with its indentation, keyed by Owner.member', () => {
++		const walk = locateComment(MEMBERS, 'WidgetInterface.walk')
++		const render = locateComment(MEMBERS, 'WidgetInterface.render')
++		expect(MEMBERS.slice(walk?.start, walk?.end)).toBe(
++			['\t/**', '\t * Walks the tree.', '\t */'].join('\n'),
++		)
++		expect(MEMBERS.slice(render?.start, render?.end)).toBe(
++			['\t/**', '\t * Renders the widget.', '\t */'].join('\n'),
++		)
++	})
++
++	it('closes an owner at its column-zero brace, so a later declaration keys no member', () => {
++		expect(locateComment(MEMBERS, 'interface WidgetInterface')).toBeDefined()
++		expect(locateComment(MEMBERS, 'function read')).toBeDefined()
++		expect(locateComment(MEMBERS, 'WidgetInterface.read')).toBeUndefined()
++	})
++
++	// The misses this locator inherits from the reader that attaches blocks, each already
++	// recorded as that reader's own boundary. A block a blank line separates from its
++	// declaration attaches to the blank line; a block written inside a template literal is no
++	// genuine span; a re-export row declares nothing to key.
++	it('misses the shapes the attaching reader misses, and no others here', () => {
++		expect(locateComment(SEPARATED, 'function walk')).toBeUndefined()
++		expect(locateComment(TEMPLATE, 'function ghost')).toBeUndefined()
++		expect(locateComment(BARREL, 'const types')).toBeUndefined()
++		expect(TEMPLATE.slice(0, 3)).toBe('/**')
++		const outer = locateComment(TEMPLATE, 'const sample')
++		expect(TEMPLATE.slice(outer?.start, outer?.end)).toBe(
++			['/**', ' * Holds a sample module.', ' */'].join('\n'),
++		)
++	})
++
++	it('returns undefined for a key nothing in the file carries', () => {
++		expect(locateComment(OVERLOADS, 'function phantom')).toBeUndefined()
++		expect(locateComment(OVERLOADS, 'const read')).toBeUndefined()
++		expect(locateComment(OVERLOADS, 'Phantom.read')).toBeUndefined()
++	})
++
++	it('reports offsets a CRLF file carries', () => {
++		const text = ['/**', ' * Walks.', ' */', 'export function walk(): void {}', ''].join('\r\n')
++		const span = locateComment(text, 'function walk')
++		expect(text.slice(span?.start, span?.end)).toBe(['/**', ' * Walks.', ' */'].join('\r\n'))
++	})
++
++	// The end-to-end the seed runs: locate the block, rewrite it, splice it back, and read the
++	// new description through `collectSummaries` over `extractSourceLines` — the reader the
++	// parity gate compares on, rather than a projection re-derived in this file.
++	it('carries a rewrite back into the file, read by the reader the gate compares on', () => {
++		const span = locateComment(MEMBERS, 'WidgetInterface.walk')
++		expect(span).toBeDefined()
++		const block = MEMBERS.slice(span?.start, span?.end)
++		const rewritten = replaceSummary(block, 'Walks a tree depth-first.')
++		expect(rewritten).toBeDefined()
++		const written = spliceSpan(MEMBERS, span ?? { start: 0, end: 0 }, rewritten ?? '')
++
++		expect(Array.from(collectSummaries(extractSourceLines(written)).values())).toContain(
++			'Walks a tree depth-first.',
++		)
++		expect(written.split('\n')).toContain('\t * Walks a tree depth-first.')
++		expect(written.slice(0, span?.start)).toBe(MEMBERS.slice(0, span?.start))
++		expect(written.slice((written.length ?? 0) - (MEMBERS.length - (span?.end ?? 0)))).toBe(
++			MEMBERS.slice(span?.end),
++		)
++	})
++
++	// Over this package's own source: every export the reader gives a summary must have a
++	// locatable block, and the block's own description must be that summary. A locator that
++	// found the wrong block, or the block of the declaration before it, reddens here.
++	it('locates the block behind every summary this package ships', () => {
++		const missed = Object.entries(SOURCE).flatMap(([key, text]) =>
++			extractExports(text)
++				.filter((symbol) => symbol.summary !== undefined)
++				.filter((symbol) => {
++					const span = locateComment(text, computeSymbolKey(symbol))
++					if (span === undefined) return true
++					return extractSummary(text.slice(span.start, span.end)) !== symbol.summary
++				})
++				.map((symbol) => `${key}: ${computeSymbolKey(symbol)}`),
++		)
++		expect(missed).toEqual([])
++		expect(
++			Object.values(SOURCE).flatMap((text) =>
++				extractExports(text).filter((symbol) => symbol.summary !== undefined),
++			).length,
++		).toBeGreaterThan(0)
++	})
++
++	// The member half of the same control, at the same scale. The preceding declaration control
++	// meets the head grammar only; this one meets the member grammar and the owner-close rule over real
++	// declarations, where a hand-written fixture cannot reach the shapes this package ships. Every
++	// documented member the declaration readers report must have a locatable block whose own
++	// description is that member's summary.
++	it('locates the block behind every documented member this package ships', () => {
++		const members = Object.entries(SOURCE).flatMap(([file, text]) =>
++			(['class', 'interface'] as const).flatMap((keyword) =>
++				extractExports(text)
++					.filter((symbol) => symbol.keyword === keyword)
++					.flatMap((symbol) =>
++						extractMemberMethods(extractDeclaration(text, keyword, symbol.name)?.body ?? [])
++							.filter((entry) => entry.summary !== undefined)
++							.map((entry) => ({ file, text, key: `${symbol.name}.${entry.name}`, entry })),
++					),
++			),
++		)
++		const missed = members.filter((member) => {
++			const span = locateComment(member.text, member.key)
++			if (span === undefined) return true
++			return extractSummary(member.text.slice(span.start, span.end)) !== member.entry.summary
++		})
++
++		expect(missed.map((member) => `${member.file}: ${member.key}`)).toEqual([])
++		expect(members.length).toBeGreaterThan(MEMBER_FLOOR)
++	})
++})
