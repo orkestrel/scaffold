@@ -79,3 +79,10 @@ The campaign ends when each closes as implemented, repaired, retained, or intent
 
 - **Satisfied: the three open items under § For the owner.** Ruling 6 accepts the defaults: the README shrink with the pitch as the H1 blockquote equal to the guide's tagline (D4's RQ assertion and D6's rewrite), the equality reading where a `Summary` cell adopts the doc block's verb-first sentence and the noun-phrase clause covers the tagline and the pitch alone (D4's rule bullets), and the voice-rule population as every file the linter walks (D3, landed in the fix round).
 - **Unchanged:** D4 waits on D3's landing and on the guide head start built from D2's landed tip; D5 waits on D2-fix's `locateComment`; D6 and D7.n follow in order.
+
+## Re-baseline (2026-09-07, after D2-fix returned)
+
+- **Transformed: the span record.** `locateComment` returns `MarkdownSpan`, the record `spliceSpan` already takes; no `SourceSpan` is added, because a structurally identical second record is the rename-wrap the rules refuse. D5's seed slices, rewrites, and splices with that one record.
+- **Transformed: `replaceExample` refuses a body its three-backtick fence cannot enclose** rather than widening the fence and `collectExamples`'s reader together; the seed reports such a miss with its key. Widening both is recorded for whoever owns the `@example` body contract.
+- **Added for D5:** the seed derives its keys from `Drift.key` and locates per key; a `collectKeys` reader is promoted only when the seed asks for it (D2-fix § Findings 1).
+- **Unchanged:** D7.guide (the guide's own compared columns, one more row under `Behavior`), the formatter round trip's missing in-suite home, the test-infrastructure readers at module scope.
