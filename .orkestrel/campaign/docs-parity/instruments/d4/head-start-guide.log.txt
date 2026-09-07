@@ -1,0 +1,52 @@
+guide tip: b7dc578 Render guide text from source entries and carry a summary or an example across either side
+
+> @orkestrel/guide@0.0.17 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/guide@0.0.17 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/guide@0.0.17 build:src
+> npm run build:src:core
+
+
+> @orkestrel/guide@0.0.17 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 12 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  130.32 kB │ gzip: 33.35 kB │ map: 195.07 kB
+
+transforming...
+✓ 12 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  135.49 kB │ gzip: 33.77 kB │ map: 196.79 kB
+
+✓ built in 687ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/guide@0.0.17 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+archive: /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d4/packed/orkestrel-guide-0.0.17.tgz
+
+changed 1 package in 562ms
+installed guide: 0.0.17
+154: * and {@link locateComment} matches a caller's key against the whole map. A change to the head
+826: * so {@link findDrift} reports the absence.
+915: * table without it leaves every row's summary absent, which {@link findDrift} reports.
+928: * Extracts the guide's tagline — the text of the blockquote following the document's H1,
+930: * blockquote ends the window, so a blockquote elsewhere in the document is not the tagline.
+933: * @returns The tagline, or `undefined` when no blockquote follows an H1 before the next heading
+989: * {@link SUMMARY} column leaves every row's summary absent and {@link findDrift} reports each
+1025: * findDrift(guide, source) // [{ key: 'function walk', guide: 'Walks.', source: 'Walks a tree.' }]
+HEAD-START DONE
+SCRIPT EXIT 0
