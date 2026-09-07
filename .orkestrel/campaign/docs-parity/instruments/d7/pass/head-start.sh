@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# head-start.sh <pkg>: the P.1 precondition — install the guide's packed tip (0.0.18 at c86f7fd) into the checkout --no-save.
+# head-start.sh <pkg>: the P.1 precondition — install the guide's packed tip (0.0.18 at the branch tip after U4) into the checkout --no-save.
 # Orchestrator-owned tracked command; log at headstart/<pkg>.log.txt. Generalizes a1/head-start-abort.sh.
 set -u
 n=$1; A=/home/user/fleet/$n

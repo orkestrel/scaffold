@@ -1,0 +1,142 @@
+diff --git a/guides/guide.md b/guides/guide.md
+index e6899b7..f160b08 100644
+--- a/guides/guide.md
++++ b/guides/guide.md
+@@ -95,7 +95,7 @@ directly.
+ | `unwrapComment`         | function | `(comment: string) => readonly string[]`                                                                  | Unwraps one genuine JSDoc span into one content line per physical line — the `/**` opener, the closing marker, each line's continuation marker, and per-line trailing whitespace removed, with a line's own indentation past the marker kept. The result is aligned with `comment.split('\n')`, so an index found in it addresses the same physical line of the span it was built from, which is what lets a rewrite keep every line it does not replace. `normalizeComment` is this projection joined and trimmed at its ends.                                                                                                                                     |
+ | `buildComment`          | function | `(lines: readonly string[], indent: string) => string`                                                    | Builds one genuine JSDoc span from its content lines — the inverse of `unwrapComment`. Each line is emitted at `indent` behind a continuation marker, an empty line as the bare marker so no line carries trailing whitespace, and the leading and trailing empty lines are dropped because the opener and the closer take those physical lines.                                                                                                                                                                                                                                                                                                                    |
+ | `wrapText`              | function | `(text: string, width: number) => readonly string[]`                                                      | Wraps one paragraph into greedy lines no longer than `width` characters. Every run of whitespace separates words, and a word longer than `width` takes its own line rather than being split, so a long code token or URL survives the wrap intact.                                                                                                                                                                                                                                                                                                                                                                                                                  |
+-| `normalizeSummary`      | function | `(text: string) => string`                                                                                | Returns the canonical compared form of a description paragraph — `{@link Target}` and `{@link Target \| label}` become the code token of the label or the target text, every run of whitespace, including a collapsed continuation marker and a line break, becomes one space, the ends trim, and a code span keeps its delimiters while its own boundary whitespace goes. The guide's side and the source's side read through this one form.                                                                                                                                                                                                                       |
++| `normalizeSummary`      | function | `(text: string) => string`                                                                                | Returns the canonical compared form of a description paragraph — `{@link Target}` and `{@link Target \| label}` become the code token of the label or the target text with the target's `import('./module.js').` or `module#` module part dropped, every run of whitespace, including a collapsed continuation marker and a line break, becomes one space, the ends trim, and a code span keeps its delimiters while its own boundary whitespace goes. The guide's side and the source's side read through this one form.                                                                                                                                           |
+ | `maskFences`            | function | `(text: string) => string`                                                                                | Returns one doc block's unwrapped text with every fenced body replaced by aligned spaces, so a tag search reads the block's structure and never its example code. A line opening with three or more backticks or tildes opens a body, the first line opening with a run of the same character at least as long closes it, an unclosed body runs to the end, and the marker lines themselves stay. The projection preserves every line and every column, so an index found in it addresses the same character of the text it was built from.                                                                                                                         |
+ | `collectSummaries`      | function | `(lines: readonly SourceLine[]) => ReadonlyMap<SourceLine, string>`                                       | Collects the description paragraph of every documented physical record — a doc block's text before its first block tag, in `normalizeSummary`'s compared form — keyed by the record it documents. A record whose block carries no description contributes no entry, so an absent summary stays absent rather than becoming an empty string.                                                                                                                                                                                                                                                                                                                         |
+ | `extractBodyLines`      | function | `(lines: readonly string[]) => readonly SourceLine[]`                                                     | Extracts the aligned physical records of a declaration's body, read inside an owner head this function supplies, so a callable member in the body carries the `Owner.member` key `collectKeys` reports for it, and that head's own record opens the projection. A body read on its own carries no head, and the member grammar attaches a member to the head enclosing it.                                                                                                                                                                                                                                                                                          |
+@@ -356,6 +356,7 @@ occurs rather than on a side reserved for it:
+ 
+ - Every single-backtick code span — one backtick per side, no inner backtick, no adjacent backtick — is located, before any other clause runs.
+ - `{@link X}` and `{@link A.b}` become the code token of the target text, outside a located span.
++- A target's module part — the inline import form `import('./module.js').` and the declaration reference form `module#` — drops, so `{@link import('./module.js').X}` and `{@link module#X}` become the code token of `X` while `{@link import('./module.js').A.b}` becomes the code token of `A.b`.
+ - `{@link X | text}` becomes the code token of `text`, outside a located span.
+ - Emphasis — `**text**` and `_text_` — drops to its text.
+ - A link, `[text](target)`, drops to `text`.
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index e70d93b..8fd5a2f 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1680,10 +1680,11 @@ export function unwrapComment(comment: string): readonly string[] {
+ 
+ /**
+  * Returns the canonical compared form of a description paragraph — `{@link Target}` and
+- * `{@link Target | label}` become the code token of the label or the target text, every run of
+- * whitespace, including a collapsed continuation marker and a line break, becomes one space,
+- * the ends trim, and a code span keeps its delimiters while its own boundary whitespace goes.
+- * The guide's side and the source's side read through this one form.
++ * `{@link Target | label}` become the code token of the label or the target text with the
++ * target's `import('./module.js').` or `module#` module part dropped, every run of whitespace,
++ * including a collapsed continuation marker and a line break, becomes one space, the ends trim,
++ * and a code span keeps its delimiters while its own boundary whitespace goes. The guide's side
++ * and the source's side read through this one form.
+  *
+  * @remarks
+  * The clauses land in a fixed order, because each one decides what the next one sees. Every
+@@ -1698,6 +1699,12 @@ export function unwrapComment(comment: string): readonly string[] {
+  * whose content is all whitespace keeps one space, because a parser strips nothing from that
+  * one.
+  *
++ * A target's module part is the inline import form `import('<specifier>').` or the declaration
++ * reference form `<module>#`, and the expansion drops it, so a cross-file link and the code
++ * token a guide cell documents it with reach the same text. Everything after that part travels:
++ * `Owner.member` keeps its owner, and a dotted target no module part precedes is untouched. A
++ * label is text rather than a target, so `{@link Target | label}` renders its label whole.
++ *
+  * A code span delimited by more than one backtick is outside the compared form's representable
+  * set and travels untouched, as does a code span whose own text carries a backtick: the form
+  * spells every span with one backtick per side, so neither can be written back. A summary that
+@@ -1710,6 +1717,7 @@ export function unwrapComment(comment: string): readonly string[] {
+  * @example
+  * ```ts
+  * normalizeSummary('Creates a\n{@link Widget}.') // 'Creates a `Widget`.'
++ * normalizeSummary("Reads {@link import('./widgets.js').Widget}.") // 'Reads `Widget`.'
+  * normalizeSummary('cells joined by ` | `.') // 'cells joined by `|`.'
+  * ```
+  */
+@@ -1722,7 +1730,7 @@ export function normalizeSummary(text: string): string {
+ 		if (index % 2 === 0) {
+ 			normalized += part
+ 				.replace(/\{@link\s+[^}|]*\|\s*([^}]*?)\s*\}/g, '`$1`')
+-				.replace(/\{@link\s+([^}|]*?)\s*\}/g, '`$1`')
++				.replace(/\{@link\s+(?:import\([^)]*\)\.|[^}|#\s]*#)?([^}|]*?)\s*\}/g, '`$1`')
+ 			continue
+ 		}
+ 		const value = part.slice(1, -1).replace(/\s+/g, ' ').trim()
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 5f94ee8..281f7d3 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -2118,6 +2118,36 @@ describe('normalizeSummary', () => {
+ 		expect(normalizeSummary('{@link A} and {@link B | b}.')).toBe('`A` and `b`.')
+ 	})
+ 
++	// The module-part clause. A cross-file link names the declaring module in the doc block, and
++	// the guide cell documenting it carries the code token alone, so the compared form drops that
++	// part from a target and keeps everything after it. The qualified-target case earlier is the
++	// control: a dot that no module part precedes stays.
++	it('drops the module part of an inline import target', () => {
++		expect(normalizeSummary("Reads {@link import('./widgets.js').Widget}.")).toBe('Reads `Widget`.')
++		expect(normalizeSummary("Reads {@link import('@scope/widgets').Widget}.")).toBe(
++			'Reads `Widget`.',
++		)
++	})
++
++	it('keeps the member of an inline import target', () => {
++		expect(normalizeSummary("Reads {@link import('./widgets.js').Widget.render}.")).toBe(
++			'Reads `Widget.render`.',
++		)
++	})
++
++	it('drops the package part of a declaration reference target', () => {
++		expect(normalizeSummary('Reads {@link @scope/widgets#Widget}.')).toBe('Reads `Widget`.')
++		expect(normalizeSummary('Reads {@link @scope/widgets#Widget.render}.')).toBe(
++			'Reads `Widget.render`.',
++		)
++	})
++
++	it('renders the label of a labelled link whose target names a module', () => {
++		expect(normalizeSummary("Creates {@link import('./widgets.js').Widget | a widget}.")).toBe(
++			'Creates `a widget`.',
++		)
++	})
++
+ 	it('collapses a line break and its continuation whitespace into one space', () => {
+ 		expect(normalizeSummary('Creates a widget\nfrom a name.')).toBe('Creates a widget from a name.')
+ 	})
+@@ -2708,6 +2738,29 @@ describe('findDrift', () => {
+ 		])
+ 	})
+ 
++	// A cross-file link names its declaring module in the doc block, and the cell documenting it
++	// carries the code token alone. Both sides read through the compared form, so the pair agrees.
++	it('reads a module-qualified link against the bare token documenting it', () => {
++		const linked = AGREEING_GUIDE.replace(
++			'| `createWidget` | function | Creates a widget. |',
++			'| `createWidget` | function | Creates a `Widget`. |',
++		)
++		const cross = createSource({
++			files: {
++				...FILES,
++				'module/factories.ts': [
++					'/**',
++					" * Creates a {@link import('./widgets.js').Widget}.",
++					' */',
++					'export function createWidget(): void {}',
++					'',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		expect(findDrift(createGuide(linked), cross)).toEqual([])
++	})
++
+ 	it('reports the guide side absent when the table carries no Summary column', () => {
+ 		const stripped = AGREEING_GUIDE.replace(
+ 			'| Name | Kind | Summary |\n| --- | --- | --- |\n| `WidgetInterface` | interface | Represents a widget. |\n| `createWidget` | function | Creates a widget. |',

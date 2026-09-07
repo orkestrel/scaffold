@@ -31,7 +31,7 @@ $n's checkout carries scaffold's vendored delta and the seed from the extracted 
 
 ## Standing conditions, taken before this dispatch
 
-- The Orchestrator installed \`@orkestrel/guide@0.0.18\` (packed at the guide's \`c86f7fd\`) into \`node_modules\` with \`--no-save\`; \`package.json\` still declares the \`^0.0.17\` range and stays so in this unit (the registry serves no \`0.0.18\` yet; the re-pin lands after the release). \`npm ls\` reports that one package \`invalid\` against its range, which is expected. Do not run \`npm install\` or \`npm ci\`. The install log:
+- The Orchestrator installed \`@orkestrel/guide@0.0.18\` (packed at the guide's tip after U4) into \`node_modules\` with \`--no-save\`; \`package.json\` still declares the \`^0.0.17\` range and stays so in this unit (the registry serves no \`0.0.18\` yet; the re-pin lands after the release). \`npm ls\` reports that one package \`invalid\` against its range, which is expected. Do not run \`npm install\` or \`npm ci\`. The install log:
 
 \`\`\`text
 $hs
