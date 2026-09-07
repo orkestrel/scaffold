@@ -400,4 +400,7 @@ The fix round moved lines under D5's citations and none of the D5 report's `file
 | `tests/src/core/compilers.test.ts:611-631` | `emits the documentation seed beside the guides proof` | `:619` opens the case |
 | `tests/src/core/compilers.test.ts:1806-2114` | the fixture constants, `buildSeedWorkspace`, `runSeed`, `describe('the documentation seed')` | the `describe` opens at `:2071` and the file ends at `:2188` |
 | `guides/scaffold.md:1025-1044` | the equality-gate paragraphs | `:1025-1051`, with this round's paragraph at `:1035-1041` |
-| this report's K5 `:1371-1380` | the root tsconfig paragraph | `:1371-1378` |
+| this report's K5 `:1371-1380` | the root tsconfig paragraph | `:1371-1378` after D5-fix; `:1375-1384` after D5-fix-2 |
+| this report's K5 `guides/scaffold.md:254` | the `blueprintToHostArtifacts` Surface row | `:255` after D5-fix-2 |
+| this report's K5 `guides/scaffold.md:1265` | the renamed prose reference | `:1271` after D5-fix-2 |
+| this report's K5 `guides/scaffold.md:1239` | the vendored-set enumeration in § Vendored data root | `:1245` after D5-fix-2 (`:1239` is the section heading) |
