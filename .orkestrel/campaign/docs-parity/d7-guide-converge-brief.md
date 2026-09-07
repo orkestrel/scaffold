@@ -17,7 +17,7 @@
 
 ## What is fixed
 
-Read from the tree at U1's commit (`ed1527d`, clean, `version` `0.0.18`, the readers reaching every declaration head). Line numbers below are from that tree.
+Read from the tree at U1-fix's commit (`COMMIT_U1FIX`, clean, `version` `0.0.18`, the lockfile synced, the readers reaching every declaration head). Line numbers below are from that tree.
 
 The tables (`grep -n '^| Name\|^| Method' guides/guide.md`: Types `:32`, Constants `:60`, Helpers `:79`, Parsers `:154`, Shapers `:164`, Validators `:178`, Factories `:192`, Methods `:250`, `:263`, `:295`; the H3 sections `### \`Guide\`` `:204`, `### \`Source\`` `:213`, `### \`SourceManager\`` `:229`) and their headers after this unit:
 
@@ -39,10 +39,10 @@ The tables (`grep -n '^| Name\|^| Method' guides/guide.md`: Types `:32`, Constan
 - The README keeps `## API` (`tests/guides.test.ts:50-81` reads it); its opening paragraph drops the bijection claim the pitch carries and keeps the onboarding (devDependency, the test file, the vitest project).
 - Titles (decision 5), each block titled with its fence heading verbatim: `createGuide` "Construct a `Guide` from markdown text"; `createSource` "Construct a `Source` from an inline files record"; `createSourceManager` "Resolve a fence's import specifier to the right `Source`"; `findDrift` "Compare a guide against the source it documents"; `extractSourceLines` "Project source into physical code lines"; the `GuideInterface.tagline` member block "Read a guide's tagline". The guide fence wins on content: carry each fence body into its block with `--to source` and read the result. Unpaired by ruling: "The bijection assertion shape", "Resolve directory and file targets", "Carry a summary across into the guide" (compositions), "List the fence languages a package allows" (a four-backtick body no three-backtick block encloses), and the class blocks (constructor door beside the factory door). Read each titled fence body for a backtick run before titling.
 - The gate cases, in this file's house form (`string[]` collected, `expect(...).toEqual([])`): the equality case inside the manifest loop's `describe(entry.concept)` block, one line per drift `${entry.spec} ${drift.key}: guide ${left} source ${right}` with `absent` for an undefined side; the pin at file scope on `GUIDE_SPEC` in the both-sides form (`${GUIDE_SPEC} pairs: guide [...] source [...]` when no title pairs); the README case with the two `not.toBeUndefined()` guards before `toBe`.
-- § Tests (`:795-801`) states the suite does not wire SQ, MQ, or EQ and that the tables head `Shape`, `Signature`, `Behavior`, `Builds`, and `Returns`; after this unit it states the suite wires them and the tables head `Summary`.
-- The guide's own § The check catalog EQ row (`:555`) and § The extraction model already state the widened reach (U1); do not restate.
+- § Tests (`:797-803`) states the suite does not wire SQ, MQ, or EQ and that the tables head `Shape`, `Signature`, `Behavior`, `Builds`, and `Returns`; after this unit it states the suite wires them and the tables head `Summary`.
+- The guide's own § The check catalog EQ row (`:557`) and § The extraction model already state the widened reach (U1 and its fix); do not restate. The § Patterns headings sit at `:650-788`; the tagline blockquote at `:3-9` carries the `Source:` link at `:9`.
 - Every Surface and Methods cell changes voice under `--to guide`: the doc-block paragraphs open verb-first and the present cells are noun phrases (R1 subjective F5), so the whole table reads verb-first after the write; that is the ruled direction, not a defect to repair.
-- A table header's text is what the column ruling fixes; its padding is the formatter's, so a re-padded header row after `npm run format` is not a deviation. The § Patterns headings sit at `:648-786`; the tagline blockquote at `:3-9` carries the `Source:` link at `:9`.
+- A table header's text is what the column ruling fixes; its padding is the formatter's, so a re-padded header row after `npm run format` is not a deviation.
 
 ## Standing conditions
 
