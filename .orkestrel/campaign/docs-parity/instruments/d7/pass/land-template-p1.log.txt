@@ -1,0 +1,43 @@
+== template P.1 landing 2026-09-07T15:53:52Z, version 0.0.7
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 509ms
+EXIT 0
+== lockfile root version
+0.0.7 / 0.0.7
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== deps marker rewritten
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupPolicy.ts | 572 ++++++++++++++++++++++++++++++++++++++++++++-------
+ tsconfig.json        |   3 +-
+ 10 files changed, 1545 insertions(+), 567 deletions(-)
+== stage by path
+ 11 files changed, 1999 insertions(+), 567 deletions(-)
+== committed
+67df803 Prepare template for the equality gate
+(status end)

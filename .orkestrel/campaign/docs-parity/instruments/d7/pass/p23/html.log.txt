@@ -1,0 +1,91 @@
+### html at e9e2336, guide guides/html.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  35 passed (35)
+   test:guides exit 0
+-- census
+   guides/html.md surface {"equal":93,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":10,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class HTML methods 10 grouped false undescribed ["filter","find"]
+   owner interface HTMLInterface methods 10 grouped true undescribed []
+   examples titledFences 11 titledExamples ["createHTML:Parse, then query"] pairs ["Parse, then query"]
+-- sites: surface row guides/html.md:20; methods row guides/html.md:176; title src/core/factories.ts:19
+-- control A: one Surface Summary cell altered (guides/html.md:20)
+guides/html.md interface HTMLAttribute: guide "Represents one attribute of an `ElementNode` - its `name` and, when the source wrote one, its `value`. Control." source "Represents one attribute of an `ElementNode` - its `name` and, when the source wrote one, its `value`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > HTML > keeps every compared summary and example equal to its source
+Tests  1 failed | 34 passed (35)
+× keeps every compared summary and example equal to its source 740ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/html.md:176)
+guides/html.md HTMLInterface.span: guide "Returns the original-input region that produced a node in this handle's tree. Control." source "Returns the original-input region that produced a node in this handle's tree."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > HTML > keeps every compared summary and example equal to its source
+Tests  1 failed | 34 passed (35)
+× keeps every compared summary and example equal to its source 650ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates an HTML handle from an HTML string or an already-parsed {@link HTMLDocument} - the
+guides/html.md function createHTML: guide "Creates an HTML handle from an HTML string or an already-parsed `HTMLDocument` - the typed AST plus the query, rewrite, fold, streaming, and shaping operations `HTMLInterface` exposes." source "Control Creates an HTML handle from an HTML string or an already-parsed `HTMLDocument` - the typed AST plus the query, rewrite, fold, streaming, and shaping operations `HTMLInterface` exposes."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > HTML > keeps every compared summary and example equal to its source
+Tests  1 failed | 34 passed (35)
+× keeps every compared summary and example equal to its source 666ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/HTML.ts:41:  * Control Represents a parsed document - the typed {@link HTMLDocument} AST plus the query
+guides/html.md class HTML: guide "Represents a parsed document - the typed `HTMLDocument` AST plus the query (`walk` / `find` / `filter` / `reduce`), rewrite (`map`), fold, streaming, and document-shaping (`sanitize` / `distill`) operations `HTMLInterface` declares." source "Control Represents a parsed document - the typed `HTMLDocument` AST plus the query (`walk` / `find` / `filter` / `reduce`), rewrite (`map`), fold, streaming, and document-shaping (`sanitize` / `distill`) operations `HTMLInterface` declares."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > HTML > keeps every compared summary and example equal to its source
+Tests  1 failed | 34 passed (35)
+× keeps every compared summary and example equal to its source 597ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:19)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 34 passed (35)
+× pairs at least one example title across the guide and the source 110ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/html.md Parse, then query: guide "ts\nimport { createHTML, isElementNode } from '@orkestrel/html'\n\nconst page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')\n\npage.document.children[0] // { category: 'element', name: 'h1', attributes: [], children: [...] }\npage.span(page.document) // { start: 0, end: 40 } - half-open offsets in the original input\npage.find(isElementNode)?.name // 'h1' - narrowed to ElementNode by the guard overload\npage.filter(isElementNode).map((element) => element.name) // ['h1', 'p', 'b']\n\nconst categories: string[] = []\nfor (const node of page.walk()) categories.push(node.category)\n// ['document', 'element', 'text', 'element', 'text', 'element', 'text', 'text']" source "ts\nimport { createHTML, isElementNode } from '@orkestrel/html' // control\n\nconst page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')\n\npage.document.children[0] // { category: 'element', name: 'h1', attributes: [], children: [...] }\npage.span(page.document) // { start: 0, end: 40 } - half-open offsets in the original input\npage.find(isElementNode)?.name // 'h1' - narrowed to ElementNode by the guard overload\npage.filter(isElementNode).map((element) => element.name) // ['h1', 'p', 'b']\n\nconst categories: string[] = []\nfor (const node of page.walk()) categories.push(node.category)\n// ['document', 'element', 'text', 'element', 'text', 'element', 'text', 'text']"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > HTML > keeps every compared summary and example equal to its source
+Tests  1 failed | 34 passed (35)
+× keeps every compared summary and example equal to its source 603ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/html.md pitch: readme "Control: A types-first HTML toolkit: a hand-written, index-based tokenizer that turns any page or fragment into an immutable `HTML` handle over a typed AST, plus the sanitizer, the distiller, and the standalone renderers that project that AST back out as canonical HTML or structural plain text." tagline "A types-first HTML toolkit: a hand-written, index-based tokenizer that turns any page or fragment into an immutable `HTML` handle over a typed AST, plus the sanitizer, the distiller, and the standalone renderers that project that AST back out as canonical HTML or structural plain text."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A types-first HTML toolkit: …' to be 'A types-first HTML toolkit: a hand-wr…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 34 passed (35)
+× opens the README with the guide tagline 24ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/html.md interface HTMLSanitizeOptions: guide absent source "Describes the options for `HTMLInterface.sanitize`. Each allowlist key REPLACES its default rather than extending it, so a caller who passes one narrows or redirects that one axis and leaves the others alone."
+guides/html.md interface HTMLDistillOptions: guide absent source "Describes the options for `HTMLInterface.distill` - the content-extraction pass that reduces a page to the prose a reader (or a language model) actually wants."
+guides/html.md interface HTMLInterface: guide absent source "Represents a parsed HTML document: the typed `HTMLDocument` AST plus the query, rewrite, fold, and reduction operations over it."
+rows read: 1, disagreements found: 23
+   docs exit 1
+AssertionError: expected [ …(23) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > HTML > keeps every compared summary and example equal to its source
+Tests  1 failed | 34 passed (35)
+× keeps every compared summary and example equal to its source 733ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

@@ -1,0 +1,112 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-sqlite",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/sqlite.md",
+   "source": "src/server",
+   "surface": {
+    "counts": {
+     "equal": 18,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 13,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "SQLiteDatabase",
+     "keyword": "class",
+     "methods": 9,
+     "grouped": false,
+     "undescribed": [
+      "begin",
+      "close",
+      "commit",
+      "connect",
+      "execute",
+      "pragma",
+      "prepare",
+      "rollback",
+      "transact"
+     ]
+    },
+    {
+     "name": "SQLiteDatabaseInterface",
+     "keyword": "interface",
+     "methods": 9,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SQLiteStatement",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "all",
+      "execute",
+      "get",
+      "iterate"
+     ]
+    },
+    {
+     "name": "SQLiteStatementInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Connect, execute, and round-trip a row",
+     "Positional and named parameters",
+     "Reading: get, all, iterate",
+     "Atomic transactions",
+     "Long-lived transactions with begin / commit / rollback",
+     "Branching on a typed fault",
+     "Pragmas",
+     "Closing a connection",
+     "Production options: readonly, timeout, foreignKeys",
+     "Disposing with using",
+     "Retrying on BUSY",
+     "The boundary helpers directly"
+    ],
+    "titledExamples": [
+     "createSQLiteDatabase:Connect, execute, and round-trip a row"
+    ],
+    "pairs": [
+     "Connect, execute, and round-trip a row"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

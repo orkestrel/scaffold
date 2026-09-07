@@ -1,0 +1,84 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-html",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/html.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 93,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 10,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "HTML",
+     "keyword": "class",
+     "methods": 10,
+     "grouped": false,
+     "undescribed": [
+      "filter",
+      "find"
+     ]
+    },
+    {
+     "name": "HTMLInterface",
+     "keyword": "interface",
+     "methods": 10,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Parse, then query",
+     "Adopt a document that came from somewhere else",
+     "Rewrite with map, count with reduce, project with fold",
+     "Stream the top level, shallow and backpressured",
+     "Sanitize, and watch the floor hold",
+     "Distill a page down to its content",
+     "Work on a bare node, with no handle at all",
+     "Scan by hand, one piece at a time",
+     "Escape, resolve, and inspect",
+     "Ask a name or an element a question",
+     "Prove the roundtrip laws"
+    ],
+    "titledExamples": [
+     "createHTML:Parse, then query"
+    ],
+    "pairs": [
+     "Parse, then query"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

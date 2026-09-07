@@ -1,0 +1,91 @@
+### sqlite at 3b211a0, guide guides/sqlite.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  36 passed (36)
+   test:guides exit 0
+-- census
+   guides/sqlite.md surface {"equal":18,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":13,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class SQLiteDatabase methods 9 grouped false undescribed ["begin","close","commit","connect","execute","pragma","prepare","rollback","transact"]
+   owner interface SQLiteDatabaseInterface methods 9 grouped true undescribed []
+   owner class SQLiteStatement methods 4 grouped false undescribed ["all","execute","get","iterate"]
+   owner interface SQLiteStatementInterface methods 4 grouped true undescribed []
+   examples titledFences 13 titledExamples ["createSQLiteDatabase:Connect, execute, and round-trip a row"] pairs ["Connect, execute, and round-trip a row"]
+-- sites: surface row guides/sqlite.md:35; methods row guides/sqlite.md:88; title src/server/factories.ts:15
+-- control A: one Surface Summary cell altered (guides/sqlite.md:35)
+guides/sqlite.md function createSQLiteDatabase: guide "Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`. Control." source "Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SQLite > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 75ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/sqlite.md:88)
+guides/sqlite.md SQLiteDatabaseInterface.connect: guide "Opens the underlying connection — lazy and idempotent, so a second call is a no-op. Control." source "Opens the underlying connection — lazy and idempotent, so a second call is a no-op."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SQLite > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 63ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`.
+guides/sqlite.md function createSQLiteDatabase: guide "Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`." source "Control Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SQLite > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 53ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/server/SQLiteDatabase.ts:14:  * Control Implements `SQLiteDatabaseInterface` over a lazily opened `DatabaseSync` the instance
+guides/sqlite.md class SQLiteDatabase: guide "Implements `SQLiteDatabaseInterface` over a lazily opened `DatabaseSync` the instance owns, gating every operation on that connection and mapping each native fault to a `SQLiteError`." source "Control Implements `SQLiteDatabaseInterface` over a lazily opened `DatabaseSync` the instance owns, gating every operation on that connection and mapping each native fault to a `SQLiteError`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SQLite > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 52ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:15)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 35 passed (36)
+× pairs at least one example title across the guide and the source 60ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/sqlite.md Connect, execute, and round-trip a row: guide "ts\nimport { createSQLiteDatabase } from '@orkestrel/sqlite'\n\nconst db = createSQLiteDatabase() // path defaults to ':memory:'\ndb.connect()\ndb.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, age INTEGER)')\nconst result = db.prepare('INSERT INTO users VALUES (?, ?, ?)').execute(['u1', 'Ada', 36])\nresult.changes // 1\ndb.prepare('SELECT * FROM users WHERE id = ?').get(['u1']) // { id: 'u1', name: 'Ada', age: 36 }" source "ts\nimport { createSQLiteDatabase } from '@orkestrel/sqlite' // control\n\nconst db = createSQLiteDatabase() // path defaults to ':memory:'\ndb.connect()\ndb.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, age INTEGER)')\nconst result = db.prepare('INSERT INTO users VALUES (?, ?, ?)').execute(['u1', 'Ada', 36])\nresult.changes // 1\ndb.prepare('SELECT * FROM users WHERE id = ?').get(['u1']) // { id: 'u1', name: 'Ada', age: 36 }"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SQLite > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 81ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/sqlite.md pitch: readme "Control: A lean, typed, synchronous wrapper over Node's built-in `node:sqlite` — a thin skin on `DatabaseSync` / `StatementSync` that exposes prepared statements, transactions, and pragmas, with one runtime dependency, `@orkestrel/contract`, for boundary narrowing." tagline "A lean, typed, synchronous wrapper over Node's built-in `node:sqlite` — a thin skin on `DatabaseSync` / `StatementSync` that exposes prepared statements, transactions, and pragmas, with one runtime dependency, `@orkestrel/contract`, for boundary narrowing."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A lean, typed, synchronous w…' to be 'A lean, typed, synchronous wrapper ov…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 35 passed (36)
+× opens the README with the guide tagline 48ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/sqlite.md function createSQLiteDatabase: guide absent source "Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SQLite > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 70ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0
