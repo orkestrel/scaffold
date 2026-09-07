@@ -1,0 +1,15 @@
+== csv p2 landing 2026-09-07T15:31:28Z over 50c9dcc
+== status
+ M README.md
+ M guides/csv.md
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     |  29 ++---
+ tests/guides.test.ts  |  77 +++++++++++++-
+ 5 files changed, 258 insertions(+), 158 deletions(-)
+== stage by path
+ 5 files changed, 258 insertions(+), 158 deletions(-)
+== committed
+5a24ea5 Converge csv under the equality gate
+(status end)

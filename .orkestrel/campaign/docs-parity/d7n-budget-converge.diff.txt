@@ -1,0 +1,499 @@
+diff --git a/README.md b/README.md
+index 10cef95..ad8e046 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,13 @@
+ # @orkestrel/budget
+ 
+-A typed spending budget — a cumulative consumption tally against a ceiling
+-that exposes an `AbortSignal` firing the moment the budget is **exhausted**.
+-Charge a `Budget<T>` as work spends — `consume(value)` adds to a running
+-`consumed` total — and race its `signal` against that work to cap how much it
+-may burn (tokens, bytes, calls). A convenience `createTokenBudget` factory
+-wraps the canonical LLM cost unit (`TokenUsage`) so callers don't have to
+-write their own consumer. Deliberately small: a pure, functional counter
+-with a signal bolted to its ceiling, no Emitter, no clock, no I/O of its own.
+-Part of the `@orkestrel` line.
++> The cost primitive: a cumulative consumption tally against a ceiling that exposes an
++> `AbortSignal` firing the moment `consumed` reaches `max`.
++
++Create a handle with the `createBudget` function, give it the `max` ceiling and the
++`consumer` that reads a charge out of your domain value, and call `consume(value)` at
++each step that spends. Use the `createTokenBudget` factory where the cost unit is LLM
++token usage: it wraps the canonical `TokenUsage` record so you write no consumer of
++your own. Part of the `@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/budget.md b/guides/budget.md
+index 9075b56..59143c7 100644
+--- a/guides/budget.md
++++ b/guides/budget.md
+@@ -1,14 +1,15 @@
+ # Budget
+ 
+-> The cost primitive: a cumulative consumption tally against a ceiling that exposes an `AbortSignal` firing the moment the budget is **exhausted**. You charge a `Budget<T>` as work spends — `consume(value)` adds to a running `consumed` total — and race its `signal` against that work to cap how much it may burn (tokens, bytes, calls). When `consumed` crosses `max`, `signal` aborts; fold it into a loop's bound so the loop stops generating after the budget is spent.
+->
+-> This is the substrate's third bounding signal, a peer to a cancellation signal (fires on `abort()`) and a deadline signal (fires on expiry). All three are plain `AbortSignal`s by design, so an agent loop combines them into one bound with `AbortSignal.any([abort, timeout, budget])` and reacts to whichever trips first — cancel, deadline, or cost. A budget deliberately carries no Emitter, clock, or I/O: its native signal is the complete observation boundary. It is a functional counter with a signal bolted to its ceiling — nothing more, so the surface stays small.
+->
+-> Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
++> The cost primitive: a cumulative consumption tally against a ceiling that exposes an
++> `AbortSignal` firing the moment `consumed` reaches `max`.
++
++The `consume` method runs the consumer you configured over each domain value and adds the validated charge to a running `consumed` total, so one ceiling bounds a lifetime of requests rather than a single call. Race the handle's `signal` against the work, or fold that signal into a loop's bound, to cap how much the work may burn — tokens, bytes, or calls.
++
++A budget is the substrate's third bounding signal, a peer to a cancellation signal (fires on `abort()`) and a deadline signal (fires on expiry). All three are plain `AbortSignal`s by design, so an agent loop combines them into one bound with `AbortSignal.any([abort, timeout, budget])` and reacts to whichever trips first — cancel, deadline, or cost. The primitive deliberately carries no Emitter, clock, or I/O: its native signal is the complete observation boundary. It is a functional counter with a signal bolted to its ceiling — nothing more, so the surface stays small. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+-Create a cost handle, `start()` it, and race its `signal` against work; `consume(value)` to charge the tally as work spends:
++Create a cost handle, `start()` it, and charge it as the work spends:
+ 
+ ```ts
+ import { createBudget } from '@orkestrel/budget'
+@@ -26,43 +27,45 @@ budget.consume(7_000) // crosses 10_000 — fires `signal`
+ 
+ ### Factories
+ 
+-| API                   | Kind     | Summary                                                                                                             |
+-| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
+-| `createBudget`        | function | Create a `BudgetInterface<T>` for `max` with a `consumer`, optionally a trace `id` and a parent `signal`.           |
+-| `createTokenConsumer` | function | Create a unary consumer that charges one selected `TokenUsage` field.                                               |
+-| `createTokenBudget`   | function | Create a `BudgetInterface<TokenUsage>` charging a chosen `scope` field (`completion` default / `total` / `prompt`). |
++| API                   | Kind     | Summary                                                                                                                                                            |
++| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `createBudget`        | function | Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a `consumer`, whose native signal aborts the moment the tally reaches that ceiling. |
++| `createTokenConsumer` | function | Creates a validated unary consumer that charges one selected `TokenUsage` field.                                                                                   |
++| `createTokenBudget`   | function | Creates a token budget as a `BudgetInterface<TokenUsage>` charging one validated `scope` field per provider call.                                                  |
+ 
+ ### Validators
+ 
+-| API              | Kind     | Summary                                                                 |
+-| ---------------- | -------- | ----------------------------------------------------------------------- |
+-| `isBudgetAmount` | function | Guard a finite nonnegative numeric budget amount.                       |
+-| `isBudgetSignal` | function | Guard a genuine native `AbortSignal` without throwing on hostile input. |
+-| `isTokenScope`   | function | Guard a supported `TokenScope` field selector.                          |
+-| `isTokenUsage`   | function | Guard three finite nonnegative token counts without throwing.           |
++| API              | Kind     | Summary                                                                                                                              |
++| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
++| `isBudgetAmount` | function | Determines whether a value is a finite nonnegative budget amount.                                                                    |
++| `isBudgetSignal` | function | Determines whether a value is a genuine native `AbortSignal`, returning `false` rather than throwing on hostile input.               |
++| `isTokenScope`   | function | Determines whether a value is a supported `TokenScope` field selector.                                                               |
++| `isTokenUsage`   | function | Determines whether a value is readable token usage carrying three finite nonnegative counts, returning `false` rather than throwing. |
+ 
+ ### Helpers
+ 
+-| API                          | Kind     | Summary                                                                                        |
+-| ---------------------------- | -------- | ---------------------------------------------------------------------------------------------- |
+-| `validateBudgetOptions`      | function | Validate once-read budget options and return a fresh copy omitting absent optional keys.       |
+-| `validateTokenBudgetOptions` | function | Validate once-read token-budget options and return a fresh copy omitting absent optional keys. |
++| API                          | Kind     | Summary                                                                                                       |
++| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
++| `validateBudgetOptions`      | function | Validates and normalizes budget construction options into a fresh copy that omits absent optional keys.       |
++| `validateTokenBudgetOptions` | function | Validates and normalizes token-budget construction options into a fresh copy that omits absent optional keys. |
+ 
+-### Entities
++### Classes
+ 
+-| API      | Kind  | Summary                                                                                        |
+-| -------- | ----- | ---------------------------------------------------------------------------------------------- |
+-| `Budget` | class | A cumulative consumption tally whose `signal` fires when `consumed` reaches the `max` ceiling. |
++| API      | Kind  | Summary                                                                                                                                                        |
++| -------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Budget` | class | Implements `BudgetInterface` over a private `AbortController` the instance owns, aborting the composed signal the moment `consumed` reaches the `max` ceiling. |
+ 
+ ### Types
+ 
+-| Type                 | Kind      | Shape                                                                                                                                |
+-| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+-| `BudgetOptions`      | interface | `{ id?: string; max: number; consumer: (value: T) => number; signal?: AbortSignal }` — options for `createBudget` / the constructor. |
+-| `TokenBudgetOptions` | interface | `{ id?: string; max: number; scope?: 'completion' \| 'total' \| 'prompt'; signal?: AbortSignal }` — options for `createTokenBudget`. |
+-| `BudgetInterface`    | interface | `id` / `signal` / `max` / `consumed` / `remaining` / `exhausted` data members + the `start` / `consume` / `clear` methods.           |
+-| `TokenScope`         | type      | `'completion' \| 'total' \| 'prompt'` — the exported token-usage field selector.                                                     |
+-| `TokenUsage`         | interface | `{ prompt: number; completion: number; total: number }` — the canonical LLM cost unit, the typical `T` for an agent budget.          |
++A `Shape` cell holds an interface's members in braces, and a type alias's value.
++
++| Type                 | Kind      | Shape                                                                                | Summary                                                                                                                                                         |
++| -------------------- | --------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `BudgetOptions`      | interface | `{ id?: string; max: number; consumer: (value: T) => number; signal?: AbortSignal }` | Represents the options for constructing a cumulative budget, accepted by the `createBudget` function and the `Budget` constructor.                              |
++| `TokenBudgetOptions` | interface | `{ id?: string; max: number; scope?: TokenScope; signal?: AbortSignal }`             | Represents the options for constructing a token budget, accepted by the `createTokenBudget` function.                                                           |
++| `BudgetInterface`    | interface | `{ id, signal, max, consumed, remaining, exhausted, start, consume, clear }`         | Represents the cumulative cost handle contract: a lifetime tally, its validated ceiling, and the native signal that aborts when the tally reaches that ceiling. |
++| `TokenScope`         | type      | `'completion' \| 'total' \| 'prompt'`                                                | Names the token-usage field selected as the charge for a token budget.                                                                                          |
++| `TokenUsage`         | interface | `{ prompt: number; completion: number; total: number }`                              | Represents the canonical LLM cost unit: the finite nonnegative token counts reported for one provider call, and the typical `T` for an agent budget.            |
+ 
+ The `id`, `signal`, `max`, `consumed`, `remaining`, and `exhausted` members of `BudgetInterface` are `readonly` data members (the preceding Surface rows) — its call-signature methods are documented under [Methods](#methods).
+ 
+@@ -74,11 +77,11 @@ The public methods of `BudgetInterface` — every call-signature member listed (
+ 
+ `start` is the begin-or-restart verb — it re-arms a fresh per-request `signal` without resetting the cumulative tally; `consume` charges the tally and trips `signal` at the ceiling; `clear` is the reset — it zeroes the tally AND re-arms a fresh `signal`.
+ 
+-| Method    | Returns | Behavior                                                                                                                       |
+-| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+-| `start`   | `void`  | Re-arm a fresh `signal` for the next request WITHOUT resetting `consumed`; if already at/past `max`, arm it aborted.           |
+-| `consume` | `void`  | Run the consumer first, validate and atomically add its charge, then trip `signal` at `max`; valid overshoot remains accepted. |
+-| `clear`   | `void`  | Reset the tally to `0` AND re-arm a fresh non-aborted `signal` (the lifecycle reset) — start the next window from zero.        |
++| Method    | Returns | Summary                                                                                                                                                                                          |
++| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `start`   | `void`  | Re-arms a fresh per-request `signal` without resetting the cumulative tally, arming it already aborted when `consumed` has reached `max`.                                                        |
++| `consume` | `void`  | Runs the configured consumer first, then validates and atomically adds its charge, tripping `signal` the moment the tally reaches `max`; a valid charge that overshoots the ceiling is accepted. |
++| `clear`   | `void`  | Resets the tally to `0` and re-arms a fresh unaborted `signal`, opening the next window from zero.                                                                                               |
+ 
+ ## Contract
+ 
+@@ -179,7 +182,7 @@ budget.consume(200) // spends against the new window
+ 
+ ## Tests
+ 
+-- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports) and the `BudgetInterface` ↔ `Budget` method bijection.
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports), the `BudgetInterface` ↔ `Budget` method bijection, and the equality gate: every `Summary` cell against its declaration's description paragraph, the titled `Race work against the ceiling` fence against the `@example` block of that title (pinned so the titled pair cannot be retired silently), and the README pitch against this guide's tagline. It also runs the flagship fences and asserts the values their comments claim.
+ - [`tests/src/core/Budget.test.ts`](../tests/src/core/Budget.test.ts) — strict construction, cumulative and atomic consumption, valid overshoot, thrown-consumer identity, numeric overflow, zero-ceiling semantics, lifecycle re-arming/reset, parent reason preservation, and public type shape.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — real generic/token factory behavior plus untyped scope, usage, options, hostile, and revoked boundary failures with exact structured errors.
+ - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — direct option-helper fresh-copy and optional-key omission, exactly-once property reads, hostile getter containment, generic preservation, and exact error taxonomy/context.
+diff --git a/src/core/Budget.ts b/src/core/Budget.ts
+index ee06431..d2b5477 100644
+--- a/src/core/Budget.ts
++++ b/src/core/Budget.ts
+@@ -4,7 +4,8 @@ import { validateBudgetOptions } from './helpers.js'
+ import { isBudgetAmount } from './validators.js'
+ 
+ /**
+- * Represents a cumulative cost handle whose native `AbortSignal` aborts at its ceiling.
++ * Implements `BudgetInterface` over a private `AbortController` the instance owns,
++ * aborting the composed signal the moment `consumed` reaches the `max` ceiling.
+  *
+  * @remarks
+  * `consume(value)` invokes the configured consumer before changing state, then
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index a364f20..f286705 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -11,13 +11,33 @@ import { validateTokenBudgetOptions } from './helpers.js'
+ import { isBudgetAmount, isTokenScope, isTokenUsage } from './validators.js'
+ 
+ /**
+- * Creates a cumulative budget whose native signal aborts at its ceiling.
++ * Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a
++ * `consumer`, whose native signal aborts the moment the tally reaches that ceiling.
++ *
++ * @remarks
++ * An optional trace `id` labels the handle, and an optional parent `signal` composes
++ * with the budget's own exhaustion signal.
+  *
+  * @param options - Strict budget construction options
+  * @returns A reusable cumulative budget
+  * @throws {@link import('@orkestrel/contract').ContractError} When the
+  *   JavaScript input does not satisfy `BudgetOptions`
+  *
++ * @example Race work against the ceiling
++ * ```ts
++ * import { createBudget } from '@orkestrel/budget'
++ *
++ * const budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })
++ * budget.start()
++ * budget.signal.addEventListener('abort', () => abortStream(), { once: true })
++ *
++ * for await (const chunk of stream) {
++ * 	if (budget.signal.aborted) break // the ceiling was crossed mid-stream
++ * 	budget.consume(chunk.byteLength)
++ * 	process(chunk)
++ * }
++ * ```
++ *
+  * @example
+  * ```ts
+  * import { createBudget } from '@orkestrel/budget'
+@@ -31,7 +51,7 @@ export function createBudget<T>(options: BudgetOptions<T>): BudgetInterface<T> {
+ }
+ 
+ /**
+- * Creates a validated token consumer for one selected usage field.
++ * Creates a validated unary consumer that charges one selected `TokenUsage` field.
+  *
+  * @param scope - Token usage field to charge
+  * @returns A consumer that validates usage and returns the selected charge
+@@ -96,11 +116,13 @@ export function createTokenConsumer(scope: TokenScope): BudgetOptions<TokenUsage
+ }
+ 
+ /**
+- * Creates a token budget charging one validated usage field per provider call.
++ * Creates a token budget as a `BudgetInterface<TokenUsage>` charging one validated
++ * `scope` field per provider call.
+  *
+  * @remarks
+- * `scope` — Default: `completion`. Construction validates its own untyped
+- * boundary before composing the generic budget.
++ * `scope` selects `completion`, `total`, or `prompt`. Default: `completion`.
++ * Construction validates its own untyped boundary before composing the generic
++ * budget.
+  *
+  * @param options - Strict token-budget construction options
+  * @returns A reusable cumulative token budget
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 3235ff9..4186cab 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -3,11 +3,11 @@ import { ContractError, isFunction, isRecord, isString, preview } from '@orkestr
+ import { isBudgetAmount, isBudgetSignal, isTokenScope } from './validators.js'
+ 
+ /**
+- * Validates and normalizes budget construction options.
++ * Validates and normalizes budget construction options into a fresh copy that
++ * omits absent optional keys.
+  *
+  * @remarks
+- * Each property is read exactly once before validation. The returned object is
+- * a fresh copy and omits absent optional properties.
++ * Each property is read exactly once before validation.
+  *
+  * @param options - Potentially untrusted budget options
+  * @returns A fresh validated `BudgetOptions` object
+@@ -100,11 +100,11 @@ export function validateBudgetOptions<T>(options: BudgetOptions<T>): BudgetOptio
+ }
+ 
+ /**
+- * Validates and normalizes token-budget construction options.
++ * Validates and normalizes token-budget construction options into a fresh copy
++ * that omits absent optional keys.
+  *
+  * @remarks
+- * Each property is read exactly once before validation. The returned object is
+- * a fresh copy and omits absent optional properties.
++ * Each property is read exactly once before validation.
+  *
+  * @param options - Potentially untrusted token-budget options
+  * @returns A fresh validated `TokenBudgetOptions` object
+diff --git a/src/core/types.ts b/src/core/types.ts
+index a8a525e..ce52ceb 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,5 +1,6 @@
+ /**
+- * Represents the options for constructing a cumulative budget.
++ * Represents the options for constructing a cumulative budget, accepted by the
++ * `createBudget` function and the `Budget` constructor.
+  *
+  * @remarks
+  * `max` is a finite nonnegative ceiling. `consumer` extracts the finite
+@@ -23,7 +24,8 @@ export interface BudgetOptions<T> {
+ }
+ 
+ /**
+- * Represents a cumulative cost handle whose native signal aborts at its ceiling.
++ * Represents the cumulative cost handle contract: a lifetime tally, its validated
++ * ceiling, and the native signal that aborts when the tally reaches that ceiling.
+  *
+  * @example
+  * ```ts
+@@ -48,20 +50,24 @@ export interface BudgetInterface<T> {
+ 	/** Indicates whether the cumulative tally has reached or exceeded `max`. */
+ 	readonly exhausted: boolean
+ 	/**
+-	 * Re-arms a fresh signal without resetting the cumulative tally.
++	 * Re-arms a fresh per-request `signal` without resetting the cumulative tally,
++	 * arming it already aborted when `consumed` has reached `max`.
+ 	 *
+ 	 * @returns Nothing
+ 	 */
+ 	start(): void
+ 	/**
+-	 * Validates and atomically adds the charge extracted from a domain value.
++	 * Runs the configured consumer first, then validates and atomically adds its
++	 * charge, tripping `signal` the moment the tally reaches `max`; a valid charge
++	 * that overshoots the ceiling is accepted.
+ 	 *
+ 	 * @param value - Domain value passed to the configured consumer
+ 	 * @returns Nothing
+ 	 */
+ 	consume(value: T): void
+ 	/**
+-	 * Resets the tally and re-arms a fresh signal.
++	 * Resets the tally to `0` and re-arms a fresh unaborted `signal`, opening the
++	 * next window from zero.
+ 	 *
+ 	 * @returns Nothing
+ 	 */
+@@ -79,7 +85,8 @@ export interface BudgetInterface<T> {
+ export type TokenScope = 'completion' | 'total' | 'prompt'
+ 
+ /**
+- * Represents the options for constructing a token budget.
++ * Represents the options for constructing a token budget, accepted by the
++ * `createTokenBudget` function.
+  *
+  * @remarks
+  * `scope` — Default: `completion`. All other fields have the same strict
+@@ -102,7 +109,8 @@ export interface TokenBudgetOptions {
+ }
+ 
+ /**
+- * Represents the canonical finite nonnegative token counts reported for one provider call.
++ * Represents the canonical LLM cost unit: the finite nonnegative token counts
++ * reported for one provider call, and the typical `T` for an agent budget.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index dc2b662..3bae3da 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -2,7 +2,7 @@ import type { TokenScope, TokenUsage } from './types.js'
+ import { isFiniteNumber, isRecord } from '@orkestrel/contract'
+ 
+ /**
+- * Determines whether a value is a valid budget amount.
++ * Determines whether a value is a finite nonnegative budget amount.
+  *
+  * @param value - Unknown amount candidate
+  * @returns True if the value is a finite nonnegative number; false otherwise
+@@ -18,7 +18,8 @@ export function isBudgetAmount(value: unknown): value is number {
+ }
+ 
+ /**
+- * Determines whether a value is a genuine native `AbortSignal`.
++ * Determines whether a value is a genuine native `AbortSignal`, returning `false`
++ * rather than throwing on hostile input.
+  *
+  * @param value - Unknown signal candidate
+  * @returns True if the intrinsic signal getter accepts the value; false otherwise
+@@ -40,7 +41,7 @@ export function isBudgetSignal(value: unknown): value is AbortSignal {
+ }
+ 
+ /**
+- * Determines whether a value selects a supported token usage field.
++ * Determines whether a value is a supported `TokenScope` field selector.
+  *
+  * @param value - Unknown scope candidate
+  * @returns True if the value is `completion`, `total`, or `prompt`; false otherwise
+@@ -56,10 +57,11 @@ export function isTokenScope(value: unknown): value is TokenScope {
+ }
+ 
+ /**
+- * Determines whether a value is readable token usage with valid numeric fields.
++ * Determines whether a value is readable token usage carrying three finite
++ * nonnegative counts, returning `false` rather than throwing.
+  *
+  * @remarks
+- * Hostile getters and revoked proxies are contained and return `false`.
++ * The read contains a hostile getter and a revoked proxy.
+  *
+  * @param value - Unknown usage candidate
+  * @returns True if all three token counts are finite and nonnegative; false otherwise
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 4ca3e40..d3e50c7 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -9,6 +9,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -27,6 +28,8 @@ import { createTokenUsage } from './setup.js'
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+ /** The fence language whose blocks count as worked examples. */
+ const EXAMPLE_LANGUAGE = 'ts'
++/** The one guide this package sources, whose tagline the README pitch equals. */
++const GUIDE_SPEC = 'guides/budget.md'
+ /** Each import specifier this package's own guides may resolve against. */
+ const MODULES = Object.freeze({ '@orkestrel/budget': 'src/core', '@src/core': 'src/core' })
+ /**
+@@ -39,8 +42,8 @@ const MODULES = Object.freeze({ '@orkestrel/budget': 'src/core', '@src/core': 's
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -52,11 +55,61 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -118,6 +171,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()

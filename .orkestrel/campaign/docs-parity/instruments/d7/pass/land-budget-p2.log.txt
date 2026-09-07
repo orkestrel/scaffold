@@ -1,0 +1,18 @@
+== budget p2 landing 2026-09-07T15:31:28Z over 3e77fe5
+== status
+ M README.md
+ M guides/budget.md
+ M src/core/Budget.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts | 12 ++++----
+ tests/guides.test.ts   | 75 +++++++++++++++++++++++++++++++++++++++++++++--
+ 8 files changed, 179 insertions(+), 73 deletions(-)
+== stage by path
+ 8 files changed, 179 insertions(+), 73 deletions(-)
+== committed
+2b7400f Converge budget under the equality gate
+(status end)
