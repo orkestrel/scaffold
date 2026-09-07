@@ -13,3 +13,9 @@ Workflow `wf_402fc37c-c97`, 2026-09-07 01:03 to 01:16 UTC. Lanes on `d3pre-audit
 - Dropped: none.
 
 VERDICT: FAIL 2 4 8 — a fix round follows on `d3pre-fix-brief.md` (`builder`, every edit exact), closing with `checker` and the successor verify brief, because the fixes adopt the lanes' prescriptions verbatim.
+
+## Round 2 (the fix round's closure)
+
+Workflow `wf_016b1b39-ea3`, 2026-09-07 01:27 to 01:32 UTC: `checker` (Sonnet) on `d3pre-fix-check-brief.md` — `VERDICT: PASS` on every claim (the two array openers and their remarks, the seven separators against `HEAD`'s shape, `Matches` on every pattern and glob constant in both vendored files, the member block and the skill sentence, scope honesty with the inventory moved by regeneration alone, the two report corrections); `verifier` (Sonnet) on `d3pre-verify-2-brief.md` — `GATES: GREEN`: both instruments and their controls, the comment grep empty, `format:check`, `lint:check`, `check`, `build`, the inventory digest identical across a re-run, `npm test`, and `test:distribution` under npm 11. Accepted; committed by path.
+
+VERDICT: PASS — D3-pre accepted after D3-pre-fix.
