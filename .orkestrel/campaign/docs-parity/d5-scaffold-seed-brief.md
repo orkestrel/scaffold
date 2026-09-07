@@ -32,14 +32,14 @@ Every scaffold target with guides gains `npm run docs`: a vendored `scripts/docs
 
 - D4 landed the equality gate red-first: `npm run test:guides` is red on its two new cases until D6 converges, and `npm test` is red for that reason alone. Every other project is green.
 - `node_modules/@orkestrel/guide` is the head start the Orchestrator installed with `npm install --no-save` from the guide checkout's landed tip; `findDrift`, `tagline`, `locateComment` (returning `MarkdownSpan`, the `{ start, end }` character region `spliceSpan` takes), `replaceCell`, `replaceFence`, `replaceSummary`, `replaceExample` (each returning `string | undefined`, `undefined` meaning not replaced), `spliceSpan`, and `WRAP_WIDTH` are in its declaration. Never `npm install`.
-- The tree is committed and clean apart from `tmp/` at dispatch except for D4's uncommitted files (`tests/guides.test.ts`, `.claude/rules/documentation.md`, `.claude/rules/tests.md`, `host.json`), which are off-limits here and land with D6.
+- The tree is committed and clean apart from `tmp/` at dispatch except for D4's uncommitted files (`tests/guides.test.ts`, `.claude/rules/documentation.md`, `.claude/rules/tests.md`, `.claude/rules/workspace.md`, `host.json`), which land with D6; `host.json` is shared by regeneration alone, and the four others are off-limits here.
 - `.oxlintrc.json:441` puts `scripts/**` in the lint scope, so `npm run lint:check` reads the seed under every policy rule, the voice rules included; the root `tsconfig.json` does not include `scripts/`, so `npm run check` does not typecheck it — the child-process run is its proof.
 - Linux, bash, Node v22.22.2 (`node scripts/x.ts` runs unflagged here; the flag is for the floor). The host's command classifier refuses `npx scaffold …`; this unit needs no scaffold command.
 
 ## Scope
 
 - Owned: `scripts/docs.ts` (new), `src/core/constants.ts` (the `HOST_PATHS` row only), `src/core/compilers.ts` (the `docs` script emission only), `package.json` (the `docs` script only), `guides/scaffold.md`, `tests/src/core/compilers.test.ts`, `tests/src/core/helpers.test.ts`, the test file the seed's cases live in, `host.json` (by regeneration alone).
-- Off-limits: everything else — D4's four files, `tests/guides.test.ts`, `tests/setup*.ts`, `configs/**`, `README.md`, `package-lock.json`, `src/core/templates.ts`.
+- Off-limits: everything else — D4's rule files and `tests/guides.test.ts`, `tests/setup*.ts`, `configs/**`, `README.md`, `package-lock.json`, `src/core/templates.ts`.
 - Permitted commands: scoped `npx oxfmt --config .oxfmtrc.json --write <owned file>`, `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run test:src:core`, the seed's project, `npm run build`, `npm run build:inventory`, `node --experimental-strip-types scripts/docs.ts` over this checkout (an observation). Never `npm install`, a tree-wide `format` or lint `--fix`, a discard-class git command, or a commit.
 
 ## Unknowns
