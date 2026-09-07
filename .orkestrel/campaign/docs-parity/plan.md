@@ -99,3 +99,12 @@ The campaign ends when each closes as implemented, repaired, retained, or intent
 - **Added: D6b `template-rename`** (`implementer`, Opus 5; `/home/user/scaffold`; after D6, before the joint landing). The generated distribution proof's `readonly module: boolean` member, carried to D6 from the API-removal campaign's ledger (`../ts6-api/ledger.md:140`), is a naming ruling with a mechanical rename behind it and nothing to do with documentation convergence, so it takes its own unit rather than riding D6's brief. Scaffold's own `tests/distribution.test.ts` is not the template's output and does not move.
 - **Transformed: D6's order of work is fixed in its brief.** Hand-rewrite the wider group's blocks first, then the seed's `--to guide` once, then the titling of the `@example` blocks and the seed's `--to source`, then the tagline and the README, then the population pin. The seed's exact invocation is amended into the brief from D5's accepted report before launch.
 - **Unchanged:** D5 (running), D7.n, phase B.
+
+## Re-baseline (2026-09-07, after the D5 fork's design round)
+
+- **Transformed: D5's shape stands; the rule and its gate move.** P13 falsifies the reason `.claude/rules/workspace.md:77-79` gives, so D5-fix rewrites that bullet to the invariant it protects (a vendored module imports `node:` modules and the packages `BASE_DEV_DEPENDENCIES` declares everywhere, and nothing else), turns the gate in `tests/src/server/helpers.test.ts` into an allowlist over that set, maps each workspace's own published specifiers to its source in the generated root `tsconfig.json` so `check` in the readers' own package needs no build, and selects the seed with `blueprint.guides`. `d5-fork-design-verdict.md` carries the ruling and the refused shapes.
+- **Added: D5-fix `seed-rule`** (`implementer`, Opus 5; `/home/user/scaffold`; before D5's audit). The audit round then runs over D5 and D5-fix together.
+- **Transformed: D6 carries D4's F4 in its cheap form** (one readable line per drift in the equality case's collection).
+- **Added finding for D7.n:** the gate's and the seed's inventory omit `app/**` (F-a); the `tests/guides.test.ts` template and the seed's `INVENTORY` constant move together when an app-only workspace joins the fleet's index.
+- **Added finding for the next change:** a `scripts/` path groups as `orchestration` by prefix, so the seed is invisible to `audit --groups guides`; the group inference is its own change.
+- **Unchanged:** D6b, D7.n, phase B.

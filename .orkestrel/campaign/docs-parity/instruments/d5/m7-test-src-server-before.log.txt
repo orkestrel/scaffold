@@ -1,0 +1,39 @@
+
+> @orkestrel/scaffold@0.0.63 test:src:server
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+···········································x····································································································································································································································································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > vendored imports > keeps every vendored JavaScript and TypeScript module independent of Orkestrel packages
+AssertionError: expected [ 'scripts/docs.ts' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "scripts/docs.ts",
++ ]
+
+ ❯ tests/src/server/helpers.test.ts:200:20
+    198|    if (orkestrelImportPattern.test(content)) imported.push(path)
+    199|   }
+    200|   expect(imported).toEqual([])
+       |                    ^
+    201|  })
+    202| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 431 passed (432)
+   Start at  06:29:28
+   Duration  4.32s (transform 4.83s, setup 6.99s, import 691ms, tests 3.83s, environment 1ms)
+
+EXIT 1

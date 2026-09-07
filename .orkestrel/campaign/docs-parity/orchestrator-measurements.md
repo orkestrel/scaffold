@@ -54,3 +54,31 @@ FAIL ERR_MODULE_NOT_FOUND Cannot find module '/home/user/fleet/guide/src/core/ty
 ```
 
 Reading: the guide's source imports its siblings with a `.js` extension that the bundler and the type checker map to `.ts`, and Node's stripping loader maps nothing, so a seed in the guide checkout that imports the package's own readers must import the built `dist/src/core/index.js` entry, after `npm run build`. That is the cost of every shape that gives the guide package a copy of the seed pointing at itself (options 1 and 2 of `d5-fork-design-brief.md`); a shape that runs the registry copy (option 3) pays a one-release lag instead.
+
+## P13 — a package's own name resolves inside its checkout through its `exports` map (2026-09-07, M1 of the D5 fork)
+
+```text
+$ cd /home/user/fleet/guide && node -e "import('@orkestrel/guide').then((m) => console.log('resolved: exports', Object.keys(m).length, 'findDrift', typeof m.findDrift), (e) => console.log('FAIL', e.code))"
+resolved: exports 102 findDrift function
+$ cd /home/user/fleet/guide/tmp/m1 && node -e "import('@orkestrel/guide').then((m) => console.log('resolved from tmp/m1: exports', Object.keys(m).length), (e) => console.log('FAIL', e.code))"
+resolved from tmp/m1: exports 102
+$ cd /home/user/fleet/guide && npx tsc --noEmit -p tmp/m1/tsconfig.json      (probe.ts: `import type { Drift }` and `import { findDrift }` from '@orkestrel/guide'; instruments/d5/m1-probe.ts)
+tsc exit=0
+$ npx tsc --noEmit -p tmp/m1/tsconfig.json --traceResolution | grep -m2 …
+Using 'exports' subpath '.' with target './dist/src/core/index.d.ts'.
+======== Module name '@orkestrel/guide' was successfully resolved to '/home/user/fleet/guide/dist/src/core/index.d.ts' with Package ID '@orkestrel/guide/dist/src/core/index.d.ts@0.0.17'. ========
+control (a scratch package named ctl-noexports with no exports map, importing itself by name):
+control FAIL as expected: ERR_MODULE_NOT_FOUND
+```
+
+Reading: Node and `tsc` both resolve a package's own name from inside its tree through the `exports` map, to the built `dist/` entry, and a package without an `exports` map does not. The reason `.claude/rules/workspace.md:77-79` gives for refusing every `@orkestrel/*` import from a vendored file ("every such package is itself a target and cannot depend on itself") is false for a scaffold-generated package, which always carries an `exports` map. The true cost is that the resolution lands on `dist/`, so in the package that publishes the readers `npm run docs` runs after `npm run build`, and `npm run check` (`tsc --noEmit --project tsconfig.json`, whose program is everything outside `node_modules`, `dist`, and `tmp`) needs the workspace's own published specifiers mapped to its source in the root `tsconfig.json` to stay independent of a build.
+
+## M6 and M7 of the D5 fork (2026-09-07)
+
+```text
+$ for d in /home/user/fleet/*/; do printf '%s %s\n' "$(basename $d)" "$(grep -c '"docs"' $d/package.json)"; done
+every checkout 0 — no fleet manifest declares a docs script yet
+$ npm run test:src:server            (scaffold, the tree as D5 left it; instruments/d5/m7-test-src-server-before.log.txt)
+ FAIL  tests/src/server/helpers.test.ts:200  expect(imported).toEqual([])  — received ["scripts/docs.ts"]
+ Test Files  1 failed | 4 passed (5)   Tests  1 failed | 431 passed (432)   Duration 4.32s   EXIT 1
+```
