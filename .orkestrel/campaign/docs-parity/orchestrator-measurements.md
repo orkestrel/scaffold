@@ -191,3 +191,25 @@ mcp:   repair --offline → 9 written, 40 unchanged;                  lint → 1
 ```
 
 Reading: `repair --offline` from the tip writes the same nine paths in every package, and the vendored rule's red is the package's own test helpers plus banned terms in comments, from one site (abort) to 183 (mcp). The P17 proxy under-reads `no-banned-term` (it reads openers alone), so each package's true count is the real rule's, taken at its unit's first step. The tip's CLI runs from an extracted tarball with scaffold's `node_modules` linked, so no head start install is needed for a scratch reading.
+
+## P19 — the pilot's ground: abort in a scratch clone under the guide head start and the tip's repair (2026-09-07, `instruments/d7/p19/`)
+
+```text
+$ cd /home/user/fleet/guide && npm pack --ignore-scripts --pack-destination <scratch>/p19/packed      (tip c25c689)
+orkestrel-guide-0.0.18.tgz
+$ git clone /home/user/fleet/abort <scratch>/p19/abort; cp -r node_modules (a private copy); npm install --no-save --ignore-scripts <tgz>   (npm 11)
+removed 30 packages, and changed 1 package; installed @orkestrel/guide 0.0.18; the tree clean
+$ node <tip>/dist/bin/main.js audit --offline        → 8 of 35 planned paths drifted (the P15 configs and proofs stale, scripts/docs.ts missing) and the docs script line missing
+$ node <tip>/dist/bin/main.js repair --offline       → 9 written, 27 unchanged (the P15 list)
+$ npm run docs                                       (no dist/ in the checkout)   → exit 1: rows read: 1, disagreements found: 9      (M2: the seed needs no build outside the guide; M1: abort's drift is 9 rows)
+$ npm run check                                      → exit 2: tests/guides.test.ts(138,28): Argument of type 'readonly MethodEntry[]' is not assignable to parameter of type 'readonly string[]'
+$ npx oxlint --config .oxlintrc.json --deny-warnings . → 1 diagnostic: tests/src/core/Abort.test.ts:108 policy/no-banned-term (`just`)
+$ npm run test:policy → 90 passed | 1 skipped;  npm run test:config → 172 passed | 1 skipped
+$ npm run test:guides → 5 failed | 17 passed: `documents every interface method`, `documents no phantom method`, `Abort exposes no undocumented method` (each expected [] and met [{ name: 'abort', … }]),
+                        `documents an example for every Surface function` (['validateAbortOptions', …]), `documents an example for every method` (TypeError: value.replace is not a function)
+$ sed: the Methods header Behavior → Summary (abort.md:65); the Types table (:50, `Type | Kind | Shape`) left
+$ npm run docs -- --to guide → rows read: 1, disagreements found: 9, written: 6, reported: 3;  npx oxfmt --write guides/abort.md;  p16-cells.mjs → rows compared: 14, non-final cells mismatched: 0
+$ npm run docs → disagreements found: 3: the two interfaces in the Types table (no Summary column) and the pitch (readme absent)
+```
+
+Reading: the guide's 0.0.18 readers return records where 0.0.17 returned strings — `guide.methods()` groups carry `MethodEntry` records, `source.methods(name)` returns `MethodEntry` records, and `source.examples()` returns `SourceExample` records — so every fleet drop-in that passes those to `findMissing` or `findUnexampled` stops compiling and its cases red, the way scaffold's own suite did before D4-fix mapped each record to its `name` (`/home/user/scaffold/tests/guides.test.ts:123-151`). That adaptation is a mechanical per-package edit and a precondition of every other case, so it sits in each package's prep unit beside the head start or the re-pin. The seed runs without a build in a fleet checkout, the `--to guide` round trip over abort's three-column tables disturbs no cell, and the remaining disagreements after the write are the rows the converge unit owns.

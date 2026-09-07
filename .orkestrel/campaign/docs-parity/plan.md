@@ -164,3 +164,12 @@ The campaign ends when each closes as implemented, repaired, retained, or intent
 - **Transformed: the rules the campaign learned, landed as records.** Ruling 7 (a description paragraph is a summary; reference material goes to `@remarks`); a bump obliges the lockfile's root version in the same step; a brief naming an edit inside a doc comment must not spell the terminator; a claim over "code lines" names its file scope.
 - **Findings for the next change, outside this campaign:** the pin's population is the head blocks alone while `findDrift` pairs member blocks too (R2 objective F3); the head key is decoded in each reader and the head keyword list has several homes (R1 subjective F6, F7).
 - **Next: the guide's release on the owner's go-ahead** (`0.0.18`, their credential, ahead of scaffold's), then scaffold re-pins `@orkestrel/guide` to `^0.0.18` in `package.json` and `BASE_DEV_DEPENDENCIES`, re-runs its distribution proof, and the standing packed-install red clears. **Then D7.n** per fleet package in catalog layer order, each on the guide head start until the release lands: the columns, the class rows where a package documents classes as headings, the titles, the gate cases, the pitch, the bump with the lockfile, and the seed's zero.
+
+## Re-baseline (2026-09-07, after D7.n's design round)
+
+- **Transformed: D7.n.** `d7-fleet-plan.md` carries the rulings, the units, the routing ledger, and the exit criterion. The pass runs after the guide's release, from the registry guide and one extracted scaffold tip, in catalog layer order, with a head-started pilot on abort first to prove `0.0.18` against a second consumer.
+- **Added: the drop-in's adaptation to the `0.0.18` record shapes** in every package's prep unit (P19): the readers return records where `0.0.17` returned strings, so each `findMissing` and `findUnexampled` call maps a record to its `name` before any other case can pass.
+- **Added: F4 `d7n-scaffold-repin`** after the release — scaffold's guide re-pin, the distribution proof, the mirror re-stage, and the packed tip for the pass.
+- **Struck: the `*/` guard unit** the subjective lane proposed, satisfied by U2-fix and U2-fix-2.
+- **Not taken, recorded for the owner:** scaffold's guides-test template; the mirror refresh mechanism; the concept-cell casing fleet-wide.
+- **Unchanged: phase B** in layer order on the owner's go-ahead.
