@@ -1,0 +1,77 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-timeout",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/timeout.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 8,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 2,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Timeout",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "start"
+     ]
+    },
+    {
+     "name": "TimeoutInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Race work against a deadline",
+     "Link a parent signal",
+     "Reuse a handle across deadlines"
+    ],
+    "titledExamples": [
+     "createTimeout:Race work against a deadline"
+    ],
+    "pairs": [
+     "Race work against a deadline"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

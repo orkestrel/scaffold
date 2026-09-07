@@ -1,0 +1,97 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-tool",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/tool.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 14,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 8,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Tool",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "execute"
+     ]
+    },
+    {
+     "name": "ToolInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ToolManager",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "definitions",
+      "execute",
+      "remove",
+      "tool",
+      "tools"
+     ]
+    },
+    {
+     "name": "ToolManagerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Anatomy of a tool",
+     "The registry",
+     "Calls and results"
+    ],
+    "titledExamples": [
+     "createTool:Anatomy of a tool"
+    ],
+    "pairs": [
+     "Anatomy of a tool"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

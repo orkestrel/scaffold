@@ -1,0 +1,89 @@
+### timeout at ff14c3a, guide guides/timeout.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  29 passed (29)
+   test:guides exit 0
+-- census
+   guides/timeout.md surface {"equal":8,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":2,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Timeout methods 2 grouped false undescribed ["clear","start"]
+   owner interface TimeoutInterface methods 2 grouped true undescribed []
+   examples titledFences 4 titledExamples ["createTimeout:Race work against a deadline"] pairs ["Race work against a deadline"]
+-- sites: surface row guides/timeout.md:50; methods row guides/timeout.md:104; title src/core/factories.ts:23
+-- control A: one Surface Summary cell altered (guides/timeout.md:50)
+guides/timeout.md function createTimeout: guide "Creates a deadline handle from validated `TimeoutOptions` and returns it as a `TimeoutInterface`. Control." source "Creates a deadline handle from validated `TimeoutOptions` and returns it as a `TimeoutInterface`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Timeout > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 36ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/timeout.md:104)
+guides/timeout.md TimeoutInterface.start: guide "Arms or re-arms the deadline for `ms`, installing a fresh `signal` when the current one has already aborted. Control." source "Arms or re-arms the deadline for `ms`, installing a fresh `signal` when the current one has already aborted."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Timeout > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 39ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a deadline handle from validated `TimeoutOptions` and returns it as a
+guides/timeout.md function createTimeout: guide "Creates a deadline handle from validated `TimeoutOptions` and returns it as a `TimeoutInterface`." source "Control Creates a deadline handle from validated `TimeoutOptions` and returns it as a `TimeoutInterface`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Timeout > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 85ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Timeout.ts:5:  * Control Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one
+guides/timeout.md class Timeout: guide "Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one owned `AbortController` whose signal aborts when the deadline expires." source "Control Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one owned `AbortController` whose signal aborts when the deadline expires."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Timeout > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 33ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:23)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 28 passed (29)
+× pairs at least one example title across the guide and the source 26ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/timeout.md Race work against a deadline: guide "ts\nimport { createTimeout } from '@orkestrel/timeout'\n\nasync function fetchWithDeadline(url: string, ms: number): Promise<Response> {\n\tconst timeout = createTimeout({ ms })\n\ttimeout.start()\n\n\ttry {\n\t\treturn await fetch(url, { signal: timeout.signal })\n\t} finally {\n\t\ttimeout.clear() // cancels the still-armed deadline when the fetch won the race\n\t}\n}" source "ts\nimport { createTimeout } from '@orkestrel/timeout' // control\n\nasync function fetchWithDeadline(url: string, ms: number): Promise<Response> {\n\tconst timeout = createTimeout({ ms })\n\ttimeout.start()\n\n\ttry {\n\t\treturn await fetch(url, { signal: timeout.signal })\n\t} finally {\n\t\ttimeout.clear() // cancels the still-armed deadline when the fetch won the race\n\t}\n}"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Timeout > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 22ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/timeout.md pitch: readme "Control: The time-bound half of the substrate's time-and-cancellation pair: a controllable `setTimeout` wrapper carrying a trace `id` and a deadline `ms`, whose native `AbortSignal` aborts on expiry." tagline "The time-bound half of the substrate's time-and-cancellation pair: a controllable `setTimeout` wrapper carrying a trace `id` and a deadline `ms`, whose native `AbortSignal` aborts on expiry."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The time-bound half of the s…' to be 'The time-bound half of the substrate\…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 28 passed (29)
+× opens the README with the guide tagline 15ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/timeout.md function createTimeout: guide absent source "Creates a deadline handle from validated `TimeoutOptions` and returns it as a `TimeoutInterface`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Timeout > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 51ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

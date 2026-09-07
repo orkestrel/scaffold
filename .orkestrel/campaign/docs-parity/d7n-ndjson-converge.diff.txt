@@ -1,0 +1,347 @@
+diff --git a/README.md b/README.md
+index d9e6b78..b945237 100644
+--- a/README.md
++++ b/README.md
+@@ -1,13 +1,12 @@
+ # @orkestrel/ndjson
+ 
+-A minimal streaming NDJSON (newline-delimited JSON) parser — feed it string
+-chunks as they arrive; each complete `\n`-terminated line is decoded to a
+-record, and a partial line split across a chunk boundary is buffered until
+-the rest arrives. `parse` never throws on malformed or blank input: a
+-malformed line and a blank line are silently skipped, and a well-formed but
+-non-object JSON value (a string, number, array, `null`) is dropped, so
+-`parse()` only ever returns plain records. `clear()` drops any buffered
+-partial line so the same parser instance can be reused for a fresh stream.
++> A stateful newline-delimited-JSON (NDJSON) stream parser: a self-contained handle
++> that turns string chunks into the complete records decoded so far, and never throws
++> on a malformed, blank, or non-record line.
++
++Create a parser with the `createNDJSONParser` function, feed it each chunk as it
++arrives, and read the records that call returns; call `clear()` to reuse the same
++handle for a fresh stream. Part of the `@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/ndjson.md b/guides/ndjson.md
+index 3ce0828..271c080 100644
+--- a/guides/ndjson.md
++++ b/guides/ndjson.md
+@@ -1,28 +1,24 @@
+ # NDJSON
+ 
+-> A stateful newline-delimited-JSON (NDJSON) stream parser: feed it string
+-> chunks, get back the complete records parsed so far. `parse(chunk)` appends
+-> `chunk` to an internal buffer and splits it on `\n` — every line _before_
+-> the last is `\n`-terminated, hence complete, and is parsed to a record;
+-> the final segment is the trailing partial line and is held back for the
+-> next call, so a line split across chunk boundaries is reassembled the
+-> moment its closing `\n` arrives. Each trimmed line is filtered: a blank /
+-> whitespace-only line (including one whose only content was a CRLF's
+-> trailing `\r`) is skipped, malformed JSON is silently skipped (never
+-> thrown), and a non-record value (an array, a primitive, `null`) is
+-> dropped — only plain records come back. A never-terminated line is never
+-> emitted, even when the buffered text already happens to be valid JSON.
+-> `clear()` drops the buffered partial line so a handle can be reused for a
+-> fresh stream. A self-contained primitive — no Emitter, no server / HTTP /
+-> agent coupling; `parse` never throws on malformed, blank, or non-record
+-> input. Pair it with a streaming `TextDecoder` when reading a byte stream:
+-> the decoder handles partial characters, the parser handles partial lines.
+-> A line that is never terminated by a newline stays in the buffer until its
+-> newline arrives — the parser has no size limit, so a caller fronting an
+-> untrusted or unbounded upstream must enforce its own byte cap before
+-> feeding chunks in.
+-> Source: [`src/core`](../src/core). Surfaced through the `@src/core`
+-> barrel.
++> A stateful newline-delimited-JSON (NDJSON) stream parser: a self-contained handle
++> that turns string chunks into the complete records decoded so far, and never throws
++> on a malformed, blank, or non-record line.
++
++`parse(chunk)` appends `chunk` to an internal buffer and splits it on `\n`: every
++line before the last is `\n`-terminated, hence complete, and is parsed to a record,
++while the final segment is held back for the next call, so a line split across chunk
++boundaries is reassembled the moment its closing `\n` arrives. Each trimmed line is
++filtered — a blank or whitespace-only line (including one whose only content was a
++CRLF's trailing `\r`) is skipped, malformed JSON is skipped silently, and a
++non-record value (an array, a primitive, `null`) is dropped — so only plain records
++come back, and a line the stream never terminates is never emitted even when the
++buffered text already happens to be valid JSON. `clear()` drops the buffered partial
++line so a handle can be reused for a fresh stream. Nothing else is wired in: no
++Emitter, no server, HTTP, or agent coupling. Pair it with a streaming `TextDecoder`
++when reading a byte stream — the decoder handles partial characters, the parser
++handles partial lines. The buffer has no size limit, so a caller fronting an
++untrusted or unbounded upstream must enforce its own byte cap before feeding chunks
++in. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+@@ -41,9 +37,14 @@ parser.clear() // drop any buffered partial - ready for a fresh stream
+ 
+ ### Types
+ 
+-| Type                    | Kind      | Shape                                                                                                         |
+-| ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------- |
+-| `NDJSONParserInterface` | interface | The stateful stream-parser contract — `parse(chunk: string): readonly Record<string, unknown>[]` + `clear()`. |
++A `Shape` cell holds the interface's members in braces.
++
++| Type                    | Kind      | Shape              | Summary                                                                                                                                                                                                                                |
++| ----------------------- | --------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `NDJSONParserInterface` | interface | `{ parse, clear }` | Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a consumer holds — a `parse` that turns each string chunk into the complete records decoded so far, and a `clear` that drops the buffered partial line. |
++
++Its `parse` and `clear` members are call-signature methods, documented under
++[Methods](#methods).
+ 
+ ```ts
+ import type { NDJSONParserInterface } from '@orkestrel/ndjson'
+@@ -55,9 +56,9 @@ function feed(parser: NDJSONParserInterface, chunk: string): readonly Record<str
+ 
+ ### Factories
+ 
+-| API                  | Kind     | Builds…                                                      |
+-| -------------------- | -------- | ------------------------------------------------------------ |
+-| `createNDJSONParser` | function | A working `NDJSONParserInterface`, backed by `NDJSONParser`. |
++| API                  | Kind     | Summary                                                                                                                                                                                                            |
++| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `createNDJSONParser` | function | Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an `NDJSONParserInterface` — a fresh `NDJSONParser` holding the buffer, so a caller holds the published contract rather than the class. |
+ 
+ ```ts
+ import { createNDJSONParser } from '@orkestrel/ndjson'
+@@ -66,11 +67,11 @@ const parser = createNDJSONParser()
+ parser.parse('{"a":1}\n{"b":2}\n') // [{ a: 1 }, { b: 2 }]
+ ```
+ 
+-### Entities
++### Classes
+ 
+-| API            | Kind  | Summary                                                                                                          |
+-| -------------- | ----- | ---------------------------------------------------------------------------------------------------------------- |
+-| `NDJSONParser` | class | The stateful NDJSON stream parser — implements `NDJSONParserInterface`, reassembles records split across chunks. |
++| API            | Kind  | Summary                                                                                                                                                                                                                                                     |
++| -------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `NDJSONParser` | class | Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing `NDJSONParserInterface` over a private buffer the instance owns — each `parse` call returns the records completed so far and reassembles a record split across chunk boundaries. |
+ 
+ ## Methods
+ 
+@@ -79,10 +80,10 @@ surface.
+ 
+ #### `NDJSONParserInterface`
+ 
+-| Method  | Returns                              | Behavior                                                                                                                                                                                                                                                          |
+-| ------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `parse` | `readonly Record<string, unknown>[]` | Append `chunk`, then return every COMPLETE `\n`-terminated line parsed to a record (malformed / non-record lines skipped); retain a trailing partial line indefinitely until its newline arrives — when you front an unbounded upstream, cap input size yourself. |
+-| `clear` | `void`                               | Drop any buffered partial line, leaving the handle ready for a fresh stream.                                                                                                                                                                                      |
++| Method  | Returns                              | Summary                                                                                                                                                                                                                                                                                   |
++| ------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `parse` | `readonly Record<string, unknown>[]` | Appends `chunk` to the buffer and returns every complete `\n`-terminated line parsed to a record, skipping a malformed or non-record line; the trailing partial line is retained for the next call, so a line split across a chunk boundary is reassembled when its closing `\n` arrives. |
++| `clear` | `void`                               | Drops any buffered partial line, leaving the handle ready for a fresh stream.                                                                                                                                                                                                             |
+ 
+ ```ts
+ import { NDJSONParser } from '@orkestrel/ndjson'
+diff --git a/src/core/NDJSONParser.ts b/src/core/NDJSONParser.ts
+index 30e8a1a..f9c7b4c 100644
+--- a/src/core/NDJSONParser.ts
++++ b/src/core/NDJSONParser.ts
+@@ -2,17 +2,18 @@ import type { NDJSONParserInterface } from './types.js'
+ import { isRecord, parseJSONAs } from '@orkestrel/contract'
+ 
+ /**
+- * Decodes an NDJSON (newline-delimited JSON) stream statefully — feed the handle
+- * string chunks, get back the complete records decoded so far.
++ * Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing
++ * `NDJSONParserInterface` over a private buffer the instance owns — each `parse` call
++ * returns the records completed so far and reassembles a record split across chunk
++ * boundaries.
+  *
+  * @remarks
+- * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to an internal
+- *   buffer, splits on `\n`, and emits every line BEFORE the last one (each one is
+- *   `\n`-terminated, so it is complete); the final segment is the trailing partial
+- *   line and is retained for the next call.
++ * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to the buffer, splits
++ *   on `\n`, and emits every line before the last one, each of them `\n`-terminated
++ *   and so complete; the final segment is the trailing partial line.
+  * - **Records only, malformed-safe.** Each complete line is parsed through
+- *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped (never
+- *   throws), and a non-record value is dropped — only plain records pass
++ *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped rather than
++ *   thrown, and a non-record value is dropped — only plain records pass
+  *   {@link isRecord}.
+  *
+  * @example
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 7f09027..3fc0371 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,19 +2,18 @@ import type { NDJSONParserInterface } from './types.js'
+ import { NDJSONParser } from './NDJSONParser.js'
+ 
+ /**
+- * Creates an NDJSON (newline-delimited JSON) stream parser - a stateful handle
+- * that turns string chunks into the complete records decoded so far.
++ * Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an
++ * `NDJSONParserInterface` — a fresh `NDJSONParser` holding the buffer, so a caller
++ * holds the published contract rather than the class.
+  *
+  * @returns A working {@link NDJSONParserInterface}
+  *
+- * @example
++ * @example Factories
+  * ```ts
+  * import { createNDJSONParser } from '@orkestrel/ndjson'
+  *
+  * const parser = createNDJSONParser()
+  * parser.parse('{"a":1}\n{"b":2}\n') // [{ a: 1 }, { b: 2 }]
+- * parser.parse('{"c":3}') // [] - buffered until its trailing newline arrives
+- * parser.parse('\n') // [{ c: 3 }]
+  * ```
+  */
+ export function createNDJSONParser(): NDJSONParserInterface {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 36ad4a9..1ae0726 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,13 +1,19 @@
+ /**
+- * Represents a stateful NDJSON (newline-delimited JSON) stream parser: feed it string
+- * chunks, get back the complete records decoded so far. A trailing partial
+- * line is buffered until the rest arrives.
++ * Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a
++ * consumer holds — a `parse` that turns each string chunk into the complete records
++ * decoded so far, and a `clear` that drops the buffered partial line.
+  */
+ export interface NDJSONParserInterface {
+ 	/**
+-	 * Appends `chunk`, then returns every COMPLETE `\n`-terminated line parsed to a
+-	 * record (malformed / non-record lines are skipped); a trailing partial line
+-	 * is retained for the next call.
++	 * Appends `chunk` to the buffer and returns every complete `\n`-terminated line
++	 * parsed to a record, skipping a malformed or non-record line; the trailing partial
++	 * line is retained for the next call, so a line split across a chunk boundary is
++	 * reassembled when its closing `\n` arrives.
++	 *
++	 * @remarks
++	 * A line the stream never terminates stays in the buffer until its newline arrives,
++	 * and the buffer has no size limit, so a caller fronting an untrusted or unbounded
++	 * upstream must enforce its own byte cap before feeding chunks in.
+ 	 *
+ 	 * @param chunk - Stream text appended to the internal buffer before splitting
+ 	 * @returns Every complete line parsed to a record, in arrival order
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index e8186d9..d0e56a1 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -12,6 +12,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -29,6 +30,8 @@ import { NDJSONParser, createNDJSONParser } from '@src/core'
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+ /** The fence language whose blocks count as worked examples. */
+ const EXAMPLE_LANGUAGE = 'ts'
++/** The one guide this package sources, whose tagline the README pitch equals. */
++const GUIDE_SPEC = 'guides/ndjson.md'
+ /** Each import specifier this package's own guides may resolve against. */
+ const MODULES = Object.freeze({ '@orkestrel/ndjson': 'src/core', '@src/core': 'src/core' })
+ /**
+@@ -41,8 +44,8 @@ const MODULES = Object.freeze({ '@orkestrel/ndjson': 'src/core', '@src/core': 's
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -54,11 +57,61 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -120,6 +173,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()

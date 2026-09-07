@@ -1,0 +1,93 @@
+### tool at df46d34, guide guides/tool.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  30 passed (30)
+   test:guides exit 0
+-- census
+   guides/tool.md surface {"equal":14,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":8,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Tool methods 1 grouped false undescribed ["execute"]
+   owner interface ToolInterface methods 1 grouped true undescribed []
+   owner class ToolManager methods 7 grouped false undescribed ["add","clear","definitions","execute","remove","tool","tools"]
+   owner interface ToolManagerInterface methods 7 grouped true undescribed []
+   examples titledFences 3 titledExamples ["createTool:Anatomy of a tool"] pairs ["Anatomy of a tool"]
+-- sites: surface row guides/tool.md:46; methods row guides/tool.md:123; title src/core/factories.ts:13
+-- control A: one Surface Summary cell altered (guides/tool.md:46)
+guides/tool.md interface ToolDefinition: guide "Describes a tool as advertised to a caller. Control." source "Describes a tool as advertised to a caller."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Tool > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 65ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/tool.md:123)
+guides/tool.md ToolInterface.execute: guide "Runs the tool's handler with the caller-supplied arguments and any consumer-asserted caller context. Control." source "Runs the tool's handler with the caller-supplied arguments and any consumer-asserted caller context."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Tool > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 86ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates an executable tool bound to the supplied handler, returned as a
+guides/tool.md function createTool: guide "Creates an executable tool bound to the supplied handler, returned as a `ToolInterface` so a call site holds the published contract rather than the `Tool` class." source "Control Creates an executable tool bound to the supplied handler, returned as a `ToolInterface` so a call site holds the published contract rather than the `Tool` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Tool > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 54ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/helpers.ts:4:  * Control Projects a tool onto the plain definition advertised to a caller, advertising an
+guides/tool.md function toolToDefinition: guide "Projects a tool onto the plain definition advertised to a caller, advertising an authored `summary` in place of the full description and carrying the parameter schema by reference." source "Control Projects a tool onto the plain definition advertised to a caller, advertising an authored `summary` in place of the full description and carrying the parameter schema by reference."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Tool > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 51ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:13)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 29 passed (30)
+× pairs at least one example title across the guide and the source 68ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/tool.md Anatomy of a tool: guide "ts\nimport { createTool } from '@orkestrel/tool'\n\nconst add = createTool({\n\tname: 'add',\n\tdescription: 'Add two numeric values and return their sum. Both operands are required.',\n\tsummary: 'Add two numbers.',\n\tparameters: {\n\t\ttype: 'object',\n\t\tproperties: {\n\t\t\tleft: { type: 'number' },\n\t\t\tright: { type: 'number' },\n\t\t},\n\t\trequired: ['left', 'right'],\n\t},\n\texecute: (args) => Number(args.left) + Number(args.right),\n})" source "ts\nimport { createTool } from '@orkestrel/tool' // control\n\nconst add = createTool({\n\tname: 'add',\n\tdescription: 'Add two numeric values and return their sum. Both operands are required.',\n\tsummary: 'Add two numbers.',\n\tparameters: {\n\t\ttype: 'object',\n\t\tproperties: {\n\t\t\tleft: { type: 'number' },\n\t\t\tright: { type: 'number' },\n\t\t},\n\t\trequired: ['left', 'right'],\n\t},\n\texecute: (args) => Number(args.left) + Number(args.right),\n})"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Tool > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 76ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/tool.md pitch: readme "Control: The tool runtime for the `@orkestrel` line: a `Tool` binding an advertised JSON Schema definition to its handler, a `ToolManager` registry that advertises those definitions and executes calls with per-call error isolation, and the correlated `ToolCall` and `ToolResult` pair that travels between a caller and the registry." tagline "The tool runtime for the `@orkestrel` line: a `Tool` binding an advertised JSON Schema definition to its handler, a `ToolManager` registry that advertises those definitions and executes calls with per-call error isolation, and the correlated `ToolCall` and `ToolResult` pair that travels between a caller and the registry."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The tool runtime for the `@o…' to be 'The tool runtime for the `@orkestrel`…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 29 passed (30)
+× opens the README with the guide tagline 14ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/tool.md interface ToolInterface: guide absent source "Represents an executable tool: its advertised definition plus its local handler."
+guides/tool.md interface ToolManagerInterface: guide absent source "Represents a registry of executable tools with per-call error isolation."
+guides/tool.md type ToolResult: guide absent source "Represents the outcome of executing a `ToolCall`."
+rows read: 1, disagreements found: 8
+   docs exit 1
+AssertionError: expected [ …(8) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Tool > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 53ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

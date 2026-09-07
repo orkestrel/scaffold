@@ -1,0 +1,166 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-test",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/test.md",
+   "source": [
+    "src/core",
+    "src/browser",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 161,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 10,
+    "counts": {
+     "equal": 24,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "CookieJarInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "EventSourceInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "JournalInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "LoopbackInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "PortfolioInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RecorderInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ResourceFactoryInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ScratchInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "StateScenario",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TeardownInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Install",
+     "Surface",
+     "Record calls without a spy",
+     "Record an emitter's events",
+     "Count the listeners on a signal",
+     "Number the resources a fixture allocates",
+     "Capture a throw, then assert on it",
+     "Narrow without ! or as",
+     "Cross an unchecked boundary",
+     "Flatten headers into one record",
+     "Drain an async source",
+     "Wait for a named condition",
+     "Copy a JSON value",
+     "Prove a guard is total",
+     "Prove a wire fixpoint",
+     "Drive a statechart table",
+     "Read a source inventory",
+     "Own a temporary directory",
+     "Give everything back in one hook",
+     "Answer a real request on a loopback port",
+     "Request an HTTP upgrade",
+     "Probe what the host supports",
+     "Replay response cookies",
+     "Refuse an escaping path in your own fixture",
+     "Build and mount a fixture",
+     "Drive an interface the way a person does",
+     "Drive a field the component listens to",
+     "Measure what a reader sees",
+     "Read the tokens and colors a theme declares",
+     "Find a rule in the cascade",
+     "Read the classes and styles the markup carries",
+     "Remove an IndexedDB database",
+     "Record a browser journal",
+     "Place a capture portfolio",
+     "Measure a document's content edge",
+     "Read a written frame back"
+    ],
+    "titledExamples": [
+     "createScratch:Own a temporary directory"
+    ],
+    "pairs": [
+     "Own a temporary directory"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

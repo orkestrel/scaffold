@@ -1,0 +1,16 @@
+== ndjson p2 landing 2026-09-07T15:44:08Z over 8d03eaa
+== status
+ M README.md
+ M guides/ndjson.md
+ M src/core/NDJSONParser.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts        | 18 ++++++++----
+ tests/guides.test.ts     | 75 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 6 files changed, 143 insertions(+), 66 deletions(-)
+== stage by path
+ 6 files changed, 143 insertions(+), 66 deletions(-)
+== committed
+231fb11 Converge ndjson under the equality gate
+(status end)

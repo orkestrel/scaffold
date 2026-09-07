@@ -1,0 +1,99 @@
+### test at e62a981, guide guides/test.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  43 passed (43)
+   test:guides exit 0
+-- census
+   guides/test.md surface {"equal":161,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":24,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 10 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner interface CookieJarInterface methods 2 grouped true undescribed []
+   owner interface EventSourceInterface methods 1 grouped true undescribed []
+   owner interface JournalInterface methods 3 grouped true undescribed []
+   owner interface LoopbackInterface methods 1 grouped true undescribed []
+   owner interface PortfolioInterface methods 1 grouped true undescribed []
+   owner interface RecorderInterface methods 1 grouped true undescribed []
+   owner interface ResourceFactoryInterface methods 2 grouped true undescribed []
+   owner interface ScratchInterface methods 8 grouped true undescribed []
+   owner interface StateScenario methods 3 grouped true undescribed []
+   owner interface TeardownInterface methods 2 grouped true undescribed []
+   examples titledFences 36 titledExamples ["createScratch:Own a temporary directory"] pairs ["Own a temporary directory"]
+-- sites: surface row guides/test.md:108; methods row guides/test.md:767; title src/server/factories.ts:38
+-- control A: one Surface Summary cell altered (guides/test.md:108)
+guides/test.md interface WaitOptions: guide "Configures a bounded asynchronous wait with an elapsed-time limit, a delay between readings, and an abort signal. Control." source "Configures a bounded asynchronous wait with an elapsed-time limit, a delay between readings, and an abort signal."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > guides parity > Test > keeps every compared summary and example equal to its source
+Tests  1 failed | 42 passed (43)
+× keeps every compared summary and example equal to its source 997ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/test.md:767)
+guides/test.md RecorderInterface.clear: guide "Discards the recorded calls and keeps the recorder usable. Control." source "Discards the recorded calls and keeps the recorder usable."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > guides parity > Test > keeps every compared summary and example equal to its source
+Tests  1 failed | 42 passed (43)
+× keeps every compared summary and example equal to its source 979ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Allocates an owned temporary directory with contained file operations.
+guides/test.md function createScratch: guide "Allocates an owned temporary directory with contained file operations." source "Control Allocates an owned temporary directory with contained file operations."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > guides parity > Test > keeps every compared summary and example equal to its source
+Tests  1 failed | 42 passed (43)
+× keeps every compared summary and example equal to its source 1056ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/browser/factories.ts:10:  * Control Creates one real pointer event, ready to dispatch.
+guides/test.md function createPointerEvent: guide "Creates one real pointer event, ready to dispatch." source "Control Creates one real pointer event, ready to dispatch."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > guides parity > Test > keeps every compared summary and example equal to its source
+Tests  1 failed | 42 passed (43)
+× keeps every compared summary and example equal to its source 1025ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:38)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > guides parity > pairs at least one example title across the guide and the source
+Tests  1 failed | 42 passed (43)
+× pairs at least one example title across the guide and the source 72ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/test.md Own a temporary directory: guide "ts\nimport { createScratch } from '@orkestrel/test/server'\n\nconst scratch = createScratch({ prefix: 'guide-', files: { 'src/index.ts': 'export {}\\n' } })\n\nscratch.read('src/index.ts') // 'export {}\\n'\nscratch.has('src') // true\nscratch.read('src') // throws Error: Scratch path is a directory: src\nscratch.read('missing.ts') // undefined\nscratch.write('../escape.ts', '') // throws Error: Path outside scratch directory: ../escape.ts\n\n// `write` answers the contained path it wrote, the way `ensure` and `link` answer theirs, so the\n// path goes straight to the code under test without joining it again.\nscratch.write('src/notes.ts', 'export {}\\n') // `${scratch.path}/src/notes.ts`\n\n// `ensure` is how you get an empty directory, because every `write` creates a file.\nscratch.ensure('empty')\nscratch.names() // ['empty', 'src']\nscratch.names('empty') // []\n\n// `parent` puts the allocation somewhere other than the host temporary directory.\nconst child = createScratch({ parent: scratch.path, prefix: 'child-' })\nscratch.names().length // 3 — 'empty', 'src', and the child allocation\nchild.destroy()\nscratch.names().length // 2 — the child removed itself and nothing else\n\n// `link` creates the symbolic link the threat model names, and `read` follows it. A directory\n// source runs on a host that creates no symbolic link too; see \"Hosts that create no symbolic\n// link\" for what such a host does with a file source.\nconst outside = createScratch({ prefix: 'outside-', files: { 'read.ts': 'export {}\\n' } })\nscratch.link('gate', outside.path) // `${scratch.path}/gate` — the link's own path, not its destination\nscratch.read('gate/read.ts') // 'export {}\\n' — read through the link, at its destination\n\n// A link pointing out of the allocation is resolved through, so a contained path acts outside it.\nscratch.ensure('gate/made') // `${scratch.path}/gate/made` — the lexical path, not the destination\noutside.names() // ['made', 'read.ts'] — the directory was made under `outside.path`\nscratch.names('gate') // ['made', 'read.ts'] — the same entries, listed through the link\n\n// `link` acts at the final segment rather than through it, so `gate` is occupied.\nscratch.link('gate', outside.path) // throws Error: EEXIST: file already exists\n\n// `has` reads the final segment without following it, and `read` follows it.\nscratch.link('dangling', 'missing.ts')\nscratch.has('dangling') // true — the link is there\nscratch.read('dangling') // undefined — what it points at is not\n\n// `remove` takes one contained entry and acts at the final segment, so a link goes and whatever it\n// pointed at stays. A missing target is a no-op.\nscratch.remove('dangling')\nscratch.has('dangling') // false\nscratch.remove('missing.ts') // no throw — there was nothing there\nscratch.remove('src') // the directory and everything under it\nscratch.names() // ['empty', 'gate']\n\nscratch.destroy()\nscratch.destroy() // no-op — destroy is idempotent\noutside.has('made') // true — destroy unlinks `gate` and leaves what it pointed at\noutside.destroy()" source "ts\nimport { createScratch } from '@orkestrel/test/server' // control\n\nconst scratch = createScratch({ prefix: 'guide-', files: { 'src/index.ts': 'export {}\\n' } })\n\nscratch.read('src/index.ts') // 'export {}\\n'\nscratch.has('src') // true\nscratch.read('src') // throws Error: Scratch path is a directory: src\nscratch.read('missing.ts') // undefined\nscratch.write('../escape.ts', '') // throws Error: Path outside scratch directory: ../escape.ts\n\n// `write` answers the contained path it wrote, the way `ensure` and `link` answer theirs, so the\n// path goes straight to the code under test without joining it again.\nscratch.write('src/notes.ts', 'export {}\\n') // `${scratch.path}/src/notes.ts`\n\n// `ensure` is how you get an empty directory, because every `write` creates a file.\nscratch.ensure('empty')\nscratch.names() // ['empty', 'src']\nscratch.names('empty') // []\n\n// `parent` puts the allocation somewhere other than the host temporary directory.\nconst child = createScratch({ parent: scratch.path, prefix: 'child-' })\nscratch.names().length // 3 — 'empty', 'src', and the child allocation\nchild.destroy()\nscratch.names().length // 2 — the child removed itself and nothing else\n\n// `link` creates the symbolic link the threat model names, and `read` follows it. A directory\n// source runs on a host that creates no symbolic link too; see \"Hosts that create no symbolic\n// link\" for what such a host does with a file source.\nconst outside = createScratch({ prefix: 'outside-', files: { 'read.ts': 'export {}\\n' } })\nscratch.link('gate', outside.path) // `${scratch.path}/gate` — the link's own path, not its destination\nscratch.read('gate/read.ts') // 'export {}\\n' — read through the link, at its destination\n\n// A link pointing out of the allocation is resolved through, so a contained path acts outside it.\nscratch.ensure('gate/made') // `${scratch.path}/gate/made` — the lexical path, not the destination\noutside.names() // ['made', 'read.ts'] — the directory was made under `outside.path`\nscratch.names('gate') // ['made', 'read.ts'] — the same entries, listed through the link\n\n// `link` acts at the final segment rather than through it, so `gate` is occupied.\nscratch.link('gate', outside.path) // throws Error: EEXIST: file already exists\n\n// `has` reads the final segment without following it, and `read` follows it.\nscratch.link('dangling', 'missing.ts')\nscratch.has('dangling') // true — the link is there\nscratch.read('dangling') // undefined — what it points at is not\n\n// `remove` takes one contained entry and acts at the final segment, so a link goes and whatever it\n// pointed at stays. A missing target is a no-op.\nscratch.remove('dangling')\nscratch.has('dangling') // false\nscratch.remove('missing.ts') // no throw — there was nothing there\nscratch.remove('src') // the directory and everything under it\nscratch.names() // ['empty', 'gate']\n\nscratch.destroy()\nscratch.destroy() // no-op — destroy is idempotent\noutside.has('made') // true — destroy unlinks `gate` and leaves what it pointed at\noutside.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > guides parity > Test > keeps every compared summary and example equal to its source
+Tests  1 failed | 42 passed (43)
+× keeps every compared summary and example equal to its source 1020ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/test.md pitch: readme "Control: The test helpers the `@orkestrel` fleet kept rewriting, published once: families of what a test records, what it waits for, and what it owns, with a pair outside all of them and a browser journey layer beside them." tagline "The test helpers the `@orkestrel` fleet kept rewriting, published once: families of what a test records, what it waits for, and what it owns, with a pair outside all of them and a browser journey layer beside them."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The test helpers the `@orkes…' to be 'The test helpers the `@orkestrel` fle…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > guides parity > opens the README with the guide tagline
+Tests  1 failed | 42 passed (43)
+× opens the README with the guide tagline 48ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/test.md type HeadersSource: guide absent source "Covers any value the host `Headers` constructor accepts."
+guides/test.md interface StateTransition: guide absent source "Represents one row of a statechart table: the entity's state before an event, the event, and the state that event must leave it in."
+guides/test.md interface StateScenario: guide absent source "Drives one `StateTransition` through the three phases that prove it."
+rows read: 1, disagreements found: 19
+   docs exit 1
+AssertionError: expected [ …(19) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > guides parity > Test > keeps every compared summary and example equal to its source
+Tests  1 failed | 42 passed (43)
+× keeps every compared summary and example equal to its source 1123ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0
