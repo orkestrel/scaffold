@@ -3,5 +3,3 @@
  M .claude/rules/workspace.md
  M host.json
  M tests/guides.test.ts
-?? .orkestrel/campaign/docs-parity/d4-fix.diff.txt
-?? .orkestrel/campaign/docs-parity/d4-fix.status.txt
