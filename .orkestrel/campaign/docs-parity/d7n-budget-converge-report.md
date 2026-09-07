@@ -194,3 +194,10 @@ None met. `replaceCell` wrote every located `Summary` cell across a three-column
 ## Deviations
 
 None. Two ancillary decisions are recorded in place: the titled fence is the `### Race work against the ceiling` pattern rather than the also-eligible `## Surface` fence, and the displaced tagline sentences sit as two opening paragraphs rather than one.
+
+
+---
+
+## Orchestrator annotation (slice 2 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (budget: `:51` and `:77` for `guides/budget.md:52` and `:80`; csv: `340:` for `guides/csv.md:339`) or a pin description in words the file does not carry, the tree is authoritative. The report stands as the unit's evidence with this note.

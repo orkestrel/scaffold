@@ -220,3 +220,10 @@ None. Every cell the headers exposed was located (`reported: 0` on both writes),
 ## Deviations
 
 None.
+
+
+---
+
+## Orchestrator annotation (slice 2 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (budget: `:51` and `:77` for `guides/budget.md:52` and `:80`; csv: `340:` for `guides/csv.md:339`) or a pin description in words the file does not carry, the tree is authoritative. The report stands as the unit's evidence with this note.

@@ -1,0 +1,36 @@
+Lane held: checker budget
+
+## Claim rulings
+
+**1. PASS.** `git diff --stat`/status for `3e77fe5` (`/home/user/scaffold/.orkestrel/campaign/docs-parity/d7n-budget-prep.status.txt`) lists exactly `.oxlintrc.json`, `configs/helpers.ts`, `configs/policy.ts`, `guides/budget.md`, `package-lock.json`, `package.json`, `tests/config.test.ts`, `tests/guides.test.ts`, `tests/policy.test.ts`, `tests/setup.ts`, `tests/setupPolicy.ts`, `tsconfig.json`, plus untracked `scripts/docs.ts` — the P21 repair list, `tests/guides.test.ts`, and the report's named voice/prose sites (`tests/setup.ts`, `guides/budget.md:23`). `package.json`'s diff (`d7n-budget-prep.diff.txt:1618-1639`) touches only `version` and the `docs` script row. `package-lock.json` drops only the extraneous `vite-plugin-dts` subtree (`d7n-budget-prep.diff.txt` grep for `@orkestrel|vite-plugin-dts`); `@orkestrel/contract` stays `^0.0.16`; no `@orkestrel/*` range moved.
+
+**2. PASS.** `/home/user/fleet/budget/tests/guides.test.ts:147-172, 200-229` matches the pilot shape at `/home/user/fleet/abort/tests/guides.test.ts:145-215` (names mapped once per `describe`/loop). `d7n-budget-prep-report.md:250-255` quotes `Test Files 1 passed (1)` / `Tests 26 passed (26)`.
+
+**3. PASS.** `d7n-budget-prep-report.md:154-186`: `tests/setup.ts:6,24` open with third-person verbs (`Captures`, `Selects`) without naming the symbol, keeping every fact; `guides/budget.md:23` drops only `simply` per the substitution table; no assertion value or code token changed.
+
+**4. PASS.** `/home/user/fleet/budget/guides/budget.md:30,38,47,54,62,80` — every table heads `Summary` beside only `Kind`/`Shape`/`Returns`; `### Classes` at line 52 carries the sole `Budget` row; the Types table (line 60) states the "members in braces" convention sentence, matching the pilot's identical sentence and split idiom (full-type-literal rows vs. member-name rows) at `/home/user/fleet/abort/guides/abort.md:60-65`.
+
+**5. PASS.** Every guide Summary/Method cell (`guides/budget.md:32-34,40-43,49-50,56,64-68,82-84`) is byte-identical to its doc block's description paragraph in `/home/user/fleet/budget/src/core/{factories,validators,helpers,types,Budget}.ts`. `d7n-budget-converge-report.md:51-76` names every block rewritten by hand; facts displaced from old cells (trace `id`, parent `signal`, `scope` defaults, once-read semantics) reappear in each block's `@remarks`; the `Budget` class description was rewritten to avoid duplicating `BudgetInterface`'s sentence (report line 68), and no description restates its own `@remarks`.
+
+**6. PASS.** Exactly one titled `@example` package-wide: `src/core/factories.ts:26` ("Race work against the ceiling"), heading occurs once (`guides/budget.md:106`, single grep hit per `d7n-budget-converge-report.md:96-98`), body equals the fence at `guides/budget.md:110-122` verbatim, no triple-backtick run or doc-comment terminator (report lines 100, criterion 4).
+
+**7. PASS.** `guides/budget.md:3-4` and `README.md:3-4` carry the identical noun-phrase blockquote, no link/bold, same line breaks. Displaced sentences sit in the guide's opening prose (`guides/budget.md:6,8`); neither opening paragraph restates the tagline's clauses; README's Install/Requirements/Usage sections are untouched (`README.md:12-38`).
+
+**8. PASS.** `/home/user/fleet/budget/tests/guides.test.ts:73-95` (pin, file scope, before the manifest loop), `:102-111` (README case, two `not.toBeUndefined()` guards), `:182-190` (equality case inside `describe(entry.concept)`); `README.md` is in `ROOT_FILES` (line 46); `GUIDE_SPEC` constant at line 32; tests named for what they prove. `d7n-budget-converge-report.md:9-35` quotes each case's failing lines red on the unconverged tree; criterion 7 (lines 155-167) reads them green after. Note: the pin's actual code (`if (fence.title === undefined) continue; … if (titled.has(fence.title))`) is not literally the single boolean expression the claim quotes, but it is byte-identical to the pilot's own accepted shape at `/home/user/fleet/abort/tests/guides.test.ts:82-86`, so it meets "the shape the pilot fixed."
+
+**9. FAIL.** Two non-Summary (`Shape`) cells changed content beyond width or the brief's header rename, contradicting "equals its baseline text apart from width, except the headers the brief renames": `BudgetInterface`'s `Shape` cell went from a prose sentence ("`id` / `signal` / `max` / `consumed` / `remaining` / `exhausted` data members + the `start` / `consume` / `clear` methods.") to a brace member-list (`{ id, signal, max, consumed, remaining, exhausted, start, consume, clear }`); `TokenBudgetOptions`' `Shape` cell went from the inlined literal `scope?: 'completion' \| 'total' \| 'prompt'` to `scope?: TokenScope` (`d7n-budget-converge.diff.txt` Types-table hunk, reproduced in `d7n-budget-converge-report.md:41-45`). This overlaps claim 4's idiom-consistency requirement, which plausibly authorizes the `BudgetInterface` change; whether that authorization extends to substituting an alias name for the `TokenBudgetOptions` literal is a design-fit judgment this checker does not decide — referred below.
+
+**10. PASS.** `d7n-budget-converge.status.txt` lists only `README.md`, `guides/budget.md`, `src/core/Budget.ts`, `src/core/factories.ts`, `src/core/helpers.ts`, `src/core/types.ts`, `src/core/validators.ts`, `tests/guides.test.ts` — all doc-block hunks under `src/**` per the diff (no `@param`/`@returns`/`@throws` line touched, verified by grep).
+
+**11. PASS.** `d7n-budget-converge-report.md:143-165` quotes `npm run docs` (`rows read: 1, disagreements found: 0`), `--to guide`/`--to source` (`written: 0`), and green `oxfmt --check`, `oxlint`, `check`, `test:guides`, `test:policy`.
+
+**12. FAIL.** `d7n-budget-prep-report.md:257`: "P21's five `record shapes` failures are gone; the suite passes in full against the `.0.18` readers." This states a count (`five`) in authored prose outside a quoted command fence, violating the report-honesty requirement this claim states verbatim. Sampled `file:line` citations (`guides/budget.md:23`, `tests/setup.ts:6`, `:24`) match the tree.
+
+**13. PASS.** Neither report names a reader or seed defect (`d7n-budget-converge-report.md:190-192`: "Reader and seed defects: None met."; the prep report names none), so the claim is satisfied vacuously.
+
+## Findings outside the claims
+
+- **Referral (subjective/objective lane):** claim 4 (idiom consistency) and claim 9 (cell-content stability) conflict on the `TokenBudgetOptions` and `BudgetInterface` `Shape` cells. Right looks like the brief stating explicitly which idiom-driven cell rewrites are in scope beyond the `BudgetInterface`-style prose-to-braces conversion, so a future audit does not have to infer whether substituting `TokenScope` for its expanded literal was sanctioned.
+- The `d7n-budget-prep-report.md` count violation (claim 12) is the same class of drafting slip `.claude/rules/writing.md` bans project-wide; right looks like a report-writing pass that greps its own prose against the substitution/count rules before submission, the way `tests/setupPolicy.ts` does for the shipped repository.
+
+VERDICT: FAIL 9 12

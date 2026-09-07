@@ -307,3 +307,10 @@ Exit 1, matching the P21 reading exactly.
 None. No `repair` write landed outside the P21 list; every before-text matched verbatim; no
 voice diagnostic named an off-limits file; `test:policy` reddened only on the standing-condition
 line named in the brief; every other gate read green.
+
+
+---
+
+## Orchestrator annotation (slice 2 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (budget: `:51` and `:77` for `guides/budget.md:52` and `:80`; csv: `340:` for `guides/csv.md:339`) or a pin description in words the file does not carry, the tree is authoritative. The report stands as the unit's evidence with this note.

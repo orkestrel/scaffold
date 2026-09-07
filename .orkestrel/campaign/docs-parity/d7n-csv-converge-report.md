@@ -209,3 +209,10 @@ The correction for every following P.2 brief: run `--to guide` first and `--to s
 None against the objective. Every cell the seed had to locate was located after the header change; the tally went from 89 rows with 51 already-located cells to 89 rows with every cell located, and no cell became unlocatable. No titled body the block could not hold, no test outside `tests/guides.test.ts` went red, no vendored file needed an edit, no reader returned a shape the brief does not describe, and no residual disagreement survived a doc-block rewrite.
 
 Ancillary matters decided and recorded in the sections that own them: the titled fence (`Parse and query` over `Surface`, § 4); the `GUIDE_SPEC` rename rather than a second constant (§ 7); the `Value` column on the Constants table (§ 2); the `Shape` idiom sentence placed in the Types section's intro paragraph above the table, following the pilot at `guides/abort.md:60` rather than below the table, and carrying the `## Methods` pointer that the `CSVInterface` row's `Shape` cell dropped (`guides/csv.md:39-42`); and the `### \`CSV\`` section's opening sentence, trimmed because the new `### Classes` table's intro states the same source pointer.
+
+
+---
+
+## Orchestrator annotation (slice 2 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (budget: `:51` and `:77` for `guides/budget.md:52` and `:80`; csv: `340:` for `guides/csv.md:339`) or a pin description in words the file does not carry, the tree is authoritative. The report stands as the unit's evidence with this note.

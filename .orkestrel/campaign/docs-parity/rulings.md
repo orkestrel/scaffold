@@ -44,3 +44,7 @@ The readers locate a table's compared column by the `Summary` header and its key
 ## Ruling 11 (2026-09-07, the Orchestrator, on slice 1's subjective claim 22 and the objective F2): the doc block whole, and the pin's canon
 
 A converge unit owns each doc block whole — the description paragraph, `@remarks`, `@example`, and every other tag (`@throws`, `@param`, `@returns`) — with no code token moved; a true `@throws` clause added beside a rewritten description is within scope. The pin's canon is the pilot's form at `/home/user/fleet/abort/tests/guides.test.ts:72-95`: the guard-and-continue loop with no local type predicate and the both-sides failure line; "scaffold's inline form" in the template named the absence of a predicate, not the loop's shape, and the wording is corrected.
+
+## Ruling 12 (2026-09-07, the Orchestrator, on slice 2's subjective F3): one `Shape` idiom fleet-wide
+
+A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member, its call-signature members after `plus`, and a type alias's own type literal with a union's arms escaped as `\|`; a member's type never appears in the cell, because the declaration carries it and the guide's reader reaches it through the row's name. The convention sentence above every table that carries the column states this one idiom, and a row that spells a member's type, a prose description, or a call signature with its return type is rewritten to it. Where a row's literal names a documented alias (`scope?: TokenScope`), the alias's own row spells the union.
