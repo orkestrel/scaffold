@@ -1,6 +1,6 @@
 # Verify brief — U11 lsp-imports after its fix round (lsp)
 
-Successor of `ts6-u11-verify-brief.md`: step 1 widens the pattern to every import and require spelling; the rest is unchanged.
+Successor of `ts6-u11-verify-brief.md`: step 1 covers every import and require spelling at a specifier position; the rest is unchanged.
 
 ## Role and engine
 
@@ -8,7 +8,7 @@ Successor of `ts6-u11-verify-brief.md`: step 1 widens the pattern to every impor
 
 ## Commands, from `/home/user/fleet/lsp`, in this order
 
-1. `grep -rn "['\"]typescript['\"]" tests src configs` (expected: no line)
+1. `grep -rnE "(from|require\(|import\()[[:space:]]*['\"]typescript(/[^'\"]*)?['\"]" tests src configs` (expected: no line; the pattern is bounded to specifier positions because the LSP language identifier `'typescript'` appears as data in `tests/src/core/LSPClient.test.ts`, `tests/mirrors/metaModel.json`, and `src/core/LSPClient.ts`)
 2. `npm run format:check`
 3. `npm run lint:check` (the baseline's one `no-restricted-imports` diagnostic at `tests/setupConformance.ts:37` must be gone; any diagnostic is RED)
 4. `npm run check`

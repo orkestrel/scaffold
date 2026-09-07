@@ -1,0 +1,310 @@
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index d42a7f3..9dff52c 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -4,16 +4,20 @@ import {
+ 	META_MODEL_PATH,
+ 	formatConformanceDrift,
+ 	formatConformanceValue,
++	isSyntaxNode,
+ 	readConformanceDrift,
+ 	readEnumeration,
+ 	readForbiddenImport,
++	readForbiddenNode,
+ 	readMetaModel,
+ 	readMethod,
++	readNodeSpecifier,
+ 	readProperty,
+ 	readStructure,
+ } from './setupConformance.js'
+ import { createScratch, destroyScratch } from '@orkestrel/test/server'
+ import { readFileSync } from 'node:fs'
++import { parseSync } from 'vite'
+ import { describe, expect, it } from 'vitest'
+ 
+ describe('conformance infrastructure', () => {
+@@ -85,8 +89,123 @@ describe('conformance infrastructure', () => {
+ 		}
+ 	})
+ 
+-	it('reports a forbidden import from TypeScript syntax', () => {
+-		expect(readForbiddenImport("import {} from 'vscode-jsonrpc'\n")).toBe('vscode-jsonrpc')
+-		expect(readForbiddenImport("import {} from '@orkestrel/contract'\n")).toBeUndefined()
++	it('reports a static import of the protocol family', () => {
++		expect(readForbiddenImport("import { Message } from 'vscode-jsonrpc'\n")).toBe('vscode-jsonrpc')
++		expect(readForbiddenImport("import { isRecord } from '@orkestrel/contract'\n")).toBeUndefined()
++	})
++
++	it('reports a type-only import of the protocol family', () => {
++		expect(readForbiddenImport("import type { Message } from 'vscode-jsonrpc'\n")).toBe(
++			'vscode-jsonrpc',
++		)
++		expect(
++			readForbiddenImport("import type { Guard } from '@orkestrel/contract'\n"),
++		).toBeUndefined()
++	})
++
++	it('reports a bare side-effect import of the protocol family', () => {
++		expect(readForbiddenImport("import 'vscode-jsonrpc'\n")).toBe('vscode-jsonrpc')
++		expect(readForbiddenImport("import '@orkestrel/contract'\n")).toBeUndefined()
++	})
++
++	it('reports a re-export of the protocol family', () => {
++		expect(readForbiddenImport("export { Message } from 'vscode-jsonrpc'\n")).toBe('vscode-jsonrpc')
++		expect(readForbiddenImport("export * from 'vscode-jsonrpc'\n")).toBe('vscode-jsonrpc')
++		expect(readForbiddenImport("export { isRecord } from '@orkestrel/contract'\n")).toBeUndefined()
++		expect(readForbiddenImport("export * from '@orkestrel/contract'\n")).toBeUndefined()
++	})
++
++	it('reports an import assignment of the protocol family', () => {
++		expect(readForbiddenImport("import rpc = require('vscode-jsonrpc')\n")).toBe('vscode-jsonrpc')
++		expect(
++			readForbiddenImport("import contract = require('@orkestrel/contract')\n"),
++		).toBeUndefined()
++	})
++
++	it('reports a dynamic import of the protocol family', () => {
++		expect(readForbiddenImport("const load = () => import('vscode-jsonrpc')\n")).toBe(
++			'vscode-jsonrpc',
++		)
++		expect(
++			readForbiddenImport("const load = () => import('@orkestrel/contract')\n"),
++		).toBeUndefined()
++	})
++
++	it('reports a family specifier nested under a node that names another package', () => {
++		expect(
++			readForbiddenImport(
++				"const load = () => import('@orkestrel/contract', { with: import('vscode-jsonrpc') })\n",
++			),
++		).toBe('vscode-jsonrpc')
++	})
++
++	it('reports the earlier of two family specifiers when the earlier one is nested', () => {
++		expect(
++			readForbiddenImport(
++				"const load = () => import('@orkestrel/contract', { with: import('vscode-jsonrpc') })\nimport { Message } from 'vscode-jsonrpc/lib/common/message'\n",
++			),
++		).toBe('vscode-jsonrpc')
++	})
++
++	it('refuses source the parser rejects, naming the file', () => {
++		expect(() => readForbiddenImport("import { from 'vscode-jsonrpc'\n", 'broken.ts')).toThrow(
++			'The parser refused broken.ts:',
++		)
++	})
++
++	it('reads no specifier from a non-literal import expression or a require call', () => {
++		expect(readForbiddenImport('const load = (name: string) => import(name)\n')).toBeUndefined()
++		expect(readForbiddenImport("const rpc = require('vscode-jsonrpc')\n")).toBeUndefined()
++	})
++
++	it('reads a family specifier beneath a node carrying a parent back-link', () => {
++		const program: Record<string, unknown> = { type: 'Program' }
++		const statement = {
++			type: 'ExpressionStatement',
++			parent: program,
++			expression: {
++				type: 'ImportExpression',
++				source: { type: 'Literal', value: 'vscode-jsonrpc' },
++			},
++		}
++		program.body = [statement]
++		expect(readForbiddenNode(program)).toBe('vscode-jsonrpc')
++	})
++
++	it('checks a record carrying a string type member as a syntax node', () => {
++		expect(isSyntaxNode({ type: 'ImportDeclaration' })).toBe(true)
++		expect(isSyntaxNode({ source: 'vscode-jsonrpc' })).toBe(false)
++		expect(isSyntaxNode('ImportDeclaration')).toBe(false)
++		expect(isSyntaxNode(null)).toBe(false)
++	})
++
++	it('reads the specifier each declaration form names, and none from the forms naming no module', () => {
++		const source = [
++			"import { Message } from 'vscode-jsonrpc'",
++			"export * from 'vscode-jsonrpc'",
++			"export { Message } from 'vscode-jsonrpc'",
++			'export const local = 1',
++			"import rpc = require('vscode-jsonrpc')",
++			'import alias = rpc.Message',
++		].join('\n')
++		expect(parseSync('source.ts', `${source}\n`).program.body.map(readNodeSpecifier)).toEqual([
++			'vscode-jsonrpc',
++			'vscode-jsonrpc',
++			'vscode-jsonrpc',
++			undefined,
++			'vscode-jsonrpc',
++			undefined,
++		])
++	})
++
++	it('reads a literal import expression as its specifier and a non-literal one as none', () => {
++		const { program } = parseSync('source.ts', "import('vscode-jsonrpc')\nimport(specifier)\n")
++		expect(
++			program.body.map((statement) =>
++				statement.type === 'ExpressionStatement'
++					? readNodeSpecifier(statement.expression)
++					: statement.type,
++			),
++		).toEqual(['vscode-jsonrpc', undefined])
+ 	})
+ })
+diff --git a/tests/setupConformance.ts b/tests/setupConformance.ts
+index 4c2f9cf..b15a71a 100644
+--- a/tests/setupConformance.ts
++++ b/tests/setupConformance.ts
+@@ -1,4 +1,5 @@
+ import type { Guard } from '@orkestrel/contract'
++import type { ESTree } from 'vite'
+ import type { LSPDiagnosticSeverity, LSPDiagnosticTag, LSPTextDocumentSyncKind } from '@src/core'
+ import type { Diagnostic as InstalledDiagnostic } from 'vscode-languageserver-protocol'
+ import {
+@@ -27,14 +28,14 @@ import {
+ 	isLSPServerCapabilities,
+ 	isLSPTextDocumentSyncOptions,
+ } from '@src/core'
+-import { isRecord } from '@orkestrel/contract'
++import { isArray, isRecord } from '@orkestrel/contract'
+ import { WORKSPACE_ROOT } from './setup.js'
+ import { createHash } from 'node:crypto'
+ import { globSync, readFileSync } from 'node:fs'
+ import { createRequire } from 'node:module'
+ import { dirname, resolve } from 'node:path'
+ import { fileURLToPath } from 'node:url'
+-import ts from 'typescript'
++import { parseSync } from 'vite'
+ import {
+ 	CodeDescription,
+ 	Diagnostic,
+@@ -464,43 +465,69 @@ export function readProtocolSpecifier(specifier: string): string | undefined {
+ }
+ 
+ /**
+- * Reads the first forbidden module specifier beneath one TypeScript syntax node.
++ * Checks whether a value is a syntax node the parser produced.
+  *
+- * @param node - The syntax node to walk, including its descendants.
++ * @param value - The candidate value reached beneath a parsed program.
++ * @returns True if the value is a record carrying a string `type` member; false otherwise.
++ */
++export function isSyntaxNode(value: unknown): value is ESTree.Node {
++	return isRecord(value) && typeof value.type === 'string'
++}
++
++/**
++ * Reads the module specifier one syntax node names.
++ *
++ * @param node - The syntax node to read, without its descendants.
++ * @returns The specifier written in that node's own import or export clause, or `undefined` when the node writes none.
++ * @remarks The forms read are an `import` declaration, an `export … from` or `export * from` re-export, an `import =` assignment over an external module reference, and an `import()` expression whose source is a string literal. An `import` declaration carries the static, type-only, and bare side-effect spellings alike, and a non-literal `import()` expression names no specifier.
++ */
++export function readNodeSpecifier(node: ESTree.Node): string | undefined {
++	switch (node.type) {
++		case 'ImportDeclaration':
++		case 'ExportAllDeclaration':
++			return node.source.value
++		case 'ExportNamedDeclaration':
++			return node.source === null ? undefined : node.source.value
++		case 'TSImportEqualsDeclaration':
++			return node.moduleReference.type === 'TSExternalModuleReference'
++				? node.moduleReference.expression.value
++				: undefined
++		case 'ImportExpression':
++			return node.source.type === 'Literal' && typeof node.source.value === 'string'
++				? node.source.value
++				: undefined
++		default:
++			return undefined
++	}
++}
++
++/**
++ * Reads the first forbidden module specifier beneath one parsed syntax node.
++ *
++ * @param node - The parsed program, one node beneath it, or any member reached from one.
+  * @returns The first protocol-family specifier reached in source order, or `undefined` when the subtree names none.
+- * @remarks The walk covers static imports and exports, import assignments, and dynamic `import()` calls.
++ * @remarks The walk reads a node's own specifier first and decides a protocol-family hit there; otherwise it recurses through the node's arrays and records, so every form `readNodeSpecifier` reads is found wherever it is nested. The recursion skips a `parent` member, so a back-link the parser might populate cannot turn the tree into a cycle.
+  */
+-export function readForbiddenNode(node: ts.Node): string | undefined {
+-	if (
+-		(ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+-		node.moduleSpecifier !== undefined &&
+-		ts.isStringLiteral(node.moduleSpecifier)
+-	) {
+-		return readProtocolSpecifier(node.moduleSpecifier.text)
++export function readForbiddenNode(node: unknown): string | undefined {
++	if (isArray(node)) {
++		for (const element of node) {
++			const forbidden = readForbiddenNode(element)
++			if (forbidden !== undefined) return forbidden
++		}
++		return undefined
+ 	}
+-	if (
+-		ts.isImportEqualsDeclaration(node) &&
+-		ts.isExternalModuleReference(node.moduleReference) &&
+-		node.moduleReference.expression !== undefined &&
+-		ts.isStringLiteral(node.moduleReference.expression)
+-	) {
+-		return readProtocolSpecifier(node.moduleReference.expression.text)
++	if (!isRecord(node)) return undefined
++	if (isSyntaxNode(node)) {
++		const specifier = readNodeSpecifier(node)
++		const forbidden = specifier === undefined ? undefined : readProtocolSpecifier(specifier)
++		if (forbidden !== undefined) return forbidden
+ 	}
+-	if (
+-		ts.isCallExpression(node) &&
+-		node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+-		node.arguments.length === 1
+-	) {
+-		const [argument] = node.arguments
+-		if (argument !== undefined && ts.isStringLiteral(argument)) {
+-			return readProtocolSpecifier(argument.text)
+-		}
++	for (const [member, value] of Object.entries(node)) {
++		if (member === 'parent') continue
++		const forbidden = readForbiddenNode(value)
++		if (forbidden !== undefined) return forbidden
+ 	}
+-	let forbidden: string | undefined = undefined
+-	node.forEachChild((child) => {
+-		if (forbidden === undefined) forbidden = readForbiddenNode(child)
+-	})
+-	return forbidden
++	return undefined
+ }
+ 
+ /**
+@@ -509,14 +536,17 @@ export function readForbiddenNode(node: ts.Node): string | undefined {
+  * @param source - The TypeScript source text to parse.
+  * @param name - The filename the parser reports for that text. Default: `'source.ts'`.
+  * @returns The first protocol-family specifier reached in source order, or `undefined` when the text names none.
++ * @throws Thrown when the parser reports an error-severity diagnostic, naming the file and that diagnostic's message.
++ * @remarks A `require('vscode-jsonrpc')` call and a non-literal `import()` expression are outside the forms this reader detects, so source reaching the family either way reads as clean.
+  */
+ export function readForbiddenImport(
+ 	source: string,
+ 	name: string = 'source.ts',
+ ): string | undefined {
+-	return readForbiddenNode(
+-		ts.createSourceFile(name, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS),
+-	)
++	const parsed = parseSync(name, source)
++	const refusal = parsed.errors.find((error) => error.severity === 'Error')
++	if (refusal !== undefined) throw new Error(`The parser refused ${name}: ${refusal.message}`)
++	return readForbiddenNode(parsed.program)
+ }
+ 
+ /**
+@@ -524,7 +554,7 @@ export function readForbiddenImport(
+  *
+  * @param root - The workspace root the published source glob resolves against.
+  * @returns The offending `path:specifier` coordinate, or `undefined` when no published source names the family.
+- * @throws Thrown when a globbed source file cannot be read.
++ * @throws Thrown when a globbed source file cannot be read, or when the parser reports an error for one.
+  */
+ export function readForbiddenSource(root: string): string | undefined {
+ 	for (const path of globSync(['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.mts', 'src/**/*.cts'], {
