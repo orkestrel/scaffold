@@ -76,7 +76,7 @@ Owned: \`$G\`, \`tests/guides.test.ts\`, the doc blocks under \`src/**\` only wh
 
 ## Output
 
-\`/home/user/scaffold/tmp/units/d7n-$n-close-report.md\`: per item the hunk, per criterion the command and its last lines, the wall clock. No count in prose. No process diary.
+\`/home/user/scaffold/tmp/units/d7n-$n-close-report.md\`: per item the hunk, per criterion the command and its last lines, the wall clock. No process diary. No count in prose: name the members or recast the sentence; a number stays only as a duration, a size, a limit, a version, a date, an exit code, or a measurement quoted with the run that produced it.
 
 ## Deviation contract
 

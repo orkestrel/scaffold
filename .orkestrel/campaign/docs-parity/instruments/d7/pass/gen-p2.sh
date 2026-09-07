@@ -10,7 +10,7 @@ cd "$d" || exit 9
 tip=$(git rev-parse --short HEAD); ver=$(node -p "require('./package.json').version"); range=$(node -p "require('./package.json').devDependencies['@orkestrel/guide']")
 spec=$(grep -o '\[`[a-z]*\.md`\]' guides/README.md | head -1 | tr -d '[]`'); [ -z "$spec" ] && spec=$n.md
 facts=$(bash $SCR/facts.sh $n)
-docs=$(timeout 120 npm run docs 2>&1 | grep -v '^$' | grep -v '^>' | tail -80; echo "exit ${PIPESTATUS[0]}")
+docs=$(timeout 180 npm run docs 2>&1 | grep -v '^$' | grep -v '^>'; echo "exit ${PIPESTATUS[0]}")
 readme_item=""
 if [ "$n" = codec ]; then
 readme_item="- **codec's README** duplicates the guide's Surface tables (\`README.md:9-23\` and \`:28-41\`, which the gate never reads); a copy drifts the moment a cell is rewritten, so the README keeps its blockquote and onboarding and replaces each copied table with one sentence linking the guide's section (\`[Codings](guides/codec.md#codings)\` and its siblings), the shape scaffold's own README took in D5."
@@ -54,7 +54,7 @@ $readme_item
 - **The gate cases** in \`tests/guides.test.ts\`, in this file's own header and helpers (the readers come from \`@orkestrel/guide\`; import \`findDrift\` beside the existing readers): the equality case inside the manifest loop's \`describe(entry.concept)\` block collecting \`\${entry.spec} \${drift.key}: guide \${left} source \${right}\` lines with \`absent\` for an undefined side; the pin at file scope in the pilot's form (the guard-and-continue loop at \`/home/user/fleet/abort/tests/guides.test.ts:72-95\`, no local type predicate) with the both-sides failure line \`\${GUIDE_SPEC} pairs: guide [...] source [...]\`; the README case with two \`not.toBeUndefined()\` guards before \`toBe\`; \`README.md\` added to \`ROOT_FILES\`; a \`GUIDE_SPEC\` constant for the spec path used by the pin and the README case. Name each test for what it proves.
 $probe_item
 - **§ Tests**: every guide carries a \`## Tests\` section naming the suites that prove it; add one where the guide has none. Where it lists the checks the suite wires, it gains the equality gate named descriptively (every \`Summary\` cell against its declaration's description paragraph, the titled \`<title>\` fence — named by its title, as the pilot's \`:156\` names \`Create and abort\` — against the \`@example\` of that title, the README pitch against the tagline), with no SQ/MQ/EQ/RQ identifier until the mirror refresh lands.
-- **Template corrections** (the pilot's audit): re-read every citation in your report against the tree you leave; the Orchestrator takes the lint control reading after you exit, so plant nothing.
+- **Template corrections** (the pilot's audit): re-read every citation in your report against the tree you leave; the Orchestrator takes the lint control reading after you exit, so plant nothing for it; your own red-first control on a file you own is yours to plant and reverse, and the report records the reversal.
 
 ## The first \`docs\` worklist on this baseline
 
@@ -65,6 +65,8 @@ $docs
 $facts
 
 ## Standing conditions
+
+- Put every instrument you write under \`tmp/d7n-$n-converge/\` inside this checkout (git ignores \`tmp/\`), never under the session scratchpad: a sibling unit writes there concurrently and a file read back can hold another package's guide.
 
 - The vendored voice rule reads every doc block you rewrite (third-person verb opener, the symbol unnamed in the first sentence) and the prose sweep in \`tests/setupPolicy.ts\` reads \`guides/$spec\` and \`README.md\` against the substitution table.
 - Format and lint scoped to your owned paths: \`npx oxfmt --write <paths>\` after edits and after each seed write; \`npx oxfmt --check <paths>\` and \`npx oxlint --config .oxlintrc.json --deny-warnings <the owned .ts paths>\` as gates (oxlint reads no Markdown and exits 1 on a Markdown-only path list; the prose sweep in \`test:policy\` gates the guide and the README). \`npm run test:guides\` after the README edit, because a suite reading the README is the objective lane's M9.
@@ -87,7 +89,7 @@ Owned: \`guides/$spec\`, \`README.md\`, the doc blocks under \`src/**\` whole (t
 
 ## Output
 
-\`/home/user/scaffold/tmp/units/d7n-$n-converge-report.md\`: per criterion the command and its reading (the red-first lines verbatim), the rows moved and the blocks rewritten, the pair, the README and opening-prose sentences changed, every reader or seed defect met with the seed's line, and the wall clock from your first command to your last. No count in prose. No process diary.
+\`/home/user/scaffold/tmp/units/d7n-$n-converge-report.md\`: per criterion the command and its reading (the red-first lines verbatim), the rows moved and the blocks rewritten, the pair, the README and opening-prose sentences changed, every reader or seed defect met with the seed's line, and the wall clock from your first command to your last. No process diary. No count in prose: name the members or recast the sentence; a number stays only as a duration, a size, a limit, a version, a date, an exit code, or a measurement quoted with the run that produced it.
 
 ## Deviation contract
 

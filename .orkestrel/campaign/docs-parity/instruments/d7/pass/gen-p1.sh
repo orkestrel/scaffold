@@ -82,7 +82,7 @@ Owned: the paths \`repair --offline\` writes, \`tests/guides.test.ts\` (the site
 
 ## Output
 
-\`/home/user/scaffold/tmp/units/d7n-$n-prep-report.md\`: per item the hunk (the voice sites as before/after pairs per diagnostic), per criterion the command and its last lines, the \`docs\` worklist verbatim, and the wall clock from your first command to your last. No count in prose. No process diary. Re-read every line and path you cite against the tree you leave.
+\`/home/user/scaffold/tmp/units/d7n-$n-prep-report.md\`: per item the hunk (the voice sites as before/after pairs per diagnostic), per criterion the command and its last lines, the \`docs\` worklist verbatim, and the wall clock from your first command to your last. No process diary. No count in prose: name the members or recast the sentence; a number stays only as a duration, a size, a limit, a version, a date, an exit code, or a measurement quoted with the run that produced it. Re-read every line and path you cite against the tree you leave.
 
 ## Deviation contract
 

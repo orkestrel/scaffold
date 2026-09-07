@@ -337,3 +337,7 @@ the titled body fit its block with no `*/` or three-backtick collision; no test 
 `tests/guides.test.ts` went red; no vendored file needed an edit; the readers returned the shapes
 the brief describes; and no residual disagreement survived a doc-block rewrite under the P16
 comparator.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose and in the prep report (the slice-6 lanes cite the lines). The tree is authoritative; the reports stand annotated.

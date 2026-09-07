@@ -231,3 +231,7 @@ None. `--to guide` located and wrote every one of the 17 disagreeing cells (`rep
 ## Deviation state
 
 No deviation. Every fixed item in the brief landed, and every acceptance criterion is closed with the reading recorded here.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose and in the prep report (the slice-6 lanes cite the lines). The tree is authoritative; the reports stand annotated.

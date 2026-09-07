@@ -382,3 +382,7 @@ None. Every criterion is closed on this tree. No cell was unlocatable after the 
 than the pitch, no titled body was refused by its block, no test outside `tests/guides.test.ts`
 went red, no vendored file was edited, and the one residual disagreement class was closed by a
 doc-block rewrite and reported above.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose and in the prep report (the slice-6 lanes cite the lines). The tree is authoritative; the reports stand annotated.

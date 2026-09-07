@@ -64,3 +64,11 @@ Where a `## Surface` table carries an interface or type-alias row, that table he
 ## Ruling 16 (2026-09-07, the Orchestrator, on the single-face audit's objective F4): Ruling 5's trigger binds as written
 
 A `### Entities` heading over an all-class table becomes `### Classes`, and a class documented under its own H3 carries a row in a `### Classes` table; a descriptive heading over an all-class table (`### Stores, indexes, cursors, transactions`) stays. The audit template's claim is corrected to that trigger.
+
+## Ruling 13, amended (2026-09-07, the Orchestrator, on slice 6's subjective F5): the drop-in's header line
+
+The canonical drop-in's first line reads "The constants that follow are this package's own" — `below` is a pointer `.claude/rules/writing.md` bans — and the pilot takes that line in its closing unit; a package whose copy already reads so is canonical on that line.
+
+## Ruling 17 (2026-09-07, the Orchestrator, on slice 6's claim 19): the titled declaration where the class is the entry
+
+The titled `@example` sits on the primary factory's block. Where a guide's fences construct the class directly as the package's entry and the factory is an alias over that constructor (markdown's `createMarkdown` returns `new Markdown(input)`), the titled block is the class's, on the declaration the guide's flagship fence demonstrates; the audit claim reads "the primary factory's block, or the class's where Ruling 17 applies".
