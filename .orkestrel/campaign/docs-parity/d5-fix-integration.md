@@ -1,0 +1,3 @@
+# D5-fix integration (2026-09-07, the Orchestrator's serial patches)
+
+Applied exactly as `d5-fix-report.md` § Shared-file patches returns them, after the unit exited: the code span `nameToHostArtifacts` becomes `blueprintToHostArtifacts` in `src/core/constants.ts:130`, `:180`, `:272` and in `tests/setupServer.ts:1285`, by one `sed` over the two files. `grep -rn nameToHostArtifacts src tests guides README.md scripts` then prints nothing. `tests/setupServer.ts` is a staged host file, so `npm run build:inventory` re-ran and `host.json` moved by its digest alone. The recommendation for a `DOCS_SEED_PATH` constant is not applied here — it is a new export, so it goes to a writer — and is carried by the fix round that follows the audit.
