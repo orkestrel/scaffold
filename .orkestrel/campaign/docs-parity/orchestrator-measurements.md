@@ -130,7 +130,8 @@ $ npm view @orkestrel/guide versions --json | tail -4
 $ git -C /home/user/fleet/guide status -sb; git log --oneline -1
 ## claude/orkestrel-npm-audit-deps-14ibta...origin/…  b7dc578 (clean)
 $ grep -rn '0\.0\.17' --include=*.ts --include=*.md --include=*.json . | grep -v node_modules | grep -v package-lock
-./package.json:3 alone among tracked files                                    (the vendored catalog carries other packages' ranges; tmp/ reports are untracked)
+./package.json:3 alone among the tracked .ts, .md, and .json files the pattern covered (the lockfile excluded by the grep; the vendored catalog carries other packages' ranges; tmp/ reports are untracked)
+   R1 correction: package-lock.json:3 and :9 carried 0.0.17 outside that bound; closed by the lockfile-only install recorded in instruments/d7/u1fix/lockfile.log.txt
 $ node instruments/d7/p15/p15-fleet-classes.mjs /home/user/scaffold/src /home/user/fleet/*/src
 files read: 708, class/interface heads carrying @example: 307, titled: 0, untitled: 347
 $ node instruments/d7/p15/p15b-fleet-heads.mjs /home/user/scaffold/src /home/user/fleet/*/src   (every keyword head)

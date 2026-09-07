@@ -1,0 +1,15 @@
+== PATH=/opt/npm11/bin:$PATH npm install --package-lock-only --ignore-scripts --no-audit --no-fund → up to date, EXIT 0
+== git diff --stat
+ package-lock.json | 384 +-----------------------------------------------------
+ 1 file changed, 2 insertions(+), 382 deletions(-)
+== version lines
+-	"version": "0.0.17",
++	"version": "0.0.18",
+-			"version": "0.0.17",
++			"version": "0.0.18",
+== root devDependencies line removed
+-				"vite-plugin-dts": "^5.1.0",
+== removed node_modules entries
+node_modules/@jridgewell/gen-mapping node_modules/@jridgewell/remapping node_modules/@jridgewell/resolve-uri node_modules/@jridgewell/trace-mapping node_modules/@rollup/pluginutils node_modules/@rollup/pluginutils/node_modules/estree-walker node_modules/@volar/language-core node_modules/@volar/source-map node_modules/@volar/typescript node_modules/acorn node_modules/compare-versions node_modules/confbox node_modules/debug node_modules/exsolve node_modules/glob-to-regexp node_modules/kolorist node_modules/local-pkg node_modules/mlly node_modules/mlly/node_modules/confbox node_modules/mlly/node_modules/pkg-types node_modules/ms node_modules/path-browserify node_modules/pkg-types node_modules/quansync node_modules/ufo node_modules/unplugin node_modules/unplugin-dts node_modules/vite-plugin-dts node_modules/vscode-uri node_modules/webpack-virtual-modules 
+== manifest declares vite-plugin-dts?
+0

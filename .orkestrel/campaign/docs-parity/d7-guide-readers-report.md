@@ -115,7 +115,7 @@ rewritten block back through `extractExamples`.
 - before: `adjacency parser and apply their distinct exported-function and callable-member grammars only to\n\`code\`.`
 - after: `adjacency parser and apply their distinct declaration-head and callable-member grammars only to\n\`code\`. \`extractExamples\` dedupes by name and title, so a \`type\` and a \`const\` sharing one name\ncontribute the first block of a title rather than one block each.`
 
-`guides/guide.md:433` and `:466`: read, unchanged. `:433` names the shared key grammar and the
+`guides/guide.md:433` and `:466` (R1 correction: the sentence opens at `:467` in the tree the unit left; the brief's coordinate predates the two-line insertion at `:426-427`): read, unchanged. `:433` names the shared key grammar and the
 readers that split their own part out of it, and `:466` names the `name` overload's asymmetry with
 `methods`. Neither states the function-only reach.
 
