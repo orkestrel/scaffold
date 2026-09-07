@@ -11,3 +11,6 @@ qualifier
 queue
 rater
 relation
+sea
+sqlite
+template
