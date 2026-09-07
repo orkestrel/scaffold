@@ -1,0 +1,57 @@
+tests/src/core/AgentRegistry.test.ts:456:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/conversations/Conversation.test.ts:142:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/conversations/Conversation.test.ts:499:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/conversations/Conversation.test.ts:775:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/AgentContext.test.ts:109:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/AgentContext.test.ts:345:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/AgentContext.test.ts:525:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/AgentContext.test.ts:958:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/AgentContext.test.ts:958:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/AgentContext.test.ts:1061:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/setup.ts:68:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/setup.ts:96:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+tests/setup.ts:35:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:50:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:65:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:96:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:111:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:129:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:141:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:162:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:299:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:311:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:322:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:335:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:346:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:360:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:386:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:392:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:426:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:464:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:472:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:484:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:508:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:536:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:560:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:571:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:584:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:623:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:636:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:662:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:693:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:720:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:757:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/src/core/integration.test.ts:193:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/factories.test.ts:202:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/factories.test.ts:496:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/factories.test.ts:855:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/helpers.test.ts:405:2: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:51:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:61:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:63:1: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/src/core/Agent.test.ts:212:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:1114:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:2298:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:2641:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:3138:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/core/Agent.test.ts:3346:3: error policy(no-banned-term): Replace via in this comment: through, by using.

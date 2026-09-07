@@ -1,0 +1,14 @@
+
+> @orkestrel/agent@0.0.21 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/agent
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  16:50:25
+   Duration  1.54s (transform 750ms, setup 758ms, import 147ms, tests 411ms, environment 0ms)
+

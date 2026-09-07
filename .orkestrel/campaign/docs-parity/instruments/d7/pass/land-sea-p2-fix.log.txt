@@ -1,0 +1,14 @@
+== sea p2-fix landing 2026-09-07T21:47:09Z over 2b94a78
+== status
+ M guides/sea.md
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts   | 14 +++++++++-----
+ tests/guides.test.ts  |  4 +---
+ 4 files changed, 28 insertions(+), 18 deletions(-)
+== stage by path
+ 4 files changed, 28 insertions(+), 18 deletions(-)
+== committed
+76cfbe2 Refine sea's convergence on the audit's findings
+(status end)

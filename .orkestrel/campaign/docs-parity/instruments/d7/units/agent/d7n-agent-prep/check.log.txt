@@ -1,0 +1,12 @@
+
+> @orkestrel/agent@0.0.21 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/agent@0.0.21 check:src
+> npm run check:src:core
+
+
+> @orkestrel/agent@0.0.21 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+

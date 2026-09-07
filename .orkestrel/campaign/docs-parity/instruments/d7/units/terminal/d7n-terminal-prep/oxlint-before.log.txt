@@ -1,0 +1,31 @@
+src/core/TerminalManager.ts:21:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+src/core/PromptClient.ts:33:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/types.ts:572:1: error policy(no-banned-term): Replace currently in this comment: delete, or give the date.
+src/core/types.ts:713:1: error policy(no-malformed-summary): State what the symbol does without naming TerminalSnapshotRow in the first sentence.
+tests/setup.ts:17:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:24:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:46:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:66:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:74:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:85:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:99:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:149:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:154:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:163:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:200:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:215:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:220:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:225:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:312:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:338:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:345:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:11:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:17:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:30:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:109:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:117:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+src/server/Terminal.ts:76:1: error policy(no-banned-term): Replace currently in this comment: delete, or give the date.
+src/server/helpers.ts:25:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/helpers.ts:87:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/helpers.ts:118:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/helpers.ts:118:1: error policy(no-banned-term): Replace currently in this comment: delete, or give the date.

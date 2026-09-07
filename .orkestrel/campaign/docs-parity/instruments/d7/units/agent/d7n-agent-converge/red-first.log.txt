@@ -1,0 +1,14 @@
+
+> @orkestrel/agent@0.0.21 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/agent
+
+·xx································································x··························
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 91 passed (94)
+   Start at  21:14:25
+   Duration  931ms (transform 310ms, setup 363ms, import 190ms, tests 220ms, environment 0ms)
+

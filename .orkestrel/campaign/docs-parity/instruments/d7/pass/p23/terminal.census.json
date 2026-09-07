@@ -1,0 +1,179 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-terminal",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/terminal.md",
+   "source": [
+    "src/core",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 148,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 6,
+    "counts": {
+     "equal": 27,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "DatabaseTerminalStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "InputStreamInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MemoryTerminalStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "Prompt",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "answer",
+      "destroy",
+      "park",
+      "pending",
+      "stop"
+     ]
+    },
+    {
+     "name": "PromptClient",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "connect",
+      "destroy",
+      "disconnect"
+     ]
+    },
+    {
+     "name": "PromptClientInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "PromptInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Terminal",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "ask"
+     ]
+    },
+    {
+     "name": "TerminalInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TerminalManager",
+     "keyword": "class",
+     "methods": 10,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "answer",
+      "ask",
+      "destroy",
+      "open",
+      "pending",
+      "remove",
+      "save",
+      "terminal",
+      "terminals"
+     ]
+    },
+    {
+     "name": "TerminalManagerInterface",
+     "keyword": "interface",
+     "methods": 10,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TerminalStoreInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "The blank line binds as absence",
+     "Surface",
+     "Ask one form at this keyboard",
+     "Park a form, answer it from elsewhere",
+     "Bridge a parked form to a keyboard elsewhere",
+     "Mount the broker on your own HTTP spine",
+     "Narrow what arrives from the wire",
+     "Sanitize a schema you did not author",
+     "Drive the field reducers directly",
+     "Re-theme what a walk draws",
+     "Route forms between named endpoints",
+     "Persist endpoint config",
+     "Drive the walk over injected streams"
+    ],
+    "titledExamples": [
+     "createTerminal:Ask one form at this keyboard"
+    ],
+    "pairs": [
+     "Ask one form at this keyboard"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

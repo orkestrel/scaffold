@@ -1,0 +1,192 @@
+diff --git a/guides/sea.md b/guides/sea.md
+index e3a810e..d6145c6 100644
+--- a/guides/sea.md
++++ b/guides/sea.md
+@@ -1,4 +1,4 @@
+-# SEA — Single Executable Application Builder
++# SEA
+ 
+ > The Node.js single executable application (SEA) builder: a pure-TypeScript pipeline
+ > that compresses assets, assembles the SEA blob, injects it into a copy of the host
+@@ -11,6 +11,8 @@ source sits under [`src/server`](../src/server).
+ 
+ ### Build a single executable
+ 
++Describe the build to `createSEA` — its entry script, output directory, assets, and compression — then `await sea.execute()` for the finished executable and its size:
++
+ ```ts
+ import { createSEA, formatSize } from '@orkestrel/sea'
+ 
+@@ -153,7 +155,7 @@ A `Shape` cell holds the constant's declared type.
+ 
+ ### Types
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
+ 
+ | API                      | Kind      | Shape                                                                                                                                                                     | Summary                                                                                 |
+ | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+@@ -164,7 +166,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `SEAProgress`            | interface | `{ path, current, total }`                                                                                                                                                | Represents the progress reported while compressing a directory.                         |
+ | `SEACompressionHandler`  | type      | `(result: SEACompressionResult) => void`                                                                                                                                  | Describes the callback `compressDirectory` invokes after each file it compresses.       |
+ | `SEABrotliOptions`       | interface | `{ mode?, quality? }`                                                                                                                                                     | Controls how Brotli encodes one file.                                                   |
+-| `SEACompressionOptions`  | interface | `{ paths, mode?, quality? }`                                                                                                                                              | Controls Brotli compression of one or more directories.                                 |
++| `SEACompressionOptions`  | interface | `SEABrotliOptions plus { paths }`                                                                                                                                         | Controls Brotli compression of one or more directories.                                 |
+ | `SEAPlatform`            | interface | `{ executable, remove?, sign?, verify? }`                                                                                                                                 | Represents a platform-specific SEA build configuration.                                 |
+ | `SEAShellOptions`        | interface | `{ cwd?, env?, timeout?, signal? }`                                                                                                                                       | Configures the execution of a shell command.                                            |
+ | `ExecutableFormat`       | type      | `'pe' \| 'elf' \| 'macho'`                                                                                                                                                | Names an executable binary format detected from file header magic bytes.                |
+@@ -195,7 +197,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ 
+ ## Methods
+ 
+-The public methods of each behavioral interface — one table per type, keyed by its backticked name, every call-signature member listed. A `readonly` data member, `format` on `Injector` and `emitter` / `status` / `count` on the others, stays in the interface's `Shape` cell and off these tables. Each concrete class implements its interface exactly, so this doubles as the class's instance-method surface.
++The public methods of each behavioral interface — one table per type, keyed by its backticked name, every call-signature member listed. A `readonly` data member stays in the interface's `Shape` cell and off these tables: `format` on `InjectorInterface`, `emitter` and `status` on `SEAInterface`, `emitter` and `count` on `AssetManagerInterface`. Each concrete class implements its interface exactly, so this doubles as the class's instance-method surface.
+ 
+ #### `SEAInterface`
+ 
+@@ -232,6 +234,8 @@ The public methods of each behavioral interface — one table per type, keyed by
+ 
+ ### Injecting a resource directly
+ 
++Construct an injector over an already-assembled executable, read the format it detected, and call `inject` to write the blob into it:
++
+ ```ts
+ import { createInjector } from '@orkestrel/sea'
+ 
+@@ -249,6 +253,8 @@ injector.inject()
+ 
+ ### Assets
+ 
++Create an asset from a buffer, register it with a manager configured to load more from disk, then read the collection back and tear it down:
++
+ ```ts
+ import { createAsset, createAssetManager } from '@orkestrel/sea'
+ 
+@@ -271,6 +277,8 @@ manager.destroy()
+ 
+ ### Boundary and formatting helpers
+ 
++Every helper the build pipeline runs on is exported too, from the shell boundary and the path assertions to the fixed-width binary readers, the PE patches, and the size formatter:
++
+ ```ts
+ import {
+ 	executeShell,
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 938d8b1..d78593e 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -570,7 +570,7 @@ export function patchPESubsystem(path: string, subsystem: number): void {
+  * @remarks
+  * If the certificate overlay described by the security directory sits at the
+  * very end of the file (the common case for `signtool`-signed binaries), the
+- * file is truncated to the certificate's start FIRST so the overlay bytes are
++ * file is truncated to the certificate's start first so the overlay bytes are
+  * discarded rather than left as dead weight for a downstream injector to
+  * bury mid-file. The directory read is bounds-checked so a malformed or
+  * truncated security directory cannot throw unexpectedly — it is skipped
+@@ -615,13 +615,13 @@ export function stripPESignature(path: string): void {
+  * Builds the `signtool sign` argv for signing a Windows executable.
+  *
+  * @remarks
+- * Requires EXACTLY ONE certificate source — `sign.file` (a `.pfx`/`.p12`
++ * Requires exactly one certificate source — `sign.file` (a `.pfx`/`.p12`
+  * file, paired with `sign.password` when present) XOR `sign.thumbprint` (a
+  * certificate already installed in the Windows store). When `sign.timestamp`
+  * is set it is parsed with the `URL` constructor and must be an `http:` or
+  * `https:` URL. The returned argv is passed directly to `executeShell` — never
+  * through a shell — so nothing in `sign` can be interpreted as a flag or
+- * injected into a command line. `sign.password` is NEVER included in a
++ * injected into a command line. `sign.password` is never included in a
+  * thrown error's message or `context`.
+  *
+  * @param sign - Windows signing options
+@@ -749,7 +749,7 @@ export function ensureSafeKey(key: string): void {
+  * Resolves `path` against `base`, then dereferences both the resolved path
+  * and `base` with `realpathSync` and requires the real resolved path to
+  * equal the real base or begin with the real base plus a path separator.
+- * Dereferencing BOTH sides means a symlinked base itself (for example macOS `/tmp`
++ * Dereferencing both sides means a symlinked base itself (for example macOS `/tmp`
+  * -> `/private/tmp`) still matches, while a symlink inside the tree that
+  * points outside the real base is correctly rejected. A `realpathSync`
+  * failure (for example `ENOENT`) is wrapped as a coded `SEAError` rather than
+@@ -827,7 +827,7 @@ export function ensureSafeName(name: string): void {
+  * Fsyncs a directory to durably persist a prior file rename/create within it.
+  *
+  * @remarks
+- * A `rename`/`create` is only durable once its CONTAINING directory entry is
++ * A `rename`/`create` is only durable once its containing directory entry is
+  * flushed — fsyncing the file itself is not enough. `path` is the directory
+  * to fsync (callers pass `dirname(target)`, not the file itself). On Windows
+  * there is no directory file handle to fsync, so this is a no-op there (the
+@@ -921,7 +921,7 @@ export function finalizeExecutable(source: string, target: string): void {
+  * @remarks
+  * A pure leaf extracted from the SEA build orchestrator. The `mainFormat`
+  * field (`'commonjs' | 'module'`) exists only in Node >= 25.7 — for a `'cjs'`
+- * entry (the default) `mainFormat` is OMITTED entirely so the config still
++ * entry (the default) `mainFormat` is omitted entirely so the config still
+  * builds on older Node hosts where `'commonjs'` is already the implicit
+  * default; for an `'esm'` entry `mainFormat: 'module'` is set explicitly
+  * (this requires a Node >= 25.7 build host). Node also documents that
+diff --git a/src/server/types.ts b/src/server/types.ts
+index a5fbbe6..98e0e02 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -473,11 +473,11 @@ export interface SEAOptions {
+  * valid stdio, so `process.stdout`/`stderr`/`stdin` are detached and console
+  * output is discarded; use only for windowless apps.
+  * `sign`      — Authenticode signing options. When present, the assembled
+- * executable is signed with `signtool` (and verified) as the LAST content
++ * executable is signed with `signtool` (and verified) as the last content
+  * mutation before the atomic finalize; when absent, the output is unsigned
+  * and `SEAResult.signed` is `false`.
+  *
+- * These options apply only when the build HOST is Windows — there is no
++ * These options apply only when the build host is Windows — there is no
+  * cross-compilation, so building on a non-Windows host ignores `windows.*`.
+  */
+ export interface SEAWindowsOptions {
+@@ -490,7 +490,7 @@ export interface SEAWindowsOptions {
+  *
+  * @remarks
+  * `file`       — path to a `.pfx`/`.p12` certificate file (`signtool /f`).
+- * `password`   — certificate password (`signtool /p`). SENSITIVE — never
++ * `password`   — certificate password (`signtool /p`). Sensitive: never
+  * logged and never included in a thrown error's message or `context`.
+  * `thumbprint` — SHA1 thumbprint of a certificate already installed in the
+  * Windows certificate store (`signtool /sha1`).
+@@ -498,7 +498,7 @@ export interface SEAWindowsOptions {
+  * `/td <digest>`).
+  * `digest`     — file digest algorithm (`signtool /fd`). Default: `'sha256'`.
+  *
+- * Exactly ONE of `file` or `thumbprint` must be supplied — they identify two
++ * Exactly one of `file` or `thumbprint` must be supplied — they identify two
+  * different certificate sources and are mutually exclusive. `password`
+  * pairs with `file` (a store-resident certificate referenced by
+  * `thumbprint` has no associated password to supply here).
+@@ -548,7 +548,11 @@ export interface SEAInterface {
+ 	readonly emitter: EmitterInterface<SEAEventMap>
+ 	/** Holds the phase the build has reached. */
+ 	readonly status: SEAStatus
+-	/** Runs the compress, blob, and assemble stages and returns the build result. */
++	/**
++	 * Runs the compress, blob, and assemble stages and returns the build result.
++	 *
++	 * @throws SEAError with the `SEAErrorCode` of the stage that failed, after `status` becomes `'error'`
++	 */
+ 	execute(): Promise<SEAResult>
+ 	/** Tears down the emitter. */
+ 	destroy(): void
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 0370543..6d6398c 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,8 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes. The `sea.md fences`
+-// block at the end transcribes the flagship fences of `guides/sea.md` and asserts the
+-// values their comments claim, which name resolution alone cannot prove.
++// package's own, as is the executed section that closes the file.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {

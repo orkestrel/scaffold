@@ -1,0 +1,22 @@
+
+> @orkestrel/agent@0.0.21 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/fleet/agent
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  16:50:27
+   Duration  9.36s (transform 1.21s, setup 645ms, import 1.14s, tests 7.34s, environment 0ms)
+

@@ -1,0 +1,101 @@
+### terminal at 0b01536, guide guides/terminal.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  63 passed (63)
+   test:guides exit 0
+-- census
+   guides/terminal.md surface {"equal":148,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":27,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 6 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class DatabaseTerminalStore methods 3 grouped false undescribed []
+   owner interface InputStreamInterface methods 5 grouped true undescribed []
+   owner class MemoryTerminalStore methods 3 grouped false undescribed []
+   owner class Prompt methods 5 grouped false undescribed ["answer","destroy","park","pending","stop"]
+   owner class PromptClient methods 3 grouped false undescribed ["connect","destroy","disconnect"]
+   owner interface PromptClientInterface methods 3 grouped true undescribed []
+   owner interface PromptInterface methods 5 grouped true undescribed []
+   owner class Terminal methods 1 grouped false undescribed ["ask"]
+   owner interface TerminalInterface methods 1 grouped true undescribed []
+   owner class TerminalManager methods 10 grouped false undescribed ["add","answer","ask","destroy","open","pending","remove","save","terminal","terminals"]
+   owner interface TerminalManagerInterface methods 10 grouped true undescribed []
+   owner interface TerminalStoreInterface methods 3 grouped true undescribed []
+   examples titledFences 13 titledExamples ["createTerminal:Ask one form at this keyboard"] pairs ["Ask one form at this keyboard"]
+-- sites: surface row guides/terminal.md:103; methods row guides/terminal.md:390; title src/server/factories.ts:31
+-- control A: one Surface Summary cell altered (guides/terminal.md:103)
+guides/terminal.md interface TerminalInterface: guide "Declares the contract for asking a form of a human at a keyboard — `ask` and nothing beside it, because a form is one question however many fields it holds. The server `Terminal` implements it against a real TTY; a `PromptClientInterface` holds one to answer forms parked elsewhere. Control." source "Declares the contract for asking a form of a human at a keyboard — `ask` and nothing beside it, because a form is one question however many fields it holds. The server `Terminal` implements it against a real TTY; a `PromptClientInterface` holds one to answer forms parked elsewhere."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Terminal > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 20ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/terminal.md:390)
+guides/terminal.md TerminalInterface.ask: guide "Walks the given form to settlement and resolves its values. The Contract section names the ctrl-c exception. Control." source "Walks the given form to settlement and resolves its values. The Contract section names the ctrl-c exception."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Terminal > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 21ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio,
+guides/terminal.md function createTerminal: guide "Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the broker parks a live form until somebody elsewhere answers it, a `Terminal` answers one here: it walks the form's fields in schema order, drives each control's pure reducer over raw-mode stdin, binds every answer through the form's own `fill`, and submits. It is the only impure part of the terminal stack." source "Control Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the broker parks a live form until somebody elsewhere answers it, a `Terminal` answers one here: it walks the form's fields in schema order, drives each control's pure reducer over raw-mode stdin, binds every answer through the form's own `fill`, and submits. It is the only impure part of the terminal stack."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Terminal > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Prompt.ts:22:  * Control Implements the headless form broker. It parks live forms, exposes their serialized schemas,
+guides/terminal.md class Prompt: guide "Implements the headless form broker. It parks live forms, exposes their serialized schemas, applies remote answers to the authoritative form, and abandons a parked form on timeout, release, or teardown." source "Control Implements the headless form broker. It parks live forms, exposes their serialized schemas, applies remote answers to the authoritative form, and abandons a parked form on timeout, release, or teardown."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Terminal > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 23ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:31)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 62 passed (63)
+× pairs at least one example title across the guide and the source 43ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/terminal.md Ask one form at this keyboard: guide "ts\nimport { createForm } from '@orkestrel/form'\nimport { isTerminalError } from '@orkestrel/terminal'\nimport { createTerminal } from '@orkestrel/terminal/server'\n\nconst terminal = createTerminal() // process.stdin / process.stdout by default\nconst form = createForm({\n\tlabel: 'Sign up',\n\tfields: [\n\t\t{ control: 'text', name: 'name', label: 'Your name', rule: { required: true, minimum: 2 } },\n\t\t{ control: 'text', name: 'email', label: 'Email', rule: { required: true, email: true } },\n\t\t{ control: 'password', name: 'token', label: 'Token' },\n\t\t{ control: 'confirm', name: 'terms', label: 'Accept the terms', rule: { required: true } },\n\t\t{\n\t\t\tcontrol: 'select',\n\t\t\tname: 'role',\n\t\t\tlabel: 'Role',\n\t\t\tchoices: [\n\t\t\t\t{ value: 'admin', label: 'Admin' },\n\t\t\t\t{ value: 'viewer', label: 'Viewer', help: 'read-only' },\n\t\t\t],\n\t\t},\n\t],\n})\n\ntry {\n\tconst values = await terminal.ask(form)\n\tdeploy(values)\n} catch (error) {\n\t// Ctrl-c: the walk ended, and the form is still `editing` for whoever owns it.\n\tif (isTerminalError(error) && error.code === 'CANCEL') form.destroy()\n}" source "ts\nimport { createForm } from '@orkestrel/form' // control\nimport { isTerminalError } from '@orkestrel/terminal'\nimport { createTerminal } from '@orkestrel/terminal/server'\n\nconst terminal = createTerminal() // process.stdin / process.stdout by default\nconst form = createForm({\n\tlabel: 'Sign up',\n\tfields: [\n\t\t{ control: 'text', name: 'name', label: 'Your name', rule: { required: true, minimum: 2 } },\n\t\t{ control: 'text', name: 'email', label: 'Email', rule: { required: true, email: true } },\n\t\t{ control: 'password', name: 'token', label: 'Token' },\n\t\t{ control: 'confirm', name: 'terms', label: 'Accept the terms', rule: { required: true } },\n\t\t{\n\t\t\tcontrol: 'select',\n\t\t\tname: 'role',\n\t\t\tlabel: 'Role',\n\t\t\tchoices: [\n\t\t\t\t{ value: 'admin', label: 'Admin' },\n\t\t\t\t{ value: 'viewer', label: 'Viewer', help: 'read-only' },\n\t\t\t],\n\t\t},\n\t],\n})\n\ntry {\n\tconst values = await terminal.ask(form)\n\tdeploy(values)\n} catch (error) {\n\t// Ctrl-c: the walk ended, and the form is still `editing` for whoever owns it.\n\tif (isTerminalError(error) && error.code === 'CANCEL') form.destroy()\n}"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Terminal > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 21ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/terminal.md pitch: readme "Control: The terminal side of a form: a key decoder, a presentation theme, the pure per-field reducers, the headless broker that parks a live form until somebody elsewhere answers it, the SSE bridge that carries a parked form to a machine with a keyboard, and the manager that routes parked forms between named endpoints." tagline "The terminal side of a form: a key decoder, a presentation theme, the pure per-field reducers, the headless broker that parks a live form until somebody elsewhere answers it, the SSE bridge that carries a parked form to a machine with a keyboard, and the manager that routes parked forms between named endpoints."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The terminal side of a form:…' to be 'The terminal side of a form: a key de…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 62 passed (63)
+× opens the README with the guide tagline 24ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/terminal.md interface TerminalInterface: guide absent source "Declares the contract for asking a form of a human at a keyboard — `ask` and nothing beside it, because a form is one question however many fields it holds. The server `Terminal` implements it against a real TTY; a `PromptClientInterface` holds one to answer forms parked elsewhere."
+guides/terminal.md type PromptStatus: guide absent source "Names where one field's reducer stands after a key. `active`: keep asking, because the key was consumed or the answer was refused. `submit`: the field resolved with its `value`. `cancel`: the user aborted with ctrl-c. Names its axis, never `kind`."
+guides/terminal.md interface PromptStep: guide absent source "Represents the result of one reducer step — the next `state`, the rendered `view`, the `status`, and, on `submit` alone, the candidate `value`. The whole contract between a pure reducer and the impure driver: the driver applies the next `state`, writes the `view`, and reads `value` on `submit`."
+rows read: 1, disagreements found: 3
+   docs exit 1
+AssertionError: expected [ …(3) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Terminal > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 22ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

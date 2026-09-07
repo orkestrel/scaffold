@@ -1,0 +1,121 @@
+### workflow at 1151786, guide guides/workflow.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  101 passed (101)
+   test:guides exit 0
+-- census
+   guides/workflow.md surface {"equal":157,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":91,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 15 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class BrowserScheduler methods 2 grouped false undescribed []
+   owner class Collection methods 7 grouped false undescribed ["add","append","entries","entry","move","remove","update"]
+   owner interface CollectionEntry methods 1 grouped false undescribed ["patch"]
+   owner interface CollectionInterface methods 7 grouped true undescribed []
+   owner interface ControllerInterface methods 3 grouped true undescribed []
+   owner class DatabaseWorkflowStore methods 3 grouped false undescribed []
+   owner class FrameScheduler methods 2 grouped false undescribed []
+   owner class IdleScheduler methods 2 grouped false undescribed []
+   owner class MemoryWorkflowStore methods 3 grouped false undescribed ["delete","get","set"]
+   owner class NodeScheduler methods 2 grouped false undescribed []
+   owner interface PhaseInterface methods 13 grouped true undescribed []
+   owner class PhaseManager methods 7 grouped false undescribed ["add","append","move","phase","phases","remove","update"]
+   owner interface PhaseManagerInterface methods 7 grouped true undescribed []
+   owner class RunHolder methods 1 grouped false undescribed []
+   owner interface RunHolderInterface methods 1 grouped true undescribed []
+   owner class Runner methods 7 grouped false undescribed ["abort","destroy","execute"]
+   owner interface RunnerInterface methods 7 grouped true undescribed []
+   owner class Scheduler methods 2 grouped false undescribed []
+   owner interface SchedulerInterface methods 2 grouped true undescribed []
+   owner interface TaskControllerInterface methods 4 grouped true undescribed []
+   owner interface TaskInterface methods 12 grouped true undescribed []
+   owner class TaskManager methods 7 grouped false undescribed ["add","append","move","remove","task","tasks","update"]
+   owner interface TaskManagerInterface methods 7 grouped true undescribed []
+   owner class Workflow methods 14 grouped false undescribed ["add","complete","destroy","move","pause","phase","remove","results","resume","skip","snapshot","stop","update","wait"]
+   owner interface WorkflowInterface methods 14 grouped true undescribed []
+   owner class WorkflowManager methods 7 grouped false undescribed ["add","clear","open","remove","save","workflow","workflows"]
+   owner interface WorkflowManagerInterface methods 7 grouped true undescribed []
+   owner class WorkflowPersistence methods 3 grouped false undescribed []
+   owner interface WorkflowPersistenceInterface methods 3 grouped true undescribed []
+   owner class WorkflowRunner methods 1 grouped false undescribed []
+   owner interface WorkflowRunnerInterface methods 1 grouped true undescribed []
+   owner interface WorkflowStoreInterface methods 3 grouped true undescribed []
+   examples titledFences 31 titledExamples ["createWorkflowRunner:Author a definition and run it"] pairs ["Author a definition and run it"]
+-- sites: surface row guides/workflow.md:73; methods row guides/workflow.md:457; title src/core/factories.ts:368
+-- control A: one Surface Summary cell altered (guides/workflow.md:73)
+guides/workflow.md function createWorkflowContract: guide "Compiles the workflow definition contract — the JSON Schema, guard, parser, and seeded generator for a `WorkflowDefinition`, all derived from one shape and kept in lockstep. Control." source "Compiles the workflow definition contract — the JSON Schema, guard, parser, and seeded generator for a `WorkflowDefinition`, all derived from one shape and kept in lockstep."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workflow > keeps every compared summary and example equal to its source
+Tests  1 failed | 100 passed (101)
+× keeps every compared summary and example equal to its source 35ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/workflow.md:457)
+guides/workflow.md WorkflowInterface.phase: guide "Looks up one live phase by its `id`. Control." source "Looks up one live phase by its `id`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workflow > keeps every compared summary and example equal to its source
+Tests  1 failed | 100 passed (101)
+× keeps every compared summary and example equal to its source 28ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates the thin orchestrator — a {@link WorkflowRunnerInterface} — that executes a live W-b
+guides/workflow.md function createWorkflowRunner: guide "Creates the thin orchestrator — a `WorkflowRunnerInterface` — that executes a live W-b workflow tree by composing the shipped substrate: phases sequential, tasks concurrent, each task dispatched through its own resolved handler under the workflow's `bail` policy. The engine is pure — it carries no behavior or provider registry, and its only option is the scheduler it paces phase boundaries with." source "Control Creates the thin orchestrator — a `WorkflowRunnerInterface` — that executes a live W-b workflow tree by composing the shipped substrate: phases sequential, tasks concurrent, each task dispatched through its own resolved handler under the workflow's `bail` policy. The engine is pure — it carries no behavior or provider registry, and its only option is the scheduler it paces phase boundaries with."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workflow > keeps every compared summary and example equal to its source
+Tests  1 failed | 100 passed (101)
+× keeps every compared summary and example equal to its source 35ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/browser/BrowserScheduler.ts:7:  * Control Implements the browser {@link SchedulerInterface} — the browser-native cooperative-yield backend
+guides/workflow.md class BrowserScheduler: guide "Implements the browser `SchedulerInterface` — the browser-native cooperative-yield backend built on the Prioritized Task Scheduling API (`scheduler.postTask`) at the mapped priority, falling back to a zero-delay macrotask where it is absent, and rejecting an aborted wait with the caller's own reason." source "Control Implements the browser `SchedulerInterface` — the browser-native cooperative-yield backend built on the Prioritized Task Scheduling API (`scheduler.postTask`) at the mapped priority, falling back to a zero-delay macrotask where it is absent, and rejecting an aborted wait with the caller's own reason."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workflow > keeps every compared summary and example equal to its source
+Tests  1 failed | 100 passed (101)
+× keeps every compared summary and example equal to its source 33ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:368)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 100 passed (101)
+× pairs at least one example title across the guide and the source 89ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/workflow.md Author a definition and run it: guide "ts\nimport { createWorkflowRunner } from '@orkestrel/workflow'\nimport type { WorkflowDefinition } from '@orkestrel/workflow'\n\nconst definition: WorkflowDefinition = {\n\tid: 'release',\n\tname: 'Release',\n\tphases: [\n\t\t{\n\t\t\tid: 'build',\n\t\t\tname: 'Build',\n\t\t\ttasks: [\n\t\t\t\t{ id: 'compile', name: 'Compile', behavior: 'compile' },\n\t\t\t\t{ id: 'lint', name: 'Lint', behavior: 'lint' },\n\t\t\t],\n\t\t},\n\t\t{\n\t\t\tid: 'ship',\n\t\t\tname: 'Ship',\n\t\t\ttasks: [{ id: 'publish', name: 'Publish', behavior: 'publish' }],\n\t\t},\n\t],\n}\n\nconst runner = createWorkflowRunner() // a pure engine — no registries\n\nconst result = await runner.execute(definition, {\n\tfunctions: {\n\t\tcompile: async (controller) => `built ${controller.task.id}`,\n\t\tlint: async () => 'clean',\n\t\tpublish: async () => 'published',\n\t},\n})\nresult.status // 'completed'\nresult.workflow.phase('build')?.task('compile')?.status // 'completed'\nresult.results // every settled task's TaskResult, in positional order" source "ts\nimport { createWorkflowRunner } from '@orkestrel/workflow' // control\nimport type { WorkflowDefinition } from '@orkestrel/workflow'\n\nconst definition: WorkflowDefinition = {\n\tid: 'release',\n\tname: 'Release',\n\tphases: [\n\t\t{\n\t\t\tid: 'build',\n\t\t\tname: 'Build',\n\t\t\ttasks: [\n\t\t\t\t{ id: 'compile', name: 'Compile', behavior: 'compile' },\n\t\t\t\t{ id: 'lint', name: 'Lint', behavior: 'lint' },\n\t\t\t],\n\t\t},\n\t\t{\n\t\t\tid: 'ship',\n\t\t\tname: 'Ship',\n\t\t\ttasks: [{ id: 'publish', name: 'Publish', behavior: 'publish' }],\n\t\t},\n\t],\n}\n\nconst runner = createWorkflowRunner() // a pure engine — no registries\n\nconst result = await runner.execute(definition, {\n\tfunctions: {\n\t\tcompile: async (controller) => `built ${controller.task.id}`,\n\t\tlint: async () => 'clean',\n\t\tpublish: async () => 'published',\n\t},\n})\nresult.status // 'completed'\nresult.workflow.phase('build')?.task('compile')?.status // 'completed'\nresult.results // every settled task's TaskResult, in positional order"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workflow > keeps every compared summary and example equal to its source
+Tests  1 failed | 100 passed (101)
+× keeps every compared summary and example equal to its source 38ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/workflow.md pitch: readme "Control: Orchestration as data: a JSON-serializable `Workflow → Phase → Task` tree that a UI or an LLM authors, a store persists, and a thin engine drives by composing the shipped execution substrate." tagline "Orchestration as data: a JSON-serializable `Workflow → Phase → Task` tree that a UI or an LLM authors, a store persists, and a thin engine drives by composing the shipped execution substrate."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: Orchestration as data: a JSO…' to be 'Orchestration as data: a JSON-seriali…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 100 passed (101)
+× opens the README with the guide tagline 20ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/workflow.md function createWorkflowManager: guide absent source "Creates a `WorkflowManagerInterface` — the store-backed registry of `WorkflowInterface`s, the additive manager tier mirroring the `@orkestrel/agent` line's `createConversationManager` / `createWorkspaceManager`. The returned registry makes hydrated named work runnable when `options.functions` is supplied, and leaves it inspectable when it is not."
+guides/workflow.md function createScheduler: guide absent source "Creates the safe cross-environment cooperative-yield default — a `SchedulerInterface` built on `setTimeout` / `clearTimeout` alone, so it runs unchanged in both the browser and Node."
+guides/workflow.md function createRunner: guide absent source "Creates a thin generic orchestrator that drives declared units — and any they `spawn` — through a bounded-concurrency queue, collecting their results in order and failing the run fast on the first genuine unit failure."
+rows read: 1, disagreements found: 11
+   docs exit 1
+AssertionError: expected [ …(11) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workflow > keeps every compared summary and example equal to its source
+Tests  1 failed | 100 passed (101)
+× keeps every compared summary and example equal to its source 33ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

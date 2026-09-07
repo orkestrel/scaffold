@@ -1,0 +1,345 @@
+guides/sea.md:1:# SEA — Single Executable Application Builder
+guides/sea.md:3:> The Node.js single executable application (SEA) builder: a pure-TypeScript pipeline
+guides/sea.md:4:> that compresses assets, assembles the SEA blob, injects it into a copy of the host
+guides/sea.md:5:> Node binary, and signs the result, with no WASM and no external tools.
+guides/sea.md:35:When an `assets` path is compressed by `compression`, blob generation embeds the Brotli output under that asset's original key. Uncompressed entries keep their original paths, the compression manifest still reports each output path, and SEA does not mutate the caller's `assets` record.
+guides/sea.md:37:On Windows, `SEAOptions.windows.terminal` (default `true`) selects whether the executable keeps its console window: `false` builds a GUI-subsystem binary that launches without a terminal, at the cost of detached stdio when no console is attached (console output is discarded).
+guides/sea.md:43:`ROOM` names the applicability limit the host binary itself imposes: a layout the injector cannot write into. The injector reads that layout from the target's headers and load commands and refuses under `ROOM` before any byte reaches the output, for a PE whose header slack is smaller than one section entry, a Mach-O whose first section sits inside the space another load command needs, a Mach-O carrying no `__LINKEDIT` segment, and a `__LINKEDIT` segment carrying sections. Where the injector takes a measurement, that measurement rides in `context`: `availableHeaderSpace` against `requiredHeaderSpace` for the PE case, and `firstSectionOffset` against `requiredOffset` for the load-command case. The `__LINKEDIT` cases carry the executable path alone, because the layout is the whole finding. `INJECT` keeps the failures another host does not clear: a refusal to replace a resource that already exists while `overwrite` is `false`, a malformed resource directory, and a defect the injector reports against its own construction or a write it already made. Retry a `ROOM` build on another host, and read an `INJECT` code against the options you passed, the resource tree in the host binary, or the injector itself.
+guides/sea.md:51:| API            | Kind  | Summary                                                                    |
+guides/sea.md:53:| `SEA`          | class | Runs a Node.js single executable application build to completion.          |
+guides/sea.md:54:| `Injector`     | class | Writes a named resource into a PE, ELF, or Mach-O executable in place.     |
+guides/sea.md:56:| `AssetManager` | class | Collects named assets from a SEA blob or from disk and serves them by key. |
+guides/sea.md:60:| API                  | Kind     | Summary                                                                                                                                                                 |
+guides/sea.md:62:| `createSEA`          | function | Creates a SEA build orchestrator over the given options and returns it as a `SEAInterface`, the published contract a caller holds instead of the `SEA` class.           |
+guides/sea.md:65:| `createAssetManager` | function | Creates an asset collection and returns it as an `AssetManagerInterface`, already carrying whatever assets the running SEA blob embeds.                                 |
+guides/sea.md:71:| API                               | Kind  | Shape                                          | Summary                                                                                                               |
+guides/sea.md:73:| `SEA_SENTINEL_FUSE`               | const | `string`                                       | Holds the SEA sentinel fuse value embedded in the Node.js binary, `NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`.   |
+guides/sea.md:74:| `SEA_BLOB_RESOURCE`               | const | `string`                                       | Names the SEA blob resource in the executable, `NODE_SEA_BLOB`.                                                       |
+guides/sea.md:76:| `WINDOWS_SUBSYSTEM_GUI`           | const | `number`                                       | Holds the Windows PE subsystem value for a GUI application, 2, which launches without a terminal window.              |
+guides/sea.md:80:| `PE_MAGIC`                        | const | `number`                                       | Holds the DOS MZ header magic, 0x5a4d, the first two bytes of a PE file.                                              |
+guides/sea.md:84:| `ELF_MAGIC`                       | const | `number`                                       | Holds the ELF magic, 0x7f454c46, the bytes 0x7F `E` `L` `F` read as a 32-bit big-endian value.                        |
+guides/sea.md:85:| `ELF_CLASS_64`                    | const | `number`                                       | Holds the ELF 64-bit class identifier, 2.                                                                             |
+guides/sea.md:86:| `ELF_DATA_LSB`                    | const | `number`                                       | Holds the ELF little-endian data encoding, 1.                                                                         |
+guides/sea.md:87:| `ELF_PT_NOTE`                     | const | `number`                                       | Holds the ELF program header type for a note segment, 4.                                                              |
+guides/sea.md:88:| `ELF_PT_LOAD`                     | const | `number`                                       | Holds the ELF program header type for a loadable segment, 1.                                                          |
+guides/sea.md:89:| `ELF_PT_PHDR`                     | const | `number`                                       | Holds the ELF program header type for the program header table itself, 6.                                             |
+guides/sea.md:90:| `ELF_PF_R`                        | const | `number`                                       | Holds the ELF segment permission flag marking a segment readable, 4.                                                  |
+guides/sea.md:91:| `ELF_PAGE_SIZE`                   | const | `number`                                       | Holds the page size an injected ELF segment is aligned to, 0x1000.                                                    |
+guides/sea.md:103:| `SEA_PLATFORMS`                   | const | `Readonly<Record<string, SEAPlatform>>`        | Holds the platform-specific SEA build configurations, keyed by `process.platform` for `win32`, `darwin`, and `linux`. |
+guides/sea.md:105:| `DEFAULT_ENTRY_FORMAT`            | const | `SEAEntryFormat`                               | Names the default SEA entry point module format when none is specified, `cjs`.                                        |
+guides/sea.md:109:| API                   | Kind     | Summary                                                                                                                                      |
+guides/sea.md:113:| `isPlatformSupported` | function | Checks whether the current or named platform is supported for SEA builds.                                                                    |
+guides/sea.md:131:| `stripTrailingNulls`  | function | Truncates a NUL-padded binary name field at its first NUL character.                                                                         |
+guides/sea.md:142:| `buildBlobConfig`     | function | Builds the Node.js `--experimental-sea-config` JSON object for a SEA blob.                                                                   |
+guides/sea.md:144:| `buildELFNoteHeader`  | function | Builds an ELF `PT_NOTE` entry's header bytes (namesz/descsz/type + padded name) for the SEA blob note, without the blob body itself.         |
+guides/sea.md:145:| `alignELFNoteSize`    | function | Aligns an ELF note component size to its four-byte boundary.                                                                                 |
+guides/sea.md:148:| `openBrowser`         | function | Launches the system default browser at an http(s) URL.                                                                                       |
+guides/sea.md:149:| `SEAError`            | class    | Represents the coded base error for every failure raised by the SEA build.                                                                   |
+guides/sea.md:158:| API                      | Kind      | Shape                                                                                                                                                                     | Summary                                                                                 |
+guides/sea.md:168:| `SEAPlatform`            | interface | `{ executable, remove?, sign?, verify? }`                                                                                                                                 | Represents a platform-specific SEA build configuration.                                 |
+guides/sea.md:171:| `ELFNoteHeader`          | interface | `{ header, total }`                                                                                                                                                       | Holds an ELF `PT_NOTE` entry's header bytes and the on-disk size of the whole entry.    |
+guides/sea.md:183:| `AssetManagerInterface`  | interface | `{ emitter, count } plus asset, assets, keys, register, load, clear, destroy`                                                                                             | Represents a named asset collection with SEA and disk loading.                          |
+guides/sea.md:184:| `SEAStatus`              | type      | `'idle' \| 'active' \| 'done' \| 'error'`                                                                                                                                 | Names the overall status of the SEA build.                                              |
+guides/sea.md:185:| `SEAErrorCode`           | type      | `'PLATFORM' \| 'ENTRY' \| 'ASSET' \| 'BLOB' \| 'FORMAT' \| 'INJECT' \| 'ROOM' \| 'FUSE' \| 'SIGN' \| 'SHELL' \| 'TIMEOUT' \| 'ABORT' \| 'OUTPUT' \| 'STATE' \| 'BROWSER'` | Names the machine-readable error code carried by every `SEAError`.                      |
+guides/sea.md:186:| `SEAEntryFormat`         | type      | `'cjs' \| 'esm'`                                                                                                                                                          | Names the SEA entry point module format.                                                |
+guides/sea.md:187:| `SEAEntryOptions`        | interface | `{ path, format? }`                                                                                                                                                       | Describes the SEA entry point.                                                          |
+guides/sea.md:188:| `SEABlobOptions`         | interface | `{ cache?, snapshot? }`                                                                                                                                                   | Controls generated SEA blob behavior.                                                   |
+guides/sea.md:190:| `SEAOptions`             | interface | `{ on?, error?, name, entry, output, assets?, compression?, windows?, root?, signal?, timeout?, blob? }`                                                                  | Configures the creation of a SEA build.                                                 |
+guides/sea.md:191:| `SEAWindowsOptions`      | interface | `{ terminal?, sign? }`                                                                                                                                                    | Configures Windows-specific SEA build behavior.                                         |
+guides/sea.md:193:| `SEAResult`              | interface | `{ executable, platform, size, duration, compression?, signed, stripped, terminal? }`                                                                                     | Represents the result of a successful SEA build.                                        |
+guides/sea.md:194:| `SEAInterface`           | interface | `{ emitter, status } plus execute, destroy`                                                                                                                               | Represents a SEA build orchestrator.                                                    |
+guides/sea.md:227:| `load`     | `void`                        | Loads the configured assets from disk, and registers nothing inside SEA mode. |
+guides/sea.md:264:manager.load() // reads the configured assets outside SEA mode; no-op inside SEA mode
+guides/sea.md:344:stripTrailingNulls('.rsrc\0\0\0') // '.rsrc' — a NUL-padded PE section name field
+guides/sea.md:349:ensureSafeName('myapp') // ok; throws SEAError('ASSET', ...) for '../evil' or 'a/b'
+guides/sea.md:357:alignELFNoteSize(10) // 12 — the next four-byte ELF note boundary
+guides/sea.md:364:- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/server` bijection (value and type exports), the `SEAInterface` ↔ `SEA`, `InjectorInterface` ↔ `Injector`, and `AssetManagerInterface` ↔ `AssetManager` method bijections, and the equality gate: every `Summary` cell against its declaration's description paragraph, the titled `Build a single executable` fence against the `@example` block of that title (pinned so the titled pair cannot be retired silently), and the README pitch against this guide's tagline. It also runs the flagship fences and asserts the values their comments claim.
+guides/sea.md:365:- [`tests/src/server/seas/SEA.test.ts`](../tests/src/server/seas/SEA.test.ts) — the build pipeline end to end: the status transitions, the emitted `compress` / `progress` / `blob` / `assemble` / `complete` events, the compressed-asset key rewrite that leaves the caller's `assets` record alone, abort through `SEAOptions.signal`, the per-command timeout, and the `windows.sign` option validation.
+guides/sea.md:366:- [`tests/src/server/injectors/Injector.test.ts`](../tests/src/server/injectors/Injector.test.ts) — format detection from the header magic, and injection into synthetic PE, ELF, and Mach-O fixtures, including the `ROOM` refusals a host layout forces and the `INJECT` failures it does not.
+guides/sea.md:369:- [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — every exported helper against real files and real processes: the shell boundary and its `ShellError`, the path and key assertions including symlink escape, Brotli compression and its size arithmetic, the fixed-width binary readers and writers, the PE subsystem and signature patches, the sentinel fuse patch, the ELF note header, the streaming copy and append, the signing argv, and the browser launch.
+guides/sea.md:375:- [`README.md`](README.md) — the guides index.
+src/server/constants.ts:4: * Holds the SEA sentinel fuse value embedded in the Node.js binary,
+src/server/constants.ts:9:/** Names the SEA blob resource in the executable, `NODE_SEA_BLOB`. */
+src/server/constants.ts:16: * Holds the Windows PE subsystem value for a GUI application, 2, which launches
+src/server/constants.ts:55:/** Names the default SEA entry point module format when none is specified, `cjs`. */
+src/server/constants.ts:60:/** Holds the DOS MZ header magic, 0x5a4d, the first two bytes of a PE file. */
+src/server/constants.ts:73: * Holds the ELF magic, 0x7f454c46, the bytes 0x7F `E` `L` `F` read as a 32-bit
+src/server/constants.ts:78:/** Holds the ELF 64-bit class identifier, 2. */
+src/server/constants.ts:81:/** Holds the ELF little-endian data encoding, 1. */
+src/server/constants.ts:84:/** Holds the ELF program header type for a note segment, 4. */
+src/server/constants.ts:87:/** Holds the ELF program header type for a loadable segment, 1. */
+src/server/constants.ts:90:/** Holds the ELF program header type for the program header table itself, 6. */
+src/server/constants.ts:93:/** Holds the ELF segment permission flag marking a segment readable, 4. */
+src/server/constants.ts:96:/** Holds the page size an injected ELF segment is aligned to, 0x1000. */
+src/server/constants.ts:145: * Holds the platform-specific SEA build configurations, keyed by
+src/server/errors.ts:3:// Error surface for the SEA build. `SEAError` is the coded base every
+src/server/errors.ts:11: * Represents the coded base error for every failure raised by the SEA build.
+src/server/errors.ts:64: * Always carries {@link SEAErrorCode} `'SHELL'`. Narrow a caught value with
+src/server/errors.ts:83:		super('SHELL', message)
+src/server/factories.ts:11:import { SEA } from './seas/SEA.js'
+src/server/factories.ts:17: * Creates a SEA build orchestrator over the given options and returns it as a
+src/server/factories.ts:18: * `SEAInterface`, the published contract a caller holds instead of the `SEA` class.
+src/server/factories.ts:20: * @param options - SEA build options
+src/server/factories.ts:44:	return new SEA(options)
+src/server/factories.ts:52: * The format detected at construction — PE, ELF, or Mach-O — selects the strategy
+src/server/factories.ts:54: * needs no WASM and no external tool.
+src/server/factories.ts:93: * carrying whatever assets the running SEA blob embeds.
+src/server/helpers.ts:59: * Checks whether the current or named platform is supported for SEA builds.
+src/server/helpers.ts:75: * @param code - Error code to throw with. Default: `'STATE'`.
+src/server/helpers.ts:76: * @throws SEAError with `code` (default `'STATE'`) when `path` does not exist
+src/server/helpers.ts:80:		throw new SEAError(code ?? 'STATE', message, { path })
+src/server/helpers.ts:153: * @throws SEAError with code `'STATE'` when `command` is empty
+src/server/helpers.ts:154: * @throws SEAError with code `'ABORT'` when `options.signal` is already aborted
+src/server/helpers.ts:155: * @throws SEAError with code `'TIMEOUT'` when the command exceeds `options.timeout`
+src/server/helpers.ts:161:		throw new SEAError('STATE', 'Command array must not be empty')
+src/server/helpers.ts:164:		throw new SEAError('ABORT', 'Shell command aborted', { command: redactCommand(command) })
+src/server/helpers.ts:183:		throw new SEAError('TIMEOUT', 'Shell command timed out', {
+src/server/helpers.ts:220: * @throws SEAError with code `'OUTPUT'` when `output` is an existing symlink
+src/server/helpers.ts:248:		throw new SEAError('OUTPUT', 'Refusing to write compressed output through a symlink', {
+src/server/helpers.ts:305: * PE section and file alignment, ELF note and page alignment, and Mach-O page
+src/server/helpers.ts:331: * @throws SEAError with code `'FORMAT'` when fewer than four bytes are readable at `offset`
+src/server/helpers.ts:343:		throw new SEAError('FORMAT', 'Short read', { offset, expected: 4, read })
+src/server/helpers.ts:354: * @throws SEAError with code `'FORMAT'` when fewer than eight bytes are readable at `offset`
+src/server/helpers.ts:359: * readU64(fd, 32) // the ELF program header table offset
+src/server/helpers.ts:366:		throw new SEAError('FORMAT', 'Short read', { offset, expected: 8, read })
+src/server/helpers.ts:450: * Truncates a NUL-padded binary name field at its first NUL character.
+src/server/helpers.ts:453: * Binary name fields (PE section names, Mach-O segment and section names, ELF
+src/server/helpers.ts:454: * note names) are fixed-width and NUL-padded, so the decoded string carries
+src/server/helpers.ts:455: * trailing NUL characters that no comparison against a literal name matches.
+src/server/helpers.ts:458: * @returns The value up to, but excluding, its first NUL character
+src/server/helpers.ts:487: * @throws SEAError with code `'FORMAT'` when fewer than four bytes are readable at `0x3c`
+src/server/helpers.ts:493:		throw new SEAError('FORMAT', 'Short read', { offset: 0x3c, expected: 4, read })
+src/server/helpers.ts:504: * @throws SEAError with code `'FORMAT'` when fewer than two bytes are readable at `offset`
+src/server/helpers.ts:510:		throw new SEAError('FORMAT', 'Short read', { offset, expected: 2, read })
+src/server/helpers.ts:553: * @param subsystem - Numeric subsystem value (2 = GUI, 3 = Console)
+src/server/helpers.ts:573: * file is truncated to the certificate's start FIRST so the overlay bytes are
+src/server/helpers.ts:585:		// COFF header: 24 bytes from PE signature
+src/server/helpers.ts:619: * file, paired with `sign.password` when present) XOR `sign.thumbprint` (a
+src/server/helpers.ts:621: * is set it is parsed with the `URL` constructor and must be an `http:` or
+src/server/helpers.ts:622: * `https:` URL. The returned argv is passed directly to `executeShell` — never
+src/server/helpers.ts:630: * @throws SEAError with code `'SIGN'` when neither `file` nor `thumbprint` is set
+src/server/helpers.ts:631: * @throws SEAError with code `'SIGN'` when both `file` and `thumbprint` are set
+src/server/helpers.ts:632: * @throws SEAError with code `'SIGN'` when `timestamp` is not a parseable http(s) URL
+src/server/helpers.ts:633: * @throws SEAError with code `'SIGN'` when `digest` is not `'sha1'`, `'sha256'`, `'sha384'`, or `'sha512'`
+src/server/helpers.ts:647:			'SIGN',
+src/server/helpers.ts:653:			'SIGN',
+src/server/helpers.ts:659:		let parsed: URL
+src/server/helpers.ts:661:			parsed = new URL(sign.timestamp)
+src/server/helpers.ts:663:			throw new SEAError('SIGN', 'Windows signing timestamp must be an http(s) URL', {
+src/server/helpers.ts:668:			throw new SEAError('SIGN', 'Windows signing timestamp must be an http(s) URL', {
+src/server/helpers.ts:677:		throw new SEAError('SIGN', 'Unsupported signing digest', { digest: sign.digest })
+src/server/helpers.ts:717: * @throws SEAError with code `'ASSET'` when the key is unsafe
+src/server/helpers.ts:722: * ensureSafeKey('../secrets') // throws SEAError('ASSET', ...)
+src/server/helpers.ts:723: * ensureSafeKey('C:foo') // throws SEAError('ASSET', ...)
+src/server/helpers.ts:728:		throw new SEAError('ASSET', 'Asset key must not be empty', { key })
+src/server/helpers.ts:731:		throw new SEAError('ASSET', 'Asset key must not be an absolute path', { key })
+src/server/helpers.ts:734:		throw new SEAError('ASSET', 'Asset key must not contain a backslash', { key })
+src/server/helpers.ts:737:		throw new SEAError('ASSET', 'Asset key must not be a drive-relative specifier', { key })
+src/server/helpers.ts:740:		throw new SEAError('ASSET', 'Asset key must not contain a ".." segment', { key })
+src/server/helpers.ts:755: * failure (for example `ENOENT`) is wrapped as a coded `SEAError` rather than
+src/server/helpers.ts:761: * @throws SEAError with code `'ASSET'` when the real path escapes `base`
+src/server/helpers.ts:762: * @throws SEAError with code `'ASSET'` when the path cannot be resolved
+src/server/helpers.ts:767: * ensureContained('/dist/app', '../../etc') // throws SEAError('ASSET', ...)
+src/server/helpers.ts:780:		throw new SEAError('ASSET', 'Path not found or unresolvable', { path, cause })
+src/server/helpers.ts:784:		throw new SEAError('ASSET', 'Path escapes the build root', { base, path })
+src/server/helpers.ts:801: * @throws SEAError with code `'ASSET'` when the name is unsafe
+src/server/helpers.ts:806: * ensureSafeName('../evil') // throws SEAError('ASSET', ...)
+src/server/helpers.ts:811:		throw new SEAError('ASSET', 'Executable name must be a single path segment', { name })
+src/server/helpers.ts:814:		throw new SEAError('ASSET', 'Executable name must not contain a path separator', { name })
+src/server/helpers.ts:817:		throw new SEAError('ASSET', 'Executable name must not be an absolute path', { name })
+src/server/helpers.ts:820:		throw new SEAError('ASSET', 'Executable name must not be a drive-relative specifier', {
+src/server/helpers.ts:830: * A `rename`/`create` is only durable once its CONTAINING directory entry is
+src/server/helpers.ts:835: * return a benign errno for a directory fsync attempt (`EINVAL`, `ENOTSUP`,
+src/server/helpers.ts:836: * `EISDIR`, `EPERM`, `EACCES`) — those are treated as "fsync unsupported
+src/server/helpers.ts:837: * here" and swallowed; anything else (for example `ENOENT`, meaning the directory
+src/server/helpers.ts:841: * @throws SEAError with code `'OUTPUT'` when the directory sync fails for an
+src/server/helpers.ts:866:		// fsync" — benign and safe to ignore. Anything else (for example ENOENT, the
+src/server/helpers.ts:869:			code === 'EINVAL' ||
+src/server/helpers.ts:870:			code === 'ENOTSUP' ||
+src/server/helpers.ts:871:			code === 'EISDIR' ||
+src/server/helpers.ts:872:			code === 'EPERM' ||
+src/server/helpers.ts:873:			code === 'EACCES'
+src/server/helpers.ts:878:		throw new SEAError('OUTPUT', 'Failed to sync output directory', { path, cause })
+src/server/helpers.ts:895: * @throws SEAError with code `'OUTPUT'` when any step fails
+src/server/helpers.ts:913:		throw new SEAError('OUTPUT', 'Failed to finalize executable', { source, target, cause })
+src/server/helpers.ts:919: * Builds the Node.js `--experimental-sea-config` JSON object for a SEA blob.
+src/server/helpers.ts:922: * A pure leaf extracted from the SEA build orchestrator. The `mainFormat`
+src/server/helpers.ts:924: * entry (the default) `mainFormat` is OMITTED entirely so the config still
+src/server/helpers.ts:928: * `useSnapshot` is incompatible with an ESM entry — combining the two throws.
+src/server/helpers.ts:930: * @param entry - SEA entry point options
+src/server/helpers.ts:934: * @returns the SEA config object, ready to be written to disk as JSON
+src/server/helpers.ts:935: * @throws SEAError with code `'BLOB'` when `useSnapshot` is combined with an ESM entry
+src/server/helpers.ts:953:			'BLOB',
+src/server/helpers.ts:954:			'useSnapshot cannot be combined with an ESM entry (mainFormat module)',
+src/server/helpers.ts:969:// === ELF Helpers
+src/server/helpers.ts:972: * Aligns an ELF note component size to its four-byte boundary.
+src/server/helpers.ts:982: * Builds an ELF `PT_NOTE` entry's header bytes (namesz/descsz/type + padded
+src/server/helpers.ts:983: * name) for the SEA blob note, without the blob body itself.
+src/server/helpers.ts:986: * A pure leaf extracted from the ELF injector: the blob body is streamed
+src/server/helpers.ts:991: * The Node.js SEA runtime matches a note by the first 8 bytes of its name
+src/server/helpers.ts:995: * @param resource - Note name (SEA resource identifier, for example `NODE_SEA_BLOB`)
+src/server/helpers.ts:996: * @param blobSize - Size in bytes of the SEA blob that will follow the header
+src/server/helpers.ts:1037: * @throws SEAError with code `'OUTPUT'` when `source` is exhausted before
+src/server/helpers.ts:1065:			throw new SEAError('OUTPUT', 'Unexpected end of file while copying byte range', {
+src/server/helpers.ts:1078:// === SEA Helpers
+src/server/helpers.ts:1085: * signals to the Node.js runtime that a SEA blob is present. The `Injector` class
+src/server/helpers.ts:1091: * @throws SEAError with code `'FUSE'` when the fuse value cannot be read
+src/server/helpers.ts:1092: * @throws SEAError with code `'FUSE'` when the fuse carries a value other than `:0` or `:1`
+src/server/helpers.ts:1093: * @throws SEAError with code `'FUSE'` when the fuse is not found in the executable
+src/server/helpers.ts:1117:					throw new SEAError('FUSE', 'Could not read sentinel fuse value', { executable, fuse })
+src/server/helpers.ts:1131:				throw new SEAError('FUSE', `Unexpected sentinel fuse value: ${value}`, {
+src/server/helpers.ts:1140:		throw new SEAError('FUSE', `Sentinel fuse not found in executable: ${fuse}`, {
+src/server/helpers.ts:1152: * Launches the system default browser at an http(s) URL.
+src/server/helpers.ts:1158: * through `@orkestrel/process`'s `detach` (never a shell) so the URL cannot be
+src/server/helpers.ts:1164: * CLI flag, for example `'-e ...'`) fails to parse as an http(s) URL and is rejected
+src/server/helpers.ts:1167: * @param url - Absolute http or https URL to open
+src/server/helpers.ts:1168: * @throws SEAError with code `'BROWSER'` when `url` is not a parseable absolute URL
+src/server/helpers.ts:1169: * @throws SEAError with code `'BROWSER'` when `url` is not an `http:`/`https:` URL
+src/server/helpers.ts:1177:	let parsed: URL
+src/server/helpers.ts:1179:		parsed = new URL(url)
+src/server/helpers.ts:1181:		throw new SEAError('BROWSER', 'openBrowser requires a valid absolute URL', { url })
+src/server/helpers.ts:1185:		throw new SEAError('BROWSER', 'openBrowser only supports http and https URLs', {
+src/server/helpers.ts:1199:	// invalid command (an empty file name or a NUL character), which neither the
+src/server/index.ts:9:export * from './seas/SEA.js'
+src/server/types.ts:19: * `text`    — UTF-8 text (Brotli mode 1).
+src/server/types.ts:93: * Represents a platform-specific SEA build configuration.
+src/server/types.ts:129: * Holds an ELF `PT_NOTE` entry's header bytes and the on-disk size of the whole entry.
+src/server/types.ts:132: * `header` — the namesz/descsz/type words followed by the NUL-terminated,
+src/server/types.ts:207: * NUL padding stripped, `virtualSize` is `Misc.VirtualSize`, `virtualAddress` is
+src/server/types.ts:257: * Injects arbitrary data into PE (Windows), ELF (Linux), and Mach-O (macOS)
+src/server/types.ts:258: * executables using streaming file I/O. No WASM or external tools required.
+src/server/types.ts:318: * Represents a named asset collection with SEA and disk loading.
+src/server/types.ts:321: * In SEA mode, embedded assets are loaded automatically at construction.
+src/server/types.ts:322: * Outside SEA, `load()` reads the paths `assets` configures from disk.
+src/server/types.ts:337:	/** Loads the configured assets from disk, and registers nothing inside SEA mode. */
+src/server/types.ts:345:// === SEA
+src/server/types.ts:348: * Names the overall status of the SEA build.
+src/server/types.ts:356: * `PLATFORM` — unsupported or misdetected platform.
+src/server/types.ts:357: * `ENTRY`    — invalid or missing entry point.
+src/server/types.ts:358: * `ASSET`    — invalid asset key or content.
+src/server/types.ts:359: * `BLOB`     — SEA blob generation failure.
+src/server/types.ts:360: * `FORMAT`   — unrecognized executable binary format.
+src/server/types.ts:361: * `INJECT`   — resource injection failure.
+src/server/types.ts:362: * `ROOM`     — host binary layout the injector cannot write into: no room for a new
+src/server/types.ts:364: * `FUSE`     — sentinel fuse patch failure.
+src/server/types.ts:365: * `SIGN`     — code signing failure.
+src/server/types.ts:366: * `SHELL`    — shell command exited non-zero.
+src/server/types.ts:367: * `TIMEOUT`  — shell command exceeded its timeout.
+src/server/types.ts:368: * `ABORT`    — operation aborted through `AbortSignal`.
+src/server/types.ts:369: * `OUTPUT`   — final executable write/finalize failure.
+src/server/types.ts:370: * `STATE`    — invalid internal state or argument.
+src/server/types.ts:371: * `BROWSER`  — invalid or unsupported URL passed to `openBrowser`.
+src/server/types.ts:374:	| 'PLATFORM'
+src/server/types.ts:375:	| 'ENTRY'
+src/server/types.ts:376:	| 'ASSET'
+src/server/types.ts:377:	| 'BLOB'
+src/server/types.ts:378:	| 'FORMAT'
+src/server/types.ts:379:	| 'INJECT'
+src/server/types.ts:380:	| 'ROOM'
+src/server/types.ts:381:	| 'FUSE'
+src/server/types.ts:382:	| 'SIGN'
+src/server/types.ts:383:	| 'SHELL'
+src/server/types.ts:384:	| 'TIMEOUT'
+src/server/types.ts:385:	| 'ABORT'
+src/server/types.ts:386:	| 'OUTPUT'
+src/server/types.ts:387:	| 'STATE'
+src/server/types.ts:388:	| 'BROWSER'
+src/server/types.ts:391: * Names the SEA entry point module format.
+src/server/types.ts:400: * Describes the SEA entry point.
+src/server/types.ts:412: * Controls generated SEA blob behavior.
+src/server/types.ts:415: * `cache`    — maps to the SEA config `useCodeCache`. Default: `true`.
+src/server/types.ts:416: * `snapshot` — maps to the SEA config `useSnapshot`. Default: `false`.
+src/server/types.ts:434: * Configures the creation of a SEA build.
+src/server/types.ts:440: * `assets`      — key→path mapping for SEA embedded assets. When compression
+src/server/types.ts:444: * `windows`     — Windows-specific build options (console/GUI terminal).
+src/server/types.ts:448: * `blob`        — options controlling generated SEA blob behavior.
+src/server/types.ts:466: * Configures Windows-specific SEA build behavior.
+src/server/types.ts:471: * GUI-subsystem binary that launches without a terminal — warning: when
+src/server/types.ts:472: * launched without an attached console, a GUI-subsystem Node binary has no
+src/server/types.ts:497: * `timestamp`  — RFC3161 timestamp server URL (`signtool /tr`, paired with
+src/server/types.ts:515: * Represents the result of a successful SEA build.
+src/server/types.ts:526: * GUI-subsystem build; `undefined` on non-Windows platforms.
+src/server/types.ts:540: * Represents a SEA build orchestrator.
+src/server/types.ts:543: * Compresses assets, generates the SEA blob, copies the Node binary,
+src/server/assets/AssetManager.ts:17: * Collects named assets from a SEA blob or from disk and serves them by key.
+src/server/assets/AssetManager.ts:20: * Construction registers every asset embedded in the running SEA blob, so an
+src/server/assets/AssetManager.ts:22: * filesystem. Outside SEA mode that step registers nothing, and `load()` reads
+src/server/injectors/Injector.ts:67: * Writes a named resource into a PE, ELF, or Mach-O executable in place.
+src/server/injectors/Injector.ts:72: * resource directory, ELF appends a `PT_NOTE` segment carrying the blob as note
+src/server/injectors/Injector.ts:123:		// The checksum must be the TRUE last PE write — computed after the
+src/server/injectors/Injector.ts:150:					'FORMAT',
+src/server/injectors/Injector.ts:164:				throw new SEAError('FORMAT', 'Only 64-bit little-endian Mach-O is supported', {
+src/server/injectors/Injector.ts:171:				'FORMAT',
+src/server/injectors/Injector.ts:199:				throw new SEAError('FORMAT', 'Invalid PE signature', {
+src/server/injectors/Injector.ts:214:					'FORMAT',
+src/server/injectors/Injector.ts:282:					'ROOM',
+src/server/injectors/Injector.ts:329:				// Convert data RVA to file offset
+src/server/injectors/Injector.ts:423:					// Pad to DWORD alignment
+src/server/injectors/Injector.ts:440:			// The checksum is recomputed by the caller (inject()) AFTER the
+src/server/injectors/Injector.ts:556:	// --- PE: convert RVA to file offset using section table ---
+src/server/injectors/Injector.ts:666:				stringPoolSize += 2 + str.length * 2 // length (u16) + UTF-16LE chars
+src/server/injectors/Injector.ts:667:				stringPoolSize = alignTo(stringPoolSize, 2) // WORD align strings
+src/server/injectors/Injector.ts:847:							throw new SEAError('INJECT', 'unresolvable resource RVA', {
+src/server/injectors/Injector.ts:872:	// data entry's first DWORD is the DataRVA that gains the section VA. The
+src/server/injectors/Injector.ts:894:				// Data entry — fix up the RVA
+src/server/injectors/Injector.ts:905:	// The classic Windows IMAGE checksum: sum the whole file as little-endian
+src/server/injectors/Injector.ts:908:	// chunks (like `appendFile`) so a large SEA binary is never fully buffered.
+src/server/injectors/Injector.ts:968:	// ELF Injection
+src/server/injectors/Injector.ts:971:	// Strategy: append a PT_NOTE segment to the ELF. The note contains
+src/server/injectors/Injector.ts:976:	// Node.js SEA on Linux reads PT_NOTE segments through dl_iterate_phdr,
+src/server/injectors/Injector.ts:991:			// --- Parse ELF header ---
+src/server/injectors/Injector.ts:999:				throw new SEAError('FORMAT', 'Only 64-bit ELF executables are supported', {
+src/server/injectors/Injector.ts:1005:				throw new SEAError('FORMAT', 'Only little-endian ELF executables are supported', {
+src/server/injectors/Injector.ts:1026:					throw new SEAError('INJECT', `Note with name "${resource}" already exists`, {
+src/server/injectors/Injector.ts:1043:		// The note MUST live inside a PT_LOAD so the runtime's dl_iterate_phdr
+src/server/injectors/Injector.ts:1093:		// derive a wrong value here since the PHT no longer sits at its
+src/server/injectors/Injector.ts:1116:		// --- Append the new region: note header + streamed blob + padding + PHT ---
+src/server/injectors/Injector.ts:1136:		// --- Point the ELF header at the relocated, enlarged PHT ---
+src/server/injectors/Injector.ts:1142:			// Build-time readback: locate the note the SAME way the runtime
+src/server/injectors/Injector.ts:1151:	// --- ELF: read all program header entries into memory ---
+src/server/injectors/Injector.ts:1176:	// --- ELF: serialize a single program header entry (56 bytes, ELF64) ---
+src/server/injectors/Injector.ts:1189:	// --- ELF: read a note's name at a given file offset (bounds-checked) ---
+src/server/injectors/Injector.ts:1203:	// --- ELF: build-time readback — confirm the note is runtime-reachable ---
+src/server/injectors/Injector.ts:1229:			'INJECT',
+src/server/injectors/Injector.ts:1230:			'Injected ELF note is not reachable via a mapped PT_LOAD segment at runtime',
+src/server/injectors/Injector.ts:1243:	// Node.js SEA on macOS uses getsectdata(segment, section) to find the
+src/server/injectors/Injector.ts:1263:				throw new SEAError('FORMAT', 'Mach-O load command region exceeds file size', {
+src/server/injectors/Injector.ts:1276:				throw new SEAError('FORMAT', `Unsupported Mach-O magic: 0x${magic.toString(16)}`, {
+src/server/injectors/Injector.ts:1297:					throw new SEAError('FORMAT', 'Malformed Mach-O load command table', {
+src/server/injectors/Injector.ts:1304:					throw new SEAError('FORMAT', 'Malformed Mach-O load command table', {
+src/server/injectors/Injector.ts:1325:				throw new SEAError('INJECT', `Segment "${segmentName}" already exists`, {
+src/server/injectors/Injector.ts:1332:				throw new SEAError('ROOM', 'Mach-O binary has no __LINKEDIT segment', {
+src/server/injectors/Injector.ts:1347:			// --- Ceiling check BEFORE mutating anything: the enlarged load-command
+src/server/injectors/Injector.ts:1350:			// The sentinel starts at the FULL file size (not the bounded `buf`
+src/server/injectors/Injector.ts:1376:					'ROOM',
+src/server/injectors/Injector.ts:1388:			// offset field in the surviving commands, using the ORIGINAL
+src/server/injectors/Injector.ts:1402:							throw new SEAError('ROOM', '__LINKEDIT segment with sections is not supported', {
+src/server/injectors/Injector.ts:1420:			// OLD slot (before __LINKEDIT), inserted before __LINKEDIT so
+src/server/injectors/Injector.ts:1421:			// codesign's appended signature at EOF (inside __LINKEDIT) survives. ---
+src/server/injectors/Injector.ts:1465:				throw new SEAError('INJECT', 'Internal Mach-O load command size mismatch', {
+src/server/injectors/Injector.ts:1474:			// range starts at the NEW command-region end (not the old
+src/server/injectors/Injector.ts:1479:			// assuming no shift) correct. Starting from the OLD sizeofcmds
+src/server/injectors/Injector.ts:1636:		throw new SEAError('INJECT', 'Injected Mach-O section not found after write', {
+src/server/injectors/Injector.ts:1649:			throw new SEAError('FORMAT', 'PE section/file alignment must be a nonzero power of two', {
+src/server/injectors/Injector.ts:1656:			throw new SEAError('FORMAT', 'PE sectionAlignment must be >= fileAlignment', {
+src/server/seas/SEA.ts:52: * `execute` compresses the configured directories, generates the SEA blob, copies
+src/server/seas/SEA.ts:58: * @param options - SEA build options: the output name, the entry point, the output
+src/server/seas/SEA.ts:63: * const sea = new SEA({
+src/server/seas/SEA.ts:72:export class SEA implements SEAInterface {
+src/server/seas/SEA.ts:95:			throw new SEAError('STATE', 'SEA is destroyed')
+src/server/seas/SEA.ts:98:			throw new SEAError('STATE', 'SEA build already in progress')
+src/server/seas/SEA.ts:103:			const error = new SEAError('PLATFORM', `Unsupported platform: ${process.platform}`, {
+src/server/seas/SEA.ts:155:	// Throws SEAError('ABORT', ...) when the caller's signal has fired.
+src/server/seas/SEA.ts:158:			throw new SEAError('ABORT', 'SEA build aborted')
+src/server/seas/SEA.ts:184:			// Trigger the file-XOR-thumbprint and timestamp-scheme validation
+src/server/seas/SEA.ts:190:				ensureExists(resolve(base, sign.file), 'Certificate file not found', 'SIGN')
+src/server/seas/SEA.ts:244:		ensureExists(entry, `Entry not found: ${this.#options.entry.path}`, 'ENTRY')
+src/server/seas/SEA.ts:261:		writeFileSync(configPath, JSON.stringify(config, null, 2))
+src/server/seas/SEA.ts:269:			throw new SEAError('BLOB', 'SEA blob generation failed — blob not found', { blob })
+src/server/seas/SEA.ts:286:			throw new SEAError('PLATFORM', `Unsupported platform: ${process.platform}`, {
+src/server/seas/SEA.ts:316:						throw new SEAError('SIGN', 'Failed to strip existing signature', {
+src/server/seas/SEA.ts:338:						throw new SEAError('SIGN', 'Failed to sign executable', {
+src/server/seas/SEA.ts:348:							throw new SEAError('SIGN', 'Signature verification failed', {
+src/server/seas/SEA.ts:381:					// Resolve the certificate file against the SAME base #validate
+src/server/seas/SEA.ts:391:						throw new SEAError('SIGN', 'Windows signing failed', { executable: temp })
+src/server/seas/SEA.ts:400:							throw new SEAError('SIGN', 'Signature verification failed', { executable: temp })

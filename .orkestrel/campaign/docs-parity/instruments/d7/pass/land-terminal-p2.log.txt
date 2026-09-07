@@ -1,0 +1,29 @@
+== terminal p2 landing 2026-09-07T21:47:41Z over 3f9a081
+== status
+ M README.md
+ M guides/terminal.md
+ M src/core/Prompt.ts
+ M src/core/PromptClient.ts
+ M src/core/TerminalManager.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/stores/DatabaseTerminalStore.ts
+ M src/core/stores/MemoryTerminalStore.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/Terminal.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts                      |   6 +
+ tests/guides.test.ts                     |  90 ++++-
+ 19 files changed, 703 insertions(+), 489 deletions(-)
+== stage by path
+ 19 files changed, 703 insertions(+), 489 deletions(-)
+== committed
+0b01536 Converge terminal under the equality gate
+(status end)

@@ -1,0 +1,372 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-workflow",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/workflow.md",
+   "source": [
+    "src/core",
+    "src/browser",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 157,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 15,
+    "counts": {
+     "equal": 91,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "BrowserScheduler",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "Collection",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "append",
+      "entries",
+      "entry",
+      "move",
+      "remove",
+      "update"
+     ]
+    },
+    {
+     "name": "CollectionEntry",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "patch"
+     ]
+    },
+    {
+     "name": "CollectionInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ControllerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "DatabaseWorkflowStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "FrameScheduler",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "IdleScheduler",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "MemoryWorkflowStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "delete",
+      "get",
+      "set"
+     ]
+    },
+    {
+     "name": "NodeScheduler",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "PhaseInterface",
+     "keyword": "interface",
+     "methods": 13,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "PhaseManager",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "append",
+      "move",
+      "phase",
+      "phases",
+      "remove",
+      "update"
+     ]
+    },
+    {
+     "name": "PhaseManagerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RunHolder",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "RunHolderInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Runner",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "abort",
+      "destroy",
+      "execute"
+     ]
+    },
+    {
+     "name": "RunnerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Scheduler",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "SchedulerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TaskControllerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TaskInterface",
+     "keyword": "interface",
+     "methods": 12,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TaskManager",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "append",
+      "move",
+      "remove",
+      "task",
+      "tasks",
+      "update"
+     ]
+    },
+    {
+     "name": "TaskManagerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Workflow",
+     "keyword": "class",
+     "methods": 14,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "complete",
+      "destroy",
+      "move",
+      "pause",
+      "phase",
+      "remove",
+      "results",
+      "resume",
+      "skip",
+      "snapshot",
+      "stop",
+      "update",
+      "wait"
+     ]
+    },
+    {
+     "name": "WorkflowInterface",
+     "keyword": "interface",
+     "methods": 14,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "WorkflowManager",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "open",
+      "remove",
+      "save",
+      "workflow",
+      "workflows"
+     ]
+    },
+    {
+     "name": "WorkflowManagerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "WorkflowPersistence",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "WorkflowPersistenceInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "WorkflowRunner",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "WorkflowRunnerInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "WorkflowStoreInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Author a definition and run it",
+     "The positional collection",
+     "Scheduler (pacing)",
+     "Helpers & guards",
+     "WorkflowPersistenceInterface",
+     "Authoring a definition (pure JSON)",
+     "Validating + seeding with the contract",
+     "Running a workflow",
+     "The bail policy — graceful vs halt",
+     "Bounding a run (abort / timeout / budget)",
+     "Driving the live entity tree directly",
+     "Forcing a terminal status — skip / stop",
+     "Pausing, resuming, and parking on a run — pause / resume / wait / destroy",
+     "Mutating the live tree — add / remove / move / update / patch",
+     "Building the live tree by hand — append",
+     "Observing the live tree",
+     "Long-running task activity and cooperative control",
+     "Snapshot & restore (the durable payload)",
+     "Persisting & restoring (the durable store)",
+     "Managing workflows (registry + store seam)",
+     "The helper functions — guards, derivation, lineage & synthesis",
+     "Pacing with the scheduler — a cooperative loop",
+     "Backoff — delay a growing interval between attempts",
+     "Swapping the scheduler backend",
+     "Driving a set of units with the Runner",
+     "Bounded concurrency",
+     "Per-entry retries and timeout",
+     "Fanning out with spawn",
+     "The per-unit ControllerInterface handle — wait / spawn / abort",
+     "Fail-fast and abort",
+     "Observing the Runner"
+    ],
+    "titledExamples": [
+     "createWorkflowRunner:Author a definition and run it"
+    ],
+    "pairs": [
+     "Author a definition and run it"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

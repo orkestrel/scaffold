@@ -1,0 +1,19 @@
+== qualifier p2 landing 2026-09-07T21:47:42Z over daea207
+== status
+ M README.md
+ M guides/qualifier.md
+ M src/core/Qualifier.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |  52 ++++++++---
+ tests/guides.test.ts   |  81 +++++++++++++++--
+ 9 files changed, 290 insertions(+), 154 deletions(-)
+== stage by path
+ 9 files changed, 290 insertions(+), 154 deletions(-)
+== committed
+a5764d6 Converge qualifier under the equality gate
+(status end)
