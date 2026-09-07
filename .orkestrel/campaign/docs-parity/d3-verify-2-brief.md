@@ -10,7 +10,7 @@ Successor of `d3-verify-brief.md`: the rule id is `policy/no-malformed-summary` 
 
 1. `grep -n "no-malformed-summary\|no-banned-term" .oxlintrc.json configs/policy.ts tests/setupPolicy.ts` (expected: the two top-level wiring lines, the two register rows, the two wiring-rule entries)
 2. `grep -rn "no-imperative-summary" --include=*.ts --include=*.json --include=*.md . | grep -v "node_modules\|^./tmp\|^./dist\|^./.orkestrel"` (expected: no output; the pipeline exits 1 because the last grep matches nothing, and that is GREEN)
-3. `grep -rn "in every sense\|POLICY_PROSE_ROOTS\|vendored mirror\|stop list\|stop-set\|the voice rules" configs tests/*.ts .claude/rules guides/scaffold.md .oxlintrc.json` (expected: no output, exit 1, GREEN)
+3. `grep -rn "in every sense\|POLICY_PROSE_ROOTS\|stop list\|stop-set\|the voice rules" configs tests/*.ts .claude/rules guides/scaffold.md .oxlintrc.json` (expected: no output, exit 1, GREEN), then `grep -n "vendored mirror" configs/policy.ts tests/setupPolicy.ts tests/policy.test.ts` (expected: no output, exit 1, GREEN; `.claude/rules/writing.md:56` keeps that phrase in its third-party-mirror sense and is outside this grep)
 4. `grep -n "readPolicyGuide" tests/setupPolicy.ts tests/policy.test.ts` (expected: the declaration, the two predicate bodies, the import, and the case)
 5. `npm run format:check`
 6. `npm run lint:check`
