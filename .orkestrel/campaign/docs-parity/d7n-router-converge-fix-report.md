@@ -340,3 +340,7 @@ and the restored links leave `npm run docs` at zero.
 Retained under `/home/user/fleet/router/tmp/d7n-router-converge-fix/`: `item1.py`, `item2.py`,
 `item3.py`, `item4.py`, `shapecells.py`, and the extracted comparisons `pilot-from-describe.txt`,
 `router-from-describe.txt`, `dropin.diff.txt`, `shape-cells.txt`.
+
+---
+
+**Orchestrator annotation (closure, 2026-09-07):** the closure `checker` read counts (and, for table, an authored elision inside a `diff` fence) in this report's prose. The tree is authoritative; the report stands annotated.

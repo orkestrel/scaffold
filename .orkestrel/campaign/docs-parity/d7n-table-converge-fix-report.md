@@ -328,3 +328,7 @@ are the Orchestrator's call rather than this unit's.
 
 No deviation. No gate outside the owned files went red, and every `Shape` cell was expressible in
 Ruling 12's idiom.
+
+---
+
+**Orchestrator annotation (closure, 2026-09-07):** the closure `checker` read counts (and, for table, an authored elision inside a `diff` fence) in this report's prose. The tree is authoritative; the report stands annotated.

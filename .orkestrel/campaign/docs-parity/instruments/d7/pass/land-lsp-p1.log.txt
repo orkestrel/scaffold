@@ -1,0 +1,46 @@
+== lsp P.1 landing 2026-09-07T21:06:28Z, version 0.0.7
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/fixtures/protocol.mjs
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 245ms
+EXIT 0
+== lockfile root version
+0.0.7 / 0.0.7
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/fixtures/protocol.mjs
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/server/fixtures/protocol.mjs |   2 +-
+ tsconfig.json                          |   4 +-
+ 12 files changed, 1555 insertions(+), 576 deletions(-)
+== stage by path
+ 13 files changed, 2009 insertions(+), 576 deletions(-)
+== committed
+9f1bb34 Prepare lsp for the equality gate
+(status end)
