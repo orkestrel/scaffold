@@ -1,0 +1,58 @@
+== terminal P.1 landing 2026-09-07T21:13:55Z, version 0.0.15
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/terminal.md
+ M package.json
+ M src/core/PromptClient.ts
+ M src/core/TerminalManager.ts
+ M src/core/types.ts
+ M src/server/Terminal.ts
+ M src/server/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 251ms
+EXIT 0
+== lockfile root version
+0.0.15 / 0.0.15
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/terminal.md
+ M package-lock.json
+ M package.json
+ M src/core/PromptClient.ts
+ M src/core/TerminalManager.ts
+ M src/core/types.ts
+ M src/server/Terminal.ts
+ M src/server/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupServer.ts        |  10 +-
+ tsconfig.json               |   4 +-
+ 18 files changed, 1588 insertions(+), 607 deletions(-)
+== stage by path
+ 19 files changed, 2042 insertions(+), 607 deletions(-)
+== committed
+3f9a081 Prepare terminal for the equality gate
+(status end)

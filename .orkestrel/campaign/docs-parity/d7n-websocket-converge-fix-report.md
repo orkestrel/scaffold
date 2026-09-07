@@ -331,3 +331,7 @@ No timing red. The host stayed quiet enough for every suite to finish under 2 se
 ## Deviation state
 
 One deviation: W4, reported under its own heading. Every other item landed. The instruments are under `/home/user/fleet/websocket/tmp/d7n-websocket-converge-fix/`: the edit scripts (`w1.py`, `w2.py`, `w3w7.py`, `w568.py`, `shape.py`, `w8.py`, `pad.py`), the pilot comparison (`pilot-tail.txt`, `ws-tail.txt`), the lint probe (`probe.ts`), and the prepared rename (`rename.py`, `rename/`).
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-websocket-closure-checker-websocket.md`): § W2's sentence "the two timeouts" states a count of a growable set; the members are `WEBSOCKET_CLOSE_TIMEOUT_MS` and `WEBSOCKET_FAIL_TIMEOUT_MS`. The tree is authoritative; every quoted hunk matches the retained diff.

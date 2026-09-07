@@ -1,0 +1,8 @@
+ M README.md
+ M guides/process.md
+ M src/core/errors.ts
+ M src/core/types.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/processes/Process.ts
+ M tests/guides.test.ts

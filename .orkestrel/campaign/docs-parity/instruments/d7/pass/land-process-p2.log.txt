@@ -1,0 +1,18 @@
+== process p2 landing 2026-09-07T21:14:03Z over 720d8ee
+== status
+ M README.md
+ M guides/process.md
+ M src/core/errors.ts
+ M src/core/types.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/processes/Process.ts
+ M tests/guides.test.ts
+ src/server/processes/Process.ts |   3 +-
+ tests/guides.test.ts            |  72 ++++++++
+ 8 files changed, 299 insertions(+), 210 deletions(-)
+== stage by path
+ 8 files changed, 299 insertions(+), 210 deletions(-)
+== committed
+20b5f3f Converge process under the equality gate
+(status end)

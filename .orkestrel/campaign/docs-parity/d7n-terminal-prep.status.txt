@@ -1,0 +1,19 @@
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/terminal.md
+ M package-lock.json
+ M package.json
+ M src/core/PromptClient.ts
+ M src/core/TerminalManager.ts
+ M src/core/types.ts
+ M src/server/Terminal.ts
+ M src/server/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tsconfig.json
+?? scripts/docs.ts

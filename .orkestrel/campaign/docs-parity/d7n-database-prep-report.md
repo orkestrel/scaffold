@@ -635,3 +635,7 @@ First command 2026-09-07T16:40:06Z, last command 2026-09-07T16:51:52Z: 11 minute
 ---
 
 **Successor note (the Orchestrator, 2026-09-07):** the deviation this report records — `@orkestrel/probe/server` lacking `scanDiagnostics`, `parseProjectConfig`, and `Diagnostic` — was the Orchestrator's own doing: the guide head-start install (`npm install --no-save <guide tgz>`) reconciled `node_modules` to the lockfile and replaced probe's unpublished tip (installed `--no-save` by the ts6-api campaign, `scratchpad/ts6/pack/orkestrel-probe-0.0.12.tgz`, sha256 `6ec7c076…`) with the registry's `0.0.12`. `head-start.sh` now installs both tarballs in one command for database (`instruments/d7/pass/head-start-database-probe.log.txt`); with the tip restored the Orchestrator read `npm run check` exit 0 and `npm run test:guides` at `84 passed (84)`, the criteria this report leaves red. The closing sweep's reinstall carries the same pair.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-database-audit-verdict.md`): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read.

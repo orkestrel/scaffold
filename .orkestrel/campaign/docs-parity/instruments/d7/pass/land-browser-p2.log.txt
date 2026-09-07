@@ -1,0 +1,25 @@
+== browser p2 landing 2026-09-07T21:11:06Z over 44fb2e7
+== status
+ M README.md
+ M guides/browser.md
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/types.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts     |   39 ++
+ tests/guides.test.ts    |   79 ++-
+ 15 files changed, 1455 insertions(+), 899 deletions(-)
+== stage by path
+ 15 files changed, 1455 insertions(+), 899 deletions(-)
+== committed
+e4af75e Converge browser under the equality gate
+(status end)

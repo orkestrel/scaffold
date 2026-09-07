@@ -338,3 +338,7 @@ reader returned an undescribed shape, and no residual disagreement survived a do
 - The README onboarding was rewritten.
 - The all-caps sweep covered each description paragraph this unit rewrote and both Markdown files;
   `@remarks` bodies of blocks whose description did not change were left as written.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-database-audit-verdict.md`): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read.

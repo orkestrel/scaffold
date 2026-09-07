@@ -87,6 +87,17 @@ The sweep runs after `d7-guide-links-fix` lands and the audit over U5 and that f
 
 A package converged after the final tarball is installed takes the idiom in its converge unit and needs no closing unit beyond the verifier. The guide's branch pushes to `main` after the sweep reads green everywhere; the publish then follows Ruling 8's order.
 
+### Findings carried to the guide package (2026-09-07)
+
+- A description paragraph carrying a raw `A_B_C` identifier outside a code span cannot converge: the `Summary` cell is Markdown, so the guide side loses the underscores while the source side keeps them, and `--to guide` writes the raw identifier only for the next `docs` run to report the pair again (sea's converge report, sites `MACHO_LC_SEGMENT_64`, `PE_RT_RCDATA`, `PE_RESOURCE_DIR_SIZE`, `PE_RESOURCE_ENTRY_SIZE`, `PE_RESOURCE_DATA_ENTRY_SIZE`, each closed by a code span). Either the compared form treats an underscore pair inside a bare identifier as literal, or the seed reports the site as unconvergeable with the code-span remedy.
+- `Source.methods` resolves an inherited member to the parent's block, so a deep interface hierarchy renders the same cells in every table that inherits them (database's `#### StorageInterface` and `#### DriverInterface`). A design question for the guide: whether a member documented on the parent renders as an inherited marker rather than a duplicated cell.
+
+### Findings carried to the closing sweep from the closures (2026-09-07)
+
+- console omits Ruling 15's guard-table second sentence because its guards sit in mixed tables; the closing unit rules the sentence in or out against the pilot's form and records which.
+- markdown's `tests/guides.test.ts` lines 3 to 4 carry a header sentence the pilot's drop-in does not; the closing unit converges the header on the pilot's bytes.
+- router's Constants convention sentence carries Ruling 15's interface sentence beside the constants sentence, while template, test, table, websocket, browser, and database carry the constants sentence alone; the closing unit takes the template's form.
+
 ### Findings carried to scaffold's next vendored release (2026-09-07)
 
 - The prose sweep in `tests/setupPolicy.ts` matches `in order to` unconditionally, so "in order" followed by "to" in the ordering sense (reason's `README.md:50`, `guides/reason.md:47`) forces a reword the rule does not owe. The row moves to the judged set beside `now`, `new`, `latest`, `once`, `since`, and `master`, or the pattern excludes the ordering sense.

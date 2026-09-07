@@ -1,0 +1,23 @@
+Lane held: checker console
+
+**Claim 1** — Every item the fix brief names landed in the diff as the brief states it, and nothing else changed.
+PASS. `d7n-console-converge-fix.status.txt` lists exactly the 16 files the report's diffstat names: `guides/console.md`, `src/browser/{constants,types}.ts`, `src/core/{Progress,Styler,constants,factories,helpers,types}.ts`, `src/server/{constants,factories,helpers,types,validators}.ts`, `tests/guides.test.ts`, `tests/src/core/helpers.test.ts`. The full diff (`d7n-console-converge-fix.diff.txt`, 16 `diff --git` headers) contains only doc-block/comment edits and two prose test-fixture lines (`tests/guides.test.ts`, `tests/src/core/helpers.test.ts:706`); no code token changed in the `src/**` files I sampled (`browser/constants.ts`, `browser/types.ts`, `core/Progress.ts`, `core/Styler.ts`, `core/constants.ts`, `core/factories.ts`, `core/helpers.ts`, `core/types.ts`). Off-limits files (`README.md`, `package.json`, `package-lock.json`, `tests/setup*.ts`) are untouched.
+
+**Claim 2** — The report's citations match the tree the unit left; the report states no count in prose; the pin is described only in the words the file carries.
+PASS. Cited line `tests/guides.test.ts:73` matches the tree at that line exactly ("the assertion that follows it fails when a name here stops being stranded"). A scan of the report for digit-plus-noun count patterns found only two, both quoted command output ("`Finished in 391ms on 15 files with 140 rules using 4 threads.`" and "`16 files changed, 335 insertions(+), 307 deletions(-)`" inside the diffstat fence) — measurements reported with the run that produced them, not stated counts. The report never mentions the `@orkestrel/guide` pin, so the "described only in the file's words" clause is vacuously satisfied.
+
+**Claim 3** — Each named correction is present as the audit's finding asked (console items).
+PASS on every sub-item checked directly against the tree:
+- Hoisted `examples` binding: `tests/guides.test.ts` diff shows the ternary moved to the examples-loop scope (lines 1206-1212), out of the `it` body — matches C1.
+- `{@link import('./x.js').Name}` restorations: 107 such tags present across 16 `src/**` files (`Grep` count); `guides/console.md` has zero `import(` occurrences (`Grep` count 0), confirming cells render bare names.
+- `Shape` column under Ruling 15: the convention sentence ("A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.") appears verbatim, matching `rulings.md` Ruling 15, at 8 lines (53, 78, 101, 140, 160, 172, 250, 278) — one per table with an interface/type row. Spot-checked cells against source: `LoggerInterface` → `{ emitter, level, name? } plus debug, info, warn, error, entries, clear, destroy` and `LoggerManagerInterface` → `{ count } plus register, logger, loggers, debug, info, warn, error, remove` both match `src/core/types.ts` exactly.
+- Fence comment: `guides/console.md:389`-equivalent diff line reads "// The console capture and the process capture buffer through this one engine, so their retention semantics cannot drift apart." with a new transcription-guard assertion added in `tests/guides.test.ts`.
+- `failureing` typo: `tests/src/core/helpers.test.ts:706` now reads "a failing assertion."
+- Drop-in's two sentences: header at `tests/guides.test.ts:4` reads "the constants that follow are this package's own" (Ruling 13 amended, exact match), and `:73` carries the corrected `INTERNAL` sentence (exact match).
+- Opening prose: `guides/console.md:8` now opens directly at "ANSI / SGR escape codes are the default…", with the tagline blockquote (lines 3-6) carrying the backend-split clause; the removed sentence restating that clause is absent from the diff's `+` side.
+
+**Findings outside the claims**
+- The report's ancillary decision to omit Ruling 15's guard-table/constants-table second sentence for console (its guards sit in mixed tables, not dedicated ones) is a defensible reading of Ruling 15's trigger but is an interpretive judgment call, not a mechanical fact — referred to the subjective lane / Orchestrator rather than ruled on here.
+- Command-execution claims in the report (`npm run docs`, `oxfmt --check`, `oxlint`, `npm run check`, `npm run test:guides`, `npm run test:policy`, `npm run test:src:core`) rest solely on the writer's self-report; per the Checker mandate these are UNRESOLVED, not confirmed, and belong to the `verifier` console lane's independent gate run.
+
+VERDICT: PASS

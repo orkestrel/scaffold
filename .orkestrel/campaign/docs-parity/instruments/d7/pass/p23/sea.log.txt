@@ -1,0 +1,95 @@
+### sea at 2b94a78, guide guides/sea.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  37 passed (37)
+   test:guides exit 0
+-- census
+   guides/sea.md surface {"equal":118,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":10,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 3 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class AssetManager methods 7 grouped false undescribed ["asset","assets","clear","destroy","keys","load","register"]
+   owner interface AssetManagerInterface methods 7 grouped true undescribed []
+   owner class Injector methods 1 grouped false undescribed ["inject"]
+   owner interface InjectorInterface methods 1 grouped true undescribed []
+   owner class SEA methods 2 grouped false undescribed ["destroy","execute"]
+   owner interface SEAInterface methods 2 grouped true undescribed []
+   examples titledFences 4 titledExamples ["createSEA:Build a single executable"] pairs ["Build a single executable"]
+-- sites: surface row guides/sea.md:53; methods row guides/sea.md:206; title src/server/factories.ts:23
+-- control A: one Surface Summary cell altered (guides/sea.md:53)
+guides/sea.md class SEA: guide "Runs a Node.js single executable application build to completion. Control." source "Runs a Node.js single executable application build to completion."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Sea > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/sea.md:206)
+guides/sea.md SEAInterface.execute: guide "Runs the compress, blob, and assemble stages and returns the build result. Control." source "Runs the compress, blob, and assemble stages and returns the build result."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Sea > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 16ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a SEA build orchestrator over the given options and returns it as a
+guides/sea.md function createSEA: guide "Creates a SEA build orchestrator over the given options and returns it as a `SEAInterface`, the published contract a caller holds instead of the `SEA` class." source "Control Creates a SEA build orchestrator over the given options and returns it as a `SEAInterface`, the published contract a caller holds instead of the `SEA` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Sea > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 20ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/server/assets/Asset.ts:5:  * Control Holds one named asset's key, bytes, and compression state.
+guides/sea.md class Asset: guide "Holds one named asset's key, bytes, and compression state." source "Control Holds one named asset's key, bytes, and compression state."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Sea > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 17ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:23)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 36 passed (37)
+× pairs at least one example title across the guide and the source 28ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/sea.md Build a single executable: guide "ts\nimport { createSEA, formatSize } from '@orkestrel/sea'\n\nconst sea = createSEA({\n\tname: 'myapp',\n\tentry: { path: 'dist/server/serve.cjs' },\n\toutput: 'dist/sea',\n\tassets: { 'model.gguf': 'models/model.gguf' },\n\tcompression: { paths: ['dist/app/browser'], mode: 'text' },\n\twindows: { terminal: false },\n\ttimeout: 30_000,\n})\n\nconst result = await sea.execute()\nprocess.stdout.write(\n\t`${result.executable} ${formatSize(result.size)} ${String(result.duration)}ms\\n`,\n)" source "ts\nimport { createSEA, formatSize } from '@orkestrel/sea' // control\n\nconst sea = createSEA({\n\tname: 'myapp',\n\tentry: { path: 'dist/server/serve.cjs' },\n\toutput: 'dist/sea',\n\tassets: { 'model.gguf': 'models/model.gguf' },\n\tcompression: { paths: ['dist/app/browser'], mode: 'text' },\n\twindows: { terminal: false },\n\ttimeout: 30_000,\n})\n\nconst result = await sea.execute()\nprocess.stdout.write(\n\t`${result.executable} ${formatSize(result.size)} ${String(result.duration)}ms\\n`,\n)"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Sea > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 16ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/sea.md pitch: readme "Control: The Node.js single executable application (SEA) builder: a pure-TypeScript pipeline that compresses assets, assembles the SEA blob, injects it into a copy of the host Node binary, and signs the result, with no WASM and no external tools." tagline "The Node.js single executable application (SEA) builder: a pure-TypeScript pipeline that compresses assets, assembles the SEA blob, injects it into a copy of the host Node binary, and signs the result, with no WASM and no external tools."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The Node.js single executabl…' to be 'The Node.js single executable applica…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 36 passed (37)
+× opens the README with the guide tagline 12ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/sea.md class Injector: guide absent source "Writes a named resource into a PE, ELF, or Mach-O executable in place."
+guides/sea.md class Asset: guide absent source "Holds one named asset's key, bytes, and compression state."
+guides/sea.md class AssetManager: guide absent source "Collects named assets from a SEA blob or from disk and serves them by key."
+rows read: 1, disagreements found: 4
+   docs exit 1
+AssertionError: expected [ …(4) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Sea > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 15ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

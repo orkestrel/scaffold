@@ -1,0 +1,156 @@
+### browser at e4af75e, guide guides/browser.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  201 passed (201)
+   test:guides exit 0
+-- census
+   guides/browser.md surface {"equal":410,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":207,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 37 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Browser methods 10 grouped false undescribed ["adopt","close","connect","context","contexts","create","destroy","disconnect","discover","isolate"]
+   owner class BrowserAccessibility methods 1 grouped false undescribed ["snapshot"]
+   owner interface BrowserAccessibilityInterface methods 1 grouped true undescribed []
+   owner class BrowserClock methods 5 grouped false undescribed ["advance","install","pause","resume","uninstall"]
+   owner interface BrowserClockInterface methods 5 grouped true undescribed []
+   owner class BrowserCodegen methods 6 grouped false undescribed ["actions","clear","destroy","script","start","stop"]
+   owner interface BrowserCodegenInterface methods 6 grouped true undescribed []
+   owner class BrowserContext methods 6 grouped false undescribed ["close","create","destroy","page","pages","sync"]
+   owner interface BrowserContextInterface methods 6 grouped true undescribed []
+   owner class BrowserCookieManager methods 3 grouped false undescribed ["clear","cookies","set"]
+   owner interface BrowserCookieManagerInterface methods 3 grouped true undescribed []
+   owner class BrowserCoverage methods 3 grouped false undescribed ["destroy","start","stop"]
+   owner interface BrowserCoverageInterface methods 3 grouped true undescribed []
+   owner class BrowserDiagnostics methods 1 grouped false undescribed ["destroy"]
+   owner interface BrowserDiagnosticsInterface methods 1 grouped true undescribed []
+   owner interface BrowserDialogInterface methods 2 grouped true undescribed []
+   owner interface BrowserDownloadInterface methods 2 grouped true undescribed []
+   owner class BrowserEmulationManager methods 3 grouped false undescribed ["apply","attach","clear"]
+   owner interface BrowserEmulationManagerInterface methods 3 grouped true undescribed []
+   owner interface BrowserFileChooserInterface methods 2 grouped true undescribed []
+   owner class BrowserFrame methods 15 grouped false undescribed ["article","assert","click","content","evaluate","fill","handle","save","select","send","subscribe","title","unsubscribe","update","wait"]
+   owner interface BrowserFrameInterface methods 15 grouped true undescribed []
+   owner class BrowserHARManager methods 4 grouped false undescribed ["clear","replay","start","stop"]
+   owner interface BrowserHARManagerInterface methods 4 grouped true undescribed []
+   owner interface BrowserHandleInterface methods 5 grouped true undescribed []
+   owner interface BrowserInterface methods 10 grouped true undescribed []
+   owner class BrowserKeyboard methods 5 grouped false undescribed ["down","insert","press","type","up"]
+   owner interface BrowserKeyboardInterface methods 5 grouped true undescribed []
+   owner class BrowserLocator methods 29 grouped false undescribed ["all","attribute","check","clear","click","count","drag","editable","enabled","fill","filter","first","focus","hover","html","item","last","locator","press","screenshot","select","text","texts","type","uncheck","upload","value","visible","wait"]
+   owner interface BrowserLocatorInterface methods 29 grouped true undescribed []
+   owner class BrowserMouse methods 6 grouped false undescribed ["click","down","drag","move","up","wheel"]
+   owner interface BrowserMouseInterface methods 6 grouped true undescribed []
+   owner class BrowserNavigationManager methods 2 grouped false undescribed ["until","wait"]
+   owner interface BrowserNavigationManagerInterface methods 2 grouped true undescribed []
+   owner class BrowserNetworkManager methods 10 grouped false undescribed ["body","credentials","destroy","headers","json","offline","route","start","text","unroute"]
+   owner interface BrowserNetworkManagerInterface methods 10 grouped true undescribed []
+   owner class BrowserPage methods 27 grouped false undescribed ["article","assert","back","click","close","codegen","content","destroy","evaluate","fill","forward","frame","frames","handle","navigate","pdf","reload","save","screenshot","select","send","snapshot","subscribe","title","unsubscribe","update","wait"]
+   owner interface BrowserPageInterface methods 27 grouped true undescribed []
+   owner class BrowserPerformance methods 1 grouped false undescribed ["metrics"]
+   owner interface BrowserPerformanceInterface methods 1 grouped true undescribed []
+   owner class BrowserPermissionManager methods 3 grouped false undescribed ["clear","deny","grant"]
+   owner interface BrowserPermissionManagerInterface methods 3 grouped true undescribed []
+   owner class BrowserProfiler methods 3 grouped false undescribed ["destroy","start","stop"]
+   owner interface BrowserProfilerInterface methods 3 grouped true undescribed []
+   owner interface BrowserRouteInterface methods 3 grouped true undescribed []
+   owner class BrowserScriptManager methods 5 grouped false undescribed ["add","destroy","expose","remove","revoke"]
+   owner interface BrowserScriptManagerInterface methods 5 grouped true undescribed []
+   owner class BrowserSelectorManager methods 6 grouped false undescribed ["css","label","placeholder","role","testId","text"]
+   owner interface BrowserSelectorManagerInterface methods 6 grouped true undescribed []
+   owner class BrowserSnapshot methods 13 grouped false undescribed ["ancestors","children","closest","common","descendants","distance","document","filter","find","parent","path","siblings","walk"]
+   owner interface BrowserSnapshotInterface methods 13 grouped true undescribed []
+   owner class BrowserStorageManager methods 3 grouped false undescribed ["clear","restore","state"]
+   owner interface BrowserStorageManagerInterface methods 3 grouped true undescribed []
+   owner class BrowserTouch methods 1 grouped false undescribed ["tap"]
+   owner interface BrowserTouchInterface methods 1 grouped true undescribed []
+   owner class BrowserTracing methods 3 grouped false undescribed ["destroy","start","stop"]
+   owner interface BrowserTracingInterface methods 3 grouped true undescribed []
+   owner class BrowserTransition methods 1 grouped false undescribed ["execute"]
+   owner interface BrowserTransitionInterface methods 1 grouped true undescribed []
+   owner class BrowserWebSocket methods 4 grouped false undescribed ["close","fail","receive","transmit"]
+   owner interface BrowserWebSocketInterface methods 4 grouped true undescribed []
+   owner interface BrowserWorkerInterface methods 4 grouped true undescribed []
+   owner interface BrowserWriterInterface methods 1 grouped true undescribed []
+   owner class CDPClient methods 6 grouped false undescribed ["connect","send","subscribe","unsubscribe"]
+   owner interface CDPClientInterface methods 6 grouped true undescribed []
+   owner interface CDPTransportInterface methods 3 grouped true undescribed []
+   owner class FileBrowserWriter methods 1 grouped false undescribed []
+   owner class WebSocketCDPTransport methods 3 grouped false undescribed ["close","send","start"]
+   examples titledFences 47 titledExamples ["createBrowser:Connect to a browser and drive a page"] pairs ["Connect to a browser and drive a page"]
+-- sites: surface row guides/browser.md:56; methods row guides/browser.md:962; title src/server/factories.ts:14
+-- control A: one Surface Summary cell altered (guides/browser.md:56)
+guides/browser.md function createCDPClient: guide "Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`. Control." source "Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Browser > keeps every compared summary and example equal to its source
+Tests  1 failed | 200 passed (201)
+× keeps every compared summary and example equal to its source 34ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/browser.md:962)
+guides/browser.md CDPTransportInterface.start: guide "Opens the underlying connection. Control." source "Opens the underlying connection."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Browser > keeps every compared summary and example equal to its source
+Tests  1 failed | 200 passed (201)
+× keeps every compared summary and example equal to its source 43ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle
+guides/browser.md function createBrowser: guide "Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle management." source "Control Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle management."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Browser > keeps every compared summary and example equal to its source
+Tests  1 failed | 200 passed (201)
+× keeps every compared summary and example equal to its source 42ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/BrowserAccessibility.ts:10:  * Control Captures Chromium Accessibility-domain snapshots for one page.
+guides/browser.md class BrowserAccessibility: guide "Captures Chromium Accessibility-domain snapshots for one page." source "Control Captures Chromium Accessibility-domain snapshots for one page."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Browser > keeps every compared summary and example equal to its source
+Tests  1 failed | 200 passed (201)
+× keeps every compared summary and example equal to its source 49ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:14)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 200 passed (201)
+× pairs at least one example title across the guide and the source 87ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/browser.md Connect to a browser and drive a page: guide "ts\nimport { createBrowser } from '@orkestrel/browser/server'\n\nconst browser = createBrowser({ headless: true })\nawait browser.connect() // CDP endpoint discovery → connect, else launch\nconst page = await browser.create({ url: 'https://example.com' })\nawait page.click('#accept')\nconst shot = await page.screenshot({ path: './out.png' })\nawait browser.destroy()" source "ts\nimport { createBrowser } from '@orkestrel/browser/server' // control\n\nconst browser = createBrowser({ headless: true })\nawait browser.connect() // CDP endpoint discovery → connect, else launch\nconst page = await browser.create({ url: 'https://example.com' })\nawait page.click('#accept')\nconst shot = await page.screenshot({ path: './out.png' })\nawait browser.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Browser > keeps every compared summary and example equal to its source
+Tests  1 failed | 200 passed (201)
+× keeps every compared summary and example equal to its source 40ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/browser.md pitch: readme "Control: A lightweight Chrome DevTools Protocol automation layer for Chromium-family browsers: an environment-agnostic core that drives pages, frames, locators, and DOM snapshots over an injected transport, and a Node runtime that finds, launches, and connects to the browser itself." tagline "A lightweight Chrome DevTools Protocol automation layer for Chromium-family browsers: an environment-agnostic core that drives pages, frames, locators, and DOM snapshots over an injected transport, and a Node runtime that finds, launches, and connects to the browser itself."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A lightweight Chrome DevTool…' to be 'A lightweight Chrome DevTools Protoco…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 200 passed (201)
+× opens the README with the guide tagline 27ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/browser.md function createCDPClient: guide absent source "Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`."
+guides/browser.md function createBrowserSnapshot: guide absent source "Creates a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data."
+rows read: 1, disagreements found: 2
+   docs exit 1
+AssertionError: expected [ …(2) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Browser > keeps every compared summary and example equal to its source
+Tests  1 failed | 200 passed (201)
+× keeps every compared summary and example equal to its source 38ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

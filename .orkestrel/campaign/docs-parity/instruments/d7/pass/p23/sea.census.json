@@ -1,0 +1,115 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-sea",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/sea.md",
+   "source": "src/server",
+   "surface": {
+    "counts": {
+     "equal": 118,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 3,
+    "counts": {
+     "equal": 10,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "AssetManager",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "asset",
+      "assets",
+      "clear",
+      "destroy",
+      "keys",
+      "load",
+      "register"
+     ]
+    },
+    {
+     "name": "AssetManagerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Injector",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "inject"
+     ]
+    },
+    {
+     "name": "InjectorInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SEA",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "execute"
+     ]
+    },
+    {
+     "name": "SEAInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Build a single executable",
+     "Injecting a resource directly",
+     "Assets",
+     "Boundary and formatting helpers"
+    ],
+    "titledExamples": [
+     "createSEA:Build a single executable"
+    ],
+    "pairs": [
+     "Build a single executable"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

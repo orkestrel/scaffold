@@ -1,0 +1,798 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-browser",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/browser.md",
+   "source": [
+    "src/core",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 410,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 37,
+    "counts": {
+     "equal": 207,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Browser",
+     "keyword": "class",
+     "methods": 10,
+     "grouped": false,
+     "undescribed": [
+      "adopt",
+      "close",
+      "connect",
+      "context",
+      "contexts",
+      "create",
+      "destroy",
+      "disconnect",
+      "discover",
+      "isolate"
+     ]
+    },
+    {
+     "name": "BrowserAccessibility",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "snapshot"
+     ]
+    },
+    {
+     "name": "BrowserAccessibilityInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserClock",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "advance",
+      "install",
+      "pause",
+      "resume",
+      "uninstall"
+     ]
+    },
+    {
+     "name": "BrowserClockInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserCodegen",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "actions",
+      "clear",
+      "destroy",
+      "script",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "BrowserCodegenInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserContext",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "create",
+      "destroy",
+      "page",
+      "pages",
+      "sync"
+     ]
+    },
+    {
+     "name": "BrowserContextInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserCookieManager",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "cookies",
+      "set"
+     ]
+    },
+    {
+     "name": "BrowserCookieManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserCoverage",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "BrowserCoverageInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserDiagnostics",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "destroy"
+     ]
+    },
+    {
+     "name": "BrowserDiagnosticsInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserDialogInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserDownloadInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserEmulationManager",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "apply",
+      "attach",
+      "clear"
+     ]
+    },
+    {
+     "name": "BrowserEmulationManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserFileChooserInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserFrame",
+     "keyword": "class",
+     "methods": 15,
+     "grouped": false,
+     "undescribed": [
+      "article",
+      "assert",
+      "click",
+      "content",
+      "evaluate",
+      "fill",
+      "handle",
+      "save",
+      "select",
+      "send",
+      "subscribe",
+      "title",
+      "unsubscribe",
+      "update",
+      "wait"
+     ]
+    },
+    {
+     "name": "BrowserFrameInterface",
+     "keyword": "interface",
+     "methods": 15,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserHARManager",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "replay",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "BrowserHARManagerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserHandleInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserInterface",
+     "keyword": "interface",
+     "methods": 10,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserKeyboard",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "down",
+      "insert",
+      "press",
+      "type",
+      "up"
+     ]
+    },
+    {
+     "name": "BrowserKeyboardInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserLocator",
+     "keyword": "class",
+     "methods": 29,
+     "grouped": false,
+     "undescribed": [
+      "all",
+      "attribute",
+      "check",
+      "clear",
+      "click",
+      "count",
+      "drag",
+      "editable",
+      "enabled",
+      "fill",
+      "filter",
+      "first",
+      "focus",
+      "hover",
+      "html",
+      "item",
+      "last",
+      "locator",
+      "press",
+      "screenshot",
+      "select",
+      "text",
+      "texts",
+      "type",
+      "uncheck",
+      "upload",
+      "value",
+      "visible",
+      "wait"
+     ]
+    },
+    {
+     "name": "BrowserLocatorInterface",
+     "keyword": "interface",
+     "methods": 29,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserMouse",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "click",
+      "down",
+      "drag",
+      "move",
+      "up",
+      "wheel"
+     ]
+    },
+    {
+     "name": "BrowserMouseInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserNavigationManager",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "until",
+      "wait"
+     ]
+    },
+    {
+     "name": "BrowserNavigationManagerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserNetworkManager",
+     "keyword": "class",
+     "methods": 10,
+     "grouped": false,
+     "undescribed": [
+      "body",
+      "credentials",
+      "destroy",
+      "headers",
+      "json",
+      "offline",
+      "route",
+      "start",
+      "text",
+      "unroute"
+     ]
+    },
+    {
+     "name": "BrowserNetworkManagerInterface",
+     "keyword": "interface",
+     "methods": 10,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserPage",
+     "keyword": "class",
+     "methods": 27,
+     "grouped": false,
+     "undescribed": [
+      "article",
+      "assert",
+      "back",
+      "click",
+      "close",
+      "codegen",
+      "content",
+      "destroy",
+      "evaluate",
+      "fill",
+      "forward",
+      "frame",
+      "frames",
+      "handle",
+      "navigate",
+      "pdf",
+      "reload",
+      "save",
+      "screenshot",
+      "select",
+      "send",
+      "snapshot",
+      "subscribe",
+      "title",
+      "unsubscribe",
+      "update",
+      "wait"
+     ]
+    },
+    {
+     "name": "BrowserPageInterface",
+     "keyword": "interface",
+     "methods": 27,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserPerformance",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "metrics"
+     ]
+    },
+    {
+     "name": "BrowserPerformanceInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserPermissionManager",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "deny",
+      "grant"
+     ]
+    },
+    {
+     "name": "BrowserPermissionManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserProfiler",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "BrowserProfilerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserRouteInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserScriptManager",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "destroy",
+      "expose",
+      "remove",
+      "revoke"
+     ]
+    },
+    {
+     "name": "BrowserScriptManagerInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserSelectorManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "css",
+      "label",
+      "placeholder",
+      "role",
+      "testId",
+      "text"
+     ]
+    },
+    {
+     "name": "BrowserSelectorManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserSnapshot",
+     "keyword": "class",
+     "methods": 13,
+     "grouped": false,
+     "undescribed": [
+      "ancestors",
+      "children",
+      "closest",
+      "common",
+      "descendants",
+      "distance",
+      "document",
+      "filter",
+      "find",
+      "parent",
+      "path",
+      "siblings",
+      "walk"
+     ]
+    },
+    {
+     "name": "BrowserSnapshotInterface",
+     "keyword": "interface",
+     "methods": 13,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserStorageManager",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "restore",
+      "state"
+     ]
+    },
+    {
+     "name": "BrowserStorageManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserTouch",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "tap"
+     ]
+    },
+    {
+     "name": "BrowserTouchInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserTracing",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "BrowserTracingInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserTransition",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "execute"
+     ]
+    },
+    {
+     "name": "BrowserTransitionInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserWebSocket",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "fail",
+      "receive",
+      "transmit"
+     ]
+    },
+    {
+     "name": "BrowserWebSocketInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserWorkerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BrowserWriterInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "CDPClient",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "connect",
+      "send",
+      "subscribe",
+      "unsubscribe"
+     ]
+    },
+    {
+     "name": "CDPClientInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "CDPTransportInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "FileBrowserWriter",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "WebSocketCDPTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "send",
+      "start"
+     ]
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Connect to a browser and drive a page",
+     "Errors",
+     "Helpers",
+     "Server",
+     "Extended helpers",
+     "CDPTransportInterface",
+     "CDPClientInterface",
+     "BrowserContextInterface",
+     "BrowserFrameInterface",
+     "BrowserPageInterface",
+     "BrowserSnapshotInterface",
+     "BrowserCodegenInterface",
+     "BrowserTransitionInterface",
+     "BrowserInterface",
+     "BrowserWebSocketInterface",
+     "BrowserDownloadInterface",
+     "BrowserWriterInterface",
+     "BrowserNavigationManagerInterface",
+     "BrowserHandleInterface",
+     "BrowserScriptManagerInterface",
+     "BrowserAccessibilityInterface",
+     "BrowserTracingInterface",
+     "BrowserCoverageInterface",
+     "BrowserPerformanceInterface",
+     "BrowserProfilerInterface",
+     "BrowserDiagnosticsInterface",
+     "BrowserClockInterface",
+     "BrowserLocatorInterface",
+     "BrowserSelectorManagerInterface",
+     "BrowserKeyboardInterface",
+     "BrowserMouseInterface",
+     "BrowserTouchInterface",
+     "BrowserDialogInterface",
+     "BrowserFileChooserInterface",
+     "BrowserWorkerInterface",
+     "BrowserRouteInterface",
+     "BrowserHARManagerInterface",
+     "BrowserNetworkManagerInterface",
+     "BrowserCookieManagerInterface",
+     "BrowserPermissionManagerInterface",
+     "BrowserStorageManagerInterface",
+     "BrowserEmulationManagerInterface",
+     "Automate a page end-to-end",
+     "Record and replay interactions with codegen",
+     "Reattach to a running session",
+     "Gracefully shut down a reattached session",
+     "Drive the core client directly over an injected transport"
+    ],
+    "titledExamples": [
+     "createBrowser:Connect to a browser and drive a page"
+    ],
+    "pairs": [
+     "Connect to a browser and drive a page"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+== sea p2 landing 2026-09-07T21:18:23Z over 09f5e85
+== status
+ M README.md
+ M guides/sea.md
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M src/server/validators.ts
+ M tests/guides.test.ts
+ src/server/validators.ts |   2 +-
+ tests/guides.test.ts     |  84 ++++++++++++-
+ 8 files changed, 366 insertions(+), 214 deletions(-)
+== stage by path
+ 8 files changed, 366 insertions(+), 214 deletions(-)
+== committed
+2b94a78 Converge sea under the equality gate
+(status end)

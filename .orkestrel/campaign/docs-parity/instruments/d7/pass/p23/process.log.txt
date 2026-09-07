@@ -1,0 +1,97 @@
+### process at 20b5f3f, guide guides/process.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  117 passed | 1 skipped (118)
+   test:guides exit 0
+-- census
+   guides/process.md surface {"equal":76,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":20,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 5 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Process methods 3 grouped false undescribed []
+   owner interface ProcessChildInterface methods 3 grouped true undescribed []
+   owner interface ProcessInterface methods 3 grouped true undescribed []
+   owner class ProcessManager methods 5 grouped false undescribed []
+   owner interface ProcessManagerInterface methods 5 grouped true undescribed []
+   owner class Session methods 4 grouped false undescribed []
+   owner interface SessionInterface methods 4 grouped true undescribed []
+   owner class Supervisor methods 4 grouped true undescribed []
+   examples titledFences 20 titledExamples ["createProcess:Supervise a child and read its lines"] pairs ["Supervise a child and read its lines"]
+-- sites: surface row guides/process.md:57; methods row guides/process.md:259; title src/server/factories.ts:20
+-- control A: one Surface Summary cell altered (guides/process.md:57)
+guides/process.md function createProcess: guide "Creates one supervised child process and returns it as a `ProcessInterface`, so a caller holds the published contract rather than the `Process` class. Control." source "Creates one supervised child process and returns it as a `ProcessInterface`, so a caller holds the published contract rather than the `Process` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Process > keeps every compared summary and example equal to its source
+Tests  1 failed | 116 passed | 1 skipped (118)
+× keeps every compared summary and example equal to its source 314ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/process.md:259)
+guides/process.md ProcessInterface.send: guide "Writes one line to the open standard-input channel. Control." source "Writes one line to the open standard-input channel."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Process > keeps every compared summary and example equal to its source
+Tests  1 failed | 116 passed | 1 skipped (118)
+× keeps every compared summary and example equal to its source 302ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates one supervised child process and returns it as a {@link ProcessInterface}, so a caller
+guides/process.md function createProcess: guide "Creates one supervised child process and returns it as a `ProcessInterface`, so a caller holds the published contract rather than the `Process` class." source "Control Creates one supervised child process and returns it as a `ProcessInterface`, so a caller holds the published contract rather than the `Process` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Process > keeps every compared summary and example equal to its source
+Tests  1 failed | 116 passed | 1 skipped (118)
+× keeps every compared summary and example equal to its source 272ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/errors.ts:11:  * Control Represents a child-process failure with a stable machine-readable category.
+guides/process.md class ProcessError: guide "Represents a child-process failure with a stable machine-readable category." source "Control Represents a child-process failure with a stable machine-readable category."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Process > keeps every compared summary and example equal to its source
+Tests  1 failed | 116 passed | 1 skipped (118)
+× keeps every compared summary and example equal to its source 336ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:20)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 116 passed | 1 skipped (118)
+× pairs at least one example title across the guide and the source 27ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/process.md Supervise a child and read its lines: guide "ts\nimport { createProcess } from '@orkestrel/process/server'\n\nconst child = createProcess({\n\tcommand: { file: 'node', arguments: ['-e', 'console.log(\"ready\"); console.log(\"done\")'] },\n\tworkspace: process.cwd(),\n\tgrace: 5_000, // POSIX only: the window between SIGTERM and SIGKILL\n})\n\nconst lines: string[] = []\nfor await (const line of child.lines) lines.push(line)\nlines // ['ready', 'done']\n\nconst exit = await child.exit\nexit.code // 0\nawait child.destroy()" source "ts\nimport { createProcess } from '@orkestrel/process/server' // control\n\nconst child = createProcess({\n\tcommand: { file: 'node', arguments: ['-e', 'console.log(\"ready\"); console.log(\"done\")'] },\n\tworkspace: process.cwd(),\n\tgrace: 5_000, // POSIX only: the window between SIGTERM and SIGKILL\n})\n\nconst lines: string[] = []\nfor await (const line of child.lines) lines.push(line)\nlines // ['ready', 'done']\n\nconst exit = await child.exit\nexit.code // 0\nawait child.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Process > keeps every compared summary and example equal to its source
+Tests  1 failed | 116 passed | 1 skipped (118)
+× keeps every compared summary and example equal to its source 282ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/process.md pitch: readme "Control: A typed child-process toolkit in tiers: the supervised `Process` with framed stdout lines and a writable stdin channel, the byte-oriented `Session`, the buffered `execute` and `executeSync` runs, the fire-and-forget `detach`, and the keyed `ProcessManager` registry, none of them spawning through a shell." tagline "A typed child-process toolkit in tiers: the supervised `Process` with framed stdout lines and a writable stdin channel, the byte-oriented `Session`, the buffered `execute` and `executeSync` runs, the fire-and-forget `detach`, and the keyed `ProcessManager` registry, none of them spawning through a shell."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A typed child-process toolki…' to be 'A typed child-process toolkit in tier…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 116 passed | 1 skipped (118)
+× opens the README with the guide tagline 15ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/process.md function createProcess: guide absent source "Creates one supervised child process and returns it as a `ProcessInterface`, so a caller holds the published contract rather than the `Process` class."
+guides/process.md function createSession: guide absent source "Creates one raw byte session over a supervised child process and returns it as a `SessionInterface`, so a caller holds the published contract rather than the `Session` class."
+guides/process.md function createProcessManager: guide absent source "Creates one empty keyed registry of supervised child processes and returns it as a `ProcessManagerInterface`, so a caller holds the published contract rather than the `ProcessManager` class."
+rows read: 1, disagreements found: 3
+   docs exit 1
+AssertionError: expected [ …(3) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Process > keeps every compared summary and example equal to its source
+Tests  1 failed | 116 passed | 1 skipped (118)
+× keeps every compared summary and example equal to its source 282ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0
