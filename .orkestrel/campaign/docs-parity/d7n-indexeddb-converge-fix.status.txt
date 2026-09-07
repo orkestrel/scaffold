@@ -1,0 +1,4 @@
+ M guides/indexeddb.md
+ M src/browser/IndexedDBTransaction.ts
+ M src/browser/errors.ts
+ M src/browser/factories.ts

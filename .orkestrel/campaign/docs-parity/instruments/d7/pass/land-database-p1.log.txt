@@ -1,0 +1,63 @@
+== database P.1 landing 2026-09-07T17:00:47Z, version 0.0.14
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/browser/drivers/IndexedDBDriver.ts
+ M src/core/drivers/MemoryDriver.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/core/Database.test.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 460ms
+EXIT 0
+== lockfile root version
+0.0.14 / 0.0.14
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== deps marker rewritten
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M src/browser/drivers/IndexedDBDriver.ts
+ M src/core/drivers/MemoryDriver.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/core/Database.test.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/core/helpers.test.ts         |   2 +-
+ tsconfig.json                          |   5 +-
+ 20 files changed, 1612 insertions(+), 631 deletions(-)
+== stage by path
+ 21 files changed, 2066 insertions(+), 631 deletions(-)
+== committed
+6dd2ebe Prepare database for the equality gate
+(status end)

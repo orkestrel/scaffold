@@ -1,0 +1,419 @@
+diff --git a/guides/contract.md b/guides/contract.md
+index 2484483..fa88764 100644
+--- a/guides/contract.md
++++ b/guides/contract.md
+@@ -112,18 +112,18 @@ That is a structural test rather than a provenance one, and the residual is exac
+ 
+ ### Function & constructor guards
+ 
+-| Guard                      | Kind     | Shape                             | Summary                                                                                                      |
+-| -------------------------- | -------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+-| `isFunction`               | function | `AnyFunction`                     | Determines whether a value is callable.                                                                      |
+-| `isZeroArg`                | function | `ZeroArgFunction`                 | Determines whether a value is a function that declares zero parameters (`Function.length === 0`).            |
+-| `isAsyncFunction`          | function | `AnyAsyncFunction`                | Determines whether a value is a native `async function`.                                                     |
+-| `isGeneratorFunction`      | function | generator function                | Determines whether a value is a generator function (`function*`).                                            |
+-| `isAsyncGeneratorFunction` | function | async generator function          | Determines whether a value is an async generator function (`async function*`).                               |
+-| `isZeroArgAsync`           | function | `ZeroArgAsyncFunction`            | Determines whether a value is a zero-argument async function.                                                |
+-| `isZeroArgGenerator`       | function | zero-arg generator function       | Determines whether a value is a zero-argument generator function.                                            |
+-| `isZeroArgAsyncGenerator`  | function | zero-arg async generator function | Determines whether a value is a zero-argument async generator function.                                      |
+-| `isConstructor`            | function | `AnyConstructor`                  | Determines whether a value can be used as a `new`-target constructor.                                        |
+-| `isInstance`               | function | `InstanceType<C>`                 | Determines whether a value is an instance of a constructor, contained against a throwing `instanceof` check. |
++| Guard                      | Kind     | Shape                                                               | Summary                                                                                                      |
++| -------------------------- | -------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
++| `isFunction`               | function | `AnyFunction`                                                       | Determines whether a value is callable.                                                                      |
++| `isZeroArg`                | function | `ZeroArgFunction`                                                   | Determines whether a value is a function that declares zero parameters (`Function.length === 0`).            |
++| `isAsyncFunction`          | function | `AnyAsyncFunction`                                                  | Determines whether a value is a native `async function`.                                                     |
++| `isGeneratorFunction`      | function | `(...args: unknown[]) => Generator<unknown, unknown, unknown>`      | Determines whether a value is a generator function (`function*`).                                            |
++| `isAsyncGeneratorFunction` | function | `(...args: unknown[]) => AsyncGenerator<unknown, unknown, unknown>` | Determines whether a value is an async generator function (`async function*`).                               |
++| `isZeroArgAsync`           | function | `ZeroArgAsyncFunction`                                              | Determines whether a value is a zero-argument async function.                                                |
++| `isZeroArgGenerator`       | function | `() => Generator<unknown, unknown, unknown>`                        | Determines whether a value is a zero-argument generator function.                                            |
++| `isZeroArgAsyncGenerator`  | function | `() => AsyncGenerator<unknown, unknown, unknown>`                   | Determines whether a value is a zero-argument async generator function.                                      |
++| `isConstructor`            | function | `AnyConstructor`                                                    | Determines whether a value can be used as a `new`-target constructor.                                        |
++| `isInstance`               | function | `InstanceType<C>`                                                   | Determines whether a value is an instance of a constructor, contained against a throwing `instanceof` check. |
+ 
+ ### Combinators
+ 
+@@ -159,7 +159,7 @@ Each combinator builds a fresh guard out of guards you already hold. There is no
+ | `matchOf`        | function | Builds a guard that accepts strings matching a regular expression.                                                                                                                                                                         |
+ | `stringOf`       | function | Builds a guard that accepts strings satisfying optional length and pattern refinements — `min` / `max` length and a `pattern`.                                                                                                             |
+ 
+-The one bound the combinators carry is not itself a combinator, and its `Value` cell holds
++The bound the combinators carry is not itself a combinator, and its `Value` cell holds
+ the constant's own literal:
+ 
+ | Bound               | Kind  | Value | Summary                                                                       |
+@@ -292,11 +292,13 @@ What is NOT guaranteed, beyond the realm assumption above: a value whose observa
+ 
+ ### Types
+ 
+-A `Shape` cell holds an interface's members in braces, and a type alias's value.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an
++optional member and `plus` introducing its call-signature members, and a type alias's own type
++literal with a union's arms escaped as `\|`.
+ 
+ | Type                     | Kind      | Shape                                                                                                                            | Summary                                                                                                                                        |
+ | ------------------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Failure`                | interface | `{ success: false, error: E }`                                                                                                   | Represents the discriminated failure branch of a `Result`.                                                                                     |
++| `Failure`                | interface | `{ success, error }`                                                                                                             | Represents the discriminated failure branch of a `Result`.                                                                                     |
+ | `ArrayRead<T = unknown>` | interface | `{ entries, dense }`                                                                                                             | Represents the owned result of reading one array through its reflected own-index lens.                                                         |
+ | `GuardShapeRead`         | interface | `{ guards, names, optional, vocabulary }`                                                                                        | Represents the owned result of reading one guard shape and its optional-key mode.                                                              |
+ | `BoundsRead`             | interface | `{ min?, max? }`                                                                                                                 | Represents a derived numeric bounds pair, either member absent.                                                                                |
+@@ -317,7 +319,7 @@ A `Shape` cell holds an interface's members in braces, and a type alias's value.
+ | `ReadValueOptions`       | interface | `{ subject?, code?, context? }`                                                                                                  | Represents optional diagnostic metadata for a required read.                                                                                   |
+ | `ContainOptions`         | interface | `{ code?, context? }`                                                                                                            | Represents optional diagnostic metadata for a public door's containment boundary.                                                              |
+ | `ShapeProperty`          | interface | `{ key, child }`                                                                                                                 | Represents one captured property of an object shape, held as an ordered entry rather than as a `Map` pair.                                     |
+-| `Success`                | interface | `{ success: true, value: T }`                                                                                                    | Represents the discriminated success branch of a `Result`.                                                                                     |
++| `Success`                | interface | `{ success, value }`                                                                                                             | Represents the discriminated success branch of a `Result`.                                                                                     |
+ | `AnyConstructor`         | type      | `new (...args: unknown[]) => T`                                                                                                  | Represents a constructor signature that produces instances of `T`.                                                                             |
+ | `AnyFunction`            | type      | `(...args: unknown[]) => unknown`                                                                                                | Represents a function accepting any arguments and returning `unknown`.                                                                         |
+ | `AnyAsyncFunction`       | type      | `(...args: unknown[]) => Promise<unknown>`                                                                                       | Represents an async function accepting any arguments and returning a `Promise`.                                                                |
+@@ -326,7 +328,7 @@ A `Shape` cell holds an interface's members in braces, and a type alias's value.
+ 
+ ### Classes
+ 
+-The one class documented in full under its own heading following this table.
++`ContractError` is documented in full under its own heading following this table.
+ 
+ | API             | Kind  | Summary                                                                                      |
+ | --------------- | ----- | -------------------------------------------------------------------------------------------- |
+@@ -366,14 +368,14 @@ isContractError(error) // true
+ 
+ `ShapeCloner` is the public state-owning contract-shape engine. Its source-only constructor is inert; the first `clone()` requires every node to satisfy the realm-neutral plain-record brand before discriminant observation, then iteratively captures and wires the graph, composes raw nodes through `SchemaCloner`, freezes the completed root, validates that exact root through `ShapeValidator`, and only then applies deferred source-fidelity refusal. Success and failure replay the exact terminal root or class-owned/adopted `ContractError` without rereading the source. Active reentry permanently poisons nested, outer, and later calls with one cause-free `ShapeCloner.clone: shape cloning may not be reentered` error (`clone`, `{ shape: 'shape' }`), including caught reentry. Only errors created by this instance or adopted directly from its schema cloner or validator may replay by identity; unexpected foreign failures become `cloneShape: failed to create an owned shape snapshot` with the exact cause. Terminal settlement releases graph-working state through preconstructed replacement state before nonredirectable terminal publication, while retaining the source and exact terminal result. Distinct instances are independent, while `cloneShape` constructs a fresh instance for every eager call.
+ 
+-| API                     | Kind      | Summary                                                  |
+-| ----------------------- | --------- | -------------------------------------------------------- |
+-| `JSONCloner`            | class     | Owns the state of one exact JSON snapshot operation.     |
+-| `JSONClonerInterface`   | interface | Owns the state of one exact JSON snapshot operation.     |
+-| `SchemaCloner`          | class     | Owns the state of one JSON Schema snapshot operation.    |
+-| `SchemaClonerInterface` | interface | Owns the state of one JSON Schema snapshot operation.    |
+-| `ShapeCloner`           | class     | Owns the state of one contract-shape snapshot operation. |
+-| `ShapeClonerInterface`  | interface | Owns the state of one contract-shape snapshot operation. |
++| API                     | Kind      | Summary                                                                   |
++| ----------------------- | --------- | ------------------------------------------------------------------------- |
++| `JSONCloner`            | class     | Owns the state of one exact JSON snapshot operation.                      |
++| `JSONClonerInterface`   | interface | Settles one exact JSON snapshot of a retained source, then replays it.    |
++| `SchemaCloner`          | class     | Owns the state of one JSON Schema snapshot operation.                     |
++| `SchemaClonerInterface` | interface | Settles one JSON Schema snapshot of a retained schema, then replays it.   |
++| `ShapeCloner`           | class     | Owns the state of one contract-shape snapshot operation.                  |
++| `ShapeClonerInterface`  | interface | Settles one contract-shape snapshot of a retained shape, then replays it. |
+ 
+ `cloneShape` is the fresh eager boundary over `ShapeCloner`: every call constructs a new class instance and invokes `clone()`, so separate calls re-observe the source and produce distinct composite roots or diagnostics when identity is observable.
+ 
+@@ -470,25 +472,26 @@ contract.parse({ id: 'nope', name: 'x' }) // undefined
+ 
+ ### Shape types
+ 
+-A `Shape` cell holds an interface's members in braces, and a type alias's value. A resolver
+-whose value is a multi-branch conditional carries none, and its `Summary` states what the
+-resolution produces.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an
++optional member and `plus` introducing its call-signature members, and a type alias's own type
++literal with a union's arms escaped as `\|`. A resolver whose value is a multi-branch
++conditional carries none, and its `Summary` states what the resolution produces.
+ 
+ | Type                  | Kind      | Shape                                                                                                                                                                           | Summary                                                                                                                                                                                                           |
+ | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `ContractShape`       | type      | `StringShape \| NumberShape \| BooleanShape \| NullShape \| LiteralShape \| ArrayShape \| ObjectShape \| UnionShape \| OptionalShape \| NullableShape \| JSONShape \| RawShape` | Describes a value declaratively — a declaration the shape builders build and the compilers turn into a guard, a parser, a JSON Schema, and a generator.                                                           |
+-| `StringShape`         | interface | `{ category: 'string', min?, max?, pattern?, … }`                                                                                                                               | Describes a string with optional length and pattern constraints.                                                                                                                                                  |
+-| `NumberShape`         | interface | `{ category: 'number', min?, max?, integer?, … }`                                                                                                                               | Describes a number with optional bounds; `integer` restricts to whole numbers.                                                                                                                                    |
+-| `BooleanShape`        | interface | `{ category: 'boolean', … }`                                                                                                                                                    | Describes a boolean — accepts only `true` or `false`.                                                                                                                                                             |
+-| `NullShape`           | interface | `{ category: 'null', … }`                                                                                                                                                       | Describes a null value — accepts only `null`.                                                                                                                                                                     |
+-| `LiteralShape`        | interface | `{ category: 'literal', values, … }`                                                                                                                                            | Describes a literal — accepts exactly one of a fixed set of primitive values.                                                                                                                                     |
+-| `ArrayShape`          | interface | `{ category: 'array', items, min?, max?, … }`                                                                                                                                   | Describes an array with an element shape and optional length bounds.                                                                                                                                              |
+-| `ObjectShape`         | interface | `{ category: 'object', properties: P, additionalProperties?: A, … }`                                                                                                            | Describes an object — a map of property names to child shapes.                                                                                                                                                    |
+-| `UnionShape`          | interface | `{ category: 'union', variants, mode?, … }`                                                                                                                                     | Describes a union — accepts a value matching any one variant (first match wins).                                                                                                                                  |
+-| `OptionalShape`       | interface | `{ category: 'optional', inner }`                                                                                                                                               | Wraps an inner shape that may be absent (`undefined`).                                                                                                                                                            |
+-| `NullableShape`       | interface | `{ category: 'nullable', inner }`                                                                                                                                               | Wraps an inner shape that may be `null`.                                                                                                                                                                          |
+-| `JSONShape`           | interface | `{ category: 'json', … }`                                                                                                                                                       | Describes a JSON passthrough — accepts any JSON value.                                                                                                                                                            |
+-| `RawShape`            | interface | `{ category: 'raw', schema }`                                                                                                                                                   | Describes a validated raw JSON Schema passthrough — embeds a supported schema fragment directly.                                                                                                                  |
++| `StringShape`         | interface | `{ category, min?, max?, pattern?, description? }`                                                                                                                              | Describes a string with optional length and pattern constraints.                                                                                                                                                  |
++| `NumberShape`         | interface | `{ category, min?, max?, integer?, description? }`                                                                                                                              | Describes a number with optional bounds; `integer` restricts to whole numbers.                                                                                                                                    |
++| `BooleanShape`        | interface | `{ category, description? }`                                                                                                                                                    | Describes a boolean — accepts only `true` or `false`.                                                                                                                                                             |
++| `NullShape`           | interface | `{ category, description? }`                                                                                                                                                    | Describes a null value — accepts only `null`.                                                                                                                                                                     |
++| `LiteralShape`        | interface | `{ category, values, description? }`                                                                                                                                            | Describes a literal — accepts exactly one of a fixed set of primitive values.                                                                                                                                     |
++| `ArrayShape`          | interface | `{ category, items, min?, max?, description? }`                                                                                                                                 | Describes an array with an element shape and optional length bounds.                                                                                                                                              |
++| `ObjectShape`         | interface | `{ category, properties, additionalProperties?, description? }`                                                                                                                 | Describes an object — a map of property names to child shapes.                                                                                                                                                    |
++| `UnionShape`          | interface | `{ category, variants, mode?, description? }`                                                                                                                                   | Describes a union — accepts a value matching any one variant (first match wins).                                                                                                                                  |
++| `OptionalShape`       | interface | `{ category, inner }`                                                                                                                                                           | Wraps an inner shape that may be absent (`undefined`).                                                                                                                                                            |
++| `NullableShape`       | interface | `{ category, inner }`                                                                                                                                                           | Wraps an inner shape that may be `null`.                                                                                                                                                                          |
++| `JSONShape`           | interface | `{ category, description? }`                                                                                                                                                    | Describes a JSON passthrough — accepts any JSON value.                                                                                                                                                            |
++| `RawShape`            | interface | `{ category, schema }`                                                                                                                                                          | Describes a validated raw JSON Schema passthrough — embeds a supported schema fragment directly.                                                                                                                  |
+ | `Infer`               | type      |                                                                                                                                                                                 | Resolves the static TypeScript type a `ContractShape` describes.                                                                                                                                                  |
+ | `InferObject`         | type      |                                                                                                                                                                                 | Resolves `Infer` of an object shape's `properties` — the required keys, plus the `optional`-wrapped keys as optional members, plus the index-signature contribution of `additionalProperties` (see `InferIndex`). |
+ | `InferIndex`          | type      |                                                                                                                                                                                 | Computes the index-signature contribution of a pure record shape's `additionalProperties` — the `recordShape` case, where `properties` is empty.                                                                  |
+@@ -532,13 +535,13 @@ Turn one `ContractShape` into the six lockstep outputs — `schema` / `is` / `pa
+ | `PRESENCE_MASK_LIMIT`       | const     | Caps at `31` the number of object keys one compiled presence mask carries, frozen.                                                                                                         |
+ 
+ `ContractCompilerInterface` declares no call-signature member, so it has no Methods table: its
+-whole surface is seven readonly data properties — `schema` (a `JSONSchema`), `guard` (a
++whole surface is the readonly data properties — `schema` (a `JSONSchema`), `guard` (a
+ `Guard<Infer<S>>`), `parser` (a `Parser<Infer<S>>`), `auditor` (an `AuditorFunction`), `reporter`
+ (a `ReporterFunction`), `generator` (a `SeederFunction<Infer<S>>`), and `contract` (a
+ `ContractInterface<Infer<S>>`). `contract` is the frozen bundle whose own enumerable keys are
+ `schema`, `is`, `parse`, `audit`, `explain`, and `generate` in that order, each holding the exact
+-value the corresponding getter publishes — `contract.is` IS `compiler.guard`, by identity rather
+-than as a copy of it.
++value the corresponding getter publishes — `contract.is` is exactly `compiler.guard`, by
++identity rather than as a copy of it.
+ 
+ Compilation costs ONE ownership and ONE validation per call, not one per node. Every `compile*` entry and `createContract` construct a `ContractCompiler`, which owns the declaration once, validates that owned graph once, and indexes each unique node and structural edge once; the artifact families are postorder passes over that index. This is what replaced the arrangement where each recursive invocation re-ran `ownShape` AND `validateShape` over the subgraph it received — quadratic work for a linear declaration, and the reason a 129-node depth chain used to measure 6.3 ms of gate plus 7.9 ms of ownership and a 257-node chain 26.0 + 41.9 ms. A 30-alias depth-100 declaration now compiles a guard in 3 ms and a whole contract in 4 ms, against 640 ms and 1.87 s before. `createContract` precompiles every artifact, so `audit`, `explain` and `generate` re-walk and re-gate nothing on a later call either; `contract.audit` and `compileAuditor` are the same compiled function reached by different names. A compiled artifact is no longer a TREE either. Each family holds one entry per unique node and a parent points at its children, so a shared child is compiled once and the emitted schema preserves that sharing — which is why the cap boundary stopped being expensive: `createContract` over the two-edge-per-level DAG at the 16,383-node boundary now takes under a millisecond where it took 1,342 ms, because it compiles fourteen nodes rather than sixteen thousand. Cost tracks AUTHORED nodes and edges instead: measured here, a depth-100 chain and a 30-alias depth-100 staircase answer every door in 1–5 ms, and a flat 10,001-node object takes 52–68 ms per artifact and 110 ms for a whole contract. One level past the cap boundary — 32,767 emitted nodes over thirty-one authored ones — still refuses in about two milliseconds with code `expansion`, because the count is measured over the captured graph rather than by walking the expansion. What the cap now protects is the consumer's side of the artifacts rather than the compiler's: `generate` materializes the whole tree, and so does serializing the schema. The JSON cloner is capped for the opposite reason — it DUPLICATES a shared alias by contract rather than re-walking it: see `CLONE_NODE_LIMIT`. The `samplesToSchema` family is not on this list and was never meant to be reachable: its record path carried neither an ancestor set nor a memo, so an ordinary shared reference bought `k^depth` visits; it now memoizes a single-row slot on `(row, remaining depth)` exactly as the record branch of `valueToSchema` does. Everything above is the DECLARATION side, and for one release that was the only side measured. A compiled artifact applies each child artifact once per OCCURRENCE, which is right for a tree and wrong for a graph, so a value whose levels each held two references to one object was walked once per PATH: twenty-two shared arrays against a twenty-three-node chain of `arrayShape` — zero aliases in the declaration, every published limit satisfied — cost 524,286 node reads, 4.4 s for `is` and 8.4 s for `audit`, growing fourfold per two levels, while the same declaration over a TREE value answered instantly and `valueToSchema` answered the same graph in 4 ms because it already memoized. The verdict families now carry a per-CALL identity memo keyed by `(compiled node, value object)`, and the same value now costs thirty-six reads and under a millisecond. These details are exact rather than incidental. The guard reuses either answer while the auditor and reporter reuse only the CLEAN one, because a fault carries the path it was found at and emptiness carries nothing — a faulted node is re-walked and bounded by `FAULT_LIMIT` instead. Each node's memo is tagged with the call that filled it and nothing else releases it, so an answer never survives into a later call where the caller may have changed the value. And a leaf is not tracked at all: it descends into no child, so tracking one would buy nothing and would replace the package's own guards and parsers in the artifacts a leaf-rooted declaration publishes. `parse` is deliberately absent from that list, because its result IS the expansion; the threat model names what that costs.
+ 
+@@ -733,7 +736,7 @@ shapeCloner.clone() === owned // true — terminal success replays exactly
+ | `validate` | `void`  | Validates the retained shape declaration. |
+ 
+ `ShapeValidatorInterface` also carries one readonly data property, `expansion`: the number of
+-nodes the last SUCCESSFUL `validate()` found the retained declaration expands into, one per node
++nodes the last successful `validate()` found the retained declaration expands into, one per node
+ per incoming edge, and `undefined` both before the first successful pass and after a failed one,
+ because neither measured one. `validateShape` reads it to apply `COMPILE_NODE_LIMIT`, and
+ `refuseExpansion` refuses an absent measurement rather than reading it as a small count.
+diff --git a/src/core/combinators.ts b/src/core/combinators.ts
+index caa8d82..21c5fbf 100644
+--- a/src/core/combinators.ts
++++ b/src/core/combinators.ts
+@@ -242,8 +242,8 @@ export function literalOf(
+  * Verifies that `ctor` is a real constructor (through {@link isConstructor}) first,
+  * so passing an arrow function does not silently produce a broken guard.
+  *
+- * A CALLABLE instance passes. The only exclusion is a bad CONSTRUCTOR, never a callable
+- * VALUE: an `isObject` pre-filter made `instanceOf(Function)(() => {})` answer `false`
++ * A callable instance passes. The exclusion is a bad constructor, never a callable
++ * value: an `isObject` pre-filter made `instanceOf(Function)(() => {})` answer `false`
+  * while {@link isInstance}, the helper this is built on, answered `true` for the same
+  * pair.
+  *
+@@ -757,7 +757,7 @@ export function andOf(
+  * Prefer {@link unionOf} for a wider set of variants.
+  *
+  * @remarks
+- * Each member is contained SEPARATELY, so a throwing member is a non-match rather than
++ * Each member is contained on its own, so a throwing member is a non-match rather than
+  * a veto over its sibling. One containment around the whole disjunction made `orOf(a,
+  * b)` and `orOf(b, a)` answer differently for one value.
+  *
+@@ -795,7 +795,7 @@ export function orOf(
+  * Typed as `Guard<unknown>` because `Exclude<unknown, T>` is not useful; use
+  * {@link complementOf} when you need the narrowed `Exclude<TBase, TExcluded>`.
+  *
+- * The negation applies to the CONTAINED verdict, so a throwing guard is a non-match and
++ * The negation applies to the contained verdict, so a throwing guard is a non-match and
+  * its negation passes. Containing the negation instead made a guard and its `notOf`
+  * both reject the same value, which broke `orOf(g, notOf(g))` as a tautology.
+  *
+@@ -821,7 +821,7 @@ export function notOf(guard: (value: unknown) => boolean): Guard<unknown> {
+  *
+  * @remarks
+  * The base and the exclusion are contained separately, for the reason {@link notOf}
+- * states: a throwing EXCLUSION is a non-match, so the complement passes.
++ * states: a throwing exclusion is a non-match, so the complement passes.
+  *
+  * @param base - The guard establishing the accepted domain
+  * @param excluded - The guard whose accepted values are removed from that domain
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 505fde8..188f7dd 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -258,7 +258,7 @@ export function collectMembers(values: readonly unknown[]): Set<unknown> {
+  *
+  * @remarks
+  * Dispatched through the captured `Set.prototype.has` onto a collection no caller
+- * holds, and asked as a MODULE BINDING rather than as a property: `set.has(value)` asks
++ * holds, and asked as a module binding rather than as a property: `set.has(value)` asks
+  * a member every caller can rewrite, and moving that read onto an exported class's
+  * `has` method reproduced the identical defect one prototype higher, because every
+  * public class method is dispatched through a reachable prototype.
+@@ -1351,7 +1351,7 @@ export function readOptions<T extends object>(
+  * Draws and validates one generator random sample.
+  *
+  * @remarks
+- * A broken source is a fault of the SOURCE rather than of the shape, so the refusal
++ * A broken source is the source's fault rather than the shape's, so the refusal
+  * carries code `random` and never the `generate` code, and {@link compileGenerator}
+  * rethrows it at whatever draw depth it happened instead of rotating to the next union
+  * variant. The diagnostic names the consuming shape category, the `[0, 1)` limit, and a
+diff --git a/src/core/shapers.ts b/src/core/shapers.ts
+index 924ac22..cc4f1c7 100644
+--- a/src/core/shapers.ts
++++ b/src/core/shapers.ts
+@@ -153,7 +153,7 @@ export function stringShape(options?: StringShapeOptions): StringShape {
+  * Builds a numeric {@link NumberShape}.
+  *
+  * @remarks
+- * A present `min` or `max` must be FINITE. `NaN` and `±Infinity` throw a `bound` {@link
++ * A present `min` or `max` must be finite. `NaN` and `±Infinity` throw a `bound` {@link
+  * ContractError} at construction, because no finite value satisfies them and no JSON
+  * Schema keyword expresses them.
+  *
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 8f07569..3391704 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -365,7 +365,7 @@ export type JSONRecord = { readonly [key: string]: JSONValue }
+ export type JSONValue = JSONPrimitive | readonly JSONValue[] | JSONRecord
+ 
+ /**
+- * Owns the state of one exact JSON snapshot operation.
++ * Settles one exact JSON snapshot of a retained source, then replays it.
+  *
+  * @remarks
+  * Construction retains the source without observing it. The first
+@@ -394,7 +394,7 @@ export interface JSONClonerInterface {
+ }
+ 
+ /**
+- * Owns the state of one JSON Schema snapshot operation.
++ * Settles one JSON Schema snapshot of a retained schema, then replays it.
+  *
+  * @remarks
+  * Construction retains the schema without observing it. The first
+@@ -443,7 +443,7 @@ export interface ShapeProperty {
+ }
+ 
+ /**
+- * Owns the state of one contract-shape snapshot operation.
++ * Settles one contract-shape snapshot of a retained shape, then replays it.
+  *
+  * @remarks
+  * Construction retains the shape without observing it. The first
+@@ -1305,14 +1305,14 @@ export interface ContractInterface<T> {
+  * own and outlives the compiler that produced it. When one artifact is what you
+  * want, keep the artifact and let the compiler go.
+  *
+- * It declares no call-signature member, so its whole surface is seven readonly data
++ * It declares no call-signature member, so its whole surface is the readonly data
+  * properties: `schema` (a {@link JSONSchema}), `guard` (a `Guard<Infer<S>>`), `parser`
+  * (a `Parser<Infer<S>>`), `auditor` (an {@link AuditorFunction}), `reporter` (a {@link
+  * ReporterFunction}), `generator` (a `SeederFunction<Infer<S>>`), and `contract` (a
+  * `ContractInterface<Infer<S>>`). `contract` is the frozen bundle whose own enumerable
+  * keys are `schema`, `is`, `parse`, `audit`, `explain`, and `generate` in that order,
+- * each holding the exact value the corresponding getter publishes — `contract.is` IS
+- * `compiler.guard`, by identity rather than as a copy.
++ * each holding the exact value the corresponding getter publishes — `contract.is` is
++ * exactly `compiler.guard`, by identity rather than as a copy.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index b2806db..76eed11 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -503,10 +503,6 @@ export function isPromiseLike<T = unknown>(
+ }
+ 
+ /** Determines whether a value is an `ArrayBuffer`.
+- *
+- * @remarks
+- * Checks the container alone — no element is inspected. Use {@link arrayOf} to check
+- * every element against a guard.
+  *
+  * @param value - The value to inspect
+  * @returns True if the value is an `ArrayBuffer`; false otherwise
+@@ -703,6 +699,10 @@ export function isWeakSet(value: unknown): value is WeakSet<object> {
+ // === Array & typed-array guards
+ 
+ /** Determines whether a value is an array.
++ *
++ * @remarks
++ * Checks the container alone — no element is inspected. Use {@link arrayOf} to check
++ * every element against a guard.
+  *
+  * @param value - The value to inspect
+  * @returns True if the value is an array; false otherwise
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index b93d436..f1fa4c1 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -31,6 +31,7 @@ import {
+ 	ShapeCloner,
+ 	ShapeValidator,
+ 	createContract,
++	integerShape,
+ 	objectShape,
+ 	stringShape,
+ } from '@src/core'
+@@ -49,7 +50,7 @@ const MODULES = Object.freeze({ '@orkestrel/contract': 'src/core', '@src/core':
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([
+@@ -94,9 +95,13 @@ it('pairs at least one example title across the guide and the source', () => {
+ 		.map((example) => example.title)
+ 		.filter((title) => title !== undefined)
+ 	const titled = new Set(declared)
+-	const fences = guide.fences()
+-	const headings = fences.map((fence) => fence.title).filter((title) => title !== undefined)
+-	const paired = fences.filter((fence) => fence.title !== undefined && titled.has(fence.title))
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
+ 	const unpaired =
+ 		paired.length > 0
+ 			? []
+@@ -404,6 +409,46 @@ describe('flagship fences', () => {
+ 		expect(guideText).toContain("isTicket({ id: '' }) // false")
+ 	})
+ 
++	it('parses and explains the user contract the titled fence builds', () => {
++		// The titled `Compiling a contract` fence, executed. Its parse line claims the
++		// refinement is enforced on the parse side as well as the guard side, and its
++		// explain line claims the exact fault a violation produces, so each runs here
++		// rather than being read as text.
++		const user = createContract(objectShape({ name: stringShape({ min: 1 }), age: integerShape() }))
++
++		expect(user.is({ name: 'Ada', age: 36 })).toBe(true)
++		expect(user.parse({ name: 'Ada', age: '36' })).toEqual({ name: 'Ada', age: 36 })
++		expect(user.parse({ name: '', age: 36 })).toBeUndefined()
++		expect(user.explain({ name: '', age: 36 })).toEqual([
++			{
++				reason: 'constraint',
++				path: ['name'],
++				expected: 'string',
++				constraint: 'min',
++				limit: 1,
++				received: '""',
++			},
++		])
++	})
++
++	it('carries the user fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			'const user = createContract(objectShape({ name: stringShape({ min: 1 }), age: integerShape() }))',
++		)
++		expect(guideText).toContain(
++			"user.is({ name: 'Ada', age: 36 }) // true — a typed guard (narrows to Infer<typeof shape>)",
++		)
++		expect(guideText).toContain(
++			"user.parse({ name: 'Ada', age: '36' }) // { name: 'Ada', age: 36 } — coerces, or undefined",
++		)
++		expect(guideText).toContain(
++			"user.parse({ name: '', age: 36 }) // undefined — '' violates name min:1 (parse enforces refinements, like is)",
++		)
++		expect(guideText).toContain(
++			`user.explain({ name: '', age: 36 }) // [{ reason: 'constraint', path: ['name'], expected: 'string', constraint: 'min', limit: 1, received: '""' }]`,
++		)
++	})
++
+ 	it('answers from a contract whose members disagree about one undeclared key', () => {
+ 		// The compiling-a-contract fence: one undeclared key, read by every member
+ 		// that can see it. Derived together is not the same as equal, and each
+diff --git a/tests/setup.ts b/tests/setup.ts
+index a3cff64..5c306ea 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -2018,7 +2018,7 @@ export class PatternCarrier {
+ 	}
+ }
+ 
+-/** Carries one hostile RegExp scalar population on a type-correct string shape. */
++/** Represents a type-correct string shape carrying one hostile RegExp scalar population. */
+ export class PatternFixture {
+ 	readonly carrier: PatternCarrier
+ 	readonly shape: StringShape

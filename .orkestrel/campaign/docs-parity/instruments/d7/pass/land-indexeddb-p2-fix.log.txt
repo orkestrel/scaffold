@@ -1,0 +1,14 @@
+== indexeddb p2-fix landing 2026-09-07T16:58:31Z over b157a60
+== status
+ M guides/indexeddb.md
+ M src/browser/IndexedDBTransaction.ts
+ M src/browser/errors.ts
+ M src/browser/factories.ts
+ src/browser/errors.ts               | 10 ++---
+ src/browser/factories.ts            | 13 ++++--
+ 4 files changed, 66 insertions(+), 56 deletions(-)
+== stage by path
+ 4 files changed, 66 insertions(+), 56 deletions(-)
+== committed
+5d29c45 Refine indexeddb's convergence on the audit's findings
+(status end)

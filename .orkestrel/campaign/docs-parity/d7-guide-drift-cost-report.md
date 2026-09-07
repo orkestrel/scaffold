@@ -189,3 +189,7 @@ across instances, which the brief forbids.
 ## Wall clock
 
 2026-09-07, 16:04 UTC to 16:22 UTC in `/home/user/fleet/guide`.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read one stale citation in this report — `contract/tests/guides.test.ts:206` for the `30_000` budget, which sits at `:211` on the case opening at `:203` — and the instrument named only by its swept path; the retained copy is `instruments/d7/u5/timing.mjs`. The tree is authoritative.

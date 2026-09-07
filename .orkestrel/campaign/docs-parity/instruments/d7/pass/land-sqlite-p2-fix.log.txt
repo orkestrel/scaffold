@@ -1,0 +1,15 @@
+== sqlite p2-fix landing 2026-09-07T16:58:31Z over 3b211a0
+== status
+ M guides/sqlite.md
+ M src/server/SQLiteDatabase.ts
+ M src/server/SQLiteStatement.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts           | 22 ++++++++++------------
+ tests/guides.test.ts          | 16 ++++++++--------
+ 5 files changed, 44 insertions(+), 41 deletions(-)
+== stage by path
+ 5 files changed, 44 insertions(+), 41 deletions(-)
+== committed
+691d024 Refine sqlite's convergence on the audit's findings
+(status end)

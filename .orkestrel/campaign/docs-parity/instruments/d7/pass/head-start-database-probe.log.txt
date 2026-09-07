@@ -1,0 +1,55 @@
+== database 2026-09-07T16:59:04Z tarball sha256 7828c1635175ef73
+== before
+0.0.18
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/browser/drivers/IndexedDBDriver.ts
+ M src/core/drivers/MemoryDriver.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/core/Database.test.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+(status end)
+== replaced range
+102:		"@orkestrel/guide": "^0.0.17",
+== install
+
+changed 2 packages in 3s
+EXIT 0
+== after
+0.0.18
+probe scanDiagnostics exports: 3
+9
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/browser/drivers/IndexedDBDriver.ts
+ M src/core/drivers/MemoryDriver.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/core/Database.test.ts
+ M tests/src/core/helpers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+(status end)

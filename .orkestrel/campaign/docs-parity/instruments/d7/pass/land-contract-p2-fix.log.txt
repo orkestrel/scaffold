@@ -1,0 +1,18 @@
+== contract p2-fix landing 2026-09-07T16:58:31Z over 796e893
+== status
+ M guides/contract.md
+ M src/core/combinators.ts
+ M src/core/helpers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+ tests/guides.test.ts    | 53 +++++++++++++++++++++++++---
+ tests/setup.ts          |  2 +-
+ 8 files changed, 115 insertions(+), 67 deletions(-)
+== stage by path
+ 8 files changed, 115 insertions(+), 67 deletions(-)
+== committed
+6e9942a Refine contract's convergence on the audit's findings
+(status end)

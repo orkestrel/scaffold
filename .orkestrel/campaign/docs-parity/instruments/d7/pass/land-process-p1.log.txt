@@ -1,0 +1,44 @@
+== process P.1 landing 2026-09-07T16:58:41Z, version 0.0.11
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tests/src/server/processes/Supervisor.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 479ms
+EXIT 0
+== lockfile root version
+0.0.11 / 0.0.11
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tests/src/server/processes/Supervisor.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/server/processes/Supervisor.test.ts |   2 +-
+ tsconfig.json                                 |   4 +-
+ 11 files changed, 1547 insertions(+), 568 deletions(-)
+== stage by path
+ 12 files changed, 2001 insertions(+), 568 deletions(-)
+== committed
+720d8ee Prepare process for the equality gate
+(status end)
