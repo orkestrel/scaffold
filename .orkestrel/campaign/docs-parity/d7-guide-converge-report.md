@@ -271,7 +271,7 @@ Sentences changed in `README.md`:
   `findDrift`. **Flagged claim** — the brief scopes `README.md` but names only the pitch, the
   opening paragraph, and `## API`.
 
-`## API` is kept unchanged. `tests/guides.test.ts:50-81` reads it and its case passes.
+`## API` is kept unchanged. `tests/guides.test.ts:55-86` (R2 correction: the unit's own insert moved the case; the brief cited `:50-81`) reads it and its case passes.
 
 ## Criterion 6 — § Tests
 
@@ -404,3 +404,7 @@ Each is named for what it proves, and each carries the comment stating why it ex
    what lets a guide link to a directory resolve", and `SourceInterface`'s list of its six
    projections. The first two are caller facts that drift when a caller changes; the third is the
    `## Methods` table sitting directly beneath the row.
+
+## R2 corrections (the Orchestrator)
+
+The lanes read counts in this report's prose — the paired and unpaired tallies, the line tallies in the `docs` reading, the red-first tally, the cell-width tally, and the projection tally. Each is struck, not corrected: the members are named in the tables and readings beside them, and a size (a character width, a byte count) is a value and stays.

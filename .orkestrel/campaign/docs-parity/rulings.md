@@ -22,3 +22,7 @@ The owner's words: "Tsdoc convergence rides the API removal wave." Reading: plan
 ## Ruling 6 (2026-09-07, the owner, verbatim: "For the record, I agree with your defaults and recommendations, let's go with those, continue as you were.")
 
 The three open items close on the stated defaults. The README shrinks to the pitch, the install line, the runtime line, and one fence, with the verb, flag, and exit-code lists linking to the guide; the pitch is the blockquote under the README's H1 and equals the guide's tagline (RQ, D4 and D6). A guide `Summary` cell adopts the doc block's verb-first description sentence after the compared form, and `.claude/rules/documentation.md`'s noun-phrase clause covers the tagline and the README pitch alone (D4). The voice rules read every file the linter walks (D3, landed).
+
+## Ruling 7 (2026-09-07, the Orchestrator, on R2's referral): a description paragraph is a summary
+
+A doc block's description paragraph — the text before its first block tag, the text a `Summary` cell carries — states what the declaration does in the sentences a table scanner needs. Reference material (the population a reader walks, the grammar's edge cases, the caveats) belongs in `@remarks`, which the comparison leaves unread and the declaration's reader still meets. Every sentence survives the split; none is deleted. The `Source` class block set the shape in U2, and the fix round applies it to the widest cells. This does not change what the seed compares.
