@@ -1,0 +1,502 @@
+diff --git a/README.md b/README.md
+index 4cd2a43..a1357f9 100644
+--- a/README.md
++++ b/README.md
+@@ -1,17 +1,14 @@
+ # @orkestrel/pool
+ 
+-A typed **resource pool** with optional bounded capacity: idle reuse + FIFO
+-waiting. `acquire` leases a resource — reusing a validated idle one, growing up
+-to `max` when one is set, growing without bound when it is not, or parking on a
+-FIFO waiter list until a `release` frees one — and the returned token's
+-`release()` returns it for reuse (or hands it straight to the next waiter).
+-The FIFO handoff is validated, so a resource that goes bad while leased is
+-never handed to the next lessee, and a parked `acquire` given an `AbortSignal`
+-rejects and de-queues itself when the signal fires — no leaked waiter. The
+-pool is observable (a typed `emitter` surfaces `create` / `acquire` /
+-`release` / `destroy`) and deliberately de-bloated — no warm-floor, no
+-eviction timers. Environment-agnostic — no I/O, no browser or server
+-assumptions. Part of the `@orkestrel` line.
++> A typed resource pool with optional bounded capacity, unique ownership, FIFO settlement,
++> validated reuse, caller-owned cancellation, explicit cleanup failures, and a stable
++> event-driven teardown barrier.
++
++Create a pool with the `createPool` function, hand it the hooks that make, check, and tear
++down one resource, and `await pool.acquire()` wherever the work needs one. Release the token
++in a `finally` block, and `await pool.destroy()` when the process is done with the pool.
++Environment-agnostic — no I/O, no browser or server assumptions. Part of the `@orkestrel`
++line.
+ 
+ ## Install
+ 
+diff --git a/guides/pool.md b/guides/pool.md
+index 744274b..7365785 100644
+--- a/guides/pool.md
++++ b/guides/pool.md
+@@ -2,8 +2,11 @@
+ 
+ > A typed resource pool with optional bounded capacity, unique ownership, FIFO settlement,
+ > validated reuse, caller-owned cancellation, explicit cleanup failures, and a stable
+-> event-driven teardown barrier. It has no warm floor, eviction timer, acquire timeout, or
+-> polling loop.
++> event-driven teardown barrier.
++
++The pool has no warm floor, eviction timer, acquire timeout, or polling loop. Every wait parks
++on a promise or a signal listener and wakes when a settlement reaches it, and the lifecycle
++hooks are the caller's, so the engine itself performs no I/O.
+ 
+ ## Surface
+ 
+@@ -11,6 +14,8 @@
+ class. Each created value receives an opaque ownership record, so duplicate primitives,
+ `undefined`, `NaN`, and repeated references are independent resources.
+ 
++### Create a pool
++
+ ```ts
+ import { createPool } from '@orkestrel/pool'
+ 
+@@ -31,36 +36,36 @@ try {
+ 
+ ### Factories
+ 
+-| API          | Kind     | Summary                                                             |
+-| ------------ | -------- | ------------------------------------------------------------------- |
+-| `createPool` | function | Construct a distinct `PoolInterface` from resource lifecycle hooks. |
++| API          | Kind     | Summary                                                                                                                                  |
++| ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
++| `createPool` | function | Creates a distinct `PoolInterface` from resource lifecycle hooks, with optional bounded capacity, unique ownership, and FIFO settlement. |
+ 
+-### Entities
++### Classes
+ 
+-| API         | Kind  | Summary                                                                |
+-| ----------- | ----- | ---------------------------------------------------------------------- |
+-| `Pool`      | class | The unique-record FIFO lifecycle engine.                               |
+-| `PoolError` | class | A coded failure retaining a hostile-safe cause and structured context. |
++| API         | Kind  | Summary                                                                                                                                                                                  |
++| ----------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Pool`      | class | Represents a capacity-aware resource pool whose opaque ownership records preserve FIFO settlement, cancellation, exact lease release, and deterministic teardown under concurrent hooks. |
++| `PoolError` | class | Represents a stable, machine-readable pool failure that retains the original thrown value as its cause without unsafe coercion, alongside structured context.                            |
+ 
+ ### Guards
+ 
+-| API            | Kind     | Summary                                                      |
+-| -------------- | -------- | ------------------------------------------------------------ |
+-| `isPoolError`  | function | Total guard for `PoolError`, including hostile proxy inputs. |
+-| `isPoolMax`    | function | Accept only positive safe integers as explicit pool maxima.  |
+-| `isPoolSignal` | function | Total native `AbortSignal` guard for the acquire boundary.   |
++| API            | Kind     | Summary                                                                                 |
++| -------------- | -------- | --------------------------------------------------------------------------------------- |
++| `isPoolError`  | function | Tests whether an unknown value is a `PoolError`, returning `false` for hostile proxies. |
++| `isPoolMax`    | function | Tests whether a value is a positive safe integer, the only valid explicit pool maximum. |
++| `isPoolSignal` | function | Tests whether a value is a native `AbortSignal`, returning `false` for hostile proxies. |
+ 
+ ### Types
+ 
+-| API                | Kind      | Summary                                                          |
+-| ------------------ | --------- | ---------------------------------------------------------------- |
+-| `PoolCode`         | type      | `invalid`, `destroyed`, `create`, or `cleanup`.                  |
+-| `PoolContext`      | interface | Rejected input or distinct aggregate destroy-hook failures.      |
+-| `PoolErrorOptions` | interface | Code, optional cause, and optional context for `PoolError`.      |
+-| `PoolEventMap`     | type      | `create`, `acquire`, `release`, and `destroy` lifecycle signals. |
+-| `PoolToken`        | interface | A unique lease with readonly `value` and idempotent `release()`. |
+-| `PoolOptions`      | interface | Create, destroy, validation, capacity, and emitter options.      |
+-| `PoolInterface`    | interface | Count/emitter properties plus `acquire`, `clear`, and `destroy`. |
++| API                | Kind      | Summary                                                                                                                                                     |
++| ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `PoolCode`         | type      | Names the machine-readable failure codes produced by `PoolError`: `invalid`, `destroyed`, `create`, and `cleanup`.                                          |
++| `PoolContext`      | interface | Represents the structured context attached to a `PoolError`: the rejected input, or the distinct destroy-hook failures an aggregate cleanup collected.      |
++| `PoolErrorOptions` | interface | Represents the construction options for `PoolError`: the stable code, an optional cause, and optional structured context.                                   |
++| `PoolEventMap`     | type      | Represents the observable resource lifecycle events emitted by a `PoolInterface`: `create`, `acquire`, `release`, and `destroy`.                            |
++| `PoolToken`        | interface | Represents a unique lease over one pool-owned resource record, exposing that record as a readonly `value` and returning it through an idempotent `release`. |
++| `PoolOptions`      | interface | Represents the resource lifecycle options for `Pool` and `createPool`: creation, destruction, validation, capacity, and observation.                        |
++| `PoolInterface`    | interface | Represents a FIFO resource pool with optional bounded capacity and deterministic teardown, exposing its record counts and a typed lifecycle emitter.        |
+ 
+ `PoolInterface.emitter`, `size`, `idle`, and `active` are readonly data properties.
+ `size` counts every owned record, including records being validated or destroyed. `idle`
+@@ -75,25 +80,25 @@ The public call-signature members of `PoolInterface` and `PoolToken`; `Pool` imp
+ 
+ #### `PoolInterface`
+ 
+-| Method    | Returns                 | Behavior                                                                                  |
+-| --------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+-| `acquire` | `Promise<PoolToken<T>>` | Queue in FIFO order, validate or create, then settle in the same order; accepts a signal. |
+-| `clear`   | `Promise<void>`         | Claim and clean only the records idle in this call's synchronous snapshot.                |
+-| `destroy` | `Promise<void>`         | Enter terminal state and return the exact stable promise for complete teardown.           |
++| Method    | Returns                 | Summary                                                                                                                   |
++| --------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------- |
++| `acquire` | `Promise<PoolToken<T>>` | Queues the caller in FIFO order, validates an idle record or creates one, and settles queued acquires in that same order. |
++| `clear`   | `Promise<void>`         | Destroys the records that are idle at this call's synchronous snapshot.                                                   |
++| `destroy` | `Promise<void>`         | Tears down the pool permanently and returns its stable completion barrier.                                                |
+ 
+ #### `PoolToken`
+ 
+-The lease returned by `acquire`, with the one operation that returns its record.
++The lease returned by `acquire`, with the operation that returns its record.
+ 
+-| Method    | Returns | Behavior                                                                                                              |
+-| --------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
+-| `release` | `void`  | Returns this exact record to the pool once; a repeat call and a call after teardown transferred ownership are no-ops. |
++| Method    | Returns | Summary                                                                                                             |
++| --------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
++| `release` | `void`  | Gives this exact record back to the pool once; a repeat call, and a call after teardown took ownership, are no-ops. |
+ 
+ ## Contract
+ 
+ ### Capacity and FIFO
+ 
+-Every `acquire` receives its queue position before a create or validation hook starts. One
++Every `acquire` receives its queue position before a create or validation hook starts. The
+ reentrancy-safe pump may assign several hook operations concurrently, but a head commit
+ barrier settles successes and failures in request order. A later fast create or validation
+ cannot overtake an earlier slow one. Capacity obeys:
+@@ -142,7 +147,7 @@ becomes idle and emits `release`. Release after teardown ownership transferred i
+ 
+ `clear()` synchronously snapshots idle records and installs one cleanup promise per record
+ before invoking the hook. Concurrent clears therefore own disjoint snapshots, and a lease
+-released after one snapshot is not part of it. Every claimed record stays in `size` until its
++released after a snapshot is taken is not part of it. Every claimed record stays in `size` until its
+ hook attempt completes. Distinct failures are aggregated in a code-`cleanup` `PoolError`
+ whose `context.failures` retains the original thrown values.
+ Each claimed record's cleanup settlement independently wakes queued acquires after the
+@@ -251,8 +256,13 @@ await pool.destroy()
+   boundary guards alone: accepted and rejected maxima, and native versus hostile signals.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — factory
+   construction and instance identity only.
+-- [`tests/guides.test.ts`](../tests/guides.test.ts) — source/export,
+-  method, example, import, and link parity.
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection
++  over value and type exports, the `PoolInterface` ↔ `Pool` and `PoolToken` method bijections,
++  fence-import and relative-link resolution, and the equality gate: every `Summary` cell against
++  its declaration's description paragraph, the titled `Create a pool` fence against the
++  `@example` block of that title (pinned so the titled pair cannot be retired silently), and the
++  README pitch against this guide's tagline. It also runs the boundary-guard fence and asserts
++  the values its comments claim.
+ 
+ ## See also
+ 
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 1b006ac..810d875 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -1,8 +1,8 @@
+ import type { PoolErrorOptions } from './types.js'
+ 
+ /**
+- * Represents a stable, machine-readable pool failure with the original cause and structured
+- * context.
++ * Represents a stable, machine-readable pool failure that retains the original thrown value as
++ * its cause without unsafe coercion, alongside structured context.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index b38487f..a6da843 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,7 +2,8 @@ import type { PoolInterface, PoolOptions } from './types.js'
+ import { Pool } from './Pool.js'
+ 
+ /**
+- * Creates a resource pool with optional bounded capacity, unique ownership, and FIFO settlement.
++ * Creates a distinct {@link PoolInterface} from resource lifecycle hooks, with optional bounded
++ * capacity, unique ownership, and FIFO settlement.
+  *
+  * @remarks
+  * Concurrent create and validation hooks may overlap, while acquire promises settle in
+@@ -16,7 +17,7 @@ import { Pool } from './Pool.js'
+  * @throws {@link PoolError} Thrown when `options.max` is present and is not a positive safe
+  * integer, with `code: 'invalid'`. Construction validates it synchronously, before the pool exists.
+  *
+- * @example
++ * @example Create a pool
+  * ```ts
+  * import { createPool } from '@orkestrel/pool'
+  *
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 92c7dae..1fb2dfb 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,9 +1,15 @@
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ 
+-/** Names the machine-readable failure codes produced by {@link PoolError}. */
++/**
++ * Names the machine-readable failure codes produced by {@link PoolError}: `invalid`, `destroyed`,
++ * `create`, and `cleanup`.
++ */
+ export type PoolCode = 'invalid' | 'destroyed' | 'create' | 'cleanup'
+ 
+-/** Represents the structured context attached to a {@link PoolError}. */
++/**
++ * Represents the structured context attached to a {@link PoolError}: the rejected input, or the
++ * distinct destroy-hook failures an aggregate cleanup collected.
++ */
+ export interface PoolContext {
+ 	/** Holds the rejected public input, when the failure is an input-validation error. */
+ 	readonly value?: unknown
+@@ -11,7 +17,10 @@ export interface PoolContext {
+ 	readonly failures?: readonly unknown[]
+ }
+ 
+-/** Represents the construction options for {@link PoolError}. */
++/**
++ * Represents the construction options for {@link PoolError}: the stable code, an optional cause,
++ * and optional structured context.
++ */
+ export interface PoolErrorOptions {
+ 	/** Holds the stable machine-readable failure category. */
+ 	readonly code: PoolCode
+@@ -21,7 +30,10 @@ export interface PoolErrorOptions {
+ 	readonly context?: PoolContext
+ }
+ 
+-/** Represents the observable resource lifecycle events emitted by a {@link PoolInterface}. */
++/**
++ * Represents the observable resource lifecycle events emitted by a {@link PoolInterface}:
++ * `create`, `acquire`, `release`, and `destroy`.
++ */
+ export type PoolEventMap = {
+ 	/** Signals that a created resource entered pool ownership. */
+ 	readonly create: readonly []
+@@ -33,16 +45,23 @@ export type PoolEventMap = {
+ 	readonly destroy: readonly []
+ }
+ 
+-/** Represents a unique lease over one pool-owned resource record. */
++/**
++ * Represents a unique lease over one pool-owned resource record, exposing that record as a readonly
++ * `value` and returning it through an idempotent `release`.
++ */
+ export interface PoolToken<T> {
+ 	/** Holds the leased value. Duplicate values still belong to independent records. */
+ 	readonly value: T
+-	/** Gives this exact lease back once; subsequent calls are no-ops. */
++	/**
++	 * Gives this exact record back to the pool once; a repeat call, and a call after teardown took
++	 * ownership, are no-ops.
++	 */
+ 	release(): void
+ }
+ 
+ /**
+- * Represents the resource lifecycle options for {@link Pool} and `createPool`.
++ * Represents the resource lifecycle options for {@link Pool} and `createPool`: creation,
++ * destruction, validation, capacity, and observation.
+  *
+  * @remarks
+  * `create` lazily produces resources. `destroy` tears down a claimed resource.
+@@ -59,7 +78,10 @@ export interface PoolOptions<T> {
+ 	readonly max?: number
+ }
+ 
+-/** Represents a FIFO resource pool with optional bounded capacity and deterministic teardown. */
++/**
++ * Represents a FIFO resource pool with optional bounded capacity and deterministic teardown,
++ * exposing its record counts and a typed lifecycle emitter.
++ */
+ export interface PoolInterface<T> {
+ 	/** Holds the typed synchronous lifecycle observation surface. */
+ 	readonly emitter: EmitterInterface<PoolEventMap>
+@@ -70,7 +92,8 @@ export interface PoolInterface<T> {
+ 	/** Counts the records represented by unsettled released-once lease tokens. */
+ 	readonly active: number
+ 	/**
+-	 * Queues and leases one resource in FIFO settlement order.
++	 * Queues the caller in FIFO order, validates an idle record or creates one, and settles queued
++	 * acquires in that same order.
+ 	 *
+ 	 * @param signal - Optional native cancellation signal
+ 	 * @returns A promise for the unique resource lease
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 0d6b970..b37c909 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -1,5 +1,5 @@
+ /**
+- * Tests whether a value is a valid finite pool maximum.
++ * Tests whether a value is a positive safe integer, the only valid explicit pool maximum.
+  *
+  * @param value - The unknown maximum candidate
+  * @returns True if the value is a positive safe integer; false otherwise
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 6e0b85f..3ffee18 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,7 +1,7 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The constants below and the executed
+-// `flagship fences` block are this package's own, and are the only parts a sibling
+-// package changes.
++// this repo's own `guides/README.md` manifest. The constants that follow and the
++// executed `flagship fences` block are this package's own, and are the only parts a
++// sibling package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -10,6 +10,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -27,6 +28,8 @@ import { PoolError, isPoolError, isPoolMax, isPoolSignal } from '@src/core'
+ const FENCE_LANGUAGES = Object.freeze(['text', 'ts'])
+ /** The fence language whose blocks count as worked examples. */
+ const EXAMPLE_LANGUAGE = 'ts'
++/** The one guide this package sources, whose tagline the README pitch equals. */
++const GUIDE_SPEC = 'guides/pool.md'
+ /** Each import specifier this package's own guides may resolve against. */
+ const MODULES = Object.freeze({ '@orkestrel/pool': 'src/core', '@src/core': 'src/core' })
+ /**
+@@ -34,13 +37,13 @@ const MODULES = Object.freeze({ '@orkestrel/pool': 'src/core', '@src/core': 'src
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -52,11 +55,61 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -118,6 +171,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()
+@@ -139,19 +210,19 @@ for (const entry of manifest) {
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface).map((example) => example.name)
+-							: source
+-									.examples(group.interface)
+-									.map((example) => example.name)
+-									.concat(source.examples(entity).map((example) => example.name))
+ 					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+@@ -187,11 +258,11 @@ for (const entry of manifest) {
+ 	})
+ }
+ 
+-// The EXECUTED half. Every case above reads a name — from the guide text or from the source —
+-// and a name that resolves proves nothing about the sentence beside it, so a fence whose
+-// comment claims a value the code contradicts passes all of them. The cases here run the
+-// flagship fence and assert the values its comments claim. Change a fence, change the
+-// transcription beside it.
++// The EXECUTED half. Every preceding check reads a name — from the guide text or from
++// the source — and a name that resolves proves nothing about the sentence beside it, so a
++// fence whose comment claims a value the code contradicts passes all of them. The cases
++// here run the flagship fence and assert the values its comments claim. Change a fence,
++// change the transcription beside it.
+ describe('flagship fences', () => {
+ 	const guideText = requireValue(files['guides/pool.md'], 'Missing file: guides/pool.md')
+ 

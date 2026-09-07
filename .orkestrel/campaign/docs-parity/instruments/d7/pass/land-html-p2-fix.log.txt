@@ -1,0 +1,18 @@
+== html p2-fix landing 2026-09-07T16:31:36Z over e9e2336
+== status
+ M guides/html.md
+ M src/core/HTML.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     |  40 +++++-----
+ tests/guides.test.ts  |  55 +++++++-------
+ 8 files changed, 189 insertions(+), 185 deletions(-)
+== stage by path
+ 8 files changed, 189 insertions(+), 185 deletions(-)
+== committed
+1121b5c Refine html's convergence on the audit's findings
+(status end)

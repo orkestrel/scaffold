@@ -1,0 +1,9 @@
+ M README.md
+ M guides/reason.md
+ M src/core/builders/DefinitionBuilder.ts
+ M src/core/builders/managers/FactorManager.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts

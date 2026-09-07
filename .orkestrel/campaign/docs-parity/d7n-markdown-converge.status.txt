@@ -1,0 +1,8 @@
+ M README.md
+ M guides/markdown.md
+ M src/core/Markdown.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts

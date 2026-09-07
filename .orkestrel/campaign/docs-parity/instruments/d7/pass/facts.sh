@@ -30,8 +30,10 @@ echo "- README (\`README.md\`) first lines:"
 sed -n '1,12p' README.md | sed 's/^/    /'
 echo "- \`## Patterns\` fences, each with its nearest preceding heading:"
 awk -v g="$G" '/^#/{h=$0} /^```/{if(!in_f){in_f=1; print "    " NR ": fence under \"" h "\""} else in_f=0}' $G | awk -F'"' '{print}' | head -40
-echo "- Exported factories and classes (\`grep -n 'export function create\|export class' src/**/*.ts\`):"
-grep -rn 'export function create\|export class \|export async function create' src --include=*.ts | sed 's/^/    /' | head -20
+echo "- Exported factories, every one (\`grep -rn 'export function create\|export async function create' src --include=*.ts\`):"
+grep -rn 'export function create\|export async function create' src --include=*.ts | sed 's/^/    /'
+echo "- Exported classes (\`grep -rn 'export class ' src --include=*.ts\`):"
+grep -rn 'export class ' src --include=*.ts | sed 's/^/    /' | head -40
 echo "- \`@example\` blocks per file and any already-titled block (\`@example \\S\`):"
 grep -rc '@example' src --include=*.ts | grep -v ':0$' | sed 's/^/    /'
 grep -rn '@example [^ ]' src --include=*.ts | sed 's/^/    titled: /' | head

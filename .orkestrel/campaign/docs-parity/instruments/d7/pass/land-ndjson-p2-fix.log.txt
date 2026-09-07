@@ -1,0 +1,15 @@
+== ndjson p2-fix landing 2026-09-07T16:31:36Z over 2ec2186
+== status
+ M guides/ndjson.md
+ M src/core/NDJSONParser.ts
+ M src/core/factories.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+ tests/guides.test.ts     | 28 ++++++++++++++++------------
+ tests/setup.ts           |  4 ++--
+ 5 files changed, 45 insertions(+), 20 deletions(-)
+== stage by path
+ 5 files changed, 45 insertions(+), 20 deletions(-)
+== committed
+7ce1e46 Refine ndjson's convergence on the audit's findings
+(status end)

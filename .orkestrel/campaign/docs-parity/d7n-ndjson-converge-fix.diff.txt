@@ -1,0 +1,168 @@
+diff --git a/guides/ndjson.md b/guides/ndjson.md
+index 271c080..75e4ac7 100644
+--- a/guides/ndjson.md
++++ b/guides/ndjson.md
+@@ -60,11 +60,15 @@ function feed(parser: NDJSONParserInterface, chunk: string): readonly Record<str
+ | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+ | `createNDJSONParser` | function | Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an `NDJSONParserInterface` — a fresh `NDJSONParser` holding the buffer, so a caller holds the published contract rather than the class. |
+ 
++#### Create a parser
++
+ ```ts
+ import { createNDJSONParser } from '@orkestrel/ndjson'
+ 
+ const parser = createNDJSONParser()
+ parser.parse('{"a":1}\n{"b":2}\n') // [{ a: 1 }, { b: 2 }]
++parser.parse('{"c":3}') // [] — buffered until its trailing newline arrives
++parser.parse('\n') // [{ c: 3 }]
+ ```
+ 
+ ### Classes
+@@ -85,6 +89,9 @@ surface.
+ | `parse` | `readonly Record<string, unknown>[]` | Appends `chunk` to the buffer and returns every complete `\n`-terminated line parsed to a record, skipping a malformed or non-record line; the trailing partial line is retained for the next call, so a line split across a chunk boundary is reassembled when its closing `\n` arrives. |
+ | `clear` | `void`                               | Drops any buffered partial line, leaving the handle ready for a fresh stream.                                                                                                                                                                                                             |
+ 
++`parse` holds an unterminated line indefinitely and the buffer has no size
++limit, so a caller fronting an untrusted upstream enforces its own byte cap.
++
+ ```ts
+ import { NDJSONParser } from '@orkestrel/ndjson'
+ 
+@@ -94,3 +101,15 @@ parser.parse(':2}\n') // [{ b: 2 }] - the split line reassembled
+ parser.clear() // drop any buffered partial - ready for a fresh stream
+ parser.parse('{"c":3}\n') // [{ c: 3 }]
+ ```
++
++## Tests
++
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value and type exports), the `NDJSONParserInterface` ↔ `NDJSONParser` method bijection, and the equality gate: every `Summary` cell against its declaration's description paragraph, the titled `Create a parser` fence against the `@example` block of that title (pinned so the titled pair cannot be retired silently), and the README pitch against this guide's tagline. It also runs the flagship fences and asserts the values their comments claim.
++- [`tests/src/core/NDJSONParser.test.ts`](../tests/src/core/NDJSONParser.test.ts) — that `parse` returns the same records however a stream is cut into chunks, skipping malformed, blank, and non-record lines, withholding a line the stream never terminates, and never throwing on any input.
++- [`tests/policy.test.ts`](../tests/policy.test.ts) — repository coding law: source placement, exports, readonly contracts, syntax, and the prose this guide is written in.
++- [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration's aliases and projects, the policy Oxlint plugin's rules against its rule tester, and the configuration helpers.
++
++## See also
++
++- [`AGENTS.md`](../AGENTS.md) — the pointer to the `@orkestrel/scaffold` coding contract this package is written to.
++- [`README.md`](README.md) — the guides index.
+diff --git a/src/core/NDJSONParser.ts b/src/core/NDJSONParser.ts
+index f9c7b4c..d6035f9 100644
+--- a/src/core/NDJSONParser.ts
++++ b/src/core/NDJSONParser.ts
+@@ -3,9 +3,9 @@ import { isRecord, parseJSONAs } from '@orkestrel/contract'
+ 
+ /**
+  * Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing
+- * `NDJSONParserInterface` over a private buffer the instance owns — each `parse` call
+- * returns the records completed so far and reassembles a record split across chunk
+- * boundaries.
++ * {@link NDJSONParserInterface} over a private buffer the instance owns — each `parse`
++ * call returns the records completed so far and reassembles a record split across
++ * chunk boundaries.
+  *
+  * @remarks
+  * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to the buffer, splits
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 3fc0371..24a28de 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -3,17 +3,19 @@ import { NDJSONParser } from './NDJSONParser.js'
+ 
+ /**
+  * Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an
+- * `NDJSONParserInterface` — a fresh `NDJSONParser` holding the buffer, so a caller
+- * holds the published contract rather than the class.
++ * {@link NDJSONParserInterface} — a fresh {@link NDJSONParser} holding the buffer,
++ * so a caller holds the published contract rather than the class.
+  *
+  * @returns A working {@link NDJSONParserInterface}
+  *
+- * @example Factories
++ * @example Create a parser
+  * ```ts
+  * import { createNDJSONParser } from '@orkestrel/ndjson'
+  *
+  * const parser = createNDJSONParser()
+  * parser.parse('{"a":1}\n{"b":2}\n') // [{ a: 1 }, { b: 2 }]
++ * parser.parse('{"c":3}') // [] — buffered until its trailing newline arrives
++ * parser.parse('\n') // [{ c: 3 }]
+  * ```
+  */
+ export function createNDJSONParser(): NDJSONParserInterface {
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index d0e56a1..1a058da 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -39,7 +39,7 @@ const MODULES = Object.freeze({ '@orkestrel/ndjson': 'src/core', '@src/core': 's
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+@@ -211,20 +211,20 @@ for (const entry of manifest) {
+ 
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
++			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const documented = group.methods.map((method) => method.name)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface).map((example) => example.name)
+-							: source
+-									.examples(group.interface)
+-									.concat(source.examples(entity))
+-									.map((example) => example.name)
+ 					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+@@ -309,13 +309,17 @@ describe('flagship fences', () => {
+ 		)
+ 	})
+ 
+-	it('returns the Factories fence values from one chunk carrying two lines', () => {
+-		expect(createNDJSONParser().parse('{"a":1}\n{"b":2}\n')).toEqual([{ a: 1 }, { b: 2 }])
++	it('returns the Factories fence values, holding the unterminated line for its newline', () => {
++		const parser = createNDJSONParser()
++
++		expect(parser.parse('{"a":1}\n{"b":2}\n')).toEqual([{ a: 1 }, { b: 2 }])
++		expect(parser.parse('{"c":3}')).toEqual([])
++		expect(parser.parse('\n')).toEqual([{ c: 3 }])
+ 	})
+ 
+ 	it('carries the Factories fence lines the transcription copies', () => {
+ 		expect(guideText).toContain(
+-			'const parser = createNDJSONParser()\nparser.parse(\'{"a":1}\\n{"b":2}\\n\') // [{ a: 1 }, { b: 2 }]',
++			'const parser = createNDJSONParser()\nparser.parse(\'{"a":1}\\n{"b":2}\\n\') // [{ a: 1 }, { b: 2 }]\nparser.parse(\'{"c":3}\') // [] — buffered until its trailing newline arrives\nparser.parse(\'\\n\') // [{ c: 3 }]',
+ 		)
+ 	})
+ 
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 49bafbf..096d902 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -41,8 +41,8 @@ export function feedAll(
+ }
+ 
+ /**
+- * Builds a fixed set of partitions of `stream` for partition-invariance
+- * testing: one partition per fixed size in `sizes` (default
++ * Splits `stream` into a fixed set of chunk sequences for chunking-invariance
++ * testing: one sequence per fixed size in `sizes` (default
+  * `{1,2,3,5,7,13,len}`) plus every two-way single-cut split
+  * (`stream.slice(0, cut)` / `stream.slice(cut)` for every `cut` from `0` to
+  * `stream.length`).

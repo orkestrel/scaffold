@@ -1,0 +1,7 @@
+ M README.md
+ M guides/pool.md
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts

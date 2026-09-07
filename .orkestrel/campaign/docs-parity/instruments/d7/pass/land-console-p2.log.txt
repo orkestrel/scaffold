@@ -1,0 +1,32 @@
+== console p2 landing 2026-09-07T16:31:35Z over f93a2f4
+== status
+ M README.md
+ M guides/console.md
+ M src/browser/constants.ts
+ M src/browser/factories.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/Progress.ts
+ M src/core/Retention.ts
+ M src/core/Spinner.ts
+ M src/core/Styler.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/renderers/ANSIRenderer.ts
+ M src/core/types.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M src/server/validators.ts
+ M tests/guides.test.ts
+ src/server/validators.ts           |   2 +-
+ tests/guides.test.ts               |  84 ++++-
+ 22 files changed, 798 insertions(+), 584 deletions(-)
+== stage by path
+ 22 files changed, 798 insertions(+), 584 deletions(-)
+== committed
+10b4f2c Converge console under the equality gate
+(status end)

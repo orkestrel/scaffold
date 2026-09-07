@@ -1,0 +1,19 @@
+== reason p2 landing 2026-09-07T16:32:55Z over b4f2e92
+== status
+ M README.md
+ M guides/reason.md
+ M src/core/builders/DefinitionBuilder.ts
+ M src/core/builders/managers/FactorManager.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts                      |  14 +-
+ tests/guides.test.ts                        |  80 ++-
+ 9 files changed, 940 insertions(+), 537 deletions(-)
+== stage by path
+ 9 files changed, 940 insertions(+), 537 deletions(-)
+== committed
+49648b5 Converge reason under the equality gate
+(status end)

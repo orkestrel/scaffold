@@ -1,0 +1,17 @@
+== pool p2 landing 2026-09-07T16:31:36Z over 11509e9
+== status
+ M README.md
+ M guides/pool.md
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |   2 +-
+ tests/guides.test.ts   | 107 ++++++++++++++++++++++++++++++++++++++++---------
+ 7 files changed, 183 insertions(+), 81 deletions(-)
+== stage by path
+ 7 files changed, 183 insertions(+), 81 deletions(-)
+== committed
+ff62d1d Converge pool under the equality gate
+(status end)

@@ -1,0 +1,18 @@
+== markdown p2 landing 2026-09-07T16:31:35Z over 6f21d79
+== status
+ M README.md
+ M guides/markdown.md
+ M src/core/Markdown.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts    |  17 ++-
+ tests/guides.test.ts |  75 +++++++++-
+ 8 files changed, 325 insertions(+), 218 deletions(-)
+== stage by path
+ 8 files changed, 325 insertions(+), 218 deletions(-)
+== committed
+c38ae24 Converge markdown under the equality gate
+(status end)
