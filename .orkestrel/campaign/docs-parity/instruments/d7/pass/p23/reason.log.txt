@@ -1,0 +1,120 @@
+### reason at 49648b5, guide guides/reason.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  97 passed (97)
+   test:guides exit 0
+-- census
+   guides/reason.md surface {"equal":290,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":81,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 14 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Aggregator methods 1 grouped false undescribed ["aggregate"]
+   owner interface AggregatorInterface methods 1 grouped true undescribed []
+   owner class DefinitionBuilder methods 4 grouped false undescribed ["build","clear","destroy","merge"]
+   owner interface DefinitionBuilderInterface methods 4 grouped true undescribed []
+   owner class EquationManager methods 8 grouped false undescribed ["append","destroy","equation","equations","prepend","remove","replace","seat"]
+   owner interface EquationManagerInterface methods 8 grouped true undescribed []
+   owner class Evaluator methods 2 grouped false undescribed ["batch","evaluate"]
+   owner interface EvaluatorInterface methods 2 grouped true undescribed []
+   owner class FactManager methods 8 grouped false undescribed ["append","destroy","fact","facts","prepend","remove","replace","seat"]
+   owner interface FactManagerInterface methods 8 grouped true undescribed []
+   owner class FactorManager methods 7 grouped false undescribed ["append","destroy","factor","factors","prepend","remove","replace"]
+   owner interface FactorManagerInterface methods 7 grouped true undescribed []
+   owner class GroupManager methods 8 grouped false undescribed ["append","destroy","group","groups","prepend","remove","replace","seat"]
+   owner interface GroupManagerInterface methods 8 grouped true undescribed []
+   owner class InferenceManager methods 8 grouped false undescribed ["append","destroy","inference","inferences","prepend","remove","replace","seat"]
+   owner interface InferenceManagerInterface methods 8 grouped true undescribed []
+   owner class InferentialReasoner methods 3 grouped false undescribed ["reason","supports","validate"]
+   owner class LogicalReasoner methods 3 grouped false undescribed ["reason","supports","validate"]
+   owner class QuantitativeReasoner methods 3 grouped false undescribed ["reason","supports","validate"]
+   owner class Reason methods 7 grouped false undescribed ["destroy","reason","reasoner","reasoners","register","supports","validate"]
+   owner interface ReasonInterface methods 7 grouped true undescribed []
+   owner interface ReasonerInterface methods 3 grouped true undescribed []
+   owner class RuleManager methods 8 grouped false undescribed ["append","destroy","prepend","remove","replace","rule","rules","seat"]
+   owner interface RuleManagerInterface methods 8 grouped true undescribed []
+   owner class SubjectBuilder methods 9 grouped false undescribed ["build","clear","destroy","field","fields","merge","remove","repeat","set"]
+   owner interface SubjectBuilderInterface methods 9 grouped true undescribed []
+   owner class SymbolicReasoner methods 3 grouped false undescribed ["reason","supports","validate"]
+   owner class Transformer methods 2 grouped false undescribed ["apply","chain"]
+   owner interface TransformerInterface methods 2 grouped true undescribed []
+   owner class VariableManager methods 6 grouped false undescribed ["add","destroy","remove","seat","variable","variables"]
+   owner interface VariableManagerInterface methods 6 grouped true undescribed []
+   examples titledFences 11 titledExamples ["createReason:Create an orchestrator and score a subject"] pairs ["Create an orchestrator and score a subject"]
+-- sites: surface row guides/reason.md:53; methods row guides/reason.md:414; title src/core/factories.ts:261
+-- control A: one Surface Summary cell altered (guides/reason.md:53)
+guides/reason.md function createReason: guide "Creates the reasoning orchestrator. Control." source "Creates the reasoning orchestrator."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Reason > keeps every compared summary and example equal to its source
+Tests  1 failed | 96 passed (97)
+× keeps every compared summary and example equal to its source 12ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/reason.md:414)
+guides/reason.md ReasonInterface.reason: guide "Dispatches one subject — or maps a subject array in order — to the registered reasoner. Control." source "Dispatches one subject — or maps a subject array in order — to the registered reasoner."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Reason > keeps every compared summary and example equal to its source
+Tests  1 failed | 96 passed (97)
+× keeps every compared summary and example equal to its source 13ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates the reasoning orchestrator.
+guides/reason.md function createReason: guide "Creates the reasoning orchestrator." source "Control Creates the reasoning orchestrator."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Reason > keeps every compared summary and example equal to its source
+Tests  1 failed | 96 passed (97)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Reason.ts:20:  * Control Implements the reasoning orchestrator — a thin router over registered
+guides/reason.md class Reason: guide "Implements the reasoning orchestrator — a thin router over registered `ReasonerInterface`s." source "Control Implements the reasoning orchestrator — a thin router over registered `ReasonerInterface`s."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Reason > keeps every compared summary and example equal to its source
+Tests  1 failed | 96 passed (97)
+× keeps every compared summary and example equal to its source 10ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:261)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 96 passed (97)
+× pairs at least one example title across the guide and the source 138ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/reason.md Create an orchestrator and score a subject: guide "ts\nimport {\n\tcreateFactorGroup,\n\tcreateFieldFactor,\n\tcreateQuantitativeDefinition,\n\tcreateQuantitativeReasoner,\n\tcreateReason,\n\tcreateStaticFactor,\n} from '@orkestrel/reason'\n\nconst reason = createReason({ reasoners: [createQuantitativeReasoner()] })\n\nconst definition = createQuantitativeDefinition('risk', 'Risk score', [\n\tcreateFactorGroup('drivers', 'sum', [\n\t\tcreateFieldFactor('age', 'age'), // reads subject.age, parseNumber-coerced\n\t\tcreateStaticFactor('floor', 10), // a fixed contribution\n\t]),\n])\n\nconst result = reason.reason({ age: 25 }, definition) // one subject → one result\nif (result.reasoning === 'quantitative') result.value // 35 — narrow by the discriminant\nresult.trace // the step-by-step account of how the value came to be\n\nreason.supports('quantitative') // true — a reasoner IS registered for this reasoning\nreason.reasoner('quantitative')?.supports(definition) // the reasoner's own guard, same check" source "ts\nimport { // control\n\tcreateFactorGroup,\n\tcreateFieldFactor,\n\tcreateQuantitativeDefinition,\n\tcreateQuantitativeReasoner,\n\tcreateReason,\n\tcreateStaticFactor,\n} from '@orkestrel/reason'\n\nconst reason = createReason({ reasoners: [createQuantitativeReasoner()] })\n\nconst definition = createQuantitativeDefinition('risk', 'Risk score', [\n\tcreateFactorGroup('drivers', 'sum', [\n\t\tcreateFieldFactor('age', 'age'), // reads subject.age, parseNumber-coerced\n\t\tcreateStaticFactor('floor', 10), // a fixed contribution\n\t]),\n])\n\nconst result = reason.reason({ age: 25 }, definition) // one subject → one result\nif (result.reasoning === 'quantitative') result.value // 35 — narrow by the discriminant\nresult.trace // the step-by-step account of how the value came to be\n\nreason.supports('quantitative') // true — a reasoner IS registered for this reasoning\nreason.reasoner('quantitative')?.supports(definition) // the reasoner's own guard, same check"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Reason > keeps every compared summary and example equal to its source
+Tests  1 failed | 96 passed (97)
+× keeps every compared summary and example equal to its source 12ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/reason.md pitch: readme "Control: A synchronous, deterministic reasoning engine: declarative JSON-serializable definitions evaluated against plain subject records to produce traceable results, through the `quantitative`, `logical`, `symbolic`, and `inferential` strategies behind one dispatch surface." tagline "A synchronous, deterministic reasoning engine: declarative JSON-serializable definitions evaluated against plain subject records to produce traceable results, through the `quantitative`, `logical`, `symbolic`, and `inferential` strategies behind one dispatch surface."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A synchronous, deterministic…' to be 'A synchronous, deterministic reasonin…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 96 passed (97)
+× opens the README with the guide tagline 48ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/reason.md function createVariableManager: guide absent source "Creates a `VariableManager` — a self-owning manager over a symbolic definition's `variables` (a name-keyed record; `add` / `remove` only)."
+guides/reason.md function createFactManager: guide absent source "Creates a `FactManager` — a self-owning manager over an inferential definition's `facts`."
+guides/reason.md function createInferenceManager: guide absent source "Creates an `InferenceManager` — a self-owning manager over an inferential definition's `inferences`."
+rows read: 1, disagreements found: 17
+   docs exit 1
+AssertionError: expected [ …(17) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Reason > keeps every compared summary and example equal to its source
+Tests  1 failed | 96 passed (97)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

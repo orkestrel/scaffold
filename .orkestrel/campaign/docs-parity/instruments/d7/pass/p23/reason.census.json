@@ -1,0 +1,391 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-reason",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/reason.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 290,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 14,
+    "counts": {
+     "equal": 81,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Aggregator",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "aggregate"
+     ]
+    },
+    {
+     "name": "AggregatorInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "DefinitionBuilder",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "build",
+      "clear",
+      "destroy",
+      "merge"
+     ]
+    },
+    {
+     "name": "DefinitionBuilderInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "EquationManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "append",
+      "destroy",
+      "equation",
+      "equations",
+      "prepend",
+      "remove",
+      "replace",
+      "seat"
+     ]
+    },
+    {
+     "name": "EquationManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Evaluator",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "batch",
+      "evaluate"
+     ]
+    },
+    {
+     "name": "EvaluatorInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "FactManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "append",
+      "destroy",
+      "fact",
+      "facts",
+      "prepend",
+      "remove",
+      "replace",
+      "seat"
+     ]
+    },
+    {
+     "name": "FactManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "FactorManager",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "append",
+      "destroy",
+      "factor",
+      "factors",
+      "prepend",
+      "remove",
+      "replace"
+     ]
+    },
+    {
+     "name": "FactorManagerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "GroupManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "append",
+      "destroy",
+      "group",
+      "groups",
+      "prepend",
+      "remove",
+      "replace",
+      "seat"
+     ]
+    },
+    {
+     "name": "GroupManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "InferenceManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "append",
+      "destroy",
+      "inference",
+      "inferences",
+      "prepend",
+      "remove",
+      "replace",
+      "seat"
+     ]
+    },
+    {
+     "name": "InferenceManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "InferentialReasoner",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "reason",
+      "supports",
+      "validate"
+     ]
+    },
+    {
+     "name": "LogicalReasoner",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "reason",
+      "supports",
+      "validate"
+     ]
+    },
+    {
+     "name": "QuantitativeReasoner",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "reason",
+      "supports",
+      "validate"
+     ]
+    },
+    {
+     "name": "Reason",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "reason",
+      "reasoner",
+      "reasoners",
+      "register",
+      "supports",
+      "validate"
+     ]
+    },
+    {
+     "name": "ReasonInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ReasonerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RuleManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "append",
+      "destroy",
+      "prepend",
+      "remove",
+      "replace",
+      "rule",
+      "rules",
+      "seat"
+     ]
+    },
+    {
+     "name": "RuleManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SubjectBuilder",
+     "keyword": "class",
+     "methods": 9,
+     "grouped": false,
+     "undescribed": [
+      "build",
+      "clear",
+      "destroy",
+      "field",
+      "fields",
+      "merge",
+      "remove",
+      "repeat",
+      "set"
+     ]
+    },
+    {
+     "name": "SubjectBuilderInterface",
+     "keyword": "interface",
+     "methods": 9,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SymbolicReasoner",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "reason",
+      "supports",
+      "validate"
+     ]
+    },
+    {
+     "name": "Transformer",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "apply",
+      "chain"
+     ]
+    },
+    {
+     "name": "TransformerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "VariableManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "destroy",
+      "remove",
+      "seat",
+      "variable",
+      "variables"
+     ]
+    },
+    {
+     "name": "VariableManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Create an orchestrator and score a subject",
+     "Quantitative scoring",
+     "Numeric domains",
+     "Logical chaining — forward and backward",
+     "Symbolic solving",
+     "Inferential derivation and proof",
+     "Shaping definitions as data",
+     "The definition workspace — DefinitionBuilder",
+     "The subject workspace — SubjectBuilder",
+     "Observing",
+     "Narrowing untrusted definitions"
+    ],
+    "titledExamples": [
+     "createReason:Create an orchestrator and score a subject"
+    ],
+    "pairs": [
+     "Create an orchestrator and score a subject"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}
