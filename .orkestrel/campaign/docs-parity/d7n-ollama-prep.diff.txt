@@ -1,0 +1,3926 @@
+diff --git a/.oxlintrc.json b/.oxlintrc.json
+index 483c955..16e2efc 100644
+--- a/.oxlintrc.json
++++ b/.oxlintrc.json
+@@ -57,7 +57,9 @@
+ 		"vitest/warn-todo": "off",
+ 
+ 		"policy/no-mocking": "error",
+-		"policy/no-keyword-privacy": "error"
++		"policy/no-keyword-privacy": "error",
++		"policy/no-malformed-summary": "error",
++		"policy/no-banned-term": "error"
+ 	},
+ 	"categories": {
+ 		"correctness": "error",
+diff --git a/configs/helpers.ts b/configs/helpers.ts
+index 8734914..9836808 100644
+--- a/configs/helpers.ts
++++ b/configs/helpers.ts
+@@ -441,14 +441,20 @@ export function outputBoundary(output: string): Plugin {
+ 	}
+ }
+ 
+-/** The compiler scope a face resolves to, as its declaration emit and its roll-up both read it. */
++/**
++ * Describes the compiler scope a face resolves to, as its declaration emit and its roll-up both
++ * read it.
++ */
+ export interface ProjectScope {
+ 	readonly lib: readonly string[]
+ 	readonly types: readonly string[]
+ 	readonly root: string
+ }
+ 
+-/** The `overrideTsconfig` a declaration roll-up hands the extractor, and every option it may read. */
++/**
++ * Describes the `overrideTsconfig` a declaration roll-up hands the extractor, and every option it
++ * may read.
++ */
+ export interface ExtractorOverride {
+ 	readonly compilerOptions: {
+ 		readonly types: readonly string[]
+@@ -462,7 +468,10 @@ export interface ExtractorOverride {
+ 	readonly files: readonly string[]
+ }
+ 
+-/** The extractor exports a declaration roll-up dereferences, named as that package publishes them. */
++/**
++ * Lists the extractor exports a declaration roll-up dereferences, named as that package publishes
++ * them.
++ */
+ export interface ExtractorModule {
+ 	readonly Extractor: { readonly invoke: (config: unknown, options: unknown) => unknown }
+ 	readonly ExtractorConfig: { readonly prepare: (options: unknown) => unknown }
+diff --git a/configs/policy.ts b/configs/policy.ts
+index 4bbc05c..0a49e31 100644
+--- a/configs/policy.ts
++++ b/configs/policy.ts
+@@ -1,10 +1,10 @@
+-/** The syntax-node fields supplied to every policy visitor. */
++/** Describes the syntax-node fields supplied to every policy visitor. */
+ export interface PolicyNode {
+ 	readonly type: string
+ 	readonly range: [number, number]
+ }
+ 
+-/** The expression fields inspected by the policy rules. */
++/** Describes the expression fields the policy rules inspect. */
+ export interface PolicyExpression extends PolicyNode {
+ 	readonly parent?: PolicyExpression | null
+ 	readonly name?: unknown
+@@ -32,41 +32,73 @@ export interface PolicyExpression extends PolicyNode {
+ 	readonly imported?: PolicyExpression
+ }
+ 
+-/** One declared module function paired with the name a prefix rule reads. */
++/** Pairs one declared module function with the name a prefix rule reads. */
+ export interface PolicyBinding {
+ 	readonly node: PolicyExpression
+ 	readonly name: string | undefined
+ }
+ 
+-/** One diagnostic emitted by a policy rule. */
++/** Describes one comment the comment rules read out of a linted file. */
++export interface PolicyComment extends PolicyNode {
++	readonly type: 'Block' | 'Line' | 'Shebang'
++	readonly value: string
++}
++
++/** Lists the Oxlint source-text operations the comment rules read. */
++export interface PolicySourceCode {
++	readonly text: string
++	getAllComments(): readonly PolicyComment[]
++}
++
++/** Pairs one doc block with the declared name its first sentence must not repeat. */
++export interface PolicyDoc {
++	readonly comment: PolicyComment
++	readonly name: string | undefined
++}
++
++/** Describes one banned term, the prose it matches, and the replacement its row names. */
++export interface PolicyTerm {
++	readonly term: string
++	readonly pattern: RegExp
++	readonly replacement: string
++}
++
++/** Pairs one banned-term match with the offset it starts at. */
++export interface PolicyHit {
++	readonly term: PolicyTerm
++	readonly index: number
++}
++
++/** Describes one diagnostic a policy rule emits. */
+ export interface PolicyDiagnostic {
+-	readonly node: PolicyExpression
++	readonly node: PolicyNode
+ 	readonly messageId: string
+ 	readonly data?: Readonly<Record<string, string>>
+ }
+ 
+-/** The Oxlint context operations used by the policy rules. */
++/** Lists the Oxlint context operations the policy rules use. */
+ export interface PolicyContext {
+ 	readonly filename: string
+-	/** The directory Oxlint resolves `filename` against. */
++	/** Names the directory Oxlint resolves `filename` against. */
+ 	readonly cwd: string
++	readonly sourceCode: PolicySourceCode
+ 	report(diagnostic: PolicyDiagnostic): void
+ }
+ 
+-/** The rule documentation fields supplied to Oxlint. */
++/** Describes the rule documentation fields supplied to Oxlint. */
+ export interface PolicyDocs {
+ 	readonly [key: string]: unknown
+ 	readonly description: string
+ }
+ 
+-/** The rule metadata fields supplied to Oxlint. */
++/** Describes the rule metadata fields supplied to Oxlint. */
+ export interface PolicyMeta {
+ 	readonly type: 'problem'
+ 	readonly docs: PolicyDocs
+ 	readonly messages: Readonly<Record<string, string>>
+ }
+ 
+-/** The Oxlint visitor entries used by the policy rules. */
++/** Lists the Oxlint visitor entries the policy rules use. */
+ export interface PolicyVisitor {
+ 	readonly [key: string]: ((node: PolicyNode) => void) | undefined
+ 	readonly Program?: (node: PolicyNode) => void
+@@ -91,13 +123,13 @@ export interface PolicyVisitor {
+ 	readonly VariableDeclaration?: (node: PolicyNode) => void
+ }
+ 
+-/** The complete behavior exposed by one policy rule. */
++/** Describes the complete behavior one policy rule exposes. */
+ export interface PolicyRuleInterface {
+ 	readonly meta: PolicyMeta
+ 	create(context: PolicyContext): PolicyVisitor
+ }
+ 
+-/** Every centralized module named by the architecture kind table. */
++/** Lists every centralized module the architecture kind table names. */
+ export const CENTRAL_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'cloners.ts',
+ 	'combinators.ts',
+@@ -122,7 +154,7 @@ export const CENTRAL_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'validators.ts',
+ ])
+ 
+-/** The exhaustive centralized-file set that permits module functions. */
++/** Lists the exhaustive centralized-file set that permits module functions. */
+ export const FUNCTION_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'cloners.ts',
+ 	'combinators.ts',
+@@ -141,7 +173,7 @@ export const FUNCTION_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'validators.ts',
+ ])
+ 
+-/** Centralized files that permit module data by declaration syntax. */
++/** Lists the centralized files that permit module data by declaration syntax. */
+ export const DATA_SOURCE_FILES: readonly string[] = Object.freeze([
+ 	'combinators.ts',
+ 	'constants.ts',
+@@ -155,30 +187,30 @@ export const DATA_SOURCE_FILES: readonly string[] = Object.freeze([
+ ])
+ 
+ /**
+- * Files excluded from the module-data rule because their namespace values hold helper behavior.
+- * This exclusion also permits unrelated module data such as `export const RETRIES = 3`.
++ * Lists the files excluded from the module-data rule because their namespace values hold helper
++ * behavior. This exclusion also permits unrelated module data such as `export const RETRIES = 3`.
+  */
+ export const DATA_EXEMPT_FILES: readonly string[] = Object.freeze(['helpers.ts'])
+ 
+-/** Fleet-registered folders whose direct modules each contain one named function. */
++/** Lists the fleet-registered folders whose direct modules each contain one named function. */
+ export const FUNCTION_DOMAIN_FOLDERS: readonly string[] = Object.freeze([
+ 	'app/browser/composables',
+ 	'src/server/execution',
+ ])
+ 
+-/** The registered function-domain names no source file may take as its stem. */
++/** Lists the registered function-domain names no source file may take as its stem. */
+ export const FUNCTION_DOMAIN_NAMES: readonly string[] = Object.freeze(
+ 	FUNCTION_DOMAIN_FOLDERS.map((folder) => folder.slice(folder.lastIndexOf('/') + 1)),
+ )
+ 
+-/** Every ambient declaration suffix the placement and line-ending rules leave uninspected. */
++/** Lists every ambient declaration suffix the placement and line-ending rules leave uninspected. */
+ export const POLICY_AMBIENT_SUFFIXES: readonly string[] = Object.freeze([
+ 	'.d.cts',
+ 	'.d.mts',
+ 	'.d.ts',
+ ])
+ 
+-/** TypeScript source extensions whose declaration syntax the placement rules read. */
++/** Lists the TypeScript source extensions whose declaration syntax the placement rules read. */
+ export const POLICY_SOURCE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'cts',
+ 	'mts',
+@@ -186,35 +218,172 @@ export const POLICY_SOURCE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'tsx',
+ ])
+ 
+-/** The lint populations the placement rules run over, as the Oxlint configuration declares them. */
++/**
++ * Matches the lint populations the placement rules run over, as the Oxlint configuration declares
++ * them.
++ */
+ export const POLICY_PLACEMENT_GLOBS: readonly string[] = Object.freeze([
+ 	`app/**/*.{${POLICY_SOURCE_EXTENSIONS.join(',')}}`,
+ 	`src/**/*.{${POLICY_SOURCE_EXTENSIONS.join(',')}}`,
+ ])
+ 
+-/** The lint population the line-ending rule runs over, as the Oxlint configuration declares it. */
++/**
++ * Matches the lint population the line-ending rule runs over, as the Oxlint configuration declares
++ * it.
++ */
+ export const POLICY_ENDING_GLOBS: readonly string[] = Object.freeze([
+ 	'app/**/*.ts',
+ 	'configs/**/*.ts',
+ 	'src/**/*.ts',
+ ])
+ 
+-/** The file name shape an implementation file takes, holding the class that matches its stem. */
++/**
++ * Matches the file name shape an implementation file takes, holding the class that matches its
++ * stem.
++ */
+ export const POLICY_CLASS_PATTERN = /^[A-Z][A-Za-z0-9]*\.ts$/u
+ 
+-/** The name shape every constants.ts declaration takes. */
++/** Matches the name shape every constants.ts declaration takes. */
+ export const POLICY_CONSTANT_PATTERN = /^[A-Z][A-Z0-9_]*$/u
+ 
+-/** The file name shape a direct module of a registered function domain takes. */
++/** Matches the file name shape a direct module of a registered function domain takes. */
+ export const POLICY_DOMAIN_PATTERN = /^[a-z][A-Za-z0-9]*\.ts$/u
+ 
+-/** The file name a policy rule keys on, read from either host separator. */
++/** Matches a first word that reads as a third-person verb. */
++export const POLICY_VOICE_PATTERN = /^[A-Z][a-z]*s$/u
++
++/** Matches the boundary a description paragraph's first sentence ends at. */
++export const POLICY_SENTENCE_PATTERN = /\.\s|\.$/u
++
++/** Matches the continuation marker a doc block repeats on each line after its opening. */
++export const POLICY_MARKER_PATTERN = /^\s*\*\s?/u
++
++/** Matches one line break in any host's form. */
++export const POLICY_BREAK_PATTERN = /\r\n|\r|\n/u
++
++/** Matches a fenced code block, opening run through closing run. */
++export const POLICY_FENCE_PATTERN = /^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gmu
++
++/** Matches an inline code span, including one a line break runs through. */
++export const POLICY_SPAN_PATTERN = /(`+)(?!`)[\s\S]*?[^`]\1(?!`)/gu
++
++/** Matches a link or inherited-documentation tag, whose target is a symbol rather than prose. */
++export const POLICY_TAG_PATTERN = /\{@(?:linkcode|linkplain|link|inheritDoc)\b[^}]*\}/giu
++
++/** Matches a URL, whose segments are an address rather than prose. */
++export const POLICY_URL_PATTERN = /https?:\/\/\S+/gu
++
++/**
++ * Lists the words ending in `s` that open a sentence without being a third-person verb.
++ *
++ * @remarks
++ * The voice rule reads a first word rather than a parsed verb, so a demonstrative, a pronoun, an
++ * adverb, and a singular noun ending in `s` each need naming here to stay refused.
++ */
++export const POLICY_VOICE_STOPWORDS: readonly string[] = Object.freeze([
++	'Access',
++	'Across',
++	'Address',
++	'Alias',
++	'Always',
++	'Analysis',
++	'Assess',
++	'Basis',
++	'Bias',
++	'Bus',
++	'Business',
++	'Canvas',
++	'Chaos',
++	'Class',
++	'Compress',
++	'Cross',
++	'Discuss',
++	'Dismiss',
++	'Express',
++	'Focus',
++	'Gas',
++	'Guess',
++	'Harness',
++	'Its',
++	'Lens',
++	'Miss',
++	'Numerous',
++	'Pass',
++	'Perhaps',
++	'Plus',
++	'Press',
++	'Previous',
++	'Process',
++	'Progress',
++	'Series',
++	'Sometimes',
++	'Status',
++	'Success',
++	'This',
++	'Thus',
++	'Unless',
++	'Various',
++	'Was',
++	'Whereas',
++	'Witness',
++	'Yes',
++])
++
++/**
++ * Lists every substitution-table row whose ban is unconditional, beside its replacement.
++ *
++ * @remarks
++ * Each pattern is case-insensitive, word-bounded, and global, and carries the inflections its row
++ * reaches.
++ */
++export const POLICY_BANNED_TERMS: readonly PolicyTerm[] = Object.freeze([
++	{ term: 'should', pattern: /\bshould\b/giu, replacement: 'must, can, might, or the imperative' },
++	{ term: 'simply', pattern: /\bsimply\b/giu, replacement: 'delete' },
++	{ term: 'easy', pattern: /\beas(?:y|ier|iest|ily)\b/giu, replacement: 'delete' },
++	{ term: 'just', pattern: /\bjust\b/giu, replacement: 'delete' },
++	{ term: 'currently', pattern: /\bcurrently\b/giu, replacement: 'delete, or give the date' },
++	{ term: 'utilize', pattern: /\butiliz(?:e|es|ed|ing|ation)\b/giu, replacement: 'use' },
++	{ term: 'leverage', pattern: /\bleverag(?:e|es|ed|ing)\b/giu, replacement: 'use' },
++	{ term: 'via', pattern: /\bvia\b/giu, replacement: 'through, by using' },
++	{ term: 'in order to', pattern: /\bin order to\b/giu, replacement: 'to' },
++	{ term: 'e.g.', pattern: /\be\.g\./giu, replacement: 'for example' },
++	{ term: 'i.e.', pattern: /\bi\.e\./giu, replacement: 'that is' },
++	{ term: 'etc.', pattern: /\betc\./giu, replacement: 'bound the list, or recast the sentence' },
++	{ term: 'performant', pattern: /\bperformant\b/giu, replacement: 'the measured property' },
++	{ term: 'robust', pattern: /\brobust(?:ly|ness)?\b/giu, replacement: 'the measured property' },
++	{ term: 'allows you to', pattern: /\ballows you to\b/giu, replacement: 'lets you' },
++	{ term: 'and/or', pattern: /\band\/or\b/giu, replacement: 'and, or, or both' },
++	{ term: 'please', pattern: /\bplease\b/giu, replacement: 'delete' },
++	{ term: 'sanity check', pattern: /\bsanity[ -]check/giu, replacement: 'quick check' },
++	{ term: 'dummy', pattern: /\bdumm(?:y|ies)\b/giu, replacement: 'placeholder' },
++	{ term: 'blacklist', pattern: /\bblacklist(?:s|ed|ing)?\b/giu, replacement: 'denylist' },
++	{ term: 'whitelist', pattern: /\bwhitelist(?:s|ed|ing)?\b/giu, replacement: 'allowlist' },
++	{ term: 'slave', pattern: /\bslave\b/giu, replacement: 'replica' },
++])
++
++/**
++ * Lists every substitution-table row a reader rules by sense, which no pattern matches.
++ *
++ * @remarks
++ * Each row carries a permitted sense: a date value, a version value, a causal clause, and the name
++ * a replication topology takes. The currency check proves each row is registered here.
++ */
++export const POLICY_JUDGED_TERMS: readonly string[] = Object.freeze([
++	'now',
++	'new',
++	'latest',
++	'once',
++	'since',
++	'master',
++])
++
++/** Returns the file name a policy rule keys on, read from either host separator. */
+ export function pathToPolicyFile(filename: string): string {
+ 	const normalized = filename.replaceAll('\\', '/')
+ 	return normalized.slice(normalized.lastIndexOf('/') + 1)
+ }
+ 
+-/** The folder path a policy rule keys on, read from either host separator. */
++/** Returns the folder path a policy rule keys on, read from either host separator. */
+ export function pathToPolicyFolder(filename: string): string {
+ 	const normalized = filename.replaceAll('\\', '/')
+ 	const boundary = normalized.lastIndexOf('/')
+@@ -222,12 +391,12 @@ export function pathToPolicyFolder(filename: string): string {
+ }
+ 
+ /**
+- * The workspace-relative path when the file sits under the directory the linter resolved it
++ * Returns the workspace-relative path when the file sits under the directory the linter resolved it
+  * against, else the path as given. The linter resolves each file against its own directory, the
+  * workspace root under the `lint` scripts and its package directory under `RuleTester`, so a file
+  * outside that directory keeps its path and matches no registered domain folder, because a
+- * registered folder is workspace-relative. For a workspace at the filesystem root the prefix is
+- * the separator alone. A drive-letter case difference between the two arguments is not folded.
++ * registered folder is workspace-relative. For a workspace at the filesystem root the prefix is the
++ * separator alone. A drive-letter case difference between the two arguments is not folded.
+  */
+ export function pathToPolicyRelative(filename: string, cwd: string): string {
+ 	const normalizedFile = filename.replaceAll('\\', '/')
+@@ -236,20 +405,20 @@ export function pathToPolicyRelative(filename: string, cwd: string): string {
+ 	return normalizedFile.startsWith(prefix) ? normalizedFile.slice(prefix.length) : normalizedFile
+ }
+ 
+-/** The extensionless stem of one policy file name. */
++/** Returns the extensionless stem of one policy file name. */
+ export function fileToPolicyStem(file: string): string {
+ 	const boundary = file.lastIndexOf('.')
+ 	return boundary <= 0 ? file : file.slice(0, boundary)
+ }
+ 
+-/** Whether a path names an ambient declaration file, which no policy rule inspects. */
++/** Reports whether a path names an ambient declaration file, which no policy rule inspects. */
+ export function isPolicyAmbient(filename: string): boolean {
+ 	const file = pathToPolicyFile(filename)
+ 	return POLICY_AMBIENT_SUFFIXES.some((suffix) => file.endsWith(suffix))
+ }
+ 
+ /**
+- * Whether a path is a direct module of a fleet-registered function domain.
++ * Reports whether a path is a direct module of a fleet-registered function domain.
+  *
+  * The registered folder is a workspace-relative path, compared by equality after the linter's own
+  * directory is stripped from the given path.
+@@ -267,7 +436,7 @@ export function isPolicyDomain(filename: string, cwd: string): boolean {
+ 	)
+ }
+ 
+-/** The identifier name a node carries, or `undefined` for any other syntax. */
++/** Returns the identifier name a node carries, or `undefined` for any other syntax. */
+ export function identifierToPolicyName(
+ 	node: PolicyExpression | null | undefined,
+ ): string | undefined {
+@@ -275,7 +444,7 @@ export function identifierToPolicyName(
+ 	return typeof node.name === 'string' ? node.name : undefined
+ }
+ 
+-/** The literal text a node carries, through a single-quasi template literal. */
++/** Returns the literal text a node carries, through a single-quasi template literal. */
+ export function expressionToPolicyText(
+ 	node: PolicyExpression | null | undefined,
+ ): string | undefined {
+@@ -295,21 +464,21 @@ export function expressionToPolicyText(
+ 	return typeof cooked === 'string' ? cooked : typeof raw === 'string' ? raw : undefined
+ }
+ 
+-/** The single body expression a node holds, excluding a statement list. */
++/** Returns the single body expression a node holds, excluding a statement list. */
+ export function expressionToPolicyBody(node: PolicyExpression): PolicyExpression | undefined {
+ 	const body = node.body
+ 	if (body === undefined) return undefined
+ 	return 'type' in body ? body : undefined
+ }
+ 
+-/** The top-level statements a program holds. */
++/** Returns the top-level statements a program holds. */
+ export function programToPolicyStatements(node: PolicyExpression): readonly PolicyExpression[] {
+ 	const body = node.body
+ 	if (body === undefined || 'type' in body) return []
+ 	return body
+ }
+ 
+-/** The declaration a top-level statement holds, through either export form. */
++/** Returns the declaration a top-level statement holds, through either export form. */
+ export function statementToPolicyDeclaration(node: PolicyExpression): PolicyExpression | undefined {
+ 	if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration') {
+ 		return node.declaration
+@@ -317,7 +486,7 @@ export function statementToPolicyDeclaration(node: PolicyExpression): PolicyExpr
+ 	return node
+ }
+ 
+-/** Whether a statement sits at module scope, through either export form. */
++/** Reports whether a statement sits at module scope, through either export form. */
+ export function isPolicyTop(node: PolicyExpression): boolean {
+ 	const parent = node.parent
+ 	if (parent === undefined || parent === null) return false
+@@ -328,7 +497,7 @@ export function isPolicyTop(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a policy expression is runtime function syntax. */
++/** Reports whether a policy expression is runtime function syntax. */
+ export function isPolicyFunction(node: PolicyExpression): boolean {
+ 	return (
+ 		node.type === 'FunctionDeclaration' ||
+@@ -337,17 +506,17 @@ export function isPolicyFunction(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a node declares a module function, including a signature without a body. */
++/** Reports whether a node declares a module function, including a signature without a body. */
+ export function isPolicyDeclaredFunction(node: PolicyExpression): boolean {
+ 	return node.type === 'FunctionDeclaration' || node.type === 'TSDeclareFunction'
+ }
+ 
+-/** Whether a policy function is anonymous. */
++/** Reports whether a policy function is anonymous. */
+ export function isPolicyAnonymous(node: PolicyExpression): boolean {
+ 	return node.type === 'ArrowFunctionExpression' || node.id === null
+ }
+ 
+-/** Return the outermost parenthesized expression holding a policy function. */
++/** Returns the outermost parenthesized expression holding a policy function. */
+ export function functionToPolicyPosition(node: PolicyExpression): PolicyExpression {
+ 	let position = node
+ 	while (position.parent?.type === 'ParenthesizedExpression') {
+@@ -356,7 +525,7 @@ export function functionToPolicyPosition(node: PolicyExpression): PolicyExpressi
+ 	return position
+ }
+ 
+-/** Whether a policy function is an anonymous callback passed directly as an argument. */
++/** Reports whether a policy function is an anonymous callback passed directly as an argument. */
+ export function isPolicyCallback(node: PolicyExpression): boolean {
+ 	if (!isPolicyAnonymous(node)) return false
+ 	const position = functionToPolicyPosition(node)
+@@ -367,7 +536,7 @@ export function isPolicyCallback(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a policy function is an anonymous function returned directly as a result. */
++/** Reports whether a policy function is an anonymous function returned directly as a result. */
+ export function isPolicyResult(node: PolicyExpression): boolean {
+ 	if (!isPolicyAnonymous(node)) return false
+ 	const position = functionToPolicyPosition(node)
+@@ -378,7 +547,7 @@ export function isPolicyResult(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether an Oxlint function expression represents method syntax. */
++/** Reports whether an Oxlint function expression represents method syntax. */
+ export function isPolicyMethod(node: PolicyExpression): boolean {
+ 	const parent = node.parent
+ 	return (
+@@ -390,7 +559,10 @@ export function isPolicyMethod(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether a policy function sits inside another function before any class-expression boundary. */
++/**
++ * Reports whether a policy function sits inside another function before any class-expression
++ * boundary.
++ */
+ export function hasPolicyFunctionAncestor(node: PolicyExpression): boolean {
+ 	let parent = node.parent
+ 	let method = false
+@@ -406,7 +578,7 @@ export function hasPolicyFunctionAncestor(node: PolicyExpression): boolean {
+ 	return method
+ }
+ 
+-/** Whether an arrow is the policy plugin's sanctioned visitor-table delegation. */
++/** Reports whether an arrow is the policy plugin's sanctioned visitor-table delegation. */
+ export function isPolicyVisitor(node: PolicyExpression): boolean {
+ 	const body = expressionToPolicyBody(node)
+ 	if (
+@@ -443,7 +615,7 @@ export function isPolicyVisitor(node: PolicyExpression): boolean {
+ }
+ 
+ /**
+- * Return the module-scope statement that owns a policy function, or `undefined` when none does.
++ * Returns the module-scope statement that owns a policy function, or `undefined` when none does.
+  *
+  * A class declaration or class expression on the way up ends the search, because the placement law
+  * reads module regions rather than class members.
+@@ -460,7 +632,7 @@ export function functionToPolicyRegion(node: PolicyExpression): PolicyExpression
+ 	return undefined
+ }
+ 
+-/** Every module function a top-level statement declares, paired with its declared name. */
++/** Lists every module function a top-level statement declares, paired with its declared name. */
+ export function statementToPolicyBindings(node: PolicyExpression): readonly PolicyBinding[] {
+ 	if (isPolicyDeclaredFunction(node)) {
+ 		return [{ node, name: identifierToPolicyName(node.id) }]
+@@ -477,7 +649,7 @@ export function statementToPolicyBindings(node: PolicyExpression): readonly Poli
+ 	return bindings
+ }
+ 
+-/** Whether a call trims a whole payload before splitting it on a line feed. */
++/** Reports whether a call trims a whole payload before splitting it on a line feed. */
+ export function isPolicySplit(node: PolicyExpression): boolean {
+ 	if (node.type !== 'CallExpression' || node.arguments?.length !== 1) return false
+ 	const split = node.callee
+@@ -494,7 +666,7 @@ export function isPolicySplit(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether an expression reads the host line ending from a binding named os. */
++/** Reports whether an expression reads the host line ending from a binding named os. */
+ export function isPolicyTerminator(node: PolicyExpression): boolean {
+ 	return (
+ 		node.type === 'MemberExpression' &&
+@@ -504,7 +676,7 @@ export function isPolicyTerminator(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Whether an import declaration takes the EOL member from the host module. */
++/** Reports whether an import declaration takes the EOL member from the host module. */
+ export function importsPolicyTerminator(node: PolicyExpression): boolean {
+ 	const specifier = expressionToPolicyText(node.source)
+ 	if (specifier !== 'node:os' && specifier !== 'os') return false
+@@ -514,7 +686,165 @@ export function importsPolicyTerminator(node: PolicyExpression): boolean {
+ 	)
+ }
+ 
+-/** Report function syntax nested inside another function body. */
++/**
++ * Blanks every character of a matched region, holding its length and its line breaks.
++ *
++ * @param text - The matched region to blank.
++ * @returns The region with each character outside a line break replaced by a space.
++ */
++export function blankPolicyText(text: string): string {
++	return text.replace(/[^\n]/gu, ' ')
++}
++
++/**
++ * Blanks the regions of a text whose content is code, an address, or a symbol rather than prose.
++ *
++ * @remarks
++ * A fenced block, an inline code span a line break runs through, a link tag, and a URL each carry
++ * tokens a reader is meant to copy rather than read, so a banned term inside one is not prose. Each
++ * region is blanked in place, so every offset the caller reports stays the offset in the original
++ * text.
++ *
++ * @param text - The prose to strip, with any continuation marker already removed.
++ * @returns The same text with every code, tag, and address region replaced by spaces.
++ */
++export function stripPolicyCode(text: string): string {
++	const fenced = text.replace(POLICY_FENCE_PATTERN, blankPolicyText)
++	const spanned = fenced.replace(POLICY_SPAN_PATTERN, blankPolicyText)
++	const tagged = spanned.replace(POLICY_TAG_PATTERN, blankPolicyText)
++	return tagged.replace(POLICY_URL_PATTERN, blankPolicyText)
++}
++
++/**
++ * Reads every banned term a stripped text carries, in offset order.
++ *
++ * @param text - The prose to read, already stripped of its code regions.
++ * @returns One hit per match, each naming its row and the offset the match starts at.
++ */
++export function textToPolicyHits(text: string): readonly PolicyHit[] {
++	const hits: PolicyHit[] = []
++	for (const term of POLICY_BANNED_TERMS) {
++		for (const match of text.matchAll(term.pattern)) hits.push({ term, index: match.index })
++	}
++	return hits.sort((left, right) => left.index - right.index)
++}
++
++/**
++ * Reads one doc block's description paragraph, which ends at its first block tag.
++ *
++ * @param comment - The doc block to read.
++ * @returns The description with continuation markers removed and whitespace collapsed.
++ */
++export function commentToPolicyParagraph(comment: PolicyComment): string {
++	const description: string[] = []
++	for (const line of comment.value.split(POLICY_BREAK_PATTERN)) {
++		const text = line.replace(POLICY_MARKER_PATTERN, '')
++		if (text.trimStart().startsWith('@')) break
++		description.push(text)
++	}
++	return description.join(' ').replace(/\s+/gu, ' ').trim()
++}
++
++/**
++ * Reads the opening word of a description paragraph, punctuation removed.
++ *
++ * @param paragraph - The collapsed description paragraph.
++ * @returns The paragraph's first word reduced to its letters, empty where it has none.
++ */
++export function paragraphToPolicyOpener(paragraph: string): string {
++	const first = paragraph.match(/^\S+/u)?.[0] ?? ''
++	return first.replace(/[^A-Za-z]/gu, '')
++}
++
++/**
++ * Reports whether an opening word reads as a third-person verb.
++ *
++ * @param word - The opening word to judge.
++ * @returns True if the word ends in `s` and names no registered non-verb; false otherwise.
++ */
++export function isPolicyVoiced(word: string): boolean {
++	return POLICY_VOICE_PATTERN.test(word) && !POLICY_VOICE_STOPWORDS.includes(word)
++}
++
++/**
++ * Pairs every exported top-level statement with the doc block written directly above it.
++ *
++ * @remarks
++ * A statement takes the last comment that closes before it, and takes it only where that comment is
++ * a doc block and nothing but whitespace separates the two. A blank line between them is still
++ * whitespace, so the pairing survives one.
++ *
++ * @param node - The program node whose top-level statements are read.
++ * @param sourceCode - The source-text reader supplying the comments and the text between them.
++ * @returns One entry per documented export, each naming its block and its declared symbol.
++ */
++export function programToPolicyDocs(
++	node: PolicyExpression,
++	sourceCode: PolicySourceCode,
++): readonly PolicyDoc[] {
++	const comments = sourceCode.getAllComments()
++	const docs: PolicyDoc[] = []
++	for (const statement of programToPolicyStatements(node)) {
++		if (!statement.type.startsWith('Export')) continue
++		const start = statement.range[0]
++		let previous: PolicyComment | undefined
++		for (const comment of comments) {
++			if (comment.range[1] <= start) previous = comment
++		}
++		if (previous === undefined || previous.type !== 'Block') continue
++		if (!previous.value.startsWith('*')) continue
++		if (sourceCode.text.slice(previous.range[1], start).trim() !== '') continue
++		const declaration = statement.declaration
++		docs.push({
++			comment: previous,
++			name:
++				identifierToPolicyName(declaration?.id) ??
++				identifierToPolicyName(declaration?.declarations?.[0]?.id),
++		})
++	}
++	return docs
++}
++
++/** Reports a doc block whose first sentence is not a third-person summary of its own symbol. */
++export function reportVoice(context: PolicyContext, doc: PolicyDoc): void {
++	const paragraph = commentToPolicyParagraph(doc.comment)
++	if (!isPolicyVoiced(paragraphToPolicyOpener(paragraph))) {
++		context.report({ node: doc.comment, messageId: 'voice' })
++	}
++	const name = doc.name
++	if (name === undefined) return
++	const sentence = paragraph.split(POLICY_SENTENCE_PATTERN)[0] ?? ''
++	const repeat = new RegExp(`(?<![\\w$])${name.replaceAll('$', '\\$')}(?![\\w$])`, 'u')
++	if (repeat.test(sentence)) {
++		context.report({ node: doc.comment, messageId: 'name', data: { name } })
++	}
++}
++
++/** Reports every voice failure among the doc blocks one program's exports carry. */
++export function reportDocs(context: PolicyContext, node: PolicyExpression): void {
++	for (const doc of programToPolicyDocs(node, context.sourceCode)) reportVoice(context, doc)
++}
++
++/** Reports every banned term one comment's prose carries. */
++export function reportTerm(context: PolicyContext, comment: PolicyComment): void {
++	const lines = comment.value
++		.split(POLICY_BREAK_PATTERN)
++		.map((line) => line.replace(POLICY_MARKER_PATTERN, ''))
++	for (const hit of textToPolicyHits(stripPolicyCode(lines.join('\n')))) {
++		context.report({
++			node: comment,
++			messageId: 'term',
++			data: { term: hit.term.term, replacement: hit.term.replacement },
++		})
++	}
++}
++
++/** Reports every banned term the comments of one linted file carry. */
++export function reportComments(context: PolicyContext): void {
++	for (const comment of context.sourceCode.getAllComments()) reportTerm(context, comment)
++}
++
++/** Reports function syntax nested inside another function body. */
+ export function reportNested(context: PolicyContext, node: PolicyExpression): void {
+ 	if (
+ 		!hasPolicyFunctionAncestor(node) ||
+@@ -528,7 +858,7 @@ export function reportNested(context: PolicyContext, node: PolicyExpression): vo
+ 	context.report({ node, messageId: 'nested' })
+ }
+ 
+-/** Report banned calls on the named Vitest and Jest framework objects. */
++/** Reports banned calls on the named Vitest and Jest framework objects. */
+ export function reportMocking(context: PolicyContext, node: PolicyExpression): void {
+ 	const callee = node.callee
+ 	if (
+@@ -572,7 +902,7 @@ export function reportMocking(context: PolicyContext, node: PolicyExpression): v
+ 	}
+ }
+ 
+-/** Report TypeScript privacy keywords on class members. */
++/** Reports TypeScript privacy keywords on class members. */
+ export function reportPrivacy(context: PolicyContext, node: PolicyExpression): void {
+ 	if (node.accessibility === 'private' || node.accessibility === 'protected') {
+ 		context.report({
+@@ -583,7 +913,7 @@ export function reportPrivacy(context: PolicyContext, node: PolicyExpression): v
+ 	}
+ }
+ 
+-/** Report a centralized declaration that carries no export. */
++/** Reports a centralized declaration that carries no export. */
+ export function reportHidden(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (!CENTRAL_SOURCE_FILES.includes(pathToPolicyFile(context.filename))) return
+@@ -591,14 +921,14 @@ export function reportHidden(context: PolicyContext, node: PolicyExpression): vo
+ 	context.report({ node, messageId: 'hidden' })
+ }
+ 
+-/** Report a type declaration outside types.ts. */
++/** Reports a type declaration outside types.ts. */
+ export function reportType(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) === 'types.ts') return
+ 	context.report({ node, messageId: 'type' })
+ }
+ 
+-/** Report a class whose file neither names it nor collects errors. */
++/** Reports a class whose file neither names it nor collects errors. */
+ export function reportClass(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	const file = pathToPolicyFile(context.filename)
+@@ -612,7 +942,7 @@ export function reportClass(context: PolicyContext, node: PolicyExpression): voi
+ 	context.report({ node, messageId: 'class' })
+ }
+ 
+-/** Report module data outside a data-kind file. */
++/** Reports module data outside a data-kind file. */
+ export function reportData(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	const file = pathToPolicyFile(context.filename)
+@@ -624,7 +954,7 @@ export function reportData(context: PolicyContext, node: PolicyExpression): void
+ 	}
+ }
+ 
+-/** Report module function syntax outside a function-kind file. */
++/** Reports module function syntax outside a function-kind file. */
+ export function reportFunction(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (FUNCTION_SOURCE_FILES.includes(pathToPolicyFile(context.filename))) return
+@@ -640,7 +970,7 @@ export function reportFunction(context: PolicyContext, node: PolicyExpression):
+ 	context.report({ node, messageId: 'function' })
+ }
+ 
+-/** Report a constants.ts declaration that is mutable, misnamed, or a bare collection. */
++/** Reports a constants.ts declaration that is mutable, misnamed, or a bare collection. */
+ export function reportConstant(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) !== 'constants.ts') return
+@@ -657,7 +987,7 @@ export function reportConstant(context: PolicyContext, node: PolicyExpression):
+ 	}
+ }
+ 
+-/** Report a parsers.ts function whose name lacks the parse prefix. */
++/** Reports a parsers.ts function whose name lacks the parse prefix. */
+ export function reportParser(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) !== 'parsers.ts') return
+@@ -668,7 +998,7 @@ export function reportParser(context: PolicyContext, node: PolicyExpression): vo
+ 	}
+ }
+ 
+-/** Report a factories.ts function whose name lacks the create prefix. */
++/** Reports a factories.ts function whose name lacks the create prefix. */
+ export function reportFactory(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename) || !isPolicyTop(node)) return
+ 	if (pathToPolicyFile(context.filename) !== 'factories.ts') return
+@@ -679,7 +1009,7 @@ export function reportFactory(context: PolicyContext, node: PolicyExpression): v
+ 	}
+ }
+ 
+-/** Report a registered function domain taken as a file, or a malformed module inside one. */
++/** Reports a registered function domain taken as a file, or a malformed module inside one. */
+ export function reportDomain(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	const file = pathToPolicyFile(context.filename)
+@@ -708,20 +1038,20 @@ export function reportDomain(context: PolicyContext, node: PolicyExpression): vo
+ 	if (implementations !== 1 || malformed > 0) context.report({ node, messageId: 'module' })
+ }
+ 
+-/** Report source that reads the host line ending or splits arrived text before trimming it. */
++/** Reports source that reads the host line ending or splits arrived text before trimming it. */
+ export function reportEnding(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (isPolicySplit(node)) context.report({ node, messageId: 'split' })
+ 	if (isPolicyTerminator(node)) context.report({ node, messageId: 'terminator' })
+ }
+ 
+-/** Report an import that takes the host line ending from the operating-system module. */
++/** Reports an import that takes the host line ending from the operating-system module. */
+ export function reportEndingImport(context: PolicyContext, node: PolicyExpression): void {
+ 	if (isPolicyAmbient(context.filename)) return
+ 	if (importsPolicyTerminator(node)) context.report({ node, messageId: 'terminator' })
+ }
+ 
+-/** Ban function declarations and assignments inside another function body. */
++/** Bans function declarations and assignments inside another function body. */
+ export const NESTED_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -742,7 +1072,7 @@ export const NESTED_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban framework mocking, spying, fake clocks, and global or environment stubs. */
++/** Bans framework mocking, spying, fake clocks, and global or environment stubs. */
+ export const MOCKING_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -765,7 +1095,7 @@ export const MOCKING_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban compile-time-only TypeScript privacy keywords on class members. */
++/** Bans compile-time-only TypeScript privacy keywords on class members. */
+ export const PRIVACY_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -789,7 +1119,7 @@ export const PRIVACY_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a centralized declaration that no export reaches. */
++/** Bans a centralized declaration that no export reaches. */
+ export const HIDDEN_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -815,7 +1145,7 @@ export const HIDDEN_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a type declaration outside its module's types.ts. */
++/** Bans a type declaration outside its module's types.ts. */
+ export const TYPE_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -836,7 +1166,7 @@ export const TYPE_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a class outside the implementation file that names it. */
++/** Bans a class outside the implementation file that names it. */
+ export const CLASS_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -854,7 +1184,7 @@ export const CLASS_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban module data outside a data-kind file. */
++/** Bans module data outside a data-kind file. */
+ export const DATA_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -872,7 +1202,7 @@ export const DATA_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban module function syntax outside a function-kind file. */
++/** Bans module function syntax outside a function-kind file. */
+ export const FUNCTION_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -895,7 +1225,7 @@ export const FUNCTION_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a constants.ts declaration that is mutable, misnamed, or a bare collection. */
++/** Bans a constants.ts declaration that is mutable, misnamed, or a bare collection. */
+ export const CONSTANT_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -916,7 +1246,7 @@ export const CONSTANT_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a parsers.ts function whose name lacks the parse prefix. */
++/** Bans a parsers.ts function whose name lacks the parse prefix. */
+ export const PARSER_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -937,7 +1267,7 @@ export const PARSER_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a factories.ts function whose name lacks the create prefix. */
++/** Bans a factories.ts function whose name lacks the create prefix. */
+ export const FACTORY_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -958,7 +1288,7 @@ export const FACTORY_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban a malformed module in a registered function domain, and a file named for one. */
++/** Bans a malformed module in a registered function domain, and a file named for one. */
+ export const DOMAIN_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -979,7 +1309,7 @@ export const DOMAIN_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** Ban host-specific line-ending handling. */
++/** Bans host-specific line-ending handling. */
+ export const ENDING_RULE: PolicyRuleInterface = {
+ 	meta: {
+ 		type: 'problem',
+@@ -1001,7 +1331,47 @@ export const ENDING_RULE: PolicyRuleInterface = {
+ 	},
+ }
+ 
+-/** The workspace Oxlint plugin. */
++/** Bans a doc block above an export whose first sentence is not a third-person summary. */
++export const VOICE_RULE: PolicyRuleInterface = {
++	meta: {
++		type: 'problem',
++		docs: {
++			description:
++				'Disallow a description paragraph that opens on a word other than a third-person verb, and one that names the symbol it documents.',
++		},
++		messages: {
++			voice:
++				'Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.',
++			name: 'State what the symbol does without naming {{name}} in the first sentence.',
++		},
++	},
++	create(context) {
++		return {
++			Program: (node) => reportDocs(context, node),
++		}
++	},
++}
++
++/** Bans a comment carrying a term the substitution table bans unconditionally. */
++export const TERM_RULE: PolicyRuleInterface = {
++	meta: {
++		type: 'problem',
++		docs: {
++			description:
++				'Disallow an unconditionally banned substitution-table term in comment prose, outside code spans, fenced blocks, link tags, and URLs.',
++		},
++		messages: {
++			term: 'Replace {{term}} in this comment: {{replacement}}.',
++		},
++	},
++	create(context) {
++		return {
++			Program: () => reportComments(context),
++		}
++	},
++}
++
++/** Declares the workspace Oxlint plugin. */
+ export default {
+ 	meta: { name: 'policy' },
+ 	rules: {
+@@ -1018,5 +1388,7 @@ export default {
+ 		'no-misnamed-factory': FACTORY_RULE,
+ 		'no-malformed-domain': DOMAIN_RULE,
+ 		'no-host-line-endings': ENDING_RULE,
++		'no-malformed-summary': VOICE_RULE,
++		'no-banned-term': TERM_RULE,
+ 	},
+ }
+diff --git a/package-lock.json b/package-lock.json
+index 68511e0..6e1a2e3 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+ 	"name": "@orkestrel/ollama",
+-	"version": "0.0.14",
++	"version": "0.0.15",
+ 	"lockfileVersion": 3,
+ 	"requires": true,
+ 	"packages": {
+ 		"": {
+ 			"name": "@orkestrel/ollama",
+-			"version": "0.0.14",
++			"version": "0.0.15",
+ 			"license": "MIT",
+ 			"dependencies": {
+ 				"@orkestrel/agent": "^0.0.20",
+@@ -32,45 +32,12 @@
+ 				"oxlint": "^1.81.0",
+ 				"typescript": "^6.0.3",
+ 				"vite": "^8.2.2",
+-				"vite-plugin-dts": "^5.1.0",
+ 				"vitest": "^4.1.11"
+ 			},
+ 			"engines": {
+ 				"node": ">=22.12.0"
+ 			}
+ 		},
+-		"node_modules/@jridgewell/gen-mapping": {
+-			"version": "0.3.13",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz",
+-			"integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/sourcemap-codec": "^1.5.0",
+-				"@jridgewell/trace-mapping": "^0.3.24"
+-			}
+-		},
+-		"node_modules/@jridgewell/remapping": {
+-			"version": "2.3.5",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz",
+-			"integrity": "sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/gen-mapping": "^0.3.5",
+-				"@jridgewell/trace-mapping": "^0.3.24"
+-			}
+-		},
+-		"node_modules/@jridgewell/resolve-uri": {
+-			"version": "3.1.2",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+-			"integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
+-			"dev": true,
+-			"license": "MIT",
+-			"engines": {
+-				"node": ">=6.0.0"
+-			}
+-		},
+ 		"node_modules/@jridgewell/sourcemap-codec": {
+ 			"version": "1.5.5",
+ 			"resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz",
+@@ -78,17 +45,6 @@
+ 			"dev": true,
+ 			"license": "MIT"
+ 		},
+-		"node_modules/@jridgewell/trace-mapping": {
+-			"version": "0.3.31",
+-			"resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
+-			"integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/resolve-uri": "^3.1.0",
+-				"@jridgewell/sourcemap-codec": "^1.4.14"
+-			}
+-		},
+ 		"node_modules/@microsoft/api-extractor": {
+ 			"version": "7.59.0",
+ 			"resolved": "https://registry.npmjs.org/@microsoft/api-extractor/-/api-extractor-7.59.0.tgz",
+@@ -1580,36 +1536,6 @@
+ 			"dev": true,
+ 			"license": "MIT"
+ 		},
+-		"node_modules/@rollup/pluginutils": {
+-			"version": "5.4.0",
+-			"resolved": "https://registry.npmjs.org/@rollup/pluginutils/-/pluginutils-5.4.0.tgz",
+-			"integrity": "sha512-MfPp06CjRLfXQ3wY0R8vJDYBy/MvVcc9OulEfR0B8Iv9ko+GCNaRZ+EpJYFl27LhKsZK0o420sYCRHCjfCgeUg==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@types/estree": "^1.0.0",
+-				"estree-walker": "^2.0.2",
+-				"picomatch": "^4.0.2"
+-			},
+-			"engines": {
+-				"node": ">=14.0.0"
+-			},
+-			"peerDependencies": {
+-				"rollup": "^1.20.0||^2.0.0||^3.0.0||^4.0.0"
+-			},
+-			"peerDependenciesMeta": {
+-				"rollup": {
+-					"optional": true
+-				}
+-			}
+-		},
+-		"node_modules/@rollup/pluginutils/node_modules/estree-walker": {
+-			"version": "2.0.2",
+-			"resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-2.0.2.tgz",
+-			"integrity": "sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/@rushstack/node-core-library": {
+ 			"version": "5.24.0",
+ 			"resolved": "https://registry.npmjs.org/@rushstack/node-core-library/-/node-core-library-5.24.0.tgz",
+@@ -1882,48 +1808,6 @@
+ 				"url": "https://opencollective.com/vitest"
+ 			}
+ 		},
+-		"node_modules/@volar/language-core": {
+-			"version": "2.4.28",
+-			"resolved": "https://registry.npmjs.org/@volar/language-core/-/language-core-2.4.28.tgz",
+-			"integrity": "sha512-w4qhIJ8ZSitgLAkVay6AbcnC7gP3glYM3fYwKV3srj8m494E3xtrCv6E+bWviiK/8hs6e6t1ij1s2Endql7vzQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@volar/source-map": "2.4.28"
+-			}
+-		},
+-		"node_modules/@volar/source-map": {
+-			"version": "2.4.28",
+-			"resolved": "https://registry.npmjs.org/@volar/source-map/-/source-map-2.4.28.tgz",
+-			"integrity": "sha512-yX2BDBqJkRXfKw8my8VarTyjv48QwxdJtvRgUpNE5erCsgEUdI2DsLbpa+rOQVAJYshY99szEcRDmyHbF10ggQ==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/@volar/typescript": {
+-			"version": "2.4.28",
+-			"resolved": "https://registry.npmjs.org/@volar/typescript/-/typescript-2.4.28.tgz",
+-			"integrity": "sha512-Ja6yvWrbis2QtN4ClAKreeUZPVYMARDYZl9LMEv1iQ1QdepB6wn0jTRxA9MftYmYa4DQ4k/DaSZpFPUfxl8giw==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@volar/language-core": "2.4.28",
+-				"path-browserify": "^1.0.1",
+-				"vscode-uri": "^3.0.8"
+-			}
+-		},
+-		"node_modules/acorn": {
+-			"version": "8.18.0",
+-			"resolved": "https://registry.npmjs.org/acorn/-/acorn-8.18.0.tgz",
+-			"integrity": "sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"bin": {
+-				"acorn": "bin/acorn"
+-			},
+-			"engines": {
+-				"node": ">=0.4.0"
+-			}
+-		},
+ 		"node_modules/ajv": {
+ 			"version": "8.18.0",
+ 			"resolved": "https://registry.npmjs.org/ajv/-/ajv-8.18.0.tgz",
+@@ -2027,20 +1911,6 @@
+ 				"node": ">=18"
+ 			}
+ 		},
+-		"node_modules/compare-versions": {
+-			"version": "6.1.1",
+-			"resolved": "https://registry.npmjs.org/compare-versions/-/compare-versions-6.1.1.tgz",
+-			"integrity": "sha512-4hm4VPpIecmlg59CHXnRDnqGplJFrbLG4aFEl5vl6cK1u76ws3LLvX7ikFnTDl5vo39sjWD6AaDPYodJp/NNHg==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/confbox": {
+-			"version": "0.3.1",
+-			"resolved": "https://registry.npmjs.org/confbox/-/confbox-0.3.1.tgz",
+-			"integrity": "sha512-cKUSoKa8YxFZZSmraVi7onONx3amu77ngK3kGpsYHDH7drPwCRkQE1RYMPlLRrMtnciRj274XNRxcHxnKmDSnA==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/convert-source-map": {
+ 			"version": "2.0.0",
+ 			"resolved": "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz",
+@@ -2048,24 +1918,6 @@
+ 			"dev": true,
+ 			"license": "MIT"
+ 		},
+-		"node_modules/debug": {
+-			"version": "4.4.3",
+-			"resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+-			"integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"ms": "^2.1.3"
+-			},
+-			"engines": {
+-				"node": ">=6.0"
+-			},
+-			"peerDependenciesMeta": {
+-				"supports-color": {
+-					"optional": true
+-				}
+-			}
+-		},
+ 		"node_modules/detect-libc": {
+ 			"version": "2.1.2",
+ 			"resolved": "https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz",
+@@ -2123,13 +1975,6 @@
+ 				"node": ">=12.0.0"
+ 			}
+ 		},
+-		"node_modules/exsolve": {
+-			"version": "1.1.1",
+-			"resolved": "https://registry.npmjs.org/exsolve/-/exsolve-1.1.1.tgz",
+-			"integrity": "sha512-9U/jZUgjnSGyntRr6y5Muu1MJcwFl6kPu7k8qLF0IMNfLqvw0NZ4nnVDq0RVoZ0RvCyumib4Ez3KYrVfilrw+g==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/fast-deep-equal": {
+ 			"version": "3.1.3",
+ 			"resolved": "https://registry.npmjs.org/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz",
+@@ -2197,13 +2042,6 @@
+ 				"url": "https://github.com/sponsors/ljharb"
+ 			}
+ 		},
+-		"node_modules/glob-to-regexp": {
+-			"version": "0.4.1",
+-			"resolved": "https://registry.npmjs.org/glob-to-regexp/-/glob-to-regexp-0.4.1.tgz",
+-			"integrity": "sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==",
+-			"dev": true,
+-			"license": "BSD-2-Clause"
+-		},
+ 		"node_modules/graceful-fs": {
+ 			"version": "4.2.11",
+ 			"resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.11.tgz",
+@@ -2287,13 +2125,6 @@
+ 				"graceful-fs": "^4.1.6"
+ 			}
+ 		},
+-		"node_modules/kolorist": {
+-			"version": "1.8.0",
+-			"resolved": "https://registry.npmjs.org/kolorist/-/kolorist-1.8.0.tgz",
+-			"integrity": "sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/lightningcss": {
+ 			"version": "1.33.0",
+ 			"resolved": "https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz",
+@@ -2555,24 +2386,6 @@
+ 				"url": "https://opencollective.com/parcel"
+ 			}
+ 		},
+-		"node_modules/local-pkg": {
+-			"version": "1.2.1",
+-			"resolved": "https://registry.npmjs.org/local-pkg/-/local-pkg-1.2.1.tgz",
+-			"integrity": "sha512-++gUqRDEvcnN6Zhqrr+y/CkVEHhlrR96vZn3nZZPYzMcBUyBtTKzB9NadClFIsIVSsu+3i9tfk/erqy9kAmt7Q==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"mlly": "^1.7.4",
+-				"pkg-types": "^2.3.0",
+-				"quansync": "^0.2.11"
+-			},
+-			"engines": {
+-				"node": ">=14"
+-			},
+-			"funding": {
+-				"url": "https://github.com/sponsors/antfu"
+-			}
+-		},
+ 		"node_modules/magic-string": {
+ 			"version": "0.30.21",
+ 			"resolved": "https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz",
+@@ -2599,45 +2412,6 @@
+ 				"url": "https://github.com/sponsors/isaacs"
+ 			}
+ 		},
+-		"node_modules/mlly": {
+-			"version": "1.8.2",
+-			"resolved": "https://registry.npmjs.org/mlly/-/mlly-1.8.2.tgz",
+-			"integrity": "sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"acorn": "^8.16.0",
+-				"pathe": "^2.0.3",
+-				"pkg-types": "^1.3.1",
+-				"ufo": "^1.6.3"
+-			}
+-		},
+-		"node_modules/mlly/node_modules/confbox": {
+-			"version": "0.1.8",
+-			"resolved": "https://registry.npmjs.org/confbox/-/confbox-0.1.8.tgz",
+-			"integrity": "sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/mlly/node_modules/pkg-types": {
+-			"version": "1.3.1",
+-			"resolved": "https://registry.npmjs.org/pkg-types/-/pkg-types-1.3.1.tgz",
+-			"integrity": "sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"confbox": "^0.1.8",
+-				"mlly": "^1.7.4",
+-				"pathe": "^2.0.1"
+-			}
+-		},
+-		"node_modules/ms": {
+-			"version": "2.1.3",
+-			"resolved": "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz",
+-			"integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/nanoid": {
+ 			"version": "3.3.18",
+ 			"resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz",
+@@ -2782,13 +2556,6 @@
+ 				}
+ 			}
+ 		},
+-		"node_modules/path-browserify": {
+-			"version": "1.0.1",
+-			"resolved": "https://registry.npmjs.org/path-browserify/-/path-browserify-1.0.1.tgz",
+-			"integrity": "sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/path-parse": {
+ 			"version": "1.0.7",
+ 			"resolved": "https://registry.npmjs.org/path-parse/-/path-parse-1.0.7.tgz",
+@@ -2823,18 +2590,6 @@
+ 				"url": "https://github.com/sponsors/jonschlinkert"
+ 			}
+ 		},
+-		"node_modules/pkg-types": {
+-			"version": "2.3.2",
+-			"resolved": "https://registry.npmjs.org/pkg-types/-/pkg-types-2.3.2.tgz",
+-			"integrity": "sha512-v0sVXzj7oPGysr543YYZLYbcJNJsKikSsp/fFzoxQ12ewY3ZZr7oCPC8y7OlmxfYB3QPvriXmuPD8KZggE1vqg==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"confbox": "^0.3.0",
+-				"exsolve": "^1.1.1",
+-				"pathe": "^2.0.3"
+-			}
+-		},
+ 		"node_modules/postcss": {
+ 			"version": "8.5.26",
+ 			"resolved": "https://registry.npmjs.org/postcss/-/postcss-8.5.26.tgz",
+@@ -2864,23 +2619,6 @@
+ 				"node": "^10 || ^12 || >=14"
+ 			}
+ 		},
+-		"node_modules/quansync": {
+-			"version": "0.2.11",
+-			"resolved": "https://registry.npmjs.org/quansync/-/quansync-0.2.11.tgz",
+-			"integrity": "sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==",
+-			"dev": true,
+-			"funding": [
+-				{
+-					"type": "individual",
+-					"url": "https://github.com/sponsors/antfu"
+-				},
+-				{
+-					"type": "individual",
+-					"url": "https://github.com/sponsors/sxzz"
+-				}
+-			],
+-			"license": "MIT"
+-		},
+ 		"node_modules/require-from-string": {
+ 			"version": "2.0.2",
+ 			"resolved": "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz",
+@@ -3115,13 +2853,6 @@
+ 				"node": ">=14.17"
+ 			}
+ 		},
+-		"node_modules/ufo": {
+-			"version": "1.6.4",
+-			"resolved": "https://registry.npmjs.org/ufo/-/ufo-1.6.4.tgz",
+-			"integrity": "sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/undici-types": {
+ 			"version": "8.3.0",
+ 			"resolved": "https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz",
+@@ -3139,77 +2870,6 @@
+ 				"node": ">= 10.0.0"
+ 			}
+ 		},
+-		"node_modules/unplugin": {
+-			"version": "2.3.11",
+-			"resolved": "https://registry.npmjs.org/unplugin/-/unplugin-2.3.11.tgz",
+-			"integrity": "sha512-5uKD0nqiYVzlmCRs01Fhs2BdkEgBS3SAVP6ndrBsuK42iC2+JHyxM05Rm9G8+5mkmRtzMZGY8Ct5+mliZxU/Ww==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@jridgewell/remapping": "^2.3.5",
+-				"acorn": "^8.15.0",
+-				"picomatch": "^4.0.3",
+-				"webpack-virtual-modules": "^0.6.2"
+-			},
+-			"engines": {
+-				"node": ">=18.12.0"
+-			}
+-		},
+-		"node_modules/unplugin-dts": {
+-			"version": "1.1.0",
+-			"resolved": "https://registry.npmjs.org/unplugin-dts/-/unplugin-dts-1.1.0.tgz",
+-			"integrity": "sha512-KZJ+qk+lmd9dJY/PJvDRFL9BUtVubKDiX7Ai/X6mlkCArcQNzwmupKjVqHbRA42uqO5ZfFRFc+o8/OCbQ1GonQ==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"@rollup/pluginutils": "^5.1.4",
+-				"@volar/typescript": "^2.4.26",
+-				"compare-versions": "^6.1.1",
+-				"debug": "^4.4.0",
+-				"glob-to-regexp": "0.4.1",
+-				"kolorist": "^1.8.0",
+-				"local-pkg": "^1.1.1",
+-				"magic-string": "^0.30.17",
+-				"unplugin": "^2.3.2"
+-			},
+-			"peerDependencies": {
+-				"@microsoft/api-extractor": ">=7",
+-				"@rspack/core": "^1",
+-				"@vue/language-core": "^3.1.5",
+-				"esbuild": "*",
+-				"rolldown": "*",
+-				"rollup": ">=3",
+-				"typescript": ">=4",
+-				"vite": ">=3",
+-				"webpack": "^4 || ^5"
+-			},
+-			"peerDependenciesMeta": {
+-				"@microsoft/api-extractor": {
+-					"optional": true
+-				},
+-				"@rspack/core": {
+-					"optional": true
+-				},
+-				"@vue/language-core": {
+-					"optional": true
+-				},
+-				"esbuild": {
+-					"optional": true
+-				},
+-				"rolldown": {
+-					"optional": true
+-				},
+-				"rollup": {
+-					"optional": true
+-				},
+-				"vite": {
+-					"optional": true
+-				},
+-				"webpack": {
+-					"optional": true
+-				}
+-			}
+-		},
+ 		"node_modules/vite": {
+ 			"version": "8.2.2",
+ 			"resolved": "https://registry.npmjs.org/vite/-/vite-8.2.2.tgz",
+@@ -3288,32 +2948,6 @@
+ 				}
+ 			}
+ 		},
+-		"node_modules/vite-plugin-dts": {
+-			"version": "5.1.0",
+-			"resolved": "https://registry.npmjs.org/vite-plugin-dts/-/vite-plugin-dts-5.1.0.tgz",
+-			"integrity": "sha512-MfLc2G+mXPUDGGxpHQeYbdunavFP9UpT9yxiAsTgUXRxfEd3HqysSAM4E72jhz5eIz3OOexCHkqiVlQq8ok9/A==",
+-			"dev": true,
+-			"license": "MIT",
+-			"dependencies": {
+-				"unplugin-dts": "1.1.0"
+-			},
+-			"peerDependencies": {
+-				"@microsoft/api-extractor": ">=7",
+-				"rollup": ">=3",
+-				"vite": ">=3"
+-			},
+-			"peerDependenciesMeta": {
+-				"@microsoft/api-extractor": {
+-					"optional": true
+-				},
+-				"rollup": {
+-					"optional": true
+-				},
+-				"vite": {
+-					"optional": true
+-				}
+-			}
+-		},
+ 		"node_modules/vite/node_modules/fsevents": {
+ 			"version": "2.3.3",
+ 			"resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz",
+@@ -3419,20 +3053,6 @@
+ 				}
+ 			}
+ 		},
+-		"node_modules/vscode-uri": {
+-			"version": "3.2.0",
+-			"resolved": "https://registry.npmjs.org/vscode-uri/-/vscode-uri-3.2.0.tgz",
+-			"integrity": "sha512-m2gXo3bn0G1kT9InzMf07fTbqMbGtyckj3bH5ktLO+1Ssv+yiATZ4dhwaQv9UZWxJh6E9IFGnQyjgWVDWVBDrg==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+-		"node_modules/webpack-virtual-modules": {
+-			"version": "0.6.2",
+-			"resolved": "https://registry.npmjs.org/webpack-virtual-modules/-/webpack-virtual-modules-0.6.2.tgz",
+-			"integrity": "sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==",
+-			"dev": true,
+-			"license": "MIT"
+-		},
+ 		"node_modules/whatwg-fetch": {
+ 			"version": "3.6.20",
+ 			"resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-3.6.20.tgz",
+diff --git a/package.json b/package.json
+index e43eca7..6383433 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+ 	"name": "@orkestrel/ollama",
+-	"version": "0.0.14",
++	"version": "0.0.15",
+ 	"description": "A typed local-LLM provider for the @orkestrel line — a ProviderInterface over a local Ollama daemon's /api/chat with NDJSON streaming and guard-narrowed wire boundaries. Part of the @orkestrel line.",
+ 	"keywords": [
+ 		"ai",
+@@ -69,7 +69,8 @@
+ 		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+ 		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+ 		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+-		"prepack": "npm run build"
++		"prepack": "npm run build",
++		"docs": "node --experimental-strip-types scripts/docs.ts"
+ 	},
+ 	"dependencies": {
+ 		"@orkestrel/agent": "^0.0.20",
+diff --git a/tests/config.test.ts b/tests/config.test.ts
+index 5181f07..7a7d22e 100644
+--- a/tests/config.test.ts
++++ b/tests/config.test.ts
+@@ -35,10 +35,21 @@ import policyPlugin, {
+ 	MOCKING_RULE,
+ 	NESTED_RULE,
+ 	PARSER_RULE,
++	POLICY_BANNED_TERMS,
+ 	POLICY_ENDING_GLOBS,
++	POLICY_JUDGED_TERMS,
+ 	POLICY_PLACEMENT_GLOBS,
++	POLICY_VOICE_STOPWORDS,
+ 	PRIVACY_RULE,
++	TERM_RULE,
+ 	TYPE_RULE,
++	VOICE_RULE,
++	blankPolicyText,
++	commentToPolicyParagraph,
++	isPolicyVoiced,
++	paragraphToPolicyOpener,
++	stripPolicyCode,
++	textToPolicyHits,
+ } from '../configs/policy.js'
+ import configuration, { resolveWorkspacePath } from '../vite.config.js'
+ import tsconfig from '../tsconfig.json' with { type: 'json' }
+@@ -1324,6 +1335,393 @@ describe('policy plugin', () => {
+ 		],
+ 	})
+ 
++	tester.run('no-malformed-summary', VOICE_RULE, {
++		valid: [
++			{
++				name: 'accepts a third-person opener',
++				code: ['/** Creates a control. */', 'export const CONTROL = 1'].join('\n'),
++			},
++			{
++				name: 'accepts a whether clause',
++				code: ['/** Checks whether the reader is ready. */', 'export const READY = true'].join(
++					'\n',
++				),
++			},
++			{
++				name: 'accepts a two-letter third-person opener',
++				code: ['/** Is the value a reader receives. */', 'export const CONTROL = 1'].join('\n'),
++			},
++			{
++				name: 'accepts a reporting opener',
++				code: ['/** Reports whether the reader is ready. */', 'export const READY = true'].join(
++					'\n',
++				),
++			},
++			{
++				name: 'accepts an anonymous default export',
++				code: ['/** Declares the fixture plugin. */', 'export default { meta: 1 }'].join('\n'),
++			},
++			{
++				name: 'accepts a doc block on a declaration no export reaches',
++				code: ['/** The opener, a noun phrase. */', 'const CONTROL = 1', 'void CONTROL'].join('\n'),
++			},
++			{
++				name: 'accepts a doc block on a class member',
++				code: [
++					'/** Holds one value. */',
++					'export class Holder {',
++					'\t/** The member value, a noun phrase. */',
++					'\tvalue = 1',
++					'}',
++				].join('\n'),
++			},
++			{
++				name: 'accepts a single-star block comment before an export',
++				code: ['/* The opener, a noun phrase. */', 'export const CONTROL = 1'].join('\n'),
++			},
++			{
++				name: 'accepts a word from the stop set after the opener',
++				code: ['/** Reports whether this process passes. */', 'export const READY = true'].join(
++					'\n',
++				),
++			},
++			{
++				name: 'accepts a block tag naming the symbol after the description [membership: text before the first block tag]',
++				code: [
++					'/**',
++					' * Creates a control',
++					' *',
++					' * @param value - The value readControl reads.',
++					' */',
++					'export function readControl(value: number): number {',
++					'\treturn value',
++					'}',
++				].join('\n'),
++			},
++			{ name: 'accepts an export carrying no doc block', code: 'export const CONTROL = 1' },
++		],
++		invalid: [
++			{
++				name: 'rejects a noun-phrase opener [membership: doc blocks directly above a top-level export]',
++				code: ['/** The opener, a noun phrase. */', 'export const CONTROL = 1'].join('\n'),
++				errors: [{ messageId: 'voice' }],
++			},
++			{
++				name: 'rejects an imperative opener [membership: doc blocks directly above a top-level export]',
++				code: ['/** Create a control. */', 'export function createControl(): void {}'].join('\n'),
++				errors: [{ messageId: 'voice' }],
++			},
++			{
++				name: 'rejects an opener from the stop set [membership: opening words ending in s that name no verb]',
++				code: ['/** This holds one value. */', 'export const CONTROL = 1'].join('\n'),
++				errors: [{ messageId: 'voice' }],
++			},
++			{
++				name: 'rejects a first sentence naming its own class [membership: the declared identifier inside the first sentence]',
++				code: ['/** Returns the value ControlTwo carries. */', 'export class ControlTwo {}'].join(
++					'\n',
++				),
++				errors: [{ messageId: 'name', data: { name: 'ControlTwo' } }],
++			},
++			{
++				name: 'rejects a first sentence naming its own constant [membership: the declared identifier inside the first sentence]',
++				code: ['/** Returns the value CONTROL carries. */', 'export const CONTROL = 1'].join('\n'),
++				errors: [{ messageId: 'name', data: { name: 'CONTROL' } }],
++			},
++			{
++				name: 'rejects an empty doc block [membership: description paragraphs, the empty one included]',
++				code: ['/** */', 'export const CONTROL = 1'].join('\n'),
++				errors: [{ messageId: 'voice' }],
++			},
++			{
++				name: 'rejects a doc block a blank line separates from its export [membership: doc blocks whitespace alone separates from a top-level export]',
++				code: ['/** The opener, a noun phrase. */', '', 'export const CONTROL = 1'].join('\n'),
++				errors: [{ messageId: 'voice' }],
++			},
++		],
++	})
++
++	tester.run('no-banned-term', TERM_RULE, {
++		valid: [
++			{ name: 'accepts a term inside a code span', code: '// A `should` token names one row.' },
++			{
++				name: 'accepts a term inside a fenced example',
++				code: [
++					'/**',
++					' * Reads one value.',
++					' *',
++					' * @example',
++					' * ```text',
++					' * should stay',
++					' * ```',
++					' */',
++					'export const CONTROL = 1',
++				].join('\n'),
++			},
++			{
++				name: 'accepts a term inside a link target',
++				code: '/** Reports the state. {@link Example.should} */',
++			},
++			{
++				name: 'accepts a term inside an address',
++				code: '// Read https://example.test/should/row for the shape.',
++			},
++			{
++				name: 'accepts a term inside a code span a line break runs through',
++				code: ['/**', ' * A span `that', ' * spans lines with should` here.', ' */'].join('\n'),
++			},
++			{ name: 'accepts a judged term', code: '// The new value is read once now.' },
++			{
++				name: 'accepts a longer word carrying a term',
++				code: '// A justice viable pleased reader.',
++			},
++			{ name: 'accepts prose carrying no term', code: '// Reads the value a reader receives.' },
++		],
++		invalid: [
++			{
++				name: 'rejects should [membership: comment prose outside code, tags, and addresses]',
++				code: '// A reader should meet this row.',
++				errors: [
++					{
++						messageId: 'term',
++						data: { term: 'should', replacement: 'must, can, might, or the imperative' },
++					},
++				],
++			},
++			{
++				name: 'rejects should in a block comment [membership: block and line comments alike]',
++				code: '/** Reports the state a reader should meet. */',
++				errors: [
++					{
++						messageId: 'term',
++						data: { term: 'should', replacement: 'must, can, might, or the imperative' },
++					},
++				],
++			},
++			{
++				name: 'rejects simply [membership: comment prose outside code, tags, and addresses]',
++				code: '// The reader simply reads.',
++				errors: [{ messageId: 'term', data: { term: 'simply', replacement: 'delete' } }],
++			},
++			{
++				name: 'rejects easy [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path is easy.',
++				errors: [{ messageId: 'term', data: { term: 'easy', replacement: 'delete' } }],
++			},
++			{
++				name: 'rejects easiest [membership: the inflections one row reaches]',
++				code: '// The path is easiest.',
++				errors: [{ messageId: 'term', data: { term: 'easy', replacement: 'delete' } }],
++			},
++			{
++				name: 'rejects just [membership: comment prose outside code, tags, and addresses]',
++				code: '// The reader just reads.',
++				errors: [{ messageId: 'term', data: { term: 'just', replacement: 'delete' } }],
++			},
++			{
++				name: 'rejects currently [membership: comment prose outside code, tags, and addresses]',
++				code: '// The reader currently reads.',
++				errors: [
++					{
++						messageId: 'term',
++						data: { term: 'currently', replacement: 'delete, or give the date' },
++					},
++				],
++			},
++			{
++				name: 'rejects utilizes [membership: the inflections one row reaches]',
++				code: '// The reader utilizes the path.',
++				errors: [{ messageId: 'term', data: { term: 'utilize', replacement: 'use' } }],
++			},
++			{
++				name: 'rejects utilizing [membership: the inflections one row reaches]',
++				code: '// The reader is utilizing the path.',
++				errors: [{ messageId: 'term', data: { term: 'utilize', replacement: 'use' } }],
++			},
++			{
++				name: 'rejects leverages [membership: the inflections one row reaches]',
++				code: '// The reader leverages the path.',
++				errors: [{ messageId: 'term', data: { term: 'leverage', replacement: 'use' } }],
++			},
++			{
++				name: 'rejects leveraged [membership: the inflections one row reaches]',
++				code: '// The reader leveraged the path.',
++				errors: [{ messageId: 'term', data: { term: 'leverage', replacement: 'use' } }],
++			},
++			{
++				name: 'rejects via [membership: comment prose outside code, tags, and addresses]',
++				code: '// The reader arrives via the path.',
++				errors: [{ messageId: 'term', data: { term: 'via', replacement: 'through, by using' } }],
++			},
++			{
++				name: 'rejects in order to [membership: comment prose outside code, tags, and addresses]',
++				code: '// The reader reads in order to learn.',
++				errors: [{ messageId: 'term', data: { term: 'in order to', replacement: 'to' } }],
++			},
++			{
++				name: 'rejects the abbreviated for example [membership: dotted rows read with their dots]',
++				code: '// The reader reads one path, e.g. the front page.',
++				errors: [{ messageId: 'term', data: { term: 'e.g.', replacement: 'for example' } }],
++			},
++			{
++				name: 'rejects the abbreviated that is [membership: dotted rows read with their dots]',
++				code: '// The reader reads one path, i.e. the front page.',
++				errors: [{ messageId: 'term', data: { term: 'i.e.', replacement: 'that is' } }],
++			},
++			{
++				name: 'rejects the abbreviated list ending [membership: dotted rows read with their dots]',
++				code: '// The reader reads paths, files, etc.',
++				errors: [
++					{
++						messageId: 'term',
++						data: { term: 'etc.', replacement: 'bound the list, or recast the sentence' },
++					},
++				],
++			},
++			{
++				name: 'rejects performant [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path is performant.',
++				errors: [
++					{ messageId: 'term', data: { term: 'performant', replacement: 'the measured property' } },
++				],
++			},
++			{
++				name: 'rejects robust [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path is robust.',
++				errors: [
++					{ messageId: 'term', data: { term: 'robust', replacement: 'the measured property' } },
++				],
++			},
++			{
++				name: 'rejects robustness [membership: the inflections one row reaches]',
++				code: '// The path has robustness.',
++				errors: [
++					{ messageId: 'term', data: { term: 'robust', replacement: 'the measured property' } },
++				],
++			},
++			{
++				name: 'rejects allows you to [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path allows you to read.',
++				errors: [{ messageId: 'term', data: { term: 'allows you to', replacement: 'lets you' } }],
++			},
++			{
++				name: 'rejects the conjunction pair [membership: comment prose outside code, tags, and addresses]',
++				code: '// The reader reads a path and/or a file.',
++				errors: [{ messageId: 'term', data: { term: 'and/or', replacement: 'and, or, or both' } }],
++			},
++			{
++				name: 'rejects please [membership: comment prose outside code, tags, and addresses]',
++				code: '// Read the path, please.',
++				errors: [{ messageId: 'term', data: { term: 'please', replacement: 'delete' } }],
++			},
++			{
++				name: 'rejects the hyphenated quick check [membership: rows written with a space or a hyphen]',
++				code: '// Run a sanity-check over the path.',
++				errors: [{ messageId: 'term', data: { term: 'sanity check', replacement: 'quick check' } }],
++			},
++			{
++				name: 'rejects dummy [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path names a dummy value.',
++				errors: [{ messageId: 'term', data: { term: 'dummy', replacement: 'placeholder' } }],
++			},
++			{
++				name: 'rejects dummies [membership: the inflections one row reaches]',
++				code: '// The path names two dummies.',
++				errors: [{ messageId: 'term', data: { term: 'dummy', replacement: 'placeholder' } }],
++			},
++			{
++				name: 'rejects the refused list name [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path reads a blacklist.',
++				errors: [{ messageId: 'term', data: { term: 'blacklist', replacement: 'denylist' } }],
++			},
++			{
++				name: 'rejects the refused permit name [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path reads a whitelist.',
++				errors: [{ messageId: 'term', data: { term: 'whitelist', replacement: 'allowlist' } }],
++			},
++			{
++				name: 'rejects the refused replica name [membership: comment prose outside code, tags, and addresses]',
++				code: '// The path names a slave copy.',
++				errors: [{ messageId: 'term', data: { term: 'slave', replacement: 'replica' } }],
++			},
++		],
++	})
++
++	it('blanks a matched region without moving a line break', () => {
++		expect(blankPolicyText('abc')).toBe('   ')
++		expect(blankPolicyText('ab\ncd')).toBe('  \n  ')
++	})
++
++	it('blanks every code, tag, and address region while holding each later offset', () => {
++		const text = [
++			'A `should` span.',
++			'```text',
++			'should stay',
++			'```',
++			'A {@link Example.should} tag.',
++			'Read https://example.test/should/row here.',
++			'A reader should meet this row.',
++		].join('\n')
++		const stripped = stripPolicyCode(text)
++		expect(stripped).toHaveLength(text.length)
++		expect(stripped.split('\n')).toHaveLength(text.split('\n').length)
++		const hits = textToPolicyHits(stripped)
++		expect(hits.map((hit) => hit.term.term)).toEqual(['should'])
++		expect(text.slice(hits[0]?.index ?? -1, (hits[0]?.index ?? 0) + 6)).toBe('should')
++	})
++
++	it('reads every banned-term hit in offset order with the row it matched', () => {
++		const hits = textToPolicyHits('The reader utilizes a path and arrives via a file.')
++		expect(hits.map((hit) => hit.term.term)).toEqual(['utilize', 'via'])
++		expect(hits.map((hit) => hit.term.replacement)).toEqual(['use', 'through, by using'])
++		expect(hits[0]?.index).toBeLessThan(hits[1]?.index ?? 0)
++		expect(textToPolicyHits('The reader reads one path.')).toEqual([])
++	})
++
++	it('reads a description paragraph up to its first block tag', () => {
++		expect(
++			commentToPolicyParagraph({
++				type: 'Block',
++				value: '*\n * Creates a control.\n *\n * @param value - Reports the state.\n ',
++				range: [0, 0],
++			}),
++		).toBe('Creates a control.')
++		expect(
++			commentToPolicyParagraph({ type: 'Block', value: '* Creates a control. ', range: [0, 0] }),
++		).toBe('Creates a control.')
++		expect(commentToPolicyParagraph({ type: 'Block', value: '* ', range: [0, 0] })).toBe('')
++	})
++
++	it('reads the opening word of a paragraph as its letters alone', () => {
++		expect(paragraphToPolicyOpener('Creates a control.')).toBe('Creates')
++		expect(paragraphToPolicyOpener('"Creates" a control.')).toBe('Creates')
++		expect(paragraphToPolicyOpener('')).toBe('')
++	})
++
++	it('admits a third-person opener and refuses a registered non-verb', () => {
++		expect(isPolicyVoiced('Creates')).toBe(true)
++		expect(isPolicyVoiced('Is')).toBe(true)
++		expect(isPolicyVoiced('This')).toBe(false)
++		expect(isPolicyVoiced('Status')).toBe(false)
++		expect(isPolicyVoiced('Create')).toBe(false)
++		expect(isPolicyVoiced('')).toBe(false)
++		expect(POLICY_VOICE_STOPWORDS.every((word) => /^[A-Z][a-z]*s$/u.test(word))).toBe(true)
++	})
++
++	it('keeps the matched and judged term sets disjoint and frozen', () => {
++		const matched = POLICY_BANNED_TERMS.map((entry) => entry.term)
++		expect(matched.filter((term) => POLICY_JUDGED_TERMS.includes(term))).toEqual([])
++		expect(new Set(matched).size).toBe(matched.length)
++		expect(Object.isFrozen(POLICY_BANNED_TERMS)).toBe(true)
++		expect(Object.isFrozen(POLICY_JUDGED_TERMS)).toBe(true)
++		expect(Object.isFrozen(POLICY_VOICE_STOPWORDS)).toBe(true)
++		// Every judged row reaches this file as prose, so a pattern that matched one would red the
++		// workspace sweep on the rule file that names it.
++		for (const term of POLICY_JUDGED_TERMS) {
++			expect(textToPolicyHits(`The reader reads ${term} here.`)).toEqual([])
++		}
++	})
++
+ 	it('registers handlers as a function kind and routes as a data kind', () => {
+ 		expect(FUNCTION_SOURCE_FILES).toContain('handlers.ts')
+ 		expect(FUNCTION_SOURCE_FILES).not.toContain('routes.ts')
+@@ -1357,6 +1755,7 @@ describe('policy plugin', () => {
+ 			scratch.write(
+ 				'src/violations/fixture.ts',
+ 				[
++					'// A reader should meet this term.',
+ 					"vi.mock('./x')",
+ 					'class PrivateMember { private value = 1 }',
+ 					'class ParameterMember { constructor(readonly value: string) {} }',
+@@ -1365,6 +1764,7 @@ describe('policy plugin', () => {
+ 					"import * as os from 'node:os'",
+ 					"import { EOL } from 'node:os'",
+ 					'export interface ValueInterface { readonly id: string }',
++					'/** The opener, a noun phrase. */',
+ 					"export const STATUS = 'ready'",
+ 					"export const lines = text.trim().split('\\n')",
+ 					'export const ending = os.EOL + EOL',
+@@ -1399,6 +1799,8 @@ describe('policy plugin', () => {
+ 			scratch.write(
+ 				'src/clean/CleanMember.ts',
+ 				[
++					'// Reads the value a caller receives.',
++					'/** Holds one runtime-private value. */',
+ 					'export class CleanMember {',
+ 					'\t#value = 1',
+ 					'\tvalue(): number { return this.#value }',
+@@ -1484,6 +1886,8 @@ describe('policy plugin', () => {
+ 				'policy(no-malformed-constant) src/violations/constants.ts',
+ 				'policy(no-malformed-domain) src/violations/composables.ts',
+ 				'policy(no-malformed-domain) app/browser/composables/useTheme.ts',
++				'policy(no-banned-term) src/violations/fixture.ts',
++				'policy(no-malformed-summary) src/violations/fixture.ts',
+ 				'typescript(parameter-properties) src/violations/fixture.ts',
+ 				'typescript(explicit-member-accessibility) src/violations/fixture.ts',
+ 			]) {
+@@ -1734,36 +2138,51 @@ describe('configuration helpers', () => {
+ 
+ 	it('reads the compiler scope and fixed extractor override a declaration roll-up requires', () => {
+ 		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
+-		const project = resolve(root, 'configs/src/tsconfig.core.json')
++		// The order mirrors ENVIRONMENTS in src/core/constants.ts; a server-only workspace vendors
++		// no core project, so this walks to the first face the workspace actually carries.
++		const faces = ['core', 'browser', 'server']
++		const face = faces.find((candidate) =>
++			existsSync(resolve(root, `configs/src/tsconfig.${candidate}.json`)),
++		)
++		if (face === undefined) throw new Error('The workspace declares no face project')
++		const project = resolve(root, `configs/src/tsconfig.${face}.json`)
+ 		const declared: unknown = JSON.parse(readFileSync(project, 'utf8'))
+ 		if (typeof declared !== 'object' || declared === null) {
+-			throw new Error('The core project is not a TypeScript configuration record')
++			throw new Error(`The ${face} project is not a TypeScript configuration record`)
+ 		}
+ 		const declaredOptions: unknown = Object.getOwnPropertyDescriptor(
+ 			declared,
+ 			'compilerOptions',
+ 		)?.value
+ 		if (typeof declaredOptions !== 'object' || declaredOptions === null) {
+-			throw new Error('The core project carries no compiler options')
++			throw new Error(`The ${face} project carries no compiler options`)
+ 		}
+ 		const declaredLib: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'lib')?.value
+ 		const declaredTypes: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'types')?.value
+ 		if (!configHelpers.isStringList(declaredLib) || !configHelpers.isStringList(declaredTypes)) {
+-			throw new Error('The core project declares no lib or types')
++			throw new Error(`The ${face} project declares no lib or types`)
++		}
++		const declaredRootDir: unknown = Object.getOwnPropertyDescriptor(
++			declaredOptions,
++			'rootDir',
++		)?.value
++		if (typeof declaredRootDir !== 'string') {
++			throw new Error(`The ${face} project declares no rootDir`)
+ 		}
++		const expectedRoot = resolve(dirname(project), declaredRootDir)
+ 
+ 		const scope = configHelpers.parseProjectScope(
+ 			configHelpers.readCompilerOutput(compiler, ['--showConfig', '-p', project]),
+ 			project,
+ 		)
+-		if (scope === undefined) throw new Error('The core project resolved no compiler scope')
++		if (scope === undefined) throw new Error(`The ${face} project resolved no compiler scope`)
+ 		// The compiler lowercases every resolved library name, so the committed project is the
+ 		// second mechanism this reading is compared against rather than the reading itself.
+ 		expect(scope.lib.map((entry) => entry.toLowerCase())).toStrictEqual(
+ 			declaredLib.map((entry) => entry.toLowerCase()),
+ 		)
+ 		expect(scope.types).toStrictEqual(declaredTypes)
+-		expect(scope.root).toBe(resolve(root, 'src/core'))
++		expect(scope.root).toBe(expectedRoot)
+ 
+ 		expect(configHelpers.parseProjectScope('not a configuration', project)).toBeUndefined()
+ 		expect(
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 62cb7c9..1a6808f 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -80,9 +80,9 @@ describe('official ollama type parity (compile-time gate)', () => {
+ 	})
+ 
+ 	// --- Response-read parity ---------------------------------------------------
+-	// Every field our provider READS via @orkestrel/contract guards on `unknown`,
++	// Every field our provider READS through @orkestrel/contract guards on `unknown`,
+ 	// declared locally here (there is no src type for it) and checked against the
+-	// official ChatResponse/Message/ToolCall shapes as currently installed.
++	// official ChatResponse/Message/ToolCall shapes as installed.
+ 
+ 	interface ReadChatResponse {
+ 		readonly message: {
+@@ -121,7 +121,7 @@ describe('official ollama type parity (compile-time gate)', () => {
+ 		>()
+ 	})
+ 
+-	// The provider reads `arguments` as `unknown` and narrows it via
++	// The provider reads `arguments` as `unknown` and narrows it through
+ 	// `@orkestrel/contract` guards at runtime — the safe compile-time direction is
+ 	// that whatever the official (loosely-typed) response actually contains is
+ 	// assignable into our conservative `unknown` read type, not the reverse.
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 27381d9..4aa74a2 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -93,21 +93,27 @@ for (const entry of manifest) {
+ 		})
+ 
+ 		for (const group of guide.methods()) {
+-			const members = source.methods(group.interface)
++			const members = source.methods(group.interface).map((method) => method.name)
++			const documented = group.methods.map((method) => method.name)
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			describe(`${group.interface}`, () => {
+ 				it('documents at least one method', () => {
+ 					expect(group.methods.length).toBeGreaterThan(0)
+ 				})
+ 				it('documents every interface method', () => {
+-					expect(findMissing(members, group.methods)).toEqual([])
++					expect(findMissing(members, documented)).toEqual([])
+ 				})
+ 				it('documents no phantom method', () => {
+-					expect(findMissing(group.methods, members)).toEqual([])
++					expect(findMissing(documented, members)).toEqual([])
+ 				})
+ 				it(`${entity} exposes no undocumented method`, () => {
+ 					const extra =
+-						entity === group.interface ? [] : findMissing(source.methods(entity), group.methods)
++						entity === group.interface
++							? []
++							: findMissing(
++									source.methods(entity).map((method) => method.name),
++									documented,
++								)
+ 					expect(extra).toEqual([])
+ 				})
+ 			})
+@@ -122,22 +128,32 @@ for (const entry of manifest) {
+ 				.surface()
+ 				.filter((symbol) => symbol.keyword === 'function')
+ 				.map((symbol) => symbol.name)
+-			expect(findUnexampled(names, fences, source.examples())).toEqual([])
++			expect(
++				findUnexampled(
++					names,
++					fences,
++					source.examples().map((example) => example.name),
++				),
++			).toEqual([])
+ 		})
+ 
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
++			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface)
+-							: source.examples(group.interface).concat(source.examples(entity))
+-					expect(findUnexampled(group.methods, fences, examples)).toEqual([])
++					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+ 		}
+diff --git a/tests/policy.test.ts b/tests/policy.test.ts
+index a4452d4..14b7f08 100644
+--- a/tests/policy.test.ts
++++ b/tests/policy.test.ts
+@@ -1,6 +1,7 @@
+-import { existsSync, readdirSync } from 'node:fs'
++import { existsSync, readdirSync, readFileSync } from 'node:fs'
+ import { join } from 'node:path'
+ import { describe, expect, it } from 'vitest'
++import { POLICY_BANNED_TERMS, POLICY_JUDGED_TERMS } from '../configs/policy.js'
+ import {
+ 	BRIDGE_POLICY_CONTROLS,
+ 	createPolicyScratch,
+@@ -13,13 +14,27 @@ import {
+ 	inspectPolicyWorkspace,
+ 	inspectSkillFamily,
+ 	inspectSkillBridges,
++	isPolicyFile,
++	isPolicyMirror,
+ 	isPolicyRecord,
++	isPolicyStray,
+ 	matchesSkillTrigger,
+ 	parseSkillFrontmatter,
++	POLICY_CATALOG_FILE,
+ 	POLICY_CONTROLS,
++	POLICY_MIRROR_PATTERN,
+ 	POLICY_SUPPRESSION_DIRECTIVE,
++	POLICY_TERM_FILE,
++	POLICY_TERM_HEADING,
+ 	PORTABILITY_POLICY_CONTROLS,
++	PROSE_POLICY_CONTROLS,
++	PROSE_POLICY_MANIFEST,
++	readPolicyCatalog,
++	readPolicyGuide,
++	readPolicyPackage,
+ 	readPolicyPaths,
++	readPolicyProse,
++	readPolicyTerms,
+ 	readSkillFamily,
+ 	RULES_POLICY_CONTROLS,
+ 	SKILL_BRIDGE_ROOT,
+@@ -172,6 +187,10 @@ describe('policy population controls', () => {
+ 				membership: 'files outside source, test, config, and script code',
+ 				rule: 'suppression',
+ 				files: [
++					// The manifest names the package this guide belongs to, so the prose sweep reads it
++					// as the workspace's own guide rather than as a top-level guide no evidence accounts
++					// for.
++					{ path: 'package.json', content: PROSE_POLICY_MANIFEST },
+ 					{
+ 						path: 'guides/sample.md',
+ 						content: `<!-- ${POLICY_SUPPRESSION_DIRECTIVE} -->\n`,
+@@ -341,6 +360,113 @@ describe('portability policy', () => {
+ 	})
+ })
+ 
++describe('prose policy', () => {
++	for (const control of PROSE_POLICY_CONTROLS) {
++		it(`${control.label} [membership: ${control.membership}]`, () => {
++			const violations = inspectPolicyControl(control).filter(
++				(violation) => violation.rule === 'prose',
++			)
++			expect(violations).toHaveLength(1)
++			expect(violations[0]?.message).toBe(control.message)
++			expect(violations[0]?.line).toBe(control.line)
++		})
++	}
++
++	// A mirror is excluded from the term sweep, so the exclusion needs evidence rather than
++	// silence. The catalog table is that evidence, and it is a second mechanism: it is regenerated
++	// from the registry and names the fleet, while the guides directory names what this checkout
++	// holds. A guide neither side accounts for reports.
++	it('accounts for every top-level guide as this package, the index, or a catalog row', () => {
++		const root = process.cwd()
++		const own = readPolicyPackage(root)
++		if (own === undefined) throw new Error('The workspace manifest declares no name')
++		const guides = readPolicyProse(root).filter((path) => POLICY_MIRROR_PATTERN.test(path))
++		expect(guides.length).toBeGreaterThan(0)
++		expect(guides.filter((path) => isPolicyStray(root, path))).toEqual([])
++		const other = readPolicyCatalog(root).find((name) => name !== own)
++		if (other === undefined) throw new Error('The catalog registers no other package')
++		expect(isPolicyMirror(root, `guides/${other}.md`)).toBe(true)
++		expect(isPolicyMirror(root, `guides/${own}.md`)).toBe(false)
++		expect(isPolicyMirror(root, 'guides/README.md')).toBe(false)
++		expect(isPolicyStray(root, `guides/${own}.md`)).toBe(false)
++		expect(isPolicyStray(root, 'guides/README.md')).toBe(false)
++		// The control: a name no catalog row registers is a stray whatever the directory holds.
++		expect(isPolicyStray(root, 'guides/absent.md')).toBe(true)
++	})
++
++	it('reads the guide name a top-level path carries for another package to account for', () => {
++		const root = process.cwd()
++		const own = readPolicyPackage(root)
++		if (own === undefined) throw new Error('The workspace manifest declares no name')
++		expect(readPolicyGuide(root, 'guides/other.md')).toBe('other')
++		expect(readPolicyGuide(root, `guides/${own}.md`)).toBeUndefined()
++		expect(readPolicyGuide(root, 'guides/README.md')).toBeUndefined()
++		expect(readPolicyGuide(root, 'guides/nested/other.md')).toBeUndefined()
++		expect(readPolicyGuide(root, 'AGENTS.md')).toBeUndefined()
++	})
++
++	it('reads the authored Markdown population and excludes the directories it names', () => {
++		const paths = readPolicyProse(process.cwd())
++		expect(paths).toContain('README.md')
++		expect(paths).toContain('AGENTS.md')
++		expect(paths).toContain('guides/README.md')
++		expect(paths).toContain(POLICY_CATALOG_FILE)
++		expect(paths.some((path) => path.startsWith('node_modules/'))).toBe(false)
++		expect(paths.some((path) => path.startsWith('dist/'))).toBe(false)
++		expect(paths.some((path) => path.startsWith('tmp/'))).toBe(false)
++		expect(paths.some((path) => path.startsWith('.orkestrel/'))).toBe(false)
++	})
++})
++
++describe('denylist currency', () => {
++	// The denylist is a second copy of one column of the substitution table, so it drifts the
++	// moment a row is added or removed. Reading the table itself is the mechanism that could
++	// disagree with the copy, and every row has to land in exactly one of the two sets: matched
++	// unconditionally, or left to a reader because the row has a permitted sense.
++	// A target reads `.claude/rules/writing.md` from the installed scaffold copy rather than
++	// authoring it (the canon paragraph `src/core/templates.ts` emits into a generated `AGENTS.md`),
++	// so the table exists only where the workspace authors it. There the denylist and the table ship
++	// from one release; here they can drift, so the comparison runs here.
++	it.skipIf(!isPolicyFile(process.cwd(), POLICY_TERM_FILE))(
++		'registers every substitution-table term as either matched or judged',
++		() => {
++			const registered = new Set([
++				...POLICY_BANNED_TERMS.map((entry) => entry.term),
++				...POLICY_JUDGED_TERMS,
++			])
++			const table = readPolicyTerms(readFileSync(join(process.cwd(), POLICY_TERM_FILE), 'utf8'))
++			expect(table.length > 0).toBe(true)
++			expect([...registered].sort()).toEqual([...new Set(table)].sort())
++		},
++	)
++
++	it('reports a table row neither set names', () => {
++		// The control: a table carrying one row outside the membership, which the reader returns
++		// and neither set holds, so the comparison above would fail on it.
++		const fixture = [
++			'# Fixture',
++			'',
++			POLICY_TERM_HEADING,
++			'',
++			'| Term | Replacement |',
++			'| ---- | ----------- |',
++			'| `should` | `must` |',
++			'| `henceforth` (formal) | `after this` |',
++			'',
++			'## Not adopted',
++			'',
++			'| `unreached` | Outside the table |',
++		].join('\n')
++		const table = readPolicyTerms(fixture)
++		expect(table).toEqual(['should', 'henceforth'])
++		const registered = new Set([
++			...POLICY_BANNED_TERMS.map((entry) => entry.term),
++			...POLICY_JUDGED_TERMS,
++		])
++		expect(table.filter((term) => !registered.has(term))).toEqual(['henceforth'])
++	})
++})
++
+ describe('repository policy', () => {
+ 	it('enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace', () => {
+ 		expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+diff --git a/tests/service/OllamaProvider.test.ts b/tests/service/OllamaProvider.test.ts
+index a22d5fb..8384941 100644
+--- a/tests/service/OllamaProvider.test.ts
++++ b/tests/service/OllamaProvider.test.ts
+@@ -145,7 +145,7 @@ describe('OllamaProvider (live — generate)', () => {
+ 		expect(result.content).not.toContain('</think>')
+ 	})
+ 
+-	// Recipe: 'What is 2+2? Reply with just the number.' / inline
++	// Recipe: `'What is 2+2? Reply with just the number.'` / inline
+ 	// { num_predict: 768, temperature: 0 } / think:true. Calibration note: at
+ 	// temperature:0 a retry replays the SAME trace on a given host, so the prompt —
+ 	// not the budget — must guarantee the trace closes: compliance-style prompts
+diff --git a/tests/service/budget.test.ts b/tests/service/budget.test.ts
+index d9983d5..0467f90 100644
+--- a/tests/service/budget.test.ts
++++ b/tests/service/budget.test.ts
+@@ -173,7 +173,7 @@ describe('Agent usage (live) — multi-turn usage accumulates across provider ca
+ 			if (total === undefined) throw new Error('usage missing')
+ 
+ 			// The documented contract (AgentResult TSDoc): "usage summed across the turn's provider
+-			// calls" — verify the SUM matches, not just a monotonic bound, since the source
++			// calls" — verify the SUM matches, not a monotonic bound alone, since the source
+ 			// explicitly commits to accumulation (not last-turn-wins).
+ 			let summedPrompt = 0
+ 			let summedCompletion = 0
+diff --git a/tests/service/compaction.test.ts b/tests/service/compaction.test.ts
+index 52d6b86..992b401 100644
+--- a/tests/service/compaction.test.ts
++++ b/tests/service/compaction.test.ts
+@@ -201,7 +201,7 @@ describe('Agent (live) — AUTOMATIC compaction fires mid-run, the run continues
+ 			expect(best.result.partial).toBe(false)
+ 			// (c) The emitted `tool` chunk(s) from the SAME run carry [call, result] shape — the
+ 			// call names the registered tool, and its result is defined (never dropped) — proving
+-			// the tool-chunk payload the agent stream emits, not just the eventual final answer.
++			// the tool-chunk payload the agent stream emits, not the eventual final answer alone.
+ 			expect(best.tools.length).toBeGreaterThan(0)
+ 			for (const driven of best.tools) {
+ 				expect(driven.call.name).toBe('lookup_code')
+diff --git a/tests/service/factories.test.ts b/tests/service/factories.test.ts
+index 6895631..74cd1ea 100644
+--- a/tests/service/factories.test.ts
++++ b/tests/service/factories.test.ts
+@@ -65,7 +65,7 @@ describe('createOllama (live)', () => {
+ 	})
+ 	it('the transport seam (a headers hook) does not break the real daemon path', async () => {
+ 		// Recipe: FAST_OPTIONS. The transport seam is orthogonal to the wire: a dynamic header the real
+-		// Ollama simply ignores must still produce a normal generation against the live daemon —
++		// Ollama ignores must still produce a normal generation against the live daemon —
+ 		// proof the header-merge doesn't perturb the actual request path.
+ 		const provider = createOllama({
+ 			model: OLLAMA_CONFIG.model,
+diff --git a/tests/service/tools.test.ts b/tests/service/tools.test.ts
+index bbcce14..f37f43f 100644
+--- a/tests/service/tools.test.ts
++++ b/tests/service/tools.test.ts
+@@ -436,7 +436,7 @@ describe('Agent tool loop (live) — a single turn carries multiple tool calls',
+ 					await driveAgent(stream)
+ 					// The provider replays each requested turn as a stored assistant message
+ 					// carrying its `calls` — a message with 2+ calls proves a SINGLE turn
+-					// dispatched multiple tool calls together (structurally observable via the
++					// dispatched multiple tool calls together (structurally observable through the
+ 					// conversation store, not inferred from ordering).
+ 					const multiCallTurn = agent.context.messages
+ 						.messages()
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 51713c0..fadba10 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -60,7 +60,7 @@ export function buildTurns(count: number): readonly Message[] {
+ // rather than a successful digest. Matches `ConversationSummaryHandler` from
+ // `@orkestrel/agent`: `(messages: readonly Message[]) => Promise<string>`.
+ 
+-/** The message every {@link createThrowingSummarizer} invocation rejects with, by default. */
++/** Names the message every {@link createThrowingSummarizer} invocation rejects with, by default. */
+ export const THROWING_SUMMARIZER_MESSAGE = 'throwing-summarizer-always-fails'
+ 
+ /**
+@@ -79,7 +79,7 @@ export function createThrowingSummarizer(
+ 	}
+ }
+ 
+-/** The digest every {@link createRecordingSummarizer} invocation resolves with, by default. */
++/** Names the digest every {@link createRecordingSummarizer} invocation resolves with, by default. */
+ export const RECORDING_SUMMARIZER_DIGEST = 'recording-summarizer-digest'
+ 
+ /**
+@@ -108,7 +108,7 @@ export function createRecordingSummarizer(
+ // randomness, fixed filler prose, so a workspace-driven test (context budget,
+ // document listing) is reproducible run to run.
+ 
+-/** Tuning for {@link fillWorkspace} — all optional. */
++/** Represents the tuning {@link fillWorkspace} accepts — all optional. */
+ export interface FillWorkspaceOptions {
+ 	/** How many `doc-NN.md` files to write; defaults to `12`. */
+ 	readonly count?: number
+@@ -120,7 +120,7 @@ export interface FillWorkspaceOptions {
+ 	readonly sentinelText?: string
+ }
+ 
+-/** The fixed sentence {@link fillWorkspace} repeats to fill each generated document. */
++/** Names the fixed sentence {@link fillWorkspace} repeats to fill each generated document. */
+ export const FILLER_SENTENCE =
+ 	'The quick brown fox jumps over the lazy dog and rests beneath the old oak tree. '
+ 
+diff --git a/tests/setupPolicy.ts b/tests/setupPolicy.ts
+index 8e117f7..5e024b1 100644
+--- a/tests/setupPolicy.ts
++++ b/tests/setupPolicy.ts
+@@ -9,17 +9,25 @@ import {
+ } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { basename, dirname, join, matchesGlob } from 'node:path'
+-
+-/** A rule the fleet sweep decides from workspace text and paths. */
+-export type PolicyRule = 'bridge' | 'mirror' | 'portability' | 'rules' | 'skill' | 'suppression'
+-
+-/** One workspace file written by a physical control. */
++import { stripPolicyCode, textToPolicyHits } from '../configs/policy.js'
++
++/** Names a rule the fleet sweep decides from workspace text and paths. */
++export type PolicyRule =
++	| 'bridge'
++	| 'mirror'
++	| 'portability'
++	| 'prose'
++	| 'rules'
++	| 'skill'
++	| 'suppression'
++
++/** Describes one workspace file a physical control writes. */
+ export interface PolicySource {
+ 	readonly path: string
+ 	readonly content: string
+ }
+ 
+-/** One policy failure reported by the sweep. */
++/** Describes one policy failure the sweep reports. */
+ export interface PolicyViolation {
+ 	readonly rule: PolicyRule
+ 	readonly path: string
+@@ -27,7 +35,7 @@ export interface PolicyViolation {
+ 	readonly message: string
+ }
+ 
+-/** One physical negative control, including the population boundary it attacks. */
++/** Describes one physical negative control, including the population boundary it attacks. */
+ export interface PolicyControl {
+ 	readonly label: string
+ 	readonly membership: string
+@@ -75,7 +83,7 @@ export function createPolicyScratch(options: { readonly prefix: string }): Polic
+ 	}
+ }
+ 
+-/** Parsed skill frontmatter and the exact scalar source used for bridge comparison. */
++/** Holds parsed skill frontmatter and the exact scalar source used for bridge comparison. */
+ export interface SkillFrontmatter {
+ 	readonly keys: readonly string[]
+ 	readonly name: string | undefined
+@@ -86,29 +94,29 @@ export interface SkillFrontmatter {
+ 	}
+ }
+ 
+-/** The directory whose immediate child directories form the complete skill family. */
++/** Names the directory whose immediate child directories form the complete skill family. */
+ export const SKILL_FAMILY_ROOT = '.agents/skills'
+ 
+-/** The directory whose immediate child directories form the Claude skill bridge family. */
++/** Names the directory whose immediate child directories form the Claude skill bridge family. */
+ export const SKILL_BRIDGE_ROOT = '.claude/skills'
+ 
+-/** Minimal valid skill text for physical family controls. */
++/** Holds the minimal valid skill text for physical family controls. */
+ export const SKILL_POLICY_TEXT =
+ 	'---\nname: sample\ndescription: Use this skill for a policy fixture.\n---\n\n# Skill\n'
+ 
+-/** Skill text naming one reference for physical family controls. */
++/** Holds skill text naming one reference for physical family controls. */
+ export const SKILL_REFERENCE_TEXT = `${SKILL_POLICY_TEXT}\nRead references/example.md.\n`
+ 
+-/** Minimal valid provider bridge text for physical bridge controls. */
++/** Holds the minimal valid provider bridge text for physical bridge controls. */
+ export const SKILL_BRIDGE_TEXT = `${SKILL_POLICY_TEXT}\nRead \`.agents/skills/sample/SKILL.md\`.\n`
+ 
+-/** Canonical skill metadata whose values each carry YAML's escaped apostrophe. */
++/** Holds canonical skill metadata whose values each carry YAML's escaped apostrophe. */
+ export const SKILL_APOSTROPHE_METADATA =
+ 	"interface:\n  display_name: 'Owner''s Fixture'\n" +
+ 	"  short_description: 'Exercise the family''s apostrophe rule'\n" +
+ 	"  default_prompt: 'Use $sample for this fixture''s value.'\n"
+ 
+-/** Every extension through which a mirrored test can name a module. */
++/** Lists every extension through which a mirrored test can name a module. */
+ export const POLICY_MODULE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'cts',
+ 	'mts',
+@@ -119,39 +127,45 @@ export const POLICY_MODULE_EXTENSIONS: readonly string[] = Object.freeze([
+ 	'css',
+ ])
+ 
+-/** Module extensions whose extensionless stem can resolve a leading-underscore partial. */
++/**
++ * Lists the module extensions whose extensionless stem can resolve a leading-underscore partial.
++ */
+ export const POLICY_PARTIAL_EXTENSIONS: readonly string[] = Object.freeze(['scss', 'css'])
+ 
+-/** The reserved stem prefix whose mirrored module can resolve inside the tests axis. */
++/** Names the reserved stem prefix whose mirrored module can resolve inside the tests axis. */
+ export const POLICY_TESTS_MODULE_PREFIX = 'setup'
+ 
+-/** The complete module population available to mirrored tests under either workspace axis. */
++/**
++ * Matches the complete module population available to mirrored tests under either workspace axis.
++ */
+ export const POLICY_MODULE_GLOB = `{app,src}/**/*.{${POLICY_MODULE_EXTENSIONS.join(',')}}`
+ 
+-/** The tests-axis setup module population available to mirrored tests. */
++/** Matches the tests-axis setup module population available to mirrored tests. */
+ export const POLICY_TESTS_MODULE_GLOB = `tests/**/${POLICY_TESTS_MODULE_PREFIX}*.ts`
+ 
+-/** The mirrored module-test population inspected under either workspace axis. */
++/** Matches the mirrored module-test population inspected under either workspace axis. */
+ export const POLICY_TEST_GLOB = 'tests/{app,src}/**/*.test.ts'
+ 
+ // Compose suppression tokens so the instrument does not report its own definitions or controls.
+ export const POLICY_SUPPRESSION_DIRECTIVE = ['oxlint', '-disable'].join('')
+ 
+-/** Source, test, config, and script files inspected for lint suppression directives. */
++/** Matches the source, test, config, and script files inspected for lint suppression directives. */
+ export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
+ 	'{src,app,tests,configs,scripts}/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
+ 	'*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
+ ])
+ 
+-/** Rules whose workspace-wide lint wiring must not be weakened by configuration. */
++/** Lists the rules whose workspace-wide lint wiring must not be weakened by configuration. */
+ export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
+ 	'policy/no-mocking',
+ 	'policy/no-keyword-privacy',
++	'policy/no-malformed-summary',
++	'policy/no-banned-term',
+ 	'typescript/parameter-properties',
+ 	'typescript/explicit-member-accessibility',
+ ])
+ 
+-/** Linted workspace roots that ignore patterns must not reach. */
++/** Lists the linted workspace roots that ignore patterns must not reach. */
+ export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
+ 	'src',
+ 	'app',
+@@ -159,13 +173,16 @@ export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
+ 	'configs',
+ ])
+ 
+-/** Either lint suppression token the text sweep refuses. */
++/** Matches either lint suppression token the text sweep refuses. */
+ export const POLICY_SUPPRESSION_PATTERN = new RegExp(
+ 	[['eslint', '-disable'].join(''), POLICY_SUPPRESSION_DIRECTIVE].join('|'),
+ 	'u',
+ )
+ 
+-/** The workspace-authored path population inspected for a name a Windows checkout cannot hold. */
++/**
++ * Matches the workspace-authored path population inspected for a name a Windows checkout cannot
++ * hold.
++ */
+ export const POLICY_PORTABILITY_GLOB: readonly string[] = Object.freeze([
+ 	'{src,app,configs,tests,scripts,guides}/**/*',
+ 	'{.agents,.claude,.codex,.cursor,.github}/**/*',
+@@ -173,7 +190,7 @@ export const POLICY_PORTABILITY_GLOB: readonly string[] = Object.freeze([
+ 	'.*',
+ ])
+ 
+-/** Every device name Windows reserves, whatever extension the segment carries. */
++/** Lists every device name Windows reserves, whatever extension the segment carries. */
+ export const POLICY_RESERVED_NAMES: readonly string[] = Object.freeze([
+ 	'aux',
+ 	'com1',
+@@ -199,26 +216,59 @@ export const POLICY_RESERVED_NAMES: readonly string[] = Object.freeze([
+ 	'prn',
+ ])
+ 
+-/** Every character Windows refuses inside a path segment. */
++/** Matches every character Windows refuses inside a path segment. */
+ export const POLICY_RESERVED_PATTERN = /[<>:"|?*]/u
+ 
+-/** A shell script named as a complete path token inside a manifest script. */
++/** Matches a shell script named as a complete path token inside a manifest script. */
+ export const POLICY_SHELL_PATTERN = /\.sh\b/u
+ 
+-/** The directory whose direct Markdown files form the complete rule family. */
++/** Names the directory whose direct Markdown files form the complete rule family. */
+ export const POLICY_RULE_ROOT = '.claude/rules'
+ 
+-/** The root instruction file whose rule map registers the rule family. */
++/** Names the root instruction file whose rule map registers the rule family. */
+ export const POLICY_RULE_MAP_FILE = 'AGENTS.md'
+ 
+-/** The heading that opens the root instruction file's rule map table. */
++/** Names the heading that opens the root instruction file's rule map table. */
+ export const POLICY_RULE_MAP_HEADING = '## Rule map'
+ 
+-/** The workspace manifest whose scripts run on every supported host. */
++/** Names the workspace manifest whose scripts run on every supported host. */
+ export const POLICY_MANIFEST_FILE = 'package.json'
+ 
++/** Lists the directory names the prose sweep never descends into. */
++export const POLICY_PROSE_EXCLUSIONS: readonly string[] = Object.freeze([
++	'.git',
++	'.orkestrel',
++	'dist',
++	'node_modules',
++	'tmp',
++])
++
++/** Matches a top-level guide path and captures the package short name it is written for. */
++export const POLICY_MIRROR_PATTERN = /^guides\/([^/]+)\.md$/u
++
++/** Names the guide a workspace holds as its own index rather than as a mirror. */
++export const POLICY_GUIDE_MAP = 'README'
++
++/** Names the rule file whose substitution table is the denylist's source. */
++export const POLICY_TERM_FILE = '.claude/rules/writing.md'
++
++/** Names the heading that opens the substitution table. */
++export const POLICY_TERM_HEADING = '## Substitutions'
++
+ /**
+- * Normalize platform separators for stable matching and diagnostics.
++ * Names the catalog agent file whose table registers every fleet package.
++ *
++ * @remarks
++ * The path is written here rather than read from the scaffold constant that plans it, because this
++ * module is vendored byte-identical into every workspace and imports nothing from the package.
++ */
++export const POLICY_CATALOG_FILE = '.claude/agents/orkestrel.md'
++
++/** Names the heading that opens the package catalog. */
++export const POLICY_CATALOG_HEADING = '## Package catalog'
++
++/**
++ * Normalizes platform separators for stable matching and diagnostics.
+  *
+  * @param path - The workspace-relative path to normalize.
+  * @returns The path with forward slashes and no duplicate separators.
+@@ -227,13 +277,16 @@ export function normalizePolicyPath(path: string): string {
+ 	return path.replaceAll('\\', '/').replace(/\/+/gu, '/')
+ }
+ 
+-/** Whether a parsed configuration value is a plain record rather than an array or a primitive. */
++/**
++ * Reports whether a parsed configuration value is a plain record rather than an array or a
++ * primitive.
++ */
+ export function isPolicyRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+ 	return typeof value === 'object' && value !== null && !Array.isArray(value)
+ }
+ 
+ /**
+- * Create one stable violation for an inspection result.
++ * Creates one stable violation for an inspection result.
+  *
+  * @param rule - The rule that failed.
+  * @param path - The workspace-relative source path.
+@@ -251,7 +304,7 @@ export function createPolicyViolation(
+ }
+ 
+ /**
+- * Derive the extensionless module stem for one mirrored module test.
++ * Derives the extensionless module stem for one mirrored module test.
+  *
+  * @param path - The workspace-relative test path.
+  * @returns The extensionless module stem, or `undefined` for a reserved scope test.
+@@ -264,7 +317,7 @@ export function testToPolicyStem(path: string): string | undefined {
+ }
+ 
+ /**
+- * The candidate set is every module name a registered language resolves for a stem.
++ * Lists every module name a registered language resolves for a stem.
+  *
+  * @param stem - The extensionless workspace-relative module stem.
+  * @returns Direct modules, partial modules, then a matching tests-axis setup module.
+@@ -282,7 +335,7 @@ export function stemToPolicyCandidates(stem: string): readonly string[] {
+ }
+ 
+ /**
+- * Inspect mirrored test paths against an explicit module-path population.
++ * Inspects mirrored test paths against an explicit module-path population.
+  *
+  * @param tests - The module-test paths to inspect.
+  * @param modules - The existing module paths in every registered language.
+@@ -312,7 +365,7 @@ export function inspectPolicyMirrorPaths(
+ }
+ 
+ /**
+- * Inspect every mirrored module test beneath one workspace.
++ * Inspects every mirrored module test beneath one workspace.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every missing mirror violation in test-path order.
+@@ -327,7 +380,7 @@ export function inspectPolicyMirrors(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect code-shaped workspace files for lint suppression directives.
++ * Inspects code-shaped workspace files for lint suppression directives.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every suppression occurrence in path and line order.
+@@ -355,7 +408,7 @@ export function inspectPolicySuppressions(root: string): readonly PolicyViolatio
+ }
+ 
+ /**
+- * Inspect the lint configuration that keeps policy rules active across the workspace.
++ * Inspects the lint configuration that keeps policy rules active across the workspace.
+  *
+  * @param configuration - The parsed Oxlint configuration to inspect.
+  * @returns Every wiring violation in rule and configuration order.
+@@ -421,7 +474,7 @@ export function inspectPolicyConfiguration(configuration: unknown): readonly str
+ }
+ 
+ /**
+- * Inspect the lint configuration that keeps every named rule and population wired.
++ * Inspects the lint configuration that keeps every named rule and population wired.
+  *
+  * @param configuration - The parsed Oxlint configuration to inspect.
+  * @param rules - Every rule id that some top-level or override rules record must enable.
+@@ -470,7 +523,7 @@ export function inspectPolicyWiring(
+ }
+ 
+ /**
+- * Resolve an exact-case directory beneath a physical root.
++ * Resolves an exact-case directory beneath a physical root.
+  *
+  * @param root - The physical directory from which resolution starts.
+  * @param path - The relative directory path to resolve.
+@@ -491,7 +544,7 @@ export function resolvePolicyDirectory(root: string, path: string): string | und
+ }
+ 
+ /**
+- * Whether an exact-case path resolves to a regular file beneath a physical root.
++ * Reports whether an exact-case path resolves to a regular file beneath a physical root.
+  *
+  * @param root - The physical directory from which resolution starts.
+  * @param path - The relative file path to inspect.
+@@ -508,7 +561,7 @@ export function isPolicyFile(root: string, path: string): boolean {
+ }
+ 
+ /**
+- * Read the immediate child directories beneath one workspace-relative path.
++ * Reads the immediate child directories beneath one workspace-relative path.
+  *
+  * @param root - The workspace root to inspect.
+  * @param path - The workspace-relative parent directory.
+@@ -524,7 +577,7 @@ export function readPolicyDirectories(root: string, path: string): readonly stri
+ }
+ 
+ /**
+- * Discover the skill family from immediate directories in the workspace tree.
++ * Discovers the skill family from immediate directories in the workspace tree.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns The sorted directory names that belong to the skill family.
+@@ -534,7 +587,7 @@ export function readSkillFamily(root: string): readonly string[] {
+ }
+ 
+ /**
+- * Parse one skill document's frontmatter without interpreting arbitrary body lines as keys.
++ * Parses one skill document's frontmatter without interpreting arbitrary body lines as keys.
+  *
+  * @param content - The raw SKILL.md text.
+  * @returns The parsed fields and exact scalar source, or `undefined` for an unsupported shape.
+@@ -619,7 +672,7 @@ export function parseSkillFrontmatter(content: string): SkillFrontmatter | undef
+ }
+ 
+ /**
+- * Test whether a description carries a sentence that begins with the case-sensitive word `Use`.
++ * Reports whether a description carries a sentence that begins with the case-sensitive word `Use`.
+  *
+  * @param description - The parsed skill description.
+  * @returns True when the description contains the canonical trigger sentence.
+@@ -629,7 +682,7 @@ export function matchesSkillTrigger(description: string): boolean {
+ }
+ 
+ /**
+- * Read the direct Markdown files owned by one skill's references directory.
++ * Reads the direct Markdown files owned by one skill's references directory.
+  *
+  * @param root - The workspace root to inspect.
+  * @param name - The discovered skill directory name.
+@@ -645,7 +698,7 @@ export function readSkillReferences(root: string, name: string): readonly string
+ }
+ 
+ /**
+- * Create metadata in the canonical skill interface shape.
++ * Creates metadata in the canonical skill interface shape.
+  *
+  * @param name - The skill token the default prompt invokes.
+  * @returns Canonical skill interface metadata ending in one newline.
+@@ -662,7 +715,7 @@ export function createSkillMetadata(name: string): string {
+ }
+ 
+ /**
+- * Parse the default prompt from the canonical skill interface shape.
++ * Parses the default prompt from the canonical skill interface shape.
+  *
+  * Each value is a non-empty single-quoted scalar in which `''` carries an apostrophe.
+  *
+@@ -683,7 +736,7 @@ export function parseSkillPrompt(content: string): string | undefined {
+ }
+ 
+ /**
+- * Test whether a default prompt names one skill's token in complete form.
++ * Reports whether a default prompt names one skill's token in complete form.
+  *
+  * A skill directory name is lowercase letters and hyphens, so a match followed by either continues
+  * a longer name and names a different skill.
+@@ -702,7 +755,7 @@ export function matchesSkillToken(prompt: string, name: string): boolean {
+ }
+ 
+ /**
+- * Extract the direct Markdown reference paths named in one skill document.
++ * Extracts the direct Markdown reference paths named in one skill document.
+  *
+  * @param content - The raw SKILL.md text.
+  * @returns Each distinct references/name.md token in sorted order.
+@@ -776,7 +829,7 @@ export function inspectSkillTemplateTODOs(
+ }
+ 
+ /**
+- * Inspect one discovered skill's required files, metadata, token, and references.
++ * Inspects one discovered skill's required files, metadata, token, and references.
+  *
+  * @param root - The workspace root to inspect.
+  * @param name - The discovered skill directory name.
+@@ -966,7 +1019,7 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
+ }
+ 
+ /**
+- * Inspect every immediate member of the discovered skill family.
++ * Inspects every immediate member of the discovered skill family.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every skill-family violation in directory and invariant order.
+@@ -978,7 +1031,7 @@ export function inspectSkillFamily(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect one provider bridge against its canonical skill twin.
++ * Inspects one provider bridge against its canonical skill twin.
+  *
+  * @param root - The workspace root to inspect.
+  * @param name - The shared canonical and bridge directory name.
+@@ -1066,7 +1119,7 @@ export function inspectBridge(root: string, name: string): readonly PolicyViolat
+ }
+ 
+ /**
+- * Inspect the provider bridge set and every bridge shared with the canonical skill family.
++ * Inspects the provider bridge set and every bridge shared with the canonical skill family.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every bridge-set and bridge-content violation in directory order.
+@@ -1105,7 +1158,7 @@ export function inspectSkillBridges(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Read every rule path the root instruction file's rule map registers.
++ * Reads every rule path the root instruction file's rule map registers.
+  *
+  * @param content - The raw root instruction text.
+  * @returns Each backticked first cell beneath the rule map heading, in table order.
+@@ -1125,7 +1178,7 @@ export function readPolicyRuleMap(content: string): readonly string[] {
+ }
+ 
+ /**
+- * Inspect the discovered rule family against the root instruction file's rule map.
++ * Inspects the discovered rule family against the root instruction file's rule map.
+  *
+  * A workspace with no rule file has no rule map to keep, so the population is empty there.
+  *
+@@ -1161,7 +1214,7 @@ export function inspectPolicyRuleMap(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect an explicit path population for a name a Windows checkout cannot hold.
++ * Inspects an explicit path population for a name a Windows checkout cannot hold.
+  *
+  * Each path is read through its own final segment, because the population lists every directory as
+  * its own entry. A Windows host refuses the reserved characters and folds a case collision into one
+@@ -1218,7 +1271,7 @@ export function inspectPolicyFilenamePaths(paths: readonly string[]): readonly P
+ }
+ 
+ /**
+- * Read the workspace-authored path population, directories included.
++ * Reads the workspace-authored path population, directories included.
+  *
+  * @param root - The workspace root to read.
+  * @returns Every authored path, sorted by path.
+@@ -1228,7 +1281,7 @@ export function readPolicyPaths(root: string): readonly string[] {
+ }
+ 
+ /**
+- * Inspect the workspace-authored path population for a name a Windows checkout cannot hold.
++ * Inspects the workspace-authored path population for a name a Windows checkout cannot hold.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every unusable-name and case-collision violation in path order.
+@@ -1238,7 +1291,7 @@ export function inspectPolicyFilenames(root: string): readonly PolicyViolation[]
+ }
+ 
+ /**
+- * Parse the manifest's script record without interpreting any other manifest field.
++ * Parses the manifest's script record without interpreting any other manifest field.
+  *
+  * @param content - The raw package.json text.
+  * @returns Each script name and its command, in manifest order.
+@@ -1262,7 +1315,7 @@ export function parsePolicyScripts(content: string): ReadonlyMap<string, string>
+ }
+ 
+ /**
+- * Inspect every manifest script for a shell file no Windows host runs.
++ * Inspects every manifest script for a shell file no Windows host runs.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every shell-script violation in manifest order.
+@@ -1286,7 +1339,205 @@ export function inspectPolicyScripts(root: string): readonly PolicyViolation[] {
+ }
+ 
+ /**
+- * Inspect every host portability rule across one workspace.
++ * Reads every authored Markdown path in one workspace, sorted by path.
++ *
++ * @remarks
++ * The walk descends the whole tree apart from the directory names
++ * {@link POLICY_PROSE_EXCLUSIONS} lists, which hold installed packages, built output, scratch
++ * work, and campaign records rather than prose this workspace authors.
++ *
++ * @param root - The workspace root to read.
++ * @returns Every workspace-relative Markdown path, sorted by path.
++ */
++export function readPolicyProse(root: string): readonly string[] {
++	const paths: string[] = []
++	const pending: string[] = ['']
++	while (pending.length > 0) {
++		const relative = pending.pop() ?? ''
++		for (const entry of readdirSync(join(root, relative), { withFileTypes: true })) {
++			const path = relative === '' ? entry.name : `${relative}/${entry.name}`
++			if (entry.isDirectory()) {
++				if (!POLICY_PROSE_EXCLUSIONS.includes(entry.name)) pending.push(path)
++				continue
++			}
++			if (entry.name.endsWith('.md')) paths.push(normalizePolicyPath(path))
++		}
++	}
++	return paths.sort()
++}
++
++/**
++ * Reads the short name one workspace manifest declares, its scope removed.
++ *
++ * @param root - The workspace root to read.
++ * @returns The manifest name after its scope, or undefined where no manifest declares one.
++ */
++export function readPolicyPackage(root: string): string | undefined {
++	if (!isPolicyFile(root, POLICY_MANIFEST_FILE)) return undefined
++	let manifest: unknown
++	try {
++		manifest = JSON.parse(readFileSync(join(root, POLICY_MANIFEST_FILE), 'utf8'))
++	} catch {
++		return undefined
++	}
++	if (!isPolicyRecord(manifest)) return undefined
++	const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
++	if (typeof name !== 'string') return undefined
++	return name.slice(name.lastIndexOf('/') + 1)
++}
++
++/**
++ * Reads every package short name the catalog table registers.
++ *
++ * @remarks
++ * A workspace holds this file because the `catalog` verb refuses a target that lacks it, and a
++ * workspace that has not received one yet registers no package, so the read yields an empty list
++ * there rather than failing.
++ *
++ * @param root - The workspace root to read.
++ * @returns Each catalog row's package short name, its scope removed, in table order.
++ */
++export function readPolicyCatalog(root: string): readonly string[] {
++	if (!isPolicyFile(root, POLICY_CATALOG_FILE)) return []
++	const lines = readFileSync(join(root, POLICY_CATALOG_FILE), 'utf8')
++		.replaceAll('\r\n', '\n')
++		.split('\n')
++	const heading = lines.indexOf(POLICY_CATALOG_HEADING)
++	if (heading === -1) return []
++	const names: string[] = []
++	for (let index = heading + 1; index < lines.length; index += 1) {
++		const line = lines[index]
++		if (line === undefined || line.startsWith('## ')) break
++		const cell = line.match(/^\|\s*`([^`]+)`\s*\|/u)?.[1]
++		if (cell !== undefined) names.push(cell.slice(cell.lastIndexOf('/') + 1))
++	}
++	return names
++}
++
++/**
++ * Reads the guide name one prose path carries when that guide is another package's to account for.
++ *
++ * @remarks
++ * A top-level `guides/<name>.md` path yields its name unless the name is the guide index or this
++ * workspace's own package; every other path yields undefined. {@link isPolicyMirror} and
++ * {@link isPolicyStray} split that name by catalog membership.
++ *
++ * @param root - The workspace root the path belongs to.
++ * @param path - The workspace-relative prose path to read.
++ * @returns The guide's name, or undefined where the path is not a top-level guide another package
++ * could own.
++ */
++export function readPolicyGuide(root: string, path: string): string | undefined {
++	const name = normalizePolicyPath(path).match(POLICY_MIRROR_PATTERN)?.[1]
++	if (name === undefined || name === POLICY_GUIDE_MAP) return undefined
++	return name === readPolicyPackage(root) ? undefined : name
++}
++
++/**
++ * Reports whether one prose path is a top-level guide the catalog registers to another package.
++ *
++ * @remarks
++ * A mirror is fetched bytes rather than authored prose, so the term sweep leaves it to the package
++ * that wrote it. The catalog table is the evidence, and it is the only evidence: the workspace's own
++ * guide and the guide index are authored here, and a top-level guide the catalog does not register
++ * is a finding rather than a silent exclusion.
++ *
++ * @param root - The workspace root the path belongs to.
++ * @param path - The workspace-relative prose path to judge.
++ * @returns True if the path is a top-level guide the catalog registers to a package other than this
++ * one; false otherwise.
++ */
++export function isPolicyMirror(root: string, path: string): boolean {
++	const name = readPolicyGuide(root, path)
++	return name !== undefined && readPolicyCatalog(root).includes(name)
++}
++
++/**
++ * Reports whether one prose path is a top-level guide no evidence accounts for.
++ *
++ * @param root - The workspace root the path belongs to.
++ * @param path - The workspace-relative prose path to judge.
++ * @returns True if the path is a top-level guide that is neither this package's own, nor the index,
++ * nor a catalog row; false otherwise.
++ */
++export function isPolicyStray(root: string, path: string): boolean {
++	const name = readPolicyGuide(root, path)
++	return name !== undefined && !readPolicyCatalog(root).includes(name)
++}
++
++/**
++ * Inspects every authored Markdown file for a term the substitution table bans unconditionally.
++ *
++ * @remarks
++ * Each file is stripped of its fenced blocks, its inline code spans, its link tags, and its URLs
++ * before the match, by the same reader the comment rule uses, so a term inside one of those regions
++ * is not prose. Stripping holds every offset, so the reported line is the line in the file.
++ *
++ * A top-level guide the catalog registers to another package is a mirror and is skipped, and a
++ * top-level guide no evidence accounts for reports instead, so an exclusion is never silent.
++ *
++ * @param root - The workspace root to inspect.
++ * @returns Every unaccounted-guide violation, then every banned-term violation in path and offset
++ * order.
++ */
++export function inspectPolicyProse(root: string): readonly PolicyViolation[] {
++	const violations: PolicyViolation[] = []
++	for (const path of readPolicyProse(root)) {
++		if (isPolicyStray(root, path)) {
++			violations.push(
++				createPolicyViolation(
++					'prose',
++					path,
++					"guide is the package's own, the map, or a catalog row",
++				),
++			)
++		}
++		if (isPolicyMirror(root, path)) continue
++		const prose = stripPolicyCode(readFileSync(join(root, path), 'utf8'))
++		for (const hit of textToPolicyHits(prose)) {
++			violations.push(
++				createPolicyViolation(
++					'prose',
++					path,
++					`prose carries no banned term: ${hit.term.term} (${hit.term.replacement})`,
++					prose.slice(0, hit.index).split('\n').length,
++				),
++			)
++		}
++	}
++	return violations
++}
++
++/**
++ * Reads every term the substitution table's first column registers.
++ *
++ * @remarks
++ * Each row's first cell carries its terms as code spans, so the read takes the backticked tokens
++ * and drops the parenthetical qualifier a row writes beside one.
++ *
++ * @param content - The raw rule text carrying the substitution table.
++ * @returns Each registered term, in table order.
++ */
++export function readPolicyTerms(content: string): readonly string[] {
++	const lines = content.replaceAll('\r\n', '\n').split('\n')
++	const heading = lines.indexOf(POLICY_TERM_HEADING)
++	if (heading === -1) return []
++	const terms: string[] = []
++	for (let index = heading + 1; index < lines.length; index += 1) {
++		const line = lines[index]
++		if (line === undefined || line.startsWith('## ')) break
++		const cell = line.match(/^\|([^|]*)\|/u)?.[1]
++		if (cell === undefined) continue
++		for (const match of cell.matchAll(/`([^`]+)`/gu)) {
++			const term = match[1]
++			if (term !== undefined) terms.push(term)
++		}
++	}
++	return terms
++}
++
++/**
++ * Inspects every host portability rule across one workspace.
+  *
+  * @param root - The workspace root to inspect.
+  * @returns Every rule-map, filename, and manifest-script violation.
+@@ -1300,10 +1551,10 @@ export function inspectPolicyPortability(root: string): readonly PolicyViolation
+ }
+ 
+ /**
+- * Inspect every policy rule across one workspace.
++ * Inspects every policy rule across one workspace.
+  *
+  * @param root - The workspace root to inspect.
+- * @returns Every mirror, suppression, skill, bridge, and portability violation.
++ * @returns Every mirror, suppression, skill, bridge, portability, and prose violation.
+  */
+ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[] {
+ 	return [
+@@ -1312,11 +1563,12 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
+ 		...inspectSkillFamily(root),
+ 		...inspectSkillBridges(root),
+ 		...inspectPolicyPortability(root),
++		...inspectPolicyProse(root),
+ 	]
+ }
+ 
+ /**
+- * Write a control to a real temporary workspace and run the production sweep over it.
++ * Writes a control to a real temporary workspace and runs the production sweep over it.
+  *
+  * The control's rule selects the sweep: `skill` inspects the canonical family, `bridge` inspects
+  * provider bridges, and every other rule inspects the whole workspace route.
+@@ -1343,7 +1595,7 @@ export function inspectPolicyControl(control: PolicyControl): readonly PolicyVio
+ 	}
+ }
+ 
+-/** Physical negative controls, one for each rule the sweep claims to enforce. */
++/** Lists the physical negative controls, one for each rule the sweep claims to enforce. */
+ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a suppression directive in a scanned source file',
+@@ -1413,7 +1665,7 @@ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** Physical in-family controls for every skill-family assertion class. */
++/** Lists the physical in-family controls for every skill-family assertion class. */
+ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a SKILL.md without frontmatter',
+@@ -1689,7 +1941,7 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** Physical controls for provider-bridge assertions. */
++/** Lists the physical controls for provider-bridge assertions. */
+ export const BRIDGE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a canonical skill without a provider bridge',
+@@ -1818,7 +2070,9 @@ export const BRIDGE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** An in-family skill whose metadata values carry escaped apostrophes, proving they parse. */
++/**
++ * Describes an in-family skill whose metadata values carry escaped apostrophes, proving they parse.
++ */
+ export const SKILL_POLICY_APOSTROPHE: PolicyControl = Object.freeze({
+ 	label: 'accepts escaped apostrophes in agents/openai.yaml values',
+ 	membership: 'immediate directories beneath .agents/skills',
+@@ -1829,7 +2083,9 @@ export const SKILL_POLICY_APOSTROPHE: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A folded description containing a colon, proving continuation lines do not become keys. */
++/**
++ * Describes a folded description containing a colon, proving continuation lines do not become keys.
++ */
+ export const SKILL_POLICY_FOLDED: PolicyControl = Object.freeze({
+ 	label: 'accepts a folded description containing a colon',
+ 	membership: 'folded description scalars in discovered skill frontmatter',
+@@ -1844,7 +2100,7 @@ export const SKILL_POLICY_FOLDED: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A healthy skill reference whose prose carries the documented backticked TODO form. */
++/** Describes a healthy skill reference whose prose carries the documented backticked TODO form. */
+ export const SKILL_POLICY_BACKTICKED: PolicyControl = Object.freeze({
+ 	label: 'accepts a backticked TODO in skill prose',
+ 	membership: 'TODO occurrences inside matched inline backtick spans in discovered skill documents',
+@@ -1859,7 +2115,7 @@ export const SKILL_POLICY_BACKTICKED: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A healthy skill whose fenced example carries a template-TODO spelling. */
++/** Describes a healthy skill whose fenced example carries a template-TODO spelling. */
+ export const SKILL_POLICY_FENCED: PolicyControl = Object.freeze({
+ 	label: 'accepts a TODO in a three-space-indented fenced skill example',
+ 	membership:
+@@ -1876,7 +2132,7 @@ export const SKILL_POLICY_FENCED: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A folded description whose blank scalar line separates its paragraphs. */
++/** Describes a folded description whose blank scalar line separates its paragraphs. */
+ export const SKILL_POLICY_PARAGRAPHS: PolicyControl = Object.freeze({
+ 	label: 'accepts a folded description containing two paragraphs',
+ 	membership: 'folded description scalars in discovered skill frontmatter',
+@@ -1891,7 +2147,9 @@ export const SKILL_POLICY_PARAGRAPHS: PolicyControl = Object.freeze({
+ 	],
+ })
+ 
+-/** A bridge skill outside the discovered family, used to prove the membership boundary. */
++/**
++ * Describes a bridge skill outside the discovered family, used to prove the membership boundary.
++ */
+ export const SKILL_POLICY_EXCLUSION: PolicyControl = Object.freeze({
+ 	label: 'excludes .claude/skills from the skill family',
+ 	membership: 'directories outside .agents/skills',
+@@ -1900,7 +2158,7 @@ export const SKILL_POLICY_EXCLUSION: PolicyControl = Object.freeze({
+ })
+ 
+ /**
+- * Create root instruction text whose rule map names an explicit rule set.
++ * Creates root instruction text whose rule map names an explicit rule set.
+  *
+  * @param rules - The workspace-relative rule paths the map registers.
+  * @returns Root instruction text carrying one rule map table.
+@@ -1919,7 +2177,27 @@ export function createPolicyRuleMap(rules: readonly string[]): string {
+ 	)
+ }
+ 
+-/** Physical controls for every rule-map parity assertion the workspace route reaches. */
++/**
++ * Creates catalog agent text whose package table names an explicit package set.
++ *
++ * @param names - The package short names the catalog registers.
++ * @returns Catalog agent text carrying one package table.
++ */
++export function createPolicyCatalog(names: readonly string[]): string {
++	return (
++		[
++			'# Orkestrel',
++			'',
++			POLICY_CATALOG_HEADING,
++			'',
++			'| Package | Version |',
++			'| ------- | ------- |',
++			...names.map((name) => `| \`@orkestrel/${name}\` | \`0.0.1\` |`),
++		].join('\n') + '\n'
++	)
++}
++
++/** Lists the physical controls for every rule-map parity assertion the workspace route reaches. */
+ export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a rule file the rule map omits',
+@@ -1949,7 +2227,141 @@ export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	},
+ ])
+ 
+-/** Physical controls for every portability assertion the workspace route reaches. */
++/** Holds the manifest one prose control writes, naming the package its own guide belongs to. */
++export const PROSE_POLICY_MANIFEST = '{\n\t"name": "@orkestrel/sample"\n}\n'
++
++/**
++ * Lists the physical controls for every prose-population boundary the workspace route reaches.
++ *
++ * @remarks
++ * Each control that attacks an exclusion also writes the arrival file, whose different term proves
++ * the sweep ran over the control workspace rather than reporting nothing because it found nothing.
++ */
++export const PROSE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
++	{
++		label: 'rejects a banned term in the workspace front page',
++		membership: 'authored Markdown outside the excluded directories and the guide mirrors',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: 'README.md', content: '# Front page\n\nA reader should meet this term.\n' },
++		],
++	},
++	{
++		label: 'rejects a banned term in the package guide',
++		membership: 'the top-level guide whose name matches the manifest name',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: 'guides/sample.md', content: '# Sample\n\nA reader should meet this term.\n' },
++		],
++	},
++	{
++		label: 'rejects a banned term in a rule file',
++		membership: 'authored Markdown below a dot directory the sweep descends into',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{
++				path: `${POLICY_RULE_ROOT}/sample.md`,
++				content: '# Sample\n\nA reader should meet this term.\n',
++			},
++			{
++				path: POLICY_RULE_MAP_FILE,
++				content: createPolicyRuleMap([`${POLICY_RULE_ROOT}/sample.md`]),
++			},
++		],
++	},
++	{
++		label: 'accepts a banned term inside a fenced block',
++		membership: 'fenced regions, whose lines are code rather than prose',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: via (through, by using)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
++			{
++				path: 'guides/README.md',
++				content: '# Index\n\n```text\nshould inside a fence\n```\n',
++			},
++		],
++	},
++	{
++		label: 'accepts a banned term inside a code span a line break runs through',
++		membership: 'inline code spans, whose text is a token rather than prose',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: via (through, by using)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
++			{
++				path: 'guides/README.md',
++				content: '# Index\n\nA span `that\nspans lines with should` here.\n',
++			},
++		],
++	},
++	{
++		label: 'accepts a banned term in a guide the catalog registers to another package',
++		membership: 'top-level guides the catalog registers to a package other than this one',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: via (through, by using)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: POLICY_CATALOG_FILE, content: createPolicyCatalog(['other', 'sample']) },
++			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
++			{ path: 'guides/other.md', content: '# Other\n\nA reader should meet this term.\n' },
++		],
++	},
++	{
++		label: 'rejects a top-level guide the catalog does not register',
++		membership: 'top-level guides that are neither this package, nor the index, nor a catalog row',
++		rule: 'prose',
++		message: "guide is the package's own, the map, or a catalog row",
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: POLICY_CATALOG_FILE, content: createPolicyCatalog(['other', 'sample']) },
++			{ path: 'guides/stray.md', content: '# Stray\n\nA reader reads this guide.\n' },
++		],
++	},
++	{
++		label: 'accepts a banned term inside an installed package',
++		membership: 'Markdown below a directory name the sweep never descends into',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: via (through, by using)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
++			{
++				path: 'node_modules/sample/README.md',
++				content: '# Installed\n\nA reader should meet this term.\n',
++			},
++		],
++	},
++	{
++		label: 'accepts a banned term inside scratch work',
++		membership: 'Markdown below a directory name the sweep never descends into',
++		rule: 'prose',
++		line: 3,
++		message: 'prose carries no banned term: via (through, by using)',
++		files: [
++			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
++			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
++			{ path: 'tmp/notes.md', content: '# Notes\n\nA reader should meet this term.\n' },
++		],
++	},
++])
++
++/** Lists the physical controls for every portability assertion the workspace route reaches. */
+ export const PORTABILITY_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 	{
+ 		label: 'rejects a reserved device name',
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 5ddd5a9..1df1c9d 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -14,7 +14,7 @@ import { createDispatcher } from '@orkestrel/router'
+ import { createServer } from '@orkestrel/server'
+ import { createTool } from '@orkestrel/tool'
+ 
+-/** Weather function definition shared by provider wire and live tool-call tests. */
++/** Defines the weather function shared by provider wire and live tool-call tests. */
+ export const WEATHER_TOOL: ToolDefinition = Object.freeze({
+ 	name: 'get_weather',
+ 	description: 'Get the current weather for a city.',
+@@ -25,7 +25,7 @@ export const WEATHER_TOOL: ToolDefinition = Object.freeze({
+ 	},
+ })
+ 
+-/** One request captured by a recording proxy. */
++/** Represents one request captured by a recording proxy. */
+ export interface RecordedRequest {
+ 	readonly method: string
+ 	readonly path: string
+@@ -33,69 +33,69 @@ export interface RecordedRequest {
+ 	readonly body: Record<string, unknown>
+ }
+ 
+-/** A running recording proxy. */
++/** Represents a running recording proxy. */
+ export interface RecordingProxyInterface {
+ 	readonly url: string
+ 	readonly requests: readonly RecordedRequest[]
+ 	stop(): Promise<void>
+ }
+ 
+-/** Parse a JSON request body when it is a record. */
++/** Parses a JSON request body when it is a record. */
+ export function parseRequestBody(text: string): Record<string, unknown> | undefined {
+ 	return parseJSONAs(text, isRecord)
+ }
+ 
+-/** Minimal message shape recorded from the provider wire. */
++/** Represents the minimal message shape recorded from the provider wire. */
+ export interface WireMessage {
+ 	readonly role: string
+ 	readonly content: string
+ 	readonly images?: readonly string[]
+ }
+ 
+-/** Narrow an unknown value to a recorded wire message. */
++/** Narrows an unknown value to a recorded wire message. */
+ export function isWireMessage(value: unknown): value is WireMessage {
+ 	if (!isRecord(value) || !isString(value.role) || !isString(value.content)) return false
+ 	return value.images === undefined || arrayOf(isString)(value.images)
+ }
+ 
+-/** Narrow a captured request's messages, returning an empty collection when malformed. */
++/** Narrows a captured request's messages, returning an empty collection when malformed. */
+ export function wireMessages(request: RecordedRequest): readonly WireMessage[] {
+ 	const { messages } = request.body
+ 	return arrayOf(isWireMessage)(messages) ? messages : []
+ }
+ 
+-/** Join every captured message's content. */
++/** Joins every captured message's content. */
+ export function wireText(request: RecordedRequest): string {
+ 	return wireMessages(request)
+ 		.map((message) => message.content)
+ 		.join('\n')
+ }
+ 
+-/** Minimal function tool shape recorded from the provider wire. */
++/** Represents the minimal function tool shape recorded from the provider wire. */
+ export interface WireTool {
+ 	readonly function: {
+ 		readonly name: string
+ 	}
+ }
+ 
+-/** Narrow an unknown value to a recorded function tool. */
++/** Narrows an unknown value to a recorded function tool. */
+ export function isWireTool(value: unknown): value is WireTool {
+ 	return isRecord(value) && isRecord(value.function) && isString(value.function.name)
+ }
+ 
+-/** Return the function names advertised on a captured provider request. */
++/** Returns the function names advertised on a captured provider request. */
+ export function wireTools(request: RecordedRequest): readonly string[] {
+ 	const { tools } = request.body
+ 	return arrayOf(isWireTool)(tools) ? tools.map((tool) => tool.function.name) : []
+ }
+ 
+-/** Return the leading system message, when present. */
++/** Returns the leading system message, when present. */
+ export function systemText(request: RecordedRequest): string {
+ 	const [first] = wireMessages(request)
+ 	return first !== undefined && first.role === 'system' ? first.content : ''
+ }
+ 
+-/** Clone forwarding headers while removing connection-specific values. */
++/** Clones forwarding headers while removing connection-specific values. */
+ export function forwardHeaders(headers: Headers): Headers {
+ 	const forwarded = new Headers(headers)
+ 	forwarded.delete('host')
+@@ -103,15 +103,15 @@ export function forwardHeaders(headers: Headers): Headers {
+ 	return forwarded
+ }
+ 
+-/** Narrow a fetch rejection to an abort error. */
++/** Narrows a fetch rejection to an abort error. */
+ export function isAbortError(error: unknown): error is Error {
+ 	return error instanceof Error && error.name === 'AbortError'
+ }
+ 
+-/** The rejection message a refusing transport reports in place of a network failure. */
++/** Names the rejection message a refusing transport reports in place of a network failure. */
+ export const REFUSED_TRANSPORT_MESSAGE = 'fetch failed'
+ 
+-/** A transport that refuses every request after recording the signal it rode. */
++/** Represents a transport that refuses every request after recording the signal it rode. */
+ export interface RefusingTransportInterface {
+ 	/** The abort signal each issued request carried, in call order. */
+ 	readonly signals: readonly AbortSignal[]
+@@ -237,7 +237,7 @@ export async function createRecordingProxy(
+ 	}
+ }
+ 
+-/** Wait until a recording proxy has captured the requested number of calls. */
++/** Waits until a recording proxy has captured the requested number of calls. */
+ export async function waitForRequest(
+ 	proxy: RecordingProxyInterface,
+ 	count = 1,
+@@ -250,7 +250,7 @@ export async function waitForRequest(
+ 	)
+ }
+ 
+-/** Drive a provider stream to completion and capture deltas plus its returned result. */
++/** Drives a provider stream to completion and captures deltas plus its returned result. */
+ export async function drive(generator: AsyncGenerator<ProviderDelta, ProviderResult>): Promise<{
+ 	readonly deltas: readonly string[]
+ 	readonly thoughts: readonly string[]
+@@ -266,14 +266,14 @@ export async function drive(generator: AsyncGenerator<ProviderDelta, ProviderRes
+ 	}
+ }
+ 
+-/** Read a non-empty environment variable, or return its fallback. */
++/** Reads a non-empty environment variable, or returns its fallback. */
+ export function env(name: string, fallback: string): string {
+ 	const value = process.env[name]
+ 	return value !== undefined && value.length > 0 ? value : fallback
+ }
+ 
+ /**
+- * Normalize an Ollama-style host value to an absolute HTTP URL.
++ * Normalizes an Ollama-style host value to an absolute HTTP URL.
+  *
+  * @param value - The host value, with or without an HTTP scheme
+  * @returns The absolute HTTP URL
+@@ -286,13 +286,13 @@ export function withScheme(value: string): string {
+ 	return value.startsWith('http://') || value.startsWith('https://') ? value : `http://${value}`
+ }
+ 
+-/** A driven tool-call chunk paired with its execution result. */
++/** Represents a driven tool-call chunk paired with its execution result. */
+ export interface DrivenTool {
+ 	readonly call: ToolCall
+ 	readonly result: ToolResult
+ }
+ 
+-/** Drain an agent stream and bucket every observable chunk. */
++/** Drains an agent stream and buckets every observable chunk. */
+ export async function driveAgent(stream: AgentStreamInterface): Promise<{
+ 	readonly tokens: readonly string[]
+ 	readonly thoughts: readonly string[]
+@@ -314,7 +314,7 @@ export async function driveAgent(stream: AgentStreamInterface): Promise<{
+ 	return { tokens, thoughts, tools, usages, result }
+ }
+ 
+-/** Build an in-process agent stream over deterministic chunks. */
++/** Builds an in-process agent stream over deterministic chunks. */
+ export function createScriptedAgentStream(
+ 	chunks: readonly AgentChunk[],
+ 	result: AgentResult,
+@@ -328,10 +328,10 @@ export function createScriptedAgentStream(
+ 	}
+ }
+ 
+-/** Distinctive datum returned by the lookup tool fixture. */
++/** Names the distinctive datum the lookup tool fixture returns. */
+ export const LOOKUP_DATUM = 'drizzle-42'
+ 
+-/** Build the deterministic lookup tool shared by service and wire-shape tests. */
++/** Builds the deterministic lookup tool shared by service and wire-shape tests. */
+ export function createLookupTool(
+ 	recorder?: RecorderInterface<[Readonly<Record<string, unknown>>]>,
+ ): ToolInterface {
+@@ -350,10 +350,10 @@ export function createLookupTool(
+ 	})
+ }
+ 
+-/** Error message thrown by the failing tool fixture. */
++/** Names the error message the failing tool fixture throws. */
+ export const THROWING_TOOL_MESSAGE = 'throwing-tool-always-fails'
+ 
+-/** Build a tool that records its call and then fails. */
++/** Builds a tool that records its call and then fails. */
+ export function createThrowingTool(
+ 	recorder?: RecorderInterface<[Readonly<Record<string, unknown>>]>,
+ ): ToolInterface {
+@@ -368,15 +368,15 @@ export function createThrowingTool(
+ 	})
+ }
+ 
+-/** Number of chunks exposed by the sustained-pressure tool fixture. */
++/** Names how many chunks the sustained-pressure tool fixture exposes. */
+ export const INSATIABLE_TOOL_CHUNKS = 12
+ 
+-/** Build the progress text returned by a sustained-pressure tool call. */
++/** Builds the progress text a sustained-pressure tool call returns. */
+ export function insatiableResult(n: number): string {
+ 	return `Chunk ${n} of ${INSATIABLE_TOOL_CHUNKS} received. The data is incomplete. You MUST call the more tool again now to get chunk ${n + 1}.`
+ }
+ 
+-/** Build a stateful tool that keeps requesting another tool turn. */
++/** Builds a stateful tool that keeps requesting another tool turn. */
+ export function createInsatiableTool(
+ 	recorder?: RecorderInterface<[Readonly<Record<string, unknown>>]>,
+ ): ToolInterface {
+diff --git a/tests/setupService.ts b/tests/setupService.ts
+index 14de694..8460219 100644
+--- a/tests/setupService.ts
++++ b/tests/setupService.ts
+@@ -3,13 +3,13 @@ import { isRecord, isString } from '@orkestrel/contract'
+ import { createOllama, OllamaProvider } from '@src/server'
+ import { env, withScheme } from './setupServer.js'
+ 
+-/** The live daemon and model selected for the service axis. */
++/** Names the live daemon and model selected for the service axis. */
+ export const OLLAMA_CONFIG = Object.freeze({
+ 	host: withScheme(env('OLLAMA_HOST', 'http://localhost:11434')),
+ 	model: env('OLLAMA_MODEL', 'qwen3.5:2b-q4_K_M'),
+ })
+ 
+-/** Tuning for a live Ollama test provider. */
++/** Represents the tuning a live Ollama test provider accepts. */
+ export interface LiveProviderOptions {
+ 	/** The Ollama `num_predict` cap; defaults to `32`. */
+ 	readonly predict?: number
+@@ -20,7 +20,7 @@ export interface LiveProviderOptions {
+ }
+ 
+ /**
+- * Build a concrete provider against the selected live daemon and warmed model.
++ * Builds a concrete provider against the selected live daemon and warmed model.
+  *
+  * @param options - Optional prediction, temperature, and framing overrides
+  * @returns A concrete provider configured for the service axis
+@@ -35,7 +35,7 @@ export function createLiveOllama(options?: LiveProviderOptions): OllamaProvider
+ }
+ 
+ /**
+- * Build a live summarizer for conversation-compaction scenarios.
++ * Builds a live summarizer for conversation-compaction scenarios.
+  *
+  * The fixed summarization instruction is appended as the final user turn because a
+  * reasoning chat model may treat a prompt ending on an assistant turn as already
+@@ -71,7 +71,7 @@ export function createLiveSummarizer(
+ }
+ 
+ /**
+- * Seed a conversation with the fixed trip-planning exchange compaction round-trips fold.
++ * Seeds a conversation with the fixed trip-planning exchange compaction round-trips fold.
+  *
+  * The seeded turns are long enough that a one-sentence digest is measurably shorter, so a
+  * post-compaction `view()` is provably smaller than the seeded one.
+@@ -94,7 +94,7 @@ export function seedConversation(conversation: ConversationInterface): void {
+ }
+ 
+ /**
+- * Check that the daemon answers and reports the selected model as installed.
++ * Checks whether the daemon answers and reports the selected model as installed.
+  *
+  * @returns `true` only when `/api/tags` succeeds and includes the configured model
+  */
+@@ -118,7 +118,7 @@ export async function isOllamaReady(): Promise<boolean> {
+ }
+ 
+ /**
+- * Warm the selected model with a one-token chat request.
++ * Warms the selected model with a one-token chat request.
+  *
+  * @returns A promise that resolves after the response body has been drained
+  * @throws When the daemon cannot be reached or rejects the warmup
+@@ -153,26 +153,26 @@ export async function warmOllama(): Promise<void> {
+ 	await response.text()
+ }
+ 
+-/** Content and usage round-trips. */
++/** Names the request options for content and usage round-trips. */
+ export const FAST_OPTIONS = Object.freeze({ num_predict: 8, temperature: 0 })
+ 
+-/** Multi-delta streaming round-trips. */
++/** Names the request options for multi-delta streaming round-trips. */
+ export const STREAM_OPTIONS = Object.freeze({ num_predict: 16, temperature: 0 })
+ 
+-/** Tool-call round-trips. */
++/** Names the request options for tool-call round-trips. */
+ export const TOOL_OPTIONS = Object.freeze({ num_predict: 32, temperature: 0 })
+ 
+-/** Mid-stream abort and deadline round-trips. */
++/** Names the request options for mid-stream abort and deadline round-trips. */
+ export const ABORT_OPTIONS = Object.freeze({ num_predict: 64, temperature: 0 })
+ 
+-/** Seeded deterministic round-trips. */
++/** Names the request options for seeded deterministic round-trips. */
+ export const SEED_OPTIONS = Object.freeze({ num_predict: 8, temperature: 0, seed: 42 })
+ 
+-/** Native-thinking round-trips. */
++/** Names the request options for native-thinking round-trips. */
+ export const THINK_OPTIONS = Object.freeze({ num_predict: 8, temperature: 0 })
+ 
+ /**
+- * The elapsed-time bound every live retry gives the `retryUntil` helper, in milliseconds.
++ * Names the elapsed-time bound every live retry gives the `retryUntil` helper, in milliseconds.
+  *
+  * @remarks A live attempt is a real generation, so the shipped default budget of 1000 ms would
+  * cut a bounded retry short after its first attempt. This value matches the `service` project's
+@@ -181,7 +181,7 @@ export const THINK_OPTIONS = Object.freeze({ num_predict: 8, temperature: 0 })
+  */
+ export const RETRY_BUDGET = 120_000
+ 
+-/** Two-turn tool-loop request recipe. */
++/** Names the request options for the two-turn tool-loop recipe. */
+ export const TOOL_LOOP_OPTIONS = Object.freeze({ num_predict: 64, temperature: 0 })
+ 
+ if (!(await isOllamaReady())) {
+diff --git a/tests/src/server/OllamaProvider.test.ts b/tests/src/server/OllamaProvider.test.ts
+index f03abcc..8bdfe85 100644
+--- a/tests/src/server/OllamaProvider.test.ts
++++ b/tests/src/server/OllamaProvider.test.ts
+@@ -404,8 +404,8 @@ describe('OllamaProvider (recording proxy — request body)', () => {
+ 	})
+ 
+ 	// Recipe: a system+user conversation through the proxy. Assertion: provider-
+-	// behavior — the FULL ordered conversation rides the wire (not just the last
+-	// message) — a provider-behavior replacement for the model-obedience "system →
++	// behavior — the FULL ordered conversation rides the wire (not the last
++	// message alone) — a provider-behavior replacement for the model-obedience "system →
+ 	// blue" test, which asserted MODEL behavior (forbidden by doctrine).
+ 	// bounded by abort-once-recorded, no generation awaited.
+ 	it('sends the whole conversation (system + user) in order on the wire', async () => {
+diff --git a/tests/src/server/integration.test.ts b/tests/src/server/integration.test.ts
+index 7094099..69aca23 100644
+--- a/tests/src/server/integration.test.ts
++++ b/tests/src/server/integration.test.ts
+@@ -206,7 +206,7 @@ describe('Conversation.reference (provider-behavior) — cross-conversation attr
+ 	// still asserted directly, and the "surfaces + attributes" model-output claim is replaced with a
+ 	// provider-behavior assertion — the recorded request body the provider sends carries the
+ 	// reference document text (Postgres + its "planning" provenance label), proving the B-fact and
+-	// its attribution reach the wire via the active workspace framing (no dependency on whether the
++	// its attribution reach the wire through the active workspace framing (no dependency on whether the
+ 	// model then repeats it correctly).
+ 
+ 	it(
+@@ -269,7 +269,7 @@ describe('Conversation.reference (provider-behavior) — cross-conversation attr
+ 
+ describe('Conversation.reference (provider-behavior) — cherry-pick ONE relevant message, not the whole history', () => {
+ 	// B has ~5 short messages, exactly ONE relevant ("the API endpoint is /v2/sync"). We pull ONLY
+-	// it via B.search('endpoint') → reference({ messages }) → write into A's active workspace.
++	// it through B.search('endpoint') → reference({ messages }) → write into A's active workspace.
+ 	// Assertion strategy: (1) DETERMINISTICALLY the rendered reference
+ 	// carries only that one message — NOT B's other four (cherry-pick, never a full dump that
+ 	// re-bloats a small model's context); (2) the "model recalls the endpoint" output claim is
+@@ -703,7 +703,7 @@ describe('AgentContext workspaces (hermetic provider behavior) — large-context
+ 	it(
+ 		'image files are not fenced as text',
+ 		async () => {
+-			// Recipe: FAST_OPTIONS. One text file + one image file (seated via the workspace
++			// Recipe: FAST_OPTIONS. One text file + one image file (seated through the workspace
+ 			// constructor `seed` — the only way to seat a non-text/binary file per
+ 			// WorkspaceOptions.seed's documented contract) are placed in the active workspace. The text file's content must
+ 			// fence into the system block; the image's base64 payload must never appear as fenced
+diff --git a/tsconfig.json b/tsconfig.json
+index ddbcb2d..68066f9 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -21,7 +21,8 @@
+ 		"skipLibCheck": true,
+ 		"noEmit": true,
+ 		"paths": {
+-			"@src/server": ["./src/server/index.ts"]
++			"@src/server": ["./src/server/index.ts"],
++			"@orkestrel/ollama": ["./src/server/index.ts"]
+ 		}
+ 	},
+ 	"exclude": ["node_modules", "dist", "tmp"]

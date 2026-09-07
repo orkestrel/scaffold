@@ -1,0 +1,7 @@
+ M guides/template.md
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/templates/Template.ts
+ M src/core/templates/TemplateManager.ts
+ M tests/guides.test.ts

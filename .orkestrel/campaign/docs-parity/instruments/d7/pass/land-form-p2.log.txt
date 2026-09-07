@@ -1,0 +1,19 @@
+== form p2 landing 2026-09-07T20:58:15Z over ff9d979
+== status
+ M README.md
+ M guides/form.md
+ M src/core/Form.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |   8 ++
+ tests/guides.test.ts   |  79 +++++++++++-
+ 9 files changed, 312 insertions(+), 181 deletions(-)
+== stage by path
+ 9 files changed, 312 insertions(+), 181 deletions(-)
+== committed
+ee1fa2b Converge form under the equality gate
+(status end)

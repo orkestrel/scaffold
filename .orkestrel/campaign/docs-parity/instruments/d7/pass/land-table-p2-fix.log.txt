@@ -1,0 +1,13 @@
+== table p2-fix landing 2026-09-07T20:58:16Z over d86a5a8
+== status
+ M guides/table.md
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts    |  24 +++++-----
+ tests/guides.test.ts |  33 ++++++++-----
+ 3 files changed, 100 insertions(+), 88 deletions(-)
+== stage by path
+ 3 files changed, 100 insertions(+), 88 deletions(-)
+== committed
+a7612eb Refine table's convergence on the audit's findings
+(status end)

@@ -1,0 +1,3 @@
+ M guides/table.md
+ M src/core/types.ts
+ M tests/guides.test.ts

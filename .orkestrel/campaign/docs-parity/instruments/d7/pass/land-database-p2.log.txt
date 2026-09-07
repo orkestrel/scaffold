@@ -1,0 +1,26 @@
+== database p2 landing 2026-09-07T20:58:15Z over 6dd2ebe
+== status
+ M README.md
+ M guides/database.md
+ M src/browser/factories.ts
+ M src/browser/helpers.ts
+ M src/core/Database.ts
+ M src/core/cloners.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/compilers.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/inferers.ts
+ M tests/guides.test.ts
+ src/server/inferers.ts   |   2 +-
+ tests/guides.test.ts     |  79 +++++-
+ 16 files changed, 670 insertions(+), 328 deletions(-)
+== stage by path
+ 16 files changed, 670 insertions(+), 328 deletions(-)
+== committed
+21f0c9a Converge database under the equality gate
+(status end)

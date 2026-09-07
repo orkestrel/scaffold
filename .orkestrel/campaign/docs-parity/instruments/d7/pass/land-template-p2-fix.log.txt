@@ -1,0 +1,17 @@
+== template p2-fix landing 2026-09-07T20:58:17Z over cf8858e
+== status
+ M guides/template.md
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/templates/Template.ts
+ M src/core/templates/TemplateManager.ts
+ M tests/guides.test.ts
+ src/core/templates/TemplateManager.ts | 10 +++---
+ tests/guides.test.ts                  | 12 ++++++-
+ 7 files changed, 79 insertions(+), 48 deletions(-)
+== stage by path
+ 7 files changed, 79 insertions(+), 48 deletions(-)
+== committed
+e65daa8 Refine template's convergence on the audit's findings
+(status end)

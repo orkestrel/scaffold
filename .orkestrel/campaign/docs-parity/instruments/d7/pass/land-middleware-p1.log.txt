@@ -1,0 +1,53 @@
+== middleware P.1 landing 2026-09-07T20:58:14Z, version 0.0.20
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/core/shapers.ts
+ M src/server/middlewares.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/parsers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 234ms
+EXIT 0
+== lockfile root version
+0.0.20 / 0.0.20
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== deps marker rewritten
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M src/core/shapers.ts
+ M src/server/middlewares.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/parsers.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/server/parsers.test.ts |   4 +-
+ tsconfig.json                    |   4 +-
+ 15 files changed, 1592 insertions(+), 612 deletions(-)
+== stage by path
+ 16 files changed, 2046 insertions(+), 612 deletions(-)
+== committed
+b9d08b6 Prepare middleware for the equality gate
+(status end)

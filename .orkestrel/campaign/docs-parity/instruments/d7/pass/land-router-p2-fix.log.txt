@@ -1,0 +1,18 @@
+== router p2-fix landing 2026-09-07T20:58:16Z over 9af89c9
+== status
+ M guides/router.md
+ M src/core/DispatchGroup.ts
+ M src/core/Group.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M src/server/handlers.ts
+ M tests/guides.test.ts
+ src/server/handlers.ts    |   2 +-
+ tests/guides.test.ts      |  36 +++++++++--------
+ 8 files changed, 100 insertions(+), 83 deletions(-)
+== stage by path
+ 8 files changed, 100 insertions(+), 83 deletions(-)
+== committed
+699ec66 Refine router's convergence on the audit's findings
+(status end)
