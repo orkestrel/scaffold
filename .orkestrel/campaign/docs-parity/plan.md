@@ -149,3 +149,9 @@ The campaign ends when each closes as implemented, repaired, retained, or intent
 - **Added: U0 `d7-guide-headstart`**, Orchestrator-owned: the vendored delta `repair --offline` writes from the head-started scaffold, the bump to `0.0.18`, and the voice-rule sites P15 measured; audited by the checker in U1's round.
 - **Unchanged: D7.n and phase B.** The catalog order stands; the guide releases first, then scaffold re-pins and clears the distribution proof's packed-install case.
 - Measurements P15 and P16 replace the measurements the objective lane named missing; the round-trip over the guide's four-column tables disturbs no cell outside the written column.
+
+## Re-baseline (2026-09-07, after R1 over U0 and U1)
+
+- **Unchanged: U2, U3, D7.n, phase B.** R1 ruled `FAIL 3, 9, 13`; the lockfile closed by the Orchestrator (`aee1477`), the fix round U1-fix briefed for `builder`, closure by `checker` and `verifier`, then U2 dispatches from the fix's commit.
+- **Added: the lockfile sync as part of every bump.** A version bump obliges the lockfile's root version in the same step (`npm install --package-lock-only` under npm 11), and the guide's lockfile was stale since the manifest dropped `vite-plugin-dts`; D7.n's per-package bump carries that step.
+- **Findings for the next change, outside this campaign** (R1 subjective F6, F7): the head key's shape is decoded in each reader rather than by one exported leaf (`src/core/helpers.ts` at the `extractDeclaration`, `extractExamples`, and `extractExampleMethods` sites, with two names for the key in their comments), and the head keyword list has several homes (`src/core/types.ts`, the guide's EQ row, its regex line, and its `exports` row); both are recorded against the key-grammar capability.
