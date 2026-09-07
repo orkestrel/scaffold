@@ -72,3 +72,11 @@ The canonical drop-in's first line reads "The constants that follow are this pac
 ## Ruling 17 (2026-09-07, the Orchestrator, on slice 6's claim 19): the titled declaration where the class is the entry
 
 The titled `@example` sits on the primary factory's block. Where a guide's fences construct the class directly as the package's entry and the factory is an alias over that constructor (markdown's `createMarkdown` returns `new Markdown(input)`), the titled block is the class's, on the declaration the guide's flagship fence demonstrates; the audit claim reads "the primary factory's block, or the class's where Ruling 17 applies".
+
+## Ruling 18 (2026-09-07, the Orchestrator, on slice 5b's claim 18 and F-B1): where a constant's literal lives
+
+A `### Constants` table heads `Shape` with the constant's declared type (Ruling 12's constants sentence) and no `Value` column. Where the literal is the fact a reader needs — an opcode, a status code, a version string, a default — the declaration's description paragraph names it (`Names the text frame opcode, 0x01.`), so the cell carries it through `--to guide` and the block stays the reference (Ruling 7). An executed fence under the table may demonstrate the literals as well, never instead.
+
+## Ruling 19 (2026-09-07, the Orchestrator, on slice 5b's F6): an alias over an object of tuples
+
+An alias whose value is an object literal (`TemplateManagerEventMap`, an event map of tuple payloads) takes Ruling 12's bare member names in its `Shape` cell (`{ register, remove, clear }`); the payload types stay in the declaration.

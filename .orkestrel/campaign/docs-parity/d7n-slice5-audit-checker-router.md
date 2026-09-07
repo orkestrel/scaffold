@@ -1,0 +1,34 @@
+Lane held: checker router
+
+**Claim 14 — PASS.** `d7n-router-prep.diff.txt` and `.status.txt` show exactly: `.oxlintrc.json`, `configs/helpers.ts`, `configs/policy.ts` (repair list), `package.json` (`d7n-router-prep.diff.txt:1613-1632`: version `0.0.13`→`0.0.14`, `docs` script row added, no dependency range touched), `package-lock.json` (root version bump plus dropped `vite-plugin-dts` subtree), `tests/config.test.ts`, `tests/policy.test.ts`, `tests/setupPolicy.ts`, `tsconfig.json` (repair), `scripts/docs.ts` (untracked), plus `tests/guides.test.ts` and the five voice-fix files (`src/browser/types.ts`, `src/core/helpers.ts`, `tests/setup.ts`, `tests/setupBrowser.ts`, `tests/setupServer.ts`) the report names with their diagnostics (`d7n-router-prep-report.md:101-135`). No `@orkestrel/*` range moved.
+
+**Claim 15 — FAIL.** `/home/user/fleet/router/tests/guides.test.ts:227-244` binds `const examples = …` inside the `it('documents an example for every method', …)` callback body, not "once at the examples loop's own scope above its `describe`" as the pilot does at `/home/user/fleet/abort/tests/guides.test.ts:210-219` (`const examples` bound at lines 211-218, before `describe` opens at line 219). The router file keeps this placement unchanged through both P.1 (`d7n-router-prep-report.md`'s "examples loop" hunk leaves `const examples =` inside the `it()` block) and P.2. `members`/`documented` are correctly bound once per `describe` (`tests/guides.test.ts:165-166`, `:229`), but the `examples` binding does not match the pilot's shape. Functionally equivalent, structurally non-conforming to the claim's stated pilot shape.
+
+**Claim 16 — PASS.** Every voice/prose-sweep hunk in `d7n-router-prep.diff.txt` (e.g. `configs/policy.ts` docblock rewrites, `src/browser/types.ts:105`, `src/core/helpers.ts:173`) keeps every fact, opens with a third-person verb, moves no code token, changes no assertion value; report's per-site before/after list (`d7n-router-prep-report.md:101-131`) matches the diff exactly, and `oxlint`/`test:policy` read clean after (`:131-135`).
+
+**Claim 17 — PASS.** `guides/router.md`: every `## Surface`/`## Methods` table heads `Summary` beside only `Kind`/`Shape`/`Signature`/`Returns` (lines 51-116, 178-230); `### Entities`→`### Classes` (line 108) with all five class rows present; `### Types` table (line 123) states the `Shape` idiom in a convention sentence above it (lines 120-121).
+
+**Claim 18 — PASS.** Spot-checked widest cell (`RouterInterface`, line 137), a Types row (`PathParams`, line 125), and a Methods row (`add`, line 180) against `src/core/types.ts` and `d7n-router-converge.diff.txt:790-1000+`; literals stayed in `Shape`, clauses moved verb-first into blocks; report names each hand-rewritten block (`d7n-router-converge-report.md:62-102`); no dropped fact found in the sample.
+
+**Claim 19 — PASS.** One titled `@example` (`createListener`, `### Basic server`), heading occurs once (`grep -c '^#\+ Basic server' guides/router.md` → 1, `d7n-router-converge-report.md:126-129`), fence body carries no triple-backtick run or `*/` (`:131-137`), body equals guide fence (`guides/router.md:565-582` vs `src/server/handlers.ts` diff `d7n-router-converge.diff.txt:1163-1195`).
+
+**Claim 20 — PASS.** `guides/router.md:3-6` and `README.md:3-6` are byte-identical noun phrases, no link, no bold; displaced sentences sit in guide opening prose (`guides/router.md:8-15`); README's onboarding paragraph (`README.md:8-11`) stays without restating tagline clauses.
+
+**Claim 21 — PASS.** `tests/guides.test.ts:80-93` (equality/pin case) is character-for-character identical to the pilot at `/home/user/fleet/abort/tests/guides.test.ts:72-93`, including the guard-and-continue loop, no local type predicate, both-sides failure line; README case (`:119-128`) has two `not.toBeUndefined()` guards before `toBe`; `README.md` in `ROOT_FILES` (`:63`); `GUIDE_SPEC` constant present (`:38`).
+
+**Claim 22 — PASS.** `d7n-router-converge.diff.txt` shows every `src/**` hunk confined to doc-block content (description, `@remarks`, `@example`); no `{@link import(...)}`-form tag remains unflattened badly (constants.ts, types.ts hunks rewrite to plain code tokens); non-`Summary` cells verified byte-identical to baseline apart from the `### Types` `Shape` column per report (`d7n-router-converge-report.md:43-58`); `## Tests` section present (`guides/router.md:655-665`) naming the equality gate descriptively, no SQ/MQ/EQ/RQ id; all-caps sweep (`grep`) found only legitimate acronyms/code tokens; no count-of-growable-set language found.
+
+**Claim 23 — PASS.** `d7n-router-converge.status.txt` lists exactly `README.md`, `guides/router.md`, `src/browser/helpers.ts`, `src/browser/types.ts`, `src/core/{DispatchGroup,Dispatcher,Group,Router,constants,factories,helpers,types}.ts`, `src/server/handlers.ts`, `tests/guides.test.ts` — matches the claim.
+
+**Claim 24 — PASS.** `d7n-router-converge-report.md:221-237` quotes `npm run docs` (rows read 1, disagreements 0), `--to guide`/`--to source` (written 0), `oxfmt --check`, scoped `oxlint`, `npm run check`, `npm run test:guides` (48 passed), `npm run test:policy` (90 passed | 1 skipped), all with exit codes.
+
+**Claim 25 — PASS (sampled).** Spot-checked citations (fence line range 565-582, heading-count grep, `## Tests` line numbers, package.json hunk lines) against the tree; all matched. No count-in-prose found in either report.
+
+**Claim 26 — PASS, ruled not blocking.** Four reader/seed defects named in `d7n-router-converge-report.md:279-348`, each with reproduction command and output: (1) `*/` inside a code span silently truncates a doc block and the seed under-reports drift — real, not blocking here (this unit avoided/reverted the trigger and `check` gate catches truncation); (2) brief's embedded worklist omitted five leading rows — a brief-transcription gap, not a code defect, not blocking; (3) a renamed-header `## Methods` row with no member doc block reads `guide <text> source absent` and blocks `--to guide` until each member gets its own block — real, fully resolved in this unit, not blocking; (4) `{@link import('./x.js').Y}` renders as a raw import expression in cells, and a doc-block line-wrap hyphen survives as `hyphen space word` — both real, both fixed by hand in this unit, not blocking. Each is fleet-wide guidance for future packages, not an open defect in router's guide.
+
+**Findings outside the numbered claims**
+
+- The `examples` binding placement gap (claim 15) is present identically in both P.1 and P.2 diffs, so neither unit introduced or caught it; right shape is `const examples = …` computed once per `for (const group of guide.methods())` iteration, above the `describe`, exactly as `/home/user/fleet/abort/tests/guides.test.ts:210-219` does.
+- No other structural or scope deviation found in the router package's evidence.
+
+VERDICT: FAIL 15

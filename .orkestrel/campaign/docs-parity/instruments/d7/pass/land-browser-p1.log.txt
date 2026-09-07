@@ -1,0 +1,56 @@
+== browser P.1 landing 2026-09-07T20:23:15Z, version 0.0.16
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/browser.md
+ M package.json
+ M src/core/helpers.ts
+ M src/server/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/setupService.ts
+ M tests/src/server/Browser.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 3s
+EXIT 0
+== lockfile root version
+0.0.16 / 0.0.16
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/browser.md
+ M package-lock.json
+ M package.json
+ M src/core/helpers.ts
+ M src/server/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/setupService.ts
+ M tests/src/server/Browser.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/server/Browser.test.ts |   4 +-
+ tsconfig.json                    |   4 +-
+ 17 files changed, 1611 insertions(+), 632 deletions(-)
+== stage by path
+ 18 files changed, 2065 insertions(+), 632 deletions(-)
+== committed
+44fb2e7 Prepare browser for the equality gate
+(status end)

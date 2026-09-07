@@ -359,3 +359,7 @@ its table (the pilot's position); the titled pair is `createListener` and `### B
 `computeNavigationKey`'s cell dropped "nested-route"; the `## Methods` intro paragraphs were
 cut back to one introducing sentence each; and the README paragraph under `## Usage` lost the
 sentence that restated the tagline.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose and in the prep report (the slice-5 lanes cite the lines). The tree is authoritative; the reports stand annotated.

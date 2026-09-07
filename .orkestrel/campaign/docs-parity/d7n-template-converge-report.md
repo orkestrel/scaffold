@@ -225,3 +225,7 @@ None. The seed and the `0.0.18` readers behaved as the brief describes: `findDri
 ## Deviations
 
 None. The one ancillary matter decided and recorded: the `### Constants` table takes no `Value` column, because the fence beneath it already carries every literal and a test executes that fence.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose and in the prep report (the slice-5 lanes cite the lines). The tree is authoritative; the reports stand annotated.

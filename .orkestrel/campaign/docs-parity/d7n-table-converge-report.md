@@ -243,3 +243,7 @@ Two readings worth recording, neither a defect:
 No deviation. No stop condition fired: every cell the seed had to locate after the header change was located, the titled body fit its block, no test outside `tests/guides.test.ts` changed state, no vendored file needed an edit, every reader returned the shape the brief describes, and no residual disagreement stood after the doc-block rewrites. Nothing was planted for the lint control reading, which the Orchestrator takes after this unit exits.
 
 Every citation in this report was re-read against the tree the unit leaves.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose and in the prep report (the slice-5 lanes cite the lines). The tree is authoritative; the reports stand annotated.

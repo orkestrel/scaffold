@@ -453,3 +453,7 @@ the `### Compilers` table carries `ShapeValidatorInterface` and `ContractCompile
 with no `Shape` column, which Ruling 15 requires of a `## Surface` table carrying an interface row.
 The brief scopes this unit to existing `Shape` cells, so adding that column is a successor unit's
 work.
+
+---
+
+**Orchestrator annotation (closure, 2026-09-07):** the closure `checker` read a count in this report's prose ("Two rulings"). The tree is authoritative; the report stands annotated. The verifier's `npm test` read timing reds in `src:core` (a JSONCloner bound at 2700 ms against 2000, two 5 s timeouts) under the host's load; the Orchestrator re-runs those files alone before ruling.

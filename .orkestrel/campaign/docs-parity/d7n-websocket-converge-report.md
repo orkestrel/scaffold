@@ -237,3 +237,7 @@ The vendored voice rule reads only top-level exported statements (`programToPoli
 No deviation. Nothing in the stop list was met: every cell the seed located was written, the titled body fit its block, no test outside `tests/guides.test.ts` went red, no vendored file needed an edit, every reader returned the shape the brief describes, and no residual disagreement stood after the rewrites.
 
 Ancillary decisions recorded in full: which of the two eligible fences carries the title (§ Criterion 4), where each displaced tagline sentence sits (§ Criterion 5), which doc blocks were taken from source unchanged (§ Criterion 3), and the dependency claim the pitch could no longer carry (§ Criterion 5).
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose and in the prep report (the slice-5 lanes cite the lines). The tree is authoritative; the reports stand annotated.
