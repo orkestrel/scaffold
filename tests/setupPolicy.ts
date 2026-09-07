@@ -10,16 +10,16 @@ import {
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, matchesGlob } from 'node:path'
 
-/** A rule the fleet sweep decides from workspace text and paths. */
+/** Names a rule the fleet sweep decides from workspace text and paths. */
 export type PolicyRule = 'bridge' | 'mirror' | 'portability' | 'rules' | 'skill' | 'suppression'
 
-/** One workspace file written by a physical control. */
+/** Describes one workspace file a physical control writes. */
 export interface PolicySource {
 	readonly path: string
 	readonly content: string
 }
 
-/** One policy failure reported by the sweep. */
+/** Describes one policy failure the sweep reports. */
 export interface PolicyViolation {
 	readonly rule: PolicyRule
 	readonly path: string
@@ -27,7 +27,7 @@ export interface PolicyViolation {
 	readonly message: string
 }
 
-/** One physical negative control, including the population boundary it attacks. */
+/** Describes one physical negative control, including the population boundary it attacks. */
 export interface PolicyControl {
 	readonly label: string
 	readonly membership: string
@@ -75,7 +75,7 @@ export function createPolicyScratch(options: { readonly prefix: string }): Polic
 	}
 }
 
-/** Parsed skill frontmatter and the exact scalar source used for bridge comparison. */
+/** Holds parsed skill frontmatter and the exact scalar source used for bridge comparison. */
 export interface SkillFrontmatter {
 	readonly keys: readonly string[]
 	readonly name: string | undefined
@@ -86,29 +86,29 @@ export interface SkillFrontmatter {
 	}
 }
 
-/** The directory whose immediate child directories form the complete skill family. */
+/** Names the directory whose immediate child directories form the complete skill family. */
 export const SKILL_FAMILY_ROOT = '.agents/skills'
 
-/** The directory whose immediate child directories form the Claude skill bridge family. */
+/** Names the directory whose immediate child directories form the Claude skill bridge family. */
 export const SKILL_BRIDGE_ROOT = '.claude/skills'
 
-/** Minimal valid skill text for physical family controls. */
+/** Holds the minimal valid skill text for physical family controls. */
 export const SKILL_POLICY_TEXT =
 	'---\nname: sample\ndescription: Use this skill for a policy fixture.\n---\n\n# Skill\n'
 
-/** Skill text naming one reference for physical family controls. */
+/** Holds skill text naming one reference for physical family controls. */
 export const SKILL_REFERENCE_TEXT = `${SKILL_POLICY_TEXT}\nRead references/example.md.\n`
 
-/** Minimal valid provider bridge text for physical bridge controls. */
+/** Holds the minimal valid provider bridge text for physical bridge controls. */
 export const SKILL_BRIDGE_TEXT = `${SKILL_POLICY_TEXT}\nRead \`.agents/skills/sample/SKILL.md\`.\n`
 
-/** Canonical skill metadata whose values each carry YAML's escaped apostrophe. */
+/** Holds canonical skill metadata whose values each carry YAML's escaped apostrophe. */
 export const SKILL_APOSTROPHE_METADATA =
 	"interface:\n  display_name: 'Owner''s Fixture'\n" +
 	"  short_description: 'Exercise the family''s apostrophe rule'\n" +
 	"  default_prompt: 'Use $sample for this fixture''s value.'\n"
 
-/** Every extension through which a mirrored test can name a module. */
+/** Lists every extension through which a mirrored test can name a module. */
 export const POLICY_MODULE_EXTENSIONS: readonly string[] = Object.freeze([
 	'cts',
 	'mts',
@@ -119,31 +119,35 @@ export const POLICY_MODULE_EXTENSIONS: readonly string[] = Object.freeze([
 	'css',
 ])
 
-/** Module extensions whose extensionless stem can resolve a leading-underscore partial. */
+/**
+ * Lists the module extensions whose extensionless stem can resolve a leading-underscore partial.
+ */
 export const POLICY_PARTIAL_EXTENSIONS: readonly string[] = Object.freeze(['scss', 'css'])
 
-/** The reserved stem prefix whose mirrored module can resolve inside the tests axis. */
+/** Names the reserved stem prefix whose mirrored module can resolve inside the tests axis. */
 export const POLICY_TESTS_MODULE_PREFIX = 'setup'
 
-/** The complete module population available to mirrored tests under either workspace axis. */
+/**
+ * Matches the complete module population available to mirrored tests under either workspace axis.
+ */
 export const POLICY_MODULE_GLOB = `{app,src}/**/*.{${POLICY_MODULE_EXTENSIONS.join(',')}}`
 
-/** The tests-axis setup module population available to mirrored tests. */
+/** Matches the tests-axis setup module population available to mirrored tests. */
 export const POLICY_TESTS_MODULE_GLOB = `tests/**/${POLICY_TESTS_MODULE_PREFIX}*.ts`
 
-/** The mirrored module-test population inspected under either workspace axis. */
+/** Matches the mirrored module-test population inspected under either workspace axis. */
 export const POLICY_TEST_GLOB = 'tests/{app,src}/**/*.test.ts'
 
 // Compose suppression tokens so the instrument does not report its own definitions or controls.
 export const POLICY_SUPPRESSION_DIRECTIVE = ['oxlint', '-disable'].join('')
 
-/** Source, test, config, and script files inspected for lint suppression directives. */
+/** Matches the source, test, config, and script files inspected for lint suppression directives. */
 export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
 	'{src,app,tests,configs,scripts}/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
 	'*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
 ])
 
-/** Rules whose workspace-wide lint wiring must not be weakened by configuration. */
+/** Lists the rules whose workspace-wide lint wiring must not be weakened by configuration. */
 export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
 	'policy/no-mocking',
 	'policy/no-keyword-privacy',
@@ -151,7 +155,7 @@ export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
 	'typescript/explicit-member-accessibility',
 ])
 
-/** Linted workspace roots that ignore patterns must not reach. */
+/** Lists the linted workspace roots that ignore patterns must not reach. */
 export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
 	'src',
 	'app',
@@ -159,13 +163,16 @@ export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
 	'configs',
 ])
 
-/** Either lint suppression token the text sweep refuses. */
+/** Matches either lint suppression token the text sweep refuses. */
 export const POLICY_SUPPRESSION_PATTERN = new RegExp(
 	[['eslint', '-disable'].join(''), POLICY_SUPPRESSION_DIRECTIVE].join('|'),
 	'u',
 )
 
-/** The workspace-authored path population inspected for a name a Windows checkout cannot hold. */
+/**
+ * Matches the workspace-authored path population inspected for a name a Windows checkout cannot
+ * hold.
+ */
 export const POLICY_PORTABILITY_GLOB: readonly string[] = Object.freeze([
 	'{src,app,configs,tests,scripts,guides}/**/*',
 	'{.agents,.claude,.codex,.cursor,.github}/**/*',
@@ -173,7 +180,7 @@ export const POLICY_PORTABILITY_GLOB: readonly string[] = Object.freeze([
 	'.*',
 ])
 
-/** Every device name Windows reserves, whatever extension the segment carries. */
+/** Lists every device name Windows reserves, whatever extension the segment carries. */
 export const POLICY_RESERVED_NAMES: readonly string[] = Object.freeze([
 	'aux',
 	'com1',
@@ -199,26 +206,26 @@ export const POLICY_RESERVED_NAMES: readonly string[] = Object.freeze([
 	'prn',
 ])
 
-/** Every character Windows refuses inside a path segment. */
+/** Matches every character Windows refuses inside a path segment. */
 export const POLICY_RESERVED_PATTERN = /[<>:"|?*]/u
 
-/** A shell script named as a complete path token inside a manifest script. */
+/** Matches a shell script named as a complete path token inside a manifest script. */
 export const POLICY_SHELL_PATTERN = /\.sh\b/u
 
-/** The directory whose direct Markdown files form the complete rule family. */
+/** Names the directory whose direct Markdown files form the complete rule family. */
 export const POLICY_RULE_ROOT = '.claude/rules'
 
-/** The root instruction file whose rule map registers the rule family. */
+/** Names the root instruction file whose rule map registers the rule family. */
 export const POLICY_RULE_MAP_FILE = 'AGENTS.md'
 
-/** The heading that opens the root instruction file's rule map table. */
+/** Names the heading that opens the root instruction file's rule map table. */
 export const POLICY_RULE_MAP_HEADING = '## Rule map'
 
-/** The workspace manifest whose scripts run on every supported host. */
+/** Names the workspace manifest whose scripts run on every supported host. */
 export const POLICY_MANIFEST_FILE = 'package.json'
 
 /**
- * Normalize platform separators for stable matching and diagnostics.
+ * Normalizes platform separators for stable matching and diagnostics.
  *
  * @param path - The workspace-relative path to normalize.
  * @returns The path with forward slashes and no duplicate separators.
@@ -227,13 +234,16 @@ export function normalizePolicyPath(path: string): string {
 	return path.replaceAll('\\', '/').replace(/\/+/gu, '/')
 }
 
-/** Whether a parsed configuration value is a plain record rather than an array or a primitive. */
+/**
+ * Reports whether a parsed configuration value is a plain record rather than an array or a
+ * primitive.
+ */
 export function isPolicyRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 /**
- * Create one stable violation for an inspection result.
+ * Creates one stable violation for an inspection result.
  *
  * @param rule - The rule that failed.
  * @param path - The workspace-relative source path.
@@ -251,7 +261,7 @@ export function createPolicyViolation(
 }
 
 /**
- * Derive the extensionless module stem for one mirrored module test.
+ * Derives the extensionless module stem for one mirrored module test.
  *
  * @param path - The workspace-relative test path.
  * @returns The extensionless module stem, or `undefined` for a reserved scope test.
@@ -264,7 +274,7 @@ export function testToPolicyStem(path: string): string | undefined {
 }
 
 /**
- * The candidate set is every module name a registered language resolves for a stem.
+ * Lists every module name a registered language resolves for a stem.
  *
  * @param stem - The extensionless workspace-relative module stem.
  * @returns Direct modules, partial modules, then a matching tests-axis setup module.
@@ -282,7 +292,7 @@ export function stemToPolicyCandidates(stem: string): readonly string[] {
 }
 
 /**
- * Inspect mirrored test paths against an explicit module-path population.
+ * Inspects mirrored test paths against an explicit module-path population.
  *
  * @param tests - The module-test paths to inspect.
  * @param modules - The existing module paths in every registered language.
@@ -312,7 +322,7 @@ export function inspectPolicyMirrorPaths(
 }
 
 /**
- * Inspect every mirrored module test beneath one workspace.
+ * Inspects every mirrored module test beneath one workspace.
  *
  * @param root - The workspace root to inspect.
  * @returns Every missing mirror violation in test-path order.
@@ -327,7 +337,7 @@ export function inspectPolicyMirrors(root: string): readonly PolicyViolation[] {
 }
 
 /**
- * Inspect code-shaped workspace files for lint suppression directives.
+ * Inspects code-shaped workspace files for lint suppression directives.
  *
  * @param root - The workspace root to inspect.
  * @returns Every suppression occurrence in path and line order.
@@ -355,7 +365,7 @@ export function inspectPolicySuppressions(root: string): readonly PolicyViolatio
 }
 
 /**
- * Inspect the lint configuration that keeps policy rules active across the workspace.
+ * Inspects the lint configuration that keeps policy rules active across the workspace.
  *
  * @param configuration - The parsed Oxlint configuration to inspect.
  * @returns Every wiring violation in rule and configuration order.
@@ -421,7 +431,7 @@ export function inspectPolicyConfiguration(configuration: unknown): readonly str
 }
 
 /**
- * Inspect the lint configuration that keeps every named rule and population wired.
+ * Inspects the lint configuration that keeps every named rule and population wired.
  *
  * @param configuration - The parsed Oxlint configuration to inspect.
  * @param rules - Every rule id that some top-level or override rules record must enable.
@@ -470,7 +480,7 @@ export function inspectPolicyWiring(
 }
 
 /**
- * Resolve an exact-case directory beneath a physical root.
+ * Resolves an exact-case directory beneath a physical root.
  *
  * @param root - The physical directory from which resolution starts.
  * @param path - The relative directory path to resolve.
@@ -491,7 +501,7 @@ export function resolvePolicyDirectory(root: string, path: string): string | und
 }
 
 /**
- * Whether an exact-case path resolves to a regular file beneath a physical root.
+ * Reports whether an exact-case path resolves to a regular file beneath a physical root.
  *
  * @param root - The physical directory from which resolution starts.
  * @param path - The relative file path to inspect.
@@ -508,7 +518,7 @@ export function isPolicyFile(root: string, path: string): boolean {
 }
 
 /**
- * Read the immediate child directories beneath one workspace-relative path.
+ * Reads the immediate child directories beneath one workspace-relative path.
  *
  * @param root - The workspace root to inspect.
  * @param path - The workspace-relative parent directory.
@@ -524,7 +534,7 @@ export function readPolicyDirectories(root: string, path: string): readonly stri
 }
 
 /**
- * Discover the skill family from immediate directories in the workspace tree.
+ * Discovers the skill family from immediate directories in the workspace tree.
  *
  * @param root - The workspace root to inspect.
  * @returns The sorted directory names that belong to the skill family.
@@ -534,7 +544,7 @@ export function readSkillFamily(root: string): readonly string[] {
 }
 
 /**
- * Parse one skill document's frontmatter without interpreting arbitrary body lines as keys.
+ * Parses one skill document's frontmatter without interpreting arbitrary body lines as keys.
  *
  * @param content - The raw SKILL.md text.
  * @returns The parsed fields and exact scalar source, or `undefined` for an unsupported shape.
@@ -619,7 +629,7 @@ export function parseSkillFrontmatter(content: string): SkillFrontmatter | undef
 }
 
 /**
- * Test whether a description carries a sentence that begins with the case-sensitive word `Use`.
+ * Reports whether a description carries a sentence that begins with the case-sensitive word `Use`.
  *
  * @param description - The parsed skill description.
  * @returns True when the description contains the canonical trigger sentence.
@@ -629,7 +639,7 @@ export function matchesSkillTrigger(description: string): boolean {
 }
 
 /**
- * Read the direct Markdown files owned by one skill's references directory.
+ * Reads the direct Markdown files owned by one skill's references directory.
  *
  * @param root - The workspace root to inspect.
  * @param name - The discovered skill directory name.
@@ -645,7 +655,7 @@ export function readSkillReferences(root: string, name: string): readonly string
 }
 
 /**
- * Create metadata in the canonical skill interface shape.
+ * Creates metadata in the canonical skill interface shape.
  *
  * @param name - The skill token the default prompt invokes.
  * @returns Canonical skill interface metadata ending in one newline.
@@ -662,7 +672,7 @@ export function createSkillMetadata(name: string): string {
 }
 
 /**
- * Parse the default prompt from the canonical skill interface shape.
+ * Parses the default prompt from the canonical skill interface shape.
  *
  * Each value is a non-empty single-quoted scalar in which `''` carries an apostrophe.
  *
@@ -683,7 +693,7 @@ export function parseSkillPrompt(content: string): string | undefined {
 }
 
 /**
- * Test whether a default prompt names one skill's token in complete form.
+ * Reports whether a default prompt names one skill's token in complete form.
  *
  * A skill directory name is lowercase letters and hyphens, so a match followed by either continues
  * a longer name and names a different skill.
@@ -702,7 +712,7 @@ export function matchesSkillToken(prompt: string, name: string): boolean {
 }
 
 /**
- * Extract the direct Markdown reference paths named in one skill document.
+ * Extracts the direct Markdown reference paths named in one skill document.
  *
  * @param content - The raw SKILL.md text.
  * @returns Each distinct references/name.md token in sorted order.
@@ -776,7 +786,7 @@ export function inspectSkillTemplateTODOs(
 }
 
 /**
- * Inspect one discovered skill's required files, metadata, token, and references.
+ * Inspects one discovered skill's required files, metadata, token, and references.
  *
  * @param root - The workspace root to inspect.
  * @param name - The discovered skill directory name.
@@ -966,7 +976,7 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
 }
 
 /**
- * Inspect every immediate member of the discovered skill family.
+ * Inspects every immediate member of the discovered skill family.
  *
  * @param root - The workspace root to inspect.
  * @returns Every skill-family violation in directory and invariant order.
@@ -978,7 +988,7 @@ export function inspectSkillFamily(root: string): readonly PolicyViolation[] {
 }
 
 /**
- * Inspect one provider bridge against its canonical skill twin.
+ * Inspects one provider bridge against its canonical skill twin.
  *
  * @param root - The workspace root to inspect.
  * @param name - The shared canonical and bridge directory name.
@@ -1066,7 +1076,7 @@ export function inspectBridge(root: string, name: string): readonly PolicyViolat
 }
 
 /**
- * Inspect the provider bridge set and every bridge shared with the canonical skill family.
+ * Inspects the provider bridge set and every bridge shared with the canonical skill family.
  *
  * @param root - The workspace root to inspect.
  * @returns Every bridge-set and bridge-content violation in directory order.
@@ -1105,7 +1115,7 @@ export function inspectSkillBridges(root: string): readonly PolicyViolation[] {
 }
 
 /**
- * Read every rule path the root instruction file's rule map registers.
+ * Reads every rule path the root instruction file's rule map registers.
  *
  * @param content - The raw root instruction text.
  * @returns Each backticked first cell beneath the rule map heading, in table order.
@@ -1125,7 +1135,7 @@ export function readPolicyRuleMap(content: string): readonly string[] {
 }
 
 /**
- * Inspect the discovered rule family against the root instruction file's rule map.
+ * Inspects the discovered rule family against the root instruction file's rule map.
  *
  * A workspace with no rule file has no rule map to keep, so the population is empty there.
  *
@@ -1161,7 +1171,7 @@ export function inspectPolicyRuleMap(root: string): readonly PolicyViolation[] {
 }
 
 /**
- * Inspect an explicit path population for a name a Windows checkout cannot hold.
+ * Inspects an explicit path population for a name a Windows checkout cannot hold.
  *
  * Each path is read through its own final segment, because the population lists every directory as
  * its own entry. A Windows host refuses the reserved characters and folds a case collision into one
@@ -1218,7 +1228,7 @@ export function inspectPolicyFilenamePaths(paths: readonly string[]): readonly P
 }
 
 /**
- * Read the workspace-authored path population, directories included.
+ * Reads the workspace-authored path population, directories included.
  *
  * @param root - The workspace root to read.
  * @returns Every authored path, sorted by path.
@@ -1228,7 +1238,7 @@ export function readPolicyPaths(root: string): readonly string[] {
 }
 
 /**
- * Inspect the workspace-authored path population for a name a Windows checkout cannot hold.
+ * Inspects the workspace-authored path population for a name a Windows checkout cannot hold.
  *
  * @param root - The workspace root to inspect.
  * @returns Every unusable-name and case-collision violation in path order.
@@ -1238,7 +1248,7 @@ export function inspectPolicyFilenames(root: string): readonly PolicyViolation[]
 }
 
 /**
- * Parse the manifest's script record without interpreting any other manifest field.
+ * Parses the manifest's script record without interpreting any other manifest field.
  *
  * @param content - The raw package.json text.
  * @returns Each script name and its command, in manifest order.
@@ -1262,7 +1272,7 @@ export function parsePolicyScripts(content: string): ReadonlyMap<string, string>
 }
 
 /**
- * Inspect every manifest script for a shell file no Windows host runs.
+ * Inspects every manifest script for a shell file no Windows host runs.
  *
  * @param root - The workspace root to inspect.
  * @returns Every shell-script violation in manifest order.
@@ -1286,7 +1296,7 @@ export function inspectPolicyScripts(root: string): readonly PolicyViolation[] {
 }
 
 /**
- * Inspect every host portability rule across one workspace.
+ * Inspects every host portability rule across one workspace.
  *
  * @param root - The workspace root to inspect.
  * @returns Every rule-map, filename, and manifest-script violation.
@@ -1300,7 +1310,7 @@ export function inspectPolicyPortability(root: string): readonly PolicyViolation
 }
 
 /**
- * Inspect every policy rule across one workspace.
+ * Inspects every policy rule across one workspace.
  *
  * @param root - The workspace root to inspect.
  * @returns Every mirror, suppression, skill, bridge, and portability violation.
@@ -1316,7 +1326,7 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
 }
 
 /**
- * Write a control to a real temporary workspace and run the production sweep over it.
+ * Writes a control to a real temporary workspace and runs the production sweep over it.
  *
  * The control's rule selects the sweep: `skill` inspects the canonical family, `bridge` inspects
  * provider bridges, and every other rule inspects the whole workspace route.
@@ -1343,7 +1353,7 @@ export function inspectPolicyControl(control: PolicyControl): readonly PolicyVio
 	}
 }
 
-/** Physical negative controls, one for each rule the sweep claims to enforce. */
+/** Lists the physical negative controls, one for each rule the sweep claims to enforce. */
 export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	{
 		label: 'rejects a suppression directive in a scanned source file',
@@ -1413,7 +1423,7 @@ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	},
 ])
 
-/** Physical in-family controls for every skill-family assertion class. */
+/** Lists the physical in-family controls for every skill-family assertion class. */
 export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	{
 		label: 'rejects a SKILL.md without frontmatter',
@@ -1689,7 +1699,7 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	},
 ])
 
-/** Physical controls for provider-bridge assertions. */
+/** Lists the physical controls for provider-bridge assertions. */
 export const BRIDGE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	{
 		label: 'rejects a canonical skill without a provider bridge',
@@ -1818,7 +1828,9 @@ export const BRIDGE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	},
 ])
 
-/** An in-family skill whose metadata values carry escaped apostrophes, proving they parse. */
+/**
+ * Describes an in-family skill whose metadata values carry escaped apostrophes, proving they parse.
+ */
 export const SKILL_POLICY_APOSTROPHE: PolicyControl = Object.freeze({
 	label: 'accepts escaped apostrophes in agents/openai.yaml values',
 	membership: 'immediate directories beneath .agents/skills',
@@ -1829,7 +1841,9 @@ export const SKILL_POLICY_APOSTROPHE: PolicyControl = Object.freeze({
 	],
 })
 
-/** A folded description containing a colon, proving continuation lines do not become keys. */
+/**
+ * Describes a folded description containing a colon, proving continuation lines do not become keys.
+ */
 export const SKILL_POLICY_FOLDED: PolicyControl = Object.freeze({
 	label: 'accepts a folded description containing a colon',
 	membership: 'folded description scalars in discovered skill frontmatter',
@@ -1844,7 +1858,7 @@ export const SKILL_POLICY_FOLDED: PolicyControl = Object.freeze({
 	],
 })
 
-/** A healthy skill reference whose prose carries the documented backticked TODO form. */
+/** Describes a healthy skill reference whose prose carries the documented backticked TODO form. */
 export const SKILL_POLICY_BACKTICKED: PolicyControl = Object.freeze({
 	label: 'accepts a backticked TODO in skill prose',
 	membership: 'TODO occurrences inside matched inline backtick spans in discovered skill documents',
@@ -1859,7 +1873,7 @@ export const SKILL_POLICY_BACKTICKED: PolicyControl = Object.freeze({
 	],
 })
 
-/** A healthy skill whose fenced example carries a template-TODO spelling. */
+/** Describes a healthy skill whose fenced example carries a template-TODO spelling. */
 export const SKILL_POLICY_FENCED: PolicyControl = Object.freeze({
 	label: 'accepts a TODO in a three-space-indented fenced skill example',
 	membership:
@@ -1876,7 +1890,7 @@ export const SKILL_POLICY_FENCED: PolicyControl = Object.freeze({
 	],
 })
 
-/** A folded description whose blank scalar line separates its paragraphs. */
+/** Describes a folded description whose blank scalar line separates its paragraphs. */
 export const SKILL_POLICY_PARAGRAPHS: PolicyControl = Object.freeze({
 	label: 'accepts a folded description containing two paragraphs',
 	membership: 'folded description scalars in discovered skill frontmatter',
@@ -1891,7 +1905,9 @@ export const SKILL_POLICY_PARAGRAPHS: PolicyControl = Object.freeze({
 	],
 })
 
-/** A bridge skill outside the discovered family, used to prove the membership boundary. */
+/**
+ * Describes a bridge skill outside the discovered family, used to prove the membership boundary.
+ */
 export const SKILL_POLICY_EXCLUSION: PolicyControl = Object.freeze({
 	label: 'excludes .claude/skills from the skill family',
 	membership: 'directories outside .agents/skills',
@@ -1900,7 +1916,7 @@ export const SKILL_POLICY_EXCLUSION: PolicyControl = Object.freeze({
 })
 
 /**
- * Create root instruction text whose rule map names an explicit rule set.
+ * Creates root instruction text whose rule map names an explicit rule set.
  *
  * @param rules - The workspace-relative rule paths the map registers.
  * @returns Root instruction text carrying one rule map table.
@@ -1919,7 +1935,7 @@ export function createPolicyRuleMap(rules: readonly string[]): string {
 	)
 }
 
-/** Physical controls for every rule-map parity assertion the workspace route reaches. */
+/** Lists the physical controls for every rule-map parity assertion the workspace route reaches. */
 export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	{
 		label: 'rejects a rule file the rule map omits',
@@ -1949,7 +1965,7 @@ export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	},
 ])
 
-/** Physical controls for every portability assertion the workspace route reaches. */
+/** Lists the physical controls for every portability assertion the workspace route reaches. */
 export const PORTABILITY_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	{
 		label: 'rejects a reserved device name',

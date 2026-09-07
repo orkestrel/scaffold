@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "43ce847aa96a525919dbe948a2311214c312d58069054800577e5aff89024f08"
+			"digest": "365f62b880fac923347c8e78482bc8130559a15e5434e4aeb5cbd46b853ea6f6"
 		},
 		{
 			"storage": "CLAUDE.md",
@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "4f07f1929ffa4170644b428781788e361468b1d1cfb62a97bac737d8c8dbe151"
+			"digest": "fd0b8846e67041e251e30009311b444cea8199f036c822ba9fc1a313ecfdfd69"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -40,7 +40,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"executable": false,
-			"digest": "2221c8fddbf0474c9fbf39b5411275e27127940338b20e7626e5fac18f62c5f0"
+			"digest": "98379b5905cba4cc3725df7ddd8fd9ec19dce75ff89e68499b20ac27c53478c7"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/components.md",
@@ -52,7 +52,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/frontend-design.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/frontend-design.md",
 			"executable": false,
-			"digest": "96bbc411f56b748f71d67238b8b10e8a04fe303853930c24035de0dc3428e307"
+			"digest": "8ce1985267316610f4b68582cc993fa2d3f3a504e3e7f2c35e9d9d0e982891a1"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/inputs.md",
@@ -70,7 +70,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/utilities.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/utilities.md",
 			"executable": false,
-			"digest": "d3a60ead829b6059e656795d388d74320ccfd6667d805a106fbed6cf778ba7b4"
+			"digest": "0601721056882a7d45bfaa9ca0a03aa39e1259876f16546d4bf19b4b9496e023"
 		},
 		{
 			"storage": "agents/skills/orkestrel-align-packages/SKILL.md",
@@ -124,7 +124,7 @@
 			"storage": "agents/skills/orkestrel-debrief/references/field-testing.md",
 			"destination": ".agents/skills/orkestrel-debrief/references/field-testing.md",
 			"executable": false,
-			"digest": "196f803242195df9cd9d2d32a3502ba22445877506f1573f12a428387808578f"
+			"digest": "986896359716e315f1e0859c7190fe459c5a0ea86c0ed772c9fa5e42bd6a8171"
 		},
 		{
 			"storage": "agents/skills/orkestrel-debrief/references/instruction-audit.md",
@@ -160,7 +160,7 @@
 			"storage": "agents/skills/orkestrel-falsify/references/reconcile.md",
 			"destination": ".agents/skills/orkestrel-falsify/references/reconcile.md",
 			"executable": false,
-			"digest": "6880bc120f07bd1a20aa02596e550c3c5f5c66a241e9b40f7558ee144988db3b"
+			"digest": "fb3caa752883b151f83c95a2626ed11aebc653b07c3bf1baa1ace884f34b541f"
 		},
 		{
 			"storage": "agents/skills/orkestrel-harden-package/SKILL.md",
@@ -388,7 +388,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "1c953f2bdd2a94fc29f58e2338a288b4829b6138098856a6169244bd115e2ec4"
+			"digest": "2251fd693958c004e2a9e6087bf9248e43290694eb6488e3faa436a296d15320"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -424,7 +424,7 @@
 			"storage": "claude/rules/quality.md",
 			"destination": ".claude/rules/quality.md",
 			"executable": false,
-			"digest": "e99ef9fca7a0224e19f657eb52301314624bd0364c21faebe3ae1f1e6428b72a"
+			"digest": "dc334e2d167f6688d78b79d8214e1635098559331700e5516215a7fec0d95c25"
 		},
 		{
 			"storage": "claude/rules/styles.md",
@@ -604,13 +604,13 @@
 			"storage": "configs/helpers.ts",
 			"destination": "configs/helpers.ts",
 			"executable": false,
-			"digest": "22eb907e6f46c648d148528a9f167cfbeb042cc5a24ed1aa5f2942ef690dbf0f"
+			"digest": "85934473e279bbd955e23c7d8596db6c8798a1f44ed451506e7b3abd9fcfe9e1"
 		},
 		{
 			"storage": "configs/policy.ts",
 			"destination": "configs/policy.ts",
 			"executable": false,
-			"digest": "c4f56bd60f28142e25d89b9e7cfbbc0a4c903c0b0cd4478f00ad4fcb10043091"
+			"digest": "d2c7ff200ab884cf3fe59a981e926114a368b2d474a912fc7ff9ffda8901a307"
 		},
 		{
 			"storage": "cursor/mcp.json",
@@ -724,7 +724,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "068785557b720c462e3a1ed32fc60ea659e2855347187ea648f2707ca12eebb2"
+			"digest": "b67a8f7a21ea8b50f4e41fd135e18f60b944be09efc0db924c920e7f426153da"
 		}
 	],
 	"roots": [
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "587e7a08b7f1ab4fceb91b02ebef5b39a506b4651404e8b3a199e6761aa1d2d2"
+	"digest": "f8b93d4320ffa3a328931ef220c289ec86eb6c83c406597e980f572da8961afa"
 }

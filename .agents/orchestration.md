@@ -269,13 +269,12 @@ edits, formatter and build races, cache phantoms, and validation cross-talk.
 6. After integration, clear shared caches if needed, then have one independent `verifier` run the
    authoritative tree-wide sweep. A writer's self-report never establishes green.
 7. The Orchestrator's own sweep is a writing dispatch and queues behind the units that own those
-   files. A script that fixes one thing across every target is the easiest way to break the
-   serialization rule,
-   because it does not feel like a dispatch — nobody was named, no brief was written, and it
-   finishes in seconds. It still writes into trees a live unit owns, and a unit whose brief it
-   invalidates will repair the same drift the other way and report a state that is already false.
-   Run it before the units, or after them, or send the decision to every unit in flight per the
-   mid-campaign rule under **Dispatch anatomy**. Never beside them.
+   files. A script that fixes one thing across every target is the most direct way to break the
+   serialization rule, because it does not feel like a dispatch — nobody was named, no brief was
+   written, and it finishes in seconds. It still writes into trees a live unit owns, and a unit
+   whose brief it invalidates will repair the same drift the other way and report a state that is
+   already false. Run it before the units, or after them, or send the decision to every unit in
+   flight per the mid-campaign rule under **Dispatch anatomy**. Never beside them.
 8. A fleet pass that records a per-target status commits only the targets it recorded green. Reading
    "is the tree dirty" instead of "did this target pass" pushes a red target the moment one exists,
    and a flake makes that look like it worked. Refuse the failed row, name it, and re-run it alone
@@ -305,7 +304,7 @@ each CLI first (`codex --version`; `agent --version`, falling back to `agent.cmd
 run the bench's authentication-state check where it exposes one. Neither answer is liveness. A
 version string proves the binary is installed, and an authentication-state check reads stored
 credentials, so both pass while the account is out of quota, while the routed model is unavailable to
-it, while the server has already revoked the credential the check just read, and inside a sandbox
+it, while the server has already revoked the credential the check read, and inside a sandbox
 with the network denied. Record a bench live only on a bounded round-tripped model call that came
 back, and record what came back beside the routing decision. Probes are read-only, and the role file
 owns each bench's exact probe.
@@ -366,7 +365,7 @@ longer holds.
      plan did not consider; **unchanged**.
    - Redraw the dependency order. Strike a unit whose subject a later unit deletes. State the new
      prerequisite of a unit that acquired one.
-   - Walk the remaining units once and ask of each whether what just landed still supports it. A
+   - Walk the remaining units once and ask of each whether what landed still supports it. A
      decision taken inside a unit can remove a later unit's foundation, and the unit that took it
      cannot see that.
    - Re-baseline when a probe overturns a decision the plan rests on, not only at a phase boundary.

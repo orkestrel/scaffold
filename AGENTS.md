@@ -68,7 +68,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **No nested functions.** Extract function declarations and assignments from bodies. The only exceptions are an anonymous callback passed directly as an argument and an anonymous function returned directly as a result.
 - **Functional core, imperative shell.** Export pure leaves. Keep stateful or defining orchestration as class methods. Classes compose behavior; they do not forward 1:1 to helpers.
 - **No superfluous wrappers.** A wrapper must add a boundary, invariant, composition, translation, lifecycle, or materially narrower contract. Otherwise use or rename the real symbol and update every consumer.
-- **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, never a later visibility gate. Once an intentional reusable capability exists, expose its top-level source exports through the correct environment barrel regardless of which consumers currently use them, so developers receive the same supported mechanisms the package uses. Remove a symbol only when the capability itself should not exist. Prefer one minimal interface and one shared engine, allowing native backend overrides only for genuine faster paths.
+- **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, never a later visibility gate. Once an intentional reusable capability exists, expose its top-level source exports through the correct environment barrel regardless of which consumers use them, so developers receive the same supported mechanisms the package uses. Remove a symbol only when the capability itself must not exist. Prefer one minimal interface and one shared engine, allowing native backend overrides only for genuine faster paths.
 - **No compatibility shims.** This is greenfield. Update every consumer in the same change.
 - **Mechanism, not product policy.** Framework code supplies reusable mechanisms and stops before application decisions.
 - **No polling architecture.** Park idle work on events and abort signals. Yield long work cooperatively.
@@ -101,7 +101,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 7. **Document:** update the guide, examples, and parity contract.
 8. **Verify:** audit discovery, deferrals, and package contents as applicable. Run the required gates and read their actual output before claiming success.
 
-Quality gates before commit, in order. The acceptance gate is the non-mutating variant; run the mutating `lint` and then `format` first only to converge, then prove with the checks. `lint --fix` rewrites code and its output is not formatter-clean, so a `format` that ran before it leaves `format:check` failing on the file `lint` just rewrote:
+Quality gates before commit, in order. The acceptance gate is the non-mutating variant; run the mutating `lint` and then `format` first only to converge, then prove with the checks. `lint --fix` rewrites code and its output is not formatter-clean, so a `format` that ran before it leaves `format:check` failing on the file `lint` rewrote:
 
 ```text
 npm run format:check → npm run lint:check → npm run check → npm run build → npm test

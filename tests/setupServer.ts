@@ -81,7 +81,7 @@ import {
 } from './setup.js'
 
 /**
- * One command line beside the exact command it denotes.
+ * Describes one command line beside the exact command it denotes.
  *
  * @remarks
  * `command` is written whole rather than as a patch over a default, so a test
@@ -95,7 +95,7 @@ export interface TestCommandCase {
 }
 
 /**
- * One command line that denotes no command, beside what its refusal must name.
+ * Describes one command line that denotes no command, beside what its refusal must name.
  *
  * @remarks
  * `mention` is the exact substring the message owes the reader — the word that
@@ -109,7 +109,7 @@ export interface TestUsageCase {
 }
 
 /**
- * One audit beside whether the executable reads it as a clean run.
+ * Describes one audit beside whether the executable reads it as a clean run.
  *
  * @remarks
  * `clean` is a verdict rather than an exit code, so the table states the domain
@@ -122,7 +122,7 @@ export interface TestAuditCase {
 	readonly clean: boolean
 }
 
-/** One boundary value a server guard decides, with the verdict it owes. */
+/** Describes one boundary value a server guard decides, with the verdict it owes. */
 export interface TestBoundaryCase {
 	readonly label: string
 	readonly guard: (value: unknown) => boolean
@@ -130,28 +130,28 @@ export interface TestBoundaryCase {
 	readonly accepted: boolean
 }
 
-/** One path a classifying predicate decides, with the verdict it owes. */
+/** Describes one path a classifying predicate decides, with the verdict it owes. */
 export interface TestMatchCase {
 	readonly label: string
 	readonly path: string
 	readonly matched: boolean
 }
 
-/** One target-relative path beside the vendored storage name it maps to. */
+/** Describes one target-relative path beside the vendored storage name it maps to. */
 export interface TestStorageCase {
 	readonly label: string
 	readonly path: string
 	readonly storage: string
 }
 
-/** One text beside the digest a conforming SHA-256 owes it. */
+/** Describes one text beside the digest a conforming SHA-256 owes it. */
 export interface TestDigestCase {
 	readonly label: string
 	readonly content: string
 	readonly digest: string
 }
 
-/** One caller-supplied upstream endpoint, with the verdict the reader's law owes it. */
+/** Describes one caller-supplied upstream endpoint, with the verdict the reader's law owes it. */
 export interface TestEndpointCase {
 	readonly label: string
 	readonly base: string
@@ -159,7 +159,7 @@ export interface TestEndpointCase {
 }
 
 /**
- * One scripted HTTP reply the upstream fixture serves at one exact path.
+ * Describes one scripted HTTP reply the upstream fixture serves at one exact path.
  *
  * @remarks
  * Every field maps onto a real part of the response, so the fixture never
@@ -181,7 +181,7 @@ export interface TestUpstreamReply {
 }
 
 /**
- * The declared range sets a published version carries in a packument.
+ * Describes the declared range sets a published version carries in a packument.
  *
  * @remarks
  * Named for the manifest keys the registry serves rather than for what a reader
@@ -196,7 +196,7 @@ export interface TestPackumentEdges {
 }
 
 /**
- * One vendored file the repository fixture serves, beside the path it serves it at.
+ * Describes one vendored file the repository fixture serves, beside the path it serves it at.
  *
  * @remarks
  * `path` is the target-relative destination, which the raw content host also
@@ -211,7 +211,7 @@ export interface TestVendoredFile {
 }
 
 /**
- * One binding a parsed statement declares, with the shape a lift reads from it.
+ * Describes one binding a parsed statement declares, with the shape a lift reads from it.
  *
  * @remarks
  * `parameters` and `returns` are the source slices the parser's own spans name,
@@ -226,7 +226,7 @@ export interface TestDeclaration {
 }
 
 /**
- * One statement of a parsed module, projected onto the fields a lift reads.
+ * Describes one statement of a parsed module, projected onto the fields a lift reads.
  *
  * @remarks
  * `syntax` names the declaration a named export wraps rather than the wrapper,
@@ -252,7 +252,7 @@ export interface TestStatement {
 }
 
 /**
- * A real HTTP server on loopback, scripted per path.
+ * Describes a real HTTP server on loopback, scripted per path.
  *
  * @remarks
  * `paths` is every request line the server received, in arrival order, so a
@@ -274,7 +274,7 @@ export interface TestUpstreamInterface {
 }
 
 /**
- * The repository root, resolved from this file rather than from the process.
+ * Names the repository root, resolved from this file rather than from the process.
  *
  * @remarks
  * Anchoring here is what keeps a loader independent of the directory the runner
@@ -286,7 +286,7 @@ export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
 export const SCRATCH_PREFIX = 'orkestrel-scaffold-'
 
 /**
- * List the tracked paths this repository records as executable.
+ * Lists the tracked paths this repository records as executable.
  *
  * @returns The repository-relative paths git holds at mode `100755`, sorted.
  *
@@ -318,7 +318,7 @@ export function listExecutablePaths(): readonly string[] {
 }
 
 /**
- * Whether this run's temporary directories resolve a recased name.
+ * Reports whether this run's temporary directories resolve a recased name.
  *
  * @remarks
  * Derived from the shipped `supportsCase` probe, which writes two names differing
@@ -334,7 +334,7 @@ export function listExecutablePaths(): readonly string[] {
 export const CASE_FOLDING: boolean = !supportsCase()
 
 /**
- * Build a valid inert vendored-host manifest entry, with focused field replacements.
+ * Builds a valid inert vendored-host manifest entry, with focused field replacements.
  *
  * @param fields - The entry fields to replace on the returned value.
  * @returns An entry carrying the requested fields over minimal defaults.
@@ -345,7 +345,7 @@ export function buildManifestEntry(fields?: Partial<ManifestEntry>): ManifestEnt
 }
 
 /**
- * Build a valid inert vendored-host manifest, with focused field replacements.
+ * Builds a valid inert vendored-host manifest, with focused field replacements.
  *
  * @param fields - The manifest fields to replace on the returned value.
  * @returns A manifest carrying the requested fields over minimal defaults.
@@ -367,7 +367,7 @@ export function buildHostManifest(fields?: Partial<HostManifest>): HostManifest 
 }
 
 /**
- * Build a valid inert git working-tree state, with focused field replacements.
+ * Builds a valid inert git working-tree state, with focused field replacements.
  *
  * @param fields - The worktree fields to replace on the returned value.
  * @returns A worktree carrying the requested fields over minimal defaults.
@@ -377,7 +377,7 @@ export function buildWorktree(fields?: Partial<Worktree>): Worktree {
 }
 
 /**
- * Build a valid inert materializer option bag, with focused field replacements.
+ * Builds a valid inert materializer option bag, with focused field replacements.
  *
  * @param fields - The option fields to replace on the returned value.
  * @returns Options carrying the requested fields over minimal defaults.
@@ -393,7 +393,7 @@ export function buildMaterializerOptions(
 }
 
 /**
- * Build a valid inert upstream option bag, with focused field replacements.
+ * Builds a valid inert upstream option bag, with focused field replacements.
  *
  * @param fields - The option fields to replace on the returned value.
  * @returns Options carrying the requested fields over minimal defaults.
@@ -416,7 +416,7 @@ export function buildUpstreamOptions(fields?: Partial<UpstreamOptions>): Upstrea
 }
 
 /**
- * Build every guard the server face publishes, with what each must accept.
+ * Builds every guard the server face publishes, with what each must accept.
  *
  * @returns One case per guard, freshly built.
  *
@@ -569,7 +569,7 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
 }
 
 /**
- * Every candidate the host-path law decides, with the verdict it owes.
+ * Lists every candidate the host-path law decides, with the verdict it owes.
  *
  * @remarks
  * The multi-byte pair is what proves the segment ceiling counts bytes rather
@@ -627,7 +627,7 @@ export const FILESYSTEM_PATH_CASES: readonly TestPathCase[] = [
 ]
 
 /**
- * Build every boundary value the server's option, manifest, and inventory laws decide.
+ * Builds every boundary value the server's option, manifest, and inventory laws decide.
  *
  * @returns One case per boundary, freshly built.
  *
@@ -825,7 +825,7 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
 }
 
 /**
- * Run a call and report the coded reason it refused.
+ * Runs a call and reports the coded reason it refused.
  *
  * @param call - The call under test.
  * @returns The raised error's code, or `undefined` when the call returned
@@ -847,7 +847,7 @@ export function readErrorCode(call: () => unknown): ScaffoldErrorCode | undefine
 }
 
 /**
- * Read the message from one synchronous scaffold refusal.
+ * Reads the message from one synchronous scaffold refusal.
  *
  * @param call - The operation expected to raise a scaffold error.
  * @returns The scaffold error's message, or `undefined` when the call returned
@@ -959,7 +959,7 @@ export function readStatements(source: string, name: string): readonly TestState
 }
 
 /**
- * Build a vendored-host manifest that matches its own membership.
+ * Builds a vendored-host manifest that matches its own membership.
  *
  * @param fields - The membership to replace on the returned value.
  * @returns A manifest whose digest is computed from the membership it carries.
@@ -986,7 +986,7 @@ export function buildStagedManifest(fields?: Partial<Omit<HostManifest, 'digest'
 }
 
 /**
- * Write a real vendored host root a reader can be measured against.
+ * Writes a real vendored host root a reader can be measured against.
  *
  * @param workspace - The temporary workspace the root is written into.
  * @param relative - The workspace-relative directory to write it at.
@@ -1012,7 +1012,7 @@ export function createHostRoot(
 }
 
 /**
- * Stage this checkout's real vendored host into a temporary workspace.
+ * Stages this checkout's real vendored host into a temporary workspace.
  *
  * @param workspace - The temporary workspace that receives the staged root.
  * @returns The staged host root's absolute path.
@@ -1029,7 +1029,7 @@ export function createStagedHost(workspace: ScratchInterface): string {
 }
 
 /**
- * Every text whose SHA-256 is a published, externally checkable value.
+ * Lists every text whose SHA-256 is a published, externally checkable value.
  *
  * @remarks
  * The digest law's anchor. Every case but the multi-byte one is a published
@@ -1061,7 +1061,7 @@ export const DIGEST_CASES: readonly TestDigestCase[] = [
 	},
 ]
 
-/** Every path the repository-metadata rule decides, with the verdict it owes. */
+/** Lists every path the repository-metadata rule decides, with the verdict it owes. */
 export const GIT_PATH_CASES: readonly TestMatchCase[] = [
 	{ label: 'the metadata directory itself', path: '.git', matched: true },
 	{ label: 'a file inside it', path: '.git/config', matched: true },
@@ -1075,7 +1075,7 @@ export const GIT_PATH_CASES: readonly TestMatchCase[] = [
 	{ label: 'an unrelated dotted directory', path: '.claude/rules/names.md', matched: false },
 ]
 
-/** Every path the deletion deny-list decides, with the verdict it owes. */
+/** Lists every path the deletion deny-list decides, with the verdict it owes. */
 export const PROTECTED_PATH_CASES: readonly TestMatchCase[] = [
 	{ label: 'a published source file', path: 'src/core/index.ts', matched: true },
 	{ label: 'a private application file', path: 'app/server/main.ts', matched: true },
@@ -1094,7 +1094,7 @@ export const PROTECTED_PATH_CASES: readonly TestMatchCase[] = [
 	},
 ]
 
-/** Every path the vendoring deny-list decides, with the verdict it owes. */
+/** Lists every path the vendoring deny-list decides, with the verdict it owes. */
 export const SENSITIVE_PATH_CASES: readonly TestMatchCase[] = [
 	{ label: 'a registry credential file', path: '.npmrc', matched: true },
 	{ label: 'a nested registry credential file', path: 'packages/router/.npmrc', matched: true },
@@ -1118,7 +1118,7 @@ export const SENSITIVE_PATH_CASES: readonly TestMatchCase[] = [
 ]
 
 /**
- * Build the vendored membership the writers are measured against.
+ * Builds the vendored membership the writers are measured against.
  *
  * @param fields - The membership to replace on the returned value.
  * @returns A manifest whose digest is computed from the membership it carries.
@@ -1158,7 +1158,7 @@ export function buildVendoredManifest(
 }
 
 /**
- * One command-line word carrying every byte a refusal must not pass on.
+ * Holds one command-line word carrying every byte a refusal must not pass on.
  *
  * @remarks
  * Hostile classes in one token, because a refusal quotes the word that
@@ -1171,11 +1171,11 @@ export function buildVendoredManifest(
  */
 export const HOSTILE_ARGUMENT = '\u001b[31mpull\u0007\u007f\nforged'
 
-/** Every byte {@link HOSTILE_ARGUMENT} carries that a written line must not. */
+/** Lists every byte {@link HOSTILE_ARGUMENT} carries that a written line must not. */
 export const HOSTILE_BYTES: readonly string[] = ['\u001b', '\u0007', '\u007f', '\n']
 
 /**
- * Initialize a real git repository at a path.
+ * Initializes a real git repository at a path.
  *
  * @param path - The directory to make a repository.
  * @returns Nothing.
@@ -1191,7 +1191,7 @@ export function createRepository(path: string): void {
 }
 
 /**
- * The destinations one executable run wrote to, and the options that wired them.
+ * Describes the destinations one executable run wrote to, and the options that wired them.
  *
  * @remarks
  * `output` and `diagnostic` are the lines each handler received, in the order it
@@ -1206,7 +1206,7 @@ export interface TestSinkInterface {
 }
 
 /**
- * Create the recording destinations one executable run writes to.
+ * Creates the recording destinations one executable run writes to.
  *
  * @returns The sink, whose `options` drive the run and whose lists are read after it.
  *
@@ -1235,7 +1235,7 @@ export function createSink(): TestSinkInterface {
 }
 
 /**
- * The staged paths that are directories rather than files.
+ * Lists the staged paths that are directories rather than files.
  *
  * @remarks
  * `CANON_PATHS` mixes files and directories and says which is which nowhere,
@@ -1257,7 +1257,7 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
 ]
 
 /**
- * Every path a release stages, the vendored set and the instruction canon together.
+ * Lists every path a release stages, the vendored set and the instruction canon together.
  *
  * @remarks
  * The stager walks `HOST_PATHS` and `CANON_PATHS` alike, so a checkout fixture
@@ -1271,7 +1271,7 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
 export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
 
 /**
- * Build the manifest a vendored root storing every planned path declares.
+ * Builds the manifest a vendored root storing every planned path declares.
  *
  * @returns A manifest whose digest is computed from the membership it carries.
  *
@@ -1299,7 +1299,7 @@ export function buildFleetManifest(): HostManifest {
 }
 
 /**
- * Write a real checkout carrying every staged path, as the stager reads one.
+ * Writes a real checkout carrying every staged path, as the stager reads one.
  *
  * @param workspace - The temporary workspace the checkout is written into.
  * @param relative - The workspace-relative directory to write it at.
@@ -1330,7 +1330,7 @@ export function createCheckout(workspace: ScratchInterface, relative: string): s
 }
 
 /**
- * Build the manifest a host staged from {@link createCheckout} must declare.
+ * Builds the manifest a host staged from {@link createCheckout} must declare.
  *
  * @returns A manifest whose digest is computed from the membership it carries.
  *
@@ -1376,7 +1376,7 @@ export function buildCheckoutManifest(): HostManifest {
 }
 
 /**
- * Write a vendored root carrying every planned path, and the target beside it.
+ * Writes a vendored root carrying every planned path, and the target beside it.
  *
  * @param workspace - The temporary workspace both roots are written into.
  * @returns The host root's absolute path and the target directory's absolute path.
@@ -1400,7 +1400,7 @@ export function createFleet(workspace: ScratchInterface): {
 }
 
 /**
- * Write a fleet beside a target that already carries a rewritable catalog file.
+ * Writes a fleet beside a target that already carries a rewritable catalog file.
  *
  * @param workspace - The temporary workspace both roots are written into.
  * @returns The host root's absolute path and the target directory's absolute path.
@@ -1427,7 +1427,7 @@ export function createCatalogFleet(workspace: ScratchInterface): {
 }
 
 /**
- * Put every file in a target under git's control, without committing.
+ * Puts every file in a target under git's control, without committing.
  *
  * @param path - The repository to track the files of.
  * @returns Nothing.
@@ -1445,7 +1445,7 @@ export function trackFiles(path: string): void {
 }
 
 /**
- * Commit everything {@link trackFiles} staged, so a run reads a clean tree.
+ * Commits everything {@link trackFiles} staged, so a run reads a clean tree.
  *
  * @param path - The repository to commit.
  * @returns Nothing.
@@ -1480,24 +1480,24 @@ export function commitFiles(path: string): void {
 }
 
 /**
- * How many artifacts the compiler itself supplies for a plan selecting `src/core` alone.
+ * Lists the artifacts the compiler itself supplies for a plan selecting `src/core` alone.
  *
  * @remarks
  * Every artifact no vendored entry answers for: the computed manifest plus each
- * template the blueprint's own axes select. Counted from a real compile rather
- * than summed from parts, because the generated set grows every time the emitter
- * gains a group and a hand-written sum goes stale on each one. Repeated
+ * template the blueprint's own axes select. Read from a real compile rather
+ * than assembled by hand, because the generated set grows every time the emitter
+ * gains a group and a hand-written list goes stale on each one. Repeated
  * staleness rounds are what produced this shape.
  */
 export const CORE_GENERATED = (
 	new Compiler().compile(createBlueprint('sample', { src: ['core'] })).plan?.artifacts ?? []
 ).filter((artifact) => artifact.origin !== 'host')
 
-/** How many artifacts the compiler supplies for a `src/core` plan. */
+/** Counts the artifacts the compiler supplies for a `src/core` plan. */
 export const CORE_GENERATED_COUNT = CORE_GENERATED.length
 
 /**
- * How many paths a fleet target's plan claims once the vendored host has hydrated it.
+ * Counts the paths a fleet target's plan claims once the vendored host has hydrated it.
  *
  * @remarks
  * Each term names a real source. The vendored membership comes from
@@ -1518,12 +1518,12 @@ export const CORE_GENERATED_COUNT = CORE_GENERATED.length
 export const FLEET_ARTIFACT_COUNT = buildFleetManifest().entries.length + CORE_GENERATED_COUNT
 
 /**
- * How many planned paths a repair leaves alone because the workspace owns them.
+ * Lists the planned paths a repair leaves alone because the workspace owns them.
  *
  * @remarks
  * A birth-owned artifact is written once, when the workspace is created, and is
  * the consumer's from then on. Repair restores drift and must not overwrite one,
- * so this is exactly what its `skipped` list carries. Counted from the plan so
+ * so this is exactly what its `skipped` list carries. Read from the plan so
  * it tracks the emitter: the set grew the moment generated source, test and
  * documentation artifacts existed.
  */
@@ -1531,11 +1531,11 @@ export const FLEET_BIRTH_PATHS = CORE_GENERATED.filter(
 	(artifact) => artifact.ownership === 'birth',
 ).map((artifact) => artifact.path)
 
-/** How many planned paths a repair skips because the workspace owns them. */
+/** Counts the planned paths a repair skips because the workspace owns them. */
 export const FLEET_BIRTH_COUNT = FLEET_BIRTH_PATHS.length
 
 /**
- * Build the plan {@link buildVendoredManifest} answers for.
+ * Builds the plan {@link buildVendoredManifest} answers for.
  *
  * @param fields - The plan fields to replace on the returned value.
  * @returns A plan carrying one computed artifact and every vendored shape.
@@ -1567,7 +1567,7 @@ export function buildVendoredPlan(fields?: Partial<Plan>): Plan {
 }
 
 /**
- * Compile the default blueprint through the real compiler with its default selection.
+ * Compiles the default blueprint through the real compiler with its default selection.
  *
  * @returns The complete plan produced by the compiler.
  */
@@ -1583,7 +1583,7 @@ export function buildCompiledPlan(): Plan {
 }
 
 /**
- * Build the audit a target is in, declaring which paths the caller made stale.
+ * Builds the audit a target is in, declaring which paths the caller made stale.
  *
  * @param target - The target directory to read.
  * @param paths - The plan-relative paths the audit covers.
@@ -1622,7 +1622,7 @@ export function buildTargetAudit(
 }
 
 /**
- * The catalog agent file as a target carries it, markers and surrounding prose included.
+ * Holds the catalog agent file as a target carries it, markers and surrounding prose included.
  *
  * @remarks
  * The marker pair is read from the shared constants the writer reads, so the
@@ -1643,7 +1643,7 @@ export const CATALOG_AGENT_TEXT = [
 ].join('\n')
 
 /**
- * The catalog agent file carrying a package table a reader can list names from.
+ * Holds the catalog agent file carrying a package table a reader can list names from.
  *
  * @remarks
  * The rows are what {@link CATALOG_AGENT_TEXT} deliberately lacks. The trailing
@@ -1663,13 +1663,13 @@ export const CATALOG_AGENT_ROWS_TEXT = [
 	'',
 ].join('\n')
 
-/** The development dependencies planned for the fixture's published core environment. */
+/** Lists the development dependencies planned for the fixture's published core environment. */
 export const TARGET_DEV_DEPENDENCIES = blueprintToDevDependencies(
 	createBlueprint('sample', { src: ['core'] }),
 )
 
 /**
- * Build a target manifest with focused dependency-section replacements.
+ * Builds a target manifest with focused dependency-section replacements.
  *
  * @param blueprint - The workspace shape whose scripts and tools are planned.
  * @param dependencies - The value to place at `dependencies`.
@@ -1700,7 +1700,7 @@ export function buildTargetManifest(
 }
 
 /**
- * Remove selected dependency names from an inert manifest section.
+ * Removes selected dependency names from an inert manifest section.
  *
  * @param dependencies - The section to copy.
  * @param names - The names to omit.
@@ -1713,7 +1713,7 @@ export function omitDependencies(
 	return Object.fromEntries(Object.entries(dependencies).filter(([name]) => !names.includes(name)))
 }
 
-/** A target manifest declaring its planned scripts, tools, fleet packages, and an extra. */
+/** Holds a target manifest declaring its planned scripts, tools, fleet packages, and an extra. */
 export const TARGET_MANIFEST_TEXT = buildTargetManifest(
 	undefined,
 	{
@@ -1724,7 +1724,7 @@ export const TARGET_MANIFEST_TEXT = buildTargetManifest(
 )
 
 /**
- * A target manifest whose own name the compile gate refuses.
+ * Holds a target manifest whose own name the compile gate refuses.
  *
  * @remarks
  * A target describes its own blueprint, so a name it cannot generate from is the
@@ -1742,7 +1742,7 @@ export const REFUSED_MANIFEST_TEXT = `${JSON.stringify(
 )}\n`
 
 /**
- * Every caller-supplied endpoint the reader's scheme and host law decides.
+ * Lists every caller-supplied endpoint the reader's scheme and host law decides.
  *
  * @remarks
  * `isEndpoint` bounds length and nothing else, so every case here is a string
@@ -1789,7 +1789,7 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
 ]
 
 /**
- * Build the registry packument text a version lookup reads.
+ * Builds the registry packument text a version lookup reads.
  *
  * @param version - The version to publish under `dist-tags.latest`.
  * @param edges - The declared ranges the published version carries; omitted for
@@ -1827,7 +1827,7 @@ export function buildPackument(version: string, edges?: TestPackumentEdges): str
 }
 
 /**
- * Build the registry organization package-list text a catalog reads.
+ * Builds the registry organization package-list text a catalog reads.
  *
  * @param names - The published package names the organization lists.
  * @returns The response body, as the flat name-to-access map the registry serves.
@@ -1837,12 +1837,12 @@ export function buildOrganization(names: readonly string[]): string {
 }
 
 /**
- * The vendored files the repository fixture serves, keyed for a test to name one.
+ * Lists the vendored files the repository fixture serves, keyed for a test to name one.
  *
  * @remarks
  * `orchestration` carries a leading-dot directory and `mirror` is a guide the
  * mirror verb owns, so the set covers the two paths whose handling differs from
- * a plain root file rather than only the easy case.
+ * a plain root file rather than only the case that needs no special handling.
  */
 export const VENDORED_FILES = Object.freeze({
 	agents: Object.freeze({ path: 'AGENTS.md', content: '# Agents\n' }),
@@ -1855,7 +1855,7 @@ export const VENDORED_FILES = Object.freeze({
 })
 
 /**
- * Build the committed inventory text a vendored read is decided against.
+ * Builds the committed inventory text a vendored read is decided against.
  *
  * @param files - The vendored files the inventory declares, in declaration order.
  * @returns The manifest body, carrying a per-file digest and a membership digest over that exact order.
@@ -1877,7 +1877,7 @@ export function buildInventory(files: readonly TestVendoredFile[]): string {
 }
 
 /**
- * Build the raw-repository replies for the installed vendored host.
+ * Builds the raw-repository replies for the installed vendored host.
  *
  * @param floor - The installed floor whose inventory and host-owned bytes the
  * repository serves.
@@ -1912,7 +1912,7 @@ export function buildInstalledHostReplies(
 }
 
 /**
- * Build the target snapshot a vendored read is held to.
+ * Builds the target snapshot a vendored read is held to.
  *
  * @param files - The files the target holds, with the exact bytes it holds.
  * @returns Those bytes as hexadecimal, keyed by the same paths.
@@ -1922,7 +1922,7 @@ export function buildVendoredSnapshot(files: readonly TestVendoredFile[]): Snaps
 }
 
 /**
- * Write one scripted reply onto a real HTTP response.
+ * Writes one scripted reply onto a real HTTP response.
  *
  * @param response - The open server response to answer on.
  * @param reply - The scripted status, body, and transfer form.
@@ -1950,7 +1950,7 @@ export function writeUpstreamReply(response: ServerResponse, reply: TestUpstream
 }
 
 /**
- * Start a real HTTP server on loopback, scripted per request path.
+ * Starts a real HTTP server on loopback, scripted per request path.
  *
  * @param replies - The reply to serve at each exact request path.
  * @returns The running fixture, which the caller destroys in a `finally`.
@@ -2028,7 +2028,7 @@ export async function createUpstreamServer(
 }
 
 /**
- * The exact request paths the upstream contract puts a reader at.
+ * Lists the exact request paths the upstream contract puts a reader at.
  *
  * @remarks
  * Written from the registry's and the raw-content host's own canonical forms
@@ -2063,7 +2063,7 @@ export const UPSTREAM_PATHS = Object.freeze({
 })
 
 /**
- * The exact request paths a fleet target's own declared set puts the executable at.
+ * Lists the exact request paths a fleet target's own declared set puts the executable at.
  *
  * @remarks
  * {@link UPSTREAM_PATHS} states the canonical forms the reader is measured
@@ -2100,7 +2100,7 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
 })
 
 /**
- * Wire one executable run to a recording sink and one loopback fixture.
+ * Wires one executable run to a recording sink and one loopback fixture.
  *
  * @param sink - The destinations the run writes to.
  * @param base - The fixture's base URL, which both upstream endpoints address.
@@ -2117,7 +2117,7 @@ export function buildCLIOptions(sink: TestSinkInterface, base: string): CLIOptio
 }
 
 /**
- * Run an asynchronous call and report the coded reason it refused.
+ * Runs an asynchronous call and reports the coded reason it refused.
  *
  * @param call - The call under test.
  * @returns The rejected error's code, or `undefined` when the call resolved or
@@ -2139,7 +2139,7 @@ export async function readRejectionCode(
 	}
 }
 
-/** Every target-relative path the storage mapping decides, beside what it maps to. */
+/** Lists every target-relative path the storage mapping decides, beside what it maps to. */
 export const STORAGE_PATH_CASES: readonly TestStorageCase[] = [
 	{ label: 'a root dotfile', path: '.gitignore', storage: 'dotfiles/gitignore' },
 	{
@@ -2158,7 +2158,7 @@ export const STORAGE_PATH_CASES: readonly TestStorageCase[] = [
 	},
 ]
 
-/** Every command line the executable accepts, beside the exact command it denotes. */
+/** Lists every command line the executable accepts, beside the exact command it denotes. */
 export const COMMAND_CASES: readonly TestCommandCase[] = [
 	{
 		label: 'new with only its name',
@@ -2248,7 +2248,7 @@ export const COMMAND_CASES: readonly TestCommandCase[] = [
 	},
 ]
 
-/** Every command line that denotes no command, beside what its refusal must name. */
+/** Lists every command line that denotes no command, beside what its refusal must name. */
 export const USAGE_CASES: readonly TestUsageCase[] = [
 	{ label: 'no arguments at all', argv: [], mention: 'No command given' },
 	{ label: 'a retired verb', argv: ['pull'], mention: "Unknown command 'pull'" },
@@ -2288,7 +2288,7 @@ export const USAGE_CASES: readonly TestUsageCase[] = [
 	},
 ]
 
-/** Every audit shape the exit-code rule decides, with the verdict it owes. */
+/** Lists every audit shape the exit-code rule decides, with the verdict it owes. */
 export const AUDIT_EXIT_CASES: readonly TestAuditCase[] = [
 	{ label: 'an audit that found nothing', audit: { findings: [], questions: [] }, clean: true },
 	{
@@ -2336,7 +2336,7 @@ export const AUDIT_EXIT_CASES: readonly TestAuditCase[] = [
 ]
 
 /**
- * Build the shortest command line that exercises one option against one verb.
+ * Builds the shortest command line that exercises one option against one verb.
  *
  * @param verb - The verb the line invokes.
  * @param option - The option token, as usage displays it.

@@ -72,7 +72,7 @@ import {
 } from '@src/core'
 
 /**
- * One adversarial value every total guard, parser, and cloner must survive.
+ * Describes one adversarial value every total guard, parser, and cloner must survive.
  *
  * @remarks
  * `owned` records whether `cloneValue` can take ownership of the value. A
@@ -87,7 +87,7 @@ export interface TestHostileCase {
 }
 
 /**
- * One guard under test, with what it must accept and what it may admit.
+ * Describes one guard under test, with what it must accept and what it may admit.
  *
  * @remarks
  * `admits` names the hostile labels this guard answers `true` for. It is the
@@ -101,7 +101,7 @@ export interface TestGuardCase {
 	readonly admits: readonly string[]
 }
 
-/** One coercer under test, beside the guard it is derived from. */
+/** Describes one coercer under test, beside the guard it is derived from. */
 export interface TestParserCase {
 	readonly name: string
 	readonly parse: (value: unknown) => unknown
@@ -110,7 +110,7 @@ export interface TestParserCase {
 	readonly refused: readonly unknown[]
 }
 
-/** One candidate path the portable-path law decides. */
+/** Describes one candidate path the portable-path law decides. */
 export interface TestPathCase {
 	readonly label: string
 	readonly path: string
@@ -118,7 +118,7 @@ export interface TestPathCase {
 }
 
 /**
- * One value carrying a key its union branch forbids, beside its sound twin.
+ * Describes one value carrying a key its union branch forbids, beside its sound twin.
  *
  * @remarks
  * The records differ by exactly one key, which the suite checks, so a
@@ -131,14 +131,14 @@ export interface TestUnionCase {
 	readonly refused: Record<string, unknown>
 }
 
-/** One helper call whose determinism and input independence are measured. */
+/** Describes one helper call whose determinism and input independence are measured. */
 export interface TestPurityCase {
 	readonly helper: string
 	readonly call: () => unknown
 	readonly inputs: readonly unknown[]
 }
 
-/** One declared range measured against a reported version. */
+/** Describes one declared range measured against a reported version. */
 export interface TestRangeCase {
 	readonly range: string
 	readonly latest: string
@@ -146,7 +146,7 @@ export interface TestRangeCase {
 }
 
 /**
- * An instance whose prototype the hostile matrix severs.
+ * Describes an instance whose prototype the hostile matrix severs.
  *
  * @remarks
  * Constructed rather than written as a record, so the reparented case measures
@@ -157,7 +157,7 @@ export class TestSample {
 }
 
 /**
- * Build a valid inert blueprint, with focused field replacements.
+ * Builds a valid inert blueprint, with focused field replacements.
  *
  * @param fields - The blueprint fields to replace on the returned value.
  * @returns A blueprint carrying the requested fields over minimal defaults.
@@ -201,7 +201,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 }
 
 /**
- * Build a valid inert runtime dependency, with focused field replacements.
+ * Builds a valid inert runtime dependency, with focused field replacements.
  *
  * @param fields - The dependency fields to replace on the returned value.
  * @returns A dependency carrying the requested fields over minimal defaults.
@@ -211,7 +211,7 @@ export function buildDependency(fields?: Partial<Dependency>): Dependency {
 }
 
 /**
- * Build a valid inert artifact override, with focused field replacements.
+ * Builds a valid inert artifact override, with focused field replacements.
  *
  * @param fields - The override fields to replace on the returned value.
  * @returns An override carrying the requested fields over minimal defaults.
@@ -221,7 +221,7 @@ export function buildOverride(fields?: Partial<Override>): Override {
 }
 
 /**
- * Build a valid inert question, with focused field replacements.
+ * Builds a valid inert question, with focused field replacements.
  *
  * @param fields - The question fields to replace on the returned value.
  * @returns A question carrying the requested fields over minimal defaults.
@@ -231,7 +231,7 @@ export function buildQuestion(fields?: Partial<Question>): Question {
 }
 
 /**
- * Build a planned host artifact whose bytes have not been read.
+ * Builds a planned host artifact whose bytes have not been read.
  *
  * @param fields - The artifact fields to replace on the returned value.
  * @returns A host artifact carrying the requested fields over minimal defaults.
@@ -241,7 +241,7 @@ export function buildHostArtifact(fields?: Partial<HostArtifact>): HostArtifact 
 }
 
 /**
- * Build a planned host artifact whose vendored bytes have been read.
+ * Builds a planned host artifact whose vendored bytes have been read.
  *
  * @param fields - The artifact fields to replace on the returned value.
  * @returns A hydrated artifact carrying the requested fields over minimal defaults.
@@ -258,7 +258,7 @@ export function buildHydratedArtifact(fields?: Partial<HydratedArtifact>): Hydra
 }
 
 /**
- * Build a planned artifact whose text this package produces.
+ * Builds a planned artifact whose text this package produces.
  *
  * @param fields - The artifact fields to replace on the returned value.
  * @returns A content artifact carrying the requested fields over minimal defaults.
@@ -275,7 +275,7 @@ export function buildContentArtifact(fields?: Partial<ContentArtifact>): Content
 }
 
 /**
- * Build a valid inert plan, with focused field replacements.
+ * Builds a valid inert plan, with focused field replacements.
  *
  * @param fields - The plan fields to replace on the returned value.
  * @returns A plan carrying the requested fields over minimal defaults.
@@ -290,7 +290,7 @@ export function buildPlan(fields?: Partial<Plan>): Plan {
 }
 
 /**
- * Build a valid inert target snapshot.
+ * Builds a valid inert target snapshot.
  *
  * @returns One path keyed to the exact hexadecimal bytes of its content.
  */
@@ -299,7 +299,7 @@ export function buildSnapshot(): Snapshot {
 }
 
 /**
- * Build a valid inert finding against a destination that holds no file.
+ * Builds a valid inert finding against a destination that holds no file.
  *
  * @returns A missing finding, the one branch that records no observed bytes.
  */
@@ -308,7 +308,7 @@ export function buildFinding(): Finding {
 }
 
 /**
- * Build a valid inert audit carrying one finding and one question.
+ * Builds a valid inert audit carrying one finding and one question.
  *
  * @returns An audit over a single missing destination.
  */
@@ -317,7 +317,7 @@ export function buildAudit(): Audit {
 }
 
 /**
- * Build the compiler's initial listener record.
+ * Builds the compiler's initial listener record.
  *
  * @returns A hooks record wiring one real listener to the `compile` event.
  */
@@ -326,7 +326,7 @@ export function buildHooks(): EmitterHooks<CompilerEventMap> {
 }
 
 /**
- * Build a valid inert compiler option bag.
+ * Builds a valid inert compiler option bag.
  *
  * @returns Options carrying the hooks record and no error handler.
  */
@@ -334,28 +334,28 @@ export function buildCompilerOptions(): CompilerOptions {
 	return { on: buildHooks() }
 }
 
-/** The trap table whose key enumeration throws. */
+/** Holds the trap table whose key enumeration throws. */
 export const THROWING_KEYS_TRAP: ProxyHandler<object> = {
 	ownKeys() {
 		throw new Error('ownKeys trap')
 	},
 }
 
-/** The trap table whose property read throws. */
+/** Holds the trap table whose property read throws. */
 export const THROWING_GET_TRAP: ProxyHandler<object> = {
 	get() {
 		throw new Error('get trap')
 	},
 }
 
-/** The trap table whose prototype read throws. */
+/** Holds the trap table whose prototype read throws. */
 export const THROWING_PROTOTYPE_TRAP: ProxyHandler<object> = {
 	getPrototypeOf() {
 		throw new Error('getPrototypeOf trap')
 	},
 }
 
-/** The descriptor that installs a throwing accessor over a guarded property. */
+/** Holds the descriptor that installs a throwing accessor over a guarded property. */
 export const THROWING_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
 	enumerable: true,
 	configurable: true,
@@ -364,7 +364,7 @@ export const THROWING_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
 	},
 }
 
-/** The descriptor that installs an accessor answering a value a guard would accept. */
+/** Holds the descriptor that installs an accessor answering a value a guard would accept. */
 export const BENIGN_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
 	enumerable: true,
 	configurable: true,
@@ -374,7 +374,7 @@ export const BENIGN_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
 }
 
 /**
- * Every name the emitted `configs/browsers.ts` publishes, in emission order.
+ * Lists every name the emitted `configs/browsers.ts` publishes, in emission order.
  *
  * @remarks
  * The emitted root configuration reaches `resolveBrowser` and
@@ -399,12 +399,12 @@ export const BROWSER_RESOLVER_EXPORTS: readonly string[] = Object.freeze([
 	'resolveBrowser',
 ])
 
-/** A package manifest declaring one fleet package per section, and one foreign name. */
+/** Holds a package manifest declaring one fleet package per section, and one foreign name. */
 export const MANIFEST_SAMPLE =
 	'{"name":"@orkestrel/sample","dependencies":{"@orkestrel/emitter":"^0.0.5","vite":"~8.2.0"},"devDependencies":{"@orkestrel/emitter":"^9.9.9","@orkestrel/guide":"^0.0.9"}}'
 
 /**
- * Build the adversarial values every total boundary in this package must survive.
+ * Builds the adversarial values every total boundary in this package must survive.
  *
  * @returns One case per hostile construction, freshly built.
  *
@@ -460,7 +460,7 @@ export function buildHostileCases(): readonly TestHostileCase[] {
 }
 
 /**
- * Select one hostile case by its label.
+ * Selects one hostile case by its label.
  *
  * @param label - The case label to select.
  * @returns The freshly built case.
@@ -473,7 +473,7 @@ export function selectHostileCase(label: string): TestHostileCase {
 }
 
 /**
- * Count a value's own enumerable keys without containing a hostile read.
+ * Counts a value's own enumerable keys without containing a hostile read.
  *
  * @param value - The value to read.
  * @returns The number of own enumerable string keys.
@@ -490,7 +490,7 @@ export function readKeyCount(value: unknown): number {
 }
 
 /**
- * Build every guard this package publishes, with what each must accept.
+ * Builds every guard this package publishes, with what each must accept.
  *
  * @returns One case per guard, freshly built.
  */
@@ -635,7 +635,7 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 }
 
 /**
- * Build every coercer this package publishes, beside the guard it derives from.
+ * Builds every coercer this package publishes, beside the guard it derives from.
  *
  * @returns One case per parser, freshly built.
  */
@@ -673,7 +673,7 @@ export function buildParserCases(): readonly TestParserCase[] {
 }
 
 /**
- * Build the values whose sole defect is one key a union branch forbids.
+ * Builds the values whose sole defect is one key a union branch forbids.
  *
  * @returns One case per forbidden key, each paired with its sound twin.
  */
@@ -786,7 +786,7 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 }
 
 /**
- * Build one call of every helper this package publishes.
+ * Builds one call of every helper this package publishes.
  *
  * @returns One case per helper, each freshly built with the inputs it reads.
  *
@@ -840,7 +840,7 @@ export function buildPurityCases(): readonly TestPurityCase[] {
 	]
 }
 
-/** Every candidate the portable-path law decides, with the verdict it owes. */
+/** Lists every candidate the portable-path law decides, with the verdict it owes. */
 export const PATH_CASES: readonly TestPathCase[] = [
 	{ label: 'parent traversal', path: '../secrets', accepted: false },
 	{ label: 'nested parent traversal', path: 'configs/../../secrets', accepted: false },
@@ -864,7 +864,7 @@ export const PATH_CASES: readonly TestPathCase[] = [
 	{ label: 'dotted directory', path: '.claude/rules/names.md', accepted: true },
 ]
 
-/** Every declared range measured against a reported version, with the verdict it owes. */
+/** Lists every declared range measured against a reported version, with the verdict it owes. */
 export const RANGE_CASES: readonly TestRangeCase[] = [
 	{ range: '^0.0.5', latest: '0.0.5', satisfied: true },
 	{ range: '^0.0.5', latest: '0.0.7', satisfied: false },

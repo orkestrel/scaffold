@@ -162,7 +162,7 @@ For borders that must stay visible in both color modes, prefer the `border-*-sub
 
 ### Sizing
 
-Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, `.min-vh-75`, etc.; add missing steps via the utilities API if a project truly needs them — see [bootstrap-reference.md](bootstrap-reference.md)):
+Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, or `.min-vh-75`; add missing steps through the utilities API if a project truly needs them — see [bootstrap-reference.md](bootstrap-reference.md)):
 
 ```css
 /* Width / height (percent of parent) */
@@ -288,12 +288,12 @@ Helpers are single-purpose classes that sit alongside utilities.
 
 - **`.visually-hidden`** — hide visually, keep for screen readers (icon-button labels, table caption text, "Danger:" prefixes).
 - **`.visually-hidden-focusable`** — hidden until focused; the skip-link class. Never combine with `.visually-hidden`.
-- **`.stretched-link`** — makes a whole `position-relative` container (e.g. a card) the click target of one inner link, without wrapping everything in `<a>`.
+- **`.stretched-link`** — makes a whole `position-relative` container (for example, a card) the click target of one inner link, without wrapping everything in `<a>`.
 - **`.ratio .ratio-16x9`** (also `1x1`, `4x3`, `21x9`, or `--bs-aspect-ratio`) — responsive embeds/iframes.
 - **`.vstack` / `.hstack gap-*`** — shorthand vertical/horizontal flex stacks for quick toolbars and side rails.
 - **`.vr`** — vertical rule divider inside an `.hstack` or flex row.
-- **`.focus-ring`** (+ `.focus-ring-primary` … per theme color) — opt-in focus ring for custom interactive elements; tune via `--bs-focus-ring-width` (.25rem), `--bs-focus-ring-opacity` (.25), `--bs-focus-ring-color`, `--bs-focus-ring-x/y/blur`. Use it instead of `outline: none` hacks so keyboard focus stays visible.
-- **`.icon-link`** (+ `.icon-link-hover`) — pairs a Bootstrap Icon SVG with a text link; icon auto-sizes to 1em; give decorative icons `aria-hidden="true"`. Hover shift via `--bs-icon-link-transform`.
+- **`.focus-ring`** (+ `.focus-ring-primary` … per theme color) — opt-in focus ring for custom interactive elements; tune through `--bs-focus-ring-width` (.25rem), `--bs-focus-ring-opacity` (.25), `--bs-focus-ring-color`, `--bs-focus-ring-x/y/blur`. Use it instead of `outline: none` hacks so keyboard focus stays visible.
+- **`.icon-link`** (+ `.icon-link-hover`) — pairs a Bootstrap Icon SVG with a text link; icon auto-sizes to 1em; give decorative icons `aria-hidden="true"`. Hover shift through `--bs-icon-link-transform`.
 
 ## Enterprise notes (utilities)
 

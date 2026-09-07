@@ -61,14 +61,16 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   names no longer divide the subject — the fixed-rule severity and ignore-pattern reading against
   the caller-supplied rule-and-population coverage reading. Name them by the question each answers,
   or merge them into one reader, at the next policy-sweep change.
-- **scaffold**: TSDoc first sentences on the module helpers in `configs/policy.ts` and
-  `tests/setupPolicy.ts` open with a noun phrase where `.claude/rules/typescript.md` fixes a
-  third-person verb. Rule whether the letter binds a one-line TSDoc on a module helper, then sweep
-  both files on the ruling.
 - **scaffold**: `DECLARATION_DEV_DEPENDENCIES` is planned for a `bin` blueprint
   (`src/core/compilers.ts`) while the seeded `bin` config rolls no declarations, so an
   executable-only workspace installs an extractor nothing runs. Rule whether the planner keeps that
   row for `bin`, at the next planner change; a change moves generated manifests and their pins.
+- **scaffold**: the module helpers in `configs/helpers.ts`, `POLICY_SUPPRESSION_DIRECTIVE` in
+  `tests/setupPolicy.ts`, and `SCRATCH_PREFIX` in `tests/setupServer.ts` carry no doc block, so the
+  voice rules reach nothing there. The P10 probe reports each as `NODOC`; its remaining `NODOC`
+  lines sit inside the template text `src/core/templates.ts` and `src/core/compilers.ts` generate,
+  which is string data rather than a comment. Give each undocumented export a doc block at the next
+  pass over its file.
 - **test**: the browser journey layer resolves interactive targets and named regions, so a
   contrast reading on static prose (a panel paragraph, a caption) has no door but a selector,
   which the journey law forbids; measured 2026-09-03 in `lloyds`, where the drop zone's

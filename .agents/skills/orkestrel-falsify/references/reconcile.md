@@ -120,7 +120,7 @@ leaves this round is the procedure.
 
 When a round certifies an instrument — a pin, an identity check, a generated sweep — the controls
 are usually drawn from whatever the instrument obviously covers, because that is where the examples
-are easiest to construct. That sampling proves discrimination _within_ the population and is
+take the least construction. That sampling proves discrimination _within_ the population and is
 routinely reported as proof the instrument works.
 
 So before running controls, write down the instrument's **membership rule** in one sentence, then

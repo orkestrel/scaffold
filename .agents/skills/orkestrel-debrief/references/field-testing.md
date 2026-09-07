@@ -8,10 +8,10 @@ model consumes.
 Test from the top down, and do not stop at the tier that passes:
 
 1. **Frontier** (the harness's default model) — proves the surface works at all.
-2. **Mid tier** (e.g. a codex mechanical model) — proves the surface survives a harness's
-   schema abbreviation and a model that reads less carefully.
-3. **Small harness-native** (e.g. Haiku, a codex high-volume model) — the acceptance
-   tier: these must walk the surface unaided, or the surface is not done.
+2. **Mid tier** (for example, a codex mechanical model) — proves the surface survives a
+   harness's schema abbreviation and a model that reads less carefully.
+3. **Small harness-native** (for example, Haiku or a codex high-volume model) — the
+   acceptance tier: these must walk the surface unaided, or the surface is not done.
 4. **Local floor** (a quantized 2B-class model through a real tool-calling client) — not
    an acceptance gate; a stochastic probe that exposes teaching gaps nothing else hits.
    Its residual failures must be provably consumer-floor (malformed emission, attention
@@ -29,7 +29,7 @@ Test from the top down, and do not stop at the tier that passes:
 - **Caps and journals.** Every pass runs as a tracked background command under a hard
   time cap with its transcript journaled; the journal is the evidence of record.
 
-## Capture the reasoning, not just the calls
+## Capture the reasoning, not the calls alone
 
 Where the runtime exposes thinking (local runtimes expose it directly; harness stream
 formats carry interstitial text), record it. The call log shows WHAT failed; the trace

@@ -299,7 +299,7 @@ export * from './greeters/Greeter.js'
 - Keep everything generic/reusable and free of unrelated-project logic.
 - Do not expand the capability set without concrete need. Once that capability exists intentionally,
   its reusable top-level exports follow the earlier barrel rule without a second consumer gate.
-- Do not remove structural files because they are currently empty.
+- Do not remove structural files because they are empty.
 - Prefer the smallest complete implementation that preserves architecture.
 - No deprecation aliases, compatibility shims, or backward-compatibility branches; update all consumers atomically.
 - No polling/busy loops or recursive microtasks as architecture. Park idle work on an event/abort wakeup and yield long work in cooperative quanta.

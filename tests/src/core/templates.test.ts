@@ -755,7 +755,7 @@ describe('configuration templates', () => {
 })
 
 // A generated workspace vendors `format:check` and `lint:check` and runs both on
-// the bytes `new` just wrote, so the emitted text is measured against the vendored
+// the bytes `new` wrote, so the emitted text is measured against the vendored
 // rules directly here. Each instrument's population is every (blueprint, module)
 // pair the matrix emits — the sum `MODULE_EMITTERS` totals, over every blueprint
 // `buildSelections` returns — and each sweep states that population as
@@ -1022,7 +1022,7 @@ describe('emitted workspaces under their own gates', () => {
 	})
 
 	// A generated workspace's own `check` script runs `tsc` over the configuration
-	// `new` just wrote, so both browser masks are measured against Vite and
+	// `new` wrote, so both browser masks are measured against Vite and
 	// Vitest's real published types rather than against a description of them.
 	it('emits browser configurations their own typecheck accepts', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-types-' })

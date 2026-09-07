@@ -846,7 +846,7 @@ export class Materializer implements MaterializerInterface {
 		return hex
 	}
 
-	// The audit is a preview of the same comparison this call just made, so they
+	// The audit is a preview of the same comparison this call made, so they
 	// must agree on every path the plan owns. A wider audit may also carry foreign
 	// paths, which belong to the deletion verb and say nothing here.
 	#reconfirm(derived: readonly Finding[], preview: readonly Finding[], target: string): void {
@@ -925,7 +925,7 @@ export class Materializer implements MaterializerInterface {
 		}
 	}
 
-	// Bind one destination to what this call just observed at it. The digest is
+	// Bind one destination to what this call observed at it. The digest is
 	// taken directly rather than derived from the observation, because a digest
 	// over bytes nobody re-read would only restate what the comparison already
 	// proved.

@@ -57,7 +57,7 @@ product's, and keep the data surfaces disciplined and conventional enough to rea
 
 ## Process: brainstorm, explore, plan, critique, build, critique again
 
-Calibrate against the looks AI-generated design currently clusters around: (1) a warm cream
+Calibrate against the looks AI-generated design clusters around: (1) a warm cream
 background (near #F4F1EA) with a high-contrast serif display and a terracotta accent; (2) a
 near-black background with a single bright acid-green or vermilion accent; (3) a broadsheet-style
 layout with hairline rules, zero border-radius, and dense newspaper-like columns. Each is
@@ -81,8 +81,8 @@ only once the plan is specific to this brief, then follow the revised plan exact
 color and type decision from it.
 
 Structure your CSS selector specificities deliberately when writing the code. Classes cancel each
-other out easily, especially a type-based selector like `.section` against an element-based selector
-like `.cta`, and the padding and margin between sections is where it happens most.
+other out, especially a type-based selector like `.section` against an element-based selector like
+`.cta`, and the padding and margin between sections is where it happens most.
 
 Do this planning and iteration in your thinking. Show the user a direction only once it satisfies
 the brief and the quality floor below.
@@ -103,9 +103,9 @@ reads it.
 
 ## Writing in design
 
-Keep a word only where it makes the design easier to understand, and therefore easier to use. Bring
-the same intentionality to copy as to spacing and color. Before writing anything, decide what the
-design needs to say, and how to say it so the person can navigate the experience.
+Keep a word only where it helps the reader understand the design, and so use it.
+Bring the same intentionality to copy as to spacing and color. Before writing anything, decide what
+the design needs to say, and how to say it so the person can navigate the experience.
 
 Write from the end user's side of the screen. Name things by what people control and recognize,
 never by how the system is built: a person manages notifications, not webhook config. Describe what

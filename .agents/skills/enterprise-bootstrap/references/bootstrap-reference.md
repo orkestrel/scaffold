@@ -203,7 +203,7 @@ $utilities: map-merge(
 @import 'bootstrap/scss/utilities/api';
 ```
 
-Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a step (e.g. a `vh-50` the design truly needs).
+Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a step (for example, a `vh-50` the design truly needs).
 
 ## Forms in Production
 
@@ -211,7 +211,7 @@ Remove with `map-remove($utilities, "width")` or set the key to `null`. This is 
 
 - **Top-aligned labels by default** — the evidence (eye-tracking form research) shows fastest completion and the cleanest single-column scan, and they survive narrow screens without reflow. Reserve left-aligned labels for dense read-back forms where vertical compression matters more than speed.
 - Visible label or `.form-floating` — never placeholder-only (disappears on input, fails accessibility).
-- **Do not say the same thing twice.** When the host already names the request — a card heading, a dialog title, a section header stating the question — the form associates with that name via `aria-labelledby` instead of repeating the prompt in its own label. Repetition reads as separate questions to a screen-reader user and as clutter to everyone else.
+- **Do not say the same thing twice.** When the host already names the request — a card heading, a dialog title, a section header stating the question — the form associates with that name through `aria-labelledby` instead of repeating the prompt in its own label. Repetition reads as separate questions to a screen-reader user and as clutter to everyone else.
 - One column beats multi-column for completion; use the form grid (`row g-3` + `col-md-*`) only for genuinely paired fields (city/state/zip).
 
 ```html
@@ -237,7 +237,7 @@ Remove with `map-remove($utilities, "width")` or set the key to `null`. This is 
 - Once a field is in an error state, re-validate as the user types so they see the fix land.
 - Always re-check everything on submit. Keep the submit button **enabled** — a disabled submit hides _what is_ wrong; a validating submit shows it.
 - On failed submit of a long form, render an **error summary** at the top (focus it; link each item to its field) _and_ inline messages at each field — never summary-only, never inline-only.
-- Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field `aria-invalid="true"`. Never report errors via tooltip-on-hover.
+- Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field `aria-invalid="true"`. Never report errors through a hover tooltip.
 
 ### Bootstrap validation mechanics
 
@@ -274,7 +274,7 @@ Client-side, the documented pattern:
 </script>
 ```
 
-**Documented limitation (enterprise-critical):** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to assistive technologies**. For accessible flows use the server-side pattern — apply `.is-invalid` / `.is-valid` directly (no `.was-validated` parent needed), with `.invalid-feedback` linked via `aria-describedby` — or rely on native browser validation.
+**Documented limitation (enterprise-critical):** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to assistive technologies**. For accessible flows use the server-side pattern — apply `.is-invalid` / `.is-valid` directly (no `.was-validated` parent needed), with `.invalid-feedback` linked through `aria-describedby` — or rely on native browser validation.
 
 ```html
 <input
@@ -290,7 +290,7 @@ Client-side, the documented pattern:
 </div>
 ```
 
-Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid-tooltip` and `.invalid-tooltip` need a `position-relative` parent. Validation colors are mode-adaptive via `--bs-form-valid-color`, `--bs-form-valid-border-color`, `--bs-form-invalid-color`, `--bs-form-invalid-border-color`.
+Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid-tooltip` and `.invalid-tooltip` need a `position-relative` parent. Validation colors are mode-adaptive through `--bs-form-valid-color`, `--bs-form-valid-border-color`, `--bs-form-invalid-color`, `--bs-form-invalid-border-color`.
 
 ### Autosave vs explicit save
 
@@ -498,7 +498,7 @@ Give header cells an **opaque background** (`bg-body-secondary` or a `.table-*` 
 ```
 
 - **Row actions:** 1–3 high-frequency actions inline; the rest behind a per-row kebab (dropdown). Hover-only reveal fails touch and keyboard — keep at least the overflow trigger always visible and ≥24px.
-- **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming the row ("Select INV-1042"). When selection > 0, swap the toolbar's content in place for a contextual bar — "3 selected", the batch actions, and a clear-selection escape — never push the layout down (layout-shifting chrome is an anti-pattern). Announce the count via a polite live region.
+- **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming the row ("Select INV-1042"). When selection > 0, swap the toolbar's content in place for a contextual bar — "3 selected", the batch actions, and a clear-selection escape — never push the layout down (layout-shifting chrome is an anti-pattern). Announce the count through a polite live region.
 - **Pagination vs scrolling:** paginate when users need position, totals, deep links, and "go to page N" — most enterprise CRUD. Virtualize (windowed rendering) for long uniform lists where scrolling is natural. True infinite scroll is for exploratory feeds only — never where users need a footer or a findable end.
 - **Responsive, ranked:** (1) _priority columns_ — hide low-value columns per breakpoint (`d-none d-lg-table-cell`), always keeping the identifying + decision columns; (2) _horizontal scroll_ (`table-responsive`) when every column matters — remember it clips dropdowns; (3) _card-ify_ into label:value stacks below `md` for low row counts. Never card-ify a wide comparison table — comparison is the point.
 - **Table states:** loading → **skeleton rows** matching the real column count/widths (a centered spinner collapses the layout); empty → distinguish _no data yet_ (invite the first action) from _no results for these filters_ (offer "Clear filters"); error → inline retry inside the table region, header and toolbar preserved.
@@ -532,12 +532,12 @@ Design **every one** for every data surface: ideal (populated), empty, loading, 
 
 ### Feedback discipline
 
-| Channel                       | Use for                                                                          | Never for                                          |
-| ----------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Toast**                     | Transient confirmation of a just-completed action; auto-dismiss; `role="status"` | Errors needing action; anything the user must read |
-| **Inline alert**              | Feedback tied to a specific field/section/action; persists in context            | App-wide conditions                                |
-| **Banner** (page-level alert) | Persistent page/app conditions — outage, trial expiring, permissions             | Action confirmations                               |
-| **Modal / alertdialog**       | Blocking decisions the user must resolve now                                     | FYIs, success messages                             |
+| Channel                       | Use for                                                                                       | Never for                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **Toast**                     | Transient confirmation of an action that finished a moment ago; auto-dismiss; `role="status"` | Errors needing action; anything the user must read |
+| **Inline alert**              | Feedback tied to a specific field/section/action; persists in context                         | App-wide conditions                                |
+| **Banner** (page-level alert) | Persistent page/app conditions — outage, trial expiring, permissions                          | Action confirmations                               |
+| **Modal / alertdialog**       | Blocking decisions the user must resolve now                                                  | FYIs, success messages                             |
 
 Blocking errors are never toasts. Keep the acting verb consistent across the flow: the "Publish" button confirms with "Published".
 
@@ -555,7 +555,7 @@ Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only
 
 ## RTL
 
-- Enable per page: `<html lang="ar" dir="rtl">` + the RTL stylesheet `bootstrap.rtl.min.css` (built from the same source via RTLCSS). RTL support is documented as experimental.
+- Enable per page: `<html lang="ar" dir="rtl">` + the RTL stylesheet `bootstrap.rtl.min.css` (built from the same source through RTLCSS). RTL support is documented as experimental.
 - The logical properties model is why the utilities say start/end: `ms-*`/`me-*`, `ps-*`/`pe-*`, `text-start`/`text-end`, `float-start`/`float-end`, `offcanvas-start`/`end` all flip automatically. **Never write `left`/`right` positioning or physical margins in custom CSS** — use logical properties (`margin-inline-start`, `inset-inline-end`) so your custom rules flip too.
 - Caveats: shipping LTR+RTL simultaneously costs significant extra CSS; the breadcrumb divider needs `$breadcrumb-divider-flipped`; source Sass can embed RTLCSS directives (`/* rtl: … */`) for value swaps like font stacks.
 
@@ -563,13 +563,13 @@ Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only
 
 - Hide chrome, keep the data: `d-print-none` on nav, sidebars, toolbars, action buttons; the report/table itself stays printable.
 - `d-print-block`/`d-print-table` can resurface content hidden on screen (a print-only header with report title/date).
-- Print-check data screens users will export: collapse interactive affordances (sort carets, checkboxes) via `d-print-none`, and prefer `table-bordered` legibility over hover/stripe effects that may not print.
+- Print-check data screens users will export: collapse interactive affordances (sort carets, checkboxes) through `d-print-none`, and prefer `table-bordered` legibility over hover/stripe effects that may not print.
 
 ## Performance
 
 - **Ship one CSS system and no more.** Bootstrap plus a second framework (or a parallel bespoke layer) doubles payload and guarantees specificity fights.
-- **Compressed, the full build is cheap; incomplete builds are not.** Trimming via a Sass-subset build (import only the parts used — see [Theming](#theming--design-tokens)) is the sanctioned diet. Aggressive purge tools are the risky one: Bootstrap adds classes **at runtime** (`show`, `showing`, `fade`, `collapsing`, `modal-open`, `modal-backdrop`, `offcanvas-backdrop`, tooltip/popover generated markup) — purging without safelisting them ships UIs whose modals silently stop rendering. If you purge, safelist every JS-toggled class and test every overlay.
-- **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable via `currentColor`, no font flash) over the icon font; load only the icons used.
+- **Compressed, the full build is cheap; incomplete builds are not.** Trimming through a Sass-subset build (import only the parts used — see [Theming](#theming--design-tokens)) is the sanctioned diet. Aggressive purge tools are the risky one: Bootstrap adds classes **at runtime** (`show`, `showing`, `fade`, `collapsing`, `modal-open`, `modal-backdrop`, `offcanvas-backdrop`, tooltip/popover generated markup) — purging without safelisting them ships UIs whose modals silently stop rendering. If you purge, safelist every JS-toggled class and test every overlay.
+- **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable through `currentColor`, no font flash) over the icon font; load only the icons used.
 - **JS:** the bundle is small, but only load it where behavior exists; per-component ESM imports (`bootstrap/js/dist/modal`) trim further in bundlers.
 - **Fonts:** each display face is a payload decision; subset and `font-display: swap` characterful faces, and let the data face fall back to the system stack when the brief allows.
 
