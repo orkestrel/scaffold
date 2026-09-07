@@ -1,0 +1,11 @@
+== csv re-repair 2026-09-07T15:35:54Z over 5a24ea5
+== status before
+ M tests/config.test.ts
+0 written, 36 unchanged, 0 removed in ..
+== status after
+ M tests/config.test.ts
+== test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+== committed
+c512407 Re-repair from scaffold's tip after the config-test fix

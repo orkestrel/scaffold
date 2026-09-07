@@ -1,0 +1,16 @@
+== emitter p2 landing 2026-09-07T15:36:34Z over 3c0e3de
+== status
+ M README.md
+ M guides/emitter.md
+ M src/core/Emitter.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     | 28 ++++++++++---------
+ tests/guides.test.ts  | 75 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ 6 files changed, 157 insertions(+), 69 deletions(-)
+== stage by path
+ 6 files changed, 157 insertions(+), 69 deletions(-)
+== committed
+cc545a0 Converge emitter under the equality gate
+(status end)

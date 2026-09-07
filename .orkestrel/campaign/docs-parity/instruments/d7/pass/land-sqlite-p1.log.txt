@@ -1,0 +1,46 @@
+== sqlite P.1 landing 2026-09-07T15:36:01Z, version 0.0.11
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/server/SQLiteDatabase.ts
+ M src/server/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 462ms
+EXIT 0
+== lockfile root version
+0.0.11 / 0.0.11
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M src/server/SQLiteDatabase.ts
+ M src/server/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/setupPolicy.ts         | 572 +++++++++++++++++++++++++++++++++++++------
+ tsconfig.json                |   3 +-
+ 12 files changed, 1545 insertions(+), 567 deletions(-)
+== stage by path
+ 13 files changed, 1999 insertions(+), 567 deletions(-)
+== committed
+555609c Prepare sqlite for the equality gate
+(status end)

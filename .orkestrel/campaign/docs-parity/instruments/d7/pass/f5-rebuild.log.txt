@@ -1,0 +1,28 @@
+== F5 2026-09-07T15:32:43Z at 3d6b2235
+ M tests/config.test.ts
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-config-face-2-report.md
+== build
+build-host: staged 122 file(s) into dist/host
+
+> @orkestrel/scaffold@0.0.63 build:inventory
+> node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+
+build-inventory: staged 122 file(s) into host.json
+build exit 0
+== status after build
+ M host.json
+ M tests/config.test.ts
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-config-face-2-report.md
+== test:config
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+test:config exit 0
+== format:check
+Finished in 15314ms on 223 files using 4 threads.
+format exit 0
+== lint (scoped)
+lint exit 0
+== host digest of the vendored test
+718:			"storage": "tests/config.test.ts",
+719:			"destination": "tests/config.test.ts",
+== done 2026-09-07T15:33:21Z

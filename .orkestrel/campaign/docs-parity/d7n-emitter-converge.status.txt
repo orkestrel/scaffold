@@ -1,0 +1,6 @@
+ M README.md
+ M guides/emitter.md
+ M src/core/Emitter.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts

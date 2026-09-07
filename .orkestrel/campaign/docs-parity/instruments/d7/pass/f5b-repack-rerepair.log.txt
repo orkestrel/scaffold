@@ -1,0 +1,51 @@
+== F5b 2026-09-07T15:34:04Z at f4494c1b
+orkestrel-scaffold-0.0.63.tgz
+adf27d6aae7ac556
+== the packed vendored test carries the fix:
+1
+### sqlite
+-- status before
+ M .oxlintrc.json  M configs/helpers.ts  M configs/policy.ts  M package.json  M src/server/SQLiteDatabase.ts  M src/server/types.ts  M tests/config.test.ts  M tests/guides.test.ts  M tests/policy.test.ts  M tests/setupPolicy.ts  M tsconfig.json ?? scripts/docs.ts 
+1 written, 36 unchanged, 0 removed in ..
+-- status after
+ M .oxlintrc.json  M configs/helpers.ts  M configs/policy.ts  M package.json  M src/server/SQLiteDatabase.ts  M src/server/types.ts  M tests/config.test.ts  M tests/guides.test.ts  M tests/policy.test.ts  M tests/setupPolicy.ts  M tsconfig.json ?? scripts/docs.ts 
+-- test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+### indexeddb
+-- status before
+ M .oxlintrc.json  M configs/helpers.ts  M configs/policy.ts  M package.json  M src/browser/IndexedDBDatabase.ts  M src/browser/types.ts  M tests/config.test.ts  M tests/guides.test.ts  M tests/policy.test.ts  M tests/setupBrowser.ts  M tests/setupPolicy.ts  M tests/src/browser/IndexedDBDatabase.test.ts  M tsconfig.json ?? scripts/docs.ts 
+1 written, 37 unchanged, 0 removed in ..
+-- status after
+ M .oxlintrc.json  M configs/helpers.ts  M configs/policy.ts  M package.json  M src/browser/IndexedDBDatabase.ts  M src/browser/types.ts  M tests/config.test.ts  M tests/guides.test.ts  M tests/policy.test.ts  M tests/setupBrowser.ts  M tests/setupPolicy.ts  M tests/src/browser/IndexedDBDatabase.test.ts  M tsconfig.json ?? scripts/docs.ts 
+-- test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+### abort
+-- status before
+
+2 written, 34 unchanged, 0 removed in ..
+-- status after
+ M scripts/docs.ts  M tests/config.test.ts 
+-- test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+### budget
+-- status before
+
+1 written, 35 unchanged, 0 removed in ..
+-- status after
+ M tests/config.test.ts 
+-- test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+### csv
+-- status before
+
+1 written, 35 unchanged, 0 removed in ..
+-- status after
+ M tests/config.test.ts 
+-- test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+== done 2026-09-07T15:34:56Z

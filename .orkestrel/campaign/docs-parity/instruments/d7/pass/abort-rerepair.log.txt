@@ -1,0 +1,13 @@
+== abort re-repair 2026-09-07T15:35:37Z over d714f6b
+== status before
+ M scripts/docs.ts
+ M tests/config.test.ts
+0 written, 36 unchanged, 0 removed in ..
+== status after
+ M scripts/docs.ts
+ M tests/config.test.ts
+== test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+== committed
+3c54b26 Re-repair from scaffold's tip after the config-test fix

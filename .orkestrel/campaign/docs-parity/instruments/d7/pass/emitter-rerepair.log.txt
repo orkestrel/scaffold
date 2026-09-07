@@ -1,0 +1,10 @@
+== emitter re-repair 2026-09-07T15:36:35Z over cc545a0
+== status before
+1 written, 35 unchanged, 0 removed in ..
+== status after
+ M tests/config.test.ts
+== test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+== committed
+e09b656 Re-repair from scaffold's tip after the config-test fix
