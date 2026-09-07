@@ -1,0 +1,31 @@
+== tip
+0.0.63
+/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/p18/scaffold-tip/package/dist/host/scripts/docs.ts
+== abort: repair --offline
+tests/policy.test.ts replaced (126 lines added).
+tests/config.test.ts replaced (404 lines added).
+9 written, 27 unchanged, 0 removed in ..
+== abort: git status
+ M .oxlintrc.json  M configs/helpers.ts  M configs/policy.ts  M package.json  M tests/config.test.ts  M tests/policy.test.ts  M tests/setupPolicy.ts  M tsconfig.json ?? scripts/docs.ts 
+== abort: lint:check
+1
+      1 tests/src/core/Abort.test.ts
+== abort: lint rules hit
+      1 policy(no-banned-term)
+== mcp: repair --offline
+tests/policy.test.ts replaced (126 lines added).
+tests/config.test.ts replaced (404 lines added).
+9 written, 40 unchanged, 0 removed in ..
+== mcp: git status
+ M .oxlintrc.json  M configs/helpers.ts  M configs/policy.ts  M package.json  M tests/config.test.ts  M tests/policy.test.ts  M tests/setupPolicy.ts  M tsconfig.json ?? scripts/docs.ts 
+== mcp: lint:check
+183
+     54 tests/setupConformance.ts
+     42 tests/setup.ts
+     25 tests/setupServer.ts
+     10 tests/fixtures/browserServer.ts
+      7 src/core/types.ts
+      6 tests/src/server/middlewares.test.ts
+== mcp: lint rules hit
+     51 policy(no-banned-term)
+    132 policy(no-malformed-summary)

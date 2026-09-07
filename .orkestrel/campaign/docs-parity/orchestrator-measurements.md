@@ -169,3 +169,25 @@ $ npx oxfmt --check guides/guide.md                                            e
 ```
 
 Reading: `replaceCell` re-renders the guide's four-column tables, their nested code spans, and their escaped pipes without disturbing any cell outside the written column, and oxfmt 0.66.0 restores the committed alignment, so the seed's `--to guide` direction is safe over this guide. The written cells read verb-first from doc blocks that already open with a verb (the sample in the log: `SUMMARY`, `extractTagline`, `findDrift`, `isDrift`, `createGuide`), so the hand work is the information the data columns keep — the Constants literal that a `Value` column takes, the Types and Shapers literals that `Shape` keeps — and the rows the write cannot reach: the classes, the tables without the column, and the pitch.
+
+## P17 — the fleet's exposure to the vendored voice rule (2026-09-07, `instruments/d7/p17/`, the P10 instrument over every fleet checkout but `guide`)
+
+```text
+$ node instruments/p10/p10b-voice.mjs /home/user/fleet/<pkg> src            (p17b-fleet-src-voice.log.txt)
+FLAGGED 0 for every package but console 4, contract 1, html 1, markdown 1, mcp 2, middleware 2, router 1, server 1, terminal 1, toolbox 1 — and those are the proxy's name-repeat reading, not openers
+$ node instruments/p10/p10b-voice.mjs /home/user/fleet/<pkg> tests scripts configs   (p17c-fleet-owned-voice.log.txt)
+every package reads about 153 flagged sites in the vendored copies at 0.0.63's text (configs/policy.ts 75, tests/setupPolicy.ts 75, configs/helpers.ts 3), which `repair` replaces with the clean copies (dist/host: FLAGGED 0);
+the package-owned remainder sits in each package's own test helpers: contract tests/setup.ts 107, mcp tests/setupConformance.ts 52, browser 53, database 52, html 36, agent 31, ollama 30, brief 24, codec 26, reason 22, sea 21, middleware 19, terminal 17, others under 16, abort budget emitter ndjson pool process sqlite template timeout tool worker workspace 0
+```
+
+Reading: the fleet's `src/**` doc blocks already open verb-first, so the cells the seed writes carry the rule's voice everywhere; the rule's red sits in the packages' own test helper doc blocks and comments, sized per package in the log.
+
+## P18 — `repair` from the packed tip and the real rule, in scratch clones (2026-09-07, `instruments/d7/p18/`)
+
+```text
+$ p18-repair-lint.sh      (git clone of the checkout, node_modules linked to the checkout's, the tip's dist/bin/main.js run from an extracted tarball whose node_modules links to scaffold's)
+abort: repair --offline → 9 written, 27 unchanged (the P15 list); npx oxlint --config .oxlintrc.json --deny-warnings . → 1 diagnostic (tests/src/core/Abort.test.ts, policy/no-banned-term)
+mcp:   repair --offline → 9 written, 40 unchanged;                  lint → 183 diagnostics: 132 policy/no-malformed-summary, 51 policy/no-banned-term; tests/setupConformance.ts 54, tests/setup.ts 42, tests/setupServer.ts 25, tests/fixtures/browserServer.ts 10, src/core/types.ts 7, tests/src/server/middlewares.test.ts 6
+```
+
+Reading: `repair --offline` from the tip writes the same nine paths in every package, and the vendored rule's red is the package's own test helpers plus banned terms in comments, from one site (abort) to 183 (mcp). The P17 proxy under-reads `no-banned-term` (it reads openers alone), so each package's true count is the real rule's, taken at its unit's first step. The tip's CLI runs from an extracted tarball with scaffold's `node_modules` linked, so no head start install is needed for a scratch reading.
