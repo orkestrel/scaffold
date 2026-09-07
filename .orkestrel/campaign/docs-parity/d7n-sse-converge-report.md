@@ -210,3 +210,10 @@ The guide carries no `## Tests` section — its headings are `Surface`, `Types`,
 ## Deviation state
 
 No deviation. Nothing in the deviation contract fired: every cell was located after the headers changed, the block held the titled body, no test outside `tests/guides.test.ts` went red, no vendored file needed an edit, no reader returned an undescribed shape, and no residual disagreement survived. No lint control was planted.
+
+
+---
+
+## Orchestrator annotation (slice 1 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (msg: `357:### Factories` for `guides/msg.md:358`; sse: `88:### Factories` for `guides/sse.md:86`), the tree is authoritative. The report stands as the unit's evidence with this note.

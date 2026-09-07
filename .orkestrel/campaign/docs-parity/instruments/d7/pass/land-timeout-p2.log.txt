@@ -1,0 +1,19 @@
+== timeout p2 landing 2026-09-07T15:40:47Z over 9b09bac
+== status
+ M README.md
+ M guides/timeout.md
+ M src/core/Timeout.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts | 11 +++---
+ tests/guides.test.ts   | 81 +++++++++++++++++++++++++++++++++++++++++----
+ 9 files changed, 163 insertions(+), 78 deletions(-)
+== stage by path
+ 9 files changed, 163 insertions(+), 78 deletions(-)
+== committed
+4c80cc3 Converge timeout under the equality gate
+(status end)

@@ -224,3 +224,10 @@ None. Every change landed in an owned file.
 ## Deviation state
 
 None. Ancillary matters decided and recorded: the README case's red taken at the tagline divergence rather than on the baseline (§ 1); `encodeBase64` chosen over `decodeBase64` for the title (§ 4); the guide's displaced sentences folded as a clause on the opening paragraph's closing sentence and the README's as its own onboarding paragraph (§ 5); the four writing-rule corrections in owned prose (§ 5).
+
+
+---
+
+## Orchestrator annotation (slice 1 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (msg: `357:### Factories` for `guides/msg.md:358`; sse: `88:### Factories` for `guides/sse.md:86`), the tree is authoritative. The report stands as the unit's evidence with this note.

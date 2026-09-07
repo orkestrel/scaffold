@@ -1,0 +1,9 @@
+ M README.md
+ M guides/timeout.md
+ M src/core/Timeout.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts

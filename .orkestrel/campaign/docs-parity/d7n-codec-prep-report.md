@@ -289,3 +289,10 @@ None. No path outside the P21 list was written by `repair`, every before-text wa
 - The `@orkestrel/guide` range in `package.json` still reads `^0.0.17`, untouched, as the brief directs. `node_modules` carries the `0.0.18` head start.
 - The lockfile's root version still reads `0.0.2`; the Orchestrator's lockfile-only install lands it.
 - `scripts/docs.ts` is untracked and needs staging with the rest of the repair.
+
+
+---
+
+## Orchestrator annotation (slice 1 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (msg: `357:### Factories` for `guides/msg.md:358`; sse: `88:### Factories` for `guides/sse.md:86`), the tree is authoritative. The report stands as the unit's evidence with this note.

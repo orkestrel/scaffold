@@ -32,3 +32,15 @@ A doc block's description paragraph — the text before its first block tag, the
 - No scaffold template for `tests/guides.test.ts`; the drop-in stays package-owned and a newborn copies it when it gains a guide.
 - Mirrors refresh through `scaffold catalog` in one sweep after the last package converges, each package's result pushed to `main` as it lands so the fetch reads it.
 - The guide does not publish before the pass. Every package converges under the guide's packed tip installed `--no-save` and scaffold's extracted tip for `repair`, so a reader or seed defect any package meets is fixed in the guide before `0.0.18` publishes. After every package has moved: the guide publishes, each package re-pins to the registry release and bumps, and the publishes run in catalog layer order.
+
+## Ruling 9 (2026-09-07, the Orchestrator, on slice 1's subjective F1): a descriptive heading over the demonstrating fence
+
+Where the fence that demonstrates the titled declaration sits under a structural heading (`### Factories`, `### Helpers`, `## Surface`), the converge unit adds a heading one level deeper directly above that fence, worded as the demonstration it shows (`#### Create a parser`), so the `@example` title reads as a demonstration and the structural heading stays. No fence moves and no section is added; the fence's title is the new heading's text. Ruling 3's population is unchanged.
+
+## Ruling 10 (2026-09-07, the Orchestrator, on slice 1's subjective F8): the key column's header is the guide's own
+
+The readers locate a table's compared column by the `Summary` header and its key by position, so the first column's header text (`API`, `Name`, `Type`, `Method`, `Export`, `Factory`) is deliberately free and stays as each guide wrote it. No unit renames it.
+
+## Ruling 11 (2026-09-07, the Orchestrator, on slice 1's subjective claim 22 and the objective F2): the doc block whole, and the pin's canon
+
+A converge unit owns each doc block whole — the description paragraph, `@remarks`, `@example`, and every other tag (`@throws`, `@param`, `@returns`) — with no code token moved; a true `@throws` clause added beside a rewritten description is within scope. The pin's canon is the pilot's form at `/home/user/fleet/abort/tests/guides.test.ts:72-95`: the guard-and-continue loop with no local type predicate and the both-sides failure line; "scaffold's inline form" in the template named the absence of a predicate, not the loop's shape, and the wording is corrected.

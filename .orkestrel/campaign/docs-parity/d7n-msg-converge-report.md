@@ -290,3 +290,10 @@ edit, no reader returned a shape the brief did not describe, and no residual dis
 under the P16 comparator. The two ancillary matters decided and recorded are the Validators
 column's replacement (`Narrows to` → `Signature`) and the titled fence chosen among the eligible
 ones (`Factories`).
+
+
+---
+
+## Orchestrator annotation (slice 1 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban, and where it names a citation as stale against the tree the unit left (msg: `357:### Factories` for `guides/msg.md:358`; sse: `88:### Factories` for `guides/sse.md:86`), the tree is authoritative. The report stands as the unit's evidence with this note.

@@ -1,0 +1,442 @@
+diff --git a/README.md b/README.md
+index 5e5597b..b4a6aed 100644
+--- a/README.md
++++ b/README.md
+@@ -1,13 +1,14 @@
+ # @orkestrel/timeout
+ 
+-A typed, **controllable** `setTimeout` wrapper — a deadline handle that
+-exposes an `AbortSignal` which fires on expiry, for racing against work.
+-Deliberately small: `start()` arms the deadline, `clear()` cancels it without
+-firing, and calling `start()` again after expiry reuses the handle for a
+-fresh deadline without re-construction. An optional parent `signal` links in
+-without inheriting `AbortSignal.any` semantics — a parent abort during the
+-timing window _clears_ the timeout (it never expires) rather than firing it.
+-Part of the `@orkestrel` line.
++> The time-bound half of the substrate's time-and-cancellation pair: a
++> controllable `setTimeout` wrapper carrying a trace `id` and a deadline `ms`,
++> whose native `AbortSignal` aborts on expiry.
++
++Create a handle with the `createTimeout` function, call `start()` to arm the
++deadline, and hand its signal to the fetch, stream, or queue task the deadline
++bounds; call `clear()` when that work finishes first. Pass a parent signal
++where an outer cancellation must retire the deadline rather than let it expire;
++that link carries no `AbortSignal.any` semantics. Part of the `@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/timeout.md b/guides/timeout.md
+index c3228ee..005c37e 100644
+--- a/guides/timeout.md
++++ b/guides/timeout.md
+@@ -1,17 +1,17 @@
+ # Timeout
+ 
+-> A controllable `setTimeout` wrapper that exposes an `AbortSignal` which fires
+-> on expiry, for racing work against a deadline. A `Timeout` carries a trace
+-> `id`, a deadline `ms`, and `start()` / `clear()` controls — arm the deadline,
+-> then race its `signal` against work to bound how long that work may run. The
+-> time-bound half of the substrate's time-and-cancellation pair. Deliberately
+-> thin: it is not a scheduler, not a debounce/throttle, not a retry policy —
+-> one `setTimeout` made re-armable, clearable, and parent-linkable. Its native
+-> `AbortSignal` is the complete observation surface; there is no separate event
+-> map. `start()` arms the deadline, `clear()` cancels it without firing, and
+-> calling `start()` again after an expiry swaps in a fresh signal, so a handle
+-> is reusable across deadlines without re-construction. Source:
+-> [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
++> The time-bound half of the substrate's time-and-cancellation pair: a
++> controllable `setTimeout` wrapper carrying a trace `id` and a deadline `ms`,
++> whose native `AbortSignal` aborts on expiry.
++
++Arm the deadline with `start()`, then race its `signal` against work to bound
++how long that work may run; `clear()` cancels the deadline without firing it,
++and a `start()` after an expiry swaps in a fresh signal, so one handle serves a
++sequence of deadlines without re-construction. The package is deliberately
++thin: not a scheduler, not a debounce, not a retry policy — one `setTimeout`
++made re-armable, clearable, and parent-linkable. The native signal is the
++complete observation surface, so there is no separate event map. Source:
++[`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+@@ -45,44 +45,46 @@ defaults to a random UUID.
+ 
+ ### Factories
+ 
+-| API             | Kind     | Summary                                                            |
+-| --------------- | -------- | ------------------------------------------------------------------ |
+-| `createTimeout` | function | Create a `TimeoutInterface` deadline handle from `TimeoutOptions`. |
++| API             | Kind     | Summary                                                                                           |
++| --------------- | -------- | ------------------------------------------------------------------------------------------------- |
++| `createTimeout` | function | Creates a deadline handle from validated `TimeoutOptions` and returns it as a `TimeoutInterface`. |
+ 
+-### Entities
++### Classes
+ 
+-| API       | Kind  | Summary                                                                       |
+-| --------- | ----- | ----------------------------------------------------------------------------- |
+-| `Timeout` | class | The controllable `setTimeout` wrapper; implements `TimeoutInterface` exactly. |
++| API       | Kind  | Summary                                                                                                                                                       |
++| --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Timeout` | class | Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one owned `AbortController` whose signal aborts when the deadline expires. |
+ 
+ ### Constants
+ 
+-| API              | Kind  | Summary                                                  |
+-| ---------------- | ----- | -------------------------------------------------------- |
+-| `MAX_TIMEOUT_MS` | const | Largest accepted duration: `2_147_483_647` milliseconds. |
++| API              | Kind  | Summary                                                                               |
++| ---------------- | ----- | ------------------------------------------------------------------------------------- |
++| `MAX_TIMEOUT_MS` | const | Names the largest timeout duration the package accepts, `2_147_483_647` milliseconds. |
+ 
+ ### Validators
+ 
+-| API                 | Kind     | Summary                                                        |
+-| ------------------- | -------- | -------------------------------------------------------------- |
+-| `isTimeoutDuration` | function | Total validator for an integer in the inclusive timeout range. |
+-| `isTimeoutSignal`   | function | Total native-brand validator for a genuine `AbortSignal`.      |
++| API                 | Kind     | Summary                                                                                                                                |
++| ------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
++| `isTimeoutDuration` | function | Determines whether a value is an integer in the inclusive range from `0` through `MAX_TIMEOUT_MS`, staying total for every input.      |
++| `isTimeoutSignal`   | function | Determines whether a value is a genuine native `AbortSignal`, staying total for a structural spoof and for a hostile or revoked proxy. |
+ 
+ ### Helpers
+ 
+-| API                      | Kind     | Summary                                                                                 |
+-| ------------------------ | -------- | --------------------------------------------------------------------------------------- |
+-| `validateTimeoutOptions` | function | Validate once-read timeout options and return a fresh copy omitting absent option keys. |
++| API                      | Kind     | Summary                                                                                                             |
++| ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
++| `validateTimeoutOptions` | function | Validates once-read timeout construction options and returns a fresh normalized copy omitting absent optional keys. |
+ 
+ ### Types
+ 
+-| Type               | Kind      | Shape                                                                                                |
+-| ------------------ | --------- | ---------------------------------------------------------------------------------------------------- |
+-| `TimeoutOptions`   | interface | `{ id?: string; ms: number; signal?: AbortSignal }` — options for `createTimeout` / the constructor. |
+-| `TimeoutInterface` | interface | `id` / `ms` / `signal` / `expired` data members + `start` / `clear` methods.                         |
++A `Shape` cell holds an interface's members in braces.
+ 
+-The `id`, `ms`, `signal`, and `expired` members are `readonly` data members of
+-`TimeoutInterface` (the preceding Surface rows) — its call-signature methods
++| Type               | Kind      | Shape                                               | Summary                                                                                   |
++| ------------------ | --------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
++| `TimeoutOptions`   | interface | `{ id?: string; ms: number; signal?: AbortSignal }` | Represents the options `createTimeout` and the `Timeout` constructor accept.              |
++| `TimeoutInterface` | interface | `{ id, ms, signal, expired, start, clear }`         | Represents a controllable deadline exposing a native `AbortSignal` that aborts on expiry. |
++
++The `id`, `ms`, `signal`, and `expired` members of `TimeoutInterface` are
++`readonly` data members (Surface rows, earlier) — its call-signature methods
+ are documented under [Methods](#methods). `expired` derives directly from the
+ owned signal's `aborted` state rather than storing a duplicate lifecycle flag.
+ 
+@@ -95,13 +97,12 @@ class's instance-method surface (AGENTS.md, Documentation contract).
+ 
+ #### `TimeoutInterface`
+ 
+-`start` arms (or re-arms) the deadline; `clear` cancels a pending expiry
+-without firing.
++The call-signature members, each with the type it returns:
+ 
+-| Method  | Returns | Behavior                                                                                           |
+-| ------- | ------- | -------------------------------------------------------------------------------------------------- |
+-| `start` | `void`  | Arm the deadline for `ms`. Re-arming swaps a fresh `signal` if the prior one fired.                |
+-| `clear` | `void`  | Cancel a pending expiry without firing `signal`; after expiry, swap in a fresh non-aborted signal. |
++| Method  | Returns | Summary                                                                                                                                           |
++| ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `start` | `void`  | Arms or re-arms the deadline for `ms`, installing a fresh `signal` when the current one has already aborted.                                      |
++| `clear` | `void`  | Cancels an armed deadline without aborting its `signal`, and resets expiry by installing a fresh signal when the current one has already aborted. |
+ 
+ ## Contract
+ 
+@@ -210,6 +211,13 @@ timeout.start() // re-armed; a fresh deadline window begins
+ 
+ ## Tests
+ 
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔
++  `src/core` bijection over value and type exports, the `TimeoutInterface` ↔
++  `Timeout` method bijection, and the equality gate: every `Summary` cell
++  against its declaration's description paragraph, the titled fence against the
++  `@example` block of that title (pinned so the titled pair cannot be retired
++  silently), and the README pitch against this guide's tagline. It also runs the
++  flagship fences and asserts the values their comments claim.
+ - [`tests/src/core/Timeout.test.ts`](../tests/src/core/Timeout.test.ts) —
+   public-constructor integration, real expiry / clear / replacement / churn
+   behavior, signal identity and derived expiry, and the intentional parent-clear
+diff --git a/src/core/Timeout.ts b/src/core/Timeout.ts
+index f7f83b3..a953675 100644
+--- a/src/core/Timeout.ts
++++ b/src/core/Timeout.ts
+@@ -2,7 +2,8 @@ import type { TimeoutInterface, TimeoutOptions } from './types.js'
+ import { validateTimeoutOptions } from './helpers.js'
+ 
+ /**
+- * Represents a controllable deadline whose native `AbortSignal` aborts when it expires.
++ * Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one
++ * owned `AbortController` whose signal aborts when the deadline expires.
+  *
+  * @remarks
+  * `start()` arms or replaces the current deadline. Expiry sets `expired` and
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 1c4cdf5..308cf4f 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -1,5 +1,5 @@
+ /**
+- * Names the largest timeout duration accepted by the package, in milliseconds.
++ * Names the largest timeout duration the package accepts, `2_147_483_647` milliseconds.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 0a97aa9..aa4e983 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,7 +2,8 @@ import type { TimeoutInterface, TimeoutOptions } from './types.js'
+ import { Timeout } from './Timeout.js'
+ 
+ /**
+- * Creates a controllable deadline whose native signal aborts on expiry.
++ * Creates a deadline handle from validated `TimeoutOptions` and returns it as a
++ * `TimeoutInterface`.
+  *
+  * @remarks
+  * `options.ms` must be an integer from `0` through `2_147_483_647`, inclusive.
+@@ -19,16 +20,19 @@ import { Timeout } from './Timeout.js'
+  * @throws {@link import('@orkestrel/contract').ContractError} Thrown when the
+  *   JavaScript input does not satisfy `TimeoutOptions`
+  *
+- * @example
++ * @example Race work against a deadline
+  * ```ts
+  * import { createTimeout } from '@orkestrel/timeout'
+  *
+- * const timeout = createTimeout({ ms: 5_000 })
+- * timeout.start()
+- * try {
+- * 	await fetch('/work', { signal: timeout.signal })
+- * } finally {
+- * 	timeout.clear()
++ * async function fetchWithDeadline(url: string, ms: number): Promise<Response> {
++ * 	const timeout = createTimeout({ ms })
++ * 	timeout.start()
++ *
++ * 	try {
++ * 		return await fetch(url, { signal: timeout.signal })
++ * 	} finally {
++ * 		timeout.clear() // cancels the still-armed deadline when the fetch won the race
++ * 	}
+  * }
+  * ```
+  */
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 37123d8..22bc355 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -4,11 +4,11 @@ import { MAX_TIMEOUT_MS } from './constants.js'
+ import { isTimeoutDuration, isTimeoutSignal } from './validators.js'
+ 
+ /**
+- * Validates and normalizes timeout construction options.
++ * Validates once-read timeout construction options and returns a fresh normalized copy
++ * omitting absent optional keys.
+  *
+  * @remarks
+- * Each property is read exactly once before validation. The returned object is
+- * a fresh copy and omits absent optional properties. No timer, controller, or
++ * Each property is read before any validation runs, and no timer, controller, or
+  * listener lifecycle begins at this boundary.
+  *
+  * @param options - Potentially untrusted timeout options
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 48b6c36..e6dc513 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,5 +1,5 @@
+ /**
+- * Represents the options for constructing a timeout deadline.
++ * Represents the options `createTimeout` and the `Timeout` constructor accept.
+  *
+  * @remarks
+  * `ms` is an integer from `0` through `2_147_483_647`, inclusive. `id`
+@@ -45,7 +45,8 @@ export interface TimeoutInterface {
+ 	/** Reports whether the owned signal has aborted, derived directly from that signal. */
+ 	readonly expired: boolean
+ 	/**
+-	 * Arms or re-arms the deadline.
++	 * Arms or re-arms the deadline for `ms`, installing a fresh `signal` when the
++	 * current one has already aborted.
+ 	 *
+ 	 * @remarks
+ 	 * Returns without arming when the parent `signal` supplied at construction
+@@ -56,11 +57,11 @@ export interface TimeoutInterface {
+ 	 */
+ 	start(): void
+ 	/**
+-	 * Cancels an armed deadline without aborting its signal and resets expiry state.
++	 * Cancels an armed deadline without aborting its `signal`, and resets expiry by
++	 * installing a fresh signal when the current one has already aborted.
+ 	 *
+ 	 * @remarks
+-	 * Installs a fresh non-aborted signal when the current signal has already
+-	 * aborted; a signal that never fired keeps its identity.
++	 * A signal that never fired keeps its identity.
+ 	 *
+ 	 * @returns Nothing
+ 	 */
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index bdd0c38..5fb3a49 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -2,7 +2,8 @@ import { isInteger } from '@orkestrel/contract'
+ import { MAX_TIMEOUT_MS } from './constants.js'
+ 
+ /**
+- * Determines whether a value is an accepted timeout duration.
++ * Determines whether a value is an integer in the inclusive range from `0` through
++ * `MAX_TIMEOUT_MS`, staying total for every input.
+  *
+  * @param value - Unknown duration candidate
+  * @returns True if the value is an integer in the inclusive timeout range; false otherwise
+@@ -18,12 +19,12 @@ export function isTimeoutDuration(value: unknown): value is number {
+ }
+ 
+ /**
+- * Determines whether a value is a genuine native `AbortSignal`.
++ * Determines whether a value is a genuine native `AbortSignal`, staying total for a
++ * structural spoof and for a hostile or revoked proxy.
+  *
+  * @remarks
+- * The intrinsic `aborted` getter performs the native brand check. The boundary
+- * contains revoked proxies and hostile receivers, returning `false` instead of
+- * allowing their errors to escape.
++ * The intrinsic `aborted` getter performs the native brand check, and the boundary
++ * returns `false` rather than letting a receiver's error escape.
+  *
+  * @param value - Unknown signal candidate
+  * @returns True if the native `AbortSignal` getter accepts the value; false otherwise
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index c8e7123..d80f5fe 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -11,6 +11,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -40,11 +41,11 @@ const MODULES = Object.freeze({ '@orkestrel/timeout': 'src/core', '@src/core': '
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+-/** The guide whose flagship fences the executed cases at the end of this file transcribe. */
+-const CORE_GUIDE = 'guides/timeout.md'
++/** The one guide this package sources, whose tagline the README pitch equals. */
++const GUIDE_SPEC = 'guides/timeout.md'
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -56,11 +57,61 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -122,6 +173,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()
+@@ -199,8 +268,8 @@ for (const entry of manifest) {
+ // body, so a line one fence shares with another cannot stand in for it. Change a
+ // fence, change the transcription beside it.
+ describe('flagship fences', () => {
+-	const guideText = requireValue(files[CORE_GUIDE], `Missing file: ${CORE_GUIDE}`)
+-	const readmeText = readFileSync(new URL('README.md', root), 'utf8')
++	const guideText = requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`)
++	const readmeText = requireValue(files['README.md'], 'Missing file: README.md')
+ 
+ 	it('aborts the Surface fence signal on expiry', async () => {
+ 		const timeout = createTimeout({ ms: 10 })

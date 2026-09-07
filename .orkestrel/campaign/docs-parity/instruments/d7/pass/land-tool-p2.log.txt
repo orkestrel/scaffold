@@ -1,0 +1,17 @@
+== tool p2 landing 2026-09-07T15:40:59Z over f6987c3
+== status
+ M README.md
+ M guides/tool.md
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |   7 ++-
+ tests/guides.test.ts   |  77 ++++++++++++++++++++++++-
+ 7 files changed, 203 insertions(+), 92 deletions(-)
+== stage by path
+ 7 files changed, 203 insertions(+), 92 deletions(-)
+== committed
+4c39064 Converge tool under the equality gate
+(status end)
