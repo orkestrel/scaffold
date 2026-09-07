@@ -1,0 +1,19 @@
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/Agent.test.ts
+ M tests/src/core/AgentContext.test.ts
+ M tests/src/core/AgentRegistry.test.ts
+ M tests/src/core/conversations/Conversation.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/integration.test.ts
+ M tsconfig.json
+?? scripts/docs.ts

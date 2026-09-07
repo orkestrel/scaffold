@@ -1,0 +1,56 @@
+== sea P.1 landing 2026-09-07T17:02:45Z, version 0.0.15
+== status before install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M src/server/helpers.ts
+ M src/server/injectors/Injector.ts
+ M src/server/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/injectors/Injector.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 672ms
+EXIT 0
+== lockfile root version
+0.0.15 / 0.0.15
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M src/server/helpers.ts
+ M src/server/injectors/Injector.ts
+ M src/server/types.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/injectors/Injector.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/server/injectors/Injector.test.ts |   2 +-
+ tsconfig.json                               |   3 +-
+ 17 files changed, 1599 insertions(+), 621 deletions(-)
+== stage by path
+ 18 files changed, 2053 insertions(+), 621 deletions(-)
+== committed
+09f5e85 Prepare sea for the equality gate
+(status end)

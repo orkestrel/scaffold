@@ -1,0 +1,58 @@
+== agent P.1 landing 2026-09-07T17:02:47Z, version 0.0.21
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/Agent.test.ts
+ M tests/src/core/AgentContext.test.ts
+ M tests/src/core/AgentRegistry.test.ts
+ M tests/src/core/conversations/Conversation.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/integration.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 542ms
+EXIT 0
+== lockfile root version
+0.0.21 / 0.0.21
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/Agent.test.ts
+ M tests/src/core/AgentContext.test.ts
+ M tests/src/core/AgentRegistry.test.ts
+ M tests/src/core/conversations/Conversation.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/integration.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/core/integration.test.ts                |   2 +-
+ tsconfig.json                                     |   3 +-
+ 18 files changed, 1603 insertions(+), 625 deletions(-)
+== stage by path
+ 19 files changed, 2057 insertions(+), 625 deletions(-)
+== committed
+5c2a8f0 Prepare agent for the equality gate
+(status end)

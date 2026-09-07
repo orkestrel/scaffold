@@ -1,0 +1,88 @@
+== mcp P.1 landing 2026-09-07T17:02:49Z, version 0.0.29
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/mcp.md
+ M package.json
+ M src/browser/factories.ts
+ M src/browser/transports/WebSocketClientTransport.ts
+ M src/core/MCPClient.ts
+ M src/core/MCPServer.ts
+ M src/core/MCPTextStreamController.ts
+ M src/core/types.ts
+ M src/server/HTTPDisconnect.ts
+ M src/server/handlers.ts
+ M tests/config.test.ts
+ M tests/conformance.test.ts
+ M tests/conformanceClient.ts
+ M tests/fixtures/browserServer.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupConformance.ts
+ M tests/setupGlobal.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/MCPClient.test.ts
+ M tests/src/core/MCPServer.test.ts
+ M tests/src/core/parsers.test.ts
+ M tests/src/server/factories.test.ts
+ M tests/src/server/integration.test.ts
+ M tests/src/server/middlewares.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 1s
+EXIT 0
+== lockfile root version
+0.0.29 / 0.0.29
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/mcp.md
+ M package-lock.json
+ M package.json
+ M src/browser/factories.ts
+ M src/browser/transports/WebSocketClientTransport.ts
+ M src/core/MCPClient.ts
+ M src/core/MCPServer.ts
+ M src/core/MCPTextStreamController.ts
+ M src/core/types.ts
+ M src/server/HTTPDisconnect.ts
+ M src/server/handlers.ts
+ M tests/config.test.ts
+ M tests/conformance.test.ts
+ M tests/conformanceClient.ts
+ M tests/fixtures/browserServer.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.ts
+ M tests/setupConformance.ts
+ M tests/setupGlobal.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/MCPClient.test.ts
+ M tests/src/core/MCPServer.test.ts
+ M tests/src/core/parsers.test.ts
+ M tests/src/server/factories.test.ts
+ M tests/src/server/integration.test.ts
+ M tests/src/server/middlewares.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/server/middlewares.test.ts               |  12 +-
+ tsconfig.json                                      |   5 +-
+ 33 files changed, 1747 insertions(+), 742 deletions(-)
+== stage by path
+ 34 files changed, 2201 insertions(+), 742 deletions(-)
+== committed
+a844c0c Prepare mcp for the equality gate
+(status end)
