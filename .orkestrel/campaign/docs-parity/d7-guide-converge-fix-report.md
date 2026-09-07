@@ -257,3 +257,7 @@ rows read: 1, disagreements found: 0, written: 0, reported: 0
 ### 6 — the report
 
 This file names each item's hunk or split point, gives item 4's split points and its widths before and after, and states no count in prose. Numbers appear only as a measurement reported with the run that produced it, a character width, a line number, or a duration.
+
+## Closure corrections (the Orchestrator)
+
+The checker read counts in this report's prose: the sentence tallying the cells the seed rewrote and the sentence tallying the tables that narrowed. Each is struck; the seed's own line (`written: 4`) and the width table name the members.

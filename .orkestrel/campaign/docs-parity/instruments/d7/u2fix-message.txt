@@ -1,0 +1,15 @@
+Refuse a body the doc block cannot hold, and read the widest cells as summaries
+
+`replaceExample` refuses a body carrying the doc-comment terminator the
+way it refuses a backtick run, so the seed cannot write a block that stops
+the file parsing; its contract, the guide's refusal sentence, and § Tests
+name that class beside the fences already outside the comparison. The
+widest description paragraphs split into the summary a table cell carries
+and a remarks section the declaration's reader still meets, with every
+sentence kept in order; the keyword list's remark names its members; the
+`exists` block carries the reason a directory counts; the guide's opening
+paragraph ends with its packaging sentence; and each `Shape` column's
+intro states its notation.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

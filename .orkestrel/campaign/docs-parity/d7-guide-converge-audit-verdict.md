@@ -30,3 +30,26 @@ Lanes: subjective `reviewer` (Opus 5), objective `reviewer` (Opus 5, the recorde
 | `manifestEntryShape`'s authored `Shape` cell; the README `## Checks` row; the dropped `escapeRegExp` and `SourceInterface` clauses | the unit's flags 3, 4, 8 | accepted on the lanes' readings (claim 3 PASS; the `## Checks` row follows § Tests) |
 
 VERDICT: FAIL 9, 12
+
+## Round 2 (2026-09-07, closure of U2-fix, Workflow `wf_5295f467-eb9`)
+
+Lanes: subjective `reviewer` (Opus 5) on items 4, 6, 7; objective `reviewer` (Opus 5, the recorded substitution for the dark Sol bench; the writer was Opus and Sol is dark) on items 1, 4, 5; `checker` (Sonnet) on every claim; `verifier` (Sonnet) on the gates. Returns: `d7-guide-converge-fix-subjective.md` (`VERDICT: PASS`), `d7-guide-converge-fix-objective.md` (`VERDICT: PASS`), `d7-guide-converge-fix-checker.md` (`VERDICT: FAIL 1, 8`), `d7-guide-converge-fix-verifier.md` (`GATES: GREEN`: `format:check`, `lint:check`, `check`, `test:src:core` 599, `test:guides` 54, `test:policy` 90 | 1 skipped, `build` and `docs` at 0, both seed directions `written: 0`).
+
+- **Claim 1 — PASS on the substance; the claim's wording was the defect.** The checker read the new test body as non-comment code the claim's "only the guard" excluded; the claim meant `src/core/**` and did not say so. The five files and the one code line under `src/core/**` hold.
+- **Claims 2 to 7 — PASS** on every lane that ruled them; the objective lane read every sentence of the four split blocks surviving verbatim and in order, the guard exact over the code, and the `exists` remark outside the compared paragraph; the subjective lane read the splits, the opening paragraph, and the `Shape` intros as intended.
+- **Claim 8 — FAIL, corrected.** Counts in the report's prose; the retained report is annotated.
+- **The brief's own defect, recorded:** item 1's instructed `@returns` text spelled `*/` inside the doc block, which ends the block; the unit named the terminator instead and recorded the parse failure. A brief that names an edit inside a doc comment must not spell the terminator.
+
+### Findings carried
+
+| Finding | Source | Carrier |
+| --- | --- | --- |
+| `replaceExample`'s description paragraph and `@remarks` enumerate the refusal causes and omit the terminator; the cell mirrors them | objective F1 | U2-fix-2 item 1 |
+| The guard reads `example.code` and not the fence line the same call emits, so a `language` carrying `*/` or a backtick run still closes the block | objective F2 | U2-fix-2 item 2 |
+| The guide's refusal sentence punctuates its apposition as a list member | subjective F1, objective R1 | U2-fix-2 item 3 |
+| The report's counts | checker claim 8 | annotated |
+| Claim 1's wording | checker | recorded here |
+
+U2 and its fix are committed as `f7be620` on the guide's branch; the successor round closes the three findings before U3.
+
+VERDICT: PASS, with U2-fix-2 carrying the findings
