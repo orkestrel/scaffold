@@ -1,0 +1,22 @@
+# Audit brief — D4 scaffold-gate (round 1)
+
+## Lanes
+
+Two adversarial lanes, blind to each other, clean contexts, one brief: the subjective lane (`reviewer`, Opus 5 — the rule prose's voice and home, the case titles, the collector's shape) and the objective lane (`reviewer`, Opus 5, the recorded substitution for the dark Sol bench — correctness of the assertions, what the readers permit, the drift list's completeness). A `checker` (Sonnet) runs beside them on the mechanical claims. The dispatch names which lane you hold. Read only this brief and the evidence it names; run no command; edit nothing; perform the assignment directly and spawn nothing. Rule on every claim from your lane, and write CANNOT RULE with what is missing where the claim is another lane's.
+
+## Subject
+
+Unit D4 (`d4-scaffold-gate-brief.md`) put the equality gate into scaffold's own `tests/guides.test.ts` — one collector asserting `findDrift(guide, source)` empty per concept-index row, and the README's tagline read against the own guide's — landed red-first with the drift list recorded, and rewrote `.claude/rules/documentation.md` § Parity's voice bullet into the two bullets the brief quotes plus the `tests/guides.test.ts` row in `.claude/rules/tests.md`. The report: `/home/user/scaffold/.orkestrel/campaign/docs-parity/d4-scaffold-gate-report.md`. The evidence, at absolute paths: `/home/user/scaffold/.orkestrel/campaign/docs-parity/d4-scaffold-gate.diff.txt` and `/home/user/scaffold/.orkestrel/campaign/docs-parity/d4-scaffold-gate.status.txt`; the changed files at their new state under `/home/user/scaffold`; the installed `@orkestrel/guide` declaration at `/home/user/scaffold/node_modules/@orkestrel/guide/dist/src/core/index.d.ts`; the rules `/home/user/scaffold/AGENTS.md`, `.claude/rules/tests.md`, `.claude/rules/documentation.md`, `.claude/rules/writing.md`; and `rulings.md` (Ruling 6).
+
+## Claims (verdict per claim: PASS, FAIL with `file:line` evidence, or CANNOT RULE with what is missing)
+
+1. **The equality case.** Inside `describe('guides')`, after the behavioural-declaration case, one case collects `{ spec, drift }` for every `inspected` record whose `findDrift(guide, source)` is non-empty and asserts the collection empty, the way the file's other collectors assert; `findDrift` is imported in the existing list's order; the case covers exactly the concept-index rows the file inspects and no mirror.
+2. **The README case.** `createGuide(files['README.md']).tagline()` is compared with the tagline of the record whose spec is `guides/scaffold.md`, and the case asserts neither is `undefined`; the comparison direction and the record lookup are correct.
+3. **Red-first.** The report records the two new cases red and every other case green, the drift list naming each `spec`, `key`, and absent side, and the README case's two readings; the list is consistent with what `findDrift` at the installed declaration reports over scaffold's guide and doc blocks (spot-check the keys against the files).
+4. **The rules.** `.claude/rules/documentation.md` § Parity carries the two bullets the brief quotes, in its order, in place of the voice bullet, and no other line of the file moved; `.claude/rules/tests.md`'s `tests/guides.test.ts` row reads as the brief quotes; the bullets name one home for the equality contract and agree with Ruling 6 (the `Summary` cell adopts the doc block's sentence; the tagline and the pitch are noun phrases and blockquotes).
+5. **Nothing converged.** No guide cell, doc block, README line, or fence changed; the status file lists only `tests/guides.test.ts`, `.claude/rules/documentation.md`, `.claude/rules/tests.md`, and `host.json`; `host.json` moved by regeneration alone (digests only, the same entry set).
+6. **Report honesty.** Every `file:line` the report cites matches the files at their new state; the Unknowns are answered (the rows the assertion covers; whether mirrors are index rows); no count of a growable set in the prose; the gates recorded as the brief's criteria (format, lint, check, `test:policy`, build, the digest stability, `test:guides` red on exactly the two cases).
+
+## Output
+
+Per claim, the verdict and its evidence. Then findings outside the claims, each with `file:line` and what right looks like. Then one terminal line: `VERDICT: PASS` or `VERDICT: FAIL <claim numbers>`. No process diary.
