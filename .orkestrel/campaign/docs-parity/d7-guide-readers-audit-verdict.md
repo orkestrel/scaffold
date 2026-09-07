@@ -29,3 +29,13 @@ Lanes: subjective `reviewer` (Opus 5), objective `reviewer` (Opus 5, the recorde
 | P15's sweep bound | subjective O4 | `orchestrator-measurements.md` § P15 |
 
 VERDICT: FAIL 3, 9, 13
+
+## Round 2 (2026-09-07, closure of U1-fix, Workflow `wf_5a8f1174-65f`)
+
+Lanes: `checker` (Sonnet) on the seven mechanical claims of `d7-guide-readers-fix-closure-brief.md`, `verifier` (Sonnet) on the scoped gates. The reviewer lanes did not run this round: the fix adopts the round-1 findings verbatim as exact edits, so the closure is mechanical. Returns: `d7-guide-readers-fix-checker.md` (`VERDICT: FAIL 7`), `d7-guide-readers-fix-verifier.md` (`GATES: GREEN`).
+
+- **Claims 1 to 6 — PASS** on the diff and the tree: the four files and their five hunks, the EQ row's `exported`, the doc clause wrapped under 100 columns, the `name` overload ending at `instead.`, `toStrictEqual`, the precedence sentence verbatim.
+- **Claim 7 — FAIL, corrected.** The report's closing sentence stated a count (`All five before-texts`); the retained report is corrected with the annotation. The gate readings the checker could not confirm are confirmed by the verifier: `format:check`, `lint:check`, `check`, `test:src:core` (598 passed), `test:guides` (51 passed), `test:policy` (90 passed | 1 skipped) green, `build` green, `docs` at `rows read: 1, disagreements found: 139` — the independent run round 1's claims 6 and 12 waited on.
+- Round 1's carried findings each landed or were recorded as the table there states.
+
+VERDICT: PASS

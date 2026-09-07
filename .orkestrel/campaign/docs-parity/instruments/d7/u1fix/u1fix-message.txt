@@ -1,0 +1,12 @@
+Close R1's findings on the readers: the exported reach, the doc clause, the strict control
+
+The EQ row names the reach as an exported declaration head's own block,
+the `extractExamples` doc block states head membership as the keys the
+grammar admits at column zero, the `name` overload's paragraph ends at the
+sentence that carries its contract, the untitled-head control asserts
+strictly so an emitted `title: undefined` fails it, and the extraction
+model states that a head's titled block answers before a member's of the
+same title.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

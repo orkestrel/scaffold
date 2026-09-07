@@ -17,7 +17,7 @@
 
 ## What is fixed
 
-Read from the tree at U1-fix's commit (`COMMIT_U1FIX`, clean, `version` `0.0.18`, the lockfile synced, the readers reaching every declaration head). Line numbers below are from that tree.
+Read from the tree at U1-fix's commit (`2acd50e`, clean, `version` `0.0.18`, the lockfile synced, the readers reaching every declaration head). Line numbers below are from that tree.
 
 The tables (`grep -n '^| Name\|^| Method' guides/guide.md`: Types `:32`, Constants `:60`, Helpers `:79`, Parsers `:154`, Shapers `:164`, Validators `:178`, Factories `:192`, Methods `:250`, `:263`, `:295`; the H3 sections `### \`Guide\`` `:204`, `### \`Source\`` `:213`, `### \`SourceManager\`` `:229`) and their headers after this unit:
 

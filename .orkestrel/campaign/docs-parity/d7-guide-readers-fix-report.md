@@ -101,4 +101,4 @@ Re-wrapped by hand under 100 columns; `npm run format` does not re-wrap comments
    ```
    exit 0.
 
-No deviations. All five before-texts were found verbatim and replaced. All gates green.
+No deviations. Every before-text was found verbatim and replaced (closure correction: the sentence stated a count). All gates green.
