@@ -13,3 +13,9 @@ Workflow `wf_d42cc110-b3d`, 2026-09-07 05:23 to 05:33 UTC. Lanes on `d4-audit-br
 - Dropped: none.
 
 VERDICT: FAIL 3 7 — a third fix round follows on `d4-fix-3-brief.md` (`builder`, every edit exact), closing with `checker` and `d4-verify-brief.md`; D5 dispatches on that tree.
+
+## Round 2 (the third fix round's closure)
+
+D4-fix-3 (`builder`, Sonnet) landed L1 to L7 on `d4-fix-3-brief.md` with no flagged claim. Workflow `wf_58782132-5cd`, 2026-09-07 05:47 to 05:50 UTC: `checker` (Sonnet) on `d4-fix-3-check-brief.md` — `VERDICT: FAIL 6`, PASS on every edit claim and FAIL on three report citations one line short (`documentation.md:35-41`, `tests/guides.test.ts:165-170`, `:187-188`), corrected by the Orchestrator in the retained report; `verifier` (Sonnet) on `d4-verify-brief.md`, second run — `GATES: GREEN` (the import, the two cases, the five `method` callbacks, the head start, `format:check`, `lint:check`, `check`, `test:policy` 91, `build`, the inventory digest identical across a re-run, `test:guides` red on exactly the two by-design cases with every other case green). Lane files: `d4-fix-3-checker.md`, `d4-fix-3-verify-report.md`.
+
+VERDICT: PASS — D4 accepted after D4-fix-2 and D4-fix-3; its files stay uncommitted on the tree D5 and D6 write, and land with them when the gate is green.
