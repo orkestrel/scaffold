@@ -1,0 +1,55 @@
+# u3-wrap.mjs over src/core/helpers.ts
+description paragraphs read: 64
+paragraphs that move at width 100: 61
+--- src/core/helpers.ts
+BEFORE: ["Extracts aligned physical source-line records in one character traversal.","Real line and block comments and complete template tokens become spaces in","{@link SourceLine.code}, while ordinary code, quoted strings, and recognized","regex literals retain their columns. Genuine JSDoc opened from reflection","code is retained span by span at its exact physical column in","{@link SourceLine.jsdoc}; faux openers in comments and templates are","excluded. Membership remains each consumer's separate anchored grammar."]
+AFTER : ["Extracts aligned physical source-line records in one character traversal. Real line and block","comments and complete template tokens become spaces in {@link SourceLine.code}, while ordinary","code, quoted strings, and recognized regex literals retain their columns. Genuine JSDoc opened","from reflection code is retained span by span at its exact physical column in {@link","SourceLine.jsdoc}; faux openers in comments and templates are excluded. Membership remains each","consumer's separate anchored grammar."]
+--- src/core/helpers.ts
+BEFORE: ["Checks whether an opaque inventory key contains only canonical slash-separated","segments. Empty, `.` and `..` segments are rejected without rewriting the","key; ordinary dotfile segments remain valid."]
+AFTER : ["Checks whether an opaque inventory key contains only canonical slash-separated segments. Empty,","`.` and `..` segments are rejected without rewriting the key; ordinary dotfile segments remain","valid."]
+--- src/core/helpers.ts
+BEFORE: ["Normalizes a module scope to its canonical directory list. `'.'` represents","workspace root; empty, trailing, and dot-segment spellings reduce through","{@link resolvePath}, and duplicates are removed in first-seen order."]
+AFTER : ["Normalizes a module scope to its canonical directory list. `'.'` represents workspace root;","empty, trailing, and dot-segment spellings reduce through {@link resolvePath}, and duplicates are","removed in first-seen order."]
+--- src/core/helpers.ts
+BEFORE: ["Computes the stable cache key for a {@link GuideModule}. Directories normalize before","joining, so equivalent module spellings share one key. The NUL separator","cannot occur in filesystem-backed canonical-segment inventory keys, so no","directory boundary can collide with directory text."]
+AFTER : ["Computes the stable cache key for a {@link GuideModule}. Directories normalize before joining, so","equivalent module spellings share one key. The NUL separator cannot occur in filesystem-backed","canonical-segment inventory keys, so no directory boundary can collide with directory text."]
+--- src/core/helpers.ts
+BEFORE: ["Selects the exact opaque file-inventory keys belonging under any canonical","{@link GuideModule} directory, sorted. `'.'` selects canonical root-relative","keys without accepting `/`, `./`, or `../` aliases. Every selected exact","`index.ts` and every `.test.ts` key is excluded independent of scope order."]
+AFTER : ["Selects the exact opaque file-inventory keys belonging under any canonical {@link GuideModule}","directory, sorted. `'.'` selects canonical root-relative keys without accepting `/`, `./`, or","`../` aliases. Every selected exact `index.ts` and every `.test.ts` key is excluded independent","of scope order."]
+--- src/core/helpers.ts
+BEFORE: ["Computes the bijection key for a surface symbol — its keyword and name combined — so a","symbol-set comparison diffs (name, keyword) pairs rather than names alone."]
+AFTER : ["Computes the bijection key for a surface symbol — its keyword and name combined — so a symbol-set","comparison diffs (name, keyword) pairs rather than names alone."]
+--- src/core/helpers.ts
+BEFORE: ["Finds the names present in `names` but absent from `source` — the set-difference","behind a both-directions bijection assertion."]
+AFTER : ["Finds the names present in `names` but absent from `source` — the set-difference behind a","both-directions bijection assertion."]
+--- src/core/helpers.ts
+BEFORE: ["Finds the fences whose language is absent from the caller's listed languages.","Untagged fences are always returned because they have no language to list."]
+AFTER : ["Finds the fences whose language is absent from the caller's listed languages. Untagged fences are","always returned because they have no language to list."]
+
+# u3-wrap.mjs over every src/core file
+description paragraphs read: 140
+paragraphs that move at width 100: 122
+--- src/core/Guide.ts
+BEFORE: ["Presents a pure, structured view over one parsed guide — the documented","projections (`sections` / `tagline` / `surface` / `methods` / `unnamed` / `links` /","`tests` / `fences`) are extracted once at construction and cached."]
+AFTER : ["Presents a pure, structured view over one parsed guide — the documented projections (`sections` /","`tagline` / `surface` / `methods` / `unnamed` / `links` / `tests` / `fences`) are extracted once","at construction and cached."]
+--- src/core/constants.ts
+BEFORE: ["Lists the declaration keywords a documented or exported symbol carries, in","the order the reflection grammar names them."]
+AFTER : ["Lists the declaration keywords a documented or exported symbol carries, in the order the","reflection grammar names them."]
+--- src/core/constants.ts
+BEFORE: ["Names the header text of the column a `## Surface` or `## Methods` table's compared","description paragraph is read from."]
+AFTER : ["Names the header text of the column a `## Surface` or `## Methods` table's compared description","paragraph is read from."]
+--- src/core/constants.ts
+BEFORE: ["Holds the default character budget a rewritten doc block's description paragraph wraps","inside — the greatest number of characters a re-wrapped line may carry, counted from the","line's first character with a tab counting as one, so a wrapped line reads","`${indent} * ${text}` and never passes that count."]
+AFTER : ["Holds the default character budget a rewritten doc block's description paragraph wraps inside —","the greatest number of characters a re-wrapped line may carry, counted from the line's first","character with a tab counting as one, so a wrapped line reads `${indent} * ${text}` and never","passes that count."]
+--- src/core/constants.ts
+BEFORE: ["Lists the link `href` schemes a guides-parity link check skips as external — a link","with one of these prefixes (or a bare `#` anchor, handled separately in","`isExternalLink`) is never resolved against the filesystem."]
+AFTER : ["Lists the link `href` schemes a guides-parity link check skips as external — a link with one of","these prefixes (or a bare `#` anchor, handled separately in `isExternalLink`) is never resolved","against the filesystem."]
+--- src/core/factories.ts
+BEFORE: ["Creates a structured {@link GuideInterface} view over one guide's markdown","source — parses once and caches its `sections` / `surface` / `methods` /","`links` / `tests` / `fences` projections."]
+AFTER : ["Creates a structured {@link GuideInterface} view over one guide's markdown source — parses once","and caches its `sections` / `surface` / `methods` / `links` / `tests` / `fences` projections."]
+--- src/core/factories.ts
+BEFORE: ["Creates a pure {@link SourceInterface} over a consumer-supplied file","inventory — see {@link Source}."]
+AFTER : ["Creates a pure {@link SourceInterface} over a consumer-supplied file inventory — see {@link","Source}."]
+--- src/core/factories.ts
+BEFORE: ["Creates a {@link SourceManagerInterface} that resolves the consumer's local","import specifiers and shares one source view per module."]
+AFTER : ["Creates a {@link SourceManagerInterface} that resolves the consumer's local import specifiers and","shares one source view per module."]

@@ -1,0 +1,11 @@
+# u7-summary.mjs over src/core/helpers.ts
+blocks: 64
+identity case moves (with the equality short circuit): 0
+identity case moves (forced re-wrap at width 100): 63
+genuine replacements that do not re-read to the new summary: 0
+
+# u7-summary.mjs over every src/core file
+blocks: 172
+identity case moves (with the equality short circuit): 0
+identity case moves (forced re-wrap at width 100): 131
+genuine replacements that do not re-read to the new summary: 0

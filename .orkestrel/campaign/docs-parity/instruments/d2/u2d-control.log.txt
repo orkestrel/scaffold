@@ -1,0 +1,8 @@
+DIFFERS Class B (space-padded code span)
+   source side: "cells joined by ` | `, so a reader can locate the row."
+   guide side : "cells joined by `|`, so a reader can locate the row."
+DIFFERS Class A (backtick inside a code span)
+   source side: "so `` `Widget` `` reads the same on both sides."
+   guide side : "so ``Widget`` reads the same on both sides."
+AGREES  ordinary
+AGREES  code span

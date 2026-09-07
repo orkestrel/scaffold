@@ -1,0 +1,7 @@
+# u3b-width.mjs over every src/core file
+paragraphs: 140
+single-line paragraphs: 11
+multi-line paragraphs: 129
+multi-line paragraphs reproduced by SOME greedy width: 94
+best widths (width, paragraphs reproduced): [[93,38],[92,37],[95,37],[96,36],[94,35],[97,35],[80,31],[91,31]]
+longest physical description line: 122

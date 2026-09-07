@@ -1,0 +1,24 @@
+baseline: Tests  574 passed (574)
+mutation: replaceCell returns guide instead of splicing
+  Tests  3 failed | 571 passed (574)
+  red: tests/src/core/helpers.test.ts > replaceCell > changes the one row it names and no other row
+  red: tests/src/core/helpers.test.ts > replaceCell > replaces one Methods cell by its Owner.member key
+  red: tests/src/core/helpers.test.ts > replaceCell > is a fixed point on the second run for a summary the compared form moves
+mutation: buildCell never emits a code span
+  Tests  3 failed | 571 passed (574)
+  red: tests/src/core/helpers.test.ts > buildCell > inverts extractCellText on plain text and on a code span
+  red: tests/src/core/helpers.test.ts > buildCell > reads a leading and a trailing code span
+  red: tests/src/core/helpers.test.ts > buildCell > reads the inner delimiter of a doubled run and leaves the outer backticks as text
+mutation: replaceSummary compares raw text instead of the compared form
+  Tests  1 failed | 573 passed (574)
+  red: tests/src/core/helpers.test.ts > replaceSummary > returns every described doc block this package ships byte for byte when the summary is its own
+mutation: replaceFence takes the last fence of a title, and replaceExample drops the separator walk-back
+  Tests  6 failed | 568 passed (574)
+  red: tests/src/core/helpers.test.ts > replaceFence > replaces the fence of that title and keeps every byte outside it
+  red: tests/src/core/helpers.test.ts > replaceFence > leaves a later fence of the same title outside the pairing
+  red: tests/src/core/helpers.test.ts > replaceFence > replaces the fence language with the body
+  red: tests/src/core/helpers.test.ts > replaceFence > returns the guide byte for byte when the fence already carries that body
+  red: tests/src/core/helpers.test.ts > replaceExample > replaces the body of the tag carrying that title and leaves the other tag alone
+  red: tests/src/core/helpers.test.ts > replaceExample > keeps a tag-shaped line inside the current body out of the tag search
+restored: Tests  574 passed (574)
+byte-identical after restore: true

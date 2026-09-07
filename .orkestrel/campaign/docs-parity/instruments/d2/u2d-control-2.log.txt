@@ -1,0 +1,26 @@
+shipped body, compiled from src/core/helpers.ts:
+	const parts = text.split(/((?<!`)`[^`]+`(?!`))/)
+	let normalized = ''
+
+	for (let index = 0; index < parts.length; index += 1) {
+		const part = parts[index] ?? ''
+		if (index % 2 === 0) {
+			normalized += part
+				.replace(/\{@link\s+[^}|]*\|\s*([^}]*?)\s*\}/g, '`$1`')
+				.replace(/\{@link\s+([^}|]*?)\s*\}/g, '`$1`')
+			continue
+		}
+		const value = part.slice(1, -1).replace(/\s+/g, ' ').trim()
+		normalized += `\`${value.length === 0 ? ' ' : value}\``
+	}
+
+	return normalized.replace(/\s+/g, ' ').trim()
+AGREES  Class B (space-padded code span)
+AGREES  Class B one-sided (leading space only)
+AGREES  Class B all whitespace
+DIFFERS Class A (backtick inside a code span)
+   source side: "so `` `Widget` `` reads the same on both sides."
+   guide side : "so ``Widget`` reads the same on both sides."
+AGREES  link token inside a code span
+AGREES  ordinary
+AGREES  code span

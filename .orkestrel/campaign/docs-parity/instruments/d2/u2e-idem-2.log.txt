@@ -1,0 +1,21 @@
+MethodGroup as D2 shipped it: first fixed point after render #2
+    "| `walk` | Represents one `#### \\`Interface\\`` block in a guide's `## Methods` section — the documented member names of one behavioral interface. |"
+    "| `walk` | Represents one `#### \\`Interface\\``block in a guide's`\\## Methods\\` section — the documented member names of one behavioral interface. |"
+    "| `walk` | Represents one `#### \\`Interface\\``block in a guide's`\\## Methods\\` section — the documented member names of one behavioral interface. |"
+    "| `walk` | Represents one `#### \\`Interface\\``block in a guide's`\\## Methods\\` section — the documented member names of one behavioral interface. |"
+    "| `walk` | Represents one `#### \\`Interface\\``block in a guide's`\\## Methods\\` section — the documented member names of one behavioral interface. |"
+
+MethodGroup as this round ships it: first fixed point after render #1
+    "| `walk` | Represents one behavioral interface a guide's `## Methods` section documents — the H4 heading naming that interface as a code span, and the member entries its table lists. |"
+    "| `walk` | Represents one behavioral interface a guide's `## Methods` section documents — the H4 heading naming that interface as a code span, and the member entries its table lists. |"
+    "| `walk` | Represents one behavioral interface a guide's `## Methods` section documents — the H4 heading naming that interface as a code span, and the member entries its table lists. |"
+    "| `walk` | Represents one behavioral interface a guide's `## Methods` section documents — the H4 heading naming that interface as a code span, and the member entries its table lists. |"
+    "| `walk` | Represents one behavioral interface a guide's `## Methods` section documents — the H4 heading naming that interface as a code span, and the member entries its table lists. |"
+
+adjacent spans: first fixed point after render #2
+    "| `walk` | `adjacent``spans` |"
+    "| `walk` | ```adjacent``spans``` |"
+    "| `walk` | ```adjacent``spans``` |"
+    "| `walk` | ```adjacent``spans``` |"
+    "| `walk` | ```adjacent``spans``` |"
+
