@@ -66,7 +66,7 @@ $facts
 ## Standing conditions
 
 - The vendored voice rule reads every doc block you rewrite (third-person verb opener, the symbol unnamed in the first sentence) and the prose sweep in \`tests/setupPolicy.ts\` reads \`guides/$spec\` and \`README.md\` against the substitution table.
-- Format and lint scoped to your owned paths: \`npx oxfmt --write <paths>\` after edits and after each seed write; \`npx oxfmt --check <paths>\` and \`npx oxlint --config .oxlintrc.json --deny-warnings <paths>\` as gates. \`npm run test:guides\` after the README edit, because a suite reading the README is the objective lane's M9.
+- Format and lint scoped to your owned paths: \`npx oxfmt --write <paths>\` after edits and after each seed write; \`npx oxfmt --check <paths>\` and \`npx oxlint --config .oxlintrc.json --deny-warnings <the owned .ts paths>\` as gates (oxlint reads no Markdown and exits 1 on a Markdown-only path list; the prose sweep in \`test:policy\` gates the guide and the README). \`npm run test:guides\` after the README edit, because a suite reading the README is the objective lane's M9.
 - \`package.json\` keeps \`$range\` (the registry serves no \`0.0.18\` yet); do not touch it or the lockfile.
 
 ## Scope
