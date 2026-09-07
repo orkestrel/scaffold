@@ -1,0 +1,22 @@
+== msg p2 landing 2026-09-07T15:18:08Z over 1e83f24
+== status
+ M README.md
+ M guides/msg.md
+ M src/core/MSG.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |  15 ++-
+ tests/guides.test.ts   |  75 +++++++++++-
+ 12 files changed, 474 insertions(+), 348 deletions(-)
+== stage by path
+ 12 files changed, 474 insertions(+), 348 deletions(-)
+== committed
+a11b9cb Converge msg under the equality gate
+(status end)
