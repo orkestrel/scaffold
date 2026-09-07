@@ -29,6 +29,1691 @@ index 991a284c..9f84e3be 100644
  - Sweep case-insensitively and across inflections when checking prose against the preceding table. A
    pattern for `easy` reaches neither `Easy` nor `easier`, and a temporal `once` most often appears
    as a sentence-initial `Once`.
+diff --git a/.orkestrel/campaign/docs-parity/d3-fix.diff.txt b/.orkestrel/campaign/docs-parity/d3-fix.diff.txt
+index 98e92f08..e69de29b 100644
+--- a/.orkestrel/campaign/docs-parity/d3-fix.diff.txt
++++ b/.orkestrel/campaign/docs-parity/d3-fix.diff.txt
+@@ -1,1665 +0,0 @@
+-diff --git a/.claude/rules/typescript.md b/.claude/rules/typescript.md
+-index e60706ee..cb030423 100644
+---- a/.claude/rules/typescript.md
+-+++ b/.claude/rules/typescript.md
+-@@ -77,6 +77,11 @@ type Result<T, E = Error> = Success<T> | Failure<E>
+- - Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.
+- - The first sentence states what the symbol does in the third person with an `-s` verb — `Creates`,
+-   `Returns`, `Checks whether` — and never repeats the symbol's name.
+-+- `policy/no-malformed-summary` reads that first sentence over every doc block a top-level export
+-+  declaration follows, and refuses an opening word that is not a third-person `-s` verb and a
+-+  sentence naming the declared symbol. A word ending in `s` that the rule's stop set does not name
+-+  passes whether or not it is a verb — a plural noun such as `Files` included — so read the sentence
+-+  in review as well.
+- - Describe a boolean parameter as "If `true`, …; if `false`, …", and a boolean return as
+-   "True if …; false otherwise".
+- - Write a default as "Default: …" and a thrown error as "Thrown when …".
+-diff --git a/.claude/rules/writing.md b/.claude/rules/writing.md
+-index 991a284c..9f84e3be 100644
+---- a/.claude/rules/writing.md
+-+++ b/.claude/rules/writing.md
+-@@ -107,6 +107,10 @@ a sample string inside a code fence or a test fixture: quote each as itself, exe
+- | `blacklist`, `whitelist` | `denylist`, `allowlist`                   |
+- | `master`, `slave`        | `primary`, `replica`                      |
+- 
+-+- `policy/no-banned-term` reads every comment and the prose sweep in `tests/setupPolicy.ts` reads
+-+  every authored Markdown file, and each matches the rows this table bans unconditionally. The rule
+-+  and the sweep leave `now`, `new`, `latest`, `once`, `since`, and `master` unmatched because those
+-+  rows carry a permitted sense, so rule a hit in one of those rows yourself.
+- - Sweep case-insensitively and across inflections when checking prose against the preceding table. A
+-   pattern for `easy` reaches neither `Easy` nor `easier`, and a temporal `once` most often appears
+-   as a sentence-initial `Once`.
+-diff --git a/.oxlintrc.json b/.oxlintrc.json
+-index 483c955e..16e2efc4 100644
+---- a/.oxlintrc.json
+-+++ b/.oxlintrc.json
+-@@ -57,7 +57,9 @@
+- 		"vitest/warn-todo": "off",
+- 
+- 		"policy/no-mocking": "error",
+--		"policy/no-keyword-privacy": "error"
+-+		"policy/no-keyword-privacy": "error",
+-+		"policy/no-malformed-summary": "error",
+-+		"policy/no-banned-term": "error"
+- 	},
+- 	"categories": {
+- 		"correctness": "error",
+-diff --git a/PROPOSAL.md b/PROPOSAL.md
+-index 2371b40a..4e742f9d 100644
+---- a/PROPOSAL.md
+-+++ b/PROPOSAL.md
+-@@ -983,7 +983,7 @@ through `sourceCode.getAllComments()` (`plugins-dev.d.ts:2697`) and `CommentType
+- 
+- Treat each id as a proposal the first unit settles, the way the `render` name is a proposal. Each
+- sibling names what it refuses — `no-mocking`, `no-keyword-privacy`, `no-nested-functions` — so the
+--first unit may take that form instead and land `no-imperative-summary` and `no-banned-term`.
+-+first unit may take that form instead and land `no-malformed-summary` and `no-banned-term`.
+- 
+- Each visitor stays a one-line context-binding arrow delegating to a module-scope `report{Noun}`
+- function, per `.claude/rules/workspace.md` § Policy instruments, and each ships a `PolicyControl`
+-diff --git a/configs/policy.ts b/configs/policy.ts
+-index 631e8692..0a49e311 100644
+---- a/configs/policy.ts
+-+++ b/configs/policy.ts
+-@@ -38,9 +38,40 @@ export interface PolicyBinding {
+- 	readonly name: string | undefined
+- }
+- 
+-+/** Describes one comment the comment rules read out of a linted file. */
+-+export interface PolicyComment extends PolicyNode {
+-+	readonly type: 'Block' | 'Line' | 'Shebang'
+-+	readonly value: string
+-+}
+-+
+-+/** Lists the Oxlint source-text operations the comment rules read. */
+-+export interface PolicySourceCode {
+-+	readonly text: string
+-+	getAllComments(): readonly PolicyComment[]
+-+}
+-+
+-+/** Pairs one doc block with the declared name its first sentence must not repeat. */
+-+export interface PolicyDoc {
+-+	readonly comment: PolicyComment
+-+	readonly name: string | undefined
+-+}
+-+
+-+/** Describes one banned term, the prose it matches, and the replacement its row names. */
+-+export interface PolicyTerm {
+-+	readonly term: string
+-+	readonly pattern: RegExp
+-+	readonly replacement: string
+-+}
+-+
+-+/** Pairs one banned-term match with the offset it starts at. */
+-+export interface PolicyHit {
+-+	readonly term: PolicyTerm
+-+	readonly index: number
+-+}
+-+
+- /** Describes one diagnostic a policy rule emits. */
+- export interface PolicyDiagnostic {
+--	readonly node: PolicyExpression
+-+	readonly node: PolicyNode
+- 	readonly messageId: string
+- 	readonly data?: Readonly<Record<string, string>>
+- }
+-@@ -50,6 +81,7 @@ export interface PolicyContext {
+- 	readonly filename: string
+- 	/** Names the directory Oxlint resolves `filename` against. */
+- 	readonly cwd: string
+-+	readonly sourceCode: PolicySourceCode
+- 	report(diagnostic: PolicyDiagnostic): void
+- }
+- 
+-@@ -217,6 +249,134 @@ export const POLICY_CONSTANT_PATTERN = /^[A-Z][A-Z0-9_]*$/u
+- /** Matches the file name shape a direct module of a registered function domain takes. */
+- export const POLICY_DOMAIN_PATTERN = /^[a-z][A-Za-z0-9]*\.ts$/u
+- 
+-+/** Matches a first word that reads as a third-person verb. */
+-+export const POLICY_VOICE_PATTERN = /^[A-Z][a-z]*s$/u
+-+
+-+/** Matches the boundary a description paragraph's first sentence ends at. */
+-+export const POLICY_SENTENCE_PATTERN = /\.\s|\.$/u
+-+
+-+/** Matches the continuation marker a doc block repeats on each line after its opening. */
+-+export const POLICY_MARKER_PATTERN = /^\s*\*\s?/u
+-+
+-+/** Matches one line break in any host's form. */
+-+export const POLICY_BREAK_PATTERN = /\r\n|\r|\n/u
+-+
+-+/** Matches a fenced code block, opening run through closing run. */
+-+export const POLICY_FENCE_PATTERN = /^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[^\n]*$/gmu
+-+
+-+/** Matches an inline code span, including one a line break runs through. */
+-+export const POLICY_SPAN_PATTERN = /(`+)(?!`)[\s\S]*?[^`]\1(?!`)/gu
+-+
+-+/** Matches a link or inherited-documentation tag, whose target is a symbol rather than prose. */
+-+export const POLICY_TAG_PATTERN = /\{@(?:linkcode|linkplain|link|inheritDoc)\b[^}]*\}/giu
+-+
+-+/** Matches a URL, whose segments are an address rather than prose. */
+-+export const POLICY_URL_PATTERN = /https?:\/\/\S+/gu
+-+
+-+/**
+-+ * Lists the words ending in `s` that open a sentence without being a third-person verb.
+-+ *
+-+ * @remarks
+-+ * The voice rule reads a first word rather than a parsed verb, so a demonstrative, a pronoun, an
+-+ * adverb, and a singular noun ending in `s` each need naming here to stay refused.
+-+ */
+-+export const POLICY_VOICE_STOPWORDS: readonly string[] = Object.freeze([
+-+	'Access',
+-+	'Across',
+-+	'Address',
+-+	'Alias',
+-+	'Always',
+-+	'Analysis',
+-+	'Assess',
+-+	'Basis',
+-+	'Bias',
+-+	'Bus',
+-+	'Business',
+-+	'Canvas',
+-+	'Chaos',
+-+	'Class',
+-+	'Compress',
+-+	'Cross',
+-+	'Discuss',
+-+	'Dismiss',
+-+	'Express',
+-+	'Focus',
+-+	'Gas',
+-+	'Guess',
+-+	'Harness',
+-+	'Its',
+-+	'Lens',
+-+	'Miss',
+-+	'Numerous',
+-+	'Pass',
+-+	'Perhaps',
+-+	'Plus',
+-+	'Press',
+-+	'Previous',
+-+	'Process',
+-+	'Progress',
+-+	'Series',
+-+	'Sometimes',
+-+	'Status',
+-+	'Success',
+-+	'This',
+-+	'Thus',
+-+	'Unless',
+-+	'Various',
+-+	'Was',
+-+	'Whereas',
+-+	'Witness',
+-+	'Yes',
+-+])
+-+
+-+/**
+-+ * Lists every substitution-table row whose ban is unconditional, beside its replacement.
+-+ *
+-+ * @remarks
+-+ * Each pattern is case-insensitive, word-bounded, and global, and carries the inflections its row
+-+ * reaches.
+-+ */
+-+export const POLICY_BANNED_TERMS: readonly PolicyTerm[] = Object.freeze([
+-+	{ term: 'should', pattern: /\bshould\b/giu, replacement: 'must, can, might, or the imperative' },
+-+	{ term: 'simply', pattern: /\bsimply\b/giu, replacement: 'delete' },
+-+	{ term: 'easy', pattern: /\beas(?:y|ier|iest|ily)\b/giu, replacement: 'delete' },
+-+	{ term: 'just', pattern: /\bjust\b/giu, replacement: 'delete' },
+-+	{ term: 'currently', pattern: /\bcurrently\b/giu, replacement: 'delete, or give the date' },
+-+	{ term: 'utilize', pattern: /\butiliz(?:e|es|ed|ing|ation)\b/giu, replacement: 'use' },
+-+	{ term: 'leverage', pattern: /\bleverag(?:e|es|ed|ing)\b/giu, replacement: 'use' },
+-+	{ term: 'via', pattern: /\bvia\b/giu, replacement: 'through, by using' },
+-+	{ term: 'in order to', pattern: /\bin order to\b/giu, replacement: 'to' },
+-+	{ term: 'e.g.', pattern: /\be\.g\./giu, replacement: 'for example' },
+-+	{ term: 'i.e.', pattern: /\bi\.e\./giu, replacement: 'that is' },
+-+	{ term: 'etc.', pattern: /\betc\./giu, replacement: 'bound the list, or recast the sentence' },
+-+	{ term: 'performant', pattern: /\bperformant\b/giu, replacement: 'the measured property' },
+-+	{ term: 'robust', pattern: /\brobust(?:ly|ness)?\b/giu, replacement: 'the measured property' },
+-+	{ term: 'allows you to', pattern: /\ballows you to\b/giu, replacement: 'lets you' },
+-+	{ term: 'and/or', pattern: /\band\/or\b/giu, replacement: 'and, or, or both' },
+-+	{ term: 'please', pattern: /\bplease\b/giu, replacement: 'delete' },
+-+	{ term: 'sanity check', pattern: /\bsanity[ -]check/giu, replacement: 'quick check' },
+-+	{ term: 'dummy', pattern: /\bdumm(?:y|ies)\b/giu, replacement: 'placeholder' },
+-+	{ term: 'blacklist', pattern: /\bblacklist(?:s|ed|ing)?\b/giu, replacement: 'denylist' },
+-+	{ term: 'whitelist', pattern: /\bwhitelist(?:s|ed|ing)?\b/giu, replacement: 'allowlist' },
+-+	{ term: 'slave', pattern: /\bslave\b/giu, replacement: 'replica' },
+-+])
+-+
+-+/**
+-+ * Lists every substitution-table row a reader rules by sense, which no pattern matches.
+-+ *
+-+ * @remarks
+-+ * Each row carries a permitted sense: a date value, a version value, a causal clause, and the name
+-+ * a replication topology takes. The currency check proves each row is registered here.
+-+ */
+-+export const POLICY_JUDGED_TERMS: readonly string[] = Object.freeze([
+-+	'now',
+-+	'new',
+-+	'latest',
+-+	'once',
+-+	'since',
+-+	'master',
+-+])
+-+
+- /** Returns the file name a policy rule keys on, read from either host separator. */
+- export function pathToPolicyFile(filename: string): string {
+- 	const normalized = filename.replaceAll('\\', '/')
+-@@ -526,6 +686,164 @@ export function importsPolicyTerminator(node: PolicyExpression): boolean {
+- 	)
+- }
+- 
+-+/**
+-+ * Blanks every character of a matched region, holding its length and its line breaks.
+-+ *
+-+ * @param text - The matched region to blank.
+-+ * @returns The region with each character outside a line break replaced by a space.
+-+ */
+-+export function blankPolicyText(text: string): string {
+-+	return text.replace(/[^\n]/gu, ' ')
+-+}
+-+
+-+/**
+-+ * Blanks the regions of a text whose content is code, an address, or a symbol rather than prose.
+-+ *
+-+ * @remarks
+-+ * A fenced block, an inline code span a line break runs through, a link tag, and a URL each carry
+-+ * tokens a reader is meant to copy rather than read, so a banned term inside one is not prose. Each
+-+ * region is blanked in place, so every offset the caller reports stays the offset in the original
+-+ * text.
+-+ *
+-+ * @param text - The prose to strip, with any continuation marker already removed.
+-+ * @returns The same text with every code, tag, and address region replaced by spaces.
+-+ */
+-+export function stripPolicyCode(text: string): string {
+-+	const fenced = text.replace(POLICY_FENCE_PATTERN, blankPolicyText)
+-+	const spanned = fenced.replace(POLICY_SPAN_PATTERN, blankPolicyText)
+-+	const tagged = spanned.replace(POLICY_TAG_PATTERN, blankPolicyText)
+-+	return tagged.replace(POLICY_URL_PATTERN, blankPolicyText)
+-+}
+-+
+-+/**
+-+ * Reads every banned term a stripped text carries, in offset order.
+-+ *
+-+ * @param text - The prose to read, already stripped of its code regions.
+-+ * @returns One hit per match, each naming its row and the offset the match starts at.
+-+ */
+-+export function textToPolicyHits(text: string): readonly PolicyHit[] {
+-+	const hits: PolicyHit[] = []
+-+	for (const term of POLICY_BANNED_TERMS) {
+-+		for (const match of text.matchAll(term.pattern)) hits.push({ term, index: match.index })
+-+	}
+-+	return hits.sort((left, right) => left.index - right.index)
+-+}
+-+
+-+/**
+-+ * Reads one doc block's description paragraph, which ends at its first block tag.
+-+ *
+-+ * @param comment - The doc block to read.
+-+ * @returns The description with continuation markers removed and whitespace collapsed.
+-+ */
+-+export function commentToPolicyParagraph(comment: PolicyComment): string {
+-+	const description: string[] = []
+-+	for (const line of comment.value.split(POLICY_BREAK_PATTERN)) {
+-+		const text = line.replace(POLICY_MARKER_PATTERN, '')
+-+		if (text.trimStart().startsWith('@')) break
+-+		description.push(text)
+-+	}
+-+	return description.join(' ').replace(/\s+/gu, ' ').trim()
+-+}
+-+
+-+/**
+-+ * Reads the opening word of a description paragraph, punctuation removed.
+-+ *
+-+ * @param paragraph - The collapsed description paragraph.
+-+ * @returns The paragraph's first word reduced to its letters, empty where it has none.
+-+ */
+-+export function paragraphToPolicyOpener(paragraph: string): string {
+-+	const first = paragraph.match(/^\S+/u)?.[0] ?? ''
+-+	return first.replace(/[^A-Za-z]/gu, '')
+-+}
+-+
+-+/**
+-+ * Reports whether an opening word reads as a third-person verb.
+-+ *
+-+ * @param word - The opening word to judge.
+-+ * @returns True if the word ends in `s` and names no registered non-verb; false otherwise.
+-+ */
+-+export function isPolicyVoiced(word: string): boolean {
+-+	return POLICY_VOICE_PATTERN.test(word) && !POLICY_VOICE_STOPWORDS.includes(word)
+-+}
+-+
+-+/**
+-+ * Pairs every exported top-level statement with the doc block written directly above it.
+-+ *
+-+ * @remarks
+-+ * A statement takes the last comment that closes before it, and takes it only where that comment is
+-+ * a doc block and nothing but whitespace separates the two. A blank line between them is still
+-+ * whitespace, so the pairing survives one.
+-+ *
+-+ * @param node - The program node whose top-level statements are read.
+-+ * @param sourceCode - The source-text reader supplying the comments and the text between them.
+-+ * @returns One entry per documented export, each naming its block and its declared symbol.
+-+ */
+-+export function programToPolicyDocs(
+-+	node: PolicyExpression,
+-+	sourceCode: PolicySourceCode,
+-+): readonly PolicyDoc[] {
+-+	const comments = sourceCode.getAllComments()
+-+	const docs: PolicyDoc[] = []
+-+	for (const statement of programToPolicyStatements(node)) {
+-+		if (!statement.type.startsWith('Export')) continue
+-+		const start = statement.range[0]
+-+		let previous: PolicyComment | undefined
+-+		for (const comment of comments) {
+-+			if (comment.range[1] <= start) previous = comment
+-+		}
+-+		if (previous === undefined || previous.type !== 'Block') continue
+-+		if (!previous.value.startsWith('*')) continue
+-+		if (sourceCode.text.slice(previous.range[1], start).trim() !== '') continue
+-+		const declaration = statement.declaration
+-+		docs.push({
+-+			comment: previous,
+-+			name:
+-+				identifierToPolicyName(declaration?.id) ??
+-+				identifierToPolicyName(declaration?.declarations?.[0]?.id),
+-+		})
+-+	}
+-+	return docs
+-+}
+-+
+-+/** Reports a doc block whose first sentence is not a third-person summary of its own symbol. */
+-+export function reportVoice(context: PolicyContext, doc: PolicyDoc): void {
+-+	const paragraph = commentToPolicyParagraph(doc.comment)
+-+	if (!isPolicyVoiced(paragraphToPolicyOpener(paragraph))) {
+-+		context.report({ node: doc.comment, messageId: 'voice' })
+-+	}
+-+	const name = doc.name
+-+	if (name === undefined) return
+-+	const sentence = paragraph.split(POLICY_SENTENCE_PATTERN)[0] ?? ''
+-+	const repeat = new RegExp(`(?<![\\w$])${name.replaceAll('$', '\\$')}(?![\\w$])`, 'u')
+-+	if (repeat.test(sentence)) {
+-+		context.report({ node: doc.comment, messageId: 'name', data: { name } })
+-+	}
+-+}
+-+
+-+/** Reports every voice failure among the doc blocks one program's exports carry. */
+-+export function reportDocs(context: PolicyContext, node: PolicyExpression): void {
+-+	for (const doc of programToPolicyDocs(node, context.sourceCode)) reportVoice(context, doc)
+-+}
+-+
+-+/** Reports every banned term one comment's prose carries. */
+-+export function reportTerm(context: PolicyContext, comment: PolicyComment): void {
+-+	const lines = comment.value
+-+		.split(POLICY_BREAK_PATTERN)
+-+		.map((line) => line.replace(POLICY_MARKER_PATTERN, ''))
+-+	for (const hit of textToPolicyHits(stripPolicyCode(lines.join('\n')))) {
+-+		context.report({
+-+			node: comment,
+-+			messageId: 'term',
+-+			data: { term: hit.term.term, replacement: hit.term.replacement },
+-+		})
+-+	}
+-+}
+-+
+-+/** Reports every banned term the comments of one linted file carry. */
+-+export function reportComments(context: PolicyContext): void {
+-+	for (const comment of context.sourceCode.getAllComments()) reportTerm(context, comment)
+-+}
+-+
+- /** Reports function syntax nested inside another function body. */
+- export function reportNested(context: PolicyContext, node: PolicyExpression): void {
+- 	if (
+-@@ -1013,6 +1331,46 @@ export const ENDING_RULE: PolicyRuleInterface = {
+- 	},
+- }
+- 
+-+/** Bans a doc block above an export whose first sentence is not a third-person summary. */
+-+export const VOICE_RULE: PolicyRuleInterface = {
+-+	meta: {
+-+		type: 'problem',
+-+		docs: {
+-+			description:
+-+				'Disallow a description paragraph that opens on a word other than a third-person verb, and one that names the symbol it documents.',
+-+		},
+-+		messages: {
+-+			voice:
+-+				'Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.',
+-+			name: 'State what the symbol does without naming {{name}} in the first sentence.',
+-+		},
+-+	},
+-+	create(context) {
+-+		return {
+-+			Program: (node) => reportDocs(context, node),
+-+		}
+-+	},
+-+}
+-+
+-+/** Bans a comment carrying a term the substitution table bans unconditionally. */
+-+export const TERM_RULE: PolicyRuleInterface = {
+-+	meta: {
+-+		type: 'problem',
+-+		docs: {
+-+			description:
+-+				'Disallow an unconditionally banned substitution-table term in comment prose, outside code spans, fenced blocks, link tags, and URLs.',
+-+		},
+-+		messages: {
+-+			term: 'Replace {{term}} in this comment: {{replacement}}.',
+-+		},
+-+	},
+-+	create(context) {
+-+		return {
+-+			Program: () => reportComments(context),
+-+		}
+-+	},
+-+}
+-+
+- /** Declares the workspace Oxlint plugin. */
+- export default {
+- 	meta: { name: 'policy' },
+-@@ -1030,5 +1388,7 @@ export default {
+- 		'no-misnamed-factory': FACTORY_RULE,
+- 		'no-malformed-domain': DOMAIN_RULE,
+- 		'no-host-line-endings': ENDING_RULE,
+-+		'no-malformed-summary': VOICE_RULE,
+-+		'no-banned-term': TERM_RULE,
+- 	},
+- }
+-diff --git a/guides/scaffold.md b/guides/scaffold.md
+-index c4adaf9c..93ce1b96 100644
+---- a/guides/scaffold.md
+-+++ b/guides/scaffold.md
+-@@ -1010,6 +1010,18 @@ each of which selects its project by being written. Scaffold content-owns `tests
+- `tests/policy.test.ts`, and `tests/config.test.ts`; `repair` and `overwrite` restore those files when
+- their bytes drift or the files are missing.
+- 
+-+`tests/policy.test.ts` proves the path- and text-shaped laws, and the vendored oxlint plugin
+-+`configs/policy.ts` carries the syntax-shaped ones: `policy/no-malformed-summary` reads the doc
+-+block preceding each export, and `policy/no-banned-term` reads every comment for a term
+-+`.claude/rules/writing.md` § Substitutions bans unconditionally. The prose sweep in
+-+`tests/setupPolicy.ts` reads every authored Markdown file for the same terms through the
+-+`POLICY_BANNED_TERMS` denylist the rule and the sweep share, and `tests/policy.test.ts` proves that
+-+denylist against the table wherever the workspace authors it. The sweep skips a top-level guide the
+-+package catalog in `.claude/agents/orkestrel.md` registers to another package, because a mirror is
+-+fetched bytes rather than prose this workspace wrote, and it reports a top-level guide that is
+-+neither this package's own, nor `guides/README.md`, nor a catalog row, so an exclusion always
+-+carries its evidence.
+-+
+- `tests/distribution.test.ts` is the one proof scaffold generates, and the one test artifact it
+- claims by presence. Generation is the line, not writing: scaffold writes the vendored
+- `tests/policy.test.ts` and `tests/config.test.ts` proofs too, and restores them, but those are the
+-@@ -1810,9 +1822,9 @@ port, so the run drives nothing external and stays in `test`.
+-   rendering, and the failure envelope.
+- - [`tests/src/bin/main.test.ts`](../tests/src/bin/main.test.ts) — the process entry point.
+- - [`tests/policy.test.ts`](../tests/policy.test.ts) — the path- and text-shaped policy laws:
+--  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges. The
+--  syntax-shaped laws are not here: each is a rule of the vendored oxlint plugin
+--  `configs/policy.ts`, which reads one file's declarations and reports through the linter.
+-+  mirrors, suppressions, the rule map, filenames, manifest scripts, skills, bridges, and the prose
+-+  sweep over every authored Markdown file. The syntax-shaped laws are the rules of the vendored
+-+  oxlint plugin `configs/policy.ts`, proven in `tests/config.test.ts`.
+- - [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration's aliases, projects,
+-   and outputs, every plugin rule against a case pair drawn from inside and outside its membership
+-   boundary, and the declaration roll-up over a real face.
+-diff --git a/host.json b/host.json
+-index be045d58..6b5d42d3 100644
+---- a/host.json
+-+++ b/host.json
+-@@ -442,7 +442,7 @@
+- 			"storage": "claude/rules/typescript.md",
+- 			"destination": ".claude/rules/typescript.md",
+- 			"executable": false,
+--			"digest": "0427a66e6005eeb05a31ae4ee6cb1ec5b411ccf39183d14fe979d4728c391b01"
+-+			"digest": "5b8deb2fe595d350382d2af62f9c19c16730ff4bf91ba2dc6060e4de9ec40ab6"
+- 		},
+- 		{
+- 			"storage": "claude/rules/workspace.md",
+-@@ -454,7 +454,7 @@
+- 			"storage": "claude/rules/writing.md",
+- 			"destination": ".claude/rules/writing.md",
+- 			"executable": false,
+--			"digest": "dc979ac7bbabf483c66b22f68460d0f03ef5c3059854f1a0802d8a2a9213d2f3"
+-+			"digest": "de30d71c93176c8216aa8f9792e669263104053106a76720af96bf77dea9a61a"
+- 		},
+- 		{
+- 			"storage": "claude/settings.json",
+-@@ -610,7 +610,7 @@
+- 			"storage": "configs/policy.ts",
+- 			"destination": "configs/policy.ts",
+- 			"executable": false,
+--			"digest": "d2c7ff200ab884cf3fe59a981e926114a368b2d474a912fc7ff9ffda8901a307"
+-+			"digest": "477235716dca10f84af294fa7ebad7ff4a321aafe563664b7cd24676f31459d9"
+- 		},
+- 		{
+- 			"storage": "cursor/mcp.json",
+-@@ -664,7 +664,7 @@
+- 			"storage": "dotfiles/oxlintrc.json",
+- 			"destination": ".oxlintrc.json",
+- 			"executable": false,
+--			"digest": "dd08fb209bb55d9241631d843066080e7785d6dd203cbb8666fe64924d93dd7c"
+-+			"digest": "76489f915efe64f08b72709f4b499e145852444df9b1e94273f9dddd9d2af3a5"
+- 		},
+- 		{
+- 			"storage": "dotfiles/prettierignore",
+-@@ -682,7 +682,7 @@
+- 			"storage": "guides/scaffold.md",
+- 			"destination": "guides/scaffold.md",
+- 			"executable": false,
+--			"digest": "4848e6652386cc3e9afe31257b3bf29f16d46cc14169942997bc9831a3cbc83f"
+-+			"digest": "5aef7a17f3f81ff0115ae99482f61fbfad13bd0d1818124c895b5fa20403b76c"
+- 		},
+- 		{
+- 			"storage": "scripts/codex.sh",
+-@@ -712,19 +712,19 @@
+- 			"storage": "tests/config.test.ts",
+- 			"destination": "tests/config.test.ts",
+- 			"executable": false,
+--			"digest": "cf74bd80e7ccea25d9dc57442fdb277e83ce4d5e91ee1441ddc8f8b0841fea85"
+-+			"digest": "788e83c01623a043084a4a094fed9932c80b781ed25e894e7f6fc2cfc5e9990c"
+- 		},
+- 		{
+- 			"storage": "tests/policy.test.ts",
+- 			"destination": "tests/policy.test.ts",
+- 			"executable": false,
+--			"digest": "4fbeedc813cd777d11430d76e849db22698d2251eda95ca6ddbb09c49716750c"
+-+			"digest": "75791e0758d4eb4a4acc954be7660790b92e1607ee783be9a741723b58c541d1"
+- 		},
+- 		{
+- 			"storage": "tests/setupPolicy.ts",
+- 			"destination": "tests/setupPolicy.ts",
+- 			"executable": false,
+--			"digest": "b67a8f7a21ea8b50f4e41fd135e18f60b944be09efc0db924c920e7f426153da"
+-+			"digest": "0bd6d748a31976b282b227e7bed540bb8b270f7779b3a6df8d982e6ecd184400"
+- 		}
+- 	],
+- 	"roots": [
+-@@ -772,5 +772,5 @@
+- 		".codex/agents",
+- 		".cursor/rules"
+- 	],
+--	"digest": "f8b93d4320ffa3a328931ef220c289ec86eb6c83c406597e980f572da8961afa"
+-+	"digest": "ef1438cf27dc739a6a27feeef64ca9b47842755294ad75a5c03cf7bd9c0d591f"
+- }
+-diff --git a/tests/config.test.ts b/tests/config.test.ts
+-index 5181f07a..b00f4e3a 100644
+---- a/tests/config.test.ts
+-+++ b/tests/config.test.ts
+-@@ -35,10 +35,21 @@ import policyPlugin, {
+- 	MOCKING_RULE,
+- 	NESTED_RULE,
+- 	PARSER_RULE,
+-+	POLICY_BANNED_TERMS,
+- 	POLICY_ENDING_GLOBS,
+-+	POLICY_JUDGED_TERMS,
+- 	POLICY_PLACEMENT_GLOBS,
+-+	POLICY_VOICE_STOPWORDS,
+- 	PRIVACY_RULE,
+-+	TERM_RULE,
+- 	TYPE_RULE,
+-+	VOICE_RULE,
+-+	blankPolicyText,
+-+	commentToPolicyParagraph,
+-+	isPolicyVoiced,
+-+	paragraphToPolicyOpener,
+-+	stripPolicyCode,
+-+	textToPolicyHits,
+- } from '../configs/policy.js'
+- import configuration, { resolveWorkspacePath } from '../vite.config.js'
+- import tsconfig from '../tsconfig.json' with { type: 'json' }
+-@@ -1324,6 +1335,393 @@ describe('policy plugin', () => {
+- 		],
+- 	})
+- 
+-+	tester.run('no-malformed-summary', VOICE_RULE, {
+-+		valid: [
+-+			{
+-+				name: 'accepts a third-person opener',
+-+				code: ['/** Creates a control. */', 'export const CONTROL = 1'].join('\n'),
+-+			},
+-+			{
+-+				name: 'accepts a whether clause',
+-+				code: ['/** Checks whether the reader is ready. */', 'export const READY = true'].join(
+-+					'\n',
+-+				),
+-+			},
+-+			{
+-+				name: 'accepts a two-letter third-person opener',
+-+				code: ['/** Is the value a reader receives. */', 'export const CONTROL = 1'].join('\n'),
+-+			},
+-+			{
+-+				name: 'accepts a reporting opener',
+-+				code: ['/** Reports whether the reader is ready. */', 'export const READY = true'].join(
+-+					'\n',
+-+				),
+-+			},
+-+			{
+-+				name: 'accepts an anonymous default export',
+-+				code: ['/** Declares the fixture plugin. */', 'export default { meta: 1 }'].join('\n'),
+-+			},
+-+			{
+-+				name: 'accepts a doc block on a declaration no export reaches',
+-+				code: ['/** The opener, a noun phrase. */', 'const CONTROL = 1', 'void CONTROL'].join('\n'),
+-+			},
+-+			{
+-+				name: 'accepts a doc block on a class member',
+-+				code: [
+-+					'/** Holds one value. */',
+-+					'export class Holder {',
+-+					'\t/** The member value, a noun phrase. */',
+-+					'\tvalue = 1',
+-+					'}',
+-+				].join('\n'),
+-+			},
+-+			{
+-+				name: 'accepts a single-star block comment before an export',
+-+				code: ['/* The opener, a noun phrase. */', 'export const CONTROL = 1'].join('\n'),
+-+			},
+-+			{
+-+				name: 'accepts a word from the stop set after the opener',
+-+				code: ['/** Reports whether this process passes. */', 'export const READY = true'].join(
+-+					'\n',
+-+				),
+-+			},
+-+			{
+-+				name: 'accepts a block tag naming the symbol after the description [membership: text before the first block tag]',
+-+				code: [
+-+					'/**',
+-+					' * Creates a control',
+-+					' *',
+-+					' * @param value - The value readControl reads.',
+-+					' */',
+-+					'export function readControl(value: number): number {',
+-+					'\treturn value',
+-+					'}',
+-+				].join('\n'),
+-+			},
+-+			{ name: 'accepts an export carrying no doc block', code: 'export const CONTROL = 1' },
+-+		],
+-+		invalid: [
+-+			{
+-+				name: 'rejects a noun-phrase opener [membership: doc blocks directly above a top-level export]',
+-+				code: ['/** The opener, a noun phrase. */', 'export const CONTROL = 1'].join('\n'),
+-+				errors: [{ messageId: 'voice' }],
+-+			},
+-+			{
+-+				name: 'rejects an imperative opener [membership: doc blocks directly above a top-level export]',
+-+				code: ['/** Create a control. */', 'export function createControl(): void {}'].join('\n'),
+-+				errors: [{ messageId: 'voice' }],
+-+			},
+-+			{
+-+				name: 'rejects an opener from the stop set [membership: opening words ending in s that name no verb]',
+-+				code: ['/** This holds one value. */', 'export const CONTROL = 1'].join('\n'),
+-+				errors: [{ messageId: 'voice' }],
+-+			},
+-+			{
+-+				name: 'rejects a first sentence naming its own class [membership: the declared identifier inside the first sentence]',
+-+				code: ['/** Returns the value ControlTwo carries. */', 'export class ControlTwo {}'].join(
+-+					'\n',
+-+				),
+-+				errors: [{ messageId: 'name', data: { name: 'ControlTwo' } }],
+-+			},
+-+			{
+-+				name: 'rejects a first sentence naming its own constant [membership: the declared identifier inside the first sentence]',
+-+				code: ['/** Returns the value CONTROL carries. */', 'export const CONTROL = 1'].join('\n'),
+-+				errors: [{ messageId: 'name', data: { name: 'CONTROL' } }],
+-+			},
+-+			{
+-+				name: 'rejects an empty doc block [membership: description paragraphs, the empty one included]',
+-+				code: ['/** */', 'export const CONTROL = 1'].join('\n'),
+-+				errors: [{ messageId: 'voice' }],
+-+			},
+-+			{
+-+				name: 'rejects a doc block a blank line separates from its export [membership: doc blocks whitespace alone separates from a top-level export]',
+-+				code: ['/** The opener, a noun phrase. */', '', 'export const CONTROL = 1'].join('\n'),
+-+				errors: [{ messageId: 'voice' }],
+-+			},
+-+		],
+-+	})
+-+
+-+	tester.run('no-banned-term', TERM_RULE, {
+-+		valid: [
+-+			{ name: 'accepts a term inside a code span', code: '// A `should` token names one row.' },
+-+			{
+-+				name: 'accepts a term inside a fenced example',
+-+				code: [
+-+					'/**',
+-+					' * Reads one value.',
+-+					' *',
+-+					' * @example',
+-+					' * ```text',
+-+					' * should stay',
+-+					' * ```',
+-+					' */',
+-+					'export const CONTROL = 1',
+-+				].join('\n'),
+-+			},
+-+			{
+-+				name: 'accepts a term inside a link target',
+-+				code: '/** Reports the state. {@link Example.should} */',
+-+			},
+-+			{
+-+				name: 'accepts a term inside an address',
+-+				code: '// Read https://example.test/should/row for the shape.',
+-+			},
+-+			{
+-+				name: 'accepts a term inside a code span a line break runs through',
+-+				code: ['/**', ' * A span `that', ' * spans lines with should` here.', ' */'].join('\n'),
+-+			},
+-+			{ name: 'accepts a judged term', code: '// The new value is read once now.' },
+-+			{
+-+				name: 'accepts a longer word carrying a term',
+-+				code: '// A justice viable pleased reader.',
+-+			},
+-+			{ name: 'accepts prose carrying no term', code: '// Reads the value a reader receives.' },
+-+		],
+-+		invalid: [
+-+			{
+-+				name: 'rejects should [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// A reader should meet this row.',
+-+				errors: [
+-+					{
+-+						messageId: 'term',
+-+						data: { term: 'should', replacement: 'must, can, might, or the imperative' },
+-+					},
+-+				],
+-+			},
+-+			{
+-+				name: 'rejects should in a block comment [membership: block and line comments alike]',
+-+				code: '/** Reports the state a reader should meet. */',
+-+				errors: [
+-+					{
+-+						messageId: 'term',
+-+						data: { term: 'should', replacement: 'must, can, might, or the imperative' },
+-+					},
+-+				],
+-+			},
+-+			{
+-+				name: 'rejects simply [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The reader simply reads.',
+-+				errors: [{ messageId: 'term', data: { term: 'simply', replacement: 'delete' } }],
+-+			},
+-+			{
+-+				name: 'rejects easy [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path is easy.',
+-+				errors: [{ messageId: 'term', data: { term: 'easy', replacement: 'delete' } }],
+-+			},
+-+			{
+-+				name: 'rejects easiest [membership: the inflections one row reaches]',
+-+				code: '// The path is easiest.',
+-+				errors: [{ messageId: 'term', data: { term: 'easy', replacement: 'delete' } }],
+-+			},
+-+			{
+-+				name: 'rejects just [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The reader just reads.',
+-+				errors: [{ messageId: 'term', data: { term: 'just', replacement: 'delete' } }],
+-+			},
+-+			{
+-+				name: 'rejects currently [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The reader currently reads.',
+-+				errors: [
+-+					{
+-+						messageId: 'term',
+-+						data: { term: 'currently', replacement: 'delete, or give the date' },
+-+					},
+-+				],
+-+			},
+-+			{
+-+				name: 'rejects utilizes [membership: the inflections one row reaches]',
+-+				code: '// The reader utilizes the path.',
+-+				errors: [{ messageId: 'term', data: { term: 'utilize', replacement: 'use' } }],
+-+			},
+-+			{
+-+				name: 'rejects utilizing [membership: the inflections one row reaches]',
+-+				code: '// The reader is utilizing the path.',
+-+				errors: [{ messageId: 'term', data: { term: 'utilize', replacement: 'use' } }],
+-+			},
+-+			{
+-+				name: 'rejects leverages [membership: the inflections one row reaches]',
+-+				code: '// The reader leverages the path.',
+-+				errors: [{ messageId: 'term', data: { term: 'leverage', replacement: 'use' } }],
+-+			},
+-+			{
+-+				name: 'rejects leveraged [membership: the inflections one row reaches]',
+-+				code: '// The reader leveraged the path.',
+-+				errors: [{ messageId: 'term', data: { term: 'leverage', replacement: 'use' } }],
+-+			},
+-+			{
+-+				name: 'rejects via [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The reader arrives via the path.',
+-+				errors: [{ messageId: 'term', data: { term: 'via', replacement: 'through, by using' } }],
+-+			},
+-+			{
+-+				name: 'rejects in order to [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The reader reads in order to learn.',
+-+				errors: [{ messageId: 'term', data: { term: 'in order to', replacement: 'to' } }],
+-+			},
+-+			{
+-+				name: 'rejects the abbreviated for example [membership: dotted rows read with their dots]',
+-+				code: '// The reader reads one path, e.g. the front page.',
+-+				errors: [{ messageId: 'term', data: { term: 'e.g.', replacement: 'for example' } }],
+-+			},
+-+			{
+-+				name: 'rejects the abbreviated that is [membership: dotted rows read with their dots]',
+-+				code: '// The reader reads one path, i.e. the front page.',
+-+				errors: [{ messageId: 'term', data: { term: 'i.e.', replacement: 'that is' } }],
+-+			},
+-+			{
+-+				name: 'rejects the abbreviated list ending [membership: dotted rows read with their dots]',
+-+				code: '// The reader reads paths, files, etc.',
+-+				errors: [
+-+					{
+-+						messageId: 'term',
+-+						data: { term: 'etc.', replacement: 'bound the list, or recast the sentence' },
+-+					},
+-+				],
+-+			},
+-+			{
+-+				name: 'rejects performant [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path is performant.',
+-+				errors: [
+-+					{ messageId: 'term', data: { term: 'performant', replacement: 'the measured property' } },
+-+				],
+-+			},
+-+			{
+-+				name: 'rejects robust [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path is robust.',
+-+				errors: [
+-+					{ messageId: 'term', data: { term: 'robust', replacement: 'the measured property' } },
+-+				],
+-+			},
+-+			{
+-+				name: 'rejects robustness [membership: the inflections one row reaches]',
+-+				code: '// The path has robustness.',
+-+				errors: [
+-+					{ messageId: 'term', data: { term: 'robust', replacement: 'the measured property' } },
+-+				],
+-+			},
+-+			{
+-+				name: 'rejects allows you to [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path allows you to read.',
+-+				errors: [{ messageId: 'term', data: { term: 'allows you to', replacement: 'lets you' } }],
+-+			},
+-+			{
+-+				name: 'rejects the conjunction pair [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The reader reads a path and/or a file.',
+-+				errors: [{ messageId: 'term', data: { term: 'and/or', replacement: 'and, or, or both' } }],
+-+			},
+-+			{
+-+				name: 'rejects please [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// Read the path, please.',
+-+				errors: [{ messageId: 'term', data: { term: 'please', replacement: 'delete' } }],
+-+			},
+-+			{
+-+				name: 'rejects the hyphenated quick check [membership: rows written with a space or a hyphen]',
+-+				code: '// Run a sanity-check over the path.',
+-+				errors: [{ messageId: 'term', data: { term: 'sanity check', replacement: 'quick check' } }],
+-+			},
+-+			{
+-+				name: 'rejects dummy [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path names a dummy value.',
+-+				errors: [{ messageId: 'term', data: { term: 'dummy', replacement: 'placeholder' } }],
+-+			},
+-+			{
+-+				name: 'rejects dummies [membership: the inflections one row reaches]',
+-+				code: '// The path names two dummies.',
+-+				errors: [{ messageId: 'term', data: { term: 'dummy', replacement: 'placeholder' } }],
+-+			},
+-+			{
+-+				name: 'rejects the refused list name [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path reads a blacklist.',
+-+				errors: [{ messageId: 'term', data: { term: 'blacklist', replacement: 'denylist' } }],
+-+			},
+-+			{
+-+				name: 'rejects the refused permit name [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path reads a whitelist.',
+-+				errors: [{ messageId: 'term', data: { term: 'whitelist', replacement: 'allowlist' } }],
+-+			},
+-+			{
+-+				name: 'rejects the refused replica name [membership: comment prose outside code, tags, and addresses]',
+-+				code: '// The path names a slave copy.',
+-+				errors: [{ messageId: 'term', data: { term: 'slave', replacement: 'replica' } }],
+-+			},
+-+		],
+-+	})
+-+
+-+	it('blanks a matched region without moving a line break', () => {
+-+		expect(blankPolicyText('abc')).toBe('   ')
+-+		expect(blankPolicyText('ab\ncd')).toBe('  \n  ')
+-+	})
+-+
+-+	it('blanks every code, tag, and address region while holding each later offset', () => {
+-+		const text = [
+-+			'A `should` span.',
+-+			'```text',
+-+			'should stay',
+-+			'```',
+-+			'A {@link Example.should} tag.',
+-+			'Read https://example.test/should/row here.',
+-+			'A reader should meet this row.',
+-+		].join('\n')
+-+		const stripped = stripPolicyCode(text)
+-+		expect(stripped).toHaveLength(text.length)
+-+		expect(stripped.split('\n')).toHaveLength(text.split('\n').length)
+-+		const hits = textToPolicyHits(stripped)
+-+		expect(hits.map((hit) => hit.term.term)).toEqual(['should'])
+-+		expect(text.slice(hits[0]?.index ?? -1, (hits[0]?.index ?? 0) + 6)).toBe('should')
+-+	})
+-+
+-+	it('reads every banned-term hit in offset order with the row it matched', () => {
+-+		const hits = textToPolicyHits('The reader utilizes a path and arrives via a file.')
+-+		expect(hits.map((hit) => hit.term.term)).toEqual(['utilize', 'via'])
+-+		expect(hits.map((hit) => hit.term.replacement)).toEqual(['use', 'through, by using'])
+-+		expect(hits[0]?.index).toBeLessThan(hits[1]?.index ?? 0)
+-+		expect(textToPolicyHits('The reader reads one path.')).toEqual([])
+-+	})
+-+
+-+	it('reads a description paragraph up to its first block tag', () => {
+-+		expect(
+-+			commentToPolicyParagraph({
+-+				type: 'Block',
+-+				value: '*\n * Creates a control.\n *\n * @param value - Reports the state.\n ',
+-+				range: [0, 0],
+-+			}),
+-+		).toBe('Creates a control.')
+-+		expect(
+-+			commentToPolicyParagraph({ type: 'Block', value: '* Creates a control. ', range: [0, 0] }),
+-+		).toBe('Creates a control.')
+-+		expect(commentToPolicyParagraph({ type: 'Block', value: '* ', range: [0, 0] })).toBe('')
+-+	})
+-+
+-+	it('reads the opening word of a paragraph as its letters alone', () => {
+-+		expect(paragraphToPolicyOpener('Creates a control.')).toBe('Creates')
+-+		expect(paragraphToPolicyOpener('"Creates" a control.')).toBe('Creates')
+-+		expect(paragraphToPolicyOpener('')).toBe('')
+-+	})
+-+
+-+	it('admits a third-person opener and refuses a registered non-verb', () => {
+-+		expect(isPolicyVoiced('Creates')).toBe(true)
+-+		expect(isPolicyVoiced('Is')).toBe(true)
+-+		expect(isPolicyVoiced('This')).toBe(false)
+-+		expect(isPolicyVoiced('Status')).toBe(false)
+-+		expect(isPolicyVoiced('Create')).toBe(false)
+-+		expect(isPolicyVoiced('')).toBe(false)
+-+		expect(POLICY_VOICE_STOPWORDS.every((word) => /^[A-Z][a-z]*s$/u.test(word))).toBe(true)
+-+	})
+-+
+-+	it('keeps the matched and judged term sets disjoint and frozen', () => {
+-+		const matched = POLICY_BANNED_TERMS.map((entry) => entry.term)
+-+		expect(matched.filter((term) => POLICY_JUDGED_TERMS.includes(term))).toEqual([])
+-+		expect(new Set(matched).size).toBe(matched.length)
+-+		expect(Object.isFrozen(POLICY_BANNED_TERMS)).toBe(true)
+-+		expect(Object.isFrozen(POLICY_JUDGED_TERMS)).toBe(true)
+-+		expect(Object.isFrozen(POLICY_VOICE_STOPWORDS)).toBe(true)
+-+		// Every judged row reaches this file as prose, so a pattern that matched one would red the
+-+		// workspace sweep on the rule file that names it.
+-+		for (const term of POLICY_JUDGED_TERMS) {
+-+			expect(textToPolicyHits(`The reader reads ${term} here.`)).toEqual([])
+-+		}
+-+	})
+-+
+- 	it('registers handlers as a function kind and routes as a data kind', () => {
+- 		expect(FUNCTION_SOURCE_FILES).toContain('handlers.ts')
+- 		expect(FUNCTION_SOURCE_FILES).not.toContain('routes.ts')
+-@@ -1357,6 +1755,7 @@ describe('policy plugin', () => {
+- 			scratch.write(
+- 				'src/violations/fixture.ts',
+- 				[
+-+					'// A reader should meet this term.',
+- 					"vi.mock('./x')",
+- 					'class PrivateMember { private value = 1 }',
+- 					'class ParameterMember { constructor(readonly value: string) {} }',
+-@@ -1365,6 +1764,7 @@ describe('policy plugin', () => {
+- 					"import * as os from 'node:os'",
+- 					"import { EOL } from 'node:os'",
+- 					'export interface ValueInterface { readonly id: string }',
+-+					'/** The opener, a noun phrase. */',
+- 					"export const STATUS = 'ready'",
+- 					"export const lines = text.trim().split('\\n')",
+- 					'export const ending = os.EOL + EOL',
+-@@ -1399,6 +1799,8 @@ describe('policy plugin', () => {
+- 			scratch.write(
+- 				'src/clean/CleanMember.ts',
+- 				[
+-+					'// Reads the value a caller receives.',
+-+					'/** Holds one runtime-private value. */',
+- 					'export class CleanMember {',
+- 					'\t#value = 1',
+- 					'\tvalue(): number { return this.#value }',
+-@@ -1484,6 +1886,8 @@ describe('policy plugin', () => {
+- 				'policy(no-malformed-constant) src/violations/constants.ts',
+- 				'policy(no-malformed-domain) src/violations/composables.ts',
+- 				'policy(no-malformed-domain) app/browser/composables/useTheme.ts',
+-+				'policy(no-banned-term) src/violations/fixture.ts',
+-+				'policy(no-malformed-summary) src/violations/fixture.ts',
+- 				'typescript(parameter-properties) src/violations/fixture.ts',
+- 				'typescript(explicit-member-accessibility) src/violations/fixture.ts',
+- 			]) {
+-diff --git a/tests/policy.test.ts b/tests/policy.test.ts
+-index a4452d40..14b7f08c 100644
+---- a/tests/policy.test.ts
+-+++ b/tests/policy.test.ts
+-@@ -1,6 +1,7 @@
+--import { existsSync, readdirSync } from 'node:fs'
+-+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+- import { join } from 'node:path'
+- import { describe, expect, it } from 'vitest'
+-+import { POLICY_BANNED_TERMS, POLICY_JUDGED_TERMS } from '../configs/policy.js'
+- import {
+- 	BRIDGE_POLICY_CONTROLS,
+- 	createPolicyScratch,
+-@@ -13,13 +14,27 @@ import {
+- 	inspectPolicyWorkspace,
+- 	inspectSkillFamily,
+- 	inspectSkillBridges,
+-+	isPolicyFile,
+-+	isPolicyMirror,
+- 	isPolicyRecord,
+-+	isPolicyStray,
+- 	matchesSkillTrigger,
+- 	parseSkillFrontmatter,
+-+	POLICY_CATALOG_FILE,
+- 	POLICY_CONTROLS,
+-+	POLICY_MIRROR_PATTERN,
+- 	POLICY_SUPPRESSION_DIRECTIVE,
+-+	POLICY_TERM_FILE,
+-+	POLICY_TERM_HEADING,
+- 	PORTABILITY_POLICY_CONTROLS,
+-+	PROSE_POLICY_CONTROLS,
+-+	PROSE_POLICY_MANIFEST,
+-+	readPolicyCatalog,
+-+	readPolicyGuide,
+-+	readPolicyPackage,
+- 	readPolicyPaths,
+-+	readPolicyProse,
+-+	readPolicyTerms,
+- 	readSkillFamily,
+- 	RULES_POLICY_CONTROLS,
+- 	SKILL_BRIDGE_ROOT,
+-@@ -172,6 +187,10 @@ describe('policy population controls', () => {
+- 				membership: 'files outside source, test, config, and script code',
+- 				rule: 'suppression',
+- 				files: [
+-+					// The manifest names the package this guide belongs to, so the prose sweep reads it
+-+					// as the workspace's own guide rather than as a top-level guide no evidence accounts
+-+					// for.
+-+					{ path: 'package.json', content: PROSE_POLICY_MANIFEST },
+- 					{
+- 						path: 'guides/sample.md',
+- 						content: `<!-- ${POLICY_SUPPRESSION_DIRECTIVE} -->\n`,
+-@@ -341,6 +360,113 @@ describe('portability policy', () => {
+- 	})
+- })
+- 
+-+describe('prose policy', () => {
+-+	for (const control of PROSE_POLICY_CONTROLS) {
+-+		it(`${control.label} [membership: ${control.membership}]`, () => {
+-+			const violations = inspectPolicyControl(control).filter(
+-+				(violation) => violation.rule === 'prose',
+-+			)
+-+			expect(violations).toHaveLength(1)
+-+			expect(violations[0]?.message).toBe(control.message)
+-+			expect(violations[0]?.line).toBe(control.line)
+-+		})
+-+	}
+-+
+-+	// A mirror is excluded from the term sweep, so the exclusion needs evidence rather than
+-+	// silence. The catalog table is that evidence, and it is a second mechanism: it is regenerated
+-+	// from the registry and names the fleet, while the guides directory names what this checkout
+-+	// holds. A guide neither side accounts for reports.
+-+	it('accounts for every top-level guide as this package, the index, or a catalog row', () => {
+-+		const root = process.cwd()
+-+		const own = readPolicyPackage(root)
+-+		if (own === undefined) throw new Error('The workspace manifest declares no name')
+-+		const guides = readPolicyProse(root).filter((path) => POLICY_MIRROR_PATTERN.test(path))
+-+		expect(guides.length).toBeGreaterThan(0)
+-+		expect(guides.filter((path) => isPolicyStray(root, path))).toEqual([])
+-+		const other = readPolicyCatalog(root).find((name) => name !== own)
+-+		if (other === undefined) throw new Error('The catalog registers no other package')
+-+		expect(isPolicyMirror(root, `guides/${other}.md`)).toBe(true)
+-+		expect(isPolicyMirror(root, `guides/${own}.md`)).toBe(false)
+-+		expect(isPolicyMirror(root, 'guides/README.md')).toBe(false)
+-+		expect(isPolicyStray(root, `guides/${own}.md`)).toBe(false)
+-+		expect(isPolicyStray(root, 'guides/README.md')).toBe(false)
+-+		// The control: a name no catalog row registers is a stray whatever the directory holds.
+-+		expect(isPolicyStray(root, 'guides/absent.md')).toBe(true)
+-+	})
+-+
+-+	it('reads the guide name a top-level path carries for another package to account for', () => {
+-+		const root = process.cwd()
+-+		const own = readPolicyPackage(root)
+-+		if (own === undefined) throw new Error('The workspace manifest declares no name')
+-+		expect(readPolicyGuide(root, 'guides/other.md')).toBe('other')
+-+		expect(readPolicyGuide(root, `guides/${own}.md`)).toBeUndefined()
+-+		expect(readPolicyGuide(root, 'guides/README.md')).toBeUndefined()
+-+		expect(readPolicyGuide(root, 'guides/nested/other.md')).toBeUndefined()
+-+		expect(readPolicyGuide(root, 'AGENTS.md')).toBeUndefined()
+-+	})
+-+
+-+	it('reads the authored Markdown population and excludes the directories it names', () => {
+-+		const paths = readPolicyProse(process.cwd())
+-+		expect(paths).toContain('README.md')
+-+		expect(paths).toContain('AGENTS.md')
+-+		expect(paths).toContain('guides/README.md')
+-+		expect(paths).toContain(POLICY_CATALOG_FILE)
+-+		expect(paths.some((path) => path.startsWith('node_modules/'))).toBe(false)
+-+		expect(paths.some((path) => path.startsWith('dist/'))).toBe(false)
+-+		expect(paths.some((path) => path.startsWith('tmp/'))).toBe(false)
+-+		expect(paths.some((path) => path.startsWith('.orkestrel/'))).toBe(false)
+-+	})
+-+})
+-+
+-+describe('denylist currency', () => {
+-+	// The denylist is a second copy of one column of the substitution table, so it drifts the
+-+	// moment a row is added or removed. Reading the table itself is the mechanism that could
+-+	// disagree with the copy, and every row has to land in exactly one of the two sets: matched
+-+	// unconditionally, or left to a reader because the row has a permitted sense.
+-+	// A target reads `.claude/rules/writing.md` from the installed scaffold copy rather than
+-+	// authoring it (the canon paragraph `src/core/templates.ts` emits into a generated `AGENTS.md`),
+-+	// so the table exists only where the workspace authors it. There the denylist and the table ship
+-+	// from one release; here they can drift, so the comparison runs here.
+-+	it.skipIf(!isPolicyFile(process.cwd(), POLICY_TERM_FILE))(
+-+		'registers every substitution-table term as either matched or judged',
+-+		() => {
+-+			const registered = new Set([
+-+				...POLICY_BANNED_TERMS.map((entry) => entry.term),
+-+				...POLICY_JUDGED_TERMS,
+-+			])
+-+			const table = readPolicyTerms(readFileSync(join(process.cwd(), POLICY_TERM_FILE), 'utf8'))
+-+			expect(table.length > 0).toBe(true)
+-+			expect([...registered].sort()).toEqual([...new Set(table)].sort())
+-+		},
+-+	)
+-+
+-+	it('reports a table row neither set names', () => {
+-+		// The control: a table carrying one row outside the membership, which the reader returns
+-+		// and neither set holds, so the comparison above would fail on it.
+-+		const fixture = [
+-+			'# Fixture',
+-+			'',
+-+			POLICY_TERM_HEADING,
+-+			'',
+-+			'| Term | Replacement |',
+-+			'| ---- | ----------- |',
+-+			'| `should` | `must` |',
+-+			'| `henceforth` (formal) | `after this` |',
+-+			'',
+-+			'## Not adopted',
+-+			'',
+-+			'| `unreached` | Outside the table |',
+-+		].join('\n')
+-+		const table = readPolicyTerms(fixture)
+-+		expect(table).toEqual(['should', 'henceforth'])
+-+		const registered = new Set([
+-+			...POLICY_BANNED_TERMS.map((entry) => entry.term),
+-+			...POLICY_JUDGED_TERMS,
+-+		])
+-+		expect(table.filter((term) => !registered.has(term))).toEqual(['henceforth'])
+-+	})
+-+})
+-+
+- describe('repository policy', () => {
+- 	it('enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace', () => {
+- 		expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+-diff --git a/tests/setupPolicy.ts b/tests/setupPolicy.ts
+-index fa7373b0..5e024b1a 100644
+---- a/tests/setupPolicy.ts
+-+++ b/tests/setupPolicy.ts
+-@@ -9,9 +9,17 @@ import {
+- } from 'node:fs'
+- import { tmpdir } from 'node:os'
+- import { basename, dirname, join, matchesGlob } from 'node:path'
+-+import { stripPolicyCode, textToPolicyHits } from '../configs/policy.js'
+- 
+- /** Names a rule the fleet sweep decides from workspace text and paths. */
+--export type PolicyRule = 'bridge' | 'mirror' | 'portability' | 'rules' | 'skill' | 'suppression'
+-+export type PolicyRule =
+-+	| 'bridge'
+-+	| 'mirror'
+-+	| 'portability'
+-+	| 'prose'
+-+	| 'rules'
+-+	| 'skill'
+-+	| 'suppression'
+- 
+- /** Describes one workspace file a physical control writes. */
+- export interface PolicySource {
+-@@ -151,6 +159,8 @@ export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
+- export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
+- 	'policy/no-mocking',
+- 	'policy/no-keyword-privacy',
+-+	'policy/no-malformed-summary',
+-+	'policy/no-banned-term',
+- 	'typescript/parameter-properties',
+- 	'typescript/explicit-member-accessibility',
+- ])
+-@@ -224,6 +234,39 @@ export const POLICY_RULE_MAP_HEADING = '## Rule map'
+- /** Names the workspace manifest whose scripts run on every supported host. */
+- export const POLICY_MANIFEST_FILE = 'package.json'
+- 
+-+/** Lists the directory names the prose sweep never descends into. */
+-+export const POLICY_PROSE_EXCLUSIONS: readonly string[] = Object.freeze([
+-+	'.git',
+-+	'.orkestrel',
+-+	'dist',
+-+	'node_modules',
+-+	'tmp',
+-+])
+-+
+-+/** Matches a top-level guide path and captures the package short name it is written for. */
+-+export const POLICY_MIRROR_PATTERN = /^guides\/([^/]+)\.md$/u
+-+
+-+/** Names the guide a workspace holds as its own index rather than as a mirror. */
+-+export const POLICY_GUIDE_MAP = 'README'
+-+
+-+/** Names the rule file whose substitution table is the denylist's source. */
+-+export const POLICY_TERM_FILE = '.claude/rules/writing.md'
+-+
+-+/** Names the heading that opens the substitution table. */
+-+export const POLICY_TERM_HEADING = '## Substitutions'
+-+
+-+/**
+-+ * Names the catalog agent file whose table registers every fleet package.
+-+ *
+-+ * @remarks
+-+ * The path is written here rather than read from the scaffold constant that plans it, because this
+-+ * module is vendored byte-identical into every workspace and imports nothing from the package.
+-+ */
+-+export const POLICY_CATALOG_FILE = '.claude/agents/orkestrel.md'
+-+
+-+/** Names the heading that opens the package catalog. */
+-+export const POLICY_CATALOG_HEADING = '## Package catalog'
+-+
+- /**
+-  * Normalizes platform separators for stable matching and diagnostics.
+-  *
+-@@ -1295,6 +1338,204 @@ export function inspectPolicyScripts(root: string): readonly PolicyViolation[] {
+- 	return violations
+- }
+- 
+-+/**
+-+ * Reads every authored Markdown path in one workspace, sorted by path.
+-+ *
+-+ * @remarks
+-+ * The walk descends the whole tree apart from the directory names
+-+ * {@link POLICY_PROSE_EXCLUSIONS} lists, which hold installed packages, built output, scratch
+-+ * work, and campaign records rather than prose this workspace authors.
+-+ *
+-+ * @param root - The workspace root to read.
+-+ * @returns Every workspace-relative Markdown path, sorted by path.
+-+ */
+-+export function readPolicyProse(root: string): readonly string[] {
+-+	const paths: string[] = []
+-+	const pending: string[] = ['']
+-+	while (pending.length > 0) {
+-+		const relative = pending.pop() ?? ''
+-+		for (const entry of readdirSync(join(root, relative), { withFileTypes: true })) {
+-+			const path = relative === '' ? entry.name : `${relative}/${entry.name}`
+-+			if (entry.isDirectory()) {
+-+				if (!POLICY_PROSE_EXCLUSIONS.includes(entry.name)) pending.push(path)
+-+				continue
+-+			}
+-+			if (entry.name.endsWith('.md')) paths.push(normalizePolicyPath(path))
+-+		}
+-+	}
+-+	return paths.sort()
+-+}
+-+
+-+/**
+-+ * Reads the short name one workspace manifest declares, its scope removed.
+-+ *
+-+ * @param root - The workspace root to read.
+-+ * @returns The manifest name after its scope, or undefined where no manifest declares one.
+-+ */
+-+export function readPolicyPackage(root: string): string | undefined {
+-+	if (!isPolicyFile(root, POLICY_MANIFEST_FILE)) return undefined
+-+	let manifest: unknown
+-+	try {
+-+		manifest = JSON.parse(readFileSync(join(root, POLICY_MANIFEST_FILE), 'utf8'))
+-+	} catch {
+-+		return undefined
+-+	}
+-+	if (!isPolicyRecord(manifest)) return undefined
+-+	const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
+-+	if (typeof name !== 'string') return undefined
+-+	return name.slice(name.lastIndexOf('/') + 1)
+-+}
+-+
+-+/**
+-+ * Reads every package short name the catalog table registers.
+-+ *
+-+ * @remarks
+-+ * A workspace holds this file because the `catalog` verb refuses a target that lacks it, and a
+-+ * workspace that has not received one yet registers no package, so the read yields an empty list
+-+ * there rather than failing.
+-+ *
+-+ * @param root - The workspace root to read.
+-+ * @returns Each catalog row's package short name, its scope removed, in table order.
+-+ */
+-+export function readPolicyCatalog(root: string): readonly string[] {
+-+	if (!isPolicyFile(root, POLICY_CATALOG_FILE)) return []
+-+	const lines = readFileSync(join(root, POLICY_CATALOG_FILE), 'utf8')
+-+		.replaceAll('\r\n', '\n')
+-+		.split('\n')
+-+	const heading = lines.indexOf(POLICY_CATALOG_HEADING)
+-+	if (heading === -1) return []
+-+	const names: string[] = []
+-+	for (let index = heading + 1; index < lines.length; index += 1) {
+-+		const line = lines[index]
+-+		if (line === undefined || line.startsWith('## ')) break
+-+		const cell = line.match(/^\|\s*`([^`]+)`\s*\|/u)?.[1]
+-+		if (cell !== undefined) names.push(cell.slice(cell.lastIndexOf('/') + 1))
+-+	}
+-+	return names
+-+}
+-+
+-+/**
+-+ * Reads the guide name one prose path carries when that guide is another package's to account for.
+-+ *
+-+ * @remarks
+-+ * A top-level `guides/<name>.md` path yields its name unless the name is the guide index or this
+-+ * workspace's own package; every other path yields undefined. {@link isPolicyMirror} and
+-+ * {@link isPolicyStray} split that name by catalog membership.
+-+ *
+-+ * @param root - The workspace root the path belongs to.
+-+ * @param path - The workspace-relative prose path to read.
+-+ * @returns The guide's name, or undefined where the path is not a top-level guide another package
+-+ * could own.
+-+ */
+-+export function readPolicyGuide(root: string, path: string): string | undefined {
+-+	const name = normalizePolicyPath(path).match(POLICY_MIRROR_PATTERN)?.[1]
+-+	if (name === undefined || name === POLICY_GUIDE_MAP) return undefined
+-+	return name === readPolicyPackage(root) ? undefined : name
+-+}
+-+
+-+/**
+-+ * Reports whether one prose path is a top-level guide the catalog registers to another package.
+-+ *
+-+ * @remarks
+-+ * A mirror is fetched bytes rather than authored prose, so the term sweep leaves it to the package
+-+ * that wrote it. The catalog table is the evidence, and it is the only evidence: the workspace's own
+-+ * guide and the guide index are authored here, and a top-level guide the catalog does not register
+-+ * is a finding rather than a silent exclusion.
+-+ *
+-+ * @param root - The workspace root the path belongs to.
+-+ * @param path - The workspace-relative prose path to judge.
+-+ * @returns True if the path is a top-level guide the catalog registers to a package other than this
+-+ * one; false otherwise.
+-+ */
+-+export function isPolicyMirror(root: string, path: string): boolean {
+-+	const name = readPolicyGuide(root, path)
+-+	return name !== undefined && readPolicyCatalog(root).includes(name)
+-+}
+-+
+-+/**
+-+ * Reports whether one prose path is a top-level guide no evidence accounts for.
+-+ *
+-+ * @param root - The workspace root the path belongs to.
+-+ * @param path - The workspace-relative prose path to judge.
+-+ * @returns True if the path is a top-level guide that is neither this package's own, nor the index,
+-+ * nor a catalog row; false otherwise.
+-+ */
+-+export function isPolicyStray(root: string, path: string): boolean {
+-+	const name = readPolicyGuide(root, path)
+-+	return name !== undefined && !readPolicyCatalog(root).includes(name)
+-+}
+-+
+-+/**
+-+ * Inspects every authored Markdown file for a term the substitution table bans unconditionally.
+-+ *
+-+ * @remarks
+-+ * Each file is stripped of its fenced blocks, its inline code spans, its link tags, and its URLs
+-+ * before the match, by the same reader the comment rule uses, so a term inside one of those regions
+-+ * is not prose. Stripping holds every offset, so the reported line is the line in the file.
+-+ *
+-+ * A top-level guide the catalog registers to another package is a mirror and is skipped, and a
+-+ * top-level guide no evidence accounts for reports instead, so an exclusion is never silent.
+-+ *
+-+ * @param root - The workspace root to inspect.
+-+ * @returns Every unaccounted-guide violation, then every banned-term violation in path and offset
+-+ * order.
+-+ */
+-+export function inspectPolicyProse(root: string): readonly PolicyViolation[] {
+-+	const violations: PolicyViolation[] = []
+-+	for (const path of readPolicyProse(root)) {
+-+		if (isPolicyStray(root, path)) {
+-+			violations.push(
+-+				createPolicyViolation(
+-+					'prose',
+-+					path,
+-+					"guide is the package's own, the map, or a catalog row",
+-+				),
+-+			)
+-+		}
+-+		if (isPolicyMirror(root, path)) continue
+-+		const prose = stripPolicyCode(readFileSync(join(root, path), 'utf8'))
+-+		for (const hit of textToPolicyHits(prose)) {
+-+			violations.push(
+-+				createPolicyViolation(
+-+					'prose',
+-+					path,
+-+					`prose carries no banned term: ${hit.term.term} (${hit.term.replacement})`,
+-+					prose.slice(0, hit.index).split('\n').length,
+-+				),
+-+			)
+-+		}
+-+	}
+-+	return violations
+-+}
+-+
+-+/**
+-+ * Reads every term the substitution table's first column registers.
+-+ *
+-+ * @remarks
+-+ * Each row's first cell carries its terms as code spans, so the read takes the backticked tokens
+-+ * and drops the parenthetical qualifier a row writes beside one.
+-+ *
+-+ * @param content - The raw rule text carrying the substitution table.
+-+ * @returns Each registered term, in table order.
+-+ */
+-+export function readPolicyTerms(content: string): readonly string[] {
+-+	const lines = content.replaceAll('\r\n', '\n').split('\n')
+-+	const heading = lines.indexOf(POLICY_TERM_HEADING)
+-+	if (heading === -1) return []
+-+	const terms: string[] = []
+-+	for (let index = heading + 1; index < lines.length; index += 1) {
+-+		const line = lines[index]
+-+		if (line === undefined || line.startsWith('## ')) break
+-+		const cell = line.match(/^\|([^|]*)\|/u)?.[1]
+-+		if (cell === undefined) continue
+-+		for (const match of cell.matchAll(/`([^`]+)`/gu)) {
+-+			const term = match[1]
+-+			if (term !== undefined) terms.push(term)
+-+		}
+-+	}
+-+	return terms
+-+}
+-+
+- /**
+-  * Inspects every host portability rule across one workspace.
+-  *
+-@@ -1313,7 +1554,7 @@ export function inspectPolicyPortability(root: string): readonly PolicyViolation
+-  * Inspects every policy rule across one workspace.
+-  *
+-  * @param root - The workspace root to inspect.
+-- * @returns Every mirror, suppression, skill, bridge, and portability violation.
+-+ * @returns Every mirror, suppression, skill, bridge, portability, and prose violation.
+-  */
+- export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[] {
+- 	return [
+-@@ -1322,6 +1563,7 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
+- 		...inspectSkillFamily(root),
+- 		...inspectSkillBridges(root),
+- 		...inspectPolicyPortability(root),
+-+		...inspectPolicyProse(root),
+- 	]
+- }
+- 
+-@@ -1935,6 +2177,26 @@ export function createPolicyRuleMap(rules: readonly string[]): string {
+- 	)
+- }
+- 
+-+/**
+-+ * Creates catalog agent text whose package table names an explicit package set.
+-+ *
+-+ * @param names - The package short names the catalog registers.
+-+ * @returns Catalog agent text carrying one package table.
+-+ */
+-+export function createPolicyCatalog(names: readonly string[]): string {
+-+	return (
+-+		[
+-+			'# Orkestrel',
+-+			'',
+-+			POLICY_CATALOG_HEADING,
+-+			'',
+-+			'| Package | Version |',
+-+			'| ------- | ------- |',
+-+			...names.map((name) => `| \`@orkestrel/${name}\` | \`0.0.1\` |`),
+-+		].join('\n') + '\n'
+-+	)
+-+}
+-+
+- /** Lists the physical controls for every rule-map parity assertion the workspace route reaches. */
+- export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+- 	{
+-@@ -1965,6 +2227,140 @@ export const RULES_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+- 	},
+- ])
+- 
+-+/** Holds the manifest one prose control writes, naming the package its own guide belongs to. */
+-+export const PROSE_POLICY_MANIFEST = '{\n\t"name": "@orkestrel/sample"\n}\n'
+-+
+-+/**
+-+ * Lists the physical controls for every prose-population boundary the workspace route reaches.
+-+ *
+-+ * @remarks
+-+ * Each control that attacks an exclusion also writes the arrival file, whose different term proves
+-+ * the sweep ran over the control workspace rather than reporting nothing because it found nothing.
+-+ */
+-+export const PROSE_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+-+	{
+-+		label: 'rejects a banned term in the workspace front page',
+-+		membership: 'authored Markdown outside the excluded directories and the guide mirrors',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: 'README.md', content: '# Front page\n\nA reader should meet this term.\n' },
+-+		],
+-+	},
+-+	{
+-+		label: 'rejects a banned term in the package guide',
+-+		membership: 'the top-level guide whose name matches the manifest name',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: 'guides/sample.md', content: '# Sample\n\nA reader should meet this term.\n' },
+-+		],
+-+	},
+-+	{
+-+		label: 'rejects a banned term in a rule file',
+-+		membership: 'authored Markdown below a dot directory the sweep descends into',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: should (must, can, might, or the imperative)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{
+-+				path: `${POLICY_RULE_ROOT}/sample.md`,
+-+				content: '# Sample\n\nA reader should meet this term.\n',
+-+			},
+-+			{
+-+				path: POLICY_RULE_MAP_FILE,
+-+				content: createPolicyRuleMap([`${POLICY_RULE_ROOT}/sample.md`]),
+-+			},
+-+		],
+-+	},
+-+	{
+-+		label: 'accepts a banned term inside a fenced block',
+-+		membership: 'fenced regions, whose lines are code rather than prose',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: via (through, by using)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+-+			{
+-+				path: 'guides/README.md',
+-+				content: '# Index\n\n```text\nshould inside a fence\n```\n',
+-+			},
+-+		],
+-+	},
+-+	{
+-+		label: 'accepts a banned term inside a code span a line break runs through',
+-+		membership: 'inline code spans, whose text is a token rather than prose',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: via (through, by using)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+-+			{
+-+				path: 'guides/README.md',
+-+				content: '# Index\n\nA span `that\nspans lines with should` here.\n',
+-+			},
+-+		],
+-+	},
+-+	{
+-+		label: 'accepts a banned term in a guide the catalog registers to another package',
+-+		membership: 'top-level guides the catalog registers to a package other than this one',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: via (through, by using)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: POLICY_CATALOG_FILE, content: createPolicyCatalog(['other', 'sample']) },
+-+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+-+			{ path: 'guides/other.md', content: '# Other\n\nA reader should meet this term.\n' },
+-+		],
+-+	},
+-+	{
+-+		label: 'rejects a top-level guide the catalog does not register',
+-+		membership: 'top-level guides that are neither this package, nor the index, nor a catalog row',
+-+		rule: 'prose',
+-+		message: "guide is the package's own, the map, or a catalog row",
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: POLICY_CATALOG_FILE, content: createPolicyCatalog(['other', 'sample']) },
+-+			{ path: 'guides/stray.md', content: '# Stray\n\nA reader reads this guide.\n' },
+-+		],
+-+	},
+-+	{
+-+		label: 'accepts a banned term inside an installed package',
+-+		membership: 'Markdown below a directory name the sweep never descends into',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: via (through, by using)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+-+			{
+-+				path: 'node_modules/sample/README.md',
+-+				content: '# Installed\n\nA reader should meet this term.\n',
+-+			},
+-+		],
+-+	},
+-+	{
+-+		label: 'accepts a banned term inside scratch work',
+-+		membership: 'Markdown below a directory name the sweep never descends into',
+-+		rule: 'prose',
+-+		line: 3,
+-+		message: 'prose carries no banned term: via (through, by using)',
+-+		files: [
+-+			{ path: POLICY_MANIFEST_FILE, content: PROSE_POLICY_MANIFEST },
+-+			{ path: 'README.md', content: '# Front page\n\nA reader arrives via this term.\n' },
+-+			{ path: 'tmp/notes.md', content: '# Notes\n\nA reader should meet this term.\n' },
+-+		],
+-+	},
+-+])
+-+
+- /** Lists the physical controls for every portability assertion the workspace route reaches. */
+- export const PORTABILITY_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+- 	{
+diff --git a/.orkestrel/campaign/docs-parity/d3-fix.status.txt b/.orkestrel/campaign/docs-parity/d3-fix.status.txt
+index a80fe04a..053c7330 100644
+--- a/.orkestrel/campaign/docs-parity/d3-fix.status.txt
++++ b/.orkestrel/campaign/docs-parity/d3-fix.status.txt
+@@ -8,10 +8,3 @@
+  M tests/config.test.ts
+  M tests/policy.test.ts
+  M tests/setupPolicy.ts
+-?? .orkestrel/campaign/docs-parity/d2-audit-checker.md
+-?? .orkestrel/campaign/docs-parity/d2-audit-objective.md
+-?? .orkestrel/campaign/docs-parity/d2-audit-subjective.md
+-?? .orkestrel/campaign/docs-parity/d2-verify-report.md
+-?? .orkestrel/campaign/docs-parity/d3-fix-report.md
+-?? .orkestrel/campaign/docs-parity/d3-fix.diff.txt
+-?? .orkestrel/campaign/docs-parity/d3-fix.status.txt
 diff --git a/.oxlintrc.json b/.oxlintrc.json
 index 483c955e..16e2efc4 100644
 --- a/.oxlintrc.json
