@@ -179,3 +179,9 @@ Every unit through U5 is satisfied; U7 is satisfied in probe (`d24de2e`) with it
 - **U10 `database-readers` and U11 `lsp-imports`** run in their checkouts after phase A there, on the head start, because their acceptance (no `typescript` importer) is what the head start's lint restriction reddens until they land; their phase A visit records that red as the standing condition.
 - **`codec`'s `node:vm` test helpers** are outside the exit criterion (the compiler API is the subject, not the `vm` module) and are left as they are; recorded here so the fleet sweep's `node:vm` hits read as known.
 - **Releases (U9, U14)** stay the owner's decision and credential; nothing publishes until the owner says so, and phase B waits on that.
+
+## Re-baseline (2026-09-07 02:26 UTC): phase A complete
+
+- Phase A is complete on branches: every fleet checkout carries its visit commit, `lsp` carries U11 (`257a0ad`), `database` carries U10 (`b3012ea`), scaffold carries U5 and U6, probe carries U7. No `typescript` specifier remains at an import, `require`, or dynamic-import position in any package's `src`, `tests`, or `configs`; the compiler is reached as a process everywhere.
+- Phase B (re-pin, lockfile, whole-suite gates, bump, publish in catalog layer order) now waits, per package, on that package's docs-parity convergence: the owner ruled that the TSDoc convergence rides this wave (`../docs-parity/rulings.md` § Ruling 5), so each package republishes once, after its guide, its doc blocks, and its `tests/guides.test.ts` converge under the new checks (D7.n). The scaffold and probe releases that head the wave wait on D3 to D6 in scaffold.
+- The generated proof's `readonly module: boolean` member is a finding for D6's template correction (ledger row of the same date).
