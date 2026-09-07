@@ -1,0 +1,68 @@
+
+== criterion 3: tests/setup.ts by pattern
+/**
+ * Requires markdown whose first block is a table.
+ *
+- * Require markdown whose first block is a table.
++ * Requires markdown whose first block is a table.
+
+== format:check
+
+All matched files use the correct format.
+Finished in 2953ms on 81 files using 4 threads.
+EXIT 0
+
+== lint:check
+
+> @orkestrel/guide@0.0.18 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+EXIT 0
+
+== check
+> @orkestrel/guide@0.0.18 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+EXIT 0
+
+== criterion 4 summary
+fail=0
+
+== criterion 6: commit by path
+M  .oxlintrc.json
+M  configs/helpers.ts
+M  configs/policy.ts
+M  package.json
+A  scripts/docs.ts
+M  tests/config.test.ts
+M  tests/fixtures/broken/missing-example/module/helpers.ts
+M  tests/fixtures/good/tests/widget.test.ts
+M  tests/policy.test.ts
+M  tests/setup.ts
+M  tests/setupPolicy.ts
+M  tsconfig.json
+(status end)
+cfa1f73 Take scaffold's vendored delta and the docs seed, and bump to 0.0.18
+
+ .oxlintrc.json                                     |   4 +-
+ configs/helpers.ts                                 |  15 +-
+ configs/policy.ts                                  | 534 ++++++++++++++++---
+ package.json                                       |   5 +-
+ scripts/docs.ts                                    | 454 ++++++++++++++++
+ tests/config.test.ts                               | 404 +++++++++++++++
+ .../broken/missing-example/module/helpers.ts       |   2 +
+ tests/fixtures/good/tests/widget.test.ts           |   2 +-
+ tests/policy.test.ts                               | 128 ++++-
+ tests/setup.ts                                     |   2 +-
+ tests/setupPolicy.ts                               | 572 ++++++++++++++++++---
+ tsconfig.json                                      |   3 +-
+ 12 files changed, 1954 insertions(+), 171 deletions(-)
+
+== status after commit
+(status end)
+
+== push
+To https://github.com/orkestrel/guide
+   b7dc578..cfa1f73  claude/orkestrel-npm-audit-deps-14ibta -> claude/orkestrel-npm-audit-deps-14ibta
+branch 'claude/orkestrel-npm-audit-deps-14ibta' set up to track 'origin/claude/orkestrel-npm-audit-deps-14ibta'.
+EXIT 0

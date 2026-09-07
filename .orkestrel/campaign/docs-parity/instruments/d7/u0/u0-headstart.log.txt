@@ -1,0 +1,123 @@
+
+== baseline
+b7dc578
+(status end)
+
+== head start bytes
+ab8ee57843446ad4e6578c16dcf26a11e4144053f464d0981111756f68c35b79  node_modules/@orkestrel/scaffold/dist/host/scripts/docs.ts
+ab8ee57843446ad4e6578c16dcf26a11e4144053f464d0981111756f68c35b79  /home/user/scaffold/scripts/docs.ts
+0.0.63
+
+== criterion 1: bump
+3:	"version": "0.0.18",
+
+== repair --offline
+0 of 34 planned paths drifted from the plan. Audit compared bytes at 24, existence at 4, and nothing at 6.
+tsconfig.json replaced (1 line added).
+configs/helpers.ts replaced (9 lines added).
+configs/policy.ts replaced (372 lines added).
+.oxlintrc.json replaced (2 lines added).
+tests/setupPolicy.ts replaced (412 lines added).
+tests/policy.test.ts replaced (126 lines added).
+tests/config.test.ts replaced (404 lines added).
+9 written, 26 unchanged, 0 removed in ..
+EXIT 0
+
+== criterion 2: status after repair
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M package.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+?? scripts/docs.ts
+(status end)
+
+== criterion 3: the voice-rule sites
+--- helpers.ts:5-10
+/**
+ * Greets `name`.
+ *
+ * @example
+ * ```ts
+ * greet('world')
+--- widget.test.ts:1
+// Placeholder fixture test file — linked by the good guide's `## Tests` section but
+--- setup.ts:13
+/**
+
+== diff of the package-owned edits
+-	"version": "0.0.17",
++	"version": "0.0.18",
+-		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
++		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
++		"docs": "node --experimental-strip-types scripts/docs.ts"
++ * Greets `name`.
++ *
+-// Dummy fixture test file — linked by the good guide's `## Tests` section but
++// Placeholder fixture test file — linked by the good guide's `## Tests` section but
+-			"@src/core": ["./src/core/index.ts"]
++			"@src/core": ["./src/core/index.ts"],
++			"@orkestrel/guide": ["./src/core/index.ts"]
+
+== format:check
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 2956ms on 81 files using 4 threads.
+EXIT 0
+
+== lint:check
+
+> @orkestrel/guide@0.0.18 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+tests/setup.ts:13:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+EXIT 1
+
+== check
+
+> @orkestrel/guide@0.0.18 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+EXIT 0
+
+== test:policy
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  10:57:20
+   Duration  951ms (transform 310ms, setup 82ms, import 311ms, tests 345ms, environment 0ms)
+
+EXIT 0
+
+== test:config
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  10:57:22
+   Duration  5.06s (transform 580ms, setup 78ms, import 905ms, tests 3.88s, environment 0ms)
+
+EXIT 0
+
+== build
+✓ built in 266ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/guide@0.0.18 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+EXIT 0
+
+== criterion 5: npm run docs (expected exit 1, 139)
+guides/guide.md pitch: readme absent tagline "A pure, I/O-free guides-parity toolkit: `Guide` extracts a markdown guide's documented surface, method groups, links, test links, and fenced code blocks; `Source` reflects direct declarations and conventional barrel reachability from a consumer-supplied file inventory through pure text scanners (no filesystem or TypeScript compiler API); runtime dependencies provide markdown and contract primitives, while comparison helpers (`findMissingSymbols`, `findMissing`, `resolveLink`, …) reduce every guides-parity check to `expect([]).toEqual([])` (`.claude/rules/documentation.md`). Source: `src/core`. Published through `@orkestrel/guide`."
+rows read: 1, disagreements found: 139
+EXIT 1
+
+== criterion 4 summary
+fail=1
+STOP: a gate read red; no commit

@@ -1,0 +1,17 @@
+# Report — U0 `d7-guide-headstart` (Orchestrator, tracked scripts `instruments/d7/u0/`)
+
+Brief: `d7-guide-headstart-brief.md`. Scripts: `u0-headstart.sh` (stopped before the commit) and its successor `u0b-headstart.sh` (the commit). Logs beside them. Checkout `/home/user/fleet/guide`, baseline `b7dc578` clean.
+
+## Per criterion
+
+1. **The bump.** `sed` on `package.json:3`; `grep -n '"version"'` → `3:	"version": "0.0.18",`. The head start's `dist/host/scripts/docs.ts` and scaffold's `scripts/docs.ts` share the digest `ab8ee578…35b79`; the installed scaffold reports `0.0.63`.
+2. **`repair --offline`.** `node node_modules/@orkestrel/scaffold/dist/bin/main.js repair --offline` → exit 0, `9 written, 26 unchanged, 0 removed`. `git status --short` after: `.oxlintrc.json`, `configs/helpers.ts`, `configs/policy.ts`, `package.json`, `tests/config.test.ts`, `tests/policy.test.ts`, `tests/setupPolicy.ts`, `tsconfig.json` modified and `scripts/docs.ts` untracked — the P15 list exactly. The package-owned edits are the `docs` script row after `test:setup` and the `"@orkestrel/guide": ["./src/core/index.ts"]` paths entry after `@src/core`; no `@orkestrel/*` range moved.
+3. **The voice-rule sites.** `tests/fixtures/broken/missing-example/module/helpers.ts:5` gained `Greets \`name\`.` and a blank continuation line before `@example`; `tests/fixtures/good/tests/widget.test.ts:1` reads `Placeholder fixture test file`; `tests/setup.ts:14` reads `Requires markdown whose first block is a table.` **Deviation, settled in the successor:** the brief cites the diagnostic's line `13:1`, which is the block's `/**`; the description sits on line 14, so the first script's line-addressed `sed` changed nothing and `lint:check` stayed red on that one site. `u0b-headstart.sh` applied the same replacement by pattern.
+4. **The gates.** First script: `format:check` exit 0 (81 files), `lint:check` exit 1 (the `tests/setup.ts` site alone), `check` exit 0, `test:policy` 90 passed | 1 skipped, `test:config` 172 passed | 1 skipped, `build` exit 0 (api-extractor's bundled 5.9.3 notice as before). Successor, after the pattern fix: `format:check` exit 0, `lint:check` exit 0, `check` exit 0.
+5. **The seed.** `npm run docs` → exit 1, `rows read: 1, disagreements found: 139`, the pitch line `readme absent` — the P15 worklist, U2's input.
+6. **The commit.** Staged by path (the P15 list plus the sites); `git status --short` after staging showed only those paths; commit `cfa1f73` "Take scaffold's vendored delta and the docs seed, and bump to 0.0.18" (12 files changed, 1954 insertions, 171 deletions); status empty after; pushed to `origin/claude/orkestrel-npm-audit-deps-14ibta`.
+
+## Flagged
+
+- The successor script re-ran only the gates the one-line edit touches (`format:check`, `lint:check`, `check`); `test:policy`, `test:config`, and `build` were read green on the first run, before the `tests/setup.ts` comment change, and a comment line cannot move them. R1's checker reads the log for this.
+- The lockfile did not change; no marker action.

@@ -1,0 +1,16 @@
+Take scaffold's vendored delta and the docs seed, and bump to 0.0.18
+
+`repair --offline` from the head-started scaffold (the host set landed in
+scaffold's a0a47058) writes the policy plugin with its proofs, the lint
+configuration, the root tsconfig's own-specifier entry, the `docs` script,
+and `scripts/docs.ts`. The vendored voice rule reads this tree red at the
+sites this commit fixes: the `greet` fixture block gains its description
+line, the placeholder fixture drops a banned term, and the `requireTable`
+description opens with a verb. The bump distinguishes the head-started
+bytes from the registry's 0.0.17 before any consumer installs them.
+
+The seed reports every row absent until the guide's tables head `Summary`;
+that convergence is the next change.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
