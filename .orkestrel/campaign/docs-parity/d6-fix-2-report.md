@@ -53,7 +53,7 @@ below); N0e's own criterion is read after that rebuild, matching N5's own requir
 ## N2 — the distribution proof's claim lists
 
 Ran `PATH=/opt/npm11/bin:$PATH npm run test:distribution` once to read the printed lists. The
-`glossed` list moved exactly as the D6-fix brief and the D6 converge report state: three rows
+`glossed` list moved exactly as the D6-fix brief and the D6 converge report state: the rows
 (`catalogToLayers(entries)[0]`, `createBlueprint('Router').name`, `stageHost(...).length`) left the
 list, replaced in the built declarations' own printed order by
 `layers[0] // the names that depend on nothing else in the fleet`,
@@ -275,3 +275,5 @@ edit of mine. No `npm install`, `lint --fix`, discard-class git command, or comm
 - **Criterion 1's grep for the peer-exclusion sentence in `src/core/compilers.ts` reports nothing**
   because the formatter wrapped the sentence across two lines; the sentence is present and correct,
   confirmed by reading the file directly and by the guide cell it propagated to.
+
+_Corrected by the Orchestrator after the audit round: a count of a growable set deleted._

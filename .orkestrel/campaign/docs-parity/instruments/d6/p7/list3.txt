@@ -1,0 +1,120 @@
+=== GUIDE FENCES ===
+"Scaffold" || npm install --save-dev @orkestrel/scaffold
+"Scaffold" || npx @orkestrel/scaffold --help
+"Baselines" || scaffold <verb> [options]
+"Blueprint" || import { createBlueprint } from '@orkestrel/scaffold'
+"Blueprint" || dependencies: @orkestrel/form declares the range file:vendor/orkestrel-form-0.0.1.tgz, which dependencies does not accept.
+"Compile" || import { Compiler, createBlueprint } from '@orkestrel/scaffold'
+"Compile" || import { Compiler, createBlueprint } from '@orkestrel/scaffold'
+"Fleet catalog" || import { catalogToLayers } from '@orkestrel/scaffold'
+"Vendored data root" || import { stageHost } from '@orkestrel/scaffold/server'
+"Generated workspace" || import { Compiler, createBlueprint, planToSummary } from '@orkestrel/scaffold'
+"Library" || import type { Blueprint, Snapshot } from '@orkestrel/scaffold'
+"Library" || import type { Plan } from '@orkestrel/scaffold'
+"Library" || import { Upstream } from '@orkestrel/scaffold/server'
+"Library" || import { WriteTransaction } from '@orkestrel/scaffold/server'
+"Library" || import { isScaffoldError, ScaffoldError } from '@orkestrel/scaffold'
+=== SOURCE EXAMPLES ===
+cloneValue || undefined || import { cloneValue, parseBlueprint } from '@orkestrel/scaffold' / 
+pathToCondition || undefined || import { pathToCondition } from '@orkestrel/scaffold' / 
+srcToEntry || undefined || import { srcToEntry } from '@orkestrel/scaffold' / 
+srcToExports || undefined || import { srcToExports } from '@orkestrel/scaffold' / 
+blueprintToDevDependencies || undefined || import { blueprintToDevDependencies, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToScripts || undefined || import { blueprintToScripts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToWritableScripts || undefined || import { blueprintToWritableScripts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToManifest || undefined || import { blueprintToManifest, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToMachinery || undefined || import { blueprintToMachinery, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToRootTsconfig || undefined || import { blueprintToRootTsconfig, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToRootVite || undefined || import { blueprintToRootVite, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToConfigArtifacts || undefined || import { blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToSourceArtifacts || undefined || import { blueprintToSourceArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToTestArtifacts || undefined || import { blueprintToTestArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToGuideArtifacts || undefined || import { blueprintToGuideArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToDocumentArtifacts || undefined || import { blueprintToDocumentArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToOrchestrationArtifacts || undefined || import { blueprintToOrchestrationArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+blueprintToHostArtifacts || undefined || import { blueprintToHostArtifacts, createBlueprint, DOCS_SEED_PATH } from '@orkestrel/scaffold' / 
+applyOverrides || undefined || import { applyOverrides, blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+replaceManifestRanges || undefined || import { replaceManifestRanges } from '@orkestrel/scaffold' / 
+replaceManifestScripts || undefined || import { replaceManifestScripts } from '@orkestrel/scaffold' / 
+replacePlanRanges || undefined || import { replacePlanRanges } from '@orkestrel/scaffold' / 
+planToHash || undefined || import { Compiler, createBlueprint, planToHash } from '@orkestrel/scaffold' / 
+planToFindings || undefined || import { Compiler, createBlueprint, planToFindings } from '@orkestrel/scaffold' / 
+dependenciesToQuestions || undefined || import { DEPENDENCY_NAME_PATTERN, ORKESTREL_RANGE_PATTERN } from '@orkestrel/scaffold' / import { dependenciesToQuestions } from '@orkestrel/scaffold'
+blueprintToQuestions || undefined || import { blueprintToQuestions, createBlueprint } from '@orkestrel/scaffold' / 
+artifactsToQuestions || undefined || import { artifactsToQuestions, blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold' / 
+overridesToQuestions || undefined || import { blueprintToConfigArtifacts, createBlueprint, overridesToQuestions } from '@orkestrel/scaffold' / 
+isScaffoldError || undefined || import { isScaffoldError } from '@orkestrel/scaffold' / 
+createBlueprint || undefined || import { createBlueprint } from '@orkestrel/scaffold' / 
+bytesToHex || undefined || import { bytesToHex } from '@orkestrel/scaffold' / 
+contentToHex || undefined || import { contentToHex } from '@orkestrel/scaffold' / 
+computeBytes || undefined || import { computeBytes } from '@orkestrel/scaffold' / 
+computeHash || undefined || import { computeHash } from '@orkestrel/scaffold' / 
+matchesOrchestrationPath || undefined || import { matchesOrchestrationPath } from '@orkestrel/scaffold' / 
+isDeferredPath || undefined || import { isDeferredPath } from '@orkestrel/scaffold' / 
+isCanonPath || undefined || import { isCanonPath } from '@orkestrel/scaffold' / 
+isRetainedPath || undefined || import { isRetainedPath } from '@orkestrel/scaffold' / 
+isFloorPath || undefined || import { isFloorPath } from '@orkestrel/scaffold' / 
+inferGroup || undefined || import { inferGroup } from '@orkestrel/scaffold' / 
+serializeTypeScriptString || undefined || import { serializeTypeScriptString } from '@orkestrel/scaffold' / 
+nameToGuide || undefined || import { nameToGuide } from '@orkestrel/scaffold' / 
+matchesPrintWidth || undefined || import { matchesPrintWidth } from '@orkestrel/scaffold' / 
+srcToRoot || undefined || import { srcToRoot } from '@orkestrel/scaffold' / 
+selectHostPaths || undefined || import { HOST_PATHS, selectHostPaths } from '@orkestrel/scaffold' / 
+selectGroups || undefined || import { selectGroups } from '@orkestrel/scaffold' / 
+artifactToHex || undefined || import { artifactToHex } from '@orkestrel/scaffold' / 
+inferDrift || undefined || import type { Artifact } from '@orkestrel/scaffold' / import { inferDrift } from '@orkestrel/scaffold'
+artifactToFinding || undefined || import { artifactToFinding } from '@orkestrel/scaffold' / 
+matchesDriftReachability || undefined || import type { Finding } from '@orkestrel/scaffold' / import { matchesDriftReachability } from '@orkestrel/scaffold'
+catalogToLayers || undefined || import { catalogToLayers } from '@orkestrel/scaffold' / 
+planToSummary || undefined || import { planToSummary } from '@orkestrel/scaffold' / 
+extractVersion || undefined || import { extractVersion } from '@orkestrel/scaffold' / 
+extractRangeMajor || undefined || import { extractRangeMajor } from '@orkestrel/scaffold' / 
+compareVersions || undefined || import { compareVersions } from '@orkestrel/scaffold' / 
+matchesRange || undefined || import { matchesRange } from '@orkestrel/scaffold' / 
+matchesEngines || undefined || import { matchesEngines } from '@orkestrel/scaffold' / 
+manifestToName || undefined || import { manifestToName } from '@orkestrel/scaffold' / 
+manifestToDependencies || undefined || import { manifestToDependencies } from '@orkestrel/scaffold' / 
+parseBlueprint || undefined || import { parseBlueprint } from '@orkestrel/scaffold' / 
+parseGroups || undefined || import { parseGroups } from '@orkestrel/scaffold' / 
+parseSnapshot || undefined || import { parseSnapshot } from '@orkestrel/scaffold' / 
+parseCompilerOptions || undefined || import { parseCompilerOptions } from '@orkestrel/scaffold' / 
+isPath || undefined || import { isPath } from '@orkestrel/scaffold' / 
+isCollection || undefined || import { isCollection } from '@orkestrel/scaffold' / 
+isSnapshot || undefined || import { isSnapshot } from '@orkestrel/scaffold' / 
+matchesMissingPath || undefined || import { matchesMissingPath } from '@orkestrel/scaffold/server' / 
+matchesGitPath || undefined || import { matchesGitPath } from '@orkestrel/scaffold/server' / 
+matchesProtectedPath || undefined || import { matchesProtectedPath } from '@orkestrel/scaffold/server' / 
+matchesSensitivePath || undefined || import { matchesSensitivePath } from '@orkestrel/scaffold/server' / 
+matchesExecutablePath || undefined || import { matchesExecutablePath } from '@orkestrel/scaffold/server' / 
+pathToStorage || undefined || import { pathToStorage } from '@orkestrel/scaffold/server' / 
+computeDigest || undefined || import { computeDigest } from '@orkestrel/scaffold/server' / 
+hexToDigest || undefined || import { hexToDigest } from '@orkestrel/scaffold/server' / 
+computeManifestDigest || undefined || import { computeManifestDigest } from '@orkestrel/scaffold/server' / 
+isPhysicalFile || undefined || import { isPhysicalFile } from '@orkestrel/scaffold/server' / 
+isExactCaseFile || undefined || import { isExactCaseFile } from '@orkestrel/scaffold/server' / 
+isPhysicalDirectory || undefined || import { isPhysicalDirectory } from '@orkestrel/scaffold/server' / 
+computeFileDigest || undefined || import { computeFileDigest } from '@orkestrel/scaffold/server' / 
+resolveRealPath || undefined || import { resolveRealPath } from '@orkestrel/scaffold/server' / 
+resolveContainedPath || undefined || import { resolveContainedPath } from '@orkestrel/scaffold/server' / 
+isVacant || undefined || import { isVacant } from '@orkestrel/scaffold/server' / 
+listFiles || undefined || import { listFiles } from '@orkestrel/scaffold/server' / 
+listDirectories || undefined || import { listDirectories } from '@orkestrel/scaffold/server' / 
+listCanonPaths || undefined || import { listCanonPaths } from '@orkestrel/scaffold/server' / 
+pruneEmptiedDirectories || undefined || import { pruneEmptiedDirectories } from '@orkestrel/scaffold/server' / 
+readFileHex || undefined || import { readFileHex } from '@orkestrel/scaffold/server' / 
+readFileText || undefined || import { readFileText } from '@orkestrel/scaffold/server' / 
+readSnapshot || undefined || import { readSnapshot } from '@orkestrel/scaffold/server' / 
+readHostManifest || undefined || import { readHostManifest } from '@orkestrel/scaffold/server' / 
+readHostFloor || undefined || import { readHostFloor } from '@orkestrel/scaffold/server' / 
+readManifestEntry || undefined || import { readManifestEntry } from '@orkestrel/scaffold/server' / 
+filesToHost || undefined || import { filesToHost } from '@orkestrel/scaffold/server' / 
+stageBytes || undefined || import { stageBytes } from '@orkestrel/scaffold/server' / 
+stageHost || undefined || import { stageHost } from '@orkestrel/scaffold/server' / 
+stageInventory || undefined || import { stageInventory } from '@orkestrel/scaffold/server' / 
+readAnchor || undefined || import { readAnchor } from '@orkestrel/scaffold/server' / 
+matchesAnchor || undefined || import { matchesAnchor, readAnchor } from '@orkestrel/scaffold/server' / 
+readExpectation || undefined || import { readExpectation } from '@orkestrel/scaffold/server' / 
+matchesExpectation || undefined || import { matchesExpectation, readExpectation } from '@orkestrel/scaffold/server' / 
+matchesPrecondition || undefined || import { matchesPrecondition } from '@orkestrel/scaffold/server' / 
+isFilesystemPath || undefined || import { isFilesystemPath } from '@orkestrel/scaffold/server' / 
+isInventory || undefined || import { isInventory } from '@orkestrel/scaffold/server' / 

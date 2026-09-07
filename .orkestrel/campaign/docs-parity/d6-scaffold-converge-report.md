@@ -2,7 +2,7 @@
 
 `implementer`, Claude Opus 5, subjective lane. **`npm run docs` exits 0 and `npm run test:guides`
 exits 0 with 20 cases green, the two D4 cases and the new pin among them.** Criteria 1 to 6 are met.
-Two findings sit outside my owned files and are report-only, with exact patches: `src:bin` is red on
+The findings that sit outside my owned files are report-only, with exact patches: `src:bin` is red on
 D5's `HOST_PATHS` addition, and `tests/distribution.test.ts` carries three literal expectations my
 example rewrites make false.
 
@@ -23,7 +23,7 @@ AssertionError: expected [ 'package.json', …(33) ] to have a length of 35 but 
 
 The cause is mechanical and is D5's: `tests/setupServer.ts:1518` computes
 `FLEET_ARTIFACT_COUNT = buildFleetManifest().entries.length + CORE_GENERATED_COUNT` over every
-`HOST_PATHS` member, and D5 added `scripts/docs.ts` to that list (`src/core/constants.ts:140`).
+`HOST_PATHS` member, and D5 added `scripts/docs.ts` to that list (`src/core/constants.ts:143`).
 `blueprintToHostArtifacts` filters that path out unless the blueprint carries `guides`
 (`src/core/compilers.ts:1601`, `(path) => blueprint.guides || path !== DOCS_SEED_PATH`), and the
 CLI cases build a workspace without it. So the fixture's total counts the seed and the plan does not.
@@ -50,7 +50,7 @@ Orchestrator after this unit exits.
 
 `tests/distribution.test.ts:513-560` asserts, with `toStrictEqual`, the exact claim-shaped comment
 lines the built declarations ship. The file is in neither my owned list nor my off-limits list, so it
-is unscoped and this is a patch rather than an edit. Three literals no longer exist in
+is unscoped and this is a patch rather than an edit. These literals no longer exist in
 `dist/src/**/index.d.ts` after `npm run build`, verified by grep against the build this unit left:
 
 ```text
@@ -59,7 +59,7 @@ $ grep -c "catalogToLayers(entries)\[0\]" dist/src/core/index.d.ts          → 
 $ grep -c "dist/host').length // the files staged" dist/src/server/index.d.ts → 0
 ```
 
-Strike these three rows from the `glossed` list:
+Strike these rows from the `glossed` list:
 
 ```diff
 -				'dist/src/core/index.d.ts: catalogToLayers(entries)[0] // the names that depend on nothing in the fleet',
@@ -67,7 +67,7 @@ Strike these three rows from the `glossed` list:
 -				"dist/src/server/index.d.ts: stageHost(process.cwd(), 'dist/host').length // the files staged",
 ```
 
-Add these five, each a prose verdict the classifier glosses before it drives anything
+Add these rows, each a prose verdict the classifier glosses before it drives anything
 (`tests/distribution.test.ts:371-373`: an unparseable verdict is glossed and never becomes a claim):
 
 ```diff
@@ -95,7 +95,7 @@ declaration still prints a claim of its own.
 
 ## The keys rewritten by hand
 
-Four doc blocks gained a fact the guide cell carried and the block's compared paragraph lacked.
+The doc blocks that gained a fact the guide cell carried and the block's compared paragraph lacked.
 Each was then propagated to its cell by `npm run docs -- --to guide`; no cell was hand-edited.
 
 | Key | What the block gained |
@@ -147,7 +147,7 @@ So a class's `@example` cannot enter the comparison however it is titled. That d
 | `Compiler` (`src/core/Compiler.ts`) | none | Untitled: the readers do not collect a class block. Decision 4 still rules the fence the winner, so the block adopted the § Compile fence by hand and the two texts are byte-equal |
 | `Materializer` (`src/server/Materializer.ts`) | none | Same. The block adopted the § Library `Materializer` fence by hand and the two are byte-equal |
 
-Two further blocks were titled because their code duplicates a fence and the fence is that one
+Further blocks were titled because their code duplicates a fence and the fence is that one
 declaration's example rather than a walkthrough:
 
 | Block | Title | Fence |
@@ -277,7 +277,7 @@ predicts; `git diff --stat` read 411 insertions against 367 deletions before the
 `git diff -w --numstat` read 392/348, so the churn is padding rather than content. `npm run format`
 restored column alignment, `format:check` exits 0, and a second `npm run docs` reports 0.
 
-**How many wider-group keys need a hand rewrite?** Four, named in § The keys rewritten by hand.
+**Which wider-group keys need a hand rewrite?** The keys named in § The keys rewritten by hand.
 
 ## Acceptance criteria, in order
 
@@ -387,6 +387,8 @@ The unit's instruments are `tmp/d6/list.mjs`, `list2.mjs`, `list3.mjs`, `list4.m
    direction forbids and `.claude/rules/writing.md` § Voice and actor requires. Ruled for the rule;
    the audit decides.
 3. **The `replaceManifestScripts` guide cell was false** and the true source sentence replaced it.
-4. **Three class `@example` blocks stay outside every gate** — `Upstream`, `ScaffoldError`, and
+4. **The class `@example` blocks `Upstream`, `ScaffoldError`, and `WriteTransaction` stay outside every gate** — `Upstream`, `ScaffoldError`, and
    `WriteTransaction` — because the readers do not collect a class declaration's own block. Two of
    them disagree with their guide fence today. Outside P7's named set, recorded for the next change.
+
+_Corrected by the Orchestrator after the audit round (`d6-audit-subjective.md` and `d6-audit-objective.md` claim 12): counts of growable sets deleted, the `HOST_PATHS` cite re-based to `src/core/constants.ts:143`. F1's citation of the guides filter at `src/core/compilers.ts:1601` describes the state D6 left; D6-fix-2 removed that filter._
