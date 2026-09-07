@@ -1,0 +1,118 @@
+### agent at 54e7199, guide guides/agent.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  94 passed (94)
+   test:guides exit 0
+-- census
+   guides/agent.md surface {"equal":133,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":56,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 14 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Agent methods 3 grouped false undescribed ["abort","generate","stream"]
+   owner class AgentContext methods 2 grouped false undescribed ["apply","build"]
+   owner interface AgentContextInterface methods 2 grouped true undescribed []
+   owner interface AgentInterface methods 3 grouped true undescribed []
+   owner class AgentRegistry methods 5 grouped false undescribed ["authority","build","provider","scheduler","tool"]
+   owner interface AgentRegistryInterface methods 5 grouped true undescribed []
+   owner class Authority methods 1 grouped false undescribed ["evaluate"]
+   owner interface AuthorityInterface methods 1 grouped true undescribed []
+   owner class Channel methods 4 grouped false undescribed ["close","drain","fail","push"]
+   owner interface ChannelInterface methods 4 grouped true undescribed []
+   owner interface ContextSectionSourceInterface methods 1 grouped true undescribed []
+   owner class Conversation methods 11 grouped false undescribed ["add","clear","compact","message","messages","reference","rehydrate","remove","search","snapshot","view"]
+   owner interface ConversationInterface methods 11 grouped true undescribed []
+   owner class ConversationManager methods 8 grouped false undescribed ["add","clear","conversation","conversations","open","remove","save","switch"]
+   owner interface ConversationManagerInterface methods 8 grouped true undescribed []
+   owner interface ConversationStoreInterface methods 3 grouped false undescribed []
+   owner class DatabaseConversationStore methods 3 grouped false undescribed []
+   owner class InstructionManager methods 6 grouped false undescribed ["add","clear","instruction","instructions","remove","render"]
+   owner interface InstructionManagerInterface methods 6 grouped true undescribed []
+   owner class MemoryConversationStore methods 3 grouped false undescribed ["delete","get","set"]
+   owner interface MessageManagerInterface methods 5 grouped true undescribed []
+   owner interface ProviderInterface methods 2 grouped true undescribed []
+   owner class Scope methods 1 grouped false undescribed ["narrow"]
+   owner interface ScopeInterface methods 1 grouped true undescribed []
+   owner class ScopeManager methods 5 grouped false undescribed ["clear","create","remove","scope","scopes"]
+   owner interface ScopeManagerInterface methods 5 grouped true undescribed []
+   owner interface StreamInterface methods 1 grouped false undescribed []
+   owner class ThinkSplitter methods 2 grouped false undescribed ["flush","split"]
+   owner interface ThinkSplitterInterface methods 2 grouped true undescribed []
+   examples titledFences 19 titledExamples ["createConversation:Conversations & compaction"] pairs ["Conversations & compaction"]
+-- sites: surface row guides/agent.md:382; methods row guides/agent.md:596; title src/core/factories.ts:74
+-- control A: one Surface Summary cell altered (guides/agent.md:382)
+guides/agent.md function createConversation: guide "Creates a conversation — a `ConversationInterface` grouping messages above a flat message store it owns directly, with compaction into summarized sections, a regenerated rollup `summary`, on-demand `rehydrate`, and substring `search`, driven by a provider-agnostic `ConversationSummaryHandler` seam. Control." source "Creates a conversation — a `ConversationInterface` grouping messages above a flat message store it owns directly, with compaction into summarized sections, a regenerated rollup `summary`, on-demand `rehydrate`, and substring `search`, driven by a provider-agnostic `ConversationSummaryHandler` seam."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Agent > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 24ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/agent.md:596)
+guides/agent.md ProviderInterface.generate: guide "Generates one complete turn — resolves the assembled `ProviderResult`. Control." source "Generates one complete turn — resolves the assembled `ProviderResult`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Agent > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 26ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a conversation — a {@link ConversationInterface} grouping messages above a flat
+guides/agent.md function createConversation: guide "Creates a conversation — a `ConversationInterface` grouping messages above a flat message store it owns directly, with compaction into summarized sections, a regenerated rollup `summary`, on-demand `rehydrate`, and substring `search`, driven by a provider-agnostic `ConversationSummaryHandler` seam." source "Control Creates a conversation — a `ConversationInterface` grouping messages above a flat message store it owns directly, with compaction into summarized sections, a regenerated rollup `summary`, on-demand `rehydrate`, and substring `search`, driven by a provider-agnostic `ConversationSummaryHandler` seam."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Agent > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 22ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Agent.ts:43:  * Control Composes a {@link ProviderInterface}, an {@link AgentContext}, and a
+guides/agent.md class Agent: guide "Composes a `ProviderInterface`, an `AgentContext`, and a `ToolManagerInterface` into a bounded context → provider → tools → repeat turn, exposed as both a one-shot `generate` and a live `stream` that share one private run — bounded by the run `signal`, the `timeout`, and the `budget` folded through `AbortSignal.any`, paced by `scheduler`, with tool iteration capped at `limit`." source "Control Composes a `ProviderInterface`, an `AgentContext`, and a `ToolManagerInterface` into a bounded context → provider → tools → repeat turn, exposed as both a one-shot `generate` and a live `stream` that share one private run — bounded by the run `signal`, the `timeout`, and the `budget` folded through `AbortSignal.any`, paced by `scheduler`, with tool iteration capped at `limit`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Agent > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 26ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:74)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 93 passed (94)
+× pairs at least one example title across the guide and the source 64ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/agent.md Conversations & compaction: guide "ts\nimport { createConversation } from '@orkestrel/agent'\nimport type { ProviderInterface } from '@orkestrel/agent'\n\ndeclare const provider: ProviderInterface // any concrete implementation supplied by the host app\n// The summarizer seam — built from the provider by the runtime; core stays provider-agnostic.\n// Append the instruction as the FINAL user turn: a chat model emits nothing when the prompt\n// ends on an assistant turn, so a leading-system instruction is unreliable.\nconst conversation = createConversation({\n\tsummarize: async (messages) =>\n\t\t(\n\t\t\tawait provider.generate(\n\t\t\t\t[\n\t\t\t\t\t...messages,\n\t\t\t\t\t{ id: 's', role: 'user', content: 'Summarize the conversation so far concisely.' },\n\t\t\t\t],\n\t\t\t\tAbortSignal.timeout(30_000),\n\t\t\t)\n\t\t).content,\n\tkeep: 2, // retain the two most recent turns verbatim on each compaction\n})\nconversation.add([\n\t{ role: 'user', content: 'My name is Ada.' },\n\t{ role: 'assistant', content: 'Nice to meet you, Ada.' },\n\t{ role: 'user', content: 'What did I say my name was?' },\n])\n\nconst section = await conversation.compact() // folds the older turns → a summarized section\nconversation.view() // [<section summary message>, ...the retained recent tail] — the model input\nconversation.summary // the regenerated rollup (a summary-of-summaries over all sections)\nconversation.search('ada') // case-insensitive across sections' originals + the live tail\nsection && conversation.rehydrate(section.id) // the section's full original messages (a pure read)" source "ts\nimport { createConversation } from '@orkestrel/agent' // control\nimport type { ProviderInterface } from '@orkestrel/agent'\n\ndeclare const provider: ProviderInterface // any concrete implementation supplied by the host app\n// The summarizer seam — built from the provider by the runtime; core stays provider-agnostic.\n// Append the instruction as the FINAL user turn: a chat model emits nothing when the prompt\n// ends on an assistant turn, so a leading-system instruction is unreliable.\nconst conversation = createConversation({\n\tsummarize: async (messages) =>\n\t\t(\n\t\t\tawait provider.generate(\n\t\t\t\t[\n\t\t\t\t\t...messages,\n\t\t\t\t\t{ id: 's', role: 'user', content: 'Summarize the conversation so far concisely.' },\n\t\t\t\t],\n\t\t\t\tAbortSignal.timeout(30_000),\n\t\t\t)\n\t\t).content,\n\tkeep: 2, // retain the two most recent turns verbatim on each compaction\n})\nconversation.add([\n\t{ role: 'user', content: 'My name is Ada.' },\n\t{ role: 'assistant', content: 'Nice to meet you, Ada.' },\n\t{ role: 'user', content: 'What did I say my name was?' },\n])\n\nconst section = await conversation.compact() // folds the older turns → a summarized section\nconversation.view() // [<section summary message>, ...the retained recent tail] — the model input\nconversation.summary // the regenerated rollup (a summary-of-summaries over all sections)\nconversation.search('ada') // case-insensitive across sections' originals + the live tail\nsection && conversation.rehydrate(section.id) // the section's full original messages (a pure read)"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Agent > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 23ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/agent.md pitch: readme "Control: The conversation runtime for the `@orkestrel` line: a pluggable `ProviderInterface` inference boundary, the conversation layer that feeds it — messages, compaction, instructions, scopes, and prompt assembly — and the bounded context → provider → tools → repeat loop that carries a turn to its end." tagline "The conversation runtime for the `@orkestrel` line: a pluggable `ProviderInterface` inference boundary, the conversation layer that feeds it — messages, compaction, instructions, scopes, and prompt assembly — and the bounded context → provider → tools → repeat loop that carries a turn to its end."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The conversation runtime for…' to be 'The conversation runtime for the `@or…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 93 passed (94)
+× opens the README with the guide tagline 19ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/agent.md function createAgentRegistry: guide absent source "Creates an agent registry — an `AgentRegistryInterface` holding the named pools of live, non-serializable pieces (providers, tools, authorities, schedulers) that a serializable `AgentJobInput`'s names resolve against, and `build`ing a seeded, signal-wired `AgentInterface` from a job."
+guides/agent.md function createAgentQueue: guide absent source "Creates a durable, bounded-concurrency agent-job queue — a `QueueInterface` over serializable `AgentJobInput`s that composes `createQueue`: each job is rehydrated through the `registry` into a live `AgentInterface`, run to its `AgentResult`, and subjected to the partial-as-configurable-failure policy."
+guides/agent.md function createAgentRunner: guide absent source "Creates an agent-job runner — a `RunnerInterface` over serializable `AgentJobInput`s that composes `createRunner` (one-shot, ordered, fail-fast), each unit rehydrated through the `registry` and subjected to the partial policy. The runner also carries sub-agent fan-out: a parent job's handler can `controller.spawn(childJob)`."
+rows read: 1, disagreements found: 16
+   docs exit 1
+AssertionError: expected [ …(16) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Agent > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 28ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

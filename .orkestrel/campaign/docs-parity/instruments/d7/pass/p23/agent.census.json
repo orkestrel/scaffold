@@ -1,0 +1,341 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-agent",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/agent.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 133,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 14,
+    "counts": {
+     "equal": 56,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Agent",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "abort",
+      "generate",
+      "stream"
+     ]
+    },
+    {
+     "name": "AgentContext",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "apply",
+      "build"
+     ]
+    },
+    {
+     "name": "AgentContextInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "AgentInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "AgentRegistry",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "authority",
+      "build",
+      "provider",
+      "scheduler",
+      "tool"
+     ]
+    },
+    {
+     "name": "AgentRegistryInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Authority",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "evaluate"
+     ]
+    },
+    {
+     "name": "AuthorityInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Channel",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "drain",
+      "fail",
+      "push"
+     ]
+    },
+    {
+     "name": "ChannelInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ContextSectionSourceInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Conversation",
+     "keyword": "class",
+     "methods": 11,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "compact",
+      "message",
+      "messages",
+      "reference",
+      "rehydrate",
+      "remove",
+      "search",
+      "snapshot",
+      "view"
+     ]
+    },
+    {
+     "name": "ConversationInterface",
+     "keyword": "interface",
+     "methods": 11,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ConversationManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "conversation",
+      "conversations",
+      "open",
+      "remove",
+      "save",
+      "switch"
+     ]
+    },
+    {
+     "name": "ConversationManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ConversationStoreInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "DatabaseConversationStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "InstructionManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "instruction",
+      "instructions",
+      "remove",
+      "render"
+     ]
+    },
+    {
+     "name": "InstructionManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MemoryConversationStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "delete",
+      "get",
+      "set"
+     ]
+    },
+    {
+     "name": "MessageManagerInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ProviderInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Scope",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "narrow"
+     ]
+    },
+    {
+     "name": "ScopeInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ScopeManager",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "create",
+      "remove",
+      "scope",
+      "scopes"
+     ]
+    },
+    {
+     "name": "ScopeManagerInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "StreamInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "ThinkSplitter",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "flush",
+      "split"
+     ]
+    },
+    {
+     "name": "ThinkSplitterInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Conversations & compaction",
+     "One agent, many conversations (switching the active conversation)",
+     "Production behaviors of automatic compaction",
+     "Scoping a turn",
+     "Customizing the format (the cascade)",
+     "Helpers",
+     "Validators",
+     "ChannelInterface",
+     "Bounding any provider call",
+     "Dispatching the model's tool calls",
+     "Running the loop (instead of driving the provider by hand)",
+     "Bounding cost mid-stream (the token budget)",
+     "Observing an agent (push vs. pull)",
+     "Pulling context from another conversation (with provenance)",
+     "Running many durable agents as jobs",
+     "Giving the model documents to read",
+     "Switching which workspace the model sees",
+     "Removing / clearing entries, and the less-common accessors"
+    ],
+    "titledExamples": [
+     "createConversation:Conversations & compaction"
+    ],
+    "pairs": [
+     "Conversations & compaction"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

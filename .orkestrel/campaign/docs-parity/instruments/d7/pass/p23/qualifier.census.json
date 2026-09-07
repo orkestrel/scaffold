@@ -1,0 +1,88 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-qualifier",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/qualifier.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 59,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 3,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Qualifier",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "QualifierInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Errors",
+     "Validators",
+     "Helpers",
+     "Create a qualifier",
+     "QualifierInterface",
+     "Qualification order",
+     "Eligibility",
+     "Scopes",
+     "Quantitative derivation before logical eligibility",
+     "Scoped exclusion",
+     "Conditions do not block downstream work",
+     "Referral blocks downstream work",
+     "Engine injection",
+     "Observing",
+     "Caller composition",
+     "Batch aggregates",
+     "Scoped eligibility drives selection"
+    ],
+    "titledExamples": [
+     "createQualifier:Create a qualifier"
+    ],
+    "pairs": [
+     "Create a qualifier"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}
