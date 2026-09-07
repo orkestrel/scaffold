@@ -1,0 +1,203 @@
+npm 11.19.1 node v22.22.2
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.0.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+npm notice To update run: npm install -g npm@12.0.2
+npm notice
+archive /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d3/gates-probe/packed/orkestrel-scaffold-0.0.63.tgz
+
+added 8 packages in 2s
+
+added 120 packages in 20s
+== prepublishOnly: npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+
+> @orkestrel/proof@0.0.1 prepublishOnly
+> npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+
+
+> @orkestrel/proof@0.0.1 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1224ms on 34 files using 4 threads.
+
+> @orkestrel/proof@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+
+> @orkestrel/proof@0.0.1 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/proof@0.0.1 check:src
+> npm run check:src:core && npm run check:src:server && npm run check:src:bin
+
+
+> @orkestrel/proof@0.0.1 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/proof@0.0.1 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+
+> @orkestrel/proof@0.0.1 check:src:bin
+> tsc --noEmit -p configs/src/tsconfig.bin.json
+
+
+> @orkestrel/proof@0.0.1 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/proof@0.0.1 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/proof@0.0.1 build:src
+> npm run build:src:core && npm run build:src:server && npm run build:src:bin
+
+
+> @orkestrel/proof@0.0.1 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  0.00 kB │ gzip: 0.02 kB
+
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  0.00 kB │ gzip: 0.02 kB
+
+✓ built in 116ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/proof@0.0.1 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/proof@0.0.1 build:src:server
+> vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+vite v8.2.2 building client environment for production...
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  0.01 kB │ gzip: 0.03 kB
+
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  0.00 kB │ gzip: 0.02 kB
+
+✓ built in 84ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/proof@0.0.1 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+> @orkestrel/proof@0.0.1 build:src:bin
+> vite build --config configs/src/vite.bin.config.ts
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  0.02 kB │ gzip: 0.04 kB
+
+✓ built in 27ms
+
+> @orkestrel/proof@0.0.1 test
+> npm run test:src && npm run test:policy && npm run test:config && npm run test:integration
+
+
+> @orkestrel/proof@0.0.1 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server --project src:bin
+
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d3/gates-probe/generated
+
+···
+
+ Test Files  3 passed (3)
+      Tests  3 passed (3)
+   Start at  02:40:21
+   Duration  278ms (transform 128ms, setup 86ms, import 99ms, tests 17ms, environment 0ms)
+
+
+> @orkestrel/proof@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d3/gates-probe/generated
+
+··············································································xxx·········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > prose policy > accounts for every top-level guide as this package, the index, or a catalog row
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/policy.test.ts:382:54
+    380|   expect(readPolicyCatalog(root)).toContain('guide')
+    381|   expect(isPolicyMirror(root, 'guides/guide.md')).toBe(true)
+    382|   expect(isPolicyMirror(root, 'guides/scaffold.md')).toBe(false)
+       |                                                      ^
+    383|   expect(isPolicyMirror(root, 'guides/README.md')).toBe(false)
+    384|   expect(isPolicyStray(root, 'guides/scaffold.md')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |policy| tests/policy.test.ts > prose policy > reads the authored Markdown population and excludes the directories it names
+AssertionError: expected [ '.claude/agents/orkestrel.md', …(6) ] to include '.claude/rules/writing.md'
+ ❯ tests/policy.test.ts:395:17
+    393|   expect(paths).toContain('AGENTS.md')
+    394|   expect(paths).toContain('guides/scaffold.md')
+    395|   expect(paths).toContain(POLICY_TERM_FILE)
+       |                 ^
+    396|   expect(paths.some((path) => path.startsWith('node_modules/'))).toBe(…
+    397|   expect(paths.some((path) => path.startsWith('dist/'))).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |policy| tests/policy.test.ts > denylist currency > registers every substitution-table term as either matched or judged
+Error: ENOENT: no such file or directory, open '/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d3/gates-probe/generated/.claude/rules/writing.md'
+ ❯ tests/policy.test.ts:413:33
+    411|    ...POLICY_JUDGED_TERMS,
+    412|   ])
+    413|   const table = readPolicyTerms(readFileSync(join(process.cwd(), POLIC…
+       |                                 ^
+    414|   expect(table.length > 0).toBe(true)
+    415|   expect([...registered].sort()).toEqual([...new Set(table)].sort())
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 87 passed (90)
+   Start at  02:40:23
+   Duration  930ms (transform 363ms, setup 20ms, import 385ms, tests 317ms, environment 0ms)
+
+GATES EXIT 1
+PROBE EXIT 0
