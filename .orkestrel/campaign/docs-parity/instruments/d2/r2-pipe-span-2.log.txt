@@ -1,0 +1,2 @@
+top-level types: [null]
+NO TABLE; document: {"element":"document","children":[{"element":"table","header":[[{"element":"text","value":"Name"}],[{"element":"text","value":"Summary"}]],"rows":[[[{"element":"codeSpan","value":"a"}],[{"element":"text","value":"cells joined by `"}]]],"align":[null,null]}]}

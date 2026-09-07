@@ -1,0 +1,9 @@
+rendered:
+| Name | Summary |
+| --- | --- |
+| `a` | cells joined by `\|`, so a reader can locate the row |
+reparsed cell: [{"element":"text","value":"cells joined by "},{"element":"codeSpan","value":"|"},{"element":"text","value":", so a reader can locate the row"}]
+row cell count second: 2
+EQUAL true
+control "| `a` | joined by `|` here |" -> [[{"element":"codeSpan","value":"a"}],[{"element":"text","value":"joined by `"}]]
+control "| `a` | joined by `\\|` here |" -> [[{"element":"codeSpan","value":"a"}],[{"element":"text","value":"joined by "},{"element":"codeSpan","value":"|"},{"element":"text","value":" here"}]]
