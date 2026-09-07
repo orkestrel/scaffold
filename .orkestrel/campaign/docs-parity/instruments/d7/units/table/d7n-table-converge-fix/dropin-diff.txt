@@ -1,0 +1,130 @@
+2c2
+< // this repo's own `guides/README.md` manifest. The constants below are this
+---
+> // this repo's own `guides/README.md` manifest. The constants that follow are this
+22c22
+< import { createRecorder, requireValue } from '@orkestrel/test'
+---
+> import { requireValue, resolveRoot } from '@orkestrel/test'
+24c24,64
+< import { createAbort } from '@src/core'
+---
+> import type {
+> 	BetweenFilter,
+> 	ChoiceColumn,
+> 	FlagColumn,
+> 	NumberColumn,
+> 	TableKey,
+> 	TableOrder,
+> 	TableSchema,
+> 	TextColumn,
+> } from '@src/core'
+> import {
+> 	admitsFilter,
+> 	auditTable,
+> 	cloneRow,
+> 	cloneSchema,
+> 	compareCells,
+> 	computeKeys,
+> 	createTable,
+> 	extractColumn,
+> 	extractKey,
+> 	filterRows,
+> 	isColumnCell,
+> 	isColumnChoice,
+> 	isStructuralTableSchema,
+> 	isTableCell,
+> 	isTableColumn,
+> 	isTableRow,
+> 	isTableSchema,
+> 	matchesCell,
+> 	matchesFilter,
+> 	matchesTerms,
+> 	mergeTerms,
+> 	parseRows,
+> 	parseTable,
+> 	removeTerms,
+> 	serializeRows,
+> 	serializeTable,
+> 	sortRows,
+> 	Table,
+> } from '@src/core'
+> import { compareTextNaturally, matchTextLoosely, readTableError } from './setup.js'
+26c66
+< /** Every fence language this package's guides are allowed to use. */
+---
+> /** Every fence language this package's guides may use. */
+31c71
+< const GUIDE_SPEC = 'guides/abort.md'
+---
+> const GUIDE_SPEC = 'guides/table.md'
+33c73,76
+< const MODULES = Object.freeze({ '@orkestrel/abort': 'src/core', '@src/core': 'src/core' })
+---
+> const MODULES = Object.freeze({
+> 	'@orkestrel/table': 'src/core',
+> 	'@src/core': 'src/core',
+> })
+42,43c85,93
+< const INTERNAL: readonly string[] = Object.freeze([])
+< 
+---
+> const INTERNAL: readonly string[] = Object.freeze([
+> 	'class ExpansionManager',
+> 	'class FilterManager',
+> 	'class KeyManager',
+> 	'class PaginationManager',
+> 	'class RowManager',
+> 	'class SelectionManager',
+> 	'class SortManager',
+> ])
+47c97
+< const root = new URL('../', import.meta.url)
+---
+> const root = resolveRoot(import.meta)
+61,64c111
+< 
+< it('manifest lists at least one guide', () => {
+< 	expect(manifest.length).toBeGreaterThan(0)
+< })
+---
+> const readme = createGuide(requireValue(files['README.md'], 'Missing file: README.md'))
+102c149
+< 	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
+---
+> 	const pitch = readme.tagline()
+111a159,182
+> it('imports only real exports in every root README ```ts fence', () => {
+> 	const fences = readme.fences().filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+> 	for (const fence of fences) {
+> 		for (const { specifier, names } of extractFenceImports(fence.code)) {
+> 			const imported = sources.source(specifier)
+> 			if (imported === undefined) continue
+> 			const surface = imported.surface().map((symbol) => symbol.name)
+> 			expect(findMissing(names, surface)).toEqual([])
+> 		}
+> 	}
+> })
+> 
+> it('parses manifest rows that point at real files', () => {
+> 	expect(manifest.length).toBeGreaterThan(0)
+> 	for (const entry of manifest) {
+> 		expect(files[entry.spec]).toBeDefined()
+> 		const modules = typeof entry.source === 'string' ? [entry.source] : entry.source
+> 		for (const module of modules) {
+> 			expect(Object.keys(files).some((path) => path.startsWith(`${module}/`))).toBe(true)
+> 		}
+> 		expect(Object.keys(files).some((path) => path.startsWith(`${entry.tests}/`))).toBe(true)
+> 	}
+> })
+> 
+260,265c331,332
+< // The EXECUTED half. Every preceding check reads a name — from the guide text or
+< // from the barrel — and a name that resolves proves nothing about the sentence
+< // beside it, so a fence whose comment claims a value the code contradicts passes
+< // all of them. The cases here run the flagship fences and assert the values their
+< // comments claim. Change a fence, change the transcription beside it.
+< describe('flagship fences', () => {
+---
+> // Each following test transcribes one runnable fence and asserts every value its comments claim.
+> describe('table.md fences', () => {

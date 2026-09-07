@@ -1,0 +1,180 @@
+--- tmp/d7n-router-converge-fix/pilot-from-describe.txt	2026-09-07 20:36:25.644696693 +0000
++++ tmp/d7n-router-converge-fix/router-from-describe.txt	2026-09-07 20:43:02.726332472 +0000
+@@ -142,67 +142,127 @@
+ 	})
+ }
+ 
+-// The EXECUTED half. Every preceding check reads a name — from the guide text or
+-// from the barrel — and a name that resolves proves nothing about the sentence
+-// beside it, so a fence whose comment claims a value the code contradicts passes
+-// all of them. The cases here run the flagship fences and assert the values their
+-// comments claim. Change a fence, change the transcription beside it.
+-describe('flagship fences', () => {
+-	const guideText = requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`)
++// ── Flagship fence transcriptions ────────────────────────────────────────────
++//
++// Each block that follows is one `guides/router.md` fence, run against the real barrel and
++// asserting the value its comments claim.
+ 
+-	it('cascades a parent abort into the child, flipping aborted and firing the signal', () => {
+-		// Transcribed from the parent-linking fence. Its comment claims both that the
+-		// child reads aborted and that the child's signal fired, so the recorder proves
+-		// the event beside the flag rather than in place of it.
+-		const parent = createAbort({ id: 'request' })
+-		const child = createAbort({ id: 'sub-task', signal: parent.signal })
+-		const fired = createRecorder<readonly []>()
+-		child.signal.addEventListener('abort', fired.handler)
++describe('flagship fences', () => {
++	it('registers, matches, and dispatches (Surface)', async () => {
++		const router = createRouter<{ readonly page: string }>()
++		router.add({ path: '/users/:id', meta: { page: 'profile' } })
++		expect(router.match('/users/7')).toEqual({
++			path: '/users/:id',
++			params: { id: '7' },
++			meta: { page: 'profile' },
++		})
++
++		const dispatcher = createDispatcher<{ readonly userId: string }>({
++			routes: [
++				{
++					method: 'GET',
++					path: '/users/:id',
++					handler: (_request, context) => Response.json(context.params),
++				},
++			],
++		})
++		const response = await dispatcher.handle(new Request('http://x/users/7'), { userId: 'me' })
++		expect(await response.json()).toEqual({ id: '7' })
++		dispatcher.destroy()
++	})
+ 
+-		parent.abort()
++	it('composes a group prefix and replaces on a repeated key (Groups and dedup)', () => {
++		const router = createRouter<{ readonly page: string }>({ key: (entry) => entry.path })
++		const api = router.group('/api')
++		api.add({ path: '/users', meta: { page: 'list' } })
++		expect(router.match('/api/users')?.path).toBe('/api/users')
++
++		router.add({ path: '/api/users', meta: { page: 'list-v2' } })
++		expect(router.count).toBe(1)
++		expect(router.match('/api/users')?.meta).toEqual({ page: 'list-v2' })
++	})
+ 
+-		expect(child.aborted).toBe(true)
+-		expect(fired.count).toBe(1)
++	it('ranks literal over param over wildcard (Wildcard capture and precedence)', () => {
++		const router = createRouter<{ readonly handler: string }>()
++		router.add([
++			{ path: '/files/*rest', meta: { handler: 'catchAll' } },
++			{ path: '/files/:name', meta: { handler: 'named' } },
++			{ path: '/files/readme', meta: { handler: 'literal' } },
++		])
++		expect(router.match('/files/readme')?.meta.handler).toBe('literal')
++		expect(router.match('/files/other')?.meta.handler).toBe('named')
++		expect(router.match('/files/a/b.png')?.meta.handler).toBe('catchAll')
+ 	})
+ 
+-	it('keeps the abort reason the create-and-abort fence claims', () => {
+-		// Transcribed from the create-and-abort fence, minus its `openStream` line,
+-		// which this package does not publish. The comment claims `signal.reason`
+-		// carries the value handed to `abort`.
+-		const abort = createAbort()
++	it('derives HEAD, OPTIONS, and 405 (Method-dimensioned dispatch)', async () => {
++		const dispatcher = createDispatcher()
++		dispatcher.add({ method: 'GET', path: '/health', handler: () => new Response('ok') })
++
++		const head = await dispatcher.handle(
++			new Request('http://x/health', { method: 'HEAD' }),
++			undefined,
++		)
++		expect(head.body).toBeNull()
+ 
+-		abort.abort('user navigated away')
++		const options = await dispatcher.handle(
++			new Request('http://x/health', { method: 'OPTIONS' }),
++			undefined,
++		)
++		expect(options.headers.get('Allow')).toBe('GET, HEAD, OPTIONS')
+ 
+-		expect(abort.signal.reason).toBe('user navigated away')
++		const notAllowed = await dispatcher.handle(
++			new Request('http://x/health', { method: 'DELETE' }),
++			undefined,
++		)
++		expect(notAllowed.status).toBe(405)
++		dispatcher.destroy()
+ 	})
+ 
+-	it('flips aborted on the handle the quick-start fence creates', () => {
+-		// Transcribed from the Surface quick-start fence, minus its `fetch` line, which
+-		// would make a network call. The comment claims `aborted` flips true, and that
+-		// half of it runs without the request.
+-		const abort = createAbort({ id: 'fetch-user' })
+-
+-		abort.abort()
++	it('emits a miss for an unregistered path (Observing dispatch outcomes)', async () => {
++		const matched: Array<readonly [string, string]> = []
++		const missed: Array<readonly [string, string, string]> = []
++		const dispatcher = createDispatcher({
++			on: {
++				match: (method, pattern) => matched.push([method, pattern]),
++				miss: (method, pathname, status) => missed.push([method, pathname, status]),
++			},
++		})
++		dispatcher.add({ method: 'GET', path: '/health', handler: () => new Response('ok') })
++		await dispatcher.handle(new Request('http://x/missing'), undefined)
++		expect(matched).toEqual([])
++		expect(missed).toEqual([['GET', '/missing', 'unmatched']])
++		dispatcher.destroy()
++	})
+ 
+-		expect(abort.aborted).toBe(true)
++	it('pins the literal path at the registration site (Typing a route input)', async () => {
++		const input = defineRoute({
++			method: 'GET',
++			path: '/users/:id',
++			handler: (_request, context) => new Response(context.params.id),
++		})
++		expect(input.path).toBe('/users/:id')
++
++		const dispatcher = createDispatcher()
++		dispatcher.add(input)
++		const response = await dispatcher.handle(new Request('http://x/users/7'), undefined)
++		expect(await response.text()).toBe('7')
++		dispatcher.destroy()
+ 	})
+ 
+-	it('carries the fence lines the transcriptions copy', () => {
+-		// The presence guards beside the transcriptions: they prove the transcribed
+-		// lines are still the documented ones, and nothing about behavior. Binding the
+-		// construction line alone would leave a comment free to claim the opposite
+-		// value and stay green, so every line carrying a claim is bound.
+-		expect(guideText).toContain(
+-			"const child = createAbort({ id: 'sub-task', signal: parent.signal })",
+-		)
+-		expect(guideText).toContain(
+-			'parent.abort() // child.aborted is now true; child.signal has fired',
+-		)
+-		expect(guideText).toContain(
+-			"abort.abort('user navigated away') // signal.reason carries the value",
+-		)
+-		expect(guideText).toContain(
+-			'abort.abort() // cancels the in-flight fetch through the native signal; `aborted` flips true',
+-		)
++	it('lists, filters, clears, and destroys (Introspection and reset)', () => {
++		const router = createRouter<{ readonly page: string }>()
++		router.add([
++			{ path: '/users/:id', meta: { page: 'profile' } },
++			{ path: '/tokens', meta: { page: 'tokens' } },
++		])
++		expect(router.entries()).toHaveLength(2)
++		expect(router.entries('/users/7')).toHaveLength(1)
++		router.clear()
++		expect(router.entries()).toHaveLength(0)
++
++		const dispatcher = createDispatcher()
++		dispatcher.add({ method: 'GET', path: '/health', handler: () => new Response('ok') })
++		dispatcher.destroy()
++		expect(dispatcher.router.entries()).toHaveLength(1)
+ 	})
+ })

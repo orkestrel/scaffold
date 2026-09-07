@@ -1,0 +1,6 @@
+
+> @orkestrel/browser@0.0.16 docs
+> node --experimental-strip-types scripts/docs.ts
+
+guides/browser.md Connect to a browser and drive a page: guide "ts\nimport { createBrowser } from '@orkestrel/browser/server'\n\nconst browser = createBrowser({ headless: true })\nawait browser.connect() // CDP endpoint discovery → connect, else launch\nconst page = await browser.create({ url: 'https://example.com' })\nawait page.click('#accept')\nconst shot = await page.screenshot({ path: './out.png' })\nawait browser.destroy()" source "ts\nimport { createBrowser } from '@orkestrel/browser/server'\n\nconst browser = createBrowser()\nawait browser.connect()"
+rows read: 1, disagreements found: 1

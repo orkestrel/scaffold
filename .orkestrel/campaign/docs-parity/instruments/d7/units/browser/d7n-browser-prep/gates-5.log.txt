@@ -1,0 +1,34 @@
+-- check
+
+> @orkestrel/browser@0.0.16 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/browser@0.0.16 check:src
+> npm run check:src:core && npm run check:src:server
+
+
+> @orkestrel/browser@0.0.16 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/browser@0.0.16 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+EXIT 0
+-- guides
+
+> @orkestrel/browser@0.0.16 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+······································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  198 passed (198)
+   Start at  16:52:55
+   Duration  1.80s (transform 769ms, setup 887ms, import 357ms, tests 363ms, environment 0ms)
+
+EXIT 0

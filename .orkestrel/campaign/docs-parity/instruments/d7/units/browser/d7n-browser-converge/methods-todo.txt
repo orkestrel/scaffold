@@ -1,0 +1,201 @@
+CDPTransportInterface.start	Open the underlying connection.
+CDPTransportInterface.send	Write one raw text frame to the connection. Throws a coded `BrowserConnectionError` carrying the transport `url` if called before `start()` or after `close()`.
+CDPTransportInterface.close	Close the underlying connection and release resources.
+CDPClientInterface.connect	Start the transport and begin dispatching. Idempotent.
+CDPClientInterface.reconnect	Close and re-establish the transport.
+CDPClientInterface.send	Issue a CDP method call with optional params and a trailing `CDPSendOptions` carrying the `session` to scope it to and a per-call `timeout` overriding the client-wide default; rejects on timeout.
+CDPClientInterface.subscribe	Register a handler for a CDP event, optionally session-scoped.
+CDPClientInterface.unsubscribe	Remove a handler for a CDP event, optionally session-scoped.
+CDPClientInterface.close	Tear down the transport and reject all pending requests.
+BrowserContextInterface.page	One page by index, or the first page.
+BrowserContextInterface.pages	All pages in creation order.
+BrowserContextInterface.create	Open a new page in this context.
+BrowserContextInterface.sync	Synchronize pages from the given CDP targets (server discovers the targets, core never fetches them). Performs a destructive diff, not an additive merge: pages whose target id is missing from `targets` are closed and dropped; pages present in `targets` but not yet tracked are attached and added.
+BrowserContextInterface.destroy	Release local pages and detach their sessions without disposing the remote browser context.
+BrowserContextInterface.close	Close remote pages, dispose the remote browser context, and release local resources.
+BrowserFrameInterface.title	Resolve the frame document title.
+BrowserFrameInterface.content	Extract URL, title, HTML, and visible text with result-size guards.
+BrowserFrameInterface.article	Distill the frame HTML to reader-facing plain text, boilerplate and hidden regions pruned.
+BrowserFrameInterface.click	Strict-by-default visible and enabled CSS-selector click.
+BrowserFrameInterface.fill	Strict-by-default editable input or contenteditable fill, dispatching input/change events.
+BrowserFrameInterface.select	Strict-by-default option selection on an enabled `<select>`.
+BrowserFrameInterface.evaluate	Evaluate an expression in the frame execution world with result-size guarding.
+BrowserFrameInterface.handle	Evaluate an expression by reference and return a disposable remote object handle.
+BrowserFrameInterface.wait	Wait for attached, detached, visible, or hidden selector state.
+BrowserFrameInterface.send	Issue a raw CDP method in the frame's current target session, with a trailing `BrowserSendOptions` carrying a per-call `timeout` overriding the client-wide default.
+BrowserFrameInterface.subscribe	Subscribe to a CDP event in the frame's current target session.
+BrowserFrameInterface.unsubscribe	Remove a frame-session CDP event subscription.
+BrowserFrameInterface.save	Persist bytes through a page writer; child frames reject because they own no writer.
+BrowserFrameInterface.assert	Throw a coded `BrowserError` when the frame can no longer accept protocol work: `BrowserFrame` throws once the CDP client disconnects, and `BrowserPage` also throws once the page closes. Every other method here calls it first.
+BrowserFrameInterface.update	Record an externally observed URL as the frame's current `url`. `BrowserPage` calls it from its own `Page.frameNavigated` handler.
+BrowserPageInterface.navigate	Go to a URL, wait for the requested load condition, and return final URL/response correlation.
+BrowserPageInterface.reload	Reload and return final URL/response correlation.
+BrowserPageInterface.back	Navigate to the previous history entry, or return the unchanged URL when none exists.
+BrowserPageInterface.forward	Navigate to the next history entry, or return the unchanged URL when none exists.
+BrowserPageInterface.screenshot	Capture PNG/JPEG bytes, optionally full-page and persisted through an injected writer.
+BrowserPageInterface.pdf	Print the page to PDF bytes, optionally persisted through the injected writer.
+BrowserPageInterface.frame	Look up a first-class frame by name or URL.
+BrowserPageInterface.frames	Decode the flattened frame tree, main frame first.
+BrowserPageInterface.snapshot	Capture and decode all attached documents, shadow roots, template contents, layout, and optional computed styles.
+BrowserPageInterface.codegen	Start or return the current action recorder.
+BrowserPageInterface.destroy	Release local resources and detach without closing the remote target.
+BrowserPageInterface.close	Close the remote target and release resources.
+BrowserPageInterface.title	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.content	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.article	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.click	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.fill	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.select	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.evaluate	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.handle	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.wait	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.send	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.subscribe	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.unsubscribe	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.save	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.assert	Inherited from `BrowserFrameInterface`.
+BrowserPageInterface.update	Inherited from `BrowserFrameInterface`.
+BrowserSnapshotInterface.walk	Traverse the whole capture, or one subtree when `root` is given (the root is yielded first), in `'depth'` (default) or `'breadth'` order. Each node is visited exactly once.
+BrowserSnapshotInterface.descendants	Traverse one node's subtree in depth-first order, excluding the node itself.
+BrowserSnapshotInterface.document	Resolve the captured document a node belongs to.
+BrowserSnapshotInterface.children	Direct children, entering a linked iframe's content document.
+BrowserSnapshotInterface.parent	Structural parent, crossing a document boundary to the owning iframe.
+BrowserSnapshotInterface.siblings	Structural siblings — `'preceding'` or `'following'` narrows to one side; omitting the relation returns every sibling except the node itself.
+BrowserSnapshotInterface.ancestors	Nearest-first ancestors across document and iframe boundaries.
+BrowserSnapshotInterface.common	Nearest common ancestor of two nodes, counting each node as its own candidate.
+BrowserSnapshotInterface.distance	Structural edge count between two nodes; `undefined` when they share no ancestor.
+BrowserSnapshotInterface.find	First node matching a `BrowserNodeQuery` or a `BrowserNodePredicate`.
+BrowserSnapshotInterface.filter	Every matching node, bounded by an optional `limit`; a negative or fractional limit throws a coded `BrowserError`.
+BrowserSnapshotInterface.closest	Nearest match from a node through its ancestors, testing the node first.
+BrowserSnapshotInterface.path	Deterministic frame-qualified structural path for one node.
+BrowserCodegenInterface.start	Begin recording on the page's session. Calling `start()` after `destroy()` is a silent no-op — a destroyed `BrowserCodegenInterface` cannot be restarted; a new recorder must be obtained through `page.codegen()`.
+BrowserCodegenInterface.stop	Stop recording and return the captured actions.
+BrowserCodegenInterface.actions	Current normalized action list.
+BrowserCodegenInterface.script	Compile the captured actions into a script.
+BrowserCodegenInterface.clear	Reset the captured action list.
+BrowserCodegenInterface.destroy	Tear down the recorder and detach CDP listeners.
+BrowserTransitionInterface.execute	Start the work when nothing is in flight, otherwise join the running transition and return its result.
+BrowserInterface.discover	Passive CDP probe — does not change connection state or launch/attach anything, but emits a `discover` event with the result.
+BrowserInterface.connect	Establish a connection using the strategy above (endpoint → discovery → launch). Idempotent.
+BrowserInterface.disconnect	Detach the client-side transport while the remote browser keeps running. A merely attached CDP session forgets the endpoint and ownership becomes `undefined`. Every launched or explicitly adopted session retains ownership and its endpoint, so the SAME instance can reconnect and remains responsible for eventual termination. Transport loss while an owned browser remains alive is likewise resumable.
+BrowserInterface.context	One context by index, or the first.
+BrowserInterface.contexts	All contexts.
+BrowserInterface.isolate	Create and register an isolated CDP context with validated proxy, download, origin, and emulation options.
+BrowserInterface.create	Shortcut to open a page in the default context.
+BrowserInterface.destroy	Release local resources. For a launched browser this terminates the process serving its CDP endpoint and awaits its exit — on POSIX that terminate reaches the launch's whole process group and awaits its drain, and on Windows it terminates one process by identifier, the spawned process or the one a launcher handed the endpoint to — which leaves the profile unlocked before cleanup. For an adopted attachment it sends CDP `Browser.close`. For a merely attached browser this is a LOCAL DETACH ONLY because other clients may share its targets. Idempotent.
+BrowserInterface.close	Graceful REMOTE shutdown: best-effort sends CDP `Browser.close` (whether attached or owned), and when owned also awaits the exit of the process serving the CDP endpoint plus its POSIX process-group drain (escalating to a kill only if needed), then closes every tracked context/page (sending remote `Target.closeTarget`/`disposeBrowserContext` regardless of ownership — unlike `destroy()`, which skips remote context/page closes on a non-owned CDP-attached browser) before releasing the CDP client. Use this to shut down a browser this instance doesn't own but wants to terminate anyway.
+BrowserDownloadInterface.cancel	Send CDP `Browser.cancelDownload` for this download. Ignored unless the status is still `pending`.
+BrowserWriterInterface.write	Persist the captured bytes to the given path, creating its parents.
+BrowserNavigationManagerInterface.wait	Resolve with the URL of the next navigation matching the `*`/`**` glob pattern. Rejects on timeout.
+BrowserNavigationManagerInterface.until	Poll an expression in the page until it returns a truthy value, and resolve with it.
+BrowserHandleInterface.value	Read the object back by value.
+BrowserHandleInterface.call	Run a function declaration with the handle as `this`, by value.
+BrowserHandleInterface.property	Retain one own property as its own handle, or `undefined` when absent.
+BrowserHandleInterface.properties	Read every own property by value.
+BrowserHandleInterface.dispose	Release the retained remote object. Idempotent.
+BrowserScriptManagerInterface.add	Install a script evaluated on every new document, returning its identifier.
+BrowserScriptManagerInterface.remove	Remove one installed script by identifier.
+BrowserScriptManagerInterface.expose	Bind a host function to a page-global name, callable from page JavaScript.
+BrowserScriptManagerInterface.revoke	Remove one exposed binding and its installed bridge script.
+BrowserScriptManagerInterface.destroy	Remove every installed script and binding this manager owns.
+BrowserAccessibilityInterface.snapshot	Read the full AX tree, optionally pruned to the interesting nodes only.
+BrowserTracingInterface.start	Begin tracing with the given categories. Throws a `BrowserError` when already active.
+BrowserTracingInterface.stop	End tracing, drain the IO stream, and write it through the page writer when a path was set.
+BrowserTracingInterface.destroy	Stop an active trace, discarding any failure. A no-op when nothing is tracing.
+BrowserCoverageInterface.start	Arm the requested domains. Throws a `BrowserError` when already active or when both are off.
+BrowserCoverageInterface.stop	Read the collected usage and disarm every domain it armed.
+BrowserCoverageInterface.destroy	Stop an active collector, discarding any failure. A no-op when nothing is collecting.
+BrowserPerformanceInterface.metrics	Enable the domain, read every metric, and disable it again.
+BrowserProfilerInterface.start	Begin sampling, optionally at an explicit positive integer interval in microseconds.
+BrowserProfilerInterface.stop	End sampling and decode the profile's nodes, samples, and time deltas.
+BrowserProfilerInterface.destroy	Stop an active profiler, discarding any failure. A no-op when nothing is profiling.
+BrowserDiagnosticsInterface.destroy	Tear down every diagnostics capability this page's group owns.
+BrowserClockInterface.install	Take over the page clock, optionally seeding it with an epoch time.
+BrowserClockInterface.pause	Suspend virtual time so no page timer advances.
+BrowserClockInterface.resume	Continue virtual time after a pause.
+BrowserClockInterface.advance	Move virtual time forward by the given milliseconds, firing due timers.
+BrowserClockInterface.uninstall	Return the page to the real clock. A no-op when nothing was installed.
+BrowserLocatorInterface.locator	Narrow to a descendant matching the CSS selector.
+BrowserLocatorInterface.filter	Narrow to the matches satisfying the filter.
+BrowserLocatorInterface.first	Narrow to the first match.
+BrowserLocatorInterface.last	Narrow to the last match.
+BrowserLocatorInterface.item	Narrow to the match at the given index.
+BrowserLocatorInterface.count	Count the current matches.
+BrowserLocatorInterface.all	Resolve one indexed locator per current match.
+BrowserLocatorInterface.click	Click the match with trusted input after its actionability checks pass.
+BrowserLocatorInterface.fill	Replace the match's value with the given text.
+BrowserLocatorInterface.select	Select the given option values on the match.
+BrowserLocatorInterface.check	Click the match unless it already reports checked.
+BrowserLocatorInterface.uncheck	Click the match unless it already reports unchecked.
+BrowserLocatorInterface.hover	Move trusted pointer input over the match.
+BrowserLocatorInterface.focus	Give the match keyboard focus.
+BrowserLocatorInterface.press	Focus the match and press one key or chord.
+BrowserLocatorInterface.type	Focus the match and type the value one key at a time.
+BrowserLocatorInterface.clear	Empty the match's value.
+BrowserLocatorInterface.wait	Wait until the match reaches the requested state. Rejects on timeout.
+BrowserLocatorInterface.text	Read the first match's rendered text.
+BrowserLocatorInterface.texts	Read the rendered text of every match.
+BrowserLocatorInterface.html	Read the first match's inner HTML.
+BrowserLocatorInterface.value	Read the first match's form value.
+BrowserLocatorInterface.attribute	Read one attribute of the first match, or `undefined` when it carries none.
+BrowserLocatorInterface.visible	True if the first match renders a non-empty box; false otherwise.
+BrowserLocatorInterface.enabled	True if the first match accepts input; false otherwise.
+BrowserLocatorInterface.editable	True if the first match accepts typed text; false otherwise.
+BrowserLocatorInterface.screenshot	Capture the first match's box, persisting it through the page writer when a path is given.
+BrowserLocatorInterface.upload	Set the file selection on the matched file input.
+BrowserLocatorInterface.drag	Drag the match onto the target locator with trusted pointer input.
+BrowserSelectorManagerInterface.css	Locate by CSS selector.
+BrowserSelectorManagerInterface.role	Locate by ARIA role, optionally by accessible name and exactness.
+BrowserSelectorManagerInterface.text	Locate by rendered text, optionally exact.
+BrowserSelectorManagerInterface.label	Locate a labelled control by its label text, optionally exact.
+BrowserSelectorManagerInterface.placeholder	Locate an input by its placeholder text, optionally exact.
+BrowserSelectorManagerInterface.testId	Locate by the `data-testid` attribute.
+BrowserKeyboardInterface.down	Press one key and hold it, retaining it in the modifier mask when it is a modifier.
+BrowserKeyboardInterface.up	Release one key, dropping it from the modifier mask even when the release frame fails.
+BrowserKeyboardInterface.press	Press a chord: hold its modifiers, press and release its terminal key, then release the modifiers.
+BrowserKeyboardInterface.type	Type a string as one press and release per character.
+BrowserKeyboardInterface.insert	Insert composed text in one frame, firing no per-key events.
+BrowserMouseInterface.move	Move the pointer to a point, carrying the pressed buttons.
+BrowserMouseInterface.down	Press a button at the current point, adding it to the pressed mask.
+BrowserMouseInterface.up	Release a button at the current point, dropping it from the mask even when the frame fails.
+BrowserMouseInterface.click	Move, press, optionally delay, and release at the given point.
+BrowserMouseInterface.drag	Press at the start, move in the requested steps to the end, and release.
+BrowserMouseInterface.wheel	Send a wheel delta at the current point.
+BrowserTouchInterface.tap	Dispatch a touch start at the point and a touch end, cancelling the touch on failure.
+BrowserDialogInterface.accept	Accept the dialog, optionally supplying prompt text. Throws once the dialog is handled.
+BrowserDialogInterface.dismiss	Dismiss the dialog. Throws once the dialog is handled.
+BrowserFileChooserInterface.upload	Set the chosen files. Throws when a single-file chooser is given several, or once already handled.
+BrowserFileChooserInterface.cancel	Clear the selection. Throws once already handled.
+BrowserWorkerInterface.evaluate	Evaluate a guarded expression in the worker and return its value.
+BrowserWorkerInterface.send	Issue one CDP method call on the worker's session.
+BrowserWorkerInterface.detach	Stop driving the worker locally without closing its target.
+BrowserWorkerInterface.close	Close the worker target, tolerating a worker that already terminated. Idempotent.
+BrowserRouteInterface.abort	Fail the request with a Chromium error reason. Default: `'Failed'`.
+BrowserRouteInterface.continue	Let the request proceed, optionally overriding its url, method, headers, or post body.
+BrowserRouteInterface.fulfill	Answer the request locally. Throws when the status is not an integer from 100 to 999.
+BrowserHARManagerInterface.start	Begin recording exchanges, optionally capturing response content.
+BrowserHARManagerInterface.stop	End recording and return the archive, writing it when a path was given.
+BrowserHARManagerInterface.replay	Serve matching requests from an archive instead of the network.
+BrowserHARManagerInterface.clear	Drop the recorded entries and any active replay without ending the recording.
+BrowserNetworkManagerInterface.start	Enable the Network domain and subscribe to its events. Idempotent.
+BrowserNetworkManagerInterface.body	Read one observed response body as bytes.
+BrowserNetworkManagerInterface.text	Read one observed response body as text.
+BrowserNetworkManagerInterface.json	Read one observed response body as parsed JSON.
+BrowserNetworkManagerInterface.route	Intercept requests matching the query and hand each to the handler.
+BrowserNetworkManagerInterface.unroute	Remove one handler's routes, or every route when given none.
+BrowserNetworkManagerInterface.headers	Apply extra HTTP headers to every request the page makes.
+BrowserNetworkManagerInterface.offline	Emulate offline or restore connectivity.
+BrowserNetworkManagerInterface.credentials	Apply HTTP basic-auth credentials, or clear them when given none.
+BrowserNetworkManagerInterface.destroy	Remove every route, unsubscribe, and disable the domains this manager enabled.
+BrowserCookieManagerInterface.cookies	Read the context cookies, optionally narrowed to the given URLs.
+BrowserCookieManagerInterface.set	Write the given cookies into the context.
+BrowserCookieManagerInterface.clear	Delete the context cookies matching the filter, or every cookie with none.
+BrowserPermissionManagerInterface.grant	Grant each named permission, optionally for one origin, as its own CDP frame.
+BrowserPermissionManagerInterface.deny	Deny each named permission, optionally for one origin, as its own CDP frame.
+BrowserPermissionManagerInterface.clear	Reset every permission override on the context.
+BrowserStorageManagerInterface.state	Read the context cookies and the per-origin local and session storage.
+BrowserStorageManagerInterface.restore	Write a previously read state back into the context.
+BrowserStorageManagerInterface.clear	Drop the storage of one origin, or of every origin when given none.
+BrowserEmulationManagerInterface.apply	Clear the superseded overrides and apply the given ones to every page of the context.
+BrowserEmulationManagerInterface.clear	Remove every override this manager applied.
+BrowserEmulationManagerInterface.attach	Apply the retained overrides to a newly created page.

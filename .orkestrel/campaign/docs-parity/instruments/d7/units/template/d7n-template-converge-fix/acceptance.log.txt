@@ -1,0 +1,43 @@
+== date
+2026-09-07T20:51:29Z
+== git status --short
+ M guides/template.md
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/templates/Template.ts
+ M src/core/templates/TemplateManager.ts
+ M tests/guides.test.ts
+== oxfmt --check
+All matched files use the correct format.
+Finished in 311ms on 7 files using 4 threads.
+exit=0
+== oxlint
+exit=0
+== npm run check
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+exit=0
+== npm run docs
+rows read: 1, disagreements found: 0
+exit=0
+== docs --to guide
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+exit=0
+== docs --to source
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+exit=0
+== test:guides
+ Test Files  1 passed (1)
+      Tests  34 passed (34)
+   Start at  20:51:40
+   Duration  581ms (transform 174ms, setup 16ms, import 313ms, tests 117ms, environment 0ms)
+
+== test:policy
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  20:51:41
+   Duration  594ms (transform 180ms, setup 21ms, import 194ms, tests 230ms, environment 0ms)
+
+== date
+2026-09-07T20:51:41Z

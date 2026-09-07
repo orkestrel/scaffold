@@ -1,0 +1,174 @@
+CDPTransportEventMap	type		`{ message, close, error }`
+CDPTransportInterface	interface		`{ emitter } plus start, send, close`
+CDPClientEventMap	type		`{ connect, close, drop, error }`
+CDPClientOptions	interface		`{ transport, timeout?, on?, error? }`
+CDPSendOptions	interface		`{ session?, timeout? }`
+CDPHandler	type		`(params: Readonly<Record<string, unknown>>) => void`
+CDPTarget	interface		`{ id, category, title, url }`
+CDPClientInterface	interface		`{ emitter, connected } plus connect, reconnect, send, subscribe, unsubscribe, close`
+BrowserTransitionFunction	type		`() => Promise<T>`
+BrowserTransitionInterface	interface		`{ pending } plus execute`
+BrowserWriterInterface	interface		`{} plus write`
+BrowserViewport	interface		`{ width, height, scale?, mobile?, touch?, landscape? }`
+BrowserWaitUntil	type		`'commit' \| 'load' \| 'domcontentloaded'`
+BrowserPageOptions	interface		`{ on?, error?, url?, viewport?, timeout? }`
+BrowserNavigationOptions	interface		`{ condition?, timeout? }`
+BrowserNavigationResult	interface		`{ url, response, same }`
+BrowserNavigationWatch	interface		`{ responses }`
+BrowserNavigationWait	interface		`{ pattern, timer, resolve, reject }`
+BrowserNavigationWaitOptions	interface		`{ timeout? }`
+BrowserNavigationManagerInterface	interface		`{} plus wait, until`
+BrowserActionOptions	interface		`{ timeout?, strict?, force?, trial? }`
+BrowserInputOptions	interface		`{ delay? }`
+BrowserClickOptions	interface	BrowserInputOptions	`{ button?, count? }`
+BrowserDragOptions	interface	BrowserInputOptions	`{ button?, steps? }`
+BrowserPointerOptions	interface	BrowserActionOptions	`{ position? }`
+BrowserWaitState	type		`'attached' \| 'detached' \| 'visible' \| 'hidden'`
+BrowserWaitOptions	interface	BrowserActionOptions	`{ state? }`
+BrowserScreenshotOptions	interface		`{ path?, full?, format?, quality?, clip?, transparent?, animations?, caret?, scale?, mask?, color? }`
+BrowserContentResult	interface		`{ url, title, html, text }`
+BrowserScreenshotResult	interface		`{ bytes, path }`
+BrowserTeardownFunction	type		`() => Promise<unknown>`
+BrowserHandleInterface	interface		`{ id } plus value, call, property, properties, dispose`
+BrowserBindingHandler	type		`(...args: unknown[]) => unknown \| Promise<unknown>`
+BrowserBindingCall	interface		`{ id, name, args, context }`
+BrowserScriptManagerInterface	interface		`{} plus add, remove, expose, revoke, destroy`
+BrowserScriptEntry	interface		`{ source, binding }`
+BrowserAXNode	interface		`{ id, parent, children, backend, frame, ignored, role, name, description, value, properties }`
+BrowserAccessibilitySnapshot	interface		`{ roots, nodes }`
+BrowserAccessibilityOptions	interface		`{ root?, depth? }`
+BrowserAccessibilityInterface	interface		`{} plus snapshot`
+BrowserTracingOptions	interface		`{ path?, categories?, screenshots?, sampling? }`
+BrowserTracingResult	interface		`{ bytes, path }`
+BrowserStreamChunk	interface		`{ bytes, eof }`
+BrowserTracingInterface	interface		`{ active } plus start, stop, destroy`
+BrowserCoverageRange	interface		`{ start, end, count }`
+BrowserFunctionCoverage	interface		`{ name, ranges, block }`
+BrowserScriptCoverage	interface		`{ id, url, functions }`
+BrowserStyleCoverage	interface		`{ id, ranges }`
+BrowserCoverageOptions	interface		`{ javascript?, css?, detailed? }`
+BrowserCoverageResult	interface		`{ scripts, styles }`
+BrowserCoverageInterface	interface		`{ active } plus start, stop, destroy`
+BrowserMetric	interface		`{ name, value }`
+BrowserProfileFrame	interface		`{ function, script, url, line, column }`
+BrowserProfileNode	interface		`{ id, frame, hit, children }`
+BrowserProfile	interface		`{ start, end, nodes, samples, deltas }`
+BrowserPerformanceInterface	interface		`{} plus metrics`
+BrowserProfilerInterface	interface		`{ active } plus start, stop, destroy`
+BrowserDiagnosticsInterface	interface		`{ tracing, coverage, performance, profiler } plus destroy`
+BrowserClockInterface	interface		`{ installed } plus install, pause, resume, advance, uninstall`
+BrowserSelector	type		`'css' \| 'role' \| 'text' \| 'label' \| 'placeholder' \| 'testId'`
+BrowserLocatorFilter	interface		`{ text?, exact?, visible? }`
+BrowserQuery	interface		`{ selector, value, name?, exact?, parent?, filter?, index? }`
+BrowserRoleOptions	interface		`{ name?, exact? }`
+BrowserTextOptions	interface		`{ exact? }`
+BrowserUploadOptions	interface	BrowserActionOptions	`{ files }`
+BrowserLocatorInterface	interface		`{ frame, query } plus locator, filter, first, last, item, count, all, click, fill, select, check, uncheck, hover, focus, press, type, clear, wait, text, texts, html, value, attribute, visible, enabled, editable, screenshot, upload, drag`
+BrowserSelectorManagerInterface	interface		`{} plus css, role, text, label, placeholder, testId`
+BrowserPoint	interface		`{ x, y }`
+BrowserMouseButton	type		`'left' \| 'middle' \| 'right' \| 'back' \| 'forward'`
+BrowserScreenshotScale	type		`'css' \| 'device'`
+BrowserKey	interface		`{ key, code, text, number }`
+BrowserChord	interface		`{ modifiers, key }`
+BrowserOperationOptions	type		`BrowserPointerOptions &`
+BrowserKeyboardInterface	interface		`{} plus down, up, press, type, insert`
+BrowserMouseInterface	interface		`{} plus move, down, up, click, drag, wheel`
+BrowserTouchInterface	interface		`{} plus tap`
+BrowserActionabilityOptions	interface		`{ visible?, stable?, events?, enabled?, editable?, position? }`
+BrowserQuad	interface		`{ points, center }`
+BrowserMargin	interface		`{ top?, right?, bottom?, left? }`
+BrowserPDFOptions	interface		`{ path?, landscape?, background?, scale?, width?, height?, margin?, ranges?, header?, footer?, tagged?, outline? }`
+BrowserPDFResult	interface		`{ bytes, path }`
+BrowserDialogCategory	type		`'alert' \| 'confirm' \| 'prompt' \| 'beforeunload'`
+BrowserDialogInterface	interface		`{ category, message, default } plus accept, dismiss`
+BrowserFileChooserInterface	interface		`{ multiple } plus upload, cancel`
+BrowserDownloadStatus	type		`'pending' \| 'complete' \| 'cancelled'`
+BrowserDownloadEventMap	type		`{ progress, complete, cancel }`
+BrowserDownloadProgress	interface		`{ status, received, total, path? }`
+BrowserDownloadStart	interface		`{ id, url, name, frame }`
+BrowserDownloadInterface	interface		`{ emitter, id, url, name, status, received, total, path } plus cancel, update`
+BrowserConsoleMessage	interface		`{ level, text, values, timestamp, stack }`
+BrowserStackFrame	interface		`{ url, function, line, column }`
+BrowserPageError	interface		`{ message, stack, timestamp }`
+BrowserWorkerCategory	type		`'worker' \| 'service_worker' \| 'shared_worker'`
+BrowserWorkerInterface	interface		`{ id, url, category } plus evaluate, send, detach, close`
+BrowserPageEventMap	type		`{ navigate, attach, detach, popup, dialog, chooser, download, console, error, crash, worker, request, response, failure, socket, close }`
+BrowserRequest	interface		`{ id, loader, frame, url, method, headers, post, resource, timestamp, walltime, redirect }`
+BrowserSecurity	interface		`{ protocol, issuer, from, to }`
+BrowserTimingRange	interface		`{ start, end }`
+BrowserTiming	interface		`{ request, proxy, dns, connect, ssl, send, receive }`
+BrowserResponse	interface		`{ id, loader, frame, url, status, phrase, headers, mime, protocol, address, port, cached, worker, timestamp, timing, security }`
+BrowserRequestFailure	interface		`{ id, error, cancelled, blocked }`
+BrowserWebSocketFrame	interface		`{ opcode, data, masked, timestamp }`
+BrowserWebSocketEventMap	type		`{ receive, transmit, error, close }`
+BrowserWebSocketInterface	interface		`{ emitter, id, url } plus receive, transmit, fail, close`
+BrowserNetworkEventMap	type		`{ request, response, failure, finish, socket }`
+BrowserRouteQuery	interface		`{ url?, method?, resource? }`
+BrowserRouteContinueOptions	interface		`{ url?, method?, headers?, post? }`
+BrowserRouteFulfillOptions	interface		`{ status?, phrase?, headers?, body? }`
+BrowserRouteInterface	interface		`{ id, request, handled } plus abort, continue, fulfill`
+BrowserRouteHandler	type		`(route: BrowserRouteInterface) => void \| Promise<void>`
+BrowserRouteDefinition	interface		`{ query, handler }`
+BrowserHAROptions	interface		`{ path?, content? }`
+BrowserHARValue	interface		`{ name, value }`
+BrowserHARCookie	interface	BrowserHARValue	`{ path?, domain?, expires?, httpOnly?, secure? }`
+BrowserHARPost	interface		`{ mimeType, text }`
+BrowserHARContent	interface		`{ size, mimeType, text?, encoding? }`
+BrowserHARRequest	interface		`{ method, url, httpVersion, cookies, headers, queryString, postData?, headersSize, bodySize }`
+BrowserHARResponse	interface		`{ status, statusText, httpVersion, cookies, headers, content, redirectURL, headersSize, bodySize }`
+BrowserHARTimings	interface		`{ blocked, dns, connect, send, wait, receive, ssl }`
+BrowserHAREntry	interface		`{ startedDateTime, time, request, response, cache, timings }`
+BrowserHARPending	interface		`{ request, started, response }`
+BrowserHARCreator	interface		`{ name, version }`
+BrowserHARLog	interface		`{ version, creator, entries }`
+BrowserHAR	interface		`{ log }`
+BrowserHARReplayOptions	interface		`{ fallback? }`
+BrowserHARManagerInterface	interface		`{ recording } plus start, stop, replay, clear`
+BrowserNetworkManagerInterface	interface		`{ emitter, har } plus start, body, text, json, route, unroute, headers, offline, credentials, destroy`
+BrowserSameSite	type		`'Strict' \| 'Lax' \| 'None'`
+BrowserCookiePartition	interface		`{ site, ancestor? }`
+BrowserCookie	interface		`{ name, value, domain, path, expires, http, secure, site, partition }`
+BrowserCookieInput	interface		`{ name, value, url?, domain?, path?, expires?, http?, secure?, site?, priority?, partition? }`
+BrowserCookieFilter	interface		`{ name?, domain?, path? }`
+BrowserCookieManagerInterface	interface		`{} plus cookies, set, clear`
+BrowserPermissionManagerInterface	interface		`{} plus grant, deny, clear`
+BrowserStorageEntry	interface		`{ name, value }`
+BrowserStorageOrigin	interface		`{ origin, local, session }`
+BrowserStorageState	interface		`{ cookies, origins }`
+BrowserStorageOptions	interface		`{ origins? }`
+BrowserStorageManagerInterface	interface		`{} plus state, restore, clear`
+BrowserCredentials	interface		`{ username, password }`
+BrowserGeolocation	interface		`{ latitude, longitude, accuracy? }`
+BrowserMedia	interface		`{ output?, scheme?, contrast?, motion?, colors? }`
+BrowserUserAgent	interface		`{ value, language?, platform? }`
+BrowserEmulationOptions	interface		`{ viewport?, user?, locale?, timezone?, geolocation?, media?, offline?, headers?, credentials? }`
+BrowserPagesFunction	type		`() => readonly BrowserPageInterface[]`
+BrowserEmulationManagerInterface	interface		`{} plus apply, clear, attach`
+BrowserProxy	interface		`{ server, bypass? }`
+BrowserDownloadOptions	interface		`{ path, named? }`
+BrowserContextOptions	interface		`{ on?, error?, proxy?, origins?, downloads?, emulation? }`
+BrowserContextEventMap	type		`{ page, close }`
+BrowserCodegenAction	type		`\| { readonly action: 'navigate'; readonly url: string } \| { readonly action: 'click'; readonly selector: string } \| { readonly action: 'fill'; readonly selector: string; readonly value: string } \| { readonly action: 'select'; readonly selector: string; readonly values: readonly string[] }`
+BrowserCodegenEventMap	type		`{ start, stop, action, clear }`
+BrowserCodegenOptions	interface		`{ on?, error? }`
+BrowserCodegenLanguage	type		`'javascript' \| 'typescript'`
+BrowserCodegenScriptOptions	interface		`{ language? }`
+BrowserCodegenInterface	interface		`{ emitter, started } plus start, stop, actions, script, clear, destroy`
+BrowserSessionFunction	type		`(frame: string) => Promise<string>`
+BrowserSendOptions	interface		`{ timeout? }`
+BrowserFrameInfo	interface		`{ id, parent, name, url }`
+BrowserFrameInterface	interface		`{ id, parent, name, url, selectors, keyboard, mouse, touch } plus title, content, article, click, fill, select, evaluate, handle, wait, send, subscribe, unsubscribe, save, assert, update`
+BrowserRect	type		`readonly [x: number, y: number, width: number, height: number]`
+BrowserLayout	interface		`{ bounds, styles, text, paint, offset, scroll, client }`
+BrowserNode	interface		`{ document, frame, index, id, parent, category, name, value, attributes, text, input, checked, selected, clickable, shadow, content, pseudo, source, origin, layout }`
+BrowserDocument	interface		`{ index, frame, url, title, nodes, scroll, width, height }`
+BrowserSnapshotInput	interface		`{ documents, styles }`
+BrowserWalkOrder	type		`'depth' \| 'breadth'`
+BrowserWalkOptions	interface		`{ root?, order? }`
+BrowserSiblingRelation	type		`'preceding' \| 'following'`
+BrowserSnapshotInterface	interface	BrowserSnapshotInput	`{} plus walk, descendants, document, children, parent, siblings, ancestors, common, distance, find, filter, closest, path`
+BrowserSnapshotOptions	interface		`{ styles?, paint?, rects?, limit? }`
+BrowserNodePredicate	type		`(node: BrowserNode) => boolean`
+BrowserNodeQuery	interface		`{ name?, text?, attributes?, frame?, visible?, clickable? }`
+BrowserPageInterface	interface	BrowserFrameInterface	`{ emitter, network, navigation, scripts, accessibility, diagnostics, clock, opener, target, closed } plus navigate, reload, back, forward, screenshot, pdf, frame, frames, snapshot, codegen, destroy, close`
+BrowserContextInterface	interface		`{ emitter, id, cookies, permissions, storage, emulation } plus page, pages, create, sync, destroy, close`

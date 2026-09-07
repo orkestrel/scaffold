@@ -246,3 +246,7 @@ comparator.
 ## Deviation state
 
 No deviation. Every acceptance criterion is closed on the readings quoted here.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-form-audit-verdict.md`): this report states counts in prose, and its scoped gate lines carry placeholders (`<owned paths>`) where the argument list ran; the tree is authoritative and every cited line matched it on the audit's re-read. Its instruments are retained under `instruments/d7/units/form/`.

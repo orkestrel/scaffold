@@ -1,0 +1,12 @@
+
+> @orkestrel/markdown@0.0.14 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/markdown@0.0.14 check:src
+> npm run check:src:core
+
+
+> @orkestrel/markdown@0.0.14 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+

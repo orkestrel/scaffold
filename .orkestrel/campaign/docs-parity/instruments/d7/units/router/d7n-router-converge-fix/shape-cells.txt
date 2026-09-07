@@ -1,0 +1,35 @@
+`METHOD_LIST`	`readonly ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']`
+`METHODS`	`ReadonlySet<string>`
+`TIER_LITERAL`	`2`
+`TIER_PARAM`	`1`
+`TIER_WILDCARD`	`0`
+`PathParams`	`{ readonly [K in keyof PathParamsRaw<Path>]: PathParamsRaw<Path>[K] }`
+`PathParamsRaw`	``string extends Path ? Readonly<Record<string, string>> : Path extends `${infer Segment}/${infer Rest}` ? SegmentParam<Segment> & PathParamsRaw<Rest> : SegmentParam<Path>``
+`IdentifierStartChar`	`'a' \| 'b' \| 'c' \| 'd' \| 'e' \| 'f' \| 'g' \| 'h' \| 'i' \| 'j' \| 'k' \| 'l' \| 'm' \| 'n' \| 'o' \| 'p' \| 'q' \| 'r' \| 's' \| 't' \| 'u' \| 'v' \| 'w' \| 'x' \| 'y' \| 'z' \| 'A' \| 'B' \| 'C' \| 'D' \| 'E' \| 'F' \| 'G' \| 'H' \| 'I' \| 'J' \| 'K' \| 'L' \| 'M' \| 'N' \| 'O' \| 'P' \| 'Q' \| 'R' \| 'S' \| 'T' \| 'U' \| 'V' \| 'W' \| 'X' \| 'Y' \| 'Z' \| '_'`
+`IdentifierChar`	`IdentifierStartChar \| '0' \| '1' \| '2' \| '3' \| '4' \| '5' \| '6' \| '7' \| '8' \| '9'`
+`TakeIdentifierTail`	``S extends `${infer Head}${infer Tail}` ? Head extends IdentifierChar ? TakeIdentifierTail<Tail, `${Acc}${Head}`> : Acc : Acc``
+`IdentifierHead`	``S extends `${infer Head}${infer Tail}` ? Head extends IdentifierStartChar ? TakeIdentifierTail<Tail, Head> : '' : ''``
+`SegmentParam`	``Segment extends `:${infer Rest}` ? IdentifierHead<Rest> extends infer Name extends string ? Name extends '' ? unknown : { readonly [K in Name]: string } : unknown : Segment extends `*${infer Rest}` ? IdentifierHead<Rest> extends infer Name extends string ? Name extends '' ? unknown : { readonly [K in Name]: string } : unknown : unknown``
+`CompiledPath`	`{ regex, params }`
+`RouteEntry`	`{ path, meta, name? }`
+`RouterMatch`	`{ path, params, meta, name? }`
+`AnswerHandler`	`(meta: Meta) => boolean`
+`RouterOptions`	`{ entries?, sensitive?, key? }`
+`RouterInterface`	`{ count } plus add, match, entries, group, clear`
+`GroupInterface`	`{ prefix } plus add, group`
+`Method`	`'GET' \| 'POST' \| 'PUT' \| 'PATCH' \| 'DELETE' \| 'HEAD' \| 'OPTIONS'`
+`RouteContext`	`{ params, pattern, url, state }`
+`RouteHandler`	`(request: Request, context: RouteContext<Path, TState>) => Response \| Promise<Response>`
+`RouteInput`	`{ method, path, handler, name? }`
+`RouteRecord`	`{ method, handler, name? }`
+`DispatchResult`	`{ status: 'matched', match } \| { status: 'unmethoded', allow } \| { status: 'unmatched' }`
+`DispatcherEventMap`	`{ match, miss }`
+`DispatcherOptions`	`{ routes?, sensitive?, unmatched?, unmethoded?, on?, error? }`
+`DispatcherInterface`	`{ router, emitter } plus add, group, match, handle, destroy`
+`DispatchGroupInterface`	`{ prefix } plus add, group`
+`NavigatorEventMap`	`{ navigate }`
+`NavigatorOptions`	`{ routes, history?, base?, fallback?, guard?, intercept?, sensitive?, on?, error? }`
+`NavigatorInterface`	`{ router, emitter, active } plus start, stop, navigate, match, destroy`
+`RequestOptions`	`{ origin?, response? }`
+`ListenerFunction`	`(request: IncomingMessage, response: ServerResponse) => void`
+`StateFunction`	`(message: IncomingMessage) => TState`

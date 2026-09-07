@@ -1,0 +1,924 @@
+function createCDPClient
+  G: Create a `CDPClientInterface` bound to the given `CDPTransportInterface`.
+  S: Creates a CDP client bound to the given transport.
+function createBrowserSnapshot
+  G: Create a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data.
+  S: Creates a navigable browser snapshot from decoded serializable data.
+class CDPClient
+  G: Lightweight CDP client over a `CDPTransportInterface` — JSON-RPC framing, `connect` / `send` / `subscribe` / `close`.
+  S: Provides a lightweight Chrome DevTools Protocol client over a `CDPTransportInterface`.
+class BrowserContext
+  G: Isolated browser session over a CDP browser context — manages its `BrowserPage`s (`page` / `pages` / `create` / `sync`).
+  S: Owns pages and shared state inside one Chromium browser context.
+class BrowserFrame
+  G: One attached document frame with isolated-world evaluation and frame-scoped actions over its current CDP session.
+  S: Represents one attached document frame, evaluated through its own CDP execution world.
+class BrowserPage
+  G: A single browser page or frame — navigation, content extraction, screenshot, element interaction, codegen.
+  S: Represents a top-level browser page, including its target lifecycle and child frames.
+class BrowserCodegen
+  G: Records page interactions (navigate/click/fill/select) through CDP bindings, for later compilation into a replayable script.
+  S: Records page navigation and form interactions and compiles replayable scripts.
+class BrowserSnapshot
+  G: A navigable, serializable capture of every attached document — walking, structural relationships, search, and paths over plain node data.
+  S: Represents a navigable, serializable browser DOM snapshot.
+class BrowserError
+  G: Base error for all browser automation operations (`code` + `context`).
+  S: Represents the base error for all browser automation operations.
+class BrowserSelectorError
+  G: A selector-based lookup or wait timed out without the element appearing.
+  S: Reports that a selector-based lookup or wait timed out without the element appearing.
+class CDPError
+  G: A CDP request received an error response from the remote endpoint (context carries `method` / CDP `code` / `message` / `data`).
+  S: Reports that a CDP request received an error response from the remote endpoint.
+class CDPConnectionError
+  G: A CDP request could not be sent or completed because the client was not in a connectable state (not connected, closed while connecting, or the connection dropped mid-request).
+  S: Reports that a CDP request could not be sent or completed because the client was not in a connectable state (not connected, closed while connecting, or the connection dropped mid-request).
+class CDPTimeoutError
+  G: A pending CDP request was not answered within its timeout window.
+  S: Reports that a pending CDP request was not answered within its timeout window.
+class BrowserResultLimitError
+  G: An `evaluate()`/`content()` result exceeded `BROWSER_RESULT_LIMIT` and was rejected in-page before it could overflow the CDP transport frame.
+  S: Reports that an `evaluate()`/`content()` result exceeded `BROWSER_RESULT_LIMIT` and was rejected in-page before it could overflow the CDP transport frame.
+function decodeBase64
+  G: Decode a base64-encoded string into raw bytes (pure JS, no `Buffer`/`atob` — runs identically Node/browser).
+  S: Decodes a base64-encoded string into raw bytes.
+function compileGuardedEvaluateExpression
+  G: Compile a `Runtime.evaluate` expression so the in-page code stringifies its own result and throws a recognizable sentinel error before an oversized result would overflow the CDP transport frame.
+  S: Compiles a `Runtime.evaluate` expression so the IN-PAGE code stringifies its own result and throws a recognizable error before an oversized result would overflow the CDP transport frame.
+function normalizeCodegenActions
+  G: Collapse consecutive `fill` actions on the same selector into the latest value.
+  S: Normalizes a raw list of recorded codegen actions.
+function parseCodegenActionPayload
+  G: Coerce a codegen binding payload string to a `BrowserCodegenAction`, or `undefined` off-shape.
+  S: Coerces a codegen binding payload string to a `BrowserCodegenAction`, or `undefined` off-shape.
+function parseCodegenNavigateAction
+  G: Coerce a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined` off-shape and for every frame but the top-level one.
+  S: Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined` off-shape.
+function compileCodegenScript
+  G: Compile recorded codegen actions into a replayable JavaScript or TypeScript script.
+  S: Compiles recorded codegen actions into a replayable script.
+function readEvaluationResult
+  G: Read a `Runtime.evaluate` result. Throws a `BrowserError` on a failed evaluation, and a `BrowserResultLimitError` past the guarded result size.
+  S: Decodes one CDP `Runtime.evaluate` result.
+function requireBrowserString
+  G: Narrow a browser-evaluated value to a required string.
+  S: Requires an evaluated browser value to be a string.
+function readBrowserFrames
+  G: Read `Page.getFrameTree` into depth-first frame metadata, skipping every off-shape frame.
+  S: Decodes a flattened CDP `Page.getFrameTree` result.
+function compileAttachedWaitExpression
+  G: Compile an in-page attached-state wait.
+  S: Compiles an in-page wait for an attached selector.
+function compileDetachedWaitExpression
+  G: Compile an in-page detached-state wait.
+  S: Compiles an in-page wait for a detached selector.
+function compileVisibleWaitExpression
+  G: Compile an in-page visible-state wait.
+  S: Compiles an in-page wait for a visible selector.
+function compileHiddenWaitExpression
+  G: Compile an in-page hidden-state wait.
+  S: Compiles an in-page wait for a hidden selector.
+function compileClickExpression
+  G: Compile a strict, visibility-checked click expression.
+  S: Compiles a strict, visibility-checked click expression.
+function compileFillExpression
+  G: Compile a strict, editable fill expression.
+  S: Compiles a strict, editable fill expression.
+function compileSelectExpression
+  G: Compile a strict select expression.
+  S: Compiles a strict select expression.
+function parseNumberArray
+  G: Coerce an unknown protocol value to an all-number array, or `undefined` off-shape.
+  S: Coerces an unknown value to an all-number array, or `undefined` off-shape.
+function parseSnapshotString
+  G: Coerce one DOMSnapshot string-table index to its string, or `undefined` off-shape.
+  S: Coerces one CDP snapshot string-table index to its string, or `undefined` off-shape.
+function readRareStringData
+  G: Read sparse CDP string data into a node-index map, skipping every off-shape entry.
+  S: Decodes CDP snapshot sparse string data.
+function readRareBooleanData
+  G: Read sparse CDP boolean indexes into a set, skipping every off-shape entry.
+  S: Decodes CDP snapshot sparse boolean data.
+function readRareIntegerData
+  G: Read sparse CDP integer data into a node-index map, skipping every off-shape entry.
+  S: Decodes CDP snapshot sparse integer data.
+function parseBrowserRect
+  G: Coerce a four-number CSS-pixel rectangle to a `BrowserRect`, or `undefined` off-shape.
+  S: Coerces a CDP snapshot rectangle to a `BrowserRect`, or `undefined` off-shape.
+function readBrowserAttributes
+  G: Read flattened name/value indexes into a frozen attribute record, skipping every off-shape pair.
+  S: Decodes flattened CDP node attributes.
+function readBrowserSnapshot
+  G: Read a `DOMSnapshot.captureSnapshot` response into a serializable `BrowserSnapshotInput`. Throws a `BrowserError` off-shape, and a `BrowserResultLimitError` past the configured node limit.
+  S: Decodes a CDP `DOMSnapshot.captureSnapshot` result.
+function isBrowserNodeQuery
+  G: Test whether a browser-node matcher is a declarative query rather than a predicate.
+  S: Tests whether a browser-node matcher is a declarative query.
+function matchesBrowserNode
+  G: Match a node against a declarative query.
+  S: Tests a captured node against a declarative query.
+function isBrowserNodeVisible
+  G: Test whether a node has a non-empty captured layout box.
+  S: Tests whether a captured node has a non-empty rendered layout box.
+function createBrowser
+  G: Create a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle management.
+  S: Creates a raw-CDP Browser façade.
+function createCDPTransport
+  G: Create a Node `WebSocket`-backed `CDPTransportInterface` for the given CDP debugger URL.
+  S: Creates a Node `WebSocket`-backed CDP transport.
+function createBrowserWriter
+  G: Create a filesystem-backed `BrowserWriterInterface` that persists bytes through `node:fs/promises`.
+  S: Creates a filesystem-backed browser writer.
+class Browser
+  G: Browser wrapper with discovery, connection management, and lifecycle control (discover → connect → launch).
+  S: Discovers, launches, connects to, and owns Chromium-family browser sessions.
+class WebSocketCDPTransport
+  G: Node `WebSocket`-backed `CDPTransportInterface` — connects to a CDP WebSocket debugger URL.
+  S: Provides a raw CDP text transport backed by `@orkestrel/websocket`.
+class FileBrowserWriter
+  G: Filesystem-backed `BrowserWriterInterface` — persists captured bytes, creating missing parent directories.
+  S: Persists captured browser bytes to the filesystem through `node:fs/promises`.
+class BrowserConnectionError
+  G: A CDP connection, discovery, or launch attempt failed.
+  S: Reports that a CDP connection, discovery, or launch attempt failed.
+class BrowserNotConnectedError
+  G: An operation requiring an active connection was attempted while disconnected.
+  S: Reports that an operation requiring an active connection was attempted while disconnected.
+class BrowserDestroyedError
+  G: An operation was attempted after the Browser was destroyed.
+  S: Reports that an operation was attempted after the Browser was destroyed.
+function findSystemBrowsers
+  G: Enumerate every Chrome/Chromium/Edge executable discoverable (env override → well-known install paths → PATH probe → Playwright browser stores), deduplicated by normalized path; each entry classified into a `SystemBrowser`, optionally narrowed by `options.engine` — unclassifiable executables default to engine `'chromium'` rather than being dropped.
+  S: Enumerates every Chrome/Chromium/Edge executable discoverable on this machine, deduplicated by normalized absolute path.
+function findSystemBrowser
+  G: The first entry of `findSystemBrowsers`; may return `undefined`.
+  S: Locates a Chrome/Chromium/Edge executable on this machine — the first entry of `findSystemBrowsers`.
+function parseBrowserEngine
+  G: Classify an executable path/name into a `BrowserEngine` by case-insensitive hint (edge → chromium → chrome); may return `undefined`.
+  S: Classifies an executable path/name into a `BrowserEngine` by case-insensitive hint, checked in the order edge → chromium → chrome.
+function normalizeExecutablePath
+  G: Normalize an executable path for cross-source deduplication (case-insensitive on Windows).
+  S: Normalizes an executable path for cross-source deduplication (case-insensitive on Windows).
+function browserToEngine
+  G: Classify a `/json/version` `Browser` string into a `BrowserEngine` (`Edg/` → edge, `Chrome/` → chrome, else chromium).
+  S: Classifies a `/json/version` `Browser` string into a `BrowserEngine` (`Edg/` → edge, `Chrome/` → chrome, else chromium).
+function createBrowserProfile
+  G: Resolve a caller-owned persistent profile or create an isolated temporary user-data directory.
+  S: Resolves a persistent caller profile or creates an isolated temporary one.
+function removeBrowserProfile
+  G: Remove a library-owned isolated profile after validating its guarded temp-directory shape; persistent profiles are untouched.
+  S: Removes a library-owned isolated browser profile.
+function findEnvOverrides
+  G: Check the env-override keys in order, returning every one that exists.
+  S: Checks the env-override keys (`PLAYWRIGHT_EXECUTABLE_PATH`, `CHROME_PATH`) in order and returns every one that exists.
+function buildInstallPaths
+  G: Build the default well-known install-path candidates for a platform, deriving Windows roots from env vars.
+  S: Builds the default well-known install-path candidates for a platform, deriving Windows roots from env vars.
+function buildWindowsRoots
+  G: Derive Windows install roots from env vars, falling back to well-known literals when absent.
+  S: Derives Windows install roots from env vars, falling back to well-known literals when absent.
+function findInstallPaths
+  G: Return every candidate path that exists on disk, in the given order.
+  S: Returns every candidate path that exists on disk, in the given order.
+function probePathNames
+  G: Probe PATH for every resolvable command name, in the given order.
+  S: Probes PATH (`which`/`where`) for every resolvable command name, in the given order.
+function readFirstLine
+  G: Return the first non-empty line of a command's output without its surrounding whitespace, so a `where` match on Windows keeps no trailing carriage return; may return `undefined`.
+  S: Returns the first non-empty line of a command's output, without its surrounding whitespace.
+function buildStoreBases
+  G: Build the default Playwright browser store base directories to search for a managed Chromium.
+  S: Builds the default Playwright browser store base directories to search for a managed Chromium.
+function findStorePaths
+  G: Search one store base for the top-level `chromium` link and every `chromium-*` install, highest revision first.
+  S: Searches one store base for the top-level `chromium` link and every `chromium-*` install, highest revision first.
+function launchBrowserProcess
+  G: Launch a browser process with raw-CDP debugging flags; a POSIX launch is detached into its own process group so teardown reaches every Chromium subprocess, and a Windows launch is not detached so teardown signals one process by identifier — the spawned process, or the one the launcher handed the endpoint to. Returns the spawned `ChildProcess`.
+  S: Launches a browser process with raw-CDP debugging flags.
+function waitForCDPReady
+  G: Poll a browser's CDP version endpoint until it responds or the timeout elapses; returns the debugger URL.
+  S: Polls a browser's CDP version endpoint until it responds or the timeout elapses.
+function fetchCDPTargets
+  G: Fetch and normalize the current CDP target list from a browser's `/json/list` endpoint, as a `Result` carrying either the targets or a coded `BrowserConnectionError`.
+  S: Fetches the current CDP target list from a browser's `/json/list` endpoint.
+const BROWSER_HAR_CREATOR
+  G: Frozen HAR 1.2 creator identity for persisted network archives.
+  S: Names the tool identity embedded in HAR 1.2 documents.
+const BROWSER_KEY_MODIFIERS
+  G: Frozen Chromium keyboard modifier bit map.
+  S: Maps a canonical modifier name to its CDP Input modifier bit value.
+const BROWSER_MOUSE_BUTTON_MASKS
+  G: Frozen Chromium pressed-button bit map.
+  S: Maps each public mouse button to its CDP Input pressed-button bit value.
+const BROWSER_SCREENSHOT_ATTRIBUTE
+  G: Temporary attribute used to scope screenshot preparation styles.
+  S: Names the attribute that tags temporary screenshot styles and masks.
+const BROWSER_STABLE_FRAME_COUNT
+  G: Consecutive animation frames required by the stability check.
+  S: Sets the number of animation frames whose element bounds must agree before trusted input.
+const BROWSER_TEST_ID_ATTRIBUTE
+  G: Attribute used by test-id locators.
+  S: Names the attribute the semantic test-id selector uses.
+const BROWSER_VISIBILITY_SOURCE
+  G: In-page visibility predicate source shared by every compiler.
+  S: Holds the in-page visibility predicate source, over a `style` computed style and a `rect` bounding box already in scope at the interpolation site.
+class BrowserAccessibility
+  G: Accessibility-domain snapshot reader.
+  S: Captures Chromium Accessibility-domain snapshots for one page.
+class BrowserClock
+  G: Chromium virtual-time lifecycle.
+  S: Controls the Chromium virtual-time budget for deterministic page timers.
+class BrowserCookieManager
+  G: Context-scoped cookie manager.
+  S: Performs cookie operations isolated to one browser context.
+class BrowserCoverage
+  G: JavaScript and CSS coverage lifecycle.
+  S: Collects JavaScript precise coverage and CSS rule usage for one page target.
+class BrowserDiagnostics
+  G: Tracing, coverage, and performance composition root.
+  S: Groups the diagnostic subentities beneath one page.
+class BrowserEmulationManager
+  G: Context-inherited Chromium emulation overrides.
+  S: Applies rendering, identity, location, and network emulation for context pages.
+class BrowserHARManager
+  G: HAR 1.2 recording, persistence, and replay.
+  S: Records and replays HTTP archives over one page network manager.
+class BrowserKeyboard
+  G: Trusted Chromium keyboard input.
+  S: Sends trusted keyboard input through Chromium's CDP Input domain.
+class BrowserLocator
+  G: Strict, reusable, shadow-aware locator.
+  S: Represents a reusable strict semantic locator over one frame.
+class BrowserMouse
+  G: Trusted Chromium mouse input.
+  S: Sends trusted mouse input through Chromium's CDP Input domain.
+class BrowserNavigationManager
+  G: URL/function waits and navigation-response observation.
+  S: Runs URL and page-predicate waits resilient to ordinary navigation events.
+class BrowserNetworkManager
+  G: Network observation, bodies, interception, auth, HAR, and sockets.
+  S: Drives the page-scoped Network and Fetch domain lifecycle.
+class BrowserPerformance
+  G: Performance-domain metrics reader.
+  S: Reads Performance-domain metrics for one frame.
+class BrowserPermissionManager
+  G: Context permission overrides.
+  S: Applies permission overrides isolated to one browser context.
+class BrowserProfiler
+  G: Sampled CPU-profile lifecycle.
+  S: Records sampled JavaScript CPU profiles over one frame's Profiler domain.
+class BrowserScriptManager
+  G: Init scripts and host bindings.
+  S: Installs new-document scripts and promise-based host functions for one page.
+class BrowserSelectorManager
+  G: CSS and semantic locator factory.
+  S: Creates semantic locators for one frame.
+class BrowserStorageManager
+  G: Cookie and web-storage state import/export.
+  S: Imports, exports, and clears cookie and web-storage state for one browser context.
+class BrowserTouch
+  G: Trusted Chromium touch input.
+  S: Sends trusted touch input through Chromium's CDP Input domain.
+class BrowserTracing
+  G: Trace stream capture and persistence.
+  S: Captures Chromium traces streamed through the IO domain.
+class BrowserTransition
+  G: One asynchronous transition shared by every caller that joins it.
+  S: Runs one asynchronous transition at a time, shared by every caller that joins it.
+class BrowserWebSocket
+  G: Observable WebSocket lifecycle.
+  S: Represents an observable WebSocket connection reconstructed from Network-domain events.
+function browserHARHeadersToRecord
+  G: Convert HAR header entries to a Fetch header record.
+  S: Converts HAR name/value headers into a Fetch-domain header record.
+function browserHeadersToProtocol
+  G: Convert a header record to CDP name/value entries.
+  S: Converts a header record to Fetch-domain name/value entries.
+function browserPDFToParams
+  G: Validate and compile PDF options to CDP parameters.
+  S: Validates and compiles Page.printToPDF parameters.
+function browserScreenshotToParams
+  G: Validate and compile screenshot options to CDP parameters.
+  S: Validates and compiles basic Page.captureScreenshot parameters.
+function bytesToText
+  G: Decode UTF-8 bytes.
+  S: Decodes UTF-8 bytes as text.
+function compileActionabilityFunction
+  G: Compile element actionability checks for a remote handle.
+  S: Compiles the element-side actionability pass used before trusted input.
+function compileAttachedLocatorWaitExpression
+  G: Compile a strict locator attached-state wait.
+  S: Compiles an attached-state locator wait.
+function compileBrowserBindingCleanup
+  G: Compile host-binding cleanup in a page.
+  S: Compiles current-document cleanup for one page-side host binding facade.
+function compileBrowserBindingResult
+  G: Compile host-binding settlement in a page.
+  S: Compiles delivery of a host binding result to one execution context.
+function compileBrowserBindingSource
+  G: Compile a page-side host-binding facade.
+  S: Compiles the page-side promise facade for one Runtime binding.
+function compileDetachedLocatorWaitExpression
+  G: Compile a strict locator detached-state wait.
+  S: Compiles a detached-state locator wait.
+function compileFunctionWaitExpression
+  G: Compile an auto-retrying page predicate.
+  S: Compiles an auto-retrying in-page predicate wait.
+function compileHiddenLocatorWaitExpression
+  G: Compile a strict locator hidden-state wait.
+  S: Compiles a hidden-state locator wait.
+function compileLocatorExpression
+  G: Compile a query that returns its first element.
+  S: Compiles a deep locator query returning its first match.
+function compileLocatorListExpression
+  G: Compile a deep, open-shadow-aware semantic query.
+  S: Compiles a deep, shadow-aware locator query returning every match.
+function compileScreenshotCleanupExpression
+  G: Compile cleanup for temporary screenshot styles.
+  S: Compiles cleanup for temporary screenshot styles and masks.
+function compileScreenshotPreparationExpression
+  G: Compile screenshot masking, caret, and animation preparation.
+  S: Compiles temporary animation, caret, and mask setup for a screenshot.
+function compileStorageClearExpression
+  G: Compile origin storage clearing.
+  S: Compiles an expression that clears local and session storage.
+function compileStorageReadExpression
+  G: Compile origin storage extraction.
+  S: Compiles an expression that serializes local and session storage.
+function compileStorageRestoreExpression
+  G: Compile origin storage restoration.
+  S: Compiles an expression that restores one origin's web storage.
+function compileVisibleLocatorWaitExpression
+  G: Compile a strict locator visible-state wait.
+  S: Compiles a visible-state locator wait.
+function computeBrowserButtons
+  G: Compute the current Chromium mouse button bit mask.
+  S: Computes the CDP Input pressed-button bitmask.
+function computeBrowserModifiers
+  G: Compute Chromium keyboard modifier bits.
+  S: Computes the CDP Input modifier bitmask.
+function concatBytes
+  G: Concatenate byte chunks without a runtime-specific buffer.
+  S: Concatenates byte chunks without Node-specific buffers.
+function cookieToProtocol
+  G: Validate and project a public cookie into CDP input.
+  S: Converts a typed cookie input into Chromium protocol fields.
+function createBrowserHAREntry
+  G: Build one standards-shaped HAR 1.2 exchange entry.
+  S: Builds a standards-shaped HAR 1.2 entry from one observed exchange.
+function encodeBase64
+  G: Encode bytes as base64 without Node or DOM globals.
+  S: Encodes raw bytes as base64 without relying on Node or DOM globals.
+function extractBrowserChord
+  G: Extract a keyboard chord such as `Control+Shift+P` into canonical modifiers and a terminal key. Throws a `BrowserError` on an empty chord or an unsupported modifier.
+  S: Extracts a keyboard chord such as `Control+Shift+P` into its parts.
+function keyToBrowserInput
+  G: Normalize a key token to Chromium input metadata.
+  S: Normalizes one key to CDP keyboard event data.
+function matchesBrowserCookieURL
+  G: Match a cookie against a URL using domain/path/security rules.
+  S: Matches a decoded cookie against one request URL.
+function matchesBrowserRoute
+  G: Match an observed request against route criteria.
+  S: Matches a request against route criteria.
+function matchesBrowserURL
+  G: Match a URL against the supported `*`/`**` glob grammar.
+  S: Matches a URL using Chromium-style `*` and `**` glob segments.
+function mediaToFeatures
+  G: Project public media options to Chromium feature entries.
+  S: Converts typed media preferences to Chromium emulated media features.
+function parseBrowserAXString
+  G: Coerce a string-valued Accessibility AXValue to a string, or `undefined` off-shape.
+  S: Coerces a string-valued Accessibility-domain AXValue to a string, or `undefined` off-shape.
+function parseBrowserBindingCall
+  G: Coerce a Runtime binding invocation to a `BrowserBindingCall`, or `undefined` off-shape.
+  S: Coerces one Runtime binding invocation to a `BrowserBindingCall`, or `undefined` off-shape.
+function parseBrowserConsoleMessage
+  G: Coerce a `Runtime.consoleAPICalled` event to a `BrowserConsoleMessage`, or `undefined` off-shape.
+  S: Coerces one `Runtime.consoleAPICalled` event to a `BrowserConsoleMessage`, or `undefined` off-shape.
+function parseBrowserCookiePartition
+  G: Coerce a cookie partition key to a `BrowserCookiePartition`, or `undefined` off-shape.
+  S: Coerces an optional Chromium cookie partition key to a `BrowserCookiePartition`, or `undefined` off-shape.
+function parseBrowserDownloadProgress
+  G: Coerce a `Browser.downloadProgress` event to a `BrowserDownloadProgress`, or `undefined` off-shape.
+  S: Coerces one `Browser.downloadProgress` event to a `BrowserDownloadProgress`, or `undefined` off-shape.
+function parseBrowserDownloadStart
+  G: Coerce a `Browser.downloadWillBegin` event to a `BrowserDownloadStart`, or `undefined` off-shape.
+  S: Coerces one `Browser.downloadWillBegin` event to a `BrowserDownloadStart`, or `undefined` off-shape.
+function parseBrowserPageError
+  G: Coerce a `Runtime.exceptionThrown` event to a `BrowserPageError`, or `undefined` off-shape.
+  S: Coerces one `Runtime.exceptionThrown` event to a `BrowserPageError`, or `undefined` off-shape.
+function parseBrowserRequest
+  G: Coerce a `Network.requestWillBeSent` or `Fetch.requestPaused` event to a `BrowserRequest`, or `undefined` off-shape.
+  S: Coerces one `Network.requestWillBeSent` or `Fetch.requestPaused` event to a `BrowserRequest`, or `undefined` off-shape.
+function parseBrowserRequestFailure
+  G: Coerce a `Network.loadingFailed` event to a `BrowserRequestFailure`, or `undefined` off-shape.
+  S: Coerces one `Network.loadingFailed` event to a `BrowserRequestFailure`, or `undefined` off-shape.
+function parseBrowserResponse
+  G: Coerce a `Network.responseReceived` event to a `BrowserResponse`, or `undefined` off-shape.
+  S: Coerces one `Network.responseReceived` event to a `BrowserResponse`, or `undefined` off-shape.
+function parseBrowserResponseRecord
+  G: Coerce a Chromium response object plus its event identity to a `BrowserResponse`, or `undefined` off-shape.
+  S: Coerces one Chromium response object plus its event identity to a `BrowserResponse`, or `undefined` off-shape.
+function parseBrowserSecurity
+  G: Coerce Chromium TLS security details to a `BrowserSecurity`, or `undefined` off-shape.
+  S: Coerces Chromium TLS security details to a `BrowserSecurity`, or `undefined` off-shape.
+function parseBrowserTiming
+  G: Coerce Chromium response timing to a `BrowserTiming`, or `undefined` off-shape.
+  S: Coerces Chromium response timing to a `BrowserTiming`, or `undefined` off-shape.
+function parseBrowserTimingRange
+  G: Coerce one named start/end pair of Chromium network timing to a `BrowserTimingRange`, or `undefined` off-shape.
+  S: Coerces one named start/end pair of Chromium network timing to a `BrowserTimingRange`, or `undefined` off-shape.
+function parseBrowserWebSocketFrame
+  G: Coerce a WebSocket frame event to a `BrowserWebSocketFrame`, or `undefined` off-shape.
+  S: Coerces one WebSocket frame event to a `BrowserWebSocketFrame`, or `undefined` off-shape.
+function readBrowserAXValue
+  G: Read the underlying value of an Accessibility AXValue, `undefined` when the record carries none.
+  S: Decodes an Accessibility-domain AXValue.
+function readBrowserAccessibility
+  G: Read an `Accessibility.getFullAXTree` response into a snapshot. Throws a `BrowserError` off-shape.
+  S: Decodes Accessibility-domain nodes into a flat serializable tree.
+function readBrowserCookie
+  G: Read one Chromium cookie. Throws a `BrowserError` off-shape.
+  S: Decodes one Chromium cookie.
+function readBrowserCookies
+  G: Read a `Network.getCookies` response into cookies. Throws a `BrowserError` off-shape.
+  S: Decodes cookies returned by `Storage.getCookies`.
+function readBrowserCoverageRanges
+  G: Read and normalize coverage ranges. Throws a `BrowserError` off-shape.
+  S: Decodes coverage ranges.
+function readBrowserHeaders
+  G: Read a Chromium Headers object into string values, skipping every entry that is neither a string nor a finite number.
+  S: Decodes a Chromium Headers object into string values.
+function readBrowserMetrics
+  G: Read Performance-domain metrics. Throws a `BrowserError` off-shape.
+  S: Decodes Performance-domain metrics.
+function readBrowserProfile
+  G: Read a sampled CPU profile. Throws a `BrowserError` off-shape.
+  S: Decodes one CPU profile.
+function readBrowserProfileFrame
+  G: Read one CPU-profile call frame. Throws a `BrowserError` off-shape.
+  S: Decodes a CPU profile call frame.
+function readBrowserQuad
+  G: Read the first `DOM.getContentQuads` quad and its center. Throws a `BrowserError` off-shape.
+  S: Decodes the first `DOM.getContentQuads` quad and its center.
+function readBrowserRemoteValue
+  G: Read a Runtime remote value, falling back to its unserializable form and its description, `undefined` when it carries none.
+  S: Decodes a Runtime remote object's printable value.
+function readBrowserScriptCoverage
+  G: Read JavaScript coverage. Throws a `BrowserError` off-shape.
+  S: Decodes JavaScript precise coverage.
+function readBrowserScriptIdentifier
+  G: Read an installed init-script identifier. Throws a `BrowserError` off-shape.
+  S: Decodes the `Page.addScriptToEvaluateOnNewDocument` result.
+function readBrowserStack
+  G: Read a Chromium runtime stack trace, skipping every off-shape call frame.
+  S: Decodes a Chromium runtime stack trace.
+function readBrowserStorageEntries
+  G: Read origin storage entries. Throws a `BrowserError` off-shape.
+  S: Decodes a list of web-storage entries.
+function readBrowserStorageOrigin
+  G: Read an origin storage result. Throws a `BrowserError` off-shape.
+  S: Decodes one in-page web-storage snapshot.
+function readBrowserStreamChunk
+  G: Read one `IO.read` response. Throws a `BrowserError` off-shape.
+  S: Decodes one `IO.read` response.
+function readBrowserStyleCoverage
+  G: Read CSS coverage. Throws a `BrowserError` off-shape.
+  S: Decodes CSS rule usage.
+function settleBrowserTeardown
+  G: Run teardown steps to settlement and return the first failure.
+  S: Awaits every teardown step in order and returns the first failure.
+function textToBytes
+  G: Encode UTF-8 text.
+  S: Encodes UTF-8 text as bytes.
+function validateBrowserAccessibilityOptions
+  G: Validate accessibility snapshot bounds.
+  S: Validates Accessibility-domain snapshot bounds.
+function validateBrowserContextOptions
+  G: Validate isolated-context configuration before CDP mutation.
+  S: Validates isolated-context options before creating remote state.
+function validateBrowserEmulationOptions
+  G: Validate emulation configuration before partial application.
+  S: Validates context emulation boundaries before partial application.
+function validateBrowserHAR
+  G: Validate the HAR 1.2 fields required for replay.
+  S: Validates the HAR 1.2 fields required for deterministic replay.
+function validateBrowserInputOptions
+  G: Validate the bounded delay, count, steps, and position of one trusted-input operation.
+  S: Validates the bounded keys of one trusted-input operation.
+function validateBrowserPoint
+  G: Validate finite viewport coordinates.
+  S: Validates viewport input coordinates.
+function validateBrowserRange
+  G: Validate an optional finite numeric range.
+  S: Validates a finite numeric range.
+function validateBrowserTimeout
+  G: Validate a non-negative finite timeout.
+  S: Validates a public browser timeout before protocol work begins.
+function validateBrowserViewport
+  G: Validate dimensions and device scale.
+  S: Validates Chromium viewport metrics.
+interface BrowserAXNode
+  G: Decoded Chromium accessibility node.
+  S: Represents one decoded Chromium accessibility node.
+interface BrowserAccessibilityInterface
+  G: Accessibility snapshot contract.
+  S: Inspects the accessibility tree.
+interface BrowserAccessibilityOptions
+  G: Root/depth accessibility options.
+  S: Describes the options for an accessibility snapshot.
+interface BrowserAccessibilitySnapshot
+  G: Serializable accessibility forest.
+  S: Describes a serializable accessibility-tree snapshot.
+interface BrowserActionabilityOptions
+  G: Internal actionability checks and optional position.
+  S: Describes the actionability checks performed before locator input.
+interface BrowserBindingCall
+  G: One decoded page-to-host binding call.
+  S: Describes a decoded page-to-host binding call.
+type BrowserBindingHandler
+  G: Host function exposed to a page.
+  S: Runs a host function exposed into page JavaScript.
+interface BrowserChord
+  G: Parsed keyboard modifiers and key.
+  S: Describes a parsed keyboard chord.
+interface BrowserClickOptions
+  G: Mouse button, click count, and inter-transition delay for a click.
+  S: Describes the options for a trusted mouse click.
+interface BrowserClockInterface
+  G: Chromium virtual-time contract.
+  S: Controls Chromium virtual time for deterministic page timers.
+interface BrowserConsoleMessage
+  G: Typed page console event.
+  S: Represents one console API call.
+type BrowserContextEventMap
+  G: Context page/close events.
+  S: Maps the browser-context lifecycle events.
+interface BrowserContextOptions
+  G: Emitter hook, proxy, origin, download, and emulation context options.
+  S: Describes the options for creating and configuring an isolated browser context.
+interface BrowserCookie
+  G: Cookie returned by Chromium.
+  S: Represents one cookie returned from a browser context.
+interface BrowserCookieFilter
+  G: Name/domain/path cookie-clear filter.
+  S: Describes optional narrowing criteria for clearing context cookies.
+interface BrowserCookieInput
+  G: Cookie creation input.
+  S: Describes the input used to create or replace a browser cookie.
+interface BrowserCookieManagerInterface
+  G: Context cookie contract: `cookies` / `set` / `clear`.
+  S: Provides cookie operations scoped to one browser context.
+interface BrowserCookiePartition
+  G: Partitioned-cookie key.
+  S: Describes a cookie partition key used by CHIPS-partitioned cookies.
+interface BrowserCoverageInterface
+  G: JavaScript/CSS coverage lifecycle.
+  S: Drives the coverage capture lifecycle.
+interface BrowserCoverageOptions
+  G: Coverage collection options.
+  S: Describes the options for a coverage capture.
+interface BrowserCoverageRange
+  G: Covered source range and execution count.
+  S: Describes a source range reported by JavaScript or CSS coverage.
+interface BrowserCoverageResult
+  G: Combined script/style coverage result.
+  S: Describes combined JavaScript and CSS usage.
+interface BrowserCredentials
+  G: HTTP basic-auth credentials.
+  S: Describes the HTTP basic-auth credentials applied to context pages.
+interface BrowserDiagnosticsInterface
+  G: Diagnostics group contract: `tracing` / `coverage` / `performance` / `profiler`.
+  S: Groups the diagnostics by capability.
+type BrowserDialogCategory
+  G: JavaScript dialog category.
+  S: Names a JavaScript dialog category reported by Chromium.
+interface BrowserDialogInterface
+  G: Dialog data and settlement contract.
+  S: Represents one active JavaScript dialog.
+type BrowserDownloadEventMap
+  G: Download progress/finish/abort events.
+  S: Maps the download progress events.
+interface BrowserDownloadInterface
+  G: Download state, `cancel`, and the progress update its page drives.
+  S: Represents one context download tracked through Chromium's Browser domain.
+interface BrowserDownloadOptions
+  G: Context download path/policy.
+  S: Describes the download policy for a browser context.
+interface BrowserDownloadProgress
+  G: Decoded download progress event.
+  S: Describes a protocol-neutral download progress update.
+interface BrowserDownloadStart
+  G: Decoded download creation event.
+  S: Describes a decoded `Browser.downloadWillBegin` event.
+type BrowserDownloadStatus
+  G: Download lifecycle state.
+  S: Names a download lifecycle phase.
+interface BrowserDragOptions
+  G: Mouse button, interpolation steps, and inter-move delay for a drag.
+  S: Describes the options for a trusted mouse drag.
+interface BrowserEmulationManagerInterface
+  G: Context emulation lifecycle.
+  S: Configures context-scoped emulation.
+interface BrowserEmulationOptions
+  G: Viewport, identity, location, media, network, and auth emulation.
+  S: Describes network and rendering overrides inherited by context pages.
+interface BrowserFileChooserInterface
+  G: File chooser metadata and file selection.
+  S: Represents one intercepted file chooser.
+interface BrowserFunctionCoverage
+  G: Per-function JavaScript coverage.
+  S: Describes function coverage inside one script.
+interface BrowserGeolocation
+  G: Latitude, longitude, and accuracy override.
+  S: Describes a geographic location override.
+interface BrowserHAR
+  G: Standards-shaped HAR 1.2 document.
+  S: Describes the standards-shaped HAR 1.2 document produced by the network manager.
+interface BrowserHARContent
+  G: HAR response body metadata.
+  S: Describes response body metadata in an HTTP archive.
+interface BrowserHARCookie
+  G: HAR cookie value.
+  S: Represents one cookie in an HTTP archive.
+interface BrowserHARCreator
+  G: HAR creator name/version.
+  S: Describes the tool identity embedded in an HTTP archive.
+interface BrowserHAREntry
+  G: One HAR HTTP exchange.
+  S: Represents one completed HTTP exchange in a HAR recording.
+interface BrowserHARLog
+  G: HAR version, creator, and entries.
+  S: Describes the HAR 1.2 log object.
+interface BrowserHARManagerInterface
+  G: HAR recording/replay contract.
+  S: Provides HAR recording and replay operations.
+interface BrowserHAROptions
+  G: HAR content/persistence options.
+  S: Describes the options for a HAR recording.
+interface BrowserHARPending
+  G: Request state awaiting completion.
+  S: Holds recording state until a request finishes; a new value replaces it on each update.
+interface BrowserHARPost
+  G: HAR request body metadata.
+  S: Describes request body metadata in an HTTP archive.
+interface BrowserHARReplayOptions
+  G: Archive-miss replay behavior.
+  S: Describes HAR replay behavior.
+interface BrowserHARRequest
+  G: HAR 1.2 request.
+  S: Describes a HAR 1.2 request entry.
+interface BrowserHARResponse
+  G: HAR 1.2 response.
+  S: Describes a HAR 1.2 response entry.
+interface BrowserHARTimings
+  G: HAR 1.2 phase timings.
+  S: Holds HAR 1.2 phase timings in milliseconds.
+interface BrowserHARValue
+  G: HAR name/value entry.
+  S: Represents one name/value pair in an HTTP archive.
+interface BrowserHandleInterface
+  G: Remote object evaluation/disposal contract.
+  S: Represents a remote JavaScript object retained in one frame execution context.
+interface BrowserInputOptions
+  G: The delay every trusted input operation shares.
+  S: Describes the options shared by every trusted input operation.
+interface BrowserKey
+  G: Normalized Chromium keyboard input data.
+  S: Describes normalized CDP keyboard key data.
+interface BrowserKeyboardInterface
+  G: Trusted keyboard input contract.
+  S: Provides keyboard input operations bound to one frame target session.
+interface BrowserLocatorClickOptions
+  G: Element resolution plus mouse-click input.
+  S: Describes the options for a locator click, combining element resolution with mouse input.
+interface BrowserLocatorDragOptions
+  G: Element resolution plus mouse-drag input.
+  S: Describes the options for a locator drag, combining element resolution with mouse input.
+interface BrowserLocatorFilter
+  G: Serializable locator filter.
+  S: Describes a declarative locator filter applied after selector resolution.
+interface BrowserLocatorInterface
+  G: Reusable strict locator contract, including `text` and `texts`.
+  S: Represents a reusable strict locator over one frame.
+interface BrowserLocatorTypeOptions
+  G: Element resolution plus key input.
+  S: Describes the options for locator keyboard entry, combining element resolution with key input.
+interface BrowserMargin
+  G: PDF paper margins.
+  S: Describes the paper margin lengths accepted by Chromium print-to-PDF.
+interface BrowserMedia
+  G: Media and user-preference emulation: `output`, `scheme`, `contrast`, `motion`, `colors`.
+  S: Describes browser color and media feature overrides.
+interface BrowserMetric
+  G: Named performance metric.
+  S: Represents one Performance-domain metric.
+type BrowserMouseButton
+  G: Supported Chromium mouse button.
+  S: Names a mouse button understood by Chromium's Input domain.
+interface BrowserMouseInterface
+  G: Trusted mouse input contract.
+  S: Provides mouse input operations bound to one frame target session.
+interface BrowserNavigationManagerInterface
+  G: Navigation observation/wait contract.
+  S: Provides URL and in-page predicate waits associated with one page.
+interface BrowserNavigationResult
+  G: Final navigation URL and matching response.
+  S: Describes the outcome of a top-level navigation command.
+interface BrowserNavigationWait
+  G: Pending URL-pattern waiter state.
+  S: Represents one pending URL-pattern wait.
+interface BrowserNavigationWaitOptions
+  G: URL/function navigation wait options.
+  S: Describes the options for URL and predicate waits.
+interface BrowserNavigationWatch
+  G: Pending request/response correlation state.
+  S: Holds the state retained while correlating navigation with Network events.
+type BrowserNetworkEventMap
+  G: Request/response/failure/finish/socket events.
+  S: Maps the network events a page's network manager emits.
+interface BrowserNetworkManagerInterface
+  G: Page network lifecycle contract.
+  S: Provides page-scoped network observation and interception.
+type BrowserOperationOptions
+  G: Every option a trusted-input operation can carry.
+  S: Collects every option a trusted-input operation can carry.
+interface BrowserPDFOptions
+  G: Chromium print-to-PDF options.
+  S: Describes the options for printing a Chromium page to PDF.
+interface BrowserPDFResult
+  G: PDF bytes and optional path.
+  S: Describes the result of printing a page to PDF.
+interface BrowserPageError
+  G: Uncaught page exception.
+  S: Represents one uncaught page exception.
+type BrowserPageEventMap
+  G: Page, frame, target, input, and network events.
+  S: Maps the typed page, frame, target, and user-visible browser events.
+type BrowserPagesFunction
+  G: Returns a context's live pages at call time.
+  S: Returns the context's live pages at call time.
+interface BrowserPerformanceInterface
+  G: Performance-domain metrics contract.
+  S: Reads Performance-domain metrics.
+interface BrowserPermissionManagerInterface
+  G: Context permission contract.
+  S: Provides permission override operations scoped to one browser context.
+interface BrowserPoint
+  G: CSS-pixel coordinate.
+  S: Describes a point in viewport CSS pixels.
+interface BrowserPointerOptions
+  G: Element resolution plus an in-element target point.
+  S: Describes the options for a locator operation that aims at a point inside the element.
+interface BrowserProfile
+  G: Sampled CPU profile.
+  S: Describes a sampled CPU profile.
+interface BrowserProfileFrame
+  G: CPU-profile call frame.
+  S: Describes a JavaScript call frame from a CPU profile.
+interface BrowserProfileNode
+  G: CPU-profile call-tree node.
+  S: Represents one node in a sampled CPU profile.
+interface BrowserProfilerInterface
+  G: Sampled CPU-profile lifecycle contract.
+  S: Drives the sampled CPU profile lifecycle.
+interface BrowserProxy
+  G: Context proxy server and bypass list.
+  S: Describes proxy settings used when creating an isolated browser context.
+interface BrowserQuad
+  G: Element content quad and actionable center.
+  S: Describes a decoded content quad and its actionable center.
+interface BrowserQuery
+  G: Serializable locator query tree.
+  S: Describes a serializable selector query, including optional ancestry and filtering.
+interface BrowserRequest
+  G: Observed HTTP request.
+  S: Represents one observed browser request.
+interface BrowserRequestFailure
+  G: Observed request failure.
+  S: Represents one failed browser request.
+interface BrowserResponse
+  G: Observed HTTP response with timing/security metadata.
+  S: Represents one observed browser response.
+interface BrowserRoleOptions
+  G: Role locator accessible-name options.
+  S: Describes the options for role-based locator creation.
+interface BrowserRouteContinueOptions
+  G: Request continuation overrides.
+  S: Describes the overrides supplied when continuing an intercepted request.
+interface BrowserRouteDefinition
+  G: Installed route query/handler.
+  S: Represents one installed network route.
+interface BrowserRouteFulfillOptions
+  G: Synthetic response options.
+  S: Describes the synthetic response supplied when fulfilling an intercepted request.
+type BrowserRouteHandler
+  G: Function handling a paused request.
+  S: Runs for a matching intercepted request.
+interface BrowserRouteInterface
+  G: Paused-request settlement contract.
+  S: Represents one paused Fetch-domain request.
+interface BrowserRouteQuery
+  G: URL/method/resource route criteria.
+  S: Describes route matching criteria. Omitted fields match all values.
+type BrowserSameSite
+  G: Cookie same-site policy.
+  S: Names a cookie same-site policy understood by Chromium.
+type BrowserScreenshotScale
+  G: CSS/device screenshot coordinate scale.
+  S: Names a screenshot coordinate scale.
+interface BrowserScriptCoverage
+  G: Per-script JavaScript coverage.
+  S: Describes JavaScript script coverage.
+interface BrowserScriptEntry
+  G: Installed script and optional binding owner.
+  S: Represents one installed new-document script and its optional host binding owner.
+interface BrowserScriptManagerInterface
+  G: Init-script/binding lifecycle contract.
+  S: Manages initialization scripts and host bindings for one page.
+interface BrowserSecurity
+  G: TLS protocol, issuer, and validity.
+  S: Describes the TLS details supplied with a browser response.
+type BrowserSelector
+  G: CSS/role/text/label/placeholder/testId locator axis.
+  S: Names a selector axis supported by `BrowserSelectorManagerInterface`.
+interface BrowserSelectorManagerInterface
+  G: Semantic locator factory contract: `css` / `role` / `text` / `label` / `placeholder` / `testId`.
+  S: Groups the locator factories by selector semantics.
+interface BrowserStackFrame
+  G: Browser-side exception stack frame.
+  S: Represents one browser-side stack frame.
+interface BrowserStorageEntry
+  G: Web-storage key/value pair.
+  S: Represents one key/value pair from web storage.
+interface BrowserStorageManagerInterface
+  G: Storage state lifecycle contract.
+  S: Provides storage-state import, export, and clearing operations.
+interface BrowserStorageOptions
+  G: Origins selected for storage capture.
+  S: Describes the options for collecting storage state from selected origins.
+interface BrowserStorageOrigin
+  G: Local/session storage for one origin.
+  S: Describes an origin-scoped local and session storage snapshot.
+interface BrowserStorageState
+  G: Cookies and selected web-storage origins.
+  S: Describes a portable browser authentication and storage snapshot.
+interface BrowserStreamChunk
+  G: Decoded CDP IO chunk.
+  S: Represents one decoded IO stream read.
+interface BrowserStyleCoverage
+  G: Per-style-sheet CSS coverage.
+  S: Describes CSS stylesheet coverage.
+type BrowserTeardownFunction
+  G: One teardown step run to settlement.
+  S: Runs one teardown step to settlement while the first failure is retained.
+interface BrowserTextOptions
+  G: Exactness for text-like locators.
+  S: Describes the options for text-like locator creation.
+interface BrowserTiming
+  G: CDP network timing phases.
+  S: Holds network timing values in milliseconds relative to request time.
+interface BrowserTimingRange
+  G: Start/end pair for one network timing phase.
+  S: Describes the start/end pair for one network timing phase.
+interface BrowserTouchInterface
+  G: Trusted touch input contract.
+  S: Provides touch input operations bound to one frame target session.
+interface BrowserTracingInterface
+  G: Chromium tracing lifecycle contract.
+  S: Drives the trace capture lifecycle.
+interface BrowserTracingOptions
+  G: Categories/screenshots/sampling/path tracing options.
+  S: Describes the options for a Chromium trace capture.
+interface BrowserTracingResult
+  G: Trace bytes and optional path.
+  S: Describes the result of a trace capture.
+type BrowserTransitionFunction
+  G: The work one transition performs.
+  S: Runs the work one `BrowserTransitionInterface` transition performs.
+interface BrowserTransitionInterface
+  G: One shared asynchronous transition contract.
+  S: Represents one asynchronous transition shared by every caller that arrives while it runs.
+interface BrowserUploadOptions
+  G: File paths plus action options.
+  S: Describes the options for setting files on a file input.
+interface BrowserUserAgent
+  G: User-agent string/language/platform override.
+  S: Describes user-agent metadata accepted by Chromium emulation.
+type BrowserWebSocketEventMap
+  G: WebSocket frame/error/close events.
+  S: Maps the WebSocket lifecycle events.
+interface BrowserWebSocketFrame
+  G: WebSocket opcode/payload/mask/timestamp.
+  S: Describes a WebSocket frame payload.
+interface BrowserWebSocketInterface
+  G: Observable WebSocket contract — identity, emitter, and the frame updates its manager drives.
+  S: Represents one observed WebSocket connection.
+type BrowserWorkerCategory
+  G: Dedicated/service/shared worker category.
+  S: Names a worker target category.
+interface BrowserWorkerInterface
+  G: Attached worker evaluation/CDP contract.
+  S: Represents a script worker attached to a page target.

@@ -1,0 +1,12 @@
+BrowserEngine	type		`'chromium' \| 'chrome' \| 'edge'`
+BrowserConnection	type		`'cdp' \| 'launch' \| 'persistent'`
+BrowserStatus	type		`'idle' \| 'connecting' \| 'connected' \| 'disconnected' \| 'error'`
+BrowserDiscoveryResult	interface		`{ endpoint, browser }`
+SystemBrowserOptions	interface		`{ env?, paths?, names?, stores?, engine? }`
+SystemBrowser	type		`{ executable, engine }`
+BrowserProfileResult	interface		`{ path, temporary }`
+BrowserCDPOptions	interface		`{ port?, host?, endpoint?, discover? }`
+BrowserEventMap	type		`{ idle, discover, connect, disconnect, launch, page, context, error, destroy }`
+BrowserOptions	interface		`{ on?, error?, headless?, executable?, profile?, cdp?, timeout?, viewport?, signal?, args?, engine?, browsers? }`
+BrowserInterface	interface		`{ emitter, engine, status, connection, owned, pid } plus discover, connect, adopt, disconnect, context, contexts, isolate, create, destroy, close`
+WebSocketCDPTransportOptions	interface		`{ on?, error?, url, timeout? }`

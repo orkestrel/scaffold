@@ -80,3 +80,10 @@ A `### Constants` table heads `Shape` with the constant's declared type (Ruling 
 ## Ruling 19 (2026-09-07, the Orchestrator, on slice 5b's F6): an alias over an object of tuples
 
 An alias whose value is an object literal (`TemplateManagerEventMap`, an event map of tuple payloads) takes Ruling 12's bare member names in its `Shape` cell (`{ register, remove, clear }`); the payload types stay in the declaration.
+
+## Ruling 20 (2026-09-07, the Orchestrator, on form's audit F6 and objective F3 and F5, and the closures' referrals): where the convention sentence sits, a guard table's column, and the drop-in's bytes
+
+- The convention sentence sits once per table that carries the `Shape` column, between that table's own heading and the table; where several tables share one heading with no heading between them, once before the first. A guide whose `## Surface` section holds several H3 tables with the column repeats the sentence under each heading, and that repetition is the form (form's `### Schema and fields`, `### Answers and rules`, `### The form`).
+- A dedicated guard table (`### Guards`, every row a guard function) heads `Shape` with the type each guard narrows to, under Ruling 15's guard sentence, because that sentence presupposes the column. A mixed table where a guard sits among other functions does not take the column and carries no guard sentence (console).
+- A `### Constants` table takes the constants sentence alone ("A `Shape` cell holds the constant's declared type."), the template's form; router's interface sentence beside it is the outlier the closing sweep corrects.
+- The drop-in's bytes are the pilot's from `const root = new URL('../', import.meta.url)` through the manifest loop's closing brace, outside the constants block: `/Interface$/` with no flag, `new URL('../', import.meta.url)` rather than a package helper, the pilot's comments. A package's own file-scope case (form's README-fence case) and its own cases inside the manifest loop's `describe` stay, appended after the pilot's cases; the pilot's `describe('flagship fences')` section is the pilot's own and each package writes its own executed section.

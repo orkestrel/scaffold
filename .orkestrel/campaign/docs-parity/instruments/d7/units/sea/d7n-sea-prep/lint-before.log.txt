@@ -1,0 +1,47 @@
+tests/src/server/injectors/Injector.test.ts:436:5: error policy(no-banned-term): Replace sanity check in this comment: quick check.
+src/server/types.ts:49:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/types.ts:223:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/types.ts:269:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/types.ts:343:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+src/server/types.ts:505:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/types.ts:530:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/setup.ts:8:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:486:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+tests/setupServer.ts:935:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/setupServer.ts:29:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:60:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:74:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:167:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:327:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:338:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:486:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:512:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:535:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:606:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:629:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:637:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:709:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:728:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:875:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:883:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:890:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:904:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:920:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:935:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:944:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+src/server/injectors/Injector.ts:976:2: error policy(no-banned-term): Replace via in this comment: through, by using.
+src/server/injectors/Injector.ts:1244:2: error policy(no-banned-term): Replace via in this comment: through, by using.
+src/server/injectors/Injector.ts:1256:4: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/injectors/Injector.ts:1343:4: error policy(no-banned-term): Replace etc. in this comment: bound the list, or recast the sentence.
+src/server/injectors/Injector.ts:1523:4: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/helpers.ts:237:2: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:564:1: error policy(no-banned-term): Replace simply in this comment: delete.
+src/server/helpers.ts:694:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:706:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:742:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:742:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:788:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:824:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:864:3: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:979:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:1148:1: error policy(no-banned-term): Replace e.g. in this comment: for example.

@@ -317,3 +317,7 @@ Matches the P21 reading exactly, and is the converge unit's worklist.
 ## Deviations
 
 None. `repair` wrote exactly the P21 paths, both before-texts were found verbatim, both voice diagnostics named in-scope files (`src/core/helpers.ts` under a comment, `tests/setup.ts` under `tests/**`), `test:policy` reported no red, and every gate other than `docs` read green.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-form-audit-verdict.md`): this report states counts in prose, and its scoped gate lines carry placeholders (`<owned paths>`) where the argument list ran; the tree is authoritative and every cited line matched it on the audit's re-read. Its instruments are retained under `instruments/d7/units/form/`.

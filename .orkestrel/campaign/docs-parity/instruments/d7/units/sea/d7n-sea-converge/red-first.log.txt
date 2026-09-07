@@ -1,0 +1,14 @@
+
+> @orkestrel/sea@0.0.15 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/sea
+
+·xx····················x·············
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 34 passed (37)
+   Start at  21:00:35
+   Duration  1.12s (transform 376ms, setup 20ms, import 620ms, tests 217ms, environment 0ms)
+

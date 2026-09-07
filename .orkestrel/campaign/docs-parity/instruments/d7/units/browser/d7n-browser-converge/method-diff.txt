@@ -1,0 +1,621 @@
+CDPTransportInterface.start
+  G: Open the underlying connection.
+  S: Opens the underlying connection.
+CDPTransportInterface.send
+  G: Write one raw text frame to the connection. Throws a coded `BrowserConnectionError` carrying the transport `url` if called before `start()` or after `close()`.
+  S: Writes one raw text frame to the connection. Throws a coded `BrowserConnectionError` carrying the transport `url` when called before the connection opens or after it closes.
+CDPTransportInterface.close
+  G: Close the underlying connection and release resources.
+  S: Closes the underlying connection and releases its resources.
+CDPClientInterface.connect
+  G: Start the transport and begin dispatching. Idempotent.
+  S: Starts the transport and begins dispatching. Idempotent.
+CDPClientInterface.reconnect
+  G: Close and re-establish the transport.
+  S: Closes the transport and re-establishes it.
+CDPClientInterface.send
+  G: Issue a CDP method call with optional params and a trailing `CDPSendOptions` carrying the `session` to scope it to and a per-call `timeout` overriding the client-wide default; rejects on timeout.
+  S: Issues a CDP method call with optional params and a trailing `CDPSendOptions` carrying the `session` to scope it to and a per-call `timeout` overriding the client-wide default; rejects on timeout.
+CDPClientInterface.subscribe
+  G: Register a handler for a CDP event, optionally session-scoped.
+  S: Registers a handler for a CDP event, optionally session-scoped.
+CDPClientInterface.unsubscribe
+  G: Remove a handler for a CDP event, optionally session-scoped.
+  S: Removes a handler for a CDP event, optionally session-scoped.
+CDPClientInterface.close
+  G: Tear down the transport and reject all pending requests.
+  S: Tears down the transport and rejects every pending request.
+BrowserContextInterface.page
+  G: One page by index, or the first page.
+  S: Returns one page by index, or the first page.
+BrowserContextInterface.pages
+  G: All pages in creation order.
+  S: Returns every page in creation order.
+BrowserContextInterface.create
+  G: Open a new page in this context.
+  S: Opens a page in this context.
+BrowserContextInterface.sync
+  G: Synchronize pages from the given CDP targets (server discovers the targets, core never fetches them). Performs a destructive diff, not an additive merge: pages whose target id is missing from `targets` are closed and dropped; pages present in `targets` but not yet tracked are attached and added.
+  S: Synchronizes pages from the given CDP targets, which the server discovers and core never fetches. Performs a destructive diff rather than an additive merge: a page whose target id is missing from `targets` is closed and dropped, and a target that is not yet tracked is attached and added.
+BrowserContextInterface.destroy
+  G: Release local pages and detach their sessions without disposing the remote browser context.
+  S: Releases local pages and detaches their sessions without disposing the remote browser context.
+BrowserContextInterface.close
+  G: Close remote pages, dispose the remote browser context, and release local resources.
+  S: Closes remote pages, disposes the remote browser context, and releases local resources.
+BrowserFrameInterface.title
+  G: Resolve the frame document title.
+  S: Resolves the frame document title.
+BrowserFrameInterface.content
+  G: Extract URL, title, HTML, and visible text with result-size guards.
+  S: Extracts the URL, title, HTML, and visible text under the result-size guards.
+BrowserFrameInterface.article
+  G: Distill the frame HTML to reader-facing plain text, boilerplate and hidden regions pruned.
+  S: Distills the frame HTML to reader-facing plain text, with boilerplate and hidden regions pruned.
+BrowserFrameInterface.click
+  G: Strict-by-default visible and enabled CSS-selector click.
+  S: Clicks a CSS-selector match, strict by default and requiring it visible and enabled.
+BrowserFrameInterface.fill
+  G: Strict-by-default editable input or contenteditable fill, dispatching input/change events.
+  S: Fills an editable input or contenteditable element, strict by default, dispatching input and change events.
+BrowserFrameInterface.select
+  G: Strict-by-default option selection on an enabled `<select>`.
+  S: Selects options on an enabled `select` element, strict by default.
+BrowserFrameInterface.evaluate
+  G: Evaluate an expression in the frame execution world with result-size guarding.
+  S: Evaluates an expression in the frame execution world under the result-size guard.
+BrowserFrameInterface.handle
+  G: Evaluate an expression by reference and return a disposable remote object handle.
+  S: Evaluates an expression by reference and returns a disposable remote object handle.
+BrowserFrameInterface.wait
+  G: Wait for attached, detached, visible, or hidden selector state.
+  S: Waits for a selector to reach the attached, detached, visible, or hidden state.
+BrowserFrameInterface.send
+  G: Issue a raw CDP method in the frame's current target session, with a trailing `BrowserSendOptions` carrying a per-call `timeout` overriding the client-wide default.
+  S: Issues a raw CDP method in the frame's current target session, with a trailing `BrowserSendOptions` carrying a per-call `timeout` overriding the client-wide default.
+BrowserFrameInterface.subscribe
+  G: Subscribe to a CDP event in the frame's current target session.
+  S: Subscribes to a CDP event in the frame's current target session.
+BrowserFrameInterface.unsubscribe
+  G: Remove a frame-session CDP event subscription.
+  S: Removes a frame-session CDP event subscription.
+BrowserFrameInterface.save
+  G: Persist bytes through a page writer; child frames reject because they own no writer.
+  S: Persists bytes through a page writer; a child frame rejects because it owns no writer.
+BrowserFrameInterface.assert
+  G: Throw a coded `BrowserError` when the frame can no longer accept protocol work: `BrowserFrame` throws once the CDP client disconnects, and `BrowserPage` also throws once the page closes. Every other method here calls it first.
+  S: Throws a coded `BrowserError` when the frame can no longer accept protocol work: a frame throws once the CDP client disconnects, and a page also throws once it closes. Every other member here calls it first.
+BrowserFrameInterface.update
+  G: Record an externally observed URL as the frame's current `url`. `BrowserPage` calls it from its own `Page.frameNavigated` handler.
+  S: Records an externally observed URL as the frame's current `url`, which a page calls from its own `Page.frameNavigated` handler.
+BrowserPageInterface.navigate
+  G: Go to a URL, wait for the requested load condition, and return final URL/response correlation.
+  S: Goes to a URL, waits for the requested load condition, and returns the final URL with its response correlation.
+BrowserPageInterface.reload
+  G: Reload and return final URL/response correlation.
+  S: Reloads the page and returns the final URL with its response correlation.
+BrowserPageInterface.back
+  G: Navigate to the previous history entry, or return the unchanged URL when none exists.
+  S: Navigates to the previous history entry, or returns the unchanged URL when none exists.
+BrowserPageInterface.forward
+  G: Navigate to the next history entry, or return the unchanged URL when none exists.
+  S: Navigates to the next history entry, or returns the unchanged URL when none exists.
+BrowserPageInterface.screenshot
+  G: Capture PNG/JPEG bytes, optionally full-page and persisted through an injected writer.
+  S: Captures PNG or JPEG bytes, optionally full-page and persisted through an injected writer.
+BrowserPageInterface.pdf
+  G: Print the page to PDF bytes, optionally persisted through the injected writer.
+  S: Prints the page to PDF bytes, optionally persisted through the injected writer.
+BrowserPageInterface.frame
+  G: Look up a first-class frame by name or URL.
+  S: Looks up a first-class frame by name or URL.
+BrowserPageInterface.frames
+  G: Decode the flattened frame tree, main frame first.
+  S: Decodes the flattened frame tree, main frame first.
+BrowserPageInterface.snapshot
+  G: Capture and decode all attached documents, shadow roots, template contents, layout, and optional computed styles.
+  S: Captures and decodes every attached document, shadow root, template content, layout box, and requested computed style.
+BrowserPageInterface.codegen
+  G: Start or return the current action recorder.
+  S: Starts the action recorder, or returns the running one.
+BrowserPageInterface.destroy
+  G: Release local resources and detach without closing the remote target.
+  S: Releases local resources and detaches without closing the remote target.
+BrowserPageInterface.close
+  G: Close the remote target and release resources.
+  S: Closes the remote target and releases its resources.
+BrowserPageInterface.title
+  G: Inherited from `BrowserFrameInterface`.
+  S: Resolves the frame document title.
+BrowserPageInterface.content
+  G: Inherited from `BrowserFrameInterface`.
+  S: Extracts the URL, title, HTML, and visible text under the result-size guards.
+BrowserPageInterface.article
+  G: Inherited from `BrowserFrameInterface`.
+  S: Distills the frame HTML to reader-facing plain text, with boilerplate and hidden regions pruned.
+BrowserPageInterface.click
+  G: Inherited from `BrowserFrameInterface`.
+  S: Clicks a CSS-selector match, strict by default and requiring it visible and enabled.
+BrowserPageInterface.fill
+  G: Inherited from `BrowserFrameInterface`.
+  S: Fills an editable input or contenteditable element, strict by default, dispatching input and change events.
+BrowserPageInterface.select
+  G: Inherited from `BrowserFrameInterface`.
+  S: Selects options on an enabled `select` element, strict by default.
+BrowserPageInterface.evaluate
+  G: Inherited from `BrowserFrameInterface`.
+  S: Evaluates an expression in the frame execution world under the result-size guard.
+BrowserPageInterface.handle
+  G: Inherited from `BrowserFrameInterface`.
+  S: Evaluates an expression by reference and returns a disposable remote object handle.
+BrowserPageInterface.wait
+  G: Inherited from `BrowserFrameInterface`.
+  S: Waits for a selector to reach the attached, detached, visible, or hidden state.
+BrowserPageInterface.send
+  G: Inherited from `BrowserFrameInterface`.
+  S: Issues a raw CDP method in the frame's current target session, with a trailing `BrowserSendOptions` carrying a per-call `timeout` overriding the client-wide default.
+BrowserPageInterface.subscribe
+  G: Inherited from `BrowserFrameInterface`.
+  S: Subscribes to a CDP event in the frame's current target session.
+BrowserPageInterface.unsubscribe
+  G: Inherited from `BrowserFrameInterface`.
+  S: Removes a frame-session CDP event subscription.
+BrowserPageInterface.save
+  G: Inherited from `BrowserFrameInterface`.
+  S: Persists bytes through a page writer; a child frame rejects because it owns no writer.
+BrowserPageInterface.assert
+  G: Inherited from `BrowserFrameInterface`.
+  S: Throws a coded `BrowserError` when the frame can no longer accept protocol work: a frame throws once the CDP client disconnects, and a page also throws once it closes. Every other member here calls it first.
+BrowserPageInterface.update
+  G: Inherited from `BrowserFrameInterface`.
+  S: Records an externally observed URL as the frame's current `url`, which a page calls from its own `Page.frameNavigated` handler.
+BrowserSnapshotInterface.walk
+  G: Traverse the whole capture, or one subtree when `root` is given (the root is yielded first), in `'depth'` (default) or `'breadth'` order. Each node is visited exactly once.
+  S: Traverses the whole capture, or one subtree when `root` is given and yielded first, in `'depth'` order by default or in `'breadth'` order. Visits each node exactly once.
+BrowserSnapshotInterface.descendants
+  G: Traverse one node's subtree in depth-first order, excluding the node itself.
+  S: Traverses one node's subtree in depth-first order, excluding the node itself.
+BrowserSnapshotInterface.document
+  G: Resolve the captured document a node belongs to.
+  S: Resolves the captured document a node belongs to.
+BrowserSnapshotInterface.children
+  G: Direct children, entering a linked iframe's content document.
+  S: Returns the direct children of a node, entering a linked iframe's content document.
+BrowserSnapshotInterface.parent
+  G: Structural parent, crossing a document boundary to the owning iframe.
+  S: Returns the structural parent of a node, crossing a document boundary to the owning iframe.
+BrowserSnapshotInterface.siblings
+  G: Structural siblings — `'preceding'` or `'following'` narrows to one side; omitting the relation returns every sibling except the node itself.
+  S: Returns the structural siblings of a node; `'preceding'` or `'following'` narrows to one side, and omitting the relation returns every sibling but the node itself.
+BrowserSnapshotInterface.ancestors
+  G: Nearest-first ancestors across document and iframe boundaries.
+  S: Returns the ancestors of a node, nearest first, across document and iframe boundaries.
+BrowserSnapshotInterface.common
+  G: Nearest common ancestor of two nodes, counting each node as its own candidate.
+  S: Returns the nearest common ancestor of two nodes, counting each node as its own candidate.
+BrowserSnapshotInterface.distance
+  G: Structural edge count between two nodes; `undefined` when they share no ancestor.
+  S: Returns the structural edge count between two nodes, or `undefined` when they share no ancestor.
+BrowserSnapshotInterface.find
+  G: First node matching a `BrowserNodeQuery` or a `BrowserNodePredicate`.
+  S: Returns the first node matching a `BrowserNodeQuery` or a `BrowserNodePredicate`.
+BrowserSnapshotInterface.filter
+  G: Every matching node, bounded by an optional `limit`; a negative or fractional limit throws a coded `BrowserError`.
+  S: Returns every matching node, bounded by an optional `limit`; a negative or fractional limit throws a coded `BrowserError`.
+BrowserSnapshotInterface.closest
+  G: Nearest match from a node through its ancestors, testing the node first.
+  S: Returns the nearest match from a node through its ancestors, testing the node first.
+BrowserSnapshotInterface.path
+  G: Deterministic frame-qualified structural path for one node.
+  S: Returns a deterministic frame-qualified structural path for one node.
+BrowserCodegenInterface.start
+  G: Begin recording on the page's session. Calling `start()` after `destroy()` is a silent no-op — a destroyed `BrowserCodegenInterface` cannot be restarted; a new recorder must be obtained through `page.codegen()`.
+  S: Begins recording on the page's session. A call after teardown is a silent no-op, because a torn-down recorder cannot be restarted and a fresh one is obtained through the page.
+BrowserCodegenInterface.stop
+  G: Stop recording and return the captured actions.
+  S: Stops recording and returns the captured actions.
+BrowserCodegenInterface.actions
+  G: Current normalized action list.
+  S: Returns the current normalized action list.
+BrowserCodegenInterface.script
+  G: Compile the captured actions into a script.
+  S: Compiles the captured actions into a script.
+BrowserCodegenInterface.clear
+  G: Reset the captured action list.
+  S: Resets the captured action list.
+BrowserCodegenInterface.destroy
+  G: Tear down the recorder and detach CDP listeners.
+  S: Tears down the recorder and detaches its CDP listeners.
+BrowserTransitionInterface.execute
+  G: Start the work when nothing is in flight, otherwise join the running transition and return its result.
+  S: Starts the work when nothing is in flight, and otherwise joins the running transition and returns its result.
+BrowserInterface.discover
+  G: Passive CDP probe — does not change connection state or launch/attach anything, but emits a `discover` event with the result.
+  S: Probes CDP passively, changing no connection state and neither launching nor attaching, and emits a `discover` event with the result.
+BrowserInterface.connect
+  G: Establish a connection using the strategy above (endpoint → discovery → launch). Idempotent.
+  S: Establishes a connection through the endpoint, then discovery, then a launch. Idempotent.
+BrowserInterface.adopt
+  G: Assume responsibility for terminating the connected browser. This is explicit for a CDP attachment; launched browsers are owned automatically. Rejects unless a live connection supplies an endpoint to retain.
+  S: Assumes responsibility for terminating the connected browser.
+BrowserInterface.disconnect
+  G: Detach the client-side transport while the remote browser keeps running. A merely attached CDP session forgets the endpoint and ownership becomes `undefined`. Every launched or explicitly adopted session retains ownership and its endpoint, so the SAME instance can reconnect and remains responsible for eventual termination. Transport loss while an owned browser remains alive is likewise resumable.
+  S: Detaches the client-side transport while the remote browser keeps running. A merely attached CDP session forgets the endpoint and its ownership becomes `undefined`. A launched or explicitly adopted session retains ownership and its endpoint, so the same instance can reconnect and stays responsible for eventual termination. Transport loss while an owned browser remains alive is resumable the same way.
+BrowserInterface.context
+  G: One context by index, or the first.
+  S: Returns one context by index, or the first.
+BrowserInterface.contexts
+  G: All contexts.
+  S: Returns every context.
+BrowserInterface.isolate
+  G: Create and register an isolated CDP context with validated proxy, download, origin, and emulation options.
+  S: Creates and registers an isolated CDP context with validated proxy, download, origin, and emulation options.
+BrowserInterface.create
+  G: Shortcut to open a page in the default context.
+  S: Opens a page in the default context.
+BrowserInterface.destroy
+  G: Release local resources. For a launched browser this terminates the process serving its CDP endpoint and awaits its exit — on POSIX that terminate reaches the launch's whole process group and awaits its drain, and on Windows it terminates one process by identifier, the spawned process or the one a launcher handed the endpoint to — which leaves the profile unlocked before cleanup. For an adopted attachment it sends CDP `Browser.close`. For a merely attached browser this is a LOCAL DETACH ONLY because other clients may share its targets. Idempotent.
+  S: Releases local resources. A launched browser has the process serving its CDP endpoint terminated and its exit awaited — on POSIX that terminate reaches the launch's whole process group and awaits its drain, and on Windows it terminates one process by identifier, the spawned process or the one a launcher handed the endpoint to — which leaves the profile unlocked before cleanup. An adopted attachment is sent CDP `Browser.close`. A merely attached browser is detached locally and nothing more, because other clients may share its targets. Idempotent.
+BrowserInterface.close
+  G: Graceful REMOTE shutdown: best-effort sends CDP `Browser.close` (whether attached or owned), and when owned also awaits the exit of the process serving the CDP endpoint plus its POSIX process-group drain (escalating to a kill only if needed), then closes every tracked context/page (sending remote `Target.closeTarget`/`disposeBrowserContext` regardless of ownership — unlike `destroy()`, which skips remote context/page closes on a non-owned CDP-attached browser) before releasing the CDP client. Use this to shut down a browser this instance doesn't own but wants to terminate anyway.
+  S: Shuts the remote browser down: sends CDP `Browser.close` best-effort whether attached or owned, and for an owned browser also awaits the exit of the process serving the CDP endpoint plus its POSIX process-group drain, escalating to a kill only where needed. Then closes every tracked context and page, sending remote `Target.closeTarget` and `disposeBrowserContext` whatever the ownership, before releasing the CDP client. This is the way to shut down a browser the instance does not own and still wants terminated.
+BrowserWebSocketInterface.receive
+  G: Emit `receive` for one frame the page received. Ignored after `close`.
+  S: Reports one received frame. The page's network manager drives it.
+BrowserWebSocketInterface.transmit
+  G: Emit `transmit` for one frame the page sent. Ignored after `close`.
+  S: Reports one sent frame. The page's network manager drives it.
+BrowserWebSocketInterface.fail
+  G: Emit `error` with the connection's fault message. Ignored after `close`.
+  S: Reports a connection fault. The page's network manager drives it.
+BrowserWebSocketInterface.close
+  G: Emit `close` with the closing timestamp, then destroy the emitter. Every later call on this connection is ignored.
+  S: Reports the connection closing and destroys the emitter. The page's network manager drives it.
+BrowserDownloadInterface.cancel
+  G: Send CDP `Browser.cancelDownload` for this download. Ignored unless the status is still `pending`.
+  S: Sends CDP `Browser.cancelDownload` for this download, and is ignored unless the status is still pending.
+BrowserDownloadInterface.update
+  G: Record one progress update, emit `progress`, and settle the download by emitting `complete` or `cancel` and destroying the emitter. Ignored after it settles.
+  S: Records one step of the download's progress. The owning page drives it.
+BrowserWriterInterface.write
+  G: Persist the captured bytes to the given path, creating its parents.
+  S: Persists the captured bytes to the given path, creating its parent directories.
+BrowserNavigationManagerInterface.wait
+  G: Resolve with the URL of the next navigation matching the `*`/`**` glob pattern. Rejects on timeout.
+  S: Resolves with the URL of the next navigation matching the `*` and `**` glob pattern. Rejects on timeout.
+BrowserNavigationManagerInterface.until
+  G: Poll an expression in the page until it returns a truthy value, and resolve with it.
+  S: Polls an expression in the page until it returns a truthy value, and resolves with that value.
+BrowserHandleInterface.value
+  G: Read the object back by value.
+  S: Reads the object back by value.
+BrowserHandleInterface.call
+  G: Run a function declaration with the handle as `this`, by value.
+  S: Runs a function declaration with the handle as `this`, by value.
+BrowserHandleInterface.property
+  G: Retain one own property as its own handle, or `undefined` when absent.
+  S: Retains one own property as its own handle, or returns `undefined` when the property is absent.
+BrowserHandleInterface.properties
+  G: Read every own property by value.
+  S: Reads every own property by value.
+BrowserHandleInterface.dispose
+  G: Release the retained remote object. Idempotent.
+  S: Releases the retained remote object. Idempotent.
+BrowserScriptManagerInterface.add
+  G: Install a script evaluated on every new document, returning its identifier.
+  S: Installs a script evaluated on every new document, and returns its identifier.
+BrowserScriptManagerInterface.remove
+  G: Remove one installed script by identifier.
+  S: Removes one installed script by identifier.
+BrowserScriptManagerInterface.expose
+  G: Bind a host function to a page-global name, callable from page JavaScript.
+  S: Binds a host function to a page-global name, callable from page JavaScript.
+BrowserScriptManagerInterface.revoke
+  G: Remove one exposed binding and its installed bridge script.
+  S: Removes one exposed binding and its installed bridge script.
+BrowserScriptManagerInterface.destroy
+  G: Remove every installed script and binding this manager owns.
+  S: Removes every installed script and binding this manager owns.
+BrowserAccessibilityInterface.snapshot
+  G: Read the full AX tree, optionally pruned to the interesting nodes only.
+  S: Reads the full accessibility tree, optionally pruned to the interesting nodes.
+BrowserTracingInterface.start
+  G: Begin tracing with the given categories. Throws a `BrowserError` when already active.
+  S: Begins tracing with the given categories. Throws a `BrowserError` when a trace is already active.
+BrowserTracingInterface.stop
+  G: End tracing, drain the IO stream, and write it through the page writer when a path was set.
+  S: Ends tracing, drains the IO stream, and writes it through the page writer when a path was set.
+BrowserTracingInterface.destroy
+  G: Stop an active trace, discarding any failure. A no-op when nothing is tracing.
+  S: Stops an active trace, discarding any failure, and does nothing when no trace is running.
+BrowserCoverageInterface.start
+  G: Arm the requested domains. Throws a `BrowserError` when already active or when both are off.
+  S: Arms the requested domains. Throws a `BrowserError` when collection is already active or when neither domain is requested.
+BrowserCoverageInterface.stop
+  G: Read the collected usage and disarm every domain it armed.
+  S: Reads the collected usage and disarms every domain it armed.
+BrowserCoverageInterface.destroy
+  G: Stop an active collector, discarding any failure. A no-op when nothing is collecting.
+  S: Stops an active collector, discarding any failure, and does nothing when no collection is running.
+BrowserPerformanceInterface.metrics
+  G: Enable the domain, read every metric, and disable it again.
+  S: Enables the domain, reads every metric, and disables the domain again.
+BrowserProfilerInterface.start
+  G: Begin sampling, optionally at an explicit positive integer interval in microseconds.
+  S: Begins sampling, optionally at an explicit positive integer interval in microseconds.
+BrowserProfilerInterface.stop
+  G: End sampling and decode the profile's nodes, samples, and time deltas.
+  S: Ends sampling and decodes the profile's nodes, samples, and time deltas.
+BrowserProfilerInterface.destroy
+  G: Stop an active profiler, discarding any failure. A no-op when nothing is profiling.
+  S: Stops an active profiler, discarding any failure, and does nothing when no profile is running.
+BrowserDiagnosticsInterface.destroy
+  G: Tear down every diagnostics capability this page's group owns.
+  S: Tears down every diagnostics capability this page's group owns.
+BrowserClockInterface.install
+  G: Take over the page clock, optionally seeding it with an epoch time.
+  S: Takes over the page clock, optionally seeding it with an epoch time.
+BrowserClockInterface.pause
+  G: Suspend virtual time so no page timer advances.
+  S: Suspends virtual time so no page timer advances.
+BrowserClockInterface.resume
+  G: Continue virtual time after a pause.
+  S: Continues virtual time after a pause.
+BrowserClockInterface.advance
+  G: Move virtual time forward by the given milliseconds, firing due timers.
+  S: Moves virtual time forward by the given milliseconds, firing the timers that fall due.
+BrowserClockInterface.uninstall
+  G: Return the page to the real clock. A no-op when nothing was installed.
+  S: Returns the page to the real clock, and does nothing when no clock was installed.
+BrowserLocatorInterface.locator
+  G: Narrow to a descendant matching the CSS selector.
+  S: Narrows to a descendant matching the CSS selector.
+BrowserLocatorInterface.filter
+  G: Narrow to the matches satisfying the filter.
+  S: Narrows to the matches satisfying the filter.
+BrowserLocatorInterface.first
+  G: Narrow to the first match.
+  S: Narrows to the first match.
+BrowserLocatorInterface.last
+  G: Narrow to the last match.
+  S: Narrows to the last match.
+BrowserLocatorInterface.item
+  G: Narrow to the match at the given index.
+  S: Narrows to the match at the given index.
+BrowserLocatorInterface.count
+  G: Count the current matches.
+  S: Counts the current matches.
+BrowserLocatorInterface.all
+  G: Resolve one indexed locator per current match.
+  S: Resolves one indexed locator per current match.
+BrowserLocatorInterface.click
+  G: Click the match with trusted input after its actionability checks pass.
+  S: Clicks the match with trusted input after its actionability checks pass.
+BrowserLocatorInterface.fill
+  G: Replace the match's value with the given text.
+  S: Replaces the match's value with the given text.
+BrowserLocatorInterface.select
+  G: Select the given option values on the match.
+  S: Selects the given option values on the match.
+BrowserLocatorInterface.check
+  G: Click the match unless it already reports checked.
+  S: Clicks the match unless it already reports checked.
+BrowserLocatorInterface.uncheck
+  G: Click the match unless it already reports unchecked.
+  S: Clicks the match unless it already reports unchecked.
+BrowserLocatorInterface.hover
+  G: Move trusted pointer input over the match.
+  S: Moves trusted pointer input over the match.
+BrowserLocatorInterface.focus
+  G: Give the match keyboard focus.
+  S: Gives the match keyboard focus.
+BrowserLocatorInterface.press
+  G: Focus the match and press one key or chord.
+  S: Focuses the match and presses one key or chord.
+BrowserLocatorInterface.type
+  G: Focus the match and type the value one key at a time.
+  S: Focuses the match and types the value one key at a time.
+BrowserLocatorInterface.clear
+  G: Empty the match's value.
+  S: Empties the match's value.
+BrowserLocatorInterface.wait
+  G: Wait until the match reaches the requested state. Rejects on timeout.
+  S: Waits until the match reaches the requested state. Rejects on timeout.
+BrowserLocatorInterface.text
+  G: Read the first match's rendered text.
+  S: Reads the first match's rendered text.
+BrowserLocatorInterface.texts
+  G: Read the rendered text of every match.
+  S: Reads the rendered text of every match.
+BrowserLocatorInterface.html
+  G: Read the first match's inner HTML.
+  S: Reads the first match's inner HTML.
+BrowserLocatorInterface.value
+  G: Read the first match's form value.
+  S: Reads the first match's form value.
+BrowserLocatorInterface.attribute
+  G: Read one attribute of the first match, or `undefined` when it carries none.
+  S: Reads one attribute of the first match, or returns `undefined` when the match carries none.
+BrowserLocatorInterface.visible
+  G: True if the first match renders a non-empty box; false otherwise.
+  S: Reports whether the first match renders a non-empty box.
+BrowserLocatorInterface.enabled
+  G: True if the first match accepts input; false otherwise.
+  S: Reports whether the first match accepts input.
+BrowserLocatorInterface.editable
+  G: True if the first match accepts typed text; false otherwise.
+  S: Reports whether the first match accepts typed text.
+BrowserLocatorInterface.screenshot
+  G: Capture the first match's box, persisting it through the page writer when a path is given.
+  S: Captures the first match's box, persisting it through the page writer when a path is given.
+BrowserLocatorInterface.upload
+  G: Set the file selection on the matched file input.
+  S: Sets the file selection on the matched file input.
+BrowserLocatorInterface.drag
+  G: Drag the match onto the target locator with trusted pointer input.
+  S: Drags the match onto the target locator with trusted pointer input.
+BrowserSelectorManagerInterface.css
+  G: Locate by CSS selector.
+  S: Locates by CSS selector.
+BrowserSelectorManagerInterface.role
+  G: Locate by ARIA role, optionally by accessible name and exactness.
+  S: Locates by ARIA role, optionally by accessible name and exactness.
+BrowserSelectorManagerInterface.text
+  G: Locate by rendered text, optionally exact.
+  S: Locates by rendered text, optionally exact.
+BrowserSelectorManagerInterface.label
+  G: Locate a labelled control by its label text, optionally exact.
+  S: Locates a labelled control by its label text, optionally exact.
+BrowserSelectorManagerInterface.placeholder
+  G: Locate an input by its placeholder text, optionally exact.
+  S: Locates an input by its placeholder text, optionally exact.
+BrowserSelectorManagerInterface.testId
+  G: Locate by the `data-testid` attribute.
+  S: Locates by the test-id attribute.
+BrowserKeyboardInterface.down
+  G: Press one key and hold it, retaining it in the modifier mask when it is a modifier.
+  S: Presses one key and holds it, retaining it in the modifier mask when it is a modifier.
+BrowserKeyboardInterface.up
+  G: Release one key, dropping it from the modifier mask even when the release frame fails.
+  S: Releases one key, dropping it from the modifier mask even when the release frame fails.
+BrowserKeyboardInterface.press
+  G: Press a chord: hold its modifiers, press and release its terminal key, then release the modifiers.
+  S: Presses a chord: holds its modifiers, presses and releases its terminal key, then releases the modifiers.
+BrowserKeyboardInterface.type
+  G: Type a string as one press and release per character.
+  S: Types a string as one press and release per character.
+BrowserKeyboardInterface.insert
+  G: Insert composed text in one frame, firing no per-key events.
+  S: Inserts composed text in one frame, firing no per-key events.
+BrowserMouseInterface.move
+  G: Move the pointer to a point, carrying the pressed buttons.
+  S: Moves the pointer to a point, carrying the pressed buttons.
+BrowserMouseInterface.down
+  G: Press a button at the current point, adding it to the pressed mask.
+  S: Presses a button at the current point, adding it to the pressed mask.
+BrowserMouseInterface.up
+  G: Release a button at the current point, dropping it from the mask even when the frame fails.
+  S: Releases a button at the current point, dropping it from the mask even when the frame fails.
+BrowserMouseInterface.click
+  G: Move, press, optionally delay, and release at the given point.
+  S: Moves to the given point, presses, optionally delays, and releases.
+BrowserMouseInterface.drag
+  G: Press at the start, move in the requested steps to the end, and release.
+  S: Presses at the start, moves in the requested steps to the end, and releases.
+BrowserMouseInterface.wheel
+  G: Send a wheel delta at the current point.
+  S: Sends a wheel delta at the current point.
+BrowserTouchInterface.tap
+  G: Dispatch a touch start at the point and a touch end, cancelling the touch on failure.
+  S: Dispatches a touch start at the point and a touch end, cancelling the touch on failure.
+BrowserDialogInterface.accept
+  G: Accept the dialog, optionally supplying prompt text. Throws once the dialog is handled.
+  S: Accepts the dialog, optionally supplying prompt text. Throws once the dialog is handled.
+BrowserDialogInterface.dismiss
+  G: Dismiss the dialog. Throws once the dialog is handled.
+  S: Dismisses the dialog. Throws once the dialog is handled.
+BrowserFileChooserInterface.upload
+  G: Set the chosen files. Throws when a single-file chooser is given several, or once already handled.
+  S: Sets the chosen files. Throws when a single-file chooser is given several, and once the chooser is already handled.
+BrowserFileChooserInterface.cancel
+  G: Clear the selection. Throws once already handled.
+  S: Clears the selection. Throws once the chooser is already handled.
+BrowserWorkerInterface.evaluate
+  G: Evaluate a guarded expression in the worker and return its value.
+  S: Evaluates a guarded expression in the worker and returns its value.
+BrowserWorkerInterface.send
+  G: Issue one CDP method call on the worker's session.
+  S: Issues one CDP method call on the worker's session.
+BrowserWorkerInterface.detach
+  G: Stop driving the worker locally without closing its target.
+  S: Stops driving the worker locally without closing its target.
+BrowserWorkerInterface.close
+  G: Close the worker target, tolerating a worker that already terminated. Idempotent.
+  S: Closes the worker target, tolerating a worker that already terminated. Idempotent.
+BrowserRouteInterface.abort
+  G: Fail the request with a Chromium error reason. Default: `'Failed'`.
+  S: Fails the request with a Chromium error reason, `'Failed'` by default.
+BrowserRouteInterface.continue
+  G: Let the request proceed, optionally overriding its url, method, headers, or post body.
+  S: Lets the request proceed, optionally overriding its URL, method, headers, or post body.
+BrowserRouteInterface.fulfill
+  G: Answer the request locally. Throws when the status is not an integer from 100 to 999.
+  S: Answers the request locally. Throws when the status is not an integer from 100 to 999.
+BrowserHARManagerInterface.start
+  G: Begin recording exchanges, optionally capturing response content.
+  S: Begins recording exchanges, optionally capturing response content.
+BrowserHARManagerInterface.stop
+  G: End recording and return the archive, writing it when a path was given.
+  S: Ends recording and returns the archive, writing it when a path was given.
+BrowserHARManagerInterface.replay
+  G: Serve matching requests from an archive instead of the network.
+  S: Serves matching requests from an archive instead of from the network.
+BrowserHARManagerInterface.clear
+  G: Drop the recorded entries and any active replay without ending the recording.
+  S: Drops the recorded entries and any active replay without ending the recording.
+BrowserNetworkManagerInterface.start
+  G: Enable the Network domain and subscribe to its events. Idempotent.
+  S: Enables the Network domain and subscribes to its events. Idempotent.
+BrowserNetworkManagerInterface.body
+  G: Read one observed response body as bytes.
+  S: Reads one observed response body as bytes.
+BrowserNetworkManagerInterface.text
+  G: Read one observed response body as text.
+  S: Reads one observed response body as text.
+BrowserNetworkManagerInterface.json
+  G: Read one observed response body as parsed JSON.
+  S: Reads one observed response body as parsed JSON.
+BrowserNetworkManagerInterface.route
+  G: Intercept requests matching the query and hand each to the handler.
+  S: Intercepts requests matching the query and hands each one to the handler.
+BrowserNetworkManagerInterface.unroute
+  G: Remove one handler's routes, or every route when given none.
+  S: Removes one handler's routes, or every route when given none.
+BrowserNetworkManagerInterface.headers
+  G: Apply extra HTTP headers to every request the page makes.
+  S: Applies extra HTTP headers to every request the page makes.
+BrowserNetworkManagerInterface.offline
+  G: Emulate offline or restore connectivity.
+  S: Emulates an offline connection, or restores connectivity.
+BrowserNetworkManagerInterface.credentials
+  G: Apply HTTP basic-auth credentials, or clear them when given none.
+  S: Applies HTTP basic-auth credentials, or clears them when given none.
+BrowserNetworkManagerInterface.destroy
+  G: Remove every route, unsubscribe, and disable the domains this manager enabled.
+  S: Removes every route, unsubscribes, and disables the domains this manager enabled.
+BrowserCookieManagerInterface.cookies
+  G: Read the context cookies, optionally narrowed to the given URLs.
+  S: Reads the context cookies, optionally narrowed to the given URLs.
+BrowserCookieManagerInterface.set
+  G: Write the given cookies into the context.
+  S: Writes the given cookies into the context.
+BrowserCookieManagerInterface.clear
+  G: Delete the context cookies matching the filter, or every cookie with none.
+  S: Deletes the context cookies matching the filter, or every cookie when given none.
+BrowserPermissionManagerInterface.grant
+  G: Grant each named permission, optionally for one origin, as its own CDP frame.
+  S: Grants each named permission, optionally for one origin, as its own CDP frame.
+BrowserPermissionManagerInterface.deny
+  G: Deny each named permission, optionally for one origin, as its own CDP frame.
+  S: Denies each named permission, optionally for one origin, as its own CDP frame.
+BrowserPermissionManagerInterface.clear
+  G: Reset every permission override on the context.
+  S: Resets every permission override on the context.
+BrowserStorageManagerInterface.state
+  G: Read the context cookies and the per-origin local and session storage.
+  S: Reads the context cookies and the per-origin local and session storage.
+BrowserStorageManagerInterface.restore
+  G: Write a previously read state back into the context.
+  S: Writes a previously read state back into the context.
+BrowserStorageManagerInterface.clear
+  G: Drop the storage of one origin, or of every origin when given none.
+  S: Drops the storage of one origin, or of every origin when given none.
+BrowserEmulationManagerInterface.apply
+  G: Clear the superseded overrides and apply the given ones to every page of the context.
+  S: Clears the superseded overrides and applies the given ones to every page of the context.
+BrowserEmulationManagerInterface.clear
+  G: Remove every override this manager applied.
+  S: Removes every override this manager applied.
+BrowserEmulationManagerInterface.attach
+  G: Apply the retained overrides to a newly created page.
+  S: Applies the retained overrides to a newly created page.

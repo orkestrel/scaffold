@@ -1,0 +1,14 @@
+
+> @orkestrel/browser@0.0.16 test:src:server
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+····················································································································································
+
+ Test Files  6 passed (6)
+      Tests  148 passed (148)
+   Start at  20:59:29
+   Duration  29.16s (transform 2.86s, setup 3.43s, import 1.01s, tests 28.14s, environment 0ms)
+

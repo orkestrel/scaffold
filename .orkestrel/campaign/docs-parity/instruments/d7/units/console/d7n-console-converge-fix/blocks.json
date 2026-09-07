@@ -1,0 +1,907 @@
+[
+ {
+  "file": "src/browser/constants.ts",
+  "minus": [
+   " * in the {@link import('./types.js').ConsoleOutput} format string, consuming the next entry of the"
+  ],
+  "plus": [
+   " * in the `ConsoleOutput` format string, consuming the next entry of the"
+  ],
+  "tags": [
+   "{@link import('./types.js').ConsoleOutput}"
+  ]
+ },
+ {
+  "file": "src/browser/constants.ts",
+  "minus": [
+   " * the subset of ANSI {@link import('@src/core').strip} cares about that carries style (color /"
+  ],
+  "plus": [
+   " * the subset of ANSI `strip` cares about that carries style (color /"
+  ],
+  "tags": [
+   "{@link import('@src/core').strip}"
+  ]
+ },
+ {
+  "file": "src/browser/types.ts",
+  "minus": [
+   " * Configures {@link import('./factories.js').createBrowserSink}.",
+   " *",
+   " * @remarks",
+   " * `palette` partially overrides the browser's default color and attribute CSS mappings."
+  ],
+  "plus": [
+   " * Configures `createBrowserSink` \u2014 the optional `palette` partially overriding the browser's",
+   " * named color and attribute CSS mappings."
+  ],
+  "tags": [
+   "{@link import('./factories.js').createBrowserSink}"
+  ]
+ },
+ {
+  "file": "src/browser/types.ts",
+  "minus": [
+   " * Represents the `console.log`-ready output {@link import('./helpers.js').ansiToConsole} produces from"
+  ],
+  "plus": [
+   " * Represents the `console.log`-ready output `ansiToConsole` produces from"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').ansiToConsole}"
+  ]
+ },
+ {
+  "file": "src/browser/types.ts",
+  "minus": [
+   " * Represents the immutable accumulator {@link import('./helpers.js').ansiToConsole} carries across a run while",
+   " * translating SGR codes to CSS \u2014 a single `foreground` and `background` declaration (each channel",
+   " * replaceable by a later color of the same channel) plus an ordered, de-duplicated list of attribute",
+   " * declarations. An SGR reset drops both channels and empties the list;",
+   " * {@link import('./helpers.js').ansiToConsole} folds it into the `;`-joined CSS string a run emits."
+  ],
+  "plus": [
+   " * Represents the immutable scan state `ansiToConsole` replaces while translating SGR codes to",
+   " * CSS \u2014 an optional `foreground` and `background` declaration plus a readonly list of attribute",
+   " * declarations."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').ansiToConsole}",
+   "{@link import('./helpers.js').ansiToConsole}"
+  ]
+ },
+ {
+  "file": "src/core/Progress.ts",
+  "minus": [
+   " * on `update`. The leading `\\r` is what an overwrite-capable sink (the TTY sink) redraws on; a",
+   " * plain sink degrades to a fresh, non-overwriting line \u2014 the line-overwrite is the sink's job.",
+   " * Universal \u2014 the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no",
+   " * `process.stdout`. No self-timer (unlike {@link import('./Spinner.js').Spinner}) \u2014 the caller drives it."
+  ],
+  "plus": [
+   " * on `update`. No self-timer, unlike `Spinner` \u2014 the caller drives it."
+  ],
+  "tags": [
+   "{@link import('./Spinner.js').Spinner}"
+  ]
+ },
+ {
+  "file": "src/core/Styler.ts",
+  "minus": [
+   "\t * the accessor chain, and how a {@link import('./types.js').Theme} role is applied."
+  ],
+  "plus": [
+   "\t * the accessor chain, and how a `Theme` role is applied."
+  ],
+  "tags": [
+   "{@link import('./types.js').Theme}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} \u2014 at",
+   " * most this many recent records are kept (oldest dropped first). Retention is always bounded \u2014 the",
+   " * oldest record is dropped after the cap is reached; a consumer overrides it through `options.limit`."
+  ],
+  "plus": [
+   " * Sets the default bounded-retention cap for a `LoggerInterface` \u2014 `1000`, so at most that many",
+   " * recent records are kept and retention is always bounded.",
+   " *",
+   " * @remarks",
+   " * The oldest record is dropped after the cap is reached; a consumer overrides the cap through",
+   " * `options.limit`."
+  ],
+  "tags": [
+   "{@link import('./types.js').LoggerInterface}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Unicode box-drawing glyphs at the four line weights. The renderers ({@link",
+   " * import('./helpers.js').renderBox} / {@link import('./helpers.js').renderTable}) look the",
+   " * style up here, so no glyph literal lives in a renderer. Deeply frozen."
+  ],
+  "plus": [
+   " * Unicode box-drawing glyphs at each line weight, deeply frozen.",
+   " *",
+   " * @remarks",
+   " * The renderers (`renderBox` / `renderTable`) look the style up here, so no glyph literal lives",
+   " * in a renderer."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBox}",
+   "{@link import('./helpers.js').renderTable}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * {@link import('./helpers.js').renderBox} with no explicit `width`, and the reporter's"
+  ],
+  "plus": [
+   " * `renderBox` with no explicit `width`, and the reporter's"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBox}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * {@link import('./types.js').ReporterOptions}`.width`."
+  ],
+  "plus": [
+   " * `ReporterOptions.width`."
+  ],
+  "tags": [
+   "{@link import('./types.js').ReporterOptions}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   "/** Sets the default horizontal padding inside a box's edges ({@link import('./helpers.js').renderBox}) \u2014 one cell. */"
+  ],
+  "plus": [
+   "/** Sets the default horizontal padding inside a box's edges (`renderBox`) \u2014 one cell. */"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBox}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   "/** Sets the default cell {@link Alignment} a {@link import('./types.js').ColumnSpec} uses when none is given \u2014 `left`. */"
+  ],
+  "plus": [
+   "/** Sets the default cell {@link Alignment} a `ColumnSpec` uses when none is given \u2014 `left`. */"
+  ],
+  "tags": [
+   "{@link import('./types.js').ColumnSpec}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   "/** Holds the default fill character {@link import('./helpers.js').renderSeparator} draws its rule with \u2014 `\u2500`. */"
+  ],
+  "plus": [
+   "/** Holds the default fill character `renderSeparator` draws its rule with \u2014 `\u2500`. */"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderSeparator}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Sets the number of milliseconds at or above which {@link import('./helpers.js').formatDuration}",
+   " * (and so `Reporter.timing`) switches from a `\u2026ms` rendering to a `\u2026s` (seconds, 2 d.p.)",
+   " * rendering \u2014 exactly one second."
+  ],
+  "plus": [
+   " * Sets the millisecond threshold at or above which `formatDuration` (and so `Reporter.timing`)",
+   " * switches from a `\u2026ms` rendering to a `\u2026s` (seconds, 2 d.p.) rendering \u2014 `1000`, exactly one",
+   " * second."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').formatDuration}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} \u2014 at most this",
+   " * many recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level",
+   " * bucket; oldest dropped first). Capture retention is always bounded so a long-running capture can",
+   " * never grow without bound (the same retention precedent as {@link DEFAULT_LOG_LIMIT}); a consumer",
+   " * overrides it through `options.limit`."
+  ],
+  "plus": [
+   " * Sets the default bounded-buffer cap for a `CaptureInterface` \u2014 `1000`, so at most that many",
+   " * recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level",
+   " * bucket; oldest dropped first) and retention is always bounded.",
+   " *",
+   " * @remarks",
+   " * A long-running capture can never grow without bound (the same retention precedent as",
+   " * {@link DEFAULT_LOG_LIMIT}); a consumer overrides the cap through `options.limit`."
+  ],
+  "tags": [
+   "{@link import('./types.js').CaptureInterface}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances through \u2014",
+   " * the ten braille-pattern glyphs (U+2800 block) that read as a smoothly rotating dot, the universal",
+   " * terminal-spinner convention. Frozen; a consumer swaps the whole cycle through `options.frames`."
+  ],
+  "plus": [
+   " * Holds the default spinner frame cycle a `SpinnerInterface` advances through \u2014 the",
+   " * braille-pattern glyphs (`\u280b\u2819\u2839\u2026`, the U+2800 block) that read as a smoothly rotating dot."
+  ],
+  "tags": [
+   "{@link import('./types.js').SpinnerInterface}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Sets the default timer period in milliseconds between a {@link import('./types.js').SpinnerInterface}'s",
+   " * frames \u2014 the `setInterval` interval `start()` arms. Eighty milliseconds (\u224812.5 frames/second) is",
+   " * the conventional spinner cadence: fast enough to read as motion, slow enough not to thrash a",
+   " * terminal. A consumer overrides it through `options.interval`."
+  ],
+  "plus": [
+   " * Sets the default timer period between a `SpinnerInterface`'s frames \u2014 the `setInterval`",
+   " * interval `start()` arms, `80` ms (\u224812.5 frames/second).",
+   " *",
+   " * @remarks",
+   " * That is the conventional spinner cadence: fast enough to read as motion, slow enough not to",
+   " * thrash a terminal. A consumer overrides it through `options.interval`."
+  ],
+  "tags": [
+   "{@link import('./types.js').SpinnerInterface}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed run of a"
+  ],
+  "plus": [
+   " * Holds the default filled-cell glyph `renderBar` draws the completed run of a"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBar}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * through {@link import('./types.js').BarOptions}`.fill`."
+  ],
+  "plus": [
+   " * through `BarOptions.fill`."
+  ],
+  "tags": [
+   "{@link import('./types.js').BarOptions}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining run of a"
+  ],
+  "plus": [
+   " * Holds the default empty-cell glyph `renderBar` draws the remaining run of a"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBar}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * it through {@link import('./types.js').BarOptions}`.empty`."
+  ],
+  "plus": [
+   " * it through `BarOptions.empty`."
+  ],
+  "tags": [
+   "{@link import('./types.js').BarOptions}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Sets the default visible cell count of a progress-bar track \u2014 the glyph run {@link",
+   " * import('./helpers.js').renderBar} fills (and a {@link import('./types.js').ProgressInterface} sizes",
+   " * its bar to). Thirty cells is a compact, terminal-friendly default; a consumer overrides it through",
+   " * `options.width`. Distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line width) \u2014 a bar",
+   " * track is one inline element, not a full-width rule."
+  ],
+  "plus": [
+   " * Sets the default visible cell count of a progress-bar track \u2014 the glyph run `renderBar` fills,",
+   " * and the width a `ProgressInterface` sizes its bar to. `30` cells.",
+   " *",
+   " * @remarks",
+   " * Thirty cells is a compact, terminal-friendly default; a consumer overrides it through",
+   " * `options.width`. It is distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line",
+   " * width) \u2014 a bar track is one inline element, not a full-width rule."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBar}",
+   "{@link import('./types.js').ProgressInterface}"
+  ]
+ },
+ {
+  "file": "src/core/constants.ts",
+  "minus": [
+   " * Holds the default {@link Theme} \u2014 every role bound to its default {@link Style}, deeply frozen.",
+   " * The base {@link import('./factories.js').createTheme} merges over, and the theme every",
+   " * entity uses when none is supplied."
+  ],
+  "plus": [
+   " * Holds the default {@link Theme} \u2014 every role bound to its default {@link Style}, assembled from",
+   " * {@link LEVEL_COLORS}, {@link STATUS_ICONS}, and {@link STATUS_COLORS} and deeply frozen.",
+   " *",
+   " * @remarks",
+   " * It is the base `createTheme` merges over, and the theme every entity uses when none is",
+   " * supplied."
+  ],
+  "tags": [
+   "{@link import('./factories.js').createTheme}"
+  ]
+ },
+ {
+  "file": "src/core/factories.ts",
+  "minus": [
+   " * Creates the fluent, composable {@link StylerInterface} \u2014 the consumer-facing styling",
+   " * API. It builds a {@link import('./types.js').Style} under the hood and renders it",
+   " * through a {@link import('./types.js').RendererInterface} (the ANSI default), so",
+   " * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely reusable."
+  ],
+  "plus": [
+   " * Creates the fluent, composable {@link StylerInterface} \u2014 ANSI by default, retargeted by a",
+   " * `renderer` and stripped of color by `enabled: false`.",
+   " *",
+   " * @remarks",
+   " * It builds a `Style` under the hood and renders it through a `RendererInterface`, so",
+   " * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely",
+   " * reusable."
+  ],
+  "tags": [
+   "{@link import('./types.js').Style}",
+   "{@link import('./types.js').RendererInterface}"
+  ]
+ },
+ {
+  "file": "src/core/factories.ts",
+  "minus": [
+   " * {@link import('./loggers/Logger.js').Logger}."
+  ],
+  "plus": [
+   " * `Logger`."
+  ],
+  "tags": [
+   "{@link import('./loggers/Logger.js').Logger}"
+  ]
+ },
+ {
+  "file": "src/core/factories.ts",
+  "minus": [
+   " * plus the {@link import('./types.js').CapturedMessage}s it logged \u2014 the scoped, self-restoring"
+  ],
+  "plus": [
+   " * plus the `CapturedMessage`s it logged \u2014 the scoped, self-restoring"
+  ],
+  "tags": [
+   "{@link import('./types.js').CapturedMessage}"
+  ]
+ },
+ {
+  "file": "src/core/factories.ts",
+  "minus": [
+   " * plus the {@link import('./types.js').CapturedMessage}s it logged, synchronously."
+  ],
+  "plus": [
+   " * plus the `CapturedMessage`s it logged, synchronously."
+  ],
+  "tags": [
+   "{@link import('./types.js').CapturedMessage}"
+  ]
+ },
+ {
+  "file": "src/core/helpers.ts",
+  "minus": [
+   " * {@link import('./types.js').LoggerInterface} writes to its sink."
+  ],
+  "plus": [
+   " * `LoggerInterface` writes to its sink."
+  ],
+  "tags": [
+   "{@link import('./types.js').LoggerInterface}"
+  ]
+ },
+ {
+  "file": "src/core/helpers.ts",
+  "minus": [
+   " * {@link import('./types.js').ReporterInterface.timing}."
+  ],
+  "plus": [
+   " * `ReporterInterface.timing`."
+  ],
+  "tags": [
+   "{@link import('./types.js').ReporterInterface.timing}"
+  ]
+ },
+ {
+  "file": "src/core/helpers.ts",
+  "minus": [
+   " * and the `(current/total)` count (`\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 50% (5/10)`). Pure: same {@link BarOptions} \u2192",
+   " * same string. The animation-layer sibling of the `render*` renderers (box / table / tree /",
+   " * separator), shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw",
+   " * the one bar \u2014 never a second, hand-rolled one."
+  ],
+  "plus": [
+   " * and the `(current/total)` count (`\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 50% (5/10)`). Pure and width-aware: same",
+   " * {@link BarOptions} \u2192 same string."
+  ],
+  "tags": [
+   "{@link import('./types.js').ProgressInterface}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Names a machine-readable error code for a {@link import('./errors.js').ConsoleError}."
+  ],
+  "plus": [
+   " * Names the machine-readable error code a `ConsoleError` carries \u2014 `INVARIANT`, the only code the",
+   " * package throws."
+  ],
+  "tags": [
+   "{@link import('./errors.js').ConsoleError}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Represents the line layout a logger writes \u2014 one {@link LogRecord} plus the styling substrate in,",
+   " * one finished line out. {@link import('./helpers.js').formatRecord} is the default."
+  ],
+  "plus": [
+   " * Represents the line layout a logger writes \u2014 `(record, styler, theme) => string`, one",
+   " * {@link LogRecord} plus the styling substrate in and one finished line out. `formatRecord` is",
+   " * the default."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').formatRecord}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures the {@link import('./loggers/Logger.js').Logger} constructor."
+  ],
+  "plus": [
+   " * Configures the `Logger` constructor \u2014 the `on` / `error` emitter keys, the `level` threshold,",
+   " * the logger's `name`, the `sink` / `styler` / `theme` / `format` line substrate, the retention",
+   " * `limit`, and the `silent` write switch."
+  ],
+  "tags": [
+   "{@link import('./loggers/Logger.js').Logger}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures the {@link import('./loggers/LoggerManager.js').LoggerManager} constructor."
+  ],
+  "plus": [
+   " * Configures the `LoggerManager` constructor \u2014 the `level` / `sink` / `styler` / `theme` /",
+   " * `format` / `limit` / `silent` defaults flowed into every logger it mints."
+  ],
+  "tags": [
+   "{@link import('./loggers/LoggerManager.js').LoggerManager}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures {@link import('./helpers.js').renderSeparator} \u2014 a horizontal rule, optionally",
+   " * carrying a centered title."
+  ],
+  "plus": [
+   " * Configures `renderSeparator` \u2014 a horizontal rule, optionally carrying a centered title. Every",
+   " * key is optional: `title`, `width`, `fill`, `styler`, and `style`."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderSeparator}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures {@link import('./helpers.js').renderBox} \u2014 content framed in box-drawing",
+   " * characters."
+  ],
+  "plus": [
+   " * Configures `renderBox` \u2014 content framed in box-drawing characters. `content` is required and",
+   " * `title`, `padding`, `border`, `width`, `styler`, and `style` are optional; a `Reporter`",
+   " * supplies its own chrome style only when the caller gives neither `styler` nor `style`."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBox}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures {@link import('./helpers.js').renderTable} \u2014 a bordered grid of columns + rows",
+   " * with per-column alignment and width-aware sizing."
+  ],
+  "plus": [
+   " * Configures `renderTable` \u2014 a bordered grid of columns + rows with per-column alignment and",
+   " * width-aware sizing. `columns` and `rows` are required and `border`, `styler`, and `style` are",
+   " * optional; a `Reporter` supplies its own chrome style only when the caller gives neither",
+   " * `styler` nor `style`."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderTable}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures {@link import('./helpers.js').renderTree} \u2014 a nested {@link TreeNode} tree drawn",
+   " * with box-drawing connectors."
+  ],
+  "plus": [
+   " * Configures `renderTree` \u2014 a nested {@link TreeNode} tree drawn with box-drawing connectors.",
+   " * `root` is required and `border`, `styler`, and `style` are optional; a `Reporter` supplies its",
+   " * own chrome style only when the caller gives neither `styler` nor `style`."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderTree}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures the {@link import('./Reporter.js').Reporter} constructor."
+  ],
+  "plus": [
+   " * Configures the `Reporter` constructor \u2014 the `sink` every line is written to, the `styler` and",
+   " * `theme` it formats through, and the `width` its layouts measure against."
+  ],
+  "tags": [
+   "{@link import('./Reporter.js').Reporter}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   "\t/** Renders a {@link TableOptions} grid through {@link import('./helpers.js').renderTable} and writes it. */"
+  ],
+  "plus": [
+   "\t/** Renders a {@link TableOptions} grid through `renderTable` and writes it. */"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderTable}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   "\t/** Renders a {@link TreeOptions} tree through {@link import('./helpers.js').renderTree} and writes it. */"
+  ],
+  "plus": [
+   "\t/** Renders a {@link TreeOptions} tree through `renderTree` and writes it. */"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderTree}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   "\t/** Renders a {@link BoxOptions} frame through {@link import('./helpers.js').renderBox} and writes it. */"
+  ],
+  "plus": [
+   "\t/** Renders a {@link BoxOptions} frame through `renderBox` and writes it. */"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBox}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures the {@link import('./Capture.js').Capture} constructor."
+  ],
+  "plus": [
+   " * Configures the `Capture` constructor \u2014 the `on` / `error` emitter keys, the `levels`",
+   " * intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`."
+  ],
+  "tags": [
+   "{@link import('./Capture.js').Capture}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Represents the structured outcome of {@link import('./factories.js').createCaptureResult} \u2014 the wrapped function's",
+   " * own return `value` plus the {@link CapturedMessage}s intercepted while it ran."
+  ],
+  "plus": [
+   " * Represents the structured outcome of `createCaptureResult` \u2014 the wrapped function's own return",
+   " * `value` plus the `messages` it logged while it ran."
+  ],
+  "tags": [
+   "{@link import('./factories.js').createCaptureResult}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures the pure {@link import('./helpers.js').renderBar} renderer \u2014 a determinate progress",
+   " * bar string (`\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 50% (5/10)`), width-aware and styler-optional."
+  ],
+  "plus": [
+   " * Configures the pure `renderBar` renderer \u2014 a determinate progress bar string",
+   " * (`\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 50% (5/10)`), width-aware and styler-optional. `current` and `total` are",
+   " * required and `width`, `fill`, `empty`, `styler`, and `style` are optional."
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBar}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures the {@link import('./Spinner.js').Spinner} constructor."
+  ],
+  "plus": [
+   " * Configures the `Spinner` constructor \u2014 the `on` / `error` emitter keys, the `message` shown,",
+   " * the glyph `frames` and their `interval`, and the `sink` / `styler` / `theme` line substrate."
+  ],
+  "tags": [
+   "{@link import('./Spinner.js').Spinner}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * Configures the {@link import('./Progress.js').Progress} constructor."
+  ],
+  "plus": [
+   " * Configures the `Progress` constructor \u2014 the `on` / `error` emitter keys, the required `total`,",
+   " * the `message` shown, the bar's `width` / `fill` / `empty` glyphs, and the `sink` / `styler` /",
+   " * `theme` line substrate."
+  ],
+  "tags": [
+   "{@link import('./Progress.js').Progress}"
+  ]
+ },
+ {
+  "file": "src/core/types.ts",
+  "minus": [
+   " * {@link import('./helpers.js').renderBar}, writes `\\r` + bar to its {@link SinkInterface}, and emits"
+  ],
+  "plus": [
+   " * `renderBar`, writes `\\r` + bar to its {@link SinkInterface}, and emits"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').renderBar}"
+  ]
+ },
+ {
+  "file": "src/server/constants.ts",
+  "minus": [
+   " * Lists the two process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept, in"
+  ],
+  "plus": [
+   " * Lists the process streams a `ProcessCaptureInterface` can intercept, in"
+  ],
+  "tags": [
+   "{@link import('./types.js').ProcessCaptureInterface}"
+  ]
+ },
+ {
+  "file": "src/server/constants.ts",
+  "minus": [
+   " * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} \u2014 at",
+   " * most this many recent {@link import('./types.js').CapturedChunk}s are retained per buffer (the",
+   " * total buffer and each per-stream bucket; oldest dropped first). Mirrors the core `Capture`'s",
+   " * `DEFAULT_CAPTURE_LIMIT`; a consumer overrides it through `options.limit`."
+  ],
+  "plus": [
+   " * Sets the default bounded-buffer cap for a `ProcessCaptureInterface` \u2014 `1000`, so at most that",
+   " * many recent `CapturedChunk`s are retained per buffer (the total buffer and each per-stream",
+   " * bucket; oldest dropped first) and retention is always bounded.",
+   " *",
+   " * @remarks",
+   " * It mirrors the core `Capture`'s `DEFAULT_CAPTURE_LIMIT`; a consumer overrides the cap through",
+   " * `options.limit`."
+  ],
+  "tags": [
+   "{@link import('./types.js').ProcessCaptureInterface}",
+   "{@link import('./types.js').CapturedChunk}"
+  ]
+ },
+ {
+  "file": "src/server/constants.ts",
+  "minus": [
+   " * Sets the terminal width {@link import('./factories.js').createServerSink} reports through",
+   " * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY (so"
+  ],
+  "plus": [
+   " * Sets the terminal width `createServerSink` reports through",
+   " * `ServerSinkInterface.columns` when the `stdout` stream is not a TTY (so"
+  ],
+  "tags": [
+   "{@link import('./factories.js').createServerSink}",
+   "{@link import('./types.js').ServerSinkInterface.columns}"
+  ]
+ },
+ {
+  "file": "src/server/constants.ts",
+  "minus": [
+   " * {@link import('@src/core').SinkInterface}. `sink.write(text, STREAM_LEVEL_MAP[level])` is the"
+  ],
+  "plus": [
+   " * `SinkInterface`. `sink.write(text, STREAM_LEVEL_MAP[level])` is the"
+  ],
+  "tags": [
+   "{@link import('@src/core').SinkInterface}"
+  ]
+ },
+ {
+  "file": "src/server/factories.ts",
+  "minus": [
+   " * Creates the server TTY {@link ServerSinkInterface} \u2014 the server output backend, the",
+   " * env-symmetric sibling of `createBrowserSink` / core's `createConsoleSink`. `write(text, level?)`",
+   " * routes by level to the process streams and uses construction-time styled facts: it sends ANSI",
+   " * straight to a styled target (with a leading `\\r` overwriting a terminal line natively) but",
+   " * {@link import('@src/core').strip}s ANSI to clean text for a plain target."
+  ],
+  "plus": [
+   " * Creates the server TTY {@link ServerSinkInterface} \u2014 the server output backend, whose",
+   " * `write(text, level?)` routes by level to the process streams and uses construction-time styled",
+   " * facts: it sends ANSI straight to a styled target (with a leading `\\r` overwriting a terminal",
+   " * line natively) but `strip`s ANSI to clean text for a plain target."
+  ],
+  "tags": [
+   "{@link import('@src/core').strip}"
+  ]
+ },
+ {
+  "file": "src/server/helpers.ts",
+  "minus": [
+   " * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a {@link import('./types.js').ServerSinkInterface}"
+  ],
+  "plus": [
+   " * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a `ServerSinkInterface`"
+  ],
+  "tags": [
+   "{@link import('./types.js').ServerSinkInterface}"
+  ]
+ },
+ {
+  "file": "src/server/helpers.ts",
+  "minus": [
+   " * Infers whether one stream target receives styled output. The result is a construction-time",
+   " * target fact for {@link import('./factories.js').createServerSink}; this helper is pure and never",
+   " * reads process globals itself."
+  ],
+  "plus": [
+   " * Infers whether one stream target receives styled output \u2014 a present `FORCE_COLOR` first, then a",
+   " * non-empty `NO_COLOR`, then `target.isTTY === true`."
+  ],
+  "tags": [
+   "{@link import('./factories.js').createServerSink}"
+  ]
+ },
+ {
+  "file": "src/server/types.ts",
+  "minus": [
+   " * Declares the minimal writable-stream shape the server sink and process capture address \u2014 exactly the",
+   " * slice of a Node `tty.WriteStream` / `process.stdout` they touch, and no more. A",
+   " * {@link ServerSinkOptions} target and a {@link ProcessCaptureInterface}'s patched streams are",
+   " * narrowed to this through {@link import('./validators.js').isStreamTarget} (narrow the",
+   " * boundary, never `as`), so a test can drive either with a hand-built fake stream that never",
+   " * touches the real `process` streams."
+  ],
+  "plus": [
+   " * Declares the minimal writable-stream shape the server sink and process capture address \u2014",
+   " * `write(text)` plus an optional `isTTY` and `columns`, exactly the slice of a Node",
+   " * `tty.WriteStream` / `process.stdout` they touch and no more."
+  ],
+  "tags": [
+   "{@link import('./validators.js').isStreamTarget}"
+  ]
+ },
+ {
+  "file": "src/server/types.ts",
+  "minus": [
+   " * Holds the options for {@link import('./factories.js').createServerSink} \u2014 all optional, so a bare",
+   " * `createServerSink()` writes to the real process streams."
+  ],
+  "plus": [
+   " * Holds the options for `createServerSink` \u2014 the `stdout` and `stderr` targets, the `styled`",
+   " * override, the `environment` inference reads, and an explicit `columns` width. All are",
+   " * optional, so a bare `createServerSink()` writes to the real process streams."
+  ],
+  "tags": [
+   "{@link import('./factories.js').createServerSink}"
+  ]
+ },
+ {
+  "file": "src/server/types.ts",
+  "minus": [
+   " * Declares a {@link SinkInterface} that also exposes the target terminal's {@link columns} width \u2014 the shape",
+   " * {@link import('./factories.js').createServerSink} returns. It is a drop-in {@link SinkInterface}",
+   " * (so a `Logger` / `Reporter` / `Spinner` / `Progress` takes it as `sink`) whose extra `columns`",
+   " * getter lets a consumer size a `Reporter`'s layout to the live terminal. Its `styled` fact lets",
+   " * the same consumer enable or disable its styler for the `stdout` target."
+  ],
+  "plus": [
+   " * Declares a {@link SinkInterface} that also exposes the `stdout` target's construction-time",
+   " * `styled` fact and the terminal's live or fixed {@link columns} width \u2014 the shape",
+   " * `createServerSink` returns."
+  ],
+  "tags": [
+   "{@link import('./factories.js').createServerSink}"
+  ]
+ },
+ {
+  "file": "src/server/types.ts",
+  "minus": [
+   " * Names the process-stream `write` method a {@link ProcessCaptureInterface} snapshots and swaps at",
+   " * the patch boundary \u2014 the write-side analogue of {@link import('@src/core').ConsoleMethod}."
+  ],
+  "plus": [
+   " * Names the process-stream `write` method a {@link ProcessCaptureInterface} snapshots and swaps",
+   " * at the patch boundary \u2014 `NodeJS.WriteStream['write']` verbatim, the write-side analogue of",
+   " * `ConsoleMethod`."
+  ],
+  "tags": [
+   "{@link import('@src/core').ConsoleMethod}"
+  ]
+ },
+ {
+  "file": "src/server/types.ts",
+  "minus": [
+   " * Holds the options for the {@link import('./ProcessCapture.js').ProcessCapture} constructor \u2014 every",
+   " * field optional, so a bare `new ProcessCapture()` buffers both streams without mirroring or",
+   " * forwarding."
+  ],
+  "plus": [
+   " * Holds the options for the `ProcessCapture` constructor \u2014 the `on` / `error` emitter keys, the",
+   " * `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`.",
+   " * Every field is optional, so a bare `new ProcessCapture()` buffers both streams without",
+   " * mirroring or forwarding."
+  ],
+  "tags": [
+   "{@link import('./ProcessCapture.js').ProcessCapture}"
+  ]
+ },
+ {
+  "file": "src/server/validators.ts",
+  "minus": [
+   " * guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write `encoding`"
+  ],
+  "plus": [
+   " * guard used by `decodeChunk` to honor a process-write `encoding`"
+  ],
+  "tags": [
+   "{@link import('./helpers.js').decodeChunk}"
+  ]
+ }
+]

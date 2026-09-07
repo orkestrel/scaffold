@@ -1,0 +1,84 @@
+function createCDPClient	Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`.
+function createBrowserSnapshot	Creates a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data.
+function createBrowser	Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle management.
+function createCDPTransport	Creates a Node `WebSocket`-backed `CDPTransportInterface` for the given CDP debugger URL.
+function createBrowserWriter	Creates a filesystem-backed `BrowserWriterInterface` that persists bytes through `node:fs/promises`.
+class BrowserError	Represents the base error for all browser automation operations, carrying the code `BROWSER_ERROR` and a `context` record.
+class BrowserSelectorError	Reports that a selector-based lookup or wait timed out without the element appearing, under the code `BROWSER_SELECTOR_ERROR`.
+class CDPError	Reports that a CDP request received an error response from the remote endpoint, under the code `BROWSER_CDP_ERROR`, with the `method`, the CDP `code`, the `message`, and any `data` in its context.
+class CDPConnectionError	Reports that a CDP request could not be sent or completed because the client was not in a connectable state — not connected, closed while connecting, or the connection dropped mid-request — under the code `BROWSER_CDP_CONNECTION_ERROR`.
+class CDPTimeoutError	Reports that a pending CDP request was not answered within its timeout window, under the code `BROWSER_CDP_TIMEOUT_ERROR`.
+class BrowserResultLimitError	Reports that an `evaluate()`/`content()` result exceeded `BROWSER_RESULT_LIMIT` and was rejected in-page before it could overflow the CDP transport frame, under the code `BROWSER_RESULT_LIMIT_ERROR`.
+class BrowserConnectionError	Reports that a CDP connection, discovery, or launch attempt failed, under the code `BROWSER_CONNECTION_ERROR`.
+class BrowserNotConnectedError	Reports that an operation requiring an active connection was attempted while disconnected, under the code `BROWSER_NOT_CONNECTED_ERROR`.
+class BrowserDestroyedError	Reports that an operation was attempted after the browser wrapper was destroyed, under the code `BROWSER_DESTROYED_ERROR`.
+function isBrowserError	Narrows an unknown value to a `BrowserError`.
+function isBrowserSelectorError	Narrows an unknown value to a `BrowserSelectorError`.
+function isCDPError	Narrows an unknown value to a `CDPError`.
+function isCDPConnectionError	Narrows an unknown value to a `CDPConnectionError`.
+function isCDPTimeoutError	Narrows an unknown value to a `CDPTimeoutError`.
+function isBrowserResultLimitError	Narrows an unknown value to a `BrowserResultLimitError`.
+function isBrowserConnectionError	Narrows an unknown value to a `BrowserConnectionError`.
+function isBrowserNotConnectedError	Narrows an unknown value to a `BrowserNotConnectedError`.
+function isBrowserDestroyedError	Narrows an unknown value to a `BrowserDestroyedError`.
+const BROWSER_DEFAULT_TIMEOUT_MS	Sets the default timeout for browser connection, requests, and navigation, `30_000` milliseconds.
+const BROWSER_WAIT_POLL_INTERVAL_MS	Sets the poll interval while waiting for a selector to appear, `100` milliseconds.
+const BROWSER_DEFAULT_VIEWPORT_WIDTH	Sets the default viewport width, `1280` pixels.
+const BROWSER_DEFAULT_VIEWPORT_HEIGHT	Sets the default viewport height, `720` pixels.
+const BROWSER_CODEGEN_BINDING_NAME	Names the CDP runtime binding the codegen recorder script calls into, `'__orkestrelBrowserCodegen'`.
+const BROWSER_RESULT_LIMIT	Caps the serialized-character length for an `evaluate()`/`content()` result at `2_500_000`, enforced in-page before the result is returned to CDP.
+const BROWSER_RESULT_LIMIT_SENTINEL_PREFIX	Names the distinctive prefix for the in-page result-limit sentinel error, `'[[ORKESTREL_BROWSER_RESULT_LIMIT]]'`, immediately followed by the serialized length.
+const BROWSER_RESULT_LIMIT_PATTERN	Matches the in-page result-limit sentinel error message, anchored immediately after the `Error:` (optionally `Uncaught Error:`) prefix that Chromium prepends to a thrown error's description, so the guard's own throw is recognized only at the start of the message rather than wherever the substring happens to occur.
+const BROWSER_STOP_LOADING_TIMEOUT_MS	Bounds the best-effort `Page.stopLoading` call issued after a failed `navigate()` at `1_000` milliseconds.
+const BROWSER_FRAME_WORLD_NAME	Names the isolated world used for iframe evaluation, `'__orkestrelBrowserFrame'`.
+const BROWSER_SNAPSHOT_NODE_LIMIT	Sets the default maximum node count accepted from a decoded CDP DOM snapshot, `100_000`.
+const BROWSER_DEFAULT_CDP_PORT	Sets the default CDP port probed for an existing browser and used for launches, `9222`.
+const BROWSER_DEFAULT_HOST	Sets the default host probed for an existing browser and used for launches, `'127.0.0.1'`, which avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`.
+const BROWSER_CDP_PROTOCOL	Names the protocol prefix for CDP discovery requests, `'http'`.
+const BROWSER_CDP_VERSION_PATH	Names the path appended to the CDP host to fetch version metadata, `'/json/version'`, which is where endpoint discovery reads.
+const BROWSER_CDP_LIST_PATH	Names the path appended to the CDP host to list open targets — pages, workers, and every other target category Chromium reports — `'/json/list'`.
+const BROWSER_HEADLESS_ARG	Names the flag that enables headless mode on a launched browser process, `'--headless=new'`.
+const BROWSER_PROFILE_PREFIX	Names the prefix for isolated browser profiles created beneath the operating-system temp directory, `'orkestrel-browser-'`.
+const BROWSER_KILL_GRACE_MS	Bounds each launched-process exit window during TERM-to-KILL teardown at `3_000` milliseconds.
+const BROWSER_PORT_PROBE_TIMEOUT_MS	Bounds the `discover: false` port-occupancy probe before launching at `200` milliseconds, which is short because the probe only needs to detect an already-listening CDP endpoint rather than perform full discovery.
+const BROWSER_TRANSPORT_LOSS_DEFER_MS	Defers once for `50` milliseconds when a transport loss is observed on an owned process, giving a near-simultaneous process-exit event, which libuv may reap slightly later than the socket close, first say over the diagnosis.
+const BROWSER_PROCESS_EXIT_CAUSE	Names the machine-readable error-context cause for an owned browser process exiting, `'process-exit'`.
+const BROWSER_TRANSPORT_LOSS_CAUSE	Names the machine-readable error-context cause for a CDP transport disconnecting while its browser remains alive, `'transport-loss'`.
+const BROWSER_STORE_ENV_KEY	Names the environment variable that carries an additional Playwright browser store base directory, `'PLAYWRIGHT_BROWSERS_PATH'`.
+const BROWSER_STORE_LINK_NAME	Names the top-level Chromium symlink or binary Playwright maintains inside a browser store base, `'chromium'`.
+function compileGuardedEvaluateExpression	Compiles a `Runtime.evaluate` expression so the in-page code stringifies its own result and throws a recognizable sentinel error before an oversized result would overflow the CDP transport frame.
+function normalizeCodegenActions	Normalizes recorded codegen actions, collapsing consecutive `fill` actions on the same selector into the latest value.
+function parseCodegenNavigateAction	Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined` off-shape and for every frame but the top-level one.
+function compileCodegenScript	Compiles recorded codegen actions into a replayable JavaScript or TypeScript script.
+function readEvaluationResult	Decodes one CDP `Runtime.evaluate` result, throwing a `BrowserError` on a failed evaluation and a `BrowserResultLimitError` past the guarded result size.
+function readBrowserFrames	Decodes a flattened CDP `Page.getFrameTree` result into depth-first frame metadata, skipping every off-shape frame.
+function readRareStringData	Decodes CDP snapshot sparse string data into a node-index map, skipping every off-shape entry.
+function readRareBooleanData	Decodes CDP snapshot sparse boolean data into a set of node indexes, skipping every off-shape entry.
+function readRareIntegerData	Decodes CDP snapshot sparse integer data into a node-index map, skipping every off-shape entry.
+function parseBrowserRect	Coerces a four-number CSS-pixel rectangle to a `BrowserRect`, or `undefined` off-shape.
+function readBrowserAttributes	Decodes flattened CDP node attributes into a frozen record, skipping every off-shape pair.
+function readBrowserSnapshot	Decodes a CDP `DOMSnapshot.captureSnapshot` result into a serializable `BrowserSnapshotInput`, throwing a `BrowserError` off-shape and a `BrowserResultLimitError` past the configured node limit.
+function isBrowserNodeQuery	Tests whether a browser-node matcher is a declarative query rather than a predicate.
+function fetchCDPTargets	Fetches the current CDP target list from a browser's `/json/list` endpoint, as a `Result` carrying either the targets or a coded `BrowserConnectionError`.
+function extractBrowserChord	Extracts a keyboard chord such as `Control+Shift+P` into its parts, throwing a `BrowserError` on an empty chord or an unsupported modifier.
+function readBrowserAXValue	Decodes an Accessibility-domain AXValue, or `undefined` when the record carries none.
+function readBrowserAccessibility	Decodes Accessibility-domain nodes into a flat serializable tree, throwing a `BrowserError` off-shape.
+function readBrowserCookie	Decodes one Chromium cookie, throwing a `BrowserError` off-shape.
+function readBrowserCookies	Decodes the cookies `Storage.getCookies` returns, throwing a `BrowserError` off-shape.
+function readBrowserCoverageRanges	Decodes and normalizes coverage ranges, throwing a `BrowserError` off-shape.
+function readBrowserHeaders	Decodes a Chromium Headers object into string values, skipping every entry that is neither a string nor a finite number.
+function readBrowserMetrics	Decodes Performance-domain metrics, throwing a `BrowserError` off-shape.
+function readBrowserProfile	Decodes one CPU profile, throwing a `BrowserError` off-shape.
+function readBrowserProfileFrame	Decodes a CPU profile call frame, throwing a `BrowserError` off-shape.
+function readBrowserQuad	Decodes the first `DOM.getContentQuads` quad and its center, throwing a `BrowserError` off-shape.
+function readBrowserRemoteValue	Decodes a Runtime remote object's printable value, falling back to its unserializable form and then its description, or `undefined` when it carries none.
+function readBrowserScriptCoverage	Decodes JavaScript precise coverage, throwing a `BrowserError` off-shape.
+function readBrowserScriptIdentifier	Decodes the `Page.addScriptToEvaluateOnNewDocument` result, throwing a `BrowserError` off-shape.
+function readBrowserStack	Decodes a Chromium runtime stack trace, skipping every off-shape call frame.
+function readBrowserStorageEntries	Decodes a list of web-storage entries, throwing a `BrowserError` off-shape.
+function readBrowserStorageOrigin	Decodes one in-page web-storage snapshot, throwing a `BrowserError` off-shape.
+function readBrowserStreamChunk	Decodes one `IO.read` response, throwing a `BrowserError` off-shape.
+function readBrowserStyleCoverage	Decodes CSS rule usage, throwing a `BrowserError` off-shape.
+function validateBrowserInputOptions	Validates the bounded delay, count, steps, and position of one trusted-input operation.
+interface BrowserPageInterface	Abstracts a single top-level browser page, extending `BrowserFrameInterface` with navigation, screenshots, frame discovery, DOM snapshots, codegen, and target teardown.
+interface BrowserSnapshotInterface	Represents a navigable, serializable snapshot of every document attached to a page, extending `BrowserSnapshotInput` with walking, structural relationships, search, and path derivation over plain `BrowserNode` values.

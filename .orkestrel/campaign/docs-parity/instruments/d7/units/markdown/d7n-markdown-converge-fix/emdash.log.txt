@@ -1,0 +1,420 @@
+src/core/Markdown.ts:22
+   *   and is NOT re-validated - gate an untrusted value with `isMarkdownDocument` first.
+   *   and is NOT re-validated — gate an untrusted value with `isMarkdownDocument` first.
+src/core/Markdown.ts:35
+   * - **Immutable.** {@link map} never mutates the stored AST - it returns a NEW `Markdown`
+   * - **Immutable.** {@link map} never mutates the stored AST — it returns a NEW `Markdown`
+src/core/Markdown.ts:40
+   *   `stream` is shallow - only the document's direct block children.
+   *   `stream` is shallow — only the document's direct block children.
+src/core/Markdown.ts:96
+  	 * Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator
+  	 * Returns THE deep traversal — a lazy, depth-first, pre-order, root-inclusive generator
+src/core/Markdown.ts:163
+  	 * (shallow, source order) - a fresh, pull-based source per call: one block is
+  	 * (shallow, source order) — a fresh, pull-based source per call: one block is
+src/core/factories.ts:23
+   * {@link MarkdownDocument} - a typed AST plus the query, rewrite, and fold operations
+   * {@link MarkdownDocument} — a typed AST plus the query, rewrite, and fold operations
+src/core/factories.ts:31
+   * {@link MarkdownDocument}, adopts it AS-IS without re-validation - gate an untrusted
+   * {@link MarkdownDocument}, adopts it AS-IS without re-validation — gate an untrusted
+src/core/factories.ts:33
+   * degrades to text, never throws) and zero-dependency - a hand-written scanner, no
+   * degrades to text, never throws) and zero-dependency — a hand-written scanner, no
+src/core/factories.ts:53
+   * {@link TextNode} - a guard, coercing parser, JSON Schema, and seeded
+   * {@link TextNode} — a guard, coercing parser, JSON Schema, and seeded
+src/core/factories.ts:72
+   * {@link CodeSpanNode} - a guard, coercing parser, JSON Schema, and seeded
+   * {@link CodeSpanNode} — a guard, coercing parser, JSON Schema, and seeded
+src/core/factories.ts:108
+   * {@link CodeBlockNode} - a guard, coercing parser, JSON Schema, and seeded
+   * {@link CodeBlockNode} — a guard, coercing parser, JSON Schema, and seeded
+src/core/factories.ts:127
+   * {@link ThematicBreakNode} - a guard, coercing parser, JSON Schema, and
+   * {@link ThematicBreakNode} — a guard, coercing parser, JSON Schema, and
+src/core/helpers.ts:62
+  // malformed input degrades to text, never throws - so each is unit-tested in isolation.
+  // malformed input degrades to text, never throws — so each is unit-tested in isolation.
+src/core/helpers.ts:67
+  // backtracking regex) so it is linear-time - no ReDoS on adversarial input.
+  // backtracking regex) so it is linear-time — no ReDoS on adversarial input.
+src/core/helpers.ts:295
+   * Counts the leading space / tab characters on `line` (a tab counts as one) - the
+   * Counts the leading space / tab characters on `line` (a tab counts as one) — the
+src/core/helpers.ts:323
+   * Checks whether `character` is whitespace under the emphasis flanking rule - a space, a
+   * Checks whether `character` is whitespace under the emphasis flanking rule — a space, a
+src/core/helpers.ts:340
+   * Checks whether `character` is escapable by a leading backslash - the ASCII punctuation
+   * Checks whether `character` is escapable by a leading backslash — the ASCII punctuation
+src/core/helpers.ts:357
+   * Checks whether `line` is blank - empty, or containing only whitespace - the markdown
+   * Checks whether `line` is blank — empty, or containing only whitespace — the markdown
+src/core/helpers.ts:390
+   * Checks whether `line` closes a fence opened by `marker` - the same fence character, a run
+   * Checks whether `line` closes a fence opened by `marker` — the same fence character, a run
+src/core/helpers.ts:417
+   * Checks whether `character` is a regex-`\s`-equivalent whitespace character - the
+   * Checks whether `character` is a regex-`\s`-equivalent whitespace character — the
+src/core/helpers.ts:441
+   * Checks whether `line` is a thematic break (horizontal rule) - three or more of the SAME
+   * Checks whether `line` is a thematic break (horizontal rule) — three or more of the SAME
+src/core/helpers.ts:462
+   * Checks whether the pair (`header`, `delimiter`) opens a GFM table - `delimiter` is a row of
+   * Checks whether the pair (`header`, `delimiter`) opens a GFM table — `delimiter` is a row of
+src/core/helpers.ts:597
+   * Splits one GFM table row into its cell strings - outer pipes are optional, a pipe
+   * Splits one GFM table row into its cell strings — outer pipes are optional, a pipe
+src/core/helpers.ts:664
+   * Derives the per-column {@link TableAlign} list from a GFM delimiter row - `:---`
+   * Derives the per-column {@link TableAlign} list from a GFM delimiter row — `:---`
+src/core/helpers.ts:692
+   * break / blockquote / list / table) - the paragraph collector stops at such a line
+   * break / blockquote / list / table) — the paragraph collector stops at such a line
+src/core/helpers.ts:721
+   * Resolves backslash escapes in a raw string to their literal characters - used for a
+   * Resolves backslash escapes in a raw string to their literal characters — used for a
+src/core/helpers.ts:747
+   * Merges adjacent text nodes into one - the inline scanner emits a text node per
+   * Merges adjacent text nodes into one — the inline scanner emits a text node per
+src/core/helpers.ts:827
+   * Locates a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+   * Locates a link `[text](href)` at `start` — the text runs to a BALANCED `]`, then `(`
+src/core/helpers.ts:883
+   * Scans a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+   * Scans a link `[text](href)` at `start` — the text runs to a BALANCED `]`, then `(`
+src/core/helpers.ts:917
+   * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+   * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+src/core/helpers.ts:984
+   * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+   * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+src/core/helpers.ts:1024
+   * Scans the window `[from, to)` of `source` into inline nodes - the single recursive
+   * Scans the window `[from, to)` of `source` into inline nodes — the single recursive
+src/core/helpers.ts:1036
+   *   children. At {@link MAX_DEPTH} the window is never scanned for markup - it emits as
+   *   children. At {@link MAX_DEPTH} the window is never scanned for markup — it emits as
+src/core/helpers.ts:1037
+   *   a single literal text node - so pathological nesting (`[[[[…`, `****…`) cannot
+   *   a single literal text node — so pathological nesting (`[[[[…`, `****…`) cannot
+src/core/helpers.ts:1714
+   * Renders a {@link MarkdownNode} to its CANONICAL markdown source - the inverse
+   * Renders a {@link MarkdownNode} to its CANONICAL markdown source — the inverse
+src/core/helpers.ts:2079
+  // knowledge. The engine is `@orkestrel/html`'s own `foldNode` catamorphism - it
+  // knowledge. The engine is `@orkestrel/html`'s own `foldNode` catamorphism — it
+src/core/helpers.ts:2080
+  // already owns depth capping, cycle safety, and bottom-up folding - so this file
+  // already owns depth capping, cycle safety, and bottom-up folding — so this file
+src/core/helpers.ts:2123
+   * Trims the whitespace at the two ends of an inline run - the leading whitespace of a
+   * Trims the whitespace at the two ends of an inline run — the leading whitespace of a
+src/core/helpers.ts:2124
+   * leading text node and the trailing whitespace of a trailing one - dropping either
+   * leading text node and the trailing whitespace of a trailing one — dropping either
+src/core/helpers.ts:2168
+   * a break cannot be written at all - a heading and a table cell are one line each - it
+   * a break cannot be written at all — a heading and a table cell are one line each — it
+src/core/helpers.ts:2294
+   * Reads a projection as BLOCK content - the view a document, a blockquote, and a list
+   * Reads a projection as BLOCK content — the view a document, a blockquote, and a list
+src/core/helpers.ts:2332
+   * Reads a projection as INLINE content - the view a link, an emphasis, and a table cell
+   * Reads a projection as INLINE content — the view a link, an emphasis, and a table cell
+src/core/helpers.ts:2363
+   * Projects one HTML leaf - a text node, a comment, or a doctype - to its
+   * Projects one HTML leaf — a text node, a comment, or a doctype — to its
+src/core/helpers.ts:2393
+   * Projects one HTML container - the document root or an element - from its children's
+   * Projects one HTML container — the document root or an element — from its children's
+src/core/helpers.ts:2408
+   * shape - `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+   * shape — `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+src/core/helpers.ts:2412
+   * body from its `code` child's raw text, and a list takes one item per `li` child - so
+   * body from its `code` child's raw text, and a list takes one item per `li` child — so
+src/core/helpers.ts:2560
+  			// html's set is the gate; the union is the bridge - an alignment markdown has no
+  			// html's set is the gate; the union is the bridge — an alignment markdown has no
+src/core/helpers.ts:2707
+   * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} - the
+   * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} — the
+src/core/helpers.ts:2711
+   * **Engine.** One total handler table - {@link projectHTMLNode} for the containers,
+   * **Engine.** One total handler table — {@link projectHTMLNode} for the containers,
+src/core/helpers.ts:2712
+   * {@link projectHTMLLeaf} for the leaves - folded by `@orkestrel/html`'s own `foldNode`, so
+   * {@link projectHTMLLeaf} for the leaves — folded by `@orkestrel/html`'s own `foldNode`, so
+src/core/helpers.ts:2721
+   * then truncate again - so the anchor law below is a law within the depth budget, and
+   * then truncate again — so the anchor law below is a law within the depth budget, and
+src/core/helpers.ts:2727
+   * link or image is KEPT - `[text]()` - since a bad URL is no reason to lose the words
+   * link or image is KEPT — `[text]()` — since a bad URL is no reason to lose the words
+src/core/helpers.ts:2735
+   * translations - whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+   * translations — whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+src/core/helpers.ts:2736
+   * break only where a line can end - because a shape markdown cannot write back is a
+   * break only where a line can end — because a shape markdown cannot write back is a
+src/core/helpers.ts:2766
+   * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive - yields
+   * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive — yields
+src/core/helpers.ts:2825
+   * Folds a {@link MarkdownNode} into a `T` through a total catamorphism - children are
+   * Folds a {@link MarkdownNode} into a `T` through a total catamorphism — children are
+src/core/helpers.ts:2830
+   * **Table contract.** A {@link TableNode} has no single `children` array - its cells
+   * **Table contract.** A {@link TableNode} has no single `children` array — its cells
+src/core/helpers.ts:2833
+   * walk order across ALL cells - every header cell's inline nodes (column order), then
+   * walk order across ALL cells — every header cell's inline nodes (column order), then
+src/core/helpers.ts:2834
+   * every body row's cells' inline nodes (row order, then column order) - and reads
+   * every body row's cells' inline nodes (row order, then column order) — and reads
+src/core/helpers.ts:2997
+   * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) - each node's children
+   * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) — each node's children
+src/core/helpers.ts:3009
+   * input child is reused - `rewriteDocument` stays total and never produces a
+   * input child is reused — `rewriteDocument` stays total and never produces a
+src/core/parsers.ts:198
+   * block phase - the document half of what {@link parseProvenance} returns. Malformed
+   * block phase — the document half of what {@link parseProvenance} returns. Malformed
+src/core/shapers.ts:11
+  // or types - a JSON-Schema blueprint the compilers (factories.ts) turn into a
+  // or types — a JSON-Schema blueprint the compilers (factories.ts) turn into a
+src/core/shapers.ts:21
+   * Describes the shape of a {@link TextNode} - a plain-text leaf inline run.
+   * Describes the shape of a {@link TextNode} — a plain-text leaf inline run.
+src/core/shapers.ts:38
+   * Describes the shape of a {@link CodeSpanNode} - an inline code span (`` `code` ``).
+   * Describes the shape of a {@link CodeSpanNode} — an inline code span (`` `code` ``).
+src/core/shapers.ts:55
+   * Describes the shape of a {@link LineBreakNode} - a GFM hard line-break leaf.
+   * Describes the shape of a {@link LineBreakNode} — a GFM hard line-break leaf.
+src/core/shapers.ts:71
+   * Describes the shape of a {@link CodeBlockNode} - a fenced code block. `lang` is
+   * Describes the shape of a {@link CodeBlockNode} — a fenced code block. `lang` is
+src/core/shapers.ts:91
+   * Describes the shape of a {@link ThematicBreakNode} - a horizontal rule. Carries no
+   * Describes the shape of a {@link ThematicBreakNode} — a horizontal rule. Carries no
+src/core/shapers.ts:108
+   * Describes the shape of a {@link TableAlign} - the per-column GFM table alignment
+   * Describes the shape of a {@link TableAlign} — the per-column GFM table alignment
+src/core/shapers.ts:126
+   * Describes the shape of {@link ListItemMatch} - the parsed parts of a single list-item
+   * Describes the shape of {@link ListItemMatch} — the parsed parts of a single list-item
+src/core/types.ts:3
+  // A {@link MarkdownInterface} parses a markdown document into a typed AST - a
+  // A {@link MarkdownInterface} parses a markdown document into a typed AST — a
+src/core/types.ts:10
+  // / table cell. Every node is plain readonly data - no behaviour.
+  // / table cell. Every node is plain readonly data — no behaviour.
+src/core/types.ts:22
+   * Represents the parsed parts of a single list-item line - the value the block phase's
+   * Represents the parsed parts of a single list-item line — the value the block phase's
+src/core/types.ts:34
+  	/** Holds the full marker width (indent + bullet/ordinal + the following space) - the continuation indent. */
+  	/** Holds the full marker width (indent + bullet/ordinal + the following space) — the continuation indent. */
+src/core/types.ts:39
+   * Represents the parsed parts of a single ATX heading line - the value the block phase's heading
+   * Represents the parsed parts of a single ATX heading line — the value the block phase's heading
+src/core/types.ts:52
+   * Represents the parsed parts of a fenced-code opening line - the value the block phase's fence
+   * Represents the parsed parts of a fenced-code opening line — the value the block phase's fence
+src/core/types.ts:63
+   * Represents the located extent of one inline code span - the value the inline phase's code
+   * Represents the located extent of one inline code span — the value the inline phase's code
+src/core/types.ts:74
+   * Represents the located syntax bounds of one `[text](href)` link - the value the inline phase's
+   * Represents the located syntax bounds of one `[text](href)` link — the value the inline phase's
+src/core/types.ts:85
+   * Represents the located content and syntax bounds of one emphasis run - the value the inline
+   * Represents the located content and syntax bounds of one emphasis run — the value the inline
+src/core/types.ts:100
+   * Represents the scanned result of one `[text](href)` link - the node the inline phase's link
+   * Represents the scanned result of one `[text](href)` link — the node the inline phase's link
+src/core/types.ts:111
+   * Represents the scanned result of one emphasis run - the node the inline phase's emphasis
+   * Represents the scanned result of one emphasis run — the node the inline phase's emphasis
+src/core/types.ts:122
+   * Represents the result of collecting one GFM table - the node the construct scanner built and
+   * Represents the result of collecting one GFM table — the node the construct scanner built and
+src/core/types.ts:133
+   * Represents the result of collecting one list - the node the construct scanner built and where
+   * Represents the result of collecting one list — the node the construct scanner built and where
+src/core/types.ts:184
+   *   whole original region instead of the prefix an affine step would reach - which is
+   *   whole original region instead of the prefix an affine step would reach — which is
+src/core/types.ts:204
+   * original string - what `splitLines` returns per line, so every phase downstream of
+   * original string — what `splitLines` returns per line, so every phase downstream of
+src/core/types.ts:229
+   * Represents a run of plain text - the leaf inline node. `value` is the decoded text with
+   * Represents a run of plain text — the leaf inline node. `value` is the decoded text with
+src/core/types.ts:241
+   * Represents emphasized inline content - `*italic*` / `_italic_` (`strong: false`) or
+   * Represents emphasized inline content — `*italic*` / `_italic_` (`strong: false`) or
+src/core/types.ts:255
+   * Represents an inline code span - `` `code` ``. `value` is the verbatim span text; no inner
+   * Represents an inline code span — `` `code` ``. `value` is the verbatim span text; no inner
+src/core/types.ts:266
+   * Represents a GFM hard line break - two or more trailing spaces before a newline in
+   * Represents a GFM hard line break — two or more trailing spaces before a newline in
+src/core/types.ts:274
+   * Represents an inline link - `[text](href)`. `children` are the inline nodes of the link text.
+   * Represents an inline link — `[text](href)`. `children` are the inline nodes of the link text.
+src/core/types.ts:287
+   * Represents an inline image - `![alt](src)`. `children` are the inline nodes of the
+   * Represents an inline image — `![alt](src)`. `children` are the inline nodes of the
+src/core/types.ts:308
+   * Represents an ATX heading - `#` … `######`. `level` is 1–6 (the number of leading `#`),
+   * Represents an ATX heading — `#` … `######`. `level` is 1–6 (the number of leading `#`),
+src/core/types.ts:319
+  /** Represents a paragraph - a run of non-blank lines that is not another block; `children` its inline content. */
+  /** Represents a paragraph — a run of non-blank lines that is not another block; `children` its inline content. */
+src/core/types.ts:326
+  /** Represents one item of a {@link ListNode} - `children` the block content of the item (typically one paragraph, plus any nested list). */
+  /** Represents one item of a {@link ListNode} — `children` the block content of the item (typically one paragraph, plus any nested list). */
+src/core/types.ts:334
+   * Represents a list - bulleted (`-` / `*` / `+`, `ordered: false`) or numbered (`1.` / `1)`,
+   * Represents a list — bulleted (`-` / `*` / `+`, `ordered: false`) or numbered (`1.` / `1)`,
+src/core/types.ts:350
+   * Represents a GFM table - `header` the inline content of each header cell, `rows` the body
+   * Represents a GFM table — `header` the inline content of each header cell, `rows` the body
+src/core/types.ts:357
+  	/** Holds the header row - one cell of inline content per column. */
+  	/** Holds the header row — one cell of inline content per column. */
+src/core/types.ts:359
+  	/** Holds the body rows - each a list of cells, each cell inline content. */
+  	/** Holds the body rows — each a list of cells, each cell inline content. */
+src/core/types.ts:371
+   * Represents a fenced code block - ```` ```lang ````. `code` is the verbatim block content (no
+   * Represents a fenced code block — ```` ```lang ````. `code` is the verbatim block content (no
+src/core/types.ts:384
+  /** Represents a blockquote - `>`-prefixed lines; `children` the block content parsed from the de-quoted lines (so quotes nest). */
+  /** Represents a blockquote — `>`-prefixed lines; `children` the block content parsed from the de-quoted lines (so quotes nest). */
+src/core/types.ts:391
+  /** Represents a thematic break - a horizontal rule (`---` / `***` / `___` on its own line). */
+  /** Represents a thematic break — a horizontal rule (`---` / `***` / `___` on its own line). */
+src/core/types.ts:407
+   * Represents the root of a parsed markdown AST - the ordered block children of the whole
+   * Represents the root of a parsed markdown AST — the ordered block children of the whole
+src/core/types.ts:417
+   * Represents any node in a markdown AST - the {@link MarkdownDocument} root, a {@link BlockNode},
+   * Represents any node in a markdown AST — the {@link MarkdownDocument} root, a {@link BlockNode},
+src/core/types.ts:423
+  /** Represents one projected table cell - the inline content and alignment of a `th` / `td`. */
+  /** Represents one projected table cell — the inline content and alignment of a `th` / `td`. */
+src/core/types.ts:427
+  	/** Holds the cell's inline content - a table cell is inline-only, so block content flattens to text. */
+  	/** Holds the cell's inline content — a table cell is inline-only, so block content flattens to text. */
+src/core/types.ts:432
+   * Represents what one HTML node projects to on the way to markdown - the fold value
+   * Represents what one HTML node projects to on the way to markdown — the fold value
+src/core/types.ts:442
+   * - `blocks` / `inlines` - the block and inline views. They are exclusive by
+   * - `blocks` / `inlines` — the block and inline views. They are exclusive by
+src/core/types.ts:446
+   * - `text` - the raw, uncollapsed, unescaped subtree text a code span and a
+   * - `text` — the raw, uncollapsed, unescaped subtree text a code span and a
+src/core/types.ts:449
+   * - `cells` / `rows` - table structure in flight. A cell travels up to its `tr` and a
+   * - `cells` / `rows` — table structure in flight. A cell travels up to its `tr` and a
+src/core/types.ts:462
+  	/** Holds the rows this node contributes to an enclosing table - each its cells, in column order. */
+  	/** Holds the rows this node contributes to an enclosing table — each its cells, in column order. */
+src/core/types.ts:467
+   * Represents a fold handler for one AST element - receives the node and its children
+   * Represents a fold handler for one AST element — receives the node and its children
+src/core/types.ts:474
+   * Represents the total catamorphism table for {@link MarkdownInterface.fold} - one
+   * Represents the total catamorphism table for {@link MarkdownInterface.fold} — one
+src/core/types.ts:485
+  	/** Folds a {@link ThematicBreakNode} (leaf - always called with an empty children list). */
+  	/** Folds a {@link ThematicBreakNode} (leaf — always called with an empty children list). */
+src/core/types.ts:489
+  	/** Folds a {@link CodeBlockNode} (leaf - always called with an empty children list). */
+  	/** Folds a {@link CodeBlockNode} (leaf — always called with an empty children list). */
+src/core/types.ts:497
+  	 * to ONE folded `T` per inline node - header cells first (column order), then body
+  	 * to ONE folded `T` per inline node — header cells first (column order), then body
+src/core/types.ts:503
+  	/** Folds a {@link TextNode} (leaf - always called with an empty children list). */
+  	/** Folds a {@link TextNode} (leaf — always called with an empty children list). */
+src/core/types.ts:507
+  	/** Folds a {@link CodeSpanNode} (leaf - always called with an empty children list). */
+  	/** Folds a {@link CodeSpanNode} (leaf — always called with an empty children list). */
+src/core/types.ts:509
+  	/** Folds a {@link LineBreakNode} (leaf - always called with an empty children list). */
+  	/** Folds a {@link LineBreakNode} (leaf — always called with an empty children list). */
+src/core/types.ts:525
+   * Pairs a parsed document with the {@link MarkdownSpan} of each of its nodes - what
+   * Pairs a parsed document with the {@link MarkdownSpan} of each of its nodes — what
+src/core/types.ts:530
+   * no other. A node the parse merged from adjacent scanner output - the text run
+   * no other. A node the parse merged from adjacent scanner output — the text run
+src/core/types.ts:531
+   * `coalesceText` joins - is present and carries the region ENCLOSING its parts, from
+   * `coalesceText` joins — is present and carries the region ENCLOSING its parts, from
+src/core/types.ts:554
+   *   so an identity the rewrite reused - one node returned for several inputs, or a
+   *   so an identity the rewrite reused — one node returned for several inputs, or a
+src/core/types.ts:555
+   *   node the handler moved elsewhere in the tree - keeps the region it already had;
+   *   node the handler moved elsewhere in the tree — keeps the region it already had;
+src/core/types.ts:576
+   * - **Immutable.** {@link MarkdownInterface.map} never mutates the stored AST - it
+   * - **Immutable.** {@link MarkdownInterface.map} never mutates the stored AST — it
+src/core/types.ts:580
+   *   depth-first, pre-order, root-inclusive; `stream` is shallow - only the
+   *   depth-first, pre-order, root-inclusive; `stream` is shallow — only the
+src/core/types.ts:583
+   *   blocks - a fresh, pull-based source per call: exactly one block is enqueued per
+   *   blocks — a fresh, pull-based source per call: exactly one block is enqueued per
+src/core/types.ts:597
+  	 * Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive
+  	 * Returns THE deep traversal — a lazy, depth-first, pre-order, root-inclusive
+src/core/types.ts:648
+  	 * (shallow, source order) - a lazy, pull-based, backpressure-respecting source. A
+  	 * (shallow, source order) — a lazy, pull-based, backpressure-respecting source. A
+src/core/validators.ts:182
+   * Narrows to {@link CodeSpanNode} - the node whose `element` discriminant is
+   * Narrows to {@link CodeSpanNode} — the node whose `element` discriminant is
+src/core/validators.ts:246
+  // input - a deserialized AST, a value crossing a process/RPC boundary) against
+  // input — a deserialized AST, a value crossing a process/RPC boundary) against
+src/core/validators.ts:251
+  // exported guard names themselves - legal because `lazyOf`'s thunk resolves per
+  // exported guard names themselves — legal because `lazyOf`'s thunk resolves per
+src/core/validators.ts:259
+   * Determines whether an arbitrary value is a valid {@link InlineNode} - a text
+   * Determines whether an arbitrary value is a valid {@link InlineNode} — a text
+src/core/validators.ts:263
+   * Total: never throws, even on cyclic or pathologically deep input - every
+   * Total: never throws, even on cyclic or pathologically deep input — every
+src/core/validators.ts:300
+   * Determines whether an arbitrary value is a valid {@link BlockNode} - a
+   * Determines whether an arbitrary value is a valid {@link BlockNode} — a
+src/core/validators.ts:305
+   * Total: never throws, even on cyclic or pathologically deep input - every
+   * Total: never throws, even on cyclic or pathologically deep input — every
+src/core/validators.ts:309
+   * than named separately - it is used at exactly these two sites.
+   * than named separately — it is used at exactly these two sites.
+src/core/validators.ts:345
+   * Determines whether an arbitrary value is a valid {@link MarkdownNode} - the
+   * Determines whether an arbitrary value is a valid {@link MarkdownNode} — the
+src/core/validators.ts:350
+   * Total: never throws, even on cyclic or pathologically deep input - every
+   * Total: never throws, even on cyclic or pathologically deep input — every
+src/core/validators.ts:354
+   * named separately - it is used at exactly these two sites.
+   * named separately — it is used at exactly these two sites.
+src/core/validators.ts:380
+   * Total: never throws, even on cyclic or pathologically deep input - every
+   * Total: never throws, even on cyclic or pathologically deep input — every

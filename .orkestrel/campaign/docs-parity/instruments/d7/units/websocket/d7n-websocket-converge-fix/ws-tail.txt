@@ -1,0 +1,237 @@
+for (const entry of manifest) {
+	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+	const source = createSource({ files, module: entry.source })
+
+	describe(`${entry.concept}`, () => {
+		it('uses only listed fence languages', () => {
+			expect(findUnlisted(guide.fences(), FENCE_LANGUAGES)).toEqual([])
+		})
+
+		it('extracts a non-empty documented surface', () => {
+			expect(guide.surface().length).toBeGreaterThan(0)
+		})
+		it('re-exports every direct declaration that is not named internal', () => {
+			const stranded = findMissingSymbols(source.exports(), source.surface())
+			expect(stranded.filter((key) => !INTERNAL.includes(key))).toEqual([])
+		})
+		it('names no symbol internal that the barrel already exports', () => {
+			const stranded = findMissingSymbols(source.exports(), source.surface())
+			expect(INTERNAL.filter((key) => !stranded.includes(key))).toEqual([])
+		})
+		it('re-exports only direct declarations', () => {
+			expect(findMissingSymbols(source.surface(), source.exports())).toEqual([])
+		})
+		it('documents every barrel export', () => {
+			expect(findMissingSymbols(source.surface(), guide.surface())).toEqual([])
+		})
+		it('documents only barrel exports', () => {
+			expect(findMissingSymbols(guide.surface(), source.surface())).toEqual([])
+		})
+
+		it('exposes no hidden module-scope declarations', () => {
+			expect(source.hidden().map(computeSymbolKey)).toEqual([])
+		})
+
+		for (const group of guide.methods()) {
+			const members = source.methods(group.interface).map((method) => method.name)
+			const documented = group.methods.map((method) => method.name)
+			const entity = group.interface.replace(/Interface$/, '')
+			describe(`${group.interface}`, () => {
+				it('documents at least one method', () => {
+					expect(group.methods.length).toBeGreaterThan(0)
+				})
+				it('documents every interface method', () => {
+					expect(findMissing(members, documented)).toEqual([])
+				})
+				it('documents no phantom method', () => {
+					expect(findMissing(documented, members)).toEqual([])
+				})
+				it(`${entity} exposes no undocumented method`, () => {
+					const extra =
+						entity === group.interface
+							? []
+							: findMissing(
+									source.methods(entity).map((method) => method.name),
+									documented,
+								)
+					expect(extra).toEqual([])
+				})
+			})
+		}
+
+		// The equality gate: a `Summary` cell against its export's description paragraph, a
+		// titled fence against the `@example` of that title. `findDrift` owns the comparison
+		// and names both sides; converge the two sides with `npm run docs`, never by
+		// weakening this assertion. `findDrift` pairs an example only where a title is
+		// present on both sides, so an untitled `@example` block is outside this case. Each
+		// collected line is the spec, the key, and each side's text or `absent` — the same
+		// worklist `npm run docs` prints, so a failure here is read the way that command's
+		// output is.
+		it('keeps every compared summary and example equal to its source', () => {
+			const disagreeing: string[] = []
+			for (const drift of findDrift(guide, source)) {
+				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
+				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
+				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
+			}
+			expect(disagreeing).toEqual([])
+		})
+
+		it('documents an example for every Surface function', () => {
+			const fences = guide
+				.fences()
+				.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+				.map((fence) => fence.code)
+			const names = guide
+				.surface()
+				.filter((symbol) => symbol.keyword === 'function')
+				.map((symbol) => symbol.name)
+			expect(
+				findUnexampled(
+					names,
+					fences,
+					source.examples().map((example) => example.name),
+				),
+			).toEqual([])
+		})
+
+		for (const group of guide.methods()) {
+			const entity = group.interface.replace(/Interface$/, '')
+			const documented = group.methods.map((method) => method.name)
+			const examples =
+				entity === group.interface
+					? source.examples(group.interface).map((example) => example.name)
+					: source
+							.examples(group.interface)
+							.map((example) => example.name)
+							.concat(source.examples(entity).map((example) => example.name))
+			describe(`${group.interface} examples`, () => {
+				it('documents an example for every method', () => {
+					const fences = guide
+						.fences()
+						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+						.map((fence) => fence.code)
+					expect(findUnexampled(documented, fences, examples)).toEqual([])
+				})
+			})
+		}
+
+		it('imports only real exports in every ```ts fence', () => {
+			const fences = guide.fences().filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+			for (const fence of fences) {
+				for (const { specifier, names } of extractFenceImports(fence.code)) {
+					const imported = sources.source(specifier)
+					if (imported === undefined) continue
+					const surface = imported.surface().map((symbol) => symbol.name)
+					expect(findMissing(names, surface)).toEqual([])
+				}
+			}
+		})
+
+		it('resolves every relative link', () => {
+			const broken = guide
+				.links()
+				.filter((href) => !isExternalLink(href))
+				.map((href) => resolveLink(entry.spec, href))
+				.filter((path) => !source.exists(path))
+			expect(broken).toEqual([])
+		})
+		it('links only to test files that exist', () => {
+			const missing = guide
+				.tests()
+				.map((href) => resolveLink(entry.spec, href))
+				.filter((path) => !source.exists(path))
+			expect(missing).toEqual([])
+		})
+	})
+}
+
+// The flagship fences of `guides/websocket.md`, transcribed and asserted on the values
+// their comments claim. Name resolution is not a behavioural proof, so a fence documenting
+// a value the code contradicts satisfies every parity assertion in this file; only an
+// executed transcription breaks on it. The `## Surface` and `## Patterns` fences take an
+// upgraded socket from a live `node:http` server, so they run here over the in-memory
+// Duplex pair `tests/setupServer.ts` builds, which is the same real bidirectional socket
+// without the listener. Change a fence, change the transcription beside it.
+
+// The canonical `Sec-WebSocket-Key` of RFC 6455 §1.3, standing in for the request header
+// the two server-mode fences read.
+const FENCE_KEY = 'dGhlIHNhbXBsZSBub25jZQ=='
+
+describe('flagship fences', () => {
+	it('the Surface fence echoes a client text frame back as `echo: <text>`', async () => {
+		const [server, client] = duplexPair()
+		const collector = readClientFrames(client)
+		const headers: Record<string, string | readonly string[] | undefined> = {
+			'sec-websocket-key': FENCE_KEY,
+		}
+
+		const key = headers['sec-websocket-key']
+		if (typeof key !== 'string') throw new Error('the fence narrows the header to a string key')
+		const ws = createNodeWebSocket({
+			socket: server,
+			key, // present => server mode + 101 handshake
+			on: { message: (text) => ws.send(`echo: ${text}`) },
+		})
+		const closes: Array<number | undefined> = []
+		ws.emitter.on('close', (code) => closes.push(code))
+		await flushSocket()
+
+		client.write(encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'hello', { masked: true }))
+		await flushSocket()
+
+		expect(collector.frames.map((frame) => frame.payload.toString('utf-8'))).toEqual([
+			'echo: hello',
+		])
+
+		// The fence's `close` listener: the peer's close frame is echoed, the socket ends,
+		// and the final `close` carries the peer's code.
+		const closePayload = Buffer.alloc(2)
+		closePayload.writeUInt16BE(1000, 0)
+		client.write(encodeWebSocketFrame(WEBSOCKET_OPCODE_CLOSE, closePayload, { masked: true }))
+		await flushSocket()
+		expect(closes).toEqual([1000])
+	})
+
+	it('the Patterns fence echoes from its construction hook and hands the same message to a second observer', async () => {
+		const [server, client] = duplexPair()
+		const collector = readClientFrames(client)
+		const observed = createRecorder<readonly [message: string]>()
+
+		const ws = createNodeWebSocket({
+			socket: server,
+			key: FENCE_KEY,
+			on: { message: (text) => ws.send(`echo: ${text}`) }, // wired before the first frame arrives
+		})
+		ws.emitter.on('message', observed.handler) // a second observer of the same event
+		await flushSocket()
+
+		client.write(encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'pattern', { masked: true }))
+		await flushSocket()
+
+		// One echo, not two: the fence's later listener observes the message and the
+		// construction hook is what answers it.
+		expect(collector.frames.map((frame) => frame.payload.toString('utf-8'))).toEqual([
+			'echo: pattern',
+		])
+		expect(observed.calls).toEqual([['pattern']])
+		ws.destroy()
+	})
+
+	it('the encoder fence writes a server frame unmasked and a client frame masked', () => {
+		const unmasked = encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'hello')
+		const masked = encodeWebSocketFrame(WEBSOCKET_OPCODE_TEXT, 'hello', { masked: true })
+
+		// server→client: FIN + text opcode, the 7-bit length form, and the mask bit clear.
+		expect([...unmasked]).toEqual([0x81, 0x05, 0x68, 0x65, 0x6c, 0x6c, 0x6f])
+		expect(unmasked.readUInt8(1) & 0x80).toBe(0)
+		// client→server: the same header with the mask bit set, so the bytes differ.
+		expect(masked.readUInt8(0)).toBe(0x81)
+		expect(masked.readUInt8(1) & 0x80).toBe(0x80)
+		expect(masked.equals(unmasked)).toBe(false)
+	})
+
+	it('the accept-token fence returns the RFC 6455 §1.3 worked example', () => {
+		expect(computeWebSocketAccept('dGhlIHNhbXBsZSBub25jZQ==')).toBe('s3pPLMBiTxaQ9kYGzzhZRbK+xOo=')
+	})
+})

@@ -1,0 +1,66 @@
+Check	`{ field, operator, value }`
+CheckResult	`{ field, met, actual, error? }`
+Transform	`{ operation, operand? }`
+Bounds	`{ minimum?, maximum? }`
+StaticSource	`{ origin, value }`
+FieldSource	`{ origin, field }`
+LookupSource	`{ origin, field, table }`
+RangeSource	`{ origin, field, ranges }`
+FactorRange	`{ bounds?, value }`
+Factor	`{ id, name, description?, source, fallback?, checks?, transforms?, bounds?, weight?, priority?, enabled?, required? }`
+FactorGroup	`{ id, name, description?, factors, aggregation, base?, bounds?, enabled?, strict? }`
+QuantitativeDefinition	`{ reasoning, id, name, description?, groups, aggregation, base?, bounds?, precision? }`
+Atom	`{ form, check }`
+Compound	`{ form, operator, operands }`
+Rule	`{ id, name, description?, premises, conclusion, priority?, enabled? }`
+LogicalDefinition	`{ reasoning, id, name, description?, rules, strategy, depth? }`
+Variable	`{ form, name }`
+Constant	`{ form, value }`
+Operation	`{ form, operator, left, right? }`
+Equation	`{ id, name, description?, left, right, target }`
+SymbolicDefinition	`{ reasoning, id, name, description?, equations, variables, precision? }`
+Fact	`{ id, predicate, terms, confidence? }`
+Inference	`{ id, name, description?, premises, conclusion, confidence?, enabled? }`
+InferentialDefinition	`{ reasoning, id, name, description?, inferences, facts, strategy, depth? }`
+FactorResult	`{ id, applied, value, raw?, checks? }`
+GroupResult	`{ id, applied, value, factors }`
+QuantitativeResult	`{ reasoning, value, groups, count, success, trace, errors }`
+RuleResult	`{ id, applied, premises }`
+LogicalResult	`{ reasoning, conclusion, rules, count, success, trace, errors }`
+SymbolicResult	`{ reasoning, solutions, success, trace, errors }`
+ProofNode	`{ fact, inference?, children?, depth }`
+InferentialResult	`{ reasoning, derived, proof?, success, trace, errors }`
+ReasonValidationResult	`{ valid, errors, warnings }`
+EvaluatorOptions	`{ id? }`
+TransformerOptions	`{ id? }`
+AggregatorOptions	`{ id? }`
+QuantitativeReasonerOptions	`{ id?, evaluator?, transformer?, aggregator? }`
+LogicalReasonerOptions	`{ id?, evaluator? }`
+SymbolicReasonerOptions	`{ id? }`
+InferentialReasonerOptions	`{ id? }`
+EvaluatorInterface	`{ id } plus evaluate, batch`
+TransformerInterface	`{ id } plus apply, chain`
+AggregatorInterface	`{ id } plus aggregate`
+ReasonerInterface	`{ id, reasoning } plus supports, validate, reason`
+ReasonOptions	`{ reasoners?, bail?, validate?, on?, error? }`
+ReasonInterface	`{ emitter } plus reason, register, reasoner, reasoners, supports, validate, destroy`
+GroupManagerInterface	`{ emitter } plus group, groups, append, prepend, replace, remove, seat, destroy`
+GroupManagerOptions	`{ groups?, on?, error? }`
+FactorManagerInterface	`{ emitter } plus factor, factors, append, prepend, replace, remove, destroy`
+FactorManagerOptions	`{ on?, error? }`
+RuleManagerInterface	`{ emitter } plus rule, rules, append, prepend, replace, remove, seat, destroy`
+RuleManagerOptions	`{ rules?, on?, error? }`
+EquationManagerInterface	`{ emitter } plus equation, equations, append, prepend, replace, remove, seat, destroy`
+EquationManagerOptions	`{ equations?, on?, error? }`
+FactManagerInterface	`{ emitter } plus fact, facts, append, prepend, replace, remove, seat, destroy`
+FactManagerOptions	`{ facts?, on?, error? }`
+InferenceManagerInterface	`{ emitter } plus inference, inferences, append, prepend, replace, remove, seat, destroy`
+InferenceManagerOptions	`{ inferences?, on?, error? }`
+VariableManagerInterface	`{ emitter } plus variable, variables, add, remove, seat, destroy`
+VariableManagerOptions	`{ variables?, on?, error? }`
+LogicalChainingResult	`{ conclusion, rules }`
+InferentialChainingResult	`{ derived, proof? }`
+DefinitionBuilderInterface	`{ [DEFINITION_BUILDER_BRAND], id, reasoning, emitter, groups, factors, rules, equations, variables, facts, inferences } plus build, merge, clear, destroy`
+DefinitionBuilderOptions	`{ id?, groups?, factors?, rules?, equations?, variables?, facts?, inferences?, on?, error? }`
+SubjectBuilderInterface	`{ [SUBJECT_BUILDER_BRAND], id, emitter } plus field, fields, set, remove, merge, clear, repeat, build, destroy`
+SubjectBuilderOptions	`{ id?, on?, error? }`

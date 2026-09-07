@@ -1,0 +1,33 @@
+
+> @orkestrel/browser@0.0.16 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+···································································································································································································································································································x··········································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/BrowserHARManager.test.ts > BrowserHARManager > stamps archives with the version the manifest declares
+AssertionError: expected '0.0.15' to be '0.0.16' // Object.is equality
+
+Expected: "0.0.16"
+Received: "0.0.15"
+
+ ❯ tests/src/core/BrowserHARManager.test.ts:23:39
+     21|
+     22|   expect(BROWSER_HAR_CREATOR.name).toBe(isRecord(manifest) ? manifest[…
+     23|   expect(BROWSER_HAR_CREATOR.version).toBe(declared)
+       |                                       ^
+     24|  })
+     25|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 38 passed (39)
+      Tests  1 failed | 461 passed (462)
+   Start at  20:59:15
+   Duration  5.94s (transform 2.78s, setup 6.90s, import 1.37s, tests 2.26s, environment 4ms)
+

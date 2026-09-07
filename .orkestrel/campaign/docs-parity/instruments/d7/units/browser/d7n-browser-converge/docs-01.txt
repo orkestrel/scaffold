@@ -1,0 +1,623 @@
+
+> @orkestrel/browser@0.0.16 docs
+> node --experimental-strip-types scripts/docs.ts
+
+guides/browser.md function createCDPClient: guide "Create a `CDPClientInterface` bound to the given `CDPTransportInterface`." source "Creates a CDP client bound to the given transport."
+guides/browser.md function createBrowserSnapshot: guide "Create a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data." source "Creates a navigable browser snapshot from decoded serializable data."
+guides/browser.md class CDPClient: guide "Lightweight CDP client over a `CDPTransportInterface` — JSON-RPC framing, `connect` / `send` / `subscribe` / `close`." source "Provides a lightweight Chrome DevTools Protocol client over a `CDPTransportInterface`."
+guides/browser.md class BrowserContext: guide "Isolated browser session over a CDP browser context — manages its `BrowserPage`s (`page` / `pages` / `create` / `sync`)." source "Owns pages and shared state inside one Chromium browser context."
+guides/browser.md class BrowserFrame: guide "One attached document frame with isolated-world evaluation and frame-scoped actions over its current CDP session." source "Represents one attached document frame, evaluated through its own CDP execution world."
+guides/browser.md class BrowserPage: guide "A single browser page or frame — navigation, content extraction, screenshot, element interaction, codegen." source "Represents a top-level browser page, including its target lifecycle and child frames."
+guides/browser.md class BrowserCodegen: guide "Records page interactions (navigate/click/fill/select) through CDP bindings, for later compilation into a replayable script." source "Records page navigation and form interactions and compiles replayable scripts."
+guides/browser.md class BrowserSnapshot: guide "A navigable, serializable capture of every attached document — walking, structural relationships, search, and paths over plain node data." source "Represents a navigable, serializable browser DOM snapshot."
+guides/browser.md const BROWSER_DEFAULT_TIMEOUT_MS: guide absent source "Sets the default timeout in milliseconds for browser connection, requests, and navigation."
+guides/browser.md const BROWSER_WAIT_POLL_INTERVAL_MS: guide absent source "Sets the poll interval in milliseconds while waiting for a selector to appear."
+guides/browser.md const BROWSER_DEFAULT_VIEWPORT_WIDTH: guide absent source "Sets the default viewport width in pixels."
+guides/browser.md const BROWSER_DEFAULT_VIEWPORT_HEIGHT: guide absent source "Sets the default viewport height in pixels."
+guides/browser.md const BROWSER_CODEGEN_BINDING_NAME: guide absent source "Names the CDP runtime binding the codegen recorder script calls into."
+guides/browser.md const BROWSER_CODEGEN_SOURCE: guide absent source "Holds the in-page recorder script injected through `Page.addScriptToEvaluateOnNewDocument` and `Runtime.evaluate`."
+guides/browser.md const BASE64_CHARS: guide absent source "Holds the index-ordered base64 alphabet used to build `BASE64_LOOKUP`."
+guides/browser.md const BASE64_LOOKUP: guide absent source "Maps each base64 character to its 6-bit value, derived from `BASE64_CHARS`."
+guides/browser.md const BROWSER_RESULT_LIMIT: guide absent source "Caps the serialized-character length for an `evaluate()`/`content()` result, enforced IN-PAGE before the result is returned to CDP."
+guides/browser.md const BROWSER_RESULT_LIMIT_SENTINEL_PREFIX: guide absent source "Names the distinctive prefix for the in-page result-limit sentinel error, immediately followed by the serialized length."
+guides/browser.md const BROWSER_RESULT_LIMIT_PATTERN: guide absent source "Matches the in-page result-limit sentinel error message, anchored immediately after the `Error:` (optionally `Uncaught Error:`) prefix that Chromium prepends to a thrown error's description — so the guard's own throw is recognized only at the message START, not wherever the substring happens to occur."
+guides/browser.md const BROWSER_STOP_LOADING_TIMEOUT_MS: guide absent source "Bounds (in milliseconds) the best-effort `Page.stopLoading` call issued after a failed `navigate()`."
+guides/browser.md const BROWSER_FRAME_WORLD_NAME: guide absent source "Names the isolated world used for iframe evaluation."
+guides/browser.md const BROWSER_SNAPSHOT_NODE_LIMIT: guide absent source "Sets the default maximum node count accepted from a decoded CDP DOM snapshot."
+guides/browser.md class BrowserError: guide "Base error for all browser automation operations (`code` + `context`)." source "Represents the base error for all browser automation operations."
+guides/browser.md class BrowserSelectorError: guide "A selector-based lookup or wait timed out without the element appearing." source "Reports that a selector-based lookup or wait timed out without the element appearing."
+guides/browser.md class CDPError: guide "A CDP request received an error response from the remote endpoint (context carries `method` / CDP `code` / `message` / `data`)." source "Reports that a CDP request received an error response from the remote endpoint."
+guides/browser.md class CDPConnectionError: guide "A CDP request could not be sent or completed because the client was not in a connectable state (not connected, closed while connecting, or the connection dropped mid-request)." source "Reports that a CDP request could not be sent or completed because the client was not in a connectable state (not connected, closed while connecting, or the connection dropped mid-request)."
+guides/browser.md class CDPTimeoutError: guide "A pending CDP request was not answered within its timeout window." source "Reports that a pending CDP request was not answered within its timeout window."
+guides/browser.md class BrowserResultLimitError: guide "An `evaluate()`/`content()` result exceeded `BROWSER_RESULT_LIMIT` and was rejected in-page before it could overflow the CDP transport frame." source "Reports that an `evaluate()`/`content()` result exceeded `BROWSER_RESULT_LIMIT` and was rejected in-page before it could overflow the CDP transport frame."
+guides/browser.md function isBrowserError: guide absent source "Narrows an unknown value to BrowserError."
+guides/browser.md function isBrowserSelectorError: guide absent source "Narrows an unknown value to BrowserSelectorError."
+guides/browser.md function isCDPError: guide absent source "Narrows an unknown value to CDPError."
+guides/browser.md function isCDPConnectionError: guide absent source "Narrows an unknown value to CDPConnectionError."
+guides/browser.md function isCDPTimeoutError: guide absent source "Narrows an unknown value to CDPTimeoutError."
+guides/browser.md function isBrowserResultLimitError: guide absent source "Narrows an unknown value to BrowserResultLimitError."
+guides/browser.md function decodeBase64: guide "Decode a base64-encoded string into raw bytes (pure JS, no `Buffer`/`atob` — runs identically Node/browser)." source "Decodes a base64-encoded string into raw bytes."
+guides/browser.md function compileGuardedEvaluateExpression: guide "Compile a `Runtime.evaluate` expression so the in-page code stringifies its own result and throws a recognizable sentinel error before an oversized result would overflow the CDP transport frame." source "Compiles a `Runtime.evaluate` expression so the IN-PAGE code stringifies its own result and throws a recognizable error before an oversized result would overflow the CDP transport frame."
+guides/browser.md function normalizeCodegenActions: guide "Collapse consecutive `fill` actions on the same selector into the latest value." source "Normalizes a raw list of recorded codegen actions."
+guides/browser.md function parseCodegenActionPayload: guide "Coerce a codegen binding payload string to a `BrowserCodegenAction`, or `undefined` off-shape." source "Coerces a codegen binding payload string to a `BrowserCodegenAction`, or `undefined` off-shape."
+guides/browser.md function parseCodegenNavigateAction: guide "Coerce a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined` off-shape and for every frame but the top-level one." source "Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined` off-shape."
+guides/browser.md function compileCodegenScript: guide "Compile recorded codegen actions into a replayable JavaScript or TypeScript script." source "Compiles recorded codegen actions into a replayable script."
+guides/browser.md function readEvaluationResult: guide "Read a `Runtime.evaluate` result. Throws a `BrowserError` on a failed evaluation, and a `BrowserResultLimitError` past the guarded result size." source "Decodes one CDP `Runtime.evaluate` result."
+guides/browser.md function requireBrowserString: guide "Narrow a browser-evaluated value to a required string." source "Requires an evaluated browser value to be a string."
+guides/browser.md function readBrowserFrames: guide "Read `Page.getFrameTree` into depth-first frame metadata, skipping every off-shape frame." source "Decodes a flattened CDP `Page.getFrameTree` result."
+guides/browser.md function compileAttachedWaitExpression: guide "Compile an in-page attached-state wait." source "Compiles an in-page wait for an attached selector."
+guides/browser.md function compileDetachedWaitExpression: guide "Compile an in-page detached-state wait." source "Compiles an in-page wait for a detached selector."
+guides/browser.md function compileVisibleWaitExpression: guide "Compile an in-page visible-state wait." source "Compiles an in-page wait for a visible selector."
+guides/browser.md function compileHiddenWaitExpression: guide "Compile an in-page hidden-state wait." source "Compiles an in-page wait for a hidden selector."
+guides/browser.md function compileClickExpression: guide "Compile a strict, visibility-checked click expression." source "Compiles a strict, visibility-checked click expression."
+guides/browser.md function compileFillExpression: guide "Compile a strict, editable fill expression." source "Compiles a strict, editable fill expression."
+guides/browser.md function compileSelectExpression: guide "Compile a strict select expression." source "Compiles a strict select expression."
+guides/browser.md function parseNumberArray: guide "Coerce an unknown protocol value to an all-number array, or `undefined` off-shape." source "Coerces an unknown value to an all-number array, or `undefined` off-shape."
+guides/browser.md function parseSnapshotString: guide "Coerce one DOMSnapshot string-table index to its string, or `undefined` off-shape." source "Coerces one CDP snapshot string-table index to its string, or `undefined` off-shape."
+guides/browser.md function readRareStringData: guide "Read sparse CDP string data into a node-index map, skipping every off-shape entry." source "Decodes CDP snapshot sparse string data."
+guides/browser.md function readRareBooleanData: guide "Read sparse CDP boolean indexes into a set, skipping every off-shape entry." source "Decodes CDP snapshot sparse boolean data."
+guides/browser.md function readRareIntegerData: guide "Read sparse CDP integer data into a node-index map, skipping every off-shape entry." source "Decodes CDP snapshot sparse integer data."
+guides/browser.md function parseBrowserRect: guide "Coerce a four-number CSS-pixel rectangle to a `BrowserRect`, or `undefined` off-shape." source "Coerces a CDP snapshot rectangle to a `BrowserRect`, or `undefined` off-shape."
+guides/browser.md function readBrowserAttributes: guide "Read flattened name/value indexes into a frozen attribute record, skipping every off-shape pair." source "Decodes flattened CDP node attributes."
+guides/browser.md function readBrowserSnapshot: guide "Read a `DOMSnapshot.captureSnapshot` response into a serializable `BrowserSnapshotInput`. Throws a `BrowserError` off-shape, and a `BrowserResultLimitError` past the configured node limit." source "Decodes a CDP `DOMSnapshot.captureSnapshot` result."
+guides/browser.md function isBrowserNodeQuery: guide "Test whether a browser-node matcher is a declarative query rather than a predicate." source "Tests whether a browser-node matcher is a declarative query."
+guides/browser.md function matchesBrowserNode: guide "Match a node against a declarative query." source "Tests a captured node against a declarative query."
+guides/browser.md function isBrowserNodeVisible: guide "Test whether a node has a non-empty captured layout box." source "Tests whether a captured node has a non-empty rendered layout box."
+guides/browser.md type CDPTransportEventMap: guide absent source "Maps the events emitted by a `CDPTransportInterface` — the raw text pipe a `CDPClientInterface` sends and receives JSON-RPC frames over."
+guides/browser.md interface CDPTransportInterface: guide absent source "Represents a dumb text transport CDPClient sends and receives JSON-RPC frames over."
+guides/browser.md interface CDPClientOptions: guide absent source "Describes the options for creating a CDPClient."
+guides/browser.md type CDPHandler: guide absent source "Receives a subscribed CDP event with its params record."
+guides/browser.md type CDPClientEventMap: guide absent source "Maps the events a `CDPClientInterface` emits."
+guides/browser.md interface CDPTarget: guide absent source "Represents one entry of the CDP `Target.getTargets` result."
+guides/browser.md interface CDPClientInterface: guide absent source "Provides a lightweight Chrome DevTools Protocol client over a `CDPTransportInterface`."
+guides/browser.md interface CDPSendOptions: guide absent source "Describes the options for one CDP method call."
+guides/browser.md interface BrowserWriterInterface: guide absent source "Provides a pluggable sink for persisting captured browser bytes to a path."
+guides/browser.md interface BrowserViewport: guide absent source "Describes the viewport dimensions for a browser page."
+guides/browser.md type BrowserWaitUntil: guide absent source "Names the page load condition for navigation — the CDP load event awaited by `navigate()`."
+guides/browser.md interface BrowserPageOptions: guide absent source "Describes the options for creating a browser page."
+guides/browser.md interface BrowserNavigationOptions: guide absent source "Describes the options for page navigation."
+guides/browser.md interface BrowserActionOptions: guide absent source "Describes the options for element interaction (click, fill, select, wait)."
+guides/browser.md type BrowserWaitState: guide absent source "Names an element state a frame or page can wait for."
+guides/browser.md interface BrowserWaitOptions: guide absent source "Describes the options for waiting on an element."
+guides/browser.md interface BrowserScreenshotOptions: guide absent source "Describes the options for taking a page screenshot."
+guides/browser.md interface BrowserContentResult: guide absent source "Describes the result of page content extraction."
+guides/browser.md interface BrowserScreenshotResult: guide absent source "Describes the result of a page screenshot."
+guides/browser.md type BrowserCodegenAction: guide absent source "Represents one recorded browser action captured during a codegen session."
+guides/browser.md type BrowserCodegenEventMap: guide absent source "Maps the events a `BrowserCodegenInterface` emits."
+guides/browser.md interface BrowserCodegenOptions: guide absent source "Describes the options for creating a BrowserCodegen recorder."
+guides/browser.md type BrowserCodegenLanguage: guide absent source "Names the target language for a compiled codegen script."
+guides/browser.md interface BrowserCodegenScriptOptions: guide absent source "Describes the options for compiling recorded actions into a script."
+guides/browser.md interface BrowserCodegenInterface: guide absent source "Records page interactions (navigation, click, fill, select) as a session runs, for later compilation into a replayable script."
+guides/browser.md type BrowserSessionFunction: guide absent source "Resolves the current CDP session for a frame id."
+guides/browser.md interface BrowserFrameInfo: guide absent source "Describes serializable frame metadata decoded from CDP `Page.getFrameTree`."
+guides/browser.md interface BrowserFrameInterface: guide absent source "Provides the operations shared by a top-level page and an iframe document."
+guides/browser.md interface BrowserSendOptions: guide absent source "Describes the options for one raw CDP method call issued in a frame's target session."
+guides/browser.md type BrowserRect: guide absent source "Represents a rectangle in CSS pixels: x, y, width, height."
+guides/browser.md interface BrowserLayout: guide absent source "Describes layout data associated with one captured DOM node."
+guides/browser.md interface BrowserNode: guide absent source "Represents one serializable DOM node decoded from a CDP DOM snapshot."
+guides/browser.md interface BrowserDocument: guide absent source "Represents one document captured in a CDP DOM snapshot."
+guides/browser.md interface BrowserSnapshotInput: guide absent source "Describes the serializable input for a navigable browser snapshot."
+guides/browser.md type BrowserWalkOrder: guide absent source "Names the structural ordering for a browser snapshot walk."
+guides/browser.md interface BrowserWalkOptions: guide absent source "Describes the options for walking a browser snapshot."
+guides/browser.md type BrowserSiblingRelation: guide absent source "Names a structural sibling relationship relative to a browser node."
+guides/browser.md interface BrowserSnapshotInterface: guide absent source "Represents a navigable, serializable snapshot of every document attached to a page."
+guides/browser.md interface BrowserSnapshotOptions: guide absent source "Describes the options configuring capture through `BrowserPageInterface` `snapshot()`. The snapshot entity's creation input is `BrowserSnapshotInput`."
+guides/browser.md type BrowserNodePredicate: guide absent source "Names the predicate form accepted by `BrowserSnapshotInterface` find, filter, and closest methods."
+guides/browser.md interface BrowserNodeQuery: guide absent source "Describes a declarative browser-node matcher used by `matchesBrowserNode`."
+guides/browser.md interface BrowserPageInterface: guide absent source "Abstracts a single top-level browser page."
+guides/browser.md interface BrowserContextInterface: guide absent source "Represents an isolated browser session over a CDP browser context."
+guides/browser.md function createBrowser: guide "Create a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle management." source "Creates a raw-CDP Browser façade."
+guides/browser.md function createCDPTransport: guide "Create a Node `WebSocket`-backed `CDPTransportInterface` for the given CDP debugger URL." source "Creates a Node `WebSocket`-backed CDP transport."
+guides/browser.md function createBrowserWriter: guide "Create a filesystem-backed `BrowserWriterInterface` that persists bytes through `node:fs/promises`." source "Creates a filesystem-backed browser writer."
+guides/browser.md class Browser: guide "Browser wrapper with discovery, connection management, and lifecycle control (discover → connect → launch)." source "Discovers, launches, connects to, and owns Chromium-family browser sessions."
+guides/browser.md class WebSocketCDPTransport: guide "Node `WebSocket`-backed `CDPTransportInterface` — connects to a CDP WebSocket debugger URL." source "Provides a raw CDP text transport backed by `@orkestrel/websocket`."
+guides/browser.md class FileBrowserWriter: guide "Filesystem-backed `BrowserWriterInterface` — persists captured bytes, creating missing parent directories." source "Persists captured browser bytes to the filesystem through `node:fs/promises`."
+guides/browser.md const BROWSER_DEFAULT_CDP_PORT: guide absent source "Sets the default CDP port probed for an existing browser and used for launches."
+guides/browser.md const BROWSER_DEFAULT_HOST: guide absent source "Sets the default host probed for an existing browser and used for launches (avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`)."
+guides/browser.md const BROWSER_CDP_PROTOCOL: guide absent source "Names the protocol prefix for CDP discovery requests."
+guides/browser.md const BROWSER_CDP_VERSION_PATH: guide absent source "Names the path appended to the CDP host to fetch version metadata (endpoint discovery)."
+guides/browser.md const BROWSER_CDP_LIST_PATH: guide absent source "Names the path appended to the CDP host to list open targets (pages, workers, etc)."
+guides/browser.md const BROWSER_LAUNCH_ARGS: guide absent source "Lists the flags always passed to a launched browser process, alongside the caller's own."
+guides/browser.md const BROWSER_HEADLESS_ARG: guide absent source "Names the flag that enables headless mode on a launched browser process."
+guides/browser.md const BROWSER_PROFILE_PREFIX: guide absent source "Names the prefix for isolated browser profiles created beneath the operating-system temp directory."
+guides/browser.md const BROWSER_KILL_GRACE_MS: guide absent source "Bounds each launched-process exit window during TERM-to-KILL teardown."
+guides/browser.md const BROWSER_PORT_PROBE_TIMEOUT_MS: guide absent source "Bounds the `discover: false` port-occupancy probe before launching — short, because it only needs to detect an already-listening CDP endpoint, not perform full discovery."
+guides/browser.md const BROWSER_TRANSPORT_LOSS_DEFER_MS: guide absent source "Defers once, briefly, when a transport loss is observed on an owned process, giving a near-simultaneous process-exit event (which libuv may reap slightly later than the socket close) first say over the diagnosis."
+guides/browser.md const BROWSER_PROCESS_EXIT_CAUSE: guide absent source "Names the machine-readable error-context cause for an owned browser process exiting."
+guides/browser.md const BROWSER_TRANSPORT_LOSS_CAUSE: guide absent source "Names the machine-readable error-context cause for a CDP transport disconnecting while its browser remains alive."
+guides/browser.md const BROWSER_ENV_PATH_KEYS: guide absent source "Lists the environment variables checked (in order) for an explicit browser executable path override."
+guides/browser.md const BROWSER_EXECUTABLE_PATHS: guide absent source "Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root, keyed by `process.platform`."
+guides/browser.md const BROWSER_WINDOWS_SUFFIXES: guide absent source "Lists the Windows install-root-relative suffixes for Chrome/Edge/Chromium, joined against each candidate root (`PROGRAMFILES`, `PROGRAMFILES(X86)`, `LOCALAPPDATA`)."
+guides/browser.md const BROWSER_WINDOWS_ROOT_FALLBACKS: guide absent source "Lists the fallback Windows install roots used when the corresponding environment variable is absent."
+guides/browser.md const BROWSER_EXECUTABLE_NAMES: guide absent source "Lists the command names probed on PATH when no well-known executable path exists."
+guides/browser.md const BROWSER_STORE_ENV_KEY: guide absent source "Names the environment variable that carries an additional Playwright browser store base directory."
+guides/browser.md const BROWSER_STORE_DEFAULT_DIRS: guide absent source "Lists the well-known Playwright browser store base directories checked in addition to `PLAYWRIGHT_BROWSERS_PATH`."
+guides/browser.md const BROWSER_STORE_CACHE_DIRS: guide absent source "Names the per-OS default Playwright browser cache directory, relative to the home directory (win32 uses `LOCALAPPDATA` directly)."
+guides/browser.md const BROWSER_STORE_LINK_NAME: guide absent source "Names the top-level Chromium symlink/binary Playwright maintains inside a browser store base."
+guides/browser.md const BROWSER_STORE_GLOBS: guide absent source "Names the glob pattern (relative to a store base) matching a versioned Chromium binary, keyed by `process.platform`."
+guides/browser.md const BROWSER_ENGINE_HINTS: guide absent source "Lists the case-insensitive substrings identifying an executable path/name's browser engine, checked by `parseBrowserEngine` in the order `edge` → `chromium` → `chrome`."
+guides/browser.md class BrowserConnectionError: guide "A CDP connection, discovery, or launch attempt failed." source "Reports that a CDP connection, discovery, or launch attempt failed."
+guides/browser.md class BrowserNotConnectedError: guide "An operation requiring an active connection was attempted while disconnected." source "Reports that an operation requiring an active connection was attempted while disconnected."
+guides/browser.md class BrowserDestroyedError: guide "An operation was attempted after the Browser was destroyed." source "Reports that an operation was attempted after the Browser was destroyed."
+guides/browser.md function isBrowserConnectionError: guide absent source "Narrows an unknown value to BrowserConnectionError."
+guides/browser.md function isBrowserNotConnectedError: guide absent source "Narrows an unknown value to BrowserNotConnectedError."
+guides/browser.md function isBrowserDestroyedError: guide absent source "Narrows an unknown value to BrowserDestroyedError."
+guides/browser.md function findSystemBrowsers: guide "Enumerate every Chrome/Chromium/Edge executable discoverable (env override → well-known install paths → PATH probe → Playwright browser stores), deduplicated by normalized path; each entry classified into a `SystemBrowser`, optionally narrowed by `options.engine` — unclassifiable executables default to engine `'chromium'` rather than being dropped." source "Enumerates every Chrome/Chromium/Edge executable discoverable on this machine, deduplicated by normalized absolute path."
+guides/browser.md function findSystemBrowser: guide "The first entry of `findSystemBrowsers`; may return `undefined`." source "Locates a Chrome/Chromium/Edge executable on this machine — the first entry of `findSystemBrowsers`."
+guides/browser.md function parseBrowserEngine: guide "Classify an executable path/name into a `BrowserEngine` by case-insensitive hint (edge → chromium → chrome); may return `undefined`." source "Classifies an executable path/name into a `BrowserEngine` by case-insensitive hint, checked in the order edge → chromium → chrome."
+guides/browser.md function normalizeExecutablePath: guide "Normalize an executable path for cross-source deduplication (case-insensitive on Windows)." source "Normalizes an executable path for cross-source deduplication (case-insensitive on Windows)."
+guides/browser.md function browserToEngine: guide "Classify a `/json/version` `Browser` string into a `BrowserEngine` (`Edg/` → edge, `Chrome/` → chrome, else chromium)." source "Classifies a `/json/version` `Browser` string into a `BrowserEngine` (`Edg/` → edge, `Chrome/` → chrome, else chromium)."
+guides/browser.md function createBrowserProfile: guide "Resolve a caller-owned persistent profile or create an isolated temporary user-data directory." source "Resolves a persistent caller profile or creates an isolated temporary one."
+guides/browser.md function removeBrowserProfile: guide "Remove a library-owned isolated profile after validating its guarded temp-directory shape; persistent profiles are untouched." source "Removes a library-owned isolated browser profile."
+guides/browser.md function findEnvOverrides: guide "Check the env-override keys in order, returning every one that exists." source "Checks the env-override keys (`PLAYWRIGHT_EXECUTABLE_PATH`, `CHROME_PATH`) in order and returns every one that exists."
+guides/browser.md function buildInstallPaths: guide "Build the default well-known install-path candidates for a platform, deriving Windows roots from env vars." source "Builds the default well-known install-path candidates for a platform, deriving Windows roots from env vars."
+guides/browser.md function buildWindowsRoots: guide "Derive Windows install roots from env vars, falling back to well-known literals when absent." source "Derives Windows install roots from env vars, falling back to well-known literals when absent."
+guides/browser.md function findInstallPaths: guide "Return every candidate path that exists on disk, in the given order." source "Returns every candidate path that exists on disk, in the given order."
+guides/browser.md function probePathNames: guide "Probe PATH for every resolvable command name, in the given order." source "Probes PATH (`which`/`where`) for every resolvable command name, in the given order."
+guides/browser.md function readFirstLine: guide "Return the first non-empty line of a command's output without its surrounding whitespace, so a `where` match on Windows keeps no trailing carriage return; may return `undefined`." source "Returns the first non-empty line of a command's output, without its surrounding whitespace."
+guides/browser.md function buildStoreBases: guide "Build the default Playwright browser store base directories to search for a managed Chromium." source "Builds the default Playwright browser store base directories to search for a managed Chromium."
+guides/browser.md function findStorePaths: guide "Search one store base for the top-level `chromium` link and every `chromium-*` install, highest revision first." source "Searches one store base for the top-level `chromium` link and every `chromium-*` install, highest revision first."
+guides/browser.md function launchBrowserProcess: guide "Launch a browser process with raw-CDP debugging flags; a POSIX launch is detached into its own process group so teardown reaches every Chromium subprocess, and a Windows launch is not detached so teardown signals one process by identifier — the spawned process, or the one the launcher handed the endpoint to. Returns the spawned `ChildProcess`." source "Launches a browser process with raw-CDP debugging flags."
+guides/browser.md function waitForCDPReady: guide "Poll a browser's CDP version endpoint until it responds or the timeout elapses; returns the debugger URL." source "Polls a browser's CDP version endpoint until it responds or the timeout elapses."
+guides/browser.md function fetchCDPTargets: guide "Fetch and normalize the current CDP target list from a browser's `/json/list` endpoint, as a `Result` carrying either the targets or a coded `BrowserConnectionError`." source "Fetches the current CDP target list from a browser's `/json/list` endpoint."
+guides/browser.md type BrowserEngine: guide absent source "Names a supported browser engine (raw CDP targets Chromium-family browsers only)."
+guides/browser.md type BrowserConnection: guide absent source "Names how the browser connection was established."
+guides/browser.md type BrowserStatus: guide absent source "Names the lifecycle status of a browser wrapper."
+guides/browser.md interface BrowserDiscoveryResult: guide absent source "Describes the result of passive browser discovery."
+guides/browser.md interface SystemBrowserOptions: guide absent source "Describes the options overriding `findSystemBrowsers`'/`findSystemBrowser`'s candidate sources."
+guides/browser.md type SystemBrowser: guide absent source "Represents one discovered browser executable on this machine."
+guides/browser.md interface BrowserProfileResult: guide absent source "Describes the resolved browser profile directory used for a Chromium-family launch."
+guides/browser.md interface BrowserCDPOptions: guide absent source "Configures the CDP (Chrome DevTools Protocol) connection."
+guides/browser.md type BrowserEventMap: guide absent source "Maps the events a `BrowserInterface` emits."
+guides/browser.md interface BrowserOptions: guide absent source "Describes the options for creating a Browser."
+guides/browser.md interface BrowserInterface: guide absent source "Wraps a browser with discovery, connection management, and lifecycle control."
+guides/browser.md interface WebSocketCDPTransportOptions: guide absent source "Describes the options for creating a WebSocketCDPTransport."
+guides/browser.md const BROWSER_HAR_CREATOR: guide "Frozen HAR 1.2 creator identity for persisted network archives." source "Names the tool identity embedded in HAR 1.2 documents."
+guides/browser.md const BROWSER_KEY_MODIFIERS: guide "Frozen Chromium keyboard modifier bit map." source "Maps a canonical modifier name to its CDP Input modifier bit value."
+guides/browser.md const BROWSER_MOUSE_BUTTON_MASKS: guide "Frozen Chromium pressed-button bit map." source "Maps each public mouse button to its CDP Input pressed-button bit value."
+guides/browser.md const BROWSER_SCREENSHOT_ATTRIBUTE: guide "Temporary attribute used to scope screenshot preparation styles." source "Names the attribute that tags temporary screenshot styles and masks."
+guides/browser.md const BROWSER_STABLE_FRAME_COUNT: guide "Consecutive animation frames required by the stability check." source "Sets the number of animation frames whose element bounds must agree before trusted input."
+guides/browser.md const BROWSER_TEST_ID_ATTRIBUTE: guide "Attribute used by test-id locators." source "Names the attribute the semantic test-id selector uses."
+guides/browser.md const BROWSER_VISIBILITY_SOURCE: guide "In-page visibility predicate source shared by every compiler." source "Holds the in-page visibility predicate source, over a `style` computed style and a `rect` bounding box already in scope at the interpolation site."
+guides/browser.md class BrowserAccessibility: guide "Accessibility-domain snapshot reader." source "Captures Chromium Accessibility-domain snapshots for one page."
+guides/browser.md class BrowserClock: guide "Chromium virtual-time lifecycle." source "Controls the Chromium virtual-time budget for deterministic page timers."
+guides/browser.md class BrowserCookieManager: guide "Context-scoped cookie manager." source "Performs cookie operations isolated to one browser context."
+guides/browser.md class BrowserCoverage: guide "JavaScript and CSS coverage lifecycle." source "Collects JavaScript precise coverage and CSS rule usage for one page target."
+guides/browser.md class BrowserDiagnostics: guide "Tracing, coverage, and performance composition root." source "Groups the diagnostic subentities beneath one page."
+guides/browser.md class BrowserEmulationManager: guide "Context-inherited Chromium emulation overrides." source "Applies rendering, identity, location, and network emulation for context pages."
+guides/browser.md class BrowserHARManager: guide "HAR 1.2 recording, persistence, and replay." source "Records and replays HTTP archives over one page network manager."
+guides/browser.md class BrowserKeyboard: guide "Trusted Chromium keyboard input." source "Sends trusted keyboard input through Chromium's CDP Input domain."
+guides/browser.md class BrowserLocator: guide "Strict, reusable, shadow-aware locator." source "Represents a reusable strict semantic locator over one frame."
+guides/browser.md class BrowserMouse: guide "Trusted Chromium mouse input." source "Sends trusted mouse input through Chromium's CDP Input domain."
+guides/browser.md class BrowserNavigationManager: guide "URL/function waits and navigation-response observation." source "Runs URL and page-predicate waits resilient to ordinary navigation events."
+guides/browser.md class BrowserNetworkManager: guide "Network observation, bodies, interception, auth, HAR, and sockets." source "Drives the page-scoped Network and Fetch domain lifecycle."
+guides/browser.md class BrowserPerformance: guide "Performance-domain metrics reader." source "Reads Performance-domain metrics for one frame."
+guides/browser.md class BrowserPermissionManager: guide "Context permission overrides." source "Applies permission overrides isolated to one browser context."
+guides/browser.md class BrowserProfiler: guide "Sampled CPU-profile lifecycle." source "Records sampled JavaScript CPU profiles over one frame's Profiler domain."
+guides/browser.md class BrowserScriptManager: guide "Init scripts and host bindings." source "Installs new-document scripts and promise-based host functions for one page."
+guides/browser.md class BrowserSelectorManager: guide "CSS and semantic locator factory." source "Creates semantic locators for one frame."
+guides/browser.md class BrowserStorageManager: guide "Cookie and web-storage state import/export." source "Imports, exports, and clears cookie and web-storage state for one browser context."
+guides/browser.md class BrowserTouch: guide "Trusted Chromium touch input." source "Sends trusted touch input through Chromium's CDP Input domain."
+guides/browser.md class BrowserTracing: guide "Trace stream capture and persistence." source "Captures Chromium traces streamed through the IO domain."
+guides/browser.md class BrowserTransition: guide "One asynchronous transition shared by every caller that joins it." source "Runs one asynchronous transition at a time, shared by every caller that joins it."
+guides/browser.md class BrowserWebSocket: guide "Observable WebSocket lifecycle." source "Represents an observable WebSocket connection reconstructed from Network-domain events."
+guides/browser.md function browserHARHeadersToRecord: guide "Convert HAR header entries to a Fetch header record." source "Converts HAR name/value headers into a Fetch-domain header record."
+guides/browser.md function browserHeadersToProtocol: guide "Convert a header record to CDP name/value entries." source "Converts a header record to Fetch-domain name/value entries."
+guides/browser.md function browserPDFToParams: guide "Validate and compile PDF options to CDP parameters." source "Validates and compiles Page.printToPDF parameters."
+guides/browser.md function browserScreenshotToParams: guide "Validate and compile screenshot options to CDP parameters." source "Validates and compiles basic Page.captureScreenshot parameters."
+guides/browser.md function bytesToText: guide "Decode UTF-8 bytes." source "Decodes UTF-8 bytes as text."
+guides/browser.md function compileActionabilityFunction: guide "Compile element actionability checks for a remote handle." source "Compiles the element-side actionability pass used before trusted input."
+guides/browser.md function compileAttachedLocatorWaitExpression: guide "Compile a strict locator attached-state wait." source "Compiles an attached-state locator wait."
+guides/browser.md function compileBrowserBindingCleanup: guide "Compile host-binding cleanup in a page." source "Compiles current-document cleanup for one page-side host binding facade."
+guides/browser.md function compileBrowserBindingResult: guide "Compile host-binding settlement in a page." source "Compiles delivery of a host binding result to one execution context."
+guides/browser.md function compileBrowserBindingSource: guide "Compile a page-side host-binding facade." source "Compiles the page-side promise facade for one Runtime binding."
+guides/browser.md function compileDetachedLocatorWaitExpression: guide "Compile a strict locator detached-state wait." source "Compiles a detached-state locator wait."
+guides/browser.md function compileFunctionWaitExpression: guide "Compile an auto-retrying page predicate." source "Compiles an auto-retrying in-page predicate wait."
+guides/browser.md function compileHiddenLocatorWaitExpression: guide "Compile a strict locator hidden-state wait." source "Compiles a hidden-state locator wait."
+guides/browser.md function compileLocatorExpression: guide "Compile a query that returns its first element." source "Compiles a deep locator query returning its first match."
+guides/browser.md function compileLocatorListExpression: guide "Compile a deep, open-shadow-aware semantic query." source "Compiles a deep, shadow-aware locator query returning every match."
+guides/browser.md function compileScreenshotCleanupExpression: guide "Compile cleanup for temporary screenshot styles." source "Compiles cleanup for temporary screenshot styles and masks."
+guides/browser.md function compileScreenshotPreparationExpression: guide "Compile screenshot masking, caret, and animation preparation." source "Compiles temporary animation, caret, and mask setup for a screenshot."
+guides/browser.md function compileStorageClearExpression: guide "Compile origin storage clearing." source "Compiles an expression that clears local and session storage."
+guides/browser.md function compileStorageReadExpression: guide "Compile origin storage extraction." source "Compiles an expression that serializes local and session storage."
+guides/browser.md function compileStorageRestoreExpression: guide "Compile origin storage restoration." source "Compiles an expression that restores one origin's web storage."
+guides/browser.md function compileVisibleLocatorWaitExpression: guide "Compile a strict locator visible-state wait." source "Compiles a visible-state locator wait."
+guides/browser.md function computeBrowserButtons: guide "Compute the current Chromium mouse button bit mask." source "Computes the CDP Input pressed-button bitmask."
+guides/browser.md function computeBrowserModifiers: guide "Compute Chromium keyboard modifier bits." source "Computes the CDP Input modifier bitmask."
+guides/browser.md function concatBytes: guide "Concatenate byte chunks without a runtime-specific buffer." source "Concatenates byte chunks without Node-specific buffers."
+guides/browser.md function cookieToProtocol: guide "Validate and project a public cookie into CDP input." source "Converts a typed cookie input into Chromium protocol fields."
+guides/browser.md function createBrowserHAREntry: guide "Build one standards-shaped HAR 1.2 exchange entry." source "Builds a standards-shaped HAR 1.2 entry from one observed exchange."
+guides/browser.md function encodeBase64: guide "Encode bytes as base64 without Node or DOM globals." source "Encodes raw bytes as base64 without relying on Node or DOM globals."
+guides/browser.md function extractBrowserChord: guide "Extract a keyboard chord such as `Control+Shift+P` into canonical modifiers and a terminal key. Throws a `BrowserError` on an empty chord or an unsupported modifier." source "Extracts a keyboard chord such as `Control+Shift+P` into its parts."
+guides/browser.md function keyToBrowserInput: guide "Normalize a key token to Chromium input metadata." source "Normalizes one key to CDP keyboard event data."
+guides/browser.md function matchesBrowserCookieURL: guide "Match a cookie against a URL using domain/path/security rules." source "Matches a decoded cookie against one request URL."
+guides/browser.md function matchesBrowserRoute: guide "Match an observed request against route criteria." source "Matches a request against route criteria."
+guides/browser.md function matchesBrowserURL: guide "Match a URL against the supported `*`/`**` glob grammar." source "Matches a URL using Chromium-style `*` and `**` glob segments."
+guides/browser.md function mediaToFeatures: guide "Project public media options to Chromium feature entries." source "Converts typed media preferences to Chromium emulated media features."
+guides/browser.md function parseBrowserAXString: guide "Coerce a string-valued Accessibility AXValue to a string, or `undefined` off-shape." source "Coerces a string-valued Accessibility-domain AXValue to a string, or `undefined` off-shape."
+guides/browser.md function parseBrowserBindingCall: guide "Coerce a Runtime binding invocation to a `BrowserBindingCall`, or `undefined` off-shape." source "Coerces one Runtime binding invocation to a `BrowserBindingCall`, or `undefined` off-shape."
+guides/browser.md function parseBrowserConsoleMessage: guide "Coerce a `Runtime.consoleAPICalled` event to a `BrowserConsoleMessage`, or `undefined` off-shape." source "Coerces one `Runtime.consoleAPICalled` event to a `BrowserConsoleMessage`, or `undefined` off-shape."
+guides/browser.md function parseBrowserCookiePartition: guide "Coerce a cookie partition key to a `BrowserCookiePartition`, or `undefined` off-shape." source "Coerces an optional Chromium cookie partition key to a `BrowserCookiePartition`, or `undefined` off-shape."
+guides/browser.md function parseBrowserDownloadProgress: guide "Coerce a `Browser.downloadProgress` event to a `BrowserDownloadProgress`, or `undefined` off-shape." source "Coerces one `Browser.downloadProgress` event to a `BrowserDownloadProgress`, or `undefined` off-shape."
+guides/browser.md function parseBrowserDownloadStart: guide "Coerce a `Browser.downloadWillBegin` event to a `BrowserDownloadStart`, or `undefined` off-shape." source "Coerces one `Browser.downloadWillBegin` event to a `BrowserDownloadStart`, or `undefined` off-shape."
+guides/browser.md function parseBrowserPageError: guide "Coerce a `Runtime.exceptionThrown` event to a `BrowserPageError`, or `undefined` off-shape." source "Coerces one `Runtime.exceptionThrown` event to a `BrowserPageError`, or `undefined` off-shape."
+guides/browser.md function parseBrowserRequest: guide "Coerce a `Network.requestWillBeSent` or `Fetch.requestPaused` event to a `BrowserRequest`, or `undefined` off-shape." source "Coerces one `Network.requestWillBeSent` or `Fetch.requestPaused` event to a `BrowserRequest`, or `undefined` off-shape."
+guides/browser.md function parseBrowserRequestFailure: guide "Coerce a `Network.loadingFailed` event to a `BrowserRequestFailure`, or `undefined` off-shape." source "Coerces one `Network.loadingFailed` event to a `BrowserRequestFailure`, or `undefined` off-shape."
+guides/browser.md function parseBrowserResponse: guide "Coerce a `Network.responseReceived` event to a `BrowserResponse`, or `undefined` off-shape." source "Coerces one `Network.responseReceived` event to a `BrowserResponse`, or `undefined` off-shape."
+guides/browser.md function parseBrowserResponseRecord: guide "Coerce a Chromium response object plus its event identity to a `BrowserResponse`, or `undefined` off-shape." source "Coerces one Chromium response object plus its event identity to a `BrowserResponse`, or `undefined` off-shape."
+guides/browser.md function parseBrowserSecurity: guide "Coerce Chromium TLS security details to a `BrowserSecurity`, or `undefined` off-shape." source "Coerces Chromium TLS security details to a `BrowserSecurity`, or `undefined` off-shape."
+guides/browser.md function parseBrowserTiming: guide "Coerce Chromium response timing to a `BrowserTiming`, or `undefined` off-shape." source "Coerces Chromium response timing to a `BrowserTiming`, or `undefined` off-shape."
+guides/browser.md function parseBrowserTimingRange: guide "Coerce one named start/end pair of Chromium network timing to a `BrowserTimingRange`, or `undefined` off-shape." source "Coerces one named start/end pair of Chromium network timing to a `BrowserTimingRange`, or `undefined` off-shape."
+guides/browser.md function parseBrowserWebSocketFrame: guide "Coerce a WebSocket frame event to a `BrowserWebSocketFrame`, or `undefined` off-shape." source "Coerces one WebSocket frame event to a `BrowserWebSocketFrame`, or `undefined` off-shape."
+guides/browser.md function readBrowserAXValue: guide "Read the underlying value of an Accessibility AXValue, `undefined` when the record carries none." source "Decodes an Accessibility-domain AXValue."
+guides/browser.md function readBrowserAccessibility: guide "Read an `Accessibility.getFullAXTree` response into a snapshot. Throws a `BrowserError` off-shape." source "Decodes Accessibility-domain nodes into a flat serializable tree."
+guides/browser.md function readBrowserCookie: guide "Read one Chromium cookie. Throws a `BrowserError` off-shape." source "Decodes one Chromium cookie."
+guides/browser.md function readBrowserCookies: guide "Read a `Network.getCookies` response into cookies. Throws a `BrowserError` off-shape." source "Decodes cookies returned by `Storage.getCookies`."
+guides/browser.md function readBrowserCoverageRanges: guide "Read and normalize coverage ranges. Throws a `BrowserError` off-shape." source "Decodes coverage ranges."
+guides/browser.md function readBrowserHeaders: guide "Read a Chromium Headers object into string values, skipping every entry that is neither a string nor a finite number." source "Decodes a Chromium Headers object into string values."
+guides/browser.md function readBrowserMetrics: guide "Read Performance-domain metrics. Throws a `BrowserError` off-shape." source "Decodes Performance-domain metrics."
+guides/browser.md function readBrowserProfile: guide "Read a sampled CPU profile. Throws a `BrowserError` off-shape." source "Decodes one CPU profile."
+guides/browser.md function readBrowserProfileFrame: guide "Read one CPU-profile call frame. Throws a `BrowserError` off-shape." source "Decodes a CPU profile call frame."
+guides/browser.md function readBrowserQuad: guide "Read the first `DOM.getContentQuads` quad and its center. Throws a `BrowserError` off-shape." source "Decodes the first `DOM.getContentQuads` quad and its center."
+guides/browser.md function readBrowserRemoteValue: guide "Read a Runtime remote value, falling back to its unserializable form and its description, `undefined` when it carries none." source "Decodes a Runtime remote object's printable value."
+guides/browser.md function readBrowserScriptCoverage: guide "Read JavaScript coverage. Throws a `BrowserError` off-shape." source "Decodes JavaScript precise coverage."
+guides/browser.md function readBrowserScriptIdentifier: guide "Read an installed init-script identifier. Throws a `BrowserError` off-shape." source "Decodes the `Page.addScriptToEvaluateOnNewDocument` result."
+guides/browser.md function readBrowserStack: guide "Read a Chromium runtime stack trace, skipping every off-shape call frame." source "Decodes a Chromium runtime stack trace."
+guides/browser.md function readBrowserStorageEntries: guide "Read origin storage entries. Throws a `BrowserError` off-shape." source "Decodes a list of web-storage entries."
+guides/browser.md function readBrowserStorageOrigin: guide "Read an origin storage result. Throws a `BrowserError` off-shape." source "Decodes one in-page web-storage snapshot."
+guides/browser.md function readBrowserStreamChunk: guide "Read one `IO.read` response. Throws a `BrowserError` off-shape." source "Decodes one `IO.read` response."
+guides/browser.md function readBrowserStyleCoverage: guide "Read CSS coverage. Throws a `BrowserError` off-shape." source "Decodes CSS rule usage."
+guides/browser.md function settleBrowserTeardown: guide "Run teardown steps to settlement and return the first failure." source "Awaits every teardown step in order and returns the first failure."
+guides/browser.md function textToBytes: guide "Encode UTF-8 text." source "Encodes UTF-8 text as bytes."
+guides/browser.md function validateBrowserAccessibilityOptions: guide "Validate accessibility snapshot bounds." source "Validates Accessibility-domain snapshot bounds."
+guides/browser.md function validateBrowserContextOptions: guide "Validate isolated-context configuration before CDP mutation." source "Validates isolated-context options before creating remote state."
+guides/browser.md function validateBrowserEmulationOptions: guide "Validate emulation configuration before partial application." source "Validates context emulation boundaries before partial application."
+guides/browser.md function validateBrowserHAR: guide "Validate the HAR 1.2 fields required for replay." source "Validates the HAR 1.2 fields required for deterministic replay."
+guides/browser.md function validateBrowserInputOptions: guide "Validate the bounded delay, count, steps, and position of one trusted-input operation." source "Validates the bounded keys of one trusted-input operation."
+guides/browser.md function validateBrowserPoint: guide "Validate finite viewport coordinates." source "Validates viewport input coordinates."
+guides/browser.md function validateBrowserRange: guide "Validate an optional finite numeric range." source "Validates a finite numeric range."
+guides/browser.md function validateBrowserTimeout: guide "Validate a non-negative finite timeout." source "Validates a public browser timeout before protocol work begins."
+guides/browser.md function validateBrowserViewport: guide "Validate dimensions and device scale." source "Validates Chromium viewport metrics."
+guides/browser.md interface BrowserAXNode: guide "Decoded Chromium accessibility node." source "Represents one decoded Chromium accessibility node."
+guides/browser.md interface BrowserAccessibilityInterface: guide "Accessibility snapshot contract." source "Inspects the accessibility tree."
+guides/browser.md interface BrowserAccessibilityOptions: guide "Root/depth accessibility options." source "Describes the options for an accessibility snapshot."
+guides/browser.md interface BrowserAccessibilitySnapshot: guide "Serializable accessibility forest." source "Describes a serializable accessibility-tree snapshot."
+guides/browser.md interface BrowserActionabilityOptions: guide "Internal actionability checks and optional position." source "Describes the actionability checks performed before locator input."
+guides/browser.md interface BrowserBindingCall: guide "One decoded page-to-host binding call." source "Describes a decoded page-to-host binding call."
+guides/browser.md type BrowserBindingHandler: guide "Host function exposed to a page." source "Runs a host function exposed into page JavaScript."
+guides/browser.md interface BrowserChord: guide "Parsed keyboard modifiers and key." source "Describes a parsed keyboard chord."
+guides/browser.md interface BrowserClickOptions: guide "Mouse button, click count, and inter-transition delay for a click." source "Describes the options for a trusted mouse click."
+guides/browser.md interface BrowserClockInterface: guide "Chromium virtual-time contract." source "Controls Chromium virtual time for deterministic page timers."
+guides/browser.md interface BrowserConsoleMessage: guide "Typed page console event." source "Represents one console API call."
+guides/browser.md type BrowserContextEventMap: guide "Context page/close events." source "Maps the browser-context lifecycle events."
+guides/browser.md interface BrowserContextOptions: guide "Emitter hook, proxy, origin, download, and emulation context options." source "Describes the options for creating and configuring an isolated browser context."
+guides/browser.md interface BrowserCookie: guide "Cookie returned by Chromium." source "Represents one cookie returned from a browser context."
+guides/browser.md interface BrowserCookieFilter: guide "Name/domain/path cookie-clear filter." source "Describes optional narrowing criteria for clearing context cookies."
+guides/browser.md interface BrowserCookieInput: guide "Cookie creation input." source "Describes the input used to create or replace a browser cookie."
+guides/browser.md interface BrowserCookieManagerInterface: guide "Context cookie contract: `cookies` / `set` / `clear`." source "Provides cookie operations scoped to one browser context."
+guides/browser.md interface BrowserCookiePartition: guide "Partitioned-cookie key." source "Describes a cookie partition key used by CHIPS-partitioned cookies."
+guides/browser.md interface BrowserCoverageInterface: guide "JavaScript/CSS coverage lifecycle." source "Drives the coverage capture lifecycle."
+guides/browser.md interface BrowserCoverageOptions: guide "Coverage collection options." source "Describes the options for a coverage capture."
+guides/browser.md interface BrowserCoverageRange: guide "Covered source range and execution count." source "Describes a source range reported by JavaScript or CSS coverage."
+guides/browser.md interface BrowserCoverageResult: guide "Combined script/style coverage result." source "Describes combined JavaScript and CSS usage."
+guides/browser.md interface BrowserCredentials: guide "HTTP basic-auth credentials." source "Describes the HTTP basic-auth credentials applied to context pages."
+guides/browser.md interface BrowserDiagnosticsInterface: guide "Diagnostics group contract: `tracing` / `coverage` / `performance` / `profiler`." source "Groups the diagnostics by capability."
+guides/browser.md type BrowserDialogCategory: guide "JavaScript dialog category." source "Names a JavaScript dialog category reported by Chromium."
+guides/browser.md interface BrowserDialogInterface: guide "Dialog data and settlement contract." source "Represents one active JavaScript dialog."
+guides/browser.md type BrowserDownloadEventMap: guide "Download progress/finish/abort events." source "Maps the download progress events."
+guides/browser.md interface BrowserDownloadInterface: guide "Download state, `cancel`, and the progress update its page drives." source "Represents one context download tracked through Chromium's Browser domain."
+guides/browser.md interface BrowserDownloadOptions: guide "Context download path/policy." source "Describes the download policy for a browser context."
+guides/browser.md interface BrowserDownloadProgress: guide "Decoded download progress event." source "Describes a protocol-neutral download progress update."
+guides/browser.md interface BrowserDownloadStart: guide "Decoded download creation event." source "Describes a decoded `Browser.downloadWillBegin` event."
+guides/browser.md type BrowserDownloadStatus: guide "Download lifecycle state." source "Names a download lifecycle phase."
+guides/browser.md interface BrowserDragOptions: guide "Mouse button, interpolation steps, and inter-move delay for a drag." source "Describes the options for a trusted mouse drag."
+guides/browser.md interface BrowserEmulationManagerInterface: guide "Context emulation lifecycle." source "Configures context-scoped emulation."
+guides/browser.md interface BrowserEmulationOptions: guide "Viewport, identity, location, media, network, and auth emulation." source "Describes network and rendering overrides inherited by context pages."
+guides/browser.md interface BrowserFileChooserInterface: guide "File chooser metadata and file selection." source "Represents one intercepted file chooser."
+guides/browser.md interface BrowserFunctionCoverage: guide "Per-function JavaScript coverage." source "Describes function coverage inside one script."
+guides/browser.md interface BrowserGeolocation: guide "Latitude, longitude, and accuracy override." source "Describes a geographic location override."
+guides/browser.md interface BrowserHAR: guide "Standards-shaped HAR 1.2 document." source "Describes the standards-shaped HAR 1.2 document produced by the network manager."
+guides/browser.md interface BrowserHARContent: guide "HAR response body metadata." source "Describes response body metadata in an HTTP archive."
+guides/browser.md interface BrowserHARCookie: guide "HAR cookie value." source "Represents one cookie in an HTTP archive."
+guides/browser.md interface BrowserHARCreator: guide "HAR creator name/version." source "Describes the tool identity embedded in an HTTP archive."
+guides/browser.md interface BrowserHAREntry: guide "One HAR HTTP exchange." source "Represents one completed HTTP exchange in a HAR recording."
+guides/browser.md interface BrowserHARLog: guide "HAR version, creator, and entries." source "Describes the HAR 1.2 log object."
+guides/browser.md interface BrowserHARManagerInterface: guide "HAR recording/replay contract." source "Provides HAR recording and replay operations."
+guides/browser.md interface BrowserHAROptions: guide "HAR content/persistence options." source "Describes the options for a HAR recording."
+guides/browser.md interface BrowserHARPending: guide "Request state awaiting completion." source "Holds recording state until a request finishes; a new value replaces it on each update."
+guides/browser.md interface BrowserHARPost: guide "HAR request body metadata." source "Describes request body metadata in an HTTP archive."
+guides/browser.md interface BrowserHARReplayOptions: guide "Archive-miss replay behavior." source "Describes HAR replay behavior."
+guides/browser.md interface BrowserHARRequest: guide "HAR 1.2 request." source "Describes a HAR 1.2 request entry."
+guides/browser.md interface BrowserHARResponse: guide "HAR 1.2 response." source "Describes a HAR 1.2 response entry."
+guides/browser.md interface BrowserHARTimings: guide "HAR 1.2 phase timings." source "Holds HAR 1.2 phase timings in milliseconds."
+guides/browser.md interface BrowserHARValue: guide "HAR name/value entry." source "Represents one name/value pair in an HTTP archive."
+guides/browser.md interface BrowserHandleInterface: guide "Remote object evaluation/disposal contract." source "Represents a remote JavaScript object retained in one frame execution context."
+guides/browser.md interface BrowserInputOptions: guide "The delay every trusted input operation shares." source "Describes the options shared by every trusted input operation."
+guides/browser.md interface BrowserKey: guide "Normalized Chromium keyboard input data." source "Describes normalized CDP keyboard key data."
+guides/browser.md interface BrowserKeyboardInterface: guide "Trusted keyboard input contract." source "Provides keyboard input operations bound to one frame target session."
+guides/browser.md interface BrowserLocatorClickOptions: guide "Element resolution plus mouse-click input." source "Describes the options for a locator click, combining element resolution with mouse input."
+guides/browser.md interface BrowserLocatorDragOptions: guide "Element resolution plus mouse-drag input." source "Describes the options for a locator drag, combining element resolution with mouse input."
+guides/browser.md interface BrowserLocatorFilter: guide "Serializable locator filter." source "Describes a declarative locator filter applied after selector resolution."
+guides/browser.md interface BrowserLocatorInterface: guide "Reusable strict locator contract, including `text` and `texts`." source "Represents a reusable strict locator over one frame."
+guides/browser.md interface BrowserLocatorTypeOptions: guide "Element resolution plus key input." source "Describes the options for locator keyboard entry, combining element resolution with key input."
+guides/browser.md interface BrowserMargin: guide "PDF paper margins." source "Describes the paper margin lengths accepted by Chromium print-to-PDF."
+guides/browser.md interface BrowserMedia: guide "Media and user-preference emulation: `output`, `scheme`, `contrast`, `motion`, `colors`." source "Describes browser color and media feature overrides."
+guides/browser.md interface BrowserMetric: guide "Named performance metric." source "Represents one Performance-domain metric."
+guides/browser.md type BrowserMouseButton: guide "Supported Chromium mouse button." source "Names a mouse button understood by Chromium's Input domain."
+guides/browser.md interface BrowserMouseInterface: guide "Trusted mouse input contract." source "Provides mouse input operations bound to one frame target session."
+guides/browser.md interface BrowserNavigationManagerInterface: guide "Navigation observation/wait contract." source "Provides URL and in-page predicate waits associated with one page."
+guides/browser.md interface BrowserNavigationResult: guide "Final navigation URL and matching response." source "Describes the outcome of a top-level navigation command."
+guides/browser.md interface BrowserNavigationWait: guide "Pending URL-pattern waiter state." source "Represents one pending URL-pattern wait."
+guides/browser.md interface BrowserNavigationWaitOptions: guide "URL/function navigation wait options." source "Describes the options for URL and predicate waits."
+guides/browser.md interface BrowserNavigationWatch: guide "Pending request/response correlation state." source "Holds the state retained while correlating navigation with Network events."
+guides/browser.md type BrowserNetworkEventMap: guide "Request/response/failure/finish/socket events." source "Maps the network events a page's network manager emits."
+guides/browser.md interface BrowserNetworkManagerInterface: guide "Page network lifecycle contract." source "Provides page-scoped network observation and interception."
+guides/browser.md type BrowserOperationOptions: guide "Every option a trusted-input operation can carry." source "Collects every option a trusted-input operation can carry."
+guides/browser.md interface BrowserPDFOptions: guide "Chromium print-to-PDF options." source "Describes the options for printing a Chromium page to PDF."
+guides/browser.md interface BrowserPDFResult: guide "PDF bytes and optional path." source "Describes the result of printing a page to PDF."
+guides/browser.md interface BrowserPageError: guide "Uncaught page exception." source "Represents one uncaught page exception."
+guides/browser.md type BrowserPageEventMap: guide "Page, frame, target, input, and network events." source "Maps the typed page, frame, target, and user-visible browser events."
+guides/browser.md type BrowserPagesFunction: guide "Returns a context's live pages at call time." source "Returns the context's live pages at call time."
+guides/browser.md interface BrowserPerformanceInterface: guide "Performance-domain metrics contract." source "Reads Performance-domain metrics."
+guides/browser.md interface BrowserPermissionManagerInterface: guide "Context permission contract." source "Provides permission override operations scoped to one browser context."
+guides/browser.md interface BrowserPoint: guide "CSS-pixel coordinate." source "Describes a point in viewport CSS pixels."
+guides/browser.md interface BrowserPointerOptions: guide "Element resolution plus an in-element target point." source "Describes the options for a locator operation that aims at a point inside the element."
+guides/browser.md interface BrowserProfile: guide "Sampled CPU profile." source "Describes a sampled CPU profile."
+guides/browser.md interface BrowserProfileFrame: guide "CPU-profile call frame." source "Describes a JavaScript call frame from a CPU profile."
+guides/browser.md interface BrowserProfileNode: guide "CPU-profile call-tree node." source "Represents one node in a sampled CPU profile."
+guides/browser.md interface BrowserProfilerInterface: guide "Sampled CPU-profile lifecycle contract." source "Drives the sampled CPU profile lifecycle."
+guides/browser.md interface BrowserProxy: guide "Context proxy server and bypass list." source "Describes proxy settings used when creating an isolated browser context."
+guides/browser.md interface BrowserQuad: guide "Element content quad and actionable center." source "Describes a decoded content quad and its actionable center."
+guides/browser.md interface BrowserQuery: guide "Serializable locator query tree." source "Describes a serializable selector query, including optional ancestry and filtering."
+guides/browser.md interface BrowserRequest: guide "Observed HTTP request." source "Represents one observed browser request."
+guides/browser.md interface BrowserRequestFailure: guide "Observed request failure." source "Represents one failed browser request."
+guides/browser.md interface BrowserResponse: guide "Observed HTTP response with timing/security metadata." source "Represents one observed browser response."
+guides/browser.md interface BrowserRoleOptions: guide "Role locator accessible-name options." source "Describes the options for role-based locator creation."
+guides/browser.md interface BrowserRouteContinueOptions: guide "Request continuation overrides." source "Describes the overrides supplied when continuing an intercepted request."
+guides/browser.md interface BrowserRouteDefinition: guide "Installed route query/handler." source "Represents one installed network route."
+guides/browser.md interface BrowserRouteFulfillOptions: guide "Synthetic response options." source "Describes the synthetic response supplied when fulfilling an intercepted request."
+guides/browser.md type BrowserRouteHandler: guide "Function handling a paused request." source "Runs for a matching intercepted request."
+guides/browser.md interface BrowserRouteInterface: guide "Paused-request settlement contract." source "Represents one paused Fetch-domain request."
+guides/browser.md interface BrowserRouteQuery: guide "URL/method/resource route criteria." source "Describes route matching criteria. Omitted fields match all values."
+guides/browser.md type BrowserSameSite: guide "Cookie same-site policy." source "Names a cookie same-site policy understood by Chromium."
+guides/browser.md type BrowserScreenshotScale: guide "CSS/device screenshot coordinate scale." source "Names a screenshot coordinate scale."
+guides/browser.md interface BrowserScriptCoverage: guide "Per-script JavaScript coverage." source "Describes JavaScript script coverage."
+guides/browser.md interface BrowserScriptEntry: guide "Installed script and optional binding owner." source "Represents one installed new-document script and its optional host binding owner."
+guides/browser.md interface BrowserScriptManagerInterface: guide "Init-script/binding lifecycle contract." source "Manages initialization scripts and host bindings for one page."
+guides/browser.md interface BrowserSecurity: guide "TLS protocol, issuer, and validity." source "Describes the TLS details supplied with a browser response."
+guides/browser.md type BrowserSelector: guide "CSS/role/text/label/placeholder/testId locator axis." source "Names a selector axis supported by `BrowserSelectorManagerInterface`."
+guides/browser.md interface BrowserSelectorManagerInterface: guide "Semantic locator factory contract: `css` / `role` / `text` / `label` / `placeholder` / `testId`." source "Groups the locator factories by selector semantics."
+guides/browser.md interface BrowserStackFrame: guide "Browser-side exception stack frame." source "Represents one browser-side stack frame."
+guides/browser.md interface BrowserStorageEntry: guide "Web-storage key/value pair." source "Represents one key/value pair from web storage."
+guides/browser.md interface BrowserStorageManagerInterface: guide "Storage state lifecycle contract." source "Provides storage-state import, export, and clearing operations."
+guides/browser.md interface BrowserStorageOptions: guide "Origins selected for storage capture." source "Describes the options for collecting storage state from selected origins."
+guides/browser.md interface BrowserStorageOrigin: guide "Local/session storage for one origin." source "Describes an origin-scoped local and session storage snapshot."
+guides/browser.md interface BrowserStorageState: guide "Cookies and selected web-storage origins." source "Describes a portable browser authentication and storage snapshot."
+guides/browser.md interface BrowserStreamChunk: guide "Decoded CDP IO chunk." source "Represents one decoded IO stream read."
+guides/browser.md interface BrowserStyleCoverage: guide "Per-style-sheet CSS coverage." source "Describes CSS stylesheet coverage."
+guides/browser.md type BrowserTeardownFunction: guide "One teardown step run to settlement." source "Runs one teardown step to settlement while the first failure is retained."
+guides/browser.md interface BrowserTextOptions: guide "Exactness for text-like locators." source "Describes the options for text-like locator creation."
+guides/browser.md interface BrowserTiming: guide "CDP network timing phases." source "Holds network timing values in milliseconds relative to request time."
+guides/browser.md interface BrowserTimingRange: guide "Start/end pair for one network timing phase." source "Describes the start/end pair for one network timing phase."
+guides/browser.md interface BrowserTouchInterface: guide "Trusted touch input contract." source "Provides touch input operations bound to one frame target session."
+guides/browser.md interface BrowserTracingInterface: guide "Chromium tracing lifecycle contract." source "Drives the trace capture lifecycle."
+guides/browser.md interface BrowserTracingOptions: guide "Categories/screenshots/sampling/path tracing options." source "Describes the options for a Chromium trace capture."
+guides/browser.md interface BrowserTracingResult: guide "Trace bytes and optional path." source "Describes the result of a trace capture."
+guides/browser.md type BrowserTransitionFunction: guide "The work one transition performs." source "Runs the work one `BrowserTransitionInterface` transition performs."
+guides/browser.md interface BrowserTransitionInterface: guide "One shared asynchronous transition contract." source "Represents one asynchronous transition shared by every caller that arrives while it runs."
+guides/browser.md interface BrowserUploadOptions: guide "File paths plus action options." source "Describes the options for setting files on a file input."
+guides/browser.md interface BrowserUserAgent: guide "User-agent string/language/platform override." source "Describes user-agent metadata accepted by Chromium emulation."
+guides/browser.md type BrowserWebSocketEventMap: guide "WebSocket frame/error/close events." source "Maps the WebSocket lifecycle events."
+guides/browser.md interface BrowserWebSocketFrame: guide "WebSocket opcode/payload/mask/timestamp." source "Describes a WebSocket frame payload."
+guides/browser.md interface BrowserWebSocketInterface: guide "Observable WebSocket contract — identity, emitter, and the frame updates its manager drives." source "Represents one observed WebSocket connection."
+guides/browser.md type BrowserWorkerCategory: guide "Dedicated/service/shared worker category." source "Names a worker target category."
+guides/browser.md interface BrowserWorkerInterface: guide "Attached worker evaluation/CDP contract." source "Represents a script worker attached to a page target."
+guides/browser.md CDPTransportInterface.start: guide "Open the underlying connection." source absent
+guides/browser.md CDPTransportInterface.send: guide "Write one raw text frame to the connection. Throws a coded `BrowserConnectionError` carrying the transport `url` if called before `start()` or after `close()`." source absent
+guides/browser.md CDPTransportInterface.close: guide "Close the underlying connection and release resources." source absent
+guides/browser.md CDPClientInterface.connect: guide "Start the transport and begin dispatching. Idempotent." source absent
+guides/browser.md CDPClientInterface.reconnect: guide "Close and re-establish the transport." source absent
+guides/browser.md CDPClientInterface.send: guide "Issue a CDP method call with optional params and a trailing `CDPSendOptions` carrying the `session` to scope it to and a per-call `timeout` overriding the client-wide default; rejects on timeout." source absent
+guides/browser.md CDPClientInterface.subscribe: guide "Register a handler for a CDP event, optionally session-scoped." source absent
+guides/browser.md CDPClientInterface.unsubscribe: guide "Remove a handler for a CDP event, optionally session-scoped." source absent
+guides/browser.md CDPClientInterface.close: guide "Tear down the transport and reject all pending requests." source absent
+guides/browser.md BrowserContextInterface.page: guide "One page by index, or the first page." source absent
+guides/browser.md BrowserContextInterface.pages: guide "All pages in creation order." source absent
+guides/browser.md BrowserContextInterface.create: guide "Open a new page in this context." source absent
+guides/browser.md BrowserContextInterface.sync: guide "Synchronize pages from the given CDP targets (server discovers the targets, core never fetches them). Performs a destructive diff, not an additive merge: pages whose target id is missing from `targets` are closed and dropped; pages present in `targets` but not yet tracked are attached and added." source absent
+guides/browser.md BrowserContextInterface.destroy: guide "Release local pages and detach their sessions without disposing the remote browser context." source absent
+guides/browser.md BrowserContextInterface.close: guide "Close remote pages, dispose the remote browser context, and release local resources." source absent
+guides/browser.md BrowserFrameInterface.title: guide "Resolve the frame document title." source absent
+guides/browser.md BrowserFrameInterface.content: guide "Extract URL, title, HTML, and visible text with result-size guards." source absent
+guides/browser.md BrowserFrameInterface.article: guide "Distill the frame HTML to reader-facing plain text, boilerplate and hidden regions pruned." source absent
+guides/browser.md BrowserFrameInterface.click: guide "Strict-by-default visible and enabled CSS-selector click." source absent
+guides/browser.md BrowserFrameInterface.fill: guide "Strict-by-default editable input or contenteditable fill, dispatching input/change events." source absent
+guides/browser.md BrowserFrameInterface.select: guide "Strict-by-default option selection on an enabled `<select>`." source absent
+guides/browser.md BrowserFrameInterface.evaluate: guide "Evaluate an expression in the frame execution world with result-size guarding." source absent
+guides/browser.md BrowserFrameInterface.handle: guide "Evaluate an expression by reference and return a disposable remote object handle." source absent
+guides/browser.md BrowserFrameInterface.wait: guide "Wait for attached, detached, visible, or hidden selector state." source absent
+guides/browser.md BrowserFrameInterface.send: guide "Issue a raw CDP method in the frame's current target session, with a trailing `BrowserSendOptions` carrying a per-call `timeout` overriding the client-wide default." source absent
+guides/browser.md BrowserFrameInterface.subscribe: guide "Subscribe to a CDP event in the frame's current target session." source absent
+guides/browser.md BrowserFrameInterface.unsubscribe: guide "Remove a frame-session CDP event subscription." source absent
+guides/browser.md BrowserFrameInterface.save: guide "Persist bytes through a page writer; child frames reject because they own no writer." source absent
+guides/browser.md BrowserFrameInterface.assert: guide "Throw a coded `BrowserError` when the frame can no longer accept protocol work: `BrowserFrame` throws once the CDP client disconnects, and `BrowserPage` also throws once the page closes. Every other method here calls it first." source absent
+guides/browser.md BrowserFrameInterface.update: guide "Record an externally observed URL as the frame's current `url`. `BrowserPage` calls it from its own `Page.frameNavigated` handler." source absent
+guides/browser.md BrowserPageInterface.navigate: guide "Go to a URL, wait for the requested load condition, and return final URL/response correlation." source absent
+guides/browser.md BrowserPageInterface.reload: guide "Reload and return final URL/response correlation." source absent
+guides/browser.md BrowserPageInterface.back: guide "Navigate to the previous history entry, or return the unchanged URL when none exists." source absent
+guides/browser.md BrowserPageInterface.forward: guide "Navigate to the next history entry, or return the unchanged URL when none exists." source absent
+guides/browser.md BrowserPageInterface.screenshot: guide "Capture PNG/JPEG bytes, optionally full-page and persisted through an injected writer." source absent
+guides/browser.md BrowserPageInterface.pdf: guide "Print the page to PDF bytes, optionally persisted through the injected writer." source absent
+guides/browser.md BrowserPageInterface.frame: guide "Look up a first-class frame by name or URL." source absent
+guides/browser.md BrowserPageInterface.frames: guide "Decode the flattened frame tree, main frame first." source absent
+guides/browser.md BrowserPageInterface.snapshot: guide "Capture and decode all attached documents, shadow roots, template contents, layout, and optional computed styles." source absent
+guides/browser.md BrowserPageInterface.codegen: guide "Start or return the current action recorder." source absent
+guides/browser.md BrowserPageInterface.destroy: guide "Release local resources and detach without closing the remote target." source absent
+guides/browser.md BrowserPageInterface.close: guide "Close the remote target and release resources." source absent
+guides/browser.md BrowserPageInterface.title: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.content: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.article: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.click: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.fill: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.select: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.evaluate: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.handle: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.wait: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.send: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.subscribe: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.unsubscribe: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.save: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.assert: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserPageInterface.update: guide "Inherited from `BrowserFrameInterface`." source absent
+guides/browser.md BrowserSnapshotInterface.walk: guide "Traverse the whole capture, or one subtree when `root` is given (the root is yielded first), in `'depth'` (default) or `'breadth'` order. Each node is visited exactly once." source absent
+guides/browser.md BrowserSnapshotInterface.descendants: guide "Traverse one node's subtree in depth-first order, excluding the node itself." source absent
+guides/browser.md BrowserSnapshotInterface.document: guide "Resolve the captured document a node belongs to." source absent
+guides/browser.md BrowserSnapshotInterface.children: guide "Direct children, entering a linked iframe's content document." source absent
+guides/browser.md BrowserSnapshotInterface.parent: guide "Structural parent, crossing a document boundary to the owning iframe." source absent
+guides/browser.md BrowserSnapshotInterface.siblings: guide "Structural siblings — `'preceding'` or `'following'` narrows to one side; omitting the relation returns every sibling except the node itself." source absent
+guides/browser.md BrowserSnapshotInterface.ancestors: guide "Nearest-first ancestors across document and iframe boundaries." source absent
+guides/browser.md BrowserSnapshotInterface.common: guide "Nearest common ancestor of two nodes, counting each node as its own candidate." source absent
+guides/browser.md BrowserSnapshotInterface.distance: guide "Structural edge count between two nodes; `undefined` when they share no ancestor." source absent
+guides/browser.md BrowserSnapshotInterface.find: guide "First node matching a `BrowserNodeQuery` or a `BrowserNodePredicate`." source absent
+guides/browser.md BrowserSnapshotInterface.filter: guide "Every matching node, bounded by an optional `limit`; a negative or fractional limit throws a coded `BrowserError`." source absent
+guides/browser.md BrowserSnapshotInterface.closest: guide "Nearest match from a node through its ancestors, testing the node first." source absent
+guides/browser.md BrowserSnapshotInterface.path: guide "Deterministic frame-qualified structural path for one node." source absent
+guides/browser.md BrowserCodegenInterface.start: guide "Begin recording on the page's session. Calling `start()` after `destroy()` is a silent no-op — a destroyed `BrowserCodegenInterface` cannot be restarted; a new recorder must be obtained through `page.codegen()`." source absent
+guides/browser.md BrowserCodegenInterface.stop: guide "Stop recording and return the captured actions." source absent
+guides/browser.md BrowserCodegenInterface.actions: guide "Current normalized action list." source absent
+guides/browser.md BrowserCodegenInterface.script: guide "Compile the captured actions into a script." source absent
+guides/browser.md BrowserCodegenInterface.clear: guide "Reset the captured action list." source absent
+guides/browser.md BrowserCodegenInterface.destroy: guide "Tear down the recorder and detach CDP listeners." source absent
+guides/browser.md BrowserTransitionInterface.execute: guide "Start the work when nothing is in flight, otherwise join the running transition and return its result." source absent
+guides/browser.md BrowserInterface.discover: guide "Passive CDP probe — does not change connection state or launch/attach anything, but emits a `discover` event with the result." source absent
+guides/browser.md BrowserInterface.connect: guide "Establish a connection using the strategy above (endpoint → discovery → launch). Idempotent." source absent
+guides/browser.md BrowserInterface.adopt: guide "Assume responsibility for terminating the connected browser. This is explicit for a CDP attachment; launched browsers are owned automatically. Rejects unless a live connection supplies an endpoint to retain." source "Assumes responsibility for terminating the connected browser."
+guides/browser.md BrowserInterface.disconnect: guide "Detach the client-side transport while the remote browser keeps running. A merely attached CDP session forgets the endpoint and ownership becomes `undefined`. Every launched or explicitly adopted session retains ownership and its endpoint, so the SAME instance can reconnect and remains responsible for eventual termination. Transport loss while an owned browser remains alive is likewise resumable." source absent
+guides/browser.md BrowserInterface.context: guide "One context by index, or the first." source absent
+guides/browser.md BrowserInterface.contexts: guide "All contexts." source absent
+guides/browser.md BrowserInterface.isolate: guide "Create and register an isolated CDP context with validated proxy, download, origin, and emulation options." source absent
+guides/browser.md BrowserInterface.create: guide "Shortcut to open a page in the default context." source absent
+guides/browser.md BrowserInterface.destroy: guide "Release local resources. For a launched browser this terminates the process serving its CDP endpoint and awaits its exit — on POSIX that terminate reaches the launch's whole process group and awaits its drain, and on Windows it terminates one process by identifier, the spawned process or the one a launcher handed the endpoint to — which leaves the profile unlocked before cleanup. For an adopted attachment it sends CDP `Browser.close`. For a merely attached browser this is a LOCAL DETACH ONLY because other clients may share its targets. Idempotent." source absent
+guides/browser.md BrowserInterface.close: guide "Graceful REMOTE shutdown: best-effort sends CDP `Browser.close` (whether attached or owned), and when owned also awaits the exit of the process serving the CDP endpoint plus its POSIX process-group drain (escalating to a kill only if needed), then closes every tracked context/page (sending remote `Target.closeTarget`/`disposeBrowserContext` regardless of ownership — unlike `destroy()`, which skips remote context/page closes on a non-owned CDP-attached browser) before releasing the CDP client. Use this to shut down a browser this instance doesn't own but wants to terminate anyway." source absent
+guides/browser.md BrowserWebSocketInterface.receive: guide "Emit `receive` for one frame the page received. Ignored after `close`." source "Reports one received frame. The page's network manager drives it."
+guides/browser.md BrowserWebSocketInterface.transmit: guide "Emit `transmit` for one frame the page sent. Ignored after `close`." source "Reports one sent frame. The page's network manager drives it."
+guides/browser.md BrowserWebSocketInterface.fail: guide "Emit `error` with the connection's fault message. Ignored after `close`." source "Reports a connection fault. The page's network manager drives it."
+guides/browser.md BrowserWebSocketInterface.close: guide "Emit `close` with the closing timestamp, then destroy the emitter. Every later call on this connection is ignored." source "Reports the connection closing and destroys the emitter. The page's network manager drives it."
+guides/browser.md BrowserDownloadInterface.cancel: guide "Send CDP `Browser.cancelDownload` for this download. Ignored unless the status is still `pending`." source absent
+guides/browser.md BrowserDownloadInterface.update: guide "Record one progress update, emit `progress`, and settle the download by emitting `complete` or `cancel` and destroying the emitter. Ignored after it settles." source "Records one step of the download's progress. The owning page drives it."
+guides/browser.md BrowserWriterInterface.write: guide "Persist the captured bytes to the given path, creating its parents." source absent
+guides/browser.md BrowserNavigationManagerInterface.wait: guide "Resolve with the URL of the next navigation matching the `*`/`**` glob pattern. Rejects on timeout." source absent
+guides/browser.md BrowserNavigationManagerInterface.until: guide "Poll an expression in the page until it returns a truthy value, and resolve with it." source absent
+guides/browser.md BrowserHandleInterface.value: guide "Read the object back by value." source absent
+guides/browser.md BrowserHandleInterface.call: guide "Run a function declaration with the handle as `this`, by value." source absent
+guides/browser.md BrowserHandleInterface.property: guide "Retain one own property as its own handle, or `undefined` when absent." source absent
+guides/browser.md BrowserHandleInterface.properties: guide "Read every own property by value." source absent
+guides/browser.md BrowserHandleInterface.dispose: guide "Release the retained remote object. Idempotent." source absent
+guides/browser.md BrowserScriptManagerInterface.add: guide "Install a script evaluated on every new document, returning its identifier." source absent
+guides/browser.md BrowserScriptManagerInterface.remove: guide "Remove one installed script by identifier." source absent
+guides/browser.md BrowserScriptManagerInterface.expose: guide "Bind a host function to a page-global name, callable from page JavaScript." source absent
+guides/browser.md BrowserScriptManagerInterface.revoke: guide "Remove one exposed binding and its installed bridge script." source absent
+guides/browser.md BrowserScriptManagerInterface.destroy: guide "Remove every installed script and binding this manager owns." source absent
+guides/browser.md BrowserAccessibilityInterface.snapshot: guide "Read the full AX tree, optionally pruned to the interesting nodes only." source absent
+guides/browser.md BrowserTracingInterface.start: guide "Begin tracing with the given categories. Throws a `BrowserError` when already active." source absent
+guides/browser.md BrowserTracingInterface.stop: guide "End tracing, drain the IO stream, and write it through the page writer when a path was set." source absent
+guides/browser.md BrowserTracingInterface.destroy: guide "Stop an active trace, discarding any failure. A no-op when nothing is tracing." source absent
+guides/browser.md BrowserCoverageInterface.start: guide "Arm the requested domains. Throws a `BrowserError` when already active or when both are off." source absent
+guides/browser.md BrowserCoverageInterface.stop: guide "Read the collected usage and disarm every domain it armed." source absent
+guides/browser.md BrowserCoverageInterface.destroy: guide "Stop an active collector, discarding any failure. A no-op when nothing is collecting." source absent
+guides/browser.md BrowserPerformanceInterface.metrics: guide "Enable the domain, read every metric, and disable it again." source absent
+guides/browser.md BrowserProfilerInterface.start: guide "Begin sampling, optionally at an explicit positive integer interval in microseconds." source absent
+guides/browser.md BrowserProfilerInterface.stop: guide "End sampling and decode the profile's nodes, samples, and time deltas." source absent
+guides/browser.md BrowserProfilerInterface.destroy: guide "Stop an active profiler, discarding any failure. A no-op when nothing is profiling." source absent
+guides/browser.md BrowserDiagnosticsInterface.destroy: guide "Tear down every diagnostics capability this page's group owns." source absent
+guides/browser.md BrowserClockInterface.install: guide "Take over the page clock, optionally seeding it with an epoch time." source absent
+guides/browser.md BrowserClockInterface.pause: guide "Suspend virtual time so no page timer advances." source absent
+guides/browser.md BrowserClockInterface.resume: guide "Continue virtual time after a pause." source absent
+guides/browser.md BrowserClockInterface.advance: guide "Move virtual time forward by the given milliseconds, firing due timers." source absent
+guides/browser.md BrowserClockInterface.uninstall: guide "Return the page to the real clock. A no-op when nothing was installed." source absent
+guides/browser.md BrowserLocatorInterface.locator: guide "Narrow to a descendant matching the CSS selector." source absent
+guides/browser.md BrowserLocatorInterface.filter: guide "Narrow to the matches satisfying the filter." source absent
+guides/browser.md BrowserLocatorInterface.first: guide "Narrow to the first match." source absent
+guides/browser.md BrowserLocatorInterface.last: guide "Narrow to the last match." source absent
+guides/browser.md BrowserLocatorInterface.item: guide "Narrow to the match at the given index." source absent
+guides/browser.md BrowserLocatorInterface.count: guide "Count the current matches." source absent
+guides/browser.md BrowserLocatorInterface.all: guide "Resolve one indexed locator per current match." source absent
+guides/browser.md BrowserLocatorInterface.click: guide "Click the match with trusted input after its actionability checks pass." source absent
+guides/browser.md BrowserLocatorInterface.fill: guide "Replace the match's value with the given text." source absent
+guides/browser.md BrowserLocatorInterface.select: guide "Select the given option values on the match." source absent
+guides/browser.md BrowserLocatorInterface.check: guide "Click the match unless it already reports checked." source absent
+guides/browser.md BrowserLocatorInterface.uncheck: guide "Click the match unless it already reports unchecked." source absent
+guides/browser.md BrowserLocatorInterface.hover: guide "Move trusted pointer input over the match." source absent
+guides/browser.md BrowserLocatorInterface.focus: guide "Give the match keyboard focus." source absent
+guides/browser.md BrowserLocatorInterface.press: guide "Focus the match and press one key or chord." source absent
+guides/browser.md BrowserLocatorInterface.type: guide "Focus the match and type the value one key at a time." source absent
+guides/browser.md BrowserLocatorInterface.clear: guide "Empty the match's value." source absent
+guides/browser.md BrowserLocatorInterface.wait: guide "Wait until the match reaches the requested state. Rejects on timeout." source absent
+guides/browser.md BrowserLocatorInterface.text: guide "Read the first match's rendered text." source absent
+guides/browser.md BrowserLocatorInterface.texts: guide "Read the rendered text of every match." source absent
+guides/browser.md BrowserLocatorInterface.html: guide "Read the first match's inner HTML." source absent
+guides/browser.md BrowserLocatorInterface.value: guide "Read the first match's form value." source absent
+guides/browser.md BrowserLocatorInterface.attribute: guide "Read one attribute of the first match, or `undefined` when it carries none." source absent
+guides/browser.md BrowserLocatorInterface.visible: guide "True if the first match renders a non-empty box; false otherwise." source absent
+guides/browser.md BrowserLocatorInterface.enabled: guide "True if the first match accepts input; false otherwise." source absent
+guides/browser.md BrowserLocatorInterface.editable: guide "True if the first match accepts typed text; false otherwise." source absent
+guides/browser.md BrowserLocatorInterface.screenshot: guide "Capture the first match's box, persisting it through the page writer when a path is given." source absent
+guides/browser.md BrowserLocatorInterface.upload: guide "Set the file selection on the matched file input." source absent
+guides/browser.md BrowserLocatorInterface.drag: guide "Drag the match onto the target locator with trusted pointer input." source absent
+guides/browser.md BrowserSelectorManagerInterface.css: guide "Locate by CSS selector." source absent
+guides/browser.md BrowserSelectorManagerInterface.role: guide "Locate by ARIA role, optionally by accessible name and exactness." source absent
+guides/browser.md BrowserSelectorManagerInterface.text: guide "Locate by rendered text, optionally exact." source absent
+guides/browser.md BrowserSelectorManagerInterface.label: guide "Locate a labelled control by its label text, optionally exact." source absent
+guides/browser.md BrowserSelectorManagerInterface.placeholder: guide "Locate an input by its placeholder text, optionally exact." source absent
+guides/browser.md BrowserSelectorManagerInterface.testId: guide "Locate by the `data-testid` attribute." source absent
+guides/browser.md BrowserKeyboardInterface.down: guide "Press one key and hold it, retaining it in the modifier mask when it is a modifier." source absent
+guides/browser.md BrowserKeyboardInterface.up: guide "Release one key, dropping it from the modifier mask even when the release frame fails." source absent
+guides/browser.md BrowserKeyboardInterface.press: guide "Press a chord: hold its modifiers, press and release its terminal key, then release the modifiers." source absent
+guides/browser.md BrowserKeyboardInterface.type: guide "Type a string as one press and release per character." source absent
+guides/browser.md BrowserKeyboardInterface.insert: guide "Insert composed text in one frame, firing no per-key events." source absent
+guides/browser.md BrowserMouseInterface.move: guide "Move the pointer to a point, carrying the pressed buttons." source absent
+guides/browser.md BrowserMouseInterface.down: guide "Press a button at the current point, adding it to the pressed mask." source absent
+guides/browser.md BrowserMouseInterface.up: guide "Release a button at the current point, dropping it from the mask even when the frame fails." source absent
+guides/browser.md BrowserMouseInterface.click: guide "Move, press, optionally delay, and release at the given point." source absent
+guides/browser.md BrowserMouseInterface.drag: guide "Press at the start, move in the requested steps to the end, and release." source absent
+guides/browser.md BrowserMouseInterface.wheel: guide "Send a wheel delta at the current point." source absent
+guides/browser.md BrowserTouchInterface.tap: guide "Dispatch a touch start at the point and a touch end, cancelling the touch on failure." source absent
+guides/browser.md BrowserDialogInterface.accept: guide "Accept the dialog, optionally supplying prompt text. Throws once the dialog is handled." source absent
+guides/browser.md BrowserDialogInterface.dismiss: guide "Dismiss the dialog. Throws once the dialog is handled." source absent
+guides/browser.md BrowserFileChooserInterface.upload: guide "Set the chosen files. Throws when a single-file chooser is given several, or once already handled." source absent
+guides/browser.md BrowserFileChooserInterface.cancel: guide "Clear the selection. Throws once already handled." source absent
+guides/browser.md BrowserWorkerInterface.evaluate: guide "Evaluate a guarded expression in the worker and return its value." source absent
+guides/browser.md BrowserWorkerInterface.send: guide "Issue one CDP method call on the worker's session." source absent
+guides/browser.md BrowserWorkerInterface.detach: guide "Stop driving the worker locally without closing its target." source absent
+guides/browser.md BrowserWorkerInterface.close: guide "Close the worker target, tolerating a worker that already terminated. Idempotent." source absent
+guides/browser.md BrowserRouteInterface.abort: guide "Fail the request with a Chromium error reason. Default: `'Failed'`." source absent
+guides/browser.md BrowserRouteInterface.continue: guide "Let the request proceed, optionally overriding its url, method, headers, or post body." source absent
+guides/browser.md BrowserRouteInterface.fulfill: guide "Answer the request locally. Throws when the status is not an integer from 100 to 999." source absent
+guides/browser.md BrowserHARManagerInterface.start: guide "Begin recording exchanges, optionally capturing response content." source absent
+guides/browser.md BrowserHARManagerInterface.stop: guide "End recording and return the archive, writing it when a path was given." source absent
+guides/browser.md BrowserHARManagerInterface.replay: guide "Serve matching requests from an archive instead of the network." source absent
+guides/browser.md BrowserHARManagerInterface.clear: guide "Drop the recorded entries and any active replay without ending the recording." source absent
+guides/browser.md BrowserNetworkManagerInterface.start: guide "Enable the Network domain and subscribe to its events. Idempotent." source absent
+guides/browser.md BrowserNetworkManagerInterface.body: guide "Read one observed response body as bytes." source absent
+guides/browser.md BrowserNetworkManagerInterface.text: guide "Read one observed response body as text." source absent
+guides/browser.md BrowserNetworkManagerInterface.json: guide "Read one observed response body as parsed JSON." source absent
+guides/browser.md BrowserNetworkManagerInterface.route: guide "Intercept requests matching the query and hand each to the handler." source absent
+guides/browser.md BrowserNetworkManagerInterface.unroute: guide "Remove one handler's routes, or every route when given none." source absent
+guides/browser.md BrowserNetworkManagerInterface.headers: guide "Apply extra HTTP headers to every request the page makes." source absent
+guides/browser.md BrowserNetworkManagerInterface.offline: guide "Emulate offline or restore connectivity." source absent
+guides/browser.md BrowserNetworkManagerInterface.credentials: guide "Apply HTTP basic-auth credentials, or clear them when given none." source absent
+guides/browser.md BrowserNetworkManagerInterface.destroy: guide "Remove every route, unsubscribe, and disable the domains this manager enabled." source absent
+guides/browser.md BrowserCookieManagerInterface.cookies: guide "Read the context cookies, optionally narrowed to the given URLs." source absent
+guides/browser.md BrowserCookieManagerInterface.set: guide "Write the given cookies into the context." source absent
+guides/browser.md BrowserCookieManagerInterface.clear: guide "Delete the context cookies matching the filter, or every cookie with none." source absent
+guides/browser.md BrowserPermissionManagerInterface.grant: guide "Grant each named permission, optionally for one origin, as its own CDP frame." source absent
+guides/browser.md BrowserPermissionManagerInterface.deny: guide "Deny each named permission, optionally for one origin, as its own CDP frame." source absent
+guides/browser.md BrowserPermissionManagerInterface.clear: guide "Reset every permission override on the context." source absent
+guides/browser.md BrowserStorageManagerInterface.state: guide "Read the context cookies and the per-origin local and session storage." source absent
+guides/browser.md BrowserStorageManagerInterface.restore: guide "Write a previously read state back into the context." source absent
+guides/browser.md BrowserStorageManagerInterface.clear: guide "Drop the storage of one origin, or of every origin when given none." source absent
+guides/browser.md BrowserEmulationManagerInterface.apply: guide "Clear the superseded overrides and apply the given ones to every page of the context." source absent
+guides/browser.md BrowserEmulationManagerInterface.clear: guide "Remove every override this manager applied." source absent
+guides/browser.md BrowserEmulationManagerInterface.attach: guide "Apply the retained overrides to a newly created page." source absent
+guides/browser.md pitch: readme absent tagline "A lightweight Chrome DevTools Protocol (CDP) automation layer, split into an environment-agnostic core and a Node server runtime. Core (`@orkestrel/browser`) is pure logic over an injected `CDPTransportInterface` — no `WebSocket`, no `node:*`, no filesystem — so it runs identically in Node or a browser: `CDPClient` frames JSON-RPC-shaped CDP messages over the transport, `BrowserContext` / `BrowserPage` model a CDP browser context and its pages, `BrowserSnapshot` turns a captured DOM snapshot into navigable serializable data, `BrowserCodegen` records page interactions for later script compilation. One capability reaches past the protocol: `article()` distills a captured document to its reader-facing prose through `@orkestrel/html` — content selection, not another whole-body text dump. Server (`@orkestrel/browser/server`) supplies the missing environment pieces: `WebSocketCDPTransport` (a Node `WebSocket`-backed CDP transport), `Browser` (discovery → connect → launch lifecycle, spawning a real Chromium-family process when nothing is already listening), and a filesystem-backed browser writer. Source: `src/core` (through `@src/core`) + `src/server` (through `@src/server`)."
+rows read: 1, disagreements found: 618

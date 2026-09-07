@@ -1,0 +1,14 @@
+
+> @orkestrel/markdown@0.0.14 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/markdown
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  20:52:12
+   Duration  933ms (transform 480ms, setup 370ms, import 178ms, tests 234ms, environment 0ms)
+

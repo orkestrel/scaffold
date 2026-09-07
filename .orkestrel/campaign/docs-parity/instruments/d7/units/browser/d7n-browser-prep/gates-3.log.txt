@@ -1,0 +1,40 @@
+-- policy
+
+> @orkestrel/browser@0.0.16 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  16:51:26
+   Duration  1.63s (transform 856ms, setup 868ms, import 148ms, tests 390ms, environment 0ms)
+
+EXIT 0
+-- config
+
+> @orkestrel/browser@0.0.16 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  16:51:28
+   Duration  6.18s (transform 1.28s, setup 844ms, import 987ms, tests 4.14s, environment 0ms)
+
+EXIT 0

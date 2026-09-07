@@ -1,0 +1,512 @@
+=== src/core/types.ts ConsoleMethod ===
+export type ConsoleMethod = (...args: unknown[]) => void
+
+=== src/core/types.ts ConsoleErrorCode ===
+export type ConsoleErrorCode = 'INVARIANT'
+
+=== src/core/types.ts Color ===
+export type Color =
+	| 'black'
+	| 'red'
+	| 'green'
+	| 'yellow'
+	| 'blue'
+	| 'magenta'
+	| 'cyan'
+	| 'white'
+	| 'brightBlack'
+	| 'brightRed'
+	| 'brightGreen'
+	| 'brightYellow'
+	| 'brightBlue'
+	| 'brightMagenta'
+	| 'brightCyan'
+	| 'brightWhite'
+	| 'default'
+
+=== src/core/types.ts Attribute ===
+export type Attribute = 'bold' | 'dim' | 'italic' | 'underline' | 'inverse' | 'strikethrough'
+
+=== src/core/types.ts Style ===
+export interface Style {
+	readonly foreground?: Color
+	readonly background?: Color
+	readonly attributes: readonly Attribute[]
+}
+
+=== src/core/types.ts RendererInterface ===
+export interface RendererInterface {
+	render(style: Style, text: string): string
+}
+
+=== src/core/types.ts StylerOptions ===
+export interface StylerOptions {
+	readonly renderer?: RendererInterface
+	readonly enabled?: boolean
+}
+
+=== src/core/types.ts StylerInterface ===
+export interface StylerInterface {
+	(text: string): string
+	readonly style: Style
+	readonly enabled: boolean
+	render(style: Style, text: string): string
+	readonly black: StylerInterface
+	readonly red: StylerInterface
+	readonly green: StylerInterface
+	readonly yellow: StylerInterface
+	readonly blue: StylerInterface
+	readonly magenta: StylerInterface
+	readonly cyan: StylerInterface
+	readonly white: StylerInterface
+	readonly brightBlack: StylerInterface
+	readonly brightRed: StylerInterface
+	readonly brightGreen: StylerInterface
+	readonly brightYellow: StylerInterface
+	readonly brightBlue: StylerInterface
+	readonly brightMagenta: StylerInterface
+	readonly brightCyan: StylerInterface
+	readonly brightWhite: StylerInterface
+	readonly bold: StylerInterface
+	readonly dim: StylerInterface
+	readonly italic: StylerInterface
+	readonly underline: StylerInterface
+	readonly inverse: StylerInterface
+	readonly strikethrough: StylerInterface
+}
+
+=== src/core/types.ts ThemeStatus ===
+export interface ThemeStatus {
+	readonly icon: string
+	readonly style: Style
+}
+
+=== src/core/types.ts Theme ===
+export interface Theme {
+	readonly levels: Readonly<Record<LogLevel, Style>>
+	readonly statuses: Readonly<Record<StatusLevel, ThemeStatus>>
+	readonly accent: Style
+	readonly chrome: Style
+}
+
+=== src/core/types.ts ThemeOptions ===
+export interface ThemeOptions {
+	readonly levels?: Readonly<Partial<Record<LogLevel, Style>>>
+	readonly statuses?: Readonly<Partial<Record<StatusLevel, ThemeStatus>>>
+	readonly accent?: Style
+	readonly chrome?: Style
+}
+
+=== src/core/types.ts LogLevel ===
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+=== src/core/types.ts LogRecord ===
+export interface LogRecord {
+	readonly level: LogLevel
+	readonly message: string
+	readonly time: number
+	readonly name?: string
+	readonly data?: Readonly<Record<string, unknown>>
+}
+
+=== src/core/types.ts SinkInterface ===
+export interface SinkInterface {
+	write(text: string, level?: LogLevel): void
+}
+
+=== src/core/types.ts WriterSet ===
+export interface WriterSet<T> {
+	readonly log: T
+	readonly warn: T
+	readonly error: T
+}
+
+=== src/core/types.ts LoggerEventMap ===
+export type LoggerEventMap = {
+	readonly entry: readonly [record: LogRecord]
+}
+
+=== src/core/types.ts LogFormatFunction ===
+export type LogFormatFunction = (record: LogRecord, styler: StylerInterface, theme: Theme) => string
+
+=== src/core/types.ts LoggerOptions ===
+export interface LoggerOptions {
+	readonly on?: EmitterHooks<LoggerEventMap>
+	readonly error?: EmitterErrorHandler
+	readonly level?: LogLevel
+	readonly name?: string
+	readonly sink?: SinkInterface
+	readonly styler?: StylerInterface
+	readonly theme?: Theme
+	readonly format?: LogFormatFunction
+	readonly limit?: number
+	readonly silent?: boolean
+}
+
+=== src/core/types.ts LoggerInterface ===
+export interface LoggerInterface {
+	readonly emitter: EmitterInterface<LoggerEventMap>
+	readonly level: LogLevel
+	readonly name?: string
+	debug(message: string, data?: Record<string, unknown>): void
+	info(message: string, data?: Record<string, unknown>): void
+	warn(message: string, data?: Record<string, unknown>): void
+	error(message: string, data?: Record<string, unknown>): void
+	entries(): readonly LogRecord[]
+	clear(): void
+	destroy(): void
+}
+
+=== src/core/types.ts LoggerManagerOptions ===
+export interface LoggerManagerOptions {
+	readonly level?: LogLevel
+	readonly sink?: SinkInterface
+	readonly styler?: StylerInterface
+	readonly theme?: Theme
+	readonly format?: LogFormatFunction
+	readonly limit?: number
+	readonly silent?: boolean
+}
+
+=== src/core/types.ts LoggerManagerInterface ===
+export interface LoggerManagerInterface {
+	readonly count: number
+	register(name: string, options?: LoggerOptions): LoggerInterface
+	logger(name: string): LoggerInterface | undefined
+	loggers(): readonly LoggerInterface[]
+	debug(message: string, data?: Record<string, unknown>): void
+	info(message: string, data?: Record<string, unknown>): void
+	warn(message: string, data?: Record<string, unknown>): void
+	error(message: string, data?: Record<string, unknown>): void
+	remove(): void
+	remove(name: string): boolean
+	remove(names: readonly string[]): boolean
+}
+
+=== src/core/types.ts Alignment ===
+export type Alignment = 'left' | 'center' | 'right'
+
+=== src/core/types.ts BorderStyle ===
+export type BorderStyle = 'single' | 'double' | 'round' | 'heavy'
+
+=== src/core/types.ts BorderChars ===
+export interface BorderChars {
+	readonly horizontal: string
+	readonly vertical: string
+	readonly topLeft: string
+	readonly topRight: string
+	readonly bottomLeft: string
+	readonly bottomRight: string
+	readonly cross: string
+	readonly teeDown: string
+	readonly teeUp: string
+	readonly teeRight: string
+	readonly teeLeft: string
+}
+
+=== src/core/types.ts SeparatorOptions ===
+export interface SeparatorOptions {
+	readonly title?: string
+	readonly width?: number
+	readonly fill?: string
+	readonly styler?: StylerInterface
+	readonly style?: Style
+}
+
+=== src/core/types.ts BoxOptions ===
+export interface BoxOptions {
+	readonly content: string
+	readonly title?: string
+	readonly padding?: number
+	readonly border?: BorderStyle
+	readonly width?: number
+	readonly styler?: StylerInterface
+	readonly style?: Style
+}
+
+=== src/core/types.ts ColumnSpec ===
+export interface ColumnSpec {
+	readonly label: string
+	readonly align?: Alignment
+}
+
+=== src/core/types.ts TableOptions ===
+export interface TableOptions {
+	readonly columns: readonly ColumnSpec[]
+	readonly rows: ReadonlyArray<readonly string[]>
+	readonly border?: BorderStyle
+	readonly styler?: StylerInterface
+	readonly style?: Style
+}
+
+=== src/core/types.ts TreeNode ===
+export interface TreeNode {
+	readonly label: string
+	readonly children?: readonly TreeNode[]
+}
+
+=== src/core/types.ts TreeOptions ===
+export interface TreeOptions {
+	readonly root: TreeNode
+	readonly border?: BorderStyle
+	readonly styler?: StylerInterface
+	readonly style?: Style
+}
+
+=== src/core/types.ts StatusLevel ===
+export type StatusLevel = 'success' | 'error' | 'warn' | 'info'
+
+=== src/core/types.ts StepPosition ===
+export interface StepPosition {
+	readonly index: number
+	readonly total: number
+}
+
+=== src/core/types.ts ReporterOptions ===
+export interface ReporterOptions {
+	readonly sink?: SinkInterface
+	readonly styler?: StylerInterface
+	readonly theme?: Theme
+	readonly width?: number
+}
+
+=== src/core/types.ts ReporterInterface ===
+export interface ReporterInterface {
+	section(title: string): void
+	step(message: string, position?: StepPosition): void
+	timing(label: string, ms: number): void
+	status(level: StatusLevel, message: string): void
+	table(options: TableOptions): void
+	tree(options: TreeOptions): void
+	box(options: BoxOptions): void
+	line(text: string): void
+	blank(count?: number): void
+}
+
+=== src/core/types.ts CaptureLevel ===
+export type CaptureLevel = 'log' | 'info' | 'warn' | 'error' | 'debug'
+
+=== src/core/types.ts CapturedMessage ===
+export interface CapturedMessage {
+	readonly level: CaptureLevel
+	readonly text: string
+	readonly time: number
+}
+
+=== src/core/types.ts CaptureEventMap ===
+export type CaptureEventMap = {
+	readonly capture: readonly [message: CapturedMessage]
+	readonly start: readonly []
+	readonly stop: readonly []
+}
+
+=== src/core/types.ts CaptureOptions ===
+export interface CaptureOptions {
+	readonly on?: EmitterHooks<CaptureEventMap>
+	readonly error?: EmitterErrorHandler
+	readonly levels?: readonly CaptureLevel[]
+	readonly mirror?: boolean
+	readonly sink?: SinkInterface
+	readonly limit?: number
+}
+
+=== src/core/types.ts CaptureInterface ===
+export interface CaptureInterface {
+	readonly emitter: EmitterInterface<CaptureEventMap>
+	readonly active: boolean
+	start(): void
+	stop(): void
+	messages(): readonly CapturedMessage[]
+	messages(level: CaptureLevel): readonly CapturedMessage[]
+	clear(): void
+	destroy(): void
+}
+
+=== src/core/types.ts CaptureResult ===
+export interface CaptureResult<T> {
+	readonly value: T
+	readonly messages: readonly CapturedMessage[]
+}
+
+=== src/core/types.ts BarOptions ===
+export interface BarOptions {
+	readonly current: number
+	readonly total: number
+	readonly width?: number
+	readonly fill?: string
+	readonly empty?: string
+	readonly styler?: StylerInterface
+	readonly style?: Style
+}
+
+=== src/core/types.ts SpinnerEventMap ===
+export type SpinnerEventMap = {
+	readonly frame: readonly [line: string]
+	readonly start: readonly []
+	readonly stop: readonly []
+}
+
+=== src/core/types.ts SpinnerOptions ===
+export interface SpinnerOptions {
+	readonly on?: EmitterHooks<SpinnerEventMap>
+	readonly error?: EmitterErrorHandler
+	readonly message?: string
+	readonly frames?: readonly string[]
+	readonly interval?: number
+	readonly sink?: SinkInterface
+	readonly styler?: StylerInterface
+	readonly theme?: Theme
+}
+
+=== src/core/types.ts SpinnerInterface ===
+export interface SpinnerInterface {
+	readonly emitter: EmitterInterface<SpinnerEventMap>
+	readonly active: boolean
+	readonly message: string
+	start(): void
+	tick(): void
+	update(message: string): void
+	succeed(message?: string): void
+	fail(message?: string): void
+	stop(): void
+	destroy(): void
+}
+
+=== src/core/types.ts RetentionInterface ===
+export interface RetentionInterface<T extends { readonly level: string }> {
+	add(record: T): void
+	records(): readonly T[]
+	records(level: T['level']): readonly T[]
+	clear(): void
+}
+
+=== src/core/types.ts ProgressReport ===
+export interface ProgressReport {
+	readonly current: number
+	readonly total: number
+}
+
+=== src/core/types.ts ProgressEventMap ===
+export type ProgressEventMap = {
+	readonly update: readonly [progress: ProgressReport]
+	readonly succeed: readonly []
+}
+
+=== src/core/types.ts ProgressOptions ===
+export interface ProgressOptions {
+	readonly on?: EmitterHooks<ProgressEventMap>
+	readonly error?: EmitterErrorHandler
+	readonly total: number
+	readonly message?: string
+	readonly width?: number
+	readonly fill?: string
+	readonly empty?: string
+	readonly sink?: SinkInterface
+	readonly styler?: StylerInterface
+	readonly theme?: Theme
+}
+
+=== src/core/types.ts ProgressInterface ===
+export interface ProgressInterface {
+	readonly emitter: EmitterInterface<ProgressEventMap>
+	readonly active: boolean
+	readonly succeeded: boolean
+	readonly current: number
+	readonly total: number
+	update(current: number, message?: string): void
+	succeed(message?: string): void
+	fail(message?: string): void
+	destroy(): void
+}
+
+=== src/browser/types.ts BrowserPalette ===
+export interface BrowserPalette {
+	readonly color?: Readonly<Partial<Record<Exclude<Color, 'default'>, string>>>
+	readonly attribute?: Readonly<Partial<Record<Attribute, string>>>
+}
+
+=== src/browser/types.ts BrowserSinkOptions ===
+export interface BrowserSinkOptions {
+	readonly palette?: BrowserPalette
+}
+
+=== src/browser/types.ts ConsoleOutput ===
+export interface ConsoleOutput {
+	readonly format: string
+	readonly styles: readonly string[]
+}
+
+=== src/browser/types.ts StyleAccumulator ===
+export interface StyleAccumulator {
+	readonly foreground?: string
+	readonly background?: string
+	readonly attributes: readonly string[]
+}
+
+=== src/server/types.ts StreamTargetInterface ===
+export interface StreamTargetInterface {
+	write(text: string): boolean | void
+	readonly isTTY?: boolean
+	readonly columns?: number
+}
+
+=== src/server/types.ts ServerSinkOptions ===
+export interface ServerSinkOptions {
+	readonly stdout?: StreamTargetInterface
+	readonly stderr?: StreamTargetInterface
+	readonly styled?: boolean
+	readonly environment?: Readonly<Record<string, string | undefined>>
+	readonly columns?: number
+}
+
+=== src/server/types.ts ServerSinkInterface ===
+export interface ServerSinkInterface extends SinkInterface {
+	readonly styled: boolean
+	readonly columns: number
+}
+
+=== src/server/types.ts StreamLevel ===
+export type StreamLevel = 'stdout' | 'stderr'
+
+=== src/server/types.ts StreamWriteFunction ===
+export type StreamWriteFunction = NodeJS.WriteStream['write']
+
+=== src/server/types.ts StreamWriteCallback ===
+export type StreamWriteCallback = (error?: Error | null) => void
+
+=== src/server/types.ts CapturedChunk ===
+export interface CapturedChunk {
+	readonly level: StreamLevel
+	readonly text: string
+	readonly time: number
+}
+
+=== src/server/types.ts ProcessCaptureEventMap ===
+export type ProcessCaptureEventMap = {
+	readonly capture: readonly [chunk: CapturedChunk]
+	readonly start: readonly []
+	readonly stop: readonly []
+}
+
+=== src/server/types.ts ProcessCaptureOptions ===
+export interface ProcessCaptureOptions {
+	readonly on?: EmitterHooks<ProcessCaptureEventMap>
+	readonly error?: EmitterErrorHandler
+	readonly levels?: readonly StreamLevel[]
+	readonly mirror?: boolean
+	readonly sink?: SinkInterface
+	readonly limit?: number
+}
+
+=== src/server/types.ts ProcessCaptureInterface ===
+export interface ProcessCaptureInterface {
+	readonly emitter: EmitterInterface<ProcessCaptureEventMap>
+	readonly active: boolean
+	start(): void
+	stop(): void
+	messages(): readonly CapturedChunk[]
+	messages(level: StreamLevel): readonly CapturedChunk[]
+	clear(): void
+	destroy(): void
+}
+

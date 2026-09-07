@@ -1,0 +1,28 @@
+-- format:check
+
+> @orkestrel/browser@0.0.16 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 11377ms on 136 files using 4 threads.
+EXIT 0
+-- check
+
+> @orkestrel/browser@0.0.16 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/browser@0.0.16 check:src
+> npm run check:src:core && npm run check:src:server
+
+
+> @orkestrel/browser@0.0.16 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/browser@0.0.16 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+EXIT 0

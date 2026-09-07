@@ -1,0 +1,8 @@
+
+> @orkestrel/browser@0.0.16 docs
+> node --experimental-strip-types scripts/docs.ts --to guide
+
+wrote guides/browser.md
+guides/browser.md pitch: readme absent tagline "A lightweight Chrome DevTools Protocol (CDP) automation layer, split into an environment-agnostic core and a Node server runtime. Core (`@orkestrel/browser`) is pure logic over an injected `CDPTransportInterface` — no `WebSocket`, no `node:*`, no filesystem — so it runs identically in Node or a browser: `CDPClient` frames JSON-RPC-shaped CDP messages over the transport, `BrowserContext` / `BrowserPage` model a CDP browser context and its pages, `BrowserSnapshot` turns a captured DOM snapshot into navigable serializable data, `BrowserCodegen` records page interactions for later script compilation. One capability reaches past the protocol: `article()` distills a captured document to its reader-facing prose through `@orkestrel/html` — content selection, not another whole-body text dump. Server (`@orkestrel/browser/server`) supplies the missing environment pieces: `WebSocketCDPTransport` (a Node `WebSocket`-backed CDP transport), `Browser` (discovery → connect → launch lifecycle, spawning a real Chromium-family process when nothing is already listening), and a filesystem-backed browser writer. Source: `src/core` (through `@src/core`) + `src/server` (through `@src/server`)."; the README pitch is authored by hand
+rows read: 1, disagreements found: 552, written: 551, reported: 1
+next: npm run format

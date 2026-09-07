@@ -1,0 +1,113 @@
+-- guides
+
+> @orkestrel/browser@0.0.16 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+······································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  198 passed (198)
+   Start at  16:50:28
+   Duration  2.52s (transform 1.12s, setup 1.22s, import 601ms, tests 424ms, environment 0ms)
+
+EXIT 0
+-- policy
+
+> @orkestrel/browser@0.0.16 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+·················································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace
+AssertionError: expected [ { rule: 'prose', …(3) }, …(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "line": 1228,
++     "message": "prose carries no banned term: currently (delete, or give the date)",
++     "path": "guides/browser.md",
++     "rule": "prose",
++   },
++   {
++     "line": 1604,
++     "message": "prose carries no banned term: currently (delete, or give the date)",
++     "path": "guides/browser.md",
++     "rule": "prose",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:472:49
+    470| describe('repository policy', () => {
+    471|  it('enforces the mirror, suppression, skill, bridge, and portability …
+    472|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    473|  })
+    474|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 89 passed | 1 skipped (91)
+   Start at  16:50:32
+   Duration  2.38s (transform 1.27s, setup 1.35s, import 177ms, tests 544ms, environment 0ms)
+
+EXIT 1
+-- config
+
+> @orkestrel/browser@0.0.16 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/fleet/browser
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/config.test.ts:2370:55
+    2368|      entry.startsWith('orkestrel-declarations-'),
+    2369|     )
+    2370|     expect(after.every((entry) => before.has(entry))).toBe(true)
+       |                                                       ^
+    2371|
+    2372|     // The face ships exactly one declaration: the emit's scratch tree…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 171 passed | 1 skipped (173)
+   Start at  16:50:35
+   Duration  7.70s (transform 1.43s, setup 932ms, import 1.01s, tests 5.45s, environment 0ms)
+
+EXIT 1
