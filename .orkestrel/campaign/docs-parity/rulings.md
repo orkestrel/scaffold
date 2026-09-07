@@ -51,7 +51,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
 
 ## Ruling 13 (2026-09-07, the Orchestrator, on slice 3's F-1 and the objective lane's first finding): the drop-in's canonical text
 
-The shared drop-in is the pilot's `/home/user/fleet/abort/tests/guides.test.ts` outside the constants block, with two corrections the pilot itself takes in its own fix: the `INTERNAL` doc block reads "the assertion that follows it fails when a name here stops being stranded" (no ordinal, no `below`), and the equality case sits before the import walk inside the manifest loop. The examples case is named `documents an example for every Surface function`; the mapped `examples` binding maps each side then concatenates. A package's drop-in matches that text byte for byte outside its constants, so the next drop-in update is a copy.
+The shared drop-in is the pilot's `/home/user/fleet/abort/tests/guides.test.ts` outside the constants block, with two corrections the pilot itself takes in its own fix: the `INTERNAL` doc block reads "the assertion that follows it fails when a name here stops being stranded" (no ordinal, no `below`), and the equality case keeps the pilot's original position — directly after the methods loop and before the examples case, which html's copy had moved past the import walk. The examples case is named `documents an example for every Surface function`; the mapped `examples` binding maps each side then concatenates. A package's drop-in matches that text byte for byte outside its constants, so the next drop-in update is a copy.
 
 ## Ruling 14 (2026-09-07, the Orchestrator, on slice 3's N-1): an example converges toward the fuller demonstration
 
