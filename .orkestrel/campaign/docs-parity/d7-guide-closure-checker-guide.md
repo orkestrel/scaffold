@@ -1,0 +1,21 @@
+Lane held: checker guide
+
+**Claim 1** — PASS. `git status --short` at `/home/user/scaffold/.orkestrel/campaign/docs-parity/d7-guide-u5-fix.status.txt` lists exactly 8 files: `guides/guide.md`, `src/core/helpers.ts`, `src/core/sources/Source.ts`, `src/core/types.ts`, `tests/setup.test.ts`, `tests/setup.ts`, `tests/src/core/helpers.test.ts`, `tests/src/core/sources/Source.test.ts`. The 7 owned files (per the fix brief's Scope section) plus `tests/setup.test.ts`, which the report documents as a report-only patch the Orchestrator applied (report lines 126–182, 194) — exactly the exception this claim names. The diff at `d7-guide-u5-fix.diff.txt` shows no edit outside these files, no `src/**` code-token move, and `src/core/types.ts` touched only at the two `{@link}` references (lines 495, 505 in `/home/user/fleet/guide/src/core/types.ts`, confirmed by direct read). `package.json` and the lockfile are absent from status output.
+
+**Claim 2** — PASS. Spot-checked citations against the live tree at `/home/user/fleet/guide`: `src/core/helpers.ts:1301-1307` matches the `@remarks` body read directly; `src/core/types.ts:495`/`:505` match; `guides/guide.md:363-364` matches the compared-form bullets read directly; `tests/src/core/sources/Source.test.ts:1179-1204` matches the `it` block read directly; `tests/setup.ts:46-108` matches the `StoreReadings`/`buildStoreSource`/`readStoreReadings` block read directly (lines 47–108). No count in prose: every numeral in the report (`146 characters`, diffstat line counts, `Tests 613 passed (613)`, durations, exit codes, `disagreements found: 0`) is a size, duration, or a measurement quoted with the run that produced it — none is a bare count of a growable set.
+
+**Claim 3** — PASS, all sub-items verified directly against `/home/user/fleet/guide`:
+- G1: `src/core/helpers.ts:1301-1304` states the key-convention reason in `extractDeclaration`'s `@remarks`.
+- G2: `guides/guide.md:468-471` and `src/core/helpers.ts:1305-1307` attribute the single-projection amortization to `collectDeclarations`/`Source`; `grep -n 'projects it once rather than once per name' guides/guide.md src/core/helpers.ts` finds nothing (report line 60-61, confirmed present in diff as removed). The unrelated `Source` Summary table cell (`guides/guide.md:213`) never carried this claim, so the report's "no cell followed" statement holds.
+- G3: `grep -nE '^\t+const [a-zA-Z]+ = \(' tests/src/core/sources/Source.test.ts` finds nothing; `tests/setup.ts:56-108` exports `buildStoreSource` and `readStoreReadings` with doc blocks; `tests/setup.test.ts` (patched) carries their own `describe` proofs (confirmed in diff, lines 205–238).
+- G4: `guides/guide.md:363` reads "…each a package or path token, one carrying `@` or `/`…"; `guides/guide.md:364` is the new member-reference bullet ending "…outside a located span."
+- G5: `guides/guide.md:233-239` states dedup/sort once and one derive-once sentence covering every reading; the duplicated caching clause is gone.
+- G6: paragraphs at `guides/guide.md:226-242` and `:460-496` fit under 101 columns (checked with `Grep` against the live file); `src/core/sources/Source.ts:47-58` wraps at the file's own ~80-column convention, matching unmodified neighboring lines (27-29, 37-46) rather than the brief's stated "about 72 columns" — a factual premise in the brief, not a defect in the work.
+- G7: `src/core/types.ts:495,505` both read `{@link collectDeclarations}`.
+- G8: `tests/src/core/helpers.test.ts:1648` is retitled "answers an absent and a metacharacter-carrying key with no entry, and a declared key as extractDeclaration does," and its assertions (lines 1651-1661) name exactly those four cases.
+
+**Findings outside the claims.** The fix brief's item 6 stated Source.ts's neighbor wrap as "about 72 columns"; the actual file convention is nearer 80 columns, and the writer's re-wrap (80) matches the file's real neighbors rather than the brief's estimate. This is not a defect — matching real neighbors is the correct outcome — but the brief's stated premise was wrong. No carrier needed; record for the brief author only.
+
+**Referrals.** None. Every claim resolved on direct file evidence, not on the writer's self-reported gate exit codes (criteria 3-5 remain the verifier lane's subject, per the closure brief's split).
+
+VERDICT: PASS

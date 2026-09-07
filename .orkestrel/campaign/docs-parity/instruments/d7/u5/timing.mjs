@@ -1,6 +1,9 @@
+// Retained copy: imports the guide checkout's own build by absolute path. Run from anywhere; a bare `@orkestrel/guide`
+// import resolves to the caller's installed copy (scaffold's registry 0.0.17 when run from the campaign folder), which is
+// what the guide closure's verifier measured on 2026-09-07 before this line was fixed.
 // tmp/timing.mjs — reads @orkestrel/contract's checkout read-only and times the
 // guide reader over it. Run: node tmp/timing.mjs [repeats]
-import { collectTitles, createGuide, createSource, findDrift } from '@orkestrel/guide'
+import { collectTitles, createGuide, createSource, findDrift } from '/home/user/fleet/guide/dist/src/core/index.js'
 import { globSync, readFileSync } from 'node:fs'
 
 const ROOT = '/home/user/fleet/contract'
