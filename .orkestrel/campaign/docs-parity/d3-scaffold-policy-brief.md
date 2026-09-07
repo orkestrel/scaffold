@@ -34,7 +34,7 @@ The vendored oxlint `policy` plugin gains `no-imperative-summary` and `no-banned
 
 ## Evidence at dispatch
 
-FILLED_AT_DISPATCH: the instrument readings after D3-pre (`FLAGGED 0`, `HITS 0`), `git log --oneline -1`, `git status --short` (clean), oxlint `1.80.0`, `RuleTester` from `oxlint/plugins-dev` as `tests/config.test.ts:21` imports it.
+Taken at dispatch on the committed tree. `node .orkestrel/campaign/docs-parity/instruments/p10/p10b-voice.mjs /home/user/scaffold src app configs tests scripts` → `FILES 58 BLOCKS 662 FLAGGED 0 NODOC 35`. `node .orkestrel/campaign/docs-parity/instruments/p9/p9d-terms.mjs /home/user/scaffold` → `FILES 80 HITS 0`. `git log --oneline -1` → `bce3ddb4 Record D3-pre's closure` (D3-pre landed). `git status --short` → no tracked change (0 lines). oxlint `1.80.0` (`node_modules/oxlint/package.json`). `RuleTester` import: `tests/config.test.ts:21:import { RuleTester } from 'oxlint/plugins-dev'`. The `deps.sh` marker needs no update: this unit changes no lockfile.
 
 ## Scope
 
