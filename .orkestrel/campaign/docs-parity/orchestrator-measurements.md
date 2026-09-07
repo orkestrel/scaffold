@@ -213,3 +213,16 @@ $ npm run docs → disagreements found: 3: the two interfaces in the Types table
 ```
 
 Reading: the guide's 0.0.18 readers return records where 0.0.17 returned strings — `guide.methods()` groups carry `MethodEntry` records, `source.methods(name)` returns `MethodEntry` records, and `source.examples()` returns `SourceExample` records — so every fleet drop-in that passes those to `findMissing` or `findUnexampled` stops compiling and its cases red, the way scaffold's own suite did before D4-fix mapped each record to its `name` (`/home/user/scaffold/tests/guides.test.ts:123-151`). That adaptation is a mechanical per-package edit and a precondition of every other case, so it sits in each package's prep unit beside the head start or the re-pin. The seed runs without a build in a fleet checkout, the `--to guide` round trip over abort's three-column tables disturbs no cell, and the remaining disagreements after the write are the rows the converge unit owns.
+
+## P20 — the vendored voice rule's reading in every fleet checkout after `repair` (2026-09-07, `instruments/d7/p20/`)
+
+```text
+$ p20-fleet-repair-lint.sh      (a scratch clone per checkout, node_modules linked, repair --offline from the extracted tip, then npx oxlint --config .oxlintrc.json --deny-warnings .)
+total diagnostics per package, by rule (no-malformed-summary / no-banned-term) and the files that carry them — the full table in p20-fleet-repair-lint.log.txt:
+  under ten: budget 2, emitter 2, form 2, msg 7, ndjson 5, pool 2, probe 4, process 1, queue 8, relation 3, sqlite 2, sse 5, template 0, timeout 0, tool 1, worker 6, workspace 4, lsp 9, test 9
+  ten to twenty: console 13, csv 14, indexeddb 17, interpret 13, markdown 16, program 12, qualifier 15, rater 15, router 19, toolbox 11, websocket 13
+  above twenty: codec 26, brief 31, reason 28, terminal 31, workflow 28, middleware 39, html 38, sea 47, server 23, agent 57, database 59, browser 60, ollama 61, contract 130, mcp 183
+  the sites sit in tests/setup.ts and tests/setupServer.ts almost everywhere; sea, server, csv, and indexeddb carry theirs partly in src/**
+```
+
+Reading: the rule's red is created by `repair` in every checkout, and its size routes the prep unit — `builder` under twenty sites, the Opus `implementer` above — while the per-file lists tell each brief where the sites are. `test`'s reading is small despite its size, so it runs as a builder prep with a giant's converge.

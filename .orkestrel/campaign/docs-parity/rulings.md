@@ -26,3 +26,9 @@ The three open items close on the stated defaults. The README shrinks to the pit
 ## Ruling 7 (2026-09-07, the Orchestrator, on R2's referral): a description paragraph is a summary
 
 A doc block's description paragraph — the text before its first block tag, the text a `Summary` cell carries — states what the declaration does in the sentences a table scanner needs. Reference material (the population a reader walks, the grammar's edge cases, the caveats) belongs in `@remarks`, which the comparison leaves unread and the declaration's reader still meets. Every sentence survives the split; none is deleted. The `Source` class block set the shape in U2, and the fix round applies it to the widest cells. This does not change what the seed compares.
+
+## Ruling 8 (2026-09-07, the owner, verbatim: "Go with your recommendations on both, and instead of publishing guide now, use the tarball method and apply it to all packages so if we run into any issues we can apply the fixes before we publish guide, then once all are moved, we can publish and then bump them to the new version easily and we can publish in dependency layers.")
+
+- No scaffold template for `tests/guides.test.ts`; the drop-in stays package-owned and a newborn copies it when it gains a guide.
+- Mirrors refresh through `scaffold catalog` in one sweep after the last package converges, each package's result pushed to `main` as it lands so the fetch reads it.
+- The guide does not publish before the pass. Every package converges under the guide's packed tip installed `--no-save` and scaffold's extracted tip for `repair`, so a reader or seed defect any package meets is fixed in the guide before `0.0.18` publishes. After every package has moved: the guide publishes, each package re-pins to the registry release and bumps, and the publishes run in catalog layer order.

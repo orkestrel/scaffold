@@ -179,3 +179,11 @@ The campaign ends when each closes as implemented, repaired, retained, or intent
 - **Satisfied: the pilot (A.1 to A.4, A.2-fix) and G1.** abort at `d714f6b` closes ruling 10's per-package list under the guide head start, with the whole chain green and no reader or seed defect; the guide's release candidate is `c86f7fd` with the RQ catalog row.
 - **Transformed: the fleet template** — `d7-fleet-plan.md` § Template corrections carries what every later brief inherits from the pilot's audit.
 - **Next: the guide's release on the owner's go-ahead**, then F4 (scaffold's guide re-pin, the distribution proof, the mirror re-stage, the packed tip), abort's re-pin (A.5), and the layer slices from L0.
+
+## Re-baseline (2026-09-07, after Ruling 8)
+
+- **Transformed: D7.n's release order.** Ruling 1 of `d7-fleet-plan.md` inverts on the owner's word: every package takes the guide head start (the tarball packed at the guide's tip, installed `--no-save` by the Orchestrator) and `repair --offline` from the extracted scaffold tip, the way the pilot did; the guide releases after the last package converges; then each package re-pins, bumps, and publishes in layer order. A reader or seed defect met during the pass is a guide unit before the release, and every converged package re-runs its gates against the new tarball.
+- **Satisfied by the ruling: the two owner decisions** — no scaffold template; mirrors through one `catalog` sweep after the pass, each package pushed to `main` as it lands.
+- **Added: a `main` fast-forward per package** at its acceptance, so the `catalog` fetch reads the rewritten guide.
+- **Struck: F3 before the pass and F4's guide re-pin**; F4's mirror re-stage landed early (`584ebdf5`), and the tip is re-packed with it for the pass.
+- **Order:** L0 (codec, msg, sse as one slice; contract alone; test alone), then L1 onward, giants alone.
