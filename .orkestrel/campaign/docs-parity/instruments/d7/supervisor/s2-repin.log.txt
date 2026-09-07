@@ -1,0 +1,102 @@
+== s2 2026-09-07T16:49:36Z over edf80e6
+@orkestrel/contract: ^0.0.15 -> ^0.0.16 (dependencies)
+@orkestrel/database: ^0.0.12 -> ^0.0.13 (dependencies)
+@orkestrel/emitter: ^0.0.8 -> ^0.0.9 (dependencies)
+@orkestrel/process: ^0.0.9 -> ^0.0.10 (dependencies)
+@orkestrel/workflow: ^0.0.16 -> ^0.0.17 (dependencies)
+@orkestrel/agent: ^0.0.19 -> ^0.0.20 (devDependencies)
+@orkestrel/budget: ^0.0.8 -> ^0.0.9 (devDependencies)
+@orkestrel/form: ^0.0.3 -> ^0.0.5 (devDependencies)
+@orkestrel/guide: ^0.0.15 -> ^0.0.17 (devDependencies)
+@orkestrel/html: ^0.0.7 -> ^0.0.8 (devDependencies)
+@orkestrel/mcp: ^0.0.27 -> ^0.0.28 (devDependencies)
+@orkestrel/middleware: ^0.0.18 -> ^0.0.19 (devDependencies)
+@orkestrel/ndjson: ^0.0.8 -> ^0.0.9 (devDependencies)
+@orkestrel/ollama: ^0.0.13 -> ^0.0.14 (devDependencies)
+@orkestrel/probe: ^0.0.11 -> ^0.0.12 (devDependencies)
+@orkestrel/router: ^0.0.12 -> ^0.0.13 (devDependencies)
+@orkestrel/scaffold: ^0.0.60 -> ^0.0.63 (devDependencies)
+@orkestrel/sea: ^0.0.13 -> ^0.0.14 (devDependencies)
+@orkestrel/server: ^0.0.17 -> ^0.0.18 (devDependencies)
+@orkestrel/sse: ^0.0.5 -> ^0.0.6 (devDependencies)
+@orkestrel/terminal: ^0.0.13 -> ^0.0.14 (devDependencies)
+@orkestrel/test: ^0.0.12 -> ^0.0.13 (devDependencies)
+@orkestrel/tool: ^0.0.12 -> ^0.0.13 (devDependencies)
+== npm install (lockfile regenerated against the registry)
+npm warn EBADENGINE   current: { node: 'v22.22.2', npm: '11.19.1' }
+npm warn EBADENGINE }
+
+added 228 packages in 44s
+exit 0
+== installed
+scaffold 0.0.63 guide 0.0.17 contract 0.0.16 server 0.0.18 middleware 0.0.19
+== repair --offline from the tip
+13 written, 46 unchanged, 0 removed in ..
+== status
+ M .oxlintrc.json
+ M configs/browsers.ts
+ M configs/helpers.ts
+ M configs/policy.ts
+ M configs/src/vite.core.config.ts
+ M configs/src/vite.server.config.ts
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tsconfig.json
+ M vite.config.ts
+?? scripts/docs.ts
+== check
+app/browser/seeders.ts(337,10): error TS2353: Object literal may only specify known properties, and 'current' does not exist in type 'TaskProgress'.
+app/browser/seeders.ts(653,17): error TS2353: Object literal may only specify known properties, and 'current' does not exist in type 'TaskProgress'.
+app/core/types.ts(9,53): error TS2305: Module '"@orkestrel/workflow"' has no exported member 'WorkflowStatus'.
+app/core/validators.ts(21,42): error TS2305: Module '"@orkestrel/workflow"' has no exported member 'WORKFLOW_STATUSES'.
+app/core/validators.ts(40,41): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+app/server/ApplicationContext.ts(3,15): error TS2305: Module '"@orkestrel/middleware"' has no exported member 'ClientInfo'.
+app/server/ApplicationContext.ts(4,15): error TS2724: '"@orkestrel/server"' has no exported member named 'ConnectionInfo'. Did you mean 'Connection'?
+app/server/ApplicationHandlers.ts(42,23): error TS2305: Module '"@orkestrel/server"' has no exported member 'openStream'.
+app/server/ApplicationHandlers.ts(152,12): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationHandlers.ts(153,12): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationHandlers.ts(154,12): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationHandlers.ts(181,26): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationHandlers.ts(193,12): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationHandlers.ts(436,31): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationPersistence.ts(15,11): error TS2416: Property 'sessions' in type 'ApplicationPersistence' is not assignable to the same property in base type 'ApplicationPersistenceInterface'.
+app/server/ApplicationRosterHandlers.ts(10,10): error TS2305: Module '"@orkestrel/server"' has no exported member 'openStream'.
+app/server/ApplicationRuntime.ts(59,11): error TS2416: Property 'sessions' in type 'ApplicationRuntime' is not assignable to the same property in base type 'ApplicationRuntimeInterface'.
+app/server/ApplicationRuntime.ts(151,5): error TS2322: Type 'ApplicationPersistence' is not assignable to type 'ApplicationPersistenceInterface'.
+app/server/ApplicationServer.ts(210,4): error TS2561: Object literal may only specify known properties, but 'require' does not exist in type 'SessionOptions<SessionInterface, ApplicationState>'. Did you mean to write 'required'?
+app/server/ApplicationUserHandlers.ts(86,41): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationUserHandlers.ts(95,13): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationUserHandlers.ts(101,13): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/ApplicationUserHandlers.ts(117,31): error TS2339: Property 'data' does not exist on type 'SessionInterface'.
+app/server/TerminalOutput.ts(1,15): error TS2724: '"@orkestrel/terminal/server"' has no exported member named 'OutputStreamInterface'. Did you mean 'InputStreamInterface'?
+app/server/factories.ts(152,2): error TS2322: Type 'ApplicationRuntime' is not assignable to type 'ApplicationRuntimeInterface'.
+app/server/helpers.ts(11,29): error TS2724: '"@orkestrel/agent"' has no exported member named 'MessageInterface'. Did you mean 'AgentInterface'?
+app/server/helpers.ts(15,15): error TS2724: '"@orkestrel/server"' has no exported member named 'ConnectionInfo'. Did you mean 'Connection'?
+app/server/helpers.ts(891,12): error TS2339: Property 'type' does not exist on type 'AgentChunk'.
+app/server/helpers.ts(891,38): error TS2339: Property 'type' does not exist on type 'AgentChunk'.
+app/server/helpers.ts(896,40): error TS2339: Property 'content' does not exist on type 'AgentChunk'.
+exit 2
+== lint
+975
+exit 1
+== test:guides
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed (1)
+      Tests  4 failed | 408 passed (412)
+exit 1
+== test:policy
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace
+ Test Files  1 failed (1)
+      Tests  1 failed | 89 passed | 1 skipped (91)
+exit 1
+== test:config
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+exit 0
+== docs
+exit 1
+== s2 done 2026-09-07T16:51:27Z

@@ -1,0 +1,38 @@
+== npm ci 2026-09-07T16:45:20Z
+npm error For a full report see:
+npm error /root/.npm/_logs/2026-09-07T16_45_20_333Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-09-07T16_45_20_333Z-debug-0.log
+exit 1
+== installed
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module './node_modules/@orkestrel/scaffold/package.json'
+Require stack:
+- /home/user/fleet/supervisor/[eval]
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Module.require (node:internal/modules/cjs/loader:1463:12)
+    at require (node:internal/modules/helpers:147:16)
+    at [eval]:1:59
+    at Array.map (<anonymous>) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/home/user/fleet/supervisor/[eval]' ]
+}
+
+Node.js v22.22.2
+== check
+error TS2688: Cannot find type definition file for 'node'.
+error TS2688: Cannot find type definition file for 'vite/client'.
+error TS2688: Cannot find type definition file for 'vitest/globals'.
+exit 2
+== test:guides
+exit 127
+== test:policy
+exit 127
+== s1 done 2026-09-07T16:45:28Z
