@@ -15,8 +15,8 @@ Each boolean member ruled against `.claude/rules/names.md` § General vocabulary
 
 Ancillary decisions, recorded rather than escalated:
 
-- The three `buildStage` locals feeding the record's shorthand keys are renamed with their members (`browser` → `bundled`, `required` → `requirable`, `commonjs` → `loadable`). Leaving them would keep the ruled-against words in the same statement that writes the renamed members.
-- The two target locals beside them are renamed `importTarget` and `requireTarget` (from `imported` and `requiredTarget`), which makes the target trio parallel with `browserTarget` and keeps the `requirable` line inside the emitted print width of 100 columns. The measured emitted width of that line is 99 columns; the previous spelling wrapped it at 101.
+- The `buildStage` locals feeding the record's shorthand keys are renamed with their members (`browser` → `bundled`, `required` → `requirable`, `commonjs` → `loadable`). Leaving them would keep the ruled-against words in the same statement that writes the renamed members.
+- The target locals beside them are renamed `importTarget` and `requireTarget` (from `imported` and `requiredTarget`), which makes them parallel with `browserTarget` and keeps the `requirable` line inside the emitted print width of 100 columns. The measured emitted width of that line is 99 columns; the previous spelling wrapped it at 101.
 - The interface's leading comment gains the load distinction, because the renamed `requirable`/`loadable` pair names two facts the old comment collapsed.
 - `resolvesBrowser` keeps its own locals (`module`, `imported`, `required` hold resolved target strings inside that helper). They are not `Entry` members and sit outside this unit's scope.
 
@@ -97,7 +97,7 @@ Extra evidence taken because the observation's red case runs the template this u
 ?? scripts/docs.ts
 ```
 
-Everything outside the two owned files is the D4 through D6 baseline this unit was dispatched over. `git diff --stat` over the owned files:
+Everything outside the owned files is the D4 through D6 baseline this unit was dispatched over. `git diff --stat` over the owned files:
 
 ```text
  src/core/templates.ts            |  63 ++++++++++++-----------
@@ -110,3 +110,5 @@ Everything outside the two owned files is the D4 through D6 baseline this unit w
 - **The distribution observation's red case is the dependency-order failure the brief names, not this rename.** The evidence is indirect: the run captures no output from the generated workspace's gate chain, only its exit code 2, and the brief allows one run. What is direct is that both variants of the emitted proof typecheck clean and carry no over-width line, so the rename does not redden the generated workspace's `check` or `format:check` stages. Separating the cause needs the deciding run the brief reserves for the Orchestrator.
 - **A stray emitted artifact briefly landed in the repository root and was removed.** The first emit probe misread its own argument list and wrote the generated proof to `/home/user/scaffold/x`. It was moved into the session scratchpad in the following command; the final `git status --short` carries no untracked `x`, and no tracked file was touched by it.
 - **`bundled` names the browser fact by its mechanism rather than its host.** A reader meets `entry.bundled` at the browser drive and at the guard case that reports an undrivable browser face, so the drive supplies the host. The alternative spellings that name the host directly are either not assertions (`browser`) or not English a reader would predict (`bundlable`, `browsable`).
+
+_Corrected by the Orchestrator after the closure round (`d6b-audit-checker.md` claim 5): counts of growable sets deleted._
