@@ -38,13 +38,13 @@ Draft written 2026-09-07 while D5 runs; the seed's invocation lines are amended 
 - `.oxlintrc.json` lints `src/**`, `tests/**`, `configs/**`, and `scripts/**` under the voice rules; `npm run lint:check` is the doc-block voice gate.
 - `npm run format` is permitted to this unit because it is the sole writer and no other unit is live; run it after each seed write and before every check.
 - Linux, bash, Node v22.22.2. The host's command classifier refuses `npx scaffold …`; this unit needs no scaffold command.
-- Whole-suite timing: `npm test` runs for several minutes on this container; report its exit code and duration as an observation, and the Orchestrator takes the deciding run after you exit.
+- Whole-suite timing: `npm test` runs for several minutes on this container and its distribution project needs npm 11 first on the path (`PATH=/opt/npm11/bin:$PATH npm test`; under the shell's default npm 10.9.7 the generated workspace's install crashes inside npm, `orchestrator-measurements.md` § M8); report its exit code and duration as an observation, and the Orchestrator takes the deciding run after you exit.
 
 ## Scope
 
 - Owned: `guides/scaffold.md` (a host file: `npm run build` restages it and `host.json` moves by regeneration alone), `host.json` (by regeneration alone), `README.md`, the doc comments under `src/**/*.ts` (comment text only; no code token, signature, or export moves), `tests/guides.test.ts` (the pin, and a consumer edit only where a rewritten fence needs one), `guides/README.md` (only where a row must change).
 - Off-limits: `scripts/docs.ts`, `src/core/templates.ts` (its `readonly module: boolean` member is unit D6b's), `src/core/constants.ts`, `src/core/compilers.ts`, `package.json`, `package-lock.json`, `configs/**`, `tests/setup*.ts`, `tests/src/**`, `.claude/**`, `.agents/**`, `PROPOSAL.md`, `ROADMAP.md`.
-- Permitted commands: `npm run docs` and its two `--to` forms, `npm run format`, `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run test:guides`, `npm run test:policy`, `npm run test:src:core`, `npm run build`, `npm test` (an observation). Never `npm install`, lint `--fix`, a discard-class git command, or a commit.
+- Permitted commands: `npm run docs` and its two `--to` forms, `npm run format`, `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run test:guides`, `npm run test:policy`, `npm run test:src:core`, `npm run build`, `PATH=/opt/npm11/bin:$PATH npm test` (an observation). Never `npm install`, lint `--fix`, a discard-class git command, or a commit.
 
 ## Unknowns
 
@@ -60,7 +60,7 @@ Draft written 2026-09-07 while D5 runs; the seed's invocation lines are amended 
 4. `npm run test:policy` exits 0.
 5. `npm run test:guides` exits 0, with the two D4 cases and the pin case listed green.
 6. `npm run build` exits 0; `sha256sum host.json` is identical before and after a second `npm run build:inventory`.
-7. Observation: `npm test` exit code and duration.
+7. Observation: `PATH=/opt/npm11/bin:$PATH npm test` exit code and duration.
 
 ## Output
 
