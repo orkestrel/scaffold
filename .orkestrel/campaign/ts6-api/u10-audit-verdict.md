@@ -10,3 +10,9 @@ Workflow `wf_4f619013-568`, 2026-09-07 01:49 to 02:02 UTC. Lanes on `u10-audit-b
 - Dropped: none.
 
 VERDICT: PASS on the claims; the fix round closes the findings with `checker` and the verify brief before the commit.
+
+## Round 2 (the fix round's closure)
+
+Workflow `wf_33605fcb-da4`, 2026-09-07 02:20 to 02:25 UTC: `checker` (Sonnet) on `u10-fix-check-brief.md` — `VERDICT: PASS` on every claim (the revert-and-rerun narrative marked UNRESOLVED as writer-reported, the cases and exits it names verified); `verifier` (Sonnet) on `u10-verify-brief.md` — `GATES: GREEN` (`test:setup` 82 passed, `test:guides` 84 passed, `npm test` green across every project, no timing re-run needed). U10 accepted; committed by path on database's branch.
+
+VERDICT: PASS — U10 accepted after U10-fix.
