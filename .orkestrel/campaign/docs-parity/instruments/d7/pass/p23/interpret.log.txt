@@ -1,0 +1,113 @@
+### interpret at a0303e5, guide guides/interpret.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  98 passed (98)
+   test:guides exit 0
+-- census
+   guides/interpret.md surface {"equal":131,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":48,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 12 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Clarifier methods 1 grouped false undescribed ["clarify"]
+   owner interface ClarifierInterface methods 1 grouped true undescribed []
+   owner class DefinitionManager methods 6 grouped false undescribed ["add","definition","definitions","destroy","has","remove"]
+   owner interface DefinitionManagerInterface methods 6 grouped true undescribed []
+   owner class Extractor methods 1 grouped false undescribed ["extract"]
+   owner interface ExtractorInterface methods 1 grouped true undescribed []
+   owner class Formatter methods 1 grouped false undescribed ["format"]
+   owner interface FormatterInterface methods 1 grouped true undescribed []
+   owner class Generator methods 1 grouped false undescribed ["generate"]
+   owner interface GeneratorInterface methods 1 grouped true undescribed []
+   owner class Interpret methods 8 grouped false undescribed ["add","describe","destroy","interpret","narrate","remove","template","templates"]
+   owner class InterpretContext methods 5 grouped false undescribed ["add","clear","destroy","entities","previous"]
+   owner interface InterpretContextInterface methods 5 grouped true undescribed []
+   owner interface InterpretInterface methods 8 grouped true undescribed []
+   owner class Narrator methods 6 grouped false undescribed ["describe","label","line","narrate","phrase","value"]
+   owner interface NarratorInterface methods 6 grouped true undescribed []
+   owner class Normalizer methods 1 grouped false undescribed ["normalize"]
+   owner interface NormalizerInterface methods 1 grouped true undescribed []
+   owner class RecordManager methods 6 grouped false undescribed ["add","destroy","has","record","records","remove"]
+   owner interface RecordManagerInterface methods 6 grouped true undescribed []
+   owner class SubjectManager methods 6 grouped false undescribed ["add","destroy","has","remove","subject","subjects"]
+   owner interface SubjectManagerInterface methods 6 grouped true undescribed []
+   owner class TemplateManager methods 6 grouped false undescribed ["add","destroy","has","remove","template","templates"]
+   owner interface TemplateManagerInterface methods 6 grouped true undescribed []
+   examples titledFences 19 titledExamples ["createInterpret:Interpret text against an added template"] pairs ["Interpret text against an added template"]
+-- sites: surface row guides/interpret.md:78; methods row guides/interpret.md:543; title src/core/factories.ts:54
+-- control A: one Surface Summary cell altered (guides/interpret.md:78)
+guides/interpret.md type ProvenanceCategory: guide "Names how one `FieldMapping` / `Entity` value was obtained. Control." source "Names how one `FieldMapping` / `Entity` value was obtained."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Interpret > keeps every compared summary and example equal to its source
+Tests  1 failed | 97 passed (98)
+× keeps every compared summary and example equal to its source 20ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/interpret.md:543)
+guides/interpret.md NormalizerInterface.normalize: guide "Applies the contraction, abbreviation, and correction substitutions in order, then collapses whitespace. Control." source "Applies the contraction, abbreviation, and correction substitutions in order, then collapses whitespace."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Interpret > keeps every compared summary and example equal to its source
+Tests  1 failed | 97 passed (98)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates an interpretation orchestrator, returning an {@link InterpretInterface}
+guides/interpret.md function createInterpret: guide "Creates an interpretation orchestrator, returning an `InterpretInterface` seeded from `InterpretOptions`." source "Control Creates an interpretation orchestrator, returning an `InterpretInterface` seeded from `InterpretOptions`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Interpret > keeps every compared summary and example equal to its source
+Tests  1 failed | 97 passed (98)
+× keeps every compared summary and example equal to its source 20ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Interpret.ts:43:  * Control Implements the interpretation orchestrator — the sole public entry point of the
+guides/interpret.md class Interpret: guide "Implements the interpretation orchestrator — the sole public entry point of the `interprets` module, mirroring the reasons `Reason` orchestrator shape: it runs the `[normalize, extract, clarify, format, generate]` pipeline, owns the template registry and the context, and exposes the reverse direction." source "Control Implements the interpretation orchestrator — the sole public entry point of the `interprets` module, mirroring the reasons `Reason` orchestrator shape: it runs the `[normalize, extract, clarify, format, generate]` pipeline, owns the template registry and the context, and exposes the reverse direction."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Interpret > keeps every compared summary and example equal to its source
+Tests  1 failed | 97 passed (98)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:54)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 97 passed (98)
+× pairs at least one example title across the guide and the source 32ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/interpret.md Interpret text against an added template: guide "ts\nimport { createExtractor, createInterpret } from '@orkestrel/interpret'\nimport {\n\tcreateFactorGroup,\n\tcreateFieldFactor,\n\tcreateQuantitativeDefinition,\n} from '@orkestrel/reason'\n\nconst interpret = createInterpret({\n\textractor: createExtractor({\n\t\tactions: { calculate: 'calculate' },\n\t\tdomains: { arithmetic: ['arithmetic'] },\n\t}),\n\ttemplates: [\n\t\t{\n\t\t\tid: 't1',\n\t\t\tname: 'Arithmetic',\n\t\t\tdomain: 'arithmetic',\n\t\t\tintents: ['calculate'],\n\t\t\tmappings: [{ entity: 'value', aliases: [], field: 'value' }],\n\t\t\tdefaults: [],\n\t\t\tcomputations: [],\n\t\t\tdefinition: createQuantitativeDefinition('t1', 'Arithmetic', [\n\t\t\t\tcreateFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),\n\t\t\t]),\n\t\t},\n\t],\n})\n\nconst result = interpret.interpret('calculate arithmetic 42')\nresult.subject // { value: 42 }\nresult.ambiguities // []\nresult.failures // []\n\ninterpret.emitter.on('interpret', (interpretation) => interpretation.digest)\ninterpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))\ninterpret.destroy()" source "ts\nimport { createExtractor, createInterpret } from '@orkestrel/interpret' // control\nimport {\n\tcreateFactorGroup,\n\tcreateFieldFactor,\n\tcreateQuantitativeDefinition,\n} from '@orkestrel/reason'\n\nconst interpret = createInterpret({\n\textractor: createExtractor({\n\t\tactions: { calculate: 'calculate' },\n\t\tdomains: { arithmetic: ['arithmetic'] },\n\t}),\n\ttemplates: [\n\t\t{\n\t\t\tid: 't1',\n\t\t\tname: 'Arithmetic',\n\t\t\tdomain: 'arithmetic',\n\t\t\tintents: ['calculate'],\n\t\t\tmappings: [{ entity: 'value', aliases: [], field: 'value' }],\n\t\t\tdefaults: [],\n\t\t\tcomputations: [],\n\t\t\tdefinition: createQuantitativeDefinition('t1', 'Arithmetic', [\n\t\t\t\tcreateFactorGroup('total', 'sum', [createFieldFactor('value', 'value')]),\n\t\t\t]),\n\t\t},\n\t],\n})\n\nconst result = interpret.interpret('calculate arithmetic 42')\nresult.subject // { value: 42 }\nresult.ambiguities // []\nresult.failures // []\n\ninterpret.emitter.on('interpret', (interpretation) => interpretation.digest)\ninterpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))\ninterpret.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Interpret > keeps every compared summary and example equal to its source
+Tests  1 failed | 97 passed (98)
+× keeps every compared summary and example equal to its source 17ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/interpret.md pitch: readme "Control: A synchronous, deterministic bidirectional bridge between natural language and the `@orkestrel/reason` engine: a forward pipeline that normalizes raw text, classifies its intent, matches an added `Template`, clarifies the fields extraction left open, and generates a `Subject` and `Definition` pair ready for `Reason.reason`, plus a reverse direction that renders a `Definition`, a `Subject`, or a `ReasonResult` to display-neutral prose through a lexicon-driven `Narrator`." tagline "A synchronous, deterministic bidirectional bridge between natural language and the `@orkestrel/reason` engine: a forward pipeline that normalizes raw text, classifies its intent, matches an added `Template`, clarifies the fields extraction left open, and generates a `Subject` and `Definition` pair ready for `Reason.reason`, plus a reverse direction that renders a `Definition`, a `Subject`, or a `ReasonResult` to display-neutral prose through a lexicon-driven `Narrator`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A synchronous, deterministic…' to be 'A synchronous, deterministic bidirect…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 97 passed (98)
+× opens the README with the guide tagline 12ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/interpret.md interface DefinitionManagerInterface: guide absent source "Represents the definition registry — a self-owning, versioned/hashed record-holder."
+guides/interpret.md interface InterpretContextInterface: guide absent source "Represents the cross-turn interpretation context: a capped, replayable history plus the subject/definition registries carry-over reads from."
+guides/interpret.md interface InterpretInterface: guide absent source "Represents the interpretation orchestrator — the sole public entry point, mirroring `reasons`' `Reason` orchestrator shape."
+rows read: 1, disagreements found: 58
+   docs exit 1
+AssertionError: expected [ …(58) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Interpret > keeps every compared summary and example equal to its source
+Tests  1 failed | 97 passed (98)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

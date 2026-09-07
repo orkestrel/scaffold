@@ -1,0 +1,18 @@
+2026-09-07T21:35:25Z
+=== npm run test:guides
+
+> @orkestrel/form@0.0.6 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/form
+
+···················································
+
+ Test Files  1 passed (1)
+      Tests  51 passed (51)
+   Start at  21:35:26
+   Duration  1.25s (transform 380ms, setup 413ms, import 320ms, tests 367ms, environment 0ms)
+
+exit 0
+2026-09-07T21:35:27Z

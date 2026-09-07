@@ -1,0 +1,14 @@
+== form p2-fix landing 2026-09-07T21:39:47Z over ee1fa2b
+== status
+ M guides/form.md
+ M src/core/constants.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     |  14 ++---
+ tests/guides.test.ts  |   8 +--
+ 4 files changed, 106 insertions(+), 102 deletions(-)
+== stage by path
+ 4 files changed, 106 insertions(+), 102 deletions(-)
+== committed
+6483f42 Refine form's convergence on the audit's findings
+(status end)

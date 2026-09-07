@@ -1,0 +1,6 @@
+=== C1: git status --short
+ M guides/form.md
+ M src/core/constants.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+exit 0

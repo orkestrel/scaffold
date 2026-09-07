@@ -1,0 +1,19 @@
+2026-09-07T21:31:31Z
+### grep -n "^| API *| Kind *| Shape *| Summary" guides/form.md
+54:| API             | Kind      | Shape                                                                                                                                                                            | Summary                                                                                       |
+83:| API                 | Kind      | Shape                                                                                                | Summary                                                    |
+101:| API             | Kind      | Shape                                                                                                                                                                         | Summary                                                                                                            |
+exit 0
+### grep -c "A `Shape` cell holds the constant's declared type." guides/form.md
+0
+### grep -c "In a guard table" guides/form.md
+0
+### grep -n "Its own options|Contract [0-9]* states|/Interface$/u|resolveRoot" guides/form.md tests/guides.test.ts
+guides/form.md:246:| Control    | Value               | Its own options              | Notes                                                          |
+guides/form.md:803:Contract 10 states: a source within `PATTERN_LIMIT` can still backtrack catastrophically, and
+guides/form.md:936:previous error list in place. Contract 4 states the exact partial-state boundary.
+tests/guides.test.ts:26:import { createRecorder, requireValue, resolveRoot } from '@orkestrel/test'
+tests/guides.test.ts:105:const root = resolveRoot(import.meta)
+tests/guides.test.ts:220:			const entity = group.interface.replace(/Interface$/u, '')
+tests/guides.test.ts:281:			const entity = group.interface.replace(/Interface$/u, '')
+exit 0

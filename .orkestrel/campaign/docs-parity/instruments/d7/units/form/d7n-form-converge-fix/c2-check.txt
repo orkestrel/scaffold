@@ -1,0 +1,16 @@
+2026-09-07T21:35:05Z
+=== npm run check
+
+> @orkestrel/form@0.0.6 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/form@0.0.6 check:src
+> npm run check:src:core
+
+
+> @orkestrel/form@0.0.6 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+exit 0
+2026-09-07T21:35:09Z

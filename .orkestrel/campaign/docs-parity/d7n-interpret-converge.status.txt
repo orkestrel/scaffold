@@ -1,0 +1,12 @@
+ M README.md
+ M guides/interpret.md
+ M src/core/Interpret.ts
+ M src/core/Narrator.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/managers/SubjectManager.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts

@@ -1,0 +1,20 @@
+
+> @orkestrel/database@0.0.14 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/database@0.0.14 check:src
+> npm run check:src:core && npm run check:src:browser && npm run check:src:server
+
+
+> @orkestrel/database@0.0.14 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/database@0.0.14 check:src:browser
+> tsc --noEmit -p configs/src/tsconfig.browser.json
+
+
+> @orkestrel/database@0.0.14 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+

@@ -1,0 +1,19 @@
+
+> @orkestrel/form@0.0.6 docs
+> node --experimental-strip-types scripts/docs.ts
+
+guides/form.md interface FormInterface: guide "Represents a form: a schema, the answers given against it, and the errors they carry." source "Declares the contract a form exposes: the state it holds and the calls that move it."
+guides/form.md const PATTERN_LIMIT: guide "Caps the accepted source length for an authored regular expression." source "Caps the accepted source length for an authored regular expression, at 256."
+guides/form.md const FIELD_LIMIT: guide "Caps the number of fields one schema may declare." source "Caps the number of fields one schema may declare, at 512."
+guides/form.md const GROUP_LIMIT: guide "Caps the number of groups one schema may declare." source "Caps the number of groups one schema may declare, at 64."
+guides/form.md const CHOICE_LIMIT: guide "Caps the number of choices one `select` or `checkbox` field may offer." source "Caps the number of choices one `select` or `checkbox` field may offer, at 1024."
+guides/form.md const LIST_LIMIT: guide "Caps the number of entries one list-valued answer may hold." source "Caps the number of entries one list-valued answer may hold, at 1024."
+guides/form.md const NAME_LIMIT: guide "Caps the length, in UTF-16 code units, of a schema, group, or field name." source "Caps the length, in UTF-16 code units, of a schema, group, or field name, at 128."
+guides/form.md const STRING_LIMIT: guide "Caps the length, in UTF-16 code units, of any single retained string." source "Caps the length, in UTF-16 code units, of any single retained string, at 65536."
+guides/form.md const TEXT_LIMIT: guide "Caps the total length, in UTF-16 code units, of every string one schema retains." source "Caps the total length, in UTF-16 code units, of every string one schema retains, at 1048576."
+guides/form.md const NODE_LIMIT: guide "Caps the total number of records, arrays, and leaves one schema retains." source "Caps the total number of records, arrays, and leaves one schema retains, at 16384."
+guides/form.md FormInterface.fill: guide "Answers several fields at once." source "Answers one field, or several at once."
+guides/form.md FormInterface.disable: guide "Takes every field out of the form." source "Takes one field, several fields, or every field out of the form."
+guides/form.md FormInterface.enable: guide "Puts every field back into the form." source "Puts one field, several fields, or every field back into the form."
+guides/form.md FormInterface.clear: guide "Returns every answer to `FormInterface.baseline`, the answers the form opened with." source "Returns every answer to the ones the form opened with."
+rows read: 1, disagreements found: 14

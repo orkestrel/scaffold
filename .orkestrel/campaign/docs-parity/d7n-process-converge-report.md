@@ -264,3 +264,7 @@ disagreement survived the doc-block rewrites under the P16 comparator.
 - **The equality case sits directly after the methods loop**, before `documents at least one method
   group` and the examples case, per Ruling 13's second correction. The pin and the README case sit
   at file scope directly after `manifest lists at least one guide`, the pilot's position.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-process-audit-verdict.md`): this report states counts in prose, and the P.2 report's claim that every remaining `both` names its members is false at `guides/process.md:1031`; the tree is authoritative and every cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/process/`.

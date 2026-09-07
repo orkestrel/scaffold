@@ -1,0 +1,21 @@
+== queue p2 landing 2026-09-07T21:39:14Z over 4042dda
+== status
+ M README.md
+ M guides/queue.md
+ M src/core/Queue.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/stores/DatabaseQueueStore.ts
+ M src/core/stores/MemoryQueueStore.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts                |  13 ++-
+ tests/guides.test.ts                  |  82 +++++++++++++-
+ 11 files changed, 259 insertions(+), 163 deletions(-)
+== stage by path
+ 11 files changed, 259 insertions(+), 163 deletions(-)
+== committed
+bb89ae0 Converge queue under the equality gate
+(status end)

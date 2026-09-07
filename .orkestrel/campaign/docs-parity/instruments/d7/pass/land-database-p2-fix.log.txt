@@ -1,0 +1,21 @@
+== database p2-fix landing 2026-09-07T21:37:05Z over 21f0c9a
+== status
+ M guides/database.md
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/server/compilers.ts
+ M src/server/constants.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ src/server/helpers.ts    |  20 ++--
+ src/server/types.ts      |   6 +-
+ 11 files changed, 156 insertions(+), 150 deletions(-)
+== stage by path
+ 11 files changed, 156 insertions(+), 150 deletions(-)
+== committed
+5ee7268 Refine database's convergence on the audit's findings
+(status end)

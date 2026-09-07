@@ -1,0 +1,9 @@
+2026-09-07T21:34:54Z
+=== npx oxfmt --check guides/form.md tests/guides.test.ts src/core/types.ts src/core/constants.ts
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 828ms on 4 files using 4 threads.
+exit 0
+=== npx oxlint --config .oxlintrc.json --deny-warnings tests/guides.test.ts src/core
+exit 0

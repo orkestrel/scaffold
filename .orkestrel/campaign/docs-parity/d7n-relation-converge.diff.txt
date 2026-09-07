@@ -1,0 +1,688 @@
+diff --git a/README.md b/README.md
+index 2aec9bb..98c5551 100644
+--- a/README.md
++++ b/README.md
+@@ -1,15 +1,15 @@
+ # @orkestrel/relation
+ 
+-A typed **relation manager** over [`@orkestrel/database`](https://github.com/orkestrel/database)
+-tables — name a table's relations once, then `load` / `find` records with their
+-related rows already attached. Loading is **batched** — a direct relation uses
+-one query across the whole record set, while a `through` relation uses two
+-(junction then target); either count stays constant as the parent count grows.
+-The relationships
+-(`belongs` / `many` / `one` / `through` / `morph`) cover the FK shapes; nested
+-includes recurse through the registry; `link` / `unlink` / `links` manage a
+-many-to-many junction without hand-writing join rows. Environment-agnostic —
+-no I/O, no browser or server assumptions. Part of the `@orkestrel` line.
++> A small, declarative ORM layer over the `@orkestrel/database` tables: a table's
++> relations named once, then `load` / `find` records with their related rows already
++> attached, batched so a direct relation costs one query across the whole record set and
++> a `through` relation two.
++
++Declare each table's relations with the `belongsTo`, `hasMany`, `hasOne`,
++`hasThrough`, and `hasMorph` builders, then reach a typed model through
++`model(name)` and drop to `model.table` for plain typed reads and writes.
++Environment-agnostic — no I/O, no browser or server assumptions. Part of the
++`@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/relation.md b/guides/relation.md
+index 053fb04..8b4e298 100644
+--- a/guides/relation.md
++++ b/guides/relation.md
+@@ -1,8 +1,11 @@
+ # Relation
+ 
+-> A small, declarative ORM layer over the [database](database.md) module: name a table's relations once, then `load` / `find` records with their related rows already attached. Loading is **batched** — a direct relation uses one query across the whole record set, while a `through` relation uses two (junction then target); either count stays constant as the parent count grows. The relationships (`belongs` / `many` / `one` / `through` / `morph`) cover the FK shapes; nested includes recurse through the registry; `link` / `unlink` / `links` manage a many-to-many junction without hand-writing join rows.
+->
+-> It deliberately stays **thin above the typed store**. Resolution is define-time (each relation is precomputed once into a flat `ResolvedRelation` — nothing is inferred while loading), and the loaded relation properties are intentionally **loose** (`Row | readonly Row[] | undefined`) rather than typed to each exact target row: the typed half is the table reached through `model.table`; relation loading is the looser convenience on top. No write-cascades, no lazy proxies, no query builder of its own — batched eager loading and junction management. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
++> A small, declarative ORM layer over the `@orkestrel/database` tables: a table's
++> relations named once, then `load` / `find` records with their related rows already
++> attached, batched so a direct relation costs one query across the whole record set and
++> a `through` relation two.
++
++The relationships (`belongs` / `many` / `one` / `through` / `morph`) cover the foreign-key shapes; nested includes recurse through the registry; `link` / `unlink` / `links` manage a many-to-many junction without hand-writing join rows. The layer stays thin above the typed store: resolution is define-time — each relation is precomputed once into a flat `ResolvedRelation`, and nothing is inferred while loading — and the loaded relation properties are deliberately loose (`Row | readonly Row[] | undefined`) rather than typed to each exact target row. The typed half is the table reached through `model.table`, and relation loading is the looser convenience on top. No write-cascades, no lazy proxies, no query builder of its own. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+@@ -34,71 +37,73 @@ acme?.contacts // the relation property — broad (Row | readonly Row[] | undefi
+ 
+ ### Factory & manager
+ 
+-| API                     | Kind     | Summary                                                                        |
+-| ----------------------- | -------- | ------------------------------------------------------------------------------ |
+-| `createRelationManager` | function | Create a `RelationManagerInterface` over a database and its relation map.      |
+-| `RelationManager`       | class    | The relation registry — resolves relations once, vends a model per table.      |
+-| `Model`                 | class    | A typed table paired with relation-aware `load` / `find` and junction methods. |
++| API                     | Kind     | Summary                                                                                                 |
++| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
++| `createRelationManager` | function | Creates a `RelationManagerInterface` over a database and its relation map.                              |
++| `RelationManager`       | class    | Resolves a `RelationsShape` once at construction and vends a typed `ModelInterface` per declared table. |
++| `Model`                 | class    | Pairs a typed table with relation-aware `load` / `find` and junction management.                        |
+ 
+ ### Builders
+ 
+-| API          | Kind     | Builds a relation where…                                                   |
+-| ------------ | -------- | -------------------------------------------------------------------------- |
+-| `belongsTo`  | function | a FK on THIS table points at the related row (single).                     |
+-| `hasMany`    | function | a FK on the RELATED table points back here (array).                        |
+-| `hasOne`     | function | like `hasMany`, but a single related row.                                  |
+-| `hasThrough` | function | a junction table links the two sides (many-to-many).                       |
+-| `hasMorph`   | function | a polymorphic FK plus a discriminator column on the RELATED table (array). |
++| API          | Kind     | Summary                                                                                                         |
++| ------------ | -------- | --------------------------------------------------------------------------------------------------------------- |
++| `belongsTo`  | function | Builds a `belongs` relation — a foreign key on the owning table points at the related row (single).             |
++| `hasMany`    | function | Builds a `many` relation — a foreign key on the related table points back at the owning row (array).            |
++| `hasOne`     | function | Builds a `one` relation — like `hasMany`, but a single related row.                                             |
++| `hasThrough` | function | Builds a `through` relation — a junction table links the two sides (many-to-many).                              |
++| `hasMorph`   | function | Builds a `morph` relation — a polymorphic foreign key plus a discriminator column on the related table (array). |
+ 
+ ### Resolution
+ 
+-| API                    | Kind     | Summary                                                    |
+-| ---------------------- | -------- | ---------------------------------------------------------- |
+-| `resolveRelation`      | function | Resolve one raw `Relation` into a flat `ResolvedRelation`. |
+-| `resolveRelationMap`   | function | Resolve every entry of a `RelationMap`.                    |
+-| `isRelationDescriptor` | function | Narrow a value to the object form of a relation.           |
++| API                    | Kind     | Summary                                                                       |
++| ---------------------- | -------- | ----------------------------------------------------------------------------- |
++| `resolveRelation`      | function | Resolves one raw `Relation` value into a flat `ResolvedRelation`.             |
++| `resolveRelationMap`   | function | Resolves every entry of a `RelationMap` into a name → `ResolvedRelation` map. |
++| `isRelationDescriptor` | function | Narrows a value to a `RelationDescriptor` (the object form of a relation).    |
+ 
+ ### Row helpers
+ 
+-| API             | Kind     | Summary                                                           |
+-| --------------- | -------- | ----------------------------------------------------------------- |
+-| `readColumn`    | function | Read one column off any record, whatever its declared type.       |
+-| `countAttached` | function | Count the related rows one relation attached across a record set. |
+-| `indexRows`     | function | Index rows by the string form of one column, for keyed lookups.   |
+-| `groupRows`     | function | Group rows by the string form of one column, for many lookups.    |
++| API             | Kind     | Summary                                                                |
++| --------------- | -------- | ---------------------------------------------------------------------- |
++| `readColumn`    | function | Reads one column off any record, whatever its declared type.           |
++| `countAttached` | function | Counts the related rows one relation attached across a record set.     |
++| `indexRows`     | function | Indexes rows by the string form of one column, for keyed lookups.      |
++| `groupRows`     | function | Groups rows by the string form of one column, for one-to-many lookups. |
+ 
+ ### Errors
+ 
+-| API               | Kind     | Summary                                                                         |
+-| ----------------- | -------- | ------------------------------------------------------------------------------- |
+-| `RelationError`   | class    | Carries a `RelationErrorCode` (`INVALID` / `UNKNOWN_RELATION` / `NOT_THROUGH`). |
+-| `isRelationError` | function | Narrow an unknown caught value to a `RelationError`.                            |
++| API               | Kind     | Summary                                                                                             |
++| ----------------- | -------- | --------------------------------------------------------------------------------------------------- |
++| `RelationError`   | class    | Represents an error thrown by the relations layer, carrying a machine-readable `RelationErrorCode`. |
++| `isRelationError` | function | Narrows an unknown caught value to a `RelationError`.                                               |
+ 
+ ### Types
+ 
+-| Type                       | Kind      | Shape                                                                                                       |
+-| -------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+-| `Relationship`             | type      | `'belongs' \| 'many' \| 'one' \| 'through' \| 'morph'`.                                                     |
+-| `RelationDescriptor`       | interface | The object form — `relationship?` plus the per-relationship fields (`column` / `key` / `through` / …).      |
+-| `Relation`                 | type      | `string` (belongs) \| `readonly string[]` (many) \| `RelationDescriptor`.                                   |
+-| `RelationMap`              | type      | `Readonly<Record<string, Relation>>` — a model's relations by name.                                         |
+-| `RelationsShape`           | type      | `{ [table]?: RelationMap }` — per-table relation maps, keyed by the database's tables.                      |
+-| `ResolvedRelation`         | type      | A relation resolved at define-time — a union over the arms that follow, discriminated on `relationship`.    |
+-| `ResolvedBelongs`          | interface | The `belongs` arm — `{ relationship, name, model, column }`, every member required.                         |
+-| `ResolvedMany`             | interface | The `many` arm — `{ relationship, name, model, key }`, every member required.                               |
+-| `ResolvedOne`              | interface | The `one` arm — `{ relationship, name, model, key }`, every member required.                                |
+-| `ResolvedThrough`          | interface | The `through` arm — `{ relationship, name, model, through, source, target }`, every member required.        |
+-| `ResolvedMorph`            | interface | The `morph` arm — `{ relationship, name, model, key, tag, label }`, every member required.                  |
+-| `RelationErrorCode`        | type      | `'INVALID' \| 'UNKNOWN_RELATION' \| 'NOT_THROUGH'`.                                                         |
+-| `Include`                  | interface | Which relations to populate (`true`), and recursively their own (nested `Include`).                         |
+-| `Loaded`                   | type      | `T & Record<string, Row \| readonly Row[] \| undefined>` — a row with relations attached.                   |
+-| `LoadedMap`                | type      | `Record<string, Row \| readonly Row[] \| undefined>` — the relation-property bag of a `Loaded` row.         |
+-| `RelationContext`          | interface | `{ resolved, primary }` — a related model's resolved relations + primary, for nesting.                      |
+-| `FindOptions`              | interface | `{ limit?, offset?, sort?, direction?, signal? }` — pagination, ordering, and cancellation for `find`.      |
+-| `ModelEventMap`            | type      | A model's push observation surface — `load(name, count)` · `link(key, relation)` · `unlink(key, relation)`. |
+-| `ModelInterface`           | interface | `emitter` / `name` / `table` / `relations` + `load` / `find` / `link` / `unlink` / `links`.                 |
+-| `RelationManagerOptions`   | interface | `{ database, relations?, model? }` — input to `createRelationManager`.                                      |
+-| `RelationManagerInterface` | interface | `count` / `model` / `names` / `has`.                                                                        |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| Type                       | Kind      | Shape                                                                                | Summary                                                                                                                                                                               |
++| -------------------------- | --------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Relationship`             | type      | `'belongs' \| 'many' \| 'one' \| 'through' \| 'morph'`                               | Enumerates the relationships a relation can declare.                                                                                                                                  |
++| `RelationDescriptor`       | interface | `{ relationship?, column?, key?, through?, source?, target?, tag?, label?, model? }` | Represents the object form of a relation.                                                                                                                                             |
++| `Relation`                 | type      | `string \| readonly string[] \| RelationDescriptor`                                  | Represents a single relation definition.                                                                                                                                              |
++| `RelationMap`              | type      | `Readonly<Record<string, Relation>>`                                                 | Holds a model's relations, keyed by relation name.                                                                                                                                    |
++| `RelationsShape`           | type      | `{ readonly [K in keyof T]?: RelationMap }`                                          | Holds per-table relation maps — the declarative input to `createRelationManager`.                                                                                                     |
++| `ResolvedRelation`         | type      | `ResolvedBelongs \| ResolvedMany \| ResolvedOne \| ResolvedThrough \| ResolvedMorph` | Represents a relation resolved at define-time into a flat, ready-to-load form.                                                                                                        |
++| `ResolvedBelongs`          | interface | `{ relationship, name, model, column }`                                              | Represents a `belongs` relation resolved at define-time — the foreign key sits on the owning table.                                                                                   |
++| `ResolvedMany`             | interface | `{ relationship, name, model, key }`                                                 | Represents a `many` relation resolved at define-time — the foreign key sits on the related table.                                                                                     |
++| `ResolvedOne`              | interface | `{ relationship, name, model, key }`                                                 | Represents a `one` relation resolved at define-time — `ResolvedMany`'s foreign key, one row.                                                                                          |
++| `ResolvedThrough`          | interface | `{ relationship, name, model, through, source, target }`                             | Represents a `through` relation resolved at define-time — a junction table links the two sides.                                                                                       |
++| `ResolvedMorph`            | interface | `{ relationship, name, model, key, tag, label }`                                     | Represents a `morph` relation resolved at define-time — a polymorphic foreign key and its discriminator.                                                                              |
++| `RelationErrorCode`        | type      | `'INVALID' \| 'UNKNOWN_RELATION' \| 'NOT_THROUGH'`                                   | Names a machine-readable `RelationError` code.                                                                                                                                        |
++| `Include`                  | interface | `{ [relation] }`                                                                     | Selects which relations to populate when loading — and, recursively, their own.                                                                                                       |
++| `Loaded`                   | type      | `T & Readonly<LoadedMap>`                                                            | Represents a row with its loaded relation properties attached.                                                                                                                        |
++| `LoadedMap`                | type      | `Record<string, Row \| readonly Row[] \| undefined>`                                 | Holds the relation properties attached to a `Loaded` row — each relation name mapped to its loaded related row(s), or `undefined` when a `belongs` / `one` relation misses.           |
++| `RelationContext`          | interface | `{ resolved, primary }`                                                              | Holds a related model's resolved relations and primary-key column, for nested loading.                                                                                                |
++| `FindOptions`              | interface | `{ limit?, offset?, sort?, direction?, signal? }`                                    | Configures pagination, ordering, and cancellation for `find`.                                                                                                                         |
++| `ModelEventMap`            | type      | `{ load, link, unlink }`                                                             | Declares the push observation surface of a `ModelInterface` — the eager-load + junction-management moments a fire-and-forget observer (logging, metrics, a sync layer) subscribes to. |
++| `ModelInterface`           | interface | `{ emitter, name, table, relations } plus load, find, link, unlink, links`           | Represents a typed table paired with relation-aware loading and junction management.                                                                                                  |
++| `RelationManagerOptions`   | interface | `{ database, relations?, model? }`                                                   | Configures `createRelationManager`.                                                                                                                                                   |
++| `RelationManagerInterface` | interface | `{ count } plus model, names, has`                                                   | Vends a typed `ModelInterface` per table.                                                                                                                                             |
+ 
+ ## Methods
+ 
+@@ -108,36 +113,36 @@ The public methods of each behavioral interface — one table per type, keyed by
+ 
+ `load` / `find` batch-load (one query for a direct relation, two for `through`, regardless of result size); `link` / `unlink` / `links` manage a `through` relation's junction rows. Every method accepts the database package's optional `OperationOptions` abort signal; `find` carries the same signal in `FindOptions`.
+ 
+-| Method   | Returns                                      | Behavior                                                  |
+-| -------- | -------------------------------------------- | --------------------------------------------------------- |
+-| `load`   | `Promise<Loaded<T> \| undefined>` (or array) | One record by key(s) with the chosen relations populated. |
+-| `find`   | `Promise<readonly Loaded<T>[]>`              | Many records (paged / sorted) with relations populated.   |
+-| `link`   | `Promise<void>`                              | Insert a missing junction row for a `through` relation.   |
+-| `unlink` | `Promise<void>`                              | Remove matching junction rows atomically.                 |
+-| `links`  | `Promise<readonly Key[]>`                    | The related keys reachable through a `through` relation.  |
++| Method   | Returns                                      | Summary                                                                                                             |
++| -------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
++| `load`   | `Promise<Loaded<T> \| undefined>` (or array) | Loads one record by key with the chosen relations populated, or a positional array of records for an array of keys. |
++| `find`   | `Promise<readonly Loaded<T>[]>`              | Finds many records, paged and sorted through `FindOptions`, with the chosen relations populated.                    |
++| `link`   | `Promise<void>`                              | Inserts a missing junction row for a `through` relation.                                                            |
++| `unlink` | `Promise<void>`                              | Removes every matching junction row for a `through` relation inside one transaction.                                |
++| `links`  | `Promise<readonly Key[]>`                    | Lists the related keys reachable through a `through` relation.                                                      |
+ 
+ #### `RelationManagerInterface`
+ 
+ `model(name)` vends the typed model for a declared table; `names()` lists the table names that carry resolved relations, and `has(name)` reports whether a given table does.
+ 
+-| Method  | Returns                       | Behavior                                 |
+-| ------- | ----------------------------- | ---------------------------------------- |
+-| `model` | `ModelInterface<RowOf<T[K]>>` | The typed model for a declared table.    |
+-| `names` | `readonly string[]`           | The names of every model with relations. |
+-| `has`   | `boolean`                     | Whether a model has resolved relations.  |
++| Method  | Returns                       | Summary                                                     |
++| ------- | ----------------------------- | ----------------------------------------------------------- |
++| `model` | `ModelInterface<RowOf<T[K]>>` | Returns the typed model for a declared table.               |
++| `names` | `readonly string[]`           | Lists the names of every model carrying resolved relations. |
++| `has`   | `boolean`                     | Reports whether a model carries resolved relations.         |
+ 
+ ## Contract
+ 
+ These invariants hold across `src/core` ↔ `relation.md`:
+ 
+-1. **DOC ↔ SOURCE bijection.** Every `function` / `class` / `interface` / `type` row in the `## Surface` tables is a real export of the relations source tree, and every export appears as a Surface row — exhaustive, both directions (`.claude/rules/documentation.md` § Parity).
++1. **Doc ↔ source bijection.** Every `function` / `class` / `interface` / `type` row in the `## Surface` tables is a real export of the relations source tree, and every export appears as a Surface row — exhaustive, both directions (`.claude/rules/documentation.md` § Parity).
+ 2. **Layered on the typed database and validated at construction.** A manager is built over a `DatabaseInterface`; `model(name)` is checked against the database's declared tables and returns a model whose `table` is that table's typed `TableInterface` (a declared table with no relation entry yields a relation-less model — still fully usable for typed CRUD). Related tables are fetched by runtime name at the broad `Row` type. Every resolved target table and `through` junction must appear in `database.export()`; an undeclared table throws `RelationError('INVALID', ...)` when the manager is created, before any operation runs.
+ 3. **Batch loading — no N+1.** A direct included relation uses one query over the distinct foreign keys for the entire record set; a `through` relation uses two queries, one for the junction rows and one for the target rows. Related rows are grouped in memory and attached, so either query count is independent of how many parents were loaded. Nested includes recurse through the registry, and each nested level is batched again under the same rule.
+ 4. **Resolution is define-time.** Each raw `Relation` is resolved once at construction into a flat `ResolvedRelation` — a union discriminated on `relationship` whose every arm declares its own columns required, so a loader reads them after one narrow and never against an absent member; nothing is inferred during loading. The builders set an explicit `relationship` (so `many` and `one`, otherwise identical as `{ key }`, are unambiguous); a hand-written descriptor with no `relationship` infers one from the fields present (`through` → `through`, `tag` → `morph`, `column` → `belongs`, else `key` → `one`), and a malformed one throws `INVALID` at define-time.
+ 5. **Total, loose `Loaded`.** `Loaded<T>` is the base row (the table's row type) intersected with the broad relation bag `Readonly<LoadedMap>` (`Row | readonly Row[] | undefined` per relation); a missed `belongs` / `one` is `undefined`, a missed `many` / `through` / `morph` is `[]`. Through-only operations (`link` / `unlink` / `links`) throw `NOT_THROUGH` on any other relationship and `UNKNOWN_RELATION` for a relation the model never declared. `link` is idempotent for sequential calls: an existing `(key, target)` pair causes no write and no event. Concurrent `link` calls for the same pair may each insert. `unlink` removes all matching rows inside one database transaction, so a fault rolls the whole removal back. On a driver without a native transaction the database's floor snapshots the whole store, so a rollback restores every table to the scope's start.
+-6. **Observation is a pure side-channel.** A `Model` owns a typed `emitter` (`ModelEventMap` — `load(name, count)` / `link(key, relation)` / `unlink(key, relation)`); `RelationManager` is event-free by design (a stateless registry has no observable lifecycle). Every event is emitted directly (the `.claude/rules/patterns.md` § Stateful emitters convention: the emitter isolates a listener throw, routing it to its OWN `error` handler — the `error` option, surfaced as `(error, event)`, NOT a domain event — itself re-entrancy-guarded) strictly AFTER the load resolves / the junction op completes. `load` fires ONCE per relation (carrying the count of rows attached across the record set — no N+1 in the events), so a buggy observer can corrupt neither the batched eager-load nor a junction write (proven by the emit-safety tests). An idempotent no-op `link` emits nothing.
++6. **Observation is a pure side-channel.** A `Model` owns a typed `emitter` (`ModelEventMap` — `load(name, count)` / `link(key, relation)` / `unlink(key, relation)`); `RelationManager` is event-free by design (a stateless registry has no observable lifecycle). Every event is emitted directly (the `.claude/rules/patterns.md` § Stateful emitters convention: the emitter isolates a listener throw, routing it to its own `error` handler — the `error` option, surfaced as `(error, event)`, never a domain event — itself re-entrancy-guarded) strictly after the load resolves and after the junction operation completes. `load` fires once per relation (carrying the count of rows attached across the record set — no N+1 in the events), so a buggy observer can corrupt neither the batched eager-load nor a junction write (proven by the emit-safety tests). An idempotent no-op `link` emits nothing.
+ 7. **Cooperative cancellation.** Every model operation accepts the database package's abort option. Query reads pass the signal to `records`. The keyed `get` read takes no options in the database package, so `load` checks the signal before it and again before each relation in the population walk; a batched `get` already in flight runs to completion. Writes pass it to their database mutation or transaction. An aborted signal surfaces unchanged as the database package's `ABORTED` error.
+-8. **DOC ↔ SOURCE method bijection.** Every behavioral interface's `## Methods` table lists exactly its public methods (call-signature members) — exhaustive, both directions — and each implementing class (`Model` / `RelationManager`) exposes the same public methods, no more (`.claude/rules/documentation.md` § Parity). A renamed / added / removed method breaks the gate until the table is reconciled.
++8. **Doc ↔ source method bijection.** Every behavioral interface's `## Methods` table lists exactly its public methods (call-signature members) — exhaustive, both directions — and each implementing class (`Model` / `RelationManager`) exposes the same public methods, no more (`.claude/rules/documentation.md` § Parity). A renamed / added / removed method breaks the gate until the table is reconciled.
+ 
+ Typing each loaded relation property to its exact target row (Prisma-style) is a deliberate, documented deferral — like the database guide's deferred pieces. The `Model` is **observable** — it owns a typed `emitter` (`ModelEventMap`) carrying its eager-load + junction moments (see [Observing](#observing)); `RelationManager` stays event-free by design (a stateless registry that merely vends models has no observable lifecycle of its own). Still out of scope: write-cascades; they are additive and leave the documented surface unchanged.
+ 
+@@ -168,6 +173,8 @@ const manager = createRelationManager({
+ 		contacts: { account: belongsTo('accountId', 'accounts') },
+ 	},
+ })
++
++const acme = await manager.model('accounts').load('acc1', { contacts: true, classification: true })
+ ```
+ 
+ The shorthands cover the common relationships — a bare string is a `belongsTo` column, and a one-element array is a `hasMany` key (both unambiguous, so they need no `relationship`):
+@@ -180,13 +187,13 @@ Reach for the builders for everything else: they set an explicit `relationship`,
+ 
+ The relationships, and where each foreign key lives:
+ 
+-| Relationship | Builder      | FK location    | Returns               |
+-| ------------ | ------------ | -------------- | --------------------- |
+-| `belongs`    | `belongsTo`  | THIS table     | single or `undefined` |
+-| `many`       | `hasMany`    | RELATED table  | array                 |
+-| `one`        | `hasOne`     | RELATED table  | single or `undefined` |
+-| `through`    | `hasThrough` | junction table | array                 |
+-| `morph`      | `hasMorph`   | RELATED table  | array                 |
++| Relationship | Builder      | FK location        | Returns               |
++| ------------ | ------------ | ------------------ | --------------------- |
++| `belongs`    | `belongsTo`  | the owning table   | single or `undefined` |
++| `many`       | `hasMany`    | the related table  | array                 |
++| `one`        | `hasOne`     | the related table  | single or `undefined` |
++| `through`    | `hasThrough` | the junction table | array                 |
++| `morph`      | `hasMorph`   | the related table  | array                 |
+ 
+ ### Resolving relations directly
+ 
+@@ -262,7 +269,7 @@ const page = await accounts.find(
+ const deep = await accounts.load('acc1', { contacts: { account: true } })
+ 
+ // Batch by key array: an array in, an array out — and this direct-relation fetch is
+-// STILL one query across all parents (no N+1), not one per key.
++// still one query across all parents (no N+1), not one per key.
+ const [a, b] = await accounts.load(['acc1', 'acc2'], { contacts: true })
+ ```
+ 
+@@ -307,7 +314,7 @@ await pending
+ 
+ ### Observing
+ 
+-Each `Model` exposes a typed `emitter` carrying its eager-load + junction moments for fire-and-forget observers — logging, metrics, a sync layer. Subscribe through `model.emitter.on(...)`. **Emitting is observation-only**: every event fires strictly AFTER the load resolves / the junction op completes, so a listener can never change what a load does (and a throwing one can't corrupt it). The `RelationManager` is event-free by design — a stateless registry that merely vends models has no observable lifecycle of its own; observe the per-model handle instead.
++Each `Model` exposes a typed `emitter` carrying its eager-load + junction moments for fire-and-forget observers — logging, metrics, a sync layer. Subscribe through `model.emitter.on(...)`. **Emitting is observation-only**: every event fires strictly after the load resolves and after the junction operation completes, so a listener can never change what a load does (and a throwing one can't corrupt it). The `RelationManager` is event-free by design — a stateless registry that merely vends models has no observable lifecycle of its own; observe the per-model handle instead.
+ 
+ ```ts
+ const accounts = manager.model('accounts')
+@@ -334,9 +341,9 @@ The event vocabulary:
+ | ------- | --------------- | --------------------------------------------------------------------- |
+ | `Model` | `ModelEventMap` | `load(name, count)` · `link(key, relation)` · `unlink(key, relation)` |
+ 
+-`load` fires ONCE per relation an eager-load resolves (`load` / `find`, including each nested relation) — carrying the relation name + the COUNT of related rows attached across the whole record set (the batched load has no N+1, and neither do its events — it is not one event per record); `link` / `unlink` fire after a junction row is inserted / removed, carrying the owning key + the relation name. Reads of the base rows are the table's concern (observe `model.table.emitter` for per-row `write` / `remove`).
++`load` fires once per relation an eager-load resolves (`load` / `find`, including each nested relation) — carrying the relation name and the count of related rows attached across the whole record set (the batched load has no N+1, and neither do its events — it is not one event per record); `link` / `unlink` fire after a junction row is inserted / removed, carrying the owning key + the relation name. Reads of the base rows are the table's concern (observe `model.table.emitter` for per-row `write` / `remove`).
+ 
+-**Listener isolation.** A listener throw is NEVER allowed to escape into the load: the emitter isolates it and routes it to its OWN `error` handler (the `error` option, surfaced as `(error, event)`), NOT to a domain event — so a buggy observer is isolated yet not silently lost. The `error` handler runs in its own try/catch, so even a throwing handler can't recurse or escape; with no handler, the throw is swallowed silently. Because every emit sits after its transition AND is isolated, a buggy observer **cannot corrupt the batched eager-load or a junction write** — the load still resolves correctly and the junction row is still written — proven by the emit-safety tests. A `Model` is reached through the `RelationManager`, which threads the `model.error` option into every handle it vends, so set that option to receive a `Model` listener throw; leave it unset and the throw is swallowed silently.
++**Listener isolation.** A listener throw never escapes into the load: the emitter isolates it and routes it to its own `error` handler (the `error` option, surfaced as `(error, event)`), never to a domain event — so a buggy observer is isolated yet not silently lost. The `error` handler runs in its own try/catch, so even a throwing handler can't recurse or escape; with no handler, the throw is swallowed silently. Because every emit sits after its transition and is isolated, a buggy observer **cannot corrupt the batched eager-load or a junction write** — the load still resolves correctly and the junction row is still written — proven by the emit-safety tests. A `Model` is reached through the `RelationManager`, which threads the `model.error` option into every handle it vends, so set that option to receive a `Model` listener throw; leave it unset and the throw is swallowed silently.
+ 
+ ### Practices
+ 
+@@ -349,7 +356,7 @@ The event vocabulary:
+ 
+ ## Tests
+ 
+-- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports).
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports), the `ModelInterface` / `RelationManagerInterface` ↔ `Model` / `RelationManager` method bijections, and the equality gate: every `Summary` cell against its declaration's description paragraph, the titled `Defining relations` fence against the `@example` block of that title (pinned so the titled pair cannot be retired silently), and the README pitch against this guide's tagline. It also runs the guide's value-claiming fences and asserts the values their comments claim.
+ - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — `resolveRelation` (shorthands, builders, inference, errors, a wrong-typed descriptor member), `resolveRelationMap`, `readColumn`, `countAttached`, `indexRows`, `groupRows`.
+ - [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — `isRelationDescriptor` over the object form, the builders' output, the string / array shorthands, a member holding the wrong type, and a `relationship` outside the union.
+ - [`tests/src/core/RelationManager.test.ts`](../tests/src/core/RelationManager.test.ts) — the manager-level surface: the registry (`count` / `names` / `has`), the typed `model(name)` accessor, and construction-time `INVALID` errors for undeclared relation and junction tables.
+diff --git a/src/core/Model.ts b/src/core/Model.ts
+index d7e66f8..4be9365 100644
+--- a/src/core/Model.ts
++++ b/src/core/Model.ts
+@@ -29,7 +29,7 @@ import { countAttached, groupRows, indexRows, readColumn } from './helpers.js'
+ import { RelationError } from './errors.js'
+ 
+ /**
+- * Pairs a typed table with relation-aware loading.
++ * Pairs a typed table with relation-aware `load` / `find` and junction management.
+  *
+  * @remarks
+  * The model's own table is fully typed (`table`); related tables are reached by
+@@ -45,10 +45,10 @@ import { RelationError } from './errors.js'
+  *   eager-load + junction moments — `load` (a relation resolved: its name + the count of
+  *   related rows attached across the whole record set), `link` / `unlink` (a junction row
+  *   written) — for fire-and-forget observers. Every event is emitted directly, strictly
+- *   AFTER the load resolves / the junction op completes; the emitter isolates a listener
+- *   throw and routes it to its `error` handler (the `error` option), so a buggy observer can
+- *   never corrupt the batched eager-load (no N+1 in the events either — one `load` per
+- *   relation, not per record).
++ *   after the load resolves and after the junction operation completes; the emitter
++ *   isolates a listener throw and routes it to its `error` handler (the `error` option),
++ *   so a buggy observer can never corrupt the batched eager-load (no N+1 in the events
++ *   either — one `load` per relation, not per record).
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 81c4ca8..7e7962f 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -5,7 +5,8 @@ import type { RelationErrorCode } from './types.js'
+ // (`.claude/rules/typescript.md` § Errors and outcomes).
+ 
+ /**
+- * Represents an error thrown by the relations layer.
++ * Represents an error thrown by the relations layer, carrying a machine-readable
++ * {@link RelationErrorCode}.
+  *
+  * @remarks
+  * Thrown for: a relation value whose relationship cannot be inferred (`INVALID`), a
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index e805cc3..480d7b4 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -3,7 +3,7 @@ import type { TableMap } from '@orkestrel/database'
+ import { RelationManager } from './RelationManager.js'
+ 
+ /**
+- * Creates a relation manager over a database and its relation definitions.
++ * Creates a {@link RelationManagerInterface} over a database and its relation map.
+  *
+  * @remarks
+  * `relations` maps table names (constrained to the database's tables) to their
+@@ -14,17 +14,31 @@ import { RelationManager } from './RelationManager.js'
+  * @param options - The `database` and an optional `relations` map
+  * @returns A typed {@link RelationManagerInterface}
+  *
+- * @example
++ * @example Defining relations
+  * ```ts
+- * import { createRelationManager, belongsTo, hasMany } from '@src/core'
++ * import {
++ * 	createRelationManager,
++ * 	belongsTo,
++ * 	hasMany,
++ * 	hasOne,
++ * 	hasThrough,
++ * 	hasMorph,
++ * } from '@orkestrel/relation'
+  *
+  * const manager = createRelationManager({
+  * 	database: db,
+  * 	relations: {
+- * 		accounts: { classification: belongsTo('classificationId', 'classifications'), contacts: hasMany('accountId') },
++ * 		accounts: {
++ * 			classification: belongsTo('classificationId', 'classifications'), // FK on accounts
++ * 			contacts: hasMany('accountId'), // FK on contacts → accounts
++ * 			profile: hasOne('accountId', 'profiles'), // single, FK on profiles
++ * 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // through a junction
++ * 			notes: hasMorph('entityId', 'entityType', 'account', 'notes'), // polymorphic
++ * 		},
+  * 		contacts: { account: belongsTo('accountId', 'accounts') },
+  * 	},
+  * })
++ *
+  * const acme = await manager.model('accounts').load('acc1', { contacts: true, classification: true })
+  * ```
+  */
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 4736cee..1f2e443 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -153,7 +153,7 @@ export function resolveRelationMap(relations: RelationMap): ReadonlyMap<string,
+ // === Row projection
+ 
+ /**
+- * Reads one column off any record.
++ * Reads one column off any record, whatever its declared type.
+  *
+  * @remarks
+  * A base row's type is closed, so the column is read with `Reflect.get` rather than
+@@ -259,7 +259,8 @@ export function groupRows(
+ // === Builders
+ 
+ /**
+- * Builds a `belongs` relation — a foreign key on THIS table points at the related row.
++ * Builds a `belongs` relation — a foreign key on the owning table points at the related row
++ * (single).
+  *
+  * @param column - The FK column on this table
+  * @param model - Target table name (defaults to the relation name)
+@@ -275,7 +276,8 @@ export function belongsTo(column: string, model?: string): RelationDescriptor {
+ }
+ 
+ /**
+- * Builds a `many` relation — a foreign key on the RELATED table points back here.
++ * Builds a `many` relation — a foreign key on the related table points back at the owning row
++ * (array).
+  *
+  * @param key - The FK column on the related table
+  * @param model - Target table name (defaults to the relation name)
+@@ -326,7 +328,8 @@ export function hasThrough(
+ }
+ 
+ /**
+- * Builds a `morph` relation — a polymorphic FK plus a discriminator on the RELATED table.
++ * Builds a `morph` relation — a polymorphic foreign key plus a discriminator column on the
++ * related table (array).
+  *
+  * @param key - The FK column on the related table
+  * @param tag - The discriminator column on the related table
+diff --git a/src/core/types.ts b/src/core/types.ts
+index bb9bf76..1063a61 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -83,7 +83,8 @@ export type RelationsShape<T extends TableMap = TableMap> = {
+ }
+ 
+ /**
+- * Represents a `belongs` relation resolved at define-time — the foreign key sits on THIS table.
++ * Represents a `belongs` relation resolved at define-time — the foreign key sits on the owning
++ * table.
+  *
+  * @remarks
+  * `column` is that foreign key; the related row is the one whose primary key it holds.
+@@ -97,7 +98,7 @@ export interface ResolvedBelongs {
+ }
+ 
+ /**
+- * Represents a `many` relation resolved at define-time — the foreign key sits on the RELATED
++ * Represents a `many` relation resolved at define-time — the foreign key sits on the related
+  * table.
+  *
+  * @remarks
+@@ -304,15 +305,71 @@ export interface ModelInterface<T = Row> {
+ 	readonly name: string
+ 	readonly table: TableInterface<T>
+ 	readonly relations: RelationMap
++	/**
++	 * Loads one record by key with the chosen relations populated, or a positional array of
++	 * records for an array of keys.
++	 *
++	 * @remarks
++	 * A key the table does not hold reads as `undefined`, and an array of keys keeps one slot
++	 * per key in the order given. Either form batches the relation queries over the whole
++	 * record set.
++	 *
++	 * @param key - The primary key to read
++	 * @param include - The relations to populate, and recursively their own
++	 * @param options - The database package's abort option
++	 * @returns The loaded record, or `undefined` when the key holds none
++	 */
+ 	load(key: Key, include: Include, options?: OperationOptions): Promise<Loaded<T> | undefined>
+ 	load(
+ 		keys: readonly Key[],
+ 		include: Include,
+ 		options?: OperationOptions,
+ 	): Promise<ReadonlyArray<Loaded<T> | undefined>>
++	/**
++	 * Finds many records, paged and sorted through {@link FindOptions}, with the chosen
++	 * relations populated.
++	 *
++	 * @param include - The relations to populate, and recursively their own
++	 * @param options - Pagination, ordering, and the abort signal
++	 * @returns The page's records, each carrying its populated relations
++	 */
+ 	find(include: Include, options?: FindOptions): Promise<ReadonlyArray<Loaded<T>>>
++	/**
++	 * Inserts a missing junction row for a `through` relation.
++	 *
++	 * @remarks
++	 * Idempotent for sequential calls: a pair the junction already holds writes nothing and
++	 * emits nothing. Concurrent calls for one pair may each insert.
++	 *
++	 * @param key - The owning record's primary key
++	 * @param relation - The `through` relation's name
++	 * @param target - The related record's primary key
++	 * @param options - The database package's abort option
++	 * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
++	 *   `UNKNOWN_RELATION` one for a relation the model never declared
++	 */
+ 	link(key: Key, relation: string, target: Key, options?: OperationOptions): Promise<void>
++	/**
++	 * Removes every matching junction row for a `through` relation inside one transaction.
++	 *
++	 * @param key - The owning record's primary key
++	 * @param relation - The `through` relation's name
++	 * @param target - The related record's primary key
++	 * @param options - The database package's abort option
++	 * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
++	 *   `UNKNOWN_RELATION` one for a relation the model never declared
++	 */
+ 	unlink(key: Key, relation: string, target: Key, options?: OperationOptions): Promise<void>
++	/**
++	 * Lists the related keys reachable through a `through` relation.
++	 *
++	 * @param key - The owning record's primary key
++	 * @param relation - The `through` relation's name
++	 * @param options - The database package's abort option
++	 * @returns The related keys the junction holds for that record
++	 * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
++	 *   `UNKNOWN_RELATION` one for a relation the model never declared
++	 */
+ 	links(key: Key, relation: string, options?: OperationOptions): Promise<readonly Key[]>
+ }
+ 
+@@ -356,7 +413,29 @@ export interface RelationManagerOptions<T extends TableMap = TableMap> {
+  */
+ export interface RelationManagerInterface<T extends TableMap = TableMap> {
+ 	readonly count: number
++	/**
++	 * Returns the typed model for a declared table.
++	 *
++	 * @remarks
++	 * `name` is checked against the database's declared tables, so a typo is a compile error.
++	 * A declared table with no relation entry yields a relation-less model, still fully usable
++	 * for typed reads and writes through `table`.
++	 *
++	 * @param name - A declared table's name
++	 * @returns A model typed by that table's row
++	 */
+ 	model<K extends keyof T & string>(name: K): ModelInterface<RowOf<T[K]>>
++	/**
++	 * Lists the names of every model carrying resolved relations.
++	 *
++	 * @returns The table names the registry resolved a relation map for
++	 */
+ 	names(): readonly string[]
++	/**
++	 * Reports whether a model carries resolved relations.
++	 *
++	 * @param name - The table name to test
++	 * @returns True when the registry resolved a relation map for that table; false otherwise
++	 */
+ 	has(name: string): boolean
+ }
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index dd481ce..188ada2 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,7 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. `FENCE_LANGUAGES`, `EXAMPLE_LANGUAGE`,
+-// `MODULES`, `INTERNAL`, and `ROOT_FILES` are this package's own, and are the only part
+-// a sibling package changes.
++// this repo's own `guides/README.md` manifest. The constants that follow are this
++// package's own, and are the only part a sibling package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -10,6 +9,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -38,6 +38,8 @@ import {
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+ /** The fence language whose blocks count as worked examples. */
+ const EXAMPLE_LANGUAGE = 'ts'
++/** The one guide this package sources, whose tagline the README pitch equals. */
++const GUIDE_SPEC = 'guides/relation.md'
+ /** Each import specifier this package's own guides may resolve against. */
+ const MODULES = Object.freeze({ '@orkestrel/relation': 'src/core', '@src/core': 'src/core' })
+ /**
+@@ -45,13 +47,13 @@ const MODULES = Object.freeze({ '@orkestrel/relation': 'src/core', '@src/core':
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the `names no symbol internal that the barrel
+- * already exports` case fails when a name here stops being stranded, so the list cannot rot.
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
++ * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -63,11 +65,61 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -129,6 +181,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()

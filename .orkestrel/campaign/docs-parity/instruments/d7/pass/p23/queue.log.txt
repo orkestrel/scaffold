@@ -1,0 +1,94 @@
+### queue at bb89ae0, guide guides/queue.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  29 passed (29)
+   test:guides exit 0
+-- census
+   guides/queue.md surface {"equal":27,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":13,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class DatabaseQueueStore methods 4 grouped false undescribed []
+   owner class MemoryQueueStore methods 4 grouped false undescribed []
+   owner class Queue methods 9 grouped false undescribed []
+   owner interface QueueInterface methods 9 grouped true undescribed []
+   owner interface QueueStoreInterface methods 4 grouped true undescribed []
+   examples titledFences 12 titledExamples ["createQueue:Create a queue"] pairs ["Create a queue"]
+-- sites: surface row guides/queue.md:56; methods row guides/queue.md:143; title src/core/factories.ts:31
+-- control A: one Surface Summary cell altered (guides/queue.md:56)
+guides/queue.md function createQueue: guide "Creates a concurrent, cooperative job queue — a bounded-concurrency engine that runs each enqueued input through a handler, with retries and a per-attempt timeout / abort, all over the L1 `Abort` / `Timeout` primitives. Control." source "Creates a concurrent, cooperative job queue — a bounded-concurrency engine that runs each enqueued input through a handler, with retries and a per-attempt timeout / abort, all over the L1 `Abort` / `Timeout` primitives."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Queue > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 13ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/queue.md:143)
+guides/queue.md QueueInterface.enqueue: guide "Reserves one FIFO entry, submits it, and wakes a worker; the returned promise settles when the entry finally settles. Control." source "Reserves one FIFO entry, submits it, and wakes a worker; the returned promise settles when the entry finally settles."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Queue > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 13ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a concurrent, cooperative job queue — a bounded-concurrency engine that
+guides/queue.md function createQueue: guide "Creates a concurrent, cooperative job queue — a bounded-concurrency engine that runs each enqueued input through a handler, with retries and a per-attempt timeout / abort, all over the L1 `Abort` / `Timeout` primitives." source "Control Creates a concurrent, cooperative job queue — a bounded-concurrency engine that runs each enqueued input through a handler, with retries and a per-attempt timeout / abort, all over the L1 `Abort` / `Timeout` primitives."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Queue > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Queue.ts:29:  * Control Represents a concurrent, cooperative FIFO job queue — a wake-park worker loop with
+guides/queue.md class Queue: guide "Represents a concurrent, cooperative FIFO job queue — a wake-park worker loop with retries, a per-attempt timeout, abort, and optional outstanding-work persistence." source "Control Represents a concurrent, cooperative FIFO job queue — a wake-park worker loop with retries, a per-attempt timeout, abort, and optional outstanding-work persistence."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Queue > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:31)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 28 passed (29)
+× pairs at least one example title across the guide and the source 25ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/queue.md Create a queue: guide "ts\nimport { createQueue } from '@orkestrel/queue'\n\n// Ordered (concurrency defaults to 1): each entry runs to completion before the next.\nconst queue = createQueue<Job, Output>({ handler: (job) => run(job) })\n\nconst output = await queue.enqueue(job)\n\n// Bounded, retried, and time-boxed: four in flight, two extra attempts, 5s per attempt.\nconst fetches = createQueue<string, number>({\n\thandler: async (url, { signal }) => (await fetch(url, { signal })).status,\n\tconcurrency: 4,\n\tretries: 2,\n\ttimeout: 5_000,\n})\n\nconst status = await fetches.enqueue('https://example.com')" source "ts\nimport { createQueue } from '@orkestrel/queue' // control\n\n// Ordered (concurrency defaults to 1): each entry runs to completion before the next.\nconst queue = createQueue<Job, Output>({ handler: (job) => run(job) })\n\nconst output = await queue.enqueue(job)\n\n// Bounded, retried, and time-boxed: four in flight, two extra attempts, 5s per attempt.\nconst fetches = createQueue<string, number>({\n\thandler: async (url, { signal }) => (await fetch(url, { signal })).status,\n\tconcurrency: 4,\n\tretries: 2,\n\ttimeout: 5_000,\n})\n\nconst status = await fetches.enqueue('https://example.com')"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Queue > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/queue.md pitch: readme "Control: A concurrent, cooperative FIFO job queue: a bounded-concurrency engine that runs each enqueued input through a handler with retries and a per-attempt timeout or abort, and hands back one promise per `enqueue` that settles with that job's result." tagline "A concurrent, cooperative FIFO job queue: a bounded-concurrency engine that runs each enqueued input through a handler with retries and a per-attempt timeout or abort, and hands back one promise per `enqueue` that settles with that job's result."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A concurrent, cooperative FI…' to be 'A concurrent, cooperative FIFO job qu…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 28 passed (29)
+× opens the README with the guide tagline 9ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/queue.md function createQueue: guide absent source "Creates a concurrent, cooperative job queue — a bounded-concurrency engine that runs each enqueued input through a handler, with retries and a per-attempt timeout / abort, all over the L1 `Abort` / `Timeout` primitives."
+guides/queue.md function createDatabaseQueueStore: guide absent source "Creates a `DatabaseQueueStore` over any `DriverInterface` — the durable, driver-pluggable backing for a queue's outstanding entries, across a memory, JSON, or SQLite driver."
+guides/queue.md function createMemoryQueueStore: guide absent source "Creates an in-memory `MemoryQueueStore` over a plain `Map` — the zero-plumbing `QueueStoreInterface` a queue takes when its outstanding entries need not outlive the process, and the twin of `DatabaseQueueStore`."
+rows read: 1, disagreements found: 3
+   docs exit 1
+AssertionError: expected [ …(3) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Queue > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

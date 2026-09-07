@@ -1,0 +1,102 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-relation",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/relation.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 38,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 8,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Model",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "find",
+      "link",
+      "links",
+      "load",
+      "unlink"
+     ]
+    },
+    {
+     "name": "ModelInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RelationManager",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "has",
+      "model",
+      "names"
+     ]
+    },
+    {
+     "name": "RelationManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Defining relations",
+     "Resolving relations directly",
+     "The registry surface",
+     "Loading",
+     "Typed table access",
+     "Through management",
+     "Observing"
+    ],
+    "titledExamples": [
+     "createRelationManager:Defining relations"
+    ],
+    "pairs": [
+     "Defining relations"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

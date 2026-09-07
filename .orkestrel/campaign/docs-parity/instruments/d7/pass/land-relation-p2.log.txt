@@ -1,0 +1,18 @@
+== relation p2 landing 2026-09-07T21:37:24Z over bcf2e7d
+== status
+ M README.md
+ M guides/relation.md
+ M src/core/Model.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     |  83 ++++++++++++++++++++++++-
+ tests/guides.test.ts  |  84 ++++++++++++++++++++++---
+ 8 files changed, 287 insertions(+), 113 deletions(-)
+== stage by path
+ 8 files changed, 287 insertions(+), 113 deletions(-)
+== committed
+6ab44aa Converge relation under the equality gate
+(status end)

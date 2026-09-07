@@ -278,3 +278,7 @@ No reader or seed defect was met in `@orkestrel/guide` itself: the readers locat
 No deviation stopped the unit. Every item in the brief is closed and every acceptance criterion is met. The two defects reported are the Orchestrator's to route: the stale `BROWSER_HAR_CREATOR.version` needs a writer with `src/core/constants.ts` code in scope, and the truncated-intersection reading is recorded for the campaign rather than for this checkout.
 
 The vendored `tests/config.test.ts` case that reads the shared temporary directory was not run under load, so it carries no reading here.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-browser-audit-verdict.md`): this report states counts in prose, and the P.2 report's sentence "no `{@link}` in a description paragraph had to be unwrapped" is false against its diff (`src/core/errors.ts:80`); the tree is authoritative and every cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/browser/`.

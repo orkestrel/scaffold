@@ -1,0 +1,303 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-interpret",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/interpret.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 131,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 12,
+    "counts": {
+     "equal": 48,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Clarifier",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "clarify"
+     ]
+    },
+    {
+     "name": "ClarifierInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "DefinitionManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "definition",
+      "definitions",
+      "destroy",
+      "has",
+      "remove"
+     ]
+    },
+    {
+     "name": "DefinitionManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Extractor",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "extract"
+     ]
+    },
+    {
+     "name": "ExtractorInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Formatter",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "format"
+     ]
+    },
+    {
+     "name": "FormatterInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Generator",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "generate"
+     ]
+    },
+    {
+     "name": "GeneratorInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Interpret",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "describe",
+      "destroy",
+      "interpret",
+      "narrate",
+      "remove",
+      "template",
+      "templates"
+     ]
+    },
+    {
+     "name": "InterpretContext",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "destroy",
+      "entities",
+      "previous"
+     ]
+    },
+    {
+     "name": "InterpretContextInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "InterpretInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Narrator",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "describe",
+      "label",
+      "line",
+      "narrate",
+      "phrase",
+      "value"
+     ]
+    },
+    {
+     "name": "NarratorInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Normalizer",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "normalize"
+     ]
+    },
+    {
+     "name": "NormalizerInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RecordManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "destroy",
+      "has",
+      "record",
+      "records",
+      "remove"
+     ]
+    },
+    {
+     "name": "RecordManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SubjectManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "destroy",
+      "has",
+      "remove",
+      "subject",
+      "subjects"
+     ]
+    },
+    {
+     "name": "SubjectManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TemplateManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "destroy",
+      "has",
+      "remove",
+      "template",
+      "templates"
+     ]
+    },
+    {
+     "name": "TemplateManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Interpret text against an added template",
+     "Constants",
+     "Errors",
+     "Validators",
+     "Helpers",
+     "Parsers",
+     "Factories",
+     "NormalizerInterface",
+     "ExtractorInterface",
+     "ClarifierInterface",
+     "FormatterInterface",
+     "GeneratorInterface",
+     "NarratorInterface",
+     "RecordManagerInterface",
+     "TemplateManagerInterface",
+     "SubjectManagerInterface",
+     "DefinitionManagerInterface",
+     "InterpretContextInterface",
+     "InterpretInterface"
+    ],
+    "titledExamples": [
+     "createInterpret:Interpret text against an added template"
+    ],
+    "pairs": [
+     "Interpret text against an added template"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

@@ -495,3 +495,7 @@ AssertionError: expected false to be true // Object.is equality
 ```
 
 The re-run at the same tree, with only `test:policy` beside it (`gates-3.log.txt`), passed: `Tests 172 passed | 1 skipped (173)`, EXIT 0. Done: item 3's `guides/browser.md` edit landed between the two runs and touches nothing this assertion reads. Hypothesis: the assertion reads the shared system temporary directory for `orkestrel-declarations-*` entries and requires every entry present after the emit to have been present before it, so a sibling unit in another checkout creating one of those directories during this window reddens it — cross-talk, not this checkout's state. Per `.agents/orchestration.md` § Writing concurrency rule 10, the deciding re-run belongs to you after this unit exits, not to me; take it once the sibling units are done.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-browser-audit-verdict.md`): this report states counts in prose, and the P.2 report's sentence "no `{@link}` in a description paragraph had to be unwrapped" is false against its diff (`src/core/errors.ts:80`); the tree is authoritative and every cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/browser/`.

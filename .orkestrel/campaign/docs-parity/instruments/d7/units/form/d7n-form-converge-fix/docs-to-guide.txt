@@ -1,0 +1,7 @@
+
+> @orkestrel/form@0.0.6 docs
+> node --experimental-strip-types scripts/docs.ts --to guide
+
+wrote guides/form.md
+rows read: 1, disagreements found: 14, written: 14, reported: 0
+next: npm run format

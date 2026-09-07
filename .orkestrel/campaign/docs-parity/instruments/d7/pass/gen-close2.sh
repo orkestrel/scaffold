@@ -62,11 +62,13 @@ extended=$(grep -rn '^export interface [A-Za-z]* extends' src --include=types.ts
 pilot=/home/user/fleet/abort/tests/guides.test.ts
 region() { awk '/^const root = /{p=1} p{print} p && /^for \(const entry of manifest/{f=1} f && /^}$/{exit}' "$1"; }
 dropin=$(diff <(region "$pilot") <(region tests/guides.test.ts) | head -80)
-header=$(diff <(sed -n 1,3p "$pilot") <(sed -n 1,3p tests/guides.test.ts); grep -c 'the assertion that follows it fails when a name here stops being stranded' tests/guides.test.ts | sed 's/^/INTERNAL sentence present: /')
+header=$(diff <(sed -n 1,3p "$pilot") <(sed -n 1,3p tests/guides.test.ts))
+internal=$(tr -s '[:space:]' ' ' < tests/guides.test.ts | sed 's/ \* / /g' | grep -c 'the assertion that follows it fails when a name here stops being stranded')
 budget=$(grep -n '30_000\|findDrift(' tests/guides.test.ts)
 needed=no
 [ -n "$noshape$mixed$typed$links$tables$fences$extended" ] && needed=yes
-[ -n "$dropin" ] && needed=yes
+[ -n "$dropin$header" ] && needed=yes
+[ "$internal" = 1 ] || needed=yes
 echo "$docs" | grep -q 'disagreements found: 0' || needed=yes
 cat > "$OUT" <<EOF
 # Brief — \`d7n-$n-close\` (the closing sweep: Rulings 15, 18, and 20, the link re-convergence, the drop-in's canon)
@@ -98,7 +100,7 @@ $(printf '%s\n' "${links:-(none)}" | sed 's/^/   /')
 \`\`\`text
 $(printf '%s\n' "${dropin:-(no difference)}")
 \`\`\`
-   Header (lines 1 to 3 against the pilot's; the canon of Ruling 21): $(printf '%s' "${header:-equal}" | tr '\n' ';')
+   Header (lines 1 to 3 against the pilot's; the canon of Ruling 21): $(printf '%s' "${header:-equal}" | tr '\n' ';'). The \`INTERNAL\` block carries the pilot's sentence (1 = yes): $internal
    Lines naming a budget or the \`findDrift\` call: $(printf '%s' "$budget" | tr '\n' ';')
 4. **Fence lead-ins (Ruling 21).** Every code fence sits under a complete sentence naming what it shows; a fence directly under a heading takes one sentence between them (a titled fence: what the demonstration builds). Fences directly under a heading (heading line -> fence line):
 $(printf '%s\n' "${fences:-(none)}" | sed 's/^/   /')

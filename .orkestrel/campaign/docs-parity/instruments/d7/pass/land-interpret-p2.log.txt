@@ -1,0 +1,22 @@
+== interpret p2 landing 2026-09-07T21:39:14Z over 6414e9c
+== status
+ M README.md
+ M guides/interpret.md
+ M src/core/Interpret.ts
+ M src/core/Narrator.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/managers/SubjectManager.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts              |  19 +-
+ tests/guides.test.ts                |  90 +++++-
+ 12 files changed, 784 insertions(+), 348 deletions(-)
+== stage by path
+ 12 files changed, 784 insertions(+), 348 deletions(-)
+== committed
+a0303e5 Converge interpret under the equality gate
+(status end)

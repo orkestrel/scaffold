@@ -2,11 +2,11 @@
 
 ## Role and engine
 
-`builder` on Sonnet: a fully specified unit. Sole writer in `/home/user/fleet/codec` from the committed tip `da68b6a` (status lines: 0; the final guide head start `0.0.18` installed `--no-save`, `dist/src/core/index.js` sha256 `2b76b363f4b9…`). Perform the assignment directly and spawn nothing. Do not commit, install, or run a discard-class git command; undo an edit by editing. Put every instrument under `tmp/d7n-codec-close/` inside this checkout.
+`builder` on Sonnet: a fully specified unit. Sole writer in `/home/user/fleet/codec` from the committed tip `caab921` (status lines: 0; the final guide head start `0.0.18` installed `--no-save`, `dist/src/core/index.js` sha256 `2b76b363f4b9…`). Perform the assignment directly and spawn nothing. Do not commit, install, or run a discard-class git command; undo an edit by editing. Put every instrument under `tmp/d7n-codec-close/` inside this checkout.
 
 ## Read first
 
-`/home/user/scaffold/AGENTS.md` § Writing; `/home/user/scaffold/.orkestrel/campaign/docs-parity/rulings.md` § Ruling 12, § Ruling 13 and its amendment, § Ruling 15, § Ruling 16, § Ruling 18, § Ruling 20; the pilot's Types table `/home/user/fleet/abort/guides/abort.md:58-67` and `/home/user/fleet/budget/guides/budget.md:60-68` (a `plus` row); the pilot's suite `/home/user/fleet/abort/tests/guides.test.ts` whole; `src/**/types.ts` and `src/**/constants.ts` for every declaration the items name.
+`/home/user/scaffold/AGENTS.md` § Writing; `/home/user/scaffold/.orkestrel/campaign/docs-parity/rulings.md` § Ruling 12, § Ruling 13 and its amendment, § Ruling 15, § Ruling 16, § Ruling 18, § Ruling 20, § Ruling 21; the pilot's Types table `/home/user/fleet/abort/guides/abort.md:58-67` and `/home/user/fleet/budget/guides/budget.md:60-68` (a `plus` row); the pilot's suite `/home/user/fleet/abort/tests/guides.test.ts` whole; `src/**/types.ts` and `src/**/constants.ts` for every declaration the items name.
 
 ## Items
 
@@ -19,13 +19,13 @@
    (none)
    Guard and constants tables, and convention sentences off the canon (Ruling 20):
    (none)
+   Extended interfaces (Ruling 21: the cell names the parent before `plus` and the added members after; the table's sentence gains "An extended interface's name comes before `plus`, with the members it adds after."):
+   (none)
 2. **Member references.** Doc blocks writing `{@link Owner#member}` or `{@link #member}`; the final readers compare them as `Owner#member` and `#member`, so a cell written by the earlier readers may read `member` alone. Run `npm run docs`; where a row disagrees on such a link, `npm run docs -- --to guide` then `npx oxfmt --write guides/codec.md`. Sites:
    (none)
 3. **The drop-in's canon (Rulings 13 and 20).** `tests/guides.test.ts` from its `const root = ` line through the manifest loop's closing brace equals the pilot's same region byte for byte — `new URL('../', import.meta.url)`, `/Interface$/` with no flag, the pilot's comments, no per-case budget, `findDrift` called inside the `it` — except a package-specific case appended after the pilot's cases (a file-scope case after the pilot's README case and before the manifest loop; a case inside the loop's `describe` after the pilot's examples loop). A binding only the package's own case uses moves inside that case; a case name or an assertion that differs from the pilot's takes the pilot's. Line 2 reads the pilot's header line and the `INTERNAL` block carries the pilot's sentence. The current diff of that region against the pilot (empty means nothing to do):
 ```text
-10a11
-> const specification = requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`)
-65a67,81
+65a66,80
 > it('derives the exact package export keys from the same face map', () => {
 > 	const parsed: unknown = JSON.parse(readFileSync(new URL('package.json', root), 'utf8'))
 > 	if (typeof parsed !== 'object' || parsed === null) {
@@ -41,72 +41,19 @@
 > 	expect(Object.keys(exported).sort()).toEqual(expected.concat('./package.json').sort())
 > })
 > 
-75c91,92
-< 		it('extracts a non-empty documented surface', () => {
----
-> 		it('extracts non-empty barrel and documented surfaces', () => {
-> 			expect(source.surface().length).toBeGreaterThan(0)
-103c120
-< 			const entity = group.interface.replace(/Interface$/, '')
----
-> 			const entity = group.interface.replace(/Interface$/u, '')
-153a171
-> 			expect(names.length).toBeGreaterThan(0)
-163,191c181,209
-< 		for (const group of guide.methods()) {
-< 			const entity = group.interface.replace(/Interface$/, '')
-< 			const documented = group.methods.map((method) => method.name)
-< 			const examples =
-< 				entity === group.interface
-< 					? source.examples(group.interface).map((example) => example.name)
-< 					: source
-< 							.examples(group.interface)
-< 							.map((example) => example.name)
-< 							.concat(source.examples(entity).map((example) => example.name))
-< 			describe(`${group.interface} examples`, () => {
-< 				it('documents an example for every method', () => {
-< 					const fences = guide
-< 						.fences()
-< 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
-< 						.map((fence) => fence.code)
-< 					expect(findUnexampled(documented, fences, examples)).toEqual([])
-< 				})
-< 			})
-< 		}
-< 
-< 		it('imports only real exports in every ```ts fence', () => {
-< 			const fences = guide.fences().filter((fence) => fence.language === EXAMPLE_LANGUAGE)
-< 			for (const fence of fences) {
-< 				for (const { specifier, names } of extractFenceImports(fence.code)) {
-< 					const imported = sources.source(specifier)
-< 					if (imported === undefined) continue
-< 					const surface = imported.surface().map((symbol) => symbol.name)
-< 					expect(findMissing(names, surface)).toEqual([])
----
-> 		// The membership rule is `extractFenceImports`'s own grammar read off Guide's comment-aware source
-> 		// projection: a mapped specifier's bindings compare against that face's barrel surface, a
-> 		// repository alias and an unmapped true subpath of the root are refused because a public
-> 		// guide example must import through a published specifier, and a foreign package stays
-> 		// external and is compared against no face.
-> 		it('imports only real exports through published specifiers in every ts fence', () => {
-> 			const refused: string[] = []
-> 			const missing: string[] = []
-> 			for (const fence of guide.fences().filter((row) => row.language === EXAMPLE_LANGUAGE)) {
-> 				const projected = extractSourceLines(fence.code)
-> 					.map((line) => line.code)
-> 					.join('\n')
-> 				for (const statement of extractFenceImports(projected)) {
-> 					const specifier = statement.specifier
-> 					if (specifier.startsWith('@src/') || specifier.startsWith('@app/')) {
-> 						refused.push(specifier)
-> 						continue
-> 					}
-> 					const face = sources.source(specifier)
-> 					if (face === undefined) {
 ```
-   Header: 1c1;< // this repo's own `guides/README.md` manifest. The constants below are this;---;> // `guides/README.md` manifest, and every flagship fence in `guides/codec.md` is transcribed here;INTERNAL sentence present: 0
-   Lines naming a budget or the `findDrift` call: 233:			for (const drift of findDrift(guide, source)) {
-4. **Propagation.** `npx oxfmt --write guides/codec.md tests/guides.test.ts`; `npm run docs` at `rows read: 1, disagreements found: 0`; `-- --to guide` and `-- --to source` at `written: 0`.
+   Header (lines 1 to 3 against the pilot's; the canon of Ruling 21): 3c3;< // package's own, as is the executed section that closes the file.;---;> // package's own, as is the executed section that closes the file. Every flagship fence. The `INTERNAL` block carries the pilot's sentence (1 = yes): 1
+   Lines naming a budget or the `findDrift` call: 232:			for (const drift of findDrift(guide, source)) {
+4. **Fence lead-ins (Ruling 21).** Every code fence sits under a complete sentence naming what it shows; a fence directly under a heading takes one sentence between them (a titled fence: what the demonstration builds). Fences directly under a heading (heading line -> fence line):
+   275: ### Encode and decode a byte sequence -> fence at 277
+   286: ### Reach the url face -> fence at 288
+   298: ### Meet the canonical refusals -> fence at 300
+   313: ### Ask a value whether a decoder would take it -> fence at 315
+   325: ### Drive the round-trip and canonical-form laws -> fence at 327
+   342: ### Read the hex face -> fence at 344
+   356: ### Encode and decode through a charset -> fence at 358
+   393: ### Measure without producing the bytes -> fence at 395
+5. **Propagation.** `npx oxfmt --write guides/codec.md tests/guides.test.ts`; `npm run docs` at `rows read: 1, disagreements found: 0`; `-- --to guide` and `-- --to source` at `written: 0`.
 
 ## Facts read on this tip
 

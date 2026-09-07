@@ -1,4 +1,4 @@
-# Brief — A.4 `d7n-abort-verify` (the pilot's whole chain under the guide head start)
+# Brief — P.4 `d7n-abort-verify` (abort's whole chain under the guide head start)
 
 ## Role and engine
 
@@ -8,7 +8,7 @@
 
 - `node_modules/@orkestrel/guide` is the packed tip `0.0.18` installed `--no-save` (the registry serves `0.0.17`); record `node -p "require('/home/user/fleet/abort/node_modules/@orkestrel/guide/package.json').version"` first. `package.json` declares `^0.0.17`; that is the recorded head-start state, not a defect.
 - `npm test` runs under `PATH=/opt/npm11/bin:$PATH`.
-- Every command runs from `/home/user/fleet/abort`; each exit code is read from `$?` after the command.
+- Every command runs from `/home/user/fleet/abort`; each exit code is read from `$?` after the command. A timing failure in a whole-suite run is reported as read, with the failing file named; the Orchestrator re-runs it alone.
 
 ## Commands, in order, each with its exit code and last lines
 
@@ -18,7 +18,7 @@
 4. `npm run lint:check`
 5. `npm run check`
 6. `npm run build`
-7. `npm run docs` — expected exit 0 and one line `rows read: 1, disagreements found: 0`
+7. `npm run docs` — expected exit 0 and one line `rows read: <non-zero>, disagreements found: 0`
 8. `PATH=/opt/npm11/bin:$PATH npm test` — every project's totals
 9. `PATH=/opt/npm11/bin:$PATH npm run test:distribution` if the manifest declares that script (`grep -n '"test:distribution"' package.json`); otherwise record that it is absent
 

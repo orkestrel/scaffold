@@ -1,0 +1,18 @@
+2026-09-07T21:35:39Z
+=== npm run test:src:core
+
+> @orkestrel/form@0.0.6 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/fleet/form
+
+·······················································································································································································
+
+ Test Files  9 passed (9)
+      Tests  183 passed (183)
+   Start at  21:35:39
+   Duration  942ms (transform 783ms, setup 891ms, import 330ms, tests 286ms, environment 1ms)
+
+exit 0
+2026-09-07T21:35:40Z

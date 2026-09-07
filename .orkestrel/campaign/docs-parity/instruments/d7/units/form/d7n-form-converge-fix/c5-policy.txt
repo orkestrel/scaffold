@@ -1,0 +1,18 @@
+2026-09-07T21:35:32Z
+=== npm run test:policy
+
+> @orkestrel/form@0.0.6 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/form
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  21:35:33
+   Duration  1.15s (transform 537ms, setup 442ms, import 206ms, tests 298ms, environment 0ms)
+
+exit 0
+2026-09-07T21:35:34Z

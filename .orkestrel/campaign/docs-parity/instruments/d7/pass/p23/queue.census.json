@@ -1,0 +1,103 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-queue",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/queue.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 27,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 13,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "DatabaseQueueStore",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "MemoryQueueStore",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "Queue",
+     "keyword": "class",
+     "methods": 9,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "QueueInterface",
+     "keyword": "interface",
+     "methods": 9,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "QueueStoreInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Guards",
+     "Helpers",
+     "Persistence",
+     "Wiring a store into a queue",
+     "Observing",
+     "Create a queue",
+     "Bounded concurrency",
+     "Retries",
+     "Per-attempt timeout",
+     "Abort",
+     "Lifecycle"
+    ],
+    "titledExamples": [
+     "createQueue:Create a queue"
+    ],
+    "pairs": [
+     "Create a queue"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

@@ -1,0 +1,54 @@
+2026-09-07T21:36:13Z
+=== npx oxfmt --check guides/form.md tests/guides.test.ts src/core/types.ts src/core/constants.ts
+
+All matched files use the correct format.
+Finished in 820ms on 4 files using 4 threads.
+exit 0
+=== npx oxlint --config .oxlintrc.json --deny-warnings tests/guides.test.ts src/core
+exit 0
+=== npm run check
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+exit 0
+=== npm run docs
+
+rows read: 1, disagreements found: 0
+exit 0
+=== npm run docs -- --to guide
+
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+exit 0
+=== npm run docs -- --to source
+
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+exit 0
+=== npm run test:guides
+
+ Test Files  1 passed (1)
+      Tests  51 passed (51)
+   Start at  21:36:21
+   Duration  1.00s (transform 278ms, setup 264ms, import 255ms, tests 349ms, environment 0ms)
+
+exit 0
+=== npm run test:policy
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  21:36:23
+   Duration  762ms (transform 256ms, setup 199ms, import 116ms, tests 310ms, environment 0ms)
+
+exit 0
+=== npm run test:src:core
+
+ Test Files  9 passed (9)
+      Tests  183 passed (183)
+   Start at  21:36:24
+   Duration  1.18s (transform 1.00s, setup 1.11s, import 471ms, tests 349ms, environment 1ms)
+
+exit 0
+=== git status --short
+ M guides/form.md
+ M src/core/constants.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+2026-09-07T21:36:25Z

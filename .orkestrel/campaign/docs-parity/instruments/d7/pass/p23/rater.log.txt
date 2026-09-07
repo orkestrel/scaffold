@@ -1,0 +1,91 @@
+### rater at 41ae09c, guide guides/rater.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  29 passed (29)
+   test:guides exit 0
+-- census
+   guides/rater.md surface {"equal":40,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":2,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Rater methods 2 grouped false undescribed ["destroy","rate"]
+   owner interface RaterInterface methods 2 grouped true undescribed []
+   examples titledFences 6 titledExamples ["createRater:Create a rater"] pairs ["Create a rater"]
+-- sites: surface row guides/rater.md:72; methods row guides/rater.md:296; title src/core/factories.ts:11
+-- control A: one Surface Summary cell altered (guides/rater.md:72)
+guides/rater.md type Stage: guide "Names a worksheet derivation step stage. Control." source "Names a worksheet derivation step stage."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Rater > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 11ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/rater.md:296)
+guides/rater.md RaterInterface.rate: guide "Rates an array of lines, or a rating definition, against one subject over the shared quantitative engine. Control." source "Rates an array of lines, or a rating definition, against one subject over the shared quantitative engine."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Rater > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 10ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a rating orchestrator over the shared quantitative engine, seeded
+guides/rater.md function createRater: guide "Creates a rating orchestrator over the shared quantitative engine, seeded from `RaterOptions` and returning a `RaterInterface`." source "Control Creates a rating orchestrator over the shared quantitative engine, seeded from `RaterOptions` and returning a `RaterInterface`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Rater > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 11ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Rater.ts:26:  * Control Orchestrates rating — owns (or receives) the shared quantitative
+guides/rater.md class Rater: guide "Orchestrates rating — owns (or receives) the shared quantitative reasoning engine and projects results into the rating domain vocabulary." source "Control Orchestrates rating — owns (or receives) the shared quantitative reasoning engine and projects results into the rating domain vocabulary."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Rater > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:11)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 28 passed (29)
+× pairs at least one example title across the guide and the source 20ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/rater.md Create a rater: guide "ts\nimport { createRater } from '@orkestrel/rater'\n\nconst rater = createRater()\nrater.destroy()" source "ts\nimport { createRater } from '@orkestrel/rater' // control\n\nconst rater = createRater()\nrater.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Rater > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 11ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/rater.md pitch: readme "Control: A typed quantitative rating layer over `@orkestrel/reason`'s shared engine: authored lines, each a plain reason `QuantitativeDefinition` joined to display metadata, rated against one subject to produce a `LineResult` per line — an `amount` and its `Worksheet` audit trail — and one `RatingResult` carrying every line's outcome and a derived `total`." tagline "A typed quantitative rating layer over `@orkestrel/reason`'s shared engine: authored lines, each a plain reason `QuantitativeDefinition` joined to display metadata, rated against one subject to produce a `LineResult` per line — an `amount` and its `Worksheet` audit trail — and one `RatingResult` carrying every line's outcome and a derived `total`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A typed quantitative rating …' to be 'A typed quantitative rating layer ove…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 28 passed (29)
+× opens the README with the guide tagline 10ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/rater.md type RaterEventMap: guide absent source "Represents the push observation surface of a `RaterInterface`."
+guides/rater.md interface RaterOptions: guide absent source "Configures `createRater` and the `Rater` constructor."
+guides/rater.md interface RaterInterface: guide absent source "Represents the rating orchestrator over the shared quantitative reasoning engine."
+rows read: 1, disagreements found: 15
+   docs exit 1
+AssertionError: expected [ …(15) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Rater > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 11ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0
