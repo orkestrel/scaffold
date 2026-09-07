@@ -43,3 +43,9 @@ D2-fix-2 (`implementer`, Opus 5) landed H1 to H7 on `d2-fix-2-brief.md`, adding 
 - Dropped: none.
 
 VERDICT: FAIL 1 2 — a fourth round follows on `d2-fix-3-brief.md` (`builder`, Sonnet, every edit exact), closing with `checker` on `d2-fix-3-check-brief.md` and the verify brief.
+
+## Round 4 (the fourth round's closure)
+
+D2-fix-3 (`builder`, Sonnet) landed J1 to J7 on `d2-fix-3-brief.md` with no flagged claim. Workflow `wf_e49c8028-8b8`, 2026-09-07 04:52 to 04:55 UTC: `checker` (Sonnet) on `d2-fix-3-check-brief.md` — `VERDICT: FAIL 6`, every mechanical claim PASS (the two sentences, the comment, the guide row and prose, the two cases, the third round's `above`/`below` sweep and the `extract*` renames, the status file, every citation, the corrected citations, the guide rows) except two numbers in the D2-fix-2 report's prose ("the run that set the floor read 16 such members" and "`test:src:core` went 574 → 587"); `verifier` (Sonnet) on `d2-verify-2-brief.md` — `GATES: GREEN` (the locator and the four replacers present, no `WIDTH` site, no new file-system import, `format:check`, `lint:check`, `check`, `build`, `npm test` with `test:src:core` 588 and `test:guides` 51). Ruled: both numbers are measurements reported with the run that produced them — the floor-setting run's reading and two suite totals — which `AGENTS.md` § Writing admits as values; the report stays as the round's record. Lane files: `d2-fix-3-checker.md`, `d2-fix-3-verify-report.md`.
+
+VERDICT: PASS — D2 accepted after D2-fix, D2-fix-2, and D2-fix-3; committed on the guide's campaign branch.
