@@ -1,0 +1,224 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-indexeddb",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/indexeddb.md",
+   "source": "src/browser",
+   "surface": {
+    "counts": {
+     "equal": 42,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 9,
+    "counts": {
+     "equal": 61,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "IndexedDBCursor",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "advance",
+      "continue",
+      "remove",
+      "seek",
+      "update"
+     ]
+    },
+    {
+     "name": "IndexedDBCursorInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBDatabase",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "connect",
+      "drop",
+      "read",
+      "store",
+      "write"
+     ]
+    },
+    {
+     "name": "IndexedDBDatabaseInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBIndex",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "count",
+      "cursor",
+      "get",
+      "has",
+      "keys",
+      "primary",
+      "records",
+      "resolve"
+     ]
+    },
+    {
+     "name": "IndexedDBIndexInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBRecordStoreInterface",
+     "keyword": "interface",
+     "methods": 11,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBStore",
+     "keyword": "class",
+     "methods": 12,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "count",
+      "cursor",
+      "get",
+      "has",
+      "index",
+      "keys",
+      "records",
+      "remove",
+      "resolve",
+      "set"
+     ]
+    },
+    {
+     "name": "IndexedDBStoreInterface",
+     "keyword": "interface",
+     "methods": 12,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBTransaction",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "abort",
+      "commit",
+      "store"
+     ]
+    },
+    {
+     "name": "IndexedDBTransactionInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBTransactionStore",
+     "keyword": "class",
+     "methods": 11,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "count",
+      "cursor",
+      "get",
+      "has",
+      "keys",
+      "records",
+      "remove",
+      "resolve",
+      "set"
+     ]
+    },
+    {
+     "name": "IndexedDBTransactionStoreInterface",
+     "keyword": "interface",
+     "methods": 11,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBUpgradeIndexManagerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "IndexedDBUpgradeStoreManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Feature-detecting before opening a database",
+     "Index-backed reads with key ranges",
+     "Cursor streaming and in-place mutation",
+     "Seeking an index cursor to one primary key",
+     "Connection lifecycle: connect, close, drop",
+     "Reading, testing, and clearing a store",
+     "Explicit transaction control and cursor movement",
+     "The request-boundary helpers directly",
+     "Branching on a typed fault",
+     "Narrowing a caught value with isIndexedDBError",
+     "Versioned upgrades: dropping a store, indexing an existing store, migrating data"
+    ],
+    "titledExamples": [
+     "createIndexedDBDatabase:Feature-detecting before opening a database"
+    ],
+    "pairs": [
+     "Feature-detecting before opening a database"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

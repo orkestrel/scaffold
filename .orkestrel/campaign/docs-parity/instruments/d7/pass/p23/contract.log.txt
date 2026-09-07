@@ -1,0 +1,98 @@
+### contract at 796e893, guide guides/contract.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  68 passed (68)
+   test:guides exit 0
+-- census
+   guides/contract.md surface {"equal":313,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":8,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 5 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner interface ContractInterface methods 4 grouped true undescribed []
+   owner class JSONCloner methods 1 grouped false undescribed []
+   owner interface JSONClonerInterface methods 1 grouped true undescribed []
+   owner class SchemaCloner methods 1 grouped false undescribed []
+   owner interface SchemaClonerInterface methods 1 grouped true undescribed []
+   owner class ShapeCloner methods 1 grouped false undescribed []
+   owner interface ShapeClonerInterface methods 1 grouped true undescribed []
+   owner class ShapeValidator methods 1 grouped false undescribed []
+   owner interface ShapeValidatorInterface methods 1 grouped true undescribed []
+   examples titledFences 20 titledExamples ["createContract:Compiling a contract"] pairs ["Compiling a contract"]
+-- sites: surface row guides/contract.md:34; methods row guides/contract.md:706; title src/core/factories.ts:46
+-- control A: one Surface Summary cell altered (guides/contract.md:34)
+guides/contract.md function isNull: guide "Determines whether a value is `null`. Control." source "Determines whether a value is `null`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Contract > keeps every compared summary and example equal to its source
+Tests  1 failed | 67 passed (68)
+× keeps every compared summary and example equal to its source 6006ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/contract.md:706)
+guides/contract.md JSONClonerInterface.clone: guide "Clones the retained source into exact, deeply frozen JSON data. Control." source "Clones the retained source into exact, deeply frozen JSON data."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Contract > keeps every compared summary and example equal to its source
+Tests  1 failed | 67 passed (68)
+× keeps every compared summary and example equal to its source 6367ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Compiles a {@link ContractShape} into a {@link ContractInterface} — the
+guides/contract.md function createContract: guide "Compiles a `ContractShape` into a `ContractInterface` — the lockstep outputs from one declaration, lockstep meaning derived from one owned snapshot rather than accepting the same values." source "Control Compiles a `ContractShape` into a `ContractInterface` — the lockstep outputs from one declaration, lockstep meaning derived from one owned snapshot rather than accepting the same values."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Contract > keeps every compared summary and example equal to its source
+Tests  1 failed | 67 passed (68)
+× keeps every compared summary and example equal to its source 6203ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/ContractCompiler.ts:83:  * Control Owns one contract shape's artifacts and their bundle, compiled lazily.
+guides/contract.md class ContractCompiler: guide "Owns one contract shape's artifacts and their bundle, compiled lazily." source "Control Owns one contract shape's artifacts and their bundle, compiled lazily."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Contract > keeps every compared summary and example equal to its source
+Tests  1 failed | 67 passed (68)
+× keeps every compared summary and example equal to its source 5898ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:46)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 67 passed (68)
+× pairs at least one example title across the guide and the source 123ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/contract.md Compiling a contract: guide "ts\nimport {\n\tcreateContract,\n\tintegerShape,\n\tobjectShape,\n\tseededRandom,\n\tstringShape,\n} from '@orkestrel/contract'\n\nconst user = createContract(objectShape({ name: stringShape({ min: 1 }), age: integerShape() }))\n\nuser.is({ name: 'Ada', age: 36 }) // true — a typed guard (narrows to Infer<typeof shape>)\nuser.parse({ name: 'Ada', age: '36' }) // { name: 'Ada', age: 36 } — coerces, or undefined\nuser.parse({ name: '', age: 36 }) // undefined — '' violates name min:1 (parse enforces refinements, like is)\nuser.explain({ name: '', age: 36 }) // [{ reason: 'constraint', path: ['name'], expected: 'string', constraint: 'min', limit: 1, received: '\"\"' }]\nuser.schema // the owned, deeply frozen { type: 'object', properties: { … }, required: ['name', 'age'], additionalProperties: false }\nuser.generate(seededRandom(42)) // reproducible seed data; omit the arg for a wall-clock-seeded source" source "ts\nimport { // control\n\tcreateContract,\n\tintegerShape,\n\tobjectShape,\n\tseededRandom,\n\tstringShape,\n} from '@orkestrel/contract'\n\nconst user = createContract(objectShape({ name: stringShape({ min: 1 }), age: integerShape() }))\n\nuser.is({ name: 'Ada', age: 36 }) // true — a typed guard (narrows to Infer<typeof shape>)\nuser.parse({ name: 'Ada', age: '36' }) // { name: 'Ada', age: 36 } — coerces, or undefined\nuser.parse({ name: '', age: 36 }) // undefined — '' violates name min:1 (parse enforces refinements, like is)\nuser.explain({ name: '', age: 36 }) // [{ reason: 'constraint', path: ['name'], expected: 'string', constraint: 'min', limit: 1, received: '\"\"' }]\nuser.schema // the owned, deeply frozen { type: 'object', properties: { … }, required: ['name', 'age'], additionalProperties: false }\nuser.generate(seededRandom(42)) // reproducible seed data; omit the arg for a wall-clock-seeded source"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Contract > keeps every compared summary and example equal to its source
+Tests  1 failed | 67 passed (68)
+× keeps every compared summary and example equal to its source 6117ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/contract.md pitch: readme "Control: The zero-dependency contract toolkit — runtime type guards, guard combinators, coerce-and-extract parsers, and a shape DSL that compiles one declaration into a JSON Schema, a guard, a parser, a strict audit, a parse report, and a generator, every one of them derived from a single owned snapshot of that declaration." tagline "The zero-dependency contract toolkit — runtime type guards, guard combinators, coerce-and-extract parsers, and a shape DSL that compiles one declaration into a JSON Schema, a guard, a parser, a strict audit, a parse report, and a generator, every one of them derived from a single owned snapshot of that declaration."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The zero-dependency contract…' to be 'The zero-dependency contract toolkit …' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 67 passed (68)
+× opens the README with the guide tagline 31ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/contract.md function isNullableString: guide absent source "Determines whether a value is a string or `null`."
+guides/contract.md function isNullableNumber: guide absent source "Determines whether a value is a number or `null` (the number may be `NaN` / `±Infinity`)."
+guides/contract.md function isNullableBoolean: guide absent source "Determines whether a value is a boolean or `null`."
+rows read: 1, disagreements found: 18
+   docs exit 1
+AssertionError: expected [ …(18) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Contract > keeps every compared summary and example equal to its source
+Tests  1 failed | 67 passed (68)
+× keeps every compared summary and example equal to its source 6687ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

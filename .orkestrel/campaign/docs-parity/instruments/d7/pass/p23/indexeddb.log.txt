@@ -1,0 +1,103 @@
+### indexeddb at b157a60, guide guides/indexeddb.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  71 passed (71)
+   test:guides exit 0
+-- census
+   guides/indexeddb.md surface {"equal":42,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":61,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 9 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class IndexedDBCursor methods 5 grouped false undescribed ["advance","continue","remove","seek","update"]
+   owner interface IndexedDBCursorInterface methods 5 grouped true undescribed []
+   owner class IndexedDBDatabase methods 6 grouped false undescribed ["close","connect","drop","read","store","write"]
+   owner interface IndexedDBDatabaseInterface methods 6 grouped true undescribed []
+   owner class IndexedDBIndex methods 8 grouped false undescribed ["count","cursor","get","has","keys","primary","records","resolve"]
+   owner interface IndexedDBIndexInterface methods 8 grouped true undescribed []
+   owner interface IndexedDBRecordStoreInterface methods 11 grouped true undescribed []
+   owner class IndexedDBStore methods 12 grouped false undescribed ["add","clear","count","cursor","get","has","index","keys","records","remove","resolve","set"]
+   owner interface IndexedDBStoreInterface methods 12 grouped true undescribed []
+   owner class IndexedDBTransaction methods 3 grouped false undescribed ["abort","commit","store"]
+   owner interface IndexedDBTransactionInterface methods 3 grouped true undescribed []
+   owner class IndexedDBTransactionStore methods 11 grouped false undescribed ["add","clear","count","cursor","get","has","keys","records","remove","resolve","set"]
+   owner interface IndexedDBTransactionStoreInterface methods 11 grouped true undescribed []
+   owner interface IndexedDBUpgradeIndexManagerInterface methods 2 grouped true undescribed []
+   owner interface IndexedDBUpgradeStoreManagerInterface methods 3 grouped true undescribed []
+   examples titledFences 12 titledExamples ["createIndexedDBDatabase:Feature-detecting before opening a database"] pairs ["Feature-detecting before opening a database"]
+-- sites: surface row guides/indexeddb.md:41; methods row guides/indexeddb.md:126; title src/browser/factories.ts:21
+-- control A: one Surface Summary cell altered (guides/indexeddb.md:41)
+guides/indexeddb.md function createIndexedDBDatabase: guide "Creates a typed, lazily-connecting IndexedDB database over a store schema. Control." source "Creates a typed, lazily-connecting IndexedDB database over a store schema."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > IndexedDB > keeps every compared summary and example equal to its source
+Tests  1 failed | 70 passed (71)
+× keeps every compared summary and example equal to its source 352ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/indexeddb.md:126)
+guides/indexeddb.md IndexedDBDatabaseInterface.connect: guide "Opens the connection, lazily and idempotently, waiting through a native block. Control." source "Opens the connection, lazily and idempotently, waiting through a native block."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > IndexedDB > keeps every compared summary and example equal to its source
+Tests  1 failed | 70 passed (71)
+× keeps every compared summary and example equal to its source 369ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a typed, lazily-connecting IndexedDB database over a store schema.
+guides/indexeddb.md function createIndexedDBDatabase: guide "Creates a typed, lazily-connecting IndexedDB database over a store schema." source "Control Creates a typed, lazily-connecting IndexedDB database over a store schema."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > IndexedDB > keeps every compared summary and example equal to its source
+Tests  1 failed | 70 passed (71)
+× keeps every compared summary and example equal to its source 366ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/browser/IndexedDBCursor.ts:6:  * Control Represents a promisified value cursor over an object store or index.
+guides/indexeddb.md class IndexedDBCursor: guide "Represents a promisified value cursor over an object store or index." source "Control Represents a promisified value cursor over an object store or index."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > IndexedDB > keeps every compared summary and example equal to its source
+Tests  1 failed | 70 passed (71)
+× keeps every compared summary and example equal to its source 358ms
+   test:guides exit 1
+-- control D: the @example title removed (src/browser/factories.ts:21)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 70 passed (71)
+× pairs at least one example title across the guide and the source 36ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/indexeddb.md Feature-detecting before opening a database: guide "ts\nimport { createIndexedDBDatabase, supportsIndexedDB } from '@orkestrel/indexeddb'\n\nif (supportsIndexedDB()) {\n\tconst db = createIndexedDBDatabase({ name: 'app', version: 1, stores: { users: { path: 'id' } } })\n\tawait db.store('users').set({ id: 'u1', name: 'Ada' })\n}" source "ts\nimport { createIndexedDBDatabase, supportsIndexedDB } from '@orkestrel/indexeddb' // control\n\nif (supportsIndexedDB()) {\n\tconst db = createIndexedDBDatabase({ name: 'app', version: 1, stores: { users: { path: 'id' } } })\n\tawait db.store('users').set({ id: 'u1', name: 'Ada' })\n}"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > IndexedDB > keeps every compared summary and example equal to its source
+Tests  1 failed | 70 passed (71)
+× keeps every compared summary and example equal to its source 387ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/indexeddb.md pitch: readme "Control: A lean, typed, Promise-based wrapper over the raw browser `IDBDatabase` / `IDBObjectStore` / `IDBIndex` / `IDBTransaction` API — object stores, secondary indexes, native key ranges, promisified cursors, multi-store transactions, and versioned schema upgrades, over `await` instead of raw `IDBRequest` events." tagline "A lean, typed, Promise-based wrapper over the raw browser `IDBDatabase` / `IDBObjectStore` / `IDBIndex` / `IDBTransaction` API — object stores, secondary indexes, native key ranges, promisified cursors, multi-store transactions, and versioned schema upgrades, over `await` instead of raw `IDBRequest` events."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A lean, typed, Promise-based…' to be 'A lean, typed, Promise-based wrapper …' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 70 passed (71)
+× opens the README with the guide tagline 16ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/indexeddb.md function createIndexedDBDatabase: guide absent source "Creates a typed, lazily-connecting IndexedDB database over a store schema."
+guides/indexeddb.md class IndexedDBDatabase: guide absent source "Represents a browser-native IndexedDB database — a typed, Promise-based handle."
+rows read: 1, disagreements found: 2
+   docs exit 1
+AssertionError: expected [ …(2) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > IndexedDB > keeps every compared summary and example equal to its source
+Tests  1 failed | 70 passed (71)
+× keeps every compared summary and example equal to its source 388ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

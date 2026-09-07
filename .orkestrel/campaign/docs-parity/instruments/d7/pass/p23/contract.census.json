@@ -1,0 +1,139 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-contract",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/contract.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 313,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 5,
+    "counts": {
+     "equal": 8,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "ContractInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "JSONCloner",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "JSONClonerInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SchemaCloner",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "SchemaClonerInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ShapeCloner",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "ShapeClonerInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ShapeValidator",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "ShapeValidatorInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "ContractError",
+     "Cloners",
+     "Shape builders",
+     "Compilers",
+     "Inferers",
+     "Domains",
+     "ShapeClonerInterface",
+     "Capturing synchronous outcomes losslessly",
+     "Narrowing unknown",
+     "Composing with recordOf / arrayOf / unionOf",
+     "Accepting foreign interface implementations with objectOf",
+     "Recursive guards with lazyOf",
+     "Guards narrow, parsers coerce",
+     "Parsing JSON safely",
+     "Checking structural JSON safely",
+     "Declaring a shape",
+     "Validating a live shape source",
+     "Compiling a contract",
+     "From an existing API/DB to an MCP tool"
+    ],
+    "titledExamples": [
+     "createContract:Compiling a contract"
+    ],
+    "pairs": [
+     "Compiling a contract"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}
