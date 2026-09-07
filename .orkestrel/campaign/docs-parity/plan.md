@@ -74,3 +74,8 @@ The campaign ends when each closes as implemented, repaired, retained, or intent
 - **Added for D5:** the seed needs a locator from a declared name or member to its doc block's line range (`d2-guide-render-report.md` § Findings 3); D5's brief carries it.
 - **Added finding for the next change, outside this campaign:** the `oxfmt` round trip over a replaced cell has no in-suite home (it needs an expensive-proof Vitest project in `@orkestrel/guide`); `renderMarkdown` escapes a `#` differently across two renders of one shipped summary (a `@orkestrel/markdown` instability, recorded for that package); the test-infrastructure readers at module scope in `tests/src/core/helpers.test.ts` promote together when a second suite needs them.
 - **Unchanged:** D7.guide (the guide's own compared columns still head `Behavior`, `Shape`, `Signature`, `Builds`, `Returns`; D1 named it and D2 added rows under `Behavior`), D4 to D7.n.
+
+## Re-baseline (2026-09-07, after Ruling 6)
+
+- **Satisfied: the three open items under § For the owner.** Ruling 6 accepts the defaults: the README shrink with the pitch as the H1 blockquote equal to the guide's tagline (D4's RQ assertion and D6's rewrite), the equality reading where a `Summary` cell adopts the doc block's verb-first sentence and the noun-phrase clause covers the tagline and the pitch alone (D4's rule bullets), and the voice-rule population as every file the linter walks (D3, landed in the fix round).
+- **Unchanged:** D4 waits on D3's landing and on the guide head start built from D2's landed tip; D5 waits on D2-fix's `locateComment`; D6 and D7.n follow in order.

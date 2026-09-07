@@ -8,10 +8,3 @@
  M tests/config.test.ts
  M tests/policy.test.ts
  M tests/setupPolicy.ts
-?? .orkestrel/campaign/docs-parity/d2-audit-checker.md
-?? .orkestrel/campaign/docs-parity/d2-audit-objective.md
-?? .orkestrel/campaign/docs-parity/d2-audit-subjective.md
-?? .orkestrel/campaign/docs-parity/d2-verify-report.md
-?? .orkestrel/campaign/docs-parity/d3-fix-report.md
-?? .orkestrel/campaign/docs-parity/d3-fix.diff.txt
-?? .orkestrel/campaign/docs-parity/d3-fix.status.txt
