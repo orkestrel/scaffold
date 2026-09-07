@@ -16,19 +16,23 @@
 
 ## Items, each an exact edit
 
-1. **The description paragraph and the `@remarks` of `replaceExample`** (`src/core/helpers.ts:2768-2785`). In the description, replace `A text that is no doc block, a title no tag carries, and code\n * the emitted three-backtick fence cannot enclose each return \`undefined\`.` with `A text that is no doc block, a title no tag carries, and a\n * language or code the emitted three-backtick fence cannot enclose or the doc block cannot hold\n * each return \`undefined\`.` — re-wrapped by hand under 100 columns. In the `@remarks`, after the sentence ending `turn a following\n * \`@\`-line into a tag.` insert `A language or code carrying the doc-comment terminator is a body the\n * block itself cannot hold: the terminator closes the block where it lands and the file stops\n * parsing there.` before `Refusing keeps the rewrite total over the bodies it can spell.` — re-wrapped by hand. In the `@returns` (`:2796-2798`), replace `and for code the emitted fence cannot\n * enclose or the doc block cannot hold — a body carrying the doc-comment terminator` with `and for a language or code the emitted\n * fence cannot enclose or the doc block cannot hold — a body carrying the doc-comment terminator`, re-wrapped.
+1. **The description paragraph and the `@remarks` of `replaceExample`** (`src/core/helpers.ts:2768-2785`). In the description, replace `` A text that is no doc block, a title no tag carries, and code\n * the emitted three-backtick fence cannot enclose each return `undefined`. `` with `` A text that is no doc block, a title no tag carries, and a\n * language or code the emitted three-backtick fence cannot enclose or the doc block cannot hold\n * each return `undefined`. `` — re-wrapped by hand under 100 columns. In the `@remarks`, after the sentence ending `` turn a following\n * `@`-line into a tag. `` insert `` A language or code carrying the doc-comment terminator is a body the\n * block itself cannot hold: the terminator closes the block where it lands and the file stops\n * parsing there. `` before `` Refusing keeps the rewrite total over the bodies it can spell. `` — re-wrapped by hand. In the `@returns` (`:2796-2798`), replace `` and for code the emitted fence cannot\n * enclose or the doc block cannot hold — a body carrying the doc-comment terminator `` with `` and for a language or code the emitted\n * fence cannot enclose or the doc block cannot hold — a body carrying the doc-comment terminator ``, re-wrapped. (`\n * ` marks the comment's line break; the backticks inside the spans are the file's own.)
 2. **The guard reads the fence line too** (`src/core/helpers.ts:2801-2802`). Replace the two lines
-   ```ts
-   	if (example.code.includes('\`\`\`')) return undefined
-   	if (example.code.includes('*/')) return undefined
-   ```
-   with
-   ```ts
-   	const spelled = [example.language ?? '', ...example.code.split('\n')]
-   	if (spelled.some((line) => line.includes('\`\`\`') || line.includes('*/'))) return undefined
-   ```
-   and keep the comment above them true (rewrite it to name the fence line and the body together). In `tests/src/core/helpers.test.ts`, beside `returns undefined for code carrying the comment terminator the block cannot hold`, add `it('returns undefined for a language the fence line cannot carry', ...)` in the same shape asserting `undefined` for `language: 'ts */'` and for `language: 'ts \`\`\`'` with a plain `code: 'walk()'`; record the case red before the guard change, then green.
-3. **The guide's refusal sentence** (`guides/guide.md:632-633`). Replace `and code the emitted three-backtick fence cannot\nenclose or the doc block cannot hold, a body carrying \`*/\`.` with `and a language or code the emitted three-backtick fence\ncannot enclose or the doc block cannot hold — a body carrying \`*/\`.`, re-wrapped by hand under 100 columns.
+
+````ts
+	if (example.code.includes('```')) return undefined
+	if (example.code.includes('*/')) return undefined
+````
+
+with
+
+````ts
+	const spelled = [example.language ?? '', ...example.code.split('\n')]
+	if (spelled.some((line) => line.includes('```') || line.includes('*/'))) return undefined
+````
+
+and rewrite the comment above them to name the fence line and the body together. In `tests/src/core/helpers.test.ts`, beside `returns undefined for code carrying the comment terminator the block cannot hold`, add `it('returns undefined for a language the fence line cannot carry', ...)` in the same shape asserting `undefined` for `language: 'ts */'` and for a `language` of `ts` followed by three backticks, with a plain `code: 'walk()'`; record the case red before the guard change, then green.
+3. **The guide's refusal sentence** (`guides/guide.md:632-633`). Replace `` and code the emitted three-backtick fence cannot\nenclose or the doc block cannot hold, a body carrying `*/`. `` with `` and a language or code the emitted three-backtick fence\ncannot enclose or the doc block cannot hold — a body carrying `*/`. ``, re-wrapped by hand under 100 columns.
 4. **The cell.** `npm run build && npm run docs -- --to guide && npm run format`; the seed rewrites the `replaceExample` cell (`guides/guide.md:144`) and nothing else (`written: 1`); then `npm run build && npm run docs` exits 0.
 
 ## Scope
