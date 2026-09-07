@@ -1,0 +1,140 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-middleware",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/middleware.md",
+   "source": [
+    "src/core",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 169,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 5,
+    "counts": {
+     "equal": 12,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "AssetSourceInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "DatabaseSessionStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "delete",
+      "get",
+      "set"
+     ]
+    },
+    {
+     "name": "MemorySessionStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "delete",
+      "get",
+      "set"
+     ]
+    },
+    {
+     "name": "Session",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "delete",
+      "set"
+     ]
+    },
+    {
+     "name": "SessionControlInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SessionInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SessionStoreInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SessionTransportInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Mount a battery",
+     "Canonical onion — fetch-native runtime",
+     "Canonical onion — behind @orkestrel/server",
+     "Body: eager cache drive",
+     "Session: control handle, header transport, injected store",
+     "Session store seam — direct calls",
+     "Session store seam — durable database-backed store",
+     "Session transport seam — direct calls",
+     "CSRF: session-bound double-submit",
+     "Multipart: node face, sniffed-type allow-list",
+     "Multipart limits — direct resolution",
+     "Assets: in-memory source",
+     "Static: SPA fallback"
+    ],
+    "titledExamples": [
+     "createBoundary:Mount a battery"
+    ],
+    "pairs": [
+     "Mount a battery"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

@@ -1,0 +1,69 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-ollama",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/ollama.md",
+   "source": "src/server",
+   "surface": {
+    "counts": {
+     "equal": 21,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 2,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "OllamaProvider",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "createOllama + generate",
+     "Bounding a call with a budget + timeout",
+     "Routing through your own server (obfuscated tokens)",
+     "Context framing",
+     "Narrowing HTTP errors with isOllamaHTTPError"
+    ],
+    "titledExamples": [
+     "createOllama:createOllama + generate"
+    ],
+    "pairs": [
+     "createOllama + generate"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

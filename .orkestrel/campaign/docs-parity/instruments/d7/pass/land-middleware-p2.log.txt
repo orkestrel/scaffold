@@ -1,0 +1,22 @@
+== middleware p2 landing 2026-09-07T21:45:13Z over b9d08b6
+== status
+ M README.md
+ M guides/middleware.md
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/core/middlewares.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/constants.ts
+ M src/server/helpers.ts
+ M src/server/middlewares.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts       |   4 +-
+ tests/guides.test.ts      |  82 ++++++-
+ 12 files changed, 515 insertions(+), 356 deletions(-)
+== stage by path
+ 12 files changed, 515 insertions(+), 356 deletions(-)
+== committed
+6576d98 Converge middleware under the equality gate
+(status end)

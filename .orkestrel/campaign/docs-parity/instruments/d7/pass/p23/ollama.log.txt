@@ -1,0 +1,90 @@
+### ollama at 98e9c34, guide guides/ollama.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  23 passed (23)
+   test:guides exit 0
+-- census
+   guides/ollama.md surface {"equal":21,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":2,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class OllamaProvider methods 2 grouped true undescribed []
+   examples titledFences 6 titledExamples ["createOllama:createOllama + generate"] pairs ["createOllama + generate"]
+-- sites: surface row guides/ollama.md:66; methods row guides/ollama.md:102; title src/server/factories.ts:36
+-- control A: one Surface Summary cell altered (guides/ollama.md:66)
+guides/ollama.md function createOllama: guide "Creates a local Ollama inference provider — a `ProviderInterface` over the daemon's `POST /api/chat`, supporting non-streaming `generate` and streaming `stream`. Control." source "Creates a local Ollama inference provider — a `ProviderInterface` over the daemon's `POST /api/chat`, supporting non-streaming `generate` and streaming `stream`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Ollama > keeps every compared summary and example equal to its source
+Tests  1 failed | 22 passed (23)
+× keeps every compared summary and example equal to its source 10ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/ollama.md:102)
+guides/ollama.md OllamaProvider.generate: guide "Generates one complete turn and resolves the assembled result — the clean content, any separated reasoning, any tool calls, and any usage the wire reported. Control." source "Generates one complete turn and resolves the assembled result — the clean content, any separated reasoning, any tool calls, and any usage the wire reported."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Ollama > keeps every compared summary and example equal to its source
+Tests  1 failed | 22 passed (23)
+× keeps every compared summary and example equal to its source 10ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a local Ollama inference provider — a {@link ProviderInterface} over the
+guides/ollama.md function createOllama: guide "Creates a local Ollama inference provider — a `ProviderInterface` over the daemon's `POST /api/chat`, supporting non-streaming `generate` and streaming `stream`." source "Control Creates a local Ollama inference provider — a `ProviderInterface` over the daemon's `POST /api/chat`, supporting non-streaming `generate` and streaming `stream`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Ollama > keeps every compared summary and example equal to its source
+Tests  1 failed | 22 passed (23)
+× keeps every compared summary and example equal to its source 12ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/server/OllamaProvider.ts:35:  * Control Implements the local Ollama inference boundary — a {@link ProviderInterface} over Ollama's
+guides/ollama.md class OllamaProvider: guide "Implements the local Ollama inference boundary — a `ProviderInterface` over Ollama's `POST /api/chat`, both non-streaming (`generate`) and streaming NDJSON (`stream`)." source "Control Implements the local Ollama inference boundary — a `ProviderInterface` over Ollama's `POST /api/chat`, both non-streaming (`generate`) and streaming NDJSON (`stream`)."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Ollama > keeps every compared summary and example equal to its source
+Tests  1 failed | 22 passed (23)
+× keeps every compared summary and example equal to its source 9ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:36)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 22 passed (23)
+× pairs at least one example title across the guide and the source 19ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/ollama.md createOllama + generate: guide "ts\nimport { createAbort } from '@orkestrel/abort'\nimport { createOllama } from '@orkestrel/ollama'\n\nconst provider = createOllama({ model: 'qwen3.5:2b-q4_K_M', options: { temperature: 0 } })\nconst abort = createAbort()\nconst messages = [\n\t{ id: '1', role: 'user', content: 'Summarize the release notes for version 2.0.' },\n] as const\n\nconst result = await provider.generate(messages, abort.signal)\nconsole.log(result.content)\nif (result.usage) charge(result.usage) // fold into a token budget" source "ts\nimport { createAbort } from '@orkestrel/abort' // control\nimport { createOllama } from '@orkestrel/ollama'\n\nconst provider = createOllama({ model: 'qwen3.5:2b-q4_K_M', options: { temperature: 0 } })\nconst abort = createAbort()\nconst messages = [\n\t{ id: '1', role: 'user', content: 'Summarize the release notes for version 2.0.' },\n] as const\n\nconst result = await provider.generate(messages, abort.signal)\nconsole.log(result.content)\nif (result.usage) charge(result.usage) // fold into a token budget"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Ollama > keeps every compared summary and example equal to its source
+Tests  1 failed | 22 passed (23)
+× keeps every compared summary and example equal to its source 11ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/ollama.md pitch: readme "Control: A typed local-LLM provider for the `@orkestrel` line: a `ProviderInterface` over a local Ollama daemon's `POST /api/chat`, with non-streaming `generate`, NDJSON `stream`, tool calls, thinking, and usage accounting, built on web-standard `fetch` and `ReadableStream` with no Ollama SDK dependency." tagline "A typed local-LLM provider for the `@orkestrel` line: a `ProviderInterface` over a local Ollama daemon's `POST /api/chat`, with non-streaming `generate`, NDJSON `stream`, tool calls, thinking, and usage accounting, built on web-standard `fetch` and `ReadableStream` with no Ollama SDK dependency."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A typed local-LLM provider f…' to be 'A typed local-LLM provider for the `@…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 22 passed (23)
+× opens the README with the guide tagline 10ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/ollama.md function extractUsage: guide absent source "Extracts the token usage of one wire record."
+guides/ollama.md function extractTools: guide absent source "Extracts the tool calls of one wire record's `message.tool_calls`."
+guides/ollama.md function extractArguments: guide absent source "Extracts a wire `arguments` value as a record."
+rows read: 1, disagreements found: 21
+   docs exit 1
+AssertionError: expected [ …(21) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Ollama > keeps every compared summary and example equal to its source
+Tests  1 failed | 22 passed (23)
+× keeps every compared summary and example equal to its source 12ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

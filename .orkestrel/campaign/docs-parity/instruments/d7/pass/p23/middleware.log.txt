@@ -1,0 +1,97 @@
+### middleware at 6576d98, guide guides/middleware.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  41 passed (41)
+   test:guides exit 0
+-- census
+   guides/middleware.md surface {"equal":169,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":12,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 5 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner interface AssetSourceInterface methods 1 grouped true undescribed []
+   owner class DatabaseSessionStore methods 3 grouped false undescribed ["delete","get","set"]
+   owner class MemorySessionStore methods 3 grouped false undescribed ["delete","get","set"]
+   owner class Session methods 3 grouped false undescribed ["clear","delete","set"]
+   owner interface SessionControlInterface methods 2 grouped true undescribed []
+   owner interface SessionInterface methods 3 grouped true undescribed []
+   owner interface SessionStoreInterface methods 3 grouped true undescribed []
+   owner interface SessionTransportInterface methods 3 grouped true undescribed []
+   examples titledFences 13 titledExamples ["createBoundary:Mount a battery"] pairs ["Mount a battery"]
+-- sites: surface row guides/middleware.md:48; methods row guides/middleware.md:302; title src/core/middlewares.ts:99
+-- control A: one Surface Summary cell altered (guides/middleware.md:48)
+guides/middleware.md function createBoundary: guide "Creates the outermost error-rendering battery — catches a downstream throw and renders it as a `Response`. Control." source "Creates the outermost error-rendering battery — catches a downstream throw and renders it as a `Response`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Middleware > keeps every compared summary and example equal to its source
+Tests  1 failed | 40 passed (41)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/middleware.md:302)
+guides/middleware.md AssetSourceInterface.read: guide "Reads one identity or Brotli asset representation for a validated relative key. Control." source "Reads one identity or Brotli asset representation for a validated relative key."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Middleware > keeps every compared summary and example equal to its source
+Tests  1 failed | 40 passed (41)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates the outermost error-rendering battery — catches a downstream throw and
+guides/middleware.md function createBoundary: guide "Creates the outermost error-rendering battery — catches a downstream throw and renders it as a `Response`." source "Control Creates the outermost error-rendering battery — catches a downstream throw and renders it as a `Response`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Middleware > keeps every compared summary and example equal to its source
+Tests  1 failed | 40 passed (41)
+× keeps every compared summary and example equal to its source 29ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Session.ts:4:  * Control Represents a server-managed session's default entity — the `create` option's default
+guides/middleware.md class Session: guide "Represents a server-managed session's default entity — the `create` option's default value for `createSession`. It ships without a bare `create*` factory of its own, because the name `createSession` belongs to the battery; `createRestoredSession` rebuilds one from a stored snapshot." source "Control Represents a server-managed session's default entity — the `create` option's default value for `createSession`. It ships without a bare `create*` factory of its own, because the name `createSession` belongs to the battery; `createRestoredSession` rebuilds one from a stored snapshot."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Middleware > keeps every compared summary and example equal to its source
+Tests  1 failed | 40 passed (41)
+× keeps every compared summary and example equal to its source 25ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/middlewares.ts:99)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 40 passed (41)
+× pairs at least one example title across the guide and the source 55ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/middleware.md Mount a battery: guide "ts\nimport { createBoundary, createSecurity } from '@orkestrel/middleware'\nimport type { IdentifierState } from '@orkestrel/middleware'\nimport { compose } from '@orkestrel/server'\n\ninterface State extends IdentifierState {}\n\nconst boundary = createBoundary({ expose: false })\nconst security = createSecurity({ hsts: true })\n\nconst handle = compose<State>([boundary, security], async (_request, context) => {\n\treturn Response.json({ identifier: context.state.identifier })\n})" source "ts\nimport { createBoundary, createSecurity } from '@orkestrel/middleware' // control\nimport type { IdentifierState } from '@orkestrel/middleware'\nimport { compose } from '@orkestrel/server'\n\ninterface State extends IdentifierState {}\n\nconst boundary = createBoundary({ expose: false })\nconst security = createSecurity({ hsts: true })\n\nconst handle = compose<State>([boundary, security], async (_request, context) => {\n\treturn Response.json({ identifier: context.state.identifier })\n})"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Middleware > keeps every compared summary and example equal to its source
+Tests  1 failed | 40 passed (41)
+× keeps every compared summary and example equal to its source 20ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/middleware.md pitch: readme "Control: Batteries for the `@orkestrel/server` middleware seam: `create{Noun}(options) => MiddlewareHandler<TState>` factories for error boundaries, telemetry, compression, security headers, CORS, deadlines, trusted-proxy client facts, ETag, bearer authentication, rate limiting, body parsing, sessions, and CSRF in the fetch-native core, plus in-memory assets, static files, streaming multipart uploads, and a `node:zlib` compression sibling in the node face." tagline "Batteries for the `@orkestrel/server` middleware seam: `create{Noun}(options) => MiddlewareHandler<TState>` factories for error boundaries, telemetry, compression, security headers, CORS, deadlines, trusted-proxy client facts, ETag, bearer authentication, rate limiting, body parsing, sessions, and CSRF in the fetch-native core, plus in-memory assets, static files, streaming multipart uploads, and a `node:zlib` compression sibling in the node face."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: Batteries for the `@orkestre…' to be 'Batteries for the `@orkestrel/server`…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 40 passed (41)
+× opens the README with the guide tagline 15ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/middleware.md function createCSRF: guide absent source "Creates the session-bound double-submit CSRF protection battery."
+guides/middleware.md function only: guide absent source "Scopes a battery to a set of exact pathnames and nowhere else — outside that set it steps aside through `next()`."
+guides/middleware.md function except: guide absent source "Scopes a battery to every pathname outside a set of exact ones — on that set it steps aside through `next()`."
+rows read: 1, disagreements found: 15
+   docs exit 1
+AssertionError: expected [ …(15) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Middleware > keeps every compared summary and example equal to its source
+Tests  1 failed | 40 passed (41)
+× keeps every compared summary and example equal to its source 29ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

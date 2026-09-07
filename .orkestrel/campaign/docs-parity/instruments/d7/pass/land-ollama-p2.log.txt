@@ -1,0 +1,19 @@
+== ollama p2 landing 2026-09-07T21:45:13Z over e6deef9
+== status
+ M README.md
+ M guides/ollama.md
+ M src/server/OllamaProvider.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts          |   4 +-
+ tests/guides.test.ts         |  82 +++++++++++++++++++++++++++++---
+ 9 files changed, 219 insertions(+), 82 deletions(-)
+== stage by path
+ 9 files changed, 219 insertions(+), 82 deletions(-)
+== committed
+98e9c34 Converge ollama under the equality gate
+(status end)
