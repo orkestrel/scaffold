@@ -19,7 +19,7 @@
 5. `npm run lint:check`
 6. `npm run check`
 7. `npm run test:src:core`
-8. `SEED_PROJECT_COMMAND` (the seed's own Vitest project, named by the D5 report; expected: 0 with the seed's child-process cases listed)
+8. `npm run test:src:core -- --reporter=verbose 2>&1 | grep -c "the documentation seed"` (the seed's cases live in `tests/src/core/compilers.test.ts` per the D5 report; expected: a count of the listed case lines, and step 7 carries the exit code)
 9. `npm run test:policy`
 10. `npm run build`
 11. `sha256sum host.json && npm run build:inventory && sha256sum host.json` (expected: the same digest before and after)
