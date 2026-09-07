@@ -1,0 +1,124 @@
+diff --git a/.claude/rules/documentation.md b/.claude/rules/documentation.md
+index 7c25f9dd..16550431 100644
+--- a/.claude/rules/documentation.md
++++ b/.claude/rules/documentation.md
+@@ -32,7 +32,14 @@ Documentation is an enforced contract, not explanatory decoration. The Writing r
+ - Every public export is documented.
+ - TypeScript, SCSS, Markdown, tests, and showcase remain aligned.
+ - A parity failure identifies drift; never suppress or weaken the test.
+-- The TSDoc voice rule governs a doc block; a guide tagline and a Surface-row description are noun phrases.
++- A guide `Summary` cell equals its export's doc-block description paragraph after the compared
++  form, a titled `@example` equals the guide fence under the heading of that title, and the README
++  pitch equals the guide's tagline. `tests/guides.test.ts` asserts each through `findDrift` and
++  `tagline()` from `@orkestrel/guide`; converge the two sides with `npm run docs`, never by
++  weakening the gate.
++- The TSDoc voice rule governs a doc block, and a `Summary` cell carries that block's description
++  paragraph, so the same voice governs the cell. A guide tagline and a README pitch are noun
++  phrases, and each is the blockquote under its file's H1.
+ - A vendored dependency guide is a mirror. Its relative links address the upstream tree and resolve to nothing here, so they are outside local-link parity. Refresh a mirror rather than rewriting it: a rewritten copy is a translation, and no comparison against the fetched bytes can check it.
+ - Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns. A `// false` beside a call that returns `true` is a defect of the same kind as a wrong return value, and it reaches every consumer who installs the package. That proof has a home: `tests/guides.test.ts` executes the flagship fences, per `.claude/rules/tests.md`. An ordered behaviour with no gate is not a gate.
+   Asserting that the sentence appears is not asserting that it is true. `expect(text).toContain('a spawn fault reports null')` passes unchanged when the code starts returning something else, so it guards the documentation's presence and nothing about the behaviour. Where a prose claim about behaviour sits under no fence, add the executed assertion that would break if the claim went false, and keep the substring check only as a presence guard beside it. A row whose close condition names a behaviour does not close on a substring.
+diff --git a/.claude/rules/tests.md b/.claude/rules/tests.md
+index 25ad96b7..447686e1 100644
+--- a/.claude/rules/tests.md
++++ b/.claude/rules/tests.md
+@@ -48,16 +48,16 @@ paths:
+ A proof that covers the workspace instead of one module has a fixed location, so no package invents
+ its own:
+ 
+-| Path                         | Proves                                                                                                                         |
+-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+-| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges   |
+-| `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                          |
+-| `tests/guides.test.ts`       | Every documented API exists, every public API is documented, and every executable fence returns what the guide says it returns |
+-| `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                  |
+-| `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                            |
+-| `tests/integration.test.ts`  | The package's features work together end to end across environments                                                            |
+-| `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                      |
+-| `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                |
++| Path                         | Proves                                                                                                                                                                                       |
++| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                 |
++| `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                        |
++| `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns |
++| `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                |
++| `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          |
++| `tests/integration.test.ts`  | The package's features work together end to end across environments                                                                                                                          |
++| `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
++| `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                                                                              |
+ 
+ - Put each root `tests/setup*.test.ts` proof in the `setup` project. Keep its assertions on
+   exported test-infrastructure behavior: do not duplicate production behavior there, and do not
+diff --git a/host.json b/host.json
+index 6b5d42d3..a6dd307a 100644
+--- a/host.json
++++ b/host.json
+@@ -400,7 +400,7 @@
+ 			"storage": "claude/rules/documentation.md",
+ 			"destination": ".claude/rules/documentation.md",
+ 			"executable": false,
+-			"digest": "db0f5f73f0f94a28ca7b6354290008a0634c50331be21084d8452b8496303fda"
++			"digest": "d0a6b6c190272f1762337dee6f79891f53c8c96f6a12cb76462d998882128c4e"
+ 		},
+ 		{
+ 			"storage": "claude/rules/names.md",
+@@ -436,7 +436,7 @@
+ 			"storage": "claude/rules/tests.md",
+ 			"destination": ".claude/rules/tests.md",
+ 			"executable": false,
+-			"digest": "c1c8ff5f5058f5946ca8b0770195ab4c1897b8907fc04f6a2548b3afc3fc68df"
++			"digest": "5ba1c577e6e86c6d35acd02c23339489b6c0a1c14c79249d0aab6b771d7ffac3"
+ 		},
+ 		{
+ 			"storage": "claude/rules/typescript.md",
+@@ -772,5 +772,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "ef1438cf27dc739a6a27feeef64ca9b47842755294ad75a5c03cf7bd9c0d591f"
++	"digest": "883ff874bced98b4875954caa01fa6bf2f52fe690375073a1fa738b3db9eff2d"
+ }
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 598bde47..6be2be5c 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -4,6 +4,7 @@ import {
+ 	createGuide,
+ 	createSource,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findUnlisted,
+ 	isExternalLink,
+@@ -150,6 +151,31 @@ describe('guides', () => {
+ 		expect(drifted).toEqual([])
+ 	})
+ 
++	// The equality gate: a `Summary` cell against its export's description paragraph, a
++	// titled fence against the `@example` of that title. `findDrift` owns the comparison
++	// and names both sides, so a disagreement is carried whole rather than summarized.
++	// Converge the two sides with `npm run docs`; never weaken this assertion.
++	it('keeps every compared summary and example equal to its source', () => {
++		const disagreeing = inspected
++			.map(({ entry, guide, source }) => ({ spec: entry.spec, drift: findDrift(guide, source) }))
++			.filter((record) => record.drift.length > 0)
++		expect(disagreeing).toEqual([])
++	})
++
++	// The README's pitch and the guide's tagline are one text, each read as the blockquote
++	// under its file's H1. `README.md` is outside the concept index, so the reader is
++	// applied to it directly rather than through an `inspected` record.
++	it('opens the README with the guide tagline', () => {
++		const pitch = createGuide(requireValue(files['README.md'])).tagline()
++		const documented = requireValue(
++			inspected.find(({ entry }) => entry.spec === 'guides/scaffold.md'),
++		)
++		const tagline = documented.guide.tagline()
++		expect(tagline).not.toBeUndefined()
++		expect(pitch).not.toBeUndefined()
++		expect(pitch).toBe(tagline)
++	})
++
+ 	it('publishes HostFile without the former Copy row type', () => {
+ 		const names = inspected.flatMap(({ source }) => source.surface().map((symbol) => symbol.name))
+ 		expect(names).toContain('HostFile')

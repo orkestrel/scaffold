@@ -1,0 +1,6 @@
+ M .claude/rules/documentation.md
+ M .claude/rules/tests.md
+ M host.json
+ M tests/guides.test.ts
+?? .orkestrel/campaign/docs-parity/d4-scaffold-gate.diff.txt
+?? .orkestrel/campaign/docs-parity/d4-scaffold-gate.status.txt
