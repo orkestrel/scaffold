@@ -1,0 +1,28 @@
+Lane held: checker
+
+**Claim 1 — L8 to L11 land as the brief words them.** PASS.
+- `guides/scaffold.md:1037-1039` reads "It exits `2` for an argument outside `--to`, printing the usage line, and for an input it cannot read — a workspace carrying no `guides/README.md`, or an index row naming a guide the workspace does not carry — printing one line naming that file rather than throwing" — matches the required "outside `--to`" wording and names the missing-index exit.
+- `guides/scaffold.md:1032-1035` names `guides/<name>.md` selected by the manifest's bare name and the three silent cases ("whose manifest declares no name, whose index carries no row for that guide, or which carries no `README.md`").
+- `grep -n "the one option\|the two values\|..."` over `scripts/docs.ts` and a full comment sweep found no count of a growable set; `scripts/docs.ts:380` uses "One current text per file," a per-file cardinality, not a set count.
+- `scripts/docs.ts:451` and `tests/src/core/compilers.test.ts:2268,2303,2376` (the actual expectation lines carrying the string; see Claim 4 finding on the report's own wrong citations for these) read `next: npm run format`.
+- `.claude/rules/workspace.md:77-78` reads "import only what resolves in every workspace: a `node:` module, or a package `BASE_DEV_DEPENDENCIES` declares." with the second "for every workspace" removed (`grep -c "declares for every workspace" .claude/rules/workspace.md` → `0`). Diffing `.orkestrel/campaign/docs-parity/d5-fix.diff.txt` against `d5-fix-2.diff.txt` shows the file's only other hunk (the workspace-proof-axis table) was already present in D5-fix, so D5-fix-2 moved only this one bullet.
+
+**Claim 2 — Scope honesty.** PASS.
+- `d5-fix-2.status.txt` lists exactly: `.claude/rules/documentation.md`, `.claude/rules/tests.md`, `.claude/rules/workspace.md`, `guides/scaffold.md`, `host.json`, `package.json`, `src/core/Compiler.ts`, `src/core/compilers.ts`, `src/core/constants.ts`, `tests/distribution.test.ts`, `tests/guides.test.ts`, `tests/setupServer.ts`, `tests/src/core/compilers.test.ts`, `tests/src/core/helpers.test.ts`, `tests/src/server/helpers.test.ts`, `tsconfig.json`, plus untracked `scripts/docs.ts` — matching D4/D5/D5-fix's dirty set, the Orchestrator's patches, and D5-fix-2's own scope.
+- Comparing git blob hashes between `d5-fix.diff.txt` and `d5-fix-2.diff.txt`: `.claude/rules/documentation.md` (`0296291c`=`0296291c`), `.claude/rules/tests.md` (`447686e1`=`447686e1`), `package.json` (`a344ed02`=`a344ed02`), `src/core/Compiler.ts` (`5485b075`=`5485b075`), `tests/guides.test.ts` (`e6002a59`=`e6002a59`), `tests/setupServer.ts` (`b2a7b3d3`=`b2a7b3d3`), `tests/src/server/helpers.test.ts` (`307d2a57`=`307d2a57`), `tsconfig.json` (`557d6848`=`557d6848`) — all unchanged by D5-fix-2, confirming no off-limits file moved.
+- `tests/distribution.test.ts` gained exactly one row, `'scripts/docs.ts'`, at line 282 (`d5-fix-2.diff.txt:574-579`), and is the only file the two diffs disagree on besides D5-fix-2's owned set.
+- `src/core/compilers.ts` (`aad19656`→`aafd80e0`) changed only at the two `DOCS_SEED_PATH` read sites plus its import row and doc-block/`@example` update; the `blueprintToWritableScripts` and `blueprintToRootTsconfig` rewrites and the `nameToHostArtifacts`→`blueprintToHostArtifacts` rename were already present, byte-identical, in `d5-fix.diff.txt`.
+
+**Claim 3 — The inventory.** PASS.
+- `d5-fix-2.diff.txt:246-300` (`host.json`) shows moved digests only for `.claude/rules/documentation.md`, `.claude/rules/tests.md`, `.claude/rules/workspace.md`, `guides/scaffold.md`, a new `scripts/docs.ts` entry, and the trailing membership digest — nothing else.
+- The report's criterion 4 (`d5-fix-2-report.md:163-171`) records one digest, `d938a3e53705f148fb504f02638acf7dee265219e95ece4d37b97105a6ed839a`, identical before `npm run build`, after it, and after a second `npm run build:inventory`.
+
+**Claim 4 — Report honesty.** FAIL.
+- `d5-fix-2-report.md:7` cites `(:339, :302)` as where "each drift still recomputes its span from the text it is about to rewrite." `scripts/docs.ts:339` is a bare closing brace `}` and `scripts/docs.ts:302` is a `continue` statement inside `writeGuide`'s failed-`replaceCell` branch; neither line computes a span. The actual span-relevant lines are `scripts/docs.ts:335` (`const text = file === undefined ? undefined : texts.get(file)`) and `:340` (`const span = locateComment(text, key)`).
+- `d5-fix-2-report.md:29` cites `tests/src/core/compilers.test.ts:2264`, `:2306`, and `:2340` as "the expectations that pinned the old line" for `next: npm run format`. Read at their new state: `:2264` is `expect(run.lines).toEqual([`, `:2306` is `expect(source).toContain(' * Shapes a widget from its parts.')` (unrelated to the next-step line), and `:2340` is a blank line before the next `it(...)`. The three actual occurrences of `next: npm run format` sit at `tests/src/core/compilers.test.ts:2268`, `:2303`, and `:2376`.
+- Every other sampled citation (L3's `:304`/`:355`; L4's `collectMissing` at `:185-195`, the exit path at `:376-379`, the two cases at `:2393`/`:2409`, `stderr` at `:2170`; L5's `Outcome.reported` at `:80`, `formatReported` at `:147`; L6's `:169`/`:396`; L7's `constants.ts:111-112`/`:143`, `compilers.ts:352`/`:1601`/`:39`) matches the files at their new state exactly, so this is a narrow but concrete drift rather than a wholesale fabrication.
+
+**Findings outside the claims.**
+- None beyond the citation drift recorded under Claim 4; no additional off-limits movement, no undisclosed count-of-a-growable-set usage, and no discrepancy in the criteria's exit codes were found.
+
+VERDICT: FAIL 4

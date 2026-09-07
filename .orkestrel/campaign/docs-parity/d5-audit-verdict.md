@@ -24,3 +24,16 @@ Lanes: subjective `reviewer` (Opus 5), objective `reviewer` (Opus 5, the recorde
 - Dropped on the record: none.
 
 VERDICT: FAIL 5, 10, 11, 13 — D5-fix-2 briefed; the round re-runs its checker and verifier on the fix, and the objective lane on L1.
+
+## Round 2 (2026-09-07, the closure of D5-fix-2)
+
+Lanes: objective `reviewer` (Opus 5, the recorded substitution for the dark Sol bench) on `d5-fix-2-audit-brief.md`, `checker` (Sonnet) on `d5-fix-2-check-brief.md`, `verifier` (Sonnet) on `d5-verify-brief.md`; Workflow `wf_e175a635-d04`, blind. The subjective lane did not run this round: its round-1 findings were prose and naming items with fixed wording (F1 to F7), which the checker's claim 1 reads mechanically; the round's reason is recorded here rather than as a template sentence. Records: `d5-fix-2-audit-objective.md` (FAIL 8), `d5-fix-2-checker.md` (FAIL 4), `d5-verify-2-report.md` (`GATES: GREEN`, `test:distribution` under npm 11.19.1 at 73.80 s with every case green).
+
+### Reconciled
+
+- Objective 1 to 7 PASS; checker 1 to 3 PASS. Claim 1's falsification limb is a derivation from the round-1 verdict's quoted pre-fix source rather than an executed run; the executed red is the writer's own (`d5-fix-2-report.md` § Criteria 3, `wrote src/core/panels/panel.ts` twice), accepted as the unit's failing-first proof with that provenance recorded.
+- Objective 8 and checker 4 FAIL on the report's citations (the span sites, the call sites, the constant's range, the Surface row, the next-step expectations) and on the `d5-fix-report.md` renumbering table missing the `guides/scaffold.md` shifts; corrected in the retained reports (this commit).
+- Findings outside the claims, each carried by D5-fix-3: F1 the seed's local `collectSummaries` collides with the installed `collectSummaries` export of `@orkestrel/guide` and takes the name `collectCells`; F2 the no-op tally limb is reachable through two overlapping rows carrying one guide text, so a case pins `written` under it; F3 the nameless-manifest and unindexed-own-guide pitch limbs get executed assertions; F4 the write run's `written:` and `reported:` values are named in the guide's write-run paragraph. The report's exit-code-less criterion 1 is noted, not carried.
+- Dropped on the record: none.
+
+VERDICT: FAIL 8 (citations, corrected) — D5-fix-3 briefed as a `builder` round; acceptance follows its checker and the verifier.
