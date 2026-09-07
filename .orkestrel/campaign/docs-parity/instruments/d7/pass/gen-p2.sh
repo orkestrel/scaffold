@@ -13,7 +13,7 @@ facts=$(bash $SCR/facts.sh $n)
 docs=$(timeout 120 npm run docs 2>&1 | grep -v '^$' | grep -v '^>' | tail -80; echo "exit ${PIPESTATUS[0]}")
 readme_item=""
 if [ "$n" = codec ]; then
-readme_item="- **codec's README** duplicates the guide's Surface tables (\`README.md:9-40\`, three tables the gate never reads); a copy drifts the moment a cell is rewritten, so the README keeps its blockquote and onboarding and replaces each copied table with one sentence linking the guide's section (\`[Codings](guides/codec.md#codings)\` and its siblings), the shape scaffold's own README took in D5."
+readme_item="- **codec's README** duplicates the guide's Surface tables (\`README.md:9-23\` and \`:28-41\`, which the gate never reads); a copy drifts the moment a cell is rewritten, so the README keeps its blockquote and onboarding and replaces each copied table with one sentence linking the guide's section (\`[Codings](guides/codec.md#codings)\` and its siblings), the shape scaffold's own README took in D5."
 fi
 probe_item=""
 if [ "$n" = probe ]; then
