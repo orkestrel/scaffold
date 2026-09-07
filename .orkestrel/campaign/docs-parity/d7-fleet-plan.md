@@ -57,3 +57,12 @@ The design round ran both lanes blind on `d7-fleet-design-brief.md`: `planner` (
 - The guide's release `0.0.18` after the pilot returns, then scaffold's release after the pass, then each package's publish in layer order — each on your credential.
 - Whether a newborn workspace is born with the three gate cases (a scaffold design question the emitter's ruling on empty barrels must settle first).
 - The mirror refresh after the wave: guides do not ship in a tarball, so a mechanism reading the owner's pushed branch is needed before dependents' mirrors can follow.
+
+## Template corrections from the abort pilot (A.3, 2026-09-07)
+
+Every P.1 and P.2 brief carries these, taken from `d7n-abort-audit-verdict.md`:
+
+- **P.1** binds `members` and `documented` once per `describe` and the mapped `examples` once in the examples loop when it adapts the drop-in to the `0.0.18` records; the bump lands in `package.json` and the Orchestrator's lockfile-only install carries it; the retained diff is captured after that install.
+- **P.2** names the titled block by its content (the block whose example the fence demonstrates), never by a baseline line number; checks heading uniqueness heading-scoped (`grep -n '^#\+ <title>'`); titles the block first and records the run, then runs `--to guide` and records that run; writes the pin in scaffold's inline form (`fence.title !== undefined && titled.has(fence.title)`, the defined titles on both sides of the failure line) with no local predicate; keeps the tagline's clauses out of the guide's opening paragraph and the README's; states one `Shape` idiom with its convention sentence worded against the rows that remain; writes distinct description paragraphs where rows would carry one sentence, and states a factory's preference as the contract it returns; prunes a remark sentence the description now repeats; names the checks in § Tests descriptively until the mirror refresh lands; plants no lint control — the Orchestrator takes that reading after the unit exits; adds `README.md` to the inventory the README case reads and uses the spec constant for the spec path.
+- **Audit**: every report's citations re-read against the tree the unit leaves; the checker's uniqueness claim reads headings.
+- **Cost, from the pilot (M10)**: the prep unit 3 minutes, the converge unit 10 minutes, the fix round 14 minutes, the audit and verifier 14 minutes, the closures 2 minutes each — under an hour of unit time for the smallest package, with one fix round; a giant carries more in its voice sites and its cells.

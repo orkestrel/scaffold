@@ -173,3 +173,9 @@ The campaign ends when each closes as implemented, repaired, retained, or intent
 - **Struck: the `*/` guard unit** the subjective lane proposed, satisfied by U2-fix and U2-fix-2.
 - **Not taken, recorded for the owner:** scaffold's guides-test template; the mirror refresh mechanism; the concept-cell casing fleet-wide.
 - **Unchanged: phase B** in layer order on the owner's go-ahead.
+
+## Re-baseline (2026-09-07, after the abort pilot)
+
+- **Satisfied: the pilot (A.1 to A.4, A.2-fix) and G1.** abort at `d714f6b` closes ruling 10's per-package list under the guide head start, with the whole chain green and no reader or seed defect; the guide's release candidate is `c86f7fd` with the RQ catalog row.
+- **Transformed: the fleet template** — `d7-fleet-plan.md` § Template corrections carries what every later brief inherits from the pilot's audit.
+- **Next: the guide's release on the owner's go-ahead**, then F4 (scaffold's guide re-pin, the distribution proof, the mirror re-stage, the packed tip), abort's re-pin (A.5), and the layer slices from L0.

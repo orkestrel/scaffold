@@ -1,0 +1,12 @@
+Refine the pilot's shape: the paragraphs, the distinct rows, the Shape idiom, the drop-in
+
+The guide's opening paragraph and the README's keep only what the tagline
+does not carry; `createAbort`, `Abort`, and `AbortInterface` each state
+what is distinct and the seed carries it into their rows; the `Shape`
+column holds one idiom with its convention stated under the table; the
+drop-in binds the name mapping once per loop and pairs titles in the
+inline form scaffold's suite uses; the remarks that repeated their
+descriptions keep only their distinct conditions.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

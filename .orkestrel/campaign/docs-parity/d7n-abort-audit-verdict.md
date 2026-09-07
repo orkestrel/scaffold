@@ -37,3 +37,11 @@ No reader or seed defect. `@orkestrel/guide@0.0.18` at `c25c689` is ready to rel
 | The lockfile hunk and the report counts | checker 1, 12 | annotated |
 
 VERDICT: FAIL 12
+
+## Round 2 (2026-09-07, closure of A.2-fix and G1, Workflows `wf_28808dd5-58a` and `wf_cdf9e0b6-b3f`)
+
+Lanes: `checker` and `verifier` per checkout (Sonnet); the reviewer lanes did not run this round, because each unit adopts round 1's findings as briefed items and the closure is mechanical. Returns: `d7n-abort-converge-fix-checker.md` (`VERDICT: PASS`, no finding), `d7n-abort-converge-fix-verifier.md` (`GATES: GREEN` over the whole chain with the head start: `test:guides` 25, `test:src` 51, `test:policy` 90 | 1 skipped, `test:config` 172 | 1 skipped, `test:setup` 1, the seed at zero in both directions); `d7n-guide-pitch-row-checker.md` (`VERDICT: PASS`), `d7n-guide-pitch-row-verifier.md` (`GATES: GREEN`). The Orchestrator's lint control read red after the fix (`instruments/d7/a2fix/lint-control.log.txt`).
+
+The pilot closes at `d714f6b` on abort's branch, with the guide's release candidate at `c86f7fd`. Round 1's carried findings each landed or were carried to the fleet template as the table there states.
+
+VERDICT: PASS
