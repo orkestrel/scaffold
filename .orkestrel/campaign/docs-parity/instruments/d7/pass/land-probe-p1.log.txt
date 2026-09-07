@@ -1,0 +1,46 @@
+== probe P.1 landing 2026-09-07T21:28:38Z, version 0.0.13
+== status before install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/README.md
+ M package.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/Probe.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 333ms
+EXIT 0
+== lockfile root version
+0.0.13 / 0.0.13
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/README.md
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/server/Probe.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/server/Probe.test.ts |   2 +-
+ tsconfig.json                  |   4 +-
+ 12 files changed, 1528 insertions(+), 571 deletions(-)
+== stage by path
+ 13 files changed, 1982 insertions(+), 571 deletions(-)
+== committed
+1c150f6 Prepare probe for the equality gate
+(status end)

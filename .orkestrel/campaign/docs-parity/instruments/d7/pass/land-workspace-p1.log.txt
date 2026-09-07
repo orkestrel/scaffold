@@ -1,0 +1,50 @@
+== workspace P.1 landing 2026-09-07T21:28:35Z, version 0.0.8
+== status before install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/workspace.md
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/workspaces/Workspace.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+== lockfile-only install
+
+up to date in 313ms
+EXIT 0
+== lockfile root version
+0.0.8 / 0.0.8
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M .oxlintrc.json
+ M README.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M guides/workspace.md
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/policy.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/src/core/workspaces/Workspace.test.ts
+ M tsconfig.json
+?? scripts/docs.ts
+ tests/src/core/workspaces/Workspace.test.ts |   2 +-
+ tsconfig.json                               |   3 +-
+ 14 files changed, 1554 insertions(+), 576 deletions(-)
+== stage by path
+ 15 files changed, 2008 insertions(+), 576 deletions(-)
+== committed
+e308cae Prepare workspace for the equality gate
+(status end)

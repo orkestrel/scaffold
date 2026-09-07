@@ -1,0 +1,1647 @@
+diff --git a/README.md b/README.md
+index 0321dc8..7031705 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,16 @@
+ # @orkestrel/server
+ 
+-A typed HTTP server for the `@orkestrel` line — composes an `@orkestrel/router`
+-dispatcher behind a managed lifecycle (start/stop/drain/destroy) over a node
+-adapter seam, with a middleware onion, response observability, and a shared
+-substrate for cookies, tokens, content negotiation, and SSE. Built to sit
+-beside `@orkestrel/router` (routing, matching, and dispatch), `@orkestrel/contract`
+-(validation), `@orkestrel/emitter` (observable lifecycle), and `@orkestrel/abort`
+-(cancellation). Part of the `@orkestrel` line.
++> A typed HTTP server for the `@orkestrel` line: a node-bound `Server` lifecycle entity
++> that composes a middleware onion around a consumed `@orkestrel/router` dispatcher,
++> beside the `HTTPError` vocabulary and a shared substrate for cookies, WebCrypto
++> tokens, content negotiation, ETag and Range, security headers, Server-Sent Events,
++> and the body pipeline.
++
++Hand `createServer` a dispatcher and a per-request state factory, call `start()`, and
++call `stop()` when the process winds down. Built to sit beside `@orkestrel/router`
++(routing, matching, and dispatch), `@orkestrel/contract` (validation),
++`@orkestrel/emitter` (observable lifecycle), and `@orkestrel/abort` (cancellation).
++Part of the `@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/server.md b/guides/server.md
+index 28650c8..95acfda 100644
+--- a/guides/server.md
++++ b/guides/server.md
+@@ -1,16 +1,17 @@
+ # Server
+ 
+-> This package's ONE guide, covering its single published surface: the middleware seam (`compose`,
+-> `MiddlewareContext`/`NextFunction`/`MiddlewareHandler`), the `HTTPError`
+-> vocabulary, the shared substrate (cookies, WebCrypto tokens, content
+-> negotiation through `Negotiator`, ETag/Range, security primitives, SSE, and the
+-> body pipeline), and the deliberately node-bound `Server` lifecycle entity
+-> binding `node:http` through `@orkestrel/router`'s adapter helpers, the upgrade
+-> seam, connection-fact injection, and `discoverPort`. The server
+-> **consumes** `@orkestrel/router` — routing, matching, and dispatch are that
+-> package's, never re-implemented here — mechanism, not product policy. Source:
+-> [`src/server`](../src/server). Surfaced through the
+-> `@orkestrel/server` barrel (aliased `@src/server` inside this repo).
++> A typed HTTP server for the `@orkestrel` line: a node-bound `Server` lifecycle entity
++> that composes a middleware onion around a consumed `@orkestrel/router` dispatcher,
++> beside the `HTTPError` vocabulary and a shared substrate for cookies, WebCrypto
++> tokens, content negotiation, ETag and Range, security headers, Server-Sent Events,
++> and the body pipeline.
++
++The server consumes `@orkestrel/router` — routing, matching, and dispatch are that
++package's, never re-implemented here — mechanism, not product policy. Its node face
++adds the upgrade seam, per-request connection-fact injection, and `discoverPort` over
++`node:http` through that package's adapter helpers. Source:
++[`src/server`](../src/server). Surfaced through the `@orkestrel/server` barrel
++(aliased `@src/server` inside this repo).
+ 
+ ## Surface
+ 
+@@ -57,122 +58,123 @@ Cross-face and substrate usage appear under [Patterns](#patterns).
+ 
+ ### Factories
+ 
+-| API                | Kind     | Summary                                                                   |
+-| ------------------ | -------- | ------------------------------------------------------------------------- |
+-| `createNegotiator` | function | Create a `NegotiatorInterface` — the content-negotiation machine.         |
+-| `createServer`     | function | Create a `ServerInterface<TState>` over a consumed `DispatcherInterface`. |
+-| `createStream`     | function | Create a `StreamInterface` — an open Server-Sent-Events stream.           |
++| API                | Kind     | Summary                                                                                                                                      |
++| ------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
++| `createNegotiator` | function | Creates a `NegotiatorInterface` — the reusable content-negotiation machine over the weighted `Accept` family.                                |
++| `createServer`     | function | Creates a `ServerInterface` — the node face's HTTP server facade over a consumed `@orkestrel/router` dispatcher.                             |
++| `createStream`     | function | Creates a `StreamInterface` — a generic Server-Sent-Events stream whose `response` is a fetch-standard streaming `Response` a route returns. |
+ 
+ ### Constants
+ 
+-| API                          | Kind  | Summary                                                                                                                                        |
+-| ---------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `DEFAULT_DRAIN_MS`           | const | Default graceful-stop deadline (ms) `stop()` gives in-flight requests and claimed upgraded sockets.                                            |
+-| `DEFAULT_BODY_LIMIT`         | const | Default maximum request body size (bytes) `readBody` accepts before a 413.                                                                     |
+-| `DEFAULT_DECOMPRESSED_LIMIT` | const | Default maximum DECOMPRESSED body size (bytes) — the zip-bomb cap.                                                                             |
+-| `SSE_HEADERS`                | const | The SSE response headers a `Stream` merges under any caller `headers` — a caller repeating one of these keys replaces its value.               |
+-| `REQUEST_ID_PATTERN`         | const | The strict charset `isValidRequestId` requires an `X-Request-ID` to match.                                                                     |
+-| `COMPRESSIBLE_TYPES`         | const | The bare `Content-Type`s `isCompressibleType` treats as compressible.                                                                          |
+-| `HTTP_ERROR_BRAND`           | const | The `Symbol.for`-interned brand `HTTPError` carries so `isHTTPError` recognizes an instance across package copies. Not a field to set by hand. |
+-| `DEFAULT_ENCODINGS`          | const | The default `Encoding` content-codings the substrate offers, in preference order.                                                              |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. A `Shape` cell holds the constant's declared type.
++
++| API                          | Kind  | Shape                              | Summary                                                                                                                                                                                                                            |
++| ---------------------------- | ----- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `DEFAULT_DRAIN_MS`           | const | `10_000`                           | Names the default graceful-stop deadline `stop()` gives in-flight requests and claimed upgraded sockets, `10_000` ms.                                                                                                              |
++| `DEFAULT_BODY_LIMIT`         | const | `1_048_576`                        | Names the default maximum request body size `readBody` accepts before a 413, `1_048_576` bytes.                                                                                                                                    |
++| `DEFAULT_DECOMPRESSED_LIMIT` | const | `16_777_216`                       | Names the default maximum decompressed request body size, `16_777_216` bytes — the zip-bomb cap the body pipeline's byte-counting `TransformStream` enforces when it transparently decompresses a `Content-Encoding` request body. |
++| `SSE_HEADERS`                | const | `Readonly<Record<string, string>>` | Holds the SSE response headers a `Stream` sets on its response, merged under any caller `headers` so a caller repeating one of these keys replaces its value.                                                                      |
++| `REQUEST_ID_PATTERN`         | const | `Readonly<RegExp>`                 | Defines the strict charset `isValidRequestId` requires an incoming `X-Request-ID` to match, `^[A-Za-z0-9_-]{1,200}$`.                                                                                                              |
++| `COMPRESSIBLE_TYPES`         | const | `ReadonlySet<string>`              | Holds the bare `Content-Type` values `isCompressibleType` treats as compressible, beyond the `text/*` prefix and structured-suffix (`+json`, `+xml`) rules that helper also applies.                                               |
++| `HTTP_ERROR_BRAND`           | const | `symbol`                           | Names the `Symbol.for`-interned brand `HTTPError` carries, `@orkestrel/server.HTTPError`, so `isHTTPError` recognizes an instance across package copies. A consumer never sets it by hand.                                         |
++| `DEFAULT_ENCODINGS`          | const | `readonly Encoding[]`              | Lists the default `Encoding` content-codings the substrate offers, in preference order — `gzip` then `deflate`.                                                                                                                    |
+ 
+ ### Helpers
+ 
+-| API                      | Kind     | Summary                                                                                                                                                     |
+-| ------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `compose`                | function | Compose an ordered middleware chain around a `terminal` handler (the frozen seam).                                                                          |
+-| `wrapMiddleware`         | function | Wrap one middleware layer around its downstream handler while enforcing the one-call `next` invariant.                                                      |
+-| `parseCookies`           | function | Parse a raw `Cookie:` header into a `name → value` lookup.                                                                                                  |
+-| `isCookieName`           | function | Whether a string is a valid RFC 6265 cookie name (no whitespace).                                                                                           |
+-| `decodeCookieValue`      | function | Decode a cookie value, falling back to raw text on malformed escapes.                                                                                       |
+-| `isCookieAttribute`      | function | Whether a string is safe to interpolate as a `Domain`/`Path` attribute value.                                                                               |
+-| `serializeCookie`        | function | Serialize a cookie into a `Set-Cookie` header value with its attributes.                                                                                    |
+-| `resolveSecure`          | function | Resolve a cookie's effective `Secure` flag from its setting + the TLS fact.                                                                                 |
+-| `writeSignedCookie`      | function | Write a SIGNED cookie (`signToken` + `Set-Cookie`).                                                                                                         |
+-| `readSignedCookie`       | function | Read + verify a SIGNED cookie off a request — total, returns `undefined` on any failure.                                                                    |
+-| `clearCookie`            | function | Clear a cookie by setting an immediately-expiring `Set-Cookie`.                                                                                             |
+-| `signToken`              | function | Sign a value into a stateless, HMAC-SHA256 token.                                                                                                           |
+-| `verifyToken`            | function | Verify a stateless token and return its embedded value — total, never throws.                                                                               |
+-| `decodeTokenPayload`     | function | Decode + narrow a signed token's payload, honoring its expiry.                                                                                              |
+-| `normalizeSecret`        | function | Normalize a `TokenSecret` to a concrete list of usable secrets.                                                                                             |
+-| `parseAcceptHeader`      | function | Parse a weighted `Accept`-family header into its q-sorted entries.                                                                                          |
+-| `computeCodingQuality`   | function | The client's quality for one content-coding from parsed `Accept-Encoding` entries.                                                                          |
+-| `resolveCoding`          | function | Pick the highest-scoring offered coding from parsed entries — the leaf both encoding doors run.                                                             |
+-| `negotiateEncoding`      | function | Select the best content-coding for a raw `Accept-Encoding` header.                                                                                          |
+-| `matchMediaType`         | function | Rank + quality of one candidate media type against parsed `Accept` entries.                                                                                 |
+-| `computeLanguageQuality` | function | The client's quality for one candidate language from parsed `Accept-Language` entries.                                                                      |
+-| `isCompressibleType`     | function | Whether a `Content-Type` is worth compressing.                                                                                                              |
+-| `computeBodyETag`        | function | Compute a content `ETag` over a fully-buffered response body by using WebCrypto.                                                                            |
+-| `unwrapETag`             | function | Strip the weak indicator (`W/`) from an entity-tag.                                                                                                         |
+-| `matchesETag`            | function | Whether a request's `If-None-Match` matches a resource's current `ETag` (RFC 7232 weak comparison).                                                         |
+-| `parseRange`             | function | Parse an HTTP `Range` header against a known resource size — total.                                                                                         |
+-| `resolveOrigin`          | function | Resolve the `Access-Control-Allow-Origin` value for a request.                                                                                              |
+-| `mergeVary`              | function | Merge a `Vary` value into an existing `Vary` header without duplication.                                                                                    |
+-| `resolveSecurityHeader`  | function | Resolve one opt-out, value-bearing security header.                                                                                                         |
+-| `isValidRequestId`       | function | Whether a client-supplied `X-Request-ID` is safe to echo back.                                                                                              |
+-| `computeIPv6Network`     | function | Compute the `/64` network of a full IPv6 address, or `undefined`.                                                                                           |
+-| `computeClientKey`       | function | Collapse a client IP into its rate-limit bucket key (IPv6 `/64`, IPv4 unchanged).                                                                           |
+-| `serializeEvent`         | function | Serialize one `SSEMessage` to the SSE wire.                                                                                                                 |
+-| `isDangerousKey`         | function | Whether a key is a prototype-pollution vector (`__proto__`/`constructor`/`prototype`).                                                                      |
+-| `scrubPrototype`         | function | Recursively strip prototype-pollution keys from a parsed value in place.                                                                                    |
+-| `collectRequestBody`     | function | Collect a `Request` body into one `Uint8Array`, enforcing a size limit.                                                                                     |
+-| `parseEncoding`          | function | Parse a raw `Content-Encoding` header into a decompressible `Encoding`.                                                                                     |
+-| `decompressRequestBody`  | function | Transparently decompress a collected body, capping decompressed output (the zip-bomb defense).                                                              |
+-| `readBody`               | function | Collect + decode a `Request` body — the pipeline behind `context.body()`; an empty body and a malformed `application/json` body both decode to `undefined`. |
+-| `isHTTPError`            | function | Narrow an unknown caught value to an `HTTPError` (including subclasses) — recognized across package copies through a structural brand fallback.             |
+-| `isServerError`          | function | Narrow an unknown caught value to a `ServerError` — the code-bearing refusal of a call the caller programmed.                                               |
+-| `isAddressInfo`          | function | Whether a `node:net` address is the structured `AddressInfo` shape.                                                                                         |
+-| `probePort`              | function | Bind and close one throwaway TCP server to resolve an available port.                                                                                       |
+-| `discoverPort`           | function | Find a free TCP port — try a `preferred` one first, else an ephemeral port.                                                                                 |
+-
+-### Entities
+-
+-| API                    | Kind  | Summary                                                                                                                     |
+-| ---------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------- |
+-| `HTTPError`            | class | An error a handler throws to produce an HTTP response of a specific status.                                                 |
+-| `ContentTooLargeError` | class | The `HTTPError` (413) thrown when a request body exceeds its size limit.                                                    |
+-| `ServerError`          | class | The code-bearing error raised when a caller programmed a call the entity refuses — `'STATUS'` or `'NEXT'`.                  |
+-| `Negotiator`           | class | The content-negotiation machine over the weighted `Accept` family; implements `NegotiatorInterface`.                        |
+-| `Server`               | class | The `node:http` lifecycle entity composing the middleware onion around a consumed dispatcher; implements `ServerInterface`. |
+-| `Stream`               | class | The Server-Sent-Events handle over a streaming `Response`; implements `StreamInterface`.                                    |
++| API                      | Kind     | Summary                                                                                                                                                                                                                                                                       |
++| ------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `compose`                | function | Composes an ordered chain of `MiddlewareHandler` layers around a `terminal` handler into one request handler — the frozen middleware seam.                                                                                                                                    |
++| `wrapMiddleware`         | function | Wraps one middleware layer around its downstream handler, enforcing the one-call `next` invariant.                                                                                                                                                                            |
++| `parseCookies`           | function | Parses a raw `Cookie:` request header into a `name → value` lookup.                                                                                                                                                                                                           |
++| `isCookieName`           | function | Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of cookie-token characters with no surrounding or interior whitespace.                                                                                                                              |
++| `decodeCookieValue`      | function | Decodes a cookie value with `decodeURIComponent`, falling back to the raw text when the value is not valid percent-encoding.                                                                                                                                                  |
++| `isCookieAttribute`      | function | Checks whether a string is safe to interpolate as a `Set-Cookie` attribute value — the guard `serializeCookie` applies to a `Domain` and a `Path` before it emits them.                                                                                                       |
++| `serializeCookie`        | function | Serializes a cookie into a `Set-Cookie` header value — `name=value` plus its attributes.                                                                                                                                                                                      |
++| `resolveSecure`          | function | Resolves a cookie's effective `Secure` flag from its `CookieOptions` `secure` setting and whether the request arrived over TLS.                                                                                                                                               |
++| `writeSignedCookie`      | function | Writes a signed cookie — HMAC-signs `value` with `signToken` and appends it as a `Set-Cookie` (the inverse of `readSignedCookie`).                                                                                                                                            |
++| `readSignedCookie`       | function | Reads and verifies a signed cookie off a request — total, returning the embedded value or `undefined` (the inverse of `writeSignedCookie`).                                                                                                                                   |
++| `clearCookie`            | function | Clears a cookie — appends a `Set-Cookie` that expires it immediately (`Max-Age=0`).                                                                                                                                                                                           |
++| `signToken`              | function | Signs a value into a stateless, HMAC-SHA256 token — `<payload>.<signature>`.                                                                                                                                                                                                  |
++| `verifyToken`            | function | Verifies a stateless token and returns its embedded value — total, never throws.                                                                                                                                                                                              |
++| `decodeTokenPayload`     | function | Decodes and narrows a signed token's base64url JSON payload, honoring its expiry — the shared decode step `verifyToken` applies after a signature match.                                                                                                                      |
++| `normalizeSecret`        | function | Normalizes a `TokenSecret` to a concrete list of usable secrets — the list behind both `signToken` and `verifyToken`.                                                                                                                                                         |
++| `parseAcceptHeader`      | function | Parses a weighted `Accept` / `Accept-Encoding` / `Accept-Language` header into its q-sorted entries.                                                                                                                                                                          |
++| `computeCodingQuality`   | function | Computes the client's quality (q) for one content-coding from the parsed `Accept-Encoding` entries — the scoring leaf `resolveCoding` runs over each offered coding.                                                                                                          |
++| `resolveCoding`          | function | Picks the highest-scoring content-coding the server offers against already parsed `Accept-Encoding` entries — the shared selection leaf behind `negotiateEncoding` and a `Negotiator`'s `encoding` axis.                                                                      |
++| `negotiateEncoding`      | function | Selects the best content-coding for a raw `Accept-Encoding` header from the codings the server offers.                                                                                                                                                                        |
++| `matchMediaType`         | function | Reports the rank and quality of one `candidate` media type against the parsed `Accept` entries — the generic media-type primitive the `Negotiator`'s `negotiate` uses to score each `available` candidate.                                                                    |
++| `computeLanguageQuality` | function | Computes the client's quality for one `candidate` language from the parsed `Accept-Language` entries — the scoring leaf the `Negotiator`'s `language` axis runs over each offered tag.                                                                                        |
++| `isCompressibleType`     | function | Checks whether a `Content-Type` is worth compressing.                                                                                                                                                                                                                         |
++| `computeBodyETag`        | function | Computes a content `ETag` over a fully-buffered response body by using WebCrypto.                                                                                                                                                                                             |
++| `unwrapETag`             | function | Strips the weak indicator (`W/`) from an entity-tag, returning its opaque comparison body — the reduction `matchesETag` applies to each side before the RFC 7232 §2.3.2 weak comparison.                                                                                      |
++| `matchesETag`            | function | Checks whether a request's `If-None-Match` header matches a resource's current `ETag` — the RFC 7232 §2.3.2 weak comparison.                                                                                                                                                  |
++| `parseRange`             | function | Parses an HTTP `Range` request header against a known resource `size` — total, returning a `RangeSpec` or `undefined`.                                                                                                                                                        |
++| `resolveOrigin`          | function | Resolves the `Access-Control-Allow-Origin` value for a request.                                                                                                                                                                                                               |
++| `mergeVary`              | function | Merges a `Vary` value into an existing `Vary` header without duplication.                                                                                                                                                                                                     |
++| `resolveSecurityHeader`  | function | Resolves one opt-out, value-bearing security header.                                                                                                                                                                                                                          |
++| `isValidRequestId`       | function | Checks whether a client-supplied `X-Request-ID` is safe to echo into a response header and `context.state`.                                                                                                                                                                   |
++| `computeIPv6Network`     | function | Computes the `/64` network of a full IPv6 address, or `undefined` when the input is not a plain IPv6 address to collapse.                                                                                                                                                     |
++| `computeClientKey`       | function | Collapses a client IP into its rate-limit bucket key — an IPv6 address to its `/64` network, an IPv4 (or IPv4-mapped) address unchanged.                                                                                                                                      |
++| `serializeEvent`         | function | Serializes one `SSEMessage` to the SSE wire.                                                                                                                                                                                                                                  |
++| `isDangerousKey`         | function | Checks whether a key is a prototype-pollution vector — `__proto__`, `constructor`, or `prototype`, each of which can reach and mutate `Object.prototype` when it is assigned onto a normal object.                                                                            |
++| `scrubPrototype`         | function | Strips the prototype-pollution keys from a parsed value in place, recursively.                                                                                                                                                                                                |
++| `collectRequestBody`     | function | Collects a `Request` body into a single `Uint8Array`, enforcing a size limit.                                                                                                                                                                                                 |
++| `parseEncoding`          | function | Parses a raw `Content-Encoding` header value into a decompressible `Encoding` — the boundary `readBody` coerces through to decide whether a request body needs transparent decompression.                                                                                     |
++| `decompressRequestBody`  | function | Decompresses an already-collected, `gzip`/`deflate`-encoded byte sequence transparently through `DecompressionStream`, capping the decompressed output — the zip-bomb defense.                                                                                                |
++| `readBody`               | function | Collects and decodes a `Request` body — the shared body-collection pipeline surfaced to middleware and handlers as the middleware context's cached `body()`. An empty body and a malformed `application/json` body each decode to `undefined`.                                |
++| `isHTTPError`            | function | Narrows an unknown caught value to an `HTTPError`, including a subclass such as `ContentTooLargeError`, and recognizes an instance from another copy of this package through a structural brand fallback.                                                                     |
++| `isServerError`          | function | Narrows an unknown caught value to a `ServerError` — the code-bearing refusal of a call the caller programmed.                                                                                                                                                                |
++| `isAddressInfo`          | function | Checks whether a `node:net` `server.address()` return is the structured `AddressInfo` (carrying a numeric `port`) rather than a pipe `string` or `null` — the total, never-throwing narrow `discoverPort` and the `Server`'s own port resolution read the bound port through. |
++| `probePort`              | function | Binds and closes a throwaway TCP server to resolve one available port.                                                                                                                                                                                                        |
++| `discoverPort`           | function | Finds a free TCP port — binds a throwaway `node:net` server on a `preferred` port where one is given and on an ephemeral port otherwise, reads the bound port, closes the server, and resolves that port.                                                                     |
++
++### Classes
++
++| API                    | Kind  | Summary                                                                                                                                                                                                      |
++| ---------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `HTTPError`            | class | Represents an error a handler (or middleware) throws to produce an HTTP response of a specific status.                                                                                                       |
++| `ContentTooLargeError` | class | Represents the `HTTPError` thrown when a request body exceeds the body pipeline's size limit — a `413 Content Too Large`.                                                                                    |
++| `ServerError`          | class | Represents the error this package raises when a caller programmed a call the entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.                                                                    |
++| `Negotiator`           | class | Represents the content-negotiation machine over the weighted `Accept` family — a reusable, cross-middleware entity rather than a middleware. Implements exactly `NegotiatorInterface`.                       |
++| `Server`               | class | Represents the HTTP server facade — an observable `node:http` lifecycle composing this module's own middleware onion around a consumed `@orkestrel/router` dispatcher. Implements exactly `ServerInterface`. |
++| `Stream`               | class | Represents the Server-Sent-Events handle over an open, fetch-standard streaming `Response`. Implements exactly `StreamInterface`.                                                                            |
+ 
+ ### Types
+ 
+-| Type                      | Kind      | Shape                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+-| ------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `MiddlewareContext`       | interface | `{ url; method; state; body() }` — the per-request composition context.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+-| `NextFunction`            | type      | `(request?) => Promise<Response>` — the double-`next`-guarded continuation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+-| `MiddlewareHandler`       | type      | `(request, context, next) => Response \| Promise<Response>` — one onion link.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+-| `Connection`              | interface | `{ ip?; encrypted }` — the adapter-injected per-request connection facts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+-| `TokenSecret`             | type      | `string \| readonly string[]` — a secret or `[current, ...older]` rotation list.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+-| `TokenOptions`            | interface | `{ secret; ttl? }` — options for `signToken`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+-| `CookieOptions`           | interface | `{ path?; domain?; maxAge?; httpOnly?; secure?; sameSite? }` — `Set-Cookie` attributes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+-| `AcceptEntry`             | interface | `{ value; q }` — one parsed weighted-header entry.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+-| `MediaMatch`              | interface | `{ q; rank }` — the quality and specificity `matchMediaType` reports for the best matching entry.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+-| `Encoding`                | type      | `'gzip' \| 'deflate' \| 'identity'` — the compression coding vocabulary.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `FormatHandlerMap`        | type      | Media type → responder table for `NegotiatorInterface.format`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `NegotiatorInterface`     | interface | `negotiate` / `encoding` / `language` / `format` — the content-negotiation contract.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+-| `SSEMessage`              | interface | `{ data; event?; id?; retry? }` — one Server-Sent Event.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `StreamOptions`           | interface | `{ status?; headers? }` — options for `createStream`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+-| `StreamInterface`         | interface | `response` / `closed` data members + `write` / `comment` / `drain` / `end`; `write` returns local queue readiness and `drain` parks until capacity or closure.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `RangeSpec`               | type      | `{ satisfiable: true; start; end } \| { satisfiable: false }` — a parsed `Range`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+-| `BodyOptions`             | interface | `{ limit?; decompression? }` — caps for `readBody`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+-| `ServerStatus`            | type      | `'idle' \| 'starting' \| 'listening' \| 'stopping' \| 'stopped'` — the lifecycle states.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `ServerErrorCode`         | type      | `'STATUS' \| 'NEXT'` — the machine-readable category a `ServerError` carries: a lifecycle call the status forbids, or a middleware calling its `next` twice.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+-| `RequestLine`             | interface | `{ method; url }` — the request a server-level fault came from.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+-| `ResponseRecord`          | interface | `{ method; pathname; status; ms }` — one finished request, the `response` event's payload.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+-| `ServerEventMap`          | type      | `{ start; request; upgrade; error; stop; drain; response }` — the `Server`'s event map. `error`'s second element and `report`'s second parameter are an OPTIONAL `RequestLine` — present for a request-pipeline fault, `undefined` for an upgrade-path fault (no fetch `Request` exists there). `response` fires with one `ResponseRecord` for every request reaching the middleware pipeline (success or outer-boundary error path) — not for one rejected at the inner `buildRequest` boundary (plain `400`, no parsed `Request` to derive facts from). `drain` carries `(pending, upgraded)` — the requests still in flight and the upgraded sockets still attached when the drain settled; both `0` means the close that followed was clean, either non-zero means it was forced. |
+-| `UpgradeHandler`          | type      | `(request, socket, head) => boolean` — a raw protocol-upgrade claimant. A claimed socket is tracked until it closes, so `stop()` can drain and then cut it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+-| `ConnectionStateFunction` | type      | `(connection: Connection) => TState` — derives a request's `TState`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+-| `ServerOptions`           | interface | `{ dispatcher; state; middleware?; host?; port?; drain?; limit?; expose?; report?; timeouts?; sockets?; on?; error? }` — `timeouts.start` bounds listener startup; `sockets.{connections,headers,requests}` maps to node's `maxConnections` / `maxHeadersCount` / `maxRequestsPerSocket`; `report?: (error, request?) => void`, `request` present only for a request-pipeline fault.                                                                                                                                                                                                                                                                                                                                                                                                  |
+-| `ServerInterface`         | interface | `id` / `status` / `port` / `address` / `dispatcher` / `emitter` data members + `use` / `upgrade` / `start` / `stop` / `destroy`. `address` is the bound node `AddressInfo` while the listener is active and `undefined` otherwise.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+-
+-The `value`/`q` members of `AcceptEntry`, the `response`/`closed` members of
+-`StreamInterface`, and the `id` / `status` / `port` / `address` / `dispatcher` /
+-`emitter` members of `ServerInterface` are all `readonly` data members (Surface rows,
+-above) — the call-signature methods of `NegotiatorInterface`,
+-`StreamInterface`, and `ServerInterface` are documented under
+-[Methods](#methods).
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| Type                      | Kind      | Shape                                                                                                                  | Summary                                                                                                                                                                                                      |
++| ------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `MiddlewareContext`       | interface | `{ url, method, state } plus body`                                                                                     | Represents the composition context — plain data, one per request, shared by every middleware and, as `state`, by the route handlers behind the dispatcher.                                                   |
++| `NextFunction`            | type      | `(request?: Request) => Promise<Response>`                                                                             | Represents the downstream continuation a `MiddlewareHandler` invokes to run the rest of the onion — guarded so a second call within one invocation rejects.                                                  |
++| `MiddlewareHandler`       | type      | `(request: Request, context: MiddlewareContext<TState>, next: NextFunction) => Response \| Promise<Response>`          | Represents one link in the middleware onion — runs around the rest of the chain.                                                                                                                             |
++| `Connection`              | interface | `{ ip?, encrypted }`                                                                                                   | Represents the per-request connection facts the server face injects — the only data that genuinely exists solely on the socket, surfaced so middleware and a consumer's `state` factory stay core-pure.      |
++| `TokenSecret`             | type      | `string \| readonly string[]`                                                                                          | Represents a secret, or a `[current, ...older]` rotation list, for signing and verifying a stateless, HMAC-signed token.                                                                                     |
++| `TokenOptions`            | interface | `{ secret, ttl? }`                                                                                                     | Options for `signToken` — how a stateless, HMAC-signed token is minted.                                                                                                                                      |
++| `CookieOptions`           | interface | `{ path?, domain?, maxAge?, httpOnly?, secure?, sameSite? }`                                                           | Represents the `Set-Cookie` attributes for `serializeCookie` (and any signed-cookie transport built over it).                                                                                                |
++| `AcceptEntry`             | interface | `{ value, q }`                                                                                                         | Represents one parsed entry of a weighted `Accept` / `Accept-Encoding` / `Accept-Language` header — a value and its quality weight, the element type `parseAcceptHeader` returns (sorted by `q` descending). |
++| `MediaMatch`              | interface | `{ q, rank }`                                                                                                          | Rates one candidate media type against a parsed `Accept` header — the quality and specificity `matchMediaType` reports for the best matching `AcceptEntry`.                                                  |
++| `Encoding`                | type      | `'gzip' \| 'deflate' \| 'identity'`                                                                                    | Represents a content-coding the substrate compresses / decompresses with. The listed codings are the `Content-Encoding` and `Accept-Encoding` token vocabulary the substrate understands.                    |
++| `FormatHandlerMap`        | type      | `Readonly<Record<string, (request: Request, context: MiddlewareContext<TState>) => Response \| Promise<Response>>>`    | Represents a map of media type → handler for `NegotiatorInterface.format` — the content-negotiation dispatch table.                                                                                          |
++| `NegotiatorInterface`     | interface | `{} plus negotiate, encoding, language, format`                                                                        | Represents content negotiation over the weighted `Accept` family — a reusable, cross-middleware machine (not itself a middleware).                                                                           |
++| `SSEMessage`              | interface | `{ data, event?, id?, retry? }`                                                                                        | Represents one Server-Sent Event to serialize to the wire.                                                                                                                                                   |
++| `StreamOptions`           | interface | `{ status?, headers? }`                                                                                                | Options for a `StreamInterface` — how `createStream` opens the streaming response.                                                                                                                           |
++| `StreamInterface`         | interface | `{ response, closed } plus write, comment, drain, end`                                                                 | Represents a handle to write Server-Sent Events to an open, fetch-standard streaming `Response` — the generic streaming surface `createStream` returns over a `ReadableStream`.                              |
++| `RangeSpec`               | type      | `{ readonly satisfiable: true; readonly start: number; readonly end: number } \| { readonly satisfiable: false }`      | Represents the parsed outcome of an HTTP `Range` request header.                                                                                                                                             |
++| `BodyOptions`             | interface | `{ limit?, decompression? }`                                                                                           | Options for `readBody` — how the shared body-collection pipeline caps and decompresses a request body.                                                                                                       |
++| `ServerStatus`            | type      | `'idle' \| 'starting' \| 'listening' \| 'stopping' \| 'stopped'`                                                       | Represents the `Server`'s lifecycle state.                                                                                                                                                                   |
++| `ServerErrorCode`         | type      | `'STATUS' \| 'NEXT'`                                                                                                   | Represents the machine-readable category a `ServerError` carries — `'STATUS'` for a lifecycle call the current status forbids, `'NEXT'` for a middleware that called its `next` a second time.               |
++| `RequestLine`             | interface | `{ method, url }`                                                                                                      | Identifies the request a server-level fault came from — its method and its parsed URL.                                                                                                                       |
++| `ResponseRecord`          | interface | `{ method, pathname, status, ms }`                                                                                     | Records one finished request — the payload `ServerEventMap.response` carries.                                                                                                                                |
++| `ServerEventMap`          | type      | `{ start, request, upgrade, error, stop, drain, response }`                                                            | Represents the `Server`'s observable lifecycle events.                                                                                                                                                       |
++| `UpgradeHandler`          | type      | `(request: IncomingMessage, socket: Duplex, head: Buffer) => boolean`                                                  | Represents a raw `node:http` protocol-upgrade claimant — registered through `ServerInterface.upgrade`.                                                                                                       |
++| `ConnectionStateFunction` | type      | `(connection: Connection) => TState`                                                                                   | Derives a consumer's per-request `TState` from the adapter-injected `Connection` — `ServerOptions.state`, invoked once per request before the middleware onion runs.                                         |
++| `ServerOptions`           | interface | `{ dispatcher, state, middleware?, host?, port?, drain?, limit?, expose?, report?, timeouts?, sockets?, on?, error? }` | Options for `createServer` — the dispatcher and per-request state factory the server requires, plus its listener, drain, boundary, timeout, socket-cap, and emitter knobs.                                   |
++| `ServerInterface`         | interface | `{ id, status, port, address, dispatcher, emitter } plus use, upgrade, start, stop, destroy`                           | Represents the HTTP server facade — an observable `node:http` lifecycle that composes a middleware onion (this module's own middleware seam) around a consumed `@orkestrel/router` `DispatcherInterface`.    |
++
++Each interface's `readonly` data members stay Surface rows, and its call-signature
++members are documented under [Methods](#methods). `ServerInterface.address` is the
++bound node `AddressInfo` while the listener is active and `undefined` otherwise.
+ 
+ ## Methods
+ 
+@@ -194,12 +196,12 @@ resolves to `undefined` — no compression — rather than to the first offered
+ coding, because an absent `Accept-Encoding` makes identity the correct answer;
+ `negotiate` and `language` fall back to the first offered value instead.
+ 
+-| Method      | Returns                 | Behavior                                                                    |
+-| ----------- | ----------------------- | --------------------------------------------------------------------------- |
+-| `negotiate` | `string \| undefined`   | Pick the best `available` value for a weighted `Accept`-style header.       |
+-| `encoding`  | `Encoding \| undefined` | Pick the best `available` content-coding for an `Accept-Encoding` header.   |
+-| `language`  | `string \| undefined`   | Pick the best `available` language for an `Accept-Language` header.         |
+-| `format`    | `Promise<Response>`     | Dispatch to the handler whose media type the client most prefers, or `406`. |
++| Method      | Returns                 | Summary                                                                                                                                                                                      |
++| ----------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `negotiate` | `string \| undefined`   | Picks the best `available` value for a weighted `Accept`-style `header` — the generic media-type primitive (`encoding` / `language` build on it).                                            |
++| `encoding`  | `Encoding \| undefined` | Picks the best `available` content-coding for an `Accept-Encoding` header — the coding axis of the same q-value parser (a bare `*` wildcard ⇒ the first `available`).                        |
++| `language`  | `string \| undefined`   | Picks the best `available` language for an `Accept-Language` header — `negotiate` with a language-prefix match (`en` accepts `en-US`) and a bare `*` wildcard.                               |
++| `format`    | `Promise<Response>`     | Dispatches to the handler whose media type the client most prefers — reads the request `Accept`, negotiates against `handlers`' keys, and invokes the winner; `406` when none is acceptable. |
+ 
+ #### `StreamInterface`
+ 
+@@ -215,12 +217,12 @@ bound must also cap each individual event. The route must return `response`
+ before its producer awaits a `false` write, because no consumer can pull the
+ body before receiving that response.
+ 
+-| Method    | Returns         | Behavior                                                                                                                                   |
+-| --------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `write`   | `boolean`       | Serialize and enqueue one event; report positive local queue capacity afterward (`false` also when already closed).                        |
+-| `comment` | `void`          | Enqueue one SSE comment/keep-alive line; safely do nothing once closed.                                                                    |
+-| `drain`   | `Promise<void>` | Resolve on the pull that restores positive local queue capacity, or immediately when already writable/closed; event-driven, never polling. |
+-| `end`     | `void`          | Close the response stream; safely do nothing once already closed and settle any parked producer.                                           |
++| Method    | Returns         | Summary                                                                                                                                                                                                        |
++| --------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `write`   | `boolean`       | Serializes and enqueues one `SSEMessage` to the wire, reporting whether the process-local queue still has capacity afterward — `false` also once the stream is closed.                                         |
++| `comment` | `void`          | Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores, and a no-op once the stream is closed.                                                                                          |
++| `drain`   | `Promise<void>` | Parks until the process-local stream queue has capacity again — resolving on the consumer pull that restores it, or immediately when capacity is already available or the stream is closed, and never polling. |
++| `end`     | `void`          | Ends the stream, completing the response — a no-op once already `closed`, and it settles any parked producer.                                                                                                  |
+ 
+ #### `ServerInterface`
+ 
+@@ -228,27 +230,27 @@ body before receiving that response.
+ registers a raw protocol-upgrade claimant; `start` binds the listener and
+ resolves the actually-bound port while accepting an optional caller
+ `AbortSignal`; `stop` gracefully drains then closes; `destroy` is the
+-terminal, idempotent teardown. Both always resolve: an upgraded socket a
++terminal, idempotent teardown. `stop` and `destroy` always resolve: an upgraded socket a
+ handler claimed is drained up to the `drain` deadline and then destroyed,
+ never waited on forever.
+ 
+-| Method    | Returns           | Behavior                                                                                                                       |
+-| --------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+-| `use`     | `void`            | Mount one middleware, or many, appended outer-to-inner in call order.                                                          |
+-| `upgrade` | `void`            | Register an `UpgradeHandler` claimant (fan-out in registration order); a claimed socket is tracked until it closes.            |
+-| `start`   | `Promise<number>` | Bind the configured `host`/`port` (or an ephemeral one), cancellable by an optional `AbortSignal`, and resolve the bound port. |
+-| `stop`    | `Promise<void>`   | Refuse new connections, fire the stop signal, drain requests and upgraded sockets up to the deadline, then close.              |
+-| `destroy` | `Promise<void>`   | The terminal, idempotent teardown — force-closes any live listener and socket, then tears down the `#emitter`.                 |
++| Method    | Returns           | Summary                                                                                                                                                           |
++| --------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `use`     | `void`            | Appends one middleware, or an array of them in order, to the onion, outer-to-inner in call order.                                                                 |
++| `upgrade` | `void`            | Registers an `UpgradeHandler` claimant that runs in registration order; a claimed socket is tracked until it closes.                                              |
++| `start`   | `Promise<number>` | Binds the configured `host` and `port`, or an ephemeral port, under an optional caller `AbortSignal`, and resolves the actually-bound port.                       |
++| `stop`    | `Promise<void>`   | Stops gracefully: refuses new connections, fires the stop signal, drains in-flight requests and claimed upgraded sockets up to the `drain` deadline, then closes. |
++| `destroy` | `Promise<void>`   | Tears down for good: force-closes the listener and every socket, then the emitter — terminal and idempotent from any state.                                       |
+ 
+ ## Contract
+ 
+ These invariants hold across `src/server` ↔ `server.md`.
+ 
+-1. **DOC ↔ SOURCE bijection.** Every `function` / `class` / `interface` /
++1. **Doc ↔ source bijection.** Every `function` / `class` / `interface` /
+    `type` / `const` row in the `## Surface` tables is a real export of its
+    source directory, and every export appears as a Surface row — exhaustive,
+    both directions.
+-2. **DOC ↔ SOURCE method bijection.** The `## Methods` tables list exactly
++2. **Doc ↔ source method bijection.** The `## Methods` tables list exactly
+    `NegotiatorInterface`'s, `StreamInterface`'s, and `ServerInterface`'s public
+    methods — exhaustive, both directions — and `Negotiator` / `Stream` /
+    `Server` expose the same public methods, no more.
+@@ -256,7 +258,7 @@ These invariants hold across `src/server` ↔ `server.md`.
+    `idle → starting → listening → stopping → stopped`; `start()` from
+    `listening`/`starting`/`stopping` rejects with a `ServerError` of code
+    `'STATUS'`, carrying that status in its `context` and narrowed by
+-   `isServerError`; each `start()` mints a FRESH stop signal, so a restarted
++   `isServerError`; each `start()` mints a fresh stop signal, so a restarted
+    server is never born aborted; `address` is the real bound `AddressInfo`
+    after a successful start and `undefined` before start and after stop or
+    destroy; `stop()`/`destroy()` are idempotent no-ops from a state with
+@@ -272,16 +274,16 @@ These invariants hold across `src/server` ↔ `server.md`.
+    `reason`. A later `start()` is therefore permitted. Aborting the caller
+    signal after a successful start does not stop a live server.
+ 5. **Graceful drain is event-driven, never a busy-loop.** `stop()` fires the
+-   stop signal, arms a `@orkestrel/timeout` deadline, and PARKS on the
+-   drainable count reaching zero OR the deadline firing (a wake-park, not
++   stop signal, arms a `@orkestrel/timeout` deadline, and parks on the
++   drainable count reaching zero or the deadline firing (a wake-park, not
+    polling); it then emits `drain` with the still-pending counts and closes —
+    dropping idle keep-alive sockets always, force-closing every open socket
+    only when the deadline fired with work still pending (or on `destroy()`).
+-   Drainable work is every in-flight REQUEST plus every upgraded SOCKET a
++   Drainable work is every in-flight request plus every upgraded socket a
+    handler claimed, because a long-lived upgraded connection is work a
+    graceful stop lets finish rather than cuts mid-frame. `drain` carries
+    both counts, so a caller can tell a clean stop from a forced one. This is
+-   also what makes `stop()` and `destroy()` ALWAYS resolve: node detaches an
++   also what makes `stop()` and `destroy()` always resolve: node detaches an
+    upgraded socket from its own connection set, so neither
+    `closeIdleConnections()` nor `closeAllConnections()` reaches it while
+    `server.close()` still waits on it, and the server therefore tracks each
+@@ -293,8 +295,8 @@ These invariants hold across `src/server` ↔ `server.md`.
+    socket nothing closes costs `stop()` the whole `drain` budget and is then
+    cut, so lower `drain` for a faster shutdown.
+ 6. **The built-in boundary is lifecycle machinery, not policy — one seam
+-   that spans setup AND dispatch.** The `Server` wraps the WHOLE per-request
+-   lifecycle in two nested phases of the same boundary. The innermost phase
++   that spans setup and dispatch.** The `Server` wraps the whole per-request
++   lifecycle in nested phases of the same boundary. The innermost phase
+    covers only `buildRequest`: a malformed request (for example, an unparsable `Host`)
+    answers a plain `400`, with no `error` emit, no `report` call, and no
+    `response` emit, since nothing downstream ever ran and no parsed `Request`
+@@ -303,7 +305,7 @@ These invariants hold across `src/server` ↔ `server.md`.
+    a throwing `this.#state(connection)` through the middleware/dispatcher
+    run — where a thrown `HTTPError` renders as its own status + message; any
+    other throw renders `500` with its message hidden unless `expose` is set,
+-   `report` is invoked with the caught error PLUS the originating request's
++   `report` is invoked with the caught error plus the originating request's
+    `{ method, url }` (its own throw swallowed so reporting can never crash
+    the response), and `error` is emitted with that same `{ method, url }` as
+    its second argument. Beneath this single seam sits one server-owned last
+@@ -314,68 +316,68 @@ These invariants hold across `src/server` ↔ `server.md`.
+    `response` event fires once the response has been sent, carrying
+    `{ method, pathname, status, ms }` — so observability covers every request
+    that reached the middleware pipeline, exactly once, regardless of outcome.
+-   A request rejected at the inner `buildRequest` boundary above is the one
++   A request rejected at the inner `buildRequest` boundary is the one
+    exception: it emits no `response` at all.
+ 7. **Upgrade fan-out is isolated, first-claimer-wins.** Registered
+    `UpgradeHandler`s run in registration order; the first to return `true`
+-   CLAIMS the socket and stops the fan-out; a handler that THROWS is treated as
+-   declined (the throw surfaces on `error` with NO request context — `error`'s
++   claims the socket and stops the fan-out; a handler that throws is treated as
++   declined (the throw surfaces on `error` with no request context — `error`'s
+    second argument is `undefined` on the upgrade path, since no fetch
+    `Request` exists there, only a raw `IncomingMessage` — and never crashes
+    the process) and the fan-out continues; an upgrade nothing claims destroys
+-   the socket so it never leaks a dangling connection. A CLAIMED socket is
++   the socket so it never leaks a dangling connection. A claimed socket is
+    tracked until it closes, which is what item 5's drain and forced close
+    act on — ownership stays with the claimant either way.
+ 8. **Body read exactly once, capped, zip-bomb-safe, scrubbed.**
+-   `MiddlewareContext.body()` is lazy and CACHED, so a body-parsing middleware
++   `MiddlewareContext.body()` is lazy and cached, so a body-parsing middleware
+    and the eventual handler both reading it consume the underlying stream
+    exactly once; `readBody` caps the wire size (`ContentTooLargeError`/413 over
+    `limit`), transparently decompresses a `gzip`/`deflate` body through a
+-   byte-counting `TransformStream` that ABORTS the instant decompressed output
+-   would exceed `decompression` (fail BEFORE materializing a decompression
++   byte-counting `TransformStream` that aborts the instant decompressed output
++   would exceed `decompression` (fail before materializing a decompression
+    bomb, since `DecompressionStream` has no `maxOutputLength`), and scrubs
+    `__proto__`/`constructor`/`prototype` keys from a parsed JSON body
+    (`scrubPrototype`) before it is ever handed to application code.
+ 9. **Cookie + token jewels preserved.** `parseCookies` rejects a
+    whitespace-padded name so a `'  __Host-x'` never reconciles into a
+-   protected `__Host-` name; `serializeCookie` THROWS on a `Domain`/`Path`
++   protected `__Host-` name; `serializeCookie` throws on a `Domain`/`Path`
+    injection attempt rather than silently dropping it; a `sameSite: 'None'`
+-   cookie is ALWAYS `Secure` regardless of the `secure` setting;
++   cookie is always `Secure` regardless of the `secure` setting;
+    `resolveSecure` derives `Secure` from the connection's TLS fact whenever
+    `secure` is left `undefined` (omitted).
+-   `verifyToken` is TOTAL (malformed / tampered / expired / empty-rotation all
+-   yield `undefined`, never throw); the expiry is HMAC-COVERED inside the
+-   signed payload; a `TokenSecret` rotation list signs with the FIRST secret
+-   and verifies against ANY; comparison is constant-time through
++   `verifyToken` is total (malformed / tampered / expired / empty-rotation all
++   yield `undefined`, never throw); the expiry is HMAC-covered inside the
++   signed payload; a `TokenSecret` rotation list signs with the first secret
++   and verifies against any of them; comparison is constant-time through
+    `crypto.subtle.verify` (the old `safeCompare` is retired, not ported).
+ 10. **Seam semantics: returning onion.** Each `MiddlewareHandler` receives a
+     `next` that, called, runs the downstream chain and resolves its `Response`;
+-    NOT calling it short-circuits with the middleware's own `Response`; a
+-    SECOND call to the same `next` within one invocation REJECTS with a
++    not calling it short-circuits with the middleware's own `Response`; a
++    second call to the same `next` within one invocation rejects with a
+     `ServerError` of code `'NEXT'` (the double-`next` guard) — a middleware can
+     transform the request (`next(newRequest)`), transform the response (mutate
+     after `await next()`), or short-circuit, but never fork the chain. That
+     rejection escapes into the request boundary, which carries no `status` for
+     it and answers a generic 500.
+-11. **The bag IS the router's state.** `compose`'s `terminal` is
++11. **The bag is the router's state.** `compose`'s `terminal` is
+     `(request, context) => dispatcher.handle(request, context.state)` — the
+     exact object every middleware wrote into `context.state` is what a route
+     handler reads as `RouteContext.state`. No second plumbing.
+ 12. **Connection facts are injected once, at the adapter boundary.**
+     `Connection` (`ip`, `encrypted`) is built per-request from the raw
+-    socket and handed to `ServerOptions.state` — `X-Forwarded-For` is NEVER
++    socket and handed to `ServerOptions.state` — `X-Forwarded-For` is never
+     implicitly trusted; a deployment behind a trusted proxy derives its own
+     client key explicitly in `state` or in middleware.
+ 13. **The stop signal is observable inside a handler.** The `Request`'s
+     `signal` (already tied to client disconnect by the router's
+-    `buildRequest`) is LINKED, through `@orkestrel/abort`'s `linkSignal`, to the
++    `buildRequest`) is linked, through `@orkestrel/abort`'s `linkSignal`, to the
+     server's per-run stop signal — so a handler awaiting `request.signal`
+-    observes EITHER the client disconnecting OR the server calling `stop()`,
++    observes either the client disconnecting or the server calling `stop()`,
+     closing the old design's latent gap.
+ 14. **Enterprise timeout knobs, Slowloris-guarded.** `timeouts.request` /
+     `timeouts.headers` / `timeouts.keepalive` map onto `node:http`'s
+     `requestTimeout` / `headersTimeout` / `keepAliveTimeout`; construction
+-    THROWS a `TypeError` when `headers` exceeds `keepalive` (the Slowloris
++    throws a `TypeError` when `headers` exceeds `keepalive` (the Slowloris
+     footgun) — a guard at the boundary, never on the hot path.
+ 15. **Socket caps map without policy.** `sockets.connections` /
+     `sockets.headers` / `sockets.requests` apply directly to node's
+@@ -384,24 +386,24 @@ These invariants hold across `src/server` ↔ `server.md`.
+     each native meaning (reject all connections for `connections`, unlimited
+     for `headers` and `requests`).
+ 16. **Content negotiation is total and q-value-linear.** `parseAcceptHeader`
+-    is a single pass with no backtracking (ReDoS-safe); a `;q=0` entry is KEPT
++    is a single pass with no backtracking (ReDoS-safe); a `;q=0` entry is kept
+     (an explicit rejection a caller must honor, never silently dropped); an
+     absent/malformed `Accept` header resolves to the any-range (the first
+     offered value/handler) rather than rejecting.
+ 17. **`expose: false` leaks nothing; `HTTPError` messages always surface.** A
+     generic (non-`HTTPError`) throw's message is hidden behind a fixed
+     `'Internal Server Error'` string unless `expose` is explicitly `true`; an
+-    `HTTPError`'s own `message` is ALWAYS client-facing (it is the handler's
++    `HTTPError`'s own `message` is always client-facing (it is the handler's
+     deliberate signal), independent of `expose`.
+ 18. **`isHTTPError` recognizes an `HTTPError` across package copies, not only
+     `instanceof`.** A version-skewed or workspace-linked duplicate install of
+-    this package produces a SECOND, distinct `HTTPError` constructor —
+-    `instanceof` fails across the two copies even though the thrown value is
++    this package produces a second, distinct `HTTPError` constructor —
++    `instanceof` fails across the copies even though the thrown value is
+     structurally identical, which would otherwise collapse a deliberate 4xx
+     into the built-in boundary's 500 fallback. `isHTTPError` tries
+     `instanceof` first, then falls back to a total structural check: the
+     value must carry a stable cross-copy brand (a `Symbol.for`-interned key,
+-    so every copy resolves the same symbol) AND expose a numeric `status` and
++    so every copy resolves the same symbol) and expose a numeric `status` and
+     a string `message` — the exact fields the boundary reads off a
+     recognized error. The brand is an implementation detail of `HTTPError`'s
+     constructor, not a field a consumer sets by hand.
+@@ -452,8 +454,8 @@ await server.destroy()
+ 
+ ### Middleware ordering idiom
+ 
+-Middleware runs OUTERMOST-first (`middleware[0]` wraps everything after it).
+-A CORS handler must claim a preflight `OPTIONS` request BEFORE the
++Middleware runs outermost-first (`middleware[0]` wraps everything after it).
++A CORS handler must claim a preflight `OPTIONS` request before the
+ dispatcher's own auto-`OPTIONS` responder ever sees it — mount it earliest in
+ the array, ahead of anything that would short-circuit later.
+ 
+@@ -484,7 +486,7 @@ const server = createServer<State>({
+ 
+ ### Typed state slices
+ 
+-Each middleware family publishes its OWN state-slice interface; a consumer
++Each middleware family publishes its own state-slice interface; a consumer
+ intersects the slices it mounts into one `TState` — no per-middleware generic
+ accumulation.
+ 
+@@ -525,7 +527,7 @@ function streamHandler(): Response {
+ 
+ `stop()` refuses new connections, gives in-flight work up to the `drain`
+ deadline, then closes; `destroy()` is the final, idempotent teardown. In-flight
+-work is requests AND claimed upgraded sockets, so both calls always return.
++work is requests and claimed upgraded sockets, so each call always returns.
+ 
+ ```ts
+ import { createServer } from '@orkestrel/server'
+@@ -650,10 +652,11 @@ new TextDecoder().decode(body) // 'hi' — capped decompression, the zip-bomb de
+   `DispatcherInterface`; this package owns zero route matching — mechanism,
+   not product policy.
+ - **Mount CORS before anything that could short-circuit an `OPTIONS`** — the
+-  ordering idiom above; the dispatcher's own auto-`OPTIONS` runs LAST.
++  ordering idiom under [Middleware ordering idiom](#middleware-ordering-idiom);
++  the dispatcher's own auto-`OPTIONS` runs last.
+ - **Read `context.body()` through the cache, never `request.body` directly**
+   — the stream is drained exactly once, capped and zip-bomb-safe.
+-- **Thread `request.signal` into downstream work** — it fires on EITHER
++- **Thread `request.signal` into downstream work** — it fires on either
+   client disconnect or server `stop()`.
+ - **Never derive a rate key from `X-Forwarded-For`** — use the injected
+   `Connection.ip` (or your own trusted-proxy derivation).
+@@ -670,6 +673,14 @@ new TextDecoder().decode(body) // 'hi' — capped decompression, the zip-bomb de
+ 
+ ## Tests
+ 
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/server`
++  bijection (value and type exports), the `NegotiatorInterface` / `StreamInterface` /
++  `ServerInterface` ↔ implementing-class method bijections, and the equality gate:
++  every `Summary` cell against its declaration's description paragraph, the titled
++  `Substrate direct use — tokens, cookies, negotiation` fence against the `@example`
++  block of that title (pinned so the titled pair cannot be retired silently), and the
++  README pitch against this guide's tagline. It also runs the flagship fences and
++  asserts the values their comments claim.
+ - [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) —
+   `compose` (outer-first ordering, double-`next` rejection, short-circuit,
+   request substitution, response transformation), cookie parse/serialize/
+@@ -689,7 +700,7 @@ new TextDecoder().decode(body) // 'hi' — capped decompression, the zip-bomb de
+ - [`tests/src/server/Stream.test.ts`](../tests/src/server/Stream.test.ts) —
+   the opened SSE response and its header merge order, the serialized wire for
+   events and comments, readiness/drain and ignore-the-signal behavior, and the
+-  two ways the handle closes (`end`, and a consumer cancelling).
++  ways the handle closes (`end`, and a consumer cancelling).
+ - [`tests/src/server/errors.test.ts`](../tests/src/server/errors.test.ts) —
+   `HTTPError`/`ContentTooLargeError` shape and `isHTTPError` narrowing, and
+   `ServerError` shape with `isServerError` narrowing.
+diff --git a/src/server/Negotiator.ts b/src/server/Negotiator.ts
+index 0ec3608..c966111 100644
+--- a/src/server/Negotiator.ts
++++ b/src/server/Negotiator.ts
+@@ -8,13 +8,13 @@ import {
+ 
+ /**
+  * Represents the content-negotiation machine over the weighted `Accept` family — a
+- * reusable, cross-middleware ENTITY (not a middleware). Implements exactly
++ * reusable, cross-middleware entity rather than a middleware. Implements exactly
+  * {@link NegotiatorInterface}.
+  *
+  * @remarks
+  * `negotiate` is the generic media-type primitive (exact / subtype-wildcard /
+  * any-range, q-sorted, `;q=0` rejected); `encoding` / `language` are its
+- * sibling axes and REUSE the same {@link parseAcceptHeader} q-value parser the
++ * sibling axes and reuse the same {@link parseAcceptHeader} q-value parser the
+  * rest of the substrate uses — one parser, never two. `format` reads the
+  * request `Accept`, negotiates a {@link FormatHandlerMap}'s keys, and invokes
+  * the winner — or answers `406 Not Acceptable`.
+diff --git a/src/server/Server.ts b/src/server/Server.ts
+index 5106805..b91742b 100644
+--- a/src/server/Server.ts
++++ b/src/server/Server.ts
+@@ -31,35 +31,35 @@ import { HTTPError, isHTTPError, ServerError } from './errors.js'
+ /**
+  * Represents the HTTP server facade — an observable `node:http` lifecycle composing this
+  * module's own middleware onion around a consumed `@orkestrel/router`
+- * dispatcher.
++ * dispatcher. Implements exactly {@link ServerInterface}.
+  *
+  * @typeParam TState - The consumer's opaque per-request state type
+  *
+  * @remarks
+  * - **Lifecycle.** `start(signal?)` builds the underlying `node:http`
+  *   server, binds the configured {@link ServerOptions.host} / {@link
+- *   ServerOptions.port} (omitted/`0` port ⇒ EPHEMERAL, resolved from the
++ *   ServerOptions.port} (omitted/`0` port ⇒ ephemeral, resolved from the
+  *   bound address), exposes that {@link AddressInfo} through `address`, observes
+  *   caller cancellation plus the configured `timeouts.start` deadline while the
+  *   bind is pending, and transitions `idle → starting → listening`. A
+  *   cancelled or expired bind closes its partial server and resets to `idle` for
+  *   another start. `stop()` transitions
+  *   to `stopping`: refuses new connections, fires a fresh-per-run stop signal
+- *   so in-flight handlers observe cancellation, drains in-flight requests AND
++ *   so in-flight handlers observe cancellation, drains in-flight requests and
+  *   claimed upgraded sockets up to the `drain` deadline (event-driven, no
+  *   busy-loop), then closes → `stopped`, forcing whatever the deadline caught
+  *   still open. `destroy()` is the idempotent final teardown.
+  * - **Per request.** In-flight is tracked (finished on response `finish` or
+  *   `close`); a `Request` is built through the router's `buildRequest`, its
+- *   `signal` LINKED to this run's stop signal through `@orkestrel/abort`'s
++ *   `signal` linked to this run's stop signal through `@orkestrel/abort`'s
+  *   `linkSignal` (a fresh `Request` is constructed with the linked signal —
+- *   `buildRequest`'s own abort, armed by BOTH request-side and response-side
++ *   `buildRequest`'s own abort, armed by request-side and response-side
+  *   teardown, composes with the server's stop signal through `AbortSignal.any`,
+- *   so a handler awaiting `request.signal` observes BOTH); `context.state` is built through
++ *   so a handler awaiting `request.signal` observes either); `context.state` is built through
+  *   {@link ServerOptions.state} from the connection facts; the composed
+  *   middleware onion runs, terminating in `dispatcher.handle`; the result is
+  *   written back through `sendResponse`.
+- * - **The built-in boundary** wraps the WHOLE per-request chain, including
++ * - **The built-in boundary** wraps the whole per-request chain, including
+  *   setup: `buildRequest` runs behind its own inner boundary that maps a
+  *   throw (for example, a malformed `Host` header) to a silent `400` with no
+  *   `error` emit; everything after (`Request` reconstruction, connection
+@@ -73,12 +73,12 @@ import { HTTPError, isHTTPError, ServerError } from './errors.js'
+  * - **Upgrade fan-out** — verbatim old semantics (first-claimer-wins, a
+  *   throwing handler is treated as declined and surfaced on `error`, an
+  *   unclaimed upgrade destroys the socket), bound per-run to this instance.
+- *   A CLAIMED socket joins `#upgraded` until it closes: the claimant still
++ *   A claimed socket joins `#upgraded` until it closes: the claimant still
+  *   owns it, and the tracking exists because node detaches an upgraded socket
+  *   from the set its own close calls walk, so nothing else can end it.
+  * - **Observable.** Owns an {@link Emitter} over {@link ServerEventMap}
+  *   exposed as `readonly emitter`; the emitter isolates a listener throw and
+- *   routes it to the `error` OPTION (not the domain `error` event).
++ *   routes it to the `error` option rather than to the domain `error` event.
+  */
+ export class Server<TState> implements ServerInterface<TState> {
+ 	readonly #id: string
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index a48f760..904e3b8 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -9,39 +9,43 @@ import type { Encoding } from './types.js'
+ // package's own `constants.ts`.
+ 
+ /**
+- * Names the default graceful-stop deadline (ms) the server gives in-flight
+- * requests on `stop()`.
++ * Names the default graceful-stop deadline `stop()` gives in-flight requests and
++ * claimed upgraded sockets, `10_000` ms.
+  */
+ export const DEFAULT_DRAIN_MS = 10_000
+ 
+ /**
+- * Names the `Symbol.for`-keyed brand `HTTPError` carries so `isHTTPError` recognizes
+- * an instance thrown by ANOTHER copy of this package (the dual-package
+- * hazard — a version-skewed or workspace-linked duplicate install), where
+- * `instanceof` alone fails because the two copies' `HTTPError` constructors
+- * are distinct objects.
++ * Names the `Symbol.for`-interned brand `HTTPError` carries,
++ * `@orkestrel/server.HTTPError`, so `isHTTPError` recognizes an instance across
++ * package copies. A consumer never sets it by hand.
+  *
+  * @remarks
+- * `Symbol.for` interns the symbol on the GLOBAL symbol registry, so every
+- * copy of this package that evaluates this key resolves the SAME symbol
++ * The brand exists for the dual-package hazard — a version-skewed or
++ * workspace-linked duplicate install — where `instanceof` alone fails because
++ * each copy's `HTTPError` constructor is a distinct object.
++ * `Symbol.for` interns the symbol on the global symbol registry, so every
++ * copy of this package that evaluates this key resolves the same symbol
+  * instance — unlike a locally-scoped `Symbol()`, which would mint a fresh,
+  * unequal symbol per copy and defeat the whole point of a cross-copy brand.
+  */
+ export const HTTP_ERROR_BRAND = Symbol.for('@orkestrel/server.HTTPError')
+ 
+-/** Names the default maximum request body size (bytes) `readBody` accepts before a 413. */
++/**
++ * Names the default maximum request body size `readBody` accepts before a 413,
++ * `1_048_576` bytes.
++ */
+ export const DEFAULT_BODY_LIMIT = 1_048_576
+ 
+ /**
+- * Names the default maximum DECOMPRESSED request body size (bytes) — the zip-bomb cap
+- * the body pipeline's byte-counting `TransformStream` enforces when
+- * transparently decompressing a `Content-Encoding` request body.
++ * Names the default maximum decompressed request body size, `16_777_216` bytes — the
++ * zip-bomb cap the body pipeline's byte-counting `TransformStream` enforces when
++ * it transparently decompresses a `Content-Encoding` request body.
+  *
+  * @remarks
+  * A small compressed payload (under {@link DEFAULT_BODY_LIMIT} on the wire)
+  * can inflate by many orders of magnitude — a classic decompression bomb.
+- * Capping the decompressed byte count makes the pipe ABORT the moment the
+- * output would exceed this, BEFORE the full bomb is materialized, so the
++ * Capping the decompressed byte count makes the pipe abort the moment the
++ * output would exceed this, before the full bomb is materialized, so the
+  * inflation can never exhaust memory. Defaults to `16 MiB` — a generous
+  * ceiling for a legitimate compressed JSON / form body, far below an OOM. A
+  * consumer raises it through {@link import('./types.js').BodyOptions}
+@@ -51,16 +55,16 @@ export const DEFAULT_BODY_LIMIT = 1_048_576
+ export const DEFAULT_DECOMPRESSED_LIMIT = 16_777_216
+ 
+ /**
+- * Holds the SSE response headers a `Stream` always sets on its response.
++ * Holds the SSE response headers a `Stream` sets on its response, merged under any
++ * caller `headers` so a caller repeating one of these keys replaces its value.
+  *
+  * @remarks
+  * `text/event-stream` is the media type browsers dispatch as SSE; `no-cache`
+  * keeps a proxy from caching the stream; `keep-alive` holds the connection
+  * open; `X-Accel-Buffering: no` opts a buffering reverse proxy (nginx) out so
+  * events flush promptly rather than batching. Frozen so a consumer can read
+- * but never mutate the shared default; a `Stream` merges any
+- * {@link import('./types.js').StreamOptions.headers} OVER these, so a caller
+- * repeating one of these keys replaces its value.
++ * but never mutate the shared default; the merged keys are
++ * {@link import('./types.js').StreamOptions.headers}.
+  */
+ export const SSE_HEADERS: Readonly<Record<string, string>> = Object.freeze({
+ 	'Content-Type': 'text/event-stream; charset=utf-8',
+@@ -71,17 +75,21 @@ export const SSE_HEADERS: Readonly<Record<string, string>> = Object.freeze({
+ 
+ /**
+  * Defines the strict charset `isValidRequestId` requires an incoming `X-Request-ID`
+- * to match — `^[A-Za-z0-9_-]{1,200}$` — so a CRLF / log-injection / oversized
+- * / control-char-bearing incoming id is REJECTED (a fresh id is minted
+- * instead) rather than ever riding into a response header or `context.state`.
+- * Frozen so a consumer can read but never mutate the shared default.
++ * to match, `^[A-Za-z0-9_-]{1,200}$`.
++ *
++ * @remarks
++ * An incoming id carrying CRLF, a log-injection payload, a control character,
++ * or more characters than the pattern admits fails the match and is rejected —
++ * a fresh id is minted instead — so it never rides into a response header or
++ * `context.state`. Frozen so a consumer can read but never mutate the shared
++ * default.
+  */
+ export const REQUEST_ID_PATTERN: Readonly<RegExp> = Object.freeze(/^[A-Za-z0-9_-]{1,200}$/)
+ 
+ /**
+- * Holds the set of bare `Content-Type`s `isCompressibleType` treats as
+- * COMPRESSIBLE, beyond the `text/*` prefix + structured-suffix (`+json` /
+- * `+xml`) rules that helper also applies.
++ * Holds the bare `Content-Type` values `isCompressibleType` treats as compressible,
++ * beyond the `text/*` prefix and structured-suffix (`+json`, `+xml`) rules that
++ * helper also applies.
+  *
+  * @remarks
+  * The text-shaped application types worth compressing (JSON / JavaScript /
+@@ -110,10 +118,10 @@ export const COMPRESSIBLE_TYPES: ReadonlySet<string> = Object.freeze(
+ 
+ /**
+  * Lists the default {@link Encoding} content-codings the substrate offers, in
+- * PREFERENCE order — `gzip` / `deflate`.
++ * preference order — `gzip` then `deflate`.
+  *
+  * @remarks
+- * `identity` (no compression) is always implicitly acceptable and is NOT
++ * `identity` (no compression) is always implicitly acceptable and is not
+  * listed here — it is the fall-through when a client accepts none of these.
+  * Brotli is omitted per the core's `CompressionStream`-only decision (see
+  * {@link Encoding}). Frozen so a consumer can read but never mutate the
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 28cbc1a..29c89bd 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -38,7 +38,7 @@ import { HTTP_ERROR_BRAND } from './constants.js'
+  * Carries the HTTP `status` to send and an optional `context` record (the
+  * offending field / value). The server's built-in error boundary catches it
+  * and renders a response of `status` with the error's `message` as the body
+- * — so an `HTTPError`'s message is ALWAYS client-facing (it is the handler's
++ * — so an `HTTPError`'s message is always client-facing (it is the handler's
+  * deliberate signal), unlike a generic throw whose message is hidden unless
+  * `expose` is set. Subclass it (as {@link ContentTooLargeError} does) for
+  * specific statuses, or throw it directly. Narrow a caught value with
+@@ -101,21 +101,22 @@ export class ContentTooLargeError extends HTTPError {
+ }
+ 
+ /**
+- * Narrows an unknown caught value to an {@link HTTPError} (including its
+- * subclasses, for example {@link ContentTooLargeError}).
++ * Narrows an unknown caught value to an {@link HTTPError}, including a subclass such
++ * as {@link ContentTooLargeError}, and recognizes an instance from another copy of
++ * this package through a structural brand fallback.
+  *
+  * @param value - The value to test (typically a `catch` binding)
+  * @returns True if `value` is an {@link HTTPError}; false otherwise
+  *
+  * @remarks
+  * Tries `instanceof` first, then falls back to a total structural check for
+- * an instance built by a DIFFERENT copy of this package (the dual-package
++ * an instance built by a different copy of this package (the dual-package
+  * hazard — version skew, a linked workspace duplicate) whose `HTTPError`
+  * constructor is a distinct object from this copy's: the value must carry
+  * the cross-copy brand (interned by using `Symbol.for`, so every copy resolves the
+- * same key) AND expose the exact fields the server's error boundary reads off
++ * same key) and expose the exact fields the server's error boundary reads off
+  * a recognized `HTTPError` — a numeric `status` and a string `message`. A
+- * plain object that merely carries a `status` WITHOUT the brand is rejected.
++ * plain object that merely carries a `status` without the brand is rejected.
+  *
+  * @example
+  * ```ts
+@@ -138,11 +139,11 @@ export function isHTTPError(value: unknown): value is HTTPError {
+ 
+ /**
+  * Represents the error this package raises when a caller programmed a call the
+- * entity refuses.
++ * entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.
+  *
+  * @remarks
+  * Carries a machine-readable {@link ServerErrorCode} and an optional `context`
+- * record naming the offending facts. This is a PROGRAMMER error, so it carries
++ * record naming the offending facts. This is a programmer error, so it carries
+  * no HTTP `status`: a `'STATUS'` lifecycle refusal is raised to the caller that
+  * invoked the lifecycle method, and a `'NEXT'` double-`next` refusal escapes its
+  * middleware into the request boundary, which reaches it as a generic 500 with
+@@ -173,13 +174,14 @@ export class ServerError extends Error {
+ }
+ 
+ /**
+- * Narrows an unknown caught value to a {@link ServerError}.
++ * Narrows an unknown caught value to a {@link ServerError} — the code-bearing refusal
++ * of a call the caller programmed.
+  *
+  * @param value - The value to test (typically a `catch` binding)
+  * @returns True if `value` is a {@link ServerError}; false otherwise
+  *
+  * @remarks
+- * Recognizes an instance built by THIS copy of the package. A `ServerError`
++ * Recognizes an instance built by this copy of the package. A `ServerError`
+  * is raised by a `Server` to the caller that invoked it directly, so both sides
+  * hold the same copy and the cross-copy brand {@link isHTTPError} needs has no
+  * consumer here.
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 5f08281..1847b3c 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -15,13 +15,48 @@ import { Stream } from './Stream.js'
+  *
+  * @returns A {@link NegotiatorInterface}
+  *
+- * @example
++ * @example Substrate direct use — tokens, cookies, negotiation
+  * ```ts
+- * import { createNegotiator } from '@src/server'
++ * import type { MiddlewareContext } from '@orkestrel/server'
++ * import {
++ * 	createNegotiator,
++ * 	decodeTokenPayload,
++ * 	decompressRequestBody,
++ * 	readSignedCookie,
++ * 	signToken,
++ * 	verifyToken,
++ * 	writeSignedCookie,
++ * } from '@orkestrel/server'
++ *
++ * declare const context: MiddlewareContext<Record<string, never>>
+  *
+  * const negotiator = createNegotiator()
+- * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html'])
+- * // 'text/html'
++ * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html']) // 'text/html'
++ * negotiator.encoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'
++ * negotiator.language('en-US, en;q=0.8, fr;q=0.5', ['en', 'fr']) // 'en'
++ * await negotiator.format(new Request('http://x'), context, {
++ * 	'application/json': (_request, _context) => Response.json({ ok: true }),
++ * })
++ *
++ * const headers = new Headers()
++ * await writeSignedCookie(headers, 'session', 'user-1', 'secret')
++ * const value = await readSignedCookie(
++ * 	new Request('http://x', { headers: { cookie: 'session=abc' } }),
++ * 	'session',
++ * 	'secret',
++ * )
++ * await verifyToken('bad.token', 'secret') // undefined — total, never throws
++ *
++ * const token = await signToken('client', { secret: 'shh' })
++ * decodeTokenPayload(token.split('.')[0]) // 'client' — the shared decode step verifyToken applies after a signature match
++ *
++ * const gzipped = new Uint8Array(
++ * 	await new Response(
++ * 		new Blob(['hi']).stream().pipeThrough(new CompressionStream('gzip')),
++ * 	).arrayBuffer(),
++ * )
++ * const body = await decompressRequestBody(gzipped, 'gzip', 1_048_576)
++ * new TextDecoder().decode(body) // 'hi' — capped decompression, the zip-bomb defense
+  * ```
+  */
+ export function createNegotiator(): NegotiatorInterface {
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 8ebba7b..7dc9a2a 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -35,18 +35,18 @@ import { isAddressInfo } from './validators.js'
+ // once.
+ 
+ /**
+- * Composes an ordered chain of {@link MiddlewareHandler}s around a `terminal`
++ * Composes an ordered chain of {@link MiddlewareHandler} layers around a `terminal`
+  * handler into one request handler — the frozen middleware seam.
+  *
+  * @remarks
+- * `middleware[0]` runs OUTERMOST: it is invoked first, and its call to `next`
+- * runs `middleware[1]`, and so on until the LAST middleware's `next` invokes
++ * `middleware[0]` runs outermost: it is invoked first, and its call to `next`
++ * runs `middleware[1]`, and so on until the last middleware's `next` invokes
+  * `terminal`. Each middleware's `next` may be called with a substituted
+  * `Request` (the downstream chain then sees that request instead of the
+  * original), called with no argument (the original request continues
+- * downstream), or NOT called at all (a short-circuit — the middleware's own
++ * downstream), or not called at all (a short-circuit — the middleware's own
+  * returned `Response` is sent, and everything downstream never runs). A
+- * SECOND call to the same `next` within one middleware invocation REJECTS —
++ * second call to the same `next` within one middleware invocation rejects —
+  * each link runs the chain at most once, so a middleware cannot fork the
+  * request into two divergent downstream runs.
+  *
+@@ -76,7 +76,8 @@ export function compose<TState>(
+ }
+ 
+ /**
+- * Wraps one middleware layer around its downstream handler.
++ * Wraps one middleware layer around its downstream handler, enforcing the one-call
++ * `next` invariant.
+  *
+  * @remarks
+  * The returned handler enforces the one-call `next` invariant while preserving
+@@ -163,8 +164,8 @@ export function parseCookies(header: string | undefined): Record<string, string>
+ }
+ 
+ /**
+- * Checks whether a string is a valid RFC 6265 cookie NAME — a non-empty run of
+- * cookie-token chars with NO surrounding (or interior) whitespace.
++ * Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of
++ * cookie-token characters with no surrounding or interior whitespace.
+  *
+  * @remarks
+  * A cookie name is an RFC 7230 `token`: `^[!#$%&'*+\-.0-9A-Z^_`a-z|~]+$` —
+@@ -207,9 +208,9 @@ export function decodeCookieValue(raw: string): string {
+ }
+ 
+ /**
+- * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute VALUE
+- * (a `Domain` / `Path`) — the guard {@link serializeCookie} screens those two
+- * attributes with before emitting them.
++ * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute value —
++ * the guard {@link serializeCookie} applies to a `Domain` and a `Path` before it
++ * emits them.
+  *
+  * @remarks
+  * Rejects a value carrying a `;` (splits attributes), a `,` (can split a
+@@ -309,7 +310,7 @@ export function resolveSecure(secure: boolean | undefined, encrypted: boolean):
+ }
+ 
+ /**
+- * Writes a SIGNED cookie — HMAC-signs `value` with {@link signToken} and
++ * Writes a signed cookie — HMAC-signs `value` with {@link signToken} and
+  * appends it as a `Set-Cookie` (the inverse of {@link readSignedCookie}).
+  *
+  * @remarks
+@@ -342,13 +343,13 @@ export async function writeSignedCookie(
+ }
+ 
+ /**
+- * Reads + verifies a SIGNED cookie off a request — TOTAL, returning the
++ * Reads and verifies a signed cookie off a request — total, returning the
+  * embedded value or `undefined` (the inverse of {@link writeSignedCookie}).
+  *
+  * @remarks
+  * Parses the `Cookie` header ({@link parseCookies}), takes the named cookie,
+  * and verifies it with {@link verifyToken} against `secret` (a rotation list
+- * accepts a cookie signed by any of its secrets). ANY failure — an absent
++ * accepts a cookie signed by any of its secrets). Any failure — an absent
+  * cookie, a tampered value, a wrong secret — yields `undefined`, never throws.
+  *
+  * @param request - The `Request` to read the `Cookie` header from
+@@ -445,19 +446,19 @@ export async function signToken(value: string, options: TokenOptions): Promise<s
+ }
+ 
+ /**
+- * Verifies a stateless token and returns its embedded value — TOTAL, never throws.
++ * Verifies a stateless token and returns its embedded value — total, never throws.
+  *
+  * @remarks
+- * The inverse of {@link signToken}: splits the token on its LAST `.` (so a
++ * The inverse of {@link signToken}: splits the token on its last `.` (so a
+  * value containing dots survives), decodes the signature with
+  * `@orkestrel/codec`'s `decodeBase64URL` — a signature that is not canonical
+  * base64url is refused there, before any key import — and checks the payload's
+- * HMAC-SHA256 signature against EACH {@link TokenSecret} candidate through
++ * HMAC-SHA256 signature against each {@link TokenSecret} candidate through
+  * `crypto.subtle.verify` (constant-time internally — the old `safeCompare` is
+  * retired), accepting the token on the first match (the
+  * rotation path). It then decodes + narrows the payload (`isRecord` +
+  * `typeof`, never `as`) and, when an expiry was bound in, rejects an expired
+- * token. ANY failure — a malformed token, a bad signature,
++ * token. Any failure — a malformed token, a bad signature,
+  * a hostile/non-JSON payload, an empty secret list, or an elapsed expiry —
+  * yields `undefined` rather than throwing.
+  *
+@@ -500,7 +501,7 @@ export async function verifyToken(token: string, secret: TokenSecret): Promise<s
+ }
+ 
+ /**
+- * Decodes + narrows a signed token's base64url JSON payload, honoring its
++ * Decodes and narrows a signed token's base64url JSON payload, honoring its
+  * expiry — the shared decode step {@link verifyToken} applies after a
+  * signature match.
+  *
+@@ -508,7 +509,7 @@ export async function verifyToken(token: string, secret: TokenSecret): Promise<s
+  * Decodes the payload with `@orkestrel/codec`'s `decodeBase64URL` (total — a
+  * non-canonical base64url segment answers `undefined` rather than throwing),
+  * reads it as UTF-8 JSON, narrows it to a record with a string `value` without
+- * `as`, and rejects an expired `exp`. TOTAL — any
++ * `as`, and rejects an expired `exp`. Total — any
+  * decode/shape/expiry failure yields `undefined`; only `JSON.parse` still
+  * throws, and its `catch` answers `undefined` too.
+  *
+@@ -531,13 +532,13 @@ export function decodeTokenPayload(encoded: string): string | undefined {
+ }
+ 
+ /**
+- * Normalizes a {@link TokenSecret} to a concrete list of USABLE secrets —
+- * backs both {@link signToken} and {@link verifyToken}.
++ * Normalizes a {@link TokenSecret} to a concrete list of usable secrets — the list
++ * behind both {@link signToken} and {@link verifyToken}.
+  *
+  * @remarks
+  * A single string becomes a one-element list; a rotation list is copied. Any
+- * blank/whitespace-only entry is DROPPED (`.trim()` is used only for that
+- * emptiness test; each kept secret is stored VERBATIM). The first kept
++ * blank/whitespace-only entry is dropped (`.trim()` is used only for that
++ * emptiness test; each kept secret is stored verbatim). The first kept
+  * element is the signing secret; all kept are accepted on verify.
+  *
+  * @param secret - The {@link TokenSecret} (a single string, or a rotation list)
+@@ -634,7 +635,8 @@ export function computeCodingQuality(entries: readonly AcceptEntry[], coding: st
+ 
+ /**
+  * Picks the highest-scoring content-coding the server offers against already
+- * parsed `Accept-Encoding` entries.
++ * parsed `Accept-Encoding` entries — the shared selection leaf behind
++ * {@link negotiateEncoding} and a `Negotiator`'s `encoding` axis.
+  *
+  * @remarks
+  * The single selection leaf behind both doors onto this axis —
+@@ -642,9 +644,9 @@ export function computeCodingQuality(entries: readonly AcceptEntry[], coding: st
+  * entity — so the scoring loop has one implementation. Scores each `available`
+  * coding with {@link computeCodingQuality} and keeps the highest; a strict `>`
+  * keeps the earlier-offered coding on a client-side tie, which is what makes
+- * `available` the SERVER's preference order. An empty `available` list, and a
++ * `available` the server's preference order. An empty `available` list, and a
+  * list the client rejects outright, both yield `undefined` (identity — no
+- * compression). TOTAL on hostile input.
++ * compression). Total on hostile input.
+  *
+  * @typeParam T - The coding string type (so a `readonly Encoding[]` returns an `Encoding`)
+  * @param entries - The parsed {@link AcceptEntry} list
+@@ -703,7 +705,7 @@ export function negotiateEncoding<T extends string>(
+ }
+ 
+ /**
+- * Reports the rank + quality of one `candidate` media type against the parsed `Accept`
++ * Reports the rank and quality of one `candidate` media type against the parsed `Accept`
+  * entries — the generic media-type primitive the `Negotiator`'s `negotiate`
+  * uses to score each `available` candidate.
+  *
+@@ -827,13 +829,13 @@ export function isCompressibleType(type: string): boolean {
+ // parser.
+ 
+ /**
+- * Computes a CONTENT `ETag` over a fully-buffered response body by using WebCrypto.
++ * Computes a content `ETag` over a fully-buffered response body by using WebCrypto.
+  *
+  * @remarks
+  * Hashes `body` with SHA-256 (`crypto.subtle.digest`) and wraps the hex
+- * digest as a WEAK validator (`W/"<hash>"`) when `weak` is `true` — the
+- * default, encoding-AGNOSTIC, so the tag survives a downstream content
+- * re-encoding (gzip) and still matches on revalidation — or a STRONG one
++ * digest as a weak validator (`W/"<hash>"`) when `weak` is `true` — the
++ * default, encoding-agnostic, so the tag survives a downstream content
++ * re-encoding (gzip) and still matches on revalidation — or a strong one
+  * (`"<hash>"`, byte-identity) when `weak` is `false`.
+  *
+  * @param body - The full (uncompressed) response body to hash
+@@ -853,8 +855,8 @@ export async function computeBodyETag(body: Uint8Array<ArrayBuffer>, weak = true
+ }
+ 
+ /**
+- * Strips the WEAK indicator (`W/`) from an entity-tag, returning its opaque
+- * comparison body — the reduction {@link matchesETag} applies to both sides
++ * Strips the weak indicator (`W/`) from an entity-tag, returning its opaque
++ * comparison body — the reduction {@link matchesETag} applies to each side
+  * before the RFC 7232 §2.3.2 weak comparison.
+  *
+  * @param tag - One entity-tag (`W/"<body>"` or `"<body>"`)
+@@ -872,14 +874,14 @@ export function unwrapETag(tag: string): string {
+ 
+ /**
+  * Checks whether a request's `If-None-Match` header matches a resource's current
+- * `ETag` — the RFC 7232 §2.3.2 WEAK comparison.
++ * `ETag` — the RFC 7232 §2.3.2 weak comparison.
+  *
+  * @remarks
+- * `If-None-Match` is a COMMA-separated LIST of entity-tags (matches if ANY
+- * listed tag matches), or the `*` wildcard (matches ANY current
++ * `If-None-Match` is a comma-separated list of entity-tags (matches if any
++ * listed tag matches), or the `*` wildcard (matches any current
+  * representation — only a list of exactly `*` is the wildcard). Comparison is
+- * WEAK: `W/"abc"` and `"abc"` are equal (both sides' weak prefix is stripped
+- * through {@link unwrapETag} before comparing the opaque body). TOTAL — a
++ * weak: `W/"abc"` and `"abc"` are equal (each side's weak prefix is stripped
++ * through {@link unwrapETag} before comparing the opaque body). Total — a
+  * malformed/empty header matches nothing, never throws.
+  *
+  * @param header - The raw `If-None-Match` header value
+@@ -906,17 +908,17 @@ export function matchesETag(header: string, etag: string): boolean {
+ 
+ /**
+  * Parses an HTTP `Range` request header against a known resource `size` —
+- * TOTAL, returning a {@link RangeSpec} or `undefined`.
++ * total, returning a {@link RangeSpec} or `undefined`.
+  *
+  * @remarks
+  * Handles the three single-range `bytes=` forms — closed (`start-end`), open
+  * (`start-`), and suffix (`-suffixLength`) — clamping the window to
+- * `[0, size - 1]` (the HTTP INCLUSIVE-end convention). Returns
++ * `[0, size - 1]` (the HTTP inclusive-end convention). Returns
+  * `{ satisfiable: true, start, end }` for an overlapping range,
+  * `{ satisfiable: false }` for a range wholly past the resource, and
+- * `undefined` for the "serve the whole resource" case: an ABSENT header, a
+- * non-`bytes` unit, a MULTI-range header (`a-b, c-d` — refused outright, not
+- * supported), or any malformed/non-finite bound. NEVER throws on a hostile
++ * `undefined` for the "serve the whole resource" case: an absent header, a
++ * non-`bytes` unit, a multi-range header (`a-b, c-d` — refused outright, not
++ * supported), or any malformed/non-finite bound. Never throws on a hostile
+  * header.
+  *
+  * @param header - The raw `Range` header value
+@@ -1053,15 +1055,15 @@ export function resolveSecurityHeader(
+ }
+ 
+ /**
+- * Checks whether a client-supplied `X-Request-ID` is SAFE to echo into a response
+- * header + `context.state`.
++ * Checks whether a client-supplied `X-Request-ID` is safe to echo into a response
++ * header and `context.state`.
+  *
+  * @remarks
+- * A request id is echoed RAW into a response header and log lines, so an
++ * A request id is echoed raw into a response header and log lines, so an
+  * untrusted one is a header-injection + log-injection + DoS vector. This
+  * refuses anything off {@link import('./constants.js').REQUEST_ID_PATTERN}
+  * (`^[A-Za-z0-9_-]{1,200}$` — no whitespace, no control chars, no CR/LF).
+- * TOTAL — never throws.
++ * Total — never throws.
+  *
+  * @param value - The candidate incoming request id
+  * @returns True if `value` is a safe, bounded, charset-clean correlation id; false otherwise
+@@ -1127,11 +1129,11 @@ export function computeIPv6Network(address: string): string | undefined {
+ }
+ 
+ /**
+- * Collapses a client IP into its rate-limit BUCKET key — an IPv6 address to
++ * Collapses a client IP into its rate-limit bucket key — an IPv6 address to
+  * its `/64` network, an IPv4 (or IPv4-mapped) address unchanged.
+  *
+  * @remarks
+- * A residential/mobile IPv6 user is routinely handed a WHOLE `/64`, so a
++ * A residential/mobile IPv6 user is routinely handed a whole `/64`, so a
+  * per-`/128` rate limit is trivially bypassed by rotating host bits — the
+  * real identity is the `/64` network. Delegates the IPv6 collapse to
+  * {@link computeIPv6Network}; anything it returns `undefined` for (an IPv4 address,
+@@ -1195,9 +1197,9 @@ export function serializeEvent(message: SSEMessage): string {
+ // the fetch-vocabulary migration).
+ 
+ /**
+- * Checks whether a key is a PROTOTYPE-POLLUTION vector — `__proto__`, `constructor`,
+- * or `prototype` — the three keys that, assigned onto a normal object, can
+- * reach and mutate `Object.prototype`.
++ * Checks whether a key is a prototype-pollution vector — `__proto__`,
++ * `constructor`, or `prototype`, each of which can reach and mutate
++ * `Object.prototype` when it is assigned onto a normal object.
+  *
+  * @param key - The candidate object key
+  * @returns True if `key` is one of the three prototype-pollution keys; false otherwise
+@@ -1213,12 +1215,11 @@ export function isDangerousKey(key: string): boolean {
+ }
+ 
+ /**
+- * Strips the prototype-pollution keys from a parsed value IN PLACE,
+- * recursively.
++ * Strips the prototype-pollution keys from a parsed value in place, recursively.
+  *
+  * @remarks
+- * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an OWN,
+- * enumerable `__proto__` DATA property — but that own key becomes a
++ * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an own,
++ * enumerable `__proto__` data property — but that own key becomes a
+  * pollution gadget the moment a downstream deep-merge copies it onto a live
+  * object. This walks the value and `delete`s any own {@link isDangerousKey}
+  * key at every depth, recursing into nested objects + array elements.
+@@ -1328,12 +1329,12 @@ export function parseEncoding(header: string | null): Exclude<Encoding, 'identit
+ 
+ /**
+  * Decompresses an already-collected, `gzip`/`deflate`-encoded byte sequence
+- * transparently through `DecompressionStream`, capping the DECOMPRESSED output —
++ * transparently through `DecompressionStream`, capping the decompressed output —
+  * the zip-bomb defense.
+  *
+  * @remarks
+  * Pipes `bytes` through `DecompressionStream(encoding)` and a byte-counting
+- * `TransformStream` that ABORTS the pipe the INSTANT the running decompressed
++ * `TransformStream` that aborts the pipe the instant the running decompressed
+  * total exceeds `cap` — fail-before-materialize, since `DecompressionStream`
+  * has no `maxOutputLength` knob. A cap breach surfaces
+  * as a {@link ContentTooLargeError} (413); a genuinely corrupt/truncated
+@@ -1394,9 +1395,10 @@ export async function decompressRequestBody(
+ }
+ 
+ /**
+- * Collects + decodes a `Request` body — the shared body-collection pipeline
++ * Collects and decodes a `Request` body — the shared body-collection pipeline
+  * surfaced to middleware and handlers as the middleware context's cached
+- * `body()`.
++ * `body()`. An empty body and a malformed `application/json` body each decode to
++ * `undefined`.
+  *
+  * @remarks
+  * Collects the wire body capped at `options.limit` bytes ({@link
+@@ -1407,13 +1409,11 @@ export async function decompressRequestBody(
+  * import('./constants.js').DEFAULT_DECOMPRESSED_LIMIT}), then decodes by
+  * content type: `application/json` is parsed by using `@orkestrel/contract`'s
+  * `parseJSON` and scrubbed of prototype-pollution keys ({@link
+- * scrubPrototype}); any other type decodes as UTF-8 text; an empty body
+- * decodes to `undefined`.
++ * scrubPrototype}); any other type decodes as UTF-8 text.
+  *
+- * A malformed JSON body is total: it decodes to `undefined` rather than
+- * throwing, so a handler that must reject one checks for `undefined` itself.
+- * That makes `undefined` the answer for two distinct inputs, and nothing in the
+- * returned value tells them apart.
++ * A malformed JSON body is total: it decodes rather than throwing, so a handler
++ * that must reject one checks for `undefined` itself, and nothing in the returned
++ * value tells an empty body from a malformed one.
+  *
+  * @param request - The `Request` to read the body from
+  * @param options - The {@link BodyOptions} `limit` + `decompression` caps
+@@ -1490,13 +1490,14 @@ export async function probePort(port: number): Promise<number> {
+ }
+ 
+ /**
+- * Finds a FREE TCP port — binds a throwaway `node:net` server, reads the
+- * OS-assigned port, closes it, and resolves that port.
++ * Finds a free TCP port — binds a throwaway `node:net` server on a `preferred`
++ * port where one is given and on an ephemeral port otherwise, reads the bound
++ * port, closes the server, and resolves that port.
+  *
+  * @remarks
+  * With no `preferred` it binds port `0` (an ephemeral OS-assigned free port)
+- * and returns it. With a `preferred` port it tries THAT port first and
+- * returns it when free; if already in use (`EADDRINUSE`) it FALLS BACK to an
++ * and returns it. With a `preferred` port it tries that port first and
++ * returns it when free; if already in use (`EADDRINUSE`) it falls back to an
+  * ephemeral free port rather than rejecting — a caller always gets a usable
+  * port. It binds then immediately closes a probe server, so the returned
+  * port is free at the instant of the probe (an inherent TOCTOU race — bind it
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 5dd6181..2cf5cfa 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -19,7 +19,7 @@
+ 
+ /**
+  * Represents the composition context — plain data, one per request, shared by every
+- * middleware AND (as `state`) by the route handlers behind the dispatcher.
++ * middleware and, as `state`, by the route handlers behind the dispatcher.
+  *
+  * @typeParam TState - The consumer's opaque per-request state type
+  *
+@@ -28,7 +28,7 @@
+  *   a middleware never re-parses it).
+  * - `method` — the raw request verb; the dispatcher (not this seam) narrows it
+  *   to a known {@link import('@orkestrel/router').Method}.
+- * - `state` — THE shared bag threaded from the adapter's `state` factory,
++ * - `state` — the shared bag threaded from the adapter's `state` factory,
+  *   through every middleware, into `dispatcher.handle`'s `state` — the same
+  *   object a route handler reads as `context.state`.
+  * - `body()` — lazily collect the request body (byte-limited, transparently
+@@ -53,12 +53,12 @@ export interface MiddlewareContext<TState> {
+ 
+ /**
+  * Represents the downstream continuation a {@link MiddlewareHandler} invokes to run the
+- * rest of the onion.
++ * rest of the onion — guarded so a second call within one invocation rejects.
+  *
+  * @remarks
+  * Call it (optionally with a substituted `Request`) to run the downstream
+  * chain and receive its `Response`; omit the call entirely to short-circuit
+- * with a `Response` built by this middleware instead. A SECOND call rejects
++ * with a `Response` built by this middleware instead. A second call rejects
+  * (the double-`next` guard) — each middleware runs the chain at most once.
+  *
+  * @param request - An optional replacement `Request` to hand downstream
+@@ -94,7 +94,7 @@ export type MiddlewareHandler<TState> = (
+ ) => Response | Promise<Response>
+ 
+ /**
+- * Represents the per-request connection facts the server face injects — the ONLY data
++ * Represents the per-request connection facts the server face injects — the only data
+  * that genuinely exists solely on the socket, surfaced so middleware and a
+  * consumer's `state` factory stay core-pure.
+  *
+@@ -111,14 +111,14 @@ export interface Connection {
+ }
+ 
+ /**
+- * Represents a secret (or rotation list) for signing + verifying a stateless, HMAC-signed
+- * token.
++ * Represents a secret, or a `[current, ...older]` rotation list, for signing and
++ * verifying a stateless, HMAC-signed token.
+  *
+  * @remarks
+  * A single `string` is the lone secret. A `readonly string[]` is a rotation
+  * list in `[current, ...older]` order: `signToken` always signs with the
+- * FIRST (current) secret, while `verifyToken` accepts a token signed by ANY
+- * secret in the list — so a key rotates by prepending the new one and keeping
++ * first (current) secret, while `verifyToken` accepts a token signed by any
++ * secret in the list — so a key rotates by prepending the fresh one and keeping
+  * the old until every outstanding token has expired, with zero downtime.
+  */
+ export type TokenSecret = string | readonly string[]
+@@ -384,7 +384,9 @@ export interface StreamInterface {
+ 	/** Reports whether the underlying stream is done (ended, or the consumer disconnected). */
+ 	readonly closed: boolean
+ 	/**
+-	 * Serializes + enqueues one {@link SSEMessage} to the wire.
++	 * Serializes and enqueues one {@link SSEMessage} to the wire, reporting whether the
++	 * process-local queue still has capacity afterward — `false` also once the stream
++	 * is closed.
+ 	 *
+ 	 * @param message - The event to send (its `data` split on `\n` into `data:` lines)
+ 	 * @returns True if the process-local stream queue has capacity after
+@@ -394,13 +396,16 @@ export interface StreamInterface {
+ 	 */
+ 	write(message: SSEMessage): boolean
+ 	/**
+-	 * Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores.
++	 * Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores,
++	 * and a no-op once the stream is closed.
+ 	 *
+ 	 * @param text - The comment text (sent after the `: ` prefix)
+ 	 */
+ 	comment(text: string): void
+ 	/**
+-	 * Parks until the process-local stream queue has capacity again.
++	 * Parks until the process-local stream queue has capacity again — resolving on the
++	 * consumer pull that restores it, or immediately when capacity is already available
++	 * or the stream is closed, and never polling.
+ 	 *
+ 	 * @returns A promise that resolves when a consumer pull restores positive
+ 	 *   desired size, or immediately when capacity is already available or the
+@@ -408,7 +413,10 @@ export interface StreamInterface {
+ 	 *   not prove that a remote peer consumed the queued bytes.
+ 	 */
+ 	drain(): Promise<void>
+-	/** Ends the stream, completing the response (a no-op once already `closed`). */
++	/**
++	 * Ends the stream, completing the response — a no-op once already `closed`, and it
++	 * settles any parked producer.
++	 */
+ 	end(): void
+ }
+ 
+@@ -484,7 +492,9 @@ export type ServerStatus = 'idle' | 'starting' | 'listening' | 'stopping' | 'sto
+ 
+ /**
+  * Represents the machine-readable category a
+- * {@link import('./errors.js').ServerError} carries.
++ * {@link import('./errors.js').ServerError} carries — `'STATUS'` for a lifecycle
++ * call the current status forbids, `'NEXT'` for a middleware that called its `next`
++ * a second time.
+  *
+  * @remarks
+  * A `ServerError` reports a call the caller programmed and the substrate
+@@ -612,7 +622,9 @@ export type UpgradeHandler = (request: IncomingMessage, socket: Duplex, head: Bu
+ export type ConnectionStateFunction<TState> = (connection: Connection) => TState
+ 
+ /**
+- * Options for `createServer`.
++ * Options for `createServer` — the dispatcher and per-request state factory the
++ * server requires, plus its listener, drain, boundary, timeout, socket-cap, and
++ * emitter knobs.
+  *
+  * @param dispatcher - The `@orkestrel/router` {@link DispatcherInterface} the
+  *   composed middleware onion terminates into — bring-your-own router (the
+@@ -626,12 +638,12 @@ export type ConnectionStateFunction<TState> = (connection: Connection) => TState
+  * @param host - The network interface `start()` binds to (`node:http`
+  *   `server.listen`'s host). Omitted ⇒ node's default (all interfaces).
+  * @param port - The TCP port `start()` binds to. Omitted or `0` ⇒ an
+- *   EPHEMERAL, OS-assigned free port (the default); `start()` always resolves
++ *   ephemeral, OS-assigned free port (the default); `start()` always resolves
+  *   the actually-bound port. A port already in use rejects `start()` with
+  *   `EADDRINUSE` — no silent ephemeral fallback (use `discoverPort` to pick a
+  *   guaranteed-free port up front).
+  * @param drain - The graceful-stop deadline in milliseconds: on `stop()` the
+- *   server stops accepting new connections and gives in-flight requests AND
++ *   server stops accepting new connections and gives in-flight requests and
+  *   claimed upgraded sockets this long to finish before forcing every
+  *   remaining socket closed. Defaults to `DEFAULT_DRAIN_MS`. Must be a
+  *   non-negative finite number. A long-lived upgraded socket that nothing
+@@ -734,7 +746,8 @@ export interface ServerInterface<TState> {
+ 	/** Holds the lifecycle emitter over {@link ServerEventMap}. */
+ 	readonly emitter: EmitterInterface<ServerEventMap>
+ 	/**
+-	 * Appends one middleware, or an array of them in order, to the onion.
++	 * Appends one middleware, or an array of them in order, to the onion, outer-to-inner
++	 * in call order.
+ 	 *
+ 	 * @param middleware - One handler, or the ordered array of handlers to append
+ 	 *
+@@ -745,13 +758,15 @@ export interface ServerInterface<TState> {
+ 	use(middleware: MiddlewareHandler<TState>): void
+ 	use(middleware: ReadonlyArray<MiddlewareHandler<TState>>): void
+ 	/**
+-	 * Registers a protocol-upgrade claimant that runs in registration order.
++	 * Registers an {@link UpgradeHandler} claimant that runs in registration order; a
++	 * claimed socket is tracked until it closes.
+ 	 *
+ 	 * @param handler - The claimant; the first to return `true` claims the socket
+ 	 */
+ 	upgrade(handler: UpgradeHandler): void
+ 	/**
+-	 * Binds the configured listener and resolves its actually-bound port.
++	 * Binds the configured `host` and `port`, or an ephemeral port, under an optional
++	 * caller `AbortSignal`, and resolves the actually-bound port.
+ 	 *
+ 	 * @param signal - Optional caller cancellation observed only while startup
+ 	 *   is pending; aborting after this method resolves does not stop the server.
+@@ -768,10 +783,11 @@ export interface ServerInterface<TState> {
+ 	 */
+ 	start(signal?: AbortSignal): Promise<number>
+ 	/**
+-	 * Stops gracefully: refuses new connections, fires the stop signal, drains, closes.
++	 * Stops gracefully: refuses new connections, fires the stop signal, drains in-flight
++	 * requests and claimed upgraded sockets up to the `drain` deadline, then closes.
+ 	 *
+ 	 * @remarks
+-	 * Drainable work is every in-flight request PLUS every upgraded socket a
++	 * Drainable work is every in-flight request plus every upgraded socket a
+ 	 * handler claimed. The drain parks on that work reaching zero or the
+ 	 * `drain` deadline expiring, emits `drain` with both remaining counts, and
+ 	 * then closes — dropping idle keep-alive sockets on a clean drain, and
+@@ -783,7 +799,8 @@ export interface ServerInterface<TState> {
+ 	 */
+ 	stop(): Promise<void>
+ 	/**
+-	 * Tears down for good: force-closes the listener and every socket, then the emitter.
++	 * Tears down for good: force-closes the listener and every socket, then the emitter —
++	 * terminal and idempotent from any state.
+ 	 *
+ 	 * @returns Resolves once nothing is left open; idempotent from any state
+ 	 */
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 6f8a0f8..cc406d9 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,5 +1,5 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The four constants below are this
++// this repo's own `guides/README.md` manifest. The constants that follow are this
+ // package's own, and are the only part a sibling package changes.
+ 
+ import { describe, expect, it } from 'vitest'
+@@ -19,6 +19,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -35,6 +36,8 @@ import { readInventory } from '@orkestrel/test/server'
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+ /** The fence language whose blocks count as worked examples. */
+ const EXAMPLE_LANGUAGE = 'ts'
++/** The one guide this package sources, whose tagline the README pitch equals. */
++const GUIDE_SPEC = 'guides/server.md'
+ /** Each import specifier this package's own guides may resolve against. */
+ const MODULES = Object.freeze({ '@orkestrel/server': 'src/server', '@src/server': 'src/server' })
+ /**
+@@ -42,13 +45,13 @@ const MODULES = Object.freeze({ '@orkestrel/server': 'src/server', '@src/server'
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -60,11 +63,61 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -126,6 +179,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()

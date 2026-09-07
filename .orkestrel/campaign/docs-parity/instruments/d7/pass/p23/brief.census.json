@@ -1,0 +1,113 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-brief",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/brief.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 123,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 9,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "BriefCompiler",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "compile",
+      "destroy",
+      "gate"
+     ]
+    },
+    {
+     "name": "BriefCompilerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "BriefManager",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "brief",
+      "briefs",
+      "destroy",
+      "has",
+      "remove"
+     ]
+    },
+    {
+     "name": "BriefManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Compile and project a brief",
+     "Constants",
+     "Errors",
+     "Validators",
+     "Shapers",
+     "Builders",
+     "Helpers",
+     "Parsers",
+     "Factories",
+     "BriefCompilerInterface",
+     "BriefManagerInterface",
+     "Compiling a rough request",
+     "Failing closed — the blocking path",
+     "Gating through the reason engine",
+     "Projecting the downstream artifacts",
+     "Narrowing an untrusted brief",
+     "Serving briefs at a tool boundary",
+     "Storing briefs by their own identity"
+    ],
+    "titledExamples": [
+     "createBriefCompiler:Compile and project a brief"
+    ],
+    "pairs": [
+     "Compile and project a brief"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

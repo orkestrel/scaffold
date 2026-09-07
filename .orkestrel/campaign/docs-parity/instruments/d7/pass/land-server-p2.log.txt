@@ -1,0 +1,20 @@
+== server p2 landing 2026-09-07T21:28:41Z over 543ba65
+== status
+ M README.md
+ M guides/server.md
+ M src/server/Negotiator.ts
+ M src/server/Server.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts      |  63 +++++---
+ tests/guides.test.ts     |  79 +++++++++-
+ 10 files changed, 487 insertions(+), 338 deletions(-)
+== stage by path
+ 10 files changed, 487 insertions(+), 338 deletions(-)
+== committed
+89f98d1 Converge server under the equality gate
+(status end)

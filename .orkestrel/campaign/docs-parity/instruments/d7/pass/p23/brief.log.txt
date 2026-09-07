@@ -1,0 +1,93 @@
+### brief at db926ac, guide guides/brief.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  37 passed (37)
+   test:guides exit 0
+-- census
+   guides/brief.md surface {"equal":123,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":9,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class BriefCompiler methods 3 grouped false undescribed ["compile","destroy","gate"]
+   owner interface BriefCompilerInterface methods 3 grouped true undescribed []
+   owner class BriefManager methods 6 grouped false undescribed ["add","brief","briefs","destroy","has","remove"]
+   owner interface BriefManagerInterface methods 6 grouped true undescribed []
+   examples titledFences 18 titledExamples ["createBriefCompiler:Compile and project a brief"] pairs ["Compile and project a brief"]
+-- sites: surface row guides/brief.md:98; methods row guides/brief.md:657; title src/core/factories.ts:27
+-- control A: one Surface Summary cell altered (guides/brief.md:98)
+guides/brief.md type TaskOperation: guide "Names the closed vocabulary of what a brief asks for. Control." source "Names the closed vocabulary of what a brief asks for."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Brief > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 24ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/brief.md:657)
+guides/brief.md BriefCompilerInterface.compile: guide "Runs the `interpret` → `draft` → `gate` → `pin` pipeline over a `BriefInput`, returning a complete or visible-incomplete result. Control." source "Runs the `interpret` → `draft` → `gate` → `pin` pipeline over a `BriefInput`, returning a complete or visible-incomplete result."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Brief > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 20ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a compilation orchestrator.
+guides/brief.md function createBriefCompiler: guide "Creates a compilation orchestrator." source "Control Creates a compilation orchestrator."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Brief > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 21ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/BriefCompiler.ts:42:  * Control Implements the compilation orchestrator — the `[interpret, draft, gate, pin]` pipeline.
+guides/brief.md class BriefCompiler: guide "Implements the compilation orchestrator — the `[interpret, draft, gate, pin]` pipeline." source "Control Implements the compilation orchestrator — the `[interpret, draft, gate, pin]` pipeline."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Brief > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:27)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 36 passed (37)
+× pairs at least one example title across the guide and the source 36ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/brief.md Compile and project a brief: guide "ts\nimport {\n\tbriefToGoal,\n\tbriefToMarkdown,\n\tbuildOutcome,\n\tbuildProof,\n\tbuildTask,\n\tcreateBriefCompiler,\n} from '@orkestrel/brief'\n\nconst compiler = createBriefCompiler()\n\nconst briefing = compiler.compile({\n\ttask: buildTask('refactor', 'code', 'Refactor useForm to native browser form APIs.'),\n\tauthority: [{ path: 'AGENTS.md', note: 'project law; wins every conflict' }],\n\tmanifest: {\n\t\tread: [\n\t\t\t{ path: 'AGENTS.md', note: 'project law; wins every conflict' },\n\t\t\t{ path: 'guides/browser.md', note: 'the composable contract' },\n\t\t],\n\t\tedit: [{ path: 'src/browser/composables/useForm.ts', note: 'the composable being refactored' }],\n\t\tlocked: [{ path: 'src/browser/types.ts', note: 'the published contract' }],\n\t\tforbidden: [{ path: 'app/**', note: 'out of scope' }],\n\t},\n\toutcomes: [buildOutcome(1, 'useForm uses native FormData with no behavior change')],\n\tproofs: [buildProof('type-check and lint pass', 'npm run check')],\n})\n\nbriefing.brief !== undefined // true — the brief is present exactly when the gate passed\nif (briefing.brief !== undefined) {\n\tbriefToMarkdown(briefing.brief) // the copy-ready agent prompt\n\tbriefToGoal(briefing.brief) // the /goal completion condition\n}\n\ncompiler.emitter.on('block', (questions) => questions.length)\ncompiler.destroy()" source "ts\nimport { // control\n\tbriefToGoal,\n\tbriefToMarkdown,\n\tbuildOutcome,\n\tbuildProof,\n\tbuildTask,\n\tcreateBriefCompiler,\n} from '@orkestrel/brief'\n\nconst compiler = createBriefCompiler()\n\nconst briefing = compiler.compile({\n\ttask: buildTask('refactor', 'code', 'Refactor useForm to native browser form APIs.'),\n\tauthority: [{ path: 'AGENTS.md', note: 'project law; wins every conflict' }],\n\tmanifest: {\n\t\tread: [\n\t\t\t{ path: 'AGENTS.md', note: 'project law; wins every conflict' },\n\t\t\t{ path: 'guides/browser.md', note: 'the composable contract' },\n\t\t],\n\t\tedit: [{ path: 'src/browser/composables/useForm.ts', note: 'the composable being refactored' }],\n\t\tlocked: [{ path: 'src/browser/types.ts', note: 'the published contract' }],\n\t\tforbidden: [{ path: 'app/**', note: 'out of scope' }],\n\t},\n\toutcomes: [buildOutcome(1, 'useForm uses native FormData with no behavior change')],\n\tproofs: [buildProof('type-check and lint pass', 'npm run check')],\n})\n\nbriefing.brief !== undefined // true — the brief is present exactly when the gate passed\nif (briefing.brief !== undefined) {\n\tbriefToMarkdown(briefing.brief) // the copy-ready agent prompt\n\tbriefToGoal(briefing.brief) // the /goal completion condition\n}\n\ncompiler.emitter.on('block', (questions) => questions.length)\ncompiler.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Brief > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 17ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/brief.md pitch: readme "Control: The specification compiler: a synchronous, deterministic pipeline that resolves a rough request into a `Brief` — a closed, content-hashed execution contract another agent can run with no interpretation left to do — gated by a traceable reasoner and projected into every downstream artifact." tagline "The specification compiler: a synchronous, deterministic pipeline that resolves a rough request into a `Brief` — a closed, content-hashed execution contract another agent can run with no interpretation left to do — gated by a traceable reasoner and projected into every downstream artifact."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The specification compiler: …' to be 'The specification compiler: a synchro…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 36 passed (37)
+× opens the README with the guide tagline 26ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/brief.md type BriefManagerEventMap: guide absent source "Declares the `BriefManager`'s push observation surface."
+guides/brief.md interface BriefManagerOptions: guide absent source "Represents the input to `createBriefManager`."
+guides/brief.md interface BriefManagerInterface: guide absent source "Declares the brief registry contract."
+rows read: 1, disagreements found: 34
+   docs exit 1
+AssertionError: expected [ …(34) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Brief > keeps every compared summary and example equal to its source
+Tests  1 failed | 36 passed (37)
+× keeps every compared summary and example equal to its source 17ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

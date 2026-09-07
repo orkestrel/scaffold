@@ -1,0 +1,96 @@
+### server at 89f98d1, guide guides/server.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  36 passed (36)
+   test:guides exit 0
+-- census
+   guides/server.md surface {"equal":87,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":13,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 3 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner interface MiddlewareContext methods 1 grouped false undescribed ["body"]
+   owner class Negotiator methods 4 grouped false undescribed ["encoding","language","negotiate"]
+   owner interface NegotiatorInterface methods 4 grouped true undescribed []
+   owner class Server methods 5 grouped false undescribed ["destroy","start","stop","upgrade","use"]
+   owner interface ServerInterface methods 5 grouped true undescribed []
+   owner class Stream methods 4 grouped false undescribed ["comment","drain","end","write"]
+   owner interface StreamInterface methods 4 grouped true undescribed []
+   examples titledFences 9 titledExamples ["createNegotiator:Substrate direct use — tokens, cookies, negotiation"] pairs ["Substrate direct use — tokens, cookies, negotiation"]
+-- sites: surface row guides/server.md:63; methods row guides/server.md:201; title src/server/factories.ts:18
+-- control A: one Surface Summary cell altered (guides/server.md:63)
+guides/server.md function createNegotiator: guide "Creates a `NegotiatorInterface` — the reusable content-negotiation machine over the weighted `Accept` family. Control." source "Creates a `NegotiatorInterface` — the reusable content-negotiation machine over the weighted `Accept` family."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Server > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/server.md:201)
+guides/server.md NegotiatorInterface.negotiate: guide "Picks the best `available` value for a weighted `Accept`-style `header` — the generic media-type primitive (`encoding` / `language` build on it). Control." source "Picks the best `available` value for a weighted `Accept`-style `header` — the generic media-type primitive (`encoding` / `language` build on it)."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Server > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a {@link NegotiatorInterface} — the reusable content-negotiation
+guides/server.md function createNegotiator: guide "Creates a `NegotiatorInterface` — the reusable content-negotiation machine over the weighted `Accept` family." source "Control Creates a `NegotiatorInterface` — the reusable content-negotiation machine over the weighted `Accept` family."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Server > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 17ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/server/Negotiator.ts:10:  * Control Represents the content-negotiation machine over the weighted `Accept` family — a
+guides/server.md class Negotiator: guide "Represents the content-negotiation machine over the weighted `Accept` family — a reusable, cross-middleware entity rather than a middleware. Implements exactly `NegotiatorInterface`." source "Control Represents the content-negotiation machine over the weighted `Accept` family — a reusable, cross-middleware entity rather than a middleware. Implements exactly `NegotiatorInterface`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Server > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:18)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 35 passed (36)
+× pairs at least one example title across the guide and the source 69ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/server.md Substrate direct use — tokens, cookies, negotiation: guide "ts\nimport type { MiddlewareContext } from '@orkestrel/server'\nimport {\n\tcreateNegotiator,\n\tdecodeTokenPayload,\n\tdecompressRequestBody,\n\treadSignedCookie,\n\tsignToken,\n\tverifyToken,\n\twriteSignedCookie,\n} from '@orkestrel/server'\n\ndeclare const context: MiddlewareContext<Record<string, never>>\n\nconst negotiator = createNegotiator()\nnegotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html']) // 'text/html'\nnegotiator.encoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'\nnegotiator.language('en-US, en;q=0.8, fr;q=0.5', ['en', 'fr']) // 'en'\nawait negotiator.format(new Request('http://x'), context, {\n\t'application/json': (_request, _context) => Response.json({ ok: true }),\n})\n\nconst headers = new Headers()\nawait writeSignedCookie(headers, 'session', 'user-1', 'secret')\nconst value = await readSignedCookie(\n\tnew Request('http://x', { headers: { cookie: 'session=abc' } }),\n\t'session',\n\t'secret',\n)\nawait verifyToken('bad.token', 'secret') // undefined — total, never throws\n\nconst token = await signToken('client', { secret: 'shh' })\ndecodeTokenPayload(token.split('.')[0]) // 'client' — the shared decode step verifyToken applies after a signature match\n\nconst gzipped = new Uint8Array(\n\tawait new Response(\n\t\tnew Blob(['hi']).stream().pipeThrough(new CompressionStream('gzip')),\n\t).arrayBuffer(),\n)\nconst body = await decompressRequestBody(gzipped, 'gzip', 1_048_576)\nnew TextDecoder().decode(body) // 'hi' — capped decompression, the zip-bomb defense" source "ts\nimport type { MiddlewareContext } from '@orkestrel/server' // control\nimport {\n\tcreateNegotiator,\n\tdecodeTokenPayload,\n\tdecompressRequestBody,\n\treadSignedCookie,\n\tsignToken,\n\tverifyToken,\n\twriteSignedCookie,\n} from '@orkestrel/server'\n\ndeclare const context: MiddlewareContext<Record<string, never>>\n\nconst negotiator = createNegotiator()\nnegotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html']) // 'text/html'\nnegotiator.encoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'\nnegotiator.language('en-US, en;q=0.8, fr;q=0.5', ['en', 'fr']) // 'en'\nawait negotiator.format(new Request('http://x'), context, {\n\t'application/json': (_request, _context) => Response.json({ ok: true }),\n})\n\nconst headers = new Headers()\nawait writeSignedCookie(headers, 'session', 'user-1', 'secret')\nconst value = await readSignedCookie(\n\tnew Request('http://x', { headers: { cookie: 'session=abc' } }),\n\t'session',\n\t'secret',\n)\nawait verifyToken('bad.token', 'secret') // undefined — total, never throws\n\nconst token = await signToken('client', { secret: 'shh' })\ndecodeTokenPayload(token.split('.')[0]) // 'client' — the shared decode step verifyToken applies after a signature match\n\nconst gzipped = new Uint8Array(\n\tawait new Response(\n\t\tnew Blob(['hi']).stream().pipeThrough(new CompressionStream('gzip')),\n\t).arrayBuffer(),\n)\nconst body = await decompressRequestBody(gzipped, 'gzip', 1_048_576)\nnew TextDecoder().decode(body) // 'hi' — capped decompression, the zip-bomb defense"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Server > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 29ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/server.md pitch: readme "Control: A typed HTTP server for the `@orkestrel` line: a node-bound `Server` lifecycle entity that composes a middleware onion around a consumed `@orkestrel/router` dispatcher, beside the `HTTPError` vocabulary and a shared substrate for cookies, WebCrypto tokens, content negotiation, ETag and Range, security headers, Server-Sent Events, and the body pipeline." tagline "A typed HTTP server for the `@orkestrel` line: a node-bound `Server` lifecycle entity that composes a middleware onion around a consumed `@orkestrel/router` dispatcher, beside the `HTTPError` vocabulary and a shared substrate for cookies, WebCrypto tokens, content negotiation, ETag and Range, security headers, Server-Sent Events, and the body pipeline."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A typed HTTP server for the …' to be 'A typed HTTP server for the `@orkestr…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 35 passed (36)
+× opens the README with the guide tagline 15ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/server.md function createNegotiator: guide absent source "Creates a `NegotiatorInterface` — the reusable content-negotiation machine over the weighted `Accept` family."
+guides/server.md function createServer: guide absent source "Creates a `ServerInterface` — the node face's HTTP server facade over a consumed `@orkestrel/router` dispatcher."
+guides/server.md function createStream: guide absent source "Creates a `StreamInterface` — a generic Server-Sent-Events stream whose `response` is a fetch-standard streaming `Response` a route returns."
+rows read: 1, disagreements found: 3
+   docs exit 1
+AssertionError: expected [ …(3) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Server > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 22ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

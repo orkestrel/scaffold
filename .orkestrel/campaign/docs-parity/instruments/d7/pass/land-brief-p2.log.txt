@@ -1,0 +1,19 @@
+== brief p2 landing 2026-09-07T21:28:42Z over d8f2de0
+== status
+ M README.md
+ M guides/brief.md
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |   4 +
+ tests/guides.test.ts   | 626 +++++++++++++++++++++++++++++--------------------
+ 9 files changed, 815 insertions(+), 524 deletions(-)
+== stage by path
+ 9 files changed, 815 insertions(+), 524 deletions(-)
+== committed
+db926ac Converge brief under the equality gate
+(status end)
