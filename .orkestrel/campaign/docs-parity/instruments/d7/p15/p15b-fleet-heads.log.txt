@@ -1,0 +1,4 @@
+titled: /home/user/scaffold/src/core/factories.ts -> export function createBlueprint :: Blueprint
+titled: /home/user/scaffold/src/core/helpers.ts -> export function catalogToLayers :: Fleet catalog
+titled: /home/user/scaffold/src/server/helpers.ts -> export function stageHost :: Vendored data root
+files read: 708, declaration heads carrying @example: 2017, titled: 3, untitled: 2065

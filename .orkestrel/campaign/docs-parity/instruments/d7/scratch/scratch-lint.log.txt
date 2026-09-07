@@ -1,0 +1,3 @@
+tests/fixtures/broken/missing-example/module/helpers.ts:5:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/good/tests/widget.test.ts:1:1: error policy(no-banned-term): Replace dummy in this comment: placeholder.
+tests/setup.ts:13:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.

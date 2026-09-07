@@ -1,0 +1,14 @@
+
+> @orkestrel/guide@0.0.17 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/guide-scratch
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  10:42:44
+   Duration  1.03s (transform 378ms, setup 82ms, import 400ms, tests 350ms, environment 0ms)
+

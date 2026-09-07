@@ -121,3 +121,50 @@ exit 1: stale tsconfig.json, configs/helpers.ts, configs/policy.ts, .oxlintrc.js
 Reading: the guide checkout's head start of scaffold is the unpublished tip at the published version number, so the replaced range (`^0.0.63`) is recorded here and the registry copy is restored before any release gate (`npm ci` restores it). `repair` from the installed entry would write the vendored files D3 and D5 changed (the policy plugin and its proofs, the lint config, the root `tsconfig.json` with the own-specifier entry, and the seed); it reports the manifest aligned, so whether the `docs` script is appended by `repair` or added by hand is a measurement the D7.guide unit takes at its first write. The registry's guide carries no reader, which is the dependency-order red scaffold's distribution proof shows.
 
 P14 addendum: the head-start install reported `removed 30 packages, and changed 1 package`; `npm ls --depth=0` in the guide checkout then reports nothing missing, extraneous, or invalid, the lockfile's and the installed scaffold's runtime dependency sets are identical, and `npm run check` there passes, so the removed packages were extraneous to the guide's lockfile and the head start restores nothing the guide's gates read. `npm ci` there restores the registry copy before any release gate.
+
+## P15 — the ground D7.guide's units stand on (2026-09-07, after the design round; `instruments/d7/p15/`, `instruments/d7/scratch/`)
+
+```text
+$ npm view @orkestrel/guide versions --json | tail -4
+  "0.0.15", "0.0.16", "0.0.17" ]                                              (the list ends at 0.0.17; 0.0.18 is unpublished)
+$ git -C /home/user/fleet/guide status -sb; git log --oneline -1
+## claude/orkestrel-npm-audit-deps-14ibta...origin/…  b7dc578 (clean)
+$ grep -rn '0\.0\.17' --include=*.ts --include=*.md --include=*.json . | grep -v node_modules | grep -v package-lock
+./package.json:3 alone among tracked files                                    (the vendored catalog carries other packages' ranges; tmp/ reports are untracked)
+$ node instruments/d7/p15/p15-fleet-classes.mjs /home/user/scaffold/src /home/user/fleet/*/src
+files read: 708, class/interface heads carrying @example: 307, titled: 0, untitled: 347
+$ node instruments/d7/p15/p15b-fleet-heads.mjs /home/user/scaffold/src /home/user/fleet/*/src   (every keyword head)
+titled: scaffold src/core/factories.ts createBlueprint :: Blueprint; src/core/helpers.ts catalogToLayers :: Fleet catalog; src/server/helpers.ts stageHost :: Vendored data root
+files read: 708, declaration heads carrying @example: 2017, titled: 3, untitled: 2065
+scratch clone of the guide checkout (node_modules linked to the head-started checkout), instruments/d7/scratch/:
+$ node node_modules/@orkestrel/scaffold/dist/bin/main.js repair --offline
+wrote .oxlintrc.json, configs/helpers.ts, configs/policy.ts, tests/config.test.ts, tests/policy.test.ts, tests/setupPolicy.ts, scripts/docs.ts,
+      package.json (the `docs` script row appended after `test:setup`), tsconfig.json (the `"@orkestrel/guide": ["./src/core/index.ts"]` paths entry after `@src/core`);
+      every `@orkestrel/*` range untouched; README.md, guides/**, tests/guides.test.ts, tests/setup.ts, src/** untouched
+$ npm run lint:check                                                           exit 1
+tests/fixtures/broken/missing-example/module/helpers.ts:5:1  policy(no-malformed-summary)   (a block opening at its @example tag)
+tests/fixtures/good/tests/widget.test.ts:1:1                policy(no-banned-term)          (`Dummy` in a line comment)
+tests/setup.ts:13:1                                          policy(no-malformed-summary)   ("Require markdown whose first block is a table.")
+$ npm run test:policy → 90 passed | 1 skipped;  npm run test:config → 172 passed | 1 skipped;  npm run check → exit 0
+$ npm run build && npm run docs                                                exit 1
+rows read: 1, disagreements found: 139                                         (every line `guide absent`: no table heads Summary; the pitch `readme absent`)
+```
+
+Reading: the widening of the example readers to every declaration head is inert across the fleet, because the only titled head blocks anywhere are scaffold's function blocks that already pair. `repair --offline` from the installed built entry lands the seed, the `docs` script, the own-specifier `paths` entry, and D3's policy plugin with its proofs, and leaves every hand-written file the units own untouched. The vendored voice rule reads the guide's own tree red at the sites the log names, each a one-line edit in a file the guide owns, and the vendored proofs and the typecheck read green. The seed runs only after a build, and before any header carries `Summary` every row reports absent.
+
+## P16 — the seed's round trip over the guide's own tables (2026-09-07, `instruments/d7/p16/`)
+
+```text
+$ instruments/d7/p16/p16-round-trip.sh                                         (the scratch clone; sed renames each Behavior header to Summary: lines 60 79 154 178 192 250 263 295)
+$ npm run docs                                                                 exit 1: rows read: 1, disagreements found: 139  (now text differences; the cells read)
+$ npm run docs -- --to guide                                                   exit 1: rows read: 1, disagreements found: 139, written: 109, reported: 30
+   reported: `class Guide`, `class Source`, `class SourceManager` (no Summary cell carries the key — the H3 sections carry no row),
+             `type DeclarationKeyword` and the Types rows, `const *Shape` (the Types and Shapers tables carry no Summary column), the pitch
+$ npx oxfmt --write guides/guide.md                                            exit 0 (oxfmt 0.66.0);  git diff --stat: 125 insertions(+), 125 deletions(-)
+$ node p16-cells.mjs guide-before.md guide-after.md
+rows compared: 145, non-final cells mismatched: 0, rows missing after: 0, rows after: 145
+$ npm run docs                                                                 exit 1: rows read: 1, disagreements found: 30
+$ npx oxfmt --check guides/guide.md                                            exit 0
+```
+
+Reading: `replaceCell` re-renders the guide's four-column tables, their nested code spans, and their escaped pipes without disturbing any cell outside the written column, and oxfmt 0.66.0 restores the committed alignment, so the seed's `--to guide` direction is safe over this guide. The written cells read verb-first from doc blocks that already open with a verb (the sample in the log: `SUMMARY`, `extractTagline`, `findDrift`, `isDrift`, `createGuide`), so the hand work is the information the data columns keep — the Constants literal that a `Value` column takes, the Types and Shapers literals that `Shape` keeps — and the rows the write cannot reach: the classes, the tables without the column, and the pitch.
