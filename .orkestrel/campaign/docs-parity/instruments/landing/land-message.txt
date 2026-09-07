@@ -1,0 +1,32 @@
+Land the documentation-parity gate, the seed, and scaffold's convergence
+
+D4 puts the equality gate into tests/guides.test.ts: every compared
+Summary cell equals its doc-block description paragraph, every titled
+@example equals the guide fence of its title, the README pitch equals
+the guide's tagline, and a population pin keeps the example half from
+passing over nothing. The parity bullets in .claude/rules state the
+contract in one home.
+
+D5 vendors scripts/docs.ts, the seed that reports every disagreement
+and carries a summary or an example across either side through the
+readers @orkestrel/guide ships; blueprintToScripts emits the docs
+script with guides. The vendored-imports rule states the invariant it
+protects (node: modules and the base packages every workspace declares)
+and its gate reads that as an allowlist; the generated root tsconfig
+maps each workspace's own published specifiers to its source, so check
+in the readers' own package needs no build; DOCS_SEED_PATH is the
+seed's one home.
+
+D6 converges scaffold: four doc blocks carry the guide's fuller
+information verb-first, the seed propagates every cell, three @example
+blocks take their fence's heading and body, the guide's tagline is a
+noun phrase the README opens with, and the README shrinks to the pitch,
+the install, one fence, and lists that link to the guide. The
+distribution proof's packed-install case stays red until
+@orkestrel/guide publishes the readers and scaffold re-pins.
+
+D6b names the generated distribution proof's boolean members as
+assertions.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

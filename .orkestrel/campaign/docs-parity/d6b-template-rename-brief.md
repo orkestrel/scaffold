@@ -20,13 +20,13 @@ The distribution proof template in `src/core/templates.ts` names its `Entry` rec
 
 ## Standing conditions
 
-D4, D5, and D6 are accepted and uncommitted on this tree; `npm run test:guides` is green at dispatch. `node_modules/@orkestrel/guide` is a `--no-save` head start; never `npm install`. `npm run test:distribution` runs for about 70 seconds; a timing red is the Orchestrator's to re-run alone.
+D4, D5 with its fix rounds, and D6 with its fix round are accepted and uncommitted on this tree; `npm run test:guides` is green at dispatch and `npm run docs` exits 0. `node_modules/@orkestrel/guide` is a `--no-save` head start; never `npm install`. `npm run test:distribution` needs npm 11 first on the path (`PATH=/opt/npm11/bin:$PATH`), runs for about 80 seconds, and is red at dispatch on exactly the packed-install case by dependency order (the registry's `@orkestrel/guide` predates the readers the vendored seed imports; `plan.md` § Re-baseline after D6-fix-2 returned); the generated proof template this unit edits is exercised by that same project, so run it once as an observation and report every case's reading; the Orchestrator takes the deciding run.
 
 ## Scope
 
 - Owned: `src/core/templates.ts` (the `Entry` members and their read sites only), `tests/src/core/templates.test.ts`.
 - Off-limits: everything else.
-- Permitted commands: scoped `npx oxfmt --config .oxfmtrc.json --write <owned file>`, `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run test:src:core`, `npm run build`, `npm run test:distribution` (an observation). Never `npm install`, lint `--fix`, a discard-class git command, or a commit.
+- Permitted commands: scoped `npx oxfmt --config .oxfmtrc.json --write <owned file>`, `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run test:src:core`, `npm run build`, `PATH=/opt/npm11/bin:$PATH npm run test:distribution` (an observation, once). Never `npm install`, lint `--fix`, a discard-class git command, or a commit.
 
 ## Acceptance criteria, cheapest first
 
@@ -34,7 +34,7 @@ D4, D5, and D6 are accepted and uncommitted on this tree; `npm run test:guides` 
 2. `npm run format:check`, `npm run lint:check`, `npm run check` exit 0.
 3. `npm run test:src:core` exits 0.
 4. `npm run build` exits 0.
-5. Observation: `npm run test:distribution` exit code and last lines.
+5. Observation: `PATH=/opt/npm11/bin:$PATH npm run test:distribution` exit code and every case's reading (expected: the packed-install case red by dependency order and every other case green).
 
 ## Output
 
