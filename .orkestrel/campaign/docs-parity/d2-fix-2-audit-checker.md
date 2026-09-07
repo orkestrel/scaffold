@@ -1,0 +1,39 @@
+I now have sufficient mechanical evidence across all claims. Writing the verdict.
+
+**Deviation on evidence.** The brief names `d2-fix-2.diff.txt`, `d2-fix-2.status.txt`, and `d2-fix.diff.txt` as evidence. None exists under `/home/user/fleet/guide` or anywhere in `/home/user/fleet` (confirmed by `Glob`/`Grep` sweeps for `d2-fix-2*`, `*.diff.txt`, `*.status.txt`). Per instruction, I do not reconstruct this with a shell. Every claim resting only on the diff or the status file's content (rather than the report plus the files at their new state) is ruled CANNOT RULE for that part, with this omission as what is missing. The report file itself is at `docs-d2-fix-2-report.md` (the brief's `d2-fix-2-report.md` name is a shortened reference to the same file, confirmed by content match), not a missing file.
+
+## Claims
+
+**1. H1, one grammar.**
+- Mechanical, PASS: `collectKeys` exported at `src/core/helpers.ts:2015` (doc block `:1987-2014`), beside `collectSummaries` at `:1951`. `extractExports` (`:1086,1091`), `extractMemberMethods` (`:1301,1305`), `extractExampleMethods` (`:2143,2147`), `extractExamples` (`:2103`), and `locateComment` (`:2864,2866`) each call `collectKeys`. Export-head pattern `^export (?:async )?(function\*?|class|const|interface|type)` occurs once (`:2020`); member pattern `^\t(?:async )?\*?(\w+)\??(?:<.*>)?\(` occurs once (`:2032`); owner-close rule `line.code === '}'` occurs once (`:2028`). `extractExports` derives the keyword from the shared match at `:1100-1102` (`key.indexOf(' ')`, `key.slice`), matching the report's description.
+- CANNOT RULE (objective lane; needs test execution the checker cannot run): "the tip's cases for the two readers are unchanged and green" and "`locateComment`'s TSDoc describes what the code does" is a design-fit reading of the prose at `:2832-2837`, not a mechanical fact.
+
+**2. H1, the controls.**
+- Mechanical, PASS: `describe('collectKeys')` at `tests/src/core/helpers.test.ts:3948`, over the hoisted fixtures `OVERLOADS`/`SEPARATED`/`TEMPLATE`/`BARREL`/`MEMBERS` at `:2852-2911`, one copy shared with `describe('the doc-block reader against the parser')` (`:2913`). The corpus-scale member control `locates the block behind every documented member this package ships` exists at `:4131-4151`, checks every `Owner.member` summary against `locateComment`'s block, and asserts `members.length` clears `MEMBER_FLOOR` (`:3009`, value `12`).
+- CANNOT RULE (objective lane): whether the controls are "discriminating" rests on the report's self-reported mutation table (§ "What each new control catches"), which is the writer's own claim of a run I did not execute or independently observe. That evidence is UNRESOLVED, not CONFIRMED, per the audit rule on self-reported claims.
+
+**3. H2, H3, H6, prose accuracy.**
+- Mechanical, PASS: `spliceSpan`'s `@param span` at `:2445-2446` names both producers ("the region `MarkdownInterface.span` reports for a markdown node, or the one {@link locateComment} reports for a doc block"). The sentence at `:1697-1699` reads exactly as the brief and report quote it. `normalizeSummary`'s TSDoc `@remarks` at `:1684-1686` states "one backtick per side, no inner backtick, no adjacent backtick" with no `buildCell` appositive present in the current file (confirmed by reading `:1675-1727` in full — no `buildCell` mention). Guide `:346` states the identical clause set ("one backtick per side, no inner backtick, no adjacent backtick").
+- CANNOT RULE (objective lane): none flagged beyond the text match — no judgment call sits in this claim's stated scope beyond agreement, which is confirmed textually above; I defer any deeper design-fit reading to the objective lane per the lane split.
+
+**4. H4, H5.**
+- PASS (checker's own claim, no objective-lane split named): no `above` or `below` pointer as a case-insensitive whole word remains in `src/core`, `guides/guide.md`, `tests/src/core`, or `tests/guides.test.ts` (four scoped `Grep` sweeps, zero matches each). `extractBlocks` (`tests/src/core/helpers.test.ts:2972`) and `extractSummary` (`:3011`) exist, and no `readBlocks`/`readSummary` token remains anywhere under `tests/` (zero matches).
+
+**5. The two decisions the report flags.**
+- Mechanical, PASS on citations: `extractBodyLines` exists at `:1983` with cases at `:3922-3946` (`describe('extractBodyLines')`) and a guide row at `guides/guide.md:103`. `extractExampleMethods` (`:2143-2164`) and `extractExamples` (`:2103` onward, narrowed to the `function ` prefix per its doc block at `:2089-2091`) both route through `collectKeys`; guide rows for both exist at `guides/guide.md:107-108`.
+- CANNOT RULE (objective lane, as the claim itself directs): whether `extractBodyLines`'s export "earns its export under the no-superfluous-wrapper law or is a wrapper the two readers can hold inline," and whether the `extractExampleMethods`/`extractExamples` routing "follows from H1's outcome," are design-fit judgment calls the claim assigns to that lane, not mechanically decidable from text alone.
+
+**6. The unproven rule.**
+- Mechanical, PASS on citation: the comment "The authoritative span is the last one the run opens" sits at `src/core/helpers.ts:2891-2892` (one line earlier than the claim's `2890-2892`, but the same three-line comment block starting `:2890`), matching the report's citation and the claim's quote.
+- CANNOT RULE (objective lane, as the claim itself directs): whether the rule is correct for two adjacent doc blocks with no code line between them, and whether it may stay a recorded-but-untested comment or needs a case now, is the design/correctness judgment the claim names for that lane.
+
+**7. H7 and scope.**
+- Mechanical, PASS: `src/core/helpers.ts:1721-1723` is cited in the report as the prior round's location (explicitly historical, "at the state `d2-fix-report.md` described"); the current-tree citation `:1730-1732` matches the file exactly (confirmed by direct read). `tests/guides.test.ts:401` matches `it('carries the caller-obligation sentence the round trip proves', ...)` exactly. The cache sentence is backed by five named searches with results, shown verbatim in the report (§ "The H7 citations and the cache search"). No count-shaped number appears in the report's prose (spot-checked; the report itself states "no count in prose" was a criterion and I found none beyond version/line/exit-code values, which `AGENTS.md` § Writing permits). The `collectKeys` guide row exists at `guides/guide.md:104`.
+- CANNOT RULE: "the status file lists only the owned set" — the named status file (`d2-fix-2.status.txt`) does not exist on disk; I cannot check it. The report's own `git status --short` block (lines 254-263 of the report) lists exactly the six owned-scope files (`guides/guide.md`, `src/core/constants.ts`, `src/core/helpers.ts`, `src/core/types.ts`, `tests/guides.test.ts`, `tests/src/core/helpers.test.ts`), all inside the brief's owned set, but this is the writer's self-reported status, not the independent status file the brief names as evidence, so it stands as UNRESOLVED rather than a substitute PASS.
+
+## Findings outside the claims
+
+- **Missing evidence files** (`d2-fix-2.diff.txt`, `d2-fix-2.status.txt`, `d2-fix.diff.txt` under `/home/user/fleet/guide`): none exists. What right looks like: the Orchestrator supplies these three files at dispatch, per the brief's own § Subject, or names their absence as a standing condition so the checker does not spend a round discovering it.
+- **Claim 6 line-number drift**: the claim states `:2890-2892`; the current tree carries the comment at `:2890` (blank continuation) through `:2892`, with the load-bearing sentence at `:2891-2892`. This is a one-line rounding difference, not a defect, and I flag it only so a future audit does not read it as a miscite.
+
+VERDICT: CANNOT RULE 1, 2, 3, 5, 6, 7

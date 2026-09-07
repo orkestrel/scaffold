@@ -29,3 +29,17 @@ D2-fix (`implementer`, Opus 5) landed G1 to G10 on `d2-fix-brief.md`, with one r
 - Dropped: none.
 
 VERDICT: FAIL 9 10 — a third round follows on `d2-fix-2-brief.md` (`implementer`, Opus 5), closing with the objective lane on H1, `checker`, and the verify brief.
+
+## Round 3 (the third round's closure)
+
+D2-fix-2 (`implementer`, Opus 5) landed H1 to H7 on `d2-fix-2-brief.md`, adding `extractBodyLines` and routing `extractExampleMethods` and `extractExamples` through `collectKeys` on its reading of H1's outcome. Workflow `wf_77c0abcf-1be`, 2026-09-07 04:20 to 04:29 UTC, on `d2-fix-2-audit-brief.md` and `d2-verify-2-brief.md`: objective `reviewer` (Opus 5, the recorded substitution for the dark Sol bench) — `VERDICT: FAIL 1 2`; `checker` (Sonnet) — `VERDICT: CANNOT RULE 1, 2, 3, 5, 6, 7`, because the brief named the evidence files by bare name and the checker searched the guide checkout for them; `verifier` (Sonnet) — `GATES: GREEN` (`test:src:core` 587, `test:guides` 51, `npm test`, `build`). The subjective lane did not run this round by the round-2 ruling (the closure named the objective lane on H1). Lane files: `d2-fix-2-audit-objective.md`, `d2-fix-2-audit-checker.md`, `d2-fix-2-verify-report.md`.
+
+- Claim 1: the grammar exists once and the three readers plus the two the unit routed read it; FAIL on one conjunct — `locateComment`'s TSDoc at `src/core/helpers.ts:2838-2839` claims every reachable block is one `collectSummaries` reports, and a tag-only block is reachable without a summary. Ruled: carried, J1.
+- Claim 2: the controls are present and correctly shaped; FAIL on the comment at `tests/src/core/helpers.test.ts:4126-4130`, which claims a reach the report's own mutation table refutes (a consistent grammar drift moves both sides of the corpus control, so only a locator-region defect reddens it). Ruled: carried, J2 — the comment states the proven reach and names where a grammar drift is caught; the control's design stands.
+- Claims 3 and 5: PASS. `extractBodyLines` earns its export on the objective lane's reading (a translation with a documented invariant and two consumers), and the routing of the two example readers preserves their populations. The referral on its device (a fabricated owner head against an optional owner parameter on `collectKeys`) is ruled by the Orchestrator: the export stays as shipped; no lane found the shape wrong, and reopening it is the Orchestrator's taste, not a finding.
+- Claim 6: PASS on correctness; the last-opener rule is right, and the case that pins it is carried now (J6) rather than deferred, because it is exact and cheap and a deferred finding with no carrier is a dropped one.
+- Claims 4 and 7: the checker could not rule for want of the evidence paths; carried into the fourth round's checker brief with absolute paths (`d2-fix-3-check-brief.md`).
+- Objective findings, carried: 1 (the owner-close sentence names `export`, J3), 2 (the guide row and the reader prose name both closes, J4), 3 (the `extractExampleMethods` case, J5), 4 and 5 (report citations, J7).
+- Dropped: none.
+
+VERDICT: FAIL 1 2 — a fourth round follows on `d2-fix-3-brief.md` (`builder`, Sonnet, every edit exact), closing with `checker` on `d2-fix-3-check-brief.md` and the verify brief.
