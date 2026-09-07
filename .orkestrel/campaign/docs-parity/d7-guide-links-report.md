@@ -319,3 +319,10 @@ Two ancillary decisions, recorded rather than escalated:
   is where this doc block already explains what each clause sees; the paragraph states what travels
   after the dropped part and that a label is not a target. It is inside the owned file and outside
   the compared paragraph, so it moves no guide cell.
+
+
+---
+
+## Orchestrator annotation (U4 audit, 2026-09-07)
+
+The audit read counts in this report's prose against the writing ban; every citation held. The report stands as the unit's evidence with this note.

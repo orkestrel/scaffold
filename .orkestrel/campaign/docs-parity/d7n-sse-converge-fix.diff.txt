@@ -1,0 +1,127 @@
+diff --git a/guides/sse.md b/guides/sse.md
+index 8427291..d713546 100644
+--- a/guides/sse.md
++++ b/guides/sse.md
+@@ -89,6 +89,8 @@ try {
+ | ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `createSSEParser` | function | Creates a Server-Sent-Events (SSE) stream parser — a stateful `SSEParserInterface` handle, backed by `SSEParser`, that turns string chunks into the complete events dispatched so far. |
+ 
++#### Create a bounded parser and feed it chunks
++
+ ```ts
+ import { createSSEParser } from '@orkestrel/sse'
+ 
+@@ -143,7 +145,7 @@ parser.flush() // [{ data: 'incomplete' }] - forced out at end-of-stream
+ ```
+ 
+ `id` / `retry` are sticky connection state (WHATWG last-event-id semantics):
+-each valid `id:` / `retry:` field updates them, dispatch does NOT clear them,
++each valid `id:` / `retry:` field updates them, dispatch does not clear them,
+ and only `clear()` does — useful for reconnection (`Last-Event-ID` header):
+ 
+ ```ts
+@@ -171,3 +173,11 @@ try {
+ 	if (isSSEError(error) && error.code === 'OVERFLOW') parser.clear()
+ }
+ ```
++
++## Tests
++
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value and type exports), the `SSEParserInterface` ↔ `SSEParser` method bijection, and the equality gate: every `Summary` cell against its declaration's description paragraph, the titled `Create a bounded parser and feed it chunks` fence against the `@example` block of that title (pinned so the titled pair cannot be retired silently), and the README pitch against this guide's tagline. It also runs the flagship fences and asserts the values their comments claim.
++- [`tests/src/core/SSEParser.test.ts`](../tests/src/core/SSEParser.test.ts) — the parser against the WHATWG algorithm: dispatch on the blank line, stripping only the first space after a colon, multi-line `data:` concatenation with no trailing newline, every field together with last-wins repeats, comment and unknown-field handling, the empty-data rule that emits no spurious event, cross-chunk reassembly, LF / CRLF / bare-CR terminators including a CRLF split across chunks, first-chunk BOM stripping, integer-only `retry:`, a NUL-voided `id:`, sticky `id` / `retry` surviving dispatch until `clear()` drops them, `clear()` dropping the buffered line and the carriage hold and re-arming BOM stripping, returned arrays never aliased across calls, a configured `limit` throwing `SSEError('OVERFLOW')` with parser state unchanged, unicode and adversarial input, volume runs, and the invariant suites that feed one corpus through every fixed-size and two-way-split chunking and require the whole-string parse back.
++- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createSSEParser` returns a working `SSEParserInterface`, hands back handles that share no buffer state, matches `new SSEParser()` over a shared corpus, and threads `limit` through to the same overflow.
++- [`tests/policy.test.ts`](../tests/policy.test.ts) — this repository's own conventions: the scratch containment guard, the mirror register pairing each test with its module, the population controls with their negative controls, the skill family and bridge rules, the rule map, portability, the prose denylist and its currency, and the policy configuration wiring.
++- [`tests/config.test.ts`](../tests/config.test.ts) — the root configuration read from the real config files, the Oxlint policy plugin's rules driven through `RuleTester`, and the configuration helpers.
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 6ad4857..a1f922b 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -23,7 +23,7 @@ import { SSEParser } from './SSEParser.js'
+  *
+  * @returns A working {@link SSEParserInterface}
+  *
+- * @example Factories
++ * @example Create a bounded parser and feed it chunks
+  * ```ts
+  * import { createSSEParser } from '@orkestrel/sse'
+  *
+diff --git a/src/core/types.ts b/src/core/types.ts
+index a6328b9..49e240d 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -27,21 +27,23 @@ export interface SSEEvent {
+ }
+ 
+ /**
+- * Names the machine-readable code an `SSEError` carries — `'OVERFLOW'` alone, thrown when a
+- * `parse(chunk)` call would push the buffered total over a configured `limit`.
++ * Names the machine-readable code an {@link import('./errors.js').SSEError} carries —
++ * `'OVERFLOW'` alone, thrown when a `parse(chunk)` call would push the buffered total over a
++ * configured `limit`.
+  */
+ export type SSEErrorCode = 'OVERFLOW'
+ 
+ /**
+- * Configures the parser `createSSEParser` builds and the `SSEParser` constructor accepts —
+- * `limit` caps the total buffered characters held at once, and leaving it unset keeps the
+- * buffering unbounded.
++ * Configures the parser {@link import('./factories.js').createSSEParser} builds and the
++ * {@link import('./SSEParser.js').SSEParser} constructor accepts — `limit` caps the total
++ * buffered characters held at once, and leaving it unset keeps the buffering unbounded.
+  *
+  * @remarks
+  * The bounded total is the un-consumed line buffer plus the in-progress event's accumulated
+  * field lengths (data segments + event type + pending id). With no `limit` the parser never
+  * throws. When set, a `parse(chunk)` call that would push the buffered total over `limit`
+- * throws an `SSEError` with code `'OVERFLOW'` instead of appending the chunk.
++ * throws an {@link import('./errors.js').SSEError} with code `'OVERFLOW'` instead of
++ * appending the chunk.
+  */
+ export interface SSEParserOptions {
+ 	readonly limit?: number
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index a44ac98..19b7688 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -216,19 +216,19 @@ for (const entry of manifest) {
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface).map((example) => example.name)
+-							: source
+-									.examples(group.interface)
+-									.map((example) => example.name)
+-									.concat(source.examples(entity).map((example) => example.name))
+ 					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 9d4be39..39b628d 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -47,8 +47,8 @@ export function sliceStream(stream: string, size: number): readonly string[] {
+ }
+ 
+ /**
+- * Splits `stream` into a fixed set of partitions for partition-invariance
+- * testing: one partition per fixed size in `sizes` (default `{1,2,3,5,7,13,len}`)
++ * Splits `stream` into a fixed set of chunk sequences for partition-invariance
++ * testing: one sequence per fixed size in `sizes` (default `{1,2,3,5,7,13,len}`)
+  * plus every two-way single-cut split (`stream.slice(0, cut)` /
+  * `stream.slice(cut)` for every `cut` from `0` to `stream.length`).
+  */
