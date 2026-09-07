@@ -180,3 +180,4 @@ Bench state at start (2026-09-06, 22:5x UTC): Codex bench unavailable (Sol dark;
 | S2 P.2 emitter (returned, landed) | `implementer` | Opus 5 | 7 minutes; `docs` at zero; no deviation; landed by `land-p2.sh`, then re-repaired | `d7n-emitter-converge-brief.md` | `d7n-emitter-converge-report.md`, `.diff.txt`, `.status.txt` | P23b running |
 | S3/S4 P.2 sqlite, indexeddb | `implementer` ×2 | Opus 5 | Workflow, one writer per checkout | `d7n-{sqlite,indexeddb}-converge-brief.md` | (on return) | — |
 | L2a P.1 console, markdown, pool | `builder` ×3 | Sonnet | briefs from the re-packed tip; Workflow | `d7n-{console,markdown,pool}-prep-brief.md` | (on return) | — |
+| S2 audit (budget, csv, emitter) | `reviewer` ×2, `checker` ×3 | Opus 5 (subjective; objective as the recorded substitution), Sonnet | Workflow, five blind lanes on `d7n-slice2-audit-brief.md`, claims 1 to 39 | `d7n-slice2-audit-brief.md` | (on return) | — |
