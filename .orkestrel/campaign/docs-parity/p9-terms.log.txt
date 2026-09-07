@@ -1,0 +1,410 @@
+.agents/orchestration.md:272: easy: files. A script that fixes one thing across every target is the easiest way to break the
+.agents/orchestration.md:308: just: it, while the server has already revoked the credential the check just read, and inside a sandbox
+.agents/orchestration.md:369: just: - Walk the remaining units once and ask of each whether what just landed still supports it. A
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:206: e.g.: Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a st
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:214: via: - **Do not say the same thing twice.** When the host already names the request — a card heading, a dialog title, a section header stating th
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:240: via: - Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:277: via: **Documented limitation (enterprise-critical):** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:293: via: Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid-tooltip` and `.invalid-tooltip` need a 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:501: via: - **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:537: just: | **Toast**                     | Transient confirmation of a just-completed action; auto-dismiss; `role="status"` | Errors needing action; 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:558: via: - Enable per page: `<html lang="ar" dir="rtl">` + the RTL stylesheet `bootstrap.rtl.min.css` (built from the same source via RTLCSS). RTL su
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:566: via: - Print-check data screens users will export: collapse interactive affordances (sort carets, checkboxes) via `d-print-none`, and prefer `tab
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:571: via: - **Compressed, the full build is cheap; incomplete builds are not.** Trimming via a Sass-subset build (import only the parts used — see [Th
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:572: via: - **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable via `currentColor`, no font flash)
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:60: currently: Calibrate against the looks AI-generated design currently clusters around: (1) a warm cream
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:84: easy: other out easily, especially a type-based selector like `.section` against an element-based selector
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:106: easy: Keep a word only where it makes the design easier to understand, and therefore easier to use. Bring
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:106: easy: Keep a word only where it makes the design easier to understand, and therefore easier to use. Bring
+.agents/skills/enterprise-bootstrap/references/utilities.md:165: via: Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, `.min-vh-75`, etc.; add missing steps via the utilities API
+.agents/skills/enterprise-bootstrap/references/utilities.md:165: etc.: Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, `.min-vh-75`, etc.; add missing steps via the utilities API
+.agents/skills/enterprise-bootstrap/references/utilities.md:291: e.g.: - **`.stretched-link`** — makes a whole `position-relative` container (e.g. a card) the click target of one inner link, without wrapping eve
+.agents/skills/enterprise-bootstrap/references/utilities.md:295: via: - **`.focus-ring`** (+ `.focus-ring-primary` … per theme color) — opt-in focus ring for custom interactive elements; tune via `--bs-focus-ri
+.agents/skills/enterprise-bootstrap/references/utilities.md:296: via: - **`.icon-link`** (+ `.icon-link-hover`) — pairs a Bootstrap Icon SVG with a text link; icon auto-sizes to 1em; give decorative icons `aria
+.agents/skills/orkestrel-debrief/references/field-testing.md:11: e.g.: 2. **Mid tier** (e.g. a codex mechanical model) — proves the surface survives a harness's
+.agents/skills/orkestrel-debrief/references/field-testing.md:13: e.g.: 3. **Small harness-native** (e.g. Haiku, a codex high-volume model) — the acceptance
+.agents/skills/orkestrel-debrief/references/field-testing.md:32: just: ## Capture the reasoning, not just the calls
+.agents/skills/orkestrel-falsify/references/reconcile.md:123: easy: are easiest to construct. That sampling proves discrimination _within_ the population and is
+.claude/rules/architecture.md:302: currently: - Do not remove structural files because they are currently empty.
+.claude/rules/quality.md:70: just: - Report a question unanswered rather than answering it with a weaker instrument. A fallback that measures something adjacent returns a conf
+AGENTS.md:71: should: - **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, 
+AGENTS.md:71: currently: - **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, 
+AGENTS.md:104: just: Quality gates before commit, in order. The acceptance gate is the non-mutating variant; run the mutating `lint` and then `format` first only
+PROPOSAL.md:212: should: **The substitution-table row rests on these sweeps.** `grep -rniE '\b(should|simply|leverage)\b' src
+PROPOSAL.md:212: simply: **The substitution-table row rests on these sweeps.** `grep -rniE '\b(should|simply|leverage)\b' src
+PROPOSAL.md:212: leverage: **The substitution-table row rests on these sweeps.** `grep -rniE '\b(should|simply|leverage)\b' src
+guides/abort.md:19: via: The `signal` is a plain `AbortSignal`, so it drops into anything that takes one. Call `abort()` to cancel and `abort(reason)` to attach a va
+guides/abort.md:75: via: 3. **Parent linking via `AbortSignal.any`.** With a parent `signal`, the exposed `signal` is `AbortSignal.any([own, parent])`, so it fires o
+guides/abort.md:78: via: 6. **Traceable identity.** `id` is a stable string for the handle's lifetime — caller-supplied via `options.id`, or a `crypto.randomUUID()` 
+guides/agent.md:89: just: `context.messages.add` mints each message's `id` (a random UUID) and returns the created message(s); `build()` is computed fresh on every ca
+guides/agent.md:137: via: The turn is bounded by ONE cancel folded from the external `signal` + the `timeout` deadline + the `budget` signal via `AbortSignal.any`; `a
+guides/agent.md:139: via: Gate the model's tool calls with an optional `Authority` (`createAuthority`) — a synchronous policy gate the loop consults BEFORE each call 
+guides/agent.md:167: via: Alongside the conversation store sits the STANDALONE `InstructionManager` a richer context assembles a prompt from — named directives, keyed
+guides/agent.md:271: just: `agent.context.conversations` is the structural message-source registry — supplied at construction and never reassigned; switch its ACTIVE c
+guides/agent.md:304: i.e.: - **Futile-compaction guard (the single-level limit).** If `compact()` folds NOTHING (returns `undefined`) while the prompt is still over th
+guides/agent.md:314: via: A `Scope` (`createScope` / a `ScopeManager`) is a NAMED allow-list filter the context applies at `build()` time AND at the loop's tool-adver
+guides/agent.md:339: just: Each context section frames as `[open, ...items.map(render), close]` — a top line rendered once before the items, each item's text, and a bo
+guides/agent.md:343: simply: 3. **Provider default** — `format?: ContextFormatInterface` on a `ProviderInterface` (keyed by section kind — currently `instructions`): the
+guides/agent.md:343: currently: 3. **Provider default** — `format?: ContextFormatInterface` on a `ProviderInterface` (keyed by section kind — currently `instructions`): the
+guides/agent.md:344: simply: 4. **Built-in** — the manager's hardcoded `description` getter + `format(item)` method (`## Instructions` + the content) — the floor for `op
+guides/agent.md:399: via: | `Conversation`              | class | A conversation that OWNS its live message tail DIRECTLY (the flat store verbs `add` / `message` / `m
+guides/agent.md:411: via: | `Channel`                   | class | An unbounded async channel — a producer `push`es chunks into it and `close` / `fail`s it, a consumer
+guides/agent.md:419: via: | `DEFAULT_AGENT_LIMIT`       | const | The default cap on an agent turn's tool iterations — `10`; overridable via `AgentOptions.limit`.    
+guides/agent.md:528: via: | `AgentJobInput`                | interface | `{ provider; messages; system?; tools?; authority?; scheduler?; limit?; timeout?; budget?; ch
+guides/agent.md:537: and/or: | `CompactOptions`               | interface | `{ keep?; sections? }` — per-compaction overrides for `Conversation.compact()` (override the 
+guides/agent.md:667: via: | `compact`   | `Promise<SectionInterface \| undefined>`           | Fold the oldest `count - keep` live messages into a summarized section 
+guides/agent.md:695: e.g.: 4. **Usage reuses `TokenUsage`.** `ProviderResult.usage` is the [budgets](budget.md) `TokenUsage` shape (`{ prompt, completion, total }`), i
+guides/agent.md:696: via: 5. **Bounded by an `AbortSignal`.** Both `generate` and `stream` take an `AbortSignal`, so a caller bounds the request — a cancel, a [timeou
+guides/agent.md:700: via: 9. **Scope filtering + image attachment.** A `Scope` is a named allow-list filter with three per-category lists (`instructions` by `name`, `
+guides/agent.md:700: via: 9. **Scope filtering + image attachment.** A `Scope` is a named allow-list filter with three per-category lists (`instructions` by `name`, `
+guides/agent.md:700: via: 9. **Scope filtering + image attachment.** A `Scope` is a named allow-list filter with three per-category lists (`instructions` by `name`, `
+guides/agent.md:704: via: 13. **Bounded, paced, capped.** Each run arms ONE cancel via `createAbort({ signal: AbortSignal.any([…]) })` folding whichever of the extern
+guides/agent.md:705: via: 14. **Two observation surfaces on the `Agent`; the rest event-free.** The provider contract, the tool registry, the conversation store, and 
+guides/agent.md:707: via: 16. **The authority gate (`Authority` / `createAuthority`).** An optional `Authority` is the synchronous policy gate consulted before each t
+guides/agent.md:712: via: 21. **Sub-agent fan-out via `controller.spawn`; cancellation threaded.** On a `createAgentRunner`, each unit's handler receives a `Controlle
+guides/agent.md:713: via: 22. **The conversation layer (`Conversation` + `ConversationManager`).** A `Conversation` groups messages ABOVE the flat `MessageManager`: `
+guides/agent.md:714: via: 23. **`AgentContext` folds the ACTIVE conversation's view; the message source is the readonly `conversations` registry.** `messages` is the 
+guides/agent.md:715: via: 24. **Automatic compaction — the context `window` budget (opt-in, additive, production-hardened).** `AgentOptions.window` is a CONTEXT [`Bud
+guides/agent.md:715: e.g.: 24. **Automatic compaction — the context `window` budget (opt-in, additive, production-hardened).** `AgentOptions.window` is a CONTEXT [`Bud
+guides/agent.md:715: i.e.: 24. **Automatic compaction — the context `window` budget (opt-in, additive, production-hardened).** `AgentOptions.window` is a CONTEXT [`Bud
+guides/agent.md:721: via: 27. **Limit exhaustion, mid-stream budget metering, per-run bounds, and per-run `schema`.** `RunOutcome.exhausted` (and the settled outcome'
+guides/agent.md:721: via: 27. **Limit exhaustion, mid-stream budget metering, per-run bounds, and per-run `schema`.** `RunOutcome.exhausted` (and the settled outcome'
+guides/agent.md:735: via: `ProviderInterface.generate` / `.stream` take a plain `AbortSignal`, so fold an [abort](abort.md), a [timeout](timeout.md), and a token [bud
+guides/agent.md:810: just: **A `think: true` run needs headroom for reasoning.** Live reasoning deltas (`ProviderDelta` `'thinking'`) are NOT metered mid-stream (only 
+guides/agent.md:834: just: **Observation can never corrupt the loop.** The emitter isolates a listener that THROWS (the throw can never escape into the settle-once / w
+guides/agent.md:1049: just: - [`tests/src/core/AgentContext.test.ts`](../tests/src/core/AgentContext.test.ts) — `build()` WITH a system prompt prepends `{ role: 'system
+guides/agent.md:1049: via: - [`tests/src/core/AgentContext.test.ts`](../tests/src/core/AgentContext.test.ts) — `build()` WITH a system prompt prepends `{ role: 'system
+guides/agent.md:1049: via: - [`tests/src/core/AgentContext.test.ts`](../tests/src/core/AgentContext.test.ts) — `build()` WITH a system prompt prepends `{ role: 'system
+guides/agent.md:1053: via: - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — agent-owned factories over REAL declared tool/workspace depend
+guides/agent.md:1053: via: - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — agent-owned factories over REAL declared tool/workspace depend
+guides/agent.md:1063: via: - [`abort.md`](abort.md) / [`timeout.md`](timeout.md) — the bounding signals folded into a call's `AbortSignal` via `AbortSignal.any`.
+guides/agent.md:1066: via: - [`emitter.md`](emitter.md) — the foundational observable primitive the `Agent` owns as its push `emitter` (the §13 pattern); `AgentEventMa
+guides/agent.md:1069: e.g.: - [`contract.md`](contract.md) — the shape DSL other tools (e.g. `@orkestrel/toolbox`'s `createWorkspaceTool`) compile against; the shared `
+guides/brief.md:100: leverage: | `Example`                | interface | `{ input, output, note? }` — one input-to-output exemplar; the highest-leverage ambiguity remover. 
+guides/brief.md:105: should: | `Proof`                  | interface | `{ text, command }` — one mechanical, transcript-provable check; `command` should carry a clear exi
+guides/brief.md:546: simply: brief simply never says the executor may open what it must obey.
+guides/brief.md:744: should: record already stored. A registry expecting more than a few thousand distinct briefs should
+guides/brief.md:1091: via: parse-then-trust boundary: shape via the compiled guard, semantics via `validateBrief`,
+guides/brief.md:1091: via: parse-then-trust boundary: shape via the compiled guard, semantics via `validateBrief`,
+guides/brief.md:1092: via: readiness via the gate. Three gates, three questions.
+guides/browser.md:19: via: > [`src/core`](../src/core) (via `@src/core`) +
+guides/browser.md:20: via: > [`src/server`](../src/server) (via `@src/server`).
+guides/browser.md:66: via: | `BrowserCodegen`  | class | Records page interactions (navigate/click/fill/select) via CDP bindings, for later compilation into a replayab
+guides/browser.md:78: via: | `BROWSER_CODEGEN_SOURCE`               | const | The in-page recorder script source injected via CDP to capture click/fill/select actions 
+guides/browser.md:78: via: | `BROWSER_CODEGEN_SOURCE`               | const | The in-page recorder script source injected via CDP to capture click/fill/select actions 
+guides/browser.md:263: via: Server-side connection lifecycle — discover an already-running browser via
+guides/browser.md:282: via: | `createScreenshotWriter` | function | Create a filesystem-backed `ScreenshotWriterInterface` that persists bytes via `node:fs/promises`. |
+guides/browser.md:314: e.g.: | `BROWSER_STORE_DEFAULT_DIRS`      | const | Frozen list of well-known Playwright browser store base directories (e.g. `/opt/pw-browsers`).
+guides/browser.md:1136: via: | `start`   | `Promise<void>`                            | Begin recording on the page's session. Calling `start()` after `destroy()` is a s
+guides/browser.md:1162: currently: | `adopt`      | `void`                                 | Assume responsibility for terminating the currently connected browser. This is exp
+guides/browser.md:1226: via: accepts an optional `ScreenshotWriterInterface` (injected via
+guides/browser.md:1229: via: implementation) via `Browser`.
+guides/browser.md:1232: via: `{cdp.host}:{cdp.port}` (defaulting to `127.0.0.1:{cdp.port}` via
+guides/browser.md:1237: via: classified via `parseBrowserEngine` (explicit `executable`) or the
+guides/browser.md:1255: via: via `@orkestrel/emitter`'s emitter, never a domain event. An external
+guides/browser.md:1260: e.g.: again (e.g. rediscovering it over CDP), while a process exit is terminal
+guides/browser.md:1414: via: browser process keeps running, so a later `Browser` can reattach to it via
+guides/browser.md:1461: should: Use `close()` instead of `destroy()` when this instance should actually
+guides/budget.md:23: simply: **What happens:** `consume(value)` runs your extractor first, validates its result as a finite nonnegative charge, and atomically adds it to
+guides/budget.md:25: via: **Options:** pass a parent `signal` to link an external cancel — the exposed `signal` then fires on EITHER exhaustion OR the parent aborting
+guides/budget.md:90: e.g.: 4. **`clear()` resets the tally (§10).** `clear()` is the §10 reset — it zeroes `consumed` AND re-arms a fresh `signal`, returning the budge
+guides/budget.md:92: via: 6. **Parent links via `AbortSignal.any`.** With a parent `signal`, the exposed `signal` is `AbortSignal.any([own, parent])`, so it fires on 
+guides/budget.md:93: via: 7. **Composes with abort/timeout.** Because `signal` is a plain `AbortSignal`, a `Budget` folds into a combined bound with a cancellation si
+guides/budget.md:94: via: 8. **Traceable identity.** `id` is a stable string for the handle's lifetime — caller-supplied via `options.id`, including an empty string, 
+guides/budget.md:159: e.g.: `clear()` zeroes the tally and re-arms a fresh signal, so a spent budget can open a new window from scratch — e.g. an agent loop that compac
+guides/budget.md:176: via: - **Fold into the loop's bound** — combine `budget.signal` with an abort and a timeout via `AbortSignal.any` so one bound covers cancel, dea
+guides/contract.md:131: via: | `recordOf`       | function | accepts an **exact** record matching a readable `{ key: guard }` shape — optional keys via a readable key li
+guides/contract.md:132: via: | `objectOf`       | function | accepts an **open** non-array object or member-carrying callable matching a readable `{ key: guard }` shape 
+guides/contract.md:174: via: | `parseJSONValue`      | function | a cycle-safe `JSONValue` — a **deep** gate via the same `matchesJSONValue` walk as `isJSONValue`. A rea
+guides/contract.md:470: via: | `InferObject`         | type      | `Infer` of an object shape — required + optional keys, plus an index signature folded from `additional
+guides/contract.md:470: via: | `InferObject`         | type      | `Infer` of an object shape — required + optional keys, plus an index signature folded from `additional
+guides/contract.md:494: via: | `compileGuard`              | function  | shape → a `Guard<Infer<S>>` (generic in the shape; reuses `arrayOf` / `unionOf` / `literalOf` / 
+guides/contract.md:511: should: Compilation costs ONE ownership and ONE validation per call, not one per node. Every `compile*` entry and `createContract` construct a `Cont
+guides/contract.md:567: via: | `INFER_DEPTH_LIMIT`    | const     | `32` — the maximum object/array nesting depth inference walks, frozen. Lowerable per call via `limits
+guides/contract.md:1045: just: The inferred schema is not just an advertised `inputSchema` — `schemaToShape` turns it back into a `ContractShape`, so the SAME inference al
+guides/csv.md:117: via: | `uniqueColumns`         | function | `(names: readonly string[]) => readonly string[]`                                                    
+guides/csv.md:148: via: | `deriveHeader`    | function | `(records: readonly RawRecord[], options: Required<ParseOptions>) => HeaderResult`               | Resolves
+guides/csv.md:150: via: | `coerceInferred`  | function | `(value: string, type: ColumnType) => unknown`                                                   | Coerces 
+guides/csv.md:214: via: | `map`    | `CSVInterface`        | Rewrites every row (copy-on-write) via a callback and returns a NEW `CSVInterface`; never mutates the o
+guides/csv.md:215: via: | `reduce` | `T`                   | Folds the rows, in table order, into an accumulator via a plain reducer callback.                      
+guides/csv.md:255: via: empty header name is deterministically renamed via `uniqueColumns` (a repeat
+guides/database.md:19: just: > and no raw-SQL escape hatch — just the smallest cross-environment core that
+guides/database.md:86: via: | `IndexedDBDriver` | class | A persistent browser driver — narrow-then-refine querying via key-range pushdown, versionchange migration, `__
+guides/database.md:173: via: | `computeAggregate`     | function | `count` / `sum` / `average` / `minimum` / `maximum` over a column (coerces via `parseNumber`).        
+guides/database.md:217: via: | `matchesLikePattern`     | function | Match a value against a SQL `LIKE` pattern via `matchesWildcardPattern` (case-INSENSITIVE; `%` → any
+guides/database.md:218: via: | `matchesGlobPattern`     | function | Match a value against a `GLOB` pattern via `matchesWildcardPattern` (case-SENSITIVE; `*` → any run, 
+guides/database.md:242: via: | `KeyFunction`              | type      | `() => Key` — a caller-supplied key minting function, supplied via `DatabaseOptions.generator`.  
+guides/database.md:284: e.g.: data members, e.g. `emitter` / `name` / `status` / `primary` / `contract` /
+guides/database.md:338: via: | `migrate`     | `Promise<Migration>`                        | Diff a deployed `TableSchema[]` against the declared schema via `planMigrati
+guides/database.md:430: via: portable `ColumnStorage` via `shapeToColumnStorage`, the `primary` key, and declared
+guides/database.md:444: via: `stream?` and `migrate?` (`MemoryDriver.stream` lazily filters `scan` via
+guides/database.md:465: i.e.: file — bare `{ tables }` — reads back as unstamped, i.e. `metadata()` resolves
+guides/database.md:466: simply: `undefined`; a bare `{ tables }` document is therefore simply unstamped). A `JSONDriver` write-path
+guides/database.md:512: e.g.: supplementary-plane characters (code points ≥ U+10000, e.g. many emoji) —
+guides/database.md:578: just: graph to drain — not just the promise the callback returns. A rejected
+guides/database.md:617: just: on one driver. `import(tables)` returns a new view of just those tables
+guides/database.md:620: via: portable JSON Schema, `columns` re-imports losslessly via `import` within
+guides/database.md:706: currently: which still owns knowing what is currently deployed. A driver that DOES
+guides/database.md:737: via: non-`id` primary key, structural round-tripping via `equalsValue`), then
+guides/database.md:741: just: fields must copy-in/copy-out isolated, not just its top-level fields),
+guides/database.md:745: via: fails conformance (`MemoryDriver` passes by deep-copying via
+guides/database.md:1416: just: ledger, so work accepted just before the transaction is included and work
+guides/database.md:1417: just: attempted just after the boundary conflicts; there is no unobserved gap where a
+guides/database.md:1470: e.g.: (useful outside a `Database`, e.g. against a bare driver):
+guides/database.md:1508: currently: only has to track what is currently deployed:
+guides/database.md:1762: via: consumer that needs the value re-reads it). Subscribe via
+guides/database.md:1810: just: silently. Every throwing listener surfaces (not just the first). Because
+guides/database.md:1817: via: (A `Table` is reached via the `Database`, which does not thread an `error`
+guides/database.md:2378: via: - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the query engine: `compareValues` total order, `matchesFuzzy` orde
+guides/database.md:2378: via: - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the query engine: `compareValues` total order, `matchesFuzzy` orde
+guides/database.md:2379: via: - [`tests/src/core/drivers/MemoryDriver.test.ts`](../tests/src/core/drivers/MemoryDriver.test.ts) — the driver primitive: `open(schema)` rea
+guides/emitter.md:91: just: 3. **Listener isolation routes errors.** A throwing listener never stops its siblings: every listener runs, and a throw is routed to the emi
+guides/form.md:104: currently: evaluation), `touched` (the fields somebody has visited), `disabled` (the fields currently out of the
+guides/form.md:1599: should: wording of its strings is not, and no consumer should parse them.
+guides/html.md:318: just: | `a`                          | The link TEXT only; the destination `base` just resolved is gone                                           
+guides/indexeddb.md:3: just: > A lean, typed, Promise-based wrapper over the raw browser `IDBDatabase` / `IDBObjectStore` / `IDBIndex` / `IDBTransaction` API. Its job is
+guides/indexeddb.md:103: e.g.: The public methods of each behavioral interface — one table per type, keyed by its backticked name, every call-signature member listed (its 
+guides/indexeddb.md:340: e.g.: Every terminal native `DOMException` crosses the request boundary as an `IndexedDBError` carrying a machine-readable `code` (`CONSTRAINT`, `
+guides/indexeddb.md:340: e.g.: Every terminal native `DOMException` crosses the request boundary as an `IndexedDBError` carrying a machine-readable `code` (`CONSTRAINT`, `
+guides/indexeddb.md:405: via: - [`tests/src/browser/IndexedDBDatabase.test.ts`](../tests/src/browser/IndexedDBDatabase.test.ts) — the database handle in real Chromium: la
+guides/indexeddb.md:405: via: - [`tests/src/browser/IndexedDBDatabase.test.ts`](../tests/src/browser/IndexedDBDatabase.test.ts) — the database handle in real Chromium: la
+guides/interpret.md:227: should: declared shape should be rejected loudly. Result guards are OPEN: unknown
+guides/interpret.md:738: via: carries no `id` field of its own) unless the caller overrides via
+guides/markdown.md:158: e.g.: Node guards, from [`validators.ts`](../src/core/validators.ts). The `is{Element}Node` guards narrow an ALREADY-PARSED `MarkdownNode` by its 
+guides/markdown.md:221: just: Recursion in the AST is structural, not incidental: a `blockquote`'s `children` re-parse the de-quoted lines as blocks (so quotes nest), a `
+guides/markdown.md:257: e.g.: - **`markdownToHTML` / `renderHTML` recursion** — past the cap, a node is not projected structurally; it yields a text node carrying the `va
+guides/mcp.md:604: should: SHOULD still accept from an older peer. Resource subscription lives on
+guides/mcp.md:1131: should: revision says a server SHOULD carry its identity in a result's `_meta`, and this is the one
+guides/mcp.md:1292: just: they check the CALENDAR, not just the shape: RFC 3339 §5.6 defines `date-mday` by the month and
+guides/mcp.md:4423: should: **Re-listing and retrying once after a `Mcp-Param-*` `HeaderMismatch` — a declared SHOULD
+guides/mcp.md:4428: should: made correct. SEP-2243 says a client receiving `HeaderMismatch` SHOULD re-list and retry
+guides/mcp.md:4440: should: **A retry the server cannot verify is refused, not re-requested — a declared SHOULD departure.**
+guides/mcp.md:4441: should: The MRTR page says a server that finds requested information missing on a retry SHOULD answer a
+guides/mcp.md:4445: just: carrier it just declined to trust, and minting a fresh round from an unverifiable retry hands a
+guides/mcp.md:4452: should: scenarios check a SHOULD, so a refusal reports WARNING and both scenarios are recorded at
+guides/mcp.md:4479: should: **The stdio client shuts a child down signal-first, not stdin-first — a declared SHOULD
+guides/mcp.md:4480: should: departure owned by another package.** The stdio page says a client SHOULD close the child's
+guides/mcp.md:4564: should: server SHOULD send the EMPTY `subscriptions/listen` result to signal a graceful end, and it
+guides/mcp.md:5431: should: unresolved URI or prompt. `-32002` is the pre-`2026-07-28` spelling a client SHOULD
+guides/middleware.md:53: via: | `createBearer`      | function | Bearer-token authentication via `verifyToken`.                                   |
+guides/middleware.md:337: just: from the deadline firing is just another throw the boundary maps cleanly
+guides/middleware.md:379: via: verification is constant-time via `crypto.subtle.verify`.
+guides/middleware.md:384: via: without it; IPv6 addresses collapse to their `/64` network via
+guides/middleware.md:387: just: access (not just insertion) refreshes a key's recency, so an attacker
+guides/middleware.md:450: via: via `options.directory`).
+guides/msg.md:109: e.g.: | `MSG_FIELD_NAME_MAPPING`            | const | `Readonly<Record<string, string>>` — MAPI property tag hex → short field name (e.g. `subject
+guides/msg.md:171: via: | `readANSIString`      | function | `(data: Uint8Array, encoding?: MSGEncoding) => string`              | Reads a non-Unicode (PT_STRING8) 
+guides/msg.md:183: via: | `decodeWindows1252`   | function | `(bytes: Uint8Array) => string`                                     | Decodes Windows-1252 bytes into a
+guides/msg.md:186: and/or: | `detectFormat`        | function | `(name?: string, mime?: string) => EmailFormat \| undefined`        | Derives `EmailFormat` from a file
+guides/msg.md:189: via: | `decodeMIMEText`      | function | `(body: string, encoding: string, charset: string) => string`       | Decodes a MIME body to text via `
+guides/msg.md:303: via: | `isEmailMessage`    | function | `EmailMessage`    | Total from-unknown guard: `{ from, to, cc, subject, date?, text, html, attachments }`
+guides/msg.md:304: via: | `isEmailChain`      | function | `EmailChain`      | Total from-unknown guard: `{ format, messages }`, `messages` recursively validated vi
+guides/ndjson.md:83: should: | `parse` | `readonly Record<string, unknown>[]` | Append `chunk`, then return every COMPLETE `\n`-terminated line parsed to a record (malfo
+guides/ollama.md:5: via: > The design is deliberately spare. It is **one external boundary, kept honest**: every `unknown` wire value is narrowed through the `@orkes
+guides/ollama.md:5: via: > The design is deliberately spare. It is **one external boundary, kept honest**: every `unknown` wire value is narrowed through the `@orkes
+guides/ollama.md:5: via: > The design is deliberately spare. It is **one external boundary, kept honest**: every `unknown` wire value is narrowed through the `@orkes
+guides/ollama.md:93: via: 4. **Configurable `think` on the wire; the SPLITTER is the guarantee (H4).** For a thinking-capable model (e.g. `qwen3`) the per-request `th
+guides/ollama.md:93: via: 4. **Configurable `think` on the wire; the SPLITTER is the guarantee (H4).** For a thinking-capable model (e.g. `qwen3`) the per-request `th
+guides/ollama.md:93: e.g.: 4. **Configurable `think` on the wire; the SPLITTER is the guarantee (H4).** For a thinking-capable model (e.g. `qwen3`) the per-request `th
+guides/ollama.md:98: via: 9. **Boundary narrowing — all wire `unknown` via guards, never `as` (§14).** Every value read off the wire (the parsed body, each NDJSON rec
+guides/ollama.md:101: via: 12. **Transport seam (custom `fetch` + dynamic `headers`).** `OllamaOptions.fetch` swaps the transport (default `globalThis.fetch`, BOUND to
+guides/ollama.md:104: robust: 15. **Tested LIVE against a real local Ollama (NO `skipIf`).** The provider tests run against a REAL Ollama daemon (AGENTS §16 — no mocks; o
+guides/ollama.md:128: via: `generate` / `stream` take a plain `AbortSignal`, so fold an abort, a timeout, and a token budget into one bound via `AbortSignal.any` — whi
+guides/ollama.md:150: e.g.: In the browser you must NOT ship the real LLM API key. Instead, deploy a thin server that holds the real key, point the provider's `url` at 
+guides/ollama.md:170: e.g.: `OllamaOptions.format` is the provider's context-framing default — a `ContextFormatInterface` (from `@orkestrel/agent`) declaring how this p
+guides/ollama.md:221: e.g.: - **Branch on the HTTP status, not the message** — narrow a caught value with `isOllamaHTTPError` and read `error.status` (e.g. `404` for an
+guides/ollama.md:223: e.g.: - **Give a thinking model headroom** — with `think: true`, a reasoning model (e.g. `qwen3.5:2b` at `temperature: 0`) can spend 200+ tokens o
+guides/ollama.md:224: via: - **Tune via `options`** — pass sampling parameters (`temperature` / `seed` / `num_predict` / …) through `OllamaOptions.options`; they forwa
+guides/program.md:703: via: 1. exact shape via `isProgramDefinition` — this alone establishes rating structure and authority/gates shape, so validate performs no redund
+guides/qualifier.md:114: e.g.: `ENGINE` marks an underlying reason engine throw that fits no other code (e.g. a
+guides/qualifier.md:433: should: fail-closed: a subject with incomplete eligibility evidence should not proceed to
+guides/qualifier.md:620: should: qualifies for a downstream consumer should treat that outcome as terminal and skip downstream
+guides/qualifier.md:686: should: When `qualification.eligibility` is not `'eligible'`, the caller should skip
+guides/qualifier.md:786: should: Integration tests should prove that a caller's downstream step is never invoked when
+guides/queue.md:15: just: > Durability is opt-in and outstanding-only. A `QueueStoreInterface` mirrors just the jobs
+guides/queue.md:20: just: > `@orkestrel/database` layer (a queue's durable state is just a table), driver-pluggable
+guides/queue.md:156: just: A `QueueStoreInterface` is the durable backing for a queue's **outstanding** entries — the work that has not yet completed. It is deliberate
+guides/queue.md:191: should: Accepting work durably is not best-effort: admissions are serialized by call order and a failed initial `save` rejects only that enqueue aft
+guides/queue.md:195: via: `Queue` exposes a typed `emitter` (AGENTS §13) carrying its lifecycle moments for fire-and-forget observers — logging, metrics, tracing. Sub
+guides/queue.md:215: just: **The listener-isolation safety guarantee.** A listener throw is NEVER allowed to escape into the engine: the emitter isolates it and routes
+guides/queue.md:262: should: A handler should observe its `execution.signal` to abandon work early; even if it ignores the signal, the queue stops waiting once the deadl
+guides/queue.md:292: just: - **Honour `execution.signal`** — pass it to `fetch` / child aborts and bail out when it fires, so timeouts and aborts actually stop work ra
+guides/queue.md:311: just: - [`@orkestrel/database`](https://github.com/orkestrel/database#readme) — the storage layer the `QueueStoreInterface` persists over (a queue
+guides/reason.md:38: in order to: `reason` dispatches by `definition.reasoning` — pass an ARRAY of subjects and the batch overload maps them in order to an equal-length resul
+guides/reason.md:280: via: | `DEFINITION_BUILDER_BRAND` | const | A `unique symbol` — the `DefinitionBuilder` builder brand key (`isDefinitionBuilder` reads it via `Re
+guides/reason.md:281: via: | `SUBJECT_BUILDER_BRAND`    | const | A `unique symbol` — the `SubjectBuilder` builder brand key (`isSubjectBuilder` reads it via `Reflect.
+guides/reason.md:426: simply: The self-owning manager over a quantitative definition's `groups`. Managers are KIND-FREE — an off-kind collection is simply ignored by `bui
+guides/reason.md:552: just: 2. **Deterministic, synchronous, immutable (§11).** Same subject + same definition → the same result, every time — no clocks, no randomness,
+guides/reason.md:555: via: 5. **Guard totality and exactness (§14).** Every validator is a total `Guard` — adversarial input (cycles, depth, hostile prototypes) return
+guides/reason.md:661: just: (b) Error that compounds across several `percentage` / `divide` steps BEFORE the terminal round can cross a half-ulp boundary at the 4th pla
+guides/reason.md:896: should: Managers are KIND-FREE: an off-kind mutation (`draft.rules.append(...)` on a quantitative draft) is INERT, never a throw — the rules accumul
+guides/reason.md:896: just: Managers are KIND-FREE: an off-kind mutation (`draft.rules.append(...)` on a quantitative draft) is INERT, never a throw — the rules accumul
+guides/reason.md:918: via: `fields()` reads the whole current record and `field(key)` one top-level key — nested records are composed as VALUES (read deep at evaluatio
+guides/reason.md:922: via: The `Reason` exposes a typed `emitter` (AGENTS §13) for fire-and-forget observers — logging, metrics, an audit trail. Subscribe via `reason.
+guides/reason.md:947: just: `register` fires per registration (constructor seeding does NOT fire it); `reason` fires once per result the reasoner RETURNS, synchronously
+guides/reason.md:975: via: `warnings` flag the runnable-but-suspicious: empty collections, duplicate rule / group / factor / equation / inference ids (`Duplicate <noun
+guides/reason.md:977: e.g.: Prefer this at boundaries over the orchestrator's `validate: true` option (which throws `INVALID` per call); use the option when a throw IS 
+guides/reason.md:991: should: - **Gate authoring verbs by `reasoning`** — managers are kind-free, so an off-kind mutation accumulates silently and never surfaces in `buil
+guides/reason.md:1004: via: - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — every factory wires a working instance; custom `id`s via the o
+guides/relation.md:5: just: > It deliberately stays **thin above the typed store**. Resolution is define-time (each relation is precomputed once into a flat `ResolvedRe
+guides/relation.md:91: e.g.: The public methods of each behavioral interface — one table per type, keyed by its backticked name, every call-signature member listed (its 
+guides/relation.md:280: via: Each `Model` exposes a typed `emitter` (AGENTS §13) carrying its eager-load + junction moments for fire-and-forget observers — logging, metr
+guides/relation.md:296: via: **The listener-isolation safety guarantee.** A listener throw is NEVER allowed to escape into the load: the emitter isolates it and routes i
+guides/relation.md:312: via: - [`tests/src/core/Model.test.ts`](../tests/src/core/Model.test.ts) — `Model` behavior: `load` / `find` populating each relation kind (batch
+guides/router.md:230: via: 7. **Dedup via `key`.** When `RouterOptions.key` is set, an entry whose
+guides/router.md:257: via: `'unmatched'`/`'unmethoded'` via its `reason` field) — AGENTS §13, no
+guides/router.md:268: via: `location.hash` and binds `hashchange`; `history: true` reads/writes via
+guides/router.md:321: via: message into the `Request` via a manual `ReadableStream` pump — a `for
+guides/router.md:334: via: `set-cookie` via `Headers.getSetCookie()` so multiple response cookies
+guides/router.md:506: via: verdict is discarded via its own `signal`.
+guides/router.md:620: via: `answers` seam, `entries()` (all + filtered), dedup via `key`, case
+guides/sea.md:68: should: | `SKIP_EXTENSIONS`                 | const | File extensions that should NOT be Brotli-compressed.                       |
+guides/sea.md:102: should: | `isCompressible`      | function | Check if a file should be Brotli-compressed based on its extension.             |
+guides/sea.md:131: via: | `ShellError`          | class    | Error thrown when a shell command run via `runShell` exits non-zero.            |
+guides/sea.md:170: e.g.: The public methods of each behavioral interface — every call-signature member listed (a `readonly` data member, e.g. `format` or `emitter`, 
+guides/server.md:7: via: > negotiation via `Negotiator`, ETag/Range, security primitives, SSE, and the
+guides/server.md:9: via: > binding `node:http` via `@orkestrel/router`'s adapter helpers, the upgrade
+guides/server.md:94: via: | `clearCookie`           | function | Clear a cookie via an immediately-expiring `Set-Cookie`.                                             
+guides/server.md:105: via: | `computeBodyETag`       | function | Compute a content `ETag` over a fully-buffered response body via WebCrypto.                          
+guides/server.md:124: via: | `isHTTPError`           | function | Narrow an unknown caught value to an `HTTPError` (including subclasses) — recognized across package c
+guides/server.md:270: should: graceful stop should let finish rather than cut mid-frame. `drain` carries
+guides/server.md:286: e.g.: covers only `buildRequest`: a malformed request (e.g. an unparsable `Host`)
+guides/server.md:337: via: and verifies against ANY; comparison is constant-time via
+guides/server.md:357: via: `buildRequest`) is LINKED, via `@orkestrel/abort`'s `linkSignal`, to the
+guides/server.md:382: just: 18. **`isHTTPError` recognizes an `HTTPError` across package copies, not just
+guides/server.md:397: should: accepting the event. A `false` result means the producer should await
+guides/sqlite.md:3: just: > A lean, typed, **synchronous** wrapper over Node's built-in [`node:sqlite`](https://nodejs.org/api/sqlite.html) — zero npm dependencies, j
+guides/sqlite.md:68: e.g.: The public methods of each behavioral interface — one table per type, keyed by its backticked name, every call-signature member listed (its 
+guides/sqlite.md:70: currently: `SQLiteDatabaseInterface` also exposes `readonly transacting: boolean` — whether a transaction is currently open on this connection (node:sq
+guides/sqlite.md:83: e.g.: | `begin`       | `void`                     | Open a transaction (`BEGIN`); throws the native fault (e.g. a nested `BEGIN`) as a `SQLiteErr
+guides/sqlite.md:105: e.g.: 5. **Native faults become `SQLiteError`.** Every native `node:sqlite` throw is mapped at the boundary to a `SQLiteError` carrying a machine-
+guides/sqlite.md:263: via: - **Branch on `error.code`** (via `isSQLiteError`) rather than parsing a message — `'CONSTRAINT'` distinguishes a key conflict from any othe
+guides/sqlite.md:267: e.g.: - **Branch on `transacting` instead of catching a nested-`BEGIN` error** — a consumer composing its own `begin()` (e.g. a migration step joi
+guides/table.md:1402: should: wording of its strings is not, and no consumer should parse them.
+guides/terminal.md:46: should: should accept an empty answer is a field with no `required` rule.
+guides/terminal.md:590: currently: field and a field currently in `form.disabled` are skipped; a `locked` field renders read-only
+guides/test.md:730: just: seeded after the directory exists, so a refused key removes the directory that was just made and
+guides/test.md:739: just: directory it just made and rethrows when a key escapes or the host refuses a write.
+guides/test.md:2027: just: directory a just-exited child held as its working directory: `removeTree` retries that removal ten
+guides/test.md:2817: just: fixed 900-row block converges on 1800 without ever reaching it by restaging at the height just
+guides/timeout.md:9: just: > just one `setTimeout` made re-armable, clearable, and parent-linkable. Its
+guides/timeout.md:201: e.g.: an API that accepts an `AbortSignal`, e.g. `fetch`) rather than polling
+guides/tool.md:38: simply: absent optional field is simply absent.
+guides/tool.md:135: should: should not name a class.
+guides/toolbox.md:25: via: | `createAgentTool`               | function | Build the sub-agent delegation `ToolInterface` — resolves + runs one seeded agent via an `Age
+guides/toolbox.md:124: via: | `includeShape`       | const | Flat dot-path relation include list, expanded via `expandInclude`.                                         
+guides/toolbox.md:177: via: | `WorkflowSteps`            | interface | `{ name?, steps }` — the FLAT authoring blob `createWorkflowTool` advertises; `name` is also the 
+guides/toolbox.md:222: currently: > A reconnecting SSE client replays every currently-pending form from the top on EVERY (re)connect (the GET handler's replay loop), so a raw
+guides/toolbox.md:300: via: 7. **`createWorkspaceTool` is manager-driven, with a no-active ergonomic seam.** `options.manager` (drive directly) takes priority over `opt
+guides/toolbox.md:300: via: 7. **`createWorkspaceTool` is manager-driven, with a no-active ergonomic seam.** `options.manager` (drive directly) takes priority over `opt
+guides/toolbox.md:302: via: 8. **`createAgentTool` carries its own `store` slot, composable with a registry-level store.** `AgentToolOptions.store` is an optional `Conv
+guides/toolbox.md:304: via: 9. **A delegated sub-agent's lifecycle is a single `generate()` call.** `createAgentTool`'s handler resolves a live agent via `registry.buil
+guides/toolbox.md:312: via: 13. **The lean `summary` / full `description` split, and `createDescribeTool`'s expansion seam.** `createWorkflowTool`, `createWorkspaceTool
+guides/toolbox.md:314: via: 14. **`createDatabaseTool` and `createRelationTool` are single-tool-many-operations, matching `createWorkspaceTool`'s shape.** `createDataba
+guides/toolbox.md:318: via: 16. **The `TableSpec` column DSL is bounded to four primitive kinds.** A `ColumnSpec` is either a bare `ColumnKind` shorthand (`'string'` / 
+guides/toolbox.md:332: should: 23. **`createEndpointTool` ENFORCES its advertised inferred schema via a NORMALIZING parse by default (`@orkestrel/contract` 0.0.7's `schema
+guides/toolbox.md:332: via: 23. **`createEndpointTool` ENFORCES its advertised inferred schema via a NORMALIZING parse by default (`@orkestrel/contract` 0.0.7's `schema
+guides/toolbox.md:332: via: 23. **`createEndpointTool` ENFORCES its advertised inferred schema via a NORMALIZING parse by default (`@orkestrel/contract` 0.0.7's `schema
+guides/toolbox.md:332: e.g.: 23. **`createEndpointTool` ENFORCES its advertised inferred schema via a NORMALIZING parse by default (`@orkestrel/contract` 0.0.7's `schema
+guides/toolbox.md:334: via: 24. **The terminal seam speaks whole FORMS, and `@orkestrel/form` owns their shape.** `promptToolShape` bounds a call to `{ to, schema }` an
+guides/toolbox.md:340: via: ### Authoring + running a workflow through the tool, via a real `ToolManager`
+guides/toolbox.md:443: via: ### Persisting a delegation's conversation via the agent tool's own `store` slot
+guides/toolbox.md:467: via: ### Lean advertisement + on-demand expansion via `createDescribeTool`
+guides/toolbox.md:723: via: ### Persisting database definitions via `DefinitionStoreInterface`
+guides/toolbox.md:848: via: ### Inferring a JSON Schema from example values, via a real `ToolManager`
+guides/toolbox.md:953: currently: - [`tests/src/server/factories.test.ts`](../tests/src/server/factories.test.ts) — `createTerminalRoutes` returning exactly two records (GET 
+guides/toolbox.md:953: via: - [`tests/src/server/factories.test.ts`](../tests/src/server/factories.test.ts) — `createTerminalRoutes` returning exactly two records (GET 
+guides/websocket.md:75: e.g.: | `WEBSOCKET_CLOSE_INVALID`       | const | Invalid-frame-payload-data status code (`1007`) — e.g. non-UTF-8 text or an unparseable close re
+guides/websocket.md:123: via: 8. **An `AbortSignal` is an external cancellation seam.** `signal` (composing with `@orkestrel/abort` / `@orkestrel/timeout`'s native `Abort
+guides/websocket.md:197: e.g.: - **Let the mode handle masking — never set the mask bit yourself.** Server mode sends unmasked, client mode masks; the single `key` choice 
+guides/worker.md:217: via: the job would wait forever. A death mid-flight still rejects via the dispatch's own
+guides/worker.md:228: should: 9. **Structured-clone constraints.** `TInput` / `TResult` / `workerData` should be
+guides/worker.md:243: just: server JSON driver.** A queue's durable state is just a `@orkestrel/database` table,
+guides/worker.md:340: via: re-exposes from its underlying queue — logging, metrics, tracing. Subscribe via
+guides/worker.md:428: just: out when it fires, so timeouts and aborts actually stop work rather than just
+guides/worker.md:430: via: - **Size the pool via `concurrency`** — the pool's `max` defaults to it; override
+guides/worker.md:431: should: `pool.max` explicitly only when the resource cap should diverge from the job cap.
+guides/workflow.md:61: simply: Why this is safe: the definition is the SINGLE source of truth. `execute` builds the live tree from the definition itself — there is no sepa
+guides/workflow.md:93: simply: Beneath the engine sit the shipped primitives it composes — it re-implements none of them. The pure `WorkflowRunner` engine DRIVES the live 
+guides/workflow.md:123: should: Beyond the cross-environment default, each host has a native cooperative-yield primitive a `yield()` should reach for. The backends are stan
+guides/workflow.md:130: should: - `FrameScheduler.yield()` resumes just before the next paint via `requestAnimationFrame` (and `cancelAnimationFrame` on abort) — for work t
+guides/workflow.md:130: just: - `FrameScheduler.yield()` resumes just before the next paint via `requestAnimationFrame` (and `cancelAnimationFrame` on abort) — for work t
+guides/workflow.md:130: via: - `FrameScheduler.yield()` resumes just before the next paint via `requestAnimationFrame` (and `cancelAnimationFrame` on abort) — for work t
+guides/workflow.md:131: via: - `IdleScheduler.yield()` resumes when the host is idle via `requestIdleCallback` (and `cancelIdleCallback` on abort), falling back to a `se
+guides/workflow.md:170: via: The additive manager tier (§9 + the `@orkestrel/agent` line's store standard): `WorkflowManager` (`createWorkflowManager`) is an insertion-o
+guides/workflow.md:170: via: The additive manager tier (§9 + the `@orkestrel/agent` line's store standard): `WorkflowManager` (`createWorkflowManager`) is an insertion-o
+guides/workflow.md:394: via: | `RunnerEntryOptions`           | interface | The per-entry reliability overrides for one unit — `{ retries?, timeout? }`, resolved from it
+guides/workflow.md:399: e.g.: | `DeferredInterface`            | interface | `{ promise, resolve, reject }` — a promise whose settlement is driven externally, e.g. for de
+guides/workflow.md:527: via: | `add`       | `WorkflowInterface`                       | MINT a live workflow from a `WorkflowDefinition` (via `createWorkflow`, flowing 
+guides/workflow.md:541: currently: | `wait`    | `Promise<void>`                       | Park on the currently closed workflow, phase, and task gates, raced against cancellati
+guides/workflow.md:601: via: 6. **The leaf is a guarded state machine; the override round-trips.** A `Task`'s transitions read the `TASK_TRANSITIONS` graph via `canTrans
+guides/workflow.md:603: via: 7. **The result tree is lineage-navigable, three tiers.** A `TaskResult` carries its full lineage (`task` / `phase` / `workflow` contexts) a
+guides/workflow.md:621: currently: 15. **`WorkflowRunnerInterface.execute(workflow)` claims one coherent drivable object synchronously and once.** The entity overload accepts 
+guides/workflow.md:639: via: 22. **Environment backends honour priority and the native primitive; abort semantics are identical.** Each backend (`NodeScheduler` over `se
+guides/workflow.md:733: should: A `bail` override on `execute` wins over the definition's `bail` (which wins over `DEFAULT_BAIL`). Under `bail: true`, a mid-flight sibling 
+guides/workflow.md:910: via: `createWorkflow` builds every phase/task from the definition via `PhaseManagerInterface.append` / `TaskManagerInterface.append` internally —
+guides/workflow.md:910: e.g.: `createWorkflow` builds every phase/task from the definition via `PhaseManagerInterface.append` / `TaskManagerInterface.append` internally —
+guides/workflow.md:942: via: Each live `Workflow` / `Phase` / `Task` exposes a typed `emitter` (AGENTS §13) carrying its lifecycle for fire-and-forget observers — loggin
+guides/workflow.md:1337: via: The `Runner` exposes a typed `emitter` (AGENTS §13) carrying its run lifecycle for fire-and-forget observers — logging, metrics, tracing. Su
+guides/workflow.md:1372: should: - **Choose `bail` deliberately** — `false` (graceful) when failures are useful data and every phase should run; `true` (halt) for transactio
+guides/workflow.md:1376: should: - **Always thread a `signal` through the scheduler** — pass `options.signal` through `yield` / `delay` so cancellation rejects the pending w
+guides/workflow.md:1376: via: - **Always thread a `signal` through the scheduler** — pass `options.signal` through `yield` / `delay` so cancellation rejects the pending w
+guides/workflow.md:1379: just: - **Honour `controller.signal`** — pass it to `fetch` / child aborts and bail when it fires, so a fail-fast or an `abort` actually stops in-
+guides/workflow.md:1411: via: - [`tests/src/browser/BrowserScheduler.test.ts`](../tests/src/browser/BrowserScheduler.test.ts) — the browser backend in REAL headless Chrom
+guides/workspace.md:19: just: > **Anyone can drive it.** An agent loop, a tool handler, and plain application code are all just
+guides/workspace.md:33: simply: absent optional field is simply absent.
+guides/workspace.md:391: should: the workspaces that caller should reach, and let `active` say which one is current:
+guides/workspace.md:460: simply: `open` consults the registry first: a registered id is simply activated and returned, without
+user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md:3: should: This control should simply fail via a hit.
+user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md:3: simply: This control should simply fail via a hit.
+user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md:3: via: This control should simply fail via a hit.
+FILES 129 HITS 360
+  3	.agents/orchestration.md
+  11	.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+  4	.agents/skills/enterprise-bootstrap/references/frontend-design.md
+  5	.agents/skills/enterprise-bootstrap/references/utilities.md
+  3	.agents/skills/orkestrel-debrief/references/field-testing.md
+  1	.agents/skills/orkestrel-falsify/references/reconcile.md
+  1	.claude/rules/architecture.md
+  1	.claude/rules/quality.md
+  3	AGENTS.md
+  3	PROPOSAL.md
+  3	guides/abort.md
+  44	guides/agent.md
+  7	guides/brief.md
+  18	guides/browser.md
+  8	guides/budget.md
+  9	guides/contract.md
+  6	guides/csv.md
+  30	guides/database.md
+  1	guides/emitter.md
+  2	guides/form.md
+  1	guides/html.md
+  6	guides/indexeddb.md
+  2	guides/interpret.md
+  3	guides/markdown.md
+  13	guides/mcp.md
+  6	guides/middleware.md
+  7	guides/msg.md
+  1	guides/ndjson.md
+  15	guides/ollama.md
+  1	guides/program.md
+  5	guides/qualifier.md
+  9	guides/queue.md
+  16	guides/reason.md
+  5	guides/relation.md
+  7	guides/router.md
+  4	guides/sea.md
+  11	guides/server.md
+  7	guides/sqlite.md
+  1	guides/table.md
+  2	guides/terminal.md
+  4	guides/test.md
+  2	guides/timeout.md
+  2	guides/tool.md
+  23	guides/toolbox.md
+  3	guides/websocket.md
+  7	guides/worker.md
+  27	guides/workflow.md
+  4	guides/workspace.md
+  3	user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md
