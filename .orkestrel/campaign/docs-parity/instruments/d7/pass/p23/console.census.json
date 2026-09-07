@@ -1,0 +1,288 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-console",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/console.md",
+   "source": [
+    "src/core",
+    "src/browser",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 155,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 11,
+    "counts": {
+     "equal": 51,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "ANSIRenderer",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "Capture",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "destroy",
+      "messages",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "CaptureInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Logger",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "debug",
+      "destroy",
+      "entries",
+      "error",
+      "info",
+      "warn"
+     ]
+    },
+    {
+     "name": "LoggerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "LoggerManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "debug",
+      "error",
+      "info",
+      "logger",
+      "loggers",
+      "register",
+      "remove",
+      "warn"
+     ]
+    },
+    {
+     "name": "LoggerManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ProcessCapture",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "clear",
+      "destroy",
+      "messages",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "ProcessCaptureInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Progress",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "fail",
+      "succeed",
+      "update"
+     ]
+    },
+    {
+     "name": "ProgressInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RendererInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Reporter",
+     "keyword": "class",
+     "methods": 9,
+     "grouped": false,
+     "undescribed": [
+      "blank",
+      "box",
+      "line",
+      "section",
+      "status",
+      "step",
+      "table",
+      "timing",
+      "tree"
+     ]
+    },
+    {
+     "name": "ReporterInterface",
+     "keyword": "interface",
+     "methods": 9,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Retention",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "records"
+     ]
+    },
+    {
+     "name": "RetentionInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ServerSinkInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "SinkInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Spinner",
+     "keyword": "class",
+     "methods": 7,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "fail",
+      "start",
+      "stop",
+      "succeed",
+      "tick",
+      "update"
+     ]
+    },
+    {
+     "name": "SpinnerInterface",
+     "keyword": "interface",
+     "methods": 7,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "StreamTargetInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "write"
+     ]
+    },
+    {
+     "name": "StylerInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "A styled, leveled logger",
+     "The line a logger writes",
+     "A logger registry",
+     "A reporter narration",
+     "One theme, every entity",
+     "Scoping third-party console.* with createCaptureResult",
+     "Capture lifecycle",
+     "The bounded retention engine directly",
+     "A spinner and a progress bar",
+     "The browser — %c styling in DevTools",
+     "The server — a TTY sink and a process capture",
+     "One logger, different sink per environment (the cross-env one-liner)",
+     "The pure layout + formatting helpers directly",
+     "Server helpers directly",
+     "Server boundary guards directly"
+    ],
+    "titledExamples": [
+     "createServerSink:The server — a TTY sink and a process capture"
+    ],
+    "pairs": [
+     "The server — a TTY sink and a process capture"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

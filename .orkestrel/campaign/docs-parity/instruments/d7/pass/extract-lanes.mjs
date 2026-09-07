@@ -9,8 +9,8 @@ for (const line of lines) {
   const text = typeof rec.result === 'string' ? rec.result : JSON.stringify(rec.result, null, 2)
   const first = text.split('\n').find((l) => l.trim().length > 0) ?? ''
   let slug
-  const lane = /Lane held:\s*([a-z]+)(?:\s+([a-z]+))?/i.exec(first)
-  const unit = /`(d7[^`]+)`/.exec(first)
+  const lane = /Lane held:\s*([a-z]+)(?:\s+([a-z]+))?/i.exec(first) || /Lane held:\s*([a-z]+)(?:\s+([a-z]+))?/i.exec(text)
+  const unit = /^# Report — `(d7[^`]+)`/m.exec(text)
   if (lane) slug = ['subjective', 'objective'].includes(lane[1].toLowerCase()) ? lane[1].toLowerCase() : `${lane[1].toLowerCase()}${lane[2] ? '-' + lane[2].toLowerCase() : ''}`
   else if (unit) slug = unit[1].replace(/^d7n?-/, '')
   else {

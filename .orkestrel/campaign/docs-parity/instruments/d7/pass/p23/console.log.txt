@@ -1,0 +1,111 @@
+### console at 10b4f2c, guide guides/console.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  94 passed (94)
+   test:guides exit 0
+-- census
+   guides/console.md surface {"equal":155,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":51,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 11 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class ANSIRenderer methods 1 grouped false undescribed []
+   owner class Capture methods 5 grouped false undescribed ["clear","destroy","messages","start","stop"]
+   owner interface CaptureInterface methods 5 grouped true undescribed []
+   owner class Logger methods 7 grouped false undescribed ["clear","debug","destroy","entries","error","info","warn"]
+   owner interface LoggerInterface methods 7 grouped true undescribed []
+   owner class LoggerManager methods 8 grouped false undescribed ["debug","error","info","logger","loggers","register","remove","warn"]
+   owner interface LoggerManagerInterface methods 8 grouped true undescribed []
+   owner class ProcessCapture methods 5 grouped false undescribed ["clear","destroy","messages","start","stop"]
+   owner interface ProcessCaptureInterface methods 5 grouped true undescribed []
+   owner class Progress methods 4 grouped false undescribed ["destroy","fail","succeed","update"]
+   owner interface ProgressInterface methods 4 grouped true undescribed []
+   owner interface RendererInterface methods 1 grouped true undescribed []
+   owner class Reporter methods 9 grouped false undescribed ["blank","box","line","section","status","step","table","timing","tree"]
+   owner interface ReporterInterface methods 9 grouped true undescribed []
+   owner class Retention methods 3 grouped false undescribed ["add","clear","records"]
+   owner interface RetentionInterface methods 3 grouped true undescribed []
+   owner interface ServerSinkInterface methods 1 grouped false undescribed []
+   owner interface SinkInterface methods 1 grouped true undescribed []
+   owner class Spinner methods 7 grouped false undescribed ["destroy","fail","start","stop","succeed","tick","update"]
+   owner interface SpinnerInterface methods 7 grouped true undescribed []
+   owner interface StreamTargetInterface methods 1 grouped false undescribed ["write"]
+   owner interface StylerInterface methods 1 grouped true undescribed []
+   examples titledFences 16 titledExamples ["createServerSink:The server — a TTY sink and a process capture"] pairs ["The server — a TTY sink and a process capture"]
+-- sites: surface row guides/console.md:57; methods row guides/console.md:307; title src/server/factories.ts:37
+-- control A: one Surface Summary cell altered (guides/console.md:57)
+guides/console.md type Color: guide "Names a terminal color — the 8 standard base colors, their 8 bright variants, and `default` (the target's own default ink, emitting no color code). Control." source "Names a terminal color — the 8 standard base colors, their 8 bright variants, and `default` (the target's own default ink, emitting no color code)."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Console > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 2088ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/console.md:307)
+guides/console.md RendererInterface.render: guide "Renders `text` wrapped in the target codes for `style`. The empty style (no colors, no attributes) and the empty string both return `text` unchanged — no wrapping. Control." source "Renders `text` wrapped in the target codes for `style`. The empty style (no colors, no attributes) and the empty string both return `text` unchanged — no wrapping."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Console > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 2246ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates the server TTY {@link ServerSinkInterface} — the server output backend, whose
+guides/console.md function createServerSink: guide "Creates the server TTY `ServerSinkInterface` — the server output backend, whose `write(text, level?)` routes by level to the process streams and uses construction-time styled facts: it sends ANSI straight to a styled target (with a leading `\\r` overwriting a terminal line natively) but `strip`s ANSI to clean text for a plain target." source "Control Creates the server TTY `ServerSinkInterface` — the server output backend, whose `write(text, level?)` routes by level to the process streams and uses construction-time styled facts: it sends ANSI straight to a styled target (with a leading `\\r` overwriting a terminal line natively) but `strip`s ANSI to clean text for a plain target."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Console > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 2024ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/browser/factories.ts:15:  * Control Creates the browser `%c` {@link SinkInterface} — the browser output backend. `write(text, level?)`
+guides/console.md function createBrowserSink: guide "Creates the browser `%c` `SinkInterface` — the browser output backend. `write(text, level?)` translates the ANSI-styled `text` into a browser `console` call (`console[method](format, ...styles)`) through `ansiToConsole`, an optional partial `BrowserPalette` overriding the named color and attribute CSS." source "Control Creates the browser `%c` `SinkInterface` — the browser output backend. `write(text, level?)` translates the ANSI-styled `text` into a browser `console` call (`console[method](format, ...styles)`) through `ansiToConsole`, an optional partial `BrowserPalette` overriding the named color and attribute CSS."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Console > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 1955ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:37)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 93 passed (94)
+× pairs at least one example title across the guide and the source 116ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/console.md The server — a TTY sink and a process capture: guide "ts\nimport { createStyler, Logger, Reporter } from '@orkestrel/console'\nimport { createServerSink, ProcessCapture } from '@orkestrel/console/server'\n\nconst sink = createServerSink() // FORCE_COLOR, then NO_COLOR, then isTTY — per target, at construction\nconst styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with the sink's stdout stripping\nconst logger = new Logger({ name: 'server', sink, styler })\nlogger.error('boom') // → process.stderr (the error stream)\nconst reporter = new Reporter({ sink, width: sink.columns }) // size the layout to the live terminal\n\n// `styled` overrides the inference outright — for a CI log that renders ANSI off a TTY, say.\nconst forced = createServerSink({ styled: true })\nforced.styled // true, whatever the environment and the streams say\n\n// Own every output path — a direct process.stdout.write, library output, child-process pipes:\nconst capture = new ProcessCapture({ levels: ['stderr'], mirror: true })\ncapture.start()\nprocess.stderr.write('a library diagnostic\\n') // captured and still shown (mirror: true)\ncapture.messages('stderr') // [{ level: 'stderr', text: 'a library diagnostic\\n', time: … }]\ncapture.clear() // drop buffered chunks; interception is unaffected\ncapture.stop()\ncapture.destroy() // stop() then tear down the emitter" source "ts\nimport { createStyler, Logger, Reporter } from '@orkestrel/console' // control\nimport { createServerSink, ProcessCapture } from '@orkestrel/console/server'\n\nconst sink = createServerSink() // FORCE_COLOR, then NO_COLOR, then isTTY — per target, at construction\nconst styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with the sink's stdout stripping\nconst logger = new Logger({ name: 'server', sink, styler })\nlogger.error('boom') // → process.stderr (the error stream)\nconst reporter = new Reporter({ sink, width: sink.columns }) // size the layout to the live terminal\n\n// `styled` overrides the inference outright — for a CI log that renders ANSI off a TTY, say.\nconst forced = createServerSink({ styled: true })\nforced.styled // true, whatever the environment and the streams say\n\n// Own every output path — a direct process.stdout.write, library output, child-process pipes:\nconst capture = new ProcessCapture({ levels: ['stderr'], mirror: true })\ncapture.start()\nprocess.stderr.write('a library diagnostic\\n') // captured and still shown (mirror: true)\ncapture.messages('stderr') // [{ level: 'stderr', text: 'a library diagnostic\\n', time: … }]\ncapture.clear() // drop buffered chunks; interception is unaffected\ncapture.stop()\ncapture.destroy() // stop() then tear down the emitter"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Console > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 2115ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/console.md pitch: readme "Control: A unified output-control system for a terminal, a browser, and a server: a style engine over frozen `Style` data, structured logging whose record and `entry` event are the transport seam, narrative reporting, console and stream capture, and live animations — one engine, environment sinks, with the platform backend swapped at the `Sink` seam." tagline "A unified output-control system for a terminal, a browser, and a server: a style engine over frozen `Style` data, structured logging whose record and `entry` event are the transport seam, narrative reporting, console and stream capture, and live animations — one engine, environment sinks, with the platform backend swapped at the `Sink` seam."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A unified output-control sys…' to be 'A unified output-control system for a…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 93 passed (94)
+× opens the README with the guide tagline 34ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/console.md function strip: guide absent source "Removes every ANSI escape sequence from `text`, returning the plain visible string."
+guides/console.md function stripControls: guide absent source "Removes every non-printing C0 control character from `text` except `\\t` / `\\n` / `\\r` (meaningful whitespace), plus DEL — a separate pass from `strip`, so `width` stays untouched."
+guides/console.md function width: guide absent source "Measures how many visible columns `text` occupies — its length after ANSI escapes are stripped, counted in Unicode code points (so an astral character such as an emoji counts as one, not the two UTF-16 units `String.length` would report)."
+rows read: 1, disagreements found: 16
+   docs exit 1
+AssertionError: expected [ …(16) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Console > keeps every compared summary and example equal to its source
+Tests  1 failed | 93 passed (94)
+× keeps every compared summary and example equal to its source 2244ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

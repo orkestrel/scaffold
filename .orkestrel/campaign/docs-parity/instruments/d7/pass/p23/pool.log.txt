@@ -1,0 +1,90 @@
+### pool at ff62d1d, guide guides/pool.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  28 passed (28)
+   test:guides exit 0
+-- census
+   guides/pool.md surface {"equal":13,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":4,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Pool methods 3 grouped false undescribed []
+   owner interface PoolInterface methods 3 grouped true undescribed []
+   owner interface PoolToken methods 1 grouped true undescribed []
+   examples titledFences 5 titledExamples ["createPool:Create a pool"] pairs ["Create a pool"]
+-- sites: surface row guides/pool.md:41; methods row guides/pool.md:85; title src/core/factories.ts:20
+-- control A: one Surface Summary cell altered (guides/pool.md:41)
+guides/pool.md function createPool: guide "Creates a distinct `PoolInterface` from resource lifecycle hooks, with optional bounded capacity, unique ownership, and FIFO settlement. Control." source "Creates a distinct `PoolInterface` from resource lifecycle hooks, with optional bounded capacity, unique ownership, and FIFO settlement."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Pool > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 113ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/pool.md:85)
+guides/pool.md PoolInterface.acquire: guide "Queues the caller in FIFO order, validates an idle record or creates one, and settles queued acquires in that same order. Control." source "Queues the caller in FIFO order, validates an idle record or creates one, and settles queued acquires in that same order."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Pool > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 85ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a distinct {@link PoolInterface} from resource lifecycle hooks, with optional bounded
+guides/pool.md function createPool: guide "Creates a distinct `PoolInterface` from resource lifecycle hooks, with optional bounded capacity, unique ownership, and FIFO settlement." source "Control Creates a distinct `PoolInterface` from resource lifecycle hooks, with optional bounded capacity, unique ownership, and FIFO settlement."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Pool > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 83ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Pool.ts:8:  * Control Represents a capacity-aware resource pool whose opaque ownership records preserve FIFO
+guides/pool.md class Pool: guide "Represents a capacity-aware resource pool whose opaque ownership records preserve FIFO settlement, cancellation, exact lease release, and deterministic teardown under concurrent hooks." source "Control Represents a capacity-aware resource pool whose opaque ownership records preserve FIFO settlement, cancellation, exact lease release, and deterministic teardown under concurrent hooks."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Pool > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 93ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:20)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 27 passed (28)
+× pairs at least one example title across the guide and the source 24ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/pool.md Create a pool: guide "ts\nimport { createPool } from '@orkestrel/pool'\n\nconst pool = createPool<Connection>({\n\tcreate: () => connect(),\n\tdestroy: (connection) => connection.close(),\n\tvalidate: (connection) => connection.alive,\n\tmax: 8,\n})\n\nconst token = await pool.acquire()\ntry {\n\tawait token.value.query('select 1')\n} finally {\n\ttoken.release()\n}" source "ts\nimport { createPool } from '@orkestrel/pool' // control\n\nconst pool = createPool<Connection>({\n\tcreate: () => connect(),\n\tdestroy: (connection) => connection.close(),\n\tvalidate: (connection) => connection.alive,\n\tmax: 8,\n})\n\nconst token = await pool.acquire()\ntry {\n\tawait token.value.query('select 1')\n} finally {\n\ttoken.release()\n}"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Pool > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 106ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/pool.md pitch: readme "Control: A typed resource pool with optional bounded capacity, unique ownership, FIFO settlement, validated reuse, caller-owned cancellation, explicit cleanup failures, and a stable event-driven teardown barrier." tagline "A typed resource pool with optional bounded capacity, unique ownership, FIFO settlement, validated reuse, caller-owned cancellation, explicit cleanup failures, and a stable event-driven teardown barrier."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A typed resource pool with o…' to be 'A typed resource pool with optional b…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 27 passed (28)
+× opens the README with the guide tagline 14ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/pool.md function createPool: guide absent source "Creates a distinct `PoolInterface` from resource lifecycle hooks, with optional bounded capacity, unique ownership, and FIFO settlement."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Pool > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 144ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

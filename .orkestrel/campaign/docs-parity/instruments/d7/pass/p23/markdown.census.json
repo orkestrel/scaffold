@@ -1,0 +1,91 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-markdown",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/markdown.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 127,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 8,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Markdown",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "filter",
+      "find"
+     ]
+    },
+    {
+     "name": "MarkdownInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Source provenance",
+     "Coordinates inside a line",
+     "Sanitization policy",
+     "htmlToMarkdown projection",
+     "Bringing your own element policy",
+     "Construct from a string and narrow with a guard",
+     "Construct from an adopted document",
+     "Filter and flatten",
+     "Chain map rewrites, then write back with renderMarkdown",
+     "Reduce into an accumulator",
+     "Environment-agnostic fold",
+     "Shallow streaming with stream()",
+     "Sync deep iteration",
+     "Async iteration with for await…of",
+     "Standalone projections and traversal on a bare node",
+     "Scan one inline construct",
+     "Guide-parity extraction",
+     "Contract-backed fixture generation"
+    ],
+    "titledExamples": [
+     "Markdown:Construct from a string and narrow with a guard"
+    ],
+    "pairs": [
+     "Construct from a string and narrow with a guard"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

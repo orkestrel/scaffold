@@ -1,0 +1,91 @@
+### markdown at c38ae24, guide guides/markdown.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  63 passed (63)
+   test:guides exit 0
+-- census
+   guides/markdown.md surface {"equal":127,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":8,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Markdown methods 8 grouped false undescribed ["filter","find"]
+   owner interface MarkdownInterface methods 8 grouped true undescribed []
+   examples titledFences 18 titledExamples ["Markdown:Construct from a string and narrow with a guard"] pairs ["Construct from a string and narrow with a guard"]
+-- sites: surface row guides/markdown.md:22; methods row guides/markdown.md:221; title src/core/Markdown.ts:42
+-- control A: one Surface Summary cell altered (guides/markdown.md:22)
+guides/markdown.md type TableAlign: guide "Names the horizontal alignment of a GFM table column, as declared by its delimiter row (`:---` left, `---:` right, `:---:` center). A bare `---` delimiter is represented by `null` in `TableNode.align`: the positional array requires one entry per column, JSON cannot carry `undefined` in an array, and the bare delimiter is an explicit no-alignment marker rather than an omitted value. Control." source "Names the horizontal alignment of a GFM table column, as declared by its delimiter row (`:---` left, `---:` right, `:---:` center). A bare `---` delimiter is represented by `null` in `TableNode.align`: the positional array requires one entry per column, JSON cannot carry `undefined` in an array, and the bare delimiter is an explicit no-alignment marker rather than an omitted value."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Markdown > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 1242ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/markdown.md:221)
+guides/markdown.md MarkdownInterface.walk: guide "Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive `Generator` over every `MarkdownNode` in the document. The sync `for (const node of markdown.walk())` surface is also consumable by `for await (const node of markdown.walk())` (JavaScript accepts a sync iterable in a `for await`), so async pipelines need no separate iterator. Contrast with `stream`: `walk` is deep, every-node, and sync; `stream` is shallow (top-level blocks only) and backpressure-respecting. Control." source "Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive `Generator` over every `MarkdownNode` in the document. The sync `for (const node of markdown.walk())` surface is also consumable by `for await (const node of markdown.walk())` (JavaScript accepts a sync iterable in a `for await`), so async pipelines need no separate iterator. Contrast with `stream`: `walk` is deep, every-node, and sync; `stream` is shallow (top-level blocks only) and backpressure-respecting."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Markdown > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 1357ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Wraps a typed {@link MarkdownDocument} AST as a stateful, parsed markdown document
+guides/markdown.md class Markdown: guide "Wraps a typed `MarkdownDocument` AST as a stateful, parsed markdown document with the query (`find` / `filter` / `reduce` / iteration), rewrite (`map`), fold, and streaming operations `MarkdownInterface` declares." source "Control Wraps a typed `MarkdownDocument` AST as a stateful, parsed markdown document with the query (`find` / `filter` / `reduce` / iteration), rewrite (`map`), fold, and streaming operations `MarkdownInterface` declares."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Markdown > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 1324ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/compilers.ts:11:  * Control Renders a {@link MarkdownNode} to sanitized canonical HTML.
+guides/markdown.md function renderHTML: guide "Renders a `MarkdownNode` to sanitized canonical HTML." source "Control Renders a `MarkdownNode` to sanitized canonical HTML."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Markdown > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 1502ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/Markdown.ts:42)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 62 passed (63)
+× pairs at least one example title across the guide and the source 131ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/markdown.md Construct from a string and narrow with a guard: guide "ts\nimport { Markdown, isHeadingNode } from '@orkestrel/markdown'\n\nconst markdown = new Markdown('# Title\\n\\nA **bold** [link](https://x.dev).')\nmarkdown.document.children[0] // { element: 'heading', level: 1, children: [...] }\n\nconst heading = markdown.find(isHeadingNode) // HeadingNode | undefined, narrowed\nif (heading !== undefined) heading.level // number — narrowed to HeadingNode" source "ts\nimport { Markdown, isHeadingNode } from '@orkestrel/markdown' // control\n\nconst markdown = new Markdown('# Title\\n\\nA **bold** [link](https://x.dev).')\nmarkdown.document.children[0] // { element: 'heading', level: 1, children: [...] }\n\nconst heading = markdown.find(isHeadingNode) // HeadingNode | undefined, narrowed\nif (heading !== undefined) heading.level // number — narrowed to HeadingNode"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Markdown > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 1201ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/markdown.md pitch: readme "Control: A types-first markdown layer over `@orkestrel/html`: a linear-time scanner that parses GitHub-Flavored Markdown into a typed AST, a stateful `Markdown` workspace that queries, rewrites, folds, and streams that AST, and standalone projections that carry it out to sanitized HTML or canonical markdown source and carry an HTML AST back in." tagline "A types-first markdown layer over `@orkestrel/html`: a linear-time scanner that parses GitHub-Flavored Markdown into a typed AST, a stateful `Markdown` workspace that queries, rewrites, folds, and streams that AST, and standalone projections that carry it out to sanitized HTML or canonical markdown source and carry an HTML AST back in."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A types-first markdown layer…' to be 'A types-first markdown layer over `@o…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 62 passed (63)
+× opens the README with the guide tagline 27ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/markdown.md type MarkdownParseResult: guide absent source "Pairs a parsed document with the `MarkdownSpan` of each of its nodes - what `parseProvenance` returns, and what `parseDocument` projects the document out of."
+guides/markdown.md type MarkdownDerivation: guide absent source "Pairs a rewritten value with the input node each rewritten node was produced from - what `rewriteDocument` returns, so provenance survives a rewrite instead of ending at it. `T` is the rewritten value: the document for a whole-document rewrite."
+guides/markdown.md interface MarkdownInterface: guide absent source "Represents a stateful, parsed markdown document: the typed `MarkdownDocument` AST plus the query, rewrite, and fold operations over it."
+rows read: 1, disagreements found: 40
+   docs exit 1
+AssertionError: expected [ …(40) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Markdown > keeps every compared summary and example equal to its source
+Tests  1 failed | 62 passed (63)
+× keeps every compared summary and example equal to its source 1259ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0
