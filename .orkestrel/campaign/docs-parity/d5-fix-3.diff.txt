@@ -1,0 +1,2087 @@
+diff --git a/.claude/rules/documentation.md b/.claude/rules/documentation.md
+index 7c25f9dd..0296291c 100644
+--- a/.claude/rules/documentation.md
++++ b/.claude/rules/documentation.md
+@@ -32,7 +32,16 @@ Documentation is an enforced contract, not explanatory decoration. The Writing r
+ - Every public export is documented.
+ - TypeScript, SCSS, Markdown, tests, and showcase remain aligned.
+ - A parity failure identifies drift; never suppress or weaken the test.
+-- The TSDoc voice rule governs a doc block; a guide tagline and a Surface-row description are noun phrases.
++- A guide `Summary` cell equals its export's doc-block description paragraph, both read in the form
++  the `findDrift` function compares (a `{@link}` tag written as its target's code token, whitespace
++  collapsed, a code span's boundary whitespace trimmed); a titled `@example` equals the guide fence
++  under the heading of that title; and the README pitch equals the guide's tagline.
++  `tests/guides.test.ts` asserts each through the `findDrift` function and the `tagline` method
++  that `@orkestrel/guide` exports; converge the two sides with `npm run docs`, never by weakening
++  the gate.
++- The TSDoc voice rule governs a doc block, and a `Summary` cell carries that block's description
++  paragraph, so the same voice governs the cell. A guide tagline and a README pitch are noun
++  phrases, and each is the blockquote under its file's H1.
+ - A vendored dependency guide is a mirror. Its relative links address the upstream tree and resolve to nothing here, so they are outside local-link parity. Refresh a mirror rather than rewriting it: a rewritten copy is a translation, and no comparison against the fetched bytes can check it.
+ - Falsify a prose claim the way you falsify a code claim. The parity test proves a name exists, never that a sentence about behavior is true, so run the example and read what it returns. A `// false` beside a call that returns `true` is a defect of the same kind as a wrong return value, and it reaches every consumer who installs the package. That proof has a home: `tests/guides.test.ts` executes the flagship fences, per `.claude/rules/tests.md`. An ordered behaviour with no gate is not a gate.
+   Asserting that the sentence appears is not asserting that it is true. `expect(text).toContain('a spawn fault reports null')` passes unchanged when the code starts returning something else, so it guards the documentation's presence and nothing about the behaviour. Where a prose claim about behaviour sits under no fence, add the executed assertion that would break if the claim went false, and keep the substring check only as a presence guard beside it. A row whose close condition names a behaviour does not close on a substring.
+diff --git a/.claude/rules/tests.md b/.claude/rules/tests.md
+index 25ad96b7..447686e1 100644
+--- a/.claude/rules/tests.md
++++ b/.claude/rules/tests.md
+@@ -48,16 +48,16 @@ paths:
+ A proof that covers the workspace instead of one module has a fixed location, so no package invents
+ its own:
+ 
+-| Path                         | Proves                                                                                                                         |
+-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+-| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges   |
+-| `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                          |
+-| `tests/guides.test.ts`       | Every documented API exists, every public API is documented, and every executable fence returns what the guide says it returns |
+-| `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                  |
+-| `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                            |
+-| `tests/integration.test.ts`  | The package's features work together end to end across environments                                                            |
+-| `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                      |
+-| `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                |
++| Path                         | Proves                                                                                                                                                                                       |
++| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                 |
++| `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs, and the `configs/` leaves behind them                                                                                        |
++| `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns |
++| `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                |
++| `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          |
++| `tests/integration.test.ts`  | The package's features work together end to end across environments                                                                                                                          |
++| `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
++| `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                                                                              |
+ 
+ - Put each root `tests/setup*.test.ts` proof in the `setup` project. Keep its assertions on
+   exported test-infrastructure behavior: do not duplicate production behavior there, and do not
+diff --git a/.claude/rules/workspace.md b/.claude/rules/workspace.md
+index 408d4d04..d5f81c04 100644
+--- a/.claude/rules/workspace.md
++++ b/.claude/rules/workspace.md
+@@ -74,9 +74,13 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
+   instrument of the policy law, and it is vendored byte-identical to every workspace including a
+   core-only one, so a module that imports nothing at all is the only form that resolves in all of
+   them.
+-- When a file is vendored byte-identical, import nothing that fails to resolve in any target. Import
+-  no `@orkestrel/*` package from it: every such package is itself a target and cannot depend on
+-  itself.
++- When a file is vendored byte-identical, import only what resolves in every workspace: a `node:`
++  module, or a package `BASE_DEV_DEPENDENCIES` declares. Refuse any other `@orkestrel/*` import;
++  `tests/src/server/helpers.test.ts` reads every vendored JavaScript and TypeScript module against
++  that set. A base package resolves in its own checkout through its `exports` map to its built
++  `dist/` entry, so a vendored module that imports it runs there after `npm run build`; the
++  generated root `tsconfig.json` maps the workspace's own published specifiers to its source, so
++  `npm run check` there needs no build.
+ 
+ Environment rules:
+ 
+@@ -124,16 +128,16 @@ environment axis is one project per src/app axis × environment:
+ The workspace-proof axis is cross-cutting. Each proof covers the whole workspace rather than
+ one environment, so each is its own project:
+ 
+-| Project        | Files                        | Proves                                                                                                                       | Gate                                  |
+-| -------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+-| `policy`       | `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges | `test`                                |
+-| `config`       | `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs                                                               | `test`                                |
+-| `setup`        | `tests/setup*.test.ts`       | Reusable behavior exported from the root test setup modules works as the consuming suites require                            | `test`                                |
+-| `guides`       | `tests/guides.test.ts`       | Every documented API exists and every public API is documented                                                               | `test`                                |
+-| `conformance`  | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                | `test`                                |
+-| `distribution` | `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                          | `prepublishOnly`; absent when private |
+-| `integration`  | `tests/integration.test.ts`  | The package's features work together end to end across environments                                                          | `test`                                |
+-| `service`      | `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                              | `prepublishOnly`; `test` when private |
++| Project        | Files                        | Proves                                                                                                                                                                                       | Gate                                  |
++| -------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
++| `policy`       | `tests/policy.test.ts`       | The path- and text-shaped policy laws: mirrors, suppressions, the rule map, filenames, manifest scripts, skills, and bridges                                                                 | `test`                                |
++| `config`       | `tests/config.test.ts`       | Root configuration resolves its aliases, projects, and outputs                                                                                                                               | `test`                                |
++| `setup`        | `tests/setup*.test.ts`       | Reusable behavior exported from the root test setup modules works as the consuming suites require                                                                                            | `test`                                |
++| `guides`       | `tests/guides.test.ts`       | Every documented API exists, every public API is documented, every compared summary, example, and pitch equals its source, and every executable fence returns what the guide says it returns | `test`                                |
++| `conformance`  | `tests/conformance.test.ts`  | Where this package drifts from the official tooling it tracks                                                                                                                                | `test`                                |
++| `distribution` | `tests/distribution.test.ts` | The packed package installs and resolves through its public exports                                                                                                                          | `prepublishOnly`; absent when private |
++| `integration`  | `tests/integration.test.ts`  | The package's features work together end to end across environments                                                                                                                          | `test`                                |
++| `service`      | `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                                                                              | `prepublishOnly`; `test` when private |
+ 
+ - Define the `setup` project only when a root file matches `tests/setup*.test.ts`, exact-case.
+   Include every matching file. When registered, emit `test:setup` and run it from `test`. When no
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 93ce1b96..7f282b17 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -14,10 +14,10 @@ write the difference back.
+ 
+ That root stages the vendored set and the instruction canon, and a target meets them differently.
+ `HOST_PATHS` names the vendored set — the licence, the harness permission file, the
+-session-start hooks, the shared policy register, the shared policy proof, the shared policy plugin,
+-the shared configuration leaf and its proof, the byte-identical root dotfiles, and the guide mirrors
+-a generated workspace starts from, never its own guide — and each target carries its own copy of
+-the paths it selects, which the verbs write and compare.
++session-start hooks, the documentation-parity seed, the shared policy register, the shared policy
++proof, the shared policy plugin, the shared configuration leaf and its proof, the byte-identical
++root dotfiles, and the guide mirrors a generated workspace starts from, never its own guide — and
++each target carries its own copy of the paths it selects, which the verbs write and compare.
+ `CANON_PATHS` names the instruction canon — the coding and orchestration contracts, the rules, the
+ skills, the templates, the transport contracts, the agent roles, the bench configuration, and the
+ MCP registrations — which stays in one place and is published for reading. A target carries the
+@@ -123,6 +123,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `DEFAULT_VERSION`                 | const | The version a workspace starts at.                                                               |
+ | `DEPENDENCY_NAME_PATTERN`         | const | The runtime dependency name syntax: the `@orkestrel` scope and a bare name.                      |
+ | `DISTRIBUTION_TEST_PATH`          | const | The generated packed-package proof every publishing workspace is planned at.                     |
++| `DOCS_SEED_PATH`                  | const | Names the vendored module `npm run docs` runs.                                                   |
+ | `ENGINES_PATTERN`                 | const | The minimum-Node engine syntax a blueprint declares.                                             |
+ | `ENVIRONMENTS`                    | const | The `Environment` values, frozen.                                                                |
+ | `EXECUTABLE_PATHS`                | const | The vendored paths a target receives with its executable bit set, frozen.                        |
+@@ -251,6 +252,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `blueprintToDevDependencies`        | function | Project a blueprint into the development dependencies its manifest declares.    |
+ | `blueprintToDocumentArtifacts`      | function | Compile the generated workspace's root documentation.                           |
+ | `blueprintToGuideArtifacts`         | function | Compile the generated workspace's guide index.                                  |
++| `blueprintToHostArtifacts`          | function | Compile the vendored host artifacts a workspace plans.                          |
+ | `blueprintToMachinery`              | function | Derive the host-specific machinery a generated root Vite configuration carries. |
+ | `blueprintToManifest`               | function | Compile a blueprint into its `package.json` content.                            |
+ | `blueprintToOrchestrationArtifacts` | function | Compile the blueprint-dependent orchestration artifacts.                        |
+@@ -262,7 +264,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `blueprintToTestArtifacts`          | function | Compile every artifact in the `tests` group that is not vendored from the host. |
+ | `blueprintToWritableScripts`        | function | Project a blueprint into the manifest scripts a region write may replace.       |
+ | `dependenciesToQuestions`           | function | Measure one declared package list against the name and range syntax it accepts. |
+-| `nameToHostArtifacts`               | function | Compile the vendored host artifacts a named workspace plans.                    |
+ | `overridesToQuestions`              | function | Measure a blueprint's overrides against the artifacts drafted for it.           |
+ | `pathToCondition`                   | function | Build one `exports` condition block for a built environment.                    |
+ | `planToFindings`                    | function | Compare a plan against a target's current content.                              |
+@@ -604,8 +605,8 @@ The root Vite configuration defines and registers the fixed `guides` project onl
+ blueprint carries `guides`. Reading verbs set that fact only when `tests/guides.test.ts` is a
+ physical file with that exact path case. A directory or a case-folded spelling does not select it. A
+ fresh workspace therefore carries no guides project or script. When a developer adds the proof,
+-`audit` reports the exact `test:guides` script line until `repair` or `overwrite` appends it through
+-the writable script region. The rest of the manifest remains birth-owned.
++`audit` reports the exact `test:guides` and `docs` script lines until `repair` or `overwrite`
++appends them through the writable script region. The rest of the manifest remains birth-owned.
+ 
+ The plan-reading verbs compare the Vitest project set named by the target manifest with the
+ project set the planned root configuration registers. Every planned proof project must also be
+@@ -1022,6 +1023,41 @@ fetched bytes rather than prose this workspace wrote, and it reports a top-level
+ neither this package's own, nor `guides/README.md`, nor a catalog row, so an exclusion always
+ carries its evidence.
+ 
++`tests/guides.test.ts` also holds the equality gate: a guide's `Summary` cell against its export's
++description paragraph, a titled guide fence against the `@example` block of that title, and the
++README pitch against the guide tagline. That gate reports and writes nothing. The vendored
++`scripts/docs.ts` seed is the writing half of the pair, and `npm run docs` runs it. It reads the
++inventory the gate reads — the source, the tests, the guides, and the root Markdown — indexes
++`guides/README.md`, and prints one line per disagreement: the guide, the compared key, and the text
++each side carries or `absent`. One further line reports the pitch pair when those two differ: the
++`README.md` blockquote against the tagline of the guide the manifest's own bare name selects,
++`guides/<name>.md`. A workspace whose manifest declares no name, whose index carries no row for that
++guide, or which carries no `README.md` reports no pitch line. A closing line names how many index
++rows the run read and how many disagreements it found. It exits `1` while a disagreement stands and
++`0` when none does. It exits `2` for an argument outside `--to`, printing the usage line, and for an
++input it cannot read — a workspace carrying no `guides/README.md`, or an index row naming a guide
++the workspace does not carry — printing one line naming that file rather than throwing.
++
++The seed is planned with `guides`, the same blueprint fact that plans the `docs` script and
++registers the `guides` project, so a workspace that indexes no guides receives neither the module nor
++a script that would run it. In the package that publishes the readers the seed imports,
++`npm run build` precedes `npm run docs`: a package's own name resolves inside its own checkout
++through the `exports` map its manifest publishes, so the import lands on `dist/` and a stale build
++runs stale readers. `npm run check` there is independent of the build, because the generated root
++`tsconfig.json` maps the workspace's own published specifiers to its source.
++
++`npm run docs -- --to guide` rewrites each `Summary` cell whose source side carries text, and
++`npm run docs -- --to source` rewrites each description paragraph and each titled `@example` body
++whose guide side carries text. The seed writes files and nothing else. It never writes a guide
++fence from the source, because the suite executes that fence and the guide owns its content; it
++never writes the README pitch, which you author by hand; and it never formats. A key a replacer
++cannot reach is reported on its own line and leaves that file exactly as it found it. Run
++`npm run format` after a write: a rewritten table renders one-space padded, and the formatter
++re-aligns it. A write run's closing line names two further values beside the row and disagreement
++counts: `written:` counts the rewrites the run carried across, and `reported:` counts the
++disagreements it left standing with a reason. A write run exits `0` when it carried every
++disagreement across, and `1` while any disagreement or miss stands reported.
++
+ `tests/distribution.test.ts` is the one proof scaffold generates, and the one test artifact it
+ claims by presence. Generation is the line, not writing: scaffold writes the vendored
+ `tests/policy.test.ts` and `tests/config.test.ts` proofs too, and restores them, but those are the
+@@ -1208,10 +1244,11 @@ The vendored data root is the shared file set, staged into the published package
+ Staging walks `HOST_PATHS` and `CANON_PATHS`, and a release ships what both name.
+ 
+ `HOST_PATHS` is the vendored set, and a target receives a copy of each path it selects: the
+-licence, the harness permission file, the session-start hooks, the shared policy register, the
+-shared policy proof, the shared policy plugin, the shared configuration leaf and its proof, the
+-byte-identical root dotfiles, and the guide mirrors a generated workspace starts from. It is a
+-candidate list rather than a plan, because a workspace never mirrors its own guide.
++licence, the harness permission file, the session-start hooks, the documentation-parity seed, the
++shared policy register, the shared policy proof, the shared policy plugin, the shared configuration
++leaf and its proof, the byte-identical root dotfiles, and the guide mirrors a generated workspace
++starts from. It is a candidate list rather than a plan, because a workspace never mirrors its own
++guide, and the seed is selected by the blueprint's `guides` fact rather than by the name.
+ 
+ `CANON_PATHS` is the instruction canon, staged for reading instead: the `AGENTS.md` coding contract,
+ the `CLAUDE.md` harness bridge, the `.agents/orchestration.md` agent-operation contract, the rules
+@@ -1232,9 +1269,10 @@ sits beneath a member of the other. Staging depends on that, because the walk co
+ path it discovers twice claims one storage name twice, which refuses the stage. `isCanonPath` is the
+ one reading of canon membership, matching a member and anything beneath a member that is a directory,
+ so staging, the live overlay, and the executable's fetch list never disagree about what a path is.
+-Membership says where a path's bytes are staged, not whether a plan claims it: `nameToHostArtifacts`
+-appends `CATALOG_AGENT_PATH` to what `HOST_PATHS` selects rather than listing it there, which is what
+-keeps the file planned without putting a canon path in the vendored list.
++Membership says where a path's bytes are staged, not whether a plan claims it:
++`blueprintToHostArtifacts` appends `CATALOG_AGENT_PATH` to what `HOST_PATHS` selects rather than
++listing it there, which is what keeps the file planned without putting a canon path in the vendored
++list.
+ 
+ The `host.json` file at the repository root is the committed live inventory. Each entry carries the
+ SHA-256 digest of its file content, and the inventory carries a membership digest over its declared
+@@ -1338,7 +1376,14 @@ except the manifest.
+   `--ignore-scripts` to `npm pack` so a suite never re-runs the build it already gates.
+ - One template artifact per configuration file the selection needs: the root `tsconfig.json` and
+   `vite.config.ts`, plus a Vite config and a scoped TypeScript config per selected environment and
+-  for `bin` when it is set.
++  for `bin` when it is set. The root `tsconfig.json` maps the `@src` and `@app` aliases the selection
++  reaches, and beside them the workspace's own published specifiers — `@orkestrel/<name>` and one
++  `@orkestrel/<name>/<environment>` entry per subpath the `exports` map publishes — each to its
++  source entry. Without them the workspace's own name resolves through that `exports` map to
++  `dist/`, and `npm run check` would wait on `npm run build`. Every subpath is written before the
++  bare specifier, because `vite.config.ts` derives its `alias` record from these entries in order and
++  a bare specifier also matches its own subpaths. An `app` environment publishes nothing and maps no
++  such entry.
+ - One template artifact, `configs/browsers.ts`, for a workspace selecting `browser` on either axis.
+   It resolves the Chromium the Playwright provider launches, and the root `vite.config.ts` calls it
+   once into `browserOptions` and passes that to every `playwright()` provider it configures. The
+diff --git a/host.json b/host.json
+index 6b5d42d3..d6509de2 100644
+--- a/host.json
++++ b/host.json
+@@ -400,7 +400,7 @@
+ 			"storage": "claude/rules/documentation.md",
+ 			"destination": ".claude/rules/documentation.md",
+ 			"executable": false,
+-			"digest": "db0f5f73f0f94a28ca7b6354290008a0634c50331be21084d8452b8496303fda"
++			"digest": "9baa38c6c0f3a262ddcabab232ea430dc4577e15b1d2eedf2ecb2dc78a8f5780"
+ 		},
+ 		{
+ 			"storage": "claude/rules/names.md",
+@@ -436,7 +436,7 @@
+ 			"storage": "claude/rules/tests.md",
+ 			"destination": ".claude/rules/tests.md",
+ 			"executable": false,
+-			"digest": "c1c8ff5f5058f5946ca8b0770195ab4c1897b8907fc04f6a2548b3afc3fc68df"
++			"digest": "5ba1c577e6e86c6d35acd02c23339489b6c0a1c14c79249d0aab6b771d7ffac3"
+ 		},
+ 		{
+ 			"storage": "claude/rules/typescript.md",
+@@ -448,7 +448,7 @@
+ 			"storage": "claude/rules/workspace.md",
+ 			"destination": ".claude/rules/workspace.md",
+ 			"executable": false,
+-			"digest": "658afc51c177256fd00a097759dbf1265ebe173568a7bf7c4f12914c2b7ea622"
++			"digest": "5e69fa5bb2b439c640d1d73204418309d310a9de5a28212b8756de09f4af5d2d"
+ 		},
+ 		{
+ 			"storage": "claude/rules/writing.md",
+@@ -682,7 +682,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "5aef7a17f3f81ff0115ae99482f61fbfad13bd0d1818124c895b5fa20403b76c"
++			"digest": "b9438011f7b818c96d663662f12e3d63e0f94a09e138e2dd3805be184a31be8a"
+ 		},
+ 		{
+ 			"storage": "scripts/codex.sh",
+@@ -702,6 +702,12 @@
+ 			"executable": true,
+ 			"digest": "8f4ad360cd43ea3da202892bf2cdea546795c4081e435384754cbffbf73d773e"
+ 		},
++		{
++			"storage": "scripts/docs.ts",
++			"destination": "scripts/docs.ts",
++			"executable": false,
++			"digest": "ab8ee57843446ad4e6578c16dcf26a11e4144053f464d0981111756f68c35b79"
++		},
+ 		{
+ 			"storage": "scripts/ollama.sh",
+ 			"destination": "scripts/ollama.sh",
+@@ -772,5 +778,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "ef1438cf27dc739a6a27feeef64ca9b47842755294ad75a5c03cf7bd9c0d591f"
++	"digest": "388cabb95715acf4a19cc139e62c318af9a743e9050a9d799412fba310ca432c"
+ }
+diff --git a/package.json b/package.json
+index 7ff07ae8..a344ed02 100644
+--- a/package.json
++++ b/package.json
+@@ -78,6 +78,7 @@
+ 		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+ 		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+ 		"test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
++		"docs": "node --experimental-strip-types scripts/docs.ts",
+ 		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+ 		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+ 		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+diff --git a/src/core/Compiler.ts b/src/core/Compiler.ts
+index 0f9c3ab1..5485b075 100644
+--- a/src/core/Compiler.ts
++++ b/src/core/Compiler.ts
+@@ -23,12 +23,12 @@ import {
+ 	blueprintToConfigArtifacts,
+ 	blueprintToDocumentArtifacts,
+ 	blueprintToGuideArtifacts,
++	blueprintToHostArtifacts,
+ 	blueprintToManifest,
+ 	blueprintToOrchestrationArtifacts,
+ 	blueprintToQuestions,
+ 	blueprintToSourceArtifacts,
+ 	blueprintToTestArtifacts,
+-	nameToHostArtifacts,
+ 	overridesToQuestions,
+ 	planToFindings,
+ 	planToHash,
+@@ -294,7 +294,7 @@ export class Compiler implements CompilerInterface {
+ 			...blueprintToGuideArtifacts(blueprint),
+ 			...blueprintToDocumentArtifacts(blueprint),
+ 			...blueprintToOrchestrationArtifacts(blueprint),
+-			...nameToHostArtifacts(blueprint.name),
++			...blueprintToHostArtifacts(blueprint),
+ 		]
+ 	}
+ 
+diff --git a/src/core/compilers.ts b/src/core/compilers.ts
+index 8f1ebd21..aafd80e0 100644
+--- a/src/core/compilers.ts
++++ b/src/core/compilers.ts
+@@ -36,6 +36,7 @@ import {
+ 	DECLARATION_DEV_DEPENDENCIES,
+ 	DEPENDENCY_NAME_PATTERN,
+ 	DISTRIBUTION_TEST_PATH,
++	DOCS_SEED_PATH,
+ 	ENVIRONMENTS,
+ 	EXTRA_RANGE_PATTERN,
+ 	FLOOR_RANGE_PATTERN,
+@@ -346,7 +347,10 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
+ 	scripts['test:policy'] = `${vitest} --project policy`
+ 	scripts['test:config'] = `${vitest} --project config`
+ 	if (blueprint.setup) scripts['test:setup'] = `${vitest} --project setup`
+-	if (blueprint.guides) scripts['test:guides'] = `${vitest} --project guides`
++	if (blueprint.guides) {
++		scripts['test:guides'] = `${vitest} --project guides`
++		scripts.docs = `node --experimental-strip-types ${DOCS_SEED_PATH}`
++	}
+ 	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
+ 	scripts['test:probe'] =
+ 		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
+@@ -416,9 +420,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
+  *
+  * @remarks
+  * Every direct `test:<project>` script is writable, together with the probe and
+- * benchmark workbench scripts. Publishing adds the pack and publication
+- * lifecycle scripts. Aggregate test scripts and maintainer-owned gate chains
+- * stay outside the region.
++ * benchmark workbench scripts. A workspace carrying guides adds `docs`, the
++ * documentation-parity seed the same fact selects `test:guides` by, so a target
++ * that gains the proof gains the propagation beside it. Publishing adds the pack
++ * and publication lifecycle scripts. Aggregate test scripts and maintainer-owned
++ * gate chains stay outside the region.
+  *
+  * `accepted` carries each generated predecessor the region can replace. The
+  * pack hook accepts the build chain emitted before it delegated to `build`. The
+@@ -441,7 +447,8 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
+ 	const scripts = blueprintToScripts(blueprint)
+ 	const writable: ManifestScript[] = []
+ 	for (const [name, command] of Object.entries(scripts)) {
+-		if (!name.startsWith('test:') || name === 'test:src' || name === 'test:app') continue
++		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
++		if (!direct && name !== 'docs') continue
+ 		writable.push({ name, command, accepted: [] })
+ 	}
+ 	const prepack = scripts.prepack
+@@ -610,6 +617,21 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
+  * @param blueprint - The workspace specification.
+  * @returns Formatter-stable `tsconfig.json` text.
+  *
++ * @remarks
++ * `paths` carries the workspace's own published specifiers beside the `@src` and
++ * `@app` aliases, mapped to source. The published set is what
++ * {@link srcToExports} publishes, read the same way here so the two never name
++ * different subpaths, and the `app` axis publishes nothing so it maps nothing.
++ * A package's own name resolves inside its own checkout through that `exports`
++ * map, to the built `dist/` entry, so a module importing it would make the root
++ * typecheck depend on a build; mapping the specifier to source is what keeps
++ * `npm run check` independent of `npm run build`. The root Vite configuration
++ * derives its `alias` record from every `paths` entry, so the same specifiers
++ * resolve to source under Vitest, and every subpath is emitted before the bare
++ * specifier: an alias record is matched in declaration order and a bare pattern
++ * also matches its own subpaths, so the reverse order would resolve
++ * `@orkestrel/<name>/server` through the core entry.
++ *
+  * @example
+  * ```ts
+  * import { blueprintToRootTsconfig, createBlueprint } from '@orkestrel/scaffold'
+@@ -620,19 +642,39 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
+  * ```
+  */
+ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
+-	const aliases: string[] = []
++	const aliases: Array<[string, string]> = []
+ 	for (const environment of ENVIRONMENTS) {
+ 		if (blueprint.src.includes(environment)) {
+-			aliases.push(`"@src/${environment}": ["./src/${environment}/index.ts"]`)
++			aliases.push([`@src/${environment}`, `./src/${environment}/index.ts`])
+ 		}
+ 	}
+ 	for (const environment of ENVIRONMENTS) {
+ 		if (blueprint.app.includes(environment)) {
+-			aliases.push(`"@app/${environment}": ["./app/${environment}/index.ts"]`)
++			aliases.push([`@app/${environment}`, `./app/${environment}/index.ts`])
++		}
++	}
++	const root = srcToRoot(blueprint.src)
++	if (root === undefined) {
++		for (const environment of ENVIRONMENTS) {
++			if (environment === 'core' || !blueprint.src.includes(environment)) continue
++			const subpath = SRC_MATRIX[environment].path.slice(1)
++			aliases.push([`@orkestrel/${blueprint.name}${subpath}`, `./src/${environment}/index.ts`])
+ 		}
+ 	}
++	if (blueprint.src.length > 0) {
++		aliases.push([`@orkestrel/${blueprint.name}`, `./src/${root ?? 'core'}/index.ts`])
++	}
+ 	const paths = aliases
+-		.map((alias, index) => `\t\t\t${alias}${index === aliases.length - 1 ? '' : ','}`)
++		.map(([specifier, target], index) => {
++			const separator = index === aliases.length - 1 ? '' : ','
++			const line = `\t\t\t"${specifier}": ["${target}"]${separator}`
++			// A published specifier carries the package name, and npm accepts one long
++			// enough to push the entry past the formatter's width. oxfmt breaks such an
++			// entry over its own lines, so emitting the flat form would leave the generated
++			// file outside the fixed point the emit corpus holds it to.
++			if (matchesPrintWidth(line)) return line
++			return `\t\t\t"${specifier}": [\n\t\t\t\t"${target}"\n\t\t\t]${separator}`
++		})
+ 		.join('\n')
+ 	return fillTemplate(CONFIG_TEMPLATES.root.tsconfig, { paths })
+ }
+@@ -1511,11 +1553,11 @@ export function blueprintToOrchestrationArtifacts(
+ }
+ 
+ /**
+- * Compiles the vendored host artifacts a named workspace plans.
++ * Compiles the vendored host artifacts a workspace plans.
+  *
+- * @param name - The target workspace's own bare package name.
+- * @returns One artifact per vendored path in `HOST_PATHS` order, then the
+- * catalog file.
++ * @param blueprint - The workspace specification.
++ * @returns One artifact per selected vendored path in `HOST_PATHS` order, then
++ * the catalog file.
+  *
+  * @remarks
+  * Every artifact is claimed by presence, which is the strongest claim a pure
+@@ -1538,17 +1580,27 @@ export function blueprintToOrchestrationArtifacts(
+  * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
+  * pointers {@link blueprintToDocumentArtifacts} emits name.
+  *
++ * The documentation-parity seed is the one vendored path a fact selects rather
++ * than the name alone. `guides` selects it, and the same field selects the
++ * `docs` script {@link blueprintToScripts} emits and the `guides` project the
++ * root configuration registers, so a workspace that indexes no guides receives
++ * neither the script nor the module that script runs.
++ *
+  * @example
+  * ```ts
+- * import { nameToHostArtifacts } from '@orkestrel/scaffold'
++ * import { blueprintToHostArtifacts, createBlueprint, DOCS_SEED_PATH } from '@orkestrel/scaffold'
++ *
++ * const blueprint = createBlueprint('router', { guides: true })
+  *
+- * nameToHostArtifacts('router').some((artifact) => artifact.path === '.claude/settings.json') // true
+- * nameToHostArtifacts('router').some((artifact) => artifact.path === '.claude/agents/orkestrel.md') // true
+- * nameToHostArtifacts('router').some((artifact) => artifact.path === 'guides/router.md') // false
++ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === DOCS_SEED_PATH) // true
++ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'guides/router.md') // false
+  * ```
+  */
+-export function nameToHostArtifacts(name: string): readonly Artifact[] {
+-	return [...selectHostPaths(HOST_PATHS, name), CATALOG_AGENT_PATH].map((path): Artifact => ({
++export function blueprintToHostArtifacts(blueprint: Blueprint): readonly Artifact[] {
++	const selected = selectHostPaths(HOST_PATHS, blueprint.name).filter(
++		(path) => blueprint.guides || path !== DOCS_SEED_PATH,
++	)
++	return [...selected, CATALOG_AGENT_PATH].map((path): Artifact => ({
+ 		path,
+ 		group: inferGroup(path),
+ 		ownership: 'presence',
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 24330b5f..1004f78c 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -108,16 +108,20 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
+ /** Names the executable entry whose presence makes a workspace `bin`. */
+ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
+ 
++/** Names the vendored module `npm run docs` runs. */
++export const DOCS_SEED_PATH = 'scripts/docs.ts'
++
+ /**
+  * Lists the paths a target receives from the vendored data root, frozen.
+  *
+  * @remarks
+  * These are the files the fleet shares verbatim, and each target holds a copy
+  * of the paths it selects: the licence, the harness permission file, the
+- * session-start hooks, the shared policy register, the shared policy proof,
+- * the shared policy plugin, the shared configuration leaf and its proof, the
+- * byte-identical root dotfiles, and the guide mirrors a generated workspace
+- * starts from. A directory entry vendors everything beneath it.
++ * session-start hooks, the documentation-parity seed, the shared policy
++ * register, the shared policy proof, the shared policy plugin, the shared
++ * configuration leaf and its proof, the byte-identical root dotfiles, and the
++ * guide mirrors a generated workspace starts from. A directory entry vendors
++ * everything beneath it.
+  *
+  * A plan carries the subset its target selects, which is why the list is a
+  * candidate set rather than a plan: a workspace never mirrors its own guide.
+@@ -126,7 +130,7 @@ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
+  * its rules, its skills, its agent roles, its bench configuration, and its MCP
+  * registrations from {@link CANON_PATHS} inside the installed package, so no
+  * file scaffold leaves in a target names a path the target does not hold.
+- * `nameToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to what this list
++ * `blueprintToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to what this list
+  * selects, which is what keeps the list itself disjoint from the canon.
+  */
+ export const HOST_PATHS: readonly string[] = Object.freeze([
+@@ -136,6 +140,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
+ 	'scripts/cursor.sh',
+ 	'scripts/codex.sh',
+ 	'scripts/ollama.sh',
++	DOCS_SEED_PATH,
+ 	'tests/setupPolicy.ts',
+ 	'tests/policy.test.ts',
+ 	'tests/config.test.ts',
+@@ -175,7 +180,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
+  *
+  * The plan claims paths inside the canon deliberately, and each has a reason.
+  * `blueprintToDocumentArtifacts` claims `AGENTS.md` and `CLAUDE.md` as this
+- * package's own template pointers. `nameToHostArtifacts` claims
++ * package's own template pointers. `blueprintToHostArtifacts` claims
+  * {@link CATALOG_AGENT_PATH}, because the catalog verb refuses a target that
+  * lacks the file and repair restores its absence.
+  *
+@@ -267,7 +272,7 @@ export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.
+  *
+  * @remarks
+  * A plan claims it at a canon path, because the catalog verb refuses a target
+- * that lacks the file. `nameToHostArtifacts` appends it to the vendored
++ * that lacks the file. `blueprintToHostArtifacts` appends it to the vendored
+  * selection, and it reaches a release through the `.claude/agents` directory in
+  * {@link CANON_PATHS} rather than through {@link HOST_PATHS}, which is what
+  * keeps the two lists disjoint.
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 918233bf..15623013 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -279,6 +279,7 @@ describe('installed package consumer', () => {
+ 			'scripts/cursor.sh',
+ 			'scripts/deps.sh',
+ 			'scripts/ollama.sh',
++			'scripts/docs.ts',
+ 			'tests/config.test.ts',
+ 			'tests/policy.test.ts',
+ 			'tests/setupPolicy.ts',
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 598bde47..e6002a59 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -4,6 +4,7 @@ import {
+ 	createGuide,
+ 	createSource,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findUnlisted,
+ 	isExternalLink,
+@@ -122,15 +123,21 @@ describe('guides', () => {
+ 			const documented = guide.methods().map((group) => group.interface)
+ 			const declared = new Set(source.surface().map((symbol) => symbol.name))
+ 			for (const group of guide.methods()) {
+-				const listed = [...group.methods].sort().join(', ')
+-				const members = source.methods(group.interface).join(', ')
++				const listed = group.methods
++					.map((method) => method.name)
++					.sort()
++					.join(', ')
++				const members = source
++					.methods(group.interface)
++					.map((method) => method.name)
++					.join(', ')
+ 				if (listed !== members) {
+ 					drifted.push(`${entry.spec}: ${group.interface} documents ${listed}, declares ${members}`)
+ 				}
+ 			}
+ 			for (const symbol of source.surface()) {
+ 				if (symbol.keyword !== 'interface' && symbol.keyword !== 'class') continue
+-				const members = source.methods(symbol.name)
++				const members = source.methods(symbol.name).map((method) => method.name)
+ 				if (members.length === 0) continue
+ 				// A class implementing a documented contract is proven against that
+ 				// contract instead of documented twice: the guide's table belongs to the
+@@ -138,7 +145,12 @@ describe('guides', () => {
+ 				// extra. Everything else owes a table of its own.
+ 				const contract = `${symbol.name}Interface`
+ 				const implementing = symbol.keyword === 'class' && declared.has(contract)
+-				const owed = implementing ? source.methods(contract).join(', ') : undefined
++				const owed = implementing
++					? source
++							.methods(contract)
++							.map((method) => method.name)
++							.join(', ')
++					: undefined
+ 				if (owed !== undefined && owed !== members.join(', ')) {
+ 					drifted.push(`${entry.spec}: ${symbol.name} exposes ${members.join(', ')}, owes ${owed}`)
+ 				}
+@@ -150,6 +162,33 @@ describe('guides', () => {
+ 		expect(drifted).toEqual([])
+ 	})
+ 
++	// The equality gate: a `Summary` cell against its export's description paragraph, a
++	// titled fence against the `@example` of that title. `findDrift` owns the comparison
++	// and names both sides; read the disagreement list from `npm run docs` rather than from
++	// this assertion's output, and converge the two sides there, never by weakening this
++	// assertion. `findDrift` pairs an example only where a title is present on both sides,
++	// so an untitled `@example` block is outside this case.
++	it('keeps every compared summary and example equal to its source', () => {
++		const disagreeing = inspected
++			.map(({ entry, guide, source }) => ({ spec: entry.spec, drift: findDrift(guide, source) }))
++			.filter((record) => record.drift.length > 0)
++		expect(disagreeing).toEqual([])
++	})
++
++	// The README's pitch and the guide's tagline are one text, each read as the blockquote
++	// under its file's H1. `README.md` is outside the concept index, so the reader is
++	// applied to it directly rather than through an `inspected` record.
++	it('opens the README with the guide tagline', () => {
++		const pitch = createGuide(requireValue(files['README.md'])).tagline()
++		const documented = requireValue(
++			inspected.find(({ entry }) => entry.spec === 'guides/scaffold.md'),
++		)
++		const tagline = documented.guide.tagline()
++		expect(pitch).not.toBeUndefined()
++		expect(tagline).not.toBeUndefined()
++		expect(pitch).toBe(tagline)
++	})
++
+ 	it('publishes HostFile without the former Copy row type', () => {
+ 		const names = inspected.flatMap(({ source }) => source.surface().map((symbol) => symbol.name))
+ 		expect(names).toContain('HostFile')
+@@ -163,7 +202,9 @@ describe('guides', () => {
+ 	})
+ 
+ 	it('publishes read without the former files reader method', () => {
+-		const methods = inspected.flatMap(({ source }) => source.methods('UpstreamInterface'))
++		const methods = inspected.flatMap(({ source }) =>
++			source.methods('UpstreamInterface').map((method) => method.name),
++		)
+ 		expect(methods).toContain('read')
+ 		expect(methods).not.toContain('files')
+ 	})
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 5b51bfb0..b2a7b3d3 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1282,7 +1282,7 @@ export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
+  * `HOST_PATHS`, and a host that does not carry one of them refuses the write, so
+  * a fixture driving the executable needs the complete set rather than a sample.
+  *
+- * `nameToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to that selection, so
++ * `blueprintToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to that selection, so
+  * the manifest declares it too: a host missing it refuses every verb the moment
+  * the plan is hydrated. It is the only canon destination a host declares, because
+  * the pointers a plan claims there carry their own content, and `HOST_PATHS`
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index bcd9f5ab..235d1a51 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -1,14 +1,19 @@
+ import type { ManifestScript } from '@src/core'
+-import { readFileSync } from 'node:fs'
+-import { resolve } from 'node:path'
++import type { ScratchInterface } from '@orkestrel/test/server'
++import { createScratch, destroyScratch } from '@orkestrel/test/server'
++import { spawnSync } from 'node:child_process'
++import { mkdirSync, readFileSync, symlinkSync } from 'node:fs'
++import { join, resolve } from 'node:path'
+ import {
+ 	blueprintToConfigArtifacts,
+ 	blueprintToDevDependencies,
+ 	blueprintToDocumentArtifacts,
+ 	blueprintToGuideArtifacts,
++	blueprintToHostArtifacts,
+ 	blueprintToManifest,
+ 	blueprintToOrchestrationArtifacts,
+ 	blueprintToQuestions,
++	blueprintToRootTsconfig,
+ 	blueprintToRootVite,
+ 	blueprintToScripts,
+ 	blueprintToSourceArtifacts,
+@@ -19,11 +24,11 @@ import {
+ 	ENVIRONMENTS,
+ 	FLOOR_RANGE_PATTERN,
+ 	isCanonPath,
+-	nameToHostArtifacts,
+ 	ORKESTREL_RANGE_PATTERN,
+ 	RELEASE_PROOF_COMMAND,
+ 	replaceManifestRanges,
+ 	replaceManifestScripts,
++	srcToExports,
+ } from '@src/core'
+ import { buildBlueprint } from '../../setup.js'
+ import { describe, expect, it } from 'vitest'
+@@ -606,6 +611,27 @@ describe('blueprintToScripts config projects', () => {
+ 		expect(scripts.test).not.toContain('test:guides')
+ 	})
+ 
++	// The same fact selects the proof and the propagation: a workspace that
++	// documents a public surface gets the gate that reports drift and the seed
++	// that carries it across. The seed joins the writable region so a target that
++	// adds the proof later receives the script from a repair, and it joins no gate
++	// chain, because writing files is a maintainer's call rather than a check.
++	it('emits the documentation seed beside the guides proof', () => {
++		const documented = buildBlueprint({ guides: true })
++		const undocumented = buildBlueprint({ guides: false })
++		const scripts = blueprintToScripts(documented)
++		const names = blueprintToWritableScripts(documented).map((script) => script.name)
++
++		expect(scripts.docs).toBe('node --experimental-strip-types scripts/docs.ts')
++		expect(names.indexOf('docs')).toBe(names.indexOf('test:guides') + 1)
++		expect(blueprintToScripts(undocumented)).not.toHaveProperty('docs')
++		expect(blueprintToWritableScripts(undocumented).map((script) => script.name)).not.toContain(
++			'docs',
++		)
++		expect(scripts.test).not.toContain('npm run docs')
++		expect(scripts.prepublishOnly).not.toContain('npm run docs')
++	})
++
+ 	it('registers the distribution proof only in the release-mode publish gate', () => {
+ 		const blueprint = buildBlueprint({ src: ['core'] })
+ 		const configuration = blueprintToRootVite(blueprint)
+@@ -1728,7 +1754,7 @@ describe('content artifact compilers', () => {
+ 	// vendored neighbours the moved wiring left behind, so a removal that took a
+ 	// sibling with it is visible.
+ 	it('plans the catalog file inside the canon and none of the moved wiring', () => {
+-		const artifacts = nameToHostArtifacts('router')
++		const artifacts = blueprintToHostArtifacts(buildBlueprint({ name: 'router', guides: true }))
+ 		const paths = artifacts.map(({ path }) => path)
+ 		const canon = paths.filter((path) => isCanonPath(path))
+ 		expect(canon).toStrictEqual(['.claude/agents/orkestrel.md'])
+@@ -1755,6 +1781,25 @@ describe('content artifact compilers', () => {
+ 		).toBe(true)
+ 	})
+ 
++	// One fact selects the seed and the script that runs it, so a workspace indexing
++	// no guides is planned neither. Planning the seed alone would vendor a module
++	// whose manifest names no way to invoke it, and whose reader has no index to read.
++	it('plans the documentation seed and its script together with guides', () => {
++		const indexed = buildBlueprint({ name: 'widget', guides: true })
++		const bare = buildBlueprint({ name: 'widget', guides: false })
++		const planned = blueprintToHostArtifacts(indexed).map(({ path }) => path)
++		const withheld = blueprintToHostArtifacts(bare).map(({ path }) => path)
++
++		expect(planned).toContain('scripts/docs.ts')
++		expect(blueprintToScripts(indexed).docs).toBe('node --experimental-strip-types scripts/docs.ts')
++		expect(withheld).not.toContain('scripts/docs.ts')
++		expect(blueprintToScripts(bare)).not.toHaveProperty('docs')
++		// The guides fact moves the seed and nothing else, so the rest of the vendored
++		// selection is the control: a filter that took a neighbour with it reports here
++		// rather than in a length.
++		expect(withheld).toStrictEqual(planned.filter((path) => path !== 'scripts/docs.ts'))
++	})
++
+ 	it('names the unwritten package guide without linking to it', () => {
+ 		const [guide] = blueprintToGuideArtifacts(buildBlueprint({ name: 'widget' }))
+ 		expect(guide?.content).toContain(
+@@ -1778,3 +1823,674 @@ describe('content artifact compilers', () => {
+ 		expect(artifact?.content).not.toContain('test:service')
+ 	})
+ })
++
++// The vendored seed the `docs` script names, driven as the process a target runs
++// rather than imported: it reads `process.cwd()`, resolves `@orkestrel/guide`
++// from the tree it sits in, and writes files. A scratch workspace carrying the
++// seed's own bytes and a link to this checkout's installed copy of the readers is
++// the smallest tree that exercises all of that. The link is fixture wiring, not a
++// distribution proof: what a published tarball resolves is
++// `tests/distribution.test.ts`'s subject.
++const SEED_PATH = 'scripts/docs.ts'
++
++const SEED_MANIFEST = [
++	'{',
++	'\t"name": "@sample/widget",',
++	'\t"private": true,',
++	'\t"type": "module"',
++	'}',
++	'',
++].join('\n')
++
++const SEED_README = ['# Widget', '', '> A widget toolkit the sample workspace publishes.', ''].join(
++	'\n',
++)
++
++// The one pair the seed reports and never writes: the README pitch against the
++// guide tagline. Ruling 6 keeps the README authored by hand.
++const SEED_PITCH = ['# Widget', '', '> A widget kit the sample workspace publishes.', ''].join('\n')
++
++const SEED_INDEX = [
++	'# Guides',
++	'',
++	'## By concept',
++	'',
++	'| Concept | Spec | Source | Tests |',
++	'| --- | --- | --- | --- |',
++	'| Widget | [`widget.md`](widget.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
++	'',
++].join('\n')
++
++const SEED_BARREL = ["export * from './widget.js'", ''].join('\n')
++
++// One Surface cell, one Methods cell, and one titled fence, each planted against
++// the source beneath. Every other byte of this file is what a write must leave.
++const SEED_GUIDE = [
++	'# Widget',
++	'',
++	'> A widget toolkit the sample workspace publishes.',
++	'',
++	'## Surface',
++	'',
++	'| Name | Kind | Summary |',
++	'| --- | --- | --- |',
++	'| `shape` | function | Shapes a widget from its parts. |',
++	'| `Widget` | interface | One widget the workspace renders. |',
++	'',
++	'## Methods',
++	'',
++	'#### `Widget`',
++	'',
++	'| Method | Summary |',
++	'| --- | --- |',
++	'| `paint` | Paints the widget onto the surface. |',
++	'',
++	'## Examples',
++	'',
++	'### Shape a widget',
++	'',
++	'```ts',
++	"shape('round')",
++	'```',
++	'',
++	'## Tests',
++	'',
++	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
++	'',
++].join('\n')
++
++// What `--to guide` owes: the planted cells carrying the source text and
++// every other byte of `SEED_GUIDE` unmoved. A sampled reading cannot see a row
++// the table re-render drops, a heading it disturbs, or padding it re-aligns,
++// which is the class the claim exists to catch, so the write is compared whole.
++const SEED_GUIDE_WRITTEN = [
++	'# Widget',
++	'',
++	'> A widget toolkit the sample workspace publishes.',
++	'',
++	'## Surface',
++	'',
++	'| Name | Kind | Summary |',
++	'| --- | --- | --- |',
++	'| `shape` | function | Shapes a widget from the parts it is given. |',
++	'| `Widget` | interface | One widget the workspace renders. |',
++	'',
++	'## Methods',
++	'',
++	'#### `Widget`',
++	'',
++	'| Method | Summary |',
++	'| --- | --- |',
++	'| `paint` | Paints the widget onto the frame. |',
++	'',
++	'## Examples',
++	'',
++	'### Shape a widget',
++	'',
++	'```ts',
++	"shape('round')",
++	'```',
++	'',
++	'## Tests',
++	'',
++	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
++	'',
++].join('\n')
++
++const SEED_SOURCE = [
++	'/**',
++	' * Shapes a widget from the parts it is given.',
++	' *',
++	' * @param parts - The parts to shape.',
++	' * @returns The shaped widget.',
++	' *',
++	' * @example Shape a widget',
++	' * ```ts',
++	" * shape('square')",
++	' * ```',
++	' */',
++	'export function shape(parts: string): string {',
++	'\treturn parts',
++	'}',
++	'',
++	'/** One widget the workspace renders. */',
++	'export interface Widget {',
++	'\t/** Paints the widget onto the frame. */',
++	'\tpaint(): void',
++	'}',
++	'',
++].join('\n')
++
++// The reported workspace: every summary and example already agrees, the guide
++// documents one export carrying no doc block, and the pitch differs. Neither
++// disagreement has a side a write can take.
++const SEED_REPORTED_GUIDE = [
++	'# Widget',
++	'',
++	'> A widget toolkit the sample workspace publishes.',
++	'',
++	'## Surface',
++	'',
++	'| Name | Kind | Summary |',
++	'| --- | --- | --- |',
++	'| `shape` | function | Shapes a widget from the parts it is given. |',
++	'| `measure` | function | Measures a widget against the frame it fills. |',
++	'| `Widget` | interface | One widget the workspace renders. |',
++	'',
++	'## Methods',
++	'',
++	'#### `Widget`',
++	'',
++	'| Method | Summary |',
++	'| --- | --- |',
++	'| `paint` | Paints the widget onto the frame. |',
++	'',
++	'## Tests',
++	'',
++	'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
++	'',
++].join('\n')
++
++const SEED_UNDOCUMENTED = [
++	'',
++	'export function measure(parts: string): number {',
++	'\treturn parts.length',
++	'}',
++	'',
++].join('\n')
++
++const SEED_FILES: Readonly<Record<string, string>> = Object.freeze({
++	'package.json': SEED_MANIFEST,
++	'README.md': SEED_README,
++	'guides/README.md': SEED_INDEX,
++	'guides/widget.md': SEED_GUIDE,
++	'src/core/index.ts': SEED_BARREL,
++	'src/core/widget.ts': SEED_SOURCE,
++})
++
++const SEED_REPORTED: Readonly<Record<string, string>> = Object.freeze({
++	...SEED_FILES,
++	'README.md': SEED_PITCH,
++	'guides/widget.md': SEED_REPORTED_GUIDE,
++	'src/core/widget.ts': `${SEED_SOURCE}${SEED_UNDOCUMENTED}`,
++})
++
++// A manifest declaring no `name`, so `readShortName` returns `undefined` and
++// the pitch block never runs: the standing drift still prints, and no pitch
++// line ever joins it.
++const SEED_NAMELESS_MANIFEST = ['{', '\t"private": true,', '\t"type": "module"', '}', ''].join('\n')
++
++const SEED_NAMELESS: Readonly<Record<string, string>> = Object.freeze({
++	...SEED_REPORTED,
++	'package.json': SEED_NAMELESS_MANIFEST,
++})
++
++// The index the whole run reads from, naming a guide under a spec other than
++// this workspace's own: `readShortName` still resolves `widget`, but no row's
++// `spec` is `guides/widget.md`, so the own-guide lookup finds nothing and the
++// pitch block never runs even though the manifest names one.
++const SEED_UNOWNED_INDEX = [
++	'# Guides',
++	'',
++	'## By concept',
++	'',
++	'| Concept | Spec | Source | Tests |',
++	'| --- | --- | --- | --- |',
++	'| Widget | [`component.md`](component.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
++	'',
++].join('\n')
++
++const SEED_UNOWNED: Readonly<Record<string, string>> = Object.freeze({
++	'package.json': SEED_MANIFEST,
++	'README.md': SEED_PITCH,
++	'guides/README.md': SEED_UNOWNED_INDEX,
++	'guides/component.md': SEED_REPORTED_GUIDE,
++	'src/core/index.ts': SEED_BARREL,
++	'src/core/widget.ts': `${SEED_SOURCE}${SEED_UNDOCUMENTED}`,
++})
++
++// The overlapping workspace: a parent row over `src/core` and a child row over
++// `src/core/panels`, each documenting one declaration of the same source file.
++// A module scope selects every file beneath it, so each row reaches
++// `src/core/panels/panel.ts`, and a run that seeds its texts per row from the
++// frozen inventory writes that file once per row and keeps the later rewrite
++// alone.
++const SEED_OVERLAP_INDEX = [
++	'# Guides',
++	'',
++	'## By concept',
++	'',
++	'| Concept | Spec | Source | Tests |',
++	'| --- | --- | --- | --- |',
++	'| Widget | [`widget.md`](widget.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
++	'| Panel | [`panel.md`](panel.md) | [`src/core/panels`](../src/core/panels) | [`tests/src/core/panels`](../tests/src/core/panels) |',
++	'',
++].join('\n')
++
++const SEED_OVERLAP_PARENT = [
++	'# Widget',
++	'',
++	'> A widget toolkit the sample workspace publishes.',
++	'',
++	'## Surface',
++	'',
++	'| Name | Kind | Summary |',
++	'| --- | --- | --- |',
++	'| `frame` | function | Frames a widget for the panel. |',
++	'',
++	'## Tests',
++	'',
++	'- [`tests/src/core/panels/panel.test.ts`](../tests/src/core/panels/panel.test.ts)',
++	'',
++].join('\n')
++
++// A third row duplicating the parent's `frame` declaration with the parent's
++// cell text byte-identical: after the parent row's rewrite, the child row's
++// rewrite of that same block is a no-op, which is the shape that exercises
++// the written-count no-op limb.
++const SEED_OVERLAP_CHILD = [
++	'# Panel',
++	'',
++	'> A panel the widget toolkit renders into.',
++	'',
++	'## Surface',
++	'',
++	'| Name | Kind | Summary |',
++	'| --- | --- | --- |',
++	'| `paint` | function | Paints the panel onto the frame. |',
++	'| `frame` | function | Frames a widget for the panel. |',
++	'',
++	'## Tests',
++	'',
++	'- [`tests/src/core/panels/panel.test.ts`](../tests/src/core/panels/panel.test.ts)',
++	'',
++].join('\n')
++
++const SEED_OVERLAP_SOURCE = [
++	'/**',
++	' * Frames a widget for the panel it sits in.',
++	' *',
++	' * @param widget - The widget to frame.',
++	' * @returns The framed widget.',
++	' */',
++	'export function frame(widget: string): string {',
++	'\treturn widget',
++	'}',
++	'',
++	'/**',
++	' * Paints the panel onto the frame it was given.',
++	' *',
++	' * @param panel - The panel to paint.',
++	' * @returns The painted panel.',
++	' */',
++	'export function paint(panel: string): string {',
++	'\treturn panel',
++	'}',
++	'',
++].join('\n')
++
++const SEED_OVERLAP_WRITTEN = [
++	'/**',
++	' * Frames a widget for the panel.',
++	' *',
++	' * @param widget - The widget to frame.',
++	' * @returns The framed widget.',
++	' */',
++	'export function frame(widget: string): string {',
++	'\treturn widget',
++	'}',
++	'',
++	'/**',
++	' * Paints the panel onto the frame.',
++	' *',
++	' * @param panel - The panel to paint.',
++	' * @returns The painted panel.',
++	' */',
++	'export function paint(panel: string): string {',
++	'\treturn panel',
++	'}',
++	'',
++].join('\n')
++
++const SEED_OVERLAP: Readonly<Record<string, string>> = Object.freeze({
++	'package.json': SEED_MANIFEST,
++	'guides/README.md': SEED_OVERLAP_INDEX,
++	'guides/widget.md': SEED_OVERLAP_PARENT,
++	'guides/panel.md': SEED_OVERLAP_CHILD,
++	'src/core/index.ts': ["export * from './panels/index.js'", ''].join('\n'),
++	'src/core/panels/index.ts': ["export * from './panel.js'", ''].join('\n'),
++	'src/core/panels/panel.ts': SEED_OVERLAP_SOURCE,
++})
++
++// The index the whole run reads from, absent.
++const SEED_UNINDEXED: Readonly<Record<string, string>> = Object.freeze(
++	Object.fromEntries(Object.entries(SEED_FILES).filter(([path]) => path !== 'guides/README.md')),
++)
++
++// An index row naming a guide the workspace does not carry.
++const SEED_UNCARRIED: Readonly<Record<string, string>> = Object.freeze({
++	...SEED_FILES,
++	'guides/README.md': [
++		SEED_INDEX.trimEnd(),
++		'| Panel | [`panel.md`](panel.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
++		'',
++	].join('\n'),
++})
++
++/**
++ * Builds a workspace carrying the seed, its readers, and the planted disagreements.
++ *
++ * @param files - The workspace files to write, keyed root-relative.
++ * @returns The allocated scratch workspace.
++ */
++function buildSeedWorkspace(files: Readonly<Record<string, string>>): ScratchInterface {
++	const scratch = createScratch()
++	for (const [path, text] of Object.entries(files)) scratch.write(path, text)
++	scratch.write(SEED_PATH, readFileSync(resolve(SEED_PATH), 'utf8'))
++	mkdirSync(join(scratch.path, 'node_modules/@orkestrel'), { recursive: true })
++	symlinkSync(
++		resolve('node_modules/@orkestrel/guide'),
++		join(scratch.path, 'node_modules/@orkestrel/guide'),
++		'junction',
++	)
++	return scratch
++}
++
++/**
++ * Runs the seed in one workspace and reads what the process reported.
++ *
++ * @param scratch - The workspace to run in.
++ * @param args - The arguments after the seed's path.
++ * @returns The exit status, the lines the run printed without the trailing blank, and its error stream.
++ */
++function runSeed(
++	scratch: ScratchInterface,
++	args: readonly string[],
++): { readonly status: number | null; readonly lines: readonly string[]; readonly stderr: string } {
++	const run = spawnSync(process.execPath, ['--experimental-strip-types', SEED_PATH, ...args], {
++		cwd: scratch.path,
++		encoding: 'utf8',
++		windowsHide: true,
++	})
++	return {
++		status: run.status,
++		lines: run.stdout.split(/\r\n|\n/).filter((line) => line !== ''),
++		stderr: run.stderr,
++	}
++}
++
++describe('blueprintToRootTsconfig own specifiers', () => {
++	// The generated root program resolves the workspace's own published names to
++	// source. Left to the package's own `exports` map they resolve to `dist/`, which
++	// would hold `npm run check` behind `npm run build` in the package that publishes
++	// the module a vendored file imports.
++	it('maps every published subpath before the bare specifier and maps no app entry', () => {
++		const published = blueprintToRootTsconfig(
++			buildBlueprint({ name: 'router', src: ['core', 'browser', 'server'], app: ['core'] }),
++		)
++
++		// The whole block, so membership and order are read together: an alias record
++		// is matched in declaration order and a bare specifier also matches its own
++		// subpaths, so a bare entry written first would answer every subpath import.
++		expect(published).toContain(`\t\t"paths": {
++\t\t\t"@src/core": ["./src/core/index.ts"],
++\t\t\t"@src/browser": ["./src/browser/index.ts"],
++\t\t\t"@src/server": ["./src/server/index.ts"],
++\t\t\t"@app/core": ["./app/core/index.ts"],
++\t\t\t"@orkestrel/router/browser": ["./src/browser/index.ts"],
++\t\t\t"@orkestrel/router/server": ["./src/server/index.ts"],
++\t\t\t"@orkestrel/router": ["./src/core/index.ts"]
++\t\t}`)
++		// The published set this mirrors belongs to the manifest builder, so the
++		// subpaths are read from there rather than restated: a map that gains one and a
++		// `paths` block that does not report here.
++		expect(
++			Object.keys(srcToExports(['core', 'browser', 'server'])).filter(
++				(subpath) => subpath !== './package.json',
++			),
++		).toStrictEqual(['.', './browser', './server'])
++	})
++
++	it('maps a single published environment at the bare specifier alone', () => {
++		const published = blueprintToRootTsconfig(buildBlueprint({ name: 'router', src: ['browser'] }))
++
++		expect(published).toContain('"@orkestrel/router": ["./src/browser/index.ts"]')
++		expect(published).not.toContain('"@orkestrel/router/browser"')
++		expect(
++			Object.keys(srcToExports(['browser'])).filter((subpath) => subpath !== './package.json'),
++		).toStrictEqual(['.'])
++	})
++
++	it('maps no own specifier for a workspace that publishes nothing', () => {
++		const published = blueprintToRootTsconfig(
++			buildBlueprint({ name: 'router', src: [], app: ['server'] }),
++		)
++
++		expect(published).toContain('"@app/server": ["./app/server/index.ts"]')
++		expect(published).not.toContain('@orkestrel/router')
++		expect(srcToExports([])).toStrictEqual({})
++	})
++})
++
++describe('the documentation seed', () => {
++	it('names every planted disagreement and writes nothing without a direction', async () => {
++		const scratch = buildSeedWorkspace(SEED_FILES)
++		try {
++			const run = runSeed(scratch, [])
++
++			expect(run.lines).toEqual([
++				'guides/widget.md function shape: guide "Shapes a widget from its parts." source "Shapes a widget from the parts it is given."',
++				'guides/widget.md Widget.paint: guide "Paints the widget onto the surface." source "Paints the widget onto the frame."',
++				'guides/widget.md Shape a widget: guide "ts\\nshape(\'round\')" source "ts\\nshape(\'square\')"',
++				'rows read: 1, disagreements found: 3',
++			])
++			expect(run.status).toBe(1)
++			// The gate reports and the seed reports; only a direction writes.
++			for (const [path, text] of Object.entries(SEED_FILES)) {
++				expect(scratch.read(path)).toBe(text)
++			}
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	it('carries every summary to the guide and leaves the example and every other byte', async () => {
++		const scratch = buildSeedWorkspace(SEED_FILES)
++		try {
++			const run = runSeed(scratch, ['--to', 'guide'])
++			const guide = scratch.read('guides/widget.md') ?? ''
++
++			expect(run.lines).toEqual([
++				'wrote guides/widget.md',
++				'guides/widget.md Shape a widget: guide "ts\\nshape(\'round\')" source "ts\\nshape(\'square\')"; the guide fence owns an example',
++				'rows read: 1, disagreements found: 3, written: 2, reported: 1',
++				'next: npm run format',
++			])
++			expect(run.status).toBe(1)
++			// The whole file, so a dropped row, a disturbed heading, and re-aligned
++			// padding each report here. The landmarks beneath name what the comparison
++			// is about: the rewritten cells, and the fence, the tagline, and the link
++			// that travel unchanged.
++			expect(guide).toBe(SEED_GUIDE_WRITTEN)
++			expect(guide).toContain(
++				'| `shape` | function | Shapes a widget from the parts it is given. |',
++			)
++			expect(guide).toContain('| `paint` | Paints the widget onto the frame. |')
++			expect(guide).toContain("```ts\nshape('round')\n```")
++			expect(guide).toContain('> A widget toolkit the sample workspace publishes.')
++			expect(guide).toContain(
++				'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
++			)
++			expect(scratch.read('src/core/widget.ts')).toBe(SEED_SOURCE)
++			expect(scratch.read('README.md')).toBe(SEED_README)
++			expect(scratch.read('guides/README.md')).toBe(SEED_INDEX)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	it('carries every summary and example to the source, and reads back clean', async () => {
++		const scratch = buildSeedWorkspace(SEED_FILES)
++		try {
++			const written = runSeed(scratch, ['--to', 'source'])
++			const source = scratch.read('src/core/widget.ts') ?? ''
++			const again = runSeed(scratch, [])
++
++			expect(written.lines).toEqual([
++				'wrote src/core/widget.ts',
++				'rows read: 1, disagreements found: 3, written: 3, reported: 0',
++				'next: npm run format',
++			])
++			expect(written.status).toBe(0)
++			expect(source).toContain(' * Shapes a widget from its parts.')
++			expect(source).toContain(" * shape('round')")
++			expect(source).toContain('\t/** Paints the widget onto the surface. */')
++			// The doc block's own frame survives the rewrite: its tags, its
++			// continuation markers, and the member's indentation.
++			expect(source).toContain(' * @param parts - The parts to shape.')
++			expect(source).toContain(' * @example Shape a widget')
++			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
++			expect(again.lines).toEqual(['rows read: 1, disagreements found: 0'])
++			expect(again.status).toBe(0)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	it('reports a key no doc block carries and the pitch, and leaves both files', async () => {
++		const scratch = buildSeedWorkspace(SEED_REPORTED)
++		try {
++			const run = runSeed(scratch, ['--to', 'source'])
++
++			expect(run.lines).toEqual([
++				'guides/widget.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
++				'guides/widget.md pitch: readme "A widget kit the sample workspace publishes." tagline "A widget toolkit the sample workspace publishes."; the README pitch is authored by hand',
++				'rows read: 1, disagreements found: 2, written: 0, reported: 2',
++			])
++			expect(run.status).toBe(1)
++			// Nothing was written, so no file moved and no formatter step is named.
++			expect(run.lines).not.toContain('next: npm run format')
++			expect(scratch.read('src/core/widget.ts')).toBe(`${SEED_SOURCE}${SEED_UNDOCUMENTED}`)
++			expect(scratch.read('README.md')).toBe(SEED_PITCH)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	it('carries no pitch line for a manifest declaring no name', async () => {
++		const scratch = buildSeedWorkspace(SEED_NAMELESS)
++		try {
++			const run = runSeed(scratch, ['--to', 'source'])
++
++			expect(run.lines).toEqual([
++				'guides/widget.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
++				'rows read: 1, disagreements found: 1, written: 0, reported: 1',
++			])
++			expect(run.status).toBe(1)
++			expect(scratch.read('README.md')).toBe(SEED_PITCH)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	it('carries no pitch line for a manifest naming a guide the index does not index under its own spec', async () => {
++		const scratch = buildSeedWorkspace(SEED_UNOWNED)
++		try {
++			const run = runSeed(scratch, ['--to', 'source'])
++
++			expect(run.lines).toEqual([
++				'guides/component.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
++				'rows read: 1, disagreements found: 1, written: 0, reported: 1',
++			])
++			expect(run.status).toBe(1)
++			expect(scratch.read('README.md')).toBe(SEED_PITCH)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	it('prints one usage line and takes exit 2 for an argument outside its option', async () => {
++		const scratch = buildSeedWorkspace(SEED_FILES)
++		try {
++			const unknown = runSeed(scratch, ['--to', 'sideways'])
++			const stray = runSeed(scratch, ['--write'])
++
++			expect(unknown.lines).toEqual(['usage: npm run docs [-- --to guide|--to source]'])
++			expect(unknown.status).toBe(2)
++			expect(stray.lines).toEqual(['usage: npm run docs [-- --to guide|--to source]'])
++			expect(stray.status).toBe(2)
++			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	// A parent scope and a child scope reach one file, and the run holds one
++	// current text per file so the later row rewrites what the earlier row left
++	// rather than the bytes the run started from. A file that moved is written
++	// once, after every row has run.
++	it('carries every overlapping row into one source file and writes that file once', async () => {
++		const scratch = buildSeedWorkspace(SEED_OVERLAP)
++		try {
++			const reported = runSeed(scratch, [])
++			const written = runSeed(scratch, ['--to', 'source'])
++			const source = scratch.read('src/core/panels/panel.ts') ?? ''
++
++			expect(reported.lines).toEqual([
++				'guides/widget.md function frame: guide "Frames a widget for the panel." source "Frames a widget for the panel it sits in."',
++				'guides/panel.md function paint: guide "Paints the panel onto the frame." source "Paints the panel onto the frame it was given."',
++				'guides/panel.md function frame: guide "Frames a widget for the panel." source "Frames a widget for the panel it sits in."',
++				'rows read: 2, disagreements found: 3',
++			])
++			expect(written.lines).toEqual([
++				'wrote src/core/panels/panel.ts',
++				'rows read: 2, disagreements found: 3, written: 2, reported: 0',
++				'next: npm run format',
++			])
++			expect(written.status).toBe(0)
++			// Every rewrite in one file, and the file named once: a run that re-seeded
++			// its texts per row keeps the later rewrite alone and names the file again.
++			expect(source).toBe(SEED_OVERLAP_WRITTEN)
++			expect(written.lines.filter((line) => line.startsWith('wrote '))).toHaveLength(1)
++			expect(runSeed(scratch, []).lines).toEqual(['rows read: 2, disagreements found: 0'])
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	// The index is the run's own input, so a workspace that carries none and an
++	// index naming a guide the workspace lacks are argument faults rather than
++	// disagreements. An uncaught throw would exit 1 with a stack trace, which is
++	// the code a standing disagreement already means.
++	it('names the concept index it cannot read and takes exit 2', async () => {
++		const scratch = buildSeedWorkspace(SEED_UNINDEXED)
++		try {
++			const run = runSeed(scratch, ['--to', 'source'])
++
++			expect(run.lines).toEqual([
++				'guides/README.md: the workspace carries no concept index to read',
++			])
++			expect(run.status).toBe(2)
++			expect(run.stderr).toBe('')
++			expect(scratch.read('src/core/widget.ts')).toBe(SEED_SOURCE)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++
++	it('names the indexed guide the workspace does not carry and takes exit 2', async () => {
++		const scratch = buildSeedWorkspace(SEED_UNCARRIED)
++		try {
++			const run = runSeed(scratch, ['--to', 'guide'])
++
++			expect(run.lines).toEqual([
++				'guides/panel.md: the concept index names it and the workspace does not carry it',
++			])
++			expect(run.status).toBe(2)
++			expect(run.stderr).toBe('')
++			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
++		} finally {
++			await destroyScratch(scratch, { budget: 5000 })
++		}
++	})
++})
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 1d27e1ff..6344aa49 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -13,7 +13,9 @@ import {
+ 	computeBytes,
+ 	computeHash,
+ 	contentToHex,
++	DOCS_SEED_PATH,
+ 	extractRangeMajor,
++	EXECUTABLE_PATHS,
+ 	extractVersion,
+ 	GROUPS,
+ 	HOST_PATHS,
+@@ -173,6 +175,24 @@ describe('isCanonPath', () => {
+ 			),
+ 		).toHaveLength(1)
+ 	})
++
++	// The documentation seed is the one vendored script node runs rather than a
++	// shell invokes, so it takes the vendored set and leaves the executable set
++	// alone. A declaration in both would ship it at 0755 and claim an interpreter
++	// it has no shebang for. The shell hook beside it is the control each reading
++	// needs, drawn from the same directory.
++	it('vendors the documentation seed without an executable bit or a canon claim', () => {
++		// The path has one home, and the vendored set reads it: the literal here is
++		// what the constant must carry, so a moved seed reports rather than drifting
++		// apart from the `docs` command and the artifact filter that read it too.
++		expect(DOCS_SEED_PATH).toBe('scripts/docs.ts')
++		expect(HOST_PATHS).toContain('scripts/docs.ts')
++		expect(EXECUTABLE_PATHS).not.toContain('scripts/docs.ts')
++		expect(isCanonPath('scripts/docs.ts')).toBe(false)
++		expect(HOST_PATHS).toContain('scripts/deps.sh')
++		expect(EXECUTABLE_PATHS).toContain('scripts/deps.sh')
++		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
++	})
+ })
+ 
+ describe('isRetainedPath', () => {
+@@ -290,6 +310,15 @@ describe('selectHostPaths', () => {
+ 		expect(selectHostPaths(HOST_PATHS, 'router')).toStrictEqual(HOST_PATHS)
+ 	})
+ 
++	// The name is the whole selection this helper makes. The documentation seed is
++	// selected by the blueprint's `guides` fact instead, in `blueprintToHostArtifacts`,
++	// so the seed is a candidate here for a workspace of every shape and this reading
++	// is what a guides gate moved down into the helper would break.
++	it('keeps the documentation seed a candidate whatever else selects it', () => {
++		expect(selectHostPaths(HOST_PATHS, 'router')).toContain('scripts/docs.ts')
++		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
++	})
++
+ 	// The selection reads `HOST_PATHS` alone, so no canon member reaches it: a
+ 	// target reads those files from the package it installs, and the compiler
+ 	// appends the catalog file to the host selection while the pointers arrive as
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 6eb40834..307d2a57 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -16,6 +16,7 @@ import { Worker } from 'node:worker_threads'
+ import { arrayOf, isRecord, isString } from '@orkestrel/contract'
+ import {
+ 	ARTIFACT_TEMPLATES,
++	BASE_DEV_DEPENDENCIES,
+ 	CANON_PATHS,
+ 	contentToHex,
+ 	EXECUTABLE_PATHS,
+@@ -172,9 +173,14 @@ describe('matchesExecutablePath', () => {
+ })
+ 
+ describe('vendored imports', () => {
+-	it('keeps every vendored JavaScript and TypeScript module independent of Orkestrel packages', () => {
+-		const orkestrelImportPattern =
+-			/\b(?:from\s*|(?:import|require)\s*\(\s*)(['"`])@orkestrel\/[^'"`]+\1/u
++	// A vendored module resolves in every workspace or it dies in the target that
++	// received it, and what resolves everywhere is a `node:` module or a package
++	// `BASE_DEV_DEPENDENCIES` declares. A declared Orkestrel package resolves in its
++	// own checkout too, through the `exports` map its manifest publishes, so the set
++	// this reads against is the declaration rather than the scope. Any other
++	// `@orkestrel/*` package is undeclared wherever it lands.
++	it('imports only Orkestrel packages every workspace declares from each vendored module', () => {
++		const specifierPattern = /\b(?:from|import|require)\s*\(?\s*(['"`])(@orkestrel\/[^'"`]+)\1/gu
+ 		const paths = HOST_PATHS.flatMap((path) => {
+ 			const source = join(WORKSPACE_ROOT, path)
+ 			if (!existsSync(source)) return []
+@@ -188,15 +194,51 @@ describe('vendored imports', () => {
+ 			// Only JavaScript and TypeScript module extensions can carry resolvable imports.
+ 			return /\.[cm]?[jt]s$/u.test(path) ? [path] : []
+ 		}).sort()
+-		const imported: string[] = []
+-		expect(orkestrelImportPattern.test("import { value } from '@orkestrel/test/server'")).toBe(true)
+-		expect(orkestrelImportPattern.test('await import(`@orkestrel/test/server`)')).toBe(true)
++		// The controls, drawn from outside the vendored set, carry the two specifier
++		// forms a module writes and both sides of the ruling. Without them a reader
++		// that extracts nothing and an allowlist that admits everything each report
++		// the same clean vendored list.
++		const controls = [
++			{ path: 'control/from.ts', content: "import { value } from '@orkestrel/test/server'" },
++			{ path: 'control/dynamic.ts', content: 'await import(`@orkestrel/test/server`)' },
++			{ path: 'control/guide.ts', content: "import { findDrift } from '@orkestrel/guide'" },
++			{ path: 'control/console.ts', content: "import { render } from '@orkestrel/console'" },
++		]
+ 		expect(paths.length).toBeGreaterThan(0)
+ 		expect(paths).toContain('tests/config.test.ts')
+-		for (const path of paths) {
+-			const content = readFileSync(join(WORKSPACE_ROOT, path), 'utf8')
+-			if (orkestrelImportPattern.test(content)) imported.push(path)
++		expect(paths).toContain('scripts/docs.ts')
++		const modules = [
++			...paths.map((path) => ({
++				path,
++				content: readFileSync(join(WORKSPACE_ROOT, path), 'utf8'),
++				vendored: true,
++			})),
++			...controls.map((control) => ({ ...control, vendored: false })),
++		]
++		const imported: string[] = []
++		const controlled: string[] = []
++		for (const module of modules) {
++			for (const match of module.content.matchAll(specifierPattern)) {
++				const specifier = match[2]
++				if (specifier === undefined) throw new Error('A match carried no specifier capture')
++				// A subpath names no package of its own, so the ruling reads the scope and
++				// the first segment: `@orkestrel/test/server` is declared when
++				// `@orkestrel/test` is.
++				const declared = Object.hasOwn(
++					BASE_DEV_DEPENDENCIES,
++					specifier.split('/').slice(0, 2).join('/'),
++				)
++				if (!module.vendored) {
++					controlled.push(`${module.path}: ${specifier} ${declared ? 'declared' : 'undeclared'}`)
++				} else if (!declared) imported.push(`${module.path}: ${specifier}`)
++			}
+ 		}
++		expect(controlled).toStrictEqual([
++			'control/from.ts: @orkestrel/test/server declared',
++			'control/dynamic.ts: @orkestrel/test/server declared',
++			'control/guide.ts: @orkestrel/guide declared',
++			'control/console.ts: @orkestrel/console undeclared',
++		])
+ 		expect(imported).toEqual([])
+ 	})
+ })
+diff --git a/tsconfig.json b/tsconfig.json
+index 3aed4ae3..557d6848 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -22,7 +22,9 @@
+ 		"noEmit": true,
+ 		"paths": {
+ 			"@src/core": ["./src/core/index.ts"],
+-			"@src/server": ["./src/server/index.ts"]
++			"@src/server": ["./src/server/index.ts"],
++			"@orkestrel/scaffold/server": ["./src/server/index.ts"],
++			"@orkestrel/scaffold": ["./src/core/index.ts"]
+ 		}
+ 	},
+ 	"exclude": ["node_modules", "dist", "tmp"]
+diff --git a/scripts/docs.ts b/scripts/docs.ts
+new file mode 100644
+index 00000000..1adf7680
+--- /dev/null
++++ b/scripts/docs.ts
+@@ -0,0 +1,454 @@
++// ============================================================================
++// scripts/docs.ts - the documentation-parity seed, run as `npm run docs`.
++// ----------------------------------------------------------------------------
++// With no flag it reads the guide index, compares every guide against the source
++// it documents, and prints one line per disagreement. With `--to guide` or
++// `--to source` it rewrites the named side through the readers and replacers
++// `@orkestrel/guide` ships. The seed writes files and nothing else: it starts no
++// process, formats nothing, and reads no network, so run `npm run format` after
++// a write.
++//
++// `tests/guides.test.ts` reports the same disagreements and never writes.
++// Converge the two sides here, never by weakening that gate.
++//
++// This entry is self-contained and imports no sibling: a target receives the
++// file alone, so a module-scope declaration here has no centralized file to sit
++// in. `.claude/rules/architecture.md` § Declaration placement is what permits
++// that, and every declaration below stays local for the same reason.
++// ============================================================================
++import type {
++	Drift,
++	GuideInterface,
++	GuideModule,
++	ManifestEntry,
++	SourceExample,
++} from '@orkestrel/guide'
++import {
++	collectExamples,
++	collectKeys,
++	collectTitles,
++	computeSymbolKey,
++	createGuide,
++	createSource,
++	extractSourceLines,
++	findDrift,
++	locateComment,
++	normalizeComment,
++	parseManifest,
++	replaceCell,
++	replaceExample,
++	replaceSummary,
++	selectModuleKeys,
++	spliceSpan,
++} from '@orkestrel/guide'
++import { existsSync, globSync, readFileSync, writeFileSync } from 'node:fs'
++import { resolve } from 'node:path'
++import process from 'node:process'
++
++/** Names the option the seed accepts, with the values it takes. */
++const USAGE = 'usage: npm run docs [-- --to guide|--to source]'
++
++/** Matches the files the guide readers reflect over, the same set the gate inventories. */
++const INVENTORY: readonly string[] = ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md']
++
++/** Names the package manifest whose bare name selects this workspace's own guide. */
++const MANIFEST_FILE = 'package.json'
++
++/** Names the concept index every guide row is read from. */
++const INDEX_FILE = 'guides/README.md'
++
++/** Names the file whose blockquote pitch equals this workspace's own guide tagline. */
++const README_FILE = 'README.md'
++
++/** Names the compared pair the pitch reports under. */
++const PITCH_KEY = 'pitch'
++
++/** Pairs one indexed guide with the source it documents and the disagreements between them. */
++interface Row {
++	readonly spec: string
++	readonly guide: GuideInterface
++	readonly drift: readonly Drift[]
++	readonly titles: ReadonlyMap<string, SourceExample>
++	readonly summaries: ReadonlySet<string>
++	readonly index: ReadonlyMap<string, string>
++}
++
++/** Holds what one direction did with one row: the lines to print and the values to tally. */
++interface Outcome {
++	readonly lines: readonly string[]
++	readonly written: number
++	readonly reported: number
++}
++
++/**
++ * Reads the inventory the guide readers reflect over.
++ *
++ * @param root - The workspace root to read from.
++ * @returns Root-relative forward-slash keys mapped to file text.
++ */
++function readInventory(root: string): Record<string, string> {
++	const files: Record<string, string> = {}
++	for (const key of globSync([...INVENTORY], { cwd: root })) {
++		files[key.replaceAll('\\', '/')] = readFileSync(resolve(root, key), 'utf8')
++	}
++	return files
++}
++
++/**
++ * Reads the workspace's own bare package name.
++ *
++ * @param root - The workspace root to read from.
++ * @returns The name after the scope, or `undefined` when the manifest declares none.
++ */
++function readShortName(root: string): string | undefined {
++	const path = resolve(root, MANIFEST_FILE)
++	if (!existsSync(path)) return undefined
++	let manifest: unknown
++	try {
++		manifest = JSON.parse(readFileSync(path, 'utf8'))
++	} catch {
++		return undefined
++	}
++	if (typeof manifest !== 'object' || manifest === null) return undefined
++	const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
++	if (typeof name !== 'string' || name.length === 0) return undefined
++	return name.slice(name.lastIndexOf('/') + 1)
++}
++
++/**
++ * Renders one side of a compared pair.
++ *
++ * @param text - The text that side carries, or `undefined` when it carries none.
++ * @returns The text as a quoted single-line literal, or `absent`.
++ */
++function formatSide(text: string | undefined): string {
++	return text === undefined ? 'absent' : JSON.stringify(text)
++}
++
++/**
++ * Renders one disagreement as a single line.
++ *
++ * @param spec - The guide the disagreement was found in.
++ * @param drift - The disagreement, with the text each side carries.
++ * @returns The spec, the key, and each side's text or `absent`.
++ */
++function formatDrift(spec: string, drift: Drift): string {
++	return `${spec} ${drift.key}: guide ${formatSide(drift.guide)} source ${formatSide(drift.source)}`
++}
++
++/**
++ * Renders one disagreement a write left standing, with why it stands.
++ *
++ * @param spec - The guide the disagreement was found in.
++ * @param drift - The disagreement, with the text each side carries.
++ * @param reason - What stopped the write.
++ * @returns The disagreement's line with the reason after it.
++ */
++function formatReported(spec: string, drift: Drift, reason: string): string {
++	return `${formatDrift(spec, drift)}; ${reason}`
++}
++
++/**
++ * Renders the pitch pair as a single line.
++ *
++ * @param spec - The guide whose tagline the pitch is compared with.
++ * @param pitch - The README's blockquote pitch, or `undefined` when it carries none.
++ * @param tagline - The guide's blockquote tagline, or `undefined` when it carries none.
++ * @returns The spec, the key, and each side's text or `absent`.
++ */
++function formatPitch(spec: string, pitch: string | undefined, tagline: string | undefined): string {
++	return `${spec} ${PITCH_KEY}: readme ${formatSide(pitch)} tagline ${formatSide(tagline)}`
++}
++
++/**
++ * Collects the compared keys a guide's Surface and Methods tables carry.
++ *
++ * @param guide - The parsed guide.
++ * @returns One key per documented symbol and per documented member.
++ */
++function collectCells(guide: GuideInterface): ReadonlySet<string> {
++	const keys = new Set<string>()
++	for (const symbol of guide.surface()) keys.add(computeSymbolKey(symbol))
++	for (const group of guide.methods()) {
++		for (const entry of group.methods) keys.add(`${group.interface}.${entry.name}`)
++	}
++	return keys
++}
++
++/**
++ * Collects one line per input the run needs and the workspace does not carry.
++ *
++ * @param files - The workspace inventory the readers reflect over.
++ * @param entries - The indexed rows, or `undefined` when the workspace carries no index.
++ * @returns One line per missing input, each naming the file it is missing.
++ */
++function collectMissing(
++	files: Readonly<Record<string, string>>,
++	entries: readonly ManifestEntry[] | undefined,
++): readonly string[] {
++	if (entries === undefined) {
++		return [`${INDEX_FILE}: the workspace carries no concept index to read`]
++	}
++	return entries
++		.filter((entry) => files[entry.spec] === undefined)
++		.map((entry) => `${entry.spec}: the concept index names it and the workspace does not carry it`)
++}
++
++/**
++ * Indexes every compared key a module's files carry to the file carrying it.
++ *
++ * @param files - The workspace inventory the readers reflect over.
++ * @param module - The source directories the guide documents.
++ * @returns Each key mapped to the first file declaring it.
++ */
++function buildIndex(
++	files: Readonly<Record<string, string>>,
++	module: GuideModule,
++): ReadonlyMap<string, string> {
++	const index = new Map<string, string>()
++	for (const file of selectModuleKeys(files, module)) {
++		const text = files[file]
++		if (text === undefined) continue
++		for (const key of collectKeys(extractSourceLines(text)).values()) {
++			if (!index.has(key)) index.set(key, file)
++		}
++	}
++	return index
++}
++
++/**
++ * Splits a compared example text into the block a replacer writes.
++ *
++ * @param name - The declaration or member whose doc block carries the block.
++ * @param title - The heading text the fence and the tag pair on.
++ * @param text - The compared text: the language on the first line, the body beneath.
++ * @returns The block, carrying no language when the first line is empty.
++ */
++function splitExample(name: string, title: string, text: string): SourceExample {
++	const at = text.indexOf('\n')
++	const language = at === -1 ? text : text.slice(0, at)
++	const code = at === -1 ? '' : text.slice(at + 1)
++	return language.length === 0 ? { name, title, code } : { name, title, code, language }
++}
++
++/**
++ * Finds the compared key of the doc block carrying one titled example.
++ *
++ * @param texts - The current text of every file, keyed root-relative.
++ * @param index - Each compared key mapped to the file declaring it.
++ * @param name - The declaration or member the block belongs to.
++ * @param title - The heading text the tag carries.
++ * @returns The key `locateComment` reaches the block by, or `undefined` when none does.
++ */
++function findExample(
++	texts: ReadonlyMap<string, string>,
++	index: ReadonlyMap<string, string>,
++	name: string,
++	title: string,
++): string | undefined {
++	for (const [key, file] of index) {
++		if (key !== name && !key.endsWith(` ${name}`) && !key.endsWith(`.${name}`)) continue
++		const text = texts.get(file)
++		if (text === undefined) continue
++		const span = locateComment(text, key)
++		if (span === undefined) continue
++		const block = text.slice(span.start, span.end)
++		if (collectExamples(normalizeComment(block), name).some((one) => one.title === title)) {
++			return key
++		}
++	}
++	return undefined
++}
++
++/**
++ * Reports every disagreement one row carries, writing nothing.
++ *
++ * @param row - The indexed guide and its disagreements.
++ * @returns One line per disagreement, each left standing.
++ */
++function reportRow(row: Row): Outcome {
++	return {
++		lines: row.drift.map((drift) => formatDrift(row.spec, drift)),
++		written: 0,
++		reported: row.drift.length,
++	}
++}
++
++/**
++ * Carries every summary disagreement of one row across to its guide.
++ *
++ * @param row - The indexed guide and its disagreements.
++ * @param texts - The current text of every file, keyed root-relative, rewritten in place.
++ * @returns The lines left standing and the values to tally.
++ */
++function writeGuide(row: Row, texts: Map<string, string>): Outcome {
++	const start = texts.get(row.spec)
++	if (start === undefined) return reportRow(row)
++	const lines: string[] = []
++	let text = start
++	let written = 0
++	for (const drift of row.drift) {
++		if (!row.summaries.has(drift.key)) {
++			lines.push(formatReported(row.spec, drift, 'the guide fence owns an example'))
++			continue
++		}
++		if (drift.source === undefined) {
++			lines.push(formatReported(row.spec, drift, 'the source side carries no text'))
++			continue
++		}
++		const replaced = replaceCell(text, drift.key, drift.source)
++		if (replaced === undefined) {
++			lines.push(formatReported(row.spec, drift, 'no Summary cell carries the key'))
++			continue
++		}
++		if (replaced === text) continue
++		text = replaced
++		written += 1
++	}
++	if (text !== start) texts.set(row.spec, text)
++	return { lines, written, reported: lines.length }
++}
++
++/**
++ * Carries every disagreement of one row across to the source it documents.
++ *
++ * @param row - The indexed guide and its disagreements.
++ * @param texts - The current text of every file, keyed root-relative, rewritten in place.
++ * @returns The lines left standing and the values to tally.
++ */
++function writeSource(row: Row, texts: Map<string, string>): Outcome {
++	const lines: string[] = []
++	let written = 0
++	for (const drift of row.drift) {
++		if (drift.guide === undefined) {
++			lines.push(formatReported(row.spec, drift, 'the guide side carries no text'))
++			continue
++		}
++		const summary = row.summaries.has(drift.key)
++		const example = row.titles.get(drift.key)
++		const key = summary
++			? drift.key
++			: example === undefined
++				? undefined
++				: findExample(texts, row.index, example.name, drift.key)
++		const file = key === undefined ? undefined : row.index.get(key)
++		const text = file === undefined ? undefined : texts.get(file)
++		if (key === undefined || file === undefined || text === undefined) {
++			lines.push(formatReported(row.spec, drift, 'no doc block carries the key'))
++			continue
++		}
++		const span = locateComment(text, key)
++		if (span === undefined) {
++			lines.push(formatReported(row.spec, drift, 'no doc block carries the key'))
++			continue
++		}
++		const block = text.slice(span.start, span.end)
++		const rewritten =
++			example === undefined || summary
++				? replaceSummary(block, drift.guide)
++				: replaceExample(block, splitExample(example.name, drift.key, drift.guide))
++		if (rewritten === undefined) {
++			lines.push(formatReported(row.spec, drift, 'the doc block refused the rewrite'))
++			continue
++		}
++		const spliced = spliceSpan(text, span, rewritten)
++		if (spliced === text) continue
++		texts.set(file, spliced)
++		written += 1
++	}
++	return { lines, written, reported: lines.length }
++}
++
++const args = process.argv.slice(2)
++const direction =
++	args.length === 2 && args[0] === '--to' && (args[1] === 'guide' || args[1] === 'source')
++		? args[1]
++		: undefined
++if (direction === undefined && args.length > 0) {
++	process.stdout.write(`${USAGE}\n`)
++	process.exitCode = 2
++} else {
++	const root = process.cwd()
++	const files = readInventory(root)
++	const manifest = files[INDEX_FILE]
++	const entries = manifest === undefined ? undefined : parseManifest(manifest, 'guides')
++	const missing = collectMissing(files, entries)
++	if (entries === undefined || missing.length > 0) {
++		for (const line of missing) process.stdout.write(`${line}\n`)
++		process.exitCode = 2
++	} else {
++		// One current text per file, seeded once and rewritten in place, so a second
++		// row over the same file rewrites what the first row left rather than the
++		// bytes the run started from. The inventory stays frozen beside it, as what
++		// each flush compares against to decide whether a file moved.
++		const texts = new Map(Object.entries(files))
++		const rows: Row[] = []
++		for (const entry of entries) {
++			const markdown = files[entry.spec]
++			if (markdown === undefined) continue
++			const guide = createGuide(markdown)
++			const source = createSource({ files, module: entry.source })
++			rows.push({
++				spec: entry.spec,
++				guide,
++				drift: findDrift(guide, source),
++				titles: collectTitles(guide, source),
++				summaries: collectCells(guide),
++				index: buildIndex(files, entry.source),
++			})
++		}
++
++		const lines: string[] = []
++		let found = 0
++		let written = 0
++		let reported = 0
++		for (const row of rows) {
++			found += row.drift.length
++			const outcome =
++				direction === undefined
++					? reportRow(row)
++					: direction === 'guide'
++						? writeGuide(row, texts)
++						: writeSource(row, texts)
++			lines.push(...outcome.lines)
++			written += outcome.written
++			reported += outcome.reported
++		}
++
++		const name = readShortName(root)
++		const readme = files[README_FILE]
++		const own =
++			name === undefined ? undefined : rows.find((row) => row.spec === `guides/${name}.md`)
++		if (own !== undefined && readme !== undefined) {
++			const pitch = createGuide(readme).tagline()
++			const tagline = own.guide.tagline()
++			if (pitch !== tagline) {
++				found += 1
++				reported += 1
++				lines.push(
++					direction === undefined
++						? formatPitch(own.spec, pitch, tagline)
++						: `${formatPitch(own.spec, pitch, tagline)}; the README pitch is authored by hand`,
++				)
++			}
++		}
++
++		const changed: string[] = []
++		for (const [file, text] of texts) {
++			if (text === files[file]) continue
++			writeFileSync(resolve(root, file), text)
++			changed.push(file)
++		}
++		changed.sort()
++
++		for (const file of changed) process.stdout.write(`wrote ${file}\n`)
++		for (const line of lines) process.stdout.write(`${line}\n`)
++		process.stdout.write(
++			direction === undefined
++				? `rows read: ${rows.length}, disagreements found: ${found}\n`
++				: `rows read: ${rows.length}, disagreements found: ${found}, written: ${written}, reported: ${reported}\n`,
++		)
++		if (changed.length > 0) process.stdout.write('next: npm run format\n')
++		process.exitCode = reported > 0 ? 1 : 0
++	}
++}
