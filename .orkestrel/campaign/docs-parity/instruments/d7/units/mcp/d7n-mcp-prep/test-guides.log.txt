@@ -1,0 +1,14 @@
+
+> @orkestrel/mcp@0.0.29 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+································································································································································
+
+ Test Files  1 passed (1)
+      Tests  160 passed (160)
+   Start at  16:55:51
+   Duration  3.16s (transform 859ms, setup 690ms, import 1.05s, tests 1.22s, environment 0ms)
+

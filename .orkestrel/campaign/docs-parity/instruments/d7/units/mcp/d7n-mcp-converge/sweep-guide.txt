@@ -1,0 +1,1156 @@
+guides/mcp.md:17
+- > are an OPTIONAL decorator over that one engine — `createMCPLegacy(mcp)` translates a
++ > are an optional decorator over that one engine — `createMCPLegacy(mcp)` translates a
+guides/mcp.md:34
+- > (`-32700`) and invalid-request (`-32600`) mapping, each of whose envelopes OMITS
++ > (`-32700`) and invalid-request (`-32600`) mapping, each of whose envelopes omits
+guides/mcp.md:41
+- > **The wire lives ONE layer out.** [`src/server`](../src/server) carries the
++ > **The wire lives one layer out.** [`src/server`](../src/server) carries the
+guides/mcp.md:60
+- >   `WebSocket` client transport over the native global, the SAME core HTTP client
++ >   `WebSocket` client transport over the native global, the same core HTTP client
+guides/mcp.md:65
+- > body-size guards compose IN FRONT as ordinary `@orkestrel/server` middleware.
++ > body-size guards compose in front as ordinary `@orkestrel/server` middleware.
+guides/mcp.md:98
+- **The era discriminator is KEY PRESENCE.** A request is modern **iff** the key
++ **The era discriminator is key presence.** A request is modern **iff** the key
+guides/mcp.md:131
+- NOT be required on `server/discover`, `tools/list`, `resources/list`, or `prompts/list`,
++ not be required on `server/discover`, `tools/list`, `resources/list`, or `prompts/list`,
+guides/mcp.md:232
+- An annotation breaking any of them makes the whole TOOL DEFINITION invalid, and the two
++ An annotation breaking any of them makes the whole tool definition invalid, and the two
+guides/mcp.md:241
+- NO header at all — that is the protocol's distinction between "not supplied" and "supplied
++ no header at all — that is the protocol's distinction between "not supplied" and "supplied
+guides/mcp.md:312
+- graph. A call with NO `id` is a **notification** — a type of its own, handled
++ graph. A call with no `id` is a **notification** — a type of its own, handled
+guides/mcp.md:313
+- (the `request` event still fires) but yielding NO response (`dispatch` resolves
++ (the `request` event still fires) but yielding no response (`dispatch` resolves
+guides/mcp.md:315
+- envelopes OMIT the `id` they could not read; a `null` `id` never reaches the
++ envelopes omit the `id` they could not read; a `null` `id` never reaches the
+guides/mcp.md:317
+- are NOT protocol errors: the `ToolManager` (`@orkestrel/tool`) isolates a
++ are not protocol errors: the `ToolManager` (`@orkestrel/tool`) isolates a
+guides/mcp.md:334
+- split unrepresentable to get wrong. An INVOCATION is a **request** — a `method` call
++ split unrepresentable to get wrong. An invocation is a **request** — a `method` call
+guides/mcp.md:336
+- same call with NO `id`, answered by nothing. A RESPONSE is a **result** arm or an
++ same call with no `id`, answered by nothing. A response is a **result** arm or an
+guides/mcp.md:343
+- is the ONE place an `id` may be absent, and absence there means OMITTED: MCP
++ is the one place an `id` may be absent, and absence there means omitted: MCP
+guides/mcp.md:390
+- `MCPResult` is OPEN — it requires a string `resultType` and leaves the rest of
++ `MCPResult` is open — it requires a string `resultType` and leaves the rest of
+guides/mcp.md:393
+- CLOSED and keep their literal, so a caller that knows which method it called
++ closed and keep their literal, so a caller that knows which method it called
+guides/mcp.md:396
+- FORBIDDEN there, and `MCPResult` and `MCPLegacyResult` are unassignable in both
++ forbidden there, and `MCPResult` and `MCPLegacyResult` are unassignable in both
+guides/mcp.md:401
+- The modern branch answers from ONE registry, `server.methods`. The built-in
++ The modern branch answers from one registry, `server.methods`. The built-in
+guides/mcp.md:430
+- short-circuits every notification BEFORE the registry is read. Nothing answers a
++ short-circuits every notification before the registry is read. Nothing answers a
+guides/mcp.md:437
+- that was never typechecked against the seam can still arrive; dispatch CONTAINS
++ that was never typechecked against the seam can still arrive; dispatch contains
+guides/mcp.md:440
+- A handler also receives an `MCPMethodOptions` bag — the RESOLVED mirror of the
++ A handler also receives an `MCPMethodOptions` bag — the resolved mirror of the
+guides/mcp.md:442
+- transport can observe that the caller's request has ended, and it is REQUIRED
++ transport can observe that the caller's request has ended, and it is required
+guides/mcp.md:446
+- `dispatch` and `handle` take the caller-facing bag as an OPTIONAL second
++ `dispatch` and `handle` take the caller-facing bag as an optional second
+guides/mcp.md:472
+- `caller` is **ASSERTED, NEVER VERIFIED**. Sessions mint transport identity, not
++ `caller` is **asserted, never verified**. Sessions mint transport identity, not
+guides/mcp.md:478
+- A handler that must HOLD the request open returns an `MCPStream` instead of
++ A handler that must hold the request open returns an `MCPStream` instead of
+guides/mcp.md:482
+- unary response ends. The yield type FORBIDS an `id`, so a producer cannot put
++ unary response ends. The yield type forbids an `id`, so a producer cannot put
+guides/mcp.md:488
+- **What leaves `dispatch` is always CONTROLLED.** A producer publishes a plain
++ **What leaves `dispatch` is always controlled.** A producer publishes a plain
+guides/mcp.md:491
+- difference is who decides when the exchange ends. A native async generator QUEUES
++ difference is who decides when the exchange ends. A native async generator queues
+guides/mcp.md:497
+- no member for: end the exchange with NO terminal, from an owner that is not the consumer.
++ no member for: end the exchange with no terminal, from an owner that is not the consumer.
+guides/mcp.md:528
+- is holding. What the controller guarantees is that its CONSUMER never waits for one.
++ is holding. What the controller guarantees is that its consumer never waits for one.
+guides/mcp.md:530
+- **Ending a controlled exchange is the obligation of whoever is handed it, on EVERY exit —
++ **Ending a controlled exchange is the obligation of whoever is handed it, on every exit —
+guides/mcp.md:542
+- slot BEFORE it may reject**. Disposal that throws first would let a cleanup fault mask the
++ slot before it may reject**. Disposal that throws first would let a cleanup fault mask the
+guides/mcp.md:543
+- pump's original failure while still leaking the exchange, so a disposal failure may REPORT
++ pump's original failure while still leaking the exchange, so a disposal failure may report
+guides/mcp.md:549
+- this package's declared floor — `node >= 22.12.0` — rejects the emitted module at PARSE time
++ this package's declared floor — `node >= 22.12.0` — rejects the emitted module at parse time
+guides/mcp.md:588
+- OPAQUE and the manager mints it: this package neither interprets one nor invents one,
++ opaque and the manager mints it: this package neither interprets one nor invents one,
+guides/mcp.md:616
+- that continuation, and their SEMANTICS belong to the manager: core owns the carrier's shape,
++ that continuation, and their semantics belong to the manager: core owns the carrier's shape,
+guides/mcp.md:626
+- `uriTemplate` strings as DESCRIPTORS, and `resource` takes a **concrete URI** — the one the
++ `uriTemplate` strings as descriptors, and `resource` takes a **concrete URI** — the one the
+guides/mcp.md:783
+- 1. **A workspace addresses by PATH, and MCP addresses by URI.** That package says
++ 1. **A workspace addresses by path, and MCP addresses by URI.** That package says
+guides/mcp.md:807
+- about what a filled template MEANS, and a template that was written as a dialogue has
++ about what a filled template means, and a template that was written as a dialogue has
+guides/mcp.md:873
+- policy, so a required placeholder the client did not supply THROWS out of `prompt`. That
++ policy, so a required placeholder the client did not supply throws out of `prompt`. That
+guides/mcp.md:898
+- **Every produced notification is OWNED before it is judged.** The built-in snapshots each
++ **Every produced notification is owned before it is judged.** The built-in snapshots each
+guides/mcp.md:902
+- A notification that is not bounded exact JSON is DROPPED and the stream continues; a
++ A notification that is not bounded exact JSON is dropped and the stream continues; a
+guides/mcp.md:903
+- producer that THROWS ends the subscription with one detail-free `-32603` terminal, its
++ producer that throws ends the subscription with one detail-free `-32603` terminal, its
+guides/mcp.md:905
+- with the complete result; an abort closes with NO terminal at all, because a cancelled
++ with the complete result; an abort closes with no terminal at all, because a cancelled
+guides/mcp.md:910
+- object holding them are WIRE SPELLINGS carried verbatim from the dated schema.
++ object holding them are wire spellings carried verbatim from the dated schema.
+guides/mcp.md:912
+- strings are not this package's to choose. The TYPE name is
++ strings are not this package's to choose. The type name is
+guides/mcp.md:914
+- is this package's READING of an under-specified extension point rather than settled wire —
++ is this package's reading of an under-specified extension point rather than settled wire —
+guides/mcp.md:963
+- only when a consumer configured BOTH `task` and `subscription`: the manager is what resolves
++ only when a consumer configured both `task` and `subscription`: the manager is what resolves
+guides/mcp.md:965
+- leaves nothing to deliver and the acknowledgement omits the member. That fact is DERIVED from
++ leaves nothing to deliver and the acknowledgement omits the member. That fact is derived from
+guides/mcp.md:973
+- read does not resolve is OMITTED with no distinguishing signal: unknown, purged, and
++ read does not resolve is omitted with no distinguishing signal: unknown, purged, and
+guides/mcp.md:1035
+- `MCPSubscriptionStream` — an `AsyncGenerator` whose YIELDS are notifications and whose RETURN
++ `MCPSubscriptionStream` — an `AsyncGenerator` whose yields are notifications and whose return
+guides/mcp.md:1063
+- The refusal lands on the FIRST READ, because the body is a generator and nothing in it runs
++ The refusal lands on the first read, because the body is a generator and nothing in it runs
+guides/mcp.md:1144
+- digesting, or execution. Whichever it is, ONE reference then reaches the argument digest,
++ digesting, or execution. Whichever it is, one reference then reaches the argument digest,
+guides/mcp.md:1149
+- that WRITES to its own `arguments` now throws, and because the registry isolates a thrown tool
++ that writes to its own `arguments` now throws, and because the registry isolates a thrown tool
+guides/mcp.md:1165
+- produces exactly ONE terminal — the response the stream returns, and every later read
++ produces exactly one terminal — the response the stream returns, and every later read
+guides/mcp.md:1167
+- the answer, so the exchange closes on the value IT supplied: that read and every later one
++ the answer, so the exchange closes on the value it supplied: that read and every later one
+guides/mcp.md:1172
+- the producer is parked — and the request's signal goes down BEFORE cleanup is delegated,
++ the producer is parked — and the request's signal goes down before cleanup is delegated,
+guides/mcp.md:1174
+- rejects. A request whose caller has ALREADY gone never starts its producer at all: the
++ rejects. A request whose caller has already gone never starts its producer at all: the
+guides/mcp.md:1293
+- they check the CALENDAR, not the shape alone: RFC 3339 §5.6 defines `date-mday` by the month and
++ they check the calendar, not the shape alone: RFC 3339 §5.6 defines `date-mday` by the month and
+guides/mcp.md:1339
+- provider call somebody pays for. On a FIRST round: the selector runs, its round is owned and
++ provider call somebody pays for. On a first round: the selector runs, its round is owned and
+guides/mcp.md:1342
+- not send costs no principal lookup and no audit record. On a RETRY: every structural binding —
++ not send costs no principal lookup and no audit record. On a retry: every structural binding —
+guides/mcp.md:1346
+- round this server already gated; what it measures there is the NEXT round, so it runs after the
++ round this server already gated; what it measures there is the next round, so it runs after the
+guides/mcp.md:1468
+- content by SHAPE — `isMCPElicitResult` allows it — while the server additionally enforces the
++ content by shape — `isMCPElicitResult` allows it — while the server additionally enforces the
+guides/mcp.md:1482
+- checked for its response SHAPE alone and never against a `requestedSchema` — which is the one
++ checked for its response shape alone and never against a `requestedSchema` — which is the one
+guides/mcp.md:1487
+- are top-level `params` siblings. Extra `inputResponses` keys are IGNORED — the server reads
++ are top-level `params` siblings. Extra `inputResponses` keys are ignored — the server reads
+guides/mcp.md:1492
+- `elicitation` value names the ARM the round needs, so the client can act on it: a missing URL
++ `elicitation` value names the arm the round needs, so the client can act on it: a missing URL
+guides/mcp.md:1503
+- a port that opens SUCCESSFULLY onto a payload this server never authored, or onto one
++ a port that opens successfully onto a payload this server never authored, or onto one
+guides/mcp.md:1512
+- every round it issues, so a retry reaching THIS server without one is refused `-32602`. Pass
++ every round it issues, so a retry reaching this server without one is refused `-32602`. Pass
+guides/mcp.md:1545
+- requests a durable TASK published — the `'task'` arm of `MCPCallOutcome`, reached through the
++ requests a durable task published — the `'task'` arm of `MCPCallOutcome`, reached through the
+guides/mcp.md:1546
+- `tasks/*` methods — while the retry here answers an INLINE `resultType: 'input_required'` and
++ `tasks/*` methods — while the retry here answers an inline `resultType: 'input_required'` and
+guides/mcp.md:1549
+- **What the protected state binds, and for how long.** The carrier is OPAQUE to the client:
++ **What the protected state binds, and for how long.** The carrier is opaque to the client:
+guides/mcp.md:1550
+- it carries an authenticated principal, an absolute expiry, the ORIGINAL first-round request
++ it carries an authenticated principal, an absolute expiry, the original first-round request
+guides/mcp.md:1551
+- id, the protocol revision, the method, the EXACT round that was issued, the tool name, a
++ id, the protocol revision, the method, the exact round that was issued, the tool name, a
+guides/mcp.md:1553
+- round travels INSIDE that payload, so its size is spent from `limit.state` (16384 bytes by
++ round travels inside that payload, so its size is spent from `limit.state` (16384 bytes by
+guides/mcp.md:1568
+- is exhausted by its expiry alone. Single use is APPLICATION policy — a continuation port that
++ is exhausted by its expiry alone. Single use is application policy — a continuation port that
+guides/mcp.md:1576
+- server-side handle. The built-in modern `tools/call` is the only handler that PRODUCES
++ server-side handle. The built-in modern `tools/call` is the only handler that produces
+guides/mcp.md:1580
+- every issuer, not one method. Core does NOT refuse
++ every issuer, not one method. Core does not refuse
+guides/mcp.md:1583
+- SEMANTICS belong to whoever registered that method. Register `prompts/get` or
++ semantics belong to whoever registered that method. Register `prompts/get` or
+guides/mcp.md:1590
+- The Tasks extension is the STABLE, immutable snapshot dated 2026-07-28, extension id
++ The Tasks extension is the stable, immutable snapshot dated 2026-07-28, extension id
+guides/mcp.md:1596
+- A **task** is a durable operation that OUTLIVES the request that created it. The server
++ A **task** is a durable operation that outlives the request that created it. The server
+guides/mcp.md:1604
+- **Deferral is the SERVER's decision.** The extension gives a client no flag and no parameter
++ **Deferral is the server's decision.** The extension gives a client no flag and no parameter
+guides/mcp.md:1616
+- REQUEST's lifetime, and a transport aborts it as soon as the response body is flushed. A
++ request's lifetime, and a transport aborts it as soon as the response body is flushed. A
+guides/mcp.md:1619
+- disconnected. Spend `options.signal` on work that must finish before the ANSWER is written,
++ disconnected. Spend `options.signal` on work that must finish before the answer is written,
+guides/mcp.md:1685
+- counting at `1` produce the SAME key, which is one principal handed a `taskId` over the other's
++ counting at `1` produce the same key, which is one principal handed a `taskId` over the other's
+guides/mcp.md:1703
+- Only the CREATION answer carries `resultType: 'task'`. Reading, answering, and cancelling a
++ Only the creation answer carries `resultType: 'task'`. Reading, answering, and cancelling a
+guides/mcp.md:1710
+- parameters are read at all, because the extension binds that refusal to the METHOD. This is
++ parameters are read at all, because the extension binds that refusal to the method. This is
+guides/mcp.md:1724
+- THROWS is contained as `-32603` with the caught value on the server's `error` event. A store
++ throws is contained as `-32603` with the caught value on the server's `error` event. A store
+guides/mcp.md:1725
+- that RETURNS badly — a snapshot outside the content bound, or one off the published contract —
++ that returns badly — a snapshot outside the content bound, or one off the published contract —
+guides/mcp.md:1733
+- port that opens SUCCESSFULLY onto an off-contract payload is reported on `error` there, because
++ port that opens successfully onto an off-contract payload is reported on `error` there, because
+guides/mcp.md:1744
+- this server ASKS, and the acknowledgement says the request was accepted, never that the task
++ this server asks, and the acknowledgement says the request was accepted, never that the task
+guides/mcp.md:1748
+- to IGNORE rather than this server's to refuse, because which keys a task recognizes is
++ to ignore rather than this server's to refuse, because which keys a task recognizes is
+guides/mcp.md:1760
+- | What is suspended     | one LIVE request                                              | one DURABLE task                                    |
++ | What is suspended     | one live request                                              | one durable task                                    |
+guides/mcp.md:1786
+- | **Dedup keys scoped to their principal** | Returning the existing task for a repeated key is what makes a retried call idempotent — but an unscoped key means two principals submitting the same key receive the SAME task, one reading the other's work. This package has no principal to scope by; the store or `deferral` must. |
++ | **Dedup keys scoped to their principal** | Returning the existing task for a repeated key is what makes a retried call idempotent — but an unscoped key means two principals submitting the same key receive the same task, one reading the other's work. This package has no principal to scope by; the store or `deferral` must. |
+guides/mcp.md:1805
+- bounded JSON. `keys` is the breadth bound for BOTH bounded values, not a `_meta`
++ bounded JSON. `keys` is the breadth bound for both bounded values, not a `_meta`
+guides/mcp.md:1819
+- and exhausted subscription capacity map to `-32603` — under BOTH eras, because a legacy
++ and exhausted subscription capacity map to `-32603` — under both eras, because a legacy
+guides/mcp.md:1862
+- channel (`send` / `listen` / `closed` / `close`, ALL string messages; framing
++ channel (`send` / `listen` / `closed` / `close`, all string messages; framing
+guides/mcp.md:1864
+- WebSocket, the browser's `MessagePort` and worker scope — implements this ONE port
++ WebSocket, the browser's `MessagePort` and worker scope — implements this one port
+guides/mcp.md:1935
+- acquire modern request metadata, run through the SAME dispatcher a modern request runs through,
++ acquire modern request metadata, run through the same dispatcher a modern request runs through,
+guides/mcp.md:1984
+- **What removing legacy SERVER INGRESS costs, exactly.** The claim is bounded to ingress on
++ **What removing legacy server ingress costs, exactly.** The claim is bounded to ingress on
+guides/mcp.md:1985
+- purpose: what comes out is a server that no longer ANSWERS a dated revision, not a package that
++ purpose: what comes out is a server that no longer answers a dated revision, not a package that
+guides/mcp.md:1993
+- **`src/core/types.ts` is a DECLARED ROW, never a file to delete.** It is the shared contract
++ **`src/core/types.ts` is a declared row, never a file to delete.** It is the shared contract
+guides/mcp.md:2128
+- | `createMCPClient`                | function | Creates a transport-agnostic Model Context Protocol CLIENT — connects to a REMOTE MCP server over an injected `MCPMessageTransportInterface`, negotiates the modern revision through `server/discover`, and exposes the server's tools as local `ToolInterface`s an agent can run. |
++ | `createMCPClient`                | function | Creates a transport-agnostic Model Context Protocol client — connects to a remote MCP server over an injected `MCPMessageTransportInterface`, negotiates the modern revision through `server/discover`, and exposes the server's tools as local `ToolInterface`s an agent can run. |
+guides/mcp.md:2136
+- | `MCPServer`                | class | Dispatches JSON-RPC 2.0 requests over a live `ToolManagerInterface`, with NO transport coupling.                                                                                                                                                                                                                                                                                   |
++ | `MCPServer`                | class | Dispatches JSON-RPC 2.0 requests over a live `ToolManagerInterface`, with no transport coupling.                                                                                                                                                                                                                                                                                   |
+guides/mcp.md:2143
+- | `MCPClient`                | class | Connects to a REMOTE MCP server over any injected `MCPMessageTransportInterface`, negotiates the modern revision, and exposes the server's tools as local `ToolInterface`s an agent can run.                                                                                                                                                                                       |
++ | `MCPClient`                | class | Connects to a remote MCP server over any injected `MCPMessageTransportInterface`, negotiates the modern revision, and exposes the server's tools as local `ToolInterface`s an agent can run.                                                                                                                                                                                       |
+guides/mcp.md:2144
+- | `MCPTaskClient`            | class | Issues the `tasks/*` methods over one correlated-request door — the CLIENT half of the stable Tasks extension, exposed as an `MCPClientInterface`'s `tasks`.                                                                                                                                                                                                                       |
++ | `MCPTaskClient`            | class | Issues the `tasks/*` methods over one correlated-request door — the client half of the stable Tasks extension, exposed as an `MCPClientInterface`'s `tasks`.                                                                                                                                                                                                                       |
+guides/mcp.md:2145
+- | `HTTPClientTransport`      | class | Drives a REMOTE Streamable-HTTP MCP server over `fetch` — a CLIENT `MCPMessageTransportInterface` for the Model Context Protocol, the egress mirror of the server's `createMCPRoutes`.                                                                                                                                                                                             |
++ | `HTTPClientTransport`      | class | Drives a remote Streamable-HTTP MCP server over `fetch` — a client `MCPMessageTransportInterface` for the Model Context Protocol, the egress mirror of the server's `createMCPRoutes`.                                                                                                                                                                                             |
+guides/mcp.md:2283
+- | `inferRequestVersion`              | function | Infers the protocol version an outbound message announces itself with — the ONE projection every HTTP client transport stamps `mcp-protocol-version` from.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
++ | `inferRequestVersion`              | function | Infers the protocol version an outbound message announces itself with — the one projection every HTTP client transport stamps `mcp-protocol-version` from.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+guides/mcp.md:2323
+- | `sendStream`                       | function | Pumps a controlled serialized exchange onto a transport — every notification in order, then the terminating response — and END the exchange however the pump leaves.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++ | `sendStream`                       | function | Pumps a controlled serialized exchange onto a transport — every notification in order, then the terminating response — and end the exchange however the pump leaves.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+guides/mcp.md:2325
+- | `bindClient`                       | function | Pipes an `MCPTransportInterface` into an `MCPClientInterface` — every inbound message is decoded and delivered onto the client's OWN transport (`client.transport.emitter`'s `message` / `close` events), resolving/rejecting the client's correlated pending requests exactly as a direct reply would.                                                                                                                                                                                                                                                                                                                                                                                                                          |
++ | `bindClient`                       | function | Pipes an `MCPTransportInterface` into an `MCPClientInterface` — every inbound message is decoded and delivered onto the client's own transport (`client.transport.emitter`'s `message` / `close` events), resolving/rejecting the client's correlated pending requests exactly as a direct reply would.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+guides/mcp.md:2339
+- | `JSONRPCRequest`                   | interface | `{ jsonrpc: '2.0', method, id, params? }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Represents a JSON-RPC 2.0 request — a `method` call with optional `params`, correlated to its response by the `id` it REQUIRES.                                                                             |
++ | `JSONRPCRequest`                   | interface | `{ jsonrpc: '2.0', method, id, params? }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Represents a JSON-RPC 2.0 request — a `method` call with optional `params`, correlated to its response by the `id` it requires.                                                                             |
+guides/mcp.md:2370
+- | `MCPUnstampedCallResult`           | type      | `{ content, structuredContent?, isError?, _meta? }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Represents a `tools/call` result BEFORE the modern stamp — the executed tool's output as `content` blocks, with `isError` flagging a tool failure.                                                          |
++ | `MCPUnstampedCallResult`           | type      | `{ content, structuredContent?, isError?, _meta? }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Represents a `tools/call` result before the modern stamp — the executed tool's output as `content` blocks, with `isError` flagging a tool failure.                                                          |
+guides/mcp.md:2441
+- | `MCPProgressOwnerInterface`        | interface | `{} plus report, take, stop`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Represents the OWNING half of one progress slot — `MCPProgressInterface` plus the consuming and stopping the slot's owner performs.                                                                         |
++ | `MCPProgressOwnerInterface`        | interface | `{} plus report, take, stop`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Represents the owning half of one progress slot — `MCPProgressInterface` plus the consuming and stopping the slot's owner performs.                                                                         |
+guides/mcp.md:2457
+- | `MCPMethodOptions`                 | interface | `{ signal, caller? }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Represents the RESOLVED per-request options one dispatched method receives.                                                                                                                                 |
++ | `MCPMethodOptions`                 | interface | `{ signal, caller? }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Represents the resolved per-request options one dispatched method receives.                                                                                                                                 |
+guides/mcp.md:2462
+- | `MCPStreamControllerInterface`     | interface | `{} plus next, return, throw, stop, [Symbol.asyncDispose]`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Represents a held-open modern result whose cancellation ONE owner arbitrates — the arm every stream leaving `MCPServer.dispatch` takes.                                                                     |
++ | `MCPStreamControllerInterface`     | interface | `{} plus next, return, throw, stop, [Symbol.asyncDispose]`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Represents a held-open modern result whose cancellation one owner arbitrates — the arm every stream leaving `MCPServer.dispatch` takes.                                                                     |
+guides/mcp.md:2465
+- | `MCPMethodManagerInterface`        | interface | `{} plus add, method`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Represents the modern method registry an `MCPServerInterface` dispatches through — the ONE seam carrying both the built-in methods and any method a consumer adds.                                          |
++ | `MCPMethodManagerInterface`        | interface | `{} plus add, method`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Represents the modern method registry an `MCPServerInterface` dispatches through — the one seam carrying both the built-in methods and any method a consumer adds.                                          |
+guides/mcp.md:2471
+- | `MCPServerInterface`               | interface | `{ emitter, limit, identity, methods } plus dispatch, handle`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Dispatches JSON-RPC 2.0 modern requests over a live `ToolManagerInterface`, with NO transport coupling (a transport layer pumps strings through `handle`).                                                  |
++ | `MCPServerInterface`               | interface | `{ emitter, limit, identity, methods } plus dispatch, handle`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Dispatches JSON-RPC 2.0 modern requests over a live `ToolManagerInterface`, with no transport coupling (a transport layer pumps strings through `handle`).                                                  |
+guides/mcp.md:2485
+- | `MCPTaskClientInterface`           | interface | `{} plus task, update, abort`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Reads, answers, and stops a durable task the peer created — the CLIENT half of the stable Tasks extension.                                                                                                  |
++ | `MCPTaskClientInterface`           | interface | `{} plus task, update, abort`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Reads, answers, and stops a durable task the peer created — the client half of the stable Tasks extension.                                                                                                  |
+guides/mcp.md:2486
+- | `MCPClientInterface`               | interface | `{ emitter, connected, version, transport, tasks } plus connect, discover, disconnect, tools, listen, call`                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Connects to a REMOTE MCP server over any injected `MCPMessageTransportInterface`, negotiates the modern wire revision, and exposes the server's tools as local `ToolInterface`s an agent can run.           |
++ | `MCPClientInterface`               | interface | `{ emitter, connected, version, transport, tasks } plus connect, discover, disconnect, tools, listen, call`                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Connects to a remote MCP server over any injected `MCPMessageTransportInterface`, negotiates the modern wire revision, and exposes the server's tools as local `ToolInterface`s an agent can run.           |
+guides/mcp.md:2504
+- rate-limiting IN FRONT as ordinary middleware and supply the shared origin policy
++ rate-limiting in front as ordinary middleware and supply the shared origin policy
+guides/mcp.md:2506
+- are likewise deliberately NOT enforced by `createMCPRoutes` / `createMCPSession` —
++ are likewise deliberately not enforced by `createMCPRoutes` / `createMCPSession` —
+guides/mcp.md:2600
+- A modern `tools/call` is additionally held to the `Mcp-Param-*` headers ITS OWN served
++ A modern `tools/call` is additionally held to the `Mcp-Param-*` headers its own served
+guides/mcp.md:2636
+- **Sessions are a separate, native, plug-and-play middleware — NO dependency on
++ **Sessions are a separate, native, plug-and-play middleware — no dependency on
+guides/mcp.md:2638
+- (`@orkestrel/server`); compose it with `router.use(createMCPSession())` IN
++ (`@orkestrel/server`); compose it with `router.use(createMCPSession())` in
+guides/mcp.md:2639
+- FRONT of a session-agnostic `createMCPRoutes(mcp)`. It owns a closure
++ front of a session-agnostic `createMCPRoutes(mcp)`. It owns a closure
+guides/mcp.md:2650
+- implemented here. Because the body can only be read ONCE, the middleware
++ implemented here. Because the body can only be read once, the middleware
+guides/mcp.md:2651
+- buffers `request.text()` and FORWARDS a freshly built `Request` carrying that
++ buffers `request.text()` and forwards a freshly built `Request` carrying that
+guides/mcp.md:2657
+- **Resumable server→client push.** Each `MCPSession` FOLDS IN a bounded replay
++ **Resumable server→client push.** Each `MCPSession` folds in a bounded replay
+guides/mcp.md:2658
+- log; `session.push(message)` APPENDS the message to that log with a monotone
++ log; `session.push(message)` appends the message to that log with a monotone
+guides/mcp.md:2659
+- event id AND fans it out to every open `GET {path}` SSE stream as one
++ event id and fans it out to every open `GET {path}` SSE stream as one
+guides/mcp.md:2664
+- a dropped connection it RECONNECTS sending the `Last-Event-ID` of the last
++ a dropped connection it reconnects sending the `Last-Event-ID` of the last
+guides/mcp.md:2665
+- event it saw, and the server REPLAYS every logged event strictly after that
++ event it saw, and the server replays every logged event strictly after that
+guides/mcp.md:2667
+- retains (evicted past `capacity` / `ttl`, or never seen) replays NOTHING — the
++ retains (evicted past `capacity` / `ttl`, or never seen) replays nothing — the
+guides/mcp.md:2678
+- | `createHTTPClientTransport`   | function | Creates the HTTP CLIENT transport for an `MCPClientInterface` — a `MCPMessageTransportInterface` that drives a REMOTE Streamable-HTTP MCP server over `fetch`. The egress mirror of `createMCPRoutes`.                                                                                                                                                                                                                                                                                                                                                      |
++ | `createHTTPClientTransport`   | function | Creates the HTTP client transport for an `MCPClientInterface` — a `MCPMessageTransportInterface` that drives a remote Streamable-HTTP MCP server over `fetch`. The egress mirror of `createMCPRoutes`.                                                                                                                                                                                                                                                                                                                                                      |
+guides/mcp.md:2679
+- | `createMCPSession`            | function | Creates the native MCP session `MiddlewareHandler` — the plug-and-play stateful layer that fronts a session-agnostic `createMCPRoutes`. Compose it with `router.use(createMCPSession())` (or the equivalent middleware seam), mirroring any other closure-scoped stateful middleware. Has NO dependency on `@orkestrel/middleware` — the session store, mint-on-`initialize`, and resumable stream are all native to this package.                                                                                                                          |
++ | `createMCPSession`            | function | Creates the native MCP session `MiddlewareHandler` — the plug-and-play stateful layer that fronts a session-agnostic `createMCPRoutes`. Compose it with `router.use(createMCPSession())` (or the equivalent middleware seam), mirroring any other closure-scoped stateful middleware. Has no dependency on `@orkestrel/middleware` — the session store, mint-on-`initialize`, and resumable stream are all native to this package.                                                                                                                          |
+guides/mcp.md:2680
+- | `createDuplexServerTransport` | function | Creates the server-side mirror of `createDuplexClientTransport`: the adapter that bridges a message-channel `MCPMessageTransportInterface` (the shape the stdio and WebSocket SERVER transports already implement) onto the environment-agnostic `MCPTransportInterface` port — what `createStdioServer` and `createWebSocketServer` pipe through `bindServer`, so the request/reply/error pump those factories used to hand-roll identically now lives ONCE in the core binder. `createDuplexClientTransport` adapts the same two contracts the other way. |
++ | `createDuplexServerTransport` | function | Creates the server-side mirror of `createDuplexClientTransport`: the adapter that bridges a message-channel `MCPMessageTransportInterface` (the shape the stdio and WebSocket server transports already implement) onto the environment-agnostic `MCPTransportInterface` port — what `createStdioServer` and `createWebSocketServer` pipe through `bindServer`, so the request/reply/error pump those factories used to hand-roll identically now lives once in the core binder. `createDuplexClientTransport` adapts the same two contracts the other way. |
+guides/mcp.md:2687
+- | `MCPSession`     | class | Represents one MCP transport session — the per-session entity a `createMCPSession` middleware owns, keyed by its `id`, carrying the resumable server→client push channel with its bounded replay log FOLDED IN. |
++ | `MCPSession`     | class | Represents one MCP transport session — the per-session entity a `createMCPSession` middleware owns, keyed by its `id`, carrying the resumable server→client push channel with its bounded replay log folded in. |
+guides/mcp.md:2703
+- | `DEFAULT_MCP_SESSION_CAPACITY`   | const | `1024`                | Sets the default capacity of a session's FOLDED resumable event log (the per-`MCPSession` replay log) — the maximum number of pushed server→client messages retained for replay before the OLDEST is evicted.                          |
++ | `DEFAULT_MCP_SESSION_CAPACITY`   | const | `1024`                | Sets the default capacity of a session's folded resumable event log (the per-`MCPSession` replay log) — the maximum number of pushed server→client messages retained for replay before the oldest is evicted.                          |
+guides/mcp.md:2721
+- | `sendEventStream`         | function | Pumps a controlled held-open exchange onto an open SSE stream — one `data:` event per notification in order, then the terminating response — and END the exchange however the pump leaves.                                                                                                                        |
++ | `sendEventStream`         | function | Pumps a controlled held-open exchange onto an open SSE stream — one `data:` event per notification in order, then the terminating response — and end the exchange however the pump leaves.                                                                                                                        |
+guides/mcp.md:2744
+- | `HTTPTransportOptions`        | interface | `{ streaming?, origin?, keepalive?, caller?, path? }`                                                          | Options for `createMCPRoutes` — the mount path plus the shared POST-handler options. `createMCPRoutes` is STATELESS; sessions are a separate middleware (`createMCPSession`), composed with `server.use`.                                                                               |
++ | `HTTPTransportOptions`        | interface | `{ streaming?, origin?, keepalive?, caller?, path? }`                                                          | Options for `createMCPRoutes` — the mount path plus the shared POST-handler options. `createMCPRoutes` is stateless; sessions are a separate middleware (`createMCPSession`), composed with `server.use`.                                                                               |
+guides/mcp.md:2747
+- | `MCPSessionInterface`         | interface | `{ id } plus attach, detach, push, replay`                                                                     | Represents one MCP transport session — the per-session entity a `createMCPSession` middleware owns (the `MCPSession` entity), carrying the resumable server→client push channel with its bounded replay log FOLDED IN.                                                                  |
++ | `MCPSessionInterface`         | interface | `{ id } plus attach, detach, push, replay`                                                                     | Represents one MCP transport session — the per-session entity a `createMCPSession` middleware owns (the `MCPSession` entity), carrying the resumable server→client push channel with its bounded replay log folded in.                                                                  |
+guides/mcp.md:2765
+- upgrade. Both `WebSocketServerTransport` and `WebSocketClientTransport` REUSE
++ upgrade. Both `WebSocketServerTransport` and `WebSocketClientTransport` reuse
+guides/mcp.md:2769
+- HTTP transports share ONE transport contract. Like the HTTP transport it is
++ HTTP transports share one transport contract. Like the HTTP transport it is
+guides/mcp.md:2770
+- **mechanism, not policy** — compose an auth guard IN FRONT by registering a
++ **mechanism, not policy** — compose an auth guard in front by registering a
+guides/mcp.md:2771
+- `server.upgrade(...)` handler BEFORE this one (it can decline + destroy an
++ `server.upgrade(...)` handler before this one (it can decline + destroy an
+guides/mcp.md:2796
+- connection set the spine's own close walks, so the claimant is the ONLY thing that can
++ connection set the spine's own close walks, so the claimant is the only thing that can
+guides/mcp.md:2825
+- | `createWebSocketServer`          | function | Creates the MCP WebSocket transport INGRESS — an `UpgradeHandler` that exposes a transport-agnostic `MCPDispatcherInterface` over a WebSocket, the WebSocket mirror of `createMCPRoutes`. Register it on the spine's upgrade seam.                             |
++ | `createWebSocketServer`          | function | Creates the MCP WebSocket transport ingress — an `UpgradeHandler` that exposes a transport-agnostic `MCPDispatcherInterface` over a WebSocket, the WebSocket mirror of `createMCPRoutes`. Register it on the spine's upgrade seam.                             |
+guides/mcp.md:2826
+- | `createWebSocketClientTransport` | function | Creates the WebSocket CLIENT transport for an `MCPClientInterface` — a `MCPMessageTransportInterface` that drives a REMOTE MCP server over a WebSocket. The egress mirror of `createWebSocketServer` and the WebSocket sibling of `createHTTPClientTransport`. |
++ | `createWebSocketClientTransport` | function | Creates the WebSocket client transport for an `MCPClientInterface` — a `MCPMessageTransportInterface` that drives a remote MCP server over a WebSocket. The egress mirror of `createWebSocketServer` and the WebSocket sibling of `createHTTPClientTransport`. |
+guides/mcp.md:2832
+- | `WebSocketServerTransport` | class | Wraps a `NodeWebSocketInterface` (the RFC 6455 wire wrapper) as a `MCPMessageTransportInterface` — the per-connection JSON-RPC-over-WebSocket SERVER bridge, the bidirectional JSON-RPC message channel `createWebSocketServer` pumps `mcp.dispatch` over and the egress mirror's `WebSocketClientTransport` reuses. |
++ | `WebSocketServerTransport` | class | Wraps a `NodeWebSocketInterface` (the RFC 6455 wire wrapper) as a `MCPMessageTransportInterface` — the per-connection JSON-RPC-over-WebSocket server bridge, the bidirectional JSON-RPC message channel `createWebSocketServer` pumps `mcp.dispatch` over and the egress mirror's `WebSocketClientTransport` reuses. |
+guides/mcp.md:2833
+- | `WebSocketClientTransport` | class | Drives a REMOTE MCP server over a WebSocket — a CLIENT `MCPMessageTransportInterface` for the Model Context Protocol, the egress mirror of `createWebSocketServer` and the WebSocket sibling of `HTTPClientTransport`.                                                                                               |
++ | `WebSocketClientTransport` | class | Drives a remote MCP server over a WebSocket — a client `MCPMessageTransportInterface` for the Model Context Protocol, the egress mirror of `createWebSocketServer` and the WebSocket sibling of `HTTPClientTransport`.                                                                                               |
+guides/mcp.md:3000
+- | `createStdioClientTransport` | function | Creates the stdio CLIENT transport for an `MCPClientInterface` — a `StdioClientTransportInterface` that spawns and drives a CHILD PROCESS MCP server over newline-delimited JSON-RPC on `stdin`/`stdout`, the stdio sibling of `createHTTPClientTransport` and `createWebSocketClientTransport`. |
++ | `createStdioClientTransport` | function | Creates the stdio client transport for an `MCPClientInterface` — a `StdioClientTransportInterface` that spawns and drives a child process MCP server over newline-delimited JSON-RPC on `stdin`/`stdout`, the stdio sibling of `createHTTPClientTransport` and `createWebSocketClientTransport`. |
+guides/mcp.md:3001
+- | `createStdioServer`          | function | Creates the MCP stdio transport INGRESS — pumps a transport-agnostic `MCPDispatcherInterface` over newline-delimited JSON-RPC on `stdin`/`stdout` (or an injected stream pair), the stdio mirror of `createWebSocketServer`.                                                                     |
++ | `createStdioServer`          | function | Creates the MCP stdio transport ingress — pumps a transport-agnostic `MCPDispatcherInterface` over newline-delimited JSON-RPC on `stdin`/`stdout` (or an injected stream pair), the stdio mirror of `createWebSocketServer`.                                                                     |
+guides/mcp.md:3007
+- | `StdioClientTransport` | class | Drives a CHILD PROCESS MCP server over newline-delimited JSON-RPC on `stdin`/`stdout` — a `StdioClientTransportInterface`, the stdio sibling of `HTTPClientTransport` and `WebSocketClientTransport`.                                                                                                  |
++ | `StdioClientTransport` | class | Drives a child process MCP server over newline-delimited JSON-RPC on `stdin`/`stdout` — a `StdioClientTransportInterface`, the stdio sibling of `HTTPClientTransport` and `WebSocketClientTransport`.                                                                                                  |
+guides/mcp.md:3032
+- | `StdioServerInterface`          | interface | `{} plus start, stop`                                            | Arms and tears down the newline-delimited JSON-RPC pump over the `StdioServerOptions` stream pair — the stdio INGRESS handle `createStdioServer` returns.                                                                                     |
++ | `StdioServerInterface`          | interface | `{} plus start, stop`                                            | Arms and tears down the newline-delimited JSON-RPC pump over the `StdioServerOptions` stream pair — the stdio ingress handle `createStdioServer` returns.                                                                                     |
+guides/mcp.md:3034
+- | `LineExtraction`                | interface | `{ lines, remainder }`                                           | Represents the result of folding one more chunk of raw stdio bytes into a newline-framed buffer — every COMPLETE line extracted (newline-terminated in the wire bytes) plus the trailing partial line carried forward as the new `remainder`. |
++ | `LineExtraction`                | interface | `{ lines, remainder }`                                           | Represents the result of folding one more chunk of raw stdio bytes into a newline-framed buffer — every complete line extracted (newline-terminated in the wire bytes) plus the trailing partial line carried forward as the new `remainder`. |
+guides/mcp.md:3040
+- CLIENT-only transports drive a REMOTE MCP server from the browser,
++ CLIENT-only transports drive a remote MCP server from the browser,
+guides/mcp.md:3041
+- over the SAME `MCPMessageTransportInterface` the Node face's transports
++ over the same `MCPMessageTransportInterface` the Node face's transports
+guides/mcp.md:3046
+- `createHTTPClientTransport` returns the core `HTTPClientTransport` — ONE class, published
++ `createHTTPClientTransport` returns the core `HTTPClientTransport` — one class, published
+guides/mcp.md:3052
+- `MCPSession`-based server unchanged. The WebSocket transports share their exported NAMES
++ `MCPSession`-based server unchanged. The WebSocket transports share their exported names
+guides/mcp.md:3064
+- the reserved `_meta` version off the message being sent. That is deliberately the SAME read the
++ the reserved `_meta` version off the message being sent. That is deliberately the same read the
+guides/mcp.md:3066
+- this client sends one for. It is NOT `parseRequestContext`: that parser
++ this client sends one for. It is not `parseRequestContext`: that parser
+guides/mcp.md:3078
+- `Sec-WebSocket-Protocol: mcp` itself, and because `options.headers` spreads LAST over the
++ `Sec-WebSocket-Protocol: mcp` itself, and because `options.headers` spreads last over the
+guides/mcp.md:3107
+- property of the model, not a defect in a transport — `duplex` says what the carrier IS, and a
++ property of the model, not a defect in a transport — `duplex` says what the carrier is, and a
+guides/mcp.md:3110
+- `createMessagePortTransport` is the genuinely NEW capability: MCP over
++ `createMessagePortTransport` is the genuinely new capability: MCP over
+guides/mcp.md:3111
+- `postMessage`. A `MessagePort` is SYMMETRIC, so `MessagePortTransport` is the
++ `postMessage`. A `MessagePort` is symmetric, so `MessagePortTransport` is the
+guides/mcp.md:3112
+- ONE class both a server AND a client bind — it implements `@src/core`'s
++ one class both a server and a client bind — it implements `@src/core`'s
+guides/mcp.md:3147
+- | `createWebSocketClientTransport` | function | Create a `MCPMessageTransportInterface` over the native `WebSocket` global that drives a REMOTE MCP server (browser face).                                                                                                                                    |
++ | `createWebSocketClientTransport` | function | Create a `MCPMessageTransportInterface` over the native `WebSocket` global that drives a remote MCP server (browser face).                                                                                                                                    |
+guides/mcp.md:3148
+- | `createHTTPClientTransport`      | function | Return the core `HTTPClientTransport` over the native `fetch` that drives a REMOTE Streamable-HTTP MCP server — the same class the Node face's factory returns.                                                                                               |
++ | `createHTTPClientTransport`      | function | Return the core `HTTPClientTransport` over the native `fetch` that drives a remote Streamable-HTTP MCP server — the same class the Node face's factory returns.                                                                                               |
+guides/mcp.md:3149
+- | `createMessagePortTransport`     | function | Creates the browser-face `MessagePort` transport — a `MCPTransportInterface` over a native `MessagePort`, the SYMMETRIC carrier that works as either a server or a client transport depending on which binder (`bindServer` or `bindClient`) it is handed to. |
++ | `createMessagePortTransport`     | function | Creates the browser-face `MessagePort` transport — a `MCPTransportInterface` over a native `MessagePort`, the symmetric carrier that works as either a server or a client transport depending on which binder (`bindServer` or `bindClient`) it is handed to. |
+guides/mcp.md:3152
+- | `createScopeMessageListener`     | function | Builds `createScopeServer`'s `message`-event listener — the unified dispatcher that routes EVERY inbound event on a hostable scope, portless or port-bearing, to the right binding.                                                                           |
++ | `createScopeMessageListener`     | function | Builds `createScopeServer`'s `message`-event listener — the unified dispatcher that routes every inbound event on a hostable scope, portless or port-bearing, to the right binding.                                                                           |
+guides/mcp.md:3186
+- | `ScopeTransportInterface`         | interface | `{} plus send, listen, closed, close, deliver`               | Adapts a message-event-bearing SCOPE (`self` in a dedicated Web Worker, or any object shaped the same way) as a duplex `MCPTransportInterface` — the internal carrier `createScopeServer` binds to route the implicit (portless) message channel, plus the `deliver` entry point the scope's own `message` listener pushes an inbound string through (the scope itself never registers `listen`'s handler for the caller — the scope server's dispatcher does, through this `deliver`). |
++ | `ScopeTransportInterface`         | interface | `{} plus send, listen, closed, close, deliver`               | Adapts a message-event-bearing scope (`self` in a dedicated Web Worker, or any object shaped the same way) as a duplex `MCPTransportInterface` — the internal carrier `createScopeServer` binds to route the implicit (portless) message channel, plus the `deliver` entry point the scope's own `message` listener pushes an inbound string through (the scope itself never registers `listen`'s handler for the caller — the scope server's dispatcher does, through this `deliver`). |
+guides/mcp.md:3188
+- | `ScopeServerOptions`              | interface | `{ tools, name?, version? } plus accept?`                    | Options for `createScopeServer` — the live `ToolManagerInterface` to expose plus the optional server identity, mirroring `createMCPServer`'s `MCPServerOptions` (`@orkestrel/mcp`) but with `name`/`version` OPTIONAL (defaulting to `DEFAULT_MCP_SERVER_NAME` / `DEFAULT_MCP_SERVER_VERSION`).                                                                                                                                                                                         |
++ | `ScopeServerOptions`              | interface | `{ tools, name?, version? } plus accept?`                    | Options for `createScopeServer` — the live `ToolManagerInterface` to expose plus the optional server identity, mirroring `createMCPServer`'s `MCPServerOptions` (`@orkestrel/mcp`) but with `name`/`version` optional (defaulting to `DEFAULT_MCP_SERVER_NAME` / `DEFAULT_MCP_SERVER_VERSION`).                                                                                                                                                                                         |
+guides/mcp.md:3197
+- implementing class exposes EXACTLY its interface's methods: `MCPServer` ↔
++ implementing class exposes exactly its interface's methods: `MCPServer` ↔
+guides/mcp.md:3222
+- and not its method registry — so every door takes THIS:
++ and not its method registry — so every door takes this:
+guides/mcp.md:3306
+- The OWNING half of one progress slot: `MCPProgressInterface`'s `report`, plus the `take` and
++ The owning half of one progress slot: `MCPProgressInterface`'s `report`, plus the `take` and
+guides/mcp.md:3334
+- The held-open answer's lifecycle, owned by ONE arbitrator. Beyond the async-generator
++ The held-open answer's lifecycle, owned by one arbitrator. Beyond the async-generator
+guides/mcp.md:3341
+- what they GUARANTEE here is narrower than the protocol requires: every closure aborts the
++ what they guarantee here is narrower than the protocol requires: every closure aborts the
+guides/mcp.md:3365
+- `return` is handed a STRING, so it has no typed terminal to close on and never parses one
++ `return` is handed a string, so it has no typed terminal to close on and never parses one
+guides/mcp.md:3385
+- resolves EVERY modern method from here, so there is no second dispatch path
++ resolves every modern method from here, so there is no second dispatch path
+guides/mcp.md:3414
+- are what a manager IS. There is deliberately **no plural accessor**; the extension defines no
++ are what a manager is. There is deliberately **no plural accessor**; the extension defines no
+guides/mcp.md:3521
+- The stable Tasks extension's CLIENT half, reached as `client.tasks`. It mirrors
++ The stable Tasks extension's client half, reached as `client.tasks`. It mirrors
+guides/mcp.md:3524
+- for one, so a task exists only because the server DEFERRED a `tools/call` it
++ for one, so a task exists only because the server deferred a `tools/call` it
+guides/mcp.md:3596
+- RESOLVES, so a rejection leaves it holding an error and no claim, and nothing it
++ resolves, so a rejection leaves it holding an error and no claim, and nothing it
+guides/mcp.md:3602
+- still running), but it IS called again after an earlier `close` rejected, because
++ still running), but it is called again after an earlier `close` rejected, because
+guides/mcp.md:3605
+- `close` is also IDEMPOTENT: a call on a transport an earlier `close` already
++ `close` is also idempotent: a call on a transport an earlier `close` already
+guides/mcp.md:3607
+- second time. Idempotence bounds ONE closed lifetime rather than the object — a
++ second time. Idempotence bounds one closed lifetime rather than the object — a
+guides/mcp.md:3625
+- sends, preserves the caller's flowing or non-flowing state and listeners, and does NOT destroy
++ sends, preserves the caller's flowing or non-flowing state and listeners, and does not destroy
+guides/mcp.md:3632
+- the whole rule: a transport releases what IT acquired, never what it was
++ the whole rule: a transport releases what it acquired, never what it was
+guides/mcp.md:3636
+- REJECT, never throw synchronously. `MCPClient` issues the write inside the same
++ reject, never throw synchronously. `MCPClient` issues the write inside the same
+guides/mcp.md:3676
+- host's timer floor), and makes every end of the response that is NOT its graceful completion abort
++ host's timer floor), and makes every end of the response that is not its graceful completion abort
+guides/mcp.md:3701
+- push channel, with the bounded replay log FOLDED IN (private). `createMCPSession`
++ push channel, with the bounded replay log folded in (private). `createMCPSession`
+guides/mcp.md:3707
+- | `attach` | `void`                       | Register an OPEN server→client SSE stream (a resumable `GET {path}`) so future `push`es reach it.                                              |
++ | `attach` | `void`                       | Register an open server→client SSE stream (a resumable `GET {path}`) so future `push`es reach it.                                              |
+guides/mcp.md:3709
+- | `push`   | `string`                     | Append `message` to the folded log under a fresh MONOTONE id (returned) AND fan it out to every attached stream as one `id:`-tagged SSE event. |
++ | `push`   | `string`                     | Append `message` to the folded log under a fresh monotone id (returned) and fan it out to every attached stream as one `id:`-tagged SSE event. |
+guides/mcp.md:3710
+- | `replay` | `readonly MCPSessionEvent[]` | Every retained log entry STRICTLY AFTER `afterId`, in order; an unknown / evicted cursor replays nothing (the spec-sane resume).               |
++ | `replay` | `readonly MCPSessionEvent[]` | Every retained log entry strictly after `afterId`, in order; an unknown / evicted cursor replays nothing (the spec-sane resume).               |
+guides/mcp.md:3730
+- publishes these two doors over that pair. The handle serves ONE lifetime — `stop()`
++ publishes these two doors over that pair. The handle serves one lifetime — `stop()`
+guides/mcp.md:3736
+- | `start` | `void`  | Arm the pump: subscribe to `input` and dispatch every complete line through the bound `MCPDispatcherInterface`, writing each defined response back to `output`. The pump arms ONCE, so a repeat attaches nothing further.           |
++ | `start` | `void`  | Arm the pump: subscribe to `input` and dispatch every complete line through the bound `MCPDispatcherInterface`, writing each defined response back to `output`. The pump arms once, so a repeat attaches nothing further.           |
+guides/mcp.md:3830
+- Compose the opt-in session middleware IN FRONT of the session-agnostic route
++ Compose the opt-in session middleware in front of the session-agnostic route
+guides/mcp.md:3852
+- The SAME `MCPClient` correlation, deadline, and tool-mapping ride over any of
++ The same `MCPClient` correlation, deadline, and tool-mapping ride over any of
+guides/mcp.md:4096
+- `createScopeServer` is the drop-in entry for a REAL Web Worker's `main.ts` — boot an
++ `createScopeServer` is the drop-in entry for a real Web Worker's `main.ts` — boot an
+guides/mcp.md:4116
+- > **Trust boundary — mechanism, not policy.** `createScopeServer` exposes the ENTIRE
++ > **Trust boundary — mechanism, not policy.** `createScopeServer` exposes the entire
+guides/mcp.md:4117
+- > `tools` registry to every modern client that delivers a port-bearing message, with NO
++ > `tools` registry to every modern client that delivers a port-bearing message, with no
+guides/mcp.md:4149
+- Passing `scope` explicitly is the SAME wiring over an object you supply — this
++ Passing `scope` explicitly is the same wiring over an object you supply — this
+guides/mcp.md:4260
+- | Roots, Sampling, Logging                                                | All are deprecated in 2026-07-28 and none has a registry or a consumer here. The local `emitter`s are observability, not an MCP logging capability. Resources and Prompts are NOT on this list any more — see [Project a host-owned resource, prompt, and completion registry](#project-a-host-owned-resource-prompt-and-completion-registry).                                                                                                                                     |
++ | Roots, Sampling, Logging                                                | All are deprecated in 2026-07-28 and none has a registry or a consumer here. The local `emitter`s are observability, not an MCP logging capability. Resources and Prompts are not on this list any more — see [Project a host-owned resource, prompt, and completion registry](#project-a-host-owned-resource-prompt-and-completion-registry).                                                                                                                                     |
+guides/mcp.md:4261
+- | A built-in resource or prompt STORE                                     | The `resources` / `prompts` / `completion` capabilities ship as PORTS, exactly as tools and durable tasks do. What backs one — a workspace, a database, a template registry, a plain object — is the host's decision, and a default store here would be product policy wearing a framework's clothes.                                                                                                                                                                              |
++ | A built-in resource or prompt store                                     | The `resources` / `prompts` / `completion` capabilities ship as ports, exactly as tools and durable tasks do. What backs one — a workspace, a database, a template registry, a plain object — is the host's decision, and a default store here would be product policy wearing a framework's clothes.                                                                                                                                                                              |
+guides/mcp.md:4263
+- | Durable task or session STORAGE                                         | Task state outlives the request that created it and this package owns no persistence. The store arrives injected as `MCPTaskOptions.tasks`, exactly as `ToolManagerInterface` does — the extension's protocol ships here, its durability does not.                                                                                                                                                                                                                                 |
++ | Durable task or session storage                                         | Task state outlives the request that created it and this package owns no persistence. The store arrives injected as `MCPTaskOptions.tasks`, exactly as `ToolManagerInterface` does — the extension's protocol ships here, its durability does not.                                                                                                                                                                                                                                 |
+guides/mcp.md:4266
+- | Withholding a consumer's own invalidly annotated tool from `tools/list` | The annotation is read and enforced on both sides; see [Protocol](#protocol) for the rules. The exclusion MUST binds an HTTP CLIENT, and this package's client transports honour it. A server that also dropped the definition would hide a consumer's tool from every peer over a mistake in one property, so this one serves it, recognizes no `Mcp-Param-*` name for it, and lets each conformant client exclude it.                                                            |
++ | Withholding a consumer's own invalidly annotated tool from `tools/list` | The annotation is read and enforced on both sides; see [Protocol](#protocol) for the rules. The exclusion MUST binds an HTTP client, and this package's client transports honour it. A server that also dropped the definition would hide a consumer's tool from every peer over a mistake in one property, so this one serves it, recognizes no `Mcp-Param-*` name for it, and lets each conformant client exclude it.                                                            |
+guides/mcp.md:4270
+- | An OAuth 2.1 authorization client                                       | The flow that mints a bearer — discovery, dynamic registration, a token grant — is a client this package does not publish. Every HTTP client transport takes a `headers` record, so a consumer supplies its own bearer, and server-side authorization composes IN FRONT as ordinary `@orkestrel/server` middleware. The conformance runner's `auth/*` client scenarios are outside the recorded set for this reason — see [Declared conformance gaps](#declared-conformance-gaps). |
++ | An OAuth 2.1 authorization client                                       | The flow that mints a bearer — discovery, dynamic registration, a token grant — is a client this package does not publish. Every HTTP client transport takes a `headers` record, so a consumer supplies its own bearer, and server-side authorization composes in front as ordinary `@orkestrel/server` middleware. The conformance runner's `auth/*` client scenarios are outside the recorded set for this reason — see [Declared conformance gaps](#declared-conformance-gaps). |
+guides/mcp.md:4302
+- are all composed IN FRONT as ordinary `@orkestrel/server` middleware; `limit.message`
++ are all composed in front as ordinary `@orkestrel/server` middleware; `limit.message`
+guides/mcp.md:4340
+- The same runner has a CLIENT mode, and the same command drives this package's own
++ The same runner has a client mode, and the same command drives this package's own
+guides/mcp.md:4453
+- carrier, so a caller CAN abandon one long-lived exchange without abandoning the transport.
++ carrier, so a caller can abandon one long-lived exchange without abandoning the transport.
+guides/mcp.md:4461
+- ONE unit and never separately.
++ one unit and never separately.
+guides/mcp.md:4466
+- header the reason is stronger than scheduling: the HTTP client transports DERIVE every
++ header the reason is stronger than scheduling: the HTTP client transports derive every
+guides/mcp.md:4484
+- annotations after that listing can refuse a call whose headers a FRESH listing would have
++ annotations after that listing can refuse a call whose headers a fresh listing would have
+guides/mcp.md:4491
+- and retry the call. That listing carries no `cursor`, so the transport REPLACES its table
++ and retry the call. That listing carries no `cursor`, so the transport replaces its table
+guides/mcp.md:4499
+- NEW `input_required` round re-requesting it rather than an error. This server answers `-32602`
++ new `input_required` round re-requesting it rather than an error. This server answers `-32602`
+guides/mcp.md:4518
+- reading of it was wrong: the projection was thought to need the tool's schema passed INTO
++ reading of it was wrong: the projection was thought to need the tool's schema passed into
+guides/mcp.md:4527
+- lookup is how a client sends a header the peer never advertised. The SENT request decides
++ lookup is how a client sends a header the peer never advertised. The sent request decides
+guides/mcp.md:4529
+- `cursor` is a fresh listing and CLEARS the table before caching its page, while a
++ `cursor` is a fresh listing and clears the table before caching its page, while a
+guides/mcp.md:4578
+- no seam to hand a signal through, so a server configured WITHOUT `execution` runs its tool to
++ no seam to hand a signal through, so a server configured without `execution` runs its tool to
+guides/mcp.md:4586
+- settles its CONSUMER promptly whatever the producer is doing, and aborts the request's
++ settles its consumer promptly whatever the producer is doing, and aborts the request's
+guides/mcp.md:4602
+- Streamable HTTP there is no such frame at all — there, closing the response stream IS the
++ Streamable HTTP there is no such frame at all — there, closing the response stream is the
+guides/mcp.md:4606
+- This package's own CLIENT does write the frame — `call`'s `options.signal` sends
++ This package's own client does write the frame — `call`'s `options.signal` sends
+guides/mcp.md:4611
+- belongs to. Cancellation is ADVISORY in both directions — every receiver obligation is
++ belongs to. Cancellation is advisory in both directions — every receiver obligation is
+guides/mcp.md:4621
+- server `SHOULD` send the EMPTY `subscriptions/listen` result to signal a graceful end, and it
++ server `SHOULD` send the empty `subscriptions/listen` result to signal a graceful end, and it
+guides/mcp.md:4622
+- attributes the notification to the CLIENT alone. The schema carries only the generic
++ attributes the notification to the client alone. The schema carries only the generic
+guides/mcp.md:4633
+- is an OPEN registry, so a consumer may register `prompts/get` — or any other name — and this
++ is an open registry, so a consumer may register `prompts/get` — or any other name — and this
+guides/mcp.md:4638
+- creation gate refuses one — but it IS an asymmetry, and a consumer planning a custom method on
++ creation gate refuses one — but it is an asymmetry, and a consumer planning a custom method on
+guides/mcp.md:4648
+- `message` subscription, correlates to the pending entry that id already names, and SETTLES
++ `message` subscription, correlates to the pending entry that id already names, and settles
+guides/mcp.md:4664
+- with the detailed task, so the frame is FLAT — a consumer reads `params.status` directly,
++ with the detailed task, so the frame is flat — a consumer reads `params.status` directly,
+guides/mcp.md:4751
+- 1. **DOC ↔ SOURCE bijection.** Every `function` / `class` / `const` /
++ 1. **doc ↔ source bijection.** Every `function` / `class` / `const` /
+guides/mcp.md:4753
+-    tables AND the `### HTTP transport` + `### WebSocket transport` + `### stdio
++    tables and the `### HTTP transport` + `### WebSocket transport` + `### stdio
+guides/mcp.md:4758
+- '2.0', … }` with EXACTLY ONE of `result` / `error`. The success arm ALWAYS
++ '2.0', … }` with EXACTLY ONE of `result` / `error`. The success arm always
+guides/mcp.md:4761
+-    missing, and it is then OMITTED — the member is absent from the envelope, never
++    missing, and it is then omitted — the member is absent from the envelope, never
+guides/mcp.md:4769
+-    narrowed apart at ONE point (`Symbol.asyncIterator in result`). The stream's
++    narrowed apart at one point (`Symbol.asyncIterator in result`). The stream's
+guides/mcp.md:4773
+- 3. **Notifications yield no response.** A call with NO `id` is a
++ 3. **Notifications yield no response.** A call with no `id` is a
+guides/mcp.md:4777
+-    resolves `undefined` WHATEVER the method (`ping`, `notifications/initialized`,
++    resolves `undefined` whatever the method (`ping`, `notifications/initialized`,
+guides/mcp.md:4786
+-    does not contain it. `tools/list` and `tools/call` are TRANSLATED onto the modern engine — they acquire modern request
++    does not contain it. `tools/list` and `tools/call` are translated onto the modern engine — they acquire modern request
+guides/mcp.md:4790
+- capabilities: { tools: {} }, serverInfo: { name, version } }`, the version NEGOTIATED over the
++ capabilities: { tools: {} }, serverInfo: { name, version } }`, the version negotiated over the
+guides/mcp.md:4791
+-    LEGACY subset only: the client's `params.protocolVersion` is echoed when it is a
++    legacy subset only: the client's `params.protocolVersion` is echoed when it is a
+guides/mcp.md:4792
+-    supported LEGACY revision, and every other request — the modern `'2026-07-28'`,
++    supported legacy revision, and every other request — the modern `'2026-07-28'`,
+guides/mcp.md:4810
+-    (`@orkestrel/tool`) ALREADY isolates a thrown tool (and an unknown name)
++    (`@orkestrel/tool`) already isolates a thrown tool (and an unknown name)
+guides/mcp.md:4811
+-    into a `success: false` result, the server adds NO try/catch: that branch's
++    into a `success: false` result, the server adds no try/catch: that branch's
+guides/mcp.md:4821
+-    `prompts/list` / `prompts/get`, and `completion/complete` are registered THERE TOO,
++    `prompts/list` / `prompts/get`, and `completion/complete` are registered there too,
+guides/mcp.md:4828
+-    EVERY modern method is resolved from there — `add` under an
++    Every modern method is resolved from there — `add` under an
+guides/mcp.md:4834
+-    metadata checks (`-32602`, `-32022`) run BEFORE the seam is consulted, and a
++    metadata checks (`-32602`, `-32022`) run before the seam is consulted, and a
+guides/mcp.md:4836
+-    door, and only its translated methods travel on. The seam carries the REQUEST arm:
++    door, and only its translated methods travel on. The seam carries the request arm:
+guides/mcp.md:4839
+-    resolves nothing for a request is CONTAINED as `-32603` plus exactly one
++    resolves nothing for a request is contained as `-32603` plus exactly one
+guides/mcp.md:4850
+-    JSON) → a serialized `-32700` (Parse error) response with NO `id` member; a
++    JSON) → a serialized `-32700` (Parse error) response with no `id` member; a
+guides/mcp.md:4851
+-    message above `limit.message` reaches that same response BEFORE `JSON.parse`;
++    message above `limit.message` reaches that same response before `JSON.parse`;
+guides/mcp.md:4858
+-    parsed value that is not a valid INVOCATION (a response, or any non-message)
++    parsed value that is not a valid invocation (a response, or any non-message)
+guides/mcp.md:4859
+-    → a serialized `-32600` (Invalid Request) response with NO `id` member. The
++    → a serialized `-32600` (Invalid Request) response with no `id` member. The
+guides/mcp.md:4860
+-    raw-string parse is the ONLY `try`/`catch`; the guards (`parseJSONRPCMessage`
++    raw-string parse is the only `try`/`catch`; the guards (`parseJSONRPCMessage`
+guides/mcp.md:4870
+-    hostile-looking own data keys. Each pair of arms is MUTUALLY EXCLUSIVE on every
++    hostile-looking own data keys. Each pair of arms is mutually exclusive on every
+guides/mcp.md:4873
+-    response requires an `id` and an OBJECT `result` with no `error`, while an error
++    response requires an `id` and an object `result` with no `error`, while an error
+guides/mcp.md:4874
+-    response permits an ABSENT `id` and requires an `error` with no `result`;
++    response permits an absent `id` and requires an `error` with no `result`;
+guides/mcp.md:4880
+- 9. **The CORE is provider-agnostic, no transport.** `src/core` imports ONLY
++ 9. **The core is provider-agnostic, no transport.** `src/core` imports only
+guides/mcp.md:4885
+-    Both the dispatch core (the server) AND the client live here,
++    Both the dispatch core (the server) and the client live here,
+guides/mcp.md:4886
+-    transport-abstract; every transport lives ONE layer out in `src/server`
++    transport-abstract; every transport lives one layer out in `src/server`
+guides/mcp.md:4889
+-    version HEADER names are reserved there, not in the core.
++    version header names are reserved there, not in the core.
+guides/mcp.md:4891
+-     and fires `request` (method, the id or `undefined` for a notification, era) at the TOP of every `dispatch`,
++     and fires `request` (method, the id or `undefined` for a notification, era) at the top of every `dispatch`,
+guides/mcp.md:4892
+-     BEFORE the method runs, and `error` exactly ONCE for every operational fault it
++     before the method runs, and `error` exactly once for every operational fault it
+guides/mcp.md:4896
+-     to its OWN `error` handler (the `error` option, surfaced as `(error,
++     to its own `error` handler (the `error` option, surfaced as `(error,
+guides/mcp.md:4897
+- event)`, NOT a domain event) — so a buggy observer can never corrupt a
++ event)`, not a domain event) — so a buggy observer can never corrupt a
+guides/mcp.md:4899
+- 11. **DOC ↔ SOURCE method bijection.** The `## Methods` tables list exactly
++ 11. **doc ↔ source method bijection.** The `## Methods` tables list exactly
+guides/mcp.md:4903
+-     consumer-supplied PORTS this package defines and does not implement
++     consumer-supplied ports this package defines and does not implement
+guides/mcp.md:4932
+-     a `## Methods` group — the SAME treatment `bindServer`/`bindClient`'s test
++     a `## Methods` group — the same treatment `bindServer`/`bindClient`'s test
+guides/mcp.md:4937
+-     `createMCPRoutes(mcp, options?)` returns a SINGLE `POST {path}` route
++     `createMCPRoutes(mcp, options?)` returns a single `POST {path}` route
+guides/mcp.md:4939
+-     OWN JSON-parse `try`/`catch`) and draws a sharp line: a TRANSPORT-level
++     own JSON-parse `try`/`catch`) and draws a sharp line: a TRANSPORT-level
+guides/mcp.md:4941
+-     JSON-RPC REQUEST (`-32600`, narrowed with `parseJSONRPCMessage` + `'method'
++     JSON-RPC request (`-32600`, narrowed with `parseJSONRPCMessage` + `'method'
+guides/mcp.md:4942
+- in request`, no `as`) — is HTTP **400** with a JSON-RPC error BODY carrying no
++ in request`, no `as`) — is HTTP **400** with a JSON-RPC error body carrying no
+guides/mcp.md:4943
+-     `id` member. A legacy DISPATCH result — success or in-band JSON-RPC error — is
++     `id` member. A legacy dispatch result — success or in-band JSON-RPC error — is
+guides/mcp.md:4954
+-     A modern `tools/call` is additionally held to the `MCP_PARAM_PREFIX` headers its OWN
++     A modern `tools/call` is additionally held to the `MCP_PARAM_PREFIX` headers its own
+guides/mcp.md:4991
+-     `createMCPRoutes` mints / reads NO
++     `createMCPRoutes` mints / reads no
+guides/mcp.md:4992
+-     session id. It is MECHANISM, not policy: auth / rate-limiting / sessions
++     session id. It is mechanism, not policy: auth / rate-limiting / sessions
+guides/mcp.md:4993
+-     compose IN FRONT as ordinary middleware; origin policy is only the
++     compose in front as ordinary middleware; origin policy is only the
+guides/mcp.md:4995
+- 13. **The CLIENT is the modern-only egress mirror (`src/core`).**
++ 13. **The client is the modern-only egress mirror (`src/core`).**
+guides/mcp.md:5003
+-     and, when unpinned, retries discovery under a NEW monotonic id only when that
++     and, when unpinned, retries discovery under a new monotonic id only when that
+guides/mcp.md:5009
+-     connection first. The bare client sends NO initialization notification. The readonly `version` surface exposes the negotiated
++     connection first. The bare client sends no initialization notification. The readonly `version` surface exposes the negotiated
+guides/mcp.md:5021
+-     concatenates the result's `text` content blocks and THROWS an `Error` carrying the text when
++     concatenates the result's `text` content blocks and throws an `Error` carrying the text when
+guides/mcp.md:5029
+-     had announced `connect`, without clearing the selected modern offer. The WAIT
++     had announced `connect`, without clearing the selected modern offer. The wait
+guides/mcp.md:5035
+-     waiting to hear whether it did — so the still-running close is RETAINED and
++     waiting to hear whether it did — so the still-running close is retained and
+guides/mcp.md:5046
+-     and one issued while a close is still OWED settles that connection first —
++     and one issued while a close is still owed settles that connection first —
+guides/mcp.md:5050
+-     tagged with a monotonic numeric `id`; a SINGLE transport `message`
++     tagged with a monotonic numeric `id`; a single transport `message`
+guides/mcp.md:5060
+-     that is NOT a correlated response is
++     that is not a correlated response is
+guides/mcp.md:5061
+-     a server NOTIFICATION, re-surfaced on the `notification` event. Every
++     a server notification, re-surfaced on the `notification` event. Every
+guides/mcp.md:5064
+-     never replies REJECTS the pending request (`timed out`) rather than
++     never replies rejects the pending request (`timed out`) rather than
+guides/mcp.md:5073
+-     its own pending request. The same `timeout` bounds the client's WAIT on the
++     its own pending request. The same `timeout` bounds the client's wait on the
+guides/mcp.md:5082
+-     `error` option, NOT a domain event). Consumers subscribe through `emitter.on`.
++     `error` option, not a domain event). Consumers subscribe through `emitter.on`.
+guides/mcp.md:5083
+- 15. **The HTTP CLIENT transport drives a remote server over `fetch`
++ 15. **The HTTP client transport drives a remote server over `fetch`
+guides/mcp.md:5093
+-     and emits nothing. It is TOTAL at the boundary: a non-message success reply is
++     and emits nothing. It is total at the boundary: a non-message success reply is
+guides/mcp.md:5099
+-     `globalThis.fetch` (injectable). EVERY `fetch` call carries a `signal`,
++     `globalThis.fetch` (injectable). Every `fetch` call carries a `signal`,
+guides/mcp.md:5106
+-     no long-lived connection. It ECHOES the session, as the sessions clause states: an
++     no long-lived connection. It echoes the session, as the sessions clause states: an
+guides/mcp.md:5107
+-     `mcp-session-id` response header, when a STATEFUL server sends one (on
++     `mcp-session-id` response header, when a stateful server sends one (on
+guides/mcp.md:5109
+-     `mcp-session-id` REQUEST header on every SUBSEQUENT request — so an
++     `mcp-session-id` request header on every subsequent request — so an
+guides/mcp.md:5110
+-     `MCPClient` passes a stateful server's validation with NO caller wiring;
++     `MCPClient` passes a stateful server's validation with no caller wiring;
+guides/mcp.md:5114
+-     negotiated value, and sends `MCP_PROTOCOL_VERSION_HEADER` on every SUBSEQUENT
++     negotiated value, and sends `MCP_PROTOCOL_VERSION_HEADER` on every subsequent
+guides/mcp.md:5122
+-     invalidly annotated definition DROPPED before the caller sees it, with the exclusion
++     invalidly annotated definition dropped before the caller sees it, with the exclusion
+guides/mcp.md:5126
+-     nothing. A `tools/list` sent with no `cursor` REPLACES that table with its own page; one
++     nothing. A `tools/list` sent with no `cursor` replaces that table with its own page; one
+guides/mcp.md:5134
+-     wrapper over the spine's generic upgrade seam. It DECLINES (returns
++     wrapper over the spine's generic upgrade seam. It declines (returns
+guides/mcp.md:5138
+-     `13`. Otherwise it CLAIMS (returns `true`): `createNodeWebSocket({
++     `13`. Otherwise it claims (returns `true`): `createNodeWebSocket({
+guides/mcp.md:5141
+-     and sends UNMASKED frames), wraps it in a `WebSocketServerTransport`, and
++     and sends unmasked frames), wraps it in a `WebSocketServerTransport`, and
+guides/mcp.md:5142
+-     PUMPS — each inbound `JSONRPCMessage` that `isJSONRPCRequest` runs
++     pumps — each inbound `JSONRPCMessage` that `isJSONRPCRequest` runs
+guides/mcp.md:5152
+-     `WebSocketServerTransport` REUSES `MCPMessageTransportInterface` (`session`
++     `WebSocketServerTransport` Reuses `MCPMessageTransportInterface` (`session`
+guides/mcp.md:5153
+-     `undefined`, `start` arms the socket subscriptions, `send` writes ONE
++     `undefined`, `start` arms the socket subscriptions, `send` writes one
+guides/mcp.md:5157
+-     DROPPED, and the socket's `close` bridges to the transport's `close`. A
++     dropped, and the socket's `close` bridges to the transport's `close`. A
+guides/mcp.md:5161
+-     REJECTS with `WebSocket transport is not connected`, writing nothing. It
++     rejects with `WebSocket transport is not connected`, writing nothing. It
+guides/mcp.md:5162
+-     also OWNS what it claimed: the handler holds every live transport and, on
++     also owns what it claimed: the handler holds every live transport and, on
+guides/mcp.md:5163
+-     `options.emitter`'s `stop` event (the spine's own emitter, REQUIRED),
++     `options.emitter`'s `stop` event (the spine's own emitter, required),
+guides/mcp.md:5170
+- 17. **The WebSocket CLIENT transport drives a remote server over an upgrade
++ 17. **The WebSocket client transport drives a remote server over an upgrade
+guides/mcp.md:5177
+-     `headers`), awaiting the client `'upgrade'` event and VALIDATING
++     `headers`), awaiting the client `'upgrade'` event and validating
+guides/mcp.md:5180
+-     error REJECTS `start()` (the socket destroyed), with ONE exception: a
++     error rejects `start()` (the socket destroyed), with one exception: a
+guides/mcp.md:5181
+-     request error raised after this transport's own `close()` RESOLVES
++     request error raised after this transport's own `close()` resolves
+guides/mcp.md:5186
+-     `createNodeWebSocket({ socket, head })` (CLIENT mode — no key → frames
++     `createNodeWebSocket({ socket, head })` (client mode — no key → frames
+guides/mcp.md:5187
+-     MASKED) and bridges its frames as the client's `message` channel (decoded +
++     masked) and bridges its frames as the client's `message` channel (decoded +
+guides/mcp.md:5188
+-     narrowed with `parseJSONRPCMessage`). `send` writes ONE masked text frame
++     narrowed with `parseJSONRPCMessage`). `send` writes one masked text frame
+guides/mcp.md:5190
+-     answered from the transport's own state AND the wrapper's `readyState`: a
++     answered from the transport's own state and the wrapper's `readyState`: a
+guides/mcp.md:5192
+-     the peer ended the socket — and a `send` on a BOUND socket that is not
++     the peer ended the socket — and a `send` on a bound socket that is not
+guides/mcp.md:5193
+-     `OPEN` both REJECT with `WebSocket transport is not connected`, dropping
++     `OPEN` both reject with `WebSocket transport is not connected`, dropping
+guides/mcp.md:5201
+-     nothing). `url` accepts `ws://` / `wss://` OR `http://` / `https://` (a
++     nothing). `url` accepts `ws://` / `wss://` or `http://` / `https://` (a
+guides/mcp.md:5210
+-     this package. Compose it with `router.use(createMCPSession())` IN FRONT
++     this package. Compose it with `router.use(createMCPSession())` in front
+guides/mcp.md:5211
+-     of a session-agnostic `createMCPRoutes(mcp)`; it OWNS its `path` (default
++     of a session-agnostic `createMCPRoutes(mcp)`; it owns its `path` (default
+guides/mcp.md:5220
+-     STATEFUL across its verbs: a `POST` buffers `await request.text()` — resolves a session through
++     stateful across its verbs: a `POST` buffers `await request.text()` — resolves a session through
+guides/mcp.md:5221
+-     `readSessionHeader`; a VALID id touches the entry and sets
++     `readSessionHeader`; a valid id touches the entry and sets
+guides/mcp.md:5222
+-     `context.state.session`; an ABSENT / unknown id whose (guarded) body
++     `context.state.session`; an absent / unknown id whose (guarded) body
+guides/mcp.md:5223
+-     parses to an `initialize` request (`isInitializeRequest`) MINTS a fresh
++     parses to an `initialize` request (`isInitializeRequest`) mints a fresh
+guides/mcp.md:5227
+-     then FORWARDS a fresh `Request` carrying the buffered text
++     then forwards a fresh `Request` carrying the buffered text
+guides/mcp.md:5232
+-     live-session POST whose `MCP-Protocol-Version` header names a DIFFERENT
++     live-session POST whose `MCP-Protocol-Version` header names a different
+guides/mcp.md:5242
+-     `MCPSession` (`src/server`).** Each `MCPSession` FOLDS IN its own bounded
++     `MCPSession` (`src/server`).** Each `MCPSession` folds in its own bounded
+guides/mcp.md:5244
+-     PRIVATE to the entity — built with `createMCPSession`'s `session.capacity`
++     private to the entity — built with `createMCPSession`'s `session.capacity`
+guides/mcp.md:5248
+-     store sweep and the log sweep alike. `session.push(message)` APPENDS the message to
++     store sweep and the log sweep alike. `session.push(message)` Appends the message to
+guides/mcp.md:5249
+-     the log under a MONOTONE base36 event id (RETURNED), evicting the OLDEST
++     the log under a monotone base36 event id (returned), evicting the oldest
+guides/mcp.md:5250
+-     past `capacity` + any entry older than the per-event TTL, AND fans the
++     past `capacity` + any entry older than the per-event TTL, and fans the
+guides/mcp.md:5253
+-     retained log entry STRICTLY AFTER `afterId` in append order — an UNKNOWN
++     retained log entry strictly after `afterId` in append order — an unknown
+guides/mcp.md:5254
+-     / evicted cursor replays NOTHING. The `createMCPSession` middleware
++     / evicted cursor replays nothing. The `createMCPSession` middleware
+guides/mcp.md:5258
+-     (`readLastEventId`) and REPLAYS `session.replay(lastEventId)` onto the
++     (`readLastEventId`) and replays `session.replay(lastEventId)` onto the
+guides/mcp.md:5259
+-     stream FIRST, THEN `session.attach(stream)`, THEN detaches on the composed
++     stream first, then `session.attach(stream)`, then detaches on the composed
+guides/mcp.md:5262
+-     interval. The stream is long-lived — it is NEVER `end()`ed by the middleware.
++     interval. The stream is long-lived — it is never `end()`ed by the middleware.
+guides/mcp.md:5266
+-     `process.stdout`) in a `StdioServerTransport` and PUMPS: each inbound
++     `process.stdout`) in a `StdioServerTransport` and pumps: each inbound
+guides/mcp.md:5267
+-     `JSONRPCMessage` that is a REQUEST runs through `mcp.dispatch`, a defined
++     `JSONRPCMessage` that is a request runs through `mcp.dispatch`, a defined
+guides/mcp.md:5276
+-     AND no other `data` listener remains — so a stopped server lets the
++     and no other `data` listener remains — so a stopped server lets the
+guides/mcp.md:5287
+-     child's `stderr` is PIPED and retained as a bounded tail rather than
++     child's `stderr` is piped and retained as a bounded tail rather than
+guides/mcp.md:5288
+-     inherited by the parent. A provided `env` MERGES OVER `process.env` rather
++     inherited by the parent. A provided `env` merges over `process.env` rather
+guides/mcp.md:5300
+-     spawned anything; the held child's LIVE tail while that child runs, which
++     spawned anything; the held child's live tail while that child runs, which
+guides/mcp.md:5302
+-     supervisor FROZE at that child's terminal moment afterwards, whether the
++     supervisor froze at that child's terminal moment afterwards, whether the
+guides/mcp.md:5313
+-     exist. A child that exits on its own closes its `stderr` first, so THAT tail
++     exist. A child that exits on its own closes its `stderr` first, so that tail
+guides/mcp.md:5318
+-     `start()` opens a lifetime and REPLACES the held child, so a respawning
++     `start()` opens a lifetime and replaces the held child, so a respawning
+guides/mcp.md:5322
+-     open the replacement: after a NATURAL exit a `close` listener that calls
++     open the replacement: after a natural exit a `close` listener that calls
+guides/mcp.md:5330
+-     The bound is the supervisor's `PROCESS_EVIDENCE` — at most 2048 RAW BYTES
++     The bound is the supervisor's `PROCESS_EVIDENCE` — at most 2048 raw bytes
+guides/mcp.md:5331
+-     under `@orkestrel/process` 0.0.6 — and it keeps the END of the stream, so a
++     under `@orkestrel/process` 0.0.6 — and it keeps the end of the stream, so a
+guides/mcp.md:5340
+-     child's `stdin` and awaits the supervisor's answer, REJECTING when that
++     child's `stdin` and awaits the supervisor's answer, rejecting when that
+guides/mcp.md:5342
+-     with NO live child rejects `stdio transport is not connected`, while a live
++     with no live child rejects `stdio transport is not connected`, while a live
+guides/mcp.md:5346
+-     is the bound in milliseconds on ONE unconfirmed write: a live child that
++     is the bound in milliseconds on one unconfirmed write: a live child that
+guides/mcp.md:5350
+-     `DEFAULT_MCP_DELIVERY`, which sits BELOW `DEFAULT_MCP_REQUEST_TIMEOUT` to
++     `DEFAULT_MCP_DELIVERY`, which sits below `DEFAULT_MCP_REQUEST_TIMEOUT` to
+guides/mcp.md:5372
+- 21. **The browser transport carries the SAME `MCPMessageTransportInterface`
++ 21. **The browser transport carries the same `MCPMessageTransportInterface`
+guides/mcp.md:5378
+-     while not yet `OPEN` — REJECTS `start()`); `send` writes each message as
++     while not yet `OPEN` — rejects `start()`); `send` writes each message as
+guides/mcp.md:5379
+-     ONE text frame once `OPEN`, QUEUING (in order) any message sent before —
++     one text frame once `OPEN`, queuing (in order) any message sent before —
+guides/mcp.md:5381
+-     socket already reporting `CLOSING` / `CLOSED` REJECTS with
++     socket already reporting `CLOSING` / `CLOSED` rejects with
+guides/mcp.md:5384
+-     pending to its deadline for a frame nobody wrote; a queue rides ONE
++     pending to its deadline for a frame nobody wrote; a queue rides one
+guides/mcp.md:5385
+-     connection, so `close()` and the native `close` event each DISCARD what is
++     connection, so `close()` and the native `close` event each discard what is
+guides/mcp.md:5390
+-     DROPPED, never thrown); `close()` closes the socket and fires `close`
++     dropped, never thrown); `close()` closes the socket and fires `close`
+guides/mcp.md:5392
+-     the SAME `close` exactly once too, guarded so the transport-initiated and
++     the same `close` exactly once too, guarded so the transport-initiated and
+guides/mcp.md:5396
+-     `createHTTPClientTransport({ url, headers?, fetch?, timeout? })` returns the CORE
++     `createHTTPClientTransport({ url, headers?, fetch?, timeout? })` returns the core
+guides/mcp.md:5402
+-     nothing, and the non-success reply that REJECTS `send` rather than being swallowed. The
++     nothing, and the non-success reply that rejects `send` rather than being swallowed. The
+guides/mcp.md:5406
+- 22. **`MessagePortTransport` is SYMMETRIC; `createScopeServer` unifies dedicated-worker
++ 22. **`MessagePortTransport` is symmetric; `createScopeServer` unifies dedicated-worker
+guides/mcp.md:5409
+-     (not a `MCPMessageTransportInterface` — the SAME class works as either a
++     (not a `MCPMessageTransportInterface` — the same class works as either a
+guides/mcp.md:5412
+-     runs at CONSTRUCTION (there is no separate open step on the port contract
++     runs at construction (there is no separate open step on the port contract
+guides/mcp.md:5415
+-     `error` channel to surface it on); `messageerror` is IGNORED, not routed
++     `error` channel to surface it on); `messageerror` is ignored, not routed
+guides/mcp.md:5417
+-     port and fires the registered `closed` handler EXACTLY ONCE, idempotently
++     port and fires the registered `closed` handler exactly once, idempotently
+guides/mcp.md:5419
+-     fires ONLY from this transport's own `close()`. `listen`/`closed` are
++     fires only from this transport's own `close()`. `listen`/`closed` are
+guides/mcp.md:5421
+-     `createScopeServer(options, scope?)` takes ONE scope, defaulting to `globalThis`, so a
++     `createScopeServer(options, scope?)` takes one scope, defaulting to `globalThis`, so a
+guides/mcp.md:5424
+-     when omitted), `bindServer`s it EAGERLY over a `createScopeTransport(scope)`
++     when omitted), `bindServer`s it eagerly over a `createScopeTransport(scope)`
+guides/mcp.md:5427
+-     needs no first-use setup), and registers ONE `scope.addEventListener(
++     needs no first-use setup), and registers one `scope.addEventListener(
+guides/mcp.md:5428
+- 'message', …)` listener built by `createScopeMessageListener`. That ONE
++ 'message', …)` listener built by `createScopeMessageListener`. That one
+guides/mcp.md:5429
+-     listener handles EVERY shape uniformly, per event, with no upfront
++     listener handles every shape uniformly, per event, with no upfront
+guides/mcp.md:5430
+-     detection flag: `event.ports.length > 0` spawns a FRESH
++     detection flag: `event.ports.length > 0` spawns a fresh
+guides/mcp.md:5431
+-     `createMessagePortTransport` + `bindServer` for THAT port (tracked for
++     `createMessagePortTransport` + `bindServer` for that port (tracked for
+guides/mcp.md:5432
+-     teardown) — a Service Worker's normal per-client channel, and ALSO a
++     teardown) — a Service Worker's normal per-client channel, and also a
+guides/mcp.md:5434
+-     port-bearing event; an event with NO ports and a STRING `data` delivers
++     port-bearing event; an event with no ports and a string `data` delivers
+guides/mcp.md:5436
+-     `stop` is IDEMPOTENT: it removes the scope listener, unbinds the implicit
++     `stop` is idempotent: it removes the scope listener, unbinds the implicit
+guides/mcp.md:5437
+-     channel, and — for every accepted port — unbinds AND closes it. Those
++     channel, and — for every accepted port — unbinds and closes it. Those
+guides/mcp.md:5438
+-     bindings live in ONE map keyed by the port each belongs to, which is also
++     bindings live in one map keyed by the port each belongs to, which is also
+guides/mcp.md:5452
+-     publishes each `uriTemplate` as an opaque descriptor STRING and validates only that
++     publishes each `uriTemplate` as an opaque descriptor string and validates only that
+guides/mcp.md:5454
+-     `MCPResourceReadParams.uri` take the CONCRETE URI the client sent. Matching a URI
++     `MCPResourceReadParams.uri` take the concrete URI the client sent. Matching a URI
+guides/mcp.md:5466
+-     cursor shape exists in the package. The cursor is OPAQUE: this package validates
++     cursor shape exists in the package. The cursor is opaque: this package validates
+lines changed: 385

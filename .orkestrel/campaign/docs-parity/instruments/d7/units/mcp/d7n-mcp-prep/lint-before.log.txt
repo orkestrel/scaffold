@@ -1,0 +1,183 @@
+src/browser/transports/WebSocketClientTransport.ts:12:1: error policy(no-malformed-summary): State what the symbol does without naming WebSocketClientTransport in the first sentence.
+src/browser/factories.ts:21:1: error policy(no-malformed-summary): State what the symbol does without naming createWebSocketClientTransport in the first sentence.
+tests/setupServer.ts:380:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+tests/setupServer.ts:380:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+tests/setupServer.ts:514:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+tests/setupServer.ts:548:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/setupServer.ts:23:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:131:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:144:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:178:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:195:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:205:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:305:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:324:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:336:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:370:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:380:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:427:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:435:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:462:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:471:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:504:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:579:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:603:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:633:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:644:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:652:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:827:1: error policy(no-banned-term): Replace in order to in this comment: to.
+tests/setup.ts:1059:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+tests/setup.ts:52:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:75:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:109:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:122:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:148:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:223:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:306:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:311:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:350:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:371:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:436:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:455:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:467:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:508:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:523:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:534:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:603:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:613:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:663:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:673:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:741:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:760:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:768:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:817:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:827:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:869:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:904:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:923:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1012:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1041:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1059:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1091:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1099:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1128:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1136:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1142:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1173:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1196:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1201:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setup.ts:1224:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+src/server/HTTPDisconnect.ts:6:1: error policy(no-banned-term): Replace simply in this comment: delete.
+src/server/handlers.ts:106:3: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/MCPClient.ts:68:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/MCPClient.ts:491:3: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/MCPClient.ts:1078:3: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/MCPTextStreamController.ts:105:2: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/types.ts:895:1: error policy(no-banned-term): Replace simply in this comment: delete.
+src/core/types.ts:1005:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/types.ts:1065:2: error policy(no-banned-term): Replace easy in this comment: delete.
+src/core/types.ts:1727:1: error policy(no-banned-term): Replace simply in this comment: delete.
+src/core/types.ts:2243:2: error policy(no-banned-term): Replace simply in this comment: delete.
+src/core/types.ts:2623:1: error policy(no-banned-term): Replace simply in this comment: delete.
+src/core/types.ts:2830:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/core/MCPServer.ts:1334:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/server/factories.test.ts:52:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/factories.test.ts:55:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/factories.test.ts:134:1: error policy(no-banned-term): Replace just in this comment: delete.
+tests/setupBrowser.ts:18:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupBrowser.ts:44:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupBrowser.ts:54:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupBrowser.ts:103:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/src/server/middlewares.test.ts:41:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/middlewares.test.ts:42:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/middlewares.test.ts:46:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/middlewares.test.ts:532:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/middlewares.test.ts:761:2: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/server/middlewares.test.ts:853:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/server/integration.test.ts:39:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/integration.test.ts:75:1: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/src/server/integration.test.ts:79:1: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/server/integration.test.ts:145:3: error policy(no-banned-term): Replace via in this comment: through, by using.
+tests/setupGlobal.ts:14:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupGlobal.ts:20:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupGlobal.ts:25:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/conformanceClient.ts:88:1: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/parsers.test.ts:457:2: error policy(no-banned-term): Replace simply in this comment: delete.
+tests/setupConformance.ts:123:1: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/setupConformance.ts:141:2: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/setupConformance.ts:51:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:54:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:57:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:60:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:66:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:69:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:72:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:75:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:78:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:81:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:108:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:113:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:123:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:145:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:176:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:183:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:194:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:741:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:778:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:818:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:845:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:965:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:968:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:971:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:974:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:978:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1130:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1151:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1184:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1200:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1219:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1231:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1234:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1260:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1303:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1327:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1330:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1355:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1455:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1468:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1471:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1490:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1577:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1596:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1622:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1644:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1667:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1702:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1738:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1771:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1799:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupConformance.ts:1832:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:35:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:43:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:51:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:85:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:94:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:103:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:130:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:147:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:183:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/fixtures/browserServer.ts:203:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/src/core/MCPClient.test.ts:79:1: error policy(no-banned-term): Replace currently in this comment: delete, or give the date.
+tests/src/core/MCPClient.test.ts:81:1: error policy(no-banned-term): Replace currently in this comment: delete, or give the date.
+tests/src/core/MCPClient.test.ts:2218:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/MCPClient.test.ts:2945:3: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/src/core/MCPServer.test.ts:719:1: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/src/core/MCPServer.test.ts:1663:2: error policy(no-banned-term): Replace simply in this comment: delete.
+tests/src/core/MCPServer.test.ts:3414:1: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/MCPServer.test.ts:3537:2: error policy(no-banned-term): Replace just in this comment: delete.
+tests/src/core/MCPServer.test.ts:6222:2: error policy(no-banned-term): Replace just in this comment: delete.
+tests/guides.test.ts:361:3: error policy(no-banned-term): Replace just in this comment: delete.
+tests/conformance.test.ts:48:1: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/conformance.test.ts:108:2: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/conformance.test.ts:117:2: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.
+tests/conformance.test.ts:135:1: error policy(no-banned-term): Replace should in this comment: must, can, might, or the imperative.

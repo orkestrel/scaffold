@@ -1,0 +1,1489 @@
+src/browser/factories.ts:22
+-  * Creates the browser-face WebSocket CLIENT transport for an
++  * Creates the browser-face WebSocket client transport for an
+src/browser/factories.ts:24
+-  * that drives a REMOTE MCP server over the native `WebSocket` global. This factory is the
++  * that drives a remote MCP server over the native `WebSocket` global. This factory is the
+src/browser/factories.ts:31
+-  * JSON-RPC message the client `send`s before the socket opens is QUEUED and flushed,
++  * JSON-RPC message the client `send`s before the socket opens is queued and flushed,
+src/browser/factories.ts:35
+-  * @param options - `url` (the remote WebSocket endpoint; REQUIRED) and optional
++  * @param options - `url` (the remote WebSocket endpoint; required) and optional
+src/browser/factories.ts:59
+-  * Creates the HTTP CLIENT transport for an
++  * Creates the HTTP client transport for an
+src/browser/factories.ts:61
+-  * that drives a REMOTE Streamable-HTTP MCP server over the native `fetch`.
++  * that drives a remote Streamable-HTTP MCP server over the native `fetch`.
+src/browser/factories.ts:73
+-  * with EITHER — a plain JSON envelope or a Streamable-HTTP SSE `data:` event,
++  * with either — a plain JSON envelope or a Streamable-HTTP SSE `data:` event,
+src/browser/factories.ts:77
+-  * connection; against a STATEFUL server it captures the `mcp-session-id` from
++  * connection; against a stateful server it captures the `mcp-session-id` from
+src/browser/factories.ts:84
+-  * @param options - `url` (the remote endpoint; REQUIRED), optional `headers` merged
++  * @param options - `url` (the remote endpoint; required), optional `headers` merged
+src/browser/factories.ts:111
+-  * SYMMETRIC carrier that works as either a server or a client transport depending on
++  * symmetric carrier that works as either a server or a client transport depending on
+src/browser/factories.ts:121
+-  * @param options - `port` (the `MessagePort` half to drive; REQUIRED); see
++  * @param options - `port` (the `MessagePort` half to drive; required); see
+src/browser/factories.ts:207
+-  * routes EVERY inbound event on a hostable scope, portless or port-bearing, to the right
++  * routes every inbound event on a hostable scope, portless or port-bearing, to the right
+src/browser/factories.ts:211
+-  * Port-bearing events (`event.ports.length > 0`) are gated by `options.accept` FIRST
++  * Port-bearing events (`event.ports.length > 0`) are gated by `options.accept` first
+src/browser/factories.ts:215
+-  * into `teardowns` KEYED BY THAT PORT. A port already present is IGNORED — repeated delivery
++  * into `teardowns` keyed by that port. A port already present is ignored — repeated delivery
+src/browser/factories.ts:219
+-  * The key is what makes `teardowns` the ONLY place an accepted port is remembered. A separate
++  * The key is what makes `teardowns` the only place an accepted port is remembered. A separate
+src/browser/factories.ts:225
+-  * This branch fires on EITHER a Service-Worker-shaped scope (its normal per-client
++  * This branch fires on either a Service-Worker-shaped scope (its normal per-client
+src/browser/factories.ts:228
+-  * with NO ports and a STRING `data` is pushed onto `scopeTransport.deliver` (the
++  * with no ports and a string `data` is pushed onto `scopeTransport.deliver` (the
+src/browser/factories.ts:283
+-  * register the SINGLE handler `deliver` / the underlying close path route through —
++  * register the single handler `deliver` / the underlying close path route through —
+src/browser/transports/MessagePortTransport.ts:14
+-  *   plain duplex channel — the SAME class implements `@orkestrel/mcp`'s
++  *   plain duplex channel — the same class implements `@orkestrel/mcp`'s
+src/browser/transports/MessagePortTransport.ts:15
+-  *   `MCPTransportInterface` and is handed to EITHER `bindServer` or
++  *   `MCPTransportInterface` and is handed to either `bindServer` or
+src/browser/transports/MessagePortTransport.ts:19
+-  *   REQUIRED when listening with `addEventListener` (as opposed to the `onmessage`
++  *   required when listening with `addEventListener` (as opposed to the `onmessage`
+src/browser/transports/MessagePortTransport.ts:23
+-  *   begins dispatching QUEUED messages the moment the transport exists. This is safe
++  *   begins dispatching queued messages the moment the transport exists. This is safe
+src/browser/transports/MessagePortTransport.ts:27
+-  *   before calling `listen`, messages that arrived in the gap are DROPPED. **Bind
++  *   before calling `listen`, messages that arrived in the gap are dropped. **Bind
+src/browser/transports/MessagePortTransport.ts:34
+-  *   object) is IGNORED — dropped silently, never forwarded, never thrown —
++  *   object) is ignored — dropped silently, never forwarded, never thrown —
+src/browser/transports/MessagePortTransport.ts:38
+-  * - **`messageerror` is IGNORED, not routed to `closed`.** A `messageerror` event
++  * - **`messageerror` is ignored, not routed to `closed`.** A `messageerror` event
+src/browser/transports/MessagePortTransport.ts:40
+-  *   BAD FRAME, not a dead channel — the port itself keeps working and later, well-
++  *   bad frame, not a dead channel — the port itself keeps working and later, well-
+src/browser/transports/MessagePortTransport.ts:48
+-  *   disconnects it — further `postMessage` calls on EITHER end are silently
++  *   disconnects it — further `postMessage` calls on either end are silently
+src/browser/transports/MessagePortTransport.ts:52
+-  *   event) — `closed` fires ONLY from this transport's own `close()`.
++  *   event) — `closed` fires only from this transport's own `close()`.
+src/browser/transports/MessagePortTransport.ts:55
+-  *   second call REPLACES the first rather than adding a second subscriber.
++  *   second call replaces the first rather than adding a second subscriber.
+src/browser/transports/WebSocketClientTransport.ts:13
+-  * Drives a REMOTE MCP server over the native `WebSocket` global from the browser face, as a
++  * Drives a remote MCP server over the native `WebSocket` global from the browser face, as a
+src/browser/transports/WebSocketClientTransport.ts:14
+-  * CLIENT {@link MCPMessageTransportInterface}. This class is the browser sibling of the Node
++  * client {@link MCPMessageTransportInterface}. This class is the browser sibling of the Node
+src/browser/transports/WebSocketClientTransport.ts:22
+-  *   `'error'` event while not yet `OPEN`) REJECTS `start()`.
++  *   `'error'` event while not yet `OPEN`) rejects `start()`.
+src/browser/transports/WebSocketClientTransport.ts:25
+-  *   is even called) is QUEUED and flushed, IN ORDER, the moment the socket opens —
++  *   is even called) is queued and flushed, in order, the moment the socket opens —
+src/browser/transports/WebSocketClientTransport.ts:26
+-  *   so a caller need not await `start()` before calling `send`. A queue rides ONE
++  *   so a caller need not await `start()` before calling `send`. A queue rides one
+src/browser/transports/WebSocketClientTransport.ts:27
+-  *   connection: a close DISCARDS whatever is still in it.
++  *   connection: a close discards whatever is still in it.
+src/browser/transports/WebSocketClientTransport.ts:28
+-  * - **A closed channel REJECTS.** The native socket confirms nothing about a write, so this
++  * - **A closed channel rejects.** The native socket confirms nothing about a write, so this
+src/browser/transports/WebSocketClientTransport.ts:30
+-  *   reporting `CLOSING` / `CLOSED`, REJECTS with `WebSocket transport is not connected` rather
++  *   reporting `CLOSING` / `CLOSED`, rejects with `WebSocket transport is not connected` rather
+src/browser/transports/WebSocketClientTransport.ts:36
+-  *   non-JSON / non-message text frame surfaces on `error` and is DROPPED (never
++  *   non-JSON / non-message text frame surfaces on `error` and is dropped (never
+src/browser/transports/WebSocketClientTransport.ts:40
+-  *   SAME `close` exactly once total — `close()` first flips the guard, so the native event
++  *   same `close` exactly once total — `close()` first flips the guard, so the native event
+src/browser/transports/WebSocketClientTransport.ts:43
+-  *   Node face. A `send` issued after `close()` REJECTS (it is never queued), and the
++  *   Node face. A `send` issued after `close()` rejects (it is never queued), and the
+src/browser/transports/WebSocketClientTransport.ts:44
+-  *   pre-open queue is DISCARDED — by `close()` and by the native `close` event alike — so a
++  *   pre-open queue is discarded — by `close()` and by the native `close` event alike — so a
+src/browser/transports/WebSocketClientTransport.ts:48
+-  *   emit the emitter isolates a listener throw; `error` is a DOMAIN event (a
++  *   emit the emitter isolates a listener throw; `error` is a domain event (a
+src/browser/types.ts:28
+-  *   WebSocket endpoint. REQUIRED.
++  *   WebSocket endpoint. Required.
+src/browser/types.ts:44
+-  * platform DOES carry: a cookie the browser attaches to the upgrade, a subprotocol token, or
++  * platform does carry: a cookie the browser attaches to the upgrade, a subprotocol token, or
+src/browser/types.ts:59
+-  * the port a `message` event's `ports[0]` carried). REQUIRED. The SAME transport
++  * the port a `message` event's `ports[0]` carried). Required. The same transport
+src/browser/types.ts:68
+-  * Adapts a message-event-bearing SCOPE (`self` in a dedicated Web Worker, or any object
++  * Adapts a message-event-bearing scope (`self` in a dedicated Web Worker, or any object
+src/browser/types.ts:90
+-  * port-bearing, arrives through the SAME listener — see {@link ScopeServerOptions}'s
++  * port-bearing, arrives through the same listener — see {@link ScopeServerOptions}'s
+src/browser/types.ts:120
+-  * OPTIONAL (defaulting to {@link import('./constants.js').DEFAULT_MCP_SERVER_NAME} /
++  * optional (defaulting to {@link import('./constants.js').DEFAULT_MCP_SERVER_NAME} /
+src/browser/types.ts:126
+-  *   **`accept` gates ONLY port-bearing events** — portless messages bypass it and
++  *   **`accept` gates only port-bearing events** — portless messages bypass it and
+src/browser/types.ts:133
+-  *   `postMessage` only. When omitted, ALL port-bearing events are accepted — every
++  *   `postMessage` only. When omitted, all port-bearing events are accepted — every
+src/core/MCPClient.ts:69
+-  * Connects to a REMOTE MCP server over any injected {@link MCPMessageTransportInterface},
++  * Connects to a remote MCP server over any injected {@link MCPMessageTransportInterface},
+src/core/MCPClient.ts:74
+-  * - **The mirror of `MCPServer`.** The server DISPATCHES requests over a tool registry;
++  * - **The mirror of `MCPServer`.** The server dispatches requests over a tool registry;
+src/core/MCPClient.ts:75
+-  *   this client ISSUES them over a transport. `connect` probes `server/discover` and exposes
++  *   this client issues them over a transport. `connect` probes `server/discover` and exposes
+src/core/MCPClient.ts:90
+-  *   for it; a RESPONSE correlating to nothing pending is discarded, because the request it
++  *   for it; a response correlating to nothing pending is discarded, because the request it
+src/core/MCPClient.ts:92
+-  * - **Per-request cancellation.** `call`'s `options.signal` withdraws ONE caller from ONE
++  * - **Per-request cancellation.** `call`'s `options.signal` withdraws one caller from one
+src/core/MCPClient.ts:109
+-  *   same deadline bounds the WAIT on the transport's `close`, the one wait no drain and no signal
++  *   same deadline bounds the wait on the transport's `close`, the one wait no drain and no signal
+src/core/MCPMethodManager.ts:10
+-  *   and resolves EVERY modern method from here, so a consumer's method and a built-in
++  *   and resolves every modern method from here, so a consumer's method and a built-in
+src/core/MCPMethodManager.ts:13
+-  *   REPLACES it, which is how a consumer overrides a built-in; there is no precedence
++  *   replaces it, which is how a consumer overrides a built-in; there is no precedence
+src/core/MCPServer.ts:123
+-  * Dispatches JSON-RPC 2.0 requests over a live {@link ToolManagerInterface}, with NO
++  * Dispatches JSON-RPC 2.0 requests over a live {@link ToolManagerInterface}, with no
+src/core/MCPServer.ts:133
+-  *   OMITTED rather than nulled), dispatches, and serializes the
++  *   omitted rather than nulled), dispatches, and serializes the
+src/core/MCPStreamController.ts:13
+-  * A native async generator decides cancellation with a QUEUE: `return()` and `throw()` wait
++  * A native async generator decides cancellation with a queue: `return()` and `throw()` wait
+src/core/MCPStreamController.ts:16
+-  * arbitrates instead of queueing. It keeps at most ONE read outstanding against the source,
++  * arbitrates instead of queueing. It keeps at most one read outstanding against the source,
+src/core/MCPStreamController.ts:17
+-  * settles the consumer's read itself, aborts the request's lifetime BEFORE it delegates
++  * settles the consumer's read itself, aborts the request's lifetime before it delegates
+src/core/MCPStreamController.ts:22
+-  * terminal RESPONSE, `return(value)` is the consumer saying it has the answer already, and
++  * terminal response, `return(value)` is the consumer saying it has the answer already, and
+src/core/MCPStreamController.ts:30
+-  * **What this class does NOT have is an owner of last resort.** No finalizer, no timer, no
++  * **What this class does not have is an owner of last resort.** No finalizer, no timer, no
+src/core/MCPTaskClient.ts:12
+-  * Issues the `tasks/*` methods over one correlated-request door — the CLIENT half of the
++  * Issues the `tasks/*` methods over one correlated-request door — the client half of the
+src/core/MCPTaskClient.ts:19
+-  *   SERVER creates tasks in; this is the client's read/answer/stop access to the tasks a peer
++  *   server creates tasks in; this is the client's read/answer/stop access to the tasks a peer
+src/core/MCPTaskClient.ts:24
+-  *   sits beside it; the SCHEDULE is the consumer's, because this package has no durable place
++  *   sits beside it; the schedule is the consumer's, because this package has no durable place
+src/core/MCPTextStreamController.ts:8
+-  * A TRANSLATION boundary and deliberately nothing else. It serializes each message and the
++  * A translation boundary and deliberately nothing else. It serializes each message and the
+src/core/MCPTextStreamController.ts:11
+-  * serialized face implemented as its own async generator would add a SECOND operation queue,
++  * serialized face implemented as its own async generator would add a second operation queue,
+src/core/MCPTextStreamController.ts:16
+-  * surprises a producer. `return` receives a STRING; it cannot rebuild the typed
++  * surprises a producer. `return` receives a string; it cannot rebuild the typed
+src/core/MCPTextStreamController.ts:25
+-  * It accepts only a CONTROLLED typed stream. A raw generator would have no lifecycle to
++  * It accepts only a controlled typed stream. A raw generator would have no lifecycle to
+src/core/MCPTextStreamController.ts:29
+-  * `throw`, `stop`, and dispose each end the TYPED exchange, so a pump holding only this
++  * `throw`, `stop`, and dispose each end the typed exchange, so a pump holding only this
+src/core/MCPTextStreamController.ts:73
+- 	 * supplied text is the answer to THIS consumer, and a cooperating producer sees its
++ 	 * supplied text is the answer to this consumer, and a cooperating producer sees its
+src/core/constants.ts:77
+-  * The ONE spelling of it in this package, and the identity of the immutable snapshot dated
++  * The one spelling of it in this package, and the identity of the immutable snapshot dated
+src/core/constants.ts:78
+-  * 2026-07-28 this package implements. A client declares it per REQUEST, under
++  * 2026-07-28 this package implements. A client declares it per request, under
+src/core/constants.ts:89
+-  * The markers are LOWERCASE and exact, and this constant with {@link MCP_SENTINEL_SUFFIX} is
++  * The markers are lowercase and exact, and this constant with {@link MCP_SENTINEL_SUFFIX} is
+src/core/constants.ts:90
+-  * their ONE spelling in this package: {@link import('@orkestrel/mcp').encodeSentinel} builds a
++  * their one spelling in this package: {@link import('@orkestrel/mcp').encodeSentinel} builds a
+src/core/constants.ts:119
+-  * A STATEFUL server sends it on the `initialize` reply, and
++  * A stateful server sends it on the `initialize` reply, and
+src/core/constants.ts:156
+-  * It is valid ONLY on a primitive property schema statically reachable from the `inputSchema`
++  * It is valid only on a primitive property schema statically reachable from the `inputSchema`
+src/core/constants.ts:208
+-  * The GENERIC code for the whole condition, not one capability's code. This server answers
++  * The generic code for the whole condition, not one capability's code. This server answers
+src/core/constants.ts:259
+-  * Frozen and null-prototype, and SHARED: two calls that name no `arguments` receive the same
++  * Frozen and null-prototype, and shared: two calls that name no `arguments` receive the same
+src/core/constants.ts:290
+-  * The code every MODERN internal fault answers with — a provider, handler, continuation,
++  * The code every modern internal fault answers with — a provider, handler, continuation,
+src/core/constants.ts:301
+-  * Retained for the LEGACY branch alone. A modern fault answers
++  * Retained for the legacy branch alone. A modern fault answers
+src/core/factories.ts:74
+-  * Creates a transport-agnostic Model Context Protocol CLIENT — connects to a REMOTE
++  * Creates a transport-agnostic Model Context Protocol client — connects to a remote
+src/core/factories.ts:81
+-  * registry over MCP, the client USES a remote server's tools. `connect()` discovers,
++  * registry over MCP, the client uses a remote server's tools. `connect()` discovers,
+src/core/factories.ts:91
+-  * @param options - `transport` (the carrier; REQUIRED), an optional `identity`
++  * @param options - `transport` (the carrier; required), an optional `identity`
+src/core/factories.ts:142
+-  * Hand the RESULT to `createMCPClient({ transport })`, then pass the SAME
++  * Hand the result to `createMCPClient({ transport })`, then pass the same
+src/core/factories.ts:150
+-  * directions at any moment is exactly what the adapted port is — a claim DRIVEN over a real
++  * directions at any moment is exactly what the adapted port is — a claim driven over a real
+src/core/factories.ts:153
+-  * true of the PORT, and stays true only while the port has a peer: close the far half and
++  * true of the port, and stays true only while the port has a peer: close the far half and
+src/core/helpers.ts:118
+-  * The protocol's rule is about SENDING: a server never issues a request kind the client's
++  * The protocol's rule is about sending: a server never issues a request kind the client's
+src/core/helpers.ts:130
+-  * The `elicitation` value names the ARM the round needs, so a client can act on the refusal
++  * The `elicitation` value names the arm the round needs, so a client can act on the refusal
+src/core/helpers.ts:182
+-  * types its value EXACTLY EMPTY — `Record<string, never>`, an object with no additional
++  * types its value exactly empty — `Record<string, never>`, an object with no additional
+src/core/helpers.ts:189
+-  * A client declares this PER REQUEST. Nothing here consults a session, because the modern
++  * A client declares this per request. Nothing here consults a session, because the modern
+src/core/helpers.ts:482
+-  * `requestId` and `reason` are WIRE SPELLINGS carried verbatim from the dated schema's
++  * `requestId` and `reason` are wire spellings carried verbatim from the dated schema's
+src/core/helpers.ts:521
+-  * The dated protocol lets a `tools/call` answer in more than one way — it COMPLETED, it became a
++  * The dated protocol lets a `tools/call` answer in more than one way — it completed, it became a
+src/core/helpers.ts:551
+-  * The inverse of a server splitting a value into text block(s), and TOTAL: a non-record
++  * The inverse of a server splitting a value into text block(s), and total: a non-record
+src/core/helpers.ts:553
+-  * throwing. What it returns is a RENDERING — the prose a model reads — and not the tool's
++  * throwing. What it returns is a rendering — the prose a model reads — and not the tool's
+src/core/helpers.ts:583
+-  * - A peer's `structuredContent` is PREFERRED over the content blocks, because it is the
++  * - A peer's `structuredContent` is preferred over the content blocks, because it is the
+src/core/helpers.ts:588
+-  * - A remote tool FAILURE (`isError: true`) THROWS the error text, so an agent's tool
++  * - A remote tool failure (`isError: true`) throws the error text, so an agent's tool
+src/core/helpers.ts:695
+-  * An `undefined` `id` is OMITTED from the envelope rather than serialized as `null`:
++  * An `undefined` `id` is omitted from the envelope rather than serialized as `null`:
+src/core/helpers.ts:702
+-  * @param data - An OPTIONAL machine-readable payload (omitted from the envelope when absent)
++  * @param data - An optional machine-readable payload (omitted from the envelope when absent)
+src/core/helpers.ts:723
+-  * The ONE place a cancellation signal is resolved. A caller may have no signal to
++  * The one place a cancellation signal is resolved. A caller may have no signal to
+src/core/helpers.ts:727
+-  * The resolved signal is the request's LIFETIME, which is strictly wider than the
++  * The resolved signal is the request's lifetime, which is strictly wider than the
+src/core/helpers.ts:1094
+-  * `capabilities.extensions` appears only for a server that CONFIGURED the extension it
++  * `capabilities.extensions` appears only for a server that configured the extension it
+src/core/helpers.ts:1175
+-  * The bound is checked FIRST, against the raw string, so an oversized message is never
++  * The bound is checked first, against the raw string, so an oversized message is never
+src/core/helpers.ts:1206
+-  * The ONE inbound fold every message-carrying transport in this package runs: parse the frame,
++  * The one inbound fold every message-carrying transport in this package runs: parse the frame,
+src/core/helpers.ts:1211
+-  * The two failures report differently on purpose. Unparsable text emits the CAUGHT parse
++  * The two failures report differently on purpose. Unparsable text emits the caught parse
+src/core/helpers.ts:1278
+-  * {@link decodeEvent} (so a non-message or non-JSON `data:` event is DROPPED, never thrown —
++  * {@link decodeEvent} (so a non-message or non-JSON `data:` event is dropped, never thrown —
+src/core/helpers.ts:1279
+-  * total). It reuses the SAME `SSEParser` a server's `createStream` seam serializes against, so
++  * total). It reuses the same `SSEParser` a server's `createStream` seam serializes against, so
+src/core/helpers.ts:1358
+-  * requires a server to REJECT invalid characters, and a fallback would admit the very value
++  * requires a server to reject invalid characters, and a fallback would admit the very value
+src/core/helpers.ts:1409
+-  * inverse rather than as a second list that could drift: a value travels LITERALLY when it is
++  * inverse rather than as a second list that could drift: a value travels literally when it is
+src/core/helpers.ts:1498
+-  * `items` is reachable like any other, because the chain is read by key POSITION rather than
++  * `items` is reachable like any other, because the chain is read by key position rather than
+src/core/helpers.ts:1503
+-  * schema ROOT (which is no property), one on a leaf whose declared type is not an
++  * schema root (which is no property), one on a leaf whose declared type is not an
+src/core/helpers.ts:1549
+-  * CLIENT excludes a definition this refuses from the `tools/list` result it delivers, and a
++  * client excludes a definition this refuses from the `tools/list` result it delivers, and a
+src/core/helpers.ts:1550
+-  * SERVER recognizes exactly the `Mcp-Param-*` names this returns for its own definitions.
++  * server recognizes exactly the `Mcp-Param-*` names this returns for its own definitions.
+src/core/helpers.ts:1588
+-  * The protocol's conversion table, and the ONE place it is stated: a string travels as
++  * The protocol's conversion table, and the one place it is stated: a string travels as
+src/core/helpers.ts:1592
+-  * range carries NOTHING — a header that cannot round-trip the body value is worse than an
++  * range carries nothing — a header that cannot round-trip the body value is worse than an
+src/core/helpers.ts:1690
+-  * `requestId` is the WIRE SPELLING carried verbatim from the dated schema, and it must be a
++  * `requestId` is the wire spelling carried verbatim from the dated schema, and it must be a
+src/core/helpers.ts:1718
+-  * the terminating response — and END the exchange however the pump leaves.
++  * the terminating response — and end the exchange however the pump leaves.
+src/core/helpers.ts:1722
+-  * LAST and closes the exchange. Sends are awaited one at a time so the transport
++  * last and closes the exchange. Sends are awaited one at a time so the transport
+src/core/helpers.ts:1725
+-  * The first parameter is the CONTROLLED arm rather than a bare
++  * The first parameter is the controlled arm rather than a bare
+src/core/helpers.ts:1735
+-  * declared Node floor cannot PARSE `await using` — `target: ESNext` emits the declaration
++  * declared Node floor cannot parse `await using` — `target: ESNext` emits the declaration
+src/core/helpers.ts:1781
+-  * {@link decodeBoundedMessage} under `server.limit`, the SERVER'S OWN bound, so a message
++  * {@link decodeBoundedMessage} under `server.limit`, the server'S own bound, so a message
+src/core/helpers.ts:1790
+-  * the caller's own bug, never this binder's). A fault raised AFTER its own request was
++  * the caller's own bug, never this binder's). A fault raised after its own request was
+src/core/helpers.ts:1793
+-  * **This binder OWNS every exchange it starts, and ends each one on every exit.** It holds one
++  * **This binder owns every exchange it starts, and ends each one on every exit.** It holds one
+src/core/helpers.ts:1797
+-  * An inbound `notifications/cancelled` ABORTS the request it names, which is how the message-
++  * An inbound `notifications/cancelled` aborts the request it names, which is how the message-
+src/core/helpers.ts:1799
+-  * `MessagePort`); a cancelled request writes NO response, because a peer that asked for a call
++  * `MessagePort`); a cancelled request writes no response, because a peer that asked for a call
+src/core/helpers.ts:1804
+-  * `listen`/`closed` are REPLACE semantics (§ port contract): the returned unbind
++  * `listen`/`closed` are replace semantics (§ port contract): the returned unbind
+src/core/helpers.ts:1805
+-  * DETACHES by replacing this binder's own handlers with no-ops, so a subsequent
++  * detaches by replacing this binder's own handlers with no-ops, so a subsequent
+src/core/helpers.ts:1806
+-  * `bindServer` call on the SAME transport is never double-dispatched by a stale
++  * `bindServer` call on the same transport is never double-dispatched by a stale
+src/core/helpers.ts:1810
+-  * same exchanges. It does NOT close the transport; that remains the caller's decision.
++  * same exchanges. It does not close the transport; that remains the caller's decision.
+src/core/helpers.ts:1889
+-  * inbound message is decoded and delivered onto the client's OWN transport
++  * inbound message is decoded and delivered onto the client's own transport
+src/core/helpers.ts:1897
+-  * the SAME `transport` (see {@link import('./factories.js').createDuplexClientTransport},
++  * the same `transport` (see {@link import('./factories.js').createDuplexClientTransport},
+src/core/helpers.ts:1902
+-  * inbound message is DROPPED (total — never throws); a delivery fault is routed to
++  * inbound message is dropped (total — never throws); a delivery fault is routed to
+src/core/helpers.ts:1904
+-  * DETACHES this binder (further inbound messages and the transport's `closed` signal are
++  * detaches this binder (further inbound messages and the transport's `closed` signal are
+src/core/helpers.ts:1905
+-  * ignored) WITHOUT closing the transport.
++  * ignored) without closing the transport.
+src/core/helpers.ts:1907
+-  * `listen`/`closed` are REPLACE semantics (§ port contract): the returned unbind
++  * `listen`/`closed` are replace semantics (§ port contract): the returned unbind
+src/core/helpers.ts:1908
+-  * DETACHES by replacing this binder's own handlers with no-ops, so a subsequent
++  * detaches by replacing this binder's own handlers with no-ops, so a subsequent
+src/core/helpers.ts:1909
+-  * `bindClient` call on the SAME transport is never double-dispatched by a stale
++  * `bindClient` call on the same transport is never double-dispatched by a stale
+src/core/helpers.ts:1914
+-  * real rather than an omission.** A server binder holds the lifetime of work it STARTED, so an
++  * real rather than an omission.** A server binder holds the lifetime of work it started, so an
+src/core/helpers.ts:1920
+-  * malformed / non-JSON-RPC inbound message is DROPPED (total — never throws).
++  * malformed / non-JSON-RPC inbound message is dropped (total — never throws).
+src/core/inferers.ts:10
+-  * The era is READ from the two era guards rather than restated here, so a revision added
++  * The era is read from the two era guards rather than restated here, so a revision added
+src/core/inferers.ts:28
+-  * The STRUCTURAL read, distinct from {@link inferEra}'s read of a revision string: era is fixed
++  * The structural read, distinct from {@link inferEra}'s read of a revision string: era is fixed
+src/core/inferers.ts:60
+-  * Infers the protocol version an outbound message announces itself with — the ONE
++  * Infers the protocol version an outbound message announces itself with — the one
+src/core/inferers.ts:64
+-  * This is deliberately the SAME read the server's own expectation performs
++  * This is deliberately the same read the server's own expectation performs
+src/core/inferers.ts:66
+-  * `_meta` version, accepted whenever it is a string. It is NOT
++  * `_meta` version, accepted whenever it is a string. It is not
+src/core/inferers.ts:68
+-  * point. That parser answers a different question — is the modern metadata WELL FORMED —
++  * point. That parser answers a different question — is the modern metadata well formed —
+src/core/inferers.ts:77
+-  * Header NAMES stay with the transports that own the wire (see `constants.ts`); core owns
++  * Header names stay with the transports that own the wire (see `constants.ts`); core owns
+src/core/parsers.ts:40
+-  * ALREADY be `JSON.parse`d: the raw-string parse (which can throw on malformed
++  * already be `JSON.parse`d: the raw-string parse (which can throw on malformed
+src/core/parsers.ts:44
+-  * A defined result is an OWNED CANONICAL SNAPSHOT, never the input reference: it is
++  * A defined result is an owned canonical snapshot, never the input reference: it is
+src/core/parsers.ts:46
+-  * was SERIALIZED with its keys sorted, but the rebuilt object enumerates its own keys the
++  * was serialized with its keys sorted, but the rebuilt object enumerates its own keys the
+src/core/parsers.ts:49
+-  * BYTES takes them from `serializeJSON`/`snapshotJSON` rather than re-stringifying this
++  * bytes takes them from `serializeJSON`/`snapshotJSON` rather than re-stringifying this
+src/core/parsers.ts:52
+-  * The parser's sound partner is the COMPOSITE `isJSONRPCMessage(value) &&
++  * The parser's sound partner is the composite `isJSONRPCMessage(value) &&
+src/core/parsers.ts:62
+-  * {@link isJSONRPCMessage} ALONE is not that partner. It is clone-backed and so already
++  * {@link isJSONRPCMessage} Alone is not that partner. It is clone-backed and so already
+src/core/parsers.ts:65
+-  * whose canonical text exceeds `limits.bytes`. Those are named causes, NOT a complete
++  * whose canonical text exceeds `limits.bytes`. Those are named causes, not a complete
+src/core/parsers.ts:99
+-  * request falls outside the bound this parser INHERITS by routing through
++  * request falls outside the bound this parser inherits by routing through
+src/core/parsers.ts:146
+-  * payload binds the authenticated principal, absolute expiry, ORIGINAL request id, version,
++  * payload binds the authenticated principal, absolute expiry, original request id, version,
+src/core/parsers.ts:150
+-  * unenforced. An EMPTY round is refused for the same reason — a retry against it would answer
++  * unenforced. An empty round is refused for the same reason — a retry against it would answer
+src/core/transports/HTTPClientTransport.ts:29
+-  * Drives a REMOTE Streamable-HTTP MCP server over `fetch` — a CLIENT
++  * Drives a remote Streamable-HTTP MCP server over `fetch` — a client
+src/core/transports/HTTPClientTransport.ts:41
+-  *   `Accept` of BOTH `application/json` and `text/event-stream` (so the server may
++  *   `Accept` of both `application/json` and `text/event-stream` (so the server may
+src/core/transports/HTTPClientTransport.ts:54
+-  *   `mcp-session-id` response header, when a STATEFUL server sends one (on
++  *   `mcp-session-id` response header, when a stateful server sends one (on
+src/core/transports/HTTPClientTransport.ts:55
+-  *   `initialize`), is captured into `session` and then ECHOED as the
++  *   `initialize`), is captured into `session` and then echoed as the
+src/core/transports/HTTPClientTransport.ts:56
+-  *   `mcp-session-id` request header on every SUBSEQUENT request — so an
++  *   `mcp-session-id` request header on every subsequent request — so an
+src/core/transports/HTTPClientTransport.ts:59
+-  *   when it is a SUPPORTED value, and echoed as `mcp-protocol-version` alone on
++  *   when it is a supported value, and echoed as `mcp-protocol-version` alone on
+src/core/transports/HTTPClientTransport.ts:67
+-  *   ABORTED, which cancels the response body a `send` is reading — an SSE reply the server
++  *   aborted, which cancels the response body a `send` is reading — an SSE reply the server
+src/core/transports/HTTPClientTransport.ts:71
+-  * - **Total at the boundary, and a non-success reply REJECTS.** Every reply is narrowed
++  * - **Total at the boundary, and a non-success reply rejects.** Every reply is narrowed
+src/core/types.ts:34
+-  * its response by the `id` it REQUIRES.
++  * its response by the `id` it requires.
+src/core/types.ts:83
+-  * is a short human description; `data` is an OPTIONAL machine-readable payload
++  * is a short human description; `data` is an optional machine-readable payload
+src/core/types.ts:98
+-  * REQUIRED here. `result` is an {@link MCPResult} on the modern wire and an
++  * required here. `result` is an {@link MCPResult} on the modern wire and an
+src/core/types.ts:114
+-  * `id` is OMITTED, never `null`, when the request could not be parsed or its id
++  * `id` is omitted, never `null`, when the request could not be parsed or its id
+src/core/types.ts:120
+- 	/** Holds the failed request's id; ABSENT when no id could be read. */
++ 	/** Holds the failed request's id; absent when no id could be read. */
+src/core/types.ts:153
+-  * The dated schema requires a `resultType` on EVERY modern result and leaves the
++  * The dated schema requires a `resultType` on every modern result and leaves the
+src/core/types.ts:162
+-  * {@link MCPSubscriptionResult} — stay CLOSED and keep their literal
++  * {@link MCPSubscriptionResult} — stay closed and keep their literal
+src/core/types.ts:183
+-  * carries NO `resultType`. That absence is the whole distinction, which is why it is
++  * carries no `resultType`. That absence is the whole distinction, which is why it is
+src/core/types.ts:210
+-  * The `Object` suffix is not a role suffix from the type table — it NAMES THE SHAPE.
++  * The `Object` suffix is not a role suffix from the type table — it names the shape.
+src/core/types.ts:463
+-  * Represents a `tools/call` result BEFORE the modern stamp — the executed tool's output as
++  * Represents a `tools/call` result before the modern stamp — the executed tool's output as
+src/core/types.ts:467
+-  * The name states the whole distinction: this is the tool-call result WITHOUT
++  * The name states the whole distinction: this is the tool-call result without
+src/core/types.ts:476
+-  * `structuredContent`. A tool FAILURE (the `success: false` branch the registry
++  * `structuredContent`. A tool failure (the `success: false` branch the registry
+src/core/types.ts:477
+-  * isolated) carries its `error` text in `content` AND sets `isError: true`, so the
++  * isolated) carries its `error` text in `content` and sets `isError: true`, so the
+src/core/types.ts:616
+-  * keep OPEN parameter records: the dated schema leaves their request bodies to the caller, and
++  * keep open parameter records: the dated schema leaves their request bodies to the caller, and
+src/core/types.ts:672
+-  * from the request it ISSUED under that key, so {@link MCPInputHandler} receives every answer
++  * from the request it issued under that key, so {@link MCPInputHandler} receives every answer
+src/core/types.ts:706
+-  * `id` is the FIRST round's request id and stays bound across every later round, so a
++  * `id` is the first round's request id and stays bound across every later round, so a
+src/core/types.ts:708
+-  * after the second hop. `requests` is the EXACT round that was issued: it carries the keys the
++  * after the second hop. `requests` is the exact round that was issued: it carries the keys the
+src/core/types.ts:815
+-  * Represents the OWNING half of one progress slot — {@link MCPProgressInterface} plus the
++  * Represents the owning half of one progress slot — {@link MCPProgressInterface} plus the
+src/core/types.ts:844
+-  * The RECEIVING half of {@link MCPProgressInterface}, and deliberately not its mirror:
++  * The receiving half of {@link MCPProgressInterface}, and deliberately not its mirror:
+src/core/types.ts:851
+-  * The handler is registered for the LIFETIME OF ONE REQUEST and is released the moment
++  * The handler is registered for the lifetime of one request and is released the moment
+src/core/types.ts:898
+-  * `completed`, `failed`, and `cancelled` are TERMINAL: a task that reaches one never
++  * `completed`, `failed`, and `cancelled` are terminal: a task that reaches one never
+src/core/types.ts:900
+-  * a JSON-RPC-level failure. A tool that RAN and returned an error is `completed`
++  * a JSON-RPC-level failure. A tool that ran and returned an error is `completed`
+src/core/types.ts:905
+-  * and is a DIFFERENT mechanism: that one suspends a live request and resumes through
++  * and is a different mechanism: that one suspends a live request and resumes through
+src/core/types.ts:917
+-  * Every field name here is a WIRE SPELLING carried verbatim from the extension's
++  * Every field name here is a wire spelling carried verbatim from the extension's
+src/core/types.ts:918
+-  * schema, so the compound-member prohibition does not reach them; the type NAME is
++  * schema, so the compound-member prohibition does not reach them; the type name is
+src/core/types.ts:949
+-  * `result` is an OPEN RECORD rather than an {@link MCPResult} or an
++  * `result` is an open record rather than an {@link MCPResult} or an
+src/core/types.ts:970
+-  * DISTINCT from {@link MCPTaskDetail}, and the distinction is the whole point. A detail is
++  * distinct from {@link MCPTaskDetail}, and the distinction is the whole point. A detail is
+src/core/types.ts:972
+-  * store knows nothing about the request that read it. This is what a `tasks/get` REPLY
++  * store knows nothing about the request that read it. This is what a `tasks/get` reply
+src/core/types.ts:992
+-  * FLAT, and that is the schema's shape rather than a choice: the extension types these
++  * flat, and that is the schema's shape rather than a choice: the extension types these
+src/core/types.ts:1026
+-  * The only result in this package whose `resultType` is `'task'`. It is FLAT — the
++  * The only result in this package whose `resultType` is `'task'`. It is flat — the
+src/core/types.ts:1042
+-  * It carries NO cancellation signal, and that absence is deliberate rather than an
++  * It carries no cancellation signal, and that absence is deliberate rather than an
+src/core/types.ts:1043
+-  * omission. The signal on the accompanying {@link MCPMethodOptions} is the REQUEST's
++  * omission. The signal on the accompanying {@link MCPMethodOptions} is the request's
+src/core/types.ts:1049
+-  * ANSWER is written, and give the task's own work a lifetime the manager owns.
++  * answer is written, and give the task's own work a lifetime the manager owns.
+src/core/types.ts:1067
+-  * There is deliberately NO plural accessor. The extension defines no `tasks/list`, and
++  * There is deliberately no plural accessor. The extension defines no `tasks/list`, and
+src/core/types.ts:1072
+-  * it, AND one this caller is not entitled to see. They are indistinguishable ON
++  * it, and one this caller is not entitled to see. They are indistinguishable on
+src/core/types.ts:1073
+-  * PURPOSE: they all become the same `-32602`, so a `taskId` cannot be probed for
++  * purpose: they all become the same `-32602`, so a `taskId` cannot be probed for
+src/core/types.ts:1078
+-  * AUTHORIZE the call itself: the extension requires authorization on each task request,
++  * authorize the call itself: the extension requires authorization on each task request,
+src/core/types.ts:1096
+- 	 * - **Deduplicate by key, and SCOPE THE KEY TO ITS PRINCIPAL.** Returning the existing
++ 	 * - **Deduplicate by key, and scope the key to its principal.** Returning the existing
+src/core/types.ts:1099
+- 	 *   SAME task — one principal reading another's work through a handle it merely
++ 	 *   same task — one principal reading another's work through a handle it merely
+src/core/types.ts:1114
+- 	 * EVERY `tasks/*` method runs through here first, not only `tasks/get`. {@link update}
++ 	 * every `tasks/*` method runs through here first, not only `tasks/get`. {@link update}
+src/core/types.ts:1130
+- 	 * recognize, or has already been answered, is IGNORED rather than refused, and a
++ 	 * recognize, or has already been answered, is ignored rather than refused, and a
+src/core/types.ts:1132
+- 	 * VERBATIM — it holds none of the task's keys, so the ignoring is this method's to do.
++ 	 * verbatim — it holds none of the task's keys, so the ignoring is this method's to do.
+src/core/types.ts:1134
+- 	 * This is the SECOND multi-round-trip mechanism in the package, and it is the weaker one.
++ 	 * This is the second multi-round-trip mechanism in the package, and it is the weaker one.
+src/core/types.ts:1154
+- 	 * Cancellation is COOPERATIVE: a task that has already finished, or one whose work
++ 	 * Cancellation is cooperative: a task that has already finished, or one whose work
+src/core/types.ts:1168
+-  * Deferral is entirely the SERVER's decision. The extension gives a client no flag and
++  * Deferral is entirely the server's decision. The extension gives a client no flag and
+src/core/types.ts:1174
+-  * The returned string is the STABLE OPERATION KEY the manager deduplicates on: the same
++  * The returned string is the stable operation key the manager deduplicates on: the same
+src/core/types.ts:1176
+-  * the CALLER and the canonical call — never from `call.id`, which is the client's own
++  * the caller and the canonical call — never from `call.id`, which is the client's own
+src/core/types.ts:1512
+-  * This is the PORT that produces a {@link MCPCompletion}, not the behavioural face of one: the
++  * This is the port that produces a {@link MCPCompletion}, not the behavioural face of one: the
+src/core/types.ts:1565
+-  * The subscription id is OPTIONAL here, and that is the schema's own split rather than
++  * The subscription id is optional here, and that is the schema's own split rather than
+src/core/types.ts:1571
+-  * Compare {@link MCPSubscriptionResultMetaObject}, where the same key is REQUIRED: that one
++  * Compare {@link MCPSubscriptionResultMetaObject}, where the same key is required: that one
+src/core/types.ts:1612
+-  * Every key here is a WIRE SPELLING, carried verbatim from the dated schema's
++  * Every key here is a wire spelling, carried verbatim from the dated schema's
+src/core/types.ts:1616
+-  * and would speak a protocol no peer implements. The type NAME is the library's own
++  * and would speak a protocol no peer implements. The type name is the library's own
+src/core/types.ts:1633
+- 	 * and that placement is THIS PACKAGE'S READING rather than a settled fact: the Tasks
++ 	 * and that placement is this package'S reading rather than a settled fact: the Tasks
+src/core/types.ts:1639
+- 	 * The server honours the member only when a consumer configured BOTH a task manager and
++ 	 * The server honours the member only when a consumer configured both a task manager and
+src/core/types.ts:1643
+- 	 * the member. That fact is DERIVED from the two configured options at the moment the
++ 	 * the member. That fact is derived from the two configured options at the moment the
+src/core/types.ts:1688
+-  * `caller` is consumer-ASSERTED and NEVER VERIFIED. Sessions mint transport identity, not
++  * `caller` is consumer-ASSERTED and never verified. Sessions mint transport identity, not
+src/core/types.ts:1701
+-  * Represents the RESOLVED per-request options one dispatched method receives.
++  * Represents the resolved per-request options one dispatched method receives.
+src/core/types.ts:1704
+-  * The mirror of {@link MCPDispatchOptions} on the far side of dispatch: a CALLER may
++  * The mirror of {@link MCPDispatchOptions} on the far side of dispatch: a caller may
+src/core/types.ts:1706
+-  * `signal` is REQUIRED here. Dispatch resolves it once, at the single ingress, and
++  * `signal` is required here. Dispatch resolves it once, at the single ingress, and
+src/core/types.ts:1714
+-  * The resolved signal is the request's LIFETIME, not merely the caller's: it aborts when
++  * The resolved signal is the request's lifetime, not merely the caller's: it aborts when
+src/core/types.ts:1715
+-  * the caller's own signal aborts AND when the answer this request produced is finished —
++  * the caller's own signal aborts and when the answer this request produced is finished —
+src/core/types.ts:1721
+-  * `caller` is consumer-ASSERTED and NEVER VERIFIED, and is carried by identity: this
++  * `caller` is consumer-ASSERTED and never verified, and is carried by identity: this
+src/core/types.ts:1761
+-  * A stream yields NOTIFICATIONS and never requests — the yield type forbids an `id`,
++  * A stream yields notifications and never requests — the yield type forbids an `id`,
+src/core/types.ts:1765
+-  * Held-open closure is a RESULT in the modern revision, not an out-of-band event, so it
++  * Held-open closure is a result in the modern revision, not an out-of-band event, so it
+src/core/types.ts:1768
+-  * from a response at ONE point (`Symbol.asyncIterator in answer`), at the place that already pumps
++  * from a response at one point (`Symbol.asyncIterator in answer`), at the place that already pumps
+src/core/types.ts:1778
+-  * Represents a held-open modern result whose cancellation ONE owner arbitrates — the arm
++  * Represents a held-open modern result whose cancellation one owner arbitrates — the arm
+src/core/types.ts:1783
+-  * and a native async generator answers that badly: `return()` and `throw()` QUEUE behind a
++  * and a native async generator answers that badly: `return()` and `throw()` queue behind a
+src/core/types.ts:1786
+-  * controller settles the consumer's read ITSELF, aborts the request's signal before it
++  * controller settles the consumer's read itself, aborts the request's signal before it
+src/core/types.ts:1790
+-  * {@link stop} is the operation the protocol has no member for: end the exchange with NO
++  * {@link stop} is the operation the protocol has no member for: end the exchange with no
+src/core/types.ts:1796
+-  * **Ending a controlled exchange is the obligation of whoever is handed it, on EVERY exit —
++  * **Ending a controlled exchange is the obligation of whoever is handed it, on every exit —
+src/core/types.ts:1807
+-  * releases the producer, request lifetime, and live slot BEFORE it may reject. Throwing before
++  * releases the producer, request lifetime, and live slot before it may reject. Throwing before
+src/core/types.ts:1810
+-  * There is deliberately NO owner of last resort — no finalizer, no timer, no timeout. One
++  * There is deliberately no owner of last resort — no finalizer, no timer, no timeout. One
+src/core/types.ts:1819
+- 	 * At most ONE read is outstanding against the producer, and a rival read is refused
++ 	 * At most one read is outstanding against the producer, and a rival read is refused
+src/core/types.ts:1874
+-  * A TRANSLATION boundary and nothing more: it serializes each message, and every lifecycle
++  * A translation boundary and nothing more: it serializes each message, and every lifecycle
+src/core/types.ts:1881
+-  * passes through, and the narrowing is inherent: it is handed a STRING, so it has no typed
++  * passes through, and the narrowing is inherent: it is handed a string, so it has no typed
+src/core/types.ts:1883
+-  * exchange therefore ends with NO terminal while this face answers its own consumer with the
++  * exchange therefore ends with no terminal while this face answers its own consumer with the
+src/core/types.ts:1888
+-  * this face ends it on EVERY exit, and every closure member here reaches the TYPED exchange
++  * this face ends it on every exit, and every closure member here reaches the typed exchange
+src/core/types.ts:1894
+-  * releases the typed producer, request lifetime, and live slot BEFORE it may reject. Throwing
++  * releases the typed producer, request lifetime, and live slot before it may reject. Throwing
+src/core/types.ts:1909
+- 	 * The typed exchange ends with NO terminal: a string is not a {@link JSONRPCResponse}, and
++ 	 * The typed exchange ends with no terminal: a string is not a {@link JSONRPCResponse}, and
+src/core/types.ts:1911
+- 	 * THIS consumer alone.
++ 	 * this consumer alone.
+src/core/types.ts:1949
+-  * invoked for nothing else: dispatch short-circuits a {@link JSONRPCNotification} BEFORE the
++  * invoked for nothing else: dispatch short-circuits a {@link JSONRPCNotification} before the
+src/core/types.ts:1955
+-  * `notifications/cancelled`, and a handler acting on one must reach the OTHER request's
++  * `notifications/cancelled`, and a handler acting on one must reach the other request's
+src/core/types.ts:1956
+-  * `AbortController` — which dispatch creates per request, AFTER the notification
++  * `AbortController` — which dispatch creates per request, after the notification
+src/core/types.ts:1963
+-  * caller waiting until its deadline, so dispatch CONTAINS one as `-32603` plus a single
++  * caller waiting until its deadline, so dispatch contains one as `-32603` plus a single
+src/core/types.ts:1981
+-  * the ONE seam carrying both the built-in methods and any method a consumer adds.
++  * the one seam carrying both the built-in methods and any method a consumer adds.
+src/core/types.ts:1985
+-  * so they travel the SAME path as every later method: there is no second dispatch route
++  * so they travel the same path as every later method: there is no second dispatch route
+src/core/types.ts:1986
+-  * and no precedence puzzle. `add` under an existing name REPLACES that method — a
++  * and no precedence puzzle. `add` under an existing name replaces that method — a
+src/core/types.ts:2014
+-  * `request` fires at the TOP of every `dispatch` with the method, correlating id
++  * `request` fires at the top of every `dispatch` with the method, correlating id
+src/core/types.ts:2015
+-  * (ABSENT for a notification, which has none), and structurally selected wire era, BEFORE the
++  * (absent for a notification, which has none), and structurally selected wire era, before the
+src/core/types.ts:2030
+- 	 * inbound traffic. Only SCALARS are reported: nothing read out of the request graph
++ 	 * inbound traffic. Only scalars are reported: nothing read out of the request graph
+src/core/types.ts:2035
+- 	 * HTTP POST handler (`createMCPPostHandler`) reports the SYNTHETIC `tools/list` that
++ 	 * HTTP POST handler (`createMCPPostHandler`) reports the synthetic `tools/list` that
+src/core/types.ts:2037
+- 	 * call itself. Each carries the RESERVED id `0`, and one fires per page the handler
++ 	 * call itself. Each carries the reserved id `0`, and one fires per page the handler
+src/core/types.ts:2045
+- 	 * Reports an operational fault the server CONTAINED — the caught value, exactly once per
++ 	 * Reports an operational fault the server contained — the caught value, exactly once per
+src/core/types.ts:2055
+- 	 * This is the ONE place a caught detail is legible. The wire answer is detail-free by
++ 	 * This is the one place a caught detail is legible. The wire answer is detail-free by
+src/core/types.ts:2056
+- 	 * construction, so an operator who wants to know WHY a request failed subscribes here;
++ 	 * construction, so an operator who wants to know why a request failed subscribes here;
+src/core/types.ts:2059
+- 	 * A DOMAIN event, distinct from the emitter's own listener-error channel: a listener
++ 	 * A domain event, distinct from the emitter's own listener-error channel: a listener
+src/core/types.ts:2144
+- 	 * This is also the ONLY way a tool observes cancellation. The default path calls
++ 	 * This is also the only way a tool observes cancellation. The default path calls
+src/core/types.ts:2177
+- 	 * deferred, and `tasks/*` stays unregistered. The extension is the STABLE, immutable
++ 	 * deferred, and `tasks/*` stays unregistered. The extension is the stable, immutable
+src/core/types.ts:2251
+-  * {@link ToolManagerInterface}, with NO transport coupling (a transport layer
++  * {@link ToolManagerInterface}, with no transport coupling (a transport layer
+src/core/types.ts:2255
+-  * - **`dispatch` and `handle`.** `dispatch(invocation)` is the TYPED core: it takes an
++  * - **`dispatch` and `handle`.** `dispatch(invocation)` is the typed core: it takes an
+src/core/types.ts:2261
+-  *   `handle(message)` is the STRING boundary: it `JSON.parse`s the raw message, narrows it
++  *   `handle(message)` is the string boundary: it `JSON.parse`s the raw message, narrows it
+src/core/types.ts:2265
+-  *   `undefined` for a notification. Both error envelopes OMIT the `id` they could not read.
++  *   `undefined` for a notification. Both error envelopes omit the `id` they could not read.
+src/core/types.ts:2287
+- 	 * code in front of the server needs the SAME number: a binder that decodes an inbound
++ 	 * code in front of the server needs the same number: a binder that decodes an inbound
+src/core/types.ts:2297
+- 	 * A held-open modern method answers with a CONTROLLED stream instead of a response:
++ 	 * A held-open modern method answers with a controlled stream instead of a response:
+src/core/types.ts:2326
+- 	 * RUNTIME — which only a caller defeating these types can produce — answers a
++ 	 * runtime — which only a caller defeating these types can produce — answers a
+src/core/types.ts:2343
+- 	 * (Invalid Request) response — each with its unreadable `id` OMITTED, never `null`;
++ 	 * (Invalid Request) response — each with its unreadable `id` omitted, never `null`;
+src/core/types.ts:2349
+- 	 * The vague-verb prohibition (`process`, `handle`) governs STANDALONE helpers,
++ 	 * The vague-verb prohibition (`process`, `handle`) governs standalone helpers,
+src/core/types.ts:2379
+-  * `closed` each register THE SINGLE handler for their event — a second call
++  * `closed` each register the single handler for their event — a second call
+src/core/types.ts:2380
+-  * REPLACES the first (matching the emitter-free, minimal-surface carrier idiom
++  * replaces the first (matching the emitter-free, minimal-surface carrier idiom
+src/core/types.ts:2385
+-  * KEPT: it is a registrar for the port's terminal event, paired with `listen` for
++  * kept: it is a registrar for the port's terminal event, paired with `listen` for
+src/core/types.ts:2396
+- 	/** Registers the single inbound-message handler — a second call REPLACES the first. */
++ 	/** Registers the single inbound-message handler — a second call replaces the first. */
+src/core/types.ts:2398
+- 	/** Registers the single closed handler — a second call REPLACES the first. */
++ 	/** Registers the single closed handler — a second call replaces the first. */
+src/core/types.ts:2419
+-  * - `message` — a JSON-RPC message ARRIVED from the remote server (a response the
++  * - `message` — a JSON-RPC message arrived from the remote server (a response the
+src/core/types.ts:2425
+-  *   payload is typed `unknown`. This is a DOMAIN event, distinct from the emitter's
++  *   payload is typed `unknown`. This is a domain event, distinct from the emitter's
+src/core/types.ts:2470
+- 	 * revision defines NO client-to-server notification over it, and the cancellation
++ 	 * revision defines no client-to-server notification over it, and the cancellation
+src/core/types.ts:2480
+- 	 * A `start` that REJECTS must first release whatever it had already acquired. The
++ 	 * A `start` that rejects must first release whatever it had already acquired. The
+src/core/types.ts:2498
+- 	 * A `send` that FAILS must fail by REJECTING, never by throwing synchronously. The
++ 	 * A `send` that fails must fail by rejecting, never by throwing synchronously. The
+src/core/types.ts:2522
+- 	 * A `close` must SETTLE, and its settlements mean different things to its caller: resolving
++ 	 * A `close` must settle, and its settlements mean different things to its caller: resolving
+src/core/types.ts:2525
+- 	 * did not ANSWER and never that it did not happen — so a `close` that resolves or rejects hours
++ 	 * did not answer and never that it did not happen — so a `close` that resolves or rejects hours
+src/core/types.ts:2528
+- 	 * gave up waiting JOINS the `close` still running rather than issuing another. It IS called
++ 	 * gave up waiting joins the `close` still running rather than issuing another. It is called
+src/core/types.ts:2529
+- 	 * again after an earlier `close` REJECTED, because a rejected close ended nothing.
++ 	 * again after an earlier `close` rejected, because a rejected close ended nothing.
+src/core/types.ts:2531
+- 	 * `close` is IDEMPOTENT: a call on a transport an earlier `close` already ended resolves
++ 	 * `close` is idempotent: a call on a transport an earlier `close` already ended resolves
+src/core/types.ts:2533
+- 	 * bounds ONE closed lifetime rather than the object — a transport that reopens on `start`
++ 	 * bounds one closed lifetime rather than the object — a transport that reopens on `start`
+src/core/types.ts:2548
+-  *   `http://localhost:3000/mcp`). REQUIRED.
++  *   `http://localhost:3000/mcp`). Required.
+src/core/types.ts:2608
+-  * - `notification` — a server-initiated JSON-RPC NOTIFICATION arrived — forwarded for the
++  * - `notification` — a server-initiated JSON-RPC notification arrived — forwarded for the
+src/core/types.ts:2611
+-  *   delivered there instead, and a RESPONSE correlating to nothing pending is discarded
++  *   delivered there instead, and a response correlating to nothing pending is discarded
+src/core/types.ts:2614
+-  *   a DOMAIN event, distinct from the emitter's own listener-error channel: a listener throw
++  *   a domain event, distinct from the emitter's own listener-error channel: a listener throw
+src/core/types.ts:2635
+-  * - `transport` — the carrier the client drives a remote MCP server over (REQUIRED;
++  * - `transport` — the carrier the client drives a remote MCP server over (required;
+src/core/types.ts:2646
+-  *   `tools/call` that the server does not answer within it REJECTS (the pending
++  *   `tools/call` that the server does not answer within it rejects (the pending
+src/core/types.ts:2648
+-  *   `setTimeout`). The same deadline bounds the client's WAIT on the transport's `close`, so a
++  *   `setTimeout`). The same deadline bounds the client's wait on the transport's `close`, so a
+src/core/types.ts:2679
+-  * - `signal` cancels THAT request and nothing else. It never closes the connection, never
++  * - `signal` cancels that request and nothing else. It never closes the connection, never
+src/core/types.ts:2682
+-  *   caller stops waiting. A signal that is ALREADY aborted refuses the call before
++  *   caller stops waiting. A signal that is already aborted refuses the call before
+src/core/types.ts:2718
+-  *   text. A tool FAILURE never reaches this arm — `isError: true` throws, so an agent's
++  *   text. A tool failure never reaches this arm — `isError: true` throws, so an agent's
+src/core/types.ts:2720
+-  * - {@link MCPTaskResult} — the server DEFERRED the call into a durable task. The request
++  * - {@link MCPTaskResult} — the server deferred the call into a durable task. The request
+src/core/types.ts:2746
+-  * It resolves the peer's `result` UNVALIDATED, because validating it is the caller's job and
++  * It resolves the peer's `result` unvalidated, because validating it is the caller's job and
+src/core/types.ts:2747
+-  * every caller wants a different shape. It REJECTS with an
++  * every caller wants a different shape. It rejects with an
+src/core/types.ts:2779
+-  * Reads, answers, and stops a durable task the peer created — the CLIENT half of the stable
++  * Reads, answers, and stops a durable task the peer created — the client half of the stable
+src/core/types.ts:2785
+-  * for one, and a task exists only because the SERVER deferred a `tools/call` it received. The
++  * for one, and a task exists only because the server deferred a `tools/call` it received. The
+src/core/types.ts:2788
+-  * There is deliberately NO plural accessor, for the same reason the server-side port has none:
++  * There is deliberately no plural accessor, for the same reason the server-side port has none:
+src/core/types.ts:2813
+- 	 * REJECTS rather than answering `undefined` for a task it cannot read. The peer's refusal
++ 	 * rejects rather than answering `undefined` for a task it cannot read. The peer's refusal
+src/core/types.ts:2819
+- 	 * The peer's payload is carried VERBATIM once it proves well-formed. A modern result's own
++ 	 * The peer's payload is carried verbatim once it proves well-formed. A modern result's own
+src/core/types.ts:2840
+- 	 * VERBATIM: a key the task does not recognize, or has already answered, is the manager's to
++ 	 * verbatim: a key the task does not recognize, or has already answered, is the manager's to
+src/core/types.ts:2858
+- 	 * ADVISORY, exactly like the server-side port it mirrors: the acknowledgement reports that
++ 	 * advisory, exactly like the server-side port it mirrors: the acknowledgement reports that
+src/core/types.ts:2865
+- 	 * `resultType: 'task'` is a request that is OVER; only this method reaches the work it left
++ 	 * `resultType: 'task'` is a request that is over; only this method reaches the work it left
+src/core/types.ts:2881
+-  * Connects to a REMOTE MCP server over any injected {@link MCPMessageTransportInterface},
++  * Connects to a remote MCP server over any injected {@link MCPMessageTransportInterface},
+src/core/types.ts:2886
+-  * - **The mirror of {@link MCPServerInterface}.** Where the server DISPATCHES requests
++  * - **The mirror of {@link MCPServerInterface}.** Where the server dispatches requests
+src/core/types.ts:2887
+-  *   over a tool registry, the client ISSUES them over a transport: `connect` negotiates through
++  *   over a tool registry, the client issues them over a transport: `connect` negotiates through
+src/core/types.ts:2895
+-  *   (a remote tool FAILURE — `isError: true` — throws locally, so the agent's
++  *   (a remote tool failure — `isError: true` — throws locally, so the agent's
+src/core/types.ts:2899
+-  * - **Per-request cancellation.** `call`'s `options.signal` cancels ONE in-flight request:
++  * - **Per-request cancellation.** `call`'s `options.signal` cancels one in-flight request:
+src/core/types.ts:2908
+-  *   left alone after a `resultType: 'task'` answer writes NOTHING until its consumer asks.
++  *   left alone after a `resultType: 'task'` answer writes nothing until its consumer asks.
+src/core/types.ts:2914
+-  *   RESPONSE whose id matches nothing pending is DISCARDED: the request it answers has
++  *   response whose id matches nothing pending is discarded: the request it answers has
+src/core/types.ts:2918
+-  *   `AbortSignal.timeout(timeout)`: a server that never replies REJECTS that pending
++  *   `AbortSignal.timeout(timeout)`: a server that never replies rejects that pending
+src/core/types.ts:2946
+- 	 * issue at any time; whether they SUCCEED is the peer's decision, and a server that did not
++ 	 * issue at any time; whether they succeed is the peer's decision, and a server that did not
+src/core/types.ts:2957
+- 	 * while the CURRENT attempt is in flight joins that attempt and returns its outcome
++ 	 * while the current attempt is in flight joins that attempt and returns its outcome
+src/core/types.ts:2960
+- 	 * superseded is still unwinding OUTWAITS it, because that attempt may still owe the close
++ 	 * superseded is still unwinding outwaits it, because that attempt may still owe the close
+src/core/types.ts:2962
+- 	 * reached it first. One issued while a close is still OWED — an earlier `close` having failed,
++ 	 * reached it first. One issued while a close is still owed — an earlier `close` having failed,
+src/core/types.ts:2964
+- 	 * connection FIRST, joining a close still running rather than issuing a second one, and rejects
++ 	 * connection first, joining a close still running rather than issuing a second one, and rejects
+src/core/types.ts:3009
+- 	 * `close` carries the per-request deadline on the WAIT, so a shutdown the transport accepts and
++ 	 * `close` carries the per-request deadline on the wait, so a shutdown the transport accepts and
+src/core/types.ts:3056
+- 	 * whether the call finished: a modern server may DEFER it into a durable task or ask
++ 	 * whether the call finished: a modern server may defer it into a durable task or ask
+src/core/types.ts:3060
+- 	 * JSON (falling back to the raw string). A remote tool FAILURE (`isError: true`)
++ 	 * JSON (falling back to the raw string). A remote tool failure (`isError: true`)
+src/core/types.ts:3061
+- 	 * THROWS an `Error` carrying the error text instead, so an agent's
++ 	 * throws an `Error` carrying the error text instead, so an agent's
+src/core/types.ts:3065
+- 	 * `options.signal` cancels THIS request only — the caller stops waiting, the pending
++ 	 * `options.signal` cancels this request only — the caller stops waiting, the pending
+src/core/types.ts:3066
+- 	 * request rejects, and the peer is TOLD on a carrier that can carry a client
++ 	 * request rejects, and the peer is told on a carrier that can carry a client
+src/core/validators.ts:132
+-  * The reserved key is OPTIONAL, so a frame delivered outside a `subscriptions/listen`
++  * The reserved key is optional, so a frame delivered outside a `subscriptions/listen`
+src/core/validators.ts:133
+-  * stream passes with no stamp at all. When the key IS present its value must be a valid
++  * stream passes with no stamp at all. When the key is present its value must be a valid
+src/core/validators.ts:342
+-  * RFC 3339 §5.6 defines `date-mday` as `01-28`, `29`, `30`, or `31` BASED ON the month and
++  * RFC 3339 §5.6 defines `date-mday` as `01-28`, `29`, `30`, or `31` based on the month and
+src/core/validators.ts:350
+-  * refuse. It is a SYNTAX guard: no time zone, locale, calendar era, or leap second applies.
++  * refuse. It is a syntax guard: no time zone, locale, calendar era, or leap second applies.
+src/core/validators.ts:1018
+-  * present, exact result metadata. It deliberately does NOT narrow `resultType` to a
++  * present, exact result metadata. It deliberately does not narrow `resultType` to a
+src/core/validators.ts:1101
+-  * INTEGER milliseconds because the schema formats them `int`.
++  * integer milliseconds because the schema formats them `int`.
+src/core/validators.ts:1169
+-  * A `completed` task's `result` is checked as an OBJECT and no further. The schema declares
++  * A `completed` task's `result` is checked as an object and no further. The schema declares
+src/core/validators.ts:1222
+-  * {@link isMCPTaskDetail} plus the stamp the METHOD owes. The schema types a `tasks/get`
++  * {@link isMCPTaskDetail} plus the stamp the method owes. The schema types a `tasks/get`
+src/core/validators.ts:1226
+-  * shape. Use this guard wherever a `tasks/get` REPLY is read; use
++  * shape. Use this guard wherever a `tasks/get` reply is read; use
+src/core/validators.ts:1257
+-  * The ADMISSION guard for a task transition: a subscription producer is consumer-written,
++  * The admission guard for a task transition: a subscription producer is consumer-written,
+src/core/validators.ts:1263
+-  * `_meta` is checked for SHAPE WHEN PRESENT and nothing more. The reserved subscription
++  * `_meta` is checked for shape when present and nothing more. The reserved subscription
+src/core/validators.ts:1264
+-  * stamp is the SERVER'S to write, after this guard admits the frame and the matcher agrees
++  * stamp is the server'S to write, after this guard admits the frame and the matcher agrees
+src/core/validators.ts:1759
+-  * {@link isMCPElicitResult} says a response has the SHAPE of a response; this says the
++  * {@link isMCPElicitResult} says a response has the shape of a response; this says the
+src/core/validators.ts:1760
+-  * response answers the QUESTION that was asked. A server that protects the schema it issued
++  * response answers the question that was asked. A server that protects the schema it issued
+src/core/validators.ts:1765
+-  * or an array of strings. A value whose name is DECLARED in `schema.properties` must in
++  * or an array of strings. A value whose name is declared in `schema.properties` must in
+src/core/validators.ts:1774
+-  * An UNDECLARED property remains valid: the restricted schema is open by default, so a client
++  * An undeclared property remains valid: the restricted schema is open by default, so a client
+src/core/validators.ts:1776
+-  * valid {@link MCPElicitSchema} admits NOTHING — an unenforceable schema is never a permissive
++  * valid {@link MCPElicitSchema} admits nothing — an unenforceable schema is never a permissive
+src/core/validators.ts:2001
+-  * {@link isMCPSampleContent} block or an ARRAY of them, so both are admitted here: a
++  * {@link isMCPSampleContent} block or an array of them, so both are admitted here: a
+src/core/validators.ts:2047
+-  * A response carries no `method` of its own, so the ISSUED request selects which arm applies
++  * A response carries no `method` of its own, so the issued request selects which arm applies
+src/core/validators.ts:2052
+-  * package cannot recognize admits NOTHING, because an unrecognized question has no correct
++  * package cannot recognize admits nothing, because an unrecognized question has no correct
+src/core/validators.ts:2117
+-  * that {@link isJSONRPCId} accepts. An id-less call is NOT a request — it is a
++  * that {@link isJSONRPCId} accepts. An id-less call is not a request — it is a
+src/core/validators.ts:2147
+-  * A notification is a request-shaped call carrying NO `id` member — the protocol
++  * A notification is a request-shaped call carrying no `id` member — the protocol
+src/core/validators.ts:2190
+-  * A result answers a request, so `id` is REQUIRED and must be a valid
++  * A result answers a request, so `id` is required and must be a valid
+src/core/validators.ts:2191
+-  * {@link isJSONRPCId}. The envelope must own a `result` and must NOT own an `error`,
++  * {@link isJSONRPCId}. The envelope must own a `result` and must not own an `error`,
+src/core/validators.ts:2220
+-  * The failure OBJECT, not the envelope carrying it — the shape a failed response owns
++  * The failure object, not the envelope carrying it — the shape a failed response owns
+src/core/validators.ts:2224
+-  * It is deliberately STRUCTURAL rather than exact-JSON: `data` is declared `unknown`, so
++  * It is deliberately structural rather than exact-JSON: `data` is declared `unknown`, so
+src/core/validators.ts:2230
+-  * family's only DIRECT reader, so it meets `code` and `message` exactly as the value defines
++  * family's only direct reader, so it meets `code` and `message` exactly as the value defines
+src/core/validators.ts:2254
+-  * `id` is OPTIONAL here and only here: a peer that could not read the failed
++  * `id` is optional here and only here: a peer that could not read the failed
+src/core/validators.ts:2255
+-  * request's id OMITS the member rather than sending `null`, so an absent `id` is
++  * request's id omits the member rather than sending `null`, so an absent `id` is
+src/core/validators.ts:2256
+-  * valid and a `null` one is not. The envelope must own an `error` and must NOT own a
++  * valid and a `null` one is not. The envelope must own an `error` and must not own a
+src/server/HTTPDisconnect.ts:10
+-  * The composed {@link signal} observes request abort and EVERY way this response can end
++  * The composed {@link signal} observes request abort and every way this response can end
+src/server/HTTPDisconnect.ts:16
+-  * Graceful upstream completion is the one terminal that does NOT abort: the body closes,
++  * Graceful upstream completion is the one terminal that does not abort: the body closes,
+src/server/HTTPDisconnect.ts:22
+-  * a second {@link bridge} call THROWS rather than arming a second keepalive over one lifecycle.
++  * a second {@link bridge} call throws rather than arming a second keepalive over one lifecycle.
+src/server/HTTPDisconnect.ts:25
+-  * The keepalive interval is a BUDGET, sanitized like every other numeric knob in this package:
++  * The keepalive interval is a budget, sanitized like every other numeric knob in this package:
+src/server/MCPSession.ts:9
+-  * resumable server→client push channel with its bounded replay log FOLDED IN.
++  * resumable server→client push channel with its bounded replay log folded in.
+src/server/MCPSession.ts:13
+-  * session `id`, its OWN bounded, replayable log of pushed server→client messages (the
++  * session `id`, its own bounded, replayable log of pushed server→client messages (the
+src/server/MCPSession.ts:19
+-  * - **`push` is the server-initiated primitive.** It APPENDS the message to the log (assigning
++  * - **`push` is the server-initiated primitive.** It appends the message to the log (assigning
+src/server/MCPSession.ts:20
+-  *   a monotone base36 event id) and FANS it out to every attached stream as one `id:`-tagged
++  *   a monotone base36 event id) and fans it out to every attached stream as one `id:`-tagged
+src/server/MCPSession.ts:21
+-  *   SSE event (`stream.write({ id, data })`). A push with NO attached stream is still logged,
++  *   SSE event (`stream.write({ id, data })`). A push with no attached stream is still logged,
+src/server/MCPSession.ts:22
+-  *   so a client that connects (or reconnects with a `Last-Event-ID`) LATER replays it from the
++  *   so a client that connects (or reconnects with a `Last-Event-ID`) later replays it from the
+src/server/MCPSession.ts:26
+-  *   IDENTICAL id (the log assigns it once).
++  *   identical id (the log assigns it once).
+src/server/MCPSession.ts:29
+-  *   AFTER `afterId` in append order — the missed-events list the `GET {path}` handler writes
++  *   after `afterId` in append order — the missed-events list the `GET {path}` handler writes
+src/server/MCPSession.ts:30
+-  *   before attaching the stream for live pushes. The decision for an UNKNOWN / already-evicted
++  *   before attaching the stream for live pushes. The decision for an unknown / already-evicted
+src/server/MCPSession.ts:32
+-  *   replay NOTHING. Replaying the whole retained log would re-deliver events the client never
++  *   replay nothing. Replaying the whole retained log would re-deliver events the client never
+src/server/MCPSession.ts:33
+-  *   lost (its cursor is OLDER than everything retained); returning `[]` lets the handler then
++  *   lost (its cursor is older than everything retained); returning `[]` lets the handler then
+src/server/MCPSession.ts:36
+-  * - **Bounded, append-ordered, plain `Map`.** The log lives in ONE insertion-ordered
++  * - **Bounded, append-ordered, plain `Map`.** The log lives in one insertion-ordered
+src/server/MCPSession.ts:37
+-  *   `Map<id, entry>` — insertion order IS append order IS id order, so `replay` and capacity
++  *   `Map<id, entry>` — insertion order is append order is id order, so `replay` and capacity
+src/server/MCPSession.ts:38
+-  *   eviction both walk the map directly. NO database mirror — the log is process-local
++  *   eviction both walk the map directly. No database mirror — the log is process-local
+src/server/MCPSession.ts:41
+-  *   the OLDEST entries until at most `capacity` remain; `replay` also runs the lazy TTL sweep
++  *   the oldest entries until at most `capacity` remain; `replay` also runs the lazy TTL sweep
+src/server/constants.ts:32
+-  * Sets the default capacity of a session's FOLDED resumable event log (the per-{@link
++  * Sets the default capacity of a session's folded resumable event log (the per-{@link
+src/server/constants.ts:34
+-  * server→client messages retained for replay before the OLDEST is evicted.
++  * server→client messages retained for replay before the oldest is evicted.
+src/server/constants.ts:62
+-  * BELOW {@link import('@orkestrel/mcp').DEFAULT_MCP_REQUEST_TIMEOUT}, so a write the child never
++  * below {@link import('@orkestrel/mcp').DEFAULT_MCP_REQUEST_TIMEOUT}, so a write the child never
+src/server/factories.ts:60
+-  * (the shape the stdio and WebSocket SERVER transports already implement) onto the
++  * (the shape the stdio and WebSocket server transports already implement) onto the
+src/server/factories.ts:63
+-  * the request/reply/error pump those factories used to hand-roll identically now lives ONCE
++  * the request/reply/error pump those factories used to hand-roll identically now lives once
+src/server/factories.ts:71
+-  * `transport`'s `message` event to INVOCATIONS ONLY — requests and notifications, never a
++  * `transport`'s `message` event to invocations only — requests and notifications, never a
+src/server/factories.ts:76
+-  * @remarks A message crossing this bridge is decoded and re-encoded TWICE, and that is
++  * @remarks A message crossing this bridge is decoded and re-encoded twice, and that is
+src/server/factories.ts:77
+-  * ACCEPTED rather than accidental. Inbound: the carrier already parsed the frame into a
++  * accepted rather than accidental. Inbound: the carrier already parsed the frame into a
+src/server/factories.ts:81
+-  * `JSON.stringify` round trips per message, paid to keep ONE pump in the core binder instead
++  * `JSON.stringify` round trips per message, paid to keep one pump in the core binder instead
+src/server/factories.ts:82
+-  * of a hand-rolled one per carrier. It is BOUNDED rather than unbounded because the binder
++  * of a hand-rolled one per carrier. It is bounded rather than unbounded because the binder
+src/server/factories.ts:88
+-  * each hold THE SINGLE current handler (a second call REPLACES the first, never adds).
++  * each hold the single current handler (a second call replaces the first, never adds).
+src/server/factories.ts:90
+-  * replaces), this bridge installs ONE stable emitter listener per event on first use
++  * replaces), this bridge installs one stable emitter listener per event on first use
+src/server/factories.ts:147
+-  * A SINGLE `POST {path}` route — `createMCPRoutes` is STATELESS. The handler reads its own
++  * A single `POST {path}` route — `createMCPRoutes` is stateless. The handler reads its own
+src/server/factories.ts:153
+-  *   JSON-RPC INVOCATION — is an HTTP `400` carrying a JSON-RPC error BODY (`-32700` Parse
++  *   JSON-RPC invocation — is an HTTP `400` carrying a JSON-RPC error body (`-32700` Parse
+src/server/factories.ts:154
+-  *   error / `-32600` Invalid Request), with the `id` it could not read OMITTED.
++  *   error / `-32600` Invalid Request), with the `id` it could not read omitted.
+src/server/factories.ts:168
+-  * **Sessions are a SEPARATE, plug-and-play middleware.** `createMCPRoutes` mints / reads no
++  * **Sessions are a separate, plug-and-play middleware.** `createMCPRoutes` mints / reads no
+src/server/factories.ts:169
+-  * session id. To make the transport STATEFUL, mount {@link
++  * session id. To make the transport stateful, mount {@link
+src/server/factories.ts:170
+-  * import('./middlewares.js').createMCPSession} IN FRONT — it owns the same `path`, mints +
++  * import('./middlewares.js').createMCPSession} in front — it owns the same `path`, mints +
+src/server/factories.ts:174
+-  * This is MECHANISM, not policy: compose auth / rate-limiting (and the session middleware)
++  * This is mechanism, not policy: compose auth / rate-limiting (and the session middleware)
+src/server/factories.ts:175
+-  * IN FRONT as ordinary middleware; the optional `origin` group carries the deployment's shared
++  * in front as ordinary middleware; the optional `origin` group carries the deployment's shared
+src/server/factories.ts:210
+-  * Creates the HTTP CLIENT transport for an {@link import('@orkestrel/mcp').MCPClientInterface}
++  * Creates the HTTP client transport for an {@link import('@orkestrel/mcp').MCPClientInterface}
+src/server/factories.ts:211
+-  * — a {@link MCPMessageTransportInterface} that drives a REMOTE Streamable-HTTP MCP server
++  * — a {@link MCPMessageTransportInterface} that drives a remote Streamable-HTTP MCP server
+src/server/factories.ts:222
+-  * both `application/json` and `text/event-stream` (the server answers with EITHER — a
++  * both `application/json` and `text/event-stream` (the server answers with either — a
+src/server/factories.ts:226
+-  * server. `start` / `close` hold no connection; against a STATEFUL server it captures the
++  * server. `start` / `close` hold no connection; against a stateful server it captures the
+src/server/factories.ts:232
+-  * @param options - `url` (the remote endpoint; REQUIRED), optional `headers` merged onto
++  * @param options - `url` (the remote endpoint; required), optional `headers` merged onto
+src/server/factories.ts:256
+-  * Creates the MCP WebSocket transport INGRESS — an {@link UpgradeHandler} that exposes a
++  * Creates the MCP WebSocket transport ingress — an {@link UpgradeHandler} that exposes a
+src/server/factories.ts:268
+-  *   A decline NEVER writes to the socket (it is not yet ours) — the spine owns the unclaimed
++  *   A decline never writes to the socket (it is not yet ours) — the spine owns the unclaimed
+src/server/factories.ts:272
+-  *   only when the client's offer contains it, and sends UNMASKED frames), wraps it in a
++  *   only when the client's offer contains it, and sends unmasked frames), wraps it in a
+src/server/factories.ts:276
+-  *   each inbound REQUEST runs through `mcp.dispatch`, and a defined response is written back
++  *   each inbound request runs through `mcp.dispatch`, and a defined response is written back
+src/server/factories.ts:277
+-  *   as a frame — a NOTIFICATION sends nothing, and a non-request message (a stray response) is
++  *   as a frame — a notification sends nothing, and a non-request message (a stray response) is
+src/server/factories.ts:288
+-  * It is MECHANISM, not policy: compose an auth guard IN FRONT by registering an upgrade
++  * It is mechanism, not policy: compose an auth guard in front by registering an upgrade
+src/server/factories.ts:289
+-  * handler BEFORE this one — that handler can claim (decline + destroy) an unauthenticated
++  * handler before this one — that handler can claim (decline + destroy) an unauthenticated
+src/server/factories.ts:293
+-  * @param options - The spine's `emitter` (REQUIRED — the `stop` event this ingress closes its
++  * @param options - The spine's `emitter` (required — the `stop` event this ingress closes its
+src/server/factories.ts:371
+-  * Creates the WebSocket CLIENT transport for an {@link import('@orkestrel/mcp').MCPClientInterface}
++  * Creates the WebSocket client transport for an {@link import('@orkestrel/mcp').MCPClientInterface}
+src/server/factories.ts:372
+-  * — a {@link MCPMessageTransportInterface} that drives a REMOTE MCP server over a WebSocket. The
++  * — a {@link MCPMessageTransportInterface} that drives a remote MCP server over a WebSocket. The
+src/server/factories.ts:386
+-  * @param options - `url` (the remote WebSocket endpoint; REQUIRED) and optional `headers`
++  * @param options - `url` (the remote WebSocket endpoint; required) and optional `headers`
+src/server/factories.ts:409
+-  * Creates the stdio CLIENT transport for an {@link import('@orkestrel/mcp').MCPClientInterface}
++  * Creates the stdio client transport for an {@link import('@orkestrel/mcp').MCPClientInterface}
+src/server/factories.ts:410
+-  * — a {@link StdioClientTransportInterface} that spawns and drives a CHILD PROCESS MCP server
++  * — a {@link StdioClientTransportInterface} that spawns and drives a child process MCP server
+src/server/factories.ts:427
+-  * @param options - `command` (the executable to spawn; REQUIRED), optional `args`,
++  * @param options - `command` (the executable to spawn; required), optional `args`,
+src/server/factories.ts:452
+-  * Creates the MCP stdio transport INGRESS — pumps a transport-agnostic {@link
++  * Creates the MCP stdio transport ingress — pumps a transport-agnostic {@link
+src/server/factories.ts:461
+-  * import('@orkestrel/mcp').bindServer}: each inbound REQUEST runs through `mcp.dispatch`, and
++  * import('@orkestrel/mcp').bindServer}: each inbound request runs through `mcp.dispatch`, and
+src/server/factories.ts:462
+-  * a defined response is written back as a newline-terminated line — a NOTIFICATION
++  * a defined response is written back as a newline-terminated line — a notification
+src/server/handlers.ts:37
+-  * A protocol header naming a MODERN revision holds the request to that revision whatever shape
++  * A protocol header naming a modern revision holds the request to that revision whatever shape
+src/server/helpers.ts:16
+-  * notification in order, then the terminating response — and END the exchange however the
++  * notification in order, then the terminating response — and end the exchange however the
+src/server/helpers.ts:21
+-  * that owns. The `finally` releases the exchange on EVERY exit — the normal terminal, a
++  * that owns. The `finally` releases the exchange on every exit — the normal terminal, a
+src/server/helpers.ts:25
+-  * The exchange is released BEFORE the body ends, so the slot is already back when the response
++  * The exchange is released before the body ends, so the slot is already back when the response
+src/server/helpers.ts:182
+-  * JSON-RPC error BODY with NO id) but at the session-not-found status. Shared by
++  * JSON-RPC error body with no id) but at the session-not-found status. Shared by
+src/server/helpers.ts:201
+-  * A `node:http` {@link import('node:http').IncomingMessage}'s `url` is the request TARGET
++  * A `node:http` {@link import('node:http').IncomingMessage}'s `url` is the request target
+src/server/helpers.ts:223
+-  * with `chunk`, splits on `'\n'`, and returns every COMPLETE line (a `'\r'` trailing
++  * with `chunk`, splits on `'\n'`, and returns every complete line (a `'\r'` trailing
+src/server/helpers.ts:248
+-  * That callback is the ONLY thing that settles the promise: this helper holds no timer and no
++  * That callback is the only thing that settles the promise: this helper holds no timer and no
+src/server/helpers.ts:253
+-  * the CALLER's `send` while the abandoned write stays with the stream that still holds its
++  * the caller's `send` while the abandoned write stays with the stream that still holds its
+src/server/inferers.ts:78
+-  * The expectation a LIVE SESSION supplies is a different rule over a different input, so it
++  * The expectation a live session supplies is a different rule over a different input, so it
+src/server/inferers.ts:164
+-  * middleware answers by SUPPLYING the pinned revision rather than refusing; a present header
++  * middleware answers by supplying the pinned revision rather than refusing; a present header
+src/server/inferers.ts:205
+-  * takes the SERVED definition's projections rather than a header issue: SEP-2243 scopes the
++  * takes the served definition's projections rather than a header issue: SEP-2243 scopes the
+src/server/inferers.ts:206
+-  * rule to the `Mcp-Param-*` names the server's OWN tool definitions annotate, so a name no
++  * rule to the `Mcp-Param-*` names the server's own tool definitions annotate, so a name no
+src/server/inferers.ts:269
+-  * request selects the newest supported legacy revision. The read is deliberately the SAME one
++  * request selects the newest supported legacy revision. The read is deliberately the same one
+src/server/middlewares.ts:30
+-  * other closure-scoped stateful middleware. Has NO dependency on `@orkestrel/middleware` — the
++  * other closure-scoped stateful middleware. Has no dependency on `@orkestrel/middleware` — the
+src/server/middlewares.ts:43
+-  *   readSessionHeader}: a VALID id touches the entry and sets `context.state.session`; an
++  *   readSessionHeader}: a valid id touches the entry and sets `context.state.session`; an
+src/server/middlewares.ts:44
+-  *   ABSENT / unknown id whose (guarded) body parses to an `initialize` request ({@link
++  *   absent / unknown id whose (guarded) body parses to an `initialize` request ({@link
+src/server/middlewares.ts:45
+-  *   isInitializeRequest}) MINTS a fresh {@link MCPSession} (`crypto.randomUUID()`, the `session`
++  *   isInitializeRequest}) mints a fresh {@link MCPSession} (`crypto.randomUUID()`, the `session`
+src/server/middlewares.ts:50
+-  *   FORWARDS a fresh `Request` carrying the buffered `text` (`next(forwarded)`) — never the
++  *   forwards a fresh `Request` carrying the buffered `text` (`next(forwarded)`) — never the
+src/server/middlewares.ts:52
+-  *   with {@link MCP_SESSION_HEADER}. The entry's `touched` instant is read AFTER that
++  *   with {@link MCP_SESSION_HEADER}. The entry's `touched` instant is read after that
+src/server/middlewares.ts:53
+-  *   downstream response, because it means the LAST ACCESS: a request slower than `ttl` would
++  *   downstream response, because it means the last access: a request slower than `ttl` would
+src/server/middlewares.ts:59
+-  *   replays every event after the client's `Last-Event-ID` ({@link readLastEventId}) BEFORE
++  *   replays every event after the client's `Last-Event-ID` ({@link readLastEventId}) before
+src/server/middlewares.ts:65
+-  * It is MECHANISM, not policy, and ADDITIVE: omit it entirely for the stateless default
++  * It is mechanism, not policy, and additive: omit it entirely for the stateless default
+src/server/middlewares.ts:68
+-  * connection (the socket IS the session), so this middleware does not apply to it.
++  * connection (the socket is the session), so this middleware does not apply to it.
+src/server/transports/StdioClientTransport.ts:12
+-  * Drives a CHILD PROCESS MCP server over newline-delimited JSON-RPC on `stdin`/`stdout` —
++  * Drives a child process MCP server over newline-delimited JSON-RPC on `stdin`/`stdout` —
+src/server/transports/StdioClientTransport.ts:28
+-  *   through the supervisor's `send` and AWAITS its answer, so this promise settles only after the
++  *   through the supervisor's `send` and awaits its answer, so this promise settles only after the
+src/server/transports/StdioClientTransport.ts:35
+-  *   (idempotent). That teardown reaches the child's TERMINAL MOMENT, where the supervisor freezes
++  *   (idempotent). That teardown reaches the child's terminal moment, where the supervisor freezes
+src/server/transports/StdioClientTransport.ts:48
+-  * - **Evidence.** `evidence` reports that retained stderr tail off the HELD child — its live tail
++  * - **Evidence.** `evidence` reports that retained stderr tail off the held child — its live tail
+src/server/transports/StdioClientTransport.ts:56
+-  *   emitter isolates a listener throw; `error` is a DOMAIN event (a transport-level
++  *   emitter isolates a listener throw; `error` is a domain event (a transport-level
+src/server/transports/StdioServerTransport.ts:35
+-  *   it at `start` (`readableFlowing !== true`) AND no `data` listener remains once this
++  *   it at `start` (`readableFlowing !== true`) and no `data` listener remains once this
+src/server/transports/StdioServerTransport.ts:46
+-  *   emitter isolates a listener throw; `error` is a DOMAIN event (a transport-level
++  *   emitter isolates a listener throw; `error` is a domain event (a transport-level
+src/server/transports/WebSocketClientTransport.ts:25
+-  * Drives a REMOTE MCP server over a WebSocket — a CLIENT
++  * Drives a remote MCP server over a WebSocket — a client
+src/server/transports/WebSocketClientTransport.ts:35
+-  *   event, and VALIDATES `Sec-WebSocket-Accept === computeWebSocketAccept(key)` (the D2 helper)
++  *   event, and validates `Sec-WebSocket-Accept === computeWebSocketAccept(key)` (the D2 helper)
+src/server/transports/WebSocketClientTransport.ts:36
+-  *   — a mismatch (or a non-`101` response, or a request error) REJECTS `start()` and the socket
++  *   — a mismatch (or a non-`101` response, or a request error) rejects `start()` and the socket
+src/server/transports/WebSocketClientTransport.ts:38
+-  *   head })` (CLIENT mode — no key → frames are MASKED per RFC 6455 §5.3) and bridges its
++  *   head })` (client mode — no key → frames are masked per RFC 6455 §5.3) and bridges its
+src/server/transports/WebSocketClientTransport.ts:43
+-  *   transport while the handshake was on the wire, both WIN — the socket that arrives late is
++  *   transport while the handshake was on the wire, both win — the socket that arrives late is
+src/server/transports/WebSocketClientTransport.ts:44
+-  *   DESTROYED and never bound, so no orphan is left re-emitting frames at nobody. Both
++  *   destroyed and never bound, so no orphan is left re-emitting frames at nobody. Both
+src/server/transports/WebSocketClientTransport.ts:52
+-  *   confirmed, so this transport answers a closed channel from its own state AND the socket's
++  *   confirmed, so this transport answers a closed channel from its own state and the socket's
+src/server/transports/WebSocketClientTransport.ts:54
+-  *   peer ended the socket — and a `send` on a bound socket that is not `OPEN` both REJECT with
++  *   peer ended the socket — and a `send` on a bound socket that is not `OPEN` both reject with
+src/server/transports/WebSocketClientTransport.ts:59
+-  *   upgrade still on the wire is DESTROYED, so a `close()` during the handshake ends the
++  *   upgrade still on the wire is destroyed, so a `close()` during the handshake ends the
+src/server/transports/WebSocketClientTransport.ts:67
+-  *   `error` is a DOMAIN event (a transport-level fault).
++  *   `error` is a domain event (a transport-level fault).
+src/server/transports/WebSocketServerTransport.ts:14
+-  * {@link MCPMessageTransportInterface} — the per-connection JSON-RPC-over-WebSocket SERVER
++  * {@link MCPMessageTransportInterface} — the per-connection JSON-RPC-over-WebSocket server
+src/server/transports/WebSocketServerTransport.ts:20
+-  * - **Reuses `MCPMessageTransportInterface`.** It IS the same generic carrier the HTTP
++  * - **Reuses `MCPMessageTransportInterface`.** It is the same generic carrier the HTTP
+src/server/transports/WebSocketServerTransport.ts:22
+-  *   `send`, `close` — so the WebSocket server and client both speak ONE transport contract,
++  *   `send`, `close` — so the WebSocket server and client both speak one transport contract,
+src/server/transports/WebSocketServerTransport.ts:30
+-  *   a non-JSON or non-message frame is surfaced on `error` and DROPPED, never thrown. It
++  *   a non-JSON or non-message frame is surfaced on `error` and dropped, never thrown. It
+src/server/transports/WebSocketServerTransport.ts:36
+-  *   a socket that is not `OPEN` REJECTS with `WebSocket transport is not connected` rather than
++  *   a socket that is not `OPEN` rejects with `WebSocket transport is not connected` rather than
+src/server/transports/WebSocketServerTransport.ts:47
+-  *   DOMAIN event (a transport-level fault), distinct from the emitter's listener-error channel.
++  *   domain event (a transport-level fault), distinct from the emitter's listener-error channel.
+src/server/types.ts:108
+-  * - `streaming` — when `true` (the DEFAULT) the transport MAY answer with a
++  * - `streaming` — when `true` (the default) the transport MAY answer with a
+src/server/types.ts:112
+-  *   mode carries the SAME JSON-RPC response envelope — the choice is purely the wire
++  *   mode carries the same JSON-RPC response envelope — the choice is purely the wire
+src/server/types.ts:137
+-  * `createMCPRoutes` is STATELESS; sessions are a separate middleware ({@link
++  * `createMCPRoutes` is stateless; sessions are a separate middleware ({@link
+src/server/types.ts:157
+-  *   before the OLDEST is evicted. Omit it for the {@link
++  *   before the oldest is evicted. Omit it for the {@link
+src/server/types.ts:182
+-  * - `path` — the request path the session middleware OWNS (must match the `createMCPRoutes`
++  * - `path` — the request path the session middleware owns (must match the `createMCPRoutes`
+src/server/types.ts:186
+-  *   is treated as ABSENT and lazily evicted on the next access (no background timer — the
++  *   is treated as absent and lazily evicted on the next access (no background timer — the
+src/server/types.ts:191
+-  *   SESSION instead. An omitted leaf takes its {@link MCPSessionOptions} default, and an
++  *   session instead. An omitted leaf takes its {@link MCPSessionOptions} default, and an
+src/server/types.ts:313
+-  *   (`server.emitter`). REQUIRED: on its `stop` event the handler closes every socket it
++  *   (`server.emitter`). Required: on its `stop` event the handler closes every socket it
+src/server/types.ts:318
+-  * - `path` — the request path the upgrade handler CLAIMS; defaults to
++  * - `path` — the request path the upgrade handler claims; defaults to
+src/server/types.ts:320
+-  *   transport mounts at). A protocol-upgrade request to any OTHER path is DECLINED
++  *   transport mounts at). A protocol-upgrade request to any other path is declined
+src/server/types.ts:326
+-  * Auth / origin policy is deliberately ABSENT: like the HTTP transport, the WebSocket
++  * Auth / origin policy is deliberately absent: like the HTTP transport, the WebSocket
+src/server/types.ts:327
+-  * transport is MECHANISM — compose a guard IN FRONT (a `Server.upgrade` handler registered
++  * transport is mechanism — compose a guard in front (a `Server.upgrade` handler registered
+src/server/types.ts:342
+-  *   `wss://` URL OR an `http://` / `https://` one (a `ws(s)` scheme is converted to `http(s)`
++  *   `wss://` URL or an `http://` / `https://` one (a `ws(s)` scheme is converted to `http(s)`
+src/server/types.ts:344
+-  *   REQUIRED.
++  *   Required.
+src/server/types.ts:350
+-  * **`headers` exists HERE and not on the browser face's `{ url, protocols }`, and that
++  * **`headers` exists here and not on the browser face's `{ url, protocols }`, and that
+src/server/types.ts:367
+-  * - `command` — the executable to spawn (for example, `'node'`, `'./my-mcp-server'`). REQUIRED.
++  * - `command` — the executable to spawn (for example, `'node'`, `'./my-mcp-server'`). Required.
+src/server/types.ts:369
+-  * - `env` — environment variable overrides MERGED over the parent `process.env` for the
++  * - `env` — environment variable overrides merged over the parent `process.env` for the
+src/server/types.ts:371
+-  *   OMITTED the child inherits the full `process.env`, when PROVIDED each named key overrides
++  *   omitted the child inherits the full `process.env`, when provided each named key overrides
+src/server/types.ts:373
+-  *   REPLACE the inherited environment entirely — the supervisor always merges over the parent.
++  *   replace the inherited environment entirely — the supervisor always merges over the parent.
+src/server/types.ts:392
+- 	 * the channel faults or teardown settles it. Omission does NOT opt out here, which is where
++ 	 * the channel faults or teardown settles it. Omission does not opt out here, which is where
+src/server/types.ts:394
+- 	 * import('@orkestrel/process').ProcessOptions} — omitted THERE disables the bound, omitted
++ 	 * import('@orkestrel/process').ProcessOptions} — omitted there disables the bound, omitted
+src/server/types.ts:395
+- 	 * HERE selects the default.
++ 	 * here selects the default.
+src/server/types.ts:430
+- 	 * - **Lifetime.** The tail follows the child that produced it. The supervisor FREEZES it at
++ 	 * - **Lifetime.** The tail follows the child that produced it. The supervisor freezes it at
+src/server/types.ts:445
+- 	 *   THERE parks until `close` has been delivered, while a `close` listener that calls
++ 	 *   there parks until `close` has been delivered, while a `close` listener that calls
+src/server/types.ts:452
+- 	 *   child that ends on its own closes its stderr first, and THAT tail is complete.
++ 	 *   child that ends on its own closes its stderr first, and that tail is complete.
+src/server/types.ts:456
+- 	 * - **Bound.** The supervisor keeps the END of the child's raw stderr bytes, at most
++ 	 * - **Bound.** The supervisor keeps the end of the child's raw stderr bytes, at most
+src/server/types.ts:489
+-  * stream pair — the stdio INGRESS handle {@link import('./factories.js').createStdioServer}
++  * stream pair — the stdio ingress handle {@link import('./factories.js').createStdioServer}
+src/server/types.ts:516
+-  * buffer — every COMPLETE line extracted (newline-terminated in the wire bytes) plus
++  * buffer — every complete line extracted (newline-terminated in the wire bytes) plus
+lines changed: 496

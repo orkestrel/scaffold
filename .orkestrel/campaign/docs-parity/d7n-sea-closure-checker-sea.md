@@ -1,0 +1,23 @@
+All citations confirmed accurate. Now finalizing verdict.
+
+Lane held: checker sea
+
+**Claim 1** — PASS. Every named item in `d7n-sea-converge-fix-brief.md` landed exactly in `d7n-sea-converge-fix.diff.txt`: the S1 all-caps lowerings in `src/server/types.ts` (`LAST`, `HOST`, `SENSITIVE`, `ONE`) and `src/server/helpers.ts` (`FIRST`, `EXACTLY ONE`, `NEVER`, `BOTH`, `CONTAINING`, `OMITTED`), the `@throws` clause on `SEAInterface.execute` (`types.ts:551-556`), the four fence lead-ins and the extended-interface cell and Methods preamble and H1 change in `guides/sea.md`, and the header/`INTERNAL`-block edit in `tests/guides.test.ts`. `d7n-sea-converge-fix.status.txt` lists exactly `guides/sea.md`, `src/server/helpers.ts`, `src/server/types.ts`, `tests/guides.test.ts` — all inside the brief's owned-files bound (`guides/sea.md`, doc blocks under `src/server/**`, and only the header/`INTERNAL` block of `tests/guides.test.ts`); no off-limits file (`README.md`, `guides/README.md`, `package.json`, `package-lock.json`, `tests/src/**`, `tests/setup*.ts`) appears. The three additional emphasis fixes (`helpers.ts` `FIRST`/`CONTAINING`/`OMITTED`) beyond the brief's named list are inside the same owned doc blocks and are exactly the item's own required closing sweep, not scope creep.
+
+**Claim 2** — FAIL. The report states counts in prose rather than naming members, violating `AGENTS.md` § Writing ("NEVER state a count... findings... are such sets") and the claim's own text ("each report states no count in prose"):
+- `d7n-sea-converge-fix-report.md` Item 1: "**Three** further emphasis hits inside owned doc blocks that the audit's list did not name — `helpers.ts:573` `FIRST`, `:830` `CONTAINING`, `:924` `OMITTED` — were found by this item's own closing sweep" — the number is stated in prose, not quoted with a run that produced it (the sweep's own command output is a separate block further down and does not itself state "three").
+- Item 3: "**Four** fences sat directly under a heading. Each gained one complete sentence…" — same defect; the sentence should name the headings instead of counting the fences.
+Citations otherwise match the tree left (spot-checked `InjectorInterface:260-265`, `SEAInterface:546-559`, `AssetManagerInterface:324-343` in `/home/user/fleet/sea/src/server/types.ts`, and `git status --short` reproduces the report's four-file list), and the ancillary decisions the brief left open (the `SENSITIVE` colon form, the fence lead-in sentences, the Methods-preamble fragment) are recorded. Only the count-in-prose sub-claim fails.
+
+**Claim 3** — PASS.
+- `Shape` convention sentences sit under their canonical headings: `guides/sea.md:71` ("A `Shape` cell holds the constant's declared type."), `:158` (Ruling 12's sentence plus Ruling 21's extended-interface addition).
+- Extended interface's cell names its parent before `plus`: `guides/sea.md:169` `SEACompressionOptions` reads `SEABrotliOptions plus { paths }` (Ruling 21).
+- Constants table heads `Shape` with the declared type and puts the literal in the description: `guides/sea.md:73-107`, e.g. `:82` `PE_MAGIC` — `Shape` `number`, description "0x5a4d" (Ruling 18).
+- `tests/guides.test.ts:1-3` in `/home/user/fleet/sea` is byte-identical to `/home/user/fleet/abort/tests/guides.test.ts:1-3`; the region from `const root = ` through the manifest loop's closing brace (`sea` lines 61-272) is identical in structure and wording to the pilot's (`abort` lines 47-258), with only sea's own `describe('sea.md fences', …)` block appended after it (Rulings 13, 20, 21).
+- No fence sits directly under a heading: `guides/sea.md` shows a lead-in sentence before every fence (`:14`, `:237`, `:256`, `:280`) (Ruling 21); confirmed by direct read, matching the report's `awk` result of no output.
+- No all-caps emphasis remains in owned prose: `grep -nE '\b(LAST|HOST|SENSITIVE|ONE|EXACTLY|NEVER|BOTH|FIRST|CONTAINING|OMITTED)\b' /home/user/fleet/sea/src/server` returns no matches; the remaining all-caps hits in `Injector.ts` (`TRUE`, `AFTER`, `MUST`, `SAME`, `BEFORE`, `FULL`, `ORIGINAL`, `OLD`, `NEW`) and `SEA.ts:381` (`SAME`) sit in `//` line comments inside method bodies, confirmed by direct grep, correctly outside this unit's doc-block scope.
+- No banned pointer remains: no `above`/`below` hits in `guides/sea.md` or `tests/guides.test.ts`; the `here` occurrences (`sea.md:7`, `guides.test.ts:52,54,193`) are demonstrative pronouns inside prose, not link text, so `.claude/rules/writing.md` § Code tokens and links (which bans `here` as link text) is not engaged.
+
+**Referrals** — none; every claim resolved on direct evidence.
+
+VERDICT: FAIL claim 2

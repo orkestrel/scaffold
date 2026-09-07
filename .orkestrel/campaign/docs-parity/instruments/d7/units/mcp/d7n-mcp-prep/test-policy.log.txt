@@ -1,0 +1,115 @@
+
+> @orkestrel/mcp@0.0.29 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/mcp
+
+·················································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace
+AssertionError: expected [ { rule: 'prose', …(3) }, …(12) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "line": 605,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 1132,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 1293,
++     "message": "prose carries no banned term: just (delete)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4452,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4457,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4469,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4470,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4474,
++     "message": "prose carries no banned term: just (delete)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4481,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4508,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4509,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 4593,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++   {
++     "line": 5447,
++     "message": "prose carries no banned term: should (must, can, might, or the imperative)",
++     "path": "guides/mcp.md",
++     "rule": "prose",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:472:49
+    470| describe('repository policy', () => {
+    471|  it('enforces the mirror, suppression, skill, bridge, and portability …
+    472|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    473|  })
+    474|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 89 passed | 1 skipped (91)
+   Start at  16:56:00
+   Duration  1.52s (transform 715ms, setup 661ms, import 166ms, tests 500ms, environment 0ms)
+

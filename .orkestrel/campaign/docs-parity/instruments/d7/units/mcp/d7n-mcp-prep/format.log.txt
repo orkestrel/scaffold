@@ -1,0 +1,5 @@
+
+> @orkestrel/mcp@0.0.29 format
+> oxfmt --config .oxfmtrc.json --write .
+
+Finished in 5029ms on 127 files using 4 threads.

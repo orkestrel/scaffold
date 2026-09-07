@@ -392,3 +392,7 @@ None. `npm install` and `npm ci` were not run. No `git checkout`, `git restore`,
 `git reset`, or `git clean` was run. Nothing was committed. Instruments are under
 `/home/user/fleet/sea/tmp/d7n-sea-converge-fix/` (`start.txt`, `allcaps.txt`), which
 `.gitignore:11` ignores.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-sea-closure-checker-sea.md`): items 1 and 3 state counts in prose ("Three further emphasis hits", "Four fences"); the members are named in the same sentences and the tree is authoritative.

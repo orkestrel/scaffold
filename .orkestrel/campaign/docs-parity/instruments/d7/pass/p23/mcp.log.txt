@@ -1,0 +1,123 @@
+### mcp at 425faf7, guide guides/mcp.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  163 passed (163)
+   test:guides exit 0
+-- census
+   guides/mcp.md surface {"equal":406,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":51,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 19 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class HTTPClientTransport methods 3 grouped false undescribed ["close","send","start"]
+   owner class HTTPDisconnect methods 1 grouped true undescribed []
+   owner class MCPClient methods 6 grouped false undescribed ["call","connect","disconnect","discover","listen","tools"]
+   owner interface MCPClientInterface methods 6 grouped true undescribed []
+   owner interface MCPCompletionInterface methods 1 grouped true undescribed []
+   owner interface MCPContinuationInterface methods 2 grouped false undescribed []
+   owner interface MCPDispatcherInterface methods 2 grouped true undescribed []
+   owner class MCPLegacy methods 2 grouped false undescribed ["dispatch","handle"]
+   owner class MCPLegacyClientTransport methods 3 grouped false undescribed ["send","start"]
+   owner interface MCPMessageTransportInterface methods 3 grouped true undescribed []
+   owner class MCPMethodManager methods 2 grouped false undescribed ["add","method"]
+   owner interface MCPMethodManagerInterface methods 2 grouped true undescribed []
+   owner interface MCPProgressInterface methods 1 grouped true undescribed []
+   owner interface MCPProgressOwnerInterface methods 3 grouped true undescribed []
+   owner class MCPProgressReporter methods 3 grouped true undescribed []
+   owner interface MCPPromptManagerInterface methods 2 grouped true undescribed []
+   owner interface MCPResourceManagerInterface methods 3 grouped true undescribed []
+   owner class MCPServer methods 2 grouped false undescribed ["dispatch","handle"]
+   owner interface MCPServerInterface methods 2 grouped true undescribed []
+   owner class MCPSession methods 4 grouped false undescribed ["attach","detach","push","replay"]
+   owner interface MCPSessionInterface methods 4 grouped true undescribed []
+   owner class MCPStreamController methods 4 grouped false undescribed []
+   owner interface MCPStreamControllerInterface methods 4 grouped true undescribed []
+   owner class MCPTaskClient methods 3 grouped false undescribed ["abort","task","update"]
+   owner interface MCPTaskClientInterface methods 3 grouped true undescribed []
+   owner interface MCPTaskManagerInterface methods 4 grouped true undescribed []
+   owner class MCPTextStreamController methods 4 grouped false undescribed []
+   owner interface MCPTextStreamControllerInterface methods 4 grouped true undescribed []
+   owner class MessagePortTransport methods 4 grouped false undescribed ["close","closed","listen","send"]
+   owner interface ScopeInterface methods 3 grouped false undescribed ["addEventListener","postMessage","removeEventListener"]
+   owner interface ScopeServerInterface methods 1 grouped true undescribed []
+   owner interface ScopeTransportInterface methods 1 grouped false undescribed []
+   owner class StdioClientTransport methods 3 grouped false undescribed ["close","start"]
+   owner interface StdioClientTransportInterface methods 3 grouped false undescribed []
+   owner interface StdioServerInterface methods 2 grouped true undescribed []
+   owner class StdioServerTransport methods 3 grouped false undescribed ["close","start"]
+   owner class WebSocketClientTransport methods 3 grouped false undescribed ["close","send","start"]
+   owner class WebSocketServerTransport methods 3 grouped false undescribed ["close","send","start"]
+   examples titledFences 41 titledExamples ["createMCPServer:Expose a tool registry over MCP"] pairs ["Expose a tool registry over MCP"]
+-- sites: surface row guides/mcp.md:2128; methods row guides/mcp.md:3233; title src/core/factories.ts:43
+-- control A: one Surface Summary cell altered (guides/mcp.md:2128)
+guides/mcp.md function createMCPServer: guide "Creates a transport-agnostic Model Context Protocol server — exposes a live `ToolManagerInterface` and an optional `MCPResourceManagerInterface`, `MCPPromptManagerInterface`, and `MCPCompletionInterface` over JSON-RPC 2.0. Control." source "Creates a transport-agnostic Model Context Protocol server — exposes a live `ToolManagerInterface` and an optional `MCPResourceManagerInterface`, `MCPPromptManagerInterface`, and `MCPCompletionInterface` over JSON-RPC 2.0."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MCP > keeps every compared summary and example equal to its source
+Tests  1 failed | 162 passed (163)
+× keeps every compared summary and example equal to its source 57ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/mcp.md:3233)
+guides/mcp.md MCPDispatcherInterface.dispatch: guide "Dispatches a parsed JSON-RPC request. Control." source "Dispatches a parsed JSON-RPC request."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MCP > keeps every compared summary and example equal to its source
+Tests  1 failed | 162 passed (163)
+× keeps every compared summary and example equal to its source 60ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a transport-agnostic Model Context Protocol server — exposes a live
+guides/mcp.md function createMCPServer: guide "Creates a transport-agnostic Model Context Protocol server — exposes a live `ToolManagerInterface` and an optional `MCPResourceManagerInterface`, `MCPPromptManagerInterface`, and `MCPCompletionInterface` over JSON-RPC 2.0." source "Control Creates a transport-agnostic Model Context Protocol server — exposes a live `ToolManagerInterface` and an optional `MCPResourceManagerInterface`, `MCPPromptManagerInterface`, and `MCPCompletionInterface` over JSON-RPC 2.0."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MCP > keeps every compared summary and example equal to its source
+Tests  1 failed | 162 passed (163)
+× keeps every compared summary and example equal to its source 57ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/browser/factories.ts:22:  * Control Creates the browser-face WebSocket client transport for an
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  163 passed (163)
+   test:guides exit 0
+-- control D: the @example title removed (src/core/factories.ts:43)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 162 passed (163)
+× pairs at least one example title across the guide and the source 100ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/mcp.md Expose a tool registry over MCP: guide "ts\nimport { createMCPServer } from '@orkestrel/mcp'\nimport { createTool, createToolManager } from '@orkestrel/tool'\n\nconst tools = createToolManager()\ntools.add(\n\tcreateTool({\n\t\tname: 'search',\n\t\tdescription: 'Search the docs',\n\t\texecute: (a) => find(String(a.query)),\n\t}),\n)\ntools.add(createTool({ name: 'add', execute: (a) => Number(a.x) + Number(a.y) }))\n\nconst server = createMCPServer({ identity: { name: 'docs', version: '1.0.0' }, tools })\nserver.emitter.on('request', (method, id) => log(method, id))\n\n// A transport reads a framed message string and writes the reply:\nfor await (const message of transport) {\n\tconst reply = await server.handle(message)\n\tif (reply !== undefined) await transport.send(reply) // a notification has no reply\n}\n\n// `handle` also answers one message string on its own:\nconst listed = await server.handle(\n\t'{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\",\"id\":1,\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{}}}}',\n)\n// listed → '{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[{\"name\":\"search\",\"inputSchema\":{\"type\":\"object\"},\"description\":\"Search the docs\"},{\"name\":\"add\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\",\"ttlMs\":60000,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"docs\",\"version\":\"1.0.0\"}}}}'" source "ts\nimport { createMCPServer } from '@orkestrel/mcp' // control\nimport { createTool, createToolManager } from '@orkestrel/tool'\n\nconst tools = createToolManager()\ntools.add(\n\tcreateTool({\n\t\tname: 'search',\n\t\tdescription: 'Search the docs',\n\t\texecute: (a) => find(String(a.query)),\n\t}),\n)\ntools.add(createTool({ name: 'add', execute: (a) => Number(a.x) + Number(a.y) }))\n\nconst server = createMCPServer({ identity: { name: 'docs', version: '1.0.0' }, tools })\nserver.emitter.on('request', (method, id) => log(method, id))\n\n// A transport reads a framed message string and writes the reply:\nfor await (const message of transport) {\n\tconst reply = await server.handle(message)\n\tif (reply !== undefined) await transport.send(reply) // a notification has no reply\n}\n\n// `handle` also answers one message string on its own:\nconst listed = await server.handle(\n\t'{\"jsonrpc\":\"2.0\",\"method\":\"tools/list\",\"id\":1,\"params\":{\"_meta\":{\"io.modelcontextprotocol/protocolVersion\":\"2026-07-28\",\"io.modelcontextprotocol/clientCapabilities\":{}}}}',\n)\n// listed → '{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[{\"name\":\"search\",\"inputSchema\":{\"type\":\"object\"},\"description\":\"Search the docs\"},{\"name\":\"add\",\"inputSchema\":{\"type\":\"object\"}}],\"resultType\":\"complete\",\"ttlMs\":60000,\"cacheScope\":\"private\",\"_meta\":{\"io.modelcontextprotocol/serverInfo\":{\"name\":\"docs\",\"version\":\"1.0.0\"}}}}'"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MCP > keeps every compared summary and example equal to its source
+Tests  1 failed | 162 passed (163)
+× keeps every compared summary and example equal to its source 54ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/mcp.md pitch: readme "Control: The Model Context Protocol layer: a typed JSON-RPC 2.0 client/server pair with pluggable HTTP, WebSocket, stdio, and browser transports." tagline "The Model Context Protocol layer: a typed JSON-RPC 2.0 client/server pair with pluggable HTTP, WebSocket, stdio, and browser transports."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The Model Context Protocol l…' to be 'The Model Context Protocol layer: a t…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 162 passed (163)
+× opens the README with the guide tagline 43ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/mcp.md function createMCPClient: guide absent source "Creates a transport-agnostic Model Context Protocol client — connects to a remote MCP server over an injected `MCPMessageTransportInterface`, negotiates the modern revision through `server/discover`, and exposes the server's tools as local `ToolInterface`s an agent can run."
+guides/mcp.md function createMCPLegacyClientTransport: guide absent source "Decorates one client transport with explicit legacy handshake and era translation."
+guides/mcp.md function createDuplexClientTransport: guide absent source "Adapts an `MCPTransportInterface` (the environment-agnostic duplex message channel) into a `MCPMessageTransportInterface` — the additive bridge that lets `createMCPClient` run over the new port without any change to `MCPClient`'s existing shape."
+rows read: 1, disagreements found: 5
+   docs exit 1
+AssertionError: expected [ …(5) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MCP > keeps every compared summary and example equal to its source
+Tests  1 failed | 162 passed (163)
+× keeps every compared summary and example equal to its source 60ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

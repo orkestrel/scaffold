@@ -1,0 +1,1110 @@
+#### MCP_HANDSHAKE_VERSION  (const)
+LIT   : `'2025-11-25'`
+CLAUSE: the newest legacy initialize revision.
+DOC   : Names the revision offered and defaulted to in the legacy `initialize` handshake. ⏎  ⏎ @remarks ⏎ This is deliberately a legacy revision, and the newest one supported. 2026-07-28 is stateless ⏎ and defines no `initialize`, so it can never be the handshake's version — a client that offers ⏎ it is asking to negotiate a revision with no negotiation.
+
+#### MCP_FALLBACK_VERSION  (const)
+LIT   : `'2025-06-18'`
+CLAUSE: the older supported legacy revision.
+DOC   : Names the older legacy revision the optional legacy decorator accepts and an adapter can pin.
+
+#### MCP_MODERN_VERSION  (const)
+LIT   : `'2026-07-28'`
+CLAUSE: the modern discovery revision.
+DOC   : Names the modern revision offered by an unpinned client during discovery.
+
+#### SUPPORTED_MODERN_PROTOCOL_VERSIONS  (const)
+LIT   : Frozen bare-server discovery set: `2026-07-28`.
+CLAUSE: 
+DOC   : Lists the modern MCP protocol revisions a bare server accepts and advertises. ⏎  ⏎ @remarks ⏎ Frozen in discovery-advertisement order. Legacy revisions are absent because ⏎ only {@link SUPPORTED_LEGACY_PROTOCOL_VERSIONS} and the optional legacy ⏎ decorator own them.
+
+#### SUPPORTED_LEGACY_PROTOCOL_VERSIONS  (const)
+LIT   : Frozen decorator handshake set: `2025-11-25`, `2025-06-18`.
+CLAUSE: 
+DOC   : Lists the protocol revisions accepted by the optional legacy decorator.
+
+#### SUPPORTED_MCP_VERSIONS  (const)
+LIT   : Frozen version-guard set spanning the modern and legacy eras.
+CLAUSE: 
+DOC   : Lists the protocol revisions the `isMCPVersion` guard admits, spanning the modern and legacy ⏎ eras.
+
+#### MCP_META_VERSION  (const)
+LIT   : `'io.modelcontextprotocol/protocolVersion'`
+CLAUSE: reserved request-version metadata key.
+DOC   : Names the reserved modern `_meta` key carrying the request's protocol revision.
+
+#### MCP_META_CAPABILITIES  (const)
+LIT   : `'io.modelcontextprotocol/clientCapabilities'`
+CLAUSE: reserved capability metadata key.
+DOC   : Names the reserved modern `_meta` key carrying the client's open capability record.
+
+#### MCP_META_CLIENT  (const)
+LIT   : `'io.modelcontextprotocol/clientInfo'`
+CLAUSE: reserved client-identity metadata key.
+DOC   : Names the reserved modern `_meta` key carrying the optional client identity.
+
+#### MCP_META_SERVER  (const)
+LIT   : `'io.modelcontextprotocol/serverInfo'`
+CLAUSE: reserved server-identity metadata key.
+DOC   : Names the reserved modern `_meta` key carrying the server identity on results.
+
+#### MCP_META_SUBSCRIPTION  (const)
+LIT   : `'io.modelcontextprotocol/subscriptionId'`
+CLAUSE: reserved subscription-id metadata key.
+DOC   : Names the reserved modern `_meta` key carrying a `subscriptions/listen` request id.
+
+#### MCP_EXTENSION_TASKS  (const)
+LIT   : `'io.modelcontextprotocol/tasks'`
+CLAUSE: the stable Tasks extension id, dated 2026-07-28 and advertised by presence.
+DOC   : Names the reserved extension key identifying the stable Tasks extension. ⏎  ⏎ @remarks ⏎ The ONE spelling of it in this package, and the identity of the immutable snapshot dated ⏎ 2026-07-28 this package implements. A client declares it per REQUEST, under ⏎ `_meta['io.modelcontextprotocol/clientCapabilities'].extensions`; a server advertises it ⏎ under `server/discover`'s `capabilities.extensions`. Both sides carry an empty object — ⏎ the extension defines no options, so presence is the entire declaration.
+
+#### MCP_SENTINEL_PREFIX  (const)
+LIT   : `'=?base64?'`
+CLAUSE: the sentinel's opening marker, and the one spelling both codec directions read.
+DOC   : Names the opening marker of the Base64 sentinel a standard MCP header value travels in. ⏎  ⏎ @remarks ⏎ The markers are LOWERCASE and exact, and this constant with {@link MCP_SENTINEL_SUFFIX} is ⏎ their ONE spelling in this package: {@link import('@orkestrel/mcp').encodeSentinel} builds a ⏎ sentinel from them and {@link import('@orkestrel/mcp').decodeSentinel} recognizes one by ⏎ them, so the two directions cannot drift apart.
+
+#### MCP_SENTINEL_SUFFIX  (const)
+LIT   : `'?='`
+CLAUSE: the sentinel's closing marker.
+DOC   : Names the closing marker of the Base64 sentinel a standard MCP header value travels in.
+
+#### MCP_PARAM_PREFIX  (const)
+LIT   : `'Mcp-Param-'`
+CLAUSE: the field-name prefix an `x-mcp-header` annotation projects a tool argument onto.
+DOC   : Names the request-header prefix an `x-mcp-header` annotation projects a tool argument onto. ⏎  ⏎ @remarks ⏎ The full field name is this prefix followed by the annotation's own value verbatim, so ⏎ `x-mcp-header: 'Region'` becomes `Mcp-Param-Region`. HTTP field names are case-insensitive, ⏎ which is why {@link MCP_HEADER_ANNOTATION} values are unique case-insensitively within one ⏎ `inputSchema`.
+
+#### MCP_HEADER_ANNOTATION  (const)
+LIT   : `'x-mcp-header'`
+CLAUSE: the tool-schema key naming the header one parameter projects into.
+DOC   : Identifies the tool-schema annotation key naming the header one parameter projects into. ⏎  ⏎ @remarks ⏎ It is valid ONLY on a primitive property schema statically reachable from the `inputSchema` ⏎ root through `properties` keys alone. An occurrence anywhere else — under `items`, a ⏎ composition or conditional keyword, or a `$ref` target — makes the whole tool definition ⏎ invalid, which is what {@link import('@orkestrel/mcp').buildHeaderParameters} decides.
+
+#### MCP_LOOKUP_PAGES  (const)
+LIT   : `8`
+CLAUSE: the `tools/list` pages one modern `tools/call` walks to reach its own annotations.
+DOC   : Bounds the `tools/list` pages one modern `tools/call` walks to reach its own annotations. ⏎  ⏎ @remarks ⏎ The HTTP POST handler reads a called tool's {@link MCP_HEADER_ANNOTATION} annotations by ⏎ dispatching `tools/list` fresh on every `tools/call`, following `nextCursor` until the ⏎ named tool is found or the answer carries no cursor. The walk is bounded because its cost ⏎ is paid per call: at a page size of 100 this bound reaches 800 definitions, and a consumer ⏎ whose replacement `tools/list` pages more finely than that pays the extra dispatches on ⏎ every call it serves. The built-in listing answers the whole registry on one page and ⏎ never reaches the second. A definition further in than the walk reaches reads as no ⏎ definition, so its {@link MCP_PARAM_PREFIX} headers are forwarded untouched — the same ⏎ answer a name no served definition annotates receives.
+
+#### MCP_HEADER_MISMATCH  (const)
+LIT   : `-32020`
+CLAUSE: required HTTP metadata does not match the request body.
+DOC   : Names the MCP reserved error for required HTTP metadata that does not match the request body.
+
+#### MCP_MISSING_CAPABILITY  (const)
+LIT   : `-32021`
+CLAUSE: the GENERIC undeclared-client-capability code; `data.requiredCapabilities` names which one.
+DOC   : Names the MCP reserved error for an operation needing a client capability that was not ⏎ declared. ⏎  ⏎ @remarks ⏎ The GENERIC code for the whole condition, not one capability's code. This server answers ⏎ it in more than one place — a `tools/call` that needs `elicitation`, and a `tasks/*` request ⏎ whose client never declared `io.modelcontextprotocol/tasks` — and they are told apart by ⏎ `error.data.requiredCapabilities` alone (`{ elicitation: {} }` against ⏎ `{ extensions: { 'io.modelcontextprotocol/tasks': {} } }`). They are instances of the same ⏎ condition, so a separate numeral would describe the same fact twice. The Tasks extension's ⏎ own prose examples show `-32003`; the dated core schema fixes this code, and the dated ⏎ schema is what a peer implements against.
+
+#### MCP_UNSUPPORTED_VERSION  (const)
+LIT   : `-32022`
+CLAUSE: the request names an unsupported protocol revision.
+DOC   : Names the MCP reserved error for a request naming an unsupported protocol revision.
+
+#### DEFAULT_MCP_CACHE_TTL  (const)
+LIT   : `60000`
+CLAUSE: default modern cache freshness lifetime in milliseconds.
+DOC   : Sets the default modern result freshness lifetime in milliseconds. ⏎  ⏎ @remarks ⏎ `ttlMs` is required on cacheable results, while zero means immediately stale ⏎ rather than uncached, so the neutral usable default is one minute.
+
+#### DEFAULT_MCP_LIMITS  (const)
+LIT   : Frozen secure defaults for message, metadata, keys, state, content, subscriptions, and depth.
+CLAUSE: 
+DOC   : Sets the secure server bounds used when the matching `limit` option leaf is absent or ⏎ malformed. ⏎  ⏎ @remarks ⏎ One MiB admits ordinary JSON-RPC requests and substantial tool arguments; 16 KiB admits ⏎ extension-rich modern metadata and signed multi-round state; four MiB admits substantial ⏎ JSON tool output without allowing an unconfigured service to serialize arbitrary process ⏎ memory; 64 keys admits `_meta`'s reserved keys plus many extensions, and bounds a produced ⏎ result's breadth by the same leaf; 128 concurrent streams admits a busy service while ⏎ bounding retained producers; depth 32 admits ordinary JSON documents while rejecting ⏎ stack-hostile nesting. Frozen so callers cannot alter the defaults observed by later ⏎ servers.
+
+#### EMPTY_MCP_ARGUMENTS  (const)
+LIT   : The one frozen null-prototype record every argument-less modern `tools/call` runs with.
+CLAUSE: 
+DOC   : Holds the one empty argument record every argument-less modern `tools/call` runs with. ⏎  ⏎ @remarks ⏎ Frozen and null-prototype, and SHARED: two calls that name no `arguments` receive the same ⏎ reference, so nothing a tool writes into its own `arguments` can survive into the next ⏎ call — the write fails instead. That failure is a tool-domain failure like any other: the ⏎ registry isolates it into a `success: false` result, which reaches the peer as an ⏎ `isError: true` tool result rather than as a protocol error, because refusing a mutation ⏎ of server-owned input is not a protocol fault. ⏎  ⏎ The null prototype means an inherited key is never mistaken for a supplied argument: ⏎ `arguments.constructor` is `undefined` here rather than a function.
+
+#### JSONRPC_PARSE_ERROR  (const)
+LIT   : `-32700`
+CLAUSE: invalid JSON was received (the message did not parse).
+DOC   : Names the JSON-RPC 2.0 reserved error for invalid JSON received (the message did not parse).
+
+#### JSONRPC_INVALID_REQUEST  (const)
+LIT   : `-32600`
+CLAUSE: the payload was not a valid Request object.
+DOC   : Names the JSON-RPC 2.0 reserved error for a payload that was not a valid Request object.
+
+#### JSONRPC_METHOD_NOT_FOUND  (const)
+LIT   : `-32601`
+CLAUSE: the requested method does not exist.
+DOC   : Names the JSON-RPC 2.0 reserved error for a requested method that does not exist.
+
+#### JSONRPC_INVALID_PARAMS  (const)
+LIT   : `-32602`
+CLAUSE: the method's parameters were invalid.
+DOC   : Names the JSON-RPC 2.0 reserved error for a method's invalid parameters.
+
+#### JSONRPC_INTERNAL_ERROR  (const)
+LIT   : `-32603`
+CLAUSE: every contained MODERN fault: provider, handler, continuation, capacity, stream source, or serialization.
+DOC   : Names the JSON-RPC 2.0 reserved error for a server that failed while handling an otherwise ⏎ valid request. ⏎  ⏎ @remarks ⏎ The code every MODERN internal fault answers with — a provider, handler, continuation, ⏎ capacity, stream-source, normalization, or serialization failure the server contained. ⏎ It is detail-free on the wire: the caught value reaches the application through the ⏎ server's `error` event and never through the response.
+
+#### JSONRPC_SERVER_ERROR  (const)
+LIT   : `-32000`
+CLAUSE: the code `MCPLegacy` alone uses, for a modern result the dated revision cannot represent.
+DOC   : Names the JSON-RPC 2.0 implementation-defined server error (the `-32000` to `-32099` range). ⏎  ⏎ @remarks ⏎ Retained for the LEGACY branch alone. A modern fault answers ⏎ {@link JSONRPC_INTERNAL_ERROR}; this code survives only where an old-wire peer was ⏎ already characterized against it.
+
+#### DEFAULT_MCP_CLIENT_NAME  (const)
+LIT   : `'@orkestrel/mcp'`
+CLAUSE: the default client name reported in modern metadata or the adapter handshake.
+DOC   : Supplies the default client name reported in the MCP `initialize` handshake ⏎ (`clientInfo.name`).
+
+#### DEFAULT_MCP_CLIENT_VERSION  (const)
+LIT   : `'1.0.0'`
+CLAUSE: the default client version reported in modern metadata or the adapter handshake.
+DOC   : Supplies the default client version reported in the MCP `initialize` handshake ⏎ (`clientInfo.version`).
+
+#### DEFAULT_MCP_REQUEST_TIMEOUT  (const)
+LIT   : `30000`
+CLAUSE: the default per-request deadline (ms) an `MCPClient` applies.
+DOC   : Sets the default per-request deadline (ms) an `MCPClient` applies when `options.timeout` ⏎ is unset — a request the remote server does not answer within it rejects.
+
+#### DEFAULT_MCP_SUBSCRIPTION_CAPACITY  (const)
+LIT   : `64`
+CLAUSE: the default number of subscription frames `listen` retains while no read is parked.
+DOC   : Sets the default number of subscription frames retained while no client read is parked.
+
+#### MCP_SESSION_HEADER  (const)
+LIT   : `'mcp-session-id'`
+CLAUSE: the Streamable-HTTP session header a stateful server mints and the client echoes.
+DOC   : Names the Streamable-HTTP transport header that carries the MCP session id. ⏎  ⏎ @remarks ⏎ A STATEFUL server sends it on the `initialize` reply, and ⏎ {@link import('./transports/HTTPClientTransport.js').HTTPClientTransport} echoes it as a ⏎ request header on every subsequent request, so a client passes that server's session ⏎ validation unchanged.
+
+#### MCP_PROTOCOL_VERSION_HEADER  (const)
+LIT   : `'mcp-protocol-version'`
+CLAUSE: required after initialization; the client sends it and the POST route validates it.
+DOC   : Names the Streamable-HTTP transport header carrying the MCP protocol version. ⏎  ⏎ @remarks ⏎ A modern request derives it from its own `_meta`; a legacy request echoes the revision the ⏎ `initialize` result negotiated on each subsequent request.
+
+#### MCP_METHOD_HEADER  (const)
+LIT   : `'mcp-method'`
+CLAUSE: the modern request method, required to equal the JSON-RPC body method.
+DOC   : Names the modern Streamable-HTTP request header carrying the JSON-RPC method. ⏎  ⏎ @remarks ⏎ It is stamped on every modern request and on no legacy request.
+
+#### MCP_NAME_HEADER  (const)
+LIT   : `'mcp-name'`
+CLAUSE: the modern named target, required for `tools/call`, `prompts/get`, and `resources/read`.
+DOC   : Names the modern Streamable-HTTP request header carrying a named target. ⏎  ⏎ @remarks ⏎ The HTTP client transport stamps it only for `tools/call`, from that request's `params.name`, ⏎ in the Base64 sentinel form whenever the name cannot ride as plain ASCII.
+
+#### MCP_WEBSOCKET_SUBPROTOCOL  (const)
+LIT   : `'mcp'`
+CLAUSE: the WebSocket subprotocol `createWebSocketClientTransport` requests by default and `createWebSocketServer` selects only when offered. Per RFC 6455 §4.1 a client must fail the connection if the server returns a subprotocol it did not request; Node ≥ 22 (undici) enforces this strictly.
+DOC   : Names the WebSocket subprotocol `createWebSocketClientTransport` requests by default — ⏎ `'mcp'`, which `createWebSocketServer` selects when the client offers it. Per RFC 6455 ⏎ §4.1 a client MUST fail the connection if the server returns ⏎ a subprotocol it did not request; Node ≥ 22 (undici) enforces this strictly, so the ⏎ default bakes the correct value in. Override `WebSocketClientTransportOptions.protocols` ⏎ only when connecting to a foreign server that speaks a different subprotocol (or `[]` ⏎ for no subprotocol negotiation at all). ⏎  ⏎ @remarks ⏎ The client sends it in `Sec-WebSocket-Protocol` and the server echoes it in its `101` ⏎ handshake, so an MCP WebSocket endpoint is distinguishable from any other WebSocket on the ⏎ same path. The default WebSocket upgrade path is the same `'/mcp'` the HTTP transport mounts ⏎ at — the upgrade is selected by the `Upgrade: websocket` header, not a separate path.
+
+#### JSONRPCId  (type)
+LIT   : `string \| number`
+CLAUSE: the correlation value a request and its response share. `null` is not an id.
+DOC   : Represents a JSON-RPC 2.0 correlation id — the value a request and its response share.
+
+#### JSONRPCRequest  (interface)
+LIT   : `{ jsonrpc: '2.0'; method: string; id: JSONRPCId; params?: Record<string, unknown> }`
+CLAUSE: `id` is REQUIRED; an id-less call is a `JSONRPCNotification` instead.
+DOC   : Represents a JSON-RPC 2.0 request — a `method` call with optional `params`, correlated to ⏎ its response by the `id` it REQUIRES. ⏎  ⏎ @remarks ⏎ `jsonrpc` is the literal `'2.0'`. A call with no `id` is not a request at all: it ⏎ is a {@link JSONRPCNotification}, a distinct type. `params` is an open record ⏎ forwarded to the method handler (the handler narrows the fields it reads).
+
+#### JSONRPCNotification  (interface)
+LIT   : `{ jsonrpc: '2.0'; method: string; id?: never; params?: Record<string, unknown> }`
+CLAUSE: `id` is declared `never`, so a request is not assignable here.
+DOC   : Represents a JSON-RPC 2.0 notification — a fire-and-forget `method` call that is answered ⏎ by nothing (for example, `notifications/initialized`). ⏎  ⏎ @remarks ⏎ A notification MUST NOT carry an `id`, so `id` is declared `never`: a ⏎ {@link JSONRPCRequest} is not assignable here, which is what keeps a ⏎ request off a notification stream.
+
+#### JSONRPCInvocation  (type)
+LIT   : `JSONRPCRequest \| JSONRPCNotification`
+CLAUSE: one inbound call; narrow the arms with `invocation.id === undefined`.
+DOC   : Represents one inbound JSON-RPC call — the common dispatch input. ⏎  ⏎ @remarks ⏎ Narrow the arms apart on the id: `invocation.id === undefined` is the notification ⏎ arm, and anything else is a {@link JSONRPCRequest}.
+
+#### JSONRPCError  (interface)
+LIT   : `{ code: number; message: string; data?: unknown }`
+CLAUSE: the `error` member of a failed response.
+DOC   : Represents a JSON-RPC 2.0 error object — the `error` member of a ⏎ {@link JSONRPCErrorResponse}. ⏎  ⏎ @remarks ⏎ `code` is one of the reserved JSON-RPC codes (see `./constants.js`); `message` ⏎ is a short human description; `data` is an OPTIONAL machine-readable payload ⏎ carrying extra detail.
+
+#### JSONRPCResultResponse  (interface)
+LIT   : `{ jsonrpc: '2.0'; id: JSONRPCId; result: MCPResult \| MCPLegacyResult; error?: never }`
+CLAUSE: the success arm; `id` is required and `error` forbidden.
+DOC   : Represents the success arm of a JSON-RPC 2.0 response — the request's `id` echoed with ⏎ the method's `result`. ⏎  ⏎ @remarks ⏎ A result answers a request, and a request always has a readable `id`, so `id` is ⏎ REQUIRED here. `result` is an {@link MCPResult} on the modern wire and an ⏎ {@link MCPLegacyResult} on the legacy one; `error` is forbidden.
+
+#### JSONRPCErrorResponse  (interface)
+LIT   : `{ jsonrpc: '2.0'; id?: JSONRPCId; error: JSONRPCError; result?: never }`
+CLAUSE: the failure arm, and the ONE place `id` may be ABSENT (omitted, never `null`).
+DOC   : Represents the failure arm of a JSON-RPC 2.0 response — the request's `id` echoed with ⏎ the {@link JSONRPCError} that ended it. ⏎  ⏎ @remarks ⏎ `id` is OMITTED, never `null`, when the request could not be parsed or its id ⏎ read: MCP overrides the base specification here, so a modern peer receives an ⏎ envelope with no `id` member at all. `result` is forbidden.
+
+#### JSONRPCResponse  (type)
+LIT   : `JSONRPCResultResponse \| JSONRPCErrorResponse`
+CLAUSE: narrow the arms with `response.error === undefined`.
+DOC   : Represents a JSON-RPC 2.0 response — the answer to one {@link JSONRPCRequest}. ⏎  ⏎ @remarks ⏎ The arms are mutually exclusive in the type and in their guards. Narrow them ⏎ apart with `response.error === undefined`.
+
+#### JSONRPCMessage  (type)
+LIT   : `JSONRPCInvocation \| JSONRPCResponse`
+CLAUSE: a message on the wire; `'method' in message` narrows to the invocation half.
+DOC   : Represents a JSON-RPC 2.0 message on the wire — a {@link JSONRPCInvocation} or a ⏎ {@link JSONRPCResponse}. ⏎  ⏎ @remarks ⏎ `'method' in message` narrows to the invocation half; the response half carries ⏎ no `method`.
+
+#### MCPResult  (interface)
+LIT   : `{ resultType: string; _meta?: MCPResultMetaObject; [key: string]: unknown }`
+CLAUSE: the OPEN modern contract every dated-revision result satisfies.
+DOC   : Represents one modern MCP result — the open contract every dated-revision result satisfies. ⏎  ⏎ @remarks ⏎ The dated schema requires a `resultType` on EVERY modern result and leaves the ⏎ rest of the object open, so this contract does the same: `resultType` is a string ⏎ rather than a closed union because the protocol keeps issuing new ones (`task` ⏎ alongside `complete` and `input_required`), and the index signature is the ⏎ schema's own openness rather than a gap in this package's knowledge. ⏎  ⏎ Concrete results — {@link MCPCallResult}, {@link MCPDiscoverResult}, ⏎ {@link MCPListResult}, {@link MCPPromptListResult}, {@link MCPPromptGetResult}, ⏎ {@link MCPCompletionResult}, {@link MCPInputResult}, and ⏎ {@link MCPSubscriptionResult} — stay CLOSED and keep their literal ⏎ `resultType`, so a caller that knows which method it called still narrows to a ⏎ literal through that result's guard. Openness lives here, at the arm a server may ⏎ answer any registered method through, and nowhere else.
+
+#### MCPLegacyResult  (interface)
+LIT   : `{ resultType?: never; [key: string]: unknown }`
+CLAUSE: the legacy arm, disjoint from `MCPResult` in both directions because the legacy revision has no discriminator.
+DOC   : Represents one legacy-era result — the payload of an answer produced by the fixed legacy ⏎ method switch. ⏎  ⏎ @remarks ⏎ The legacy revision has no result-discriminator concept, so a legacy result ⏎ carries NO `resultType`. That absence is the whole distinction, which is why it is ⏎ declared `never` rather than optional: an {@link MCPResult} is not assignable ⏎ here, this type is not assignable to {@link MCPResult}, and ⏎ `result.resultType === undefined` narrows a {@link JSONRPCResultResponse}'s ⏎ `result` to the legacy arm. ⏎  ⏎ This arm exists only for the optional legacy server decorator and client transport adapter.
+
+#### MCPVersion  (type)
+LIT   : `'2026-07-28' \| '2025-11-25' \| '2025-06-18'`
+CLAUSE: a supported protocol revision.
+DOC   : Names a protocol revision supported by an MCP package surface.
+
+#### MCPModernVersion  (type)
+LIT   : `'2026-07-28'`
+CLAUSE: a revision the bare server accepts and discovery advertises.
+DOC   : Names a modern protocol revision supported by the bare MCP server.
+
+#### MCPLegacyVersion  (type)
+LIT   : `'2025-11-25' \| '2025-06-18'`
+CLAUSE: a revision owned by the legacy decorator and legacy client path.
+DOC   : Names a legacy protocol revision supported by the optional legacy decorators.
+
+#### MCPMetaObject  (type)
+LIT   : Open readonly MCP metadata map whose values are exact finite `JSONValue`; runtime keys follow the dated metadata grammar. The `Object` suffix names the JSON-object SHAPE rather than a role.
+CLAUSE: 
+DOC   : Represents the exact finite JSON metadata carried by MCP `_meta` envelopes. ⏎  ⏎ @remarks ⏎ The `Object` suffix is not a role suffix from the type table — it NAMES THE SHAPE. ⏎ `_meta` is a JSON object whose values are exact JSON, and a reader who sees ⏎ `MCPMeta` cannot tell that from a key, a string, or an entry. The same holds for ⏎ {@link MCPResultMetaObject} and {@link MCPSubscriptionResultMetaObject}, which are ⏎ that object narrowed by one reserved key each.
+
+#### MCPResultMetaObject  (type)
+LIT   : Open result metadata with an optional exact reserved `io.modelcontextprotocol/serverInfo` identity.
+CLAUSE: 
+DOC   : Carries open result metadata with the dated reserved server identity field.
+
+#### MCPNotificationMetaObject  (type)
+LIT   : Open notification metadata with an OPTIONAL reserved `io.modelcontextprotocol/subscriptionId`. A frame delivered down a `subscriptions/listen` stream carries the stamp; the same notification delivered any other way carries none, so a required key would refuse a frame the protocol permits.
+CLAUSE: 
+DOC   : Carries open notification metadata with the dated reserved subscription field. ⏎  ⏎ @remarks ⏎ The subscription id is OPTIONAL here, and that is the schema's own split rather than ⏎ this package hedging. A frame delivered down a `subscriptions/listen` stream carries the ⏎ stamp naming the listen request that agreed to it; the same notification delivered any ⏎ other way carries no stamp, because there is no subscription to name. A required key ⏎ would refuse a frame the protocol permits. ⏎  ⏎ Compare {@link MCPSubscriptionResultMetaObject}, where the same key is REQUIRED: that one ⏎ sits on the terminating result of a stream, so a subscription always exists to name.
+
+#### MCPLoggingLevel  (type)
+LIT   : The dated debug-through-emergency logging-level literals.
+CLAUSE: 
+DOC   : Names the dated logging levels accepted by MCP request metadata.
+
+#### MCPClientCapabilities  (type)
+LIT   : Open client capability map with JSON-object values and exact dated known fields.
+CLAUSE: 
+DOC   : Represents the open dated client-capability declaration carried by modern requests.
+
+#### MCPServerCapabilities  (type)
+LIT   : Open server capability map with JSON-object values and exact dated known fields.
+CLAUSE: 
+DOC   : Represents the open dated server-capability declaration returned by discovery.
+
+#### MCPEra  (type)
+LIT   : `'modern' \| 'legacy'`
+CLAUSE: the structural wire era, and a genuine protocol discriminant rather than a boolean switch: it names which published wire shape a request took and is published on the `request` event.
+DOC   : Names the wire era selected by an MCP request's structure. ⏎  ⏎ @remarks ⏎ `'modern'` and `'legacy'`, and not the boolean such a union would usually be: this is ⏎ a genuine protocol discriminant, not a behavioural switch. It names which ⏎ published wire shape a request took — a fact the request already carries — and it ⏎ is emitted on {@link MCPServerEventMap}'s `request` event, where an observer logs ⏎ or partitions by it. A boolean `modern` would publish the same fact under a name ⏎ that stops being readable the day another era exists.
+
+#### MCPRole  (type)
+LIT   : `'user' \| 'assistant'`
+CLAUSE: the intended audience of annotated content.
+DOC   : Names the intended recipient of annotated MCP content.
+
+#### MCPAnnotations  (interface)
+LIT   : Optional audience, priority, and last-modified hints.
+CLAUSE: 
+DOC   : Represents the optional audience, importance, and modification hints on MCP content.
+
+#### MCPIcon  (type)
+LIT   : Open metadata intersection with `{ src; mimeType?; sizes?; theme? }` for one resource-link icon.
+CLAUSE: 
+DOC   : Represents one sized, themed icon associated with an MCP resource link.
+
+#### MCPTextContent  (interface)
+LIT   : Exact text content block with optional annotations and metadata.
+CLAUSE: 
+DOC   : Represents a textual MCP content block.
+
+#### MCPImageContent  (interface)
+LIT   : Exact base64 image content block with MIME type, annotations, and metadata.
+CLAUSE: 
+DOC   : Represents a base64-encoded image MCP content block.
+
+#### MCPAudioContent  (interface)
+LIT   : Exact base64 audio content block with MIME type, annotations, and metadata.
+CLAUSE: 
+DOC   : Represents a base64-encoded audio MCP content block.
+
+#### MCPResourceLink  (interface)
+LIT   : Exact named resource link, including title, icons, URI, MIME, size, annotations, and metadata.
+CLAUSE: 
+DOC   : Represents a link to an MCP resource, including its exact dated-schema metadata.
+
+#### MCPTextResource  (interface)
+LIT   : Embedded textual resource contents.
+CLAUSE: 
+DOC   : Represents embedded textual resource contents.
+
+#### MCPBlobResource  (interface)
+LIT   : Embedded base64 blob resource contents.
+CLAUSE: 
+DOC   : Represents embedded base64-encoded resource contents.
+
+#### MCPEmbeddedResource  (interface)
+LIT   : Embedded text/blob resource content block.
+CLAUSE: 
+DOC   : Represents an MCP content block carrying embedded text or blob resource contents.
+
+#### MCPContent  (type)
+LIT   : Dated-schema union of text, image, audio, resource-link, and embedded-resource content.
+CLAUSE: 
+DOC   : Represents one exact dated-schema tool content block.
+
+#### MCPUnstampedCallResult  (type)
+LIT   : `{ content; structuredContent?; isError?; _meta? }`
+CLAUSE: a `tools/call` result BEFORE the modern stamp, which is the only shape the legacy revision has for one.
+DOC   : Represents a `tools/call` result BEFORE the modern stamp — the executed tool's output as ⏎ `content` blocks, with `isError` flagging a tool failure. ⏎  ⏎ @remarks ⏎ The name states the whole distinction: this is the tool-call result WITHOUT ⏎ `resultType`, which is the only shape the legacy revision has for one. ⏎ {@link MCPCallResult} is this payload plus the modern `'complete'` stamp, so ⏎ stamping is the one difference between the modern and legacy answers to `tools/call`. ⏎ `MCPServer` produces it before modern stamping, and `MCPLegacy` projects the ⏎ stamped answer back to this shape. ⏎  ⏎ A success carries the tool's value unchanged as `structuredContent` alongside ⏎ its serialized form in one `text` content block. A value-less success omits ⏎ `structuredContent`. A tool FAILURE (the `success: false` branch the registry ⏎ isolated) carries its `error` text in `content` AND sets `isError: true`, so the ⏎ model sees the failure as a tool result it can react to rather than a protocol ⏎ error.
+
+#### MCPCallResult  (type)
+LIT   : Required modern complete tool result: `MCPUnstampedCallResult & { resultType: 'complete' }`.
+CLAUSE: 
+DOC   : Represents a required complete modern `tools/call` result.
+
+#### MCPPaginationParams  (interface)
+LIT   : `{ cursor? }`
+CLAUSE: the ONE cursor-in shape every paginated modern list method takes. The cursor is opaque and the manager mints it.
+DOC   : Represents the cursor parameters shared by every paginated modern list method.
+
+#### MCPPaginationResult  (interface)
+LIT   : `{ nextCursor? }`
+CLAUSE: the ONE cursor-out shape they answer with; an absent `nextCursor` means this was the final page.
+DOC   : Represents the cursor result fields shared by every paginated modern list method.
+
+#### MCPResource  (interface)
+LIT   : One `resources/list` descriptor
+CLAUSE: `{ uri; name; title?; description?; mimeType?; annotations?; size?; icons?; _meta? }`.
+DOC   : Represents one resource descriptor advertised by `resources/list`.
+
+#### MCPResourceTemplate  (interface)
+LIT   : One `resources/templates/list` descriptor
+CLAUSE: `{ uriTemplate; name; … }`. The `uriTemplate` is published as a STRING; this package never parses or expands it.
+DOC   : Represents one RFC 6570 resource-template descriptor advertised by `resources/templates/list`.
+
+#### MCPResourceContents  (type)
+LIT   : `resources/read` contents, structurally discriminated: exactly one of `text` and `blob` (base64), with the other member forbidden, because the wire carries no tag field.
+CLAUSE: 
+DOC   : Represents the resource contents returned by `resources/read`. ⏎  ⏎ @remarks ⏎ The wire has no tag field. Presence of `text` or `blob` is the structural ⏎ discriminator, and each arm forbids the other member so a value can carry exactly one.
+
+#### MCPResourcePage  (interface)
+LIT   : `MCPPaginationResult & { resources }`
+CLAUSE: one consumer-owned page, before MCP stamps it.
+DOC   : Represents one consumer-owned page projected by `resources/list`.
+
+#### MCPResourceTemplatePage  (interface)
+LIT   : `MCPPaginationResult & { resourceTemplates }`
+CLAUSE: the template equivalent.
+DOC   : Represents one consumer-owned page projected by `resources/templates/list`.
+
+#### MCPResourceReadParams  (interface)
+LIT   : `{ uri; inputResponses?; requestState? }`
+CLAUSE: a CONCRETE uri plus the optional multi-round continuation carriers.
+DOC   : Parameters accepted by `resources/read`.
+
+#### MCPResourceListResult  (type)
+LIT   : The stamped cacheable `resources/list` answer: the page plus `resultType: 'complete'`, `ttlMs`, and `cacheScope`.
+CLAUSE: 
+DOC   : Represents the complete cacheable `resources/list` result.
+
+#### MCPResourceReadResult  (type)
+LIT   : The stamped cacheable `resources/read` answer: `{ contents }` plus the same stamps.
+CLAUSE: 
+DOC   : Represents the complete cacheable `resources/read` result.
+
+#### MCPResourceTemplateListResult  (type)
+LIT   : The stamped cacheable `resources/templates/list` answer.
+CLAUSE: 
+DOC   : Represents the complete cacheable `resources/templates/list` result.
+
+#### MCPResourceManagerInterface  (interface)
+LIT   : The consumer-supplied resource registry port
+CLAUSE: the `resources` / `resource` / `templates` methods. MCP owns no storage and no template engine.
+DOC   : Represents the consumer-supplied resource registry port. ⏎  ⏎ @remarks ⏎ MCP owns no storage. The host may back this port with memory, a workspace, a database, ⏎ or any other registry. The list methods carry the shared cursor contract verbatim; ⏎ `resource` returns `undefined` when the URI does not resolve and may instead return an ⏎ {@link MCPInputResult} for a modern multi-round interaction.
+
+#### MCPPromptArgument  (interface)
+LIT   : `{ name; title?; description?; required? }`
+CLAUSE: one argument a prompt declares.
+DOC   : Represents one argument descriptor advertised with an MCP prompt.
+
+#### MCPPrompt  (interface)
+LIT   : One `prompts/list` descriptor
+CLAUSE: `{ name; title?; description?; arguments?; icons?; _meta? }`.
+DOC   : Represents one prompt descriptor advertised by `prompts/list`.
+
+#### MCPPromptMessage  (interface)
+LIT   : `{ role: 'user' \| 'assistant'; content: MCPContent }`
+CLAUSE: one message, reusing the existing content union rather than a second one.
+DOC   : Represents one user or assistant message returned by `prompts/get`.
+
+#### MCPPromptPage  (interface)
+LIT   : `MCPPaginationResult & { prompts }`
+CLAUSE: one consumer-owned prompt page.
+DOC   : Represents one consumer-owned page projected by `prompts/list`.
+
+#### MCPPromptGetParams  (interface)
+LIT   : `{ name; arguments?; inputResponses?; requestState? }`
+CLAUSE: argument VALUES are strings by contract.
+DOC   : Parameters accepted by `prompts/get`.
+
+#### MCPPromptListResult  (type)
+LIT   : The stamped cacheable `prompts/list` answer.
+CLAUSE: 
+DOC   : Represents the complete cacheable `prompts/list` result.
+
+#### MCPPromptGetResult  (interface)
+LIT   : `{ resultType: 'complete'; description?; messages; _meta? }`
+CLAUSE: the complete `prompts/get` answer, and the one result in this family that is NOT cacheable, so it carries no `ttlMs` / `cacheScope`.
+DOC   : Represents the complete, non-cacheable `prompts/get` result.
+
+#### MCPPromptManagerInterface  (interface)
+LIT   : The consumer-supplied prompt registry port
+CLAUSE: the `prompts` / `prompt` methods, mirroring the resource port's singular/plural pair.
+DOC   : Represents the consumer-supplied prompt registry port. ⏎  ⏎ @remarks ⏎ MCP owns no prompt storage. The host projects one shared-cursor page at a time and resolves ⏎ a named prompt to its messages, an input-required result, or `undefined` when not found.
+
+#### MCPPromptReference  (interface)
+LIT   : `{ type: 'ref/prompt'; name }`
+CLAUSE: a completion reference to one named prompt.
+DOC   : Represents a completion reference to one named prompt.
+
+#### MCPResourceTemplateReference  (interface)
+LIT   : `{ type: 'ref/resource'; uri }`
+CLAUSE: a completion reference whose `uri` may itself be a template, forwarded VERBATIM to the host.
+DOC   : Represents a completion reference to one resource-template URI descriptor.
+
+#### MCPCompletionReference  (type)
+LIT   : `MCPPromptReference \| MCPResourceTemplateReference`
+CLAUSE: the arms `completion/complete` accepts, discriminated by the wire's own `type`.
+DOC   : Represents the prompt or resource-template reference accepted by `completion/complete`.
+
+#### MCPCompletionArgument  (interface)
+LIT   : `{ name; value }`
+CLAUSE: the argument fragment being completed.
+DOC   : Represents the argument fragment being completed.
+
+#### MCPCompletionContext  (interface)
+LIT   : `{ arguments? }`
+CLAUSE: previously resolved string arguments supplied as completion context.
+DOC   : Holds previously resolved string arguments supplied as completion context.
+
+#### MCPCompletionParams  (interface)
+LIT   : `{ ref; argument; context? }`
+CLAUSE: the parameters of one `completion/complete` request.
+DOC   : Parameters accepted by `completion/complete`.
+
+#### MCPCompletion  (interface)
+LIT   : `{ values; total?; hasMore? }`
+CLAUSE: the host's candidate set, BEFORE the protocol's 100-value projection.
+DOC   : Represents one completion candidate set before the protocol's 100-value projection cap.
+
+#### MCPCompletionResult  (interface)
+LIT   : `{ resultType: 'complete'; completion; _meta? }`
+CLAUSE: the stamped answer, capped at 100 values with `hasMore: true` when the cap truncated.
+DOC   : Represents the complete `completion/complete` result.
+
+#### MCPCompletionInterface  (interface)
+LIT   : The consumer-supplied completion port
+CLAUSE: the single `complete` method. Independent of the `resources` and `prompts` ports, because `completions` is a top-level capability.
+DOC   : Represents the consumer-supplied completion port for prompt and resource-template arguments. ⏎  ⏎ @remarks ⏎ The host owns reference lookup and template-variable knowledge. MCP forwards the reference ⏎ verbatim and performs no template parsing or expansion. Returning `undefined` means the ⏎ referenced prompt or resource template does not exist. ⏎  ⏎ This is the PORT that produces a {@link MCPCompletion}, not the behavioural face of one: the ⏎ candidate set is the data type, and this contract is the single method a host answers it from.
+
+#### MCPElicitValue  (type)
+LIT   : Primitive form-response value: string, number, boolean, or a readonly string list.
+CLAUSE: 
+DOC   : Names the primitive value shapes accepted in an MCP form elicitation response.
+
+#### MCPElicitChoice  (interface)
+LIT   : `{ const; title }`
+CLAUSE: one titled value in a form single- or multi-select schema.
+DOC   : Represents one titled value in a form elicitation's single- or multi-select schema.
+
+#### MCPElicitFieldSchema  (type)
+LIT   : Restricted boolean, numeric, string, single-select, or multi-select schema for ONE form field.
+CLAUSE: 
+DOC   : Represents one restricted single-field schema accepted by MCP form-mode elicitation.
+
+#### MCPElicitSchema  (interface)
+LIT   : Restricted top-level object schema for form elicitation, whose `properties` are `MCPElicitFieldSchema`s.
+CLAUSE: 
+DOC   : Represents the restricted top-level object schema in a form-mode elicitation request.
+
+#### MCPElicitForm  (interface)
+LIT   : `{ mode?: 'form'; message; requestedSchema }`
+CLAUSE: form-mode elicitation parameters.
+DOC   : Represents the parameters of a form-mode `elicitation/create` request.
+
+#### MCPElicitURL  (interface)
+LIT   : `{ mode: 'url'; message; url }`
+CLAUSE: URL-mode elicitation parameters; a consumer round may compose one, and the client must declare `elicitation.url` to receive it.
+DOC   : Represents the parameters of a URL-mode `elicitation/create` request.
+
+#### MCPElicitParams  (type)
+LIT   : `MCPElicitForm \| MCPElicitURL`
+CLAUSE: the mode-discriminated parameters of an `elicitation/create` request.
+DOC   : Represents the mode-discriminated parameters of an `elicitation/create` request.
+
+#### MCPElicitRequest  (interface)
+LIT   : `{ method: 'elicitation/create'; params: MCPElicitParams }`
+CLAUSE: one embedded elicitation request.
+DOC   : Represents an embedded MCP request asking the client to elicit input from its operator.
+
+#### MCPElicitResult  (interface)
+LIT   : `{ action: 'accept' \| 'decline' \| 'cancel'; content? }`
+CLAUSE: the client response to elicitation.
+DOC   : Represents the result supplied by a client for one embedded {@link MCPElicitRequest}.
+
+#### MCPInputRequest  (type)
+LIT   : Legal embedded request union
+CLAUSE: one `MCPElicitRequest`, or a sampling or roots request whose parameters stay open because the dated schema leaves those bodies to the caller.
+DOC   : Represents one embedded multi-round-trip request. ⏎  ⏎ @remarks ⏎ A consumer composes any of the three arms into an {@link MCPInputRound}, and this server ⏎ issues whichever arms that round carries. The elicitation arm is fully typed because this ⏎ package issues its schema and enforces the answer against it. The sampling and roots arms ⏎ keep OPEN parameter records: the dated schema leaves their request bodies to the caller, and ⏎ narrowing them here would refuse parameters the protocol permits.
+
+#### MCPInputRequestMap  (type)
+LIT   : Readonly consumer-keyed map of `MCPInputRequest` values.
+CLAUSE: 
+DOC   : Represents a consumer-keyed map of embedded requests the client must fulfil.
+
+#### MCPRoot  (interface)
+LIT   : `{ uri; name?; _meta? }`
+CLAUSE: one filesystem root a client exposes.
+DOC   : Represents one filesystem root a client exposes to a server.
+
+#### MCPRootResult  (interface)
+LIT   : `{ roots; _meta? }`
+CLAUSE: the client answer to an embedded `roots/list` request.
+DOC   : Represents the client's answer to one embedded `roots/list` request.
+
+#### MCPToolUseContent  (interface)
+LIT   : `{ type: 'tool_use'; id; name; input; _meta? }`
+CLAUSE: a model’s request to call one tool, carried inside a sampling completion.
+DOC   : Represents a model's request to call one tool, carried inside a sampling completion.
+
+#### MCPToolResultContent  (interface)
+LIT   : `{ type: 'tool_result'; toolUseId; content; isError?; structuredContent?; _meta? }`
+CLAUSE: one tool’s outcome returned to the model.
+DOC   : Represents one tool's outcome returned to the model, carried in a sampling completion.
+
+#### MCPSampleContent  (type)
+LIT   : The dated `SamplingMessageContentBlock`
+CLAUSE: `MCPTextContent`, `MCPImageContent`, `MCPAudioContent`, `MCPToolUseContent`, or `MCPToolResultContent`. The resource arms of `MCPContent` are outside it.
+DOC   : Represents one block a sampling completion may carry. ⏎  ⏎ @remarks ⏎ The dated schema's `SamplingMessageContentBlock`: the text, image, and audio blocks ⏎ {@link MCPContent} also admits, plus the two tool blocks a tool-using model produces. The ⏎ resource arms of {@link MCPContent} are deliberately absent — the schema leaves them out of ⏎ a sampling completion.
+
+#### MCPSampleResult  (interface)
+LIT   : `{ role; content; model; stopReason?; _meta? }`
+CLAUSE: the client answer to an embedded sampling request; `content` is one `MCPSampleContent` block or a readonly array of them, which is the schema’s own `anyOf`.
+DOC   : Represents the client's answer to one embedded `sampling/createMessage` request. ⏎  ⏎ @remarks ⏎ `content` is the dated schema's own `anyOf`: one {@link MCPSampleContent} block, or an array ⏎ of them. A tool-using model answers with `tool_use` and `tool_result` blocks, and a model ⏎ answering in several parts answers with the array, so narrowing this to a single text, image, ⏎ or audio block would refuse completions the schema permits. `stopReason` is an open string ⏎ because the schema names `endTurn`, `stopSequence`, `maxTokens`, and `toolUse` while ⏎ permitting any other value a provider reports.
+
+#### MCPInputResponse  (type)
+LIT   : `MCPElicitResult \| MCPSampleResult \| MCPRootResult`
+CLAUSE: one client answer, discriminated by its own required members.
+DOC   : Represents one client answer to one embedded input request. ⏎  ⏎ @remarks ⏎ The arms are discriminated by their own required members — `action` for an elicitation, ⏎ `roots` for a roots listing, and `model` beside `role` for a sampling completion — because ⏎ the protocol gives a response no `method` of its own. The server knows which arm applies ⏎ from the request it ISSUED under that key, so {@link MCPInputHandler} receives every answer ⏎ already checked against the question it answers.
+
+#### MCPInputResponseMap  (type)
+LIT   : Readonly consumer-keyed map of `MCPInputResponse` values.
+CLAUSE: 
+DOC   : Represents a consumer-keyed map of the client's answers to one issued round.
+
+#### MCPInputResult  (type)
+LIT   : `input_required` union enforcing at least one of `inputRequests` / `requestState`.
+CLAUSE: 
+DOC   : Represents an incomplete modern result carrying input requests, protected request state, ⏎ or both. ⏎  ⏎ @remarks ⏎ The union enforces the protocol's at-least-one-of rule at the type boundary: ⏎ every value has `inputRequests`, `requestState`, or both.
+
+#### MCPInputState  (interface)
+LIT   : Protected principal, absolute `expiry`, original request `id`, version, method, tool, argument digest, the exact issued `requests`, and optional JSON application state.
+CLAUSE: 
+DOC   : Represents the integrity-protected payload carried inside an opaque `requestState` token. ⏎  ⏎ @remarks ⏎ `id` is the FIRST round's request id and stays bound across every later round, so a ⏎ multi-round exchange remains one correlated call rather than a chain whose origin is lost ⏎ after the second hop. `requests` is the EXACT round that was issued: it carries the keys the ⏎ retry must answer and, for a form elicitation, the schema {@link isElicitContent} enforces ⏎ an accepted answer against — a round that is bound but never enforced buys nothing. ⏎ `requests` and `expiry` are re-minted every round; `principal`, `id`, `version`, `method`, ⏎ `name`, and `digest` are the bindings that must not move.
+
+#### MCPInputContext  (interface)
+LIT   : Call-in-hand context given to the input hook, including every verified response and the state on a retry.
+CLAUSE: 
+DOC   : Represents the call-in-hand context supplied to an {@link MCPInputHandler}.
+
+#### MCPInputRound  (interface)
+LIT   : `{ requests; state? }`
+CLAUSE: the consumer-keyed round plus optional opaque consumer state, before MCP gates and seals it.
+DOC   : Represents one consumer-composed round of embedded requests, before MCP seals its ⏎ continuation state. ⏎  ⏎ @remarks ⏎ The consumer owns the keys and the request kinds, because the keys are how it correlates ⏎ each answer and the kinds are what its own policy needs. MCP owns everything protective ⏎ around the round: the capability gate, the seal, the expiry, and the per-answer check on ⏎ the retry.
+
+#### MCPInputHandler  (type)
+LIT   : `(context, options) => MCPInputRound \| undefined` (or a promise)
+CLAUSE: ask the client for input or continue to tool execution.
+DOC   : Decides whether the current `tools/call` still needs input from the client. ⏎  ⏎ @param context - The original call plus every verified answer and state on a retry ⏎ @param options - The resolved per-request method options ⏎ @returns The next round to send, or `undefined` to continue into the tool registry
+
+#### MCPPrincipalHandler  (type)
+LIT   : `(request, options: MCPDispatchOptions) => string` (or a promise)
+CLAUSE: derives the authenticated principal bound into protected state.
+DOC   : Derives the deployment-authenticated principal bound into signed request state. ⏎  ⏎ @param request - The parsed `tools/call` request ⏎ @param options - The resolved per-request method options ⏎ @returns The authenticated principal to bind into protected state
+
+#### MCPContinuationInterface  (interface)
+LIT   : Host-neutral `seal` / `open` integrity or durable-handle port for canonical continuation state.
+CLAUSE: 
+DOC   : Represents the host-neutral integrity and storage port for opaque MRTR continuation state.
+
+#### MCPInputOptions  (interface)
+LIT   : `{ continuation; ttl; principal; selector }`
+CLAUSE: consumer policy for MRTR production and verification.
+DOC   : Configures the consumer policy for the server's multi-round-trip input mechanism.
+
+#### MCPTaskStatus  (type)
+LIT   : `'working' \| 'input_required' \| 'completed' \| 'failed' \| 'cancelled'`
+CLAUSE: one durable task's lifecycle state; `completed`, `failed`, and `cancelled` are terminal. Its `input_required` is a DIFFERENT mechanism from `MCPInputResult`'s identically spelled `resultType`.
+DOC   : Names the lifecycle state of one durable task. ⏎  ⏎ @remarks ⏎ `completed`, `failed`, and `cancelled` are TERMINAL: a task that reaches one never ⏎ moves again. `failed` reports that the deferred call could not be executed at all — ⏎ a JSON-RPC-level failure. A tool that RAN and returned an error is `completed` ⏎ carrying an `isError: true` result, exactly as an inline `tools/call` would answer, ⏎ because the deferral must not change what the tool's own failure means. ⏎  ⏎ `input_required` collides by spelling with {@link MCPInputResult}'s `resultType` ⏎ and is a DIFFERENT mechanism: that one suspends a live request and resumes through ⏎ a protected `requestState` on the next `tools/call`, while this one suspends a ⏎ durable task and resumes through `tasks/update`. Neither spelling is this package's ⏎ to change — both are on the wire.
+
+#### MCPTask  (type)
+LIT   : `{ taskId; status; statusMessage?; createdAt; lastUpdatedAt; ttlMs: number \| null; pollIntervalMs? }`
+CLAUSE: one task's wire snapshot; every field name is a verbatim spelling from the dated snapshot and `ttlMs: null` means no expiry.
+DOC   : Represents one durable task's wire snapshot — the payload a deferred `tools/call` answers ⏎ with. ⏎  ⏎ @remarks ⏎ Every field name here is a WIRE SPELLING carried verbatim from the extension's ⏎ schema, so the compound-member prohibition does not reach them; the type NAME is ⏎ this library's own. `ttlMs` is `null` — not absent — when the task has no expiry, ⏎ because the schema distinguishes absence from `null`. `createdAt` and `lastUpdatedAt` are ⏎ described as ISO 8601 instants, though the generated schema validates only a ⏎ string, so this package carries whatever the manager produced without reformatting ⏎ it. `pollIntervalMs` is the manager's hint about how often the client can ask ⏎ again; a manager that pushes notifications instead omits it.
+
+#### MCPTaskDetail  (type)
+LIT   : `MCPTask` narrowed by `status`: `input_required` adds `inputRequests`, `completed` adds an OPEN `result` record, `failed` adds `error`, `working` / `cancelled` add nothing
+CLAUSE: what a consumer manager answers with, unstamped.
+DOC   : Represents one task snapshot together with whatever its status carries — the shape ⏎ `tasks/get` and a task notification report. ⏎  ⏎ @remarks ⏎ The union is the schema's own: `input_required` carries the requests to answer, ⏎ `completed` carries the deferred call's result, `failed` carries the JSON-RPC error ⏎ that ended it, and `working` / `cancelled` carry nothing extra. Narrow on `status`. ⏎  ⏎ `result` is an OPEN RECORD rather than an {@link MCPResult} or an ⏎ {@link MCPCallResult}, because the schema declares it one: a completed task's payload ⏎ is whatever the deferred method answered, and the extension constrains nothing inside ⏎ it — not even a `resultType`. Only `tools/call` can be deferred today, and the ⏎ extension says nothing that fixes the payload to one method forever, so a reader that ⏎ knows which call it deferred narrows this record with that method's own guard.
+
+#### MCPTaskDetailResult  (type)
+LIT   : `MCPTaskDetail & { resultType: 'complete'; _meta? }`
+CLAUSE: the wire answer to `tasks/get`, DISTINCT from the unstamped detail a consumer's manager hands its own server.
+DOC   : Represents the wire answer to `tasks/get` — one snapshot under the completed-result stamp. ⏎  ⏎ @remarks ⏎ DISTINCT from {@link MCPTaskDetail}, and the distinction is the whole point. A detail is ⏎ what the consumer's {@link MCPTaskManagerInterface} answers, unstamped, because a durable ⏎ store knows nothing about the request that read it. This is what a `tasks/get` REPLY ⏎ carries: the schema types that reply as the detail intersected with the standard result, ⏎ so `resultType: 'complete'` is required rather than incidental and a peer that omits it ⏎ has answered something other than the method's declared result. ⏎  ⏎ `complete`, not `task`. Only the creation answer ({@link MCPTaskResult}) carries ⏎ `resultType: 'task'`; reading a task is an ordinary completed call whose payload happens ⏎ to be a task.
+
+#### MCPTaskNotificationParams  (type)
+LIT   : `MCPTaskDetail & { _meta?: MCPNotificationMetaObject; [key: string]: unknown }`
+CLAUSE: the FLAT params of a `notifications/tasks` frame. No `task` wrapper member exists, so narrow on `status` exactly as with a detail.
+DOC   : Represents the parameters of a `notifications/tasks` frame — one snapshot, flat, optionally ⏎ stamped with the subscription that delivered it. ⏎  ⏎ @remarks ⏎ FLAT, and that is the schema's shape rather than a choice: the extension types these ⏎ parameters as the notification envelope intersected with the detail, so every task field ⏎ sits directly under `params` and no `task` wrapper member exists. Narrow on `status` ⏎ exactly as with {@link MCPTaskDetail}. ⏎  ⏎ The index signature is the envelope's own openness, carried through. `_meta` is optional ⏎ because the reserved subscription stamp is present only on a frame delivered down a ⏎ `subscriptions/listen` stream and absent on one delivered any other way — see ⏎ {@link MCPNotificationMetaObject}.
+
+#### MCPTaskNotification  (type)
+LIT   : `JSONRPCNotification & { method: 'notifications/tasks'; params: MCPTaskNotificationParams }`
+CLAUSE: one well-formed `notifications/tasks` frame, the name of what `isMCPTaskNotification` proves.
+DOC   : Represents one well-formed `notifications/tasks` frame — the notification ⏎ {@link import('./validators.js').isMCPTaskNotification} admits. ⏎  ⏎ @remarks ⏎ The name of what that guard proves. A consumer reading `notification.params.taskId` off an ⏎ admitted frame narrows to this type, so the narrowing has a name it can annotate, pass, and ⏎ return rather than an anonymous intersection re-spelled at each site.
+
+#### MCPTaskResult  (type)
+LIT   : `MCPTask & { resultType: 'task'; _meta? }`
+CLAUSE: the FLAT creation answer, and the only result in this package whose `resultType` is `'task'`.
+DOC   : Represents the modern `tools/call` result announcing that the call became a durable task. ⏎  ⏎ @remarks ⏎ The only result in this package whose `resultType` is `'task'`. It is FLAT — the ⏎ task's fields sit beside the discriminator rather than under a `task` member — and ⏎ it carries no terminal payload, because a task at creation has no ⏎ outcome yet. The outcome arrives through {@link MCPTaskDetail}.
+
+#### MCPTaskContext  (interface)
+LIT   : `{ request; call; tools }`
+CLAUSE: the call in hand given to `deferral` and to `start`. It carries NO cancellation signal, deliberately: `options.signal` is the request's lifetime, which ends when the handle is written.
+DOC   : Represents the call-in-hand context supplied to an {@link MCPTaskHandler} and to ⏎ {@link MCPTaskManagerInterface.start}. ⏎  ⏎ @remarks ⏎ It carries NO cancellation signal, and that absence is deliberate rather than an ⏎ omission. The signal on the accompanying {@link MCPMethodOptions} is the REQUEST's ⏎ lifetime, and a deferred request ends the moment its `resultType: 'task'` answer is ⏎ written — a transport aborts it as soon as the response body is flushed. A manager ⏎ that plumbs `options.signal` into the task's work therefore loses every task it ⏎ creates, milliseconds after creating it, and the loss looks exactly like a client ⏎ that disconnected. Use `options.signal` for work that must finish before the ⏎ ANSWER is written, and give the task's own work a lifetime the manager owns. ⏎  ⏎ `call` is the canonical tool call the deferral is standing in for, so a manager ⏎ needs nothing from `request.params` to run the work; `request` is supplied whole ⏎ because the deferral decision legitimately reads metadata the call does not carry. ⏎ `tools` is the same live registry the inline path would have executed against.
+
+#### MCPTaskManagerInterface  (interface)
+LIT   : The consumer-owned durable store
+CLAUSE: the `start` / `task` / `update` / `abort` methods. There is deliberately no plural accessor, because the extension defines no `tasks/list`.
+DOC   : Represents the consumer-owned durable store behind the Tasks extension — the port this ⏎ package creates tasks through and reads them back from. ⏎  ⏎ @remarks ⏎ There is deliberately NO plural accessor. The extension defines no `tasks/list`, and ⏎ a port that could enumerate tasks would invite one; the absence is how this contract ⏎ states the non-goal. ⏎  ⏎ {@link task} answers `undefined` for a task that never existed, one whose TTL purged ⏎ it, AND one this caller is not entitled to see. They are indistinguishable ON ⏎ PURPOSE: they all become the same `-32602`, so a `taskId` cannot be probed for ⏎ existence. A manager that distinguishes them — by throwing for the unauthorized case, ⏎ say — turns its own store into an enumeration oracle no matter what this package does. ⏎  ⏎ Every method receives the resolved per-request options and is expected to ⏎ AUTHORIZE the call itself: the extension requires authorization on each task request, ⏎ and this package has no principal of its own to check one against.
+
+#### MCPTaskHandler  (type)
+LIT   : `(context, options) => string \| undefined` (or a promise)
+CLAUSE: the server-decided deferral policy, answering the stable operation key or `undefined` to run the call inline.
+DOC   : Decides whether the `tools/call` in hand becomes a durable task. ⏎  ⏎ @remarks ⏎ Deferral is entirely the SERVER's decision. The extension gives a client no flag and ⏎ no parameter to ask for a task; the client only declares that it can cope with one. ⏎ So this handler is where the policy lives — long-running tool, queue depth, caller ⏎ tier, time of day — and it is consulted only for a client that declared the ⏎ capability on the request in hand. ⏎  ⏎ The returned string is the STABLE OPERATION KEY the manager deduplicates on: the same ⏎ logical call must produce the same key, and two different calls must not. Mint it from ⏎ the CALLER and the canonical call — never from `call.id`, which is the client's own ⏎ JSON-RPC request id: a retry of one logical call changes it, so dedup never fires, and ⏎ two principals whose clients both started counting at 1 collide on it. ⏎  ⏎ Returning `undefined` runs the call inline in the ordinary way, which is always a legal ⏎ answer, and it is the only spelling of that answer. An empty string is not a second one: ⏎ it cannot identify an operation, so it is refused as `-32603` rather than quietly routed ⏎ down the inline path where nobody would find it. ⏎  ⏎ @param context - The call in hand (see {@link MCPTaskContext} — it carries no signal) ⏎ @param options - The resolved per-request method options ⏎ @returns The stable operation key to defer under, or `undefined` to run the call inline
+
+#### MCPTaskOptions  (interface)
+LIT   : `{ tasks; deferral }`
+CLAUSE: consumer policy for the stable Tasks extension; supplying it is what registers `tasks/get` / `tasks/update` / `tasks/cancel`.
+DOC   : Configures the consumer policy for the server's stable Tasks extension. ⏎  ⏎ @remarks ⏎ Supplying this is what turns the extension on: an unconfigured server advertises ⏎ nothing, defers nothing, and answers the `tasks/*` methods `-32601` — the honest ⏎ reply from a server that does not implement an optional extension.
+
+#### MCPProgress  (interface)
+LIT   : Official `{ progress; total?; message? }` request progress payload.
+CLAUSE: 
+DOC   : Represents one official request-scoped progress payload.
+
+#### MCPProgressInterface  (interface)
+LIT   : Backpressured reporter exposing `report(progress)`.
+CLAUSE: 
+DOC   : Reports request-scoped progress under backpressure — the reporter supplied to an explicit ⏎ executor.
+
+#### MCPProgressOwnerInterface  (interface)
+LIT   : The OWNING half
+CLAUSE: `MCPProgressInterface` plus `take()` and `stop()`, held by the MCP-owned response stream that created the slot while the executor holds only the narrow producer port.
+DOC   : Represents the OWNING half of one progress slot — {@link MCPProgressInterface} plus the ⏎ consuming and stopping the slot's owner performs. ⏎  ⏎ @remarks ⏎ Two interfaces over one entity because two parties hold it and they are owed different ⏎ powers. An executor receives the narrow {@link MCPProgressInterface} through ⏎ {@link MCPExecutionContext} and can publish and nothing else; the MCP-owned response stream ⏎ that created the slot holds this one and also drains it and shuts it down. Naming the owner's ⏎ half is what keeps `take` and `stop` documented as contract rather than as extra surface a ⏎ class happens to expose. ⏎  ⏎ @example ⏎ ```ts ⏎ const owner: MCPProgressOwnerInterface = new MCPProgressReporter(id, limits, signal) ⏎ const notification = await owner.take() ⏎ owner.stop() ⏎ ```
+
+#### MCPExecutionContext  (interface)
+LIT   : Explicit execution context containing `request`, canonical `call`, real `tools`, effective `signal`, and optional `progress`.
+CLAUSE: 
+DOC   : Represents the explicit, host-neutral context for one modern tool execution.
+
+#### MCPExecutionHandler  (type)
+LIT   : Host-neutral handler returning `ToolResult \| MCPCallResult`, synchronously or asynchronously.
+CLAUSE: 
+DOC   : Executes one canonical tool call or returns a fully formed complete MCP result.
+
+#### MCPListResult  (type)
+LIT   : `{ tools; resultType: 'complete'; ttlMs; cacheScope; _meta? }`
+CLAUSE: the modern cacheable `tools/list` result; the unstamped legacy answer is an `MCPLegacyResult` instead, so no stamp here is optional.
+DOC   : Represents the MCP `tools/list` result — tool descriptors plus optional modern result ⏎ stamps. ⏎  ⏎ @remarks ⏎ The wire field names remain verbatim. A modern result requires `resultType`, ⏎ `ttlMs`, and `cacheScope`; the unstamped legacy `tools/list` answer is an ⏎ {@link MCPLegacyResult} instead, so none of them is optional here.
+
+#### MCPToolDescriptor  (interface)
+LIT   : `{ name: string; description?: string; inputSchema: Record<string, unknown> }`
+CLAUSE: one `tools/list` entry.
+DOC   : Represents one entry of the MCP `tools/list` result — a tool's `name`, optional ⏎ `description`, and its JSON-Schema `inputSchema`. ⏎  ⏎ @remarks ⏎ The wire renaming of a `ToolDefinition`: `name` / `description` carry through, ⏎ and `parameters` becomes `inputSchema` (the MCP field name), defaulting to an ⏎ empty object schema (`{ type: 'object' }`) when a tool declares none.
+
+#### MCPHeaderPrimitive  (type)
+LIT   : `'boolean' \| 'integer' \| 'string'`
+CLAUSE: the schema types an `x-mcp-header` annotation may sit on; `number` has no interoperable decimal text form and is refused.
+DOC   : Names the JSON Schema types an `x-mcp-header` annotation may sit on. ⏎  ⏎ @remarks ⏎ The protocol admits primitives alone, and it splits the JSON Schema number tower: `integer` ⏎ carries a decimal rendering an HTTP field can hold exactly, while `number` has no ⏎ interoperable text form and is refused. `object`, `array`, and `null` are refused for the ⏎ same reason — a header field carries text, not structure.
+
+#### MCPHeaderParameter  (interface)
+LIT   : `{ name: string; path: readonly string[]; primitive: MCPHeaderPrimitive }`
+CLAUSE: one `x-mcp-header` projection: the field name after `MCP_PARAM_PREFIX`, the `properties` keys leading to the annotated leaf, and the type fixing its rendering.
+DOC   : Represents one `x-mcp-header` projection a tool's `inputSchema` declares. ⏎  ⏎ @remarks ⏎ - `name` — the annotation's own value, appended verbatim to {@link MCP_PARAM_PREFIX} to ⏎   form the request field name. ⏎ - `path` — the `properties` keys leading from the `inputSchema` root to the annotated ⏎   leaf, which is also the path the call's `arguments` carry the value at. ⏎ - `primitive` — the leaf's declared type, which fixes the value's text rendering and, for ⏎   `integer`, makes the server's comparison numeric rather than textual.
+
+#### MCPIdentity  (type)
+LIT   : Open metadata intersection with the dated `{ name; version; title?; description?; websiteUrl?; icons? }` identity fields.
+CLAUSE: 
+DOC   : Represents the complete dated identity of an MCP server or client.
+
+#### MCPRequestContext  (interface)
+LIT   : `{ version; capabilities: MCPClientCapabilities; identity? }`
+CLAUSE: validated modern request metadata.
+DOC   : Represents the validated per-request context projected from a modern request's reserved ⏎ `_meta` keys. ⏎  ⏎ @remarks ⏎ `version` remains a string so a syntactically valid but unsupported revision ⏎ reaches the dedicated unsupported-version path. `capabilities` is an open wire ⏎ record; `identity` is optional because client information is recommended but ⏎ not required.
+
+#### MCPDiscoverResult  (type)
+LIT   : Required modern discovery fields with exact `MCPServerCapabilities`, complete/cache stamps, optional instructions, and exact metadata.
+CLAUSE: 
+DOC   : Represents the mandatory modern `server/discover` result.
+
+#### MCPSubscriptionFilter  (interface)
+LIT   : Optional tool, prompt, resource-list, resource-URI, and task-identifier notification families for `subscriptions/listen`; its keys are verbatim wire spellings, and `taskIds` is honoured only by a server configured with both a task manager and a subscription producer.
+CLAUSE: 
+DOC   : Names the notification families a client may opt in to on a `subscriptions/listen` stream. ⏎  ⏎ @remarks ⏎ Every key here is a WIRE SPELLING, carried verbatim from the dated schema's ⏎ `params.notifications` object. They are the one place in this file where the ⏎ compound-key prohibition does not apply, because these strings are not this ⏎ package's to choose: grouping them into `{ tools: { changed } }` would read better ⏎ and would speak a protocol no peer implements. The type NAME is the library's own ⏎ and takes the `MCP` prefix; the keys are the protocol's and do not change.
+
+#### MCPSubscriptionResultMetaObject  (type)
+LIT   : Result-metadata intersection requiring the reserved subscription id.
+CLAUSE: 
+DOC   : Represents the required metadata on a graceful `subscriptions/listen` result.
+
+#### MCPSubscriptionResult  (type)
+LIT   : `{ resultType: 'complete'; _meta: MCPSubscriptionResultMetaObject }`
+CLAUSE: a graceful subscription closure.
+DOC   : Represents the terminating result returned when a `subscriptions/listen` stream closes ⏎ gracefully.
+
+#### MCPSubscriptionStream  (type)
+LIT   : `AsyncGenerator<JSONRPCNotification, MCPSubscriptionResult, unknown>`
+CLAUSE: what `MCPClientInterface.listen` returns: the acknowledgement and every owned frame as yields, the graceful terminal as the return value.
+DOC   : Represents a client subscription's owned notifications and graceful terminal result.
+
+#### MCPListenOptions  (interface)
+LIT   : `{ signal: AbortSignal; capacity?: number }`
+CLAUSE: one subscription's cancellation handle and queue bound; `signal` is required, so the bag is required with it.
+DOC   : Configures the per-subscription cancellation and bounded buffering policy.
+
+#### MCPDispatchOptions  (interface)
+LIT   : `{ signal?: AbortSignal; caller?: unknown }`
+CLAUSE: the CALLER-facing per-request options; `caller` is consumer-asserted and never protocol-verified, inspected, validated, or serialized by this package.
+DOC   : Represents the per-request execution options every dispatched handler receives. ⏎  ⏎ @remarks ⏎ `caller` is consumer-ASSERTED and NEVER VERIFIED. Sessions mint transport identity, not ⏎ caller identity, and nothing in MCP authenticates this value. This package carries it ⏎ opaquely without inspecting, validating, or serializing it. A consumer must narrow it with ⏎ its own total guard and treat absence as unauthenticated.
+
+#### MCPMethodOptions  (interface)
+LIT   : `{ signal: AbortSignal; caller?: unknown }`
+CLAUSE: the RESOLVED mirror a dispatched method receives; `signal` is required because dispatch resolves one at the single ingress.
+DOC   : Represents the RESOLVED per-request options one dispatched method receives. ⏎  ⏎ @remarks ⏎ The mirror of {@link MCPDispatchOptions} on the far side of dispatch: a CALLER may ⏎ have no signal to offer, but a dispatched method always has one to observe, so ⏎ `signal` is REQUIRED here. Dispatch resolves it once, at the single ingress, and ⏎ supplies the same value to every handler, input, principal, and subscription ⏎ producer the request reaches — none of them may reinvent a cancellation source or ⏎ treat absence as a case. ⏎  ⏎ Distinct from {@link MCPExecutionContext}, which is scoped to one tool execution ⏎ and carries the call and registry alongside the signal. ⏎  ⏎ The resolved signal is the request's LIFETIME, not merely the caller's: it aborts when ⏎ the caller's own signal aborts AND when the answer this request produced is finished — ⏎ a held-open stream that completed, that its consumer returned, or that an owner stopped. ⏎ A producer parked on an event that will never arrive is woken by exactly that, which is ⏎ why a custom stream producer observes this signal for its own cleanup instead of ⏎ relying on the consumer to iterate it to the end. ⏎  ⏎ `caller` is consumer-ASSERTED and NEVER VERIFIED, and is carried by identity: this ⏎ package neither inspects, validates, clones, nor serializes it.
+
+#### MCPSubscriptionHandler  (type)
+LIT   : `(notifications, options) => AsyncIterable<JSONRPCNotification>` (or a promise of one)
+CLAUSE: an event-driven notification producer.
+DOC   : Produces notifications for one honoured `subscriptions/listen` filter. ⏎  ⏎ @remarks ⏎ The producer parks on its own event source while idle and ends its iterable to close the ⏎ subscription gracefully. `options.signal` is the per-request cancellation signal; a ⏎ producer that needs cancellation observes it directly rather than polling. ⏎  ⏎ @param notifications - The requested filter intersected with the server's supported filter ⏎ @param options - The resolved per-request method options ⏎ @returns An event-driven source of server notifications
+
+#### MCPSubscriptionOptions  (interface)
+LIT   : `{ notifications; producer }`
+CLAUSE: the supported filter and producer for the built-in subscription method.
+DOC   : Configures the server's built-in `subscriptions/listen` method.
+
+#### MCPStream  (type)
+LIT   : `AsyncGenerator<JSONRPCNotification, JSONRPCResponse, unknown>`
+CLAUSE: a held-open result: each `yield` is a notification (the yield type forbids an `id`), the `return` value is the terminating response.
+DOC   : Represents a held-open modern result: each `yield` is a {@link JSONRPCNotification}; the ⏎ `return` value is the terminating response. ⏎  ⏎ @remarks ⏎ A stream yields NOTIFICATIONS and never requests — the yield type forbids an `id`, ⏎ so a producer cannot put a call the peer is expected to answer onto a stream that ⏎ has no way to carry the answer back. ⏎  ⏎ Held-open closure is a RESULT in the modern revision, not an out-of-band event, so it ⏎ arrives where a result arrives — the generator's `return`. Consuming a stream and ⏎ consuming a unary response therefore end the same way, and a transport narrows a stream ⏎ from a response at ONE point (`Symbol.asyncIterator in answer`), at the place that already pumps ⏎ messages onto the wire. The `TNext` type parameter is stated explicitly because a stream ⏎ accepts nothing back from its consumer.
+
+#### MCPTextStream  (type)
+LIT   : `AsyncGenerator<string, string, unknown>`
+CLAUSE: the string-boundary mirror of `MCPStream`, the same sequence already serialized.
+DOC   : Mirrors {@link MCPStream} at the string boundary — the same sequence, already serialized.
+
+#### MCPStreamControllerInterface  (interface)
+LIT   : `MCPStream` plus `stop()` and `[Symbol.asyncDispose]`
+CLAUSE: a held-open answer whose cancellation ONE owner arbitrates, settling its consumer without waiting on the producer; what every stream leaving `dispatch` is. Ending it is the obligation of whoever is handed it, on EVERY exit, and there is no owner of last resort.
+DOC   : Represents a held-open modern result whose cancellation ONE owner arbitrates — the arm ⏎ every stream leaving `MCPServer.dispatch` takes. ⏎  ⏎ @remarks ⏎ The generator protocol states what a stream yields and says nothing about who ends one, ⏎ and a native async generator answers that badly: `return()` and `throw()` QUEUE behind a ⏎ `next()` the producer has not answered yet, so a consumer walking away from a source ⏎ parked on an event that will never arrive waits forever for its own cancellation. A ⏎ controller settles the consumer's read ITSELF, aborts the request's signal before it ⏎ delegates cleanup to the producer, contains every promise the producer settles late, and ⏎ makes every closure path idempotent. ⏎  ⏎ {@link stop} is the operation the protocol has no member for: end the exchange with NO ⏎ terminal, from an owner that is not the consumer of the iteration — a transport whose ⏎ connection closed, a pump whose write failed. `return(value)` says "here is the answer"; ⏎ `stop()` says "there will be no answer", and that is exactly the difference a cancelled ⏎ request and a completed one must not blur. ⏎  ⏎ **Ending a controlled exchange is the obligation of whoever is handed it, on EVERY exit — ⏎ including the exits where nothing was cancelled.** One of these holds a producer, a request ⏎ lifetime, and (for the built-in `subscriptions/listen`) one of a finite number of live ⏎ server slots, and a consumer that walks away releases none of them: no signal fires ⏎ when nobody aborts anything. So an owner releases through {@link stop} or ⏎ {@link MCPStreamControllerInterface.[Symbol.asyncDispose] | asyncDispose} on the normal ⏎ return, on a mid-loop throw, and on a transport that closed underneath the pump alike — ⏎ which is what `await using`, or the `try … finally` that spells it on the supported Node ⏎ floor, is for. ⏎  ⏎ A conforming {@link MCPStreamControllerInterface.[Symbol.asyncDispose] | asyncDispose} ⏎ releases the producer, request lifetime, and live slot BEFORE it may reject. Throwing before ⏎ release would let a disposal fault mask the pump's original failure while leaking the exchange. ⏎  ⏎ There is deliberately NO owner of last resort — no finalizer, no timer, no timeout. One ⏎ would convert a missing obligation into a nondeterministic one and hide the very defect ⏎ this sentence exists to make visible, and GC timing is not a lifecycle.
+
+#### MCPTextStreamControllerInterface  (interface)
+LIT   : `MCPTextStream` plus `stop()` and `[Symbol.asyncDispose]`
+CLAUSE: the serialized mirror, delegating every lifecycle decision (disposal included) into the typed exchange rather than owning a second queue; what every stream leaving `handle` is.
+DOC   : Mirrors {@link MCPStreamControllerInterface} at the string boundary — the same exchange, ⏎ already serialized. ⏎  ⏎ @remarks ⏎ A TRANSLATION boundary and nothing more: it serializes each message, and every lifecycle ⏎ decision — cancellation, abort, closure — ends the controlled typed stream beneath it, so ⏎ the string face never becomes a second cancellation engine with its own queue to fall ⏎ behind. `stop()` reaches the typed producer, which is why a transport holding only the ⏎ serialized arm can still end the exchange it is writing. ⏎  ⏎ {@link MCPTextStreamControllerInterface.return} is the one member that narrows rather than ⏎ passes through, and the narrowing is inherent: it is handed a STRING, so it has no typed ⏎ terminal to close the exchange on and never parses one back out of its argument. The typed ⏎ exchange therefore ends with NO terminal while this face answers its own consumer with the ⏎ supplied text — so a cooperating producer runs its cancellation path here where the typed ⏎ {@link MCPStreamControllerInterface.return} would have run its normal return. ⏎  ⏎ **The ownership obligation is identical and it is not discharged twice.** Whoever is handed ⏎ this face ends it on EVERY exit, and every closure member here reaches the TYPED exchange ⏎ beneath — so releasing the serialized arm releases the producer, the request lifetime, and ⏎ the live server slot behind it. A serialized pump therefore owns exactly what a typed pump ⏎ owns, and neither has an owner of last resort to fall back on. ⏎  ⏎ A conforming {@link MCPTextStreamControllerInterface.[Symbol.asyncDispose] | asyncDispose} ⏎ releases the typed producer, request lifetime, and live slot BEFORE it may reject. Throwing ⏎ before delegating would let a disposal fault mask the pump's original failure while leaking ⏎ the exchange.
+
+#### MCPMethodHandler  (type)
+LIT   : `(request, options) => Promise<JSONRPCResponse \| MCPStream>`
+CLAUSE: one modern method. It receives the REQUEST arm alone, because dispatch short-circuits every notification before the registry is read, and answering is not optional: dispatch contains an absent answer as `-32603` plus one `error` event.
+DOC   : Represents one modern method, registered on the seam that dispatches it. ⏎  ⏎ @remarks ⏎ A registered method answers a {@link JSONRPCRequest} — with a terminating ⏎ {@link JSONRPCResponse}, or by holding the exchange open as an {@link MCPStream}. It is ⏎ invoked for nothing else: dispatch short-circuits a {@link JSONRPCNotification} BEFORE the ⏎ registry is read, so the notification arm never arrives here and no handler has to narrow ⏎ one away. ⏎  ⏎ The seam is this narrow because the future a wider one was kept for is structurally ⏎ unavailable. The only client-to-server notification the core protocol defines is ⏎ `notifications/cancelled`, and a handler acting on one must reach the OTHER request's ⏎ `AbortController` — which dispatch creates per request, AFTER the notification ⏎ short-circuit, and publishes to no registry and no member. Admitting a cancellation ⏎ handler therefore needs a live request-id-to-controller registry — new cross-request ⏎ server state — before the parameter's width ever becomes the obstacle. ⏎  ⏎ Answering is not optional either, and that is a runtime rule as well as a type. A handler ⏎ resolving `undefined` for a request contradicts `dispatch`'s own overloads and leaves the ⏎ caller waiting until its deadline, so dispatch CONTAINS one as `-32603` plus a single ⏎ `error` event rather than passing the absence on. ⏎  ⏎ `options.signal` is already resolved and always present — what a handler does with it ⏎ is the handler's decision, never this package's. `options.caller` is consumer-asserted ⏎ and never verified by this package. ⏎  ⏎ @param request - The parsed modern request being dispatched ⏎ @param options - The resolved per-request method options (see {@link MCPMethodOptions}) ⏎ @returns The terminating response, or a held-open {@link MCPStream}
+
+#### MCPMethodManagerInterface  (interface)
+LIT   : The modern method registry
+CLAUSE: the `add` / `method` methods, carrying both the built-in methods and any method a consumer adds.
+DOC   : Represents the modern method registry an {@link MCPServerInterface} dispatches through — ⏎ the ONE seam carrying both the built-in methods and any method a consumer adds. ⏎  ⏎ @remarks ⏎ `server/discover`, `tools/list`, `tools/call`, and `subscriptions/listen` are registered here at construction, ⏎ so they travel the SAME path as every later method: there is no second dispatch route ⏎ and no precedence puzzle. `add` under an existing name REPLACES that method — a ⏎ consumer overriding a built-in is an ordinary registration, not a special case. A name ⏎ with no handler is not an error state to model: {@link method} answers `undefined` and ⏎ the dispatch branch turns that into `-32601`.
+
+#### MCPServerEventMap  (type)
+LIT   : `{ request: [method: string, id: JSONRPCId \| undefined, era: MCPEra]; error: [unknown] }`
+CLAUSE: the observation surface; `id` is `undefined` for a notification, `era` is selected structurally per request, and `error` carries the caught value of every fault the server contained, exactly once, plus bound-transport faults.
+DOC   : Represents the push observation surface of an {@link MCPServerInterface} — the ⏎ dispatch moments a fire-and-forget observer (logging, tracing) subscribes to ⏎ through `server.emitter.on`. ⏎  ⏎ @remarks ⏎ `request` fires at the TOP of every `dispatch` with the method, correlating id ⏎ (ABSENT for a notification, which has none), and structurally selected wire era, BEFORE the ⏎ method runs — so an observer sees every inbound call. Listener isolation is the emitter's: a ⏎ listener throw is routed to the emitter's `error` handler (the `error` option), ⏎ never onto this map, so a buggy observer can never corrupt a dispatch. Declared as ⏎ a `type` alias so the type-literal satisfies `EventMap` structurally.
+
+#### MCPLimitOptions  (interface)
+LIT   : `{ message?; metadata?; keys?; state?; content?; subscriptions?; depth? }`
+CLAUSE: configurable server bounds; malformed/absent leaves use secure defaults. `keys` and `depth` bound the SHAPE of every bounded value — one `_meta` and one produced result alike — while `metadata` and `content` bound their own value's bytes.
+DOC   : Configures the hostile-input and live-resource bounds for an MCP server.
+
+#### MCPJSONLimitOptions  (interface)
+LIT   : `{ bytes; keys?; depth }`
+CLAUSE: byte/key/depth bounds consumed by `isBoundedJSON`.
+DOC   : Limits applied by {@link isBoundedJSON} to one JSON value.
+
+#### MCPServerOptions  (interface)
+LIT   : `{ on?; error?; identity; tools; resources?; prompts?; completion?; execution?; instructions?; cache?; input?; subscription?; task?; limit? }`
+CLAUSE: options for `createMCPServer`; each of `resources` / `prompts` / `completion` registers its own method family, and `task` opts into the stable Tasks extension.
+DOC   : Options for `createMCPServer` — the server {@link MCPIdentity}, the live ⏎ {@link ToolManagerInterface} it exposes, optional `instructions`, and the ⏎ reserved `on` hooks. ⏎  ⏎ @remarks ⏎ `identity` identifies the server in the `initialize` handshake (`serverInfo`). ⏎ `tools` is the live registry the server dispatches `tools/list` / `tools/call` ⏎ over — its `definitions()` advertise the tools and its `execute()` runs a call ⏎ (the manager already isolates a tool throw into a `success: false` result, so ⏎ the server adds none). `resources` is the optional consumer-owned registry the ⏎ modern resource methods project without taking ownership of storage. `prompts` ⏎ supplies the equivalent prompt registry for `prompts/list` and `prompts/get`. ⏎ `completion` supplies independent host-owned lookup and candidate generation for ⏎ `completion/complete`; the server never parses or expands a resource-template URI. ⏎ `instructions` is the optional human guidance exposed ⏎ by `server/discover`. `cache` configures the modern cache stamps: `ttl` is the ⏎ freshness lifetime in milliseconds and `scope` defaults to `'private'`. `on` ⏎ is the reserved `on` key: initial listeners for the server's ⏎ {@link MCPServerEventMap}, wired at construction. `input` enables modern ⏎ `tools/call` multi-round trips: the consumer decides when input is needed and ⏎ supplies principal/continuation/TTL policy, while MCP assigns the request key and ⏎ owns the protected wire round trip. `task` enables the stable Tasks extension: the ⏎ consumer supplies the durable store and the deferral decision, while MCP owns the ⏎ capability gate and the `resultType: 'task'` answer. `limit` configures the server's ⏎ hostile-input and live-subscription bounds; every omitted leaf uses ⏎ {@link DEFAULT_MCP_LIMITS}.
+
+#### MCPDispatcherInterface  (interface)
+LIT   : `emitter` / `limit` data members + the `dispatch` / `handle` methods
+CLAUSE: the MINIMAL surface a transport needs, and the one `MCPServerInterface` extends. Every door takes THIS — `createMCPRoutes`, `createMCPPostHandler`, `createWebSocketServer`, `createStdioServer`, and `bindServer` — which is what lets `MCPLegacy` sit between any of them and the server without either knowing.
+DOC   : Represents the minimal transport-facing MCP dispatch surface. ⏎  ⏎ @remarks ⏎ A transport-facing dispatcher needs the resolved message limit and the `dispatch` and ⏎ `handle` doors. It also shares the server emitter because a binder that owns a message pump has ⏎ no response channel for a contained transport fault and must report that fault as an event.
+
+#### MCPServerInterface  (interface)
+LIT   : `emitter` / `identity` / `methods` / `limit` data members + the `dispatch` / `handle` methods, extending `MCPDispatcherInterface`. `limit` is the resolved `Required<MCPLimitOptions>` the server actually enforces, frozen and derived from `MCPServerOptions.limit`, so code in front of the server refuses at the same byte it does.
+CLAUSE: 
+DOC   : Dispatches JSON-RPC 2.0 modern requests over a live ⏎ {@link ToolManagerInterface}, with NO transport coupling (a transport layer ⏎ pumps strings through `handle`). ⏎  ⏎ @remarks ⏎ - **`dispatch` and `handle`.** `dispatch(invocation)` is the TYPED core: it takes an ⏎   already-parsed {@link JSONRPCInvocation}, runs the method, and resolves a ⏎   {@link JSONRPCResponse} — or an {@link MCPStream} for a held-open modern method — for ⏎   a {@link JSONRPCRequest}, and `undefined` for a {@link JSONRPCNotification}. Its ⏎   overloads say exactly that, so a caller dispatching a request never handles an ⏎   `undefined` answer and a caller dispatching a notification never handles a response. ⏎   `handle(message)` is the STRING boundary: it `JSON.parse`s the raw message, narrows it ⏎   to an invocation, dispatches, and serializes the answer back to a string (or an ⏎   {@link MCPTextStream}, the same sequence already serialized) — turning a parse failure ⏎   into a `-32700` response and a non-invocation into a `-32600` response, and returning ⏎   `undefined` for a notification. Both error envelopes OMIT the `id` they could not read. ⏎ - **One method seam.** Every modern method — the built-in `server/discover` / ⏎   `tools/list` / `tools/call` / `subscriptions/listen` and configured resource methods ⏎   included — is registered on `methods` and dispatched ⏎   from it, so a method added later travels the identical path and an unregistered one ⏎   still answers `-32601`. ⏎ - **Provider-agnostic.** Imports only core siblings; it speaks JSON-RPC + the ⏎   tool registry, with no HTTP, no model, and no backend coupling. ⏎ - **Observable.** The owned `emitter` ({@link MCPServerEventMap}) fires ⏎   `request` per dispatch; the emitter isolates a listener throw and routes it to its ⏎   `error` handler (the `error` option), never the dispatch.
+
+#### MCPLegacyOptions  (interface)
+LIT   : `{ dispatcher; identity }`
+CLAUSE: the sole modern dispatcher `MCPLegacy` translates onto and the identity its `initialize` handshake reports. It holds no engine, no store, and no era flag, because the decorator owns none of them.
+DOC   : Represents the construction options for the removable legacy protocol decorator.
+
+#### MCPTransportInterface  (interface)
+LIT   : `{ send(message: string): void \| Promise<void>; listen(handler): void; closed(handler): void; close(): void \| Promise<void> }`
+CLAUSE: the environment-agnostic duplex message-channel port `bindServer` / `bindClient` drive. `listen` and `closed` are single-handler REGISTRARS (a second call replaces the first), which is why the terminal one reads as an adjective beside the imperative `close`.
+DOC   : Represents a duplex message channel an environment face provides to the pure engine — the ⏎ one port `bindServer` and `bindClient` (`./helpers.js`) pipe an ⏎ {@link MCPServerInterface} / {@link MCPClientInterface} over. ⏎  ⏎ @remarks ⏎ Messages are already-serialized JSON-RPC strings; the transport owns framing ⏎ (a WS text frame, an SSE `data:` event, a newline-terminated stdio line, a ⏎ `postMessage` payload) and never parses the string itself. `listen` and ⏎ `closed` each register THE SINGLE handler for their event — a second call ⏎ REPLACES the first (matching the emitter-free, minimal-surface carrier idiom ⏎ `bindServer` / `bindClient` themselves rely on), not an additive subscription ⏎ list. ⏎  ⏎ `closed` reads as an adjective where the naming law asks for a verb, and it is ⏎ KEPT: it is a registrar for the port's terminal event, paired with `listen` for ⏎ the other one, and no verb states that without lying. `close()` is already taken ⏎ by the imperative on the line below it, `end`/`stop` would read as a second way to ⏎ close, and `onClose` is the `on`-prefixed shape the rules reject outright. The ⏎ shape that would need no such name is an emitter, which this port deliberately ⏎ refuses — a carrier this thin is implemented by hand at every host, and one ⏎ replaceable handler per event is the whole point of it.
+
+#### MCPMessageTransportEventMap  (type)
+LIT   : `{ message: [JSONRPCMessage]; close: []; error: [unknown] }`
+CLAUSE: the transport events.
+DOC   : Lists the observable events of a {@link MCPMessageTransportInterface} — the moments the ⏎ {@link MCPClientInterface} (and any tracer) subscribes to through `transport.emitter.on`. ⏎  ⏎ @remarks ⏎ - `message` — a JSON-RPC message ARRIVED from the remote server (a response the ⏎   client correlates to a pending request by `id`, or a server-initiated ⏎   notification). The transport decodes the wire bytes (a JSON body or an SSE ⏎   `data:` event) and emits the parsed {@link JSONRPCMessage}. ⏎ - `close` — the transport's connection ended (a stream closed, `close()` ran). ⏎ - `error` — a transport-level fault (a malformed message, a network error); the ⏎   payload is typed `unknown`. This is a DOMAIN event, distinct from the emitter's ⏎   own listener-error channel: a listener throw is routed to the emitter's `error` handler ⏎   (the `error` option), never onto this map. Declared as a `type` alias so the ⏎   type-literal satisfies `EventMap` structurally.
+
+#### MCPMessageTransportInterface  (interface)
+LIT   : `emitter` / `session` / `duplex` data members + the `start` / `send` / `close` methods
+CLAUSE: the shared transport-agnostic carrier used by clients and server bridges.
+DOC   : Pumps JSON-RPC messages to a peer and surfaces received messages on its `emitter`'s ⏎ `message` event, with no knowledge of the protocol role on either side — a ⏎ transport-agnostic MCP message carrier. ⏎  ⏎ @remarks ⏎ A client hands the transport one {@link JSONRPCMessage} through `send`, and the ⏎ transport delivers each decoded reply through the `message` event. Server bridges ⏎ use the same carrier for bidirectional WebSocket and stdio channels. The minimal surface is a ⏎ `start` (open the connection / arm any reader), `send` (write one message), ⏎ and `close` (tear down). `session` exposes a server-assigned session id once a ⏎ stateful transport has one (`undefined` for the stateless v1) — reserved for the ⏎ later sessions tier. Concrete transports live in the browser and server environments; ⏎ the in-process loopback transport in the tests implements the same contract.
+
+#### HTTPClientTransportOptions  (interface)
+LIT   : `{ url: string; headers?: Record<string, string>; fetch?: typeof fetch; timeout?: number }`
+CLAUSE: the remote endpoint, extra headers, an injectable `fetch` (default `globalThis.fetch` bound to `globalThis`), and an optional `AbortSignal.timeout` deadline for `HTTPClientTransport` and both faces' `createHTTPClientTransport`.
+DOC   : Options for `createHTTPClientTransport` — the remote MCP server's URL and any extra ⏎ request headers. ⏎  ⏎ @remarks ⏎ - `url` — the absolute URL of the remote server's Streamable-HTTP endpoint (the ⏎   `POST` target every JSON-RPC message is written to, for example, ⏎   `http://localhost:3000/mcp`). REQUIRED. ⏎ - `headers` — extra request headers merged onto every `POST` (for example, an ⏎   `Authorization` bearer for a guarded server). The transport always sets ⏎   `content-type: application/json` and an `Accept` of both `application/json` and ⏎   `text/event-stream` (so the server may answer with either framing); a key supplied ⏎   here is merged on top. ⏎ - `fetch` — the `fetch` implementation to issue each `POST` with; defaults to ⏎   `globalThis.fetch` bound to `globalThis`. Injectable for a test double or a non-global ⏎   `fetch`. ⏎ - `timeout` — an optional per-request timeout in milliseconds; when set, each ⏎   `fetch` call composes that deadline with the transport's own close through ⏎   `AbortSignal.any([close, AbortSignal.timeout(timeout)])`, so whichever fires first ⏎   ends the request. Omit for no transport-level deadline; the close signal is passed ⏎   either way.
+
+#### MCPLegacyClientTransportOptions  (interface)
+LIT   : `{ identity?; capabilities?; version?; timeout? }`
+CLAUSE: the explicit adapter's legacy handshake identity, capabilities, optional exact legacy pin, and deadline.
+DOC   : Options for the explicit legacy client transport adapter. ⏎  ⏎ @remarks ⏎ - `identity` — the client identity sent through the legacy `clientInfo` field. Defaults to the ⏎   package client identity. ⏎ - `capabilities` — the legacy handshake capability record. Defaults to an empty record. ⏎ - `version` — an optional exact legacy handshake revision. Absence offers the newest supported ⏎   legacy revision and accepts the supported revision the peer selects. ⏎ - `timeout` — the legacy handshake, handshake-write, and forwarded-request deadline in ⏎   milliseconds. Default: ⏎   {@link import('./constants.js').DEFAULT_MCP_REQUEST_TIMEOUT}. ⏎  ⏎ The adapter reserves JSON-RPC wire id `0` for its handshake while `start()` is waiting for ⏎ the peer. Do not send unrelated id-`0` traffic through the wrapped transport in that window.
+
+#### MCPClientEventMap  (type)
+LIT   : `{ connect: []; disconnect: []; notification: [JSONRPCMessage]; error: [unknown] }`.
+CLAUSE: 
+DOC   : Represents the push observation surface of an {@link MCPClientInterface} — the moments a ⏎ fire-and-forget observer (logging, tracing) subscribes to through `client.emitter.on`. ⏎  ⏎ @remarks ⏎ - `connect` — modern revision negotiation completed through `server/discover`, and the client ⏎   is connected. A legacy transport adapter presents this same modern boundary after completing ⏎   its own handshake. ⏎ - `disconnect` — the connection this client had announced ended (every pending request ⏎   rejected, and the connection it owned on the transport closed — or that close faulted or ⏎   timed out, which rejects the `disconnect` caller rather than withholding this event). ⏎ - `notification` — a server-initiated JSON-RPC NOTIFICATION arrived — forwarded for the ⏎   consumer to react to (for example, a `notifications/tools/list_changed`). A ⏎   `notifications/progress` frame claimed by an in-flight request's progress handler is ⏎   delivered there instead, and a RESPONSE correlating to nothing pending is discarded ⏎   rather than forwarded here, because it answers a request that has already settled. ⏎ - `error` — a client-level fault surfaced for observation (typed `unknown`). This is ⏎   a DOMAIN event, distinct from the emitter's own listener-error channel: a listener throw ⏎   is routed to the emitter's `error` handler (the `error` option), never onto this map. ⏎   Declared as a `type` alias so the literal satisfies `EventMap`.
+
+#### MCPClientOptions  (interface)
+LIT   : `{ on?; error?; transport; identity?; capabilities?; version?: MCPModernVersion; timeout? }`
+CLAUSE: options for the modern-only `createMCPClient`.
+DOC   : Options for `createMCPClient` — the {@link MCPMessageTransportInterface} to drive, the ⏎ optional client {@link MCPIdentity}, the per-request `timeout`, and the reserved ⏎ `on` hooks. ⏎  ⏎ @remarks ⏎ - `transport` — the carrier the client drives a remote MCP server over (REQUIRED; ⏎   a concrete one from `src/server/mcp`, or an in-process loopback). The bare client negotiates ⏎   the modern revision through `server/discover`; wrap the carrier with ⏎   {@link import('./factories.js').createMCPLegacyClientTransport} for a legacy peer. ⏎ - `identity` — identifies the client in modern request metadata; defaults to ⏎   {@link import('./constants.js').DEFAULT_MCP_CLIENT_NAME} / ⏎   {@link import('./constants.js').DEFAULT_MCP_CLIENT_VERSION}. ⏎ - `capabilities` — the open client-capability record carried by every modern ⏎   request; defaults to an empty record. ⏎ - `version` — an optional modern protocol pin; absence lets `server/discover` negotiate. ⏎ - `timeout` — the per-request deadline in milliseconds: a `server/discover` / `tools/list` / ⏎   `tools/call` that the server does not answer within it REJECTS (the pending ⏎   request is settled by an `AbortSignal.timeout(timeout)` deadline — never a raw ⏎   `setTimeout`). The same deadline bounds the client's WAIT on the transport's `close`, so a ⏎   shutdown the transport accepts and never answers rejects its caller instead of wedging the ⏎   client — which makes a short `timeout` a short shutdown grace as well as a short request ⏎   deadline. Defaults to {@link import('./constants.js').DEFAULT_MCP_REQUEST_TIMEOUT}. ⏎ - `on` — the reserved `on` key: initial listeners for the client's ⏎   {@link MCPClientEventMap}, wired at construction.
+
+#### MCPProgressHandler  (type)
+LIT   : `(progress: MCPProgress) => void`
+CLAUSE: the caller's per-request progress consumer; supplying one is what stamps the request's progress token, so a peer reports only where someone is listening.
+DOC   : Receives one progress report a peer published for a request this client issued. ⏎  ⏎ @remarks ⏎ The RECEIVING half of {@link MCPProgressInterface}, and deliberately not its mirror: ⏎ the reporter awaits consumption because a server must not outrun the stream carrying ⏎ its frames, while a client consuming an already-delivered frame has nothing left to ⏎ push back on. So this returns `void` — a handler that throws is isolated by nothing ⏎ and would surface on the client's `error` event, and one that needs to await ⏎ something owns that lifetime itself. ⏎  ⏎ The handler is registered for the LIFETIME OF ONE REQUEST and is released the moment ⏎ that request settles, whichever way it settles. A frame that arrives afterwards is a ⏎ late frame for a request nobody is waiting on, and reaches the `notification` event ⏎ like any other unclaimed server-initiated message.
+
+#### MCPCallOptions  (interface)
+LIT   : `{ signal?; progress?; input? }`
+CLAUSE: per-call policy for one remote `tools/call`. `signal` cancels THAT request and never the connection or a durable task, and an already-aborted one refuses it unsent. `progress` receives that request's progress frames. `input` carries the continuation for one retry: `responses` is required and `state` is optional, because a peer may issue a round with no `requestState` to return, and the client sends the `requestState` parameter exactly when a state is supplied. The retry repeats the same `name` and byte-identical `arguments` the first call sent. `signal`, `progress`, and `input` are placed on that one request and none of them outlives it.
+DOC   : Configures per-call policy and continuation data for one remote `tools/call`. ⏎  ⏎ @remarks ⏎ Each option lives for exactly one request: ⏎  ⏎ - `signal` cancels THAT request and nothing else. It never closes the connection, never ⏎   reaches a durable task the call may have become, and never asks the peer to undo work ⏎   already done — cancellation is advisory in MCP, so the peer may finish anyway and the ⏎   caller stops waiting. A signal that is ALREADY aborted refuses the call before ⏎   anything is written, so no request the peer would have to be told about is ever issued. ⏎ - `progress` receives each `notifications/progress` frame the peer publishes for this ⏎   request. Supplying it is what stamps the request's progress token, so a peer only ⏎   reports where a caller is listening. ⏎ - `input` carries one input-required retry. `responses` is required; `state` is optional ⏎   because a peer may issue a round with no `requestState` to return, and the client sends ⏎   the `requestState` parameter exactly when a state is supplied. The retry must repeat the ⏎   original `name` and byte-identical `arguments`; the client maps the leaves to the ⏎   top-level `requestState` and `inputResponses` parameters. ⏎  ⏎ No option survives the call: the continuation data is placed only on that request, and when ⏎ the request settles — answered, refused, timed out, aborted, or drained by a `disconnect` — ⏎ the signal listener is removed and the progress handler is dropped in the same step.
+
+#### MCPCallOutcome  (type)
+LIT   : `{ resultType: 'complete'; value } \| MCPTaskResult \| MCPInputResult`
+CLAUSE: the arms the dated protocol lets a `tools/call` answer with. Narrow on `resultType`; any other is refused rather than surfaced.
+DOC   : Represents what one remote `tools/call` answered — the arms the dated protocol permits. ⏎  ⏎ @remarks ⏎ The peer chooses the arm, so the caller narrows on `resultType`: ⏎  ⏎ - `'complete'` — the call finished. `value` is the tool's own value: the peer's ⏎   `structuredContent` when it sent one (the tool's value in its original structure), ⏎   and otherwise the concatenated `text` blocks parsed as JSON, falling back to the raw ⏎   text. A tool FAILURE never reaches this arm — `isError: true` throws, so an agent's ⏎   {@link ToolManagerInterface} isolates a remote failure exactly as it does a local one. ⏎ - {@link MCPTaskResult} — the server DEFERRED the call into a durable task. The request ⏎   is over and the work is not; the outcome arrives later through the task's own methods. ⏎ - {@link MCPInputResult} — the call needs another round trip before it can finish. ⏎  ⏎ An unknown `resultType` is refused rather than surfaced: this union is what the client ⏎ can carry, and an arm it cannot name is one it cannot hand a caller safely.
+
+#### MCPRequestFunction  (type)
+LIT   : `(method, params, deadline) => Promise<unknown>`
+CLAUSE: the correlated-request door an `MCPTaskClientInterface` issues through. It resolves the peer's `result` UNVALIDATED and rejects with an `MCPError` for an error response.
+DOC   : Issues one correlated JSON-RPC request and awaits the peer's result. ⏎  ⏎ @remarks ⏎ The door an {@link MCPTaskClientInterface} reaches the wire through, and the whole of what ⏎ it is given: a method name, that method's parameters, and the deadline the request carries ⏎ (`undefined` waits on the peer indefinitely). An {@link MCPClientInterface} supplies its own ⏎ correlated-request path here, so a task read travels the exact channel `call` and `tools` ⏎ travel — one id space, one pending table, one drain on `disconnect`. ⏎  ⏎ It resolves the peer's `result` UNVALIDATED, because validating it is the caller's job and ⏎ every caller wants a different shape. It REJECTS with an ⏎ {@link import('./errors.js').MCPError} for an error response, and with an ordinary `Error` ⏎ for a deadline, an abort, or a transport write that failed. ⏎  ⏎ @param method - The JSON-RPC method to issue ⏎ @param params - That method's parameters, or `undefined` to send none ⏎ @param deadline - Milliseconds to wait for the answer, or `undefined` for no bound ⏎ @returns The peer's `result` payload, unvalidated
+
+#### MCPTaskClientOptions  (interface)
+LIT   : `{ request; timeout? }`
+CLAUSE: construction options for `MCPTaskClient`; an omitted `timeout` leaves every task request unbounded.
+DOC   : Represents the construction options for an {@link MCPTaskClientInterface}. ⏎  ⏎ @remarks ⏎ `request` is the correlated-request door (see {@link MCPRequestFunction}); an ⏎ {@link MCPClientInterface} hands over its own. `timeout` is the deadline every task request ⏎ carries, and omitting it leaves them unbounded — the same policy the issuing client applies ⏎ to its own calls, stated here because this client does not read the other one's options.
+
+#### MCPTaskClientInterface  (interface)
+LIT   : The extension's client half
+CLAUSE: the `task` / `update` / `abort` methods. `MCPTaskManagerInterface` minus `start`, because creation is never the client's decision, and with the same missing plural accessor.
+DOC   : Reads, answers, and stops a durable task the peer created — the CLIENT half of the stable ⏎ Tasks extension. ⏎  ⏎ @remarks ⏎ The mirror of {@link MCPTaskManagerInterface} minus `start`, because creating a task is ⏎ never the client's decision: the extension gives a client no flag and no parameter to ask ⏎ for one, and a task exists only because the SERVER deferred a `tools/call` it received. The ⏎ methods that remain are the `tasks/*` methods on the wire. ⏎  ⏎ There is deliberately NO plural accessor, for the same reason the server-side port has none: ⏎ the extension defines no `tasks/list`, and an accessor that could enumerate tasks would ⏎ invite one. The absence is how this contract states that. ⏎  ⏎ **This package ships no polling loop, and that is a design position rather than an ⏎ omission.** A task snapshot carries `pollIntervalMs` — a manager's hint about how often to ⏎ ask again — and this package carries that datum untouched and supplies the one-shot read ⏎ beside it. It supplies no timer, no scheduler, no terminal-await helper, and no cache, ⏎ because it has no durable place to keep a task, no way to know when the application still ⏎ cares, and no lifetime to hang a timer on that outlives the request. Schedule the reads ⏎ yourself, or wait for the peer to push. A task notification the server stamped for a ⏎ subscription is claimed by the `listen` stream that asked for it and does not re-emit ⏎ through the `MCPClientEventMap` `notification` event, so a subscribed consumer reads its ⏎ transitions from the stream it opened; an unstamped notification arrives on that event at ⏎ no added mechanism. ⏎  ⏎ Every method authorizes on the peer's side, so a task belonging to another principal is ⏎ indistinguishable from one that never existed and one whose TTL purged it — each is ⏎ the same `-32602`, deliberately.
+
+#### MCPClientInterface  (interface)
+LIT   : `emitter` / `connected` / `version` / `transport` / `tasks` data members + the `connect` / `discover` / `disconnect` / `tools` / `listen` / `call` methods.
+CLAUSE: 
+DOC   : Connects to a REMOTE MCP server over any injected {@link MCPMessageTransportInterface}, ⏎ negotiates the modern wire revision, and exposes the server's tools as local ⏎ {@link ToolInterface}s an agent can run. ⏎  ⏎ @remarks ⏎ - **The mirror of {@link MCPServerInterface}.** Where the server DISPATCHES requests ⏎   over a tool registry, the client ISSUES them over a transport: `connect` negotiates through ⏎   `server/discover`. A legacy peer requires an explicit ⏎   {@link MCPLegacyClientTransportOptions legacy transport adapter}; the bare client refuses a ⏎   peer that does not speak the modern era and names that adapter. ⏎   The negotiated revision is exposed through `version`; `tools()` lists ⏎   the remote tools and wraps each as a local {@link ToolInterface} whose `execute` ⏎   calls back through `call`; `call(name, args)` runs a remote `tools/call` and reports ⏎   the arm the peer answered with — a value, a durable task, or a request for more input ⏎   (a remote tool FAILURE — `isError: true` — throws locally, so the agent's ⏎   {@link ToolManagerInterface} isolates it into a `success: false` result exactly like a ⏎   local throw). A wrapped tool has no way to hand an agent a deferred answer, so a ⏎   non-`'complete'` arm throws there instead. ⏎ - **Per-request cancellation.** `call`'s `options.signal` cancels ONE in-flight request: ⏎   it rejects locally on every carrier, and additionally writes `notifications/cancelled` ⏎   where the transport declares itself {@link MCPMessageTransportInterface.duplex}. It ⏎   never cancels the connection, and never a durable task — a call that already answered ⏎   `resultType: 'task'` is a request that is over. Cancellation is advisory, so a ⏎   response arriving after the abort is discarded rather than raised. ⏎ - **Durable tasks, no schedule.** `tasks` ({@link MCPTaskClientInterface}) reads, answers, ⏎   and stops a task the peer deferred a call into. It carries the peer's `pollIntervalMs` ⏎   datum and supplies the one-shot read; it starts no timer and keeps no cache, so a client ⏎   left alone after a `resultType: 'task'` answer writes NOTHING until its consumer asks. ⏎ - **Request↔response correlation.** Every request is tagged with a monotonic numeric ⏎   `id`; the client subscribes to the transport's `message` event and resolves / ⏎   rejects the matching pending request by that `id`. A server-initiated message is ⏎   surfaced on `notification` — except a `notifications/progress` frame naming a request ⏎   whose caller supplied a progress handler, which goes to that handler instead. A ⏎   RESPONSE whose id matches nothing pending is DISCARDED: the request it answers has ⏎   already settled, by its deadline, by an abort, or by a disconnect, and the protocol ⏎   says to ignore it rather than surface it as something a caller might act on. ⏎ - **Per-request deadline.** A request carrying a deadline races an ⏎   `AbortSignal.timeout(timeout)`: a server that never replies REJECTS that pending ⏎   request once the deadline fires. The initial discovery probe and every public request use a ⏎   deadline. An omitted `timeout` selects {@link DEFAULT_MCP_REQUEST_TIMEOUT}; an explicit ⏎   timeout applies that deadline to the probe. The client's ⏎   wait on the transport's `close` carries that same deadline, because it is the one wait neither ⏎   the pending-request drain nor the supersession signal can reach; the deadline ends the wait, ⏎   not the close, so a retry joins that close rather than issuing a second one. ⏎ - **Transport-agnostic.** Imports only core siblings — JSON-RPC + the tool vocabulary ⏎   + the timeout primitive — with no HTTP and no model; the concrete transport is ⏎   injected. Wire fields are narrowed with the contract guards (no `as`). ⏎ - **Observable.** The owned `emitter` fires `connect` / `disconnect` / ⏎   `notification` / `error`; the emitter isolates a listener throw and routes it to its ⏎   `error` handler (the `error` option), never the client.
+
+#### SSE_BUFFERING_HEADER  (const)
+LIT   : `'x-accel-buffering'`
+CLAUSE: the reverse-proxy buffering response header used by SSE responses.
+DOC   : Names the reverse-proxy response header controlling buffering of an SSE response.
+
+#### SSE_BUFFERING_DISABLED  (const)
+LIT   : `'no'`
+CLAUSE: the value disabling reverse-proxy buffering for SSE responses.
+DOC   : Names the `X-Accel-Buffering` value that disables reverse-proxy buffering.
+
+#### DEFAULT_MCP_PATH  (const)
+LIT   : `'/mcp'`
+CLAUSE: the default path `createMCPRoutes` mounts the `POST` at (and `createMCPSession` owns for `GET` / `DELETE`).
+DOC   : Names the default request path `createMCPRoutes` mounts the transport's `POST` route at.
+
+#### DEFAULT_MCP_KEEPALIVE_INTERVAL  (const)
+LIT   : `15000`
+CLAUSE: the default interval (ms) between keepalive comments on a held-open SSE response.
+DOC   : Sets the default interval in milliseconds between SSE keepalive comments on held-open MCP ⏎ responses. ⏎  ⏎ @remarks ⏎ Fifteen seconds is infrequent enough to avoid chatty idle connections while bounding dead ⏎ client detection and staying comfortably inside common intermediary idle windows.
+
+#### SSE_KEEPALIVE_COMMENT  (const)
+LIT   : `'keepalive'`
+CLAUSE: the SSE comment text written at each keepalive interval.
+DOC   : Names the comment text written by the held-open MCP response keepalive.
+
+#### DEFAULT_MCP_SESSION_CAPACITY  (const)
+LIT   : `1024`
+CLAUSE: the default max retained pushed messages in a session's folded resumable event log (oldest evicted past it).
+DOC   : Sets the default capacity of a session's FOLDED resumable event log (the per-{@link ⏎ import('./MCPSession.js').MCPSession} replay log) — the maximum number of pushed ⏎ server→client messages retained for replay before the OLDEST is evicted. ⏎  ⏎ @remarks ⏎ Bounds the replay log's memory: only the most-recent {@link DEFAULT_MCP_SESSION_CAPACITY} ⏎ pushes are retained, so a client reconnecting with a `Last-Event-ID` older than that window ⏎ replays nothing (its cursor fell off the back). Override through the `session` group of ⏎ `createMCPSession`'s options (`session.capacity`) for a deeper / shallower window.
+
+#### DEFAULT_MCP_SESSION_TTL  (const)
+LIT   : `300000`
+CLAUSE: the default per-event idle lifetime (ms, 5 min) of a session's folded event log; a staler entry is lazily evicted.
+DOC   : Sets the default per-event idle lifetime (ms) of a session's folded resumable event log — an ⏎ entry older than this is lazily evicted on the next access (no background timer), bounding ⏎ how far back a reconnecting client may replay. ⏎  ⏎ @remarks ⏎ Five minutes — a generous reconnection window for a dropped SSE stream without retaining ⏎ stale pushes indefinitely. The session's own idle TTL is the `createMCPSession` `ttl` knob; ⏎ this bounds the replay log paired with it.
+
+#### MCPHeaderIssue  (interface)
+LIT   : `{ header; reason; message }`
+CLAUSE: a safely-worded `missing` or `mismatched` required-header diagnosis that never echoes the client-supplied value.
+DOC   : Reports one required MCP HTTP header that is absent or disagrees with its server-derived ⏎ value. ⏎  ⏎ @remarks ⏎ - `header` — the canonical HTTP field name safe to show to an integrator. ⏎ - `reason` — whether the field is absent or carries a mismatched value. ⏎ - `message` — the refusal message naming the expected body, session, or server value without ⏎   echoing the client-supplied header value.
+
+#### MCPOriginOptions  (interface)
+LIT   : `{ enabled?: boolean; origins?: readonly string[] }`
+CLAUSE: shared default-on validation with a loopback-literal default; `enabled: false` delegates upstream and ignores `origins`.
+DOC   : Configures the protocol-required HTTP `Origin` validation shared by the route and session ⏎ enforcement sites. ⏎  ⏎ @remarks ⏎ - `enabled` — whether this package validates `Origin`; defaults to `true`. Set `false` only ⏎   when an upstream layer performs the validation for the deployment. ⏎ - `origins` — the exact serialized non-loopback origins accepted when an `Origin` header is ⏎   present. Omission still accepts requests without `Origin` and canonical loopback-literal ⏎   origins (`localhost`, `[::1]`, and `127.0.0.0/8`).
+
+#### MCPKeepaliveOptions  (interface)
+LIT   : `{ interval?: number }`
+CLAUSE: the held-open SSE comment interval; any value that is not a positive integer falls back to `DEFAULT_MCP_KEEPALIVE_INTERVAL`.
+DOC   : Configures the shared SSE keepalive for held-open HTTP responses. ⏎  ⏎ @remarks ⏎ - `interval` — milliseconds between SSE comment frames. Defaults to {@link ⏎   import('./constants.js').DEFAULT_MCP_KEEPALIVE_INTERVAL}. Each comment keeps an idle ⏎   connection live through intermediaries and bounds how long a dead client can remain ⏎   unobserved by the HTTP writer.
+
+#### MCPCallerHandler  (type)
+LIT   : Synchronous `(request, context?) => unknown` extractor for front-middleware-resolved caller context; `undefined` omits it and a throw propagates.
+CLAUSE: 
+DOC   : Extracts consumer-asserted caller context synchronously from an HTTP request after the ⏎ transport has validated it for dispatch. ⏎  ⏎ @remarks ⏎ Authentication belongs to middleware composed in front of the MCP route. This handler only ⏎ reads what that middleware already resolved. Returning `undefined` supplies no caller; a ⏎ throw propagates as a route-handler throw. The result remains `unknown` because this package ⏎ cannot verify caller identity. ⏎  ⏎ @typeParam TState - The consumer's opaque per-request route state type ⏎ @param request - The validated Fetch request that will dispatch ⏎ @param context - The router context, or `undefined` for direct handler invocation ⏎ @returns Consumer-asserted caller context, or `undefined` for no caller
+
+#### HTTPHandlerOptions  (interface)
+LIT   : `{ streaming?; origin?; keepalive?; caller? }`
+CLAUSE: the named options shared by `createMCPPostHandler` and `createMCPRoutes`.
+DOC   : Options shared by the MCP Streamable-HTTP POST handler and route factory. ⏎  ⏎ @remarks ⏎ - `streaming` — when `true` (the DEFAULT) the transport MAY answer with a ⏎   Server-Sent-Events response (one `data:` event carrying the JSON-RPC reply, then ⏎   the stream ends) whenever the client's `Accept` header includes ⏎   `text/event-stream`; when `false` it always answers with a plain JSON body. Either ⏎   mode carries the SAME JSON-RPC response envelope — the choice is purely the wire ⏎   framing the Streamable-HTTP spec lets the client negotiate. ⏎ - `origin` — the shared origin-validation options passed to both the route and session ⏎   enforcement sites. Validation is enabled by default: requests without `Origin` pass, ⏎   canonical loopback-literal origins pass, and every other present `Origin` must occur ⏎   exactly in `origin.origins`. Set `origin.enabled` to `false` only when validation is ⏎   delegated upstream; `origins` is ignored in that mode. Both enforcement sites must receive ⏎   the same value. ⏎ - `keepalive` — the SSE liveness options for held-open responses. `interval` defaults to ⏎   {@link import('./constants.js').DEFAULT_MCP_KEEPALIVE_INTERVAL}. Keepalives never apply ⏎   to unary responses. ⏎ - `caller` — the synchronous extractor for consumer-asserted caller context already resolved ⏎   by front middleware. It runs only for a validated request that will dispatch. Returning ⏎   `undefined` omits caller context; a throw propagates.
+
+#### HTTPTransportOptions  (interface)
+LIT   : `HTTPHandlerOptions<TState> & { path? }`
+CLAUSE: the shared handler options plus the route mount path for `createMCPRoutes`.
+DOC   : Options for `createMCPRoutes` — the mount path plus the shared POST-handler options. ⏎ `createMCPRoutes` is STATELESS; sessions are a separate middleware ({@link ⏎ import('./middlewares.js').createMCPSession}), composed with `server.use`. ⏎  ⏎ @remarks ⏎ `path` is the request path the single `POST` route answers; it defaults to {@link ⏎ import('./constants.js').DEFAULT_MCP_PATH} (`'/mcp'`). `GET` / `DELETE` to this path get ⏎ the spine's automatic `405` unless a {@link import('./middlewares.js').createMCPSession} ⏎ middleware owning the same path is mounted in front. The remaining options are inherited ⏎ from {@link HTTPHandlerOptions}.
+
+#### MCPSessionOptions  (interface)
+LIT   : `{ capacity?; ttl?; clock? }`
+CLAUSE: the `MCPSession` entity's own folded replay log: its retained-event bound, its per-event idle lifetime, and the clock its lazy sweep reads.
+DOC   : Options for the {@link MCPSession} entity — its folded replay log's capacity and per-event ⏎ lifetime. ⏎  ⏎ @remarks ⏎ - `capacity` — the maximum number of pushed server→client messages retained for replay ⏎   before the OLDEST is evicted. Omit it for the {@link ⏎   import('./constants.js').DEFAULT_MCP_SESSION_CAPACITY} default. ⏎ - `ttl` — the PER-EVENT idle lifetime in milliseconds: a log entry older than `ttl` is ⏎   dropped by the lazy sweep `push` and `replay` run, which bounds how far a reconnecting ⏎   client may replay. Omit it for the {@link ⏎   import('./constants.js').DEFAULT_MCP_SESSION_TTL} default; a non-positive value means no ⏎   entry ever ages out by time. ⏎ - `clock` — the `() => number` epoch-ms clock the log's lazy TTL sweep reads; defaults to ⏎   `Date.now`. ⏎  ⏎ The middleware's own knobs — the owned path, the idle-SESSION sweep window, origin ⏎ validation, and keepalive — live on {@link MCPSessionMiddlewareOptions}. The two `ttl` ⏎ values measure different things, which is why they sit on different types.
+
+#### MCPSessionMiddlewareOptions  (interface)
+LIT   : `{ path?; ttl?; session?; clock?; origin?; keepalive? }`
+CLAUSE: the owned path, session TTL, the knobs each minted session takes, deterministic clock, shared origin options, and held-open keepalive options for `createMCPSession`.
+DOC   : Options for `createMCPSession` — the path the session middleware owns, the session idle ⏎ time-to-live, and the per-session resumable event-log bound. ⏎  ⏎ @remarks ⏎ - `path` — the request path the session middleware OWNS (must match the `createMCPRoutes` ⏎   `path` it fronts); a request to any other path passes straight through. Defaults to ⏎   {@link import('./constants.js').DEFAULT_MCP_PATH} (`'/mcp'`). ⏎ - `ttl` — the session idle lifetime in milliseconds: a session not accessed within `ttl` ⏎   is treated as ABSENT and lazily evicted on the next access (no background timer — the ⏎   `createRateLimiter` lazy-window idiom). Omit it for sessions that live until an explicit ⏎   `DELETE`. ⏎ - `session` — the knobs forwarded to each minted {@link MCPSession}: `capacity` bounds its ⏎   replay log and `ttl` is that log's per-event lifetime. This type's own `ttl` bounds the ⏎   SESSION instead. An omitted leaf takes its {@link MCPSessionOptions} default, and an ⏎   omitted `session.clock` inherits this type's own `clock`, so one injected clock governs ⏎   both the store sweep and the log sweep unless a caller names a different one. ⏎ - `clock` — the `() => number` epoch-ms clock {@link import('./middlewares.js').createMCPSession} ⏎   uses directly for its own session-touch / TTL-sweep bookkeeping; defaults to `Date.now`. The ⏎   deterministic clock a TTL test advances explicitly instead of racing a real idle window ⏎   against wall-clock. Production never sets it. ⏎ - `origin` — the same shared origin-validation options supplied to `createMCPRoutes`. ⏎   Validation is enabled by default, accepts canonical loopback-literal origins, and rejects ⏎   every other present origin outside its exact list before any session is minted. Set ⏎   `origin.enabled` to `false` only when validation is delegated upstream; `origins` is ignored ⏎   in that mode. Both enforcement sites must receive the same value. ⏎ - `keepalive` — the SSE liveness options for the held-open resumable response. `interval` ⏎   defaults to {@link import('./constants.js').DEFAULT_MCP_KEEPALIVE_INTERVAL}.
+
+#### MCPSessionInterface  (interface)
+LIT   : `id` data member + `attach` / `detach` / `push` / `replay` methods
+CLAUSE: one session + its resumable server→client push channel (the `MCPSession` entity).
+DOC   : Represents one MCP transport session — the per-session entity a {@link ⏎ import('./middlewares.js').createMCPSession} middleware owns (the {@link ⏎ import('./MCPSession.js').MCPSession} entity), carrying the resumable server→client push ⏎ channel with its bounded replay log folded in. ⏎  ⏎ @remarks ⏎ The application addresses a session through `context.state.session`, the {@link ⏎ MCPSessionState} slice {@link import('./middlewares.js').createMCPSession} sets. A pushed ⏎ message with no attached stream is still logged, so a client that connects or reconnects ⏎ later replays it, and the resumable `GET {path}` handler writes a replay ahead of live ⏎ pushes.
+
+#### MCPSessionState  (interface)
+LIT   : `{ session?: MCPSessionInterface }`
+CLAUSE: the `context.state` slice a consumer's `TState` extends so `createMCPSession` can thread the resolved session through.
+DOC   : Declares the `context.state` slice a {@link import('./middlewares.js').createMCPSession} ⏎ middleware sets on a validated / minted request — a consumer's `TState` extends ⏎ this so the downstream route handler can read `context.state.session` to `push` ⏎ a server-initiated message onto the session's resumable stream. ⏎  ⏎ @remarks ⏎ `session` is set on `initialize` (the minted session) and on every validated ⏎ non-`initialize` `POST` (the resolved one); absent when the request never ⏎ reached a resolved session (the middleware short-circuits those as a `404` ⏎ before calling `next`).
+
+#### MCPSessionEvent  (interface)
+LIT   : `{ id: string; message: JSONRPCMessage; timestamp: number }`
+CLAUSE: one logged pushed message (the unit `MCPSession.replay` returns).
+DOC   : Represents one entry of an {@link MCPSessionInterface}'s folded replay log — a single pushed ⏎ {@link JSONRPCMessage} tagged with the monotone event `id` the session assigned and the ⏎ `timestamp` it was appended at (for the lazy-TTL replay window). ⏎  ⏎ @remarks ⏎ - `id` — the session-assigned, monotonically-increasing event id (a base36 string), the ⏎   value a resumable client echoes back as its `Last-Event-ID` to replay from here. ⏎ - `message` — the server→client {@link JSONRPCMessage} that was pushed. ⏎ - `timestamp` — the epoch-ms instant the entry was appended, read by the TTL eviction. ⏎  ⏎ A plain value record (no behavior) — the unit {@link MCPSessionInterface.replay} ⏎ returns.
+
+#### MCPSessionEntry  (interface)
+LIT   : `{ session: MCPSession; touched: number; version: MCPVersion }`
+CLAUSE: the closure store entry, including the pinned negotiated legacy revision.
+DOC   : Represents the closure store entry a {@link import('./middlewares.js').createMCPSession} ⏎ middleware keeps per minted session — the live {@link MCPSession} entity plus the epoch-ms ⏎ instant it was last touched (the lazy-TTL sweep's idle clock, independent of the session's ⏎ own replay-log TTL). ⏎  ⏎ @remarks ⏎ - `session` — the live {@link MCPSession} entity the store keys by session id. ⏎ - `touched` — the epoch-ms instant of the last access; the entry is replaced on every ⏎   resolved request so the middleware's lazy sweep can evict an idle entry past `ttl`. ⏎ - `version` — the legacy revision negotiated by the session's initialize request, used ⏎   when a later live-session request legitimately omits its protocol header.
+
+#### WebSocketServerOptions  (interface)
+LIT   : `{ emitter: EmitterInterface<ServerEventMap>; path?: string; subprotocol?: string }`
+CLAUSE: the spine emitter whose `stop` closes the claimed sockets (REQUIRED), the upgrade path (default `/mcp`), and the negotiated subprotocol (default `'mcp'`).
+DOC   : Options for `createWebSocketServer` — the spine lifecycle the ingress follows, plus where ⏎ the WebSocket upgrade is accepted and the subprotocol negotiated. ⏎  ⏎ @remarks ⏎ - `emitter` — the emitter of the `@orkestrel/server` spine this handler is registered on ⏎   (`server.emitter`). REQUIRED: on its `stop` event the handler closes every socket it ⏎   still owns with the RFC 6455 close handshake, so the spine's drain settles at once. An ⏎   upgraded socket is detached from the connection set the spine's own close walks, so ⏎   nothing but the claimant can end it — leave it open and `stop()` spends its whole ⏎   `drain` budget and then cuts the connection mid-protocol. ⏎ - `path` — the request path the upgrade handler CLAIMS; defaults to ⏎   {@link import('./constants.js').DEFAULT_MCP_PATH} (`'/mcp'`, the same path the HTTP ⏎   transport mounts at). A protocol-upgrade request to any OTHER path is DECLINED ⏎   (the handler returns `false`, so the spine fans it to the next handler or destroys it). ⏎ - `subprotocol` — the WebSocket subprotocol selected in the `101` handshake's ⏎   `Sec-WebSocket-Protocol`; defaults to {@link import('@orkestrel/mcp').MCP_WEBSOCKET_SUBPROTOCOL} ⏎   (`'mcp'`). It is sent only when the client's offer contains that token. ⏎  ⏎ Auth / origin policy is deliberately ABSENT: like the HTTP transport, the WebSocket ⏎ transport is MECHANISM — compose a guard IN FRONT (a `Server.upgrade` handler registered ⏎ before this one can decline an unauthenticated upgrade).
+
+#### WebSocketClientTransportOptions  (interface)
+LIT   : `{ url: string; headers?: Record<string, string> }`
+CLAUSE: the remote WS endpoint (`ws(s)://` or `http(s)://`) + extra handshake headers.
+DOC   : Options for `createWebSocketClientTransport` (browser face) — the remote MCP ⏎ WebSocket endpoint and any negotiated subprotocols. ⏎  ⏎ @remarks ⏎ - `url` — the absolute `ws://` / `wss://` (or `http://` / `https://`, accepted by ⏎   the native `WebSocket` constructor the same way) URL of the remote server's ⏎   WebSocket endpoint. REQUIRED. ⏎ - `protocols` — the WebSocket subprotocol(s) to request. **Defaults to ⏎   {@link import('@orkestrel/mcp').MCP_WEBSOCKET_SUBPROTOCOL} (`'mcp'`)**, which ⏎   `createWebSocketServer` selects when the offer contains it. Per ⏎   RFC 6455 §4.1 a client must fail the connection if the server returns a subprotocol ⏎   it did not request; Node ≥ 22 (undici) enforces this strictly, so the default saves ⏎   you from that trap when connecting to this repo's own server. Override only when ⏎   targeting a foreign server that speaks a different (or no) subprotocol — pass `[]` ⏎   to request no subprotocol at all. ⏎  ⏎ **No `headers` here, and that divergence from the Node face's `{ url, headers }` is ⏎ deliberate rather than unfinished: the host performs the WebSocket handshake.** The ⏎ native constructor takes a URL and subprotocols and nothing else, so a page cannot set an ⏎ upgrade request header at all — there is no seam for an `Authorization` bearer to reach. ⏎ The Node face owns its own `node:http(s)` upgrade request and therefore can, which is why ⏎ only that side offers `headers`. Reach a guarded server from a page with a credential the ⏎ platform DOES carry: a cookie the browser attaches to the upgrade, a subprotocol token, or ⏎ a signed value in the URL. Adding a `headers` key here would be an option that silently ⏎ did nothing.
+
+#### DEFAULT_MCP_DELIVERY  (const)
+LIT   : `10000`
+CLAUSE: the default bound (ms) on one unconfirmed `send` write to the client transport child's `stdin`; an omitted `delivery` selects it, an explicit `0` removes it.
+DOC   : Sets the default bound in milliseconds on one unconfirmed write to a stdio client transport's ⏎ child `stdin` — the `delivery` a `createStdioClientTransport` caller who supplies none gets. ⏎  ⏎ @remarks ⏎ Ten seconds. The load-bearing property is the ordering, not the magnitude: this bound stays ⏎ BELOW {@link import('@orkestrel/mcp').DEFAULT_MCP_REQUEST_TIMEOUT}, so a write the child never ⏎ reads fails as an undeliverable message while the request that carried it is still open, ⏎ rather than being masked by that request's own deadline expiring first. Override per ⏎ transport with `delivery`; an explicit `0` there removes the bound.
+
+#### StdioClientTransportInterface  (interface)
+LIT   : `MCPMessageTransportInterface & { readonly evidence: string \| undefined }`
+CLAUSE: what `createStdioClientTransport` returns. The `evidence` member reads the supervised child's bounded stderr tail: `undefined` before the first `start()`, that child's live tail while it runs, and the tail frozen at its end afterwards. It declares no method of its own; the methods it inherits from `MCPMessageTransportInterface` are under [Methods](#methods).
+DOC   : Declares the contract `createStdioClientTransport` returns — a ⏎ {@link MCPMessageTransportInterface} that also reports the supervised child's stderr tail, the ⏎ diagnostic a child that dies at startup leaves behind. ⏎  ⏎ @remarks ⏎ This contract adds `evidence` and changes nothing else: `emitter`, `session`, `duplex`, ⏎ `start`, `send`, and `close` are the shared client-transport surface, unchanged. It sits here ⏎ rather than on {@link MCPMessageTransportInterface} because a transport that supervises no child — ⏎ Streamable HTTP, WebSocket, a `MessagePort` pair — has no such tail, and a member every one ⏎ of them answers `undefined` to forever is a stdio detail rather than a shared contract. A ⏎ consumer that widens this value back to {@link MCPMessageTransportInterface}, including by ⏎ reading `client.transport`, loses the reader and must keep the original reference.
+
+#### StdioClientTransportOptions  (interface)
+LIT   : `{ command: string; args?: readonly string[]; env?: Record<string, string>; delivery?: number }`
+CLAUSE: the child process to spawn. `env` MERGES over `process.env`; it never replaces it, so the child inherits every unlisted key. `delivery` bounds one unconfirmed write to the child's `stdin`, in milliseconds: an omitted value selects `DEFAULT_MCP_DELIVERY`, and an explicit `0` removes the bound.
+DOC   : Options for `createStdioClientTransport` — the child process to spawn as a ⏎ stdio-framed MCP server (newline-delimited JSON-RPC over `stdin`/`stdout`). ⏎  ⏎ @remarks ⏎ - `command` — the executable to spawn (for example, `'node'`, `'./my-mcp-server'`). REQUIRED. ⏎ - `args` — the command-line arguments passed to `command`; defaults to none. ⏎ - `env` — environment variable overrides MERGED over the parent `process.env` for the ⏎   spawned child (the composed `@orkestrel/process` supervisor's merge semantics): when ⏎   OMITTED the child inherits the full `process.env`, when PROVIDED each named key overrides ⏎   the inherited value while every unlisted key is still inherited. This transport cannot ⏎   REPLACE the inherited environment entirely — the supervisor always merges over the parent. ⏎ - `delivery` — the bound in milliseconds on one unconfirmed write to the child's `stdin`; ⏎   an explicit `0` opts out. Defaults to {@link import('./constants.js').DEFAULT_MCP_DELIVERY}.
+
+#### StdioServerInterface  (interface)
+LIT   : `{ start(): void; stop(): void }`
+CLAUSE: the ingress handle `createStdioServer` returns. `start()` arms the pump ONCE, so a repeat attaches nothing further; `stop()` unbinds it and closes the transport, and ends that handle's lifetime permanently — a `start()` after it arms nothing, and serving again takes a fresh `createStdioServer`. Its methods are under [Methods](#methods).
+DOC   : Arms and tears down the newline-delimited JSON-RPC pump over the {@link StdioServerOptions} ⏎ stream pair — the stdio INGRESS handle {@link import('./factories.js').createStdioServer} ⏎ returns. ⏎  ⏎ @remarks ⏎ The subscriptions are attached, and the release complete, by the time each call returns. One ⏎ lifetime per handle: the `stop` method ends it permanently, a `start` call issued afterwards ⏎ arms nothing, and serving again takes a fresh ⏎ {@link import('./factories.js').createStdioServer} over a live stream pair.
+
+#### StdioServerOptions  (interface)
+LIT   : `{ input?: NodeJS.ReadableStream; output?: NodeJS.WritableStream }`
+CLAUSE: the injectable stream pair (default `process.stdin`/`stdout`).
+DOC   : Options for `createStdioServer` — the injectable stdin/stdout streams the server ⏎ transport reads newline-delimited JSON-RPC requests from and writes responses to. ⏎  ⏎ @remarks ⏎ - `input` — the readable stream carrying newline-delimited JSON-RPC requests; ⏎   defaults to `process.stdin`. Injectable for a test double. ⏎ - `output` — the writable stream newline-delimited JSON-RPC responses are written ⏎   to; defaults to `process.stdout`. Injectable for a test double.
+
+#### LineExtraction  (interface)
+LIT   : `{ lines: readonly string[]; remainder: string }`
+CLAUSE: the result of folding one more chunk into the newline-framed buffer (`extractLines`).
+DOC   : Represents the result of folding one more chunk of raw stdio bytes into a newline-framed ⏎ buffer — every COMPLETE line extracted (newline-terminated in the wire bytes) plus ⏎ the trailing partial line carried forward as the new `remainder`. ⏎  ⏎ @remarks ⏎ A plain value record (no behavior) {@link import('./helpers.js').extractLines} ⏎ returns; the caller threads `remainder` back in as the next call's `buffer`.
+
+#### DEFAULT_MCP_SERVER_NAME  (const)
+LIT   : `'@orkestrel/mcp'`
+CLAUSE: `createScopeServer`'s default `serverInfo.name` when `options.name` is omitted.
+DOC   : Supplies the default server name `createScopeServer` reports (`initialize`'s `serverInfo.name`) when `options.name` is omitted.
+
+#### DEFAULT_MCP_SERVER_VERSION  (const)
+LIT   : `'1.0.0'`
+CLAUSE: `createScopeServer`'s default `serverInfo.version` when `options.version` is omitted.
+DOC   : Supplies the default server version `createScopeServer` reports (`initialize`'s `serverInfo.version`) when `options.version` is omitted.
+
+#### WebSocketClientTransportOptions  (interface)
+LIT   : `{ url: string; protocols?: string \| readonly string[] }`
+CLAUSE: the remote WS endpoint + optional subprotocol(s) (default `MCP_WEBSOCKET_SUBPROTOCOL`; pass `[]` for no subprotocol).
+DOC   : Options for `createWebSocketClientTransport` (browser face) — the remote MCP ⏎ WebSocket endpoint and any negotiated subprotocols. ⏎  ⏎ @remarks ⏎ - `url` — the absolute `ws://` / `wss://` (or `http://` / `https://`, accepted by ⏎   the native `WebSocket` constructor the same way) URL of the remote server's ⏎   WebSocket endpoint. REQUIRED. ⏎ - `protocols` — the WebSocket subprotocol(s) to request. **Defaults to ⏎   {@link import('@orkestrel/mcp').MCP_WEBSOCKET_SUBPROTOCOL} (`'mcp'`)**, which ⏎   `createWebSocketServer` selects when the offer contains it. Per ⏎   RFC 6455 §4.1 a client must fail the connection if the server returns a subprotocol ⏎   it did not request; Node ≥ 22 (undici) enforces this strictly, so the default saves ⏎   you from that trap when connecting to this repo's own server. Override only when ⏎   targeting a foreign server that speaks a different (or no) subprotocol — pass `[]` ⏎   to request no subprotocol at all. ⏎  ⏎ **No `headers` here, and that divergence from the Node face's `{ url, headers }` is ⏎ deliberate rather than unfinished: the host performs the WebSocket handshake.** The ⏎ native constructor takes a URL and subprotocols and nothing else, so a page cannot set an ⏎ upgrade request header at all — there is no seam for an `Authorization` bearer to reach. ⏎ The Node face owns its own `node:http(s)` upgrade request and therefore can, which is why ⏎ only that side offers `headers`. Reach a guarded server from a page with a credential the ⏎ platform DOES carry: a cookie the browser attaches to the upgrade, a subprotocol token, or ⏎ a signed value in the URL. Adding a `headers` key here would be an option that silently ⏎ did nothing.
+
+#### MessagePortTransportOptions  (interface)
+LIT   : `{ port: MessagePort }`
+CLAUSE: the port half `MessagePortTransport` sends/listens on.
+DOC   : Options for `createMessagePortTransport` — the native `MessagePort` a ⏎ {@link MessagePortTransport} sends and listens on. ⏎  ⏎ @remarks ⏎ `port` — the channel half to drive (for example, one side of a `new MessageChannel()`, or ⏎ the port a `message` event's `ports[0]` carried). REQUIRED. The SAME transport ⏎ works as either a server or a client carrier — the role comes from whether it is ⏎ handed to `bindServer` or `bindClient`/`createDuplexClientTransport` (`@orkestrel/mcp`).
+
+#### ScopeInterface  (interface)
+LIT   : `{ postMessage(message): void; addEventListener('message', listener): void; removeEventListener('message', listener): void }`
+CLAUSE: the structural shape `createScopeServer` needs from a hostable scope.
+DOC   : Describes the structural shape {@link import('./factories.js').createScopeServer} needs ⏎ from a ⏎ hostable scope — `self` in a dedicated Web Worker or a Service Worker (or any double ⏎ matching this shape). ⏎  ⏎ @remarks ⏎ Only the members the scope server actually touches: `postMessage` (the ⏎ dedicated-worker implicit reply channel), and `addEventListener` / ⏎ `removeEventListener` for `'message'` (every inbound event, portless or ⏎ port-bearing, arrives through the SAME listener — see {@link ScopeServerOptions}'s ⏎ doc and the factory). A real `self` / `globalThis` inside a worker satisfies this ⏎ structurally (it exposes far more, which this narrower shape ignores).
+
+#### ScopeTransportInterface  (interface)
+LIT   : `MCPTransportInterface & { deliver(message: string): void }`
+CLAUSE: the implicit scope channel `createScopeServer` binds, plus the internal push entry point its dispatcher drives it through.
+DOC   : Adapts a message-event-bearing SCOPE (`self` in a dedicated Web Worker, or any object ⏎ shaped the same way) as a duplex {@link MCPTransportInterface} — the ⏎ internal carrier `createScopeServer` binds to route the implicit (portless) message ⏎ channel, plus the `deliver` entry point the scope's own `message` listener pushes ⏎ an inbound string through (the scope itself never registers `listen`'s handler ⏎ for the caller — the scope server's dispatcher does, through this `deliver`).
+
+#### ScopeServerInterface  (interface)
+LIT   : `{ stop(): void }`
+CLAUSE: the handle `createScopeServer` returns. `stop` removes the scope listener, unbinds the implicit channel, and tears down every accepted port binding; idempotent, and permanent for that handle. Its method is under [Methods](#methods).
+DOC   : Represents one MCP server hosted inside a worker scope — what ⏎ {@link import('./factories.js').createScopeServer} returns. ⏎  ⏎ @remarks ⏎ The browser twin of the Node face's `StdioServerInterface`, and it publishes only the ⏎ terminal: the factory arms the scope's `message` listener before it returns, because an ⏎ event delivered between construction and an explicit `start` would reach nothing. `stop` ⏎ removes that listener, unbinds the implicit scope channel, and tears down every accepted ⏎ port binding; it is idempotent, and it ends this handle's lifetime permanently.
+
+#### ScopeServerOptions  (interface)
+LIT   : `{ tools: ToolManagerInterface; name?: string; version?: string; accept?: (event: MessageEvent) => boolean }`
+CLAUSE: the registry to expose, optional server identity, and optional port-event gate for `createScopeServer`.
+DOC   : Options for {@link import('./factories.js').createScopeServer} — the live ⏎ {@link ToolManagerInterface} to expose plus the optional server identity, mirroring ⏎ `createMCPServer`'s `MCPServerOptions` (`@orkestrel/mcp`) but with `name`/`version` ⏎ OPTIONAL (defaulting to {@link import('./constants.js').DEFAULT_MCP_SERVER_NAME} / ⏎ {@link import('./constants.js').DEFAULT_MCP_SERVER_VERSION}). ⏎  ⏎ @remarks ⏎ - `accept` — optional identity gate consulted **before** a port-bearing `message` ⏎   event is accepted; return `false` to drop the event (no binding, no reply). ⏎   **`accept` gates ONLY port-bearing events** — portless messages bypass it and ⏎   deliver directly to the implicit scope channel (the tool executes, blind; in a ⏎   Service Worker the reply is silently dropped — see `createScopeServer`'s portless note). ⏎   Prefer a handshake token in `event.data` as the primary pattern ⏎   (for example, `(event) => event.data === token`) — for same-origin worker/MessagePort ⏎   messages `event.origin` is frequently the empty string, making origin ⏎   allow-listing unreliable; origin checks are meaningful for cross-origin ⏎   `postMessage` only. When omitted, ALL port-bearing events are accepted — every ⏎   same-origin context that can reach the scope gets full tool-call access. ⏎   See `createScopeServer`'s trust-boundary and portless-events notes.
+

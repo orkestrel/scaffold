@@ -1,0 +1,422 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-mcp",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/mcp.md",
+   "source": [
+    "src/core",
+    "src/server",
+    "src/browser"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 406,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 19,
+    "counts": {
+     "equal": 51,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "HTTPClientTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "send",
+      "start"
+     ]
+    },
+    {
+     "name": "HTTPDisconnect",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPClient",
+     "keyword": "class",
+     "methods": 6,
+     "grouped": false,
+     "undescribed": [
+      "call",
+      "connect",
+      "disconnect",
+      "discover",
+      "listen",
+      "tools"
+     ]
+    },
+    {
+     "name": "MCPClientInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPCompletionInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPContinuationInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "MCPDispatcherInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPLegacy",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "dispatch",
+      "handle"
+     ]
+    },
+    {
+     "name": "MCPLegacyClientTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "send",
+      "start"
+     ]
+    },
+    {
+     "name": "MCPMessageTransportInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPMethodManager",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "method"
+     ]
+    },
+    {
+     "name": "MCPMethodManagerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPProgressInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPProgressOwnerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPProgressReporter",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPPromptManagerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPResourceManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPServer",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "dispatch",
+      "handle"
+     ]
+    },
+    {
+     "name": "MCPServerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPSession",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "attach",
+      "detach",
+      "push",
+      "replay"
+     ]
+    },
+    {
+     "name": "MCPSessionInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPStreamController",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "MCPStreamControllerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPTaskClient",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "abort",
+      "task",
+      "update"
+     ]
+    },
+    {
+     "name": "MCPTaskClientInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPTaskManagerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MCPTextStreamController",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "MCPTextStreamControllerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MessagePortTransport",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "closed",
+      "listen",
+      "send"
+     ]
+    },
+    {
+     "name": "ScopeInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "addEventListener",
+      "postMessage",
+      "removeEventListener"
+     ]
+    },
+    {
+     "name": "ScopeServerInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ScopeTransportInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "StdioClientTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "start"
+     ]
+    },
+    {
+     "name": "StdioClientTransportInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "StdioServerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "StdioServerTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "start"
+     ]
+    },
+    {
+     "name": "WebSocketClientTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "send",
+      "start"
+     ]
+    },
+    {
+     "name": "WebSocketServerTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "send",
+      "start"
+     ]
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Protocol",
+     "Surface",
+     "Narrow a message to its JSON-RPC arm",
+     "Register a modern method on the seam",
+     "Project a host-owned resource, prompt, and completion registry",
+     "Adapt an existing registry behind a port",
+     "Configure modern subscriptions",
+     "Consume a subscription from a client",
+     "Execute rich results and request-scoped progress",
+     "Ask the client for input during the call in hand",
+     "Defer a call to a durable task",
+     "Bound hostile input and live resources",
+     "Bind a server or a client to any duplex transport",
+     "Compose or remove the legacy protocol layer",
+     "Adapt a legacy peer at the client transport boundary",
+     "HTTP transport",
+     "Carry asserted caller context from HTTP middleware",
+     "WebSocket transport",
+     "stdio transport",
+     "Browser transport",
+     "MCPServerInterface",
+     "MCPStreamControllerInterface",
+     "MCPMethodManagerInterface",
+     "MCPClientInterface",
+     "MCPTaskClientInterface",
+     "MCPMessageTransportInterface",
+     "HTTPDisconnect",
+     "MCPSessionInterface",
+     "StdioServerInterface",
+     "ScopeServerInterface",
+     "Expose a tool registry over MCP",
+     "Drive the typed core directly",
+     "Mount the HTTP transport with sessions",
+     "Drive a remote server over HTTP, WebSocket, or stdio",
+     "Build response envelopes and validate wire messages directly",
+     "Route a request by era and build a modern result",
+     "Read HTTP request headers and decode SSE bodies directly",
+     "Frame newline-delimited JSON-RPC over stdio directly",
+     "Serve MCP from a Web Worker",
+     "Own bounded execution values and one streamed HTTP response",
+     "Declared packaging limits"
+    ],
+    "titledExamples": [
+     "createMCPServer:Expose a tool registry over MCP"
+    ],
+    "pairs": [
+     "Expose a tool registry over MCP"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}
