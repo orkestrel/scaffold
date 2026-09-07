@@ -1,0 +1,324 @@
+diff --git a/README.md b/README.md
+index e071923..c6e36eb 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,13 @@
+ # @orkestrel/abort
+ 
+-A typed **`AbortController`** wrapper — the foundational cancellation
+-primitive that async work (a fetch, a timeout, a queue task) links into to
+-observe cancellation. Deliberately small: a stable, traceable `id`, a
+-`signal` that can be linked to a parent signal through `AbortSignal.any` (so a
+-parent's abort propagates without re-implementing listener wiring), and
+-idempotent `abort()` that preserves whichever reason arrives first. Part of
+-the `@orkestrel` line.
++> The cancellation primitive: a thin, traceable wrapper over a native `AbortController` that
++> carries a trace `id`, exposes a standard `AbortSignal`, and links to a parent signal so one
++> cancellation cascades through a tree of handles.
++
++Async work — a fetch, a timeout, a queue task — links into one handle to observe
++cancellation: hand `abort.signal` to anything that already accepts an
++`AbortSignal`, call `abort()` to cancel, and pass a parent `signal` to cascade one
++cancellation across every linked handle. Part of the `@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/abort.md b/guides/abort.md
+index 97433e2..9270551 100644
+--- a/guides/abort.md
++++ b/guides/abort.md
+@@ -1,8 +1,10 @@
+ # Abort
+ 
+-> The cancellation primitive: a thin, traceable wrapper over a native `AbortController`. An `Abort` carries a trace `id`, exposes a standard `AbortSignal` you hand to any cancellable API, and can be **linked to a parent signal** so it fires when either its own `abort()` is called or the parent aborts — cancellation cascades through a tree of handles with no listener bookkeeping. Async layers bound their work against a `signal`.
+->
+-> Deliberately thin. It does **not** re-implement cancellation machinery — the native `AbortController` is the engine; `Abort` only adds a traceable `id` and parent-linking on top. It does **not** wrap the signal in a bespoke interface, so it stays interoperable with `fetch`, streams, and every Web API that already speaks `AbortSignal`. The native signal is the complete observation contract: consumers inspect `aborted` and `reason` or subscribe to its standard `abort` event. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
++> The cancellation primitive: a thin, traceable wrapper over a native `AbortController` that
++> carries a trace `id`, exposes a standard `AbortSignal`, and links to a parent signal so one
++> cancellation cascades through a tree of handles.
++
++An `Abort` carries a trace `id`, exposes a standard `AbortSignal` you hand to any cancellable API, and can be **linked to a parent signal** so it fires when either its own `abort()` is called or the parent aborts — cancellation cascades through a tree of handles with no listener bookkeeping. Async layers bound their work against a `signal`. Deliberately thin. It does **not** re-implement cancellation machinery — the native `AbortController` is the engine; `Abort` only adds a traceable `id` and parent-linking on top. It does **not** wrap the signal in a bespoke interface, so it stays interoperable with `fetch`, streams, and every Web API that already speaks `AbortSignal`. The native signal is the complete observation contract: consumers inspect `aborted` and `reason` or subscribe to its standard `abort` event. Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+@@ -22,35 +24,35 @@ Construction is a strict JavaScript boundary. `validateAbortOptions` normalizes
+ 
+ ### Factories
+ 
+-| API           | Kind     | Summary                                                                         |
+-| ------------- | -------- | ------------------------------------------------------------------------------- |
+-| `createAbort` | function | Create an `AbortInterface`, optionally with a trace `id` and a parent `signal`. |
++| API           | Kind     | Summary                                                                                                                                    |
++| ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
++| `createAbort` | function | Creates a cancellation handle — a thin, traceable wrapper over a native `AbortController` whose `signal` can be linked to a parent signal. |
+ 
+ ### Helpers
+ 
+-| API                    | Kind     | Summary                                                                                                                    |
+-| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+-| `validateAbortOptions` | function | Validate once-read abort options and return a fresh copy omitting absent optional keys.                                    |
+-| `linkSignal`           | function | Link an own `AbortSignal` to an optional parent signal, returning `AbortSignal.any([own, parent])` when a parent is given. |
++| API                    | Kind     | Summary                                                                                                                     |
++| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
++| `validateAbortOptions` | function | Validates once-read abort construction options and returns a fresh normalized copy omitting absent optional keys.           |
++| `linkSignal`           | function | Links an own `AbortSignal` to an optional parent signal, returning `AbortSignal.any([own, parent])` when a parent is given. |
+ 
+ ### Validators
+ 
+-| API             | Kind     | Summary                                                                                                   |
+-| --------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+-| `isAbortSignal` | function | Total native-brand guard for `AbortSignal`; structural spoofs and hostile or revoked proxies fail safely. |
++| API             | Kind     | Summary                                                                                                                       |
++| --------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
++| `isAbortSignal` | function | Determines whether a value is a native `AbortSignal`, staying total for structural spoofs and for hostile or revoked proxies. |
+ 
+-### Entities
++### Classes
+ 
+-| API     | Kind  | Summary                                                                    |
+-| ------- | ----- | -------------------------------------------------------------------------- |
+-| `Abort` | class | A traceable `AbortController` wrapper whose `signal` can link to a parent. |
++| API     | Kind  | Summary                                                                                                                                               |
++| ------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Abort` | class | Represents a cancellation handle — a thin, traceable wrapper over a native `AbortController` whose exposed `signal` can be linked to a parent signal. |
+ 
+ ### Types
+ 
+-| Type             | Kind      | Shape                                                                                  |
+-| ---------------- | --------- | -------------------------------------------------------------------------------------- |
+-| `AbortOptions`   | interface | `{ id?: string; signal?: AbortSignal }` — options for `createAbort` / the constructor. |
+-| `AbortInterface` | interface | `id` / `signal` / `aborted` data members + the `abort` method.                         |
++| Type             | Kind      | Shape                                   | Summary                                                                                                                                       |
++| ---------------- | --------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
++| `AbortOptions`   | interface | `{ id?: string; signal?: AbortSignal }` | Represents the options for `createAbort` and `Abort` construction.                                                                            |
++| `AbortInterface` | interface | `id` / `signal` / `aborted` / `abort`   | Represents a cancellation handle — a thin, traceable wrapper over a native `AbortController` whose `signal` can be linked to a parent signal. |
+ 
+ The `id`, `signal`, and `aborted` members of `AbortInterface` are `readonly` data members (Surface rows, above) — its call-signature method is documented under [Methods](#methods).
+ 
+@@ -62,9 +64,9 @@ The public methods of `AbortInterface` — every call-signature member listed (i
+ 
+ `abort` is the lifecycle verb `.claude/rules/names.md` § Fixed lifecycle vocabulary fixes as "Cancel with signal propagation" — it aborts the underlying controller, flipping `aborted` and firing `signal`.
+ 
+-| Method  | Returns | Behavior                                                                                                                                                                 |
+-| ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `abort` | `void`  | Cancel — abort the controller, flip `aborted`, and fire `signal` (with `reason`; `undefined`/omitted becomes a default `AbortError`). Idempotent: re-calling is a no-op. |
++| Method  | Returns | Summary                                                                                                                                                     |
++| ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `abort` | `void`  | Aborts the underlying controller, flipping `aborted` and firing `signal`. Aborting is idempotent — the first reason sticks and every later call is a no-op. |
+ 
+ ## Contract
+ 
+@@ -141,7 +143,7 @@ async function run<T>(work: Promise<T>, abort = createAbort()): Promise<T> {
+ 
+ ## Tests
+ 
+-- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports) and the `AbortInterface` ↔ `Abort` method bijection.
++- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports), the `AbortInterface` ↔ `Abort` method bijection, and the equality gate: every `Summary` cell against its declaration's description paragraph, the titled `Create and abort` fence against the `@example` block of that title (pinned so the titled pair cannot be retired silently), and the README pitch against this guide's tagline. It also runs the flagship fences and asserts the values their comments claim.
+ - [`tests/src/core/Abort.test.ts`](../tests/src/core/Abort.test.ts) — `abort()` flips `aborted` and fires `signal`, `abort(reason)` propagates the reason, a second/third `abort(reason2)` is an idempotent no-op (`signal.reason` stays the first reason), a fresh handle is not aborted, parent linking (the signal fires on the parent's abort and on its own; a parent that aborts first propagates the parent's reason), and `id` is honored / stable / unique (across a 1,000-instance batch). Edge cases: every reason type (`undefined`/omitted → a default `AbortError` `DOMException`; string / object / the falsy-but-defined `null` / `0` / `''` / `false` / `NaN` preserved by identity; first falsy reason still sticks), a parent already aborted at construction (born aborted, carrying the parent's reason, own `abort()` then inert), chained Aborts (an `Abort` parented to another's `signal`, 2–3 levels: a root abort fans down with its reason, a mid/leaf abort never flows up), `new Abort` ↔ `createAbort` parity, and proportionate public-constructor boundary integration.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createAbort` returns a working `AbortInterface` and honors `id` / a parent `signal`.
+ - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — `validateAbortOptions` fresh normalization, optional-key omission, exactly-once reads, hostile getter containment, and exact taxonomy/context; plus `linkSignal` own/parent composition and exact direct-call placement errors.
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 11e6a15..c33f560 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -17,13 +17,14 @@ import { Abort } from './Abort.js'
+  *   options are not a plain record, a defined `id` is not a string, or a
+  *   defined `signal` is not a native `AbortSignal`.
+  *
+- * @example
++ * @example Create and abort
+  * ```ts
+  * import { createAbort } from '@orkestrel/abort'
+  *
+  * const abort = createAbort()
+- * const work = fetch(url, { signal: abort.signal })
+- * abort.abort() // cancels the fetch through the linked native signal
++ * const stream = openStream({ signal: abort.signal })
++ * // later, to cancel:
++ * abort.abort('user navigated away') // signal.reason carries the value
+  * ```
+  *
+  * @example
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 8410890..c972a54 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -3,7 +3,8 @@ import { ContractError, isRecord, isString, preview } from '@orkestrel/contract'
+ import { isAbortSignal } from './validators.js'
+ 
+ /**
+- * Validates and normalizes abort construction options.
++ * Validates once-read abort construction options and returns a fresh normalized copy
++ * omitting absent optional keys.
+  *
+  * @remarks
+  * Omitted options normalize to a fresh empty object. Otherwise each property is
+@@ -80,7 +81,8 @@ export function validateAbortOptions(options?: AbortOptions): AbortOptions {
+ }
+ 
+ /**
+- * Links an own `AbortSignal` to an optional parent signal.
++ * Links an own `AbortSignal` to an optional parent signal, returning
++ * `AbortSignal.any([own, parent])` when a parent is given.
+  *
+  * @remarks
+  * When `parent` is `undefined`, the own signal is returned unchanged. When a
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 755a364..c4a90e6 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -27,7 +27,8 @@ export interface AbortInterface {
+ 	/** Reports whether `signal` has aborted. */
+ 	readonly aborted: boolean
+ 	/**
+-	 * Aborts the handle, firing `signal`. Aborting is idempotent — the first reason sticks.
++	 * Aborts the underlying controller, flipping `aborted` and firing `signal`. Aborting is
++	 * idempotent — the first reason sticks and every later call is a no-op.
+ 	 *
+ 	 * @param reason - The abort reason. A defined reason is kept verbatim (including a falsy
+ 	 *   `null`, `0`, `''`, or `false`); `undefined` defaults `signal.reason` to an `AbortError`
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 32f0066..ae04757 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -1,5 +1,6 @@
+ /**
+- * Determines whether a value is a native `AbortSignal`.
++ * Determines whether a value is a native `AbortSignal`, staying total for structural spoofs
++ * and for hostile or revoked proxies.
+  *
+  * @remarks
+  * The platform `AbortSignal.prototype.aborted` getter performs the native brand
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 24f12ea..b89086f 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -9,6 +9,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -26,6 +27,8 @@ import { createAbort } from '@src/core'
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+ /** The fence language whose blocks count as worked examples. */
+ const EXAMPLE_LANGUAGE = 'ts'
++/** The one guide this package sources, whose tagline the README pitch equals. */
++const GUIDE_SPEC = 'guides/abort.md'
+ /** Each import specifier this package's own guides may resolve against. */
+ const MODULES = Object.freeze({ '@orkestrel/abort': 'src/core', '@src/core': 'src/core' })
+ /**
+@@ -38,8 +41,16 @@ const MODULES = Object.freeze({ '@orkestrel/abort': 'src/core', '@src/core': 'sr
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
++
++// The title filter the pin below applies to both sides. `@orkestrel/contract` exports
++// `isNonEmptyString`, which this package could import; the predicate is declared here
++// because this file is a drop-in copied whole into packages that declare no contract
++// dependency, and one shape travels further than one import.
++function isTitle(value: string | undefined): value is string {
++	return value !== undefined && value.length > 0
++}
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -51,11 +62,58 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter(isTitle)
++	const headings = guide
++		.fences()
++		.map((fence) => fence.title)
++		.filter(isTitle)
++	const paired = headings.filter((title) => declared.includes(title))
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -126,6 +184,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()
+@@ -206,7 +282,7 @@ for (const entry of manifest) {
+ // all of them. The cases here run the flagship fences and assert the values their
+ // comments claim. Change a fence, change the transcription beside it.
+ describe('flagship fences', () => {
+-	const guideText = requireValue(files['guides/abort.md'], 'Missing file: guides/abort.md')
++	const guideText = requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`)
+ 
+ 	it('cascades a parent abort into the child, flipping aborted and firing the signal', () => {
+ 		// Transcribed from the parent-linking fence. Its comment claims both that the

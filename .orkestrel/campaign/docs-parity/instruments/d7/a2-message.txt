@@ -1,0 +1,14 @@
+Converge the guide under Summary and gate it
+
+Every Surface and Methods table heads `Summary` and each cell adopts its
+doc block's description paragraph through the seed, the Types table
+gaining the column beside `Shape`; the class table is named for its rows.
+The H1 blockquote is one noun phrase and the README opens with the same
+text, its displaced sentences folded into the guide's opening paragraph.
+`createAbort`'s create-and-abort example takes its fence's heading as its
+title and the fence's body. `tests/guides.test.ts` gains the equality
+case, the population pin naming both title sets, and the README case, each
+read red before the convergence; the seed reads zero in both directions.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB

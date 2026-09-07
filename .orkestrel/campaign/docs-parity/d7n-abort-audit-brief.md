@@ -15,7 +15,7 @@ You run no command and edit nothing. Read the actual diffs and status files firs
 - A.1: `/home/user/scaffold/.orkestrel/campaign/docs-parity/d7n-abort-prep-brief.md`, `d7n-abort-prep-report.md`, `d7n-abort-prep.diff.txt`, `d7n-abort-prep.status.txt`, `instruments/d7/a1/` (the head start and the lockfile logs); committed as `7d8b1dd` on abort's branch.
 - A.2: `d7n-abort-converge-brief.md`, `d7n-abort-converge-report.md`, `d7n-abort-converge.diff.txt`, `d7n-abort-converge.status.txt`.
 - The plan: `d7-fleet-plan.md` rulings 2 to 5, 7, 10; `rulings.md` § Ruling 6 and § Ruling 7; `orchestrator-measurements.md` § P19.
-- The tree at `/home/user/fleet/abort` (uncommitted A.2 edits over `7d8b1dd`): `guides/abort.md`, `README.md`, `src/core/**`, `tests/guides.test.ts`.
+- The tree at `/home/user/fleet/abort` (A.2 committed over `7d8b1dd` as the branch tip; read files, run no command): `guides/abort.md`, `README.md`, `src/core/**`, `tests/guides.test.ts`.
 - The reference shapes at the guide's `c25c689`: `/home/user/fleet/guide/tests/guides.test.ts:94-127`, `:196-204`; `/home/user/fleet/guide/guides/guide.md:1-24`, `:202-213`; `/home/user/fleet/guide/README.md:1-12`.
 - Rules: `/home/user/scaffold/AGENTS.md` § Writing; `.claude/rules/documentation.md` § Parity; `.claude/rules/tests.md`.
 
