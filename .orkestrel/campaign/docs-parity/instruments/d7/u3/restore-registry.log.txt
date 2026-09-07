@@ -1,0 +1,17 @@
+== before: installed scaffold
+0.0.63
+node_modules/@orkestrel/scaffold/dist/host/scripts/docs.ts
+== git status
+(status end)
+== PATH=/opt/npm11/bin:$PATH npm ci --ignore-scripts --no-audit --no-fund
+
+added 121 packages in 9s
+EXIT 0
+== after: installed scaffold
+0.0.63
+ls: cannot access 'node_modules/@orkestrel/scaffold/dist/host/scripts/docs.ts': No such file or directory
+== marker
+040270de20d0af72
+
+== git status after
+(status end)

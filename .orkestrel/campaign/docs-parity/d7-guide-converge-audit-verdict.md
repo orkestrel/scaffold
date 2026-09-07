@@ -53,3 +53,14 @@ Lanes: subjective `reviewer` (Opus 5) on items 4, 6, 7; objective `reviewer` (Op
 U2 and its fix are committed as `f7be620` on the guide's branch; the successor round closes the three findings before U3.
 
 VERDICT: PASS, with U2-fix-2 carrying the findings
+
+## Round 3 (2026-09-07, closure of U2-fix-2, Workflow `wf_1324c009-c85`)
+
+Lanes: `checker` (Sonnet) on the five mechanical claims of `d7-guide-converge-fix-2-closure-brief.md`, `verifier` (Sonnet) on the scoped gates. The reviewer lanes did not run this round: the unit adopts round 2's findings verbatim as exact edits, so the closure is mechanical. Returns: `d7-guide-converge-fix-2-checker.md` (`VERDICT: FAIL 5`), `d7-guide-converge-fix-2-verifier.md` (`GATES: GREEN`: `format:check`, `lint:check`, `check`, `test:src:core` 600, `test:guides` 54, `test:policy` 90 | 1 skipped, `build` and `docs` at 0, both seed directions `written: 0`, the status unchanged after).
+
+- **Claims 1 to 4 — PASS**: the three files and the one guard change, the contract naming the terminator without spelling it, the case red then green, the guide sentence with its em dash and the cell equal to the new paragraph.
+- **Claim 5 — FAIL, corrected.** One count in the report's prose; the retained report is annotated.
+
+U2, U2-fix, and U2-fix-2 close at `c25c689` on the guide's branch. Round 2's three carried findings are landed. U3 runs next over the registry scaffold.
+
+VERDICT: PASS

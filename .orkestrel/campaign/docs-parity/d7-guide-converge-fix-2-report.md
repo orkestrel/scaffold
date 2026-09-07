@@ -124,7 +124,7 @@ run docs` then exited 0 with `rows read: 1, disagreements found: 0`.
    tests/src/core/helpers.test.ts | 11 +++++++++++
    3 files changed, 25 insertions(+), 11 deletions(-)
    ```
-   Lists exactly the three owned files.
+   Lists the owned files and no other (closure correction: the sentence stated a count).
 3. `npm run format:check`: `All matched files use the correct format.` exit 0.
    `npm run lint:check`: no output, exit 0.
    `npm run check`: `tsc --noEmit --project tsconfig.json && npm run check:src` then

@@ -1,0 +1,11 @@
+Name every refusal replaceExample makes, and guard the fence line too
+
+The description paragraph, the remarks, the returns line, and the guide's
+refusal sentence each name a language or code the emitted fence cannot
+enclose or the doc block cannot hold, and the guard reads the fence line
+the call emits beside the body, so a language carrying the terminator or
+a backtick run is refused the way a body is. The seed carries the changed
+paragraph into its cell.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
