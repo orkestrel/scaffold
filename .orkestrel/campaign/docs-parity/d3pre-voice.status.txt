@@ -1,0 +1,20 @@
+ M .agents/orchestration.md
+ M .agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+ M .agents/skills/enterprise-bootstrap/references/frontend-design.md
+ M .agents/skills/enterprise-bootstrap/references/utilities.md
+ M .agents/skills/orkestrel-debrief/references/field-testing.md
+ M .agents/skills/orkestrel-falsify/references/reconcile.md
+ M .claude/rules/architecture.md
+ M .claude/rules/quality.md
+ M AGENTS.md
+ M ROADMAP.md
+ M configs/helpers.ts
+ M configs/policy.ts
+ M host.json
+ M src/server/Materializer.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.ts
+ M tests/src/core/templates.test.ts
+?? .orkestrel/campaign/docs-parity/d3pre-voice.diff.txt
+?? .orkestrel/campaign/docs-parity/d3pre-voice.status.txt
