@@ -1,0 +1,436 @@
+diff --git a/guides/guide.md b/guides/guide.md
+index 52d17c8..bc5e44a 100644
+--- a/guides/guide.md
++++ b/guides/guide.md
+@@ -104,7 +104,7 @@ directly.
+ | `collectKeys`           | function | `(lines: readonly SourceLine[]) => ReadonlyMap<SourceLine, string>`                                       | The compared key of every record a key names — a `computeSymbolKey` symbol key for a column-zero `export` head, an `Owner.member` key for a one-tab callable member inside one — keyed by the record; the owner closes at the first column-zero `}` or at a column-zero `export` declaration carrying another keyword. |
+ | `collectExamples`       | function | `(comment: string, name: string) => readonly SourceExample[]`                                             | The `@example` blocks one doc block's unwrapped text carries, each with its title, its fence language, and its body.                                                                                                                                                                                                   |
+ | `extractExampleLines`   | function | `(lines: readonly SourceLine[]) => readonly SourceLine[]`                                                 | The `extractSourceComments` walk filtered to the blocks carrying an `@example` tag opening a line at its first non-blank column, projected to the records they document.                                                                                                                                               |
+-| `extractExamples`       | function | `(source: string) => readonly SourceExample[]`                                                            | The exported functions' `@example` blocks, matched against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                                                                   |
++| `extractExamples`       | function | `(source: string) => readonly SourceExample[]`                                                            | The exported declaration heads' `@example` blocks, matched against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                                                           |
+ | `extractExampleMethods` | function | `(lines: readonly string[]) => readonly SourceExample[]`                                                  | The callable members' `@example` blocks, matched against the same shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                                                            |
+ | `selectSectionBlocks`   | function | `(document: MarkdownDocument, heading: string) => readonly BlockNode[]`                                   | The block nodes under a named `##` heading, up to the next `##`-or-higher heading (or the document's end).                                                                                                                                                                                                             |
+ | `extractTagline`        | function | `(document: MarkdownDocument) => string \| undefined`                                                     | The text of the blockquote following the document's H1, or `undefined` when a heading intervenes first.                                                                                                                                                                                                                |
+@@ -260,14 +260,14 @@ backticked name (`.claude/rules/documentation.md` § Parity).
+ 
+ #### `SourceInterface`
+ 
+-| Method     | Returns                    | Behavior                                                                                                                                                                                                                                                                            |
+-| ---------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `exports`  | `readonly SurfaceSymbol[]` | What the package **declares** — direct `type`, `interface`, `const`, `function`, and `class` declarations in the selected module keys.                                                                                                                                              |
+-| `surface`  | `readonly SurfaceSymbol[]` | What a consumer can **import** — every declaration reachable through the selected directories' conventional root `index.ts` barrels.                                                                                                                                                |
+-| `methods`  | `readonly MethodEntry[]`   | The call-signature members of the `class` / `interface` named `name`, unioned with those of every declaration it extends within the module scope, each with its own doc block's description paragraph. The first file declaring the name answers for it.                            |
+-| `exists`   | `boolean`                  | Whether a workspace-root-relative path names an inventory key exactly, or a directory any inventory key sits beneath — which is what lets a guide link to a directory resolve.                                                                                                      |
+-| `hidden`   | `readonly SurfaceSymbol[]` | Every module-scope declaration **lacking** `export` (`.claude/rules/architecture.md` § Barrel exports).                                                                                                                                                                             |
+-| `examples` | `readonly SourceExample[]` | The `@example` blocks carried by the exported functions (or, given `name`, that declaration's own members) whose eligible leading JSDoc chain ends in a span carrying an `@example` tag opening a line at its first non-blank column. Given `name`, it follows no `extends` clause. |
++| Method     | Returns                    | Behavior                                                                                                                                                                                                                                                                                    |
++| ---------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `exports`  | `readonly SurfaceSymbol[]` | What the package **declares** — direct `type`, `interface`, `const`, `function`, and `class` declarations in the selected module keys.                                                                                                                                                      |
++| `surface`  | `readonly SurfaceSymbol[]` | What a consumer can **import** — every declaration reachable through the selected directories' conventional root `index.ts` barrels.                                                                                                                                                        |
++| `methods`  | `readonly MethodEntry[]`   | The call-signature members of the `class` / `interface` named `name`, unioned with those of every declaration it extends within the module scope, each with its own doc block's description paragraph. The first file declaring the name answers for it.                                    |
++| `exists`   | `boolean`                  | Whether a workspace-root-relative path names an inventory key exactly, or a directory any inventory key sits beneath — which is what lets a guide link to a directory resolve.                                                                                                              |
++| `hidden`   | `readonly SurfaceSymbol[]` | Every module-scope declaration **lacking** `export` (`.claude/rules/architecture.md` § Barrel exports).                                                                                                                                                                                     |
++| `examples` | `readonly SourceExample[]` | The `@example` blocks carried by the exported declaration heads (or, given `name`, that declaration's own members) whose eligible leading JSDoc chain ends in a span carrying an `@example` tag opening a line at its first non-blank column. Given `name`, it follows no `extends` clause. |
+ 
+ #### Which projector a check uses
+ 
+@@ -422,8 +422,9 @@ each later span replaces the earlier one and is authoritative. Only an `@example
+ at its first non-blank column qualifies; same-line title text is allowed. Source material between or after spans
+ severs association, a leading JSDoc on the next line replaces pending state, and any other next
+ physical record is returned once as the candidate. `extractExamples` and `extractExampleMethods` share this
+-adjacency parser and apply their distinct exported-function and callable-member grammars only to
+-`code`.
++adjacency parser and apply their distinct declaration-head and callable-member grammars only to
++`code`. `extractExamples` dedupes by name and title, so a `type` and a `const` sharing one name
++contribute the first block of a title rather than one block each.
+ 
+ Across the `.ts` module keys under each selected directory, excluding its root `index.ts` and
+ every `*.test.ts`, `collectKeys` matches
+@@ -552,7 +553,10 @@ guard so a renamed heading fails loudly instead of passing on an empty extractio
+ - **MQ — Methods summary equality.** The same comparison per `MethodGroup`, over the members
+   `group.methods` and `source.methods(group.interface)` both carry, keyed `Owner.member`.
+ - **EQ — Example equality.** Every titled guide fence against the `@example` block of the same title,
+-  body and fence language together. The pairing is per title across the document, not per heading: the
++  body and fence language together. The block is a declaration head's own — a `type`, `interface`,
++  `const`, `function`, or `class` head at column zero — or a documented `class` or `interface`
++  member's, so a head's titled block is compared the way a member's is. The pairing is per title
++  across the document, not per heading: the
+   first fence a title reaches is the compared one, and every later fence of that title is outside the
+   comparison, whether it sits under the same heading or under a second heading of the same text. A title one side alone carries is outside
+   the comparison too, and an untitled `@example` stays EX's presence evidence.
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index fe45c4f..2f413ad 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -2083,21 +2083,23 @@ export function collectExamples(comment: string, name: string): readonly SourceE
+ }
+ 
+ /**
+- * Extracts the `@example` blocks carried by the exported functions in one file's source text,
+- * each named for the function its block documents. Shared adjacency comes from
+- * {@link extractSourceComments} and each block is read by {@link collectExamples};
+- * exported-function membership is the {@link collectKeys} key of the documented record, narrowed
+- * to the `function` keyword, so comment and template payload cannot qualify and the head grammar
+- * stays the one every reader here shares. A function carrying several blocks contributes each.
++ * Extracts the `@example` blocks carried by the exported declaration heads in one file's source
++ * text, each named for the declaration its block documents. Shared adjacency comes from
++ * {@link extractSourceComments} and each block is read by {@link collectExamples}; head
++ * membership is the {@link collectKeys} key of the documented record under every keyword that
++ * grammar heads, so comment and template payload cannot qualify and the head grammar stays the
++ * one every reader here shares. A member key carries a dot and a head key does not, so a
++ * member's block belongs to {@link extractExampleMethods} instead. A head carrying several
++ * blocks contributes each.
+  *
+  * @param source - The file's source text
+- * @returns The exported functions' `@example` blocks, in file order, deduplicated by name and title
++ * @returns The exported declaration heads' `@example` blocks, in file order, deduplicated by name and title
+  *
+  * @example
+  * ```ts
+- * const block = ['/**', ' * @example', ' * walk()', ' *' + '/', 'export function walk() {}', ''].join('\n')
+- * extractExamples(block) // [{ name: 'walk', code: 'walk()' }]
+- * extractExamples('export function walk() {}\n') // []
++ * const block = ['/**', ' * @example', ' * new Widget()', ' *' + '/', 'export class Widget {}', ''].join('\n')
++ * extractExamples(block) // [{ name: 'Widget', code: 'new Widget()' }]
++ * extractExamples('export class Widget {}\n') // []
+  * ```
+  */
+ export function extractExamples(source: string): readonly SourceExample[] {
+@@ -2107,12 +2109,12 @@ export function extractExamples(source: string): readonly SourceExample[] {
+ 	const keys = collectKeys(lines)
+ 
+ 	for (const comment of extractSourceComments(lines)) {
+-		// Only the `function` keyword carries an `@example` into a guide fence, so the declaration
+-		// key is read for that keyword and its name is the text past the one space.
+-		const key = keys.get(comment.line) ?? ''
+-		if (!key.startsWith('function ')) continue
++		// A head key is `${keyword} ${name}` and a member key is `Owner.member`, so the dot is
++		// what separates them and the block's name is the text past the head's one space.
++		const key = keys.get(comment.line)
++		if (key === undefined || key.includes('.')) continue
+ 
+-		const name = key.slice('function '.length)
++		const name = key.slice(key.indexOf(' ') + 1)
+ 		for (const example of collectExamples(comment.text, name)) {
+ 			const entry = `${name}\n${example.title ?? ''}`
+ 			if (seen.has(entry)) continue
+@@ -2354,7 +2356,7 @@ export function findDrift(guide: GuideInterface, source: SourceInterface): reado
+ 
+ /**
+  * Collects the titled `@example` blocks a guide's documented surface reaches — the module's
+- * exported functions, plus the own members of every documented `class` and `interface` —
++ * exported declaration heads, plus the own members of every documented `class` and `interface` —
+  * keyed by title, the first block of a title answering for it.
+  *
+  * @param guide - The parsed guide naming the documented declarations
+diff --git a/src/core/sources/Source.ts b/src/core/sources/Source.ts
+index b16397b..ca74bfd 100644
+--- a/src/core/sources/Source.ts
++++ b/src/core/sources/Source.ts
+@@ -125,9 +125,9 @@ export class Source implements SourceInterface {
+ 		return this.#exampleMembers(name)
+ 	}
+ 
+-	// The union of exported-function `@example` blocks across the module's files,
+-	// deduped by name and title in first-seen order — mirrors `#scanSymbols`, but
+-	// over the `@example` scanner rather than a `SurfaceSymbol` one.
++	// The union of exported declaration heads' `@example` blocks across the module's
++	// files, deduped by name and title in first-seen order — mirrors `#scanSymbols`,
++	// but over the `@example` scanner rather than a `SurfaceSymbol` one.
+ 	#scanExamples(): readonly SourceExample[] {
+ 		const examples: SourceExample[] = []
+ 		const seen = new Set<string>()
+diff --git a/src/core/types.ts b/src/core/types.ts
+index dc6868a..0522c31 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -356,12 +356,14 @@ export interface SourceInterface {
+ 	 */
+ 	hidden(): readonly SurfaceSymbol[]
+ 	/**
+-	 * Lists every `@example` block carried by an exported function whose next-physical-record
+-	 * eligible genuine JSDoc chain ends in a span holding an `@example` tag opening a line at its
+-	 * first non-blank column. Each block carries its title, its fence language, and its code;
+-	 * intervening material severs association.
++	 * Lists every `@example` block carried by an exported declaration head — a `type`,
++	 * `interface`, `const`, `function`, or `class` head at column zero — whose
++	 * next-physical-record eligible genuine JSDoc chain ends in a span holding an `@example` tag
++	 * opening a line at its first non-blank column. Each block carries its title, its fence
++	 * language, and its code; intervening material severs association. A member's block belongs
++	 * to the `name` overload instead.
+ 	 *
+-	 * @returns The exported functions' `@example` blocks, in first-seen order
++	 * @returns The exported declaration heads' `@example` blocks, in first-seen order
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -376,7 +378,9 @@ export interface SourceInterface {
+ 	 * Each block carries its title, its fence language, and its code; intervening material severs
+ 	 * association. Declaration and callable
+ 	 * member eligibility comes from aligned projected code while genuine JSDoc
+-	 * evidence retains its source columns.
++	 * evidence retains its source columns. The head's own block belongs to the
++	 * no-argument overload instead, so the overloads split the axis at the
++	 * declaration head against its members.
+ 	 *
+ 	 * @remarks
+ 	 * This overload reads only the named declaration's own body, in the first
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index df4267a..9580d2c 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1744,6 +1744,100 @@ describe('extractExamples', () => {
+ 		].join('\n')
+ 		expect(extractExamples(source).map((example) => example.name)).toEqual(['walk'])
+ 	})
++
++	// The axis is the declaration head against the member, with no keyword carve-out: every
++	// `collectKeys` head key contributes its blocks, and a member key belongs to the member
++	// reader beside this one.
++	it('collects a titled block above a class head, named for the class', () => {
++		const source = [
++			'/**',
++			' * @example Build a widget',
++			' * ```ts',
++			' * new Widget()',
++			' * ```',
++			' */',
++			'export class Widget {}',
++			'',
++		].join('\n')
++		expect(extractExamples(source)).toEqual([
++			{ name: 'Widget', title: 'Build a widget', code: 'new Widget()', language: 'ts' },
++		])
++	})
++
++	it('collects an untitled class-head block, which carries no title', () => {
++		const source = [
++			'/**',
++			' * @example',
++			' * new Widget()',
++			' */',
++			'export class Widget {}',
++			'',
++		].join('\n')
++		expect(extractExamples(source)).toEqual([{ name: 'Widget', code: 'new Widget()' }])
++		expect(extractExamples('export class Widget {}\n')).toEqual([])
++	})
++
++	it('collects a titled block above a type head and above an interface head', () => {
++		const source = [
++			'/**',
++			' * @example Name a widget',
++			' * ```ts',
++			" * const side: WidgetSide = 'left'",
++			' * ```',
++			' */',
++			"export type WidgetSide = 'left' | 'right'",
++			'/**',
++			' * @example Render a widget',
++			' * ```ts',
++			' * widget.render()',
++			' * ```',
++			' */',
++			'export interface WidgetInterface {',
++			'\trender(): void',
++			'}',
++			'',
++		].join('\n')
++		expect(extractExamples(source)).toEqual([
++			{
++				name: 'WidgetSide',
++				title: 'Name a widget',
++				code: "const side: WidgetSide = 'left'",
++				language: 'ts',
++			},
++			{
++				name: 'WidgetInterface',
++				title: 'Render a widget',
++				code: 'widget.render()',
++				language: 'ts',
++			},
++		])
++	})
++
++	it('collects a block above a const head', () => {
++		const source = [
++			'/**',
++			' * @example',
++			' * LANGUAGES.size',
++			' */',
++			'export const LANGUAGES = new Set()',
++			'',
++		].join('\n')
++		expect(extractExamples(source).map((example) => example.name)).toEqual(['LANGUAGES'])
++	})
++
++	it('skips a member block, which the member reader collects instead', () => {
++		const body = ['\t/**', '\t * @example', '\t * widget.render()', '\t */', '\trender(): void']
++		const source = ['export interface WidgetInterface {', ...body, '}', ''].join('\n')
++		expect(extractExamples(source)).toEqual([])
++		expect(extractExampleMethods(body).map((example) => example.name)).toEqual(['render'])
++	})
++
++	it('skips a block attached to a declaration no key names', () => {
++		const source = ['/**', ' * @example', ' * hidden()', ' */', 'const hidden = true', ''].join(
++			'\n',
++		)
++		expect(extractExamples(source)).toEqual([])
++	})
+ })
+ 
+ describe('extractExampleLines exact tags and physical adjacency', () => {
+@@ -2713,6 +2807,59 @@ describe('findDrift', () => {
+ 		).replace('### Render a widget', '### Render a widget elsewhere')
+ 		expect(findDrift(createGuide(extra), source)).toEqual([])
+ 	})
++
++	// A titled block on a declaration head that is not a function enters the comparison the
++	// same way a member's block does, so the `class` head below pairs with the guide fence of
++	// its title.
++	const HEAD_GUIDE = [
++		'# Widget',
++		'',
++		'> A widget module.',
++		'',
++		'## Surface',
++		'',
++		'| Name | Kind | Summary |',
++		'| --- | --- | --- |',
++		'| `Widget` | class | Represents a widget. |',
++		'',
++		'## Patterns',
++		'',
++		'### Build a widget',
++		'',
++		'```ts',
++		'new Widget()',
++		'```',
++		'',
++	].join('\n')
++	const headSource = createSource({
++		files: {
++			'module/index.ts': "export * from './Widget.js'\n",
++			'module/Widget.ts': [
++				'/**',
++				' * Represents a widget.',
++				' *',
++				' * @example Build a widget',
++				' * ```ts',
++				' * new Widget()',
++				' * ```',
++				' */',
++				'export class Widget {}',
++				'',
++			].join('\n'),
++		},
++		module: 'module',
++	})
++
++	it('reports nothing when a class-head block and the fence of its title agree', () => {
++		expect(findDrift(createGuide(HEAD_GUIDE), headSource)).toEqual([])
++	})
++
++	it('reports a class-head block against a same-titled fence carrying another body', () => {
++		const drifted = HEAD_GUIDE.replace('```ts\nnew Widget()\n```', '```ts\nnew Widget(1)\n```')
++		expect(findDrift(createGuide(drifted), headSource)).toEqual([
++			{ key: 'Build a widget', guide: 'ts\nnew Widget(1)', source: 'ts\nnew Widget()' },
++		])
++	})
+ })
+ 
+ describe('computeDrift', () => {
+@@ -4104,6 +4251,50 @@ describe('locateComment', () => {
+ 		expect(text.slice(span?.start, span?.end)).toBe(['/**', ' * Second.', ' */'].join('\n'))
+ 	})
+ 
++	// The seed's source-writing direction over a head that is not a function: the key names a
++	// `class`, the locator reaches its block, `replaceExample` rewrites the body, and the
++	// reader the gate compares on reads the rewritten block back.
++	it('carries an example rewrite back into a class head, read by the reader the gate compares on', () => {
++		const text = [
++			'/**',
++			' * Represents a widget.',
++			' *',
++			' * @example Build a widget',
++			' * ```ts',
++			' * new Widget()',
++			' * ```',
++			' */',
++			'export class Widget {}',
++			'',
++		].join('\n')
++		const span = locateComment(text, 'class Widget')
++		expect(span).toBeDefined()
++		const block = text.slice(span?.start, span?.end)
++		expect(block).toBe(
++			[
++				'/**',
++				' * Represents a widget.',
++				' *',
++				' * @example Build a widget',
++				' * ```ts',
++				' * new Widget()',
++				' * ```',
++				' */',
++			].join('\n'),
++		)
++
++		const example: SourceExample = {
++			name: 'Widget',
++			title: 'Build a widget',
++			code: 'new Widget(1)',
++			language: 'ts',
++		}
++		const rewritten = replaceExample(block, example)
++		expect(rewritten).toBeDefined()
++		const written = spliceSpan(text, span ?? { start: 0, end: 0 }, rewritten ?? '')
++		expect(extractExamples(written)).toEqual([example])
++	})
++
+ 	// The end-to-end the seed runs: locate the block, rewrite it, splice it back, and read the
+ 	// new description through `collectSummaries` over `extractSourceLines` — the reader the
+ 	// parity gate compares on, rather than a projection re-derived in this file.
+diff --git a/tests/src/core/sources/Source.test.ts b/tests/src/core/sources/Source.test.ts
+index 7fdb16a..67346df 100644
+--- a/tests/src/core/sources/Source.test.ts
++++ b/tests/src/core/sources/Source.test.ts
+@@ -144,6 +144,38 @@ describe('Source', () => {
+ 		}).toEqual({ functions: ['genuine'], members: ['genuine'] })
+ 	})
+ 
++	it('unions every declaration head across the module and leaves each member to the name overload', () => {
++		const source = new Source({
++			files: {
++				'module/Widget.ts': [
++					'/** @example Build a widget */',
++					'export class Widget {',
++					'\t/** @example Render a widget */',
++					'\trender(): void {}',
++					'}',
++				].join('\n'),
++				'module/types.ts': [
++					'/** @example Name a widget */',
++					"export type WidgetSide = 'left' | 'right'",
++					'/** @example Count the widgets */',
++					'export const WIDGETS = 0',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		expect(source.examples().map((example) => example.title)).toEqual([
++			'Build a widget',
++			'Name a widget',
++			'Count the widgets',
++		])
++		expect(source.examples().map((example) => example.name)).toEqual([
++			'Widget',
++			'WidgetSide',
++			'WIDGETS',
++		])
++		expect(source.examples('Widget').map((example) => example.name)).toEqual(['render'])
++	})
++
+ 	it('uses exact titled example tags and last-span replacement in both overloads', () => {
+ 		const source = new Source({
+ 			files: {

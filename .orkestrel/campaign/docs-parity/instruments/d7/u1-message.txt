@@ -1,0 +1,16 @@
+Reach every declaration head's own @example, not only a function's
+
+`extractExamples` keeps a comment whose key names a declaration head —
+`${keyword} ${name}` with no member dot — rather than a `function ` key
+alone, so a titled block above a class, interface, type, or const head
+enters `findDrift`'s comparison and the seed's `--to source` direction can
+reach it through `locateComment`. The axis becomes declaration head against
+member with no keyword carve-out. The `examples` overload contracts, the
+`extractExamples` doc block and its executed example, the `#scanExamples`
+comment, and the guide's rows, extraction model, and EQ row state the reach;
+the extraction model states the dedupe limit for a type and a const sharing
+a name. New cases cover each head keyword, the untitled head, the member
+control, the drift pair, and the head rewrite round trip.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
