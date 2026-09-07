@@ -1,0 +1,309 @@
+configs/helpers.ts:444: VOICE The compiler scope a face resolves to, as its declaration emit and its roll-up both read it.
+configs/helpers.ts:451: VOICE The `overrideTsconfig` a declaration roll-up hands the extractor, and every option it may read.
+configs/helpers.ts:465: VOICE The extractor exports a declaration roll-up dereferences, named as that package publishes them.
+configs/helpers.ts:23: NODOC hasAsciiUrlControl
+configs/helpers.ts:31: NODOC PACKAGE_MANIFEST_BYTES
+configs/helpers.ts:32: NODOC ENVIRONMENT_MODULE_BYTES
+configs/helpers.ts:54: NODOC WORKSPACE_ROOT
+configs/helpers.ts:58: NODOC fileSystemPath
+configs/helpers.ts:67: NODOC physicalPath
+configs/helpers.ts:80: NODOC sourceFallback
+configs/helpers.ts:84: NODOC workspacePath
+configs/helpers.ts:92: NODOC isBoundaryExemptModule
+configs/helpers.ts:124: NODOC isWorkspaceBoundaryModule
+configs/helpers.ts:150: NODOC isOutsideWorkspacePath
+configs/helpers.ts:156: NODOC containedPath
+configs/helpers.ts:164: NODOC packageNameOf
+configs/helpers.ts:186: NODOC readBoundedFile
+configs/helpers.ts:237: NODOC packageManifestName
+configs/helpers.ts:252: NODOC isPackageBoundary
+configs/helpers.ts:268: NODOC packageRootOf
+configs/helpers.ts:284: NODOC packageRootForResolved
+configs/helpers.ts:300: NODOC trustedPackageRootFor
+configs/helpers.ts:311: NODOC isStylesheetPath
+configs/helpers.ts:315: NODOC environmentPathError
+configs/helpers.ts:335: NODOC environmentSourceError
+configs/helpers.ts:373: NODOC enforceOutputPath
+configs/helpers.ts:404: NODOC outputBoundary
+configs/helpers.ts:738: NODOC decodeAssetSource
+configs/helpers.ts:836: NODOC environmentBoundary
+configs/policy.ts:1: VOICE The syntax-node fields supplied to every policy visitor.
+configs/policy.ts:7: VOICE The expression fields inspected by the policy rules.
+configs/policy.ts:35: VOICE One declared module function paired with the name a prefix rule reads.
+configs/policy.ts:41: VOICE One diagnostic emitted by a policy rule.
+configs/policy.ts:48: VOICE The Oxlint context operations used by the policy rules.
+configs/policy.ts:56: VOICE The rule documentation fields supplied to Oxlint.
+configs/policy.ts:62: VOICE The rule metadata fields supplied to Oxlint.
+configs/policy.ts:69: VOICE The Oxlint visitor entries used by the policy rules.
+configs/policy.ts:94: VOICE The complete behavior exposed by one policy rule.
+configs/policy.ts:100: VOICE Every centralized module named by the architecture kind table.
+configs/policy.ts:125: VOICE The exhaustive centralized-file set that permits module functions.
+configs/policy.ts:144: VOICE Centralized files that permit module data by declaration syntax.
+configs/policy.ts:163: VOICE Fleet-registered folders whose direct modules each contain one named function.
+configs/policy.ts:169: VOICE The registered function-domain names no source file may take as its stem.
+configs/policy.ts:174: VOICE Every ambient declaration suffix the placement and line-ending rules leave uninspected.
+configs/policy.ts:181: VOICE TypeScript source extensions whose declaration syntax the placement rules read.
+configs/policy.ts:189: VOICE The lint populations the placement rules run over, as the Oxlint configuration declares them.
+configs/policy.ts:195: VOICE The lint population the line-ending rule runs over, as the Oxlint configuration declares it.
+configs/policy.ts:202: VOICE The file name shape an implementation file takes, holding the class that matches its stem.
+configs/policy.ts:205: VOICE The name shape every constants.ts declaration takes.
+configs/policy.ts:208: VOICE The file name shape a direct module of a registered function domain takes.
+configs/policy.ts:211: VOICE The file name a policy rule keys on, read from either host separator.
+configs/policy.ts:217: VOICE The folder path a policy rule keys on, read from either host separator.
+configs/policy.ts:224: VOICE The workspace-relative path when the file sits under the directory the linter resolved it against, else the pa
+configs/policy.ts:239: VOICE The extensionless stem of one policy file name.
+configs/policy.ts:245: VOICE Whether a path names an ambient declaration file, which no policy rule inspects.
+configs/policy.ts:251: VOICE Whether a path is a direct module of a fleet-registered function domain. The registered folder is a workspace-
+configs/policy.ts:270: VOICE The identifier name a node carries, or `undefined` for any other syntax.
+configs/policy.ts:278: VOICE The literal text a node carries, through a single-quasi template literal.
+configs/policy.ts:298: VOICE The single body expression a node holds, excluding a statement list.
+configs/policy.ts:305: VOICE The top-level statements a program holds.
+configs/policy.ts:312: VOICE The declaration a top-level statement holds, through either export form.
+configs/policy.ts:320: VOICE Whether a statement sits at module scope, through either export form.
+configs/policy.ts:331: VOICE Whether a policy expression is runtime function syntax.
+configs/policy.ts:340: VOICE Whether a node declares a module function, including a signature without a body.
+configs/policy.ts:345: VOICE Whether a policy function is anonymous.
+configs/policy.ts:350: VOICE Return the outermost parenthesized expression holding a policy function.
+configs/policy.ts:359: VOICE Whether a policy function is an anonymous callback passed directly as an argument.
+configs/policy.ts:370: VOICE Whether a policy function is an anonymous function returned directly as a result.
+configs/policy.ts:381: VOICE Whether an Oxlint function expression represents method syntax.
+configs/policy.ts:393: VOICE Whether a policy function sits inside another function before any class-expression boundary.
+configs/policy.ts:409: VOICE Whether an arrow is the policy plugin's sanctioned visitor-table delegation.
+configs/policy.ts:445: VOICE Return the module-scope statement that owns a policy function, or `undefined` when none does. A class declarat
+configs/policy.ts:463: VOICE Every module function a top-level statement declares, paired with its declared name.
+configs/policy.ts:480: VOICE Whether a call trims a whole payload before splitting it on a line feed.
+configs/policy.ts:497: VOICE Whether an expression reads the host line ending from a binding named os.
+configs/policy.ts:507: VOICE Whether an import declaration takes the EOL member from the host module.
+configs/policy.ts:517: VOICE Report function syntax nested inside another function body.
+configs/policy.ts:531: VOICE Report banned calls on the named Vitest and Jest framework objects.
+configs/policy.ts:575: VOICE Report TypeScript privacy keywords on class members.
+configs/policy.ts:586: VOICE Report a centralized declaration that carries no export.
+configs/policy.ts:594: VOICE Report a type declaration outside types.ts.
+configs/policy.ts:601: VOICE Report a class whose file neither names it nor collects errors.
+configs/policy.ts:615: VOICE Report module data outside a data-kind file.
+configs/policy.ts:627: VOICE Report module function syntax outside a function-kind file.
+configs/policy.ts:643: VOICE Report a constants.ts declaration that is mutable, misnamed, or a bare collection.
+configs/policy.ts:660: VOICE Report a parsers.ts function whose name lacks the parse prefix.
+configs/policy.ts:671: VOICE Report a factories.ts function whose name lacks the create prefix.
+configs/policy.ts:682: VOICE Report a registered function domain taken as a file, or a malformed module inside one.
+configs/policy.ts:711: VOICE Report source that reads the host line ending or splits arrived text before trimming it.
+configs/policy.ts:718: VOICE Report an import that takes the host line ending from the operating-system module.
+configs/policy.ts:724: VOICE Ban function declarations and assignments inside another function body.
+configs/policy.ts:745: VOICE Ban framework mocking, spying, fake clocks, and global or environment stubs.
+configs/policy.ts:768: VOICE Ban compile-time-only TypeScript privacy keywords on class members.
+configs/policy.ts:792: VOICE Ban a centralized declaration that no export reaches.
+configs/policy.ts:818: VOICE Ban a type declaration outside its module's types.ts.
+configs/policy.ts:839: VOICE Ban a class outside the implementation file that names it.
+configs/policy.ts:857: VOICE Ban module data outside a data-kind file.
+configs/policy.ts:875: VOICE Ban module function syntax outside a function-kind file.
+configs/policy.ts:898: VOICE Ban a constants.ts declaration that is mutable, misnamed, or a bare collection.
+configs/policy.ts:919: VOICE Ban a parsers.ts function whose name lacks the parse prefix.
+configs/policy.ts:940: VOICE Ban a factories.ts function whose name lacks the create prefix.
+configs/policy.ts:961: VOICE Ban a malformed module in a registered function domain, and a file named for one.
+configs/policy.ts:982: VOICE Ban host-specific line-ending handling.
+configs/policy.ts:1004: VOICE The workspace Oxlint plugin.
+src/core/compilers.ts:791: NODOC appShowcase
+src/core/templates.ts:82: NODOC peers
+src/core/templates.ts:268: NODOC appBrowser
+src/core/templates.ts:351: NODOC conformance
+src/core/templates.ts:365: NODOC service
+src/core/templates.ts:397: NODOC probe
+tests/setup.ts:74: VOICE One adversarial value every total guard, parser, and cloner must survive.
+tests/setup.ts:89: VOICE One guard under test, with what it must accept and what it may admit.
+tests/setup.ts:104: VOICE One coercer under test, beside the guard it is derived from.
+tests/setup.ts:113: VOICE One candidate path the portable-path law decides.
+tests/setup.ts:120: VOICE One value carrying a key its union branch forbids, beside its sound twin.
+tests/setup.ts:134: VOICE One helper call whose determinism and input independence are measured.
+tests/setup.ts:141: VOICE One declared range measured against a reported version.
+tests/setup.ts:148: VOICE An instance whose prototype the hostile matrix severs.
+tests/setup.ts:159: VOICE Build a valid inert blueprint, with focused field replacements.
+tests/setup.ts:203: VOICE Build a valid inert runtime dependency, with focused field replacements.
+tests/setup.ts:213: VOICE Build a valid inert artifact override, with focused field replacements.
+tests/setup.ts:223: VOICE Build a valid inert question, with focused field replacements.
+tests/setup.ts:233: VOICE Build a planned host artifact whose bytes have not been read.
+tests/setup.ts:243: VOICE Build a planned host artifact whose vendored bytes have been read.
+tests/setup.ts:260: VOICE Build a planned artifact whose text this package produces.
+tests/setup.ts:277: VOICE Build a valid inert plan, with focused field replacements.
+tests/setup.ts:292: VOICE Build a valid inert target snapshot.
+tests/setup.ts:301: VOICE Build a valid inert finding against a destination that holds no file.
+tests/setup.ts:310: VOICE Build a valid inert audit carrying one finding and one question.
+tests/setup.ts:319: VOICE Build the compiler's initial listener record.
+tests/setup.ts:328: VOICE Build a valid inert compiler option bag.
+tests/setup.ts:337: VOICE The trap table whose key enumeration throws.
+tests/setup.ts:344: VOICE The trap table whose property read throws.
+tests/setup.ts:351: VOICE The trap table whose prototype read throws.
+tests/setup.ts:358: VOICE The descriptor that installs a throwing accessor over a guarded property.
+tests/setup.ts:367: VOICE The descriptor that installs an accessor answering a value a guard would accept.
+tests/setup.ts:376: VOICE Every name the emitted `configs/browsers.ts` publishes, in emission order.
+tests/setup.ts:402: VOICE A package manifest declaring one fleet package per section, and one foreign name.
+tests/setup.ts:406: VOICE Build the adversarial values every total boundary in this package must survive.
+tests/setup.ts:462: VOICE Select one hostile case by its label.
+tests/setup.ts:475: VOICE Count a value's own enumerable keys without containing a hostile read.
+tests/setup.ts:492: VOICE Build every guard this package publishes, with what each must accept.
+tests/setup.ts:637: VOICE Build every coercer this package publishes, beside the guard it derives from.
+tests/setup.ts:675: VOICE Build the values whose sole defect is one key a union branch forbids.
+tests/setup.ts:788: VOICE Build one call of every helper this package publishes.
+tests/setup.ts:843: VOICE Every candidate the portable-path law decides, with the verdict it owes.
+tests/setup.ts:867: VOICE Every declared range measured against a reported version, with the verdict it owes.
+tests/setupPolicy.ts:13: VOICE A rule the fleet sweep decides from workspace text and paths.
+tests/setupPolicy.ts:16: VOICE One workspace file written by a physical control.
+tests/setupPolicy.ts:22: VOICE One policy failure reported by the sweep.
+tests/setupPolicy.ts:30: VOICE One physical negative control, including the population boundary it attacks.
+tests/setupPolicy.ts:78: VOICE Parsed skill frontmatter and the exact scalar source used for bridge comparison.
+tests/setupPolicy.ts:89: VOICE The directory whose immediate child directories form the complete skill family.
+tests/setupPolicy.ts:92: VOICE The directory whose immediate child directories form the Claude skill bridge family.
+tests/setupPolicy.ts:95: VOICE Minimal valid skill text for physical family controls.
+tests/setupPolicy.ts:99: VOICE Skill text naming one reference for physical family controls.
+tests/setupPolicy.ts:102: VOICE Minimal valid provider bridge text for physical bridge controls.
+tests/setupPolicy.ts:105: VOICE Canonical skill metadata whose values each carry YAML's escaped apostrophe.
+tests/setupPolicy.ts:111: VOICE Every extension through which a mirrored test can name a module.
+tests/setupPolicy.ts:122: VOICE Module extensions whose extensionless stem can resolve a leading-underscore partial.
+tests/setupPolicy.ts:125: VOICE The reserved stem prefix whose mirrored module can resolve inside the tests axis.
+tests/setupPolicy.ts:128: VOICE The complete module population available to mirrored tests under either workspace axis.
+tests/setupPolicy.ts:131: VOICE The tests-axis setup module population available to mirrored tests.
+tests/setupPolicy.ts:134: VOICE The mirrored module-test population inspected under either workspace axis.
+tests/setupPolicy.ts:140: VOICE Source, test, config, and script files inspected for lint suppression directives.
+tests/setupPolicy.ts:154: VOICE Linted workspace roots that ignore patterns must not reach.
+tests/setupPolicy.ts:162: VOICE Either lint suppression token the text sweep refuses.
+tests/setupPolicy.ts:168: VOICE The workspace-authored path population inspected for a name a Windows checkout cannot hold.
+tests/setupPolicy.ts:176: VOICE Every device name Windows reserves, whatever extension the segment carries.
+tests/setupPolicy.ts:202: VOICE Every character Windows refuses inside a path segment.
+tests/setupPolicy.ts:205: VOICE A shell script named as a complete path token inside a manifest script.
+tests/setupPolicy.ts:208: VOICE The directory whose direct Markdown files form the complete rule family.
+tests/setupPolicy.ts:211: VOICE The root instruction file whose rule map registers the rule family.
+tests/setupPolicy.ts:214: VOICE The heading that opens the root instruction file's rule map table.
+tests/setupPolicy.ts:217: VOICE The workspace manifest whose scripts run on every supported host.
+tests/setupPolicy.ts:220: VOICE Normalize platform separators for stable matching and diagnostics.
+tests/setupPolicy.ts:230: VOICE Whether a parsed configuration value is a plain record rather than an array or a primitive.
+tests/setupPolicy.ts:235: VOICE Create one stable violation for an inspection result.
+tests/setupPolicy.ts:253: VOICE Derive the extensionless module stem for one mirrored module test.
+tests/setupPolicy.ts:266: VOICE The candidate set is every module name a registered language resolves for a stem.
+tests/setupPolicy.ts:284: VOICE Inspect mirrored test paths against an explicit module-path population.
+tests/setupPolicy.ts:314: VOICE Inspect every mirrored module test beneath one workspace.
+tests/setupPolicy.ts:329: VOICE Inspect code-shaped workspace files for lint suppression directives.
+tests/setupPolicy.ts:357: VOICE Inspect the lint configuration that keeps policy rules active across the workspace.
+tests/setupPolicy.ts:423: VOICE Inspect the lint configuration that keeps every named rule and population wired.
+tests/setupPolicy.ts:472: VOICE Resolve an exact-case directory beneath a physical root.
+tests/setupPolicy.ts:493: VOICE Whether an exact-case path resolves to a regular file beneath a physical root.
+tests/setupPolicy.ts:510: VOICE Read the immediate child directories beneath one workspace-relative path.
+tests/setupPolicy.ts:526: VOICE Discover the skill family from immediate directories in the workspace tree.
+tests/setupPolicy.ts:536: VOICE Parse one skill document's frontmatter without interpreting arbitrary body lines as keys.
+tests/setupPolicy.ts:621: VOICE Test whether a description carries a sentence that begins with the case-sensitive word `Use`.
+tests/setupPolicy.ts:631: VOICE Read the direct Markdown files owned by one skill's references directory.
+tests/setupPolicy.ts:647: VOICE Create metadata in the canonical skill interface shape.
+tests/setupPolicy.ts:664: VOICE Parse the default prompt from the canonical skill interface shape. Each value is a non-empty single-quoted sca
+tests/setupPolicy.ts:685: VOICE Test whether a default prompt names one skill's token in complete form. A skill directory name is lowercase le
+tests/setupPolicy.ts:704: VOICE Extract the direct Markdown reference paths named in one skill document.
+tests/setupPolicy.ts:778: VOICE Inspect one discovered skill's required files, metadata, token, and references.
+tests/setupPolicy.ts:968: VOICE Inspect every immediate member of the discovered skill family.
+tests/setupPolicy.ts:980: VOICE Inspect one provider bridge against its canonical skill twin.
+tests/setupPolicy.ts:1068: VOICE Inspect the provider bridge set and every bridge shared with the canonical skill family.
+tests/setupPolicy.ts:1107: VOICE Read every rule path the root instruction file's rule map registers.
+tests/setupPolicy.ts:1127: VOICE Inspect the discovered rule family against the root instruction file's rule map. A workspace with no rule file
+tests/setupPolicy.ts:1163: VOICE Inspect an explicit path population for a name a Windows checkout cannot hold. Each path is read through its o
+tests/setupPolicy.ts:1220: VOICE Read the workspace-authored path population, directories included.
+tests/setupPolicy.ts:1230: VOICE Inspect the workspace-authored path population for a name a Windows checkout cannot hold.
+tests/setupPolicy.ts:1240: VOICE Parse the manifest's script record without interpreting any other manifest field.
+tests/setupPolicy.ts:1264: VOICE Inspect every manifest script for a shell file no Windows host runs.
+tests/setupPolicy.ts:1288: VOICE Inspect every host portability rule across one workspace.
+tests/setupPolicy.ts:1302: VOICE Inspect every policy rule across one workspace.
+tests/setupPolicy.ts:1318: VOICE Write a control to a real temporary workspace and run the production sweep over it. The control's rule selects
+tests/setupPolicy.ts:1346: VOICE Physical negative controls, one for each rule the sweep claims to enforce.
+tests/setupPolicy.ts:1416: VOICE Physical in-family controls for every skill-family assertion class.
+tests/setupPolicy.ts:1692: VOICE Physical controls for provider-bridge assertions.
+tests/setupPolicy.ts:1821: VOICE An in-family skill whose metadata values carry escaped apostrophes, proving they parse.
+tests/setupPolicy.ts:1832: VOICE A folded description containing a colon, proving continuation lines do not become keys.
+tests/setupPolicy.ts:1847: VOICE A healthy skill reference whose prose carries the documented backticked TODO form.
+tests/setupPolicy.ts:1862: VOICE A healthy skill whose fenced example carries a template-TODO spelling.
+tests/setupPolicy.ts:1879: VOICE A folded description whose blank scalar line separates its paragraphs.
+tests/setupPolicy.ts:1894: VOICE A bridge skill outside the discovered family, used to prove the membership boundary.
+tests/setupPolicy.ts:1902: VOICE Create root instruction text whose rule map names an explicit rule set.
+tests/setupPolicy.ts:1922: VOICE Physical controls for every rule-map parity assertion the workspace route reaches.
+tests/setupPolicy.ts:1952: VOICE Physical controls for every portability assertion the workspace route reaches.
+tests/setupPolicy.ts:138: NODOC POLICY_SUPPRESSION_DIRECTIVE
+tests/setupServer.ts:83: VOICE One command line beside the exact command it denotes.
+tests/setupServer.ts:97: VOICE One command line that denotes no command, beside what its refusal must name.
+tests/setupServer.ts:111: VOICE One audit beside whether the executable reads it as a clean run.
+tests/setupServer.ts:125: VOICE One boundary value a server guard decides, with the verdict it owes.
+tests/setupServer.ts:133: VOICE One path a classifying predicate decides, with the verdict it owes.
+tests/setupServer.ts:140: VOICE One target-relative path beside the vendored storage name it maps to.
+tests/setupServer.ts:147: VOICE One text beside the digest a conforming SHA-256 owes it.
+tests/setupServer.ts:154: VOICE One caller-supplied upstream endpoint, with the verdict the reader's law owes it.
+tests/setupServer.ts:161: VOICE One scripted HTTP reply the upstream fixture serves at one exact path.
+tests/setupServer.ts:183: VOICE The declared range sets a published version carries in a packument.
+tests/setupServer.ts:198: VOICE One vendored file the repository fixture serves, beside the path it serves it at.
+tests/setupServer.ts:213: VOICE One binding a parsed statement declares, with the shape a lift reads from it.
+tests/setupServer.ts:228: VOICE One statement of a parsed module, projected onto the fields a lift reads.
+tests/setupServer.ts:254: VOICE A real HTTP server on loopback, scripted per path.
+tests/setupServer.ts:276: VOICE The repository root, resolved from this file rather than from the process.
+tests/setupServer.ts:288: VOICE List the tracked paths this repository records as executable.
+tests/setupServer.ts:320: VOICE Whether this run's temporary directories resolve a recased name.
+tests/setupServer.ts:336: VOICE Build a valid inert vendored-host manifest entry, with focused field replacements.
+tests/setupServer.ts:347: VOICE Build a valid inert vendored-host manifest, with focused field replacements.
+tests/setupServer.ts:369: VOICE Build a valid inert git working-tree state, with focused field replacements.
+tests/setupServer.ts:379: VOICE Build a valid inert materializer option bag, with focused field replacements.
+tests/setupServer.ts:395: VOICE Build a valid inert upstream option bag, with focused field replacements.
+tests/setupServer.ts:418: VOICE Build every guard the server face publishes, with what each must accept.
+tests/setupServer.ts:571: VOICE Every candidate the host-path law decides, with the verdict it owes.
+tests/setupServer.ts:629: VOICE Build every boundary value the server's option, manifest, and inventory laws decide.
+tests/setupServer.ts:827: VOICE Run a call and report the coded reason it refused.
+tests/setupServer.ts:849: VOICE Read the message from one synchronous scaffold refusal.
+tests/setupServer.ts:961: VOICE Build a vendored-host manifest that matches its own membership.
+tests/setupServer.ts:988: VOICE Write a real vendored host root a reader can be measured against.
+tests/setupServer.ts:1014: VOICE Stage this checkout's real vendored host into a temporary workspace.
+tests/setupServer.ts:1031: VOICE Every text whose SHA-256 is a published, externally checkable value.
+tests/setupServer.ts:1064: VOICE Every path the repository-metadata rule decides, with the verdict it owes.
+tests/setupServer.ts:1078: VOICE Every path the deletion deny-list decides, with the verdict it owes.
+tests/setupServer.ts:1097: VOICE Every path the vendoring deny-list decides, with the verdict it owes.
+tests/setupServer.ts:1120: VOICE Build the vendored membership the writers are measured against.
+tests/setupServer.ts:1160: VOICE One command-line word carrying every byte a refusal must not pass on.
+tests/setupServer.ts:1174: VOICE Every byte {@link HOSTILE_ARGUMENT} carries that a written line must not.
+tests/setupServer.ts:1177: VOICE Initialize a real git repository at a path.
+tests/setupServer.ts:1193: VOICE The destinations one executable run wrote to, and the options that wired them.
+tests/setupServer.ts:1208: VOICE Create the recording destinations one executable run writes to.
+tests/setupServer.ts:1237: VOICE The staged paths that are directories rather than files.
+tests/setupServer.ts:1259: VOICE Every path a release stages, the vendored set and the instruction canon together.
+tests/setupServer.ts:1273: VOICE Build the manifest a vendored root storing every planned path declares.
+tests/setupServer.ts:1301: VOICE Write a real checkout carrying every staged path, as the stager reads one.
+tests/setupServer.ts:1332: VOICE Build the manifest a host staged from {@link createCheckout} must declare.
+tests/setupServer.ts:1378: VOICE Write a vendored root carrying every planned path, and the target beside it.
+tests/setupServer.ts:1402: VOICE Write a fleet beside a target that already carries a rewritable catalog file.
+tests/setupServer.ts:1429: VOICE Put every file in a target under git's control, without committing.
+tests/setupServer.ts:1447: VOICE Commit everything {@link trackFiles} staged, so a run reads a clean tree.
+tests/setupServer.ts:1482: VOICE How many artifacts the compiler itself supplies for a plan selecting `src/core` alone.
+tests/setupServer.ts:1496: VOICE How many artifacts the compiler supplies for a `src/core` plan.
+tests/setupServer.ts:1499: VOICE How many paths a fleet target's plan claims once the vendored host has hydrated it.
+tests/setupServer.ts:1520: VOICE How many planned paths a repair leaves alone because the workspace owns them.
+tests/setupServer.ts:1534: VOICE How many planned paths a repair skips because the workspace owns them.
+tests/setupServer.ts:1537: VOICE Build the plan {@link buildVendoredManifest} answers for.
+tests/setupServer.ts:1569: VOICE Compile the default blueprint through the real compiler with its default selection.
+tests/setupServer.ts:1585: VOICE Build the audit a target is in, declaring which paths the caller made stale.
+tests/setupServer.ts:1624: VOICE The catalog agent file as a target carries it, markers and surrounding prose included.
+tests/setupServer.ts:1645: VOICE The catalog agent file carrying a package table a reader can list names from.
+tests/setupServer.ts:1666: VOICE The development dependencies planned for the fixture's published core environment.
+tests/setupServer.ts:1671: VOICE Build a target manifest with focused dependency-section replacements.
+tests/setupServer.ts:1702: VOICE Remove selected dependency names from an inert manifest section.
+tests/setupServer.ts:1716: VOICE A target manifest declaring its planned scripts, tools, fleet packages, and an extra.
+tests/setupServer.ts:1726: VOICE A target manifest whose own name the compile gate refuses.
+tests/setupServer.ts:1744: VOICE Every caller-supplied endpoint the reader's scheme and host law decides.
+tests/setupServer.ts:1791: VOICE Build the registry packument text a version lookup reads.
+tests/setupServer.ts:1829: VOICE Build the registry organization package-list text a catalog reads.
+tests/setupServer.ts:1839: VOICE The vendored files the repository fixture serves, keyed for a test to name one.
+tests/setupServer.ts:1857: VOICE Build the committed inventory text a vendored read is decided against.
+tests/setupServer.ts:1879: VOICE Build the raw-repository replies for the installed vendored host.
+tests/setupServer.ts:1914: VOICE Build the target snapshot a vendored read is held to.
+tests/setupServer.ts:1924: VOICE Write one scripted reply onto a real HTTP response.
+tests/setupServer.ts:1952: VOICE Start a real HTTP server on loopback, scripted per request path.
+tests/setupServer.ts:2030: VOICE The exact request paths the upstream contract puts a reader at.
+tests/setupServer.ts:2065: VOICE The exact request paths a fleet target's own declared set puts the executable at.
+tests/setupServer.ts:2102: VOICE Wire one executable run to a recording sink and one loopback fixture.
+tests/setupServer.ts:2119: VOICE Run an asynchronous call and report the coded reason it refused.
+tests/setupServer.ts:2142: VOICE Every target-relative path the storage mapping decides, beside what it maps to.
+tests/setupServer.ts:2161: VOICE Every command line the executable accepts, beside the exact command it denotes.
+tests/setupServer.ts:2251: VOICE Every command line that denotes no command, beside what its refusal must name.
+tests/setupServer.ts:2291: VOICE Every audit shape the exit-code rule decides, with the verdict it owes.
+tests/setupServer.ts:2338: VOICE Build the shortest command line that exercises one option against one verb.
+tests/setupServer.ts:286: NODOC SCRATCH_PREFIX
+tests/src/core/templates.test.ts:396: NODOC classifyStage
+FILES 58 BLOCKS 662 FLAGGED 272 NODOC 35
+first words: The=54 Build=38 One=25 Every=21 Whether=17 Inspect=15 Report=14 Ban=13 A=11 Write=6 Read=5 Physical=5 How=5 Create=4 Parse=3 Return=2 An=2 Minimal=2 Test=2 Run=2 Centralized=1 Fleetregistered=1 TypeScript=1 Select=1 Count=1 Parsed=1 Skill=1 Canonical=1 Module=1 Source=1 Linted=1 Either=1 Normalize=1 Derive=1 Resolve=1 Discover=1 Extract=1 List=1 Stage=1 Initialize=1 Put=1 Commit=1 Compile=1 Remove=1 Start=1 Wire=1

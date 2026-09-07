@@ -1,0 +1,50 @@
+.agents/orchestration.md:272: easy: files. A script that fixes one thing across every target is the easiest way to break the
+.agents/orchestration.md:308: just: it, while the server has already revoked the credential the check just read, and inside a sandbox
+.agents/orchestration.md:369: just: - Walk the remaining units once and ask of each whether what just landed still supports it. A
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:206: e.g.: Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a st
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:214: via: - **Do not say the same thing twice.** When the host already names the request — a card heading, a dialog title, a section header stating th
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:240: via: - Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:277: via: **Documented limitation (enterprise-critical):** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:293: via: Details: input groups with feedback need `.has-validation` on the group (border-radius fix). `.valid-tooltip` and `.invalid-tooltip` need a 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:501: via: - **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:537: just: | **Toast**                     | Transient confirmation of a just-completed action; auto-dismiss; `role="status"` | Errors needing action; 
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:558: via: - Enable per page: `<html lang="ar" dir="rtl">` + the RTL stylesheet `bootstrap.rtl.min.css` (built from the same source via RTLCSS). RTL su
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:566: via: - Print-check data screens users will export: collapse interactive affordances (sort carets, checkboxes) via `d-print-none`, and prefer `tab
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:571: via: - **Compressed, the full build is cheap; incomplete builds are not.** Trimming via a Sass-subset build (import only the parts used — see [Th
+.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md:572: via: - **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable via `currentColor`, no font flash)
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:60: currently: Calibrate against the looks AI-generated design currently clusters around: (1) a warm cream
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:84: easy: other out easily, especially a type-based selector like `.section` against an element-based selector
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:106: easy: Keep a word only where it makes the design easier to understand, and therefore easier to use. Bring
+.agents/skills/enterprise-bootstrap/references/frontend-design.md:106: easy: Keep a word only where it makes the design easier to understand, and therefore easier to use. Bring
+.agents/skills/enterprise-bootstrap/references/utilities.md:165: via: Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, `.min-vh-75`, etc.; add missing steps via the utilities API
+.agents/skills/enterprise-bootstrap/references/utilities.md:165: etc.: Bootstrap ships exactly these — nothing else (no `.vw-25`, `.vh-50`, `.mw-auto`, `.min-vh-75`, etc.; add missing steps via the utilities API
+.agents/skills/enterprise-bootstrap/references/utilities.md:291: e.g.: - **`.stretched-link`** — makes a whole `position-relative` container (e.g. a card) the click target of one inner link, without wrapping eve
+.agents/skills/enterprise-bootstrap/references/utilities.md:295: via: - **`.focus-ring`** (+ `.focus-ring-primary` … per theme color) — opt-in focus ring for custom interactive elements; tune via `--bs-focus-ri
+.agents/skills/enterprise-bootstrap/references/utilities.md:296: via: - **`.icon-link`** (+ `.icon-link-hover`) — pairs a Bootstrap Icon SVG with a text link; icon auto-sizes to 1em; give decorative icons `aria
+.agents/skills/orkestrel-debrief/references/field-testing.md:11: e.g.: 2. **Mid tier** (e.g. a codex mechanical model) — proves the surface survives a harness's
+.agents/skills/orkestrel-debrief/references/field-testing.md:13: e.g.: 3. **Small harness-native** (e.g. Haiku, a codex high-volume model) — the acceptance
+.agents/skills/orkestrel-debrief/references/field-testing.md:32: just: ## Capture the reasoning, not just the calls
+.agents/skills/orkestrel-falsify/references/reconcile.md:123: easy: are easiest to construct. That sampling proves discrimination _within_ the population and is
+.claude/rules/architecture.md:302: currently: - Do not remove structural files because they are currently empty.
+.claude/rules/quality.md:70: just: - Report a question unanswered rather than answering it with a weaker instrument. A fallback that measures something adjacent returns a conf
+AGENTS.md:71: should: - **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, 
+AGENTS.md:71: currently: - **Minimal public API.** Add or substantively expand a capability with its first real consumer; do not speculate. This is a creation gate, 
+AGENTS.md:104: just: Quality gates before commit, in order. The acceptance gate is the non-mutating variant; run the mutating `lint` and then `format` first only
+PROPOSAL.md:212: should: **The substitution-table row rests on these sweeps.** `grep -rniE '\b(should|simply|leverage)\b' src
+PROPOSAL.md:212: simply: **The substitution-table row rests on these sweeps.** `grep -rniE '\b(should|simply|leverage)\b' src
+PROPOSAL.md:212: leverage: **The substitution-table row rests on these sweeps.** `grep -rniE '\b(should|simply|leverage)\b' src
+user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md:3: should: This control should simply fail via a hit.
+user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md:3: simply: This control should simply fail via a hit.
+user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md:3: via: This control should simply fail via a hit.
+FILES 81 HITS 38
+  3	.agents/orchestration.md
+  11	.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+  4	.agents/skills/enterprise-bootstrap/references/frontend-design.md
+  5	.agents/skills/enterprise-bootstrap/references/utilities.md
+  3	.agents/skills/orkestrel-debrief/references/field-testing.md
+  1	.agents/skills/orkestrel-falsify/references/reconcile.md
+  1	.claude/rules/architecture.md
+  1	.claude/rules/quality.md
+  3	AGENTS.md
+  3	PROPOSAL.md
+  3	user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/p9/control.md
