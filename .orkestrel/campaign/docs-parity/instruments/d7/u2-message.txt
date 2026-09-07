@@ -1,0 +1,17 @@
+Converge the guide's own guide under Summary and gate it
+
+Every Surface and Methods table heads `Summary` beside the guide's own data
+columns, with the literals a cell carried moved into `Shape` or `Value` and
+every compared cell adopting its doc block's description paragraph through
+the seed. `Guide`, `Source`, and `SourceManager` gain rows ahead of their
+narrative sections so the readers meet them. The H1 blockquote is one noun
+phrase and the README opens with the same text; the README keeps its API
+list. The § Patterns fences that document one symbol's own example title
+that symbol's block and carry their bodies into it; the fence documenting
+`findDrift` stays unpaired, because its body is a doc comment and carries
+the terminator no block can hold. `tests/guides.test.ts` gains the equality
+case, the population pin naming both title sets, and the README case, each
+read red before the convergence. The seed reads zero in both directions.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01V28La253kW5DDvGA5wGKtB
