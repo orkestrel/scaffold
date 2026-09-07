@@ -57,13 +57,15 @@ for k,l in enumerate(lines):
 print('\n'.join(out))
 PY
 )
+fences=$(awk '/^#/{h=NR": "$0; blank=0; next} /^[[:space:]]*$/{if(h!="")blank=1; next} /^```/{ if(h!="" && blank==1) print h" -> fence at "NR; h=""; next } {h=""}' "$G" | cut -c1-140)
+extended=$(grep -rn '^export interface [A-Za-z]* extends' src --include=types.ts | cut -c1-140)
 pilot=/home/user/fleet/abort/tests/guides.test.ts
 region() { awk '/^const root = /{p=1} p{print} p && /^for \(const entry of manifest/{f=1} f && /^}$/{exit}' "$1"; }
 dropin=$(diff <(region "$pilot") <(region tests/guides.test.ts) | head -80)
-header=$(diff <(sed -n 2p "$pilot") <(sed -n 2p tests/guides.test.ts); grep -c 'the assertion that follows it fails when a name here stops being stranded' tests/guides.test.ts | sed 's/^/INTERNAL sentence present: /')
+header=$(diff <(sed -n 1,3p "$pilot") <(sed -n 1,3p tests/guides.test.ts); grep -c 'the assertion that follows it fails when a name here stops being stranded' tests/guides.test.ts | sed 's/^/INTERNAL sentence present: /')
 budget=$(grep -n '30_000\|findDrift(' tests/guides.test.ts)
 needed=no
-[ -n "$noshape$mixed$typed$links$tables" ] && needed=yes
+[ -n "$noshape$mixed$typed$links$tables$fences$extended" ] && needed=yes
 [ -n "$dropin" ] && needed=yes
 echo "$docs" | grep -q 'disagreements found: 0' || needed=yes
 cat > "$OUT" <<EOF
@@ -75,7 +77,7 @@ cat > "$OUT" <<EOF
 
 ## Read first
 
-\`/home/user/scaffold/AGENTS.md\` § Writing; \`/home/user/scaffold/.orkestrel/campaign/docs-parity/rulings.md\` § Ruling 12, § Ruling 13 and its amendment, § Ruling 15, § Ruling 16, § Ruling 18, § Ruling 20; the pilot's Types table \`/home/user/fleet/abort/guides/abort.md:58-67\` and \`/home/user/fleet/budget/guides/budget.md:60-68\` (a \`plus\` row); the pilot's suite \`$pilot\` whole; \`src/**/types.ts\` and \`src/**/constants.ts\` for every declaration the items name.
+\`/home/user/scaffold/AGENTS.md\` § Writing; \`/home/user/scaffold/.orkestrel/campaign/docs-parity/rulings.md\` § Ruling 12, § Ruling 13 and its amendment, § Ruling 15, § Ruling 16, § Ruling 18, § Ruling 20, § Ruling 21; the pilot's Types table \`/home/user/fleet/abort/guides/abort.md:58-67\` and \`/home/user/fleet/budget/guides/budget.md:60-68\` (a \`plus\` row); the pilot's suite \`$pilot\` whole; \`src/**/types.ts\` and \`src/**/constants.ts\` for every declaration the items name.
 
 ## Items
 
@@ -88,15 +90,19 @@ $(printf '%s\n' "${mixed:-(none)}" | sed 's/^/   /')
 $(printf '%s\n' "${typed:-(none)}" | sed 's/^/   /')
    Guard and constants tables, and convention sentences off the canon (Ruling 20):
 $(printf '%s\n' "${tables:-(none)}" | sed 's/^/   /')
+   Extended interfaces (Ruling 21: the cell names the parent before \`plus\` and the added members after; the table's sentence gains "An extended interface's name comes before \`plus\`, with the members it adds after."):
+$(printf '%s\n' "${extended:-(none)}" | sed 's/^/   /')
 2. **Member references.** Doc blocks writing \`{@link Owner#member}\` or \`{@link #member}\`; the final readers compare them as \`Owner#member\` and \`#member\`, so a cell written by the earlier readers may read \`member\` alone. Run \`npm run docs\`; where a row disagrees on such a link, \`npm run docs -- --to guide\` then \`npx oxfmt --write $G\`. Sites:
 $(printf '%s\n' "${links:-(none)}" | sed 's/^/   /')
 3. **The drop-in's canon (Rulings 13 and 20).** \`tests/guides.test.ts\` from its \`const root = \` line through the manifest loop's closing brace equals the pilot's same region byte for byte — \`new URL('../', import.meta.url)\`, \`/Interface$/\` with no flag, the pilot's comments, no per-case budget, \`findDrift\` called inside the \`it\` — except a package-specific case appended after the pilot's cases (a file-scope case after the pilot's README case and before the manifest loop; a case inside the loop's \`describe\` after the pilot's examples loop). A binding only the package's own case uses moves inside that case; a case name or an assertion that differs from the pilot's takes the pilot's. Line 2 reads the pilot's header line and the \`INTERNAL\` block carries the pilot's sentence. The current diff of that region against the pilot (empty means nothing to do):
 \`\`\`text
 $(printf '%s\n' "${dropin:-(no difference)}")
 \`\`\`
-   Header: $(printf '%s' "${header:-line 2 equal}" | tr '\n' ';')
+   Header (lines 1 to 3 against the pilot's; the canon of Ruling 21): $(printf '%s' "${header:-equal}" | tr '\n' ';')
    Lines naming a budget or the \`findDrift\` call: $(printf '%s' "$budget" | tr '\n' ';')
-4. **Propagation.** \`npx oxfmt --write $G tests/guides.test.ts\`; \`npm run docs\` at \`rows read: 1, disagreements found: 0\`; \`-- --to guide\` and \`-- --to source\` at \`written: 0\`.
+4. **Fence lead-ins (Ruling 21).** Every code fence sits under a complete sentence naming what it shows; a fence directly under a heading takes one sentence between them (a titled fence: what the demonstration builds). Fences directly under a heading (heading line -> fence line):
+$(printf '%s\n' "${fences:-(none)}" | sed 's/^/   /')
+5. **Propagation.** \`npx oxfmt --write $G tests/guides.test.ts\`; \`npm run docs\` at \`rows read: 1, disagreements found: 0\`; \`-- --to guide\` and \`-- --to source\` at \`written: 0\`.
 
 ## Facts read on this tip
 

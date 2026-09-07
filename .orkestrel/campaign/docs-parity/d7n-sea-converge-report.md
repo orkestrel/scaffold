@@ -323,3 +323,7 @@ First command 2026-09-07T20:58:11Z, last command 2026-09-07T21:12:43Z: about 15 
 None. `npm install` and `npm ci` were not run. No `git checkout`, `git restore`, `git stash`,
 `git reset`, or `git clean` was run. No vendored file, no off-limits file, and no test outside
 `tests/guides.test.ts` was edited, and no suite outside the owned scope went red.
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-sea-audit-verdict.md`): this report states counts in prose; the P.2 report cites `terminal` for a header precedent that `terminal` does not carry, and the P.1 report quotes a `git diff -U0 | grep` pipeline whose literal output carries the file headers (the P.2 report's form with `grep -vE '^[+-]{3}'` is the correct one). The tree is authoritative; every other cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/sea/`.

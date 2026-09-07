@@ -534,3 +534,7 @@ First command 2026-09-07T16:43:37Z, last command 2026-09-07T16:53Z: about 10 min
 ## Deviation state
 
 None. `repair` wrote the P21 list exactly, every before-text was found verbatim and exactly once, no voice diagnostic named an off-limits file, `test:policy` reddened only on `README.md` lines this unit owns, and every gate other than `docs` reads green. `npm install` and `npm ci` were not run; `package-lock.json`, `node_modules`, and `guides/**` are untouched. Instruments are under `/home/user/fleet/sea/tmp/d7n-sea-prep/` (`voice.mjs`, `repair.log.txt`, `lint-before.log.txt`, `lint-after.log.txt`, `policy-before.log.txt`, `docs.log.txt`).
+
+---
+
+Orchestrator's annotation (2026-09-07, from `d7n-sea-audit-verdict.md`): this report states counts in prose; the P.2 report cites `terminal` for a header precedent that `terminal` does not carry, and the P.1 report quotes a `git diff -U0 | grep` pipeline whose literal output carries the file headers (the P.2 report's form with `grep -vE '^[+-]{3}'` is the correct one). The tree is authoritative; every other cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/sea/`.
