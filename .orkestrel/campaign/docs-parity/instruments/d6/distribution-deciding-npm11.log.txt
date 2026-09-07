@@ -1,0 +1,38 @@
+npm 11.19.1 node v22.22.2
+
+> @orkestrel/scaffold@0.0.63 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+····x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > installs the packed scaffold and passes one generated core/server workspace through prepublish [requires a reachable npm registry]
+AssertionError: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ tests/distribution.test.ts:938:26
+    936|      shell,
+    937|     })
+    938|     expect(gates.status).toBe(0)
+       |                          ^
+    939|    } finally {
+    940|     workspace.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  09:19:56
+   Duration  31.45s (transform 892ms, setup 665ms, import 918ms, tests 29.64s, environment 0ms)
+
+EXIT 1
