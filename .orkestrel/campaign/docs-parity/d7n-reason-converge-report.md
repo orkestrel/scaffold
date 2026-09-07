@@ -392,3 +392,7 @@ None. No cell went unlocated after the header changes, no doc block refused the 
 outside `tests/guides.test.ts` went red, no vendored file needed an edit, no reader returned an
 undescribed shape, and no residual disagreement survived a doc-block rewrite under the P16
 comparator.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read a count in this report's prose (line 369) and in the prep report (lines 278, 293, 299). The tree is authoritative; the reports stand annotated.

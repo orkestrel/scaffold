@@ -86,3 +86,7 @@ The sweep runs after `d7-guide-links-fix` lands and the audit over U5 and that f
 3. The branch and `main` pushed at the verified tip; a package whose `main` already carries an earlier verified tip fast-forwards.
 
 A package converged after the final tarball is installed takes the idiom in its converge unit and needs no closing unit beyond the verifier. The guide's branch pushes to `main` after the sweep reads green everywhere; the publish then follows Ruling 8's order.
+
+### Findings carried to scaffold's next vendored release (2026-09-07)
+
+- The prose sweep in `tests/setupPolicy.ts` matches `in order to` unconditionally, so "in order" followed by "to" in the ordering sense (reason's `README.md:50`, `guides/reason.md:47`) forces a reword the rule does not owe. The row moves to the judged set beside `now`, `new`, `latest`, `once`, `since`, and `master`, or the pattern excludes the ordering sense.
