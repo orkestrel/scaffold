@@ -1,0 +1,20 @@
+== markdown p2-fix landing 2026-09-07T20:57:08Z over c38ae24
+== status
+ M guides/markdown.md
+ M src/core/Markdown.ts
+ M src/core/compilers.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |  32 ++++----
+ tests/guides.test.ts   |   4 +-
+ 10 files changed, 313 insertions(+), 297 deletions(-)
+== stage by path
+ 10 files changed, 313 insertions(+), 297 deletions(-)
+== committed
+2f16fdd Refine markdown's convergence on the audit's findings
+(status end)

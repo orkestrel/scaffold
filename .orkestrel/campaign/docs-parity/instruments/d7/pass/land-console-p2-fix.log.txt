@@ -1,0 +1,26 @@
+== console p2-fix landing 2026-09-07T20:57:08Z over 10b4f2c
+== status
+ M guides/console.md
+ M src/browser/constants.ts
+ M src/browser/types.ts
+ M src/core/Progress.ts
+ M src/core/Styler.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M src/server/validators.ts
+ M tests/guides.test.ts
+ M tests/src/core/helpers.test.ts
+ tests/guides.test.ts           |  19 +--
+ tests/src/core/helpers.test.ts |   2 +-
+ 16 files changed, 335 insertions(+), 307 deletions(-)
+== stage by path
+ 16 files changed, 335 insertions(+), 307 deletions(-)
+== committed
+a115456 Refine console's convergence on the audit's findings
+(status end)

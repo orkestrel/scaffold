@@ -1,0 +1,13 @@
+== pool p2-fix landing 2026-09-07T20:57:08Z over ff62d1d
+== status
+ M guides/pool.md
+ M src/core/types.ts
+ M src/core/validators.ts
+ src/core/types.ts      |  6 ++----
+ src/core/validators.ts |  3 ++-
+ 3 files changed, 21 insertions(+), 21 deletions(-)
+== stage by path
+ 3 files changed, 21 insertions(+), 21 deletions(-)
+== committed
+8d9594d Refine pool's convergence on the audit's findings
+(status end)

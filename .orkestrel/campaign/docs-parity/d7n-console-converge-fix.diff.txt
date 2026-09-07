@@ -1,0 +1,1251 @@
+diff --git a/guides/console.md b/guides/console.md
+index 277d222..bb1912f 100644
+--- a/guides/console.md
++++ b/guides/console.md
+@@ -5,16 +5,14 @@
+ > narrative reporting, console and stream capture, and live animations — one engine, environment
+ > sinks, with the platform backend swapped at the `Sink` seam.
+ 
+-The core owns the contract and every universal behavior; each environment supplies only its
+-platform output backend. ANSI / SGR escape codes are the default (the `ANSIRenderer` class with
+-the `createConsoleSink` factory), the browser translates ANSI to `console.log('%c…', css)` at its
+-sink (`createBrowserSink`), and the server writes to the real `process` streams with styling
+-selected per target at construction by the precedence in the color-detection contract
+-(`createServerSink`). A `Logger` composes leveled records, a `Reporter` narrates sections, steps,
+-timings, tables, trees, and boxes, a `Capture` and a `ProcessCapture` take control of `console.*`
+-and `process.*` on the read side, and a `Spinner` and a `Progress` drive live frames. A record
+-reaches a file, JSON, or a remote transport off the `entry` and `capture` events rather than off a
+-second code path.
++ANSI / SGR escape codes are the default (the `ANSIRenderer` class with the `createConsoleSink`
++factory), the browser translates ANSI to `console.log('%c…', css)` at its sink
++(`createBrowserSink`), and the server writes to the real `process` streams with styling selected per
++target at construction by the precedence in the color-detection contract (`createServerSink`). A
++`Logger` composes leveled records, a `Reporter` narrates sections, steps, timings, tables, trees,
++and boxes, a `Capture` and a `ProcessCapture` take control of `console.*` and `process.*` on the
++read side, and a `Spinner` and a `Progress` drive live frames. A record reaches a file, JSON, or a
++remote transport off the `entry` and `capture` events rather than off a second code path.
+ 
+ An animation pushes the line-overwrite decision down to the sink too: a `Spinner` or a `Progress`
+ writes a leading `\r` and its frame to every sink, and each sink decides what that means — the
+@@ -52,127 +50,139 @@ Style is **data**: a `Style` is a frozen `{ foreground?, background?, attributes
+ 
+ The style engine — text style as data, rendered by a swappable renderer (ANSI default; a browser `%c` renderer at the same seam).
+ 
+-| API                 | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                                            |
+-| ------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Color`             | type      | Names a terminal color — the 8 standard base colors, their 8 bright variants, and `default` (the target's own default ink, emitting no color code).                                                                                                                                                                                                                                |
+-| `Attribute`         | type      | Names a text-style attribute — `bold` / `dim` / `italic` / `underline` / `inverse` / `strikethrough`, the standard SGR text effects.                                                                                                                                                                                                                                               |
+-| `Style`             | interface | Represents text style as data — a frozen, readonly record of a foreground color, a background color, and a set of text attributes. The single style value the whole console / terminal system shares; a `RendererInterface` renders it for one target.                                                                                                                             |
+-| `RendererInterface` | interface | Declares a swappable style renderer — the seam that turns style data into output for one target. The cross-environment default is the ANSI renderer (SGR escape codes); a browser `%c` / CSS renderer implements the same contract over the same `Style` model, so it drops in without touching the style data (the browser branch).                                               |
+-| `StylerOptions`     | interface | Configures `createStyler` — `renderer` selects the output target, defaulting to the ANSI renderer, and `enabled` is the no-color switch, defaulting to `true`.                                                                                                                                                                                                                     |
+-| `StylerInterface`   | interface | Declares the fluent, composable styling surface — the consumer-facing API. It is both a function (call it with text to render the accumulated style) and a record of chainable accessors: every `Color` and `Attribute` is a getter returning a new styler with that token added, so `styler.red.bold('hi')` and `styler.red(styler.bold('hi'))` both work and nothing is mutated. |
+-| `ThemeStatus`       | interface | Represents one narrative outcome's presentation — the icon glyph a `StatusLevel` shows and the `Style` the line renders in.                                                                                                                                                                                                                                                        |
+-| `Theme`             | interface | Represents the app-wide semantic style vocabulary — `levels`, `statuses`, `accent`, and `chrome`, each role bound to a `Style` value. Pass one theme to a logger / reporter / spinner / progress and every surface speaks it.                                                                                                                                                      |
+-| `ThemeOptions`      | interface | Holds the options for `createTheme` — the roles to override on `DEFAULT_THEME`, a status supplying its whole copied `{ icon, style }` record.                                                                                                                                                                                                                                      |
+-| `ANSIRenderer`      | class     | Implements the cross-environment default `RendererInterface` — renders style data as ANSI SGR escape codes, stateless and event-free.                                                                                                                                                                                                                                              |
+-| `createStyler`      | function  | Creates the fluent, composable `StylerInterface` — ANSI by default, retargeted by a `renderer` and stripped of color by `enabled: false`.                                                                                                                                                                                                                                          |
+-| `createTheme`       | function  | Creates a `Theme` — the app-wide semantic style vocabulary, merged role by role over `DEFAULT_THEME`. Hand one theme to a logger / reporter / spinner / progress and every surface speaks it; omit `options` for the defaults.                                                                                                                                                     |
+-| `freezeStyle`       | function  | Snapshots and deeply freezes one `Style` value, including an independent frozen copy of its `attributes`.                                                                                                                                                                                                                                                                          |
+-| `strip`             | function  | Removes every ANSI escape sequence from `text`, returning the plain visible string.                                                                                                                                                                                                                                                                                                |
+-| `stripControls`     | function  | Removes every non-printing C0 control character from `text` except `\t` / `\n` / `\r` (meaningful whitespace), plus DEL — a separate pass from `strip`, so `width` stays untouched.                                                                                                                                                                                                |
+-| `width`             | function  | Measures how many visible columns `text` occupies — its length after ANSI escapes are stripped, counted in Unicode code points (so an astral character such as an emoji counts as one, not the two UTF-16 units `String.length` would report).                                                                                                                                     |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                 | Kind      | Shape                                                                                                                                                                                                                                                | Summary                                                                                                                                                                                                                                                                                                                                                                            |
++| ------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Color`             | type      | `'black' \| 'red' \| 'green' \| 'yellow' \| 'blue' \| 'magenta' \| 'cyan' \| 'white' \| 'brightBlack' \| 'brightRed' \| 'brightGreen' \| 'brightYellow' \| 'brightBlue' \| 'brightMagenta' \| 'brightCyan' \| 'brightWhite' \| 'default'`            | Names a terminal color — the 8 standard base colors, their 8 bright variants, and `default` (the target's own default ink, emitting no color code).                                                                                                                                                                                                                                |
++| `Attribute`         | type      | `'bold' \| 'dim' \| 'italic' \| 'underline' \| 'inverse' \| 'strikethrough'`                                                                                                                                                                         | Names a text-style attribute — `bold` / `dim` / `italic` / `underline` / `inverse` / `strikethrough`, the standard SGR text effects.                                                                                                                                                                                                                                               |
++| `Style`             | interface | `{ foreground?, background?, attributes }`                                                                                                                                                                                                           | Represents text style as data — a frozen, readonly record of a foreground color, a background color, and a set of text attributes. The single style value the whole console / terminal system shares; a `RendererInterface` renders it for one target.                                                                                                                             |
++| `RendererInterface` | interface | `{} plus render`                                                                                                                                                                                                                                     | Declares a swappable style renderer — the seam that turns style data into output for one target. The cross-environment default is the ANSI renderer (SGR escape codes); a browser `%c` / CSS renderer implements the same contract over the same `Style` model, so it drops in without touching the style data (the browser branch).                                               |
++| `StylerOptions`     | interface | `{ renderer?, enabled? }`                                                                                                                                                                                                                            | Configures `createStyler` — `renderer` selects the output target, defaulting to the ANSI renderer, and `enabled` is the no-color switch, defaulting to `true`.                                                                                                                                                                                                                     |
++| `StylerInterface`   | interface | `{ style, enabled, black, red, green, yellow, blue, magenta, cyan, white, brightBlack, brightRed, brightGreen, brightYellow, brightBlue, brightMagenta, brightCyan, brightWhite, bold, dim, italic, underline, inverse, strikethrough } plus render` | Declares the fluent, composable styling surface — the consumer-facing API. It is both a function (call it with text to render the accumulated style) and a record of chainable accessors: every `Color` and `Attribute` is a getter returning a new styler with that token added, so `styler.red.bold('hi')` and `styler.red(styler.bold('hi'))` both work and nothing is mutated. |
++| `ThemeStatus`       | interface | `{ icon, style }`                                                                                                                                                                                                                                    | Represents one narrative outcome's presentation — the icon glyph a `StatusLevel` shows and the `Style` the line renders in.                                                                                                                                                                                                                                                        |
++| `Theme`             | interface | `{ levels, statuses, accent, chrome }`                                                                                                                                                                                                               | Represents the app-wide semantic style vocabulary — each role bound to a `Style` value. Pass one theme to a logger / reporter / spinner / progress and every surface speaks it.                                                                                                                                                                                                    |
++| `ThemeOptions`      | interface | `{ levels?, statuses?, accent?, chrome? }`                                                                                                                                                                                                           | Holds the options for `createTheme` — the roles to override on `DEFAULT_THEME`, a status supplying its whole copied `{ icon, style }` record.                                                                                                                                                                                                                                      |
++| `ANSIRenderer`      | class     |                                                                                                                                                                                                                                                      | Implements the cross-environment default `RendererInterface` — renders style data as ANSI SGR escape codes, stateless and event-free.                                                                                                                                                                                                                                              |
++| `createStyler`      | function  |                                                                                                                                                                                                                                                      | Creates the fluent, composable `StylerInterface` — ANSI by default, retargeted by a `renderer` and stripped of color by `enabled: false`.                                                                                                                                                                                                                                          |
++| `createTheme`       | function  |                                                                                                                                                                                                                                                      | Creates a `Theme` — the app-wide semantic style vocabulary, merged role by role over `DEFAULT_THEME`. Hand one theme to a logger / reporter / spinner / progress and every surface speaks it; omit `options` for the defaults.                                                                                                                                                     |
++| `freezeStyle`       | function  |                                                                                                                                                                                                                                                      | Snapshots and deeply freezes one `Style` value, including an independent frozen copy of its `attributes`.                                                                                                                                                                                                                                                                          |
++| `strip`             | function  |                                                                                                                                                                                                                                                      | Removes every ANSI escape sequence from `text`, returning the plain visible string.                                                                                                                                                                                                                                                                                                |
++| `stripControls`     | function  |                                                                                                                                                                                                                                                      | Removes every non-printing C0 control character from `text` except `\t` / `\n` / `\r` (meaningful whitespace), plus DEL — a separate pass from `strip`, so `width` stays untouched.                                                                                                                                                                                                |
++| `width`             | function  |                                                                                                                                                                                                                                                      | Measures how many visible columns `text` occupies — its length after ANSI escapes are stripped, counted in Unicode code points (so an astral character such as an emoji counts as one, not the two UTF-16 units `String.length` would report).                                                                                                                                     |
+ 
+ ### Logging
+ 
+ Structured logging — the immutable `LogRecord` + the `entry` event are the transport seam; `Sink` is the one output primitive.
+ 
+-| API                      | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                                                    |
+-| ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `LogLevel`               | type      | Names the severity level of a `LogRecord` — one coherent, ascending scale, `debug` < `info` < `warn` < `error`, that a `LoggerInterface` gates by threshold.                                                                                                                                                                                                                               |
+-| `LogRecord`              | interface | Represents one immutable, serializable log entry — a `level`, a `message`, and a `time`, plus an optional `name` and `data`. A `LoggerInterface` builds one per call, freezes it, retains a bounded tail of them, and emits it on `entry`; every sink / transport consumes this exact shape.                                                                                               |
+-| `SinkInterface`          | interface | Declares the minimal output primitive — the seam every formatted line is written through. A `Sink` is the one place text leaves the logging system; redirect output (to a file, a buffer, a test recorder, the browser `%c` path, a server TTY) by supplying a different `SinkInterface`, with no change to the logger.                                                                    |
+-| `WriterSet`              | interface | Groups the write targets a level-routing sink chooses between — `log`, `warn`, and `error`, each of the backend's own member type.                                                                                                                                                                                                                                                         |
+-| `selectWriter`           | function  | Selects the member of a `WriterSet` a `LogLevel` routes to — `error` to `error`, `warn` to `warn`, every other level and an omitted level to `log`.                                                                                                                                                                                                                                        |
+-| `createConsoleSink`      | function  | Creates the default `SinkInterface` — a console sink that routes by level and writes through the `console` methods snapshotted at creation. The default output target behind the `Logger`.                                                                                                                                                                                                 |
+-| `Logger`                 | class     | Implements an observable, leveled logger — the entry point into the structured-logging pipeline. Each `debug` / `info` / `warn` / `error` call builds a frozen `LogRecord`, gates it by severity, retains a bounded tail of accepted records, always emits it on `entry` (the transport seam), and — unless `silent` — formats it into a styled line and writes it to its `SinkInterface`. |
+-| `LoggerManager`          | class     | Implements an event-free registry of named `Logger`s plus a convenience fan-out — the manager over the logging layer (a registry, never observable itself; each `Logger` owns its own `emitter`).                                                                                                                                                                                          |
+-| `LoggerEventMap`         | type      | Declares the observable events a `LoggerInterface` emits — `entry(record)` for every accepted record, the transport seam.                                                                                                                                                                                                                                                                  |
+-| `LogFormatFunction`      | type      | Represents the line layout a logger writes — `(record, styler, theme) => string`, one `LogRecord` plus the styling substrate in and one finished line out. `formatRecord` is the default.                                                                                                                                                                                                  |
+-| `LoggerOptions`          | interface | Configures the `Logger` constructor — the `on` / `error` emitter keys, the `level` threshold, the logger's `name`, the `sink` / `styler` / `theme` / `format` line substrate, the retention `limit`, and the `silent` write switch.                                                                                                                                                        |
+-| `LoggerInterface`        | interface | Declares an observable, leveled logger — builds a frozen `LogRecord` per call, gates it by severity, retains a bounded tail, emits it on `entry`, and (unless silent) writes a styled line to its `SinkInterface`.                                                                                                                                                                         |
+-| `LoggerManagerOptions`   | interface | Configures the `LoggerManager` constructor — the `level` / `sink` / `styler` / `theme` / `format` / `limit` / `silent` defaults flowed into every logger it mints.                                                                                                                                                                                                                         |
+-| `LoggerManagerInterface` | interface | Declares an event-free registry of named `LoggerInterface`s plus a convenience fan-out — the manager over the logging layer. It mints + stores loggers keyed by `name`, looks them up, removes them, and broadcasts a one-off log to every registered logger.                                                                                                                              |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                      | Kind      | Shape                                                                              | Summary                                                                                                                                                                                                                                                                                                                                                                                    |
++| ------------------------ | --------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `LogLevel`               | type      | `'debug' \| 'info' \| 'warn' \| 'error'`                                           | Names the severity level of a `LogRecord` — one coherent, ascending scale, `debug` < `info` < `warn` < `error`, that a `LoggerInterface` gates by threshold.                                                                                                                                                                                                                               |
++| `LogRecord`              | interface | `{ level, message, time, name?, data? }`                                           | Represents one immutable, serializable log entry. A `LoggerInterface` builds one per call, freezes it, retains a bounded tail of them, and emits it on `entry`; every sink / transport consumes this exact shape.                                                                                                                                                                          |
++| `SinkInterface`          | interface | `{} plus write`                                                                    | Declares the minimal output primitive — the seam every formatted line is written through. A `Sink` is the one place text leaves the logging system; redirect output (to a file, a buffer, a test recorder, the browser `%c` path, a server TTY) by supplying a different `SinkInterface`, with no change to the logger.                                                                    |
++| `WriterSet`              | interface | `{ log, warn, error }`                                                             | Groups the write targets a level-routing sink chooses between — each of the backend's own member type.                                                                                                                                                                                                                                                                                     |
++| `selectWriter`           | function  |                                                                                    | Selects the member of a `WriterSet` a `LogLevel` routes to — `error` to `error`, `warn` to `warn`, every other level and an omitted level to `log`.                                                                                                                                                                                                                                        |
++| `createConsoleSink`      | function  |                                                                                    | Creates the default `SinkInterface` — a console sink that routes by level and writes through the `console` methods snapshotted at creation. The default output target behind the `Logger`.                                                                                                                                                                                                 |
++| `Logger`                 | class     |                                                                                    | Implements an observable, leveled logger — the entry point into the structured-logging pipeline. Each `debug` / `info` / `warn` / `error` call builds a frozen `LogRecord`, gates it by severity, retains a bounded tail of accepted records, always emits it on `entry` (the transport seam), and — unless `silent` — formats it into a styled line and writes it to its `SinkInterface`. |
++| `LoggerManager`          | class     |                                                                                    | Implements an event-free registry of named `Logger`s plus a convenience fan-out — the manager over the logging layer (a registry, never observable itself; each `Logger` owns its own `emitter`).                                                                                                                                                                                          |
++| `LoggerEventMap`         | type      | `{ entry: [record: LogRecord] }`                                                   | Declares the observable events a `LoggerInterface` emits — `entry(record)` for every accepted record, the transport seam.                                                                                                                                                                                                                                                                  |
++| `LogFormatFunction`      | type      | `(record: LogRecord, styler: StylerInterface, theme: Theme) => string`             | Represents the line layout a logger writes — `(record, styler, theme) => string`, one `LogRecord` plus the styling substrate in and one finished line out. `formatRecord` is the default.                                                                                                                                                                                                  |
++| `LoggerOptions`          | interface | `{ on?, error?, level?, name?, sink?, styler?, theme?, format?, limit?, silent? }` | Configures the `Logger` constructor — the `on` / `error` emitter keys, the `level` threshold, the logger's `name`, the `sink` / `styler` / `theme` / `format` line substrate, the retention `limit`, and the `silent` write switch.                                                                                                                                                        |
++| `LoggerInterface`        | interface | `{ emitter, level, name? } plus debug, info, warn, error, entries, clear, destroy` | Declares an observable, leveled logger — builds a frozen `LogRecord` per call, gates it by severity, retains a bounded tail, emits it on `entry`, and (unless silent) writes a styled line to its `SinkInterface`.                                                                                                                                                                         |
++| `LoggerManagerOptions`   | interface | `{ level?, sink?, styler?, theme?, format?, limit?, silent? }`                     | Configures the `LoggerManager` constructor — the `level` / `sink` / `styler` / `theme` / `format` / `limit` / `silent` defaults flowed into every logger it mints.                                                                                                                                                                                                                         |
++| `LoggerManagerInterface` | interface | `{ count } plus register, logger, loggers, debug, info, warn, error, remove`       | Declares an event-free registry of named `LoggerInterface`s plus a convenience fan-out — the manager over the logging layer. It mints + stores loggers keyed by `name`, looks them up, removes them, and broadcasts a one-off log to every registered logger.                                                                                                                              |
+ 
+ ### Reporting
+ 
+ Narrative reporting — pure width-aware layout renderers + a lean `Reporter` front-end, over the same styler and sink substrate.
+ 
+-| API                  | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                                                  |
+-| -------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Alignment`          | type      | Names the horizontal text alignment within a fixed-width cell — `left` / `center` / `right`, the conventional set a `ColumnSpec` (and the box / separator title) aligns by.                                                                                                                                                                                                              |
+-| `BorderStyle`        | type      | Names a box-drawing border style — `single` / `double` / `round` / `heavy`, the standard Unicode line weights the renderers frame with, each selecting a full junction set in `BORDER_CHARS`.                                                                                                                                                                                            |
+-| `BorderChars`        | interface | Represents one complete box-drawing junction set for a `BorderStyle` — the edges, the corners, and the `T` / cross junctions the box and table renderers need to frame content and rule a table.                                                                                                                                                                                         |
+-| `SeparatorOptions`   | interface | Configures `renderSeparator` — a horizontal rule, optionally carrying a centered title. Every key is optional: `title`, `width`, `fill`, `styler`, and `style`.                                                                                                                                                                                                                          |
+-| `BoxOptions`         | interface | Configures `renderBox` — content framed in box-drawing characters. `content` is required and `title`, `padding`, `border`, `width`, `styler`, and `style` are optional; a `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.                                                                                                              |
+-| `ColumnSpec`         | interface | Represents one column of a `TableOptions` — its header label and how its cells align.                                                                                                                                                                                                                                                                                                    |
+-| `TableOptions`       | interface | Configures `renderTable` — a bordered grid of columns + rows with per-column alignment and width-aware sizing. `columns` and `rows` are required and `border`, `styler`, and `style` are optional; a `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.                                                                                   |
+-| `TreeNode`           | interface | Represents one node of a `TreeOptions` tree — a label plus optional children, recursively.                                                                                                                                                                                                                                                                                               |
+-| `TreeOptions`        | interface | Configures `renderTree` — a nested `TreeNode` tree drawn with box-drawing connectors. `root` is required and `border`, `styler`, and `style` are optional; a `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.                                                                                                                           |
+-| `StatusLevel`        | type      | Names a narrative outcome level — `success` / `error` / `warn` / `info`, the states `ReporterInterface.status` reports, each with its own icon + color (`STATUS_ICONS` / `STATUS_COLORS`).                                                                                                                                                                                               |
+-| `StepPosition`       | interface | Represents where one step sits in a sequence — the `{ index, total }` a `ReporterInterface.step` renders as a `[2/5]` prefix.                                                                                                                                                                                                                                                            |
+-| `ReporterOptions`    | interface | Configures the `Reporter` constructor — the `sink` every line is written to, the `styler` and `theme` it formats through, and the `width` its layouts measure against.                                                                                                                                                                                                                   |
+-| `ReporterInterface`  | interface | Declares a lean, event-free narrative reporter — the composable verb set for human / build-run output (sections, steps, timings, outcomes, tables, trees, boxes), formatting through the shared `StylerInterface` + layout renderers and writing to a `SinkInterface`.                                                                                                                   |
+-| `Reporter`           | class     | Implements a lean, event-free narrative reporter — the composable verb set for human / build-run output. Each verb formats its line through the shared `StylerInterface` and the pure layout renderers (`renderSeparator` / `renderBox` / `renderTable` / `renderTree`) and writes it to a `SinkInterface` — the same styler + sink substrate the logger uses, never a second colorizer. |
+-| `renderSeparator`    | function  | Renders a horizontal rule — an optional centered title embedded in a line of fill characters, to a fixed visible width. Pure: same `SeparatorOptions` → same string.                                                                                                                                                                                                                     |
+-| `renderBox`          | function  | Renders `content` framed in box-drawing characters, optionally captioned, width-aware so styled content stays aligned inside the frame. Pure: same `BoxOptions` → same string.                                                                                                                                                                                                           |
+-| `renderTable`        | function  | Renders a bordered grid of `columns` + `rows` with per-column alignment and width-aware column sizing. Pure: same `TableOptions` → same string.                                                                                                                                                                                                                                          |
+-| `renderTree`         | function  | Renders a nested `TreeNode` tree whose connectors derive from the chosen `border` set. Pure: same `TreeOptions` → same string.                                                                                                                                                                                                                                                           |
+-| `renderTreeChildren` | function  | Renders the connector-prefixed lines for a `TreeNode` list — the recursive core behind `renderTree`, whose third options argument requires `border` and groups the optional `styler` and `style`.                                                                                                                                                                                        |
+-| `renderBar`          | function  | Renders a determinate progress bar string — a filled / empty glyph track followed by the percentage and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure and width-aware: same `BarOptions` → same string.                                                                                                                                                                    |
+-| `align`              | function  | Pads (or, when over budget, truncates) `text` to exactly `columns` visible columns, positioning it by `alignment`. The width primitive the box / table renderers align every cell with.                                                                                                                                                                                                  |
+-| `paint`              | function  | Colors `text` through `styler` and an optional by-value `Style`, or returns it verbatim when `styler` is `undefined` — the single optional-styling primitive every renderer applies to its border / title / connector glyphs.                                                                                                                                                            |
+-| `repeatTo`           | function  | Repeats `unit` until it fills exactly `columns` visible columns, trimming a trailing partial unit so the run is never over-wide — the fill primitive the separator + box edges draw with.                                                                                                                                                                                                |
+-| `cellAt`             | function  | Returns the cell at `index` of a (possibly ragged) row — `''` when the row is shorter than the column count, so a short row pads out instead of throwing (the ragged-row guard `renderTable` reads every cell through).                                                                                                                                                                  |
+-| `meetsLevel`         | function  | Checks whether a record at `level` passes a logger gated at `threshold` — that is, its severity is at or above the threshold's.                                                                                                                                                                                                                                                          |
+-| `formatTime`         | function  | Formats a `LogRecord`'s `time` (epoch milliseconds) as an ISO-8601 timestamp string.                                                                                                                                                                                                                                                                                                     |
+-| `formatRecord`       | function  | Formats a `LogRecord` into a single styled line — the default human line layout a `LoggerInterface` writes to its sink.                                                                                                                                                                                                                                                                  |
+-| `formatDuration`     | function  | Formats a millisecond duration as a compact human string — `…ms` below one second, `…s` (seconds to 2 decimal places) at or above one second. The timing rendering behind `ReporterInterface.timing`.                                                                                                                                                                                    |
+-| `stringifyValue`     | function  | Stringifies one captured console argument into a line fragment — the per-argument rule behind `formatArgs`: an `Error` → `name: message`, a plain object / array → circular-safe JSON, anything else (string, number, boolean, `null`, `undefined`, symbol, function) → `String(value)`.                                                                                                 |
+-| `formatArgs`         | function  | Stringifies a captured `console.*` argument list into one line — the text of a `import('./types.js').CapturedMessage`. Each argument is rendered by `stringifyValue` and the parts are space-joined, mirroring how a console concatenates its arguments.                                                                                                                                 |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                  | Kind      | Shape                                                                                                            | Summary                                                                                                                                                                                                                                                                                                                                                                                  |
++| -------------------- | --------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Alignment`          | type      | `'left' \| 'center' \| 'right'`                                                                                  | Names the horizontal text alignment within a fixed-width cell — `left` / `center` / `right`, the conventional set a `ColumnSpec` (and the box / separator title) aligns by.                                                                                                                                                                                                              |
++| `BorderStyle`        | type      | `'single' \| 'double' \| 'round' \| 'heavy'`                                                                     | Names a box-drawing border style — `single` / `double` / `round` / `heavy`, the standard Unicode line weights the renderers frame with, each selecting a full junction set in `BORDER_CHARS`.                                                                                                                                                                                            |
++| `BorderChars`        | interface | `{ horizontal, vertical, topLeft, topRight, bottomLeft, bottomRight, cross, teeDown, teeUp, teeRight, teeLeft }` | Represents one complete box-drawing junction set for a `BorderStyle` — the edges, the corners, and the `T` / cross junctions the box and table renderers need to frame content and rule a table.                                                                                                                                                                                         |
++| `SeparatorOptions`   | interface | `{ title?, width?, fill?, styler?, style? }`                                                                     | Configures `renderSeparator` — a horizontal rule, optionally carrying a centered title. Every key is optional.                                                                                                                                                                                                                                                                           |
++| `BoxOptions`         | interface | `{ content, title?, padding?, border?, width?, styler?, style? }`                                                | Configures `renderBox` — content framed in box-drawing characters. A `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.                                                                                                                                                                                                                   |
++| `ColumnSpec`         | interface | `{ label, align? }`                                                                                              | Represents one column of a `TableOptions` — its header label and how its cells align.                                                                                                                                                                                                                                                                                                    |
++| `TableOptions`       | interface | `{ columns, rows, border?, styler?, style? }`                                                                    | Configures `renderTable` — a bordered grid of columns + rows with per-column alignment and width-aware sizing. A `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.                                                                                                                                                                       |
++| `TreeNode`           | interface | `{ label, children? }`                                                                                           | Represents one node of a `TreeOptions` tree — a label plus optional children, recursively.                                                                                                                                                                                                                                                                                               |
++| `TreeOptions`        | interface | `{ root, border?, styler?, style? }`                                                                             | Configures `renderTree` — a nested `TreeNode` tree drawn with box-drawing connectors. A `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.                                                                                                                                                                                                |
++| `StatusLevel`        | type      | `'success' \| 'error' \| 'warn' \| 'info'`                                                                       | Names a narrative outcome level — `success` / `error` / `warn` / `info`, the states `ReporterInterface.status` reports, each with its own icon + color (`STATUS_ICONS` / `STATUS_COLORS`).                                                                                                                                                                                               |
++| `StepPosition`       | interface | `{ index, total }`                                                                                               | Represents where one step sits in a sequence — what `ReporterInterface.step` renders as a `[2/5]` prefix.                                                                                                                                                                                                                                                                                |
++| `ReporterOptions`    | interface | `{ sink?, styler?, theme?, width? }`                                                                             | Configures the `Reporter` constructor — the `sink` every line is written to, the `styler` and `theme` it formats through, and the `width` its layouts measure against.                                                                                                                                                                                                                   |
++| `ReporterInterface`  | interface | `{} plus section, step, timing, status, table, tree, box, line, blank`                                           | Declares a lean, event-free narrative reporter — the composable verb set for human / build-run output (sections, steps, timings, outcomes, tables, trees, boxes), formatting through the shared `StylerInterface` + layout renderers and writing to a `SinkInterface`.                                                                                                                   |
++| `Reporter`           | class     |                                                                                                                  | Implements a lean, event-free narrative reporter — the composable verb set for human / build-run output. Each verb formats its line through the shared `StylerInterface` and the pure layout renderers (`renderSeparator` / `renderBox` / `renderTable` / `renderTree`) and writes it to a `SinkInterface` — the same styler + sink substrate the logger uses, never a second colorizer. |
++| `renderSeparator`    | function  |                                                                                                                  | Renders a horizontal rule — an optional centered title embedded in a line of fill characters, to a fixed visible width. Pure: same `SeparatorOptions` → same string.                                                                                                                                                                                                                     |
++| `renderBox`          | function  |                                                                                                                  | Renders `content` framed in box-drawing characters, optionally captioned, width-aware so styled content stays aligned inside the frame. Pure: same `BoxOptions` → same string.                                                                                                                                                                                                           |
++| `renderTable`        | function  |                                                                                                                  | Renders a bordered grid of `columns` + `rows` with per-column alignment and width-aware column sizing. Pure: same `TableOptions` → same string.                                                                                                                                                                                                                                          |
++| `renderTree`         | function  |                                                                                                                  | Renders a nested `TreeNode` tree whose connectors derive from the chosen `border` set. Pure: same `TreeOptions` → same string.                                                                                                                                                                                                                                                           |
++| `renderTreeChildren` | function  |                                                                                                                  | Renders the connector-prefixed lines for a `TreeNode` list — the recursive core behind `renderTree`, whose third options argument requires `border` and groups the optional `styler` and `style`.                                                                                                                                                                                        |
++| `renderBar`          | function  |                                                                                                                  | Renders a determinate progress bar string — a filled / empty glyph track followed by the percentage and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure and width-aware: same `BarOptions` → same string.                                                                                                                                                                    |
++| `align`              | function  |                                                                                                                  | Pads (or, when over budget, truncates) `text` to exactly `columns` visible columns, positioning it by `alignment`. The width primitive the box / table renderers align every cell with.                                                                                                                                                                                                  |
++| `paint`              | function  |                                                                                                                  | Colors `text` through `styler` and an optional by-value `Style`, or returns it verbatim when `styler` is `undefined` — the single optional-styling primitive every renderer applies to its border / title / connector glyphs.                                                                                                                                                            |
++| `repeatTo`           | function  |                                                                                                                  | Repeats `unit` until it fills exactly `columns` visible columns, trimming a trailing partial unit so the run is never over-wide — the fill primitive the separator + box edges draw with.                                                                                                                                                                                                |
++| `cellAt`             | function  |                                                                                                                  | Returns the cell at `index` of a (possibly ragged) row — `''` when the row is shorter than the column count, so a short row pads out instead of throwing (the ragged-row guard `renderTable` reads every cell through).                                                                                                                                                                  |
++| `meetsLevel`         | function  |                                                                                                                  | Checks whether a record at `level` passes a logger gated at `threshold` — that is, its severity is at or above the threshold's.                                                                                                                                                                                                                                                          |
++| `formatTime`         | function  |                                                                                                                  | Formats a `LogRecord`'s `time` (epoch milliseconds) as an ISO-8601 timestamp string.                                                                                                                                                                                                                                                                                                     |
++| `formatRecord`       | function  |                                                                                                                  | Formats a `LogRecord` into a single styled line — the default human line layout a `LoggerInterface` writes to its sink.                                                                                                                                                                                                                                                                  |
++| `formatDuration`     | function  |                                                                                                                  | Formats a millisecond duration as a compact human string — `…ms` below one second, `…s` (seconds to 2 decimal places) at or above one second. The timing rendering behind `ReporterInterface.timing`.                                                                                                                                                                                    |
++| `stringifyValue`     | function  |                                                                                                                  | Stringifies one captured console argument into a line fragment — the per-argument rule behind `formatArgs`: an `Error` → `name: message`, a plain object / array → circular-safe JSON, anything else (string, number, boolean, `null`, `undefined`, symbol, function) → `String(value)`.                                                                                                 |
++| `formatArgs`         | function  |                                                                                                                  | Stringifies a captured `console.*` argument list into one line — the text of a `CapturedMessage`. Each argument is rendered by `stringifyValue` and the parts are space-joined, mirroring how a console concatenates its arguments.                                                                                                                                                      |
+ 
+ ### Capture
+ 
+ Console interception — take control of `console.*` on the read side; a buffered, mirroring, forwarding interceptor with a lifecycle.
+ 
+-| API                   | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                         |
+-| --------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `CaptureLevel`        | type      | Identifies one intercepted `console` method — `log` / `info` / `warn` / `error` / `debug`, the names a `CaptureInterface` patches and reports under.                                                                                                                                                                                                            |
+-| `ConsoleMethod`       | type      | Names the console-method shape a `CaptureInterface` snapshots and swaps at the patch boundary — a variadic sink of arbitrary arguments.                                                                                                                                                                                                                         |
+-| `CapturedMessage`     | interface | Represents one captured console call — an immutable, serializable `{ level, text, time }` record of a single intercepted `console.*` invocation. A `CaptureInterface` builds one per call, freezes it, buffers it (total + by level), and emits it on `capture`; every consumer reads this exact shape.                                                         |
+-| `CaptureEventMap`     | type      | Declares the observable events a `CaptureInterface` emits — `capture(message)` per intercepted call, plus the `start` and `stop` lifecycle signals.                                                                                                                                                                                                             |
+-| `CaptureOptions`      | interface | Configures the `Capture` constructor — the `on` / `error` emitter keys, the `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`.                                                                                                                                                                                        |
+-| `CaptureInterface`    | interface | Declares an observable console interceptor — it takes control of the global `console.*` on the read side: while `active`, every configured `console.x` call is captured as a frozen `CapturedMessage`, buffered (total + by level, bounded), emitted on `capture`, and — per options — mirrored to the real console, forwarded to a `SinkInterface`, or both.   |
+-| `CaptureResult`       | interface | Represents the structured outcome of `createCaptureResult` — the wrapped function's own return `value` plus the `messages` it logged while it ran.                                                                                                                                                                                                              |
+-| `RetentionInterface`  | interface | Declares the bounded, level-keyed retention buffer a capture keeps its records in — one capped total buffer plus one capped bucket per level configured at construction.                                                                                                                                                                                        |
+-| `Retention`           | class     | Implements the bounded, level-keyed retention engine the console and process captures buffer through — one capped total buffer plus one capped bucket per level, generic over the record type each capture carries.                                                                                                                                             |
+-| `Capture`             | class     | Implements an observable console interceptor — it takes control of the global `console.*` on the read side. While `active`, every configured `console.x` call is captured as a frozen `CapturedMessage`, buffered (total + by level, bounded), emitted on `capture`, and — per options — mirrored to the real console, forwarded to a `SinkInterface`, or both. |
+-| `createCaptureResult` | function  | Runs `fn` with the global `console.*` captured for its duration, returning the function's `value` plus the `CapturedMessage`s it logged — the scoped, self-restoring ergonomic form of the `Capture` class.                                                                                                                                                     |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                   | Kind      | Shape                                                            | Summary                                                                                                                                                                                                                                                                                                                                                         |
++| --------------------- | --------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `CaptureLevel`        | type      | `'log' \| 'info' \| 'warn' \| 'error' \| 'debug'`                | Identifies one intercepted `console` method — `log` / `info` / `warn` / `error` / `debug`, the names a `CaptureInterface` patches and reports under.                                                                                                                                                                                                            |
++| `ConsoleMethod`       | type      | `(...args: unknown[]) => void`                                   | Names the console-method shape a `CaptureInterface` snapshots and swaps at the patch boundary — a variadic sink of arbitrary arguments.                                                                                                                                                                                                                         |
++| `CapturedMessage`     | interface | `{ level, text, time }`                                          | Represents one captured console call — an immutable, serializable record of a single intercepted `console.*` invocation. A `CaptureInterface` builds one per call, freezes it, buffers it (total + by level), and emits it on `capture`; every consumer reads this exact shape.                                                                                 |
++| `CaptureEventMap`     | type      | `{ capture: [message: CapturedMessage]; start: []; stop: [] }`   | Declares the observable events a `CaptureInterface` emits — `capture(message)` per intercepted call, plus the `start` and `stop` lifecycle signals.                                                                                                                                                                                                             |
++| `CaptureOptions`      | interface | `{ on?, error?, levels?, mirror?, sink?, limit? }`               | Configures the `Capture` constructor — the `on` / `error` emitter keys, the `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`.                                                                                                                                                                                        |
++| `CaptureInterface`    | interface | `{ emitter, active } plus start, stop, messages, clear, destroy` | Declares an observable console interceptor — it takes control of the global `console.*` on the read side: while `active`, every configured `console.x` call is captured as a frozen `CapturedMessage`, buffered (total + by level, bounded), emitted on `capture`, and — per options — mirrored to the real console, forwarded to a `SinkInterface`, or both.   |
++| `CaptureResult`       | interface | `{ value, messages }`                                            | Represents the structured outcome of `createCaptureResult` — the wrapped function's own return `value` plus the `messages` it logged while it ran.                                                                                                                                                                                                              |
++| `RetentionInterface`  | interface | `{} plus add, records, clear`                                    | Declares the bounded, level-keyed retention buffer a capture keeps its records in — one capped total buffer plus one capped bucket per level configured at construction.                                                                                                                                                                                        |
++| `Retention`           | class     |                                                                  | Implements the bounded, level-keyed retention engine the console and process captures buffer through — one capped total buffer plus one capped bucket per level, generic over the record type each capture carries.                                                                                                                                             |
++| `Capture`             | class     |                                                                  | Implements an observable console interceptor — it takes control of the global `console.*` on the read side. While `active`, every configured `console.x` call is captured as a frozen `CapturedMessage`, buffered (total + by level, bounded), emitted on `capture`, and — per options — mirrored to the real console, forwarded to a `SinkInterface`, or both. |
++| `createCaptureResult` | function  |                                                                  | Runs `fn` with the global `console.*` captured for its duration, returning the function's `value` plus the `CapturedMessage`s it logged — the scoped, self-restoring ergonomic form of the `Capture` class.                                                                                                                                                     |
+ 
+ ### Errors
+ 
+ The one error type the console layer throws — an internal invariant or unreachable-guard violation.
+ 
+-| API                | Kind     | Summary                                                                                                                                                  |
+-| ------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `ConsoleErrorCode` | type     | Names the machine-readable error code a `ConsoleError` carries — `INVARIANT`, the only code the package throws.                                          |
+-| `ConsoleError`     | class    | Carries a `ConsoleErrorCode` and an optional `context` bag — the error the console layer throws for an internal invariant violated at a defensive guard. |
+-| `isConsoleError`   | function | Narrows an unknown caught value to a `ConsoleError` — the guard a `catch` branches on.                                                                   |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                | Kind     | Shape         | Summary                                                                                                                                                  |
++| ------------------ | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `ConsoleErrorCode` | type     | `'INVARIANT'` | Names the machine-readable error code a `ConsoleError` carries — `INVARIANT`, the only code the package throws.                                          |
++| `ConsoleError`     | class    |               | Carries a `ConsoleErrorCode` and an optional `context` bag — the error the console layer throws for an internal invariant violated at a defensive guard. |
++| `isConsoleError`   | function |               | Narrows an unknown caught value to a `ConsoleError` — the guard a `catch` branches on.                                                                   |
+ 
+ ### Animations
+ 
+ Live activity animations — pure frame producers over the same styler and sink substrate; the line overwrite is the sink's job.
+ 
+-| API                 | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                         |
+-| ------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `BarOptions`        | interface | Configures the pure `renderBar` renderer — a determinate progress bar string (`█████░░░░░ 50% (5/10)`), width-aware and styler-optional. `current` and `total` are required and `width`, `fill`, `empty`, `styler`, and `style` are optional.                                                                                                                   |
+-| `SpinnerEventMap`   | type      | Declares the observable events a `SpinnerInterface` emits — `frame(line)` per advance and per outcome, plus the `start` and `stop` timer-lifecycle signals.                                                                                                                                                                                                     |
+-| `SpinnerOptions`    | interface | Configures the `Spinner` constructor — the `on` / `error` emitter keys, the `message` shown, the glyph `frames` and their `interval`, and the `sink` / `styler` / `theme` line substrate.                                                                                                                                                                       |
+-| `SpinnerInterface`  | interface | Declares a self-driving, observable activity spinner — a glyph cycle that advances on a periodic timer, writing each `\r` + frame line to its `SinkInterface` and emitting it on `frame`. The line-overwrite is the sink's job (a TTY sink overwrites on the `\r`; a plain sink degrades to a fresh line).                                                      |
+-| `Spinner`           | class     | Implements a self-driving, observable activity spinner — a glyph cycle that advances on a periodic timer, writing each `\r` + frame line to its `SinkInterface` and emitting it on `frame`. The timer is always cleared on an outcome, so the spinner is leak-free.                                                                                             |
+-| `ProgressReport`    | interface | Reports one advance of a `ProgressInterface` — the clamped `{ current, total }` payload carried by the `update` event of `ProgressEventMap`.                                                                                                                                                                                                                    |
+-| `ProgressEventMap`  | type      | Declares the observable events a `ProgressInterface` emits — `update(progress)` per report, plus a `succeed` signal on a successful finish.                                                                                                                                                                                                                     |
+-| `ProgressOptions`   | interface | Configures the `Progress` constructor — the `on` / `error` emitter keys, the required `total`, the `message` shown, the bar's `width` / `fill` / `empty` glyphs, and the `sink` / `styler` / `theme` line substrate.                                                                                                                                            |
+-| `ProgressInterface` | interface | Declares an update-driven, observable progress bar — `update(current)` recomputes the bar through `renderBar`, writes `\r` + bar to its `SinkInterface`, and emits the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink overwrites on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives it. |
+-| `Progress`          | class     | Implements an update-driven, observable progress bar — `update` recomputes the bar through `renderBar`, writes `\r` + bar to its `SinkInterface`, and emits the `{ current, total }` on `update`. No self-timer, unlike `Spinner` — the caller drives it.                                                                                                       |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                 | Kind      | Shape                                                                                 | Summary                                                                                                                                                                                                                                                                                                                                                         |
++| ------------------- | --------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `BarOptions`        | interface | `{ current, total, width?, fill?, empty?, styler?, style? }`                          | Configures the pure `renderBar` renderer — a determinate progress bar string (`█████░░░░░ 50% (5/10)`), width-aware and styler-optional.                                                                                                                                                                                                                        |
++| `SpinnerEventMap`   | type      | `{ frame: [line: string]; start: []; stop: [] }`                                      | Declares the observable events a `SpinnerInterface` emits — `frame(line)` per advance and per outcome, plus the `start` and `stop` timer-lifecycle signals.                                                                                                                                                                                                     |
++| `SpinnerOptions`    | interface | `{ on?, error?, message?, frames?, interval?, sink?, styler?, theme? }`               | Configures the `Spinner` constructor — the `on` / `error` emitter keys, the `message` shown, the glyph `frames` and their `interval`, and the `sink` / `styler` / `theme` line substrate.                                                                                                                                                                       |
++| `SpinnerInterface`  | interface | `{ emitter, active, message } plus start, tick, update, succeed, fail, stop, destroy` | Declares a self-driving, observable activity spinner — a glyph cycle that advances on a periodic timer, writing each `\r` + frame line to its `SinkInterface` and emitting it on `frame`. The line-overwrite is the sink's job (a TTY sink overwrites on the `\r`; a plain sink degrades to a fresh line).                                                      |
++| `Spinner`           | class     |                                                                                       | Implements a self-driving, observable activity spinner — a glyph cycle that advances on a periodic timer, writing each `\r` + frame line to its `SinkInterface` and emitting it on `frame`. The timer is always cleared on an outcome, so the spinner is leak-free.                                                                                             |
++| `ProgressReport`    | interface | `{ current, total }`                                                                  | Reports one advance of a `ProgressInterface` — the clamped payload carried by the `update` event of `ProgressEventMap`.                                                                                                                                                                                                                                         |
++| `ProgressEventMap`  | type      | `{ update: [progress: ProgressReport]; succeed: [] }`                                 | Declares the observable events a `ProgressInterface` emits — `update(progress)` per report, plus a `succeed` signal on a successful finish.                                                                                                                                                                                                                     |
++| `ProgressOptions`   | interface | `{ on?, error?, total, message?, width?, fill?, empty?, sink?, styler?, theme? }`     | Configures the `Progress` constructor — the `on` / `error` emitter keys, the required `total`, the `message` shown, the bar's `width` / `fill` / `empty` glyphs, and the `sink` / `styler` / `theme` line substrate.                                                                                                                                            |
++| `ProgressInterface` | interface | `{ emitter, active, succeeded, current, total } plus update, succeed, fail, destroy`  | Declares an update-driven, observable progress bar — `update(current)` recomputes the bar through `renderBar`, writes `\r` + bar to its `SinkInterface`, and emits the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink overwrites on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives it. |
++| `Progress`          | class     |                                                                                       | Implements an update-driven, observable progress bar — `update` recomputes the bar through `renderBar`, writes `\r` + bar to its `SinkInterface`, and emits the `{ current, total }` on `update`. No self-timer, unlike `Spinner` — the caller drives it.                                                                                                       |
+ 
+ ### Style constants
+ 
+@@ -193,7 +203,7 @@ The SGR code data the ANSI renderer maps through, and the styler's color / attri
+ | `CSI`              | const | Holds the Control Sequence Introducer (`ESC[`) that opens every SGR sequence.                                                                                                                                                                                                                                                                                                      |
+ | `RESET`            | const | Holds the full SGR reset sequence (`ESC[0m`) appended after a styled run.                                                                                                                                                                                                                                                                                                          |
+ | `ANSI_PATTERN`     | const | Matches any ANSI/VT escape sequence — CSI (SGR color/style plus cursor/erase/scroll, including colon-parameterized SGR), OSC / DCS / PM / APC / SOS string sequences (titles, hyperlinks, device strings), the `nF` charset-select family, and the two-byte `Fp` / `Fe` / `Fs` sequences (for example `ESC 7`, `ESC D`, `ESC c` RIS). Global, so `strip` removes every occurrence. |
+-| `CONTROL_PATTERN`  | const | Matches every C0 control character except `\t` / `\n` / `\r` (which are meaningful whitespace), plus DEL (`0x7F`) — the non-printing bytes `import('./helpers.js').stripControls` removes. Global, ASCII-only source (no raw control-character literal), so a scan builds a fresh `RegExp` the same way as `ANSI_PATTERN` to avoid a mutated `lastIndex`.                          |
++| `CONTROL_PATTERN`  | const | Matches every C0 control character except `\t` / `\n` / `\r` (which are meaningful whitespace), plus DEL (`0x7F`) — the non-printing bytes `stripControls` removes. Global, ASCII-only source (no raw control-character literal), so a scan builds a fresh `RegExp` the same way as `ANSI_PATTERN` to avoid a mutated `lastIndex`.                                                 |
+ 
+ ### Logging & reporting constants
+ 
+@@ -207,7 +217,7 @@ The level order + label colors, the box-drawing junction sets, status icons / co
+ | `DEFAULT_LOG_LEVEL`   | const | Sets the default `LogLevel` threshold a logger gates at when none is supplied — `info`.                                                                                                                                                                                                                                                                    |
+ | `LOG_LEVELS`          | const | Lists every `LogLevel`, in ascending severity order — the levels a logger exposes as methods and the manager fans out to. The source of truth for the level axis (drives exhaustive tests); aligned with `LEVEL_SEVERITY`.                                                                                                                                 |
+ | `BORDER_CHARS`        | const | Holds the complete `BorderChars` junction set for each `BorderStyle` — the standard Unicode box-drawing glyphs at each line weight, deeply frozen.                                                                                                                                                                                                         |
+-| `STATUS_ICONS`        | const | Maps each `StatusLevel` to its icon glyph — the leading mark a `import('./types.js').ReporterInterface.status` outcome line shows: `success` ✔, `error` ✖, `warn` ⚠, `info` ℹ. The narrative-outcome counterpart to a log level's label; frozen.                                                                                                           |
++| `STATUS_ICONS`        | const | Maps each `StatusLevel` to its icon glyph — the leading mark a `ReporterInterface.status` outcome line shows: `success` ✔, `error` ✖, `warn` ⚠, `info` ℹ. The narrative-outcome counterpart to a log level's label; frozen.                                                                                                                                |
+ | `STATUS_COLORS`       | const | Maps each `StatusLevel` to its `Color` — the icon + message color a `status` line renders in (`success` green, `error` red, `warn` yellow, `info` blue). The visual treatment of a narrative outcome, colored through the reporter's styler; orthogonal to leveling, like `LEVEL_COLORS`. Excludes `default` so each value indexes a real styler accessor. |
+ | `STATUS_LEVELS`       | const | Lists every `StatusLevel`, frozen — the outcomes a `status` line supports (drives exhaustive tests). The source of truth for the status axis; aligned with `STATUS_ICONS` / `STATUS_COLORS`.                                                                                                                                                               |
+ | `DEFAULT_WIDTH`       | const | Sets the default visible column width for the width-aware renderers — the separator rule and a `renderBox` with no explicit `width`, and the reporter's `section` rule. A sane terminal default (80 columns); a caller overrides it per-call or through `ReporterOptions.width`.                                                                           |
+@@ -222,31 +232,33 @@ The level order + label colors, the box-drawing junction sets, status icons / co
+ 
+ The intercepted-method set, the bounded-buffer cap, the level projection, and the spinner frames / bar glyphs / track width (`src/core`). All `Object.freeze`d data.
+ 
+-| API                        | Kind  | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+-| -------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `CAPTURE_LEVELS`           | const | Lists every `CaptureLevel`, frozen — the `console.*` methods a `import('./types.js').CaptureInterface` intercepts by default (and the source of truth for the capture-level axis; drives exhaustive tests). The universal console methods: `log`, `info`, `warn`, `error`, `debug`.                                                                                                                                                                                                                                                                                   |
+-| `DEFAULT_CAPTURE_LIMIT`    | const | Sets the default bounded-buffer cap for a `CaptureInterface` — `1000`, so at most that many recent `CapturedMessage`s are retained per buffer (the total buffer and each by-level bucket; oldest dropped first) and retention is always bounded.                                                                                                                                                                                                                                                                                                                      |
+-| `CAPTURE_LEVEL_MAP`        | const | Maps each `CaptureLevel` to its `LogLevel` for the optional sink forward — the projection the Capture routes through when writing an intercepted call to a `import('./types.js').SinkInterface`. `sink.write(text, CAPTURE_LEVEL_MAP[level])` is the call this map backs. `warn` / `error` / `debug` / `info` map to their matching `LogLevel`; `log` maps to `info` (a plain console log is informational — the default stream), so a stream-aware sink routes `warn` / `error` captures to the right stream. The source of truth for the capture-to-log projection. |
+-| `SPINNER_FRAMES`           | const | Holds the default spinner frame cycle a `SpinnerInterface` advances through — the braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating dot.                                                                                                                                                                                                                                                                                                                                                                                             |
+-| `DEFAULT_SPINNER_INTERVAL` | const | Sets the default timer period between a `SpinnerInterface`'s frames — the `setInterval` interval `start()` arms, `80` ms (≈12.5 frames/second).                                                                                                                                                                                                                                                                                                                                                                                                                       |
+-| `BAR_FILL`                 | const | Holds the default filled-cell glyph `renderBar` draws the completed run of a progress bar with — the full block `█` (U+2588). A single visible cell; a consumer overrides it through `BarOptions.fill`.                                                                                                                                                                                                                                                                                                                                                               |
+-| `BAR_EMPTY`                | const | Holds the default empty-cell glyph `renderBar` draws the remaining run of a progress bar with — the light-shade block `░` (U+2591). A single visible cell; a consumer overrides it through `BarOptions.empty`.                                                                                                                                                                                                                                                                                                                                                        |
+-| `DEFAULT_BAR_WIDTH`        | const | Sets the default visible cell count of a progress-bar track — the glyph run `renderBar` fills, and the width a `ProgressInterface` sizes its bar to. `30` cells.                                                                                                                                                                                                                                                                                                                                                                                                      |
++| API                        | Kind  | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
++| -------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `CAPTURE_LEVELS`           | const | Lists every `CaptureLevel`, frozen — the `console.*` methods a `CaptureInterface` intercepts by default (and the source of truth for the capture-level axis; drives exhaustive tests). The universal console methods: `log`, `info`, `warn`, `error`, `debug`.                                                                                                                                                                                                                                                                                   |
++| `DEFAULT_CAPTURE_LIMIT`    | const | Sets the default bounded-buffer cap for a `CaptureInterface` — `1000`, so at most that many recent `CapturedMessage`s are retained per buffer (the total buffer and each by-level bucket; oldest dropped first) and retention is always bounded.                                                                                                                                                                                                                                                                                                 |
++| `CAPTURE_LEVEL_MAP`        | const | Maps each `CaptureLevel` to its `LogLevel` for the optional sink forward — the projection the Capture routes through when writing an intercepted call to a `SinkInterface`. `sink.write(text, CAPTURE_LEVEL_MAP[level])` is the call this map backs. `warn` / `error` / `debug` / `info` map to their matching `LogLevel`; `log` maps to `info` (a plain console log is informational — the default stream), so a stream-aware sink routes `warn` / `error` captures to the right stream. The source of truth for the capture-to-log projection. |
++| `SPINNER_FRAMES`           | const | Holds the default spinner frame cycle a `SpinnerInterface` advances through — the braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating dot.                                                                                                                                                                                                                                                                                                                                                                        |
++| `DEFAULT_SPINNER_INTERVAL` | const | Sets the default timer period between a `SpinnerInterface`'s frames — the `setInterval` interval `start()` arms, `80` ms (≈12.5 frames/second).                                                                                                                                                                                                                                                                                                                                                                                                  |
++| `BAR_FILL`                 | const | Holds the default filled-cell glyph `renderBar` draws the completed run of a progress bar with — the full block `█` (U+2588). A single visible cell; a consumer overrides it through `BarOptions.fill`.                                                                                                                                                                                                                                                                                                                                          |
++| `BAR_EMPTY`                | const | Holds the default empty-cell glyph `renderBar` draws the remaining run of a progress bar with — the light-shade block `░` (U+2591). A single visible cell; a consumer overrides it through `BarOptions.empty`.                                                                                                                                                                                                                                                                                                                                   |
++| `DEFAULT_BAR_WIDTH`        | const | Sets the default visible cell count of a progress-bar track — the glyph run `renderBar` fills, and the width a `ProgressInterface` sizes its bar to. `30` cells.                                                                                                                                                                                                                                                                                                                                                                                 |
+ 
+ ### Browser sink
+ 
+ The browser `%c` console sink — translates the core's ANSI output into a `console.log('%c…', css)` call at the output boundary ([`src/browser`](../src/browser), surfaced through `@src/browser`). The core owns the `SinkInterface` contract + the style data model; this module owns only the browser-side translation.
+ 
+-| API                  | Kind      | Summary                                                                                                                                                                                                                                                                                                                                          |
+-| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `BrowserPalette`     | interface | Holds partial browser CSS overrides for the core color and attribute axes — a named `color` or `attribute` entry replaces only that entry, and every omission keeps its default.                                                                                                                                                                 |
+-| `BrowserSinkOptions` | interface | Configures `createBrowserSink` — the optional `palette` partially overriding the browser's named color and attribute CSS mappings.                                                                                                                                                                                                               |
+-| `ConsoleOutput`      | interface | Represents the `console.log`-ready output `ansiToConsole` produces from an ANSI-styled string — a format string of `%c`-prefixed segments and the parallel array of CSS declarations, ready to spread into a browser `console` call as `console.log(format, ...styles)`.                                                                         |
+-| `StyleAccumulator`   | interface | Represents the immutable scan state `ansiToConsole` replaces while translating SGR codes to CSS — an optional `foreground` and `background` declaration plus a readonly list of attribute declarations.                                                                                                                                          |
+-| `createBrowserSink`  | function  | Creates the browser `%c` `SinkInterface` — the browser output backend. `write(text, level?)` translates the ANSI-styled `text` into a browser `console` call (`console[method](format, ...styles)`) through `ansiToConsole`, an optional partial `BrowserPalette` overriding the named color and attribute CSS.                                  |
+-| `ansiToConsole`      | function  | Translates an ANSI-styled string into a browser `console.log`-ready `ConsoleOutput` — a `%c`-segmented format string and the parallel array of CSS declarations, an optional partial `BrowserPalette` overriding the CSS per named lookup.                                                                                                       |
+-| `escapePercent`      | function  | Doubles every literal `%` in `text` to `%%` — the `%`-escape that keeps a browser console from reading a stray `%` (for example in `50%` or `%s`) as a format directive. The single escape the `ansiToConsole` translation applies to every text segment before assembling the format string (so only the `%c`s it inserts are real directives). |
+-| `scanParameters`     | function  | Walks an SGR parameter list (the `;`-separated numeric string captured by `SGR_PATTERN`) and returns its numeric codes — `'1;31'` → `[1, 31]`, a bare or empty field becoming a `0` reset. It is total: every input yields a code list.                                                                                                          |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                  | Kind      | Shape                                      | Summary                                                                                                                                                                                                                                                                                                                                          |
++| -------------------- | --------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `BrowserPalette`     | interface | `{ color?, attribute? }`                   | Holds partial browser CSS overrides for the core color and attribute axes — a named `color` or `attribute` entry replaces only that entry, and every omission keeps its default.                                                                                                                                                                 |
++| `BrowserSinkOptions` | interface | `{ palette? }`                             | Configures `createBrowserSink` — the optional `palette` partially overriding the browser's named color and attribute CSS mappings.                                                                                                                                                                                                               |
++| `ConsoleOutput`      | interface | `{ format, styles }`                       | Represents the `console.log`-ready output `ansiToConsole` produces from an ANSI-styled string — a format string of `%c`-prefixed segments and the parallel array of CSS declarations, ready to spread into a browser `console` call as `console.log(format, ...styles)`.                                                                         |
++| `StyleAccumulator`   | interface | `{ foreground?, background?, attributes }` | Represents the immutable scan state `ansiToConsole` replaces while translating SGR codes to CSS — an optional `foreground` and `background` declaration plus a readonly list of attribute declarations.                                                                                                                                          |
++| `createBrowserSink`  | function  |                                            | Creates the browser `%c` `SinkInterface` — the browser output backend. `write(text, level?)` translates the ANSI-styled `text` into a browser `console` call (`console[method](format, ...styles)`) through `ansiToConsole`, an optional partial `BrowserPalette` overriding the named color and attribute CSS.                                  |
++| `ansiToConsole`      | function  |                                            | Translates an ANSI-styled string into a browser `console.log`-ready `ConsoleOutput` — a `%c`-segmented format string and the parallel array of CSS declarations, an optional partial `BrowserPalette` overriding the CSS per named lookup.                                                                                                       |
++| `escapePercent`      | function  |                                            | Doubles every literal `%` in `text` to `%%` — the `%`-escape that keeps a browser console from reading a stray `%` (for example in `50%` or `%s`) as a format directive. The single escape the `ansiToConsole` translation applies to every text segment before assembling the format string (so only the `%c`s it inserts are real directives). |
++| `scanParameters`     | function  |                                            | Walks an SGR parameter list (the `;`-separated numeric string captured by `SGR_PATTERN`) and returns its numeric codes — `'1;31'` → `[1, 31]`, a bare or empty field becoming a `0` reset. It is total: every input yields a code list.                                                                                                          |
+ 
+ ### Browser sink constants
+ 
+@@ -263,25 +275,27 @@ The SGR → CSS translation data the browser sink maps ANSI runs through (`src/b
+ 
+ The server output backend — a TTY-aware `Sink` over the real `process` streams with a raw process-stream capture ([`src/server`](../src/server), surfaced through `@src/server`). The core owns the `SinkInterface` / `LogLevel` contracts + the `console` `Capture`; this module owns the server-only stream backend. Color detection lives here and only here: `inferStyled` reads the environment, `createServerSink` fixes each target's `styled` fact at construction, and nothing in core or the browser probes for color (the color-detection contract).
+ 
+-| API                       | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                                                                                    |
+-| ------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `StreamTargetInterface`   | interface | Declares the minimal writable-stream shape the server sink and process capture address — `write(text)` plus an optional `isTTY` and `columns`, exactly the slice of a Node `tty.WriteStream` / `process.stdout` they touch and no more.                                                                                                                                                                                    |
+-| `ServerSinkOptions`       | interface | Holds the options for `createServerSink` — the `stdout` and `stderr` targets, the `styled` override, the `environment` inference reads, and an explicit `columns` width. All are optional, so a bare `createServerSink()` writes to the real process streams.                                                                                                                                                              |
+-| `ServerSinkInterface`     | interface | Declares a `SinkInterface` that also exposes the `stdout` target's construction-time `styled` fact and the terminal's live or fixed `columns` width — the shape `createServerSink` returns.                                                                                                                                                                                                                                |
+-| `StreamLevel`             | type      | Names which process stream a `CapturedChunk` came from — `stdout` or `stderr`, the "level" axis of the process-stream `ProcessCaptureInterface` and the server analogue of the core `Capture`'s `CaptureLevel`.                                                                                                                                                                                                            |
+-| `StreamWriteFunction`     | type      | Names the process-stream `write` method a `ProcessCaptureInterface` snapshots and swaps at the patch boundary — `NodeJS.WriteStream['write']` verbatim, the write-side analogue of `ConsoleMethod`.                                                                                                                                                                                                                        |
+-| `StreamWriteCallback`     | type      | Names the completion callback `process.*.write` accepts as its last argument — `(error?) => void`, the Node `write` callback shape and the `StreamWriteFunction` companion.                                                                                                                                                                                                                                                |
+-| `CapturedChunk`           | interface | Represents one intercepted process-stream write — the immutable, serializable `{ level, text, time }` record a `ProcessCaptureInterface` buffers and emits, the server analogue of the core `CapturedMessage`.                                                                                                                                                                                                             |
+-| `ProcessCaptureEventMap`  | type      | Declares the observable events a `ProcessCaptureInterface` emits — `capture(chunk)` per intercepted write, plus the `start` and `stop` signals.                                                                                                                                                                                                                                                                            |
+-| `ProcessCaptureOptions`   | interface | Holds the options for the `ProcessCapture` constructor — the `on` / `error` emitter keys, the `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`. Every field is optional, so a bare `new ProcessCapture()` buffers both streams without mirroring or forwarding.                                                                                                                 |
+-| `ProcessCaptureInterface` | interface | Declares an observable interceptor of the raw process output streams — the server's "own all output" capture, patching `process.stdout.write` / `process.stderr.write` on the low-level stream where the core `Capture` patches `console.*`.                                                                                                                                                                               |
+-| `ProcessCapture`          | class     | Implements an observable interceptor of the raw process output streams — it takes control of `process.stdout.write` / `process.stderr.write` on the write side. While `active`, every write to a configured `StreamLevel` is captured as a frozen `CapturedChunk`, buffered (total + per-stream, bounded), emitted on `capture`, and — per options — mirrored to the real stream, forwarded to a `SinkInterface`, or both. |
+-| `createServerSink`        | function  | Creates the server TTY `ServerSinkInterface` — the server output backend, whose `write(text, level?)` routes by level to the process streams and uses construction-time styled facts: it sends ANSI straight to a styled target (with a leading `\r` overwriting a terminal line natively) but `strip`s ANSI to clean text for a plain target.                                                                             |
+-| `isStreamTarget`          | function  | Checks whether `value` is a usable `StreamTargetInterface` — a record with a callable `write`. A total type guard: it never throws and returns `false` for anything off-shape, so it narrows the one unavoidable boundary (the real `process.stdout` / `process.stderr`, or a fake stream a test injects) to the exact slice the sink + capture touch — no `as`.                                                           |
+-| `inferColumns`            | function  | Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else the non-interactive `DEFAULT_COLUMNS` fallback. The basis a `ServerSinkInterface` reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.                                                                                                                                           |
+-| `inferStyled`             | function  | Infers whether one stream target receives styled output — a present `FORCE_COLOR` first, then a non-empty `NO_COLOR`, then `target.isTTY === true`.                                                                                                                                                                                                                                                                        |
+-| `decodeChunk`             | function  | Decodes one `process.stdout.write` / `process.stderr.write` chunk to a string — total, never throws. The process write signature accepts `string \| Uint8Array` plus an optional encoding; the capture wrapper reuses this so intercepting a raw stream write can never crash the host (a throw inside `process.stdout.write` would take the program down).                                                                |
+-| `isBufferEncoding`        | function  | Checks whether `encoding` is a `BufferEncoding` accepted by `Buffer.prototype.toString` — a total guard used by `decodeChunk` to honor a process-write `encoding` argument only when it is a real Node encoding (otherwise utf-8 is assumed).                                                                                                                                                                              |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                       | Kind      | Shape                                                            | Summary                                                                                                                                                                                                                                                                                                                                                                                                                    |
++| ------------------------- | --------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `StreamTargetInterface`   | interface | `{ isTTY?, columns? } plus write`                                | Declares the minimal writable-stream shape the server sink and process capture address — exactly the slice of a Node `tty.WriteStream` / `process.stdout` they touch and no more.                                                                                                                                                                                                                                          |
++| `ServerSinkOptions`       | interface | `{ stdout?, stderr?, styled?, environment?, columns? }`          | Holds the options for `createServerSink` — the `stdout` and `stderr` targets, the `styled` override, the `environment` inference reads, and an explicit `columns` width. All are optional, so a bare `createServerSink()` writes to the real process streams.                                                                                                                                                              |
++| `ServerSinkInterface`     | interface | `{ styled, columns } plus write`                                 | Declares a `SinkInterface` that also exposes the `stdout` target's construction-time `styled` fact and the terminal's live or fixed `columns` width — the shape `createServerSink` returns.                                                                                                                                                                                                                                |
++| `StreamLevel`             | type      | `'stdout' \| 'stderr'`                                           | Names which process stream a `CapturedChunk` came from — `stdout` or `stderr`, the "level" axis of the process-stream `ProcessCaptureInterface` and the server analogue of the core `Capture`'s `CaptureLevel`.                                                                                                                                                                                                            |
++| `StreamWriteFunction`     | type      | `NodeJS.WriteStream['write']`                                    | Names the process-stream `write` method a `ProcessCaptureInterface` snapshots and swaps at the patch boundary — `NodeJS.WriteStream['write']` verbatim, the write-side analogue of `ConsoleMethod`.                                                                                                                                                                                                                        |
++| `StreamWriteCallback`     | type      | `(error?: Error \| null) => void`                                | Names the completion callback `process.*.write` accepts as its last argument — `(error?) => void`, the Node `write` callback shape and the `StreamWriteFunction` companion.                                                                                                                                                                                                                                                |
++| `CapturedChunk`           | interface | `{ level, text, time }`                                          | Represents one intercepted process-stream write — the immutable, serializable record a `ProcessCaptureInterface` buffers and emits, the server analogue of the core `CapturedMessage`.                                                                                                                                                                                                                                     |
++| `ProcessCaptureEventMap`  | type      | `{ capture: [chunk: CapturedChunk]; start: []; stop: [] }`       | Declares the observable events a `ProcessCaptureInterface` emits — `capture(chunk)` per intercepted write, plus the `start` and `stop` signals.                                                                                                                                                                                                                                                                            |
++| `ProcessCaptureOptions`   | interface | `{ on?, error?, levels?, mirror?, sink?, limit? }`               | Holds the options for the `ProcessCapture` constructor — the `on` / `error` emitter keys, the `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`. Every field is optional, so a bare `new ProcessCapture()` buffers both streams without mirroring or forwarding.                                                                                                                 |
++| `ProcessCaptureInterface` | interface | `{ emitter, active } plus start, stop, messages, clear, destroy` | Declares an observable interceptor of the raw process output streams — the server's "own all output" capture, patching `process.stdout.write` / `process.stderr.write` on the low-level stream where the core `Capture` patches `console.*`.                                                                                                                                                                               |
++| `ProcessCapture`          | class     |                                                                  | Implements an observable interceptor of the raw process output streams — it takes control of `process.stdout.write` / `process.stderr.write` on the write side. While `active`, every write to a configured `StreamLevel` is captured as a frozen `CapturedChunk`, buffered (total + per-stream, bounded), emitted on `capture`, and — per options — mirrored to the real stream, forwarded to a `SinkInterface`, or both. |
++| `createServerSink`        | function  |                                                                  | Creates the server TTY `ServerSinkInterface` — the server output backend, whose `write(text, level?)` routes by level to the process streams and uses construction-time styled facts: it sends ANSI straight to a styled target (with a leading `\r` overwriting a terminal line natively) but `strip`s ANSI to clean text for a plain target.                                                                             |
++| `isStreamTarget`          | function  |                                                                  | Checks whether `value` is a usable `StreamTargetInterface` — a record with a callable `write`. A total type guard: it never throws and returns `false` for anything off-shape, so it narrows the one unavoidable boundary (the real `process.stdout` / `process.stderr`, or a fake stream a test injects) to the exact slice the sink + capture touch — no `as`.                                                           |
++| `inferColumns`            | function  |                                                                  | Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else the non-interactive `DEFAULT_COLUMNS` fallback. The basis a `ServerSinkInterface` reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.                                                                                                                                           |
++| `inferStyled`             | function  |                                                                  | Infers whether one stream target receives styled output — a present `FORCE_COLOR` first, then a non-empty `NO_COLOR`, then `target.isTTY === true`.                                                                                                                                                                                                                                                                        |
++| `decodeChunk`             | function  |                                                                  | Decodes one `process.stdout.write` / `process.stderr.write` chunk to a string — total, never throws. The process write signature accepts `string \| Uint8Array` plus an optional encoding; the capture wrapper reuses this so intercepting a raw stream write can never crash the host (a throw inside `process.stdout.write` would take the program down).                                                                |
++| `isBufferEncoding`        | function  |                                                                  | Checks whether `encoding` is a `BufferEncoding` accepted by `Buffer.prototype.toString` — a total guard used by `decodeChunk` to honor a process-write `encoding` argument only when it is a real Node encoding (otherwise utf-8 is assumed).                                                                                                                                                                              |
+ 
+ ### Server sink constants
+ 
+@@ -562,7 +576,7 @@ capture.destroy() // stop() then destroy the emitter
+ ```ts
+ import { Retention } from '@orkestrel/console'
+ 
+-// Both captures buffer through this one engine, so their retention semantics cannot drift apart.
++// The console capture and the process capture buffer through this one engine, so their retention semantics cannot drift apart.
+ const retention = new Retention<{ level: 'warn' | 'error'; text: string }>(['warn'], 2)
+ retention.add({ level: 'warn', text: 'first' })
+ retention.add({ level: 'error', text: 'second' }) // no `error` bucket — the whole buffer still keeps it
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index 1bb6645..58e06d9 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -62,15 +62,15 @@ export const ATTRIBUTE_CSS: Readonly<Record<number, string>> = Object.freeze({
+ })
+ 
+ /**
+- * Names the browser console directive that switches the active style — one `%c` prefixes every styled run
+- * in the `ConsoleOutput` format string, consuming the next entry of the
+- * parallel CSS array. The single source of truth for the directive token.
++ * Names the browser console directive that switches the active style — one `%c` prefixes every
++ * styled run in the {@link import('./types.js').ConsoleOutput} format string, consuming the next
++ * entry of the parallel CSS array. The single source of truth for the directive token.
+  */
+ export const DIRECTIVE = '%c'
+ 
+ /**
+  * Matches one SGR sequence (`ESC[ <params> m`) and captures its `;`-separated numeric parameters —
+- * the subset of ANSI `strip` cares about that carries style (color /
++ * the subset of ANSI {@link import('@src/core').strip} cares about that carries style (color /
+  * attribute / reset), as opposed to cursor / erase / OSC sequences. Global, so the scanner walks
+  * every SGR run in a string; built from core's {@link ESC} so no control-character literal appears
+  * in source (the codebase idiom). The capture group is the parameter list (`''` for a bare `ESC[m`,
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index a8de7e0..abfad8c 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -21,18 +21,18 @@ export interface BrowserPalette {
+ }
+ 
+ /**
+- * Configures `createBrowserSink` — the optional `palette` partially overriding the browser's
+- * named color and attribute CSS mappings.
++ * Configures {@link import('./factories.js').createBrowserSink} — the optional `palette` partially
++ * overriding the browser's named color and attribute CSS mappings.
+  */
+ export interface BrowserSinkOptions {
+ 	readonly palette?: BrowserPalette
+ }
+ 
+ /**
+- * Represents the `console.log`-ready output `ansiToConsole` produces from
+- * an ANSI-styled string — a format string of `%c`-prefixed segments and the parallel array
+- * of CSS declarations, ready to spread into a browser `console` call as
+- * `console.log(format, ...styles)`.
++ * Represents the `console.log`-ready output {@link import('./helpers.js').ansiToConsole} produces
++ * from an ANSI-styled string — a format string of `%c`-prefixed segments and the parallel array of
++ * CSS declarations, ready to spread into a browser `console` call as `console.log(format,
++ * ...styles)`.
+  *
+  * @remarks
+  * - `format` — the text with each styled run prefixed by one `%c` directive (the directive
+@@ -50,13 +50,14 @@ export interface ConsoleOutput {
+ }
+ 
+ /**
+- * Represents the immutable scan state `ansiToConsole` replaces while translating SGR codes to
+- * CSS — an optional `foreground` and `background` declaration plus a readonly list of attribute
+- * declarations.
++ * Represents the immutable scan state {@link import('./helpers.js').ansiToConsole} replaces while
++ * translating SGR codes to CSS — an optional `foreground` and `background` declaration plus a
++ * readonly list of attribute declarations.
+  *
+  * @remarks
+  * A later color of the same channel replaces that channel; an SGR reset drops both channels and
+- * empties the list; `ansiToConsole` folds the state into the `;`-joined CSS string a run emits.
++ * empties the list; {@link import('./helpers.js').ansiToConsole} folds the state into the
++ * `;`-joined CSS string a run emits.
+  *
+  * Each SGR sequence produces a new frozen value; earlier run snapshots never drift when a later
+  * sequence changes a channel. A channel holds the full CSS declaration (`'color:#cd0000'`, not a
+diff --git a/src/core/Progress.ts b/src/core/Progress.ts
+index 7cf6579..1a8bf0b 100644
+--- a/src/core/Progress.ts
++++ b/src/core/Progress.ts
+@@ -15,8 +15,9 @@ import { renderBar } from './helpers.js'
+ 
+ /**
+  * Implements an update-driven, observable progress bar — {@link update} recomputes the bar through
+- * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current, total }`
+- * on `update`. No self-timer, unlike `Spinner` — the caller drives it.
++ * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current,
++ * total }` on `update`. No self-timer, unlike {@link import('./Spinner.js').Spinner} — the caller
++ * drives it.
+  *
+  * @remarks
+  * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+diff --git a/src/core/Styler.ts b/src/core/Styler.ts
+index d1519f3..3780dc3 100644
+--- a/src/core/Styler.ts
++++ b/src/core/Styler.ts
+@@ -89,7 +89,7 @@ export class Styler {
+ 
+ 	/**
+ 	 * Renders `text` in `style` merged over the accumulated style — the by-value door beside
+-	 * the accessor chain, and how a `Theme` role is applied.
++	 * the accessor chain, and how a {@link import('./types.js').Theme} role is applied.
+ 	 *
+ 	 * @param style - The style to overlay; its colors win over the accumulated ones and its
+ 	 * attributes join them (de-duplicated, the accumulated ones first)
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index c0113e1..e2a7542 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -222,8 +222,8 @@ export const LEVEL_COLORS: Readonly<Record<LogLevel, Exclude<Color, 'default'>>>
+ })
+ 
+ /**
+- * Sets the default bounded-retention cap for a `LoggerInterface` — `1000`, so at most that many
+- * recent records are kept and retention is always bounded.
++ * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} —
++ * `1000`, so at most that many recent records are kept and retention is always bounded.
+  *
+  * @remarks
+  * The oldest record is dropped after the cap is reached; a consumer overrides the cap through
+@@ -252,8 +252,9 @@ export const LOG_LEVELS: readonly LogLevel[] = Object.freeze(['debug', 'info', '
+  * Unicode box-drawing glyphs at each line weight, deeply frozen.
+  *
+  * @remarks
+- * The renderers (`renderBox` / `renderTable`) look the style up here, so no glyph literal lives
+- * in a renderer.
++ * The renderers ({@link import('./helpers.js').renderBox} /
++ * {@link import('./helpers.js').renderTable}) look the style up here, so no glyph literal lives in
++ * a renderer.
+  *
+  * @remarks
+  * `round` shares `single`'s edges and tees — only its corners differ (the rounded `╭╮╰╯`).
+@@ -353,22 +354,22 @@ export const STATUS_LEVELS: readonly StatusLevel[] = Object.freeze([
+ 
+ /**
+  * Sets the default visible column width for the width-aware renderers — the separator rule and a
+- * `renderBox` with no explicit `width`, and the reporter's
++ * {@link import('./helpers.js').renderBox} with no explicit `width`, and the reporter's
+  * `section` rule. A sane terminal default (80 columns); a caller overrides it per-call or through
+- * `ReporterOptions.width`.
++ * {@link import('./types.js').ReporterOptions.width}.
+  */
+ export const DEFAULT_WIDTH = 80
+ 
+-/** Sets the default horizontal padding inside a box's edges (`renderBox`) — one cell. */
++/** Sets the default horizontal padding inside a box's edges ({@link import('./helpers.js').renderBox}) — one cell. */
+ export const DEFAULT_PADDING = 1
+ 
+ /** Sets the default {@link BorderStyle} the box / table renderers frame with when none is given — `single`. */
+ export const DEFAULT_BORDER: BorderStyle = 'single'
+ 
+-/** Sets the default cell {@link Alignment} a `ColumnSpec` uses when none is given — `left`. */
++/** Sets the default cell {@link Alignment} a {@link import('./types.js').ColumnSpec} uses when none is given — `left`. */
+ export const DEFAULT_ALIGN: Alignment = 'left'
+ 
+-/** Holds the default fill character `renderSeparator` draws its rule with — `─`. */
++/** Holds the default fill character {@link import('./helpers.js').renderSeparator} draws its rule with — `─`. */
+ export const SEPARATOR_FILL = '─'
+ 
+ /**
+@@ -378,9 +379,9 @@ export const SEPARATOR_FILL = '─'
+ export const SEPARATOR_TITLE_GAP = ' '
+ 
+ /**
+- * Sets the millisecond threshold at or above which `formatDuration` (and so `Reporter.timing`)
+- * switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.) rendering — `1000`, exactly one
+- * second.
++ * Sets the millisecond threshold at or above which {@link import('./helpers.js').formatDuration}
++ * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.) rendering
++ * — `1000`, exactly one second.
+  */
+ export const SECOND_MS = 1000
+ 
+@@ -405,9 +406,9 @@ export const CAPTURE_LEVELS: readonly CaptureLevel[] = Object.freeze([
+ ])
+ 
+ /**
+- * Sets the default bounded-buffer cap for a `CaptureInterface` — `1000`, so at most that many
+- * recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level
+- * bucket; oldest dropped first) and retention is always bounded.
++ * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — `1000`,
++ * so at most that many recent {@link CapturedMessage}s are retained per buffer (the total buffer
++ * and each by-level bucket; oldest dropped first) and retention is always bounded.
+  *
+  * @remarks
+  * A long-running capture can never grow without bound (the same retention precedent as
+@@ -440,8 +441,9 @@ export const CAPTURE_LEVEL_MAP: Readonly<Record<CaptureLevel, LogLevel>> = Objec
+ // one bar glyph pair; a caller overrides either through options rather than declaring a second.
+ 
+ /**
+- * Holds the default spinner frame cycle a `SpinnerInterface` advances through — the
+- * braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating dot.
++ * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances
++ * through — the braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating
++ * dot.
+  *
+  * @remarks
+  * The cycle is the universal terminal-spinner convention. Frozen; a consumer swaps the whole
+@@ -464,8 +466,8 @@ export const SPINNER_FRAMES: readonly string[] = Object.freeze([
+ ])
+ 
+ /**
+- * Sets the default timer period between a `SpinnerInterface`'s frames — the `setInterval`
+- * interval `start()` arms, `80` ms (≈12.5 frames/second).
++ * Sets the default timer period between a {@link import('./types.js').SpinnerInterface}'s frames —
++ * the `setInterval` interval `start()` arms, `80` ms (≈12.5 frames/second).
+  *
+  * @remarks
+  * That is the conventional spinner cadence: fast enough to read as motion, slow enough not to
+@@ -474,22 +476,23 @@ export const SPINNER_FRAMES: readonly string[] = Object.freeze([
+ export const DEFAULT_SPINNER_INTERVAL = 80
+ 
+ /**
+- * Holds the default filled-cell glyph `renderBar` draws the completed run of a
+- * progress bar with — the full block `█` (U+2588). A single visible cell; a consumer overrides it
+- * through `BarOptions.fill`.
++ * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed
++ * run of a progress bar with — the full block `█` (U+2588). A single visible cell; a consumer
++ * overrides it through {@link import('./types.js').BarOptions.fill}.
+  */
+ export const BAR_FILL = '█'
+ 
+ /**
+- * Holds the default empty-cell glyph `renderBar` draws the remaining run of a
+- * progress bar with — the light-shade block `░` (U+2591). A single visible cell; a consumer overrides
+- * it through `BarOptions.empty`.
++ * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining
++ * run of a progress bar with — the light-shade block `░` (U+2591). A single visible cell; a
++ * consumer overrides it through {@link import('./types.js').BarOptions.empty}.
+  */
+ export const BAR_EMPTY = '░'
+ 
+ /**
+- * Sets the default visible cell count of a progress-bar track — the glyph run `renderBar` fills,
+- * and the width a `ProgressInterface` sizes its bar to. `30` cells.
++ * Sets the default visible cell count of a progress-bar track — the glyph run
++ * {@link import('./helpers.js').renderBar} fills, and the width a
++ * {@link import('./types.js').ProgressInterface} sizes its bar to. `30` cells.
+  *
+  * @remarks
+  * Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+@@ -509,8 +512,8 @@ export const DEFAULT_BAR_WIDTH = 30
+  * {@link LEVEL_COLORS}, {@link STATUS_ICONS}, and {@link STATUS_COLORS} and deeply frozen.
+  *
+  * @remarks
+- * It is the base `createTheme` merges over, and the theme every entity uses when none is
+- * supplied.
++ * It is the base {@link import('./factories.js').createTheme} merges over, and the theme every
++ * entity uses when none is supplied.
+  *
+  * @remarks
+  * - `levels` — each {@link LogLevel} label in its {@link LEVEL_COLORS} color, no attributes.
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 575e847..e01bb51 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -19,9 +19,9 @@ import { Styler } from './Styler.js'
+  * `renderer` and stripped of color by `enabled: false`.
+  *
+  * @remarks
+- * It builds a `Style` under the hood and renders it through a `RendererInterface`, so
+- * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely
+- * reusable.
++ * It builds a {@link import('./types.js').Style} under the hood and renders it through a
++ * {@link import('./types.js').RendererInterface}, so `styler.red.bold('hi')` yields styled text.
++ * Chains are immutable, so a base styler is freely reusable.
+  *
+  * @param options - See {@link StylerOptions}
+  * @returns A base {@link StylerInterface}
+@@ -101,7 +101,7 @@ export function createTheme(options?: ThemeOptions): Theme {
+ /**
+  * Creates the default {@link SinkInterface} — a console sink that routes by level and writes
+  * through the `console` methods snapshotted at creation. The default output target behind the
+- * `Logger`.
++ * {@link import('./loggers/Logger.js').Logger}.
+  *
+  * @returns A console {@link SinkInterface}
+  *
+@@ -139,7 +139,7 @@ export function createConsoleSink(): SinkInterface {
+ 
+ /**
+  * Runs `fn` with the global `console.*` captured for its duration, returning the function's `value`
+- * plus the `CapturedMessage`s it logged — the scoped, self-restoring
++ * plus the {@link import('./types.js').CapturedMessage}s it logged — the scoped, self-restoring
+  * ergonomic form of the {@link Capture} class.
+  *
+  * @param fn - The async function to run under capture (returns `Promise<T>`)
+@@ -179,7 +179,7 @@ export function createCaptureResult<T>(
+ ): Promise<CaptureResult<T>>
+ /**
+  * Runs `fn` with the global `console.*` captured for its duration, returning the function's `value`
+- * plus the `CapturedMessage`s it logged, synchronously.
++ * plus the {@link import('./types.js').CapturedMessage}s it logged, synchronously.
+  *
+  * @param fn - The synchronous function to run under capture (returns `T`)
+  * @param options - See {@link CaptureOptions}
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 5c715a7..d8abd9c 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -195,7 +195,7 @@ export function formatTime(time: number): string {
+ 
+ /**
+  * Formats a {@link LogRecord} into a single styled line — the default human line layout a
+- * `LoggerInterface` writes to its sink.
++ * {@link import('./types.js').LoggerInterface} writes to its sink.
+  *
+  * @remarks
+  * Layout: `{time} {LEVEL} {[name]} {message}{ data}` — the ISO timestamp (dimmed), the
+@@ -272,7 +272,7 @@ export function align(text: string, columns: number, alignment: Alignment = DEFA
+ /**
+  * Formats a millisecond duration as a compact human string — `…ms` below one second, `…s`
+  * (seconds to 2 decimal places) at or above one second. The timing rendering behind
+- * `ReporterInterface.timing`.
++ * {@link import('./types.js').ReporterInterface.timing}.
+  *
+  * @remarks
+  * `999 → '999ms'`, `1000 → '1.00s'`, `1230 → '1.23s'` (the threshold is {@link SECOND_MS}).
+@@ -689,7 +689,8 @@ export function formatArgs(args: readonly unknown[]): string {
+  *
+  * @remarks
+  * It is the animation-layer sibling of the `render*` renderers (box / table / tree / separator),
+- * shared so a `ProgressInterface` and any direct caller draw the one bar — never a second,
++ * shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw the one
++ * bar — never a second,
+  * hand-rolled one.
+  *
+  * - **Fill fraction, clamped.** The filled cell count is `round((current / total) · width)` with
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 88ff1b9..a9c7780 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -13,8 +13,8 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ export type ConsoleMethod = (...args: unknown[]) => void
+ 
+ /**
+- * Names the machine-readable error code a `ConsoleError` carries — `INVARIANT`, the only code the
+- * package throws.
++ * Names the machine-readable error code a {@link import('./errors.js').ConsoleError} carries —
++ * `INVARIANT`, the only code the package throws.
+  *
+  * @remarks
+  * `INVARIANT` reports that an internal invariant or unreachable guard was violated — a defensive
+@@ -213,9 +213,8 @@ export interface ThemeStatus {
+ }
+ 
+ /**
+- * Represents the app-wide semantic style vocabulary — `levels`, `statuses`, `accent`, and
+- * `chrome`, each role bound to a {@link Style} value. Pass one theme to a logger / reporter /
+- * spinner / progress and every surface speaks it.
++ * Represents the app-wide semantic style vocabulary — each role bound to a {@link Style} value.
++ * Pass one theme to a logger / reporter / spinner / progress and every surface speaks it.
+  *
+  * @remarks
+  * - `levels` — the label style per {@link LogLevel} (a log line's severity label).
+@@ -275,9 +274,9 @@ export interface ThemeOptions {
+ export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+ 
+ /**
+- * Represents one immutable, serializable log entry — a `level`, a `message`, and a `time`, plus an
+- * optional `name` and `data`. A {@link LoggerInterface} builds one per call, freezes it, retains a
+- * bounded tail of them, and emits it on `entry`; every sink / transport consumes this exact shape.
++ * Represents one immutable, serializable log entry. A {@link LoggerInterface} builds one per call,
++ * freezes it, retains a bounded tail of them, and emits it on `entry`; every sink / transport
++ * consumes this exact shape.
+  *
+  * @remarks
+  * - `level` — the record's {@link LogLevel}.
+@@ -333,8 +332,8 @@ export interface SinkInterface {
+ }
+ 
+ /**
+- * Groups the write targets a level-routing sink chooses between — `log`, `warn`, and `error`,
+- * each of the backend's own member type.
++ * Groups the write targets a level-routing sink chooses between — each of the backend's own member
++ * type.
+  *
+  * @remarks
+  * The member type is the sink's own: a bound `console` method in core, a browser `%c` console
+@@ -370,8 +369,8 @@ export type LoggerEventMap = {
+ 
+ /**
+  * Represents the line layout a logger writes — `(record, styler, theme) => string`, one
+- * {@link LogRecord} plus the styling substrate in and one finished line out. `formatRecord` is
+- * the default.
++ * {@link LogRecord} plus the styling substrate in and one finished line out.
++ * {@link import('./helpers.js').formatRecord} is the default.
+  *
+  * @param record - The frozen record to lay out
+  * @param styler - The logger's {@link StylerInterface} — color through it (and through
+@@ -389,9 +388,9 @@ export type LoggerEventMap = {
+ export type LogFormatFunction = (record: LogRecord, styler: StylerInterface, theme: Theme) => string
+ 
+ /**
+- * Configures the `Logger` constructor — the `on` / `error` emitter keys, the `level` threshold,
+- * the logger's `name`, the `sink` / `styler` / `theme` / `format` line substrate, the retention
+- * `limit`, and the `silent` write switch.
++ * Configures the {@link import('./loggers/Logger.js').Logger} constructor — the `on` / `error`
++ * emitter keys, the `level` threshold, the logger's `name`, the `sink` / `styler` / `theme` /
++ * `format` line substrate, the retention `limit`, and the `silent` write switch.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+@@ -465,8 +464,9 @@ export interface LoggerInterface {
+ }
+ 
+ /**
+- * Configures the `LoggerManager` constructor — the `level` / `sink` / `styler` / `theme` /
+- * `format` / `limit` / `silent` defaults flowed into every logger it mints.
++ * Configures the {@link import('./loggers/LoggerManager.js').LoggerManager} constructor — the
++ * `level` / `sink` / `styler` / `theme` / `format` / `limit` / `silent` defaults flowed into every
++ * logger it mints.
+  *
+  * @remarks
+  * The manager is an event-free registry — it carries no emitter of its own (each
+@@ -592,8 +592,8 @@ export interface BorderChars {
+ }
+ 
+ /**
+- * Configures `renderSeparator` — a horizontal rule, optionally carrying a centered title. Every
+- * key is optional: `title`, `width`, `fill`, `styler`, and `style`.
++ * Configures {@link import('./helpers.js').renderSeparator} — a horizontal rule, optionally
++ * carrying a centered title. Every key is optional.
+  *
+  * @remarks
+  * - `title` — text to embed in the rule (for example a section heading). Omitted ⇒ an unbroken line.
+@@ -613,9 +613,8 @@ export interface SeparatorOptions {
+ }
+ 
+ /**
+- * Configures `renderBox` — content framed in box-drawing characters. `content` is required and
+- * `title`, `padding`, `border`, `width`, `styler`, and `style` are optional; a `Reporter`
+- * supplies its own chrome style only when the caller gives neither `styler` nor `style`.
++ * Configures {@link import('./helpers.js').renderBox} — content framed in box-drawing characters. A
++ * `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.
+  *
+  * @remarks
+  * - `content` — the body text; embedded newlines split it into lines, each framed on its own
+@@ -658,10 +657,9 @@ export interface ColumnSpec {
+ }
+ 
+ /**
+- * Configures `renderTable` — a bordered grid of columns + rows with per-column alignment and
+- * width-aware sizing. `columns` and `rows` are required and `border`, `styler`, and `style` are
+- * optional; a `Reporter` supplies its own chrome style only when the caller gives neither
+- * `styler` nor `style`.
++ * Configures {@link import('./helpers.js').renderTable} — a bordered grid of columns + rows with
++ * per-column alignment and width-aware sizing. A `Reporter` supplies its own chrome style only when
++ * the caller gives neither `styler` nor `style`.
+  *
+  * @remarks
+  * - `columns` — the {@link ColumnSpec}s, left to right; their `label`s form the header row.
+@@ -696,9 +694,9 @@ export interface TreeNode {
+ }
+ 
+ /**
+- * Configures `renderTree` — a nested {@link TreeNode} tree drawn with box-drawing connectors.
+- * `root` is required and `border`, `styler`, and `style` are optional; a `Reporter` supplies its
+- * own chrome style only when the caller gives neither `styler` nor `style`.
++ * Configures {@link import('./helpers.js').renderTree} — a nested {@link TreeNode} tree drawn with
++ * box-drawing connectors. A `Reporter` supplies its own chrome style only when the caller gives
++ * neither `styler` nor `style`.
+  *
+  * @remarks
+  * - `root` — the top {@link TreeNode}; its `label` is the unindented first line and its
+@@ -731,8 +729,8 @@ export interface TreeOptions {
+ export type StatusLevel = 'success' | 'error' | 'warn' | 'info'
+ 
+ /**
+- * Represents where one step sits in a sequence — the `{ index, total }` a
+- * {@link ReporterInterface.step} renders as a `[2/5]` prefix.
++ * Represents where one step sits in a sequence — what {@link ReporterInterface.step} renders as a
++ * `[2/5]` prefix.
+  *
+  * @remarks
+  * Both are 1-based for display (`{ index: 2, total: 5 }` ⇒ `[2/5]`); the reporter formats
+@@ -745,8 +743,9 @@ export interface StepPosition {
+ }
+ 
+ /**
+- * Configures the `Reporter` constructor — the `sink` every line is written to, the `styler` and
+- * `theme` it formats through, and the `width` its layouts measure against.
++ * Configures the {@link import('./Reporter.js').Reporter} constructor — the `sink` every line is
++ * written to, the `styler` and `theme` it formats through, and the `width` its layouts measure
++ * against.
+  *
+  * @remarks
+  * - `sink` — where every formatted line is written; defaults to
+@@ -798,11 +797,11 @@ export interface ReporterInterface {
+ 	timing(label: string, ms: number): void
+ 	/** Writes an icon + colored outcome line for `level` (`error` routes to the error stream). */
+ 	status(level: StatusLevel, message: string): void
+-	/** Renders a {@link TableOptions} grid through `renderTable` and writes it. */
++	/** Renders a {@link TableOptions} grid through {@link import('./helpers.js').renderTable} and writes it. */
+ 	table(options: TableOptions): void
+-	/** Renders a {@link TreeOptions} tree through `renderTree` and writes it. */
++	/** Renders a {@link TreeOptions} tree through {@link import('./helpers.js').renderTree} and writes it. */
+ 	tree(options: TreeOptions): void
+-	/** Renders a {@link BoxOptions} frame through `renderBox` and writes it. */
++	/** Renders a {@link BoxOptions} frame through {@link import('./helpers.js').renderBox} and writes it. */
+ 	box(options: BoxOptions): void
+ 	/** Writes one raw line, colored through the styler if any styling is embedded — no prefix, no icon. */
+ 	line(text: string): void
+@@ -838,10 +837,9 @@ export interface ReporterInterface {
+ export type CaptureLevel = 'log' | 'info' | 'warn' | 'error' | 'debug'
+ 
+ /**
+- * Represents one captured console call — an immutable, serializable `{ level, text, time }` record
+- * of a single intercepted `console.*` invocation. A {@link CaptureInterface} builds one per call,
+- * freezes it, buffers it (total + by level), and emits it on `capture`; every consumer reads this
+- * exact shape.
++ * Represents one captured console call — an immutable, serializable record of a single intercepted
++ * `console.*` invocation. A {@link CaptureInterface} builds one per call, freezes it, buffers it
++ * (total + by level), and emits it on `capture`; every consumer reads this exact shape.
+  *
+  * @remarks
+  * - `level` — the {@link CaptureLevel} naming which `console.x` was called.
+@@ -888,8 +886,9 @@ export type CaptureEventMap = {
+ }
+ 
+ /**
+- * Configures the `Capture` constructor — the `on` / `error` emitter keys, the `levels`
+- * intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`.
++ * Configures the {@link import('./Capture.js').Capture} constructor — the `on` / `error` emitter
++ * keys, the `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer
++ * `limit`.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+@@ -964,8 +963,8 @@ export interface CaptureInterface {
+ }
+ 
+ /**
+- * Represents the structured outcome of `createCaptureResult` — the wrapped function's own return
+- * `value` plus the `messages` it logged while it ran.
++ * Represents the structured outcome of {@link import('./factories.js').createCaptureResult} — the
++ * wrapped function's own return `value` plus the `messages` it logged while it ran.
+  *
+  * @remarks
+  * - `value` — whatever the wrapped `fn` returned (its `T`).
+@@ -988,9 +987,8 @@ export interface CaptureResult<T> {
+ // observable: a spinner's frames + lifecycle, a progress's updates + its final outcome.
+ 
+ /**
+- * Configures the pure `renderBar` renderer — a determinate progress bar string
+- * (`█████░░░░░ 50% (5/10)`), width-aware and styler-optional. `current` and `total` are
+- * required and `width`, `fill`, `empty`, `styler`, and `style` are optional.
++ * Configures the pure {@link import('./helpers.js').renderBar} renderer — a determinate progress
++ * bar string (`█████░░░░░ 50% (5/10)`), width-aware and styler-optional.
+  *
+  * @remarks
+  * - `current` / `total` — the filled fraction is `current / total`, clamped to `[0, total]` (a
+@@ -1044,8 +1042,9 @@ export type SpinnerEventMap = {
+ }
+ 
+ /**
+- * Configures the `Spinner` constructor — the `on` / `error` emitter keys, the `message` shown,
+- * the glyph `frames` and their `interval`, and the `sink` / `styler` / `theme` line substrate.
++ * Configures the {@link import('./Spinner.js').Spinner} constructor — the `on` / `error` emitter
++ * keys, the `message` shown, the glyph `frames` and their `interval`, and the `sink` / `styler` /
++ * `theme` line substrate.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+@@ -1152,8 +1151,8 @@ export interface RetentionInterface<T extends { readonly level: string }> {
+ }
+ 
+ /**
+- * Reports one advance of a {@link ProgressInterface} — the clamped `{ current, total }` payload
+- * carried by the `update` event of {@link ProgressEventMap}.
++ * Reports one advance of a {@link ProgressInterface} — the clamped payload carried by the `update`
++ * event of {@link ProgressEventMap}.
+  *
+  * @remarks
+  * `current` is always the value after clamping into `[0, total]`, so a listener never sees an
+@@ -1191,9 +1190,9 @@ export type ProgressEventMap = {
+ }
+ 
+ /**
+- * Configures the `Progress` constructor — the `on` / `error` emitter keys, the required `total`,
+- * the `message` shown, the bar's `width` / `fill` / `empty` glyphs, and the `sink` / `styler` /
+- * `theme` line substrate.
++ * Configures the {@link import('./Progress.js').Progress} constructor — the `on` / `error` emitter
++ * keys, the required `total`, the `message` shown, the bar's `width` / `fill` / `empty` glyphs, and
++ * the `sink` / `styler` / `theme` line substrate.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+@@ -1228,9 +1227,10 @@ export interface ProgressOptions {
+ 
+ /**
+  * Declares an update-driven, observable progress bar — `update(current)` recomputes the bar through
+- * `renderBar`, writes `\r` + bar to its {@link SinkInterface}, and emits
+- * the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink overwrites
+- * on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives it.
++ * {@link import('./helpers.js').renderBar}, writes `\r` + bar to its {@link SinkInterface}, and
++ * emits the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink
++ * overwrites on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives
++ * it.
+  *
+  * @remarks
+  * - **Update-driven.** Each `update(current, message?)` clamps `current` to `[0, total]`, renders
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 6a94479..d2fdc46 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -6,15 +6,17 @@ import type { LogLevel } from '@src/core'
+ import type { StreamLevel } from './types.js'
+ 
+ /**
+- * Lists the process streams a `ProcessCaptureInterface` can intercept, in
+- * `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured set.
++ * Lists the process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept,
++ * in `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured
++ * set.
+  */
+ export const STREAM_LEVELS: readonly StreamLevel[] = Object.freeze(['stdout', 'stderr'])
+ 
+ /**
+- * Sets the default bounded-buffer cap for a `ProcessCaptureInterface` — `1000`, so at most that
+- * many recent `CapturedChunk`s are retained per buffer (the total buffer and each per-stream
+- * bucket; oldest dropped first) and retention is always bounded.
++ * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} —
++ * `1000`, so at most that many recent {@link import('./types.js').CapturedChunk}s are retained per
++ * buffer (the total buffer and each per-stream bucket; oldest dropped first) and retention is
++ * always bounded.
+  *
+  * @remarks
+  * It mirrors the core `Capture`'s `DEFAULT_CAPTURE_LIMIT`; a consumer overrides the cap through
+@@ -23,20 +25,20 @@ export const STREAM_LEVELS: readonly StreamLevel[] = Object.freeze(['stdout', 's
+ export const DEFAULT_STREAM_LIMIT = 1000
+ 
+ /**
+- * Sets the terminal width `createServerSink` reports through
+- * `ServerSinkInterface.columns` when the `stdout` stream is not a TTY (so
+- * `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
++ * Sets the terminal width {@link import('./factories.js').createServerSink} reports through
++ * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY
++ * (so `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+  * 80-column default a non-interactive context (a pipe, a CI log) assumes.
+  */
+ export const DEFAULT_COLUMNS = 80
+ 
+ /**
+- * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the projection a
+- * process capture routes through when writing an intercepted chunk to a
+- * `SinkInterface`. `sink.write(text, STREAM_LEVEL_MAP[level])` is the
+- * call this map backs. `stderr` is conventionally the error/diagnostic
+- * stream → `error`; `stdout` is the normal output stream → `info`. The source of truth for the
+- * stream-to-log projection (the server analogue of the core `CAPTURE_LEVEL_MAP`).
++ * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the
++ * projection a process capture routes through when writing an intercepted chunk to a
++ * {@link import('@src/core').SinkInterface}. `sink.write(text, STREAM_LEVEL_MAP[level])` is the
++ * call this map backs. `stderr` is conventionally the error/diagnostic stream → `error`; `stdout`
++ * is the normal output stream → `info`. The source of truth for the stream-to-log projection (the
++ * server analogue of the core `CAPTURE_LEVEL_MAP`).
+  */
+ export const STREAM_LEVEL_MAP: Readonly<Record<StreamLevel, LogLevel>> = Object.freeze({
+ 	stdout: 'info',
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 6ec741e..b3a903a 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -8,7 +8,7 @@ import { isStreamTarget } from './validators.js'
+  * Creates the server TTY {@link ServerSinkInterface} — the server output backend, whose
+  * `write(text, level?)` routes by level to the process streams and uses construction-time styled
+  * facts: it sends ANSI straight to a styled target (with a leading `\r` overwriting a terminal
+- * line natively) but `strip`s ANSI to clean text for a plain target.
++ * line natively) but {@link import('@src/core').strip}s ANSI to clean text for a plain target.
+  *
+  * @param options - See {@link ServerSinkOptions}
+  * @returns A {@link ServerSinkInterface} — a {@link import('@src/core').SinkInterface} that also
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 57d02ad..878c7f1 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -8,9 +8,10 @@ import { DEFAULT_COLUMNS } from './constants.js'
+ import { isBufferEncoding } from './validators.js'
+ 
+ /**
+- * Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else
+- * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a `ServerSinkInterface`
+- * reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.
++ * Infers the width in character cells of a stream target — its live `columns` when it is a TTY,
++ * else the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a
++ * {@link import('./types.js').ServerSinkInterface} reports through `columns` so a `Reporter` /
++ * `Progress` can size its layout to the terminal.
+  *
+  * @remarks
+  * Reads `target.columns` on each call (so a getter-backed real stream reflects a live resize) and
+@@ -31,7 +32,8 @@ export function inferColumns(target: StreamTargetInterface): number {
+  * non-empty `NO_COLOR`, then `target.isTTY === true`.
+  *
+  * @remarks
+- * The result is a construction-time target fact for `createServerSink`; this helper is pure and
++ * The result is a construction-time target fact for
++ * {@link import('./factories.js').createServerSink}; this helper is pure and
+  * never reads process globals itself. Under `FORCE_COLOR` only the exact value `'0'` disables
+  * styling.
+  *
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 7d55358..ec2222b 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -9,13 +9,13 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ import type { SinkInterface } from '@src/core'
+ 
+ /**
+- * Declares the minimal writable-stream shape the server sink and process capture address —
+- * `write(text)` plus an optional `isTTY` and `columns`, exactly the slice of a Node
+- * `tty.WriteStream` / `process.stdout` they touch and no more.
++ * Declares the minimal writable-stream shape the server sink and process capture address — exactly
++ * the slice of a Node `tty.WriteStream` / `process.stdout` they touch and no more.
+  *
+  * @remarks
+  * A {@link ServerSinkOptions} target and a {@link ProcessCaptureInterface}'s patched streams are
+- * narrowed to this through `isStreamTarget` (narrow the boundary, never `as`), so a test can
++ * narrowed to this through {@link import('./validators.js').isStreamTarget} (narrow the boundary,
++ * never `as`), so a test can
+  * drive either with a hand-built fake stream that never touches the real `process` streams.
+  *
+  * - `write(text)` — the one required method: push a chunk to the stream, returning the host's
+@@ -36,9 +36,10 @@ export interface StreamTargetInterface {
+ }
+ 
+ /**
+- * Holds the options for `createServerSink` — the `stdout` and `stderr` targets, the `styled`
+- * override, the `environment` inference reads, and an explicit `columns` width. All are
+- * optional, so a bare `createServerSink()` writes to the real process streams.
++ * Holds the options for {@link import('./factories.js').createServerSink} — the `stdout` and
++ * `stderr` targets, the `styled` override, the `environment` inference reads, and an explicit
++ * `columns` width. All are optional, so a bare `createServerSink()` writes to the real process
++ * streams.
+  *
+  * @remarks
+  * - `stdout` — the stream `info` / `debug` (and an omitted level) are written to; defaults to
+@@ -64,7 +65,7 @@ export interface ServerSinkOptions {
+ /**
+  * Declares a {@link SinkInterface} that also exposes the `stdout` target's construction-time
+  * `styled` fact and the terminal's live or fixed {@link columns} width — the shape
+- * `createServerSink` returns.
++ * {@link import('./factories.js').createServerSink} returns.
+  *
+  * @remarks
+  * It is a drop-in {@link SinkInterface} (so a `Logger` / `Reporter` / `Spinner` / `Progress`
+@@ -98,7 +99,7 @@ export type StreamLevel = 'stdout' | 'stderr'
+ /**
+  * Names the process-stream `write` method a {@link ProcessCaptureInterface} snapshots and swaps
+  * at the patch boundary — `NodeJS.WriteStream['write']` verbatim, the write-side analogue of
+- * `ConsoleMethod`.
++ * {@link import('@src/core').ConsoleMethod}.
+  *
+  * @remarks
+  * The type is the overloaded
+@@ -122,9 +123,9 @@ export type StreamWriteFunction = NodeJS.WriteStream['write']
+ export type StreamWriteCallback = (error?: Error | null) => void
+ 
+ /**
+- * Represents one intercepted process-stream write — the immutable, serializable
+- * `{ level, text, time }` record a {@link ProcessCaptureInterface} buffers and emits, the server
+- * analogue of the core `CapturedMessage`.
++ * Represents one intercepted process-stream write — the immutable, serializable record a
++ * {@link ProcessCaptureInterface} buffers and emits, the server analogue of the core
++ * `CapturedMessage`.
+  *
+  * @remarks
+  * - `level` — the {@link StreamLevel} naming which stream (`stdout` / `stderr`) was written.
+@@ -170,10 +171,10 @@ export type ProcessCaptureEventMap = {
+ }
+ 
+ /**
+- * Holds the options for the `ProcessCapture` constructor — the `on` / `error` emitter keys, the
+- * `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer `limit`.
+- * Every field is optional, so a bare `new ProcessCapture()` buffers both streams without
+- * mirroring or forwarding.
++ * Holds the options for the {@link import('./ProcessCapture.js').ProcessCapture} constructor — the
++ * `on` / `error` emitter keys, the `levels` intercepted, the `mirror` pass-through, the `sink`
++ * forward, and the buffer `limit`. Every field is optional, so a bare `new ProcessCapture()`
++ * buffers both streams without mirroring or forwarding.
+  *
+  * @remarks
+  * - `on` — initial {@link ProcessCaptureEventMap} listeners, wired at construction (for example
+diff --git a/src/server/validators.ts b/src/server/validators.ts
+index a6250f7..565eb3a 100644
+--- a/src/server/validators.ts
++++ b/src/server/validators.ts
+@@ -36,9 +36,9 @@ export function isStreamTarget(value: unknown): value is StreamTargetInterface {
+ }
+ 
+ /**
+- * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a total
+- * guard used by `decodeChunk` to honor a process-write `encoding`
+- * argument only when it is a real Node encoding (otherwise utf-8 is assumed).
++ * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a
++ * total guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write
++ * `encoding` argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+  *
+  * @param encoding - The candidate encoding (the second `write` argument, possibly a callback)
+  * @returns True if `encoding` names a supported buffer encoding; false otherwise
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 67b405a..8ea03cc 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -70,7 +70,7 @@ const MODULES = Object.freeze({
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze(['class Styler'])
+@@ -249,19 +249,19 @@ for (const entry of manifest) {
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface).map((example) => example.name)
+-							: source
+-									.examples(group.interface)
+-									.map((example) => example.name)
+-									.concat(source.examples(entity).map((example) => example.name))
+ 					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+@@ -442,6 +442,9 @@ describe('flagship fences', () => {
+ 	})
+ 
+ 	it('carries the retention fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			'// The console capture and the process capture buffer through this one engine, so their retention semantics cannot drift apart.',
++		)
+ 		expect(guideText).toContain('retention.records().length // 2 — the whole buffer, oldest first')
+ 		expect(guideText).toContain(
+ 			"retention.records('warn') // [{ level: 'warn', text: 'first' }] — only that bucket",
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 370a5e3..e52508a 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -703,7 +703,7 @@ describe('renderBar', () => {
+ // strip must remove EVERY ANSI escape and NOTHING else; width counts CODE POINTS after the
+ // strip (its documented basis — NOT terminal cells). These cases pin the CURRENT behavior
+ // across the whole Unicode + escape spectrum, so any future change (for example teaching width
+-// east-asian double-width) is caught by a failureing assertion rather than passing silently.
++// east-asian double-width) is caught by a failing assertion rather than passing silently.
+ 
+ // Build escapes from char codes (the source idiom) — no raw control char in the test file.
+ const ESC_CHAR = String.fromCharCode(27)

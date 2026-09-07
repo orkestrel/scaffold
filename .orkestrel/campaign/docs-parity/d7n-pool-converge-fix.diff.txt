@@ -1,0 +1,85 @@
+diff --git a/guides/pool.md b/guides/pool.md
+index 7365785..cd14589 100644
+--- a/guides/pool.md
++++ b/guides/pool.md
+@@ -49,25 +49,26 @@ try {
+ 
+ ### Guards
+ 
+-| API            | Kind     | Summary                                                                                 |
+-| -------------- | -------- | --------------------------------------------------------------------------------------- |
+-| `isPoolError`  | function | Tests whether an unknown value is a `PoolError`, returning `false` for hostile proxies. |
+-| `isPoolMax`    | function | Tests whether a value is a positive safe integer, the only valid explicit pool maximum. |
+-| `isPoolSignal` | function | Tests whether a value is a native `AbortSignal`, returning `false` for hostile proxies. |
++| API            | Kind     | Summary                                                                                                          |
++| -------------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
++| `isPoolError`  | function | Tests whether an unknown value is a `PoolError`, returning `false` for hostile proxies.                          |
++| `isPoolMax`    | function | Tests whether a value is a positive safe integer, the only valid explicit pool maximum.                          |
++| `isPoolSignal` | function | Tests whether a value is a native `AbortSignal` for the acquire boundary, returning `false` for hostile proxies. |
+ 
+ ### Types
+ 
+-| API                | Kind      | Summary                                                                                                                                                     |
+-| ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `PoolCode`         | type      | Names the machine-readable failure codes produced by `PoolError`: `invalid`, `destroyed`, `create`, and `cleanup`.                                          |
+-| `PoolContext`      | interface | Represents the structured context attached to a `PoolError`: the rejected input, or the distinct destroy-hook failures an aggregate cleanup collected.      |
+-| `PoolErrorOptions` | interface | Represents the construction options for `PoolError`: the stable code, an optional cause, and optional structured context.                                   |
+-| `PoolEventMap`     | type      | Represents the observable resource lifecycle events emitted by a `PoolInterface`: `create`, `acquire`, `release`, and `destroy`.                            |
+-| `PoolToken`        | interface | Represents a unique lease over one pool-owned resource record, exposing that record as a readonly `value` and returning it through an idempotent `release`. |
+-| `PoolOptions`      | interface | Represents the resource lifecycle options for `Pool` and `createPool`: creation, destruction, validation, capacity, and observation.                        |
+-| `PoolInterface`    | interface | Represents a FIFO resource pool with optional bounded capacity and deterministic teardown, exposing its record counts and a typed lifecycle emitter.        |
+-
+-`PoolInterface.emitter`, `size`, `idle`, and `active` are readonly data properties.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API                | Kind      | Shape                                                          | Summary                                                                                                                                                     |
++| ------------------ | --------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `PoolCode`         | type      | `'invalid' \| 'destroyed' \| 'create' \| 'cleanup'`            | Names the machine-readable failure codes produced by `PoolError`.                                                                                           |
++| `PoolContext`      | interface | `{ value?, failures? }`                                        | Represents the structured context attached to a `PoolError`: the rejected input, or the distinct destroy-hook failures an aggregate cleanup collected.      |
++| `PoolErrorOptions` | interface | `{ code, cause?, context? }`                                   | Represents the construction options for `PoolError`: the stable code, an optional cause, and optional structured context.                                   |
++| `PoolEventMap`     | type      | `{ create, acquire, release, destroy }`                        | Represents the observable resource lifecycle events emitted by a `PoolInterface`.                                                                           |
++| `PoolToken`        | interface | `{ value } plus release`                                       | Represents a unique lease over one pool-owned resource record, exposing that record as a readonly `value` and returning it through an idempotent `release`. |
++| `PoolOptions`      | interface | `{ on?, error?, create, destroy?, validate?, max? }`           | Represents the resource lifecycle options for `Pool` and `createPool`: creation, destruction, validation, capacity, and observation.                        |
++| `PoolInterface`    | interface | `{ emitter, size, idle, active } plus acquire, clear, destroy` | Represents a FIFO resource pool with optional bounded capacity and deterministic teardown, exposing its record counts and a typed lifecycle emitter.        |
++
+ `size` counts every owned record, including records being validated or destroyed. `idle`
+ counts only immediately available records. `active` counts only leased records. An in-flight
+ create reservation claims capacity but is not yet an owned record and therefore is not part
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 1fb2dfb..cfea4aa 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,8 +1,7 @@
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ 
+ /**
+- * Names the machine-readable failure codes produced by {@link PoolError}: `invalid`, `destroyed`,
+- * `create`, and `cleanup`.
++ * Names the machine-readable failure codes produced by {@link PoolError}.
+  */
+ export type PoolCode = 'invalid' | 'destroyed' | 'create' | 'cleanup'
+ 
+@@ -31,8 +30,7 @@ export interface PoolErrorOptions {
+ }
+ 
+ /**
+- * Represents the observable resource lifecycle events emitted by a {@link PoolInterface}:
+- * `create`, `acquire`, `release`, and `destroy`.
++ * Represents the observable resource lifecycle events emitted by a {@link PoolInterface}.
+  */
+ export type PoolEventMap = {
+ 	/** Signals that a created resource entered pool ownership. */
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index b37c909..a88e37e 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -15,7 +15,8 @@ export function isPoolMax(value: unknown): value is number {
+ }
+ 
+ /**
+- * Tests whether a value is a native `AbortSignal`, returning `false` for hostile proxies.
++ * Tests whether a value is a native `AbortSignal` for the acquire boundary, returning `false`
++ * for hostile proxies.
+  *
+  * @param value - The unknown signal candidate
+  * @returns True if the value is a native `AbortSignal`; false otherwise
