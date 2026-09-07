@@ -676,7 +676,7 @@
 			"storage": "guides/guide.md",
 			"destination": "guides/guide.md",
 			"executable": false,
-			"digest": "1dfe3282bec2d9c8abc103d1ecac33b1e3ff2007b901249c523995e92604e929"
+			"digest": "1a572acf6b97c9ab26c56288bab83c474e3b43b4e6b3a2ce2da90fd2c208b9f7"
 		},
 		{
 			"storage": "guides/scaffold.md",
@@ -778,5 +778,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "5acab8504f2e820d962a3b6c567ffdb694da348888b598730d575f1f6e529a64"
+	"digest": "afbd2e700aaa19c164c560f7e71ab5d8b241f0d63bf2166b3be28772a4db0e29"
 }
