@@ -29,3 +29,5 @@ P13 (M1): inside the guide checkout, Node and `tsc` resolve `@orkestrel/guide` t
 ## Substitution
 
 Sol dark this round (`codex` not on `PATH`, MCP `ENOENT`); the objective lane ran on Opus 5 as `reviewer`, recorded here and in the ledger.
+
+_Superseded in part, 2026-09-07 after D6-fix stopped: the seed's selection with `blueprint.guides` (F-b's closure) is reverted — the seed is vendored into every workspace and only the `docs` script selects with `guides`; `plan.md` § Re-baseline (after D6-fix stopped) carries the reason._
