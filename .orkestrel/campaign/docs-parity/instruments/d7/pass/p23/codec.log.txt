@@ -1,0 +1,81 @@
+### codec at d216f4d, guide guides/codec.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  28 passed (28)
+   test:guides exit 0
+-- census
+   guides/codec.md surface {"equal":25,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":0,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 0 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   examples titledFences 8 titledExamples ["encodeBase64:Encode and decode a byte sequence"] pairs ["Encode and decode a byte sequence"]
+-- sites: surface row guides/codec.md:68; methods row guides/codec.md:none; title src/core/helpers.ts:30
+-- control A: one Surface Summary cell altered (guides/codec.md:68)
+guides/codec.md function encodeBase64: guide "Encodes a byte sequence as standard padded Base64, in the RFC 4648 §4 alphabet (`+`, `/`) with `=` padding. That spelling is the canonical form and the only form `decodeBase64` accepts. Total: encoding cannot fail. Control." source "Encodes a byte sequence as standard padded Base64, in the RFC 4648 §4 alphabet (`+`, `/`) with `=` padding. That spelling is the canonical form and the only form `decodeBase64` accepts. Total: encoding cannot fail."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Codec > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 16ms
+   test:guides exit 1
+-- control B: no Methods table in guides/codec.md (skipped)
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Encodes a byte sequence as standard padded Base64, in the RFC 4648 §4 alphabet (`+`, `/`) with
+guides/codec.md function encodeBase64: guide "Encodes a byte sequence as standard padded Base64, in the RFC 4648 §4 alphabet (`+`, `/`) with `=` padding. That spelling is the canonical form and the only form `decodeBase64` accepts. Total: encoding cannot fail." source "Control Encodes a byte sequence as standard padded Base64, in the RFC 4648 §4 alphabet (`+`, `/`) with `=` padding. That spelling is the canonical form and the only form `decodeBase64` accepts. Total: encoding cannot fail."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Codec > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/validators.ts:12:  * Control Checks whether a value is canonical standard Base64 text — true for exactly the strings
+guides/codec.md function isBase64: guide "Checks whether a value is canonical standard Base64 text — true for exactly the strings `decodeBase64` answers bytes for. Total on any value: a number, `null`, or a byte sequence is false rather than a throw." source "Control Checks whether a value is canonical standard Base64 text — true for exactly the strings `decodeBase64` answers bytes for. Total on any value: a number, `null`, or a byte sequence is false rather than a throw."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Codec > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 16ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/helpers.ts:30)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 27 passed (28)
+× pairs at least one example title across the guide and the source 38ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/codec.md Encode and decode a byte sequence: guide "ts\nimport { decodeBase64, encodeBase64 } from '@orkestrel/codec'\n\nencodeBase64(new Uint8Array([104, 105])) // 'aGk='\ndecodeBase64('aGk=') // Uint8Array [104, 105]\nencodeBase64(new Uint8Array([])) // ''\ndecodeBase64('') // Uint8Array []" source "ts\nimport { decodeBase64, encodeBase64 } from '@orkestrel/codec' // control\n\nencodeBase64(new Uint8Array([104, 105])) // 'aGk='\ndecodeBase64('aGk=') // Uint8Array [104, 105]\nencodeBase64(new Uint8Array([])) // ''\ndecodeBase64('') // Uint8Array []"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Codec > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/codec.md pitch: readme "Control: The fleet's byte-to-text codings: sound `encode` / `decode` / guard triples over `string` and `Uint8Array` for RFC 4648 Base64, base64url, and hex and for the UTF-8, ISO-8859-1, Windows-1252, and UTF-16LE charsets, beside a `measure*` that answers a coding's byte-side size question without producing those bytes." tagline "The fleet's byte-to-text codings: sound `encode` / `decode` / guard triples over `string` and `Uint8Array` for RFC 4648 Base64, base64url, and hex and for the UTF-8, ISO-8859-1, Windows-1252, and UTF-16LE charsets, beside a `measure*` that answers a coding's byte-side size question without producing those bytes."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The fleet\'s byte-to-text co…' to be 'The fleet\'s byte-to-text codings: so…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 27 passed (28)
+× opens the README with the guide tagline 28ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/codec.md function encodeHex: guide absent source "Encodes a byte sequence as lowercase hex, in the RFC 4648 §8 base16 alphabet, two digits per byte. That spelling is the canonical form and the only form `decodeHex` accepts. Total: encoding cannot fail."
+guides/codec.md function decodeHex: guide absent source "Decodes canonical lowercase hex text into its bytes, reading back exactly what `encodeHex` writes. An uppercase digit, an odd length, a `0x` prefix, whitespace, and any character outside the alphabet are `undefined`."
+guides/codec.md function isHex: guide absent source "Checks whether a value is canonical lowercase hex text — true for exactly the strings `decodeHex` answers bytes for. An uppercase digit, an odd length, and a `0x` prefix are false. Total on any value: a number, `null`, or a byte sequence is false rather than a throw."
+rows read: 1, disagreements found: 9
+   docs exit 1
+AssertionError: expected [ …(9) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Codec > keeps every compared summary and example equal to its source
+Tests  1 failed | 27 passed (28)
+× keeps every compared summary and example equal to its source 18ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

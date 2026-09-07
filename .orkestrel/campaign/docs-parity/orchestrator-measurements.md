@@ -226,3 +226,27 @@ total diagnostics per package, by rule (no-malformed-summary / no-banned-term) a
 ```
 
 Reading: the rule's red is created by `repair` in every checkout, and its size routes the prep unit — `builder` under twenty sites, the Opus `implementer` above — while the per-file lists tell each brief where the sites are. `test`'s reading is small despite its size, so it runs as a builder prep with a giant's converge.
+
+## P23 — the equality gate's population and its controls, per converged package (2026-09-07, `instruments/d7/pass/p23/`)
+
+`findDrift` compares every `## Surface` row whose symbol the source declares (the guide's `Summary` cell against the declaration's description paragraph), every `## Methods` row whose member the interface declares, and every titled fence with an `@example` of that title; `computeDrift` reports a pair unless the guide side is present and equals the source side, so a row with an absent cell, an absent paragraph, or both absent is reported, never passed. A guide row the source lacks and a member the interface lacks are the bijection cases' subject (`documents only barrel exports`, `documents no phantom method`), which run beside the gate.
+
+```text
+$ node census.mjs <clone>        (abort d714f6b, codec d216f4d, msg a11b9cb, sse 8f767de; head start 0.0.18)
+abort  surface equal 7   methods equal 1  groups 1  unmatched [] undocumented [] bothAbsent []  pairs ["Create and abort"]
+codec  surface equal 25  methods —        groups 0  unmatched [] undocumented [] bothAbsent []  pairs ["Encode and decode a byte sequence"]
+msg    surface equal 124 methods equal 4  groups 2  unmatched [] undocumented [] bothAbsent []  pairs ["Factories"]
+sse    surface equal 10  methods equal 3  groups 1  unmatched [] undocumented [] bothAbsent []  pairs ["Factories"]
+$ p23-parity-controls.sh / p23b-parity-controls.sh   (a scratch clone per package; each control planted, measured, restored by copy)
+  A  one Surface Summary cell altered            → docs 1 disagreement, the equality case red      (every package)
+  B  one Methods Summary cell altered            → docs 1 disagreement, the equality case red      (abort, msg, sse; codec has no Methods table)
+  C  the titled block's description first line   → docs 1 disagreement, the equality case red      (every package, p23b)
+  H  another declaration's description first line→ docs 1 disagreement, the equality case red      (every package, p23b)
+  D  the @example title removed                  → docs 0, the population pin red (both title sets named)
+  E  the titled example body altered             → docs 1 disagreement, the equality case red
+  F  the README pitch altered                    → docs 1 disagreement (pitch), the README case red
+  G  one Summary header renamed to Behavior      → docs every row of that table `guide absent`, the equality case red (abort 1, codec 9, msg 25, sse per table)
+  restored                                       → docs 0, the suite green, the clone's status clean
+```
+
+Reading: on every converged package the gate compares every documented declaration and every documented method, and every way a side can drift reddens both the seed and the suite. The first script's block control edited a `@remarks` line in abort and msg, which the comparison leaves unread by Ruling 7's design, so the successor plants it on the description's first line. Outside the gate by design: an implementing class's own method blocks (`Abort.abort`, `SSEParser.parse/flush/clear` carry none; the interface's block is the documented contract the Methods table compares), and every untitled fence (executed by the flagship tests, compared by nothing). P23 runs on every package after its converge unit lands, before its audit, as the Orchestrator's tracked command.

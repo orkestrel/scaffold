@@ -1,0 +1,63 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-codec",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/codec.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 25,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 0,
+    "counts": {
+     "equal": 0,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [],
+   "examples": {
+    "titledFences": [
+     "Encode and decode a byte sequence",
+     "Reach the url face",
+     "Meet the canonical refusals",
+     "Ask a value whether a decoder would take it",
+     "Drive both laws",
+     "Read the hex face",
+     "Encode and decode through a charset",
+     "Measure without producing the bytes"
+    ],
+    "titledExamples": [
+     "encodeBase64:Encode and decode a byte sequence"
+    ],
+    "pairs": [
+     "Encode and decode a byte sequence"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

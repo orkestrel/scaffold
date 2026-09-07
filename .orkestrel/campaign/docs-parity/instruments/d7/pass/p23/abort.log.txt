@@ -1,0 +1,89 @@
+### abort at d714f6b, guide guides/abort.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  25 passed (25)
+   test:guides exit 0
+-- census
+   guides/abort.md surface {"equal":7,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":1,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Abort methods 1 grouped false undescribed ["abort"]
+   owner interface AbortInterface methods 1 grouped true undescribed []
+   examples titledFences 4 titledExamples ["createAbort:Create and abort"] pairs ["Create and abort"]
+-- sites: surface row guides/abort.md:37; methods row guides/abort.md:79; title src/core/factories.ts:21
+-- control A: one Surface Summary cell altered (guides/abort.md:37)
+guides/abort.md function createAbort: guide "Creates a cancellation handle from validated options and returns it as an `AbortInterface` — a resolved trace `id` and a `signal` already linked to any parent given, so a caller holds the published contract rather than the `Abort` class. Control." source "Creates a cancellation handle from validated options and returns it as an `AbortInterface` — a resolved trace `id` and a `signal` already linked to any parent given, so a caller holds the published contract rather than the `Abort` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Abort > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 36ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/abort.md:79)
+guides/abort.md AbortInterface.abort: guide "Aborts the underlying controller, flipping `aborted` and firing `signal`. Aborting is idempotent — the first reason sticks and every later call is a no-op. Control." source "Aborts the underlying controller, flipping `aborted` and firing `signal`. Aborting is idempotent — the first reason sticks and every later call is a no-op."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Abort > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 38ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a cancellation handle from validated options and returns it as an
+guides/abort.md function createAbort: guide "Creates a cancellation handle from validated options and returns it as an `AbortInterface` — a resolved trace `id` and a `signal` already linked to any parent given, so a caller holds the published contract rather than the `Abort` class." source "Control Creates a cancellation handle from validated options and returns it as an `AbortInterface` — a resolved trace `id` and a `signal` already linked to any parent given, so a caller holds the published contract rather than the `Abort` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Abort > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 19ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Abort.ts:5:  * Control Implements {@link AbortInterface} over a private `AbortController` the instance owns,
+guides/abort.md class Abort: guide "Implements `AbortInterface` over a private `AbortController` the instance owns, resolving the trace `id` at construction and exposing either that controller's own `signal` or one linked to a parent." source "Control Implements `AbortInterface` over a private `AbortController` the instance owns, resolving the trace `id` at construction and exposing either that controller's own `signal` or one linked to a parent."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Abort > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 22ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:21)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 24 passed (25)
+× pairs at least one example title across the guide and the source 25ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/abort.md Create and abort: guide "ts\nimport { createAbort } from '@orkestrel/abort'\n\nconst abort = createAbort()\nconst stream = openStream({ signal: abort.signal })\n// later, to cancel:\nabort.abort('user navigated away') // signal.reason carries the value" source "ts\nimport { createAbort } from '@orkestrel/abort' // control\n\nconst abort = createAbort()\nconst stream = openStream({ signal: abort.signal })\n// later, to cancel:\nabort.abort('user navigated away') // signal.reason carries the value"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Abort > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 39ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/abort.md pitch: readme "Control: The cancellation primitive: a thin, traceable wrapper over a native `AbortController` that carries a trace `id`, exposes a standard `AbortSignal`, and links to a parent signal so one cancellation cascades through a tree of handles." tagline "The cancellation primitive: a thin, traceable wrapper over a native `AbortController` that carries a trace `id`, exposes a standard `AbortSignal`, and links to a parent signal so one cancellation cascades through a tree of handles."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The cancellation primitive: …' to be 'The cancellation primitive: a thin, t…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 24 passed (25)
+× opens the README with the guide tagline 13ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/abort.md function createAbort: guide absent source "Creates a cancellation handle from validated options and returns it as an `AbortInterface` — a resolved trace `id` and a `signal` already linked to any parent given, so a caller holds the published contract rather than the `Abort` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Abort > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 50ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

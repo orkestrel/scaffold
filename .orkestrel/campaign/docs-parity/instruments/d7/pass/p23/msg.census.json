@@ -1,0 +1,86 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-msg",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/msg.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 124,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 4,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "MSG",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "MSGInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MSGSourceInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Errors",
+     "Helpers",
+     "Shapers",
+     "Parsers",
+     "Validators",
+     "MSG",
+     "Factories",
+     "MSGSourceInterface"
+    ],
+    "titledExamples": [
+     "createMSG:Factories"
+    ],
+    "pairs": [
+     "Factories"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

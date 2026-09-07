@@ -1,0 +1,92 @@
+### msg at a11b9cb, guide guides/msg.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  36 passed (36)
+   test:guides exit 0
+-- census
+   guides/msg.md surface {"equal":124,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":4,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class MSG methods 2 grouped false undescribed []
+   owner interface MSGInterface methods 2 grouped true undescribed []
+   owner interface MSGSourceInterface methods 2 grouped true undescribed []
+   examples titledFences 9 titledExamples ["createMSG:Factories"] pairs ["Factories"]
+-- sites: surface row guides/msg.md:46; methods row guides/msg.md:383; title src/core/factories.ts:24
+-- control A: one Surface Summary cell altered (guides/msg.md:46)
+guides/msg.md interface Success: guide "Represents a successful `Result`, carrying the value the operation produced. Control." source "Represents a successful `Result`, carrying the value the operation produced."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MSG > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 548ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/msg.md:383)
+guides/msg.md MSGInterface.attachment: guide "Reads attachment binary content by zero-based index, returning its `name` and `bytes`. Requires `'msg'` input: `'eml'` input carries no MAPI field tree, so every index throws — read an `.eml` file's attachments from `chain.messages[0].attachments` instead. Control." source "Reads attachment binary content by zero-based index, returning its `name` and `bytes`. Requires `'msg'` input: `'eml'` input carries no MAPI field tree, so every index throws — read an `.eml` file's attachments from `chain.messages[0].attachments` instead."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MSG > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 574ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates an {@link MSGInterface} for raw `.eml` or `.msg` input and returns it inside a
+guides/msg.md function createMSG: guide "Creates an `MSGInterface` for raw `.eml` or `.msg` input and returns it inside a `Result`: every parse failure surfaces as a `Failure` carrying the `MSGError` instead of throwing, and an unexpected non-`MSGError` error still propagates." source "Control Creates an `MSGInterface` for raw `.eml` or `.msg` input and returns it inside a `Result`: every parse failure surfaces as a `Failure` carrying the `MSGError` instead of throwing, and an unexpected non-`MSGError` error still propagates."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MSG > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 586ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/MSG.ts:85:  * Control Parses raw `.eml` or `.msg` file bytes into a structured {@link EmailChain}, exposing — for
+guides/msg.md class MSG: guide "Parses raw `.eml` or `.msg` file bytes into a structured `EmailChain`, exposing — for `.msg` input — the raw MAPI field tree, attachment binary access, and CFB reconstitution." source "Control Parses raw `.eml` or `.msg` file bytes into a structured `EmailChain`, exposing — for `.msg` input — the raw MAPI field tree, attachment binary access, and CFB reconstitution."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MSG > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 610ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:24)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 35 passed (36)
+× pairs at least one example title across the guide and the source 41ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/msg.md Factories: guide "ts\nimport { createMSG, isSuccess } from '@orkestrel/msg'\n\nconst result = createMSG(bytes)\nif (isSuccess(result)) {\n\tconsole.log(result.value.chain.format)\n}" source "ts\nimport { createMSG, isSuccess } from '@orkestrel/msg' // control\n\nconst result = createMSG(bytes)\nif (isSuccess(result)) {\n\tconsole.log(result.value.chain.format)\n}"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MSG > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 535ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/msg.md pitch: readme "Control: A zero-dependency parser for Outlook `.msg` (CFB/OLE2 compound binary) and `.eml` (RFC 2822 / MIME) email files, projecting either format into one structured `EmailChain`." tagline "A zero-dependency parser for Outlook `.msg` (CFB/OLE2 compound binary) and `.eml` (RFC 2822 / MIME) email files, projecting either format into one structured `EmailChain`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A zero-dependency parser for…' to be 'A zero-dependency parser for Outlook …' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 35 passed (36)
+× opens the README with the guide tagline 17ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/msg.md type MSGInput: guide absent source "Represents the raw input `createMSG` and `new MSG()` accept: binary MSG bytes, an `ArrayBuffer` over them, or an `EmailInput` carrying a file-name or MIME hint."
+guides/msg.md interface MSGOptions: guide absent source "Configures the creation of an `MSGInterface`."
+guides/msg.md interface MSGInterface: guide absent source "Exposes the public surface of a parsed MSG/EML file."
+rows read: 1, disagreements found: 25
+   docs exit 1
+AssertionError: expected [ …(25) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > MSG > keeps every compared summary and example equal to its source
+Tests  1 failed | 35 passed (36)
+× keeps every compared summary and example equal to its source 555ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

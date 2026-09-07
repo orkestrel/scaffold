@@ -1,0 +1,91 @@
+### sse at 8f767de, guide guides/sse.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  39 passed (39)
+   test:guides exit 0
+-- census
+   guides/sse.md surface {"equal":10,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":3,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class SSEParser methods 3 grouped false undescribed ["clear","flush","parse"]
+   owner interface SSEParserInterface methods 3 grouped true undescribed []
+   examples titledFences 6 titledExamples ["createSSEParser:Factories"] pairs ["Factories"]
+-- sites: surface row guides/sse.md:41; methods row guides/sse.md:118; title src/core/factories.ts:26
+-- control A: one Surface Summary cell altered (guides/sse.md:41)
+guides/sse.md interface SSEEvent: guide "Represents one dispatched Server-Sent Event — the value a blank line flushes from an `SSEParserInterface`. Its `data` holds every `data:` field of that event joined by `\\n` with no trailing newline, and `event` / `id` / `retry` hold the last field of each name the event carried. Control." source "Represents one dispatched Server-Sent Event — the value a blank line flushes from an `SSEParserInterface`. Its `data` holds every `data:` field of that event joined by `\\n` with no trailing newline, and `event` / `id` / `retry` hold the last field of each name the event carried."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SSE > keeps every compared summary and example equal to its source
+Tests  1 failed | 38 passed (39)
+× keeps every compared summary and example equal to its source 35ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/sse.md:118)
+guides/sse.md SSEParserInterface.parse: guide "Appends `chunk`, then returns every event a blank line has dispatched — each event's `data:` fields concatenated with `\\n`, plus the last `event:` / `id:` / `retry:` field it carried. An in-progress event and a trailing partial line are retained for the next call, and a call that would exceed a configured `limit` throws instead, leaving parser state unchanged. Control." source "Appends `chunk`, then returns every event a blank line has dispatched — each event's `data:` fields concatenated with `\\n`, plus the last `event:` / `id:` / `retry:` field it carried. An in-progress event and a trailing partial line are retained for the next call, and a call that would exceed a configured `limit` throws instead, leaving parser state unchanged."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SSE > keeps every compared summary and example equal to its source
+Tests  1 failed | 38 passed (39)
+× keeps every compared summary and example equal to its source 34ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a Server-Sent-Events (SSE) stream parser — a stateful {@link SSEParserInterface}
+guides/sse.md function createSSEParser: guide "Creates a Server-Sent-Events (SSE) stream parser — a stateful `SSEParserInterface` handle, backed by `SSEParser`, that turns string chunks into the complete events dispatched so far." source "Control Creates a Server-Sent-Events (SSE) stream parser — a stateful `SSEParserInterface` handle, backed by `SSEParser`, that turns string chunks into the complete events dispatched so far."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SSE > keeps every compared summary and example equal to its source
+Tests  1 failed | 38 passed (39)
+× keeps every compared summary and example equal to its source 37ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/SSEParser.ts:6:  * Control Implements {@link SSEParserInterface} over one internal line buffer, reassembling an event
+guides/sse.md class SSEParser: guide "Implements `SSEParserInterface` over one internal line buffer, reassembling an event split across chunk boundaries once its blank line arrives and holding the sticky `id` / `retry` connection state until `clear()` drops it." source "Control Implements `SSEParserInterface` over one internal line buffer, reassembling an event split across chunk boundaries once its blank line arrives and holding the sticky `id` / `retry` connection state until `clear()` drops it."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SSE > keeps every compared summary and example equal to its source
+Tests  1 failed | 38 passed (39)
+× keeps every compared summary and example equal to its source 44ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:26)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 38 passed (39)
+× pairs at least one example title across the guide and the source 43ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/sse.md Factories: guide "ts\nimport { createSSEParser } from '@orkestrel/sse'\n\nconst parser = createSSEParser({ limit: 1_000_000 })\nparser.parse('data: a\\ndata: b\\n\\n') // [{ data: 'a\\nb' }] - the two data lines joined\nparser.parse('event: ping\\ndata: 1') // [] - buffered until its blank line\nparser.parse('\\n\\n') // [{ data: '1', event: 'ping' }]" source "ts\nimport { createSSEParser } from '@orkestrel/sse' // control\n\nconst parser = createSSEParser({ limit: 1_000_000 })\nparser.parse('data: a\\ndata: b\\n\\n') // [{ data: 'a\\nb' }] - the two data lines joined\nparser.parse('event: ping\\ndata: 1') // [] - buffered until its blank line\nparser.parse('\\n\\n') // [{ data: '1', event: 'ping' }]"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SSE > keeps every compared summary and example equal to its source
+Tests  1 failed | 38 passed (39)
+× keeps every compared summary and example equal to its source 82ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/sse.md pitch: readme "Control: A stateful Server-Sent-Events (SSE) stream parser: a handle that turns string chunks into the complete events a blank line has dispatched, buffering a partial line or in-progress event until the rest arrives and persisting the sticky `id` / `retry` connection state." tagline "A stateful Server-Sent-Events (SSE) stream parser: a handle that turns string chunks into the complete events a blank line has dispatched, buffering a partial line or in-progress event until the rest arrives and persisting the sticky `id` / `retry` connection state."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A stateful Server-Sent-Event…' to be 'A stateful Server-Sent-Events (SSE) s…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 38 passed (39)
+× opens the README with the guide tagline 22ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/sse.md interface SSEParserInterface: guide absent source "Represents a stateful Server-Sent-Events (SSE) stream parser: feed it string chunks, get back the complete events dispatched so far. A trailing partial line / in-progress event is buffered until the rest arrives, and the sticky `id` / `retry` getters carry the connection state a dispatch leaves in place."
+guides/sse.md interface SSEParserOptions: guide absent source "Configures the parser `createSSEParser` builds and the `SSEParser` constructor accepts — `limit` caps the total buffered characters held at once, and leaving it unset keeps the buffering unbounded."
+guides/sse.md type SSEErrorCode: guide absent source "Names the machine-readable code an `SSEError` carries — `'OVERFLOW'` alone, thrown when a `parse(chunk)` call would push the buffered total over a configured `limit`."
+rows read: 1, disagreements found: 4
+   docs exit 1
+AssertionError: expected [ …(4) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > SSE > keeps every compared summary and example equal to its source
+Tests  1 failed | 38 passed (39)
+× keeps every compared summary and example equal to its source 49ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

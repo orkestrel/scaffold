@@ -1,0 +1,76 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-abort",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/abort.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 7,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 1,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "Abort",
+     "keyword": "class",
+     "methods": 1,
+     "grouped": false,
+     "undescribed": [
+      "abort"
+     ]
+    },
+    {
+     "name": "AbortInterface",
+     "keyword": "interface",
+     "methods": 1,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Create and abort",
+     "Link to a parent (cascading cancellation)",
+     "Race work against the signal"
+    ],
+    "titledExamples": [
+     "createAbort:Create and abort"
+    ],
+    "pairs": [
+     "Create and abort"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}
