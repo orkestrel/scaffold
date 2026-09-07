@@ -1,0 +1,16 @@
+ M guides/guide.md
+ M src/core/Guide.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/shapers.ts
+ M src/core/sources/Source.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ M tests/src/core/Guide.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/shapers.test.ts
+ M tests/src/core/sources/Source.test.ts
+ M tests/src/core/validators.test.ts

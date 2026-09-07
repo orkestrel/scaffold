@@ -1,0 +1,4060 @@
+diff --git a/guides/guide.md b/guides/guide.md
+index a7dca70..2037414 100644
+--- a/guides/guide.md
++++ b/guides/guide.md
+@@ -32,14 +32,18 @@ The manifest/extraction shapes every check is built from, from [`types.ts`](../s
+ | Name                     | Kind      | Shape                                                                                                                                                                                                                                         |
+ | ------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `ExportKeyword`          | type      | `'type' \| 'interface' \| 'const' \| 'function' \| 'class'` — the declaration-keyword reflection population, derived from `EXPORT_KEYWORDS`. Comment/template payload and enums are outside it; general package policy does not forbid enums. |
+-| `SurfaceSymbol`          | interface | `{ name, keyword }` — one documented / exported symbol.                                                                                                                                                                                       |
++| `SurfaceSymbol`          | interface | `{ name, keyword, summary? }` — one documented / exported symbol; `summary` holds the compared description paragraph its side carries.                                                                                                        |
+ | `GuideModule`            | type      | `string \| readonly string[]` — one source directory, or several; `'.'` is the canonical workspace root.                                                                                                                                      |
+ | `SourceLine`             | interface | `{ source, code, jsdoc }` — one terminator-free physical source line with exact raw text, equal-length projections, and every genuine JSDoc span at its physical column or `undefined`.                                                       |
++| `SourceComment`          | interface | `{ text, line }` — one eligible genuine JSDoc block's unwrapped body paired with the physical record it documents.                                                                                                                            |
++| `MethodEntry`            | interface | `{ name, summary? }` — one documented method's identifier and the compared description paragraph its side carries.                                                                                                                            |
++| `SourceExample`          | interface | `{ name, title?, code, language? }` — one `@example` block: the declaration it documents, its pairing title, its code, and its fence language.                                                                                                |
++| `Drift`                  | interface | `{ key, guide?, source? }` — one disagreement between a guide and its source, the side carrying no text omitted.                                                                                                                              |
+ | `ManifestEntry`          | interface | `{ concept, spec, source, tests }` — one `## By concept` manifest row, paths normalized to workspace root.                                                                                                                                    |
+-| `MethodGroup`            | interface | `{ interface, methods }` — one `#### \`Interface\`` block's documented method names, in table order.                                                                                                                                          |
++| `MethodGroup`            | interface | `{ interface, methods }` — one `#### Interface` block's documented `MethodEntry` rows, in table order.                                                                                                                                        |
+ | `FenceImport`            | interface | `{ specifier, names }` — one brace `import` statement projected from a guide fence, each alias resolved to the original exported name.                                                                                                        |
+-| `GuideFence`             | interface | `{ language, code }` — one fenced code block; `language` is its info-string tag, or `undefined` when the fence is untagged.                                                                                                                   |
+-| `GuideInterface`         | interface | `{ sections, surface, methods, links, tests, fences }` — the structured, pure view over one parsed guide. See [`## Methods`](#methods).                                                                                                       |
++| `GuideFence`             | interface | `{ language, code, title? }` — one fenced code block; `language` is its info-string tag, or `undefined` when the fence is untagged, and `title` is the flattened text of its nearest preceding heading.                                       |
++| `GuideInterface`         | interface | `{ sections, tagline, surface, methods, links, tests, fences }` — the structured, pure view over one parsed guide. See [`## Methods`](#methods).                                                                                              |
+ | `SourceInterface`        | interface | `{ exports, surface, methods, exists, hidden, examples }` — direct declarations, conventional barrel reachability, members, paths, discipline, and examples. See [`## Methods`](#methods).                                                    |
+ | `SourceManagerInterface` | interface | `{ source, sources }` — resolves one import specifier to the shared source view of the module it names, and enumerates those views. See [`## Methods`](#methods).                                                                             |
+ | `SourceOptions`          | interface | `{ files, module }` — exact canonical-segment opaque workspace-relative inventory keys plus the canonicalized module scope to reflect.                                                                                                        |
+@@ -60,6 +64,8 @@ extractor and link check is keyed on, from [`constants.ts`](../src/core/constant
+ | `METHODS`          | const | `'Methods'` — the `## Methods` heading text.                                                                                                                |
+ | `TESTS`            | const | `'Tests'` — the `## Tests` heading text.                                                                                                                    |
+ | `MANIFEST`         | const | `'By concept'` — the `## By concept` manifest heading text.                                                                                                 |
++| `KIND`             | const | `'Kind'` — the header text of the column a `## Surface` table's declaration keyword is read from.                                                           |
++| `SUMMARY`          | const | `'Summary'` — the header text of the column a `## Surface` or `## Methods` table's compared description paragraph is read from.                             |
+ | `EXTERNAL_SCHEMES` | const | `readonly string[]` — `['http:', 'https:', 'mailto:', 'tel:']`; a link with one of these prefixes is never filesystem-resolved.                             |
+ 
+ ### Helpers
+@@ -84,26 +90,37 @@ directly.
+ | `joinHead`              | function | `(lines: readonly string[], start: number) => DeclarationHead \| undefined`                               | Joins a declaration head starting at `start` into one space-separated line, consuming lines until the first ending in `{`.                                                                                                                        |
+ | `escapeRegExp`          | function | `(value: string) => string`                                                                               | Escapes every regex metacharacter in a literal string so it reads as text inside a larger `RegExp` source — `extractDeclaration`'s head grammar and `findUnexampled`'s word-boundary search both splice a caller-supplied name through it.        |
+ | `extractDeclaration`    | function | `(source: string, keyword: DeclarationKeyword, name: string) => Declaration \| undefined`                 | Locates one real `export class` / `export interface` head in projected lines and returns its raw body and its `extends` bases together, or `undefined` when the file declares no such head.                                                       |
+-| `extractMemberMethods`  | function | `(lines: readonly string[]) => readonly string[]`                                                         | Matches callable members on one projection of the body; commented candidates, getters, setters, `static`, and `#` privates never count.                                                                                                           |
+-| `extractExampleLines`   | function | `(lines: readonly SourceLine[]) => readonly SourceLine[]`                                                 | The next physical candidate after the authoritative exact `@example` span in a leading chain.                                                                                                                                                     |
+-| `extractExamples`       | function | `(source: string) => readonly string[]`                                                                   | Matches exported functions against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                      |
+-| `extractExampleMethods` | function | `(lines: readonly string[]) => readonly string[]`                                                         | Matches callable members against the same shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                               |
++| `extractMemberMethods`  | function | `(lines: readonly string[]) => readonly MethodEntry[]`                                                    | Matches callable members on one projection of the body, each with its own doc block's description paragraph; commented candidates, getters, setters, `static`, and `#` privates never count.                                                      |
++| `extractSourceComments` | function | `(lines: readonly SourceLine[]) => readonly SourceComment[]`                                              | Every eligible genuine JSDoc block paired with the physical record it documents — the one walk every doc-block reader shares.                                                                                                                     |
++| `normalizeComment`      | function | `(comment: string) => string`                                                                             | One genuine JSDoc span's unwrapped body: opener, closing marker, continuation markers, and the block's leading indentation removed, per-line trailing whitespace trimmed.                                                                         |
++| `normalizeSummary`      | function | `(text: string) => string`                                                                                | The compared form of a description paragraph — `{@link}` targets rendered as code tokens, whitespace collapsed, the ends trimmed.                                                                                                                 |
++| `collectSummaries`      | function | `(lines: readonly SourceLine[]) => ReadonlyMap<SourceLine, string>`                                       | The description paragraph of every documented record, keyed by the record; a block carrying no description contributes no entry.                                                                                                                  |
++| `collectExamples`       | function | `(comment: string, name: string) => readonly SourceExample[]`                                             | The `@example` blocks one doc block's unwrapped text carries, each with its title, its fence language, and its body.                                                                                                                              |
++| `extractExampleLines`   | function | `(lines: readonly SourceLine[]) => readonly SourceLine[]`                                                 | The `extractSourceComments` walk filtered to the blocks carrying an exact block-position `@example` tag, projected to the records they document.                                                                                                  |
++| `extractExamples`       | function | `(source: string) => readonly SourceExample[]`                                                            | The exported functions' `@example` blocks, matched against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                              |
++| `extractExampleMethods` | function | `(lines: readonly string[]) => readonly SourceExample[]`                                                  | The callable members' `@example` blocks, matched against the same shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                       |
+ | `selectSectionBlocks`   | function | `(document: MarkdownDocument, heading: string) => readonly BlockNode[]`                                   | The block nodes under a named `##` heading, up to the next `##`-or-higher heading (or the document's end).                                                                                                                                        |
+-| `extractSurface`        | function | `(document: MarkdownDocument) => readonly SurfaceSymbol[]`                                                | Every `## Surface` identifier: each table's rows union every backticked H3 entity heading, deduped by `computeSymbolKey`.                                                                                                                         |
+-| `extractMethods`        | function | `(document: MarkdownDocument) => readonly MethodGroup[]`                                                  | One `MethodGroup` per documented behavioral interface in `## Methods` — an H4 code span sets the interface, the following table lists its methods.                                                                                                |
++| `extractTagline`        | function | `(document: MarkdownDocument) => string \| undefined`                                                     | The text of the blockquote following the document's H1, or `undefined` when a heading intervenes first.                                                                                                                                           |
++| `extractSurface`        | function | `(document: MarkdownDocument) => readonly SurfaceSymbol[]`                                                | Every `## Surface` identifier: each table's rows union every backticked H3 entity heading, deduped by `computeSymbolKey`, each row carrying its `Summary` cell when the table has that column.                                                    |
++| `extractMethods`        | function | `(document: MarkdownDocument) => readonly MethodGroup[]`                                                  | One `MethodGroup` per documented behavioral interface in `## Methods` — an H4 code span sets the interface, the following table lists its entries.                                                                                                |
+ | `extractLinks`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every link href in the guide document, including table cells — a full, depth-first AST walk.                                                                                                                                                      |
+ | `extractTests`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | The relative test links declared under `## Tests`.                                                                                                                                                                                                |
+-| `extractFences`         | function | `(document: MarkdownDocument) => readonly GuideFence[]`                                                   | Every fenced code block anywhere in the guide document, tagged or not — a full AST walk with no language filter.                                                                                                                                  |
++| `extractFences`         | function | `(document: MarkdownDocument) => readonly GuideFence[]`                                                   | Every fenced code block anywhere in the guide document, tagged or not, each carrying its nearest preceding heading as `title` — a full AST walk with no language filter.                                                                          |
+ | `isExternalLink`        | function | `(href: string) => boolean`                                                                               | Whether a guides-parity link check skips a link `href` — an external scheme (`EXTERNAL_SCHEMES`) or a bare `#` anchor.                                                                                                                            |
+ | `resolveLink`           | function | `(file: string, target: string) => string`                                                                | Derives a declaring file's directory, including workspace-root files, then delegates to `resolvePath`.                                                                                                                                            |
+ | `resolvePath`           | function | `(directory: string, target: string) => string`                                                           | Sole dot-segment reducer; returns `'.'` when no segment remains and preserves every excess leading parent.                                                                                                                                        |
+ | `findFirstCode`         | function | `(nodes: readonly InlineNode[]) => string \| undefined`                                                   | The first code-span value found by descending an inline node list, following into `emphasis`, `link`, and `image` children.                                                                                                                       |
+ | `normalizeIdentifier`   | function | `(code: string) => string`                                                                                | The identifier prefix of a code-span text — everything before its first `<`, trimmed (strips generic-parameter annotation).                                                                                                                       |
+-| `findKindIndex`         | function | `(table: TableNode) => number \| undefined`                                                               | The index of a table's `Kind` column, found by its header text so it survives column reordering.                                                                                                                                                  |
++| `findColumnIndex`       | function | `(table: TableNode, header: string) => number \| undefined`                                               | The index of the column whose header text is `header`, found by that text so a table's columns survive reordering.                                                                                                                                |
++| `extractCellText`       | function | `(cell: readonly InlineNode[]) => string`                                                                 | One table cell's compared text, code spans kept as code spans while emphasis and a link drop to their text and an image drops to its alternative text.                                                                                            |
+ | `extractCellLinks`      | function | `(cell: readonly InlineNode[]) => readonly string[]`                                                      | The link hrefs found within one table cell's inline content, in walk order.                                                                                                                                                                       |
++| `findUnnamed`           | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every `## Surface` or `## Methods` row whose first cell carries no code span — the rows `extractSurface` and `extractMethods` skip for want of a name, each returned as its cells' text on one line.                                              |
+ | `findUnexampled`        | function | `(names: readonly string[], fences: readonly string[], examples: readonly string[]) => readonly string[]` | The names with no fence mention (word boundary) and no `@example` membership — the EX check's core comparison.                                                                                                                                    |
+ | `findUnlisted`          | function | `(fences: readonly GuideFence[], languages: readonly string[]) => readonly GuideFence[]`                  | The fences whose language the caller did not list, plus every untagged fence — an untagged fence has no language to list.                                                                                                                         |
+ | `extractFenceImports`   | function | `(fence: string) => readonly FenceImport[]`                                                               | Parses a fence's brace `import` statements into per-specifier imported identifier names — the FI check's core comparison. Brace bindings only: a default, namespace, side-effect, or mixed `import Default, { named }` statement is not surfaced. |
++| `collectTitles`         | function | `(guide: GuideInterface, source: SourceInterface) => ReadonlyMap<string, SourceExample>`                  | The titled `@example` blocks a guide's documented surface reaches, keyed by title, the first block of a title answering for it.                                                                                                                   |
++| `computeDrift`          | function | `(key: string, guide: string \| undefined, source: string \| undefined) => Drift \| undefined`            | One compared key's guide text and source text as a `Drift`, or `undefined` only when both sides carry the same text; the side carrying no text is omitted, and neither side carrying text reports the key alone.                                  |
++| `findDrift`             | function | `(guide: GuideInterface, source: SourceInterface) => readonly Drift[]`                                    | Every disagreement between a guide and its source — Surface rows, Methods rows, then the first titled fence of each heading — naming both sites.                                                                                                  |
+ 
+ ### Parsers
+ 
+@@ -120,11 +137,14 @@ Declarative `ContractShape` values (from `@orkestrel/contract`) from
+ [`shapers.ts`](../src/core/shapers.ts) — every documented data type here is
+ non-recursive, so each shapes directly.
+ 
+-| Name                 | Kind  | Builds                                                                              |
+-| -------------------- | ----- | ----------------------------------------------------------------------------------- |
+-| `surfaceSymbolShape` | const | The shape of a `SurfaceSymbol` — `{ name: string, keyword: ExportKeyword }`.        |
+-| `methodGroupShape`   | const | The shape of a `MethodGroup` — `{ interface: string, methods: readonly string[] }`. |
+-| `manifestEntryShape` | const | The shape of a `ManifestEntry` — `source` accepting a single directory or several.  |
++| Name                 | Kind  | Builds                                                                                                |
++| -------------------- | ----- | ----------------------------------------------------------------------------------------------------- |
++| `surfaceSymbolShape` | const | The shape of a `SurfaceSymbol` — `{ name: string, keyword: ExportKeyword, summary?: string }`.        |
++| `methodGroupShape`   | const | The shape of a `MethodGroup` — `{ interface: string, methods: readonly MethodEntry[] }`.              |
++| `methodEntryShape`   | const | The shape of a `MethodEntry` — `{ name: string, summary?: string }`.                                  |
++| `sourceExampleShape` | const | The shape of a `SourceExample` — `{ name: string, title?: string, code: string, language?: string }`. |
++| `driftShape`         | const | The shape of a `Drift` — `{ key: string, guide?: string, source?: string }`.                          |
++| `manifestEntryShape` | const | The shape of a `ManifestEntry` — `source` accepting a single directory or several.                    |
+ 
+ ### Validators
+ 
+@@ -136,6 +156,9 @@ Total from-unknown guards composed from `@orkestrel/contract` combinators, from
+ | `isExportKeyword` | const | `value: unknown`   | `true` when `value` is one of the documented `ExportKeyword` literals. |
+ | `isSurfaceSymbol` | const | `value: unknown`   | `true` when `value` is a well-formed `SurfaceSymbol`.                  |
+ | `isMethodGroup`   | const | `value: unknown`   | `true` when `value` is a well-formed `MethodGroup`.                    |
++| `isMethodEntry`   | const | `value: unknown`   | `true` when `value` is a well-formed `MethodEntry`.                    |
++| `isSourceExample` | const | `value: unknown`   | `true` when `value` is a well-formed `SourceExample`.                  |
++| `isDrift`         | const | `value: unknown`   | `true` when `value` is a well-formed `Drift`.                          |
+ | `isManifestEntry` | const | `value: unknown`   | `true` when `value` is a well-formed `ManifestEntry`.                  |
+ 
+ ### Factories
+@@ -149,6 +172,9 @@ From [`factories.ts`](../src/core/factories.ts).
+ | `createSourceManager`         | function | `(options: SourceManagerOptions) => SourceManagerInterface` | Creates a `SourceManagerInterface` over a specifier-to-module policy, sharing one `Source` per module. |
+ | `createSurfaceSymbolContract` | function | `() => ContractInterface<SurfaceSymbol>`                    | Compiles `surfaceSymbolShape` into a guard / parser / schema / generator bundle.                       |
+ | `createMethodGroupContract`   | function | `() => ContractInterface<MethodGroup>`                      | Compiles `methodGroupShape` into a guard / parser / schema / generator bundle.                         |
++| `createMethodEntryContract`   | function | `() => ContractInterface<MethodEntry>`                      | Compiles `methodEntryShape` into a guard / parser / schema / generator bundle.                         |
++| `createSourceExampleContract` | function | `() => ContractInterface<SourceExample>`                    | Compiles `sourceExampleShape` into a guard / parser / schema / generator bundle.                       |
++| `createDriftContract`         | function | `() => ContractInterface<Drift>`                            | Compiles `driftShape` into a guard / parser / schema / generator bundle.                               |
+ | `createManifestEntryContract` | function | `() => ContractInterface<ManifestEntry>`                    | Compiles `manifestEntryShape` into a guard / parser / schema / generator bundle.                       |
+ 
+ ### `Guide`
+@@ -197,25 +223,26 @@ backticked name (`.claude/rules/documentation.md` § Parity).
+ 
+ #### `GuideInterface`
+ 
+-| Method     | Returns                    | Behavior                                                                                    |
+-| ---------- | -------------------------- | ------------------------------------------------------------------------------------------- |
+-| `sections` | `readonly string[]`        | The `##` heading names, in document order — the non-vacuousness guard for section presence. |
+-| `surface`  | `readonly SurfaceSymbol[]` | Every `## Surface` identifier + keyword — table rows union backticked entity headings.      |
+-| `methods`  | `readonly MethodGroup[]`   | One `MethodGroup` per documented behavioral interface in `## Methods`.                      |
+-| `links`    | `readonly string[]`        | Every link href in the guide, including table cells.                                        |
+-| `tests`    | `readonly string[]`        | The relative test links declared under `## Tests`.                                          |
+-| `fences`   | `readonly GuideFence[]`    | Every fenced code block in the whole document, tagged or not — no language filter.          |
++| Method     | Returns                    | Behavior                                                                                                                                                    |
++| ---------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `sections` | `readonly string[]`        | The `##` heading names, in document order — the non-vacuousness guard for section presence.                                                                 |
++| `tagline`  | `string \| undefined`      | The text of the blockquote following the H1 — the guide's tagline, or `undefined` when a heading intervenes first.                                          |
++| `surface`  | `readonly SurfaceSymbol[]` | Every `## Surface` identifier + keyword — table rows union backticked entity headings, each row carrying its `Summary` cell when the table has that column. |
++| `methods`  | `readonly MethodGroup[]`   | One `MethodGroup` per documented behavioral interface in `## Methods`, each row carrying its `Summary` cell.                                                |
++| `links`    | `readonly string[]`        | Every link href in the guide, including table cells.                                                                                                        |
++| `tests`    | `readonly string[]`        | The relative test links declared under `## Tests`.                                                                                                          |
++| `fences`   | `readonly GuideFence[]`    | Every fenced code block in the whole document, tagged or not, each carrying its nearest preceding heading as `title` — no language filter.                  |
+ 
+ #### `SourceInterface`
+ 
+-| Method     | Returns                    | Behavior                                                                                                                                                                                                    |
+-| ---------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `exports`  | `readonly SurfaceSymbol[]` | What the package **declares** — direct `type`, `interface`, `const`, `function`, and `class` declarations in the selected module keys.                                                                      |
+-| `surface`  | `readonly SurfaceSymbol[]` | What a consumer can **import** — every declaration reachable through the selected directories' conventional root `index.ts` barrels.                                                                        |
+-| `methods`  | `readonly string[]`        | The call-signature members of the `class` / `interface` named `name`, unioned with those of every declaration it extends within the module scope. The first file declaring the name answers for it.         |
+-| `exists`   | `boolean`                  | Whether a workspace-root-relative path names an inventory key exactly, or a directory any inventory key sits beneath — which is what lets a guide link to a directory resolve.                              |
+-| `hidden`   | `readonly SurfaceSymbol[]` | Every module-scope declaration **lacking** `export` (`.claude/rules/architecture.md` § Barrel exports).                                                                                                     |
+-| `examples` | `readonly string[]`        | The exported functions (or, given `name`, that declaration's own members) whose eligible leading JSDoc chain ends in an exact block-position `@example` span. Given `name`, it follows no `extends` clause. |
++| Method     | Returns                    | Behavior                                                                                                                                                                                                                                                 |
++| ---------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `exports`  | `readonly SurfaceSymbol[]` | What the package **declares** — direct `type`, `interface`, `const`, `function`, and `class` declarations in the selected module keys.                                                                                                                   |
++| `surface`  | `readonly SurfaceSymbol[]` | What a consumer can **import** — every declaration reachable through the selected directories' conventional root `index.ts` barrels.                                                                                                                     |
++| `methods`  | `readonly MethodEntry[]`   | The call-signature members of the `class` / `interface` named `name`, unioned with those of every declaration it extends within the module scope, each with its own doc block's description paragraph. The first file declaring the name answers for it. |
++| `exists`   | `boolean`                  | Whether a workspace-root-relative path names an inventory key exactly, or a directory any inventory key sits beneath — which is what lets a guide link to a directory resolve.                                                                           |
++| `hidden`   | `readonly SurfaceSymbol[]` | Every module-scope declaration **lacking** `export` (`.claude/rules/architecture.md` § Barrel exports).                                                                                                                                                  |
++| `examples` | `readonly SourceExample[]` | The `@example` blocks carried by the exported functions (or, given `name`, that declaration's own members) whose eligible leading JSDoc chain ends in an exact block-position `@example` span. Given `name`, it follows no `extends` clause.             |
+ 
+ #### Which projector a check uses
+ 
+@@ -278,6 +305,53 @@ the directory before the final slash, treats a slashless file as workspace-root,
+ Neither helper consults the filesystem, infers extensions, or guesses whether a dotted component
+ is a file.
+ 
++The guide's side and the source's side read into one form. `extractSurface` and `extractMethods` locate
++the compared column by its header text, `Summary`, exactly as they locate `Kind`, and read that cell
++through `extractCellText` and `normalizeSummary`. `extractSourceComments` walks the aligned
++`SourceLine` records once, pairs each eligible genuine JSDoc block with the physical record it
++documents, and every doc-block reader is a projection of that one walk: `collectSummaries` for the
++description paragraph, `collectExamples` for the `@example` blocks, and `extractExampleLines` for the
++records an `@example` documents. `extractTagline` reads the blockquote following the H1.
++
++One transform reads both sides, so its clauses are stated once and each fires wherever its input
++occurs rather than on a side reserved for it:
++
++- `{@link X}` and `{@link A.b}` become the code token of the target text.
++- `{@link X | text}` becomes the code token of `text`.
++- Emphasis — `**text**` and `_text_` — drops to its text.
++- A link, `[text](target)`, drops to `text`.
++- An image, `![text](target)`, drops to its alternative text.
++- `\|` unescapes.
++- Every run of whitespace, a continuation marker and a line break included, collapses to one space.
++- The leading and trailing whitespace trims.
++- A code span stays a code span.
++
++Nothing else is transformed. Emphasis, a link, and an image are markdown nodes, so those clauses
++reach only a guide cell; `{@link Widget}` is ordinary text, so a guide cell carrying that token
++rewrites to `` `Widget` `` exactly as a doc block's paragraph does. The `extractCellText` function
++reads the markdown nodes and `normalizeSummary` reads the text tokens, and both sides end in
++`normalizeSummary`.
++
++The compared unit is the description paragraph, not its first sentence: on the source side the doc
++block's text from its opening to its first block tag, and on the guide side the `Summary` cell. A
++block tag opens a line whose first non-blank character is `@`, so a tag written past one space after
++the continuation marker still ends the paragraph and still reads as a tag.
++`@param`, `@returns` and the `Returns` column, `@remarks` and narrative, and the H1 tagline are
++outside the comparison — `tagline()` reads the tagline for a package that compares it against its own
++README, and it gains a partner to compare against when a source declares `@packageDocumentation`.
++`Shape`, `Signature`, `Value`, and `Returns` are guide-only data columns and stay unread.
++
++Examples pair by title. A `GuideFence` carries the flattened text of its nearest preceding heading as
++`title`, a `SourceExample` carries the text after its `@example` tag, and a block claims the fence of
++the same title. A heading's text is flattened, so a title written with a code span pairs with a plain
++`@example` title. A heading pairs one fence: the first fence a title reaches is the compared one, and
++a later fence under the same heading is outside the comparison. A heading can therefore carry a setup
++fence and a result fence, and only the first answers for the title. The
++bodies compare after `normalizeComment` removes the continuation marker and the
++block's leading indentation and trims per-line trailing whitespace, and the fence language compares
++with them: an example's compared text is its language on the first line and its body beneath. An
++untitled `@example` keeps its presence role for `findUnexampled`.
++
+ `Source` never parses markdown or touches disk — it scans a consumer-supplied file
+ inventory's text with deliberately narrow physical-line grammars. `extractSourceLines` is the
+ sole character engine and emits one `SourceLine` per LF/CRLF physical line plus the final line:
+@@ -387,6 +461,13 @@ guard so a renamed heading fails loudly instead of passing on an empty extractio
+   `XInterface → X` naming convention, `findMissing(source.methods('X'), group.methods)` must
+   also be empty — the implementing class exposes no undocumented public method. Guard:
+   `group.methods.length > 0`.
++- **RN — Row naming.** `findUnnamed(document)` keeps every `## Surface` or `## Methods` row whose
++  first cell carries no code span. `extractSurface` and `extractMethods` key a row on that code span,
++  so a row without one leaves the documented surface carrying no name for SB or MB to miss, and this
++  check reports the row instead of letting it go in silence. A finding is the row's cells read
++  through `extractCellText` and joined by `|`. Guard: this check reuses `extractSurface`'s and
++  `extractMethods`' own table walk, so SB's `guide.surface().length > 0` and MB's
++  `group.methods.length > 0` already prove it non-vacuous.
+ - **LI — Link integrity.** `guide.links()`, dropping `isExternalLink` hrefs, `resolveLink`
+   the rest against the guide's own path, keep those failing `source.exists` — which holds for a
+   directory link too, because `exists` answers for an inventory key and for any directory a key
+@@ -408,12 +489,30 @@ guard so a renamed heading fails loudly instead of passing on an empty extractio
+   Applies to every `function`-keyword `Surface` symbol and every `MethodGroup` member.
+   Presence-only — fence and JSDoc **content** are never checked. `findUnexampled` is the
+   comparison. Guard: the SB/MB extractions this check reuses already prove non-vacuous.
++- **SQ — Surface summary equality.** For every symbol both `guide.surface()` and `source.surface()`
++  carry, the guide row's `Summary` cell equals the declaration's description paragraph. A pair agrees
++  only when both sides carry the same text: guide text alone reports the guide's side, source text
++  alone reports the source's, and neither side carrying text reports the key by itself — never as
++  agreement. A table with no `Summary` column therefore reports every row it documents, and a package
++  adopting SQ cannot pass it vacuously. `findDrift` is the comparison. Guard: the SB extractions
++  this check reuses already prove non-vacuous.
++- **MQ — Methods summary equality.** The same comparison per `MethodGroup`, over the members
++  `group.methods` and `source.methods(group.interface)` both carry, keyed `Owner.member`.
++- **EQ — Example equality.** Every titled guide fence against the `@example` block of the same title,
++  body and fence language together. The first fence a title reaches is the compared one, and a later
++  fence under the same heading is outside the comparison. A title one side alone carries is outside
++  the comparison too, and an untitled `@example` stays EX's presence evidence.
+ - **FI — Fence-import reality.** Every `import { ... } from 'specifier'` in a `guide.fences()`
+   fence of the checked language, for a **self** specifier (this repo's own package name / path
+   alias), imports only names that exist in `source.surface()`. `extractFenceImports` parses the
+   statement; `findMissing` diffs the imported names against the public/barrel surface's names.
+   Guard: the comparison runs against at least one resolved import.
+ 
++SQ, MQ, and EQ share one function: `findDrift(guide, source)` returns every disagreement with both
++sites, so a package's whole equality gate is `expect(findDrift(guide, source)).toEqual([])`. It
++compares only the pairs both sides carry, so a symbol, a member, or a title one side lacks is left to
++the bijection check that owns it and is never reported twice.
++
+ Permanent controls bind the SB population boundaries through production `Source`, `Guide`,
+ `findMissingSymbols`, and `computeSymbolKey`: a stranded direct declaration must be missing from the barrel;
+ a phantom Guide row must be missing from the barrel; keyword drift must fail in both barrel/Guide
+@@ -470,7 +569,7 @@ const source = createSource({
+ })
+ source.exports() // [{ name: 'Guide', keyword: 'class' }, { name: 'GuideInterface', keyword: 'interface' }]
+ source.surface() // [{ name: 'Guide', keyword: 'class' }, { name: 'GuideInterface', keyword: 'interface' }]
+-source.methods('GuideInterface') // ['sections']
++source.methods('GuideInterface') // [{ name: 'sections' }]
+ source.exists('src/core/Guide.ts') // true
+ source.exists('src/core') // true — a directory any inventory key sits beneath
+ ```
+@@ -515,6 +614,35 @@ findMissingSymbols(source.surface(), guide.surface()) // []
+ findMissingSymbols(guide.surface(), source.surface()) // []
+ ```
+ 
++### Compare a guide against the source it documents
++
++```ts
++import { createGuide, createSource, findDrift } from '@orkestrel/guide'
++
++const guide = createGuide(
++	'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |',
++)
++const source = createSource({
++	files: {
++		'src/core/index.ts': "export * from './helpers.js'\n",
++		'src/core/helpers.ts': '/**\n * Walks a tree.\n */\nexport function walk(): void {}\n',
++	},
++	module: 'src/core',
++})
++
++// One entry per disagreement, naming both sites; a symbol one side lacks belongs to SB.
++findDrift(guide, source) // [{ key: 'function walk', guide: 'Walks the tree.', source: 'Walks a tree.' }]
++```
++
++### Read a guide's tagline
++
++```ts
++import { createGuide } from '@orkestrel/guide'
++
++const guide = createGuide('# Widget\n\n> A widget toolkit.\n\n## Surface\n')
++guide.tagline() // 'A widget toolkit.'
++```
++
+ ### Project source into physical code lines
+ 
+ ```ts
+@@ -536,12 +664,19 @@ resolveLink('index.ts', './root.ts') // 'root.ts'
+ 
+ ## Tests
+ 
+-- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — direct `SourceLine`, lexical, and JSDoc-alignment invariants; projected declaration-keyword direct/hidden reflection; genuine JSDoc example adjacency and faux JSDoc exclusion; every guide-document extractor; canonical-key, runtime-name, `resolvePath`, and `resolveLink` invariants; all remaining helper leaves.
++This repository runs the catalog against itself. Its `tests/guides.test.ts` wires RN, SB, MB, LI,
++TE, NV, FL, EX, and FI. It does not wire SQ, MQ, or EQ: this guide's Surface and Methods tables head
++their compared column `Shape`, `Signature`, `Behavior`, `Builds`, and `Returns` rather than
++`Summary`, so `findDrift` would report every row this guide documents. This guide adopts the
++`Summary` column in a later change, and until then the catalog's SQ, MQ, and EQ rows describe checks
++this repository does not run against its own guide.
++
++- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — direct `SourceLine`, lexical, and JSDoc-alignment invariants; projected declaration-keyword direct/hidden reflection; genuine JSDoc example adjacency and faux JSDoc exclusion; every guide-document extractor; the compared form clause by clause on both sides; the `Summary` locator over a reordered header and a table without the column; the nameless-row finding against a name the reader reads through emphasis; a block tag written past one space after the continuation marker; fence titles and the tagline; `findDrift` with a negative control drawn from the symbols the bijection legs already report, a planted disagreement of each kind, and a later fence under one heading left outside the comparison; the doc-block reader against `parseSync`'s own reading, which names the shape the reader misses; canonical-key, runtime-name, `resolvePath`, and `resolveLink` invariants; all remaining helper leaves.
+ - [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) — `parseManifest` row parsing, malformed-row skipping, one-versus-many Source canonicalization, and nested manifest directories.
+-- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — `isExportKeyword` / `isSurfaceSymbol` / `isMethodGroup` / `isManifestEntry`.
++- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — `isExportKeyword` / `isSurfaceSymbol` / `isMethodEntry` / `isSourceExample` / `isDrift` / `isMethodGroup` / `isManifestEntry`.
+ - [`tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) — per-shape guard exactness, JSON Schema essentials, seeded generate round-trips, parse rebuilds.
+-- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createGuide` / `createSource` + the compiled symbol/group/manifest contracts.
+-- [`tests/src/core/Guide.test.ts`](../tests/src/core/Guide.test.ts) — `Guide`'s cached projections and production barrel/Guide phantom and keyword-drift controls.
++- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createGuide` / `createSource` + the compiled symbol, entry, example, drift, group, and manifest contracts.
++- [`tests/src/core/Guide.test.ts`](../tests/src/core/Guide.test.ts) — `Guide`'s cached projections, its tagline and fence titles, and production barrel/Guide phantom and keyword-drift controls.
+ - [`tests/src/core/sources/Source.test.ts`](../tests/src/core/sources/Source.test.ts) — direct/barrel projections, lexical and JSDoc regressions, canonical-key populations, root and nested indexes, exact row grammar, graph invariants, and correlated population controls.
+ - [`tests/src/core/sources/SourceManager.test.ts`](../tests/src/core/sources/SourceManager.test.ts) — `computeModuleKey` boundary collision, specifier resolution, the `undefined` skip for an unmapped specifier, array-valued module scopes, `sources()` enumeration, and per-module entity sharing with a differently-scoped identity control.
+ - [`tests/fixtures/broken/stranded-export`](../tests/fixtures/broken/stranded-export) — permanent negative control: its guide and direct declarations agree while its conventional barrel omits `strandedExport`.
+diff --git a/src/core/Guide.ts b/src/core/Guide.ts
+index 79e2ed8..7f90561 100644
+--- a/src/core/Guide.ts
++++ b/src/core/Guide.ts
+@@ -5,12 +5,13 @@ import {
+ 	extractLinks,
+ 	extractMethods,
+ 	extractSurface,
++	extractTagline,
+ 	extractTests,
+ } from './helpers.js'
+ 
+ /**
+  * Presents a pure, structured view over one parsed guide — the documented
+- * projections (`sections` / `surface` / `methods` / `links` / `tests` /
++ * projections (`sections` / `tagline` / `surface` / `methods` / `links` / `tests` /
+  * `fences`) are extracted once at construction and cached.
+  *
+  * @remarks
+@@ -29,6 +30,7 @@ import {
+  */
+ export class Guide implements GuideInterface {
+ 	readonly #sections: readonly string[]
++	readonly #tagline: string | undefined
+ 	readonly #surface: readonly SurfaceSymbol[]
+ 	readonly #methods: readonly MethodGroup[]
+ 	readonly #links: readonly string[]
+@@ -42,6 +44,7 @@ export class Guide implements GuideInterface {
+ 			.filter(isHeadingNode)
+ 			.filter((heading) => heading.level === 2)
+ 			.map((heading) => flattenText(heading).trim())
++		this.#tagline = extractTagline(document)
+ 		this.#surface = extractSurface(document)
+ 		this.#methods = extractMethods(document)
+ 		this.#links = extractLinks(document)
+@@ -53,6 +56,10 @@ export class Guide implements GuideInterface {
+ 		return this.#sections
+ 	}
+ 
++	tagline(): string | undefined {
++		return this.#tagline
++	}
++
+ 	surface(): readonly SurfaceSymbol[] {
+ 		return this.#surface
+ 	}
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 0ea5a12..e665e44 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -32,6 +32,17 @@ export const METHODS: string = 'Methods'
+  */
+ export const TESTS: string = 'Tests'
+ 
++/**
++ * Names the header text of the column a `## Surface` table's declaration keyword is read from.
++ */
++export const KIND: string = 'Kind'
++
++/**
++ * Names the header text of the column a `## Surface` or `## Methods` table's compared
++ * description paragraph is read from.
++ */
++export const SUMMARY: string = 'Summary'
++
+ /**
+  * Names the `## By concept` heading text the manifest's run-map table is keyed on.
+  */
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 1c16d93..d850af2 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -1,8 +1,11 @@
+ import type { ContractInterface } from '@orkestrel/contract'
+ import type {
++	Drift,
+ 	GuideInterface,
+ 	ManifestEntry,
++	MethodEntry,
+ 	MethodGroup,
++	SourceExample,
+ 	SourceInterface,
+ 	SourceManagerInterface,
+ 	SourceManagerOptions,
+@@ -11,7 +14,14 @@ import type {
+ } from './types.js'
+ import { createContract } from '@orkestrel/contract'
+ import { Guide } from './Guide.js'
+-import { manifestEntryShape, methodGroupShape, surfaceSymbolShape } from './shapers.js'
++import {
++	driftShape,
++	manifestEntryShape,
++	methodEntryShape,
++	methodGroupShape,
++	sourceExampleShape,
++	surfaceSymbolShape,
++} from './shapers.js'
+ import { Source } from './sources/Source.js'
+ import { SourceManager } from './sources/SourceManager.js'
+ 
+@@ -98,6 +108,63 @@ export function createSurfaceSymbolContract(): ContractInterface<SurfaceSymbol>
+ 	return createContract(surfaceSymbolShape)
+ }
+ 
++/**
++ * Compiles the {@link methodEntryShape} into a {@link ContractInterface} for
++ * {@link MethodEntry} — a guard, coercing parser, JSON Schema, and seeded
++ * generator from one shape declaration (AGENTS.md § Design laws).
++ *
++ * @returns A `MethodEntry` contract bundling `schema` / `is` / `parse` / `generate`
++ *
++ * @example
++ * ```ts
++ * import { createMethodEntryContract } from '@orkestrel/guide'
++ *
++ * const methodEntry = createMethodEntryContract()
++ * methodEntry.is({ name: 'walk' }) // true
++ * ```
++ */
++export function createMethodEntryContract(): ContractInterface<MethodEntry> {
++	return createContract(methodEntryShape)
++}
++
++/**
++ * Compiles the {@link sourceExampleShape} into a {@link ContractInterface} for
++ * {@link SourceExample} — a guard, coercing parser, JSON Schema, and seeded
++ * generator from one shape declaration (AGENTS.md § Design laws).
++ *
++ * @returns A `SourceExample` contract bundling `schema` / `is` / `parse` / `generate`
++ *
++ * @example
++ * ```ts
++ * import { createSourceExampleContract } from '@orkestrel/guide'
++ *
++ * const sourceExample = createSourceExampleContract()
++ * sourceExample.is({ name: 'walk', code: 'walk()' }) // true
++ * ```
++ */
++export function createSourceExampleContract(): ContractInterface<SourceExample> {
++	return createContract(sourceExampleShape)
++}
++
++/**
++ * Compiles the {@link driftShape} into a {@link ContractInterface} for
++ * {@link Drift} — a guard, coercing parser, JSON Schema, and seeded
++ * generator from one shape declaration (AGENTS.md § Design laws).
++ *
++ * @returns A `Drift` contract bundling `schema` / `is` / `parse` / `generate`
++ *
++ * @example
++ * ```ts
++ * import { createDriftContract } from '@orkestrel/guide'
++ *
++ * const drift = createDriftContract()
++ * drift.is({ key: 'class Widget', guide: 'A widget.' }) // true
++ * ```
++ */
++export function createDriftContract(): ContractInterface<Drift> {
++	return createContract(driftShape)
++}
++
+ /**
+  * Compiles the {@link methodGroupShape} into a {@link ContractInterface} for
+  * {@link MethodGroup} — a guard, coercing parser, JSON Schema, and seeded
+@@ -110,7 +177,7 @@ export function createSurfaceSymbolContract(): ContractInterface<SurfaceSymbol>
+  * import { createMethodGroupContract } from '@orkestrel/guide'
+  *
+  * const methodGroup = createMethodGroupContract()
+- * methodGroup.is({ interface: 'MarkdownInterface', methods: ['walk'] }) // true
++ * methodGroup.is({ interface: 'MarkdownInterface', methods: [{ name: 'walk' }] }) // true
+  * ```
+  */
+ export function createMethodGroupContract(): ContractInterface<MethodGroup> {
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 137968a..c90004d 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -3,26 +3,34 @@ import type {
+ 	Declaration,
+ 	DeclarationHead,
+ 	DeclarationKeyword,
++	Drift,
+ 	FenceImport,
+ 	GuideFence,
++	GuideInterface,
+ 	GuideModule,
++	MethodEntry,
+ 	MethodGroup,
++	SourceComment,
++	SourceExample,
++	SourceInterface,
+ 	SourceLine,
+ 	SurfaceSymbol,
+ } from './types.js'
+ import {
+ 	flattenText,
++	isBlockquoteNode,
+ 	isCodeBlockNode,
+ 	isCodeSpanNode,
+ 	isEmphasisNode,
+ 	isHeadingNode,
+ 	isImageNode,
+ 	isLinkNode,
++	isParagraphNode,
+ 	isTableNode,
+ 	walkNodes,
+ } from '@orkestrel/markdown'
+ import { isNonEmptyString } from '@orkestrel/contract'
+-import { EXTERNAL_SCHEMES, METHODS, SURFACE, TESTS } from './constants.js'
++import { EXTERNAL_SCHEMES, KIND, METHODS, SUMMARY, SURFACE, TESTS } from './constants.js'
+ import { isExportKeyword } from './validators.js'
+ 
+ /**
+@@ -938,24 +946,52 @@ export function normalizeIdentifier(code: string): string {
+ }
+ 
+ /**
+- * Finds the index of a table's `Kind` column by its header text so it survives
+- * column reordering. The match is exact and case-sensitive (`'Kind'`) — a table
+- * without that exact header contributes no symbols to the surface it feeds.
++ * Extracts one table cell's compared text — the inline content flattened with every code
++ * span kept as a code span, so `` `Widget` `` reads the same on both sides of the parity
++ * comparison. Emphasis drops to its text, a link drops to its text, an image drops to its
++ * alternative text, and the markdown parser has already unescaped `\|`.
++ *
++ * @param cell - The cell's inline nodes
++ * @returns The cell's text, code spans included
++ *
++ * @example
++ * ```ts
++ * extractCellText([{ element: 'codeSpan', value: 'Widget' }]) // '`Widget`'
++ * ```
++ */
++export function extractCellText(cell: readonly InlineNode[]): string {
++	let text = ''
++	for (const node of cell) {
++		if (isCodeSpanNode(node)) text += `\`${node.value}\``
++		else if (isEmphasisNode(node) || isLinkNode(node) || isImageNode(node)) {
++			text += extractCellText(node.children)
++		} else text += flattenText(node)
++	}
++	return text
++}
++
++/**
++ * Finds the index of the column whose header text is `header` so a table's columns survive
++ * reordering. The match is exact and case-sensitive — a table without that exact header
++ * contributes nothing to the projection reading it, so a `## Surface` table with no
++ * {@link SUMMARY} column leaves every row's summary absent and {@link findDrift} reports each
++ * of those rows, never agreement.
+  *
+  * @param table - The table to inspect
+- * @returns The `Kind` column's index, or `undefined` when the table has no `Kind` header
++ * @param header - The exact header text to locate, for example `Kind`
++ * @returns The column's index, or `undefined` when the table has no such header
+  *
+  * @example
+  * ```ts
+- * findKindIndex(table) // 1, or undefined
++ * findColumnIndex(table, 'Kind') // 1, or undefined
+  * ```
+  */
+-export function findKindIndex(table: TableNode): number | undefined {
++export function findColumnIndex(table: TableNode, header: string): number | undefined {
+ 	for (let index = 0; index < table.header.length; index += 1) {
+ 		const cell = table.header[index]
+ 		if (
+ 			cell !== undefined &&
+-			flattenText({ element: 'paragraph', children: cell }).trim() === 'Kind'
++			flattenText({ element: 'paragraph', children: cell }).trim() === header
+ 		) {
+ 			return index
+ 		}
+@@ -987,8 +1023,10 @@ export function findKindIndex(table: TableNode): number | undefined {
+ export function extractExports(source: string): readonly SurfaceSymbol[] {
+ 	const symbols: SurfaceSymbol[] = []
+ 	const seen = new Set<string>()
++	const lines = extractSourceLines(source)
++	const summaries = collectSummaries(lines)
+ 
+-	for (const line of extractSourceLines(source)) {
++	for (const line of lines) {
+ 		const match = line.code.match(
+ 			/^export (?:async )?(function\*?|class|const|interface|type) (\w+)/,
+ 		)
+@@ -1000,7 +1038,8 @@ export function extractExports(source: string): readonly SurfaceSymbol[] {
+ 		const key = `${keyword} ${name}`
+ 		if (seen.has(key)) continue
+ 		seen.add(key)
+-		symbols.push({ name, keyword })
++		const summary = summaries.get(line)
++		symbols.push({ name, keyword, ...(summary === undefined ? {} : { summary }) })
+ 	}
+ 
+ 	return symbols
+@@ -1030,8 +1069,10 @@ export function extractExports(source: string): readonly SurfaceSymbol[] {
+ export function extractHidden(source: string): readonly SurfaceSymbol[] {
+ 	const symbols: SurfaceSymbol[] = []
+ 	const seen = new Set<string>()
++	const lines = extractSourceLines(source)
++	const summaries = collectSummaries(lines)
+ 
+-	for (const line of extractSourceLines(source)) {
++	for (const line of lines) {
+ 		if (line.code.startsWith('export ')) continue
+ 		const match = line.code.match(/^(?:async )?(function\*?|class|const|interface|type) (\w+)/)
+ 		const rawKeyword = match?.[1]
+@@ -1042,7 +1083,8 @@ export function extractHidden(source: string): readonly SurfaceSymbol[] {
+ 		const key = `${keyword} ${name}`
+ 		if (seen.has(key)) continue
+ 		seen.add(key)
+-		symbols.push({ name, keyword })
++		const summary = summaries.get(line)
++		symbols.push({ name, keyword, ...(summary === undefined ? {} : { summary }) })
+ 	}
+ 
+ 	return symbols
+@@ -1178,25 +1220,35 @@ export function extractDeclaration(
+  * (`*`), and optional (`records?(`) methods all count; getters, setters,
+  * `static` members, and `#` privates never do (their keyword or `#` breaks
+  * the `name(` shape). Matching runs once over projected lines so commented
+- * method-like payload never becomes eligible.
++ * method-like payload never becomes eligible. Each member carries its own doc block's
++ * description paragraph, read through {@link collectSummaries}; the first declaration of a
++ * name answers for it.
+  *
+  * @param lines - A declaration's body lines
+- * @returns The declared method names, deduped and sorted
++ * @returns The declared members, deduplicated by name and sorted by name
+  *
+  * @example
+  * ```ts
+- * extractMemberMethods(['\tmap(): void', '\tfilter(): void']) // ['filter', 'map']
++ * extractMemberMethods(['\tmap(): void', '\tfilter(): void']) // [{ name: 'filter' }, { name: 'map' }]
+  * ```
+  */
+-export function extractMemberMethods(lines: readonly string[]): readonly string[] {
+-	const methods: string[] = []
++export function extractMemberMethods(lines: readonly string[]): readonly MethodEntry[] {
++	const methods = new Map<string, MethodEntry>()
++	const projected = extractSourceLines(lines.join('\n'))
++	const summaries = collectSummaries(projected)
+ 
+-	for (const line of extractSourceLines(lines.join('\n'))) {
++	for (const line of projected) {
+ 		const method = line.code.match(/^\t(?:async )?\*?(\w+)\??(<.*>)?\(/)
+-		if (method?.[1] !== undefined) methods.push(method[1])
++		const name = method?.[1]
++		if (name === undefined || methods.has(name)) continue
++
++		const summary = summaries.get(line)
++		methods.set(name, { name, ...(summary === undefined ? {} : { summary }) })
+ 	}
+ 
+-	return Array.from(new Set(methods)).sort()
++	return Array.from(methods.values()).sort((a, b) =>
++		a.name === b.name ? 0 : a.name < b.name ? -1 : 1,
++	)
+ }
+ 
+ /**
+@@ -1239,8 +1291,11 @@ export function selectSectionBlocks(
+  * Extracts every `## Surface` identifier the guide documents — each table row's column 0
+  * code span (the name) paired with its `Kind` column (located by header text)
+  * unioned with every backticked H3 entity heading in the section
+- * (`{name: <codeSpan>, keyword: 'class'}`), deduped by {@link computeSymbolKey}. A row with
+- * no code-span name, or an unrecognized `Kind` text, is skipped.
++ * (`{name: <codeSpan>, keyword: 'class'}`), deduped by {@link computeSymbolKey}. A row with no
++ * code-span name has no name to key a symbol on, so this reader skips it and
++ * {@link findUnnamed} reports it; a row with an unrecognized `Kind` text is skipped. A row
++ * also carries its {@link SUMMARY} column's compared text when the table has that column; a
++ * table without it leaves every row's summary absent, which {@link findDrift} reports.
+  *
+  * @param document - The parsed guide document
+  * @returns The documented surface, in encounter order
+@@ -1256,7 +1311,8 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+ 
+ 	for (const block of selectSectionBlocks(document, SURFACE)) {
+ 		if (isTableNode(block)) {
+-			const column = findKindIndex(block)
++			const column = findColumnIndex(block, KIND)
++			const described = findColumnIndex(block, SUMMARY)
+ 			for (const row of block.rows) {
+ 				const nameCell = row[0]
+ 				const rawName = nameCell === undefined ? undefined : findFirstCode(nameCell)
+@@ -1270,7 +1326,14 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+ 						: flattenText({ element: 'paragraph', children: kindCell }).trim()
+ 				if (!isExportKeyword(kindText)) continue
+ 
+-				const symbol: SurfaceSymbol = { name, keyword: kindText }
++				const summaryCell = described === undefined ? undefined : row[described]
++				const summary =
++					summaryCell === undefined ? '' : normalizeSummary(extractCellText(summaryCell))
++				const symbol: SurfaceSymbol = {
++					name,
++					keyword: kindText,
++					...(summary.length === 0 ? {} : { summary }),
++				}
+ 				const key = computeSymbolKey(symbol)
+ 				if (seen.has(key)) continue
+ 				seen.add(key)
+@@ -1297,14 +1360,16 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+ /**
+  * Extracts one {@link MethodGroup} per documented behavioral interface in `## Methods` —
+  * an H4 with a code span sets the current interface, and the table immediately
+- * following becomes its documented methods.
++ * following becomes its documented methods. A row with no code-span name has no name to key a
++ * member on, so this reader skips it and {@link findUnnamed} reports it. Each row carries its
++ * {@link SUMMARY} column's compared text when the table has that column.
+  *
+  * @param document - The parsed guide document
+  * @returns The documented method groups, in document order
+  *
+  * @example
+  * ```ts
+- * extractMethods(document) // [{ interface: 'MarkdownInterface', methods: ['walk', ...] }]
++ * extractMethods(document) // [{ interface: 'MarkdownInterface', methods: [{ name: 'walk' }] }]
+  * ```
+  */
+ export function extractMethods(document: MarkdownDocument): readonly MethodGroup[] {
+@@ -1319,12 +1384,18 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
+ 		}
+ 
+ 		if (isTableNode(block) && current !== undefined) {
+-			const methods: string[] = []
++			const methods: MethodEntry[] = []
++			const described = findColumnIndex(block, SUMMARY)
+ 			for (const row of block.rows) {
+ 				const cell = row[0]
+ 				const rawName = cell === undefined ? undefined : findFirstCode(cell)
+ 				const name = rawName === undefined ? undefined : normalizeIdentifier(rawName)
+-				if (name !== undefined) methods.push(name)
++				if (name === undefined) continue
++
++				const summaryCell = described === undefined ? undefined : row[described]
++				const summary =
++					summaryCell === undefined ? '' : normalizeSummary(extractCellText(summaryCell))
++				methods.push({ name, ...(summary.length === 0 ? {} : { summary }) })
+ 			}
+ 			groups.push({ interface: current, methods })
+ 			current = undefined
+@@ -1334,6 +1405,39 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
+ 	return groups
+ }
+ 
++/**
++ * Finds every `## Surface` or `## Methods` table row whose first cell carries no code span.
++ * {@link extractSurface} and {@link extractMethods} skip such a row, because a row with no
++ * name gives them nothing to key a symbol or a member on, and this is the check that reports
++ * the skip. Each finding is the row's cells read through {@link extractCellText} and joined
++ * by ` | `, so a reader can locate the row in the guide; the `## Surface` rows come first,
++ * then the `## Methods` rows, each in document order.
++ *
++ * @param document - The parsed guide document
++ * @returns One entry per row carrying no code-span name
++ *
++ * @example
++ * ```ts
++ * findUnnamed(document) // ['Widget | class | Represents a widget.']
++ * ```
++ */
++export function findUnnamed(document: MarkdownDocument): readonly string[] {
++	const unnamed: string[] = []
++
++	for (const heading of [SURFACE, METHODS]) {
++		for (const block of selectSectionBlocks(document, heading)) {
++			if (!isTableNode(block)) continue
++			for (const row of block.rows) {
++				const cell = row[0]
++				if (cell !== undefined && findFirstCode(cell) !== undefined) continue
++				unnamed.push(row.map((content) => extractCellText(content)).join(' | '))
++			}
++		}
++	}
++
++	return unnamed
++}
++
+ /**
+  * Extracts every link href in the guide document, including table cells — a full,
+  * depth-first walk of the whole AST.
+@@ -1377,40 +1481,88 @@ export function extractTests(document: MarkdownDocument): readonly string[] {
+ }
+ 
+ /**
+- * Selects the next physical record after an eligible genuine JSDoc whose final
+- * authoritative span carries an exact block-position `@example` tag. Title
+- * text is allowed. A leading whitespace-separated span chain is last-span
+- * authoritative; intervening source material severs association, while a
+- * leading JSDoc on the next record replaces pending state. Any other next
+- * physical record is returned once and consumes it. This parser walks aligned
+- * records without rescanning source syntax or applying declaration/member
+- * grammar.
++ * Returns the canonical body of one genuine JSDoc span — the `/**` opener, the closing
++ * marker, each line's continuation marker, and the block's leading indentation removed,
++ * with per-line trailing whitespace trimmed and the surrounding blank lines dropped. A
++ * line's own indentation beyond the marker is kept, so an `@example` fence body keeps the
++ * shape it was written in.
++ *
++ * @param comment - One complete genuine JSDoc span's raw text
++ * @returns The span's unwrapped body
++ *
++ * @example
++ * ```ts
++ * normalizeComment('/**' + ' Creates a widget. *' + '/') // 'Creates a widget.'
++ * ```
++ */
++export function normalizeComment(comment: string): string {
++	const body = /^[ \t]*\/\*([\s\S]*?)\*\/[ \t]*$/.exec(comment)?.[1] ?? comment
++	return body
++		.split('\n')
++		.map((line) => line.replace(/^[ \t]*\*[ \t]?/, '').replace(/[ \t]+$/, ''))
++		.join('\n')
++		.replace(/^\n+/, '')
++		.replace(/\n+$/, '')
++}
++
++/**
++ * Returns the canonical compared form of a description paragraph — `{@link Target}` and
++ * `{@link Target | label}` become the code token of the label or the target text, and every
++ * run of whitespace, including a collapsed continuation marker and a line break, becomes one
++ * space, with the ends trimmed. A code span stays a code span. The guide's side and the
++ * source's side read through this one form.
++ *
++ * @param text - A doc block's description paragraph, or a guide cell's flattened text
++ * @returns The compared form of that text
++ *
++ * @example
++ * ```ts
++ * normalizeSummary('Creates a\n{@link Widget}.') // 'Creates a `Widget`.'
++ * ```
++ */
++export function normalizeSummary(text: string): string {
++	return text
++		.replace(/\{@link\s+[^}|]*\|\s*([^}]*?)\s*\}/g, '`$1`')
++		.replace(/\{@link\s+([^}|]*?)\s*\}/g, '`$1`')
++		.replace(/\s+/g, ' ')
++		.trim()
++}
++
++/**
++ * Extracts every eligible genuine JSDoc block paired with the physical record it documents.
++ * An opener is eligible only when it is the first non-whitespace source material of its
++ * record; a leading whitespace-separated span chain is last-span authoritative; intervening
++ * source material severs association, while a leading JSDoc on the next record replaces
++ * pending state. Any other next physical record is returned once and consumes it. This
++ * parser walks aligned records without rescanning source syntax or applying
++ * declaration/member grammar, and every reader of a doc block's text — the description
++ * paragraph, the `@example` blocks, the member summaries — reads it through this one walk.
+  *
+  * @param lines - Aligned physical source-line records
+- * @returns The immediately following candidate lines, in source order
++ * @returns One record per documented physical line, in source order
+  *
+  * @example
+  * ```ts
+- * extractExampleLines(extractSourceLines('/** @example *' + '/\nexport function walk() {}'))
+- * // the `export function walk() {}` SourceLine
++ * extractSourceComments(extractSourceLines('/**' + ' Walks. *' + '/\nexport function walk() {}'))
++ * // [{ text: 'Walks.', line: the `export function walk() {}` SourceLine }]
+  * ```
+  */
+-export function extractExampleLines(lines: readonly SourceLine[]): readonly SourceLine[] {
+-	const examples: SourceLine[] = []
++export function extractSourceComments(lines: readonly SourceLine[]): readonly SourceComment[] {
++	const comments: SourceComment[] = []
+ 	let block = false
+ 	let eligible = false
+-	let example = false
+-	let pending = false
++	let span: string[] = []
++	let pending: string | undefined
+ 
+ 	for (const line of lines) {
+ 		const projection = line.jsdoc
+ 		const first = projection?.indexOf('/**') ?? -1
+ 
+-		if (pending) {
+-			if (!block && first >= 0 && line.source.slice(0, first).trim() === '') pending = false
++		if (pending !== undefined) {
++			if (!block && first >= 0 && line.source.slice(0, first).trim() === '') pending = undefined
+ 			else {
+-				examples.push(line)
+-				pending = false
++				comments.push({ text: pending, line })
++				pending = undefined
+ 			}
+ 		}
+ 
+@@ -1420,9 +1572,7 @@ export function extractExampleLines(lines: readonly SourceLine[]): readonly Sour
+ 		if (block) {
+ 			const close = projection.indexOf('*/')
+ 			const end = close < 0 ? projection.length : close + 2
+-			if (eligible && /^\s*\*?\s*@example(?=\s|\*\/|$)/.test(projection.slice(0, end))) {
+-				example = true
+-			}
++			span.push(projection.slice(0, end))
+ 			if (close < 0) continue
+ 
+ 			block = false
+@@ -1430,26 +1580,24 @@ export function extractExampleLines(lines: readonly SourceLine[]): readonly Sour
+ 			const endOfGap = opener < 0 ? line.source.length : opener
+ 			const whitespace = line.source.slice(close + 2, endOfGap).trim() === ''
+ 			if (opener < 0) {
+-				pending = eligible && example && whitespace
++				pending = eligible && whitespace ? normalizeComment(span.join('\n')) : undefined
+ 				continue
+ 			}
+ 
+ 			eligible = eligible && whitespace
+-			example = false
++			span = []
+ 			cursor = opener
+ 		} else {
+ 			if (first < 0) continue
+ 			eligible = line.source.slice(0, first).trim() === ''
+-			example = false
++			span = []
+ 			cursor = first
+ 		}
+ 
+ 		while (cursor < projection.length) {
+ 			const close = projection.indexOf('*/', cursor + 2)
+ 			const end = close < 0 ? projection.length : close + 2
+-			if (eligible && /^\s*\*?\s*@example(?=\s|\*\/|$)/.test(projection.slice(cursor + 3, end))) {
+-				example = true
+-			}
++			span.push(projection.slice(cursor, end))
+ 
+ 			if (close < 0) {
+ 				block = true
+@@ -1460,88 +1608,188 @@ export function extractExampleLines(lines: readonly SourceLine[]): readonly Sour
+ 			const endOfGap = opener < 0 ? line.source.length : opener
+ 			const whitespace = line.source.slice(close + 2, endOfGap).trim() === ''
+ 			if (opener < 0) {
+-				pending = eligible && example && whitespace
++				pending = eligible && whitespace ? normalizeComment(span.join('\n')) : undefined
+ 				break
+ 			}
+ 
+ 			eligible = eligible && whitespace
+-			example = false
++			span = []
+ 			cursor = opener
+ 		}
+ 	}
+ 
++	return comments
++}
++
++/**
++ * Selects the next physical record after an eligible genuine JSDoc whose final
++ * authoritative span carries an exact block-position `@example` tag — the
++ * {@link extractSourceComments} walk filtered to the blocks that carry one. Title
++ * text is allowed.
++ *
++ * @param lines - Aligned physical source-line records
++ * @returns The immediately following candidate lines, in source order
++ *
++ * @example
++ * ```ts
++ * extractExampleLines(extractSourceLines('/**' + ' @example *' + '/\nexport function walk() {}'))
++ * // the `export function walk() {}` SourceLine
++ * ```
++ */
++export function extractExampleLines(lines: readonly SourceLine[]): readonly SourceLine[] {
++	return extractSourceComments(lines)
++		.filter((comment) => /^[ \t]*@example(?=[ \t]|$)/m.test(comment.text))
++		.map((comment) => comment.line)
++}
++
++/**
++ * Collects the description paragraph of every documented physical record — a doc block's
++ * text before its first block tag, in {@link normalizeSummary}'s compared form — keyed by the
++ * record it documents. A record whose block carries no description contributes no entry, so
++ * an absent summary stays absent rather than becoming an empty string.
++ *
++ * @param lines - Aligned physical source-line records
++ * @returns One entry per documented record carrying a description paragraph
++ *
++ * @example
++ * ```ts
++ * collectSummaries(extractSourceLines('/**' + ' Walks. *' + '/\nexport function walk() {}')).size // 1
++ * ```
++ */
++export function collectSummaries(lines: readonly SourceLine[]): ReadonlyMap<SourceLine, string> {
++	const summaries = new Map<SourceLine, string>()
++
++	for (const comment of extractSourceComments(lines)) {
++		const tag = comment.text.search(/^[ \t]*@\w/m)
++		const summary = normalizeSummary(tag < 0 ? comment.text : comment.text.slice(0, tag))
++		if (summary.length > 0) summaries.set(comment.line, summary)
++	}
++
++	return summaries
++}
++
++/**
++ * Collects the `@example` blocks one doc block's unwrapped text carries, each named for the
++ * declaration or member the block documents. The text after the tag becomes the block's
++ * `title`; a body opening with a fence contributes that fence's language and its verbatim
++ * body, and a body with no fence contributes its own trimmed text as the code.
++ *
++ * @param comment - One doc block's unwrapped text, as {@link normalizeComment} returns it
++ * @param name - The declaration or member the block documents
++ * @returns The block's `@example` entries, in block order
++ *
++ * @example
++ * ```ts
++ * collectExamples('@example Walking\n```ts\nwalk()\n```', 'walk')
++ * // [{ name: 'walk', title: 'Walking', code: 'walk()', language: 'ts' }]
++ * ```
++ */
++export function collectExamples(comment: string, name: string): readonly SourceExample[] {
++	const examples: SourceExample[] = []
++	const tags = /^[ \t]*@example(?=[ \t]|$)[ \t]*(.*)$/gm
++
++	let tag: RegExpExecArray | null
++	while ((tag = tags.exec(comment)) !== null) {
++		const title = (tag[1] ?? '').trim()
++		const rest = comment.slice(tag.index + tag[0].length).replace(/^\n/, '')
++		const next = rest.search(/^[ \t]*@\w+/m)
++		const body = (next < 0 ? rest : rest.slice(0, next)).replace(/^\n+/, '').replace(/\n+$/, '')
++		const fence = /^```(\S*)\n([\s\S]*?)\n?```/.exec(body)
++		const language = fence?.[1] ?? ''
++		const code = fence?.[2] ?? body
++
++		examples.push({
++			name,
++			...(title.length === 0 ? {} : { title }),
++			code,
++			...(language.length === 0 ? {} : { language }),
++		})
++	}
++
+ 	return examples
+ }
+ 
+ /**
+- * Extracts the exported functions in one file's source text whose immediately preceding
+- * eligible genuine JSDoc block carries `@example`. Shared adjacency comes from
+- * {@link extractExampleLines}; exported-function membership is matched against
+- * the aligned code projection, so comment and template payload cannot qualify.
++ * Extracts the `@example` blocks carried by the exported functions in one file's source text,
++ * each named for the function its block documents. Shared adjacency comes from
++ * {@link extractSourceComments} and each block is read by {@link collectExamples};
++ * exported-function membership is matched against the aligned code projection, so comment and
++ * template payload cannot qualify. A function carrying several blocks contributes each.
+  *
+  * @param source - The file's source text
+- * @returns The exported function names with an `@example`, in file order
++ * @returns The exported functions' `@example` blocks, in file order, deduplicated by name and title
+  *
+  * @example
+  * ```ts
+- * const block = ['/**', ' * @example', ' *' + '/', 'export function walk() {}', ''].join('\n')
+- * extractExamples(block) // ['walk']
++ * const block = ['/**', ' * @example', ' * walk()', ' *' + '/', 'export function walk() {}', ''].join('\n')
++ * extractExamples(block) // [{ name: 'walk', code: 'walk()' }]
+  * extractExamples('export function walk() {}\n') // []
+  * ```
+  */
+-export function extractExamples(source: string): readonly string[] {
+-	const names: string[] = []
++export function extractExamples(source: string): readonly SourceExample[] {
++	const examples: SourceExample[] = []
+ 	const seen = new Set<string>()
+ 
+-	for (const line of extractExampleLines(extractSourceLines(source))) {
+-		const match = line.code.match(/^export (?:async )?function\*? (\w+)/)
++	for (const comment of extractSourceComments(extractSourceLines(source))) {
++		const match = comment.line.code.match(/^export (?:async )?function\*? (\w+)/)
+ 		const name = match?.[1]
+-		if (isNonEmptyString(name) && !seen.has(name)) {
+-			seen.add(name)
+-			names.push(name)
++		if (!isNonEmptyString(name)) continue
++
++		for (const example of collectExamples(comment.text, name)) {
++			const key = `${name}\n${example.title ?? ''}`
++			if (seen.has(key)) continue
++			seen.add(key)
++			examples.push(example)
+ 		}
+ 	}
+ 
+-	return names
++	return examples
+ }
+ 
+ /**
+- * Extracts the callable-member names in a declaration body (per {@link extractMemberMethods}'
+- * grammar) whose immediately preceding eligible genuine JSDoc block, within
+- * the same body, carries `@example`. Shared adjacency comes from
+- * {@link extractExampleLines}; member membership is matched against aligned
+- * projected code.
++ * Extracts the `@example` blocks carried by the callable members of a declaration body (per
++ * {@link extractMemberMethods}' grammar), each named for the member its block documents.
++ * Shared adjacency comes from {@link extractSourceComments} and each block is read by
++ * {@link collectExamples}; member membership is matched against aligned projected code.
+  *
+  * @param lines - A declaration's body lines
+- * @returns The exemplified member names, deduped and sorted
++ * @returns The members' `@example` blocks, deduplicated by name and title and sorted by name
+  *
+  * @example
+  * ```ts
+- * extractExampleMethods(['\t/**', '\t * @example', '\t *' + '/', '\twalk(): void']) // ['walk']
++ * extractExampleMethods(['\t/**', '\t * @example', '\t * walk()', '\t *' + '/', '\twalk(): void'])
++ * // [{ name: 'walk', code: 'walk()' }]
+  * ```
+  */
+-export function extractExampleMethods(lines: readonly string[]): readonly string[] {
+-	const methods: string[] = []
++export function extractExampleMethods(lines: readonly string[]): readonly SourceExample[] {
++	const examples: SourceExample[] = []
+ 	const seen = new Set<string>()
+ 
+-	for (const line of extractExampleLines(extractSourceLines(lines.join('\n')))) {
+-		const method = line.code.match(/^\t(?:async )?\*?(\w+)\??(<.*>)?\(/)
++	for (const comment of extractSourceComments(extractSourceLines(lines.join('\n')))) {
++		const method = comment.line.code.match(/^\t(?:async )?\*?(\w+)\??(<.*>)?\(/)
+ 		const name = method?.[1]
+-		if (isNonEmptyString(name) && !seen.has(name)) {
+-			seen.add(name)
+-			methods.push(name)
++		if (!isNonEmptyString(name)) continue
++
++		for (const example of collectExamples(comment.text, name)) {
++			const key = `${name}\n${example.title ?? ''}`
++			if (seen.has(key)) continue
++			seen.add(key)
++			examples.push(example)
+ 		}
+ 	}
+ 
+-	return Array.from(new Set(methods)).sort()
++	return examples.sort((a, b) => (a.name === b.name ? 0 : a.name < b.name ? -1 : 1))
+ }
+ 
+ /**
+  * Extracts every fenced code block anywhere in the guide document. A full AST walk
+- * includes fences nested inside blockquotes and lists.
++ * includes fences nested inside blockquotes and lists, and the same walk carries each
++ * fence's nearest preceding heading as its `title` — the key an `@example` block pairs on.
++ * A heading's text is flattened, so a title written with a code span pairs with a plain
++ * `@example` title.
+  *
+  * @param document - The parsed guide document
+- * @returns Every fence's language and verbatim code, in document order
++ * @returns Every fence's language, verbatim code, and title, in document order
+  *
+  * @example
+  * ```ts
+@@ -1550,8 +1798,189 @@ export function extractExampleMethods(lines: readonly string[]): readonly string
+  */
+ export function extractFences(document: MarkdownDocument): readonly GuideFence[] {
+ 	const fences: GuideFence[] = []
++	let title = ''
++
+ 	for (const node of walkNodes(document)) {
+-		if (isCodeBlockNode(node)) fences.push({ language: node.lang, code: node.code })
++		if (isHeadingNode(node)) {
++			title = flattenText(node).trim()
++			continue
++		}
++		if (isCodeBlockNode(node)) {
++			fences.push({
++				language: node.lang,
++				code: node.code,
++				...(title.length === 0 ? {} : { title }),
++			})
++		}
+ 	}
++
+ 	return fences
+ }
++
++/**
++ * Extracts the guide's tagline — the text of the blockquote following the document's H1,
++ * with every code span kept as a code span and whitespace collapsed. A heading before the
++ * blockquote ends the window, so a blockquote elsewhere in the document is not the tagline.
++ *
++ * @param document - The parsed guide document
++ * @returns The tagline, or `undefined` when no blockquote follows an H1 before the next heading
++ *
++ * @example
++ * ```ts
++ * extractTagline(document) // 'A pure, I/O-free guides-parity toolkit'
++ * ```
++ */
++export function extractTagline(document: MarkdownDocument): string | undefined {
++	let opened = false
++
++	for (const block of document.children) {
++		if (isHeadingNode(block)) {
++			if (opened) return undefined
++			opened = block.level === 1
++			continue
++		}
++		if (!opened || !isBlockquoteNode(block)) continue
++
++		const text = normalizeSummary(
++			block.children
++				.filter(isParagraphNode)
++				.map((paragraph) => extractCellText(paragraph.children))
++				.join(' '),
++		)
++		return text.length === 0 ? undefined : text
++	}
++
++	return undefined
++}
++
++/**
++ * Computes the drift between one compared key's guide text and source text. A pair agrees
++ * only when both sides carry the same text, and every other state is a drift: guide text
++ * alone reports the guide's side, source text alone reports the source's, and neither side
++ * carrying text reports the key by itself. A side carrying no text is absent from the result,
++ * so a documented symbol with no doc block reports as a drift naming the guide's text alone,
++ * and a row a table has no `Summary` column for against a declaration with no doc block
++ * reports as `{ key }`.
++ *
++ * @param key - The compared pair's key
++ * @param guide - The guide's text there, or `undefined` when it carries none
++ * @param source - The source's text there, or `undefined` when it carries none
++ * @returns The drift, or `undefined` when both sides carry the same text
++ *
++ * @example
++ * ```ts
++ * computeDrift('function walk', 'Walks the tree.', 'Walks a tree.')
++ * // { key: 'function walk', guide: 'Walks the tree.', source: 'Walks a tree.' }
++ * ```
++ */
++export function computeDrift(
++	key: string,
++	guide: string | undefined,
++	source: string | undefined,
++): Drift | undefined {
++	if (guide !== undefined && guide === source) return undefined
++	return {
++		key,
++		...(guide === undefined ? {} : { guide }),
++		...(source === undefined ? {} : { source }),
++	}
++}
++
++/**
++ * Finds every disagreement between a guide and the source it documents, naming both sites:
++ * each `## Surface` row against its declaration's description paragraph, each `## Methods`
++ * row against its member's, and the first titled guide fence of a heading against the
++ * `@example` block of the same title. An example's compared text is its language on the first
++ * line and its body beneath, so a fence that names another language drifts on its own.
++ *
++ * @remarks
++ * Only a pair present on both sides is compared, so a symbol, a member, or a title one side
++ * lacks entirely is left to the bijection checks that own it and is never reported twice.
++ * {@link computeDrift} rules each compared pair, so a pair whose sides carry different text, a
++ * pair where one side carries none, and a pair where neither side carries text are all drift.
++ * A heading pairs one fence: the first fence a title reaches is the compared one, and a later
++ * fence under the same heading is outside the comparison.
++ *
++ * @param guide - The parsed guide
++ * @param source - The reflected source the guide documents
++ * @returns One entry per disagreement: Surface rows, then Methods rows, then examples
++ *
++ * @example
++ * ```ts
++ * findDrift(guide, source) // [{ key: 'function walk', guide: 'Walks.', source: 'Walks a tree.' }]
++ * ```
++ */
++export function findDrift(guide: GuideInterface, source: SourceInterface): readonly Drift[] {
++	const drifts: Drift[] = []
++	const declared = new Map(source.surface().map((symbol) => [computeSymbolKey(symbol), symbol]))
++
++	for (const symbol of guide.surface()) {
++		const key = computeSymbolKey(symbol)
++		const match = declared.get(key)
++		if (match === undefined) continue
++		const drift = computeDrift(key, symbol.summary, match.summary)
++		if (drift !== undefined) drifts.push(drift)
++	}
++
++	for (const group of guide.methods()) {
++		const members = new Map(source.methods(group.interface).map((entry) => [entry.name, entry]))
++		for (const entry of group.methods) {
++			const member = members.get(entry.name)
++			if (member === undefined) continue
++			const drift = computeDrift(`${group.interface}.${entry.name}`, entry.summary, member.summary)
++			if (drift !== undefined) drifts.push(drift)
++		}
++	}
++
++	const examples = collectTitles(guide, source)
++	const compared = new Set<string>()
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined || compared.has(fence.title)) continue
++		compared.add(fence.title)
++		const example = examples.get(fence.title)
++		if (example === undefined) continue
++		const drift = computeDrift(
++			fence.title,
++			`${fence.language ?? ''}\n${fence.code}`,
++			`${example.language ?? ''}\n${example.code}`,
++		)
++		if (drift !== undefined) drifts.push(drift)
++	}
++
++	return drifts
++}
++
++/**
++ * Collects the titled `@example` blocks a guide's documented surface reaches — the module's
++ * exported functions, plus the own members of every documented `class` and `interface` —
++ * keyed by title, the first block of a title answering for it.
++ *
++ * @param guide - The parsed guide naming the documented declarations
++ * @param source - The reflected source to read the blocks from
++ * @returns One entry per distinct `@example` title
++ *
++ * @example
++ * ```ts
++ * collectTitles(guide, source).get('Walk a tree') // { name: 'walk', title: 'Walk a tree', code: 'walk()' }
++ * ```
++ */
++export function collectTitles(
++	guide: GuideInterface,
++	source: SourceInterface,
++): ReadonlyMap<string, SourceExample> {
++	const titled = new Map<string, SourceExample>()
++	const owners = guide
++		.surface()
++		.filter((symbol) => symbol.keyword === 'class' || symbol.keyword === 'interface')
++	const examples = [
++		...source.examples(),
++		...owners.flatMap((symbol) => source.examples(symbol.name)),
++	]
++
++	for (const example of examples) {
++		if (example.title === undefined || titled.has(example.title)) continue
++		titled.set(example.title, example)
++	}
++
++	return titled
++}
+diff --git a/src/core/shapers.ts b/src/core/shapers.ts
+index d397b81..1984d87 100644
+--- a/src/core/shapers.ts
++++ b/src/core/shapers.ts
+@@ -1,4 +1,11 @@
+-import { arrayShape, literalShape, objectShape, stringShape, unionShape } from '@orkestrel/contract'
++import {
++	arrayShape,
++	literalShape,
++	objectShape,
++	optionalShape,
++	stringShape,
++	unionShape,
++} from '@orkestrel/contract'
+ import { EXPORT_KEYWORDS } from './constants.js'
+ 
+ // AGENTS.md § Design laws: shapers are `ContractShape` values, not functions
+@@ -8,7 +15,7 @@ import { EXPORT_KEYWORDS } from './constants.js'
+ 
+ /**
+  * Shapes a {@link SurfaceSymbol} — a documented / exported symbol's `name`
+- * paired with its {@link ExportKeyword}.
++ * paired with its {@link ExportKeyword} and its optional compared `summary`.
+  *
+  * @example
+  * ```ts
+@@ -22,6 +29,64 @@ import { EXPORT_KEYWORDS } from './constants.js'
+ export const surfaceSymbolShape = objectShape({
+ 	name: stringShape(),
+ 	keyword: literalShape(EXPORT_KEYWORDS),
++	summary: optionalShape(stringShape()),
++})
++
++/**
++ * Shapes a {@link MethodEntry} — one documented method's `name` paired with its optional
++ * compared `summary`.
++ *
++ * @example
++ * ```ts
++ * import { createContract } from '@orkestrel/contract'
++ * import { methodEntryShape } from '@orkestrel/guide'
++ *
++ * const methodEntry = createContract(methodEntryShape)
++ * methodEntry.is({ name: 'walk' }) // true
++ * ```
++ */
++export const methodEntryShape = objectShape({
++	name: stringShape(),
++	summary: optionalShape(stringShape()),
++})
++
++/**
++ * Shapes a {@link SourceExample} — one `@example` block's `name`, its optional pairing
++ * `title`, its `code`, and its optional fence `language`.
++ *
++ * @example
++ * ```ts
++ * import { createContract } from '@orkestrel/contract'
++ * import { sourceExampleShape } from '@orkestrel/guide'
++ *
++ * const sourceExample = createContract(sourceExampleShape)
++ * sourceExample.is({ name: 'walk', code: 'walk()' }) // true
++ * ```
++ */
++export const sourceExampleShape = objectShape({
++	name: stringShape(),
++	title: optionalShape(stringShape()),
++	code: stringShape(),
++	language: optionalShape(stringShape()),
++})
++
++/**
++ * Shapes a {@link Drift} — one disagreement's compared `key` with the optional text each
++ * side carries there.
++ *
++ * @example
++ * ```ts
++ * import { createContract } from '@orkestrel/contract'
++ * import { driftShape } from '@orkestrel/guide'
++ *
++ * const drift = createContract(driftShape)
++ * drift.is({ key: 'class Widget', guide: 'A widget.' }) // true
++ * ```
++ */
++export const driftShape = objectShape({
++	key: stringShape(),
++	guide: optionalShape(stringShape()),
++	source: optionalShape(stringShape()),
+ })
+ 
+ /**
+@@ -39,7 +104,7 @@ export const surfaceSymbolShape = objectShape({
+  */
+ export const methodGroupShape = objectShape({
+ 	interface: stringShape(),
+-	methods: arrayShape(stringShape()),
++	methods: arrayShape(methodEntryShape),
+ })
+ 
+ /**
+diff --git a/src/core/sources/Source.ts b/src/core/sources/Source.ts
+index d4a5aad..b16397b 100644
+--- a/src/core/sources/Source.ts
++++ b/src/core/sources/Source.ts
+@@ -1,6 +1,8 @@
+ import type {
+ 	Declaration,
+ 	DeclarationKeyword,
++	MethodEntry,
++	SourceExample,
+ 	SourceInterface,
+ 	SourceOptions,
+ 	SurfaceSymbol,
+@@ -61,7 +63,7 @@ import {
+  * })
+  * source.exports() // [{ name: 'Guide', keyword: 'class' }, { name: 'GuideInterface', keyword: 'interface' }]
+  * source.surface() // [{ name: 'Guide', keyword: 'class' }, { name: 'GuideInterface', keyword: 'interface' }]
+- * source.methods('GuideInterface') // ['sections']
++ * source.methods('GuideInterface') // [{ name: 'sections' }]
+  * source.exists('src/core/Guide.ts') // true
+  * ```
+  */
+@@ -71,7 +73,7 @@ export class Source implements SourceInterface {
+ 	#exports: readonly SurfaceSymbol[] | undefined
+ 	#surface: readonly SurfaceSymbol[] | undefined
+ 	#hidden: readonly SurfaceSymbol[] | undefined
+-	#examples: readonly string[] | undefined
++	#examples: readonly SourceExample[] | undefined
+ 
+ 	constructor(options: SourceOptions) {
+ 		this.#files = options.files
+@@ -92,12 +94,12 @@ export class Source implements SourceInterface {
+ 		return this.#surface
+ 	}
+ 
+-	methods(name: string): readonly string[] {
++	methods(name: string): readonly MethodEntry[] {
+ 		const declared = this.#members('interface', name, new Set<string>())
+ 		if (declared !== undefined) return declared
+ 
+ 		const inherited = this.#members('class', name, new Set<string>())
+-		return inherited === undefined ? [] : inherited.filter((method) => method !== 'constructor')
++		return inherited === undefined ? [] : inherited.filter((entry) => entry.name !== 'constructor')
+ 	}
+ 
+ 	exists(relative: string): boolean {
+@@ -112,9 +114,9 @@ export class Source implements SourceInterface {
+ 		return this.#hidden
+ 	}
+ 
+-	examples(): readonly string[]
+-	examples(name: string): readonly string[]
+-	examples(name?: string): readonly string[] {
++	examples(): readonly SourceExample[]
++	examples(name: string): readonly SourceExample[]
++	examples(name?: string): readonly SourceExample[] {
+ 		if (name === undefined) {
+ 			if (this.#examples === undefined) this.#examples = this.#scanExamples()
+ 			return this.#examples
+@@ -123,25 +125,26 @@ export class Source implements SourceInterface {
+ 		return this.#exampleMembers(name)
+ 	}
+ 
+-	// The union of exported-function `@example` names across the module's
+-	// files, deduped in first-seen order — mirrors `#scanSymbols`, but over a
+-	// plain string scanner (`extractExamples`) rather than a `SurfaceSymbol` one.
+-	#scanExamples(): readonly string[] {
+-		const names: string[] = []
++	// The union of exported-function `@example` blocks across the module's files,
++	// deduped by name and title in first-seen order — mirrors `#scanSymbols`, but
++	// over the `@example` scanner rather than a `SurfaceSymbol` one.
++	#scanExamples(): readonly SourceExample[] {
++		const examples: SourceExample[] = []
+ 		const seen = new Set<string>()
+ 
+ 		for (const key of selectModuleKeys(this.#files, this.#directories)) {
+ 			const text = this.#files[key]
+ 			if (text === undefined) continue
+ 
+-			for (const name of extractExamples(text)) {
+-				if (seen.has(name)) continue
+-				seen.add(name)
+-				names.push(name)
++			for (const example of extractExamples(text)) {
++				const identity = `${example.name}\n${example.title ?? ''}`
++				if (seen.has(identity)) continue
++				seen.add(identity)
++				examples.push(example)
+ 			}
+ 		}
+ 
+-		return names
++		return examples
+ 	}
+ 
+ 	// The graph closure of each selected directory's conventional root barrel,
+@@ -202,15 +205,25 @@ export class Source implements SourceInterface {
+ 		}
+ 	}
+ 
+-	// The `@example`-carrying members of the interface-or-class declaration
+-	// body named `name`, unioning both shapes (an implementer may carry its
+-	// own `@example` a documented interface member does not, or vice versa).
+-	#exampleMembers(name: string): readonly string[] {
+-		const members = new Set<string>([
++	// The `@example` blocks of the interface-or-class declaration body named
++	// `name`, unioning both shapes (an implementer may carry its own `@example` a
++	// documented interface member does not, or vice versa). The interface's own
++	// block answers first for a member both shapes document.
++	#exampleMembers(name: string): readonly SourceExample[] {
++		const members = new Map<string, SourceExample>()
++
++		for (const example of [
+ 			...extractExampleMethods(this.#locate('interface', name)?.body ?? []),
+ 			...extractExampleMethods(this.#locate('class', name)?.body ?? []),
+-		])
+-		return Array.from(members).sort()
++		]) {
++			const identity = `${example.name}\n${example.title ?? ''}`
++			if (members.has(identity)) continue
++			members.set(identity, example)
++		}
++
++		return Array.from(members.values()).sort((a, b) =>
++			a.name === b.name ? 0 : a.name < b.name ? -1 : 1,
++		)
+ 	}
+ 
+ 	// The pure union-and-dedupe-and-sort composition behind `exports()` and
+@@ -236,29 +249,36 @@ export class Source implements SourceInterface {
+ 		return symbols.sort((a, b) => (a.name === b.name ? 0 : a.name < b.name ? -1 : 1))
+ 	}
+ 
+-	// The declared method names of the `keyword` declaration named `name`
+-	// unioned with those of every declaration it extends. `undefined` states one
+-	// fact only — the module scope declares no such head — which is what sends
+-	// `methods()` on to the class shape; a name already on the visit path is
+-	// declared and returns an empty union, so a cycle and a diamond each collapse
+-	// to one visit. A base the scope does not declare contributes nothing.
++	// The declared members of the `keyword` declaration named `name` unioned with
++	// those of every declaration it extends, each carrying its own doc block's
++	// description paragraph. `undefined` states one fact only — the module scope
++	// declares no such head — which is what sends `methods()` on to the class
++	// shape; a name already on the visit path is declared and returns an empty
++	// union, so a cycle and a diamond each collapse to one visit. A base the scope
++	// does not declare contributes nothing, and a member the declaration itself
++	// documents answers ahead of the base it overrides.
+ 	#members(
+ 		keyword: DeclarationKeyword,
+ 		name: string,
+ 		visited: Set<string>,
+-	): readonly string[] | undefined {
++	): readonly MethodEntry[] | undefined {
+ 		if (visited.has(name)) return []
+ 		visited.add(name)
+ 
+ 		const declaration = this.#locate(keyword, name)
+ 		if (declaration === undefined) return undefined
+ 
+-		const methods = new Set<string>(extractMemberMethods(declaration.body))
++		const methods = new Map<string, MethodEntry>()
++		for (const entry of extractMemberMethods(declaration.body)) methods.set(entry.name, entry)
+ 		for (const base of declaration.bases) {
+-			for (const member of this.#members(keyword, base, visited) ?? []) methods.add(member)
++			for (const member of this.#members(keyword, base, visited) ?? []) {
++				if (!methods.has(member.name)) methods.set(member.name, member)
++			}
+ 		}
+ 
+-		return Array.from(methods).sort()
++		return Array.from(methods.values()).sort((a, b) =>
++			a.name === b.name ? 0 : a.name < b.name ? -1 : 1,
++		)
+ 	}
+ 
+ 	// The one declaration that answers for `name` — the first file in sorted key
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 87ac238..6852106 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -10,13 +10,63 @@ import type { EXPORT_KEYWORDS } from './constants.js'
+ export type ExportKeyword = (typeof EXPORT_KEYWORDS)[number]
+ 
+ /**
+- * Represents one documented / exported symbol — its identifier plus its declaration keyword.
++ * Represents one documented / exported symbol — its identifier, its declaration keyword, and
++ * the description paragraph the guide and the doc block are compared on.
+  */
+ export interface SurfaceSymbol {
+ 	/** Holds the symbol's identifier. */
+ 	readonly name: string
+ 	/** Holds the symbol's declaration keyword — half of the bijection key alongside {@link name}. */
+ 	readonly keyword: ExportKeyword
++	/**
++	 * Holds the normalized description paragraph this side carries — a guide table's `Summary`
++	 * cell, or a doc block's text before its first block tag — and is absent when this side
++	 * carries none. Optional, so a hand-built symbol stays valid; {@link computeSymbolKey} never
++	 * reads it.
++	 */
++	readonly summary?: string
++}
++
++/**
++ * Represents one documented method — its identifier plus the description paragraph the guide's
++ * `Summary` cell and the member's doc block are compared on.
++ */
++export interface MethodEntry {
++	/** Holds the method's identifier. */
++	readonly name: string
++	/** Holds the normalized description paragraph this side carries, or is absent when it carries none. */
++	readonly summary?: string
++}
++
++/**
++ * Represents one `@example` block read from a doc comment — the declaration it documents, its
++ * title, and the code it carries.
++ */
++export interface SourceExample {
++	/** Names the declaration or member whose doc block carries the block. */
++	readonly name: string
++	/** Holds the text after the `@example` tag, which pairs the block with the guide fence under the heading of that text; absent when the tag carries none. */
++	readonly title?: string
++	/** Holds the block's code — the body of its fence, or the whole block when it carries no fence. */
++	readonly code: string
++	/** Holds the info-string language of the block's fence, or is absent when the block carries no fence. */
++	readonly language?: string
++}
++
++/**
++ * Represents one disagreement between a guide and the source it documents — the compared key
++ * with the text each side carries there.
++ */
++export interface Drift {
++	/**
++	 * Names the compared pair: a {@link computeSymbolKey} symbol key for a `## Surface` row, an
++	 * `Owner.member` key for a `## Methods` row, or the shared title for an example.
++	 */
++	readonly key: string
++	/** Holds the guide's text, or is absent when the guide carries none there. */
++	readonly guide?: string
++	/** Holds the source's text, or is absent when the source carries none there. */
++	readonly source?: string
+ }
+ 
+ /**
+@@ -43,6 +93,21 @@ export interface SourceLine {
+ 	readonly jsdoc: string | undefined
+ }
+ 
++/**
++ * Represents one eligible genuine JSDoc block paired with the physical record it documents —
++ * the block's unwrapped body and the {@link SourceLine} that follows its chain.
++ */
++export interface SourceComment {
++	/**
++	 * Holds the authoritative span's unwrapped body: the `/**` opener, the closing marker, each
++	 * line's continuation marker, and the block's leading indentation removed, with per-line
++	 * trailing whitespace trimmed.
++	 */
++	readonly text: string
++	/** Holds the physical record the block documents — the next record after its chain. */
++	readonly line: SourceLine
++}
++
+ /**
+  * Represents one `## By concept` manifest row — a single guides-parity check target, paths
+  * normalized to workspace root.
+@@ -65,8 +130,8 @@ export interface ManifestEntry {
+ export interface MethodGroup {
+ 	/** Holds the backticked interface name. */
+ 	readonly interface: string
+-	/** Lists the group's documented Method-cell identifiers, in table order. */
+-	readonly methods: readonly string[]
++	/** Lists the group's documented Method-cell entries, in table order. */
++	readonly methods: readonly MethodEntry[]
+ }
+ 
+ /**
+@@ -86,6 +151,11 @@ export interface GuideFence {
+ 	readonly language: string | undefined
+ 	/** Holds the fence's verbatim code body. */
+ 	readonly code: string
++	/**
++	 * Holds the flattened text of the fence's nearest preceding heading, which pairs the fence
++	 * with the `@example` block carrying that title; absent when no heading precedes it.
++	 */
++	readonly title?: string
+ }
+ 
+ /**
+@@ -100,8 +170,20 @@ export interface GuideInterface {
+ 	 * @returns The document's `##` heading names, in document order
+ 	 */
+ 	sections(): readonly string[]
++	/**
++	 * Returns the text of the blockquote following the document's H1 — the guide's tagline.
++	 *
++	 * @returns The tagline, or `undefined` when no blockquote follows an H1 before the next heading
++	 *
++	 * @example
++	 * ```ts
++	 * guide.tagline() // 'A pure, I/O-free guides-parity toolkit'
++	 * ```
++	 */
++	tagline(): string | undefined
+ 	/**
+ 	 * Lists every `## Surface` identifier + keyword — table rows union backticked entity headings.
++	 * Each row carries its `Summary` cell, located by header text, when the table has that column.
+ 	 *
+ 	 * @returns The documented surface symbols, in encounter order
+ 	 */
+@@ -138,7 +220,7 @@ export interface GuideInterface {
+ 	 * Lists every fenced code block in the whole document, in document order — no
+ 	 * language filter, so a consumer decides which languages its checks read.
+ 	 *
+-	 * @returns Every fence's language and verbatim code, in document order
++	 * @returns Every fence's language, verbatim code, and nearest preceding heading title, in document order
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -230,9 +312,9 @@ export interface SourceInterface {
+ 	 * collapses a cycle and a diamond to a single visit.
+ 	 *
+ 	 * @param name - The declaration's identifier
+-	 * @returns Its declared and inherited method names, deduplicated and sorted, a class `constructor` excluded
++	 * @returns Its declared and inherited members, each with its doc block's description paragraph, deduplicated by name and sorted, a class `constructor` excluded
+ 	 */
+-	methods(name: string): readonly string[]
++	methods(name: string): readonly MethodEntry[]
+ 	/**
+ 	 * Checks whether a workspace-root-relative path names a file or a directory present
+ 	 * in the inventory.
+@@ -259,24 +341,25 @@ export interface SourceInterface {
+ 	 */
+ 	hidden(): readonly SurfaceSymbol[]
+ 	/**
+-	 * Lists the names of every exported function whose next-physical-record eligible
+-	 * genuine JSDoc chain ends in a span carrying an exact block-position
+-	 * `@example` tag. Title text is allowed; intervening material severs
+-	 * association.
++	 * Lists every `@example` block carried by an exported function whose next-physical-record
++	 * eligible genuine JSDoc chain ends in a span holding an exact block-position
++	 * `@example` tag. Each block carries its title, its fence language, and its
++	 * code; intervening material severs association.
+ 	 *
+-	 * @returns The exported function names carrying an `@example`, in first-seen order
++	 * @returns The exported functions' `@example` blocks, in first-seen order
+ 	 *
+ 	 * @example
+ 	 * ```ts
+-	 * source.examples() // ['createGuide', 'createSource']
++	 * source.examples() // [{ name: 'createGuide', code: "createGuide('# Guide')" }]
+ 	 * ```
+ 	 */
+-	examples(): readonly string[]
++	examples(): readonly SourceExample[]
+ 	/**
+-	 * Lists the members of the `class` / `interface` named `name` whose immediately
+-	 * preceding eligible genuine JSDoc chain, within the declaration body, ends
+-	 * in a span carrying an exact block-position `@example` tag. Title text is
+-	 * allowed; intervening material severs association. Declaration and callable
++	 * Lists every `@example` block carried by a member of the `class` / `interface` named
++	 * `name` whose immediately preceding eligible genuine JSDoc chain, within the declaration
++	 * body, ends in a span holding an exact block-position `@example` tag. Each block carries
++	 * its title, its fence language, and its code; intervening material severs
++	 * association. Declaration and callable
+ 	 * member eligibility comes from aligned projected code while genuine JSDoc
+ 	 * evidence retains its source columns.
+ 	 *
+@@ -287,14 +370,14 @@ export interface SourceInterface {
+ 	 * belongs to the base that declares it.
+ 	 *
+ 	 * @param name - The declaration's identifier
+-	 * @returns Its own members carrying an `@example`, deduplicated and sorted
++	 * @returns Its own members' `@example` blocks, deduplicated by name and title and sorted by name
+ 	 *
+ 	 * @example
+ 	 * ```ts
+-	 * source.examples('GuideInterface') // ['fences', 'links', 'tests']
++	 * source.examples('GuideInterface') // [{ name: 'fences', code: 'guide.fences()' }]
+ 	 * ```
+ 	 */
+-	examples(name: string): readonly string[]
++	examples(name: string): readonly SourceExample[]
+ }
+ 
+ /**
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 07e78f1..5bd407b 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -1,5 +1,13 @@
+ import type { Guard } from '@orkestrel/contract'
+-import type { ExportKeyword, ManifestEntry, MethodGroup, SurfaceSymbol } from './types.js'
++import type {
++	Drift,
++	ExportKeyword,
++	ManifestEntry,
++	MethodEntry,
++	MethodGroup,
++	SourceExample,
++	SurfaceSymbol,
++} from './types.js'
+ import { arrayOf, isString, literalOf, recordOf, unionOf } from '@orkestrel/contract'
+ import { EXPORT_KEYWORDS } from './constants.js'
+ 
+@@ -26,7 +34,7 @@ export const isExportKeyword: Guard<ExportKeyword> = literalOf(EXPORT_KEYWORDS)
+ 
+ /**
+  * Checks whether `value` is a well-formed {@link SurfaceSymbol} — a `name`
+- * string paired with a valid {@link ExportKeyword}.
++ * string paired with a valid {@link ExportKeyword}, and an optional `summary`.
+  *
+  * @param value - The value to test
+  * @returns True if `value` is a well-formed {@link SurfaceSymbol}; false otherwise
+@@ -37,27 +45,97 @@ export const isExportKeyword: Guard<ExportKeyword> = literalOf(EXPORT_KEYWORDS)
+  * isSurfaceSymbol({ name: 'Markdown', keyword: 'enum' })   // false
+  * ```
+  */
+-export const isSurfaceSymbol: Guard<SurfaceSymbol> = recordOf({
+-	name: isString,
+-	keyword: isExportKeyword,
+-})
++export const isSurfaceSymbol: Guard<SurfaceSymbol> = recordOf(
++	{
++		name: isString,
++		keyword: isExportKeyword,
++		summary: isString,
++	},
++	['summary'],
++)
++
++/**
++ * Checks whether `value` is a well-formed {@link MethodEntry} — a `name` string with an
++ * optional `summary`.
++ *
++ * @param value - The value to test
++ * @returns True if `value` is a well-formed {@link MethodEntry}; false otherwise
++ *
++ * @example
++ * ```ts
++ * isMethodEntry({ name: 'walk' })   // true
++ * isMethodEntry({ name: 1 })        // false
++ * ```
++ */
++export const isMethodEntry: Guard<MethodEntry> = recordOf(
++	{
++		name: isString,
++		summary: isString,
++	},
++	['summary'],
++)
++
++/**
++ * Checks whether `value` is a well-formed {@link SourceExample} — a `name` and `code`
++ * string with an optional `title` and `language`.
++ *
++ * @param value - The value to test
++ * @returns True if `value` is a well-formed {@link SourceExample}; false otherwise
++ *
++ * @example
++ * ```ts
++ * isSourceExample({ name: 'walk', code: 'walk()' }) // true
++ * isSourceExample({ name: 'walk' })                 // false
++ * ```
++ */
++export const isSourceExample: Guard<SourceExample> = recordOf(
++	{
++		name: isString,
++		title: isString,
++		code: isString,
++		language: isString,
++	},
++	['title', 'language'],
++)
++
++/**
++ * Checks whether `value` is a well-formed {@link Drift} — a compared `key` with an optional
++ * `guide` and `source` text.
++ *
++ * @param value - The value to test
++ * @returns True if `value` is a well-formed {@link Drift}; false otherwise
++ *
++ * @example
++ * ```ts
++ * isDrift({ key: 'class Widget', guide: 'A widget.' }) // true
++ * isDrift({ guide: 'A widget.' })                      // false
++ * ```
++ */
++export const isDrift: Guard<Drift> = recordOf(
++	{
++		key: isString,
++		guide: isString,
++		source: isString,
++	},
++	['guide', 'source'],
++)
+ 
+ /**
+  * Checks whether `value` is a well-formed {@link MethodGroup} — a backticked
+- * `interface` name paired with its documented `methods`.
++ * `interface` name paired with its documented {@link MethodEntry} rows.
+  *
+  * @param value - The value to test
+  * @returns True if `value` is a well-formed {@link MethodGroup}; false otherwise
+  *
+  * @example
+  * ```ts
+- * isMethodGroup({ interface: 'MarkdownInterface', methods: ['walk'] }) // true
+- * isMethodGroup({ interface: 'MarkdownInterface', methods: [1] })      // false
++ * isMethodGroup({ interface: 'MarkdownInterface', methods: [{ name: 'walk' }] }) // true
++ * isMethodGroup({ interface: 'MarkdownInterface', methods: [1] })                // false
+  * ```
+  */
+ export const isMethodGroup: Guard<MethodGroup> = recordOf({
+ 	interface: isString,
+-	methods: arrayOf(isString),
++	methods: arrayOf(isMethodEntry),
+ })
+ 
+ /**
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 5bac045..eaed332 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -10,8 +10,10 @@ import {
+ 	extractSourceLines,
+ 	findMissing,
+ 	findUnexampled,
++	findUnnamed,
+ 	findUnlisted,
+ 	isExternalLink,
++	findDrift,
+ 	findMissingSymbols,
+ 	parseManifest,
+ 	resolveLink,
+@@ -19,6 +21,7 @@ import {
+ 	computeSymbolKey,
+ } from '@src/core'
+ import { isNonEmptyString } from '@orkestrel/contract'
++import { createMarkdown } from '@orkestrel/markdown'
+ import { readInventory } from '@orkestrel/test/server'
+ import { requireText } from './setup.js'
+ 
+@@ -69,7 +72,7 @@ it('documents only real exports in the README API list', () => {
+ 		...manifest.flatMap((entry) =>
+ 			createGuide(requireText(files, entry.spec))
+ 				.methods()
+-				.flatMap((group) => group.methods),
++				.flatMap((group) => group.methods.map((method) => method.name)),
+ 		),
+ 	]
+ 	expect(findMissing(tokens, documented)).toEqual([])
+@@ -87,6 +90,9 @@ for (const entry of manifest) {
+ 		it('extracts a non-empty documented surface', () => {
+ 			expect(guide.surface().length).toBeGreaterThan(0)
+ 		})
++		it('names every Surface and Methods row', () => {
++			expect(findUnnamed(createMarkdown(requireText(files, entry.spec)).document)).toEqual([])
++		})
+ 		it('re-exports every direct declaration', () => {
+ 			expect(findMissingSymbols(source.exports(), source.surface())).toEqual([])
+ 		})
+@@ -105,21 +111,27 @@ for (const entry of manifest) {
+ 		})
+ 
+ 		for (const group of guide.methods()) {
+-			const members = source.methods(group.interface)
++			const members = source.methods(group.interface).map((method) => method.name)
++			const documented = group.methods.map((method) => method.name)
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			describe(`${group.interface}`, () => {
+ 				it('documents at least one method', () => {
+-					expect(group.methods.length).toBeGreaterThan(0)
++					expect(documented.length).toBeGreaterThan(0)
+ 				})
+ 				it('documents every interface method', () => {
+-					expect(findMissing(members, group.methods)).toEqual([])
++					expect(findMissing(members, documented)).toEqual([])
+ 				})
+ 				it('documents no phantom method', () => {
+-					expect(findMissing(group.methods, members)).toEqual([])
++					expect(findMissing(documented, members)).toEqual([])
+ 				})
+ 				it(`${entity} exposes no undocumented method`, () => {
+ 					const extra =
+-						entity === group.interface ? [] : findMissing(source.methods(entity), group.methods)
++						entity === group.interface
++							? []
++							: findMissing(
++									source.methods(entity).map((method) => method.name),
++									documented,
++								)
+ 					expect(extra).toEqual([])
+ 				})
+ 			})
+@@ -134,7 +146,13 @@ for (const entry of manifest) {
+ 				.surface()
+ 				.filter((symbol) => symbol.keyword === 'function')
+ 				.map((symbol) => symbol.name)
+-			expect(findUnexampled(names, fences, source.examples())).toEqual([])
++			expect(
++				findUnexampled(
++					names,
++					fences,
++					source.examples().map((example) => example.name),
++				),
++			).toEqual([])
+ 		})
+ 
+ 		for (const group of guide.methods()) {
+@@ -145,11 +163,13 @@ for (const entry of manifest) {
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
++					const examples = (
+ 						entity === group.interface
+ 							? source.examples(group.interface)
+ 							: source.examples(group.interface).concat(source.examples(entity))
+-					expect(findUnexampled(group.methods, fences, examples)).toEqual([])
++					).map((example) => example.name)
++					const documented = group.methods.map((method) => method.name)
++					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+ 		}
+@@ -258,7 +278,7 @@ describe('flagship fences', () => {
+ 			{ name: 'Guide', keyword: 'class' },
+ 			{ name: 'GuideInterface', keyword: 'interface' },
+ 		])
+-		expect(source.methods('GuideInterface')).toEqual(['sections'])
++		expect(source.methods('GuideInterface')).toEqual([{ name: 'sections' }])
+ 		expect(source.exists('src/core/Guide.ts')).toBe(true)
+ 		expect(source.exists('src/core')).toBe(true)
+ 	})
+@@ -270,7 +290,7 @@ describe('flagship fences', () => {
+ 		expect(guideText).toContain(
+ 			"source.surface() // [{ name: 'Guide', keyword: 'class' }, { name: 'GuideInterface', keyword: 'interface' }]",
+ 		)
+-		expect(guideText).toContain("source.methods('GuideInterface') // ['sections']")
++		expect(guideText).toContain("source.methods('GuideInterface') // [{ name: 'sections' }]")
+ 		expect(guideText).toContain("source.exists('src/core/Guide.ts') // true")
+ 		expect(guideText).toContain(
+ 			"source.exists('src/core') // true — a directory any inventory key sits beneath",
+@@ -323,6 +343,45 @@ describe('flagship fences', () => {
+ 		expect(findMissingSymbols(guide.surface(), source.surface())).toEqual([])
+ 	})
+ 
++	it('names both sites of a disagreement between a guide and its source', () => {
++		const guide = createGuide(
++			'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |',
++		)
++		const source = createSource({
++			files: {
++				'src/core/index.ts': "export * from './helpers.js'\n",
++				'src/core/helpers.ts': '/**\n * Walks a tree.\n */\nexport function walk(): void {}\n',
++			},
++			module: 'src/core',
++		})
++
++		expect(findDrift(guide, source)).toEqual([
++			{ key: 'function walk', guide: 'Walks the tree.', source: 'Walks a tree.' },
++		])
++	})
++
++	it('carries the drift fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			'// One entry per disagreement, naming both sites; a symbol one side lacks belongs to SB.',
++		)
++		expect(guideText).toContain(
++			"findDrift(guide, source) // [{ key: 'function walk', guide: 'Walks the tree.', source: 'Walks a tree.' }]",
++		)
++	})
++
++	it('reads the tagline from the blockquote following the H1', () => {
++		const guide = createGuide('# Widget\n\n> A widget toolkit.\n\n## Surface\n')
++
++		expect(guide.tagline()).toBe('A widget toolkit.')
++	})
++
++	it('carries the tagline fence lines the transcription copies', () => {
++		expect(guideText).toContain(
++			"const guide = createGuide('# Widget\\n\\n> A widget toolkit.\\n\\n## Surface\\n')",
++		)
++		expect(guideText).toContain("guide.tagline() // 'A widget toolkit.'")
++	})
++
+ 	it('carries the bijection fence lines the transcription copies', () => {
+ 		expect(guideText).toContain(
+ 			'// Direct declarations, public barrel, and guide surface agree in every direction.',
+diff --git a/tests/src/core/Guide.test.ts b/tests/src/core/Guide.test.ts
+index 03b0ee2..39d905d 100644
+--- a/tests/src/core/Guide.test.ts
++++ b/tests/src/core/Guide.test.ts
+@@ -30,7 +30,10 @@ describe('Guide', () => {
+ 	it('extracts the WidgetInterface method group from the good fixture guide', () => {
+ 		const guide = new Guide(requireText(FIXTURES, 'good/guides/src/widget.md'))
+ 		expect(guide.methods()).toEqual([
+-			{ interface: 'WidgetInterface', methods: ['inspect', 'render', 'reset'] },
++			{
++				interface: 'WidgetInterface',
++				methods: [{ name: 'inspect' }, { name: 'render' }, { name: 'reset' }],
++			},
+ 		])
+ 	})
+ 
+@@ -46,6 +49,7 @@ describe('Guide', () => {
+ 
+ 	it('caches its projections — repeated calls return the same array instance', () => {
+ 		const guide = new Guide(requireText(FIXTURES, 'good/guides/src/widget.md'))
++		expect(guide.tagline()).toBe(guide.tagline())
+ 		expect(guide.surface()).toBe(guide.surface())
+ 		expect(guide.methods()).toBe(guide.methods())
+ 		expect(guide.sections()).toBe(guide.sections())
+@@ -59,12 +63,13 @@ describe('Guide', () => {
+ 		expect(guide.fences()).toEqual([])
+ 	})
+ 
+-	it("extracts the missing-example fixture guide's one Patterns fence", () => {
++	it("extracts the missing-example fixture guide's one Patterns fence with its heading title", () => {
+ 		const guide = new Guide(requireText(FIXTURES, 'broken/missing-example/guides/src/widget.md'))
+ 		expect(guide.fences()).toEqual([
+ 			{
+ 				language: 'ts',
+ 				code: "import { greet } from '../module/helpers.js'\n\ngreet('world')",
++				title: 'Patterns',
+ 			},
+ 		])
+ 	})
+@@ -77,14 +82,17 @@ describe('Guide', () => {
+ 	it('reflects a missing method row (missing-interface-method fixture)', () => {
+ 		const guide = new Guide(requireText(FIXTURES, 'broken/missing-interface-method/widget.md'))
+ 		expect(guide.methods()).toEqual([
+-			{ interface: 'WidgetInterface', methods: ['inspect', 'render'] },
++			{ interface: 'WidgetInterface', methods: [{ name: 'inspect' }, { name: 'render' }] },
+ 		])
+ 	})
+ 
+ 	it('reflects a phantom method row (phantom-method fixture)', () => {
+ 		const guide = new Guide(requireText(FIXTURES, 'broken/phantom-method/widget.md'))
+ 		expect(guide.methods()).toEqual([
+-			{ interface: 'WidgetInterface', methods: ['inspect', 'render', 'reset', 'destroy'] },
++			{
++				interface: 'WidgetInterface',
++				methods: [{ name: 'inspect' }, { name: 'render' }, { name: 'reset' }, { name: 'destroy' }],
++			},
+ 		])
+ 	})
+ })
+@@ -112,6 +120,9 @@ describe('bijection matrix', () => {
+ 		const [group] = guide.methods()
+ 		expect(group?.methods).toEqual(goodSource.methods('WidgetInterface'))
+ 		expect(goodSource.methods('WidgetInterface')).toEqual(goodSource.methods('Widget'))
++		expect(guide.tagline()).toBe(
++			'A tiny fixture module exercising every ExportKeyword for guides-parity tests.',
++		)
+ 	})
+ 
+ 	it('undocumented-export: source has DEFAULT_COUNT the guide does not document', () => {
+@@ -139,16 +150,21 @@ describe('bijection matrix', () => {
+ 	it('missing-interface-method: the guide is missing the reset row', () => {
+ 		const guide = new Guide(requireText(FIXTURES, 'broken/missing-interface-method/widget.md'))
+ 		const [group] = guide.methods()
+-		const sourceMethods = goodSource.methods('WidgetInterface')
+-		const missing = sourceMethods.filter((method) => !(group?.methods ?? []).includes(method))
++		const documented = (group?.methods ?? []).map((entry) => entry.name)
++		const missing = goodSource
++			.methods('WidgetInterface')
++			.map((entry) => entry.name)
++			.filter((method) => !documented.includes(method))
+ 		expect(missing).toEqual(['reset'])
+ 	})
+ 
+ 	it('phantom-method: the guide documents a destroy method the interface does not have', () => {
+ 		const guide = new Guide(requireText(FIXTURES, 'broken/phantom-method/widget.md'))
+ 		const [group] = guide.methods()
+-		const sourceMethods = goodSource.methods('WidgetInterface')
+-		const phantom = (group?.methods ?? []).filter((method) => !sourceMethods.includes(method))
++		const declared = goodSource.methods('WidgetInterface').map((entry) => entry.name)
++		const phantom = (group?.methods ?? [])
++			.map((entry) => entry.name)
++			.filter((method) => !declared.includes(method))
+ 		expect(phantom).toEqual(['destroy'])
+ 	})
+ 
+@@ -161,9 +177,11 @@ describe('bijection matrix', () => {
+ 		})
+ 		const guide = new Guide(requireText(FIXTURES, 'broken/class-extra-method/widget.md'))
+ 		const [group] = guide.methods()
++		const documented = (group?.methods ?? []).map((entry) => entry.name)
+ 		const extra = extraSource
+ 			.methods('Widget')
+-			.filter((method) => !(group?.methods ?? []).includes(method))
++			.map((entry) => entry.name)
++			.filter((method) => !documented.includes(method))
+ 		expect(extra).toEqual(['extra'])
+ 	})
+ 
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 7cbabf0..ce8419e 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -1,8 +1,11 @@
+ import {
++	createDriftContract,
+ 	createGuide,
+ 	createManifestEntryContract,
++	createMethodEntryContract,
+ 	createMethodGroupContract,
+ 	createSource,
++	createSourceExampleContract,
+ 	createSurfaceSymbolContract,
+ } from '@src/core'
+ import { seededRandom } from '@orkestrel/contract'
+@@ -13,8 +16,7 @@ import { readInventory } from '@orkestrel/test/server'
+ const FIXTURES = readInventory(new URL('../../fixtures/', import.meta.url), ['.'])
+ 
+ // The factory surface — createGuide / createSource construct working
+-// instances, and createSurfaceSymbolContract / createMethodGroupContract /
+-// createManifestEntryContract compile each shape into a full contract
++// instances, and each create*Contract compiles its shape into a full contract
+ // (.claude/rules/patterns.md § Validation and contracts). Guide/Source's own
+ // projections are covered in depth by
+ // Guide.test.ts / Source.test.ts — this suite is a spot-check that the
+@@ -36,7 +38,11 @@ describe('createSource', () => {
+ 			module: 'module',
+ 		})
+ 		expect(source.exports()).toHaveLength(6)
+-		expect(source.methods('WidgetInterface')).toEqual(['inspect', 'render', 'reset'])
++		expect(source.methods('WidgetInterface').map((entry) => entry.name)).toEqual([
++			'inspect',
++			'render',
++			'reset',
++		])
+ 		expect(source.exists('module/Widget.ts')).toBe(true)
+ 	})
+ })
+@@ -56,7 +62,7 @@ describe('createSurfaceSymbolContract', () => {
+ describe('createMethodGroupContract', () => {
+ 	it('compiles a working MethodGroup contract', () => {
+ 		const contract = createMethodGroupContract()
+-		expect(contract.is({ interface: 'WidgetInterface', methods: ['inspect'] })).toBe(true)
++		expect(contract.is({ interface: 'WidgetInterface', methods: [{ name: 'inspect' }] })).toBe(true)
+ 		expect(contract.is({ interface: 'WidgetInterface', methods: [1] })).toBe(false)
+ 
+ 		const value = contract.generate(seededRandom(TEST_SEED))
+@@ -83,3 +89,39 @@ describe('createManifestEntryContract', () => {
+ 		expect(contract.parse(value)).toEqual(value)
+ 	})
+ })
++
++describe('createMethodEntryContract', () => {
++	it('compiles a working MethodEntry contract', () => {
++		const contract = createMethodEntryContract()
++		expect(contract.is({ name: 'render' })).toBe(true)
++		expect(contract.is({ name: 1 })).toBe(false)
++
++		const value = contract.generate(seededRandom(TEST_SEED))
++		expect(contract.is(value)).toBe(true)
++		expect(contract.parse(value)).toEqual(value)
++	})
++})
++
++describe('createSourceExampleContract', () => {
++	it('compiles a working SourceExample contract', () => {
++		const contract = createSourceExampleContract()
++		expect(contract.is({ name: 'render', code: 'widget.render()' })).toBe(true)
++		expect(contract.is({ name: 'render' })).toBe(false)
++
++		const value = contract.generate(seededRandom(TEST_SEED))
++		expect(contract.is(value)).toBe(true)
++		expect(contract.parse(value)).toEqual(value)
++	})
++})
++
++describe('createDriftContract', () => {
++	it('compiles a working Drift contract', () => {
++		const contract = createDriftContract()
++		expect(contract.is({ key: 'class Widget', guide: 'A widget.' })).toBe(true)
++		expect(contract.is({ guide: 'A widget.' })).toBe(false)
++
++		const value = contract.generate(seededRandom(TEST_SEED))
++		expect(contract.is(value)).toBe(true)
++		expect(contract.parse(value)).toEqual(value)
++	})
++})
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 7389906..f54137d 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,6 +1,13 @@
+ import type { SourceLine, SurfaceSymbol } from '@src/core'
+ import {
++	collectExamples,
++	collectSummaries,
++	collectTitles,
++	computeDrift,
++	createGuide,
++	createSource,
+ 	extractCellLinks,
++	extractCellText,
+ 	extractDeclaration,
+ 	extractExampleMethods,
+ 	extractExamples,
+@@ -13,17 +20,23 @@ import {
+ 	extractSurface,
+ 	extractTests,
+ 	extractFenceImports,
++	extractSourceComments,
++	extractTagline,
++	findDrift,
+ 	findMissing,
+ 	findUnexampled,
++	findUnnamed,
+ 	findUnlisted,
+ 	findFirstCode,
++	normalizeComment,
+ 	normalizeIdentifier,
++	normalizeSummary,
+ 	isExternalLink,
+ 	hasCanonicalSegments,
+ 	extractHidden,
+ 	joinHead,
+ 	escapeRegExp,
+-	findKindIndex,
++	findColumnIndex,
+ 	extractMemberMethods,
+ 	findMissingSymbols,
+ 	normalizeDirectories,
+@@ -34,6 +47,7 @@ import {
+ 	computeSymbolKey,
+ } from '@src/core'
+ import { createMarkdown } from '@orkestrel/markdown'
++import { parseSync } from 'vite'
+ import { describe, expect, it } from 'vitest'
+ import { requireTable, requireText } from '../../setup.js'
+ import { readInventory } from '@orkestrel/test/server'
+@@ -590,20 +604,32 @@ describe('normalizeIdentifier', () => {
+ 	})
+ })
+ 
+-describe('findKindIndex', () => {
++describe('findColumnIndex', () => {
+ 	it('finds the Kind column when present', () => {
+ 		const table = requireTable('| Name | Kind |\n| --- | --- |\n| `X` | class |\n')
+-		expect(findKindIndex(table)).toBe(1)
++		expect(findColumnIndex(table, 'Kind')).toBe(1)
+ 	})
+ 
+ 	it('returns undefined when no Kind header exists', () => {
+ 		const table = requireTable('| Name | Description |\n| --- | --- |\n| `X` | none |\n')
+-		expect(findKindIndex(table)).toBeUndefined()
++		expect(findColumnIndex(table, 'Kind')).toBeUndefined()
+ 	})
+ 
+ 	it('finds the Kind column when the header is reordered', () => {
+ 		const table = requireTable('| Kind | Name |\n| --- | --- |\n| class | `X` |\n')
+-		expect(findKindIndex(table)).toBe(0)
++		expect(findColumnIndex(table, 'Kind')).toBe(0)
++	})
++
++	it('finds the Summary column beside the Kind column', () => {
++		const table = requireTable(
++			'| Name | Summary | Kind |\n| --- | --- | --- |\n| `X` | Holds a widget. | class |\n',
++		)
++		expect(findColumnIndex(table, 'Summary')).toBe(1)
++	})
++
++	it('refuses a header that differs in case', () => {
++		const table = requireTable('| Name | summary |\n| --- | --- |\n| `X` | Holds a widget. |\n')
++		expect(findColumnIndex(table, 'Summary')).toBeUndefined()
+ 	})
+ })
+ 
+@@ -976,7 +1002,7 @@ describe('successor lexical and reflection boundaries', () => {
+ 
+ 	it('extractMemberMethods excludes commented candidates', () => {
+ 		expect(extractMemberMethods(['\t/*', '\tghost(): void', '\t*/', '\tvisible(): void'])).toEqual([
+-			'visible',
++			{ name: 'visible' },
+ 		])
+ 	})
+ 
+@@ -987,7 +1013,7 @@ describe('successor lexical and reflection boundaries', () => {
+ 			'\t/** @example */',
+ 			'\t/* ghost(): void */',
+ 		]
+-		expect(extractExampleMethods(lines)).toEqual(['visible'])
++		expect(extractExampleMethods(lines).map((example) => example.name)).toEqual(['visible'])
+ 	})
+ })
+ 
+@@ -1030,7 +1056,10 @@ describe('extractMethods', () => {
+ 	it('extracts one group of inspect/render/reset from the good fixture', () => {
+ 		const document = createMarkdown(requireText(FIXTURES, 'good/guides/src/widget.md')).document
+ 		expect(extractMethods(document)).toEqual([
+-			{ interface: 'WidgetInterface', methods: ['inspect', 'render', 'reset'] },
++			{
++				interface: 'WidgetInterface',
++				methods: [{ name: 'inspect' }, { name: 'render' }, { name: 'reset' }],
++			},
+ 		])
+ 	})
+ 
+@@ -1039,7 +1068,7 @@ describe('extractMethods', () => {
+ 			requireText(FIXTURES, 'broken/missing-interface-method/widget.md'),
+ 		).document
+ 		expect(extractMethods(document)).toEqual([
+-			{ interface: 'WidgetInterface', methods: ['inspect', 'render'] },
++			{ interface: 'WidgetInterface', methods: [{ name: 'inspect' }, { name: 'render' }] },
+ 		])
+ 	})
+ 
+@@ -1048,9 +1077,60 @@ describe('extractMethods', () => {
+ 			requireText(FIXTURES, 'broken/phantom-method/widget.md'),
+ 		).document
+ 		expect(extractMethods(document)).toEqual([
+-			{ interface: 'WidgetInterface', methods: ['inspect', 'render', 'reset', 'destroy'] },
++			{
++				interface: 'WidgetInterface',
++				methods: [{ name: 'inspect' }, { name: 'render' }, { name: 'reset' }, { name: 'destroy' }],
++			},
++		])
++	})
++})
++
++// `extractSurface` and `extractMethods` skip a row whose first cell carries no
++// code span, because they have no name to key it on. `findUnnamed` is the check
++// that reports the skip instead of letting the row leave the guide's surface in
++// silence.
++describe('findUnnamed', () => {
++	it('reports a row with no code-span name in each documented section', () => {
++		const nameless = [
++			'## Surface',
++			'',
++			'| Name | Kind | Summary |',
++			'| --- | --- | --- |',
++			'| `Widget` | class | Represents a widget. |',
++			'| Widget | class | Represents a widget. |',
++			'',
++			'## Methods',
++			'',
++			'#### `WidgetInterface`',
++			'',
++			'| Method | Summary |',
++			'| --- | --- |',
++			'| `render` | Renders the widget. |',
++			'| render | Renders the widget. |',
++			'',
++		].join('\n')
++		expect(findUnnamed(createMarkdown(nameless).document)).toEqual([
++			'Widget | class | Represents a widget.',
++			'render | Renders the widget.',
+ 		])
+ 	})
++
++	// The negative control, drawn from outside the membership rule: a name written
++	// as a code span inside emphasis is a name `findFirstCode` reads, so the row is
++	// no finding and the symbol still reaches the documented surface.
++	it('reports no row whose name is a code span inside emphasis', () => {
++		const emphasized = [
++			'## Surface',
++			'',
++			'| Name | Kind |',
++			'| --- | --- |',
++			'| **`Widget`** | class |',
++			'',
++		].join('\n')
++		const document = createMarkdown(emphasized).document
++		expect(findUnnamed(document)).toEqual([])
++		expect(extractSurface(document)).toEqual([{ name: 'Widget', keyword: 'class' }])
++	})
+ })
+ 
+ describe('extractLinks', () => {
+@@ -1495,28 +1575,30 @@ describe('extractDeclaration', () => {
+ 
+ describe('extractMemberMethods', () => {
+ 	it('counts a plain method', () => {
+-		expect(extractMemberMethods(['\tmap(): void'])).toEqual(['map'])
++		expect(extractMemberMethods(['\tmap(): void'])).toEqual([{ name: 'map' }])
+ 	})
+ 
+ 	it('counts an async method', () => {
+-		expect(extractMemberMethods(['\tasync load(): Promise<void>'])).toEqual(['load'])
++		expect(extractMemberMethods(['\tasync load(): Promise<void>'])).toEqual([{ name: 'load' }])
+ 	})
+ 
+ 	it('counts a generator method', () => {
+-		expect(extractMemberMethods(['\t*walk(): Generator<void>'])).toEqual(['walk'])
++		expect(extractMemberMethods(['\t*walk(): Generator<void>'])).toEqual([{ name: 'walk' }])
+ 	})
+ 
+ 	it('counts an optional method', () => {
+-		expect(extractMemberMethods(['\trecords?(): void'])).toEqual(['records'])
++		expect(extractMemberMethods(['\trecords?(): void'])).toEqual([{ name: 'records' }])
+ 	})
+ 
+ 	it('counts a method whose type params nest generics', () => {
+-		expect(extractMemberMethods(['\tfold<T extends X<Y>>(value: T): T'])).toEqual(['fold'])
++		expect(extractMemberMethods(['\tfold<T extends X<Y>>(value: T): T'])).toEqual([
++			{ name: 'fold' },
++		])
+ 	})
+ 
+ 	it('counts an optional method whose type params precede the parameter list', () => {
+ 		expect(extractMemberMethods(['\ttransaction?<R>(scope: DriverScope<R>): Promise<R>'])).toEqual([
+-			'transaction',
++			{ name: 'transaction' },
+ 		])
+ 	})
+ 
+@@ -1537,7 +1619,9 @@ describe('extractMemberMethods', () => {
+ 	})
+ 
+ 	it('counts a constructor line as a member (Source excludes it downstream, not extractMemberMethods)', () => {
+-		expect(extractMemberMethods(['\tconstructor(label: string)'])).toEqual(['constructor'])
++		expect(extractMemberMethods(['\tconstructor(label: string)'])).toEqual([
++			{ name: 'constructor' },
++		])
+ 	})
+ 
+ 	it('excludes a plain data member', () => {
+@@ -1546,8 +1630,8 @@ describe('extractMemberMethods', () => {
+ 
+ 	it('dedupes and sorts the results', () => {
+ 		expect(extractMemberMethods(['\tzeta(): void', '\talpha(): void', '\tzeta(): void'])).toEqual([
+-			'alpha',
+-			'zeta',
++			{ name: 'alpha' },
++			{ name: 'zeta' },
+ 		])
+ 	})
+ 
+@@ -1558,7 +1642,9 @@ describe('extractMemberMethods', () => {
+ 			'Widget',
+ 		)
+ 		expect(
+-			extractMemberMethods(declaration?.body ?? []).filter((method) => method !== 'constructor'),
++			extractMemberMethods(declaration?.body ?? [])
++				.filter((entry) => entry.name !== 'constructor')
++				.map((entry) => entry.name),
+ 		).toEqual(['inspect', 'render', 'reset'])
+ 	})
+ })
+@@ -1581,12 +1667,12 @@ describe('extractExamples', () => {
+ 			'export function genuine(): void {}',
+ 			'',
+ 		].join('\n')
+-		expect(extractExamples(source)).toEqual(['genuine'])
++		expect(extractExamples(source).map((example) => example.name)).toEqual(['genuine'])
+ 	})
+ 
+ 	it('collects a function immediately preceded by an @example JSDoc block', () => {
+ 		const source = ['/**', ' * @example', ' */', 'export function walk() {}', ''].join('\n')
+-		expect(extractExamples(source)).toEqual(['walk'])
++		expect(extractExamples(source).map((example) => example.name)).toEqual(['walk'])
+ 	})
+ 
+ 	it('skips a function with no preceding JSDoc block', () => {
+@@ -1607,17 +1693,17 @@ describe('extractExamples', () => {
+ 
+ 	it('collects an async function', () => {
+ 		const source = ['/**', ' * @example', ' */', 'export async function load() {}', ''].join('\n')
+-		expect(extractExamples(source)).toEqual(['load'])
++		expect(extractExamples(source).map((example) => example.name)).toEqual(['load'])
+ 	})
+ 
+ 	it('collects a generator function', () => {
+ 		const source = ['/**', ' * @example', ' */', 'export function* walk() {}', ''].join('\n')
+-		expect(extractExamples(source)).toEqual(['walk'])
++		expect(extractExamples(source).map((example) => example.name)).toEqual(['walk'])
+ 	})
+ 
+ 	it('handles a single-line JSDoc comment', () => {
+ 		const source = '/** @example */\nexport function walk() {}\n'
+-		expect(extractExamples(source)).toEqual(['walk'])
++		expect(extractExamples(source).map((example) => example.name)).toEqual(['walk'])
+ 	})
+ 
+ 	it('dedupes a repeated export', () => {
+@@ -1632,7 +1718,7 @@ describe('extractExamples', () => {
+ 			'export function walk() {}',
+ 			'',
+ 		].join('\n')
+-		expect(extractExamples(source)).toEqual(['walk'])
++		expect(extractExamples(source).map((example) => example.name)).toEqual(['walk'])
+ 	})
+ })
+ 
+@@ -1656,7 +1742,9 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
+ 			[],
+ 			[],
+ 		])
+-		expect(sources.map(extractExamples)).toEqual([['exact'], ['titled'], [], [], []])
++		expect(sources.map((source) => extractExamples(source).map((example) => example.name))).toEqual(
++			[['exact'], ['titled'], [], [], []],
++		)
+ 	})
+ 
+ 	it('makes the last whitespace-separated leading JSDoc span authoritative', () => {
+@@ -1668,18 +1756,26 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
+ 				extractExampleLines(extractSourceLines(source)).map((line) => line.source),
+ 			),
+ 		).toEqual([[], ['export function candidate(): void {}']])
+-		expect([taggedThenPlain, plainThenTagged].map(extractExamples)).toEqual([[], ['candidate']])
++		expect(
++			[taggedThenPlain, plainThenTagged].map((source) =>
++				extractExamples(source).map((example) => example.name),
++			),
++		).toEqual([[], ['candidate']])
+ 	})
+ 
+ 	it('recognizes a later exact span after a minimal JSDoc span', () => {
+ 		expect(
+-			extractExamples('/**/ /** @example title */\nexport function candidate(): void {}'),
++			extractExamples('/**/ /** @example title */\nexport function candidate(): void {}').map(
++				(example) => example.name,
++			),
+ 		).toEqual(['candidate'])
+ 	})
+ 
+ 	it('replaces a minimal JSDoc span with a next-line exact span', () => {
+ 		expect(
+-			extractExamples('/**/\n/** @example title */\nexport function candidate(): void {}'),
++			extractExamples('/**/\n/** @example title */\nexport function candidate(): void {}').map(
++				(example) => example.name,
++			),
+ 		).toEqual(['candidate'])
+ 	})
+ 
+@@ -1700,7 +1796,9 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
+ 			'/** @example */\n/** plain */\nexport function candidate(): void {}',
+ 			'/** plain */\n/**\n * @example title\n */\nexport function candidate(): void {}',
+ 		]
+-		expect(sources.map(extractExamples)).toEqual([[], [], [], [], [], [], [], ['candidate']])
++		expect(sources.map((source) => extractExamples(source).map((example) => example.name))).toEqual(
++			[[], [], [], [], [], [], [], ['candidate']],
++		)
+ 	})
+ })
+ 
+@@ -1715,12 +1813,12 @@ describe('extractExampleMethods', () => {
+ 			'\t */',
+ 			'\tgenuine(): void',
+ 		]
+-		expect(extractExampleMethods(lines)).toEqual(['genuine'])
++		expect(extractExampleMethods(lines).map((example) => example.name)).toEqual(['genuine'])
+ 	})
+ 
+ 	it('collects a method immediately preceded by an @example JSDoc block', () => {
+ 		const lines = ['\t/**', '\t * @example', '\t */', '\twalk(): void']
+-		expect(extractExampleMethods(lines)).toEqual(['walk'])
++		expect(extractExampleMethods(lines).map((example) => example.name)).toEqual(['walk'])
+ 	})
+ 
+ 	it('skips a method with no preceding JSDoc block', () => {
+@@ -1738,11 +1836,13 @@ describe('extractExampleMethods', () => {
+ 			'\t */',
+ 			'\talpha(): void',
+ 		]
+-		expect(extractExampleMethods(lines)).toEqual(['alpha', 'zeta'])
++		expect(extractExampleMethods(lines).map((example) => example.name)).toEqual(['alpha', 'zeta'])
+ 	})
+ 
+ 	it('handles a single-line JSDoc comment on an interface member', () => {
+-		expect(extractExampleMethods(['\t/** @example */', '\twalk(): void'])).toEqual(['walk'])
++		expect(
++			extractExampleMethods(['\t/** @example */', '\twalk(): void']).map((example) => example.name),
++		).toEqual(['walk'])
+ 	})
+ 
+ 	it('uses exact titled tags and last-span authority for members', () => {
+@@ -1758,7 +1858,10 @@ describe('extractExampleMethods', () => {
+ 			'\t/** plain */ /** @example title */',
+ 			'\tauthoritative(): void',
+ 		]
+-		expect(extractExampleMethods(lines)).toEqual(['authoritative', 'exact'])
++		expect(extractExampleMethods(lines).map((example) => example.name)).toEqual([
++			'authoritative',
++			'exact',
++		])
+ 	})
+ 
+ 	it('applies minimal JSDoc span replacement to members', () => {
+@@ -1771,7 +1874,10 @@ describe('extractExampleMethods', () => {
+ 			'\t/** @example */ /**/',
+ 			'\treplaced(): void',
+ 		]
+-		expect(extractExampleMethods(lines)).toEqual(['nextLine', 'sameLine'])
++		expect(extractExampleMethods(lines).map((example) => example.name)).toEqual([
++			'nextLine',
++			'sameLine',
++		])
+ 	})
+ 
+ 	it('collects an optional method whose type params precede the parameter list', () => {
+@@ -1781,14 +1887,14 @@ describe('extractExampleMethods', () => {
+ 			'\t */',
+ 			'\ttransaction?<R>(scope: DriverScope<R>): Promise<R>',
+ 		]
+-		expect(extractExampleMethods(lines)).toEqual(['transaction'])
++		expect(extractExampleMethods(lines).map((example) => example.name)).toEqual(['transaction'])
+ 	})
+ })
+ 
+ describe('extractFences', () => {
+ 	it("extracts a ```ts fence's language and code body", () => {
+ 		const document = createMarkdown('## Patterns\n\n```ts\nwalk()\n```\n').document
+-		expect(extractFences(document)).toEqual([{ language: 'ts', code: 'walk()' }])
++		expect(extractFences(document)).toEqual([{ language: 'ts', code: 'walk()', title: 'Patterns' }])
+ 	})
+ 
+ 	it('returns an empty array when the document has no fence', () => {
+@@ -1841,7 +1947,7 @@ describe('broken fixture: missing-example', () => {
+ 		const surfaceNames = ['greet', 'farewell']
+ 		const examples = extractExamples(
+ 			requireText(FIXTURES, 'broken/missing-example/module/helpers.ts'),
+-		)
++		).map((example) => example.name)
+ 
+ 		const unexampled = surfaceNames.filter((name) => {
+ 			if (examples.includes(name)) return false
+@@ -1870,3 +1976,762 @@ describe('broken fixture: phantom-import', () => {
+ 		expect(phantom).toEqual(['ghost'])
+ 	})
+ })
++
++// ── The compared form ────────────────────────────────────────────────────────
++// Both sides of the guide/TSDoc comparison are read into one normalized form.
++// Each clause of the stated transform gets its own case, on the side that owns
++// it: `{@link}` rendering and whitespace collapse on the source side, emphasis,
++// link, and escaped-pipe reduction on the guide side, and code spans on both.
++
++describe('normalizeSummary', () => {
++	it('renders a bare link target as a code token', () => {
++		expect(normalizeSummary('Creates a {@link Widget}.')).toBe('Creates a `Widget`.')
++	})
++
++	it('renders a qualified link target as a code token', () => {
++		expect(normalizeSummary('Reads {@link Widget.render}.')).toBe('Reads `Widget.render`.')
++	})
++
++	it('renders a labelled link as the code token of its label', () => {
++		expect(normalizeSummary('Creates {@link Widget | a widget}.')).toBe('Creates `a widget`.')
++	})
++
++	it('renders several links in one paragraph', () => {
++		expect(normalizeSummary('{@link A} and {@link B | b}.')).toBe('`A` and `b`.')
++	})
++
++	it('collapses a line break and its continuation whitespace into one space', () => {
++		expect(normalizeSummary('Creates a widget\nfrom a name.')).toBe('Creates a widget from a name.')
++	})
++
++	it('trims the ends and leaves a code span a code span', () => {
++		expect(normalizeSummary('  Returns a `Widget`.  ')).toBe('Returns a `Widget`.')
++	})
++
++	it('leaves text carrying none of the transform unchanged', () => {
++		expect(normalizeSummary('Represents one documented symbol.')).toBe(
++			'Represents one documented symbol.',
++		)
++	})
++})
++
++describe('extractCellText', () => {
++	it('keeps a code span backticked', () => {
++		expect(extractCellText([{ element: 'codeSpan', value: 'Widget' }])).toBe('`Widget`')
++	})
++
++	it('drops strong and light emphasis to their text', () => {
++		const cell = requireTable('| Summary |\n| --- |\n| **Creates** a _widget_. |\n').rows[0]?.[0]
++		expect(extractCellText(cell ?? [])).toBe('Creates a widget.')
++	})
++
++	it('drops a link to its text', () => {
++		const cell = requireTable(
++			'| Summary |\n| --- |\n| Creates a [widget](../src/core/Widget.ts). |\n',
++		).rows[0]?.[0]
++		expect(extractCellText(cell ?? [])).toBe('Creates a widget.')
++	})
++
++	it('unescapes an escaped pipe and keeps the cell text either side of it', () => {
++		const cell = requireTable(
++			'| Summary |\n| --- |\n| Returns `string \\| undefined` for a miss. |\n',
++		).rows[0]?.[0]
++		expect(extractCellText(cell ?? [])).toBe('Returns `string | undefined` for a miss.')
++	})
++
++	it('returns an empty string for an empty cell', () => {
++		expect(extractCellText([])).toBe('')
++	})
++})
++
++describe('normalizeComment', () => {
++	it('unwraps a single-line block', () => {
++		expect(normalizeComment('/** Creates a widget. */')).toBe('Creates a widget.')
++	})
++
++	it('unwraps a multi-line block and drops its blank opening and closing lines', () => {
++		const comment = ['/**', ' * Creates a widget.', ' *', ' * @remarks', ' * Twice.', ' */'].join(
++			'\n',
++		)
++		expect(normalizeComment(comment)).toBe('Creates a widget.\n\n@remarks\nTwice.')
++	})
++
++	it("keeps a body line's own indentation past the continuation marker", () => {
++		const comment = [
++			'\t/**',
++			'\t * @example',
++			'\t * ```ts',
++			'\t * \twidget.render()',
++			'\t * ```',
++			'\t */',
++		].join('\n')
++		expect(normalizeComment(comment)).toBe('@example\n```ts\n\twidget.render()\n```')
++	})
++
++	it('trims per-line trailing whitespace', () => {
++		expect(normalizeComment('/**\n * Creates a widget.   \n */')).toBe('Creates a widget.')
++	})
++
++	it('returns an empty body for a minimal block', () => {
++		expect(normalizeComment('/**/')).toBe('')
++	})
++})
++
++describe('collectSummaries', () => {
++	it('reads the description paragraph of the record a block documents', () => {
++		const source = [
++			'/**',
++			' * Creates a widget.',
++			' */',
++			'export function createWidget() {}',
++			'',
++		].join('\n')
++		const lines = extractSourceLines(source)
++		const summaries = collectSummaries(lines)
++		const documented = lines.filter((line) => line.code.startsWith('export function'))
++		expect(Array.from(summaries.values())).toEqual(['Creates a widget.'])
++		expect(documented.map((line) => summaries.get(line))).toEqual(['Creates a widget.'])
++	})
++
++	it('stops the description at the first block tag', () => {
++		const source = [
++			'/**',
++			' * Creates a widget.',
++			' *',
++			' * @param name - The name',
++			' * @returns The widget',
++			' */',
++			'export function createWidget() {}',
++			'',
++		].join('\n')
++		expect(Array.from(collectSummaries(extractSourceLines(source)).values())).toEqual([
++			'Creates a widget.',
++		])
++	})
++
++	it('contributes no entry for a block that opens with a tag', () => {
++		const source = ['/** @example */', 'export function createWidget() {}', ''].join('\n')
++		expect(collectSummaries(extractSourceLines(source)).size).toBe(0)
++	})
++
++	it('renders a link target in the description it collects', () => {
++		const source = [
++			'/**',
++			' * Creates a {@link Widget}.',
++			' */',
++			'export function make() {}',
++			'',
++		].join('\n')
++		expect(Array.from(collectSummaries(extractSourceLines(source)).values())).toEqual([
++			'Creates a `Widget`.',
++		])
++	})
++})
++
++describe('extractSourceComments', () => {
++	it('pairs a block with the record it documents', () => {
++		const source = ['/**', ' * Creates a widget.', ' */', 'export function make() {}', ''].join(
++			'\n',
++		)
++		const comments = extractSourceComments(extractSourceLines(source))
++		expect(comments.map((comment) => comment.text)).toEqual(['Creates a widget.'])
++		expect(comments.map((comment) => comment.line.source)).toEqual(['export function make() {}'])
++	})
++
++	it('returns a block carrying no example, which the example projection filters out', () => {
++		const source = ['/**', ' * Creates a widget.', ' */', 'export function make() {}', ''].join(
++			'\n',
++		)
++		const lines = extractSourceLines(source)
++		expect(extractSourceComments(lines)).toHaveLength(1)
++		expect(extractExampleLines(lines)).toEqual([])
++	})
++})
++
++describe('collectExamples', () => {
++	it('reads a titled fenced block into its title, language, and body', () => {
++		const comment = ['@example Render a widget', '```ts', 'widget.render()', '```'].join('\n')
++		expect(collectExamples(comment, 'render')).toEqual([
++			{ name: 'render', title: 'Render a widget', code: 'widget.render()', language: 'ts' },
++		])
++	})
++
++	it('reads an untitled block with no fence as its own text', () => {
++		expect(collectExamples('@example\nwidget.render()', 'render')).toEqual([
++			{ name: 'render', code: 'widget.render()' },
++		])
++	})
++
++	it('stops a block body at the next block tag', () => {
++		const comment = ['@example', '```ts', 'widget.render()', '```', '@remarks', 'Twice.'].join('\n')
++		expect(collectExamples(comment, 'render')).toEqual([
++			{ name: 'render', code: 'widget.render()', language: 'ts' },
++		])
++	})
++
++	it('reads two blocks from one comment, in block order', () => {
++		const comment = ['@example First', 'one()', '@example Second', 'two()'].join('\n')
++		expect(collectExamples(comment, 'walk')).toEqual([
++			{ name: 'walk', title: 'First', code: 'one()' },
++			{ name: 'walk', title: 'Second', code: 'two()' },
++		])
++	})
++
++	it('refuses a tag whose name only starts with example', () => {
++		expect(collectExamples('@examples\nwalk()', 'walk')).toEqual([])
++	})
++})
++
++// A block tag written past one space after the continuation marker survives
++// `normalizeComment`'s unwrapping with its own indentation, so every tag reader
++// matches the first non-blank column of a line rather than column zero.
++describe('an over-indented block tag', () => {
++	const BLOCK = [
++		'/**',
++		' * Renders the widget.',
++		' *',
++		' *   @param value - The value',
++		' *',
++		' *   @example Render a widget',
++		' *   widget.render()',
++		' */',
++	].join('\n')
++	const INDENTED = [BLOCK, 'export function render(): void {}', ''].join('\n')
++
++	it('ends the description paragraph at the indented tag', () => {
++		expect(Array.from(collectSummaries(extractSourceLines(INDENTED)).values())).toEqual([
++			'Renders the widget.',
++		])
++	})
++
++	it('reads the indented example, keeping the body indentation the block was written with', () => {
++		expect(collectExamples(normalizeComment(BLOCK), 'render')).toEqual([
++			{ name: 'render', title: 'Render a widget', code: '  widget.render()' },
++		])
++		expect(extractExamples(INDENTED)).toEqual([
++			{ name: 'render', title: 'Render a widget', code: '  widget.render()' },
++		])
++	})
++
++	it('projects the indented example onto the record its block documents', () => {
++		expect(extractExampleLines(extractSourceLines(INDENTED)).map((line) => line.source)).toEqual([
++			'export function render(): void {}',
++		])
++	})
++})
++
++describe('extractTagline', () => {
++	it('reads the H1 blockquote, keeping its code spans', () => {
++		const document = createMarkdown('# Widget\n\n> A `Widget` toolkit.\n\n## Surface\n').document
++		expect(extractTagline(document)).toBe('A `Widget` toolkit.')
++	})
++
++	it('joins a two-paragraph blockquote into one line', () => {
++		const document = createMarkdown('# Widget\n\n> One.\n>\n> Two.\n').document
++		expect(extractTagline(document)).toBe('One. Two.')
++	})
++
++	it('returns undefined when a heading intervenes before the blockquote', () => {
++		const document = createMarkdown('# Widget\n\n## Surface\n\n> A note.\n').document
++		expect(extractTagline(document)).toBeUndefined()
++	})
++
++	it('returns undefined for a document with no H1', () => {
++		const document = createMarkdown('> A note.\n\n## Surface\n').document
++		expect(extractTagline(document)).toBeUndefined()
++	})
++
++	it("reads this repository's own guide tagline from the good fixture", () => {
++		const document = createMarkdown(requireText(FIXTURES, 'good/guides/src/widget.md')).document
++		expect(extractTagline(document)).toBe(
++			'A tiny fixture module exercising every ExportKeyword for guides-parity tests.',
++		)
++	})
++})
++
++// ── The Summary column ───────────────────────────────────────────────────────
++// The compared column is located by header text, the way the Kind column is, so
++// a reordered table still reads and a table without the column reports the gap
++// rather than agreeing silently.
++
++describe('the Summary column', () => {
++	const REORDERED = [
++		'## Surface',
++		'',
++		'| Name | Summary | Kind |',
++		'| --- | --- | --- |',
++		'| `Widget` | Represents a widget. | class |',
++		'',
++	].join('\n')
++	const ABSENT = [
++		'## Surface',
++		'',
++		'| Name | Kind | Shape |',
++		'| --- | --- | --- |',
++		'| `Widget` | class | `{ render }` |',
++		'',
++	].join('\n')
++
++	it('reads the Summary cell wherever the column sits', () => {
++		expect(extractSurface(createMarkdown(REORDERED).document)).toEqual([
++			{ name: 'Widget', keyword: 'class', summary: 'Represents a widget.' },
++		])
++	})
++
++	it('leaves the summary absent when the table carries no Summary column', () => {
++		expect(extractSurface(createMarkdown(ABSENT).document)).toEqual([
++			{ name: 'Widget', keyword: 'class' },
++		])
++	})
++
++	it('reads a Methods table the same way', () => {
++		const markdown = [
++			'## Methods',
++			'',
++			'#### `WidgetInterface`',
++			'',
++			'| Method | Returns | Summary |',
++			'| --- | --- | --- |',
++			'| `render` | `void` | Renders the widget. |',
++			'',
++		].join('\n')
++		expect(extractMethods(createMarkdown(markdown).document)).toEqual([
++			{
++				interface: 'WidgetInterface',
++				methods: [{ name: 'render', summary: 'Renders the widget.' }],
++			},
++		])
++	})
++})
++
++// ── Fence titles ─────────────────────────────────────────────────────────────
++
++describe('fence titles', () => {
++	it('carries the nearest preceding heading, flattening its code spans', () => {
++		const markdown = [
++			'## Patterns',
++			'',
++			'### Construct a `Widget`',
++			'',
++			'```ts',
++			'new Widget()',
++			'```',
++			'',
++			'### Render it',
++			'',
++			'```ts',
++			'widget.render()',
++			'```',
++			'',
++		].join('\n')
++		expect(extractFences(createMarkdown(markdown).document)).toEqual([
++			{ language: 'ts', code: 'new Widget()', title: 'Construct a Widget' },
++			{ language: 'ts', code: 'widget.render()', title: 'Render it' },
++		])
++	})
++
++	it('leaves the title absent for a fence no heading precedes', () => {
++		expect(extractFences(createMarkdown('```ts\nwalk()\n```\n').document)).toEqual([
++			{ language: 'ts', code: 'walk()' },
++		])
++	})
++})
++
++// ── Drift ────────────────────────────────────────────────────────────────────
++// `findDrift` compares only the pairs both sides carry: a symbol, a member, or
++// a title one side lacks belongs to the bijection checks and is never reported
++// twice. The negative control is drawn from outside that membership rule — a
++// symbol the SB legs already report — and the positive control plants one
++// disagreement of each kind and reads both sites back.
++
++describe('findDrift', () => {
++	const AGREEING_GUIDE = [
++		'# Widget',
++		'',
++		'> A widget module.',
++		'',
++		'## Surface',
++		'',
++		'| Name | Kind | Summary |',
++		'| --- | --- | --- |',
++		'| `WidgetInterface` | interface | Represents a widget. |',
++		'| `createWidget` | function | Creates a widget. |',
++		'',
++		'## Methods',
++		'',
++		'#### `WidgetInterface`',
++		'',
++		'| Method | Summary |',
++		'| --- | --- |',
++		'| `render` | Renders the widget. |',
++		'',
++		'## Patterns',
++		'',
++		'### Render a widget',
++		'',
++		'```ts',
++		'widget.render()',
++		'```',
++		'',
++	].join('\n')
++	const FILES = {
++		'module/index.ts': "export * from './types.js'\nexport * from './factories.js'\n",
++		'module/types.ts': [
++			'/**',
++			' * Represents a widget.',
++			' */',
++			'export interface WidgetInterface {',
++			'\t/**',
++			'\t * Renders the widget.',
++			'\t *',
++			'\t * @example Render a widget',
++			'\t * ```ts',
++			'\t * widget.render()',
++			'\t * ```',
++			'\t */',
++			'\trender(): void',
++			'}',
++			'',
++		].join('\n'),
++		'module/factories.ts': [
++			'/**',
++			' * Creates a widget.',
++			' */',
++			'export function createWidget(): void {}',
++			'',
++		].join('\n'),
++	}
++	const source = createSource({ files: FILES, module: 'module' })
++
++	it('reports nothing when every compared pair agrees', () => {
++		expect(findDrift(createGuide(AGREEING_GUIDE), source)).toEqual([])
++	})
++
++	it('reports one drift per kind, naming both sites', () => {
++		const drifted = AGREEING_GUIDE.replace('Creates a widget.', 'Constructs a widget.')
++			.replace('Renders the widget.', 'Draws the widget.')
++			.replace('widget.render()', 'widget.render(true)')
++		expect(findDrift(createGuide(drifted), source)).toEqual([
++			{
++				key: 'function createWidget',
++				guide: 'Constructs a widget.',
++				source: 'Creates a widget.',
++			},
++			{
++				key: 'WidgetInterface.render',
++				guide: 'Draws the widget.',
++				source: 'Renders the widget.',
++			},
++			{
++				key: 'Render a widget',
++				guide: 'ts\nwidget.render(true)',
++				source: 'ts\nwidget.render()',
++			},
++		])
++	})
++
++	it('reports the guide side absent when the table carries no Summary column', () => {
++		const stripped = AGREEING_GUIDE.replace(
++			'| Name | Kind | Summary |\n| --- | --- | --- |\n| `WidgetInterface` | interface | Represents a widget. |\n| `createWidget` | function | Creates a widget. |',
++			'| Name | Kind |\n| --- | --- |\n| `WidgetInterface` | interface |\n| `createWidget` | function |',
++		)
++		expect(findDrift(createGuide(stripped), source)).toEqual([
++			{ key: 'interface WidgetInterface', source: 'Represents a widget.' },
++			{ key: 'function createWidget', source: 'Creates a widget.' },
++		])
++	})
++
++	it('reports the source side absent when the declaration carries no doc block', () => {
++		const undocumented = createSource({
++			files: { ...FILES, 'module/factories.ts': 'export function createWidget(): void {}\n' },
++			module: 'module',
++		})
++		expect(findDrift(createGuide(AGREEING_GUIDE), undocumented)).toEqual([
++			{ key: 'function createWidget', guide: 'Creates a widget.' },
++		])
++	})
++
++	it('reports the key alone when neither the table nor the declaration carries text', () => {
++		const stripped = AGREEING_GUIDE.replace(
++			'| Name | Kind | Summary |\n| --- | --- | --- |\n| `WidgetInterface` | interface | Represents a widget. |\n| `createWidget` | function | Creates a widget. |',
++			'| Name | Kind |\n| --- | --- |\n| `WidgetInterface` | interface |\n| `createWidget` | function |',
++		)
++		const undocumented = createSource({
++			files: { ...FILES, 'module/factories.ts': 'export function createWidget(): void {}\n' },
++			module: 'module',
++		})
++		expect(findDrift(createGuide(stripped), undocumented)).toEqual([
++			{ key: 'interface WidgetInterface', source: 'Represents a widget.' },
++			{ key: 'function createWidget' },
++		])
++	})
++
++	it('reports a fence whose language the block does not share', () => {
++		const relanguaged = AGREEING_GUIDE.replace('```ts\nwidget.render()', '```js\nwidget.render()')
++		expect(findDrift(createGuide(relanguaged), source)).toEqual([
++			{ key: 'Render a widget', guide: 'js\nwidget.render()', source: 'ts\nwidget.render()' },
++		])
++	})
++
++	it('compares the first fence under a heading and leaves a later one outside', () => {
++		const later = AGREEING_GUIDE.replace(
++			'```ts\nwidget.render()\n```\n',
++			'```ts\nwidget.render()\n```\n\n```ts\nwidget.render(true)\n```\n',
++		)
++		expect(findDrift(createGuide(later), source)).toEqual([])
++	})
++
++	it('reports the first fence under a heading when a later fence agrees with the block', () => {
++		const first = AGREEING_GUIDE.replace(
++			'```ts\nwidget.render()\n```\n',
++			'```ts\nwidget.render(true)\n```\n\n```ts\nwidget.render()\n```\n',
++		)
++		expect(findDrift(createGuide(first), source)).toEqual([
++			{ key: 'Render a widget', guide: 'ts\nwidget.render(true)', source: 'ts\nwidget.render()' },
++		])
++	})
++
++	// The negative control. Both unpaired symbols sit outside `findDrift`'s
++	// membership rule, and the SB legs beside it prove the run is not vacuous.
++	it('reports neither a symbol the guide alone documents nor one the barrel alone exports', () => {
++		const phantomGuide = AGREEING_GUIDE.replace(
++			'| `createWidget` | function | Creates a widget. |',
++			'| `createWidget` | function | Creates a widget. |\n| `phantom` | function | Names nothing. |',
++		)
++		const stranded = createSource({
++			files: {
++				...FILES,
++				'module/index.ts':
++					"export * from './types.js'\nexport * from './factories.js'\nexport * from './stranded.js'\n",
++				'module/stranded.ts': [
++					'/**',
++					' * Strands a widget.',
++					' */',
++					'export function strandWidget(): void {}',
++					'',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		const guide = createGuide(phantomGuide)
++
++		expect(findMissingSymbols(guide.surface(), stranded.surface())).toEqual(['function phantom'])
++		expect(findMissingSymbols(stranded.surface(), guide.surface())).toEqual([
++			'function strandWidget',
++		])
++		expect(findDrift(guide, stranded)).toEqual([])
++	})
++
++	it('reports neither a member the guide alone documents nor a title one side alone carries', () => {
++		const extra = AGREEING_GUIDE.replace(
++			'| `render` | Renders the widget. |',
++			'| `render` | Renders the widget. |\n| `destroy` | Tears the widget down. |',
++		).replace('### Render a widget', '### Render a widget elsewhere')
++		expect(findDrift(createGuide(extra), source)).toEqual([])
++	})
++})
++
++describe('computeDrift', () => {
++	it('returns undefined when both sides carry the same text', () => {
++		expect(computeDrift('function walk', 'Walks.', 'Walks.')).toBeUndefined()
++	})
++
++	it('reports the key alone when neither side carries text', () => {
++		expect(computeDrift('function walk', undefined, undefined)).toEqual({ key: 'function walk' })
++	})
++
++	it('names both sides when they differ', () => {
++		expect(computeDrift('function walk', 'Walks.', 'Walks a tree.')).toEqual({
++			key: 'function walk',
++			guide: 'Walks.',
++			source: 'Walks a tree.',
++		})
++	})
++
++	it('omits the side carrying no text', () => {
++		expect(computeDrift('function walk', undefined, 'Walks a tree.')).toEqual({
++			key: 'function walk',
++			source: 'Walks a tree.',
++		})
++	})
++})
++
++describe('collectTitles', () => {
++	it('keys the titled blocks a documented interface carries and skips an untitled one', () => {
++		const guide = createGuide(
++			'## Surface\n\n| Name | Kind |\n| --- | --- |\n| `WidgetInterface` | interface |\n',
++		)
++		const source = createSource({
++			files: {
++				'module/index.ts': "export * from './types.js'\nexport * from './helpers.js'\n",
++				'module/types.ts': [
++					'export interface WidgetInterface {',
++					'\t/**',
++					'\t * @example Render a widget',
++					'\t * widget.render()',
++					'\t */',
++					'\trender(): void',
++					'}',
++					'',
++				].join('\n'),
++				'module/helpers.ts': [
++					'/**',
++					' * @example',
++					' * walk()',
++					' */',
++					'export function walk(): void {}',
++					'',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		expect(Array.from(collectTitles(guide, source).keys())).toEqual(['Render a widget'])
++	})
++})
++
++// ── The parser control ───────────────────────────────────────────────────────
++// The text reader claims to attach a doc block to the declaration it documents.
++// `parseSync` from `vite` answers the same question with a real parser — comments
++// by range against declaration positions — so the two readings can disagree, and
++// the cases below say exactly where the text reader is allowed to. `vite` is a
++// development dependency and this import never reaches `src/**`, which stays
++// free of a compiler and a parser.
++
++/** The parser's reading: each block comment's description against the export it precedes. */
++function readParsedSummaries(source: string): ReadonlyMap<string, string> {
++	const parsed = parseSync('control.ts', source)
++	const summaries = new Map<string, string>()
++
++	for (const statement of parsed.program.body) {
++		if (statement.type !== 'ExportNamedDeclaration') continue
++		const declaration = statement.declaration
++		if (declaration === null || declaration === undefined) continue
++
++		const names =
++			declaration.type === 'VariableDeclaration'
++				? declaration.declarations.map((entry) =>
++						entry.id.type === 'Identifier' ? entry.id.name : '',
++					)
++				: declaration.type === 'FunctionDeclaration' ||
++					  declaration.type === 'TSDeclareFunction' ||
++					  declaration.type === 'ClassDeclaration' ||
++					  declaration.type === 'TSInterfaceDeclaration' ||
++					  declaration.type === 'TSTypeAliasDeclaration'
++					? [declaration.id?.name ?? '']
++					: []
++
++		const preceding = parsed.comments.filter(
++			(comment) =>
++				comment.type === 'Block' &&
++				comment.value.startsWith('*') &&
++				comment.end <= statement.start &&
++				source.slice(comment.end, statement.start).trim() === '',
++		)
++		const attached = preceding[preceding.length - 1]
++		if (attached === undefined) continue
++
++		// The control's own unwrapping, deliberately independent of the reader's.
++		const body = attached.value
++			.replace(/^\*/, '')
++			.split('\n')
++			.map((line) => line.replace(/^\s*\*\s?/, ''))
++			.join('\n')
++		const tag = body.search(/(?:^|\n)@\w/)
++		const description = (tag < 0 ? body : body.slice(0, tag)).replace(/\s+/g, ' ').trim()
++
++		// An overload set declares one name several times; the first declaration
++		// answers for it, which is the reader's rule too.
++		for (const name of names) {
++			if (name.length === 0 || summaries.has(name)) continue
++			if (description.length > 0) summaries.set(name, description)
++		}
++	}
++
++	return summaries
++}
++
++/** The text reader's reading, over the same source. */
++function readTextSummaries(source: string): ReadonlyMap<string, string> {
++	const summaries = new Map<string, string>()
++	for (const symbol of extractExports(source)) {
++		if (symbol.summary !== undefined && !summaries.has(symbol.name)) {
++			summaries.set(symbol.name, symbol.summary)
++		}
++	}
++	return summaries
++}
++
++describe('the doc-block reader against the parser', () => {
++	const OVERLOADS = [
++		'/**',
++		' * Reads one value.',
++		' */',
++		'export function read(): string',
++		'export function read(name: string): string',
++		'export function read(name?: string): string {',
++		"\treturn name ?? ''",
++		'}',
++		'',
++	].join('\n')
++	const SEPARATED = [
++		'/**',
++		' * Walks the tree.',
++		' */',
++		'',
++		'export function walk(): void {}',
++		'',
++	].join('\n')
++	const TEMPLATE = [
++		'/**',
++		' * Holds a sample module.',
++		' */',
++		'export const sample = `',
++		'/**',
++		' * Ghosts a widget.',
++		' */',
++		'export function ghost() {}',
++		'`',
++		'',
++	].join('\n')
++	const BARREL = [
++		'/**',
++		' * Re-exports the widget module.',
++		' */',
++		"export * from './types.js'",
++		"export * from './helpers.js'",
++		'',
++	].join('\n')
++
++	it('agrees with the parser on an overload set', () => {
++		expect(readTextSummaries(OVERLOADS)).toEqual(readParsedSummaries(OVERLOADS))
++		expect(readParsedSummaries(OVERLOADS)).toEqual(new Map([['read', 'Reads one value.']]))
++	})
++
++	it('agrees with the parser on a doc block inside a template literal', () => {
++		expect(readTextSummaries(TEMPLATE)).toEqual(readParsedSummaries(TEMPLATE))
++		expect(readParsedSummaries(TEMPLATE)).toEqual(new Map([['sample', 'Holds a sample module.']]))
++	})
++
++	it('agrees with the parser on a re-export-only barrel: neither reads a declaration', () => {
++		expect(readTextSummaries(BARREL)).toEqual(readParsedSummaries(BARREL))
++		expect(readParsedSummaries(BARREL)).toEqual(new Map())
++	})
++
++	// The one allowed miss. The reader pairs a block with the next physical
++	// record, so a blank line takes the block; the parser skips whitespace and
++	// attaches it. A package whose gate reads a summary writes the block against
++	// its declaration, which every other case here already requires.
++	it('misses a doc block a blank line separates from its declaration, which the parser attaches', () => {
++		expect(readParsedSummaries(SEPARATED)).toEqual(new Map([['walk', 'Walks the tree.']]))
++		expect(readTextSummaries(SEPARATED)).toEqual(new Map())
++	})
++
++	it('has no miss beyond the blank-line shape across the cases it covers', () => {
++		const missed = [OVERLOADS, TEMPLATE, BARREL, SEPARATED].filter((source) => {
++			const parsed = readParsedSummaries(source)
++			const read = readTextSummaries(source)
++			return Array.from(parsed.keys()).some((name) => read.get(name) !== parsed.get(name))
++		})
++		expect(missed).toEqual([SEPARATED])
++	})
++})
+diff --git a/tests/src/core/shapers.test.ts b/tests/src/core/shapers.test.ts
+index 16b8744..cb54efb 100644
+--- a/tests/src/core/shapers.test.ts
++++ b/tests/src/core/shapers.test.ts
+@@ -1,17 +1,21 @@
+ import {
+ 	EXPORT_KEYWORDS,
++	driftShape,
+ 	isExportKeyword,
+ 	manifestEntryShape,
++	methodEntryShape,
+ 	methodGroupShape,
++	sourceExampleShape,
+ 	surfaceSymbolShape,
+ } from '@src/core'
+ import { createContract, seededRandom } from '@orkestrel/contract'
+ import { describe, expect, it } from 'vitest'
+ import { TEST_SEED } from '../../setup.js'
+ 
+-// The ContractShape blueprints — surfaceSymbolShape, methodGroupShape,
+-// manifestEntryShape — each compiled (through createContract) into a guard /
+-// parser / schema / generator that must agree in lockstep
++// The ContractShape blueprints — surfaceSymbolShape, methodEntryShape,
++// sourceExampleShape, driftShape, methodGroupShape, manifestEntryShape — each
++// compiled (through createContract) into a guard / parser / schema / generator
++// that must agree in lockstep
+ // (.claude/rules/patterns.md § Validation and contracts).
+ 
+ describe('surfaceSymbolShape', () => {
+@@ -65,14 +69,14 @@ describe('methodGroupShape', () => {
+ 	const contract = createContract(methodGroupShape)
+ 
+ 	it('is: accepts a well-formed value', () => {
+-		expect(contract.is({ interface: 'WidgetInterface', methods: ['inspect'] })).toBe(true)
++		expect(contract.is({ interface: 'WidgetInterface', methods: [{ name: 'inspect' }] })).toBe(true)
+ 	})
+ 
+ 	it('is: rejects a non-array methods field', () => {
+ 		expect(contract.is({ interface: 'WidgetInterface', methods: 'inspect' })).toBe(false)
+ 	})
+ 
+-	it('schema: closed object with an interface string and a methods string array', () => {
++	it('schema: closed object with an interface string and a methods entry array', () => {
+ 		expect(contract.schema.type).toBe('object')
+ 		expect(contract.schema.required).toEqual(['interface', 'methods'])
+ 		expect(contract.schema.additionalProperties).toBe(false)
+@@ -155,3 +159,92 @@ describe('manifestEntryShape', () => {
+ 		expect(contract.parse({ concept: 1 })).toBeUndefined()
+ 	})
+ })
++
++describe('methodEntryShape', () => {
++	const contract = createContract(methodEntryShape)
++
++	it('is: accepts a well-formed value with and without its summary', () => {
++		expect(contract.is({ name: 'render' })).toBe(true)
++		expect(contract.is({ name: 'render', summary: 'Renders the widget.' })).toBe(true)
++	})
++
++	it('is: rejects a summary of the wrong type', () => {
++		expect(contract.is({ name: 'render', summary: 1 })).toBe(false)
++	})
++
++	it('schema: requires the name alone', () => {
++		expect(contract.schema.required).toEqual(['name'])
++		expect(contract.schema.additionalProperties).toBe(false)
++	})
++
++	it('generate: round-trips through is and parse, deterministically', () => {
++		const a = contract.generate(seededRandom(TEST_SEED))
++		const b = contract.generate(seededRandom(TEST_SEED))
++		expect(contract.is(a)).toBe(true)
++		expect(contract.parse(a)).toEqual(a)
++		expect(a).toEqual(b)
++	})
++
++	it('parse: rejects a missing required field', () => {
++		expect(contract.parse({ summary: 'Renders the widget.' })).toBeUndefined()
++	})
++})
++
++describe('sourceExampleShape', () => {
++	const contract = createContract(sourceExampleShape)
++
++	it('is: accepts a block with and without its title and language', () => {
++		expect(contract.is({ name: 'render', code: 'widget.render()' })).toBe(true)
++		expect(
++			contract.is({
++				name: 'render',
++				title: 'Render a widget',
++				code: 'widget.render()',
++				language: 'ts',
++			}),
++		).toBe(true)
++	})
++
++	it('is: rejects a block with no code', () => {
++		expect(contract.is({ name: 'render' })).toBe(false)
++	})
++
++	it('schema: requires the name and the code', () => {
++		expect(contract.schema.required).toEqual(['name', 'code'])
++		expect(contract.schema.additionalProperties).toBe(false)
++	})
++
++	it('generate: round-trips through is and parse, deterministically', () => {
++		const a = contract.generate(seededRandom(TEST_SEED))
++		const b = contract.generate(seededRandom(TEST_SEED))
++		expect(contract.is(a)).toBe(true)
++		expect(contract.parse(a)).toEqual(a)
++		expect(a).toEqual(b)
++	})
++})
++
++describe('driftShape', () => {
++	const contract = createContract(driftShape)
++
++	it('is: accepts a drift naming one side and a drift naming both', () => {
++		expect(contract.is({ key: 'class Widget', source: 'Represents a widget.' })).toBe(true)
++		expect(contract.is({ key: 'class Widget', guide: 'A widget.', source: 'A widget!' })).toBe(true)
++	})
++
++	it('is: rejects a drift with no key', () => {
++		expect(contract.is({ guide: 'A widget.' })).toBe(false)
++	})
++
++	it('schema: requires the key alone', () => {
++		expect(contract.schema.required).toEqual(['key'])
++		expect(contract.schema.additionalProperties).toBe(false)
++	})
++
++	it('generate: round-trips through is and parse, deterministically', () => {
++		const a = contract.generate(seededRandom(TEST_SEED))
++		const b = contract.generate(seededRandom(TEST_SEED))
++		expect(contract.is(a)).toBe(true)
++		expect(contract.parse(a)).toEqual(a)
++		expect(a).toEqual(b)
++	})
++})
+diff --git a/tests/src/core/sources/Source.test.ts b/tests/src/core/sources/Source.test.ts
+index e2fb757..7fdb16a 100644
+--- a/tests/src/core/sources/Source.test.ts
++++ b/tests/src/core/sources/Source.test.ts
+@@ -138,10 +138,10 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect({ functions: source.examples(), members: source.examples('Widget') }).toEqual({
+-			functions: ['genuine'],
+-			members: ['genuine'],
+-		})
++		expect({
++			functions: source.examples().map((example) => example.name),
++			members: source.examples('Widget').map((example) => example.name),
++		}).toEqual({ functions: ['genuine'], members: ['genuine'] })
+ 	})
+ 
+ 	it('uses exact titled example tags and last-span replacement in both overloads', () => {
+@@ -178,8 +178,16 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.examples()).toEqual(['exact', 'titled', 'authoritative'])
+-		expect(source.examples('Widget')).toEqual(['authoritative', 'exact', 'titled'])
++		expect(source.examples().map((example) => example.name)).toEqual([
++			'exact',
++			'titled',
++			'authoritative',
++		])
++		expect(source.examples('Widget').map((example) => example.name)).toEqual([
++			'authoritative',
++			'exact',
++			'titled',
++		])
+ 	})
+ 
+ 	it('carries minimal JSDoc span precedence through both examples overloads', () => {
+@@ -201,10 +209,10 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect({ functions: source.examples(), members: source.examples('Widget') }).toEqual({
+-			functions: ['positive'],
+-			members: ['positive'],
+-		})
++		expect({
++			functions: source.examples().map((example) => example.name),
++			members: source.examples('Widget').map((example) => example.name),
++		}).toEqual({ functions: ['positive'], members: ['positive'] })
+ 	})
+ 
+ 	it('excludes internal alias segments from every module-key population and retains dotfiles', () => {
+@@ -354,13 +362,14 @@ describe('Source', () => {
+ 		const guide = createGuide(
+ 			'## Surface\n\n| Name | Kind |\n| --- | --- |\n| `Widget` | interface |\n\n## Methods\n\n#### `Widget`\n\n| Method | Description |\n| --- | --- |\n| `ghost` | Phantom |\n| `visible` | Real |',
+ 		)
+-		expect(source.methods('Widget')).toEqual(['visible'])
+-		expect(source.examples('Widget')).toEqual(['visible'])
++		expect(source.methods('Widget').map((entry) => entry.name)).toEqual(['visible'])
++		expect(source.examples('Widget').map((example) => example.name)).toEqual(['visible'])
+ 		expect(findMissingSymbols(source.surface(), guide.surface())).toEqual([])
+ 		expect(findMissingSymbols(guide.surface(), source.surface())).toEqual([])
+-		const documented = guide.methods()[0]?.methods ?? []
+-		expect(findMissing(source.methods('Widget'), documented)).toEqual([])
+-		expect(findMissing(documented, source.methods('Widget'))).toEqual(['ghost'])
++		const documented = (guide.methods()[0]?.methods ?? []).map((entry) => entry.name)
++		const members = source.methods('Widget').map((entry) => entry.name)
++		expect(findMissing(members, documented)).toEqual([])
++		expect(findMissing(documented, members)).toEqual(['ghost'])
+ 	})
+ 
+ 	it('stranded-export: surface() reveals a direct declaration omitted from the conventional barrel', () => {
+@@ -728,8 +737,16 @@ describe('Source', () => {
+ 
+ 	it('methods(WidgetInterface) and methods(Widget) agree on the same methods', () => {
+ 		const source = new Source({ files: GOOD_FILES, module: 'module' })
+-		expect(source.methods('WidgetInterface')).toEqual(['inspect', 'render', 'reset'])
+-		expect(source.methods('Widget')).toEqual(['inspect', 'render', 'reset'])
++		expect(source.methods('WidgetInterface').map((entry) => entry.name)).toEqual([
++			'inspect',
++			'render',
++			'reset',
++		])
++		expect(source.methods('Widget').map((entry) => entry.name)).toEqual([
++			'inspect',
++			'render',
++			'reset',
++		])
+ 	})
+ 
+ 	it('methods(Widget) excludes the constructor, getter, static, and #private traps', () => {
+@@ -743,7 +760,7 @@ describe('Source', () => {
+ 
+ 	it('methods() returns an empty array for a name with no declaration in scope', () => {
+ 		const source = new Source({ files: GOOD_FILES, module: 'module' })
+-		expect(source.methods('Nonexistent')).toEqual([])
++		expect(source.methods('Nonexistent').map((entry) => entry.name)).toEqual([])
+ 	})
+ 
+ 	it('methods() unions an interface pair through its extends clause', () => {
+@@ -764,8 +781,8 @@ describe('Source', () => {
+ 			module: 'module',
+ 		})
+ 		expect({
+-			base: source.methods('StoreInterface'),
+-			extending: source.methods('CursorStoreInterface'),
++			base: source.methods('StoreInterface').map((entry) => entry.name),
++			extending: source.methods('CursorStoreInterface').map((entry) => entry.name),
+ 		}).toEqual({ base: ['read', 'write'], extending: ['cursor', 'read', 'write'] })
+ 	})
+ 
+@@ -783,7 +800,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('StoreInterface')).toEqual(['read'])
++		expect(source.methods('StoreInterface').map((entry) => entry.name)).toEqual(['read'])
+ 	})
+ 
+ 	it('methods() walks a transitive chain and visits a diamond base once', () => {
+@@ -807,7 +824,12 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('StoreInterface')).toEqual(['append', 'close', 'read', 'write'])
++		expect(source.methods('StoreInterface').map((entry) => entry.name)).toEqual([
++			'append',
++			'close',
++			'read',
++			'write',
++		])
+ 	})
+ 
+ 	it('methods() terminates an extends cycle', () => {
+@@ -825,7 +847,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('FirstInterface')).toEqual(['first', 'second'])
++		expect(source.methods('FirstInterface').map((entry) => entry.name)).toEqual(['first', 'second'])
+ 	})
+ 
+ 	it('methods() ignores a base the module scope does not declare', () => {
+@@ -841,7 +863,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('CursorStoreInterface')).toEqual(['cursor'])
++		expect(source.methods('CursorStoreInterface').map((entry) => entry.name)).toEqual(['cursor'])
+ 	})
+ 
+ 	it('methods() skips an empty first-file head with no bases and reads a later declaring file', () => {
+@@ -852,7 +874,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('Widget')).toEqual(['render'])
++		expect(source.methods('Widget').map((entry) => entry.name)).toEqual(['render'])
+ 	})
+ 
+ 	it('methods() skips an empty interface head with no bases and reads the same-named class', () => {
+@@ -863,7 +885,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('Widget')).toEqual(['render'])
++		expect(source.methods('Widget').map((entry) => entry.name)).toEqual(['render'])
+ 	})
+ 
+ 	it('methods() reads the first declaring file and ignores a later file declaring the same name', () => {
+@@ -887,7 +909,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('StoreInterface')).toEqual(['open', 'read'])
++		expect(source.methods('StoreInterface').map((entry) => entry.name)).toEqual(['open', 'read'])
+ 	})
+ 
+ 	it('methods() keeps its keyword and reads no member from a same-named class base', () => {
+@@ -910,7 +932,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('StoreInterface')).toEqual(['open'])
++		expect(source.methods('StoreInterface').map((entry) => entry.name)).toEqual(['open'])
+ 	})
+ 
+ 	it('methods() reads no member from a qualified base', () => {
+@@ -928,7 +950,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('StoreInterface')).toEqual(['open'])
++		expect(source.methods('StoreInterface').map((entry) => entry.name)).toEqual(['open'])
+ 	})
+ 
+ 	it('methods() walks a class chain and still excludes the constructor', () => {
+@@ -949,7 +971,7 @@ describe('Source', () => {
+ 			},
+ 			module: 'module',
+ 		})
+-		expect(source.methods('CursorStore')).toEqual(['cursor', 'read'])
++		expect(source.methods('CursorStore').map((entry) => entry.name)).toEqual(['cursor', 'read'])
+ 	})
+ 
+ 	it('exists() is true for an exact key', () => {
+@@ -981,8 +1003,8 @@ describe('Source', () => {
+ 			),
+ 			module: 'module',
+ 		})
+-		expect(source.methods('Widget')).toContain('extra')
+-		expect(source.methods('WidgetInterface')).not.toContain('extra')
++		expect(source.methods('Widget').map((entry) => entry.name)).toContain('extra')
++		expect(source.methods('WidgetInterface').map((entry) => entry.name)).not.toContain('extra')
+ 	})
+ 
+ 	it('unions exports() across a multi-dir GuideModule', () => {
+@@ -1054,7 +1076,7 @@ describe('Source', () => {
+ 			]),
+ 			module: 'module',
+ 		})
+-		expect(source.examples()).toEqual(['greet'])
++		expect(source.examples().map((example) => example.name)).toEqual(['greet'])
+ 	})
+ 
+ 	it("examples(name) reads only the interface body's @example members when no same-named class exists", () => {
+@@ -1071,7 +1093,7 @@ describe('Source', () => {
+ 			].join('\n'),
+ 		}
+ 		const source = new Source({ files, module: 'src/core' })
+-		expect(source.examples('WidgetInterface')).toEqual(['walk'])
++		expect(source.examples('WidgetInterface').map((example) => example.name)).toEqual(['walk'])
+ 	})
+ 
+ 	it('examples(name) reads only the named body and follows no extends clause', () => {
+@@ -1092,8 +1114,8 @@ describe('Source', () => {
+ 			module: 'module',
+ 		})
+ 		expect({
+-			own: source.examples('StoreInterface'),
+-			inherited: source.methods('StoreInterface'),
++			own: source.examples('StoreInterface').map((example) => example.name),
++			inherited: source.methods('StoreInterface').map((entry) => entry.name),
+ 		}).toEqual({ own: ['open'], inherited: ['open', 'read'] })
+ 	})
+ 
+@@ -1119,6 +1141,6 @@ describe('Source', () => {
+ 			].join('\n'),
+ 		}
+ 		const source = new Source({ files, module: 'src/core' })
+-		expect(source.examples('Widget')).toEqual(['fold'])
++		expect(source.examples('Widget').map((example) => example.name)).toEqual(['fold'])
+ 	})
+ })
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index 2f67afa..1189baf 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -1,8 +1,11 @@
+ import {
+ 	extractMethods,
+ 	extractSurface,
++	isDrift,
+ 	isManifestEntry,
++	isMethodEntry,
+ 	isMethodGroup,
++	isSourceExample,
+ 	isSurfaceSymbol,
+ 	parseManifest,
+ } from '@src/core'
+@@ -79,7 +82,9 @@ describe('isMethodGroup', () => {
+ 	})
+ 
+ 	it('accepts a well-formed group', () => {
+-		expect(isMethodGroup({ interface: 'WidgetInterface', methods: ['inspect'] })).toBe(true)
++		expect(isMethodGroup({ interface: 'WidgetInterface', methods: [{ name: 'inspect' }] })).toBe(
++			true,
++		)
+ 	})
+ 
+ 	it('rejects a missing field', () => {
+@@ -166,3 +171,73 @@ describe('isManifestEntry', () => {
+ 		expect(() => isManifestEntry(hostile)).not.toThrow()
+ 	})
+ })
++
++describe('isMethodEntry', () => {
++	it('accepts an entry with and without its summary', () => {
++		expect(isMethodEntry({ name: 'render' })).toBe(true)
++		expect(isMethodEntry({ name: 'render', summary: 'Renders the widget.' })).toBe(true)
++	})
++
++	it('accepts every real extracted entry', () => {
++		const document = createMarkdown(requireText(FIXTURES, 'good/guides/src/widget.md')).document
++		for (const group of extractMethods(document)) {
++			for (const entry of group.methods) expect(isMethodEntry(entry)).toBe(true)
++		}
++	})
++
++	it('rejects a missing name', () => {
++		expect(isMethodEntry({ summary: 'Renders the widget.' })).toBe(false)
++	})
++
++	it('rejects an extra key', () => {
++		expect(isMethodEntry({ name: 'render', extra: true })).toBe(false)
++	})
++
++	it('never throws on adversarial input', () => {
++		expect(isMethodEntry(null)).toBe(false)
++		expect(isMethodEntry([])).toBe(false)
++	})
++})
++
++describe('isSourceExample', () => {
++	it('accepts a block with and without its title and language', () => {
++		expect(isSourceExample({ name: 'render', code: 'widget.render()' })).toBe(true)
++		expect(
++			isSourceExample({
++				name: 'render',
++				title: 'Render a widget',
++				code: 'widget.render()',
++				language: 'ts',
++			}),
++		).toBe(true)
++	})
++
++	it('rejects a block with no code', () => {
++		expect(isSourceExample({ name: 'render' })).toBe(false)
++	})
++
++	it('never throws on adversarial input', () => {
++		expect(isSourceExample(undefined)).toBe(false)
++		expect(isSourceExample('render')).toBe(false)
++	})
++})
++
++describe('isDrift', () => {
++	it('accepts a drift naming one side and a drift naming both', () => {
++		expect(isDrift({ key: 'class Widget', source: 'Represents a widget.' })).toBe(true)
++		expect(isDrift({ key: 'class Widget', guide: 'A widget.', source: 'A widget!' })).toBe(true)
++	})
++
++	it('accepts a drift naming neither side', () => {
++		expect(isDrift({ key: 'class Widget' })).toBe(true)
++	})
++
++	it('rejects a drift with no key', () => {
++		expect(isDrift({ guide: 'A widget.' })).toBe(false)
++	})
++
++	it('never throws on adversarial input', () => {
++		expect(isDrift(null)).toBe(false)
++		expect(isDrift(0)).toBe(false)
++	})
++})
