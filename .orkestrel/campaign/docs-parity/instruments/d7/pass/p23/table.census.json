@@ -1,0 +1,131 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-table",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/table.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 69,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 7,
+    "counts": {
+     "equal": 24,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "ExpansionManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "FilterManagerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "PaginationManagerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RowManagerInterface",
+     "keyword": "interface",
+     "methods": 6,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SelectionManagerInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "SortManagerInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Table",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "TableInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Open a table",
+     "text",
+     "number",
+     "flag",
+     "choice",
+     "Temporal data is text",
+     "Reading a column",
+     "Overriding a column",
+     "Identity",
+     "Sorting",
+     "Filtering",
+     "Pagination",
+     "Selection and expansion",
+     "Lifecycle and state",
+     "Events",
+     "Wire safety",
+     "Owning what arrives",
+     "Auditing a schema",
+     "Errors"
+    ],
+    "titledExamples": [
+     "createTable:Open a table"
+    ],
+    "pairs": [
+     "Open a table"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

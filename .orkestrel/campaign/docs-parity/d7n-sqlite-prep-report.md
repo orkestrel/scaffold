@@ -251,3 +251,7 @@ This exactly matches P21's expected `docs` worklist, confirming this reading is 
 **Hypothesis:** the vendored `tests/config.test.ts` this repair version writes assumes every repaired package owns a `core` project and hardcodes `tsconfig.core.json`, which does not hold for a package with only a `server` environment.
 
 Per the deviation contract ("or if a gate other than `docs` reads red after the items"), this unit stops here rather than editing the off-limits vendored test file to route around the missing `core` project.
+
+---
+
+**Successor note (the Orchestrator, 2026-09-07):** the `npm run test:config` deviation this report records (`ENOENT: configs/src/tsconfig.core.json`, the vendored test assuming a core face) was closed in scaffold by `f4494c1b` (the test walks the faces and reads the declared `rootDir`); the tip was re-packed and this checkout re-repaired before the P.1 landing, with `test:config` at `172 passed | 1 skipped` — see `instruments/d7/pass/f5b-repack-rerepair.log.txt` and `d7n-scaffold-config-face-2-report.md`. The deviation section stands as the unit's reading at its time; the committed tree carries the fix. The audit also read counts in this report's prose; the tree is authoritative.

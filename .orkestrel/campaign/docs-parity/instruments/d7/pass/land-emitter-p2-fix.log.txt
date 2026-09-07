@@ -1,0 +1,13 @@
+== emitter p2-fix landing 2026-09-07T16:17:22Z over e09b656
+== status
+ M guides/emitter.md
+ M src/core/Emitter.ts
+ M tests/guides.test.ts
+ src/core/Emitter.ts  |  2 +-
+ tests/guides.test.ts | 16 ++++++++--------
+ 3 files changed, 21 insertions(+), 21 deletions(-)
+== stage by path
+ 3 files changed, 21 insertions(+), 21 deletions(-)
+== committed
+286586f Refine emitter's convergence on the audit's findings
+(status end)

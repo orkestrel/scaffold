@@ -1,0 +1,89 @@
+### websocket at f28272b, guide guides/websocket.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  25 passed (25)
+   test:guides exit 0
+-- census
+   guides/websocket.md surface {"equal":42,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":4,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 1 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class NodeWebSocket methods 4 grouped false undescribed ["close","destroy","ping","send"]
+   owner interface NodeWebSocketInterface methods 4 grouped true undescribed []
+   examples titledFences 7 titledExamples ["createNodeWebSocket:Accept an upgrade and echo messages (server mode)"] pairs ["Accept an upgrade and echo messages (server mode)"]
+-- sites: surface row guides/websocket.md:44; methods row guides/websocket.md:122; title src/server/factories.ts:20
+-- control A: one Surface Summary cell altered (guides/websocket.md:44)
+guides/websocket.md function createNodeWebSocket: guide "Creates a server-native WebSocket over a raw upgraded `node:stream` Duplex socket — server mode when a `key` is given, client mode otherwise. Control." source "Creates a server-native WebSocket over a raw upgraded `node:stream` Duplex socket — server mode when a `key` is given, client mode otherwise."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > WebSocket > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 111ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/websocket.md:122)
+guides/websocket.md NodeWebSocketInterface.send: guide "Writes a message as a UTF-8 text frame, masked in client mode and unmasked in server mode, and does nothing unless `readyState` is open. Control." source "Writes a message as a UTF-8 text frame, masked in client mode and unmasked in server mode, and does nothing unless `readyState` is open."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > WebSocket > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 113ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a server-native WebSocket over a raw upgraded `node:stream` Duplex socket —
+guides/websocket.md function createNodeWebSocket: guide "Creates a server-native WebSocket over a raw upgraded `node:stream` Duplex socket — server mode when a `key` is given, client mode otherwise." source "Control Creates a server-native WebSocket over a raw upgraded `node:stream` Duplex socket — server mode when a `key` is given, client mode otherwise."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > WebSocket > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 104ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/server/NodeWebSocket.ts:45:  * Control Implements the wrapper contract over a raw upgraded `node:stream` Duplex socket,
+guides/websocket.md class NodeWebSocket: guide "Implements the wrapper contract over a raw upgraded `node:stream` Duplex socket, driving the RFC 6455 handshake, the frame codec, auto-pong, and the close handshake, and surfacing every event on an owned `emitter`." source "Control Implements the wrapper contract over a raw upgraded `node:stream` Duplex socket, driving the RFC 6455 handshake, the frame codec, auto-pong, and the close handshake, and surfacing every event on an owned `emitter`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > WebSocket > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 109ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/factories.ts:20)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 24 passed (25)
+× pairs at least one example title across the guide and the source 69ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/websocket.md Accept an upgrade and echo messages (server mode): guide "ts\nimport { createNodeWebSocket } from '@orkestrel/websocket'\n\nserver.on('upgrade', (request, socket, head) => {\n\tconst key = request.headers['sec-websocket-key']\n\tif (typeof key !== 'string') {\n\t\tsocket.destroy()\n\t\treturn\n\t}\n\tconst ws = createNodeWebSocket({\n\t\tsocket,\n\t\tkey,\n\t\thead, // any bytes already buffered after the upgrade headers\n\t})\n\tws.emitter.on('message', (text) => ws.send(`echo: ${text}`))\n\tws.emitter.on('close', (code, reason) => log('closed', code, reason))\n})" source "ts\nimport { createNodeWebSocket } from '@orkestrel/websocket' // control\n\nserver.on('upgrade', (request, socket, head) => {\n\tconst key = request.headers['sec-websocket-key']\n\tif (typeof key !== 'string') {\n\t\tsocket.destroy()\n\t\treturn\n\t}\n\tconst ws = createNodeWebSocket({\n\t\tsocket,\n\t\tkey,\n\t\thead, // any bytes already buffered after the upgrade headers\n\t})\n\tws.emitter.on('message', (text) => ws.send(`echo: ${text}`))\n\tws.emitter.on('close', (code, reason) => log('closed', code, reason))\n})"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > WebSocket > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 85ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/websocket.md pitch: readme "Control: The server-native bidirectional transport: a lean, typed wrapper over a raw upgraded `node:stream` Duplex socket that speaks only the RFC 6455 wire protocol, owning the handshake, the masked and unmasked frame codec, ping and pong, and the close handshake, and surfacing every message on an owned `emitter`." tagline "The server-native bidirectional transport: a lean, typed wrapper over a raw upgraded `node:stream` Duplex socket that speaks only the RFC 6455 wire protocol, owning the handshake, the masked and unmasked frame codec, ping and pong, and the close handshake, and surfacing every message on an owned `emitter`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The server-native bidirectio…' to be 'The server-native bidirectional trans…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 24 passed (25)
+× opens the README with the guide tagline 14ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/websocket.md function createNodeWebSocket: guide absent source "Creates a server-native WebSocket over a raw upgraded `node:stream` Duplex socket — server mode when a `key` is given, client mode otherwise."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > WebSocket > keeps every compared summary and example equal to its source
+Tests  1 failed | 24 passed (25)
+× keeps every compared summary and example equal to its source 121ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

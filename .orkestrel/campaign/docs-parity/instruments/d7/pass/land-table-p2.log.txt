@@ -1,0 +1,22 @@
+== table p2 landing 2026-09-07T16:18:05Z over 95aa463
+== status
+ M README.md
+ M guides/table.md
+ M src/core/Table.ts
+ M src/core/cloners.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/parsers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |  18 ++-
+ tests/guides.test.ts   |  73 ++++++++++-
+ 12 files changed, 460 insertions(+), 301 deletions(-)
+== stage by path
+ 12 files changed, 460 insertions(+), 301 deletions(-)
+== committed
+d86a5a8 Converge table under the equality gate
+(status end)

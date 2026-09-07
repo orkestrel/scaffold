@@ -1142,3 +1142,7 @@ rows read: 1, disagreements found: 322
 ## Deviation state
 
 No deviation. `repair` wrote the P21 list exactly, every before-text was found verbatim, no voice diagnostic named an off-limits file, `test:policy` reddened only on `guides/contract.md` lines the brief scopes in, and every gate other than `docs` reads green.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read a count (line 800) and an ordinal (line 128) in this report's prose, and a stale citation: `tests/setup.ts:3377` (lines 146, 700) names the pre-edit diagnostic line; the rewritten sentence sits at `:3391` and `Equal` is declared at `:3399` in the tree the unit left. The tree is authoritative.

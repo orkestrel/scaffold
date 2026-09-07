@@ -1,0 +1,20 @@
+== websocket p2 landing 2026-09-07T16:17:22Z over 4472093
+== status
+ M README.md
+ M guides/websocket.md
+ M src/server/NodeWebSocket.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/factories.ts
+ M src/server/helpers.ts
+ M src/server/parsers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts         |  63 +++++++++++++++++---
+ tests/guides.test.ts        |  75 ++++++++++++++++++++++-
+ 10 files changed, 294 insertions(+), 135 deletions(-)
+== stage by path
+ 10 files changed, 294 insertions(+), 135 deletions(-)
+== committed
+f28272b Converge websocket under the equality gate
+(status end)

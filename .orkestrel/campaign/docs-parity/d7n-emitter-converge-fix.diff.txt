@@ -1,0 +1,92 @@
+diff --git a/guides/emitter.md b/guides/emitter.md
+index bc54f58..f611e10 100644
+--- a/guides/emitter.md
++++ b/guides/emitter.md
+@@ -58,22 +58,22 @@ The reserved `on` option wires initial listeners at construction; the optional `
+ 
+ ### Classes
+ 
+-| API       | Kind  | Summary                                                                                                                                                                                                                                                |
+-| --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `Emitter` | class | Implements the emitter contract over one listener `Set` per event, so every public method is precisely typed with no assertion. A stateful entity owns one as a `#emitter` field and exposes it through `readonly emitter`; it never inherits from it. |
++| API       | Kind  | Summary                                                                                                                                                                                                                                              |
++| --------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Emitter` | class | Implements `EmitterInterface` over one listener `Set` per event, so every public method is precisely typed with no assertion. A stateful entity owns one as a `#emitter` field and exposes it through `readonly emitter`; it never inherits from it. |
+ 
+ ### Types
+ 
+-A `Shape` cell holds an interface's members in braces, and a type alias's value.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
+ 
+-| Type                  | Kind      | Shape                                                       | Summary                                                                                                                                                                                                                                 |
+-| --------------------- | --------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `EventMap`            | type      | `Record<string, readonly unknown[]>`                        | Maps each event name to the argument tuple its listeners receive.                                                                                                                                                                       |
+-| `EmitterHandler`      | type      | `(...args: TArgs) => void`                                  | Represents a listener for one event's argument tuple.                                                                                                                                                                                   |
+-| `EmitterErrorHandler` | type      | `(error: unknown, event: string) => void`                   | Represents the emitter's own listener-error handler — the `error` option, invoked when a listener throws during `emit`, with the caught error and the stringified event name.                                                           |
+-| `EmitterHooks`        | type      | `{ [K in keyof TMap]?: EmitterHandler<TMap[K]> }`           | Declares the initial event listeners for an emitter — the reserved `on` option: a partial map of event name to its handler, wired at construction.                                                                                      |
+-| `EmitterOptions`      | interface | `{ on?: EmitterHooks<TMap>; error?: EmitterErrorHandler }`  | Configures `createEmitter` and the `Emitter` constructor.                                                                                                                                                                               |
+-| `EmitterInterface`    | interface | `{ destroyed, on, once, off, emit, count, clear, destroy }` | Represents the contract a consumer of an emitter holds: the `destroyed` reading, the `on` / `once` / `off` registration trio, the synchronous `emit`, and the `count` / `clear` / `destroy` set that reports on and releases listeners. |
++| Type                  | Kind      | Shape                                                           | Summary                                                                                                                                                                                                                                 |
++| --------------------- | --------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `EventMap`            | type      | `Record<string, readonly unknown[]>`                            | Maps each event name to the argument tuple its listeners receive.                                                                                                                                                                       |
++| `EmitterHandler`      | type      | `(...args: TArgs) => void`                                      | Represents a listener for one event's argument tuple.                                                                                                                                                                                   |
++| `EmitterErrorHandler` | type      | `(error: unknown, event: string) => void`                       | Represents the emitter's own listener-error handler — the `error` option, invoked when a listener throws during `emit`, with the caught error and the stringified event name.                                                           |
++| `EmitterHooks`        | type      | `{ readonly [K in keyof TMap]?: EmitterHandler<TMap[K]> }`      | Declares the initial event listeners for an emitter — the reserved `on` option: a partial map of event name to its handler, wired at construction.                                                                                      |
++| `EmitterOptions`      | interface | `{ on?, error? }`                                               | Configures `createEmitter` and the `Emitter` constructor.                                                                                                                                                                               |
++| `EmitterInterface`    | interface | `{ destroyed } plus on, once, off, emit, count, clear, destroy` | Represents the contract a consumer of an emitter holds: the `destroyed` reading, the `on` / `once` / `off` registration trio, the synchronous `emit`, and the `count` / `clear` / `destroy` set that reports on and releases listeners. |
+ 
+ The `destroyed` boolean is a `readonly` data member of `EmitterInterface` (a preceding Surface row) — its call-signature methods are documented under [Methods](#methods).
+ 
+diff --git a/src/core/Emitter.ts b/src/core/Emitter.ts
+index b51ad64..f02c030 100644
+--- a/src/core/Emitter.ts
++++ b/src/core/Emitter.ts
+@@ -10,7 +10,7 @@ import { isFunction } from '@orkestrel/contract'
+ import { extractKeys } from './helpers.js'
+ 
+ /**
+- * Implements the emitter contract over one listener `Set` per event, so every public method is
++ * Implements `EmitterInterface` over one listener `Set` per event, so every public method is
+  * precisely typed with no assertion. A stateful entity owns one as a `#emitter` field and
+  * exposes it through `readonly emitter`; it never inherits from it.
+  *
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 9ec3646..c6f3d64 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -211,19 +211,19 @@ for (const entry of manifest) {
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			const documented = group.methods.map((method) => method.name)
++			const examples =
++				entity === group.interface
++					? source.examples(group.interface).map((example) => example.name)
++					: source
++							.examples(group.interface)
++							.map((example) => example.name)
++							.concat(source.examples(entity).map((example) => example.name))
+ 			describe(`${group.interface} examples`, () => {
+ 				it('documents an example for every method', () => {
+ 					const fences = guide
+ 						.fences()
+ 						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 						.map((fence) => fence.code)
+-					const examples =
+-						entity === group.interface
+-							? source.examples(group.interface).map((example) => example.name)
+-							: source
+-									.examples(group.interface)
+-									.map((example) => example.name)
+-									.concat(source.examples(entity).map((example) => example.name))
+ 					expect(findUnexampled(documented, fences, examples)).toEqual([])
+ 				})
+ 			})
+@@ -270,7 +270,7 @@ type FeedEventMap = {
+ // all of them. The cases here run the flagship fence and assert the values its
+ // comments claim. Change the fence, change the transcription beside it.
+ describe('flagship fences', () => {
+-	const guideText = requireValue(files['guides/emitter.md'], 'Missing file: guides/emitter.md')
++	const guideText = requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`)
+ 
+ 	it('counts per event and in total, drops the counted listener on off, and survives clear', () => {
+ 		// Transcribed from the Manage-listeners fence. `count` is the load-bearing

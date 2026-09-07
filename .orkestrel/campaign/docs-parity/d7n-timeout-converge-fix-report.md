@@ -244,3 +244,7 @@ $ git status --short
 ## Deviation
 
 None. No correction needed a file outside the owned set, and `docs` stayed at zero disagreements throughout.
+
+---
+
+**Orchestrator annotation (closure, 2026-09-07):** the closure `checker` read counts in this report's prose (the `changed` entry, the prose hit, the further site). The tree is authoritative; the report's prose faults stand annotated, not rewritten.

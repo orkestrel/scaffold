@@ -1,0 +1,93 @@
+### template at cf8858e, guide guides/template.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  34 passed (34)
+   test:guides exit 0
+-- census
+   guides/template.md surface {"equal":31,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":15,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Template methods 4 grouped false undescribed []
+   owner interface TemplateInterface methods 4 grouped true undescribed []
+   owner class TemplateManager methods 11 grouped false undescribed ["remove"]
+   owner interface TemplateManagerInterface methods 11 grouped true undescribed []
+   examples titledFences 8 titledExamples ["createTemplate:Create a template and a registry"] pairs ["Create a template and a registry"]
+-- sites: surface row guides/template.md:38; methods row guides/template.md:179; title src/core/factories.ts:20
+-- control A: one Surface Summary cell altered (guides/template.md:38)
+guides/template.md type MissingPolicy: guide "Names how `TemplateInterface#fill` handles an unresolved required placeholder. Control." source "Names how `TemplateInterface#fill` handles an unresolved required placeholder."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Template > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 141ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/template.md:179)
+guides/template.md TemplateInterface.definition: guide "Returns the plain, JSON-serializable template data. Control." source "Returns the plain, JSON-serializable template data."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Template > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 147ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a working {@link TemplateInterface} from a {@link TemplateOptions}
+guides/template.md function createTemplate: guide "Creates a working `TemplateInterface` from a `TemplateOptions` bag, backed by the `Template` class." source "Control Creates a working `TemplateInterface` from a `TemplateOptions` bag, backed by the `Template` class."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Template > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 146ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/errors.ts:7:  * Control Represents an error thrown by the template layer — a machine-readable
+guides/template.md class TemplateError: guide "Represents an error thrown by the template layer — a machine-readable `TemplateErrorCode` and an optional `context` record naming the offending id or placeholder name." source "Control Represents an error thrown by the template layer — a machine-readable `TemplateErrorCode` and an optional `context` record naming the offending id or placeholder name."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Template > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 173ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:20)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 33 passed (34)
+× pairs at least one example title across the guide and the source 28ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/template.md Create a template and a registry: guide "ts\nimport { createTemplate, createTemplateManager } from '@orkestrel/template'\n\nconst greeting = createTemplate({ name: 'greeting', content: 'Hi {{name}}' })\ngreeting.fill({ name: 'Ada' }) // 'Hi Ada'\n\nconst templates = createTemplateManager({\n\ttemplates: [{ id: 'greeting', name: 'greeting', content: 'Hi {{name}}' }],\n})\ntemplates.fill('greeting', { name: 'Ada' }) // 'Hi Ada'" source "ts\nimport { createTemplate, createTemplateManager } from '@orkestrel/template' // control\n\nconst greeting = createTemplate({ name: 'greeting', content: 'Hi {{name}}' })\ngreeting.fill({ name: 'Ada' }) // 'Hi Ada'\n\nconst templates = createTemplateManager({\n\ttemplates: [{ id: 'greeting', name: 'greeting', content: 'Hi {{name}}' }],\n})\ntemplates.fill('greeting', { name: 'Ada' }) // 'Hi Ada'"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Template > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 143ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/template.md pitch: readme "Control: A named, versionable template layer: `{{name}}` tokens in a `content` string, resolved against a values record by a single-pass fill engine, and registered and looked up by id through a self-owning `TemplateManager`." tagline "A named, versionable template layer: `{{name}}` tokens in a `content` string, resolved against a values record by a single-pass fill engine, and registered and looked up by id through a self-owning `TemplateManager`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A named, versionable templat…' to be 'A named, versionable template layer: …' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 33 passed (34)
+× opens the README with the guide tagline 29ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/template.md interface TemplateInterface: guide absent source "Declares the template contract a consumer holds — the readonly template record and the `definition`, `fill`, `validate`, and `parameters` calls over it."
+guides/template.md interface TemplateManagerOptions: guide absent source "Carries the options for `createTemplateManager` / the `TemplateManager` constructor."
+guides/template.md interface TemplateManagerInterface: guide absent source "Declares the registry contract a consumer holds — a self-owning, id-keyed record-holder with singular and plural accessors over the templates it registers."
+rows read: 1, disagreements found: 16
+   docs exit 1
+AssertionError: expected [ …(16) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Template > keeps every compared summary and example equal to its source
+Tests  1 failed | 33 passed (34)
+× keeps every compared summary and example equal to its source 139ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

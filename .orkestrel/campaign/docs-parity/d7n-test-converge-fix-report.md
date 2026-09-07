@@ -241,3 +241,7 @@ the corroboration instrument live in the session scratchpad at
   table; the three Types sentences therefore differ by design rather than by drift.
 - § Tests' bullet is reflowed past the sentence the item names, because inserting the fence title
   pushed the line past the file's width. No other wording in that bullet changed.
+
+---
+
+**Orchestrator annotation (closure, 2026-09-07):** the closure `checker` read counts in this report's prose (lines 12, 232, 241: the idioms, the edit instruments, the Types sentences). The tree is authoritative; the report's prose faults stand annotated, not rewritten.

@@ -1,0 +1,167 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-router",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/router.md",
+   "source": [
+    "src/core",
+    "src/browser",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 64,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 5,
+    "counts": {
+     "equal": 19,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "DispatchGroup",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "group"
+     ]
+    },
+    {
+     "name": "DispatchGroupInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Dispatcher",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "destroy",
+      "group",
+      "handle",
+      "match"
+     ]
+    },
+    {
+     "name": "DispatcherInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Group",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "group"
+     ]
+    },
+    {
+     "name": "GroupInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Navigator",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "match",
+      "navigate",
+      "start",
+      "stop"
+     ]
+    },
+    {
+     "name": "NavigatorInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Router",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "entries",
+      "group",
+      "match"
+     ]
+    },
+    {
+     "name": "RouterInterface",
+     "keyword": "interface",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Groups and dedup",
+     "Wildcard capture and precedence",
+     "Method-dimensioned dispatch (auto-HEAD, auto-OPTIONS, 405)",
+     "Observing dispatch outcomes",
+     "Typing a route input at the registration site",
+     "Introspection and reset",
+     "Hash-mode navigation",
+     "History mode with link interception",
+     "Guarding navigation (auth walls)",
+     "Basic server",
+     "Converting requests and responses directly",
+     "Observing client disconnect"
+    ],
+    "titledExamples": [
+     "createListener:Basic server"
+    ],
+    "pairs": [
+     "Basic server"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

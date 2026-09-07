@@ -1,0 +1,82 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-websocket",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/websocket.md",
+   "source": "src/server",
+   "surface": {
+    "counts": {
+     "equal": 42,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 1,
+    "counts": {
+     "equal": 4,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "NodeWebSocket",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "destroy",
+      "ping",
+      "send"
+     ]
+    },
+    {
+     "name": "NodeWebSocketInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Surface",
+     "Errors",
+     "Accept an upgrade and echo messages (server mode)",
+     "Stream-decode frames across chunk boundaries",
+     "Encode a frame to the wire (server unmasked, client masked)",
+     "Compute the handshake accept token",
+     "Keep a connection alive, and tear it down on demand"
+    ],
+    "titledExamples": [
+     "createNodeWebSocket:Accept an upgrade and echo messages (server mode)"
+    ],
+    "pairs": [
+     "Accept an upgrade and echo messages (server mode)"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

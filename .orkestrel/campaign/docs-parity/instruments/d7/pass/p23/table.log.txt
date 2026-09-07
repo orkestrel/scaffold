@@ -1,0 +1,97 @@
+### table at d86a5a8, guide guides/table.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  85 passed (85)
+   test:guides exit 0
+-- census
+   guides/table.md surface {"equal":69,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":24,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 7 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner interface ExpansionManagerInterface methods 3 grouped true undescribed []
+   owner interface FilterManagerInterface methods 4 grouped true undescribed []
+   owner interface PaginationManagerInterface methods 2 grouped true undescribed []
+   owner interface RowManagerInterface methods 6 grouped true undescribed []
+   owner interface SelectionManagerInterface methods 3 grouped true undescribed []
+   owner interface SortManagerInterface methods 4 grouped true undescribed []
+   owner class Table methods 2 grouped false undescribed []
+   owner interface TableInterface methods 2 grouped true undescribed []
+   examples titledFences 19 titledExamples ["createTable:Open a table"] pairs ["Open a table"]
+-- sites: surface row guides/table.md:72; methods row guides/table.md:1242; title src/core/factories.ts:12
+-- control A: one Surface Summary cell altered (guides/table.md:72)
+guides/table.md type TableKey: guide "Represents a row's identity — a `string`, carried in the cell the schema's `key` names. Control." source "Represents a row's identity — a `string`, carried in the cell the schema's `key` names."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Table > keeps every compared summary and example equal to its source
+Tests  1 failed | 84 passed (85)
+× keeps every compared summary and example equal to its source 498ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/table.md:1242)
+guides/table.md TableInterface.clear: guide "Puts the table back the way it opened, holding nothing. Rows, sort, filter, selection, expansion, and the page all reset. Control." source "Puts the table back the way it opened, holding nothing. Rows, sort, filter, selection, expansion, and the page all reset."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Table > keeps every compared summary and example equal to its source
+Tests  1 failed | 84 passed (85)
+× keeps every compared summary and example equal to its source 498ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Opens a table against a schema. The schema is copied, and the copy is what the table declares.
+guides/table.md function createTable: guide "Opens a table against a schema. The schema is copied, and the copy is what the table declares." source "Control Opens a table against a schema. The schema is copied, and the copy is what the table declares."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Table > keeps every compared summary and example equal to its source
+Tests  1 failed | 84 passed (85)
+× keeps every compared summary and example equal to its source 477ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/Table.ts:34:  * Control Holds a schema, its rows, and the lens through which they are read, implementing
+guides/table.md class Table: guide "Holds a schema, its rows, and the lens through which they are read, implementing `TableInterface` exactly." source "Control Holds a schema, its rows, and the lens through which they are read, implementing `TableInterface` exactly."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Table > keeps every compared summary and example equal to its source
+Tests  1 failed | 84 passed (85)
+× keeps every compared summary and example equal to its source 456ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:12)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 84 passed (85)
+× pairs at least one example title across the guide and the source 69ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/table.md Open a table: guide "ts\nimport { createTable } from '@orkestrel/table'\n\nconst table = createTable(\n\t{\n\t\tlabel: 'People',\n\t\tkey: 'id',\n\t\tcolumns: [\n\t\t\t{ cell: 'text', key: 'id', label: 'Reference' },\n\t\t\t{ cell: 'text', key: 'name', label: 'Name' },\n\t\t\t{ cell: 'number', key: 'age', label: 'Age' },\n\t\t],\n\t},\n\t{\n\t\trows: [\n\t\t\t{ id: '1', name: 'Ada', age: 36 },\n\t\t\t{ id: '2', name: 'Grace', age: 45 },\n\t\t\t{ id: '3', name: 'Alan', age: 41 },\n\t\t],\n\t\tlimit: 2,\n\t},\n)\n\ntable.filter.set({ column: 'name', operator: 'contains', text: 'a' })\ntable.sort.set({ column: 'age', direction: 'descending' })\n\ntable.count // 3 — every name holds a lowercase 'a'\ntable.pagination.count // 2 — two pages of two\ntable.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest first" source "ts\nimport { createTable } from '@orkestrel/table' // control\n\nconst table = createTable(\n\t{\n\t\tlabel: 'People',\n\t\tkey: 'id',\n\t\tcolumns: [\n\t\t\t{ cell: 'text', key: 'id', label: 'Reference' },\n\t\t\t{ cell: 'text', key: 'name', label: 'Name' },\n\t\t\t{ cell: 'number', key: 'age', label: 'Age' },\n\t\t],\n\t},\n\t{\n\t\trows: [\n\t\t\t{ id: '1', name: 'Ada', age: 36 },\n\t\t\t{ id: '2', name: 'Grace', age: 45 },\n\t\t\t{ id: '3', name: 'Alan', age: 41 },\n\t\t],\n\t\tlimit: 2,\n\t},\n)\n\ntable.filter.set({ column: 'name', operator: 'contains', text: 'a' })\ntable.sort.set({ column: 'age', direction: 'descending' })\n\ntable.count // 3 — every name holds a lowercase 'a'\ntable.pagination.count // 2 — two pages of two\ntable.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest first"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Table > keeps every compared summary and example equal to its source
+Tests  1 failed | 84 passed (85)
+× keeps every compared summary and example equal to its source 470ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/table.md pitch: readme "Control: The environment-agnostic tabular document: a `TableSchema` declaring the columns, a `Table` holding the rows given against it, and one lens of sort, filter, and page deciding which of them the view shows." tagline "The environment-agnostic tabular document: a `TableSchema` declaring the columns, a `Table` holding the rows given against it, and one lens of sort, filter, and page deciding which of them the view shows."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The environment-agnostic tab…' to be 'The environment-agnostic tabular docu…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 84 passed (85)
+× opens the README with the guide tagline 29ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/table.md interface ChoiceColumn: guide absent source "Represents a column drawn from a declared list, compared by the order that list declares. It requires `choices`."
+guides/table.md type TableColumn: guide absent source "Represents any column a schema can declare — the union discriminated on `cell`."
+guides/table.md interface TableSchema: guide absent source "Holds everything a table declares about itself — optional `name` / `label` / `help`, the required `key` naming row identity, and `columns` in order."
+rows read: 1, disagreements found: 12
+   docs exit 1
+AssertionError: expected [ …(12) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Table > keeps every compared summary and example equal to its source
+Tests  1 failed | 84 passed (85)
+× keeps every compared summary and example equal to its source 440ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

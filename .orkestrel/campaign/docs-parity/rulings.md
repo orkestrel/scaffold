@@ -56,3 +56,11 @@ The shared drop-in is the pilot's `/home/user/fleet/abort/tests/guides.test.ts` 
 ## Ruling 14 (2026-09-07, the Orchestrator, on slice 3's N-1): an example converges toward the fuller demonstration
 
 Where the titled `@example` and its fence differ in what they demonstrate, the side that lacks the demonstration is extended and the other is kept; a line is never deleted from either side to make them equal. The fence is what a guide reader runs, the block is what an IDE reader sees, and both carry the whole demonstration.
+
+## Ruling 15 (2026-09-07, the Orchestrator, on the single-face audit's subjective F1 and objective claim 5): the `Shape` column is the one device for a type's data members
+
+Where a `## Surface` table carries an interface or type-alias row, that table heads `Shape` between `Kind` and `Summary`, and the cell holds the members in Ruling 12's idiom; a guide that folded the members into the description sentence or into guide-body prose ("Its readonly data members are …", a "data-only shapes carry these members" paragraph) moves them into the cell and deletes the prose that only listed them. The convention sentence above the table reads, in one wording fleet-wide: "A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`." A guard table or a constants table adds its own second sentence ("In a guard table a `Shape` cell holds the type the guard narrows to."; "A `Shape` cell holds the constant's declared type."). A package converged before this ruling with members in braces and no `plus`, or with another wording of the sentence, takes the idiom in the closing sweep's per-package unit, the pilot included.
+
+## Ruling 16 (2026-09-07, the Orchestrator, on the single-face audit's objective F4): Ruling 5's trigger binds as written
+
+A `### Entities` heading over an all-class table becomes `### Classes`, and a class documented under its own H3 carries a row in a `### Classes` table; a descriptive heading over an all-class table (`### Stores, indexes, cursors, transactions`) stays. The audit template's claim is corrected to that trigger.

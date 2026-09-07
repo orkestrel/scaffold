@@ -1,0 +1,24 @@
+== router p2 landing 2026-09-07T16:18:05Z over 4101a0b
+== status
+ M README.md
+ M guides/router.md
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/DispatchGroup.ts
+ M src/core/Dispatcher.ts
+ M src/core/Group.ts
+ M src/core/Router.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/server/handlers.ts
+ M tests/guides.test.ts
+ src/server/handlers.ts    |  21 ++-
+ tests/guides.test.ts      |  75 ++++++++++-
+ 14 files changed, 492 insertions(+), 323 deletions(-)
+== stage by path
+ 14 files changed, 492 insertions(+), 323 deletions(-)
+== committed
+9af89c9 Converge router under the equality gate
+(status end)

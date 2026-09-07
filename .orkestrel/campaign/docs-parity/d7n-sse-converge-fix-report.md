@@ -260,3 +260,7 @@ None sits in a compared description paragraph, so none affects `npm run docs`. `
 ## Deviation state
 
 None. No restored link failed to converge, the retitled pair converges in both write directions, and no correction needed a file outside the owned set.
+
+---
+
+**Orchestrator annotation (closure, 2026-09-07):** the closure `checker` read counts in this report's prose (line 73, the `config.test.ts` sites; line 93, the chunks fed). The tree is authoritative; the report's prose faults stand annotated, not rewritten.

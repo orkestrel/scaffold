@@ -1,0 +1,12 @@
+== budget p2-fix landing 2026-09-07T16:17:21Z over 1e05e18
+== status
+ M guides/budget.md
+ M tests/guides.test.ts
+ guides/budget.md     | 20 ++++++++++----------
+ tests/guides.test.ts |  2 +-
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+== stage by path
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+== committed
+d3147bb Refine budget's convergence on the audit's findings
+(status end)

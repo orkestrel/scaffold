@@ -1,0 +1,495 @@
+diff --git a/guides/guide.md b/guides/guide.md
+index f160b08..6b85929 100644
+--- a/guides/guide.md
++++ b/guides/guide.md
+@@ -88,6 +88,7 @@ directly.
+ | `extractHidden`         | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | Extracts the module-scope declarations lacking the `export` keyword in one file's source text — the mirror image of `extractExports`'s grammar, anchored the same way (column 0, so an indented inner declaration never matches).                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+ | `joinHead`              | function | `(lines: readonly string[], start: number) => DeclarationHead \| undefined`                               | Joins the declaration head starting at `start` into one space-separated line, consuming lines until the first that ends with `{`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+ | `escapeRegExp`          | function | `(value: string) => string`                                                                               | Escapes every regex metacharacter in a literal string so it reads as text inside a larger `RegExp` source rather than as syntax.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
++| `collectDeclarations`   | function | `(source: string) => ReadonlyMap<string, Declaration>`                                                    | Collects every `export class` / `export interface` declaration one file's source text declares, each keyed `${keyword} ${name}` and carrying the body lines and the base identifiers read from its own head, so a body and a heritage clause always come from the same declaration.                                                                                                                                                                                                                                                                                                                                                                                 |
+ | `extractDeclaration`    | function | `(source: string, keyword: DeclarationKeyword, name: string) => Declaration \| undefined`                 | Locates the named `export class` / `export interface` declaration in one file's source text and returns its body lines and its base identifiers read from that one head, so a body and a heritage clause always come from the same declaration, or `undefined` when the file declares no such head.                                                                                                                                                                                                                                                                                                                                                                 |
+ | `extractMemberMethods`  | function | `(lines: readonly string[]) => readonly MethodEntry[]`                                                    | Selects the member lines declaring a callable member: plain, `async`, generator (`*`), and optional (`records?(`) methods all count; getters, setters, `static` members, and `#` privates never do (their keyword or `#` breaks the `name(` shape). The grammar is `collectKeys`'s, read once over `extractBodyLines`'s projection of the body, so commented method-like payload never becomes eligible and each member keys to the owner head that projection supplies. Each member carries its own doc block's description paragraph, read through `collectSummaries`; the first declaration of a name answers for it.                                            |
+ | `extractSourceComments` | function | `(lines: readonly SourceLine[]) => readonly SourceComment[]`                                              | Extracts every eligible genuine JSDoc block paired with the physical record it documents.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+@@ -233,7 +234,11 @@ general package policy;
+ root barrel. Both projections are computed on first access, cached, deduplicated by name and
+ keyword, and sorted by name. Member structure comes from projected lines while raw bodies preserve
+ JSDoc evidence, and `methods(name)` resolves a declaration's members through its `extends` chain
+-within the same module scope, reading the first file that declares the name. `Source` never uses the
++within the same module scope, reading the first file that declares the name. Every reading derives
++once per instance from the immutable inventory and is reused — the scope's declaration map on the
++first `methods` or `examples` lookup, then each name's members and each example collection under the
++name it was asked for — so a whole-guide comparison reads each file once rather than once per
++compared row. `Source` never uses the
+ TypeScript compiler API or filesystem; the consumer gathers `files` however its environment
+ allows. See [`## Methods`](#methods) for the public call-signature surface.
+ 
+@@ -452,14 +457,15 @@ it follows, the same way a column-zero `}` does. `extractHidden` applies the sam
+ declaration-keyword head grammar without `export`. Comment and
+ template payload, enums, `let`, `var`, and other TypeScript declaration forms are outside these
+ populations; enum exclusion describes reflection scope, not a general package-policy ban.
+-`extractDeclaration` locates a named real `export class` / `export interface` head and exact
+-column-zero close in projected lines (joining an oxfmt-wrapped signature through `joinHead`), then
+-returns that one head's aligned raw body and its `extends` bases as a single `Declaration`, or
+-`undefined` when the file declares no such head. One locator is what keeps a body and a heritage
+-clause on the same declaration. Its identifier is escaped through `escapeRegExp` before it enters
+-the head grammar, so a name carrying a regex metacharacter is literal text rather than a wildcard
+-or a thrown `SyntaxError`. A head that opens no column-zero close is skipped and the scan
+-continues. `extractMemberMethods` projects that body once through `extractBodyLines`, which reads it
++`collectDeclarations` reads a file's real `export class` / `export interface` heads and their exact
++column-zero closes from one projection of it (joining an oxfmt-wrapped signature through
++`joinHead`), and returns each head's aligned raw body and its `extends` bases as one `Declaration`,
++keyed `${keyword} ${name}`. One collector is what keeps a body and a heritage clause on the same
++declaration. The identifier is the head's own run up to its generic parameter list or its heritage
++clause, so it enters the key as literal text: a name carrying a regex metacharacter reaches no
++`RegExp`, and a lookup of that name matches the character rather than a wildcard. A head that opens
++no column-zero close records nothing, and a later head of a key already collected adds nothing. `extractDeclaration` is the named lookup over that map, so a caller reading many names
++from one file projects it once rather than once per name. `extractMemberMethods` projects that body once through `extractBodyLines`, which reads it
+ inside an owner head so each member keys to its owner, and `collectKeys` matches
+ `^\t(?:async )?\*?(\w+)\??(?:<.*>)?\(` against those body lines — plain / `async` /
+ generator / optional methods count; getters, setters, `static` members, and `#` privates
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 8fd5a2f..39f036a 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1192,11 +1192,10 @@ export function joinHead(lines: readonly string[], start: number): DeclarationHe
+  * inside a larger `RegExp` source rather than as syntax.
+  *
+  * @remarks
+- * Every caller-supplied name reaches a `RegExp` through this: {@link
+- * extractDeclaration} splices it into the head grammar and {@link
+- * findUnexampled} into a word-boundary search, so a name carrying `$`, `(`,
+- * `[`, or `.` matches that character literally instead of throwing or matching
+- * text it does not name. Pure and total; never throws.
++ * A caller-supplied name reaches a `RegExp` through this: {@link
++ * findUnexampled} splices it into a word-boundary search, so a name carrying
++ * `$`, `(`, `[`, or `.` matches that character literally instead of throwing or
++ * matching text it does not name. Pure and total; never throws.
+  *
+  * @param value - The literal string to escape
+  * @returns `value` with every regex metacharacter backslash-escaped
+@@ -1212,56 +1211,58 @@ export function escapeRegExp(value: string): string {
+ }
+ 
+ /**
+- * Locates the named `export class` / `export interface` declaration in one file's source text
+- * and returns its body lines and its base identifiers read from that one head, so a body and a
+- * heritage clause always come from the same declaration, or `undefined` when the file declares
+- * no such head.
++ * Collects every `export class` / `export interface` declaration one file's source text declares,
++ * each keyed `${keyword} ${name}` and carrying the body lines and the base identifiers read from
++ * its own head, so a body and a heritage clause always come from the same declaration.
+  *
+  * @remarks
+- * The head is matched on projected lines (column 0, an oxfmt-wrapped signature
+- * joined through {@link joinHead}), with an optional generic parameter list and
+- * an optional heritage clause between the identifier and the opening `{`; the
+- * identifier matches exactly and is escaped through {@link escapeRegExp}, so a
+- * metacharacter in `name` is literal text. The returned body lines are the raw
+- * source between that head and the first projected column-zero `}`, keeping
+- * JSDoc evidence intact. Every balanced `<...>` span is removed from the head
+- * before its `extends` clause is read, so a `T extends Base` type parameter is
+- * never a base and `Base<T>` reads as `Base`; a class's `implements` clause and
+- * everything after it is excluded, and a qualified base such as
+- * `namespace.Base` is returned verbatim. A head that opens no column-zero close
+- * is skipped and the scan continues, so a later real declaration still answers.
+- *
+- * @param source - The file's source text to search
+- * @param keyword - Whether to look for a `class` or an `interface`
+- * @param name - The declaration's identifier
+- * @returns Its body and bases, or `undefined` when `source` declares no such head
+- *
+- * @example
+- * ```ts
+- * extractDeclaration('export interface X extends Y {\n\twalk(): void\n}\n', 'interface', 'X')
++ * The whole file is projected once through {@link extractSourceLines} and every head is read from
++ * that one projection, so a scope resolving many names reads each file once rather than once per
++ * name. A head is a column-zero `export class` / `export interface` line, an oxfmt-wrapped
++ * signature joined through {@link joinHead}, with an optional generic parameter list and an
++ * optional heritage clause between the identifier and the opening `{`; the identifier is the head's
++ * own run up to that list or clause, so it enters the key as literal text and no name reaches a
++ * `RegExp`. Body lines are the raw source between the head and the first projected column-zero `}`,
++ * keeping JSDoc evidence intact. Every balanced `<...>` span is removed from the head before its
++ * `extends` clause is read, so a `T extends Base` type parameter is never a base and `Base<T>`
++ * reads as `Base`; a class's `implements` clause and everything after it is excluded, and a
++ * qualified base such as `namespace.Base` is returned verbatim. The first head of a key that opens
++ * a column-zero close answers for that key: a head that opens none records nothing, and a later
++ * head of a key already collected adds nothing.
++ *
++ * @param source - The file's source text to read
++ * @returns One entry per collected declaration, keyed `${keyword} ${name}`
++ *
++ * @example
++ * ```ts
++ * collectDeclarations('export interface X extends Y {\n\twalk(): void\n}\n').get('interface X')
+  * // { body: ['\twalk(): void'], bases: ['Y'] }
+  * ```
+  */
+-export function extractDeclaration(
+-	source: string,
+-	keyword: DeclarationKeyword,
+-	name: string,
+-): Declaration | undefined {
+-	const opener = `export ${keyword} ${name}`
+-	const grammar = new RegExp(`^${escapeRegExp(opener)}(?:<.*>)?(?: .*)? \\{$`)
++export function collectDeclarations(source: string): ReadonlyMap<string, Declaration> {
++	const declarations = new Map<string, Declaration>()
++	const opener = /^export (?:class|interface) /
++	const grammar = /^export (class|interface) ([^\s<]+)(?:<.*>)?(?: .*)? \{$/
+ 	const lines = extractSourceLines(source)
+ 	const projected = lines.map((line) => line.code)
+ 
+ 	for (let index = 0; index < projected.length; index += 1) {
+ 		const line = projected[index]
+-		if (line === undefined || !line.startsWith(opener)) continue
++		if (line === undefined || !opener.test(line)) continue
+ 
+ 		const head = joinHead(projected, index)
+-		if (head === undefined || !grammar.test(head.text)) continue
++		if (head === undefined) continue
++		const declared = grammar.exec(head.text)
++		const keyword = declared?.[1]
++		const name = declared?.[2]
++		if (keyword === undefined || name === undefined) continue
++
++		const key = `${keyword} ${name}`
++		if (declarations.has(key)) continue
+ 
+ 		let depth = 0
+ 		let flat = ''
+-		for (const character of head.text.slice(opener.length, -1)) {
++		for (const character of head.text.slice(`export ${key}`.length, -1)) {
+ 			if (character === '<') depth += 1
+ 			else if (character === '>') depth = Math.max(0, depth - 1)
+ 			else if (depth === 0) flat += character
+@@ -1277,13 +1278,48 @@ export function extractDeclaration(
+ 
+ 		for (let close = head.end + 1; close < projected.length; close += 1) {
+ 			if (projected[close] !== '}') continue
+-			return { body: lines.slice(head.end + 1, close).map((record) => record.source), bases }
++			declarations.set(key, {
++				body: lines.slice(head.end + 1, close).map((record) => record.source),
++				bases,
++			})
++			break
+ 		}
+ 
+-		// Unterminated body — keep scanning in case a later head closes.
++		// An unterminated body records nothing — keep scanning in case a later head closes.
+ 	}
+ 
+-	return undefined
++	return declarations
++}
++
++/**
++ * Locates the named `export class` / `export interface` declaration in one file's source text
++ * and returns its body lines and its base identifiers read from that one head, so a body and a
++ * heritage clause always come from the same declaration, or `undefined` when the file declares
++ * no such head.
++ *
++ * @remarks
++ * The one named lookup over {@link collectDeclarations}, which owns the head grammar, the body
++ * window, and the base reading. `name` is compared as literal text against the identifier the head
++ * itself carries, so a metacharacter in `name` names that character rather than matching text it
++ * does not name, and a caller reading many names from one file collects once instead.
++ *
++ * @param source - The file's source text to search
++ * @param keyword - Whether to look for a `class` or an `interface`
++ * @param name - The declaration's identifier
++ * @returns Its body and bases, or `undefined` when `source` declares no such head
++ *
++ * @example
++ * ```ts
++ * extractDeclaration('export interface X extends Y {\n\twalk(): void\n}\n', 'interface', 'X')
++ * // { body: ['\twalk(): void'], bases: ['Y'] }
++ * ```
++ */
++export function extractDeclaration(
++	source: string,
++	keyword: DeclarationKeyword,
++	name: string,
++): Declaration | undefined {
++	return collectDeclarations(source).get(`${keyword} ${name}`)
+ }
+ 
+ /**
+diff --git a/src/core/sources/Source.ts b/src/core/sources/Source.ts
+index 5fbe47f..59acba4 100644
+--- a/src/core/sources/Source.ts
++++ b/src/core/sources/Source.ts
+@@ -8,8 +8,8 @@ import type {
+ 	SurfaceSymbol,
+ } from '../types.js'
+ import {
++	collectDeclarations,
+ 	computeSymbolKey,
+-	extractDeclaration,
+ 	extractExampleMethods,
+ 	extractExamples,
+ 	extractExports,
+@@ -44,8 +44,13 @@ import {
+  * from; a base the scope does not declare contributes nothing. One declaration
+  * answers for a name: the first file in sorted key order that declares the head
+  * supplies its members and its bases, and a second file declaring the same name
+- * adds nothing. Source projection preserves columns without widening
+- * direct/hidden column-zero heads. Literal ECMAScript Unicode identifiers
++ * adds nothing. Every reading derives once per instance from the immutable
++ * inventory and is reused — the scope's declaration map on the first `methods`
++ * or `examples` lookup, then each name's members and each example collection
++ * under the name asked for — so a reader asking twice reads the files once and
++ * receives the same records, and a second instance over the same inventory
++ * derives the same readings of its own. Source projection preserves columns
++ * without widening direct/hidden column-zero heads. Literal ECMAScript Unicode identifiers
+  * participate in bounded slash-state recognition without escape decoding.
+  * Regex recognition is bounded: slash after bare `}` is division, so a
+  * post-brace regex statement requires an explicit `;`. General semicolonless
+@@ -73,10 +78,12 @@ import {
+ export class Source implements SourceInterface {
+ 	readonly #files: Readonly<Record<string, string>>
+ 	readonly #directories: readonly string[]
++	readonly #methods = new Map<string, readonly MethodEntry[]>()
++	readonly #examples = new Map<string | undefined, readonly SourceExample[]>()
+ 	#exports: readonly SurfaceSymbol[] | undefined
+ 	#surface: readonly SurfaceSymbol[] | undefined
+ 	#hidden: readonly SurfaceSymbol[] | undefined
+-	#examples: readonly SourceExample[] | undefined
++	#declarations: ReadonlyMap<string, Declaration> | undefined
+ 
+ 	constructor(options: SourceOptions) {
+ 		this.#files = options.files
+@@ -97,12 +104,15 @@ export class Source implements SourceInterface {
+ 		return this.#surface
+ 	}
+ 
++	// A name's members are computed once per instance and cached under that name, so a
++	// reader asking twice resolves one `extends` chain rather than two.
+ 	methods(name: string): readonly MethodEntry[] {
+-		const declared = this.#members('interface', name, new Set<string>())
+-		if (declared !== undefined) return declared
++		const cached = this.#methods.get(name)
++		if (cached !== undefined) return cached
+ 
+-		const inherited = this.#members('class', name, new Set<string>())
+-		return inherited === undefined ? [] : inherited.filter((entry) => entry.name !== 'constructor')
++		const members = this.#scanMethods(name)
++		this.#methods.set(name, members)
++		return members
+ 	}
+ 
+ 	exists(relative: string): boolean {
+@@ -117,15 +127,27 @@ export class Source implements SourceInterface {
+ 		return this.#hidden
+ 	}
+ 
++	// Each reading is computed once per instance and cached under the name it was asked
++	// for, the module-wide collection under the absent name.
+ 	examples(): readonly SourceExample[]
+ 	examples(name: string): readonly SourceExample[]
+ 	examples(name?: string): readonly SourceExample[] {
+-		if (name === undefined) {
+-			if (this.#examples === undefined) this.#examples = this.#scanExamples()
+-			return this.#examples
+-		}
++		const cached = this.#examples.get(name)
++		if (cached !== undefined) return cached
+ 
+-		return this.#exampleMembers(name)
++		const examples = name === undefined ? this.#scanExamples() : this.#exampleMembers(name)
++		this.#examples.set(name, examples)
++		return examples
++	}
++
++	// The interface shape answers first for a name both shapes declare; a class's members
++	// arrive without the `constructor` no guide documents.
++	#scanMethods(name: string): readonly MethodEntry[] {
++		const declared = this.#members('interface', name, new Set<string>())
++		if (declared !== undefined) return declared
++
++		const inherited = this.#members('class', name, new Set<string>())
++		return inherited === undefined ? [] : inherited.filter((entry) => entry.name !== 'constructor')
+ 	}
+ 
+ 	// The union of exported declaration heads' `@example` blocks across the module's
+@@ -284,22 +306,33 @@ export class Source implements SourceInterface {
+ 		)
+ 	}
+ 
+-	// The one declaration that answers for `name` — the first file in sorted key
+-	// order whose located head has a body or bases, whose body and bases are
+-	// read together, so a later file declaring the same name contributes
+-	// nothing. A located head with neither a body nor bases does not declare;
+-	// the scan continues past it to a later file or falls through unanswered.
++	// The one declaration that answers for `name`, read from the scope's declaration map,
++	// which is collected once on first lookup and reused by every later one.
+ 	#locate(keyword: DeclarationKeyword, name: string): Declaration | undefined {
++		if (this.#declarations === undefined) this.#declarations = this.#scanDeclarations()
++		return this.#declarations.get(`${keyword} ${name}`)
++	}
++
++	// The scope's declarations, keyed `${keyword} ${name}` — one `collectDeclarations`
++	// pass per file in sorted key order, so a scope reads each file once however many
++	// names it resolves. The first file whose located head has a body or bases answers
++	// for a key, its body and bases read together, so a later file declaring the same
++	// name contributes nothing. A located head with neither a body nor bases does not
++	// declare; the scan continues past it to a later file or leaves the key unanswered.
++	#scanDeclarations(): ReadonlyMap<string, Declaration> {
++		const declarations = new Map<string, Declaration>()
++
+ 		for (const key of selectModuleKeys(this.#files, this.#directories)) {
+ 			const text = this.#files[key]
+ 			if (text === undefined) continue
+ 
+-			const declaration = extractDeclaration(text, keyword, name)
+-			if (declaration === undefined) continue
+-			if (declaration.body.length === 0 && declaration.bases.length === 0) continue
+-			return declaration
++			for (const [identity, declaration] of collectDeclarations(text)) {
++				if (declarations.has(identity)) continue
++				if (declaration.body.length === 0 && declaration.bases.length === 0) continue
++				declarations.set(identity, declaration)
++			}
+ 		}
+ 
+-		return undefined
++		return declarations
+ 	}
+ }
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 281f7d3..c245e0d 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -4,6 +4,7 @@ import {
+ 	buildComment,
+ 	buildFence,
+ 	buildTable,
++	collectDeclarations,
+ 	collectExamples,
+ 	collectFences,
+ 	collectGroups,
+@@ -1597,6 +1598,70 @@ describe('extractDeclaration', () => {
+ 	})
+ })
+ 
++describe('collectDeclarations', () => {
++	it('keys every declaration of one file by its keyword and its own identifier', () => {
++		const source = [
++			'export interface ReadInterface {',
++			'\tread(): string',
++			'}',
++			'export interface StoreInterface<T> extends ReadInterface {',
++			'\topen(value: T): void',
++			'}',
++			'export class Store implements StoreInterface<string> {',
++			'\topen(): void {}',
++			'}',
++			'export const store = new Store()',
++			'',
++		].join('\n')
++		expect(Object.fromEntries(collectDeclarations(source))).toEqual({
++			'interface ReadInterface': { body: ['\tread(): string'], bases: [] },
++			'interface StoreInterface': { body: ['\topen(value: T): void'], bases: ['ReadInterface'] },
++			'class Store': { body: ['\topen(): void {}'], bases: [] },
++		})
++	})
++
++	it('collects nothing from a file declaring no class and no interface head', () => {
++		expect(collectDeclarations('export const store = 1\nexport type Store = string\n').size).toBe(0)
++	})
++
++	it('records nothing for a head that opens no column-zero close', () => {
++		const source = ['export interface B extends A {', '\twalk(): void', ''].join('\n')
++		expect(Object.fromEntries(collectDeclarations(source))).toEqual({})
++	})
++
++	it('keeps the first complete head of a key and drops a later one of the same key', () => {
++		const source = [
++			'export interface B {',
++			'\twalk(): void',
++			'}',
++			'export interface B {',
++			'\tfold(): void',
++			'}',
++			'',
++		].join('\n')
++		expect(collectDeclarations(source).get('interface B')).toEqual({
++			body: ['\twalk(): void'],
++			bases: [],
++		})
++	})
++
++	it('reads each file once however many names a caller looks up', () => {
++		const source = 'export interface X {\n\twalk(): void\n}\n'
++		const collected = collectDeclarations(source)
++		expect({
++			absent: collected.get('interface Absent'),
++			literal: collected.get('interface .*'),
++			named: collected.get('interface X'),
++			lookup: extractDeclaration(source, 'interface', 'X'),
++		}).toEqual({
++			absent: undefined,
++			literal: undefined,
++			named: { body: ['\twalk(): void'], bases: [] },
++			lookup: { body: ['\twalk(): void'], bases: [] },
++		})
++	})
++})
++
+ describe('extractMemberMethods', () => {
+ 	it('counts a plain method', () => {
+ 		expect(extractMemberMethods(['\tmap(): void'])).toEqual([{ name: 'map' }])
+diff --git a/tests/src/core/sources/Source.test.ts b/tests/src/core/sources/Source.test.ts
+index 67346df..8150707 100644
+--- a/tests/src/core/sources/Source.test.ts
++++ b/tests/src/core/sources/Source.test.ts
+@@ -1175,4 +1175,51 @@ describe('Source', () => {
+ 		const source = new Source({ files, module: 'src/core' })
+ 		expect(source.examples('Widget').map((example) => example.name)).toEqual(['fold'])
+ 	})
++
++	it('answers every repeated reading with the same records, one argument never answering for another', () => {
++		const declare = (member: string) =>
++			[
++				'export interface ReadInterface {',
++				'\t/** @example */',
++				'\tread(): string',
++				'}',
++				'export interface StoreInterface extends ReadInterface {',
++				'\t/** @example */',
++				`\t${member}(): void`,
++				'}',
++				'',
++			].join('\n')
++		// Read the member collection before the module-wide one, and the derived name before
++		// the declared one, so a reading answering under another argument's key shows up here.
++		const read = (source: Source) => ({
++			member: source.examples('StoreInterface').map((example) => example.name),
++			module: source.examples().map((example) => example.name),
++			store: source.methods('StoreInterface').map((entry) => entry.name),
++			base: source.methods('ReadInterface').map((entry) => entry.name),
++			absent: source.methods('AbsentInterface').map((entry) => entry.name),
++		})
++		const declared = {
++			member: ['open'],
++			module: [],
++			store: ['open', 'read'],
++			base: ['read'],
++			absent: [],
++		}
++		const source = new Source({ files: { 'module/types.ts': declare('open') }, module: 'module' })
++		const first = read(source)
++		const repeated = read(source)
++		const sibling = read(
++			new Source({ files: { 'module/types.ts': declare('open') }, module: 'module' }),
++		)
++		const other = read(
++			new Source({ files: { 'module/types.ts': declare('close') }, module: 'module' }),
++		)
++
++		expect({ first, repeated, sibling, other }).toEqual({
++			first: declared,
++			repeated: declared,
++			sibling: declared,
++			other: { ...declared, member: ['close'], store: ['close', 'read'] },
++		})
++	})
+ })

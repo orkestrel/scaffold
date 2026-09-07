@@ -1,0 +1,23 @@
+== csv p2-fix landing 2026-09-07T16:17:21Z over c512407
+== status
+ M README.md
+ M guides/csv.md
+ M src/core/CSV.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/inferers.ts
+ M src/core/parsers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts |   8 +--
+ tests/guides.test.ts   |  14 +++---
+ 13 files changed, 172 insertions(+), 169 deletions(-)
+== stage by path
+ 13 files changed, 172 insertions(+), 169 deletions(-)
+== committed
+715aed6 Refine csv's convergence on the audit's findings
+(status end)

@@ -1,0 +1,19 @@
+== template p2 landing 2026-09-07T16:17:22Z over 67df803
+== status
+ M README.md
+ M guides/template.md
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/templates/Template.ts
+ M src/core/templates/TemplateManager.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts                     |  93 ++++++++++++++----
+ tests/guides.test.ts                  |  75 ++++++++++++++-
+ 9 files changed, 270 insertions(+), 126 deletions(-)
+== stage by path
+ 9 files changed, 270 insertions(+), 126 deletions(-)
+== committed
+cf8858e Converge template under the equality gate
+(status end)

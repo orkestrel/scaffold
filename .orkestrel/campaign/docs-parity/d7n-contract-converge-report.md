@@ -247,3 +247,7 @@ No other reader or seed defect was met. Every `--to guide` and `--to source` lin
 ## Deviation state
 
 No deviation. Nothing in the deviation contract fired: every cell the seed had to locate was located, the titled body fits its block, no test outside `tests/guides.test.ts` went red, no vendored file needed an edit, every reader returned the shape the brief describes, and no residual disagreement survived a doc-block rewrite.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose (lines 5, 9, 73, 86, 178, 207) and a line (77) attributing the "no element is inspected" remark to `isArray` where the tree carries it on `isArrayBuffer` (`src/core/validators.ts:505-509`); the fix round moves it. The tree is authoritative; the report stands annotated.

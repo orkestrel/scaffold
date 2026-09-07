@@ -324,3 +324,7 @@ scratchpad is documented as session-isolated.
 - The array-overload batching rule keeps its existing homes — the
   `#### IndexedDBRecordStoreInterface` paragraph and `## Contract` invariant 5 — rather than
   repeating inside every cell.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose (lines 65, 92, 269-271, 319, 322). The tree is authoritative; the report stands annotated.

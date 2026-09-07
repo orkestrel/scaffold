@@ -1,0 +1,99 @@
+### router at 9af89c9, guide guides/router.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  48 passed (48)
+   test:guides exit 0
+-- census
+   guides/router.md surface {"equal":64,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":19,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 5 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class DispatchGroup methods 2 grouped false undescribed ["add","group"]
+   owner interface DispatchGroupInterface methods 2 grouped true undescribed []
+   owner class Dispatcher methods 5 grouped false undescribed ["add","destroy","group","handle","match"]
+   owner interface DispatcherInterface methods 5 grouped true undescribed []
+   owner class Group methods 2 grouped false undescribed ["add","group"]
+   owner interface GroupInterface methods 2 grouped true undescribed []
+   owner class Navigator methods 5 grouped false undescribed ["destroy","match","navigate","start","stop"]
+   owner interface NavigatorInterface methods 5 grouped true undescribed []
+   owner class Router methods 5 grouped false undescribed ["add","clear","entries","group","match"]
+   owner interface RouterInterface methods 5 grouped true undescribed []
+   examples titledFences 13 titledExamples ["createListener:Basic server"] pairs ["Basic server"]
+-- sites: surface row guides/router.md:53; methods row guides/router.md:180; title src/server/handlers.ts:79
+-- control A: one Surface Summary cell altered (guides/router.md:53)
+guides/router.md function createRouter: guide "Creates a `RouterInterface` — the pure path-matching + registry engine shared by the browser `Navigator` and the core `Dispatcher`. Control." source "Creates a `RouterInterface` — the pure path-matching + registry engine shared by the browser `Navigator` and the core `Dispatcher`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Router > keeps every compared summary and example equal to its source
+Tests  1 failed | 47 passed (48)
+× keeps every compared summary and example equal to its source 365ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/router.md:180)
+guides/router.md RouterInterface.add: guide "Registers one entry, or many in one call (batch registration), compiling each path once; throws a `ContractError` on a malformed path. Control." source "Registers one entry, or many in one call (batch registration), compiling each path once; throws a `ContractError` on a malformed path."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Router > keeps every compared summary and example equal to its source
+Tests  1 failed | 47 passed (48)
+× keeps every compared summary and example equal to its source 393ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a `node:http` request listener over a core {@link DispatcherInterface} —
+guides/router.md function createListener: guide "Creates a `node:http` request listener over a core `DispatcherInterface` — the whole server face's entry point: converts the incoming message to a fetch `Request`, hands it to the dispatcher with the consumer's per-request `state`, and writes the resulting `Response` back." source "Control Creates a `node:http` request listener over a core `DispatcherInterface` — the whole server face's entry point: converts the incoming message to a fetch `Request`, hands it to the dispatcher with the consumer's per-request `state`, and writes the resulting `Response` back."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Router > keeps every compared summary and example equal to its source
+Tests  1 failed | 47 passed (48)
+× keeps every compared summary and example equal to its source 352ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/browser/Navigator.ts:12:  * Control Represents the headless History/hash navigation entity — composes one core
+guides/router.md class Navigator: guide "Represents the headless History/hash navigation entity — composes one core `Router<Meta>`, resolving the current location on `start()` and every subsequent navigation event, tracking `active`, and emitting `navigate` through the core `Emitter`. No `render` / `outlet` — the consumer owns rendering." source "Control Represents the headless History/hash navigation entity — composes one core `Router<Meta>`, resolving the current location on `start()` and every subsequent navigation event, tracking `active`, and emitting `navigate` through the core `Emitter`. No `render` / `outlet` — the consumer owns rendering."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Router > keeps every compared summary and example equal to its source
+Tests  1 failed | 47 passed (48)
+× keeps every compared summary and example equal to its source 364ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/handlers.ts:79)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 47 passed (48)
+× pairs at least one example title across the guide and the source 62ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/router.md Basic server: guide "ts\nimport { createListener } from '@orkestrel/router/server'\nimport { createDispatcher } from '@orkestrel/router'\nimport http from 'node:http'\n\nconst dispatcher = createDispatcher<{ readonly requestId: string }>()\ndispatcher.add({\n\tmethod: 'GET',\n\tpath: '/users/:id',\n\thandler: (_request, context) =>\n\t\tResponse.json({ id: context.params.id, requestId: context.state.requestId }),\n})\n\nconst server = http.createServer(\n\tcreateListener(dispatcher, () => ({ requestId: crypto.randomUUID() })),\n)\nserver.listen(0)" source "ts\nimport { createListener } from '@orkestrel/router/server' // control\nimport { createDispatcher } from '@orkestrel/router'\nimport http from 'node:http'\n\nconst dispatcher = createDispatcher<{ readonly requestId: string }>()\ndispatcher.add({\n\tmethod: 'GET',\n\tpath: '/users/:id',\n\thandler: (_request, context) =>\n\t\tResponse.json({ id: context.params.id, requestId: context.state.requestId }),\n})\n\nconst server = http.createServer(\n\tcreateListener(dispatcher, () => ({ requestId: crypto.randomUUID() })),\n)\nserver.listen(0)"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Router > keeps every compared summary and example equal to its source
+Tests  1 failed | 47 passed (48)
+× keeps every compared summary and example equal to its source 357ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/router.md pitch: readme "Control: The typed request router: a path-matching engine (`Router`) that compiles route patterns, extracts URL-decoded params, and resolves the most specific match, with a fetch-standard, method-dimensioned dispatcher (`Dispatcher`), a headless History or hash `Navigator`, and a `node:http` adapter all composing that same engine." tagline "The typed request router: a path-matching engine (`Router`) that compiles route patterns, extracts URL-decoded params, and resolves the most specific match, with a fetch-standard, method-dimensioned dispatcher (`Dispatcher`), a headless History or hash `Navigator`, and a `node:http` adapter all composing that same engine."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The typed request router: a …' to be 'The typed request router: a path-matc…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 47 passed (48)
+× opens the README with the guide tagline 19ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/router.md function createRouter: guide absent source "Creates a `RouterInterface` — the pure path-matching + registry engine shared by the browser `Navigator` and the core `Dispatcher`."
+guides/router.md function createDispatcher: guide absent source "Creates a `DispatcherInterface` — the fetch-standard, method-dimensioned dispatch entity over one internal `Router<RouteRecord<TState>>`."
+guides/router.md function createNavigator: guide absent source "Creates a `NavigatorInterface` — the headless History/hash navigation entity composing one core `Router<Meta>`."
+rows read: 1, disagreements found: 3
+   docs exit 1
+AssertionError: expected [ …(3) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Router > keeps every compared summary and example equal to its source
+Tests  1 failed | 47 passed (48)
+× keeps every compared summary and example equal to its source 370ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

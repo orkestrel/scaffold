@@ -215,3 +215,7 @@ No deviation. Ancillary matters decided and recorded: the titled fence's heading
 `### Helpers and errors` heading kept for its mixed rows (§ Criterion 2); the guide's `## Methods`
 prose paragraphs on `transacting` and `[Symbol.dispose]` left as the baseline wrote them, being guide
 prose the gate does not read and outside this brief's named sites.
+
+---
+
+**Orchestrator annotation (audit, 2026-09-07):** the audit read counts in this report's prose (lines 47, 105, 206). The tree is authoritative; the report stands annotated.
