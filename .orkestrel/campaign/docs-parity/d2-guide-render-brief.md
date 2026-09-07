@@ -28,7 +28,7 @@
 
 ## Evidence at dispatch
 
-FILLED_AT_DISPATCH: D1's landing commit, `git status --short` (clean), the `SUMMARY` constant line, the `extractCellText` and `findColumnIndex` lines, the markdown package version, `oxfmt` version.
+Taken at dispatch on the committed guide tree. `git log --oneline -1` → `37d6cf8 Read both sides of guide and TSDoc parity into one form and name every drift` (D1 landed with its three audit rounds). `git status --short` → no tracked change (0 lines). `SUMMARY`: `src/core/constants.ts:44:export const SUMMARY: string = 'Summary'`. Helper lines: `962:export function extractCellText(cell: readonly InlineNode[]): string {;989:export function findColumnIndex(table: TableNode, header: string): number | undefined {;1424:export function extractUnnamed(document: MarkdownDocument): readonly string[] {;1547:export function maskFences(text: string): string {;1954:export function findDrift(guide: GuideInterface, source: SourceInterface): readonly Drift[] {;2008:export function collectTitles(;`. `@orkestrel/markdown` `0.0.13`; `oxfmt` `0.66.0`. Readers that landed after this brief was drafted and that the renderers must respect: `maskFences` (a fenced body is masked out of every tag search, so a rendered `@example` body carrying a tag-shaped line survives), `extractUnnamed` with the cached `Guide.unnamed()` projection (a rendered Surface or Methods row always carries a code-span name), and the per-title first-fence pairing rule in `findDrift` (a rendered example under a heading is that heading's first fence).
 
 ## Scope
 
