@@ -1,0 +1,18 @@
+== sse p2 landing 2026-09-07T15:14:10Z over 71ee295
+== status
+ M README.md
+ M guides/sse.md
+ M src/core/SSEParser.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     | 79 +++++++++++++++++++++++-----------------------
+ tests/guides.test.ts  | 82 +++++++++++++++++++++++++++++++++++++++++++++---
+ 8 files changed, 188 insertions(+), 115 deletions(-)
+== stage by path
+ 8 files changed, 188 insertions(+), 115 deletions(-)
+== committed
+8f767de Converge sse under the equality gate
+(status end)

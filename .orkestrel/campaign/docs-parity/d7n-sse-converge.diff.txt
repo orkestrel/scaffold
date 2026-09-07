@@ -1,0 +1,516 @@
+diff --git a/README.md b/README.md
+index 26c1de2..f3df53f 100644
+--- a/README.md
++++ b/README.md
+@@ -1,16 +1,12 @@
+ # @orkestrel/sse
+ 
+-A typed Server-Sent Events parser — incremental, spec-compliant parsing of
+-event-stream chunks into typed events with `data`, `event`, `id`, and `retry`
+-fields. Feed it string chunks as they arrive; a blank line dispatches the
+-accumulated event, and a partial line or in-progress event split across
+-chunk boundaries is buffered until the rest arrives. The `id` / `retry`
+-fields also persist as sticky connection state — surfaced through the `id` /
+-`retry` getters for reconnection — and an optional `limit` bounds total
+-buffered characters. A pure functional primitive — no Emitter, no events, no
+-server / HTTP / agent coupling; it never throws on malformed input, only a
+-typed `SSEError('OVERFLOW')` when a configured `limit` is exceeded. Part of
+-the `@orkestrel` line.
++> A stateful Server-Sent-Events (SSE) stream parser: a handle that turns string chunks into
++> the complete events a blank line has dispatched, buffering a partial line or in-progress
++> event until the rest arrives and persisting the sticky `id` / `retry` connection state.
++
++Create a parser with the `createSSEParser` function, feed it the chunks your transport hands
++you, and read the dispatched events off each `parse(chunk)` return. Part of the `@orkestrel`
++line.
+ 
+ ## Install
+ 
+diff --git a/guides/sse.md b/guides/sse.md
+index cd110a2..8427291 100644
+--- a/guides/sse.md
++++ b/guides/sse.md
+@@ -1,22 +1,20 @@
+ # SSE
+ 
+-> A stateful Server-Sent-Events (SSE) stream parser: feed it string chunks, get
+-> back the complete events dispatched so far. SSE is a UTF-8 text stream of
+-> events separated by a blank line; within an event each `field: value` line
+-> accumulates onto an in-progress event — multiple `data:` lines concatenate
+-> with `\n`, `event:` / `id:` / `retry:` are last-wins — and a blank line
+-> DISPATCHES the accumulated event, but only when its data buffer is
+-> non-empty. A trailing partial line or in-progress event split across chunk
+-> boundaries is buffered until the rest arrives. The `id` / `retry` fields are
+-> also persisted as sticky connection state (WHATWG last-event-id semantics) —
+-> surfaced through the `id` / `retry` getters, dropped only by `clear()`. An
+-> optional `limit` bounds total buffered characters, throwing a typed
+-> `SSEError('OVERFLOW')` instead of growing unbounded; `flush()` forces out any
+-> trailing unterminated event at end-of-stream. A pure functional primitive —
+-> no Emitter, no server / HTTP / agent coupling; it never throws on malformed
+-> input, only `SSEError('OVERFLOW')` when a configured `limit` is exceeded.
+-> Source: [`src/core`](../src/core). Surfaced through the `@src/core`
+-> barrel.
++> A stateful Server-Sent-Events (SSE) stream parser: a handle that turns string chunks into
++> the complete events a blank line has dispatched, buffering a partial line or in-progress
++> event until the rest arrives and persisting the sticky `id` / `retry` connection state.
++
++SSE is a UTF-8 text stream of events separated by a blank line. Within an event each
++`field: value` line accumulates onto an in-progress event — multiple `data:` lines concatenate
++with `\n`, and `event:` / `id:` / `retry:` are last-wins — and the blank line dispatches the
++accumulated event, but only when its data buffer is non-empty. The `id` and `retry` fields
++follow WHATWG last-event-id semantics: each survives dispatch, is read through the getter of
++its own name, and is dropped only by `clear()`. An optional `limit` bounds the total buffered
++characters, throwing a typed `SSEError('OVERFLOW')` rather than growing unbounded, and
++`flush()` forces out a trailing unterminated event at end-of-stream. A pure functional
++primitive — no Emitter, no server / HTTP / agent coupling; it never throws on malformed input,
++only `SSEError('OVERFLOW')` when a configured `limit` is exceeded.
++Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+@@ -36,12 +34,14 @@ parser.clear() // drop any buffered partial line / event - ready for a fresh str
+ 
+ ### Types
+ 
+-| Type                 | Kind      | Shape                                                                                                                         |
+-| -------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------- |
+-| `SSEEvent`           | interface | `{ data, event?, id?, retry? }` — one dispatched event; `data` is every `data:` field joined by `\n`, no trailing newline.    |
+-| `SSEParserInterface` | interface | The stateful stream-parser contract — `parse` / `flush` / `clear` + the sticky `id` / `retry` getters.                        |
+-| `SSEParserOptions`   | interface | `{ limit? }` — caps total buffered characters (un-consumed line buffer + in-progress event field lengths); unset → unbounded. |
+-| `SSEErrorCode`       | type      | `'OVERFLOW'` — the sole `SSEError` code, thrown when a configured `limit` would be exceeded.                                  |
++A `Shape` cell holds an interface's members in braces, and a type alias's value.
++
++| Type                 | Kind      | Shape                                | Summary                                                                                                                                                                                                                                                                                                           |
++| -------------------- | --------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `SSEEvent`           | interface | `{ data, event?, id?, retry? }`      | Represents one dispatched Server-Sent Event — the value a blank line flushes from an `SSEParserInterface`. Its `data` holds every `data:` field of that event joined by `\n` with no trailing newline, and `event` / `id` / `retry` hold the last field of each name the event carried.                           |
++| `SSEParserInterface` | interface | `{ parse, flush, clear, id, retry }` | Represents a stateful Server-Sent-Events (SSE) stream parser: feed it string chunks, get back the complete events dispatched so far. A trailing partial line / in-progress event is buffered until the rest arrives, and the sticky `id` / `retry` getters carry the connection state a dispatch leaves in place. |
++| `SSEParserOptions`   | interface | `{ limit? }`                         | Configures the parser `createSSEParser` builds and the `SSEParser` constructor accepts — `limit` caps the total buffered characters held at once, and leaving it unset keeps the buffering unbounded.                                                                                                             |
++| `SSEErrorCode`       | type      | `'OVERFLOW'`                         | Names the machine-readable code an `SSEError` carries — `'OVERFLOW'` alone, thrown when a `parse(chunk)` call would push the buffered total over a configured `limit`.                                                                                                                                            |
+ 
+ ```ts
+ import type { SSEParserOptions } from '@orkestrel/sse'
+@@ -51,10 +51,10 @@ const options: SSEParserOptions = { limit: 1_000_000 }
+ 
+ ### Constants
+ 
+-| API   | Kind  | Summary                                                                                                               |
+-| ----- | ----- | --------------------------------------------------------------------------------------------------------------------- |
+-| `NUL` | const | The NUL byte (`U+0000`) — an `id:` field containing it is voided per spec and never surfaced.                         |
+-| `BOM` | const | The byte-order mark (`U+FEFF`) — stripped from the first non-empty chunk of a stream; ordinary content on later ones. |
++| API   | Kind  | Summary                                                                                                                                              |
++| ----- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `NUL` | const | Names the null byte (`U+0000`). The SSE spec voids an `id:` field whose value contains it, so an `id` carrying a NUL is never surfaced.              |
++| `BOM` | const | Names the byte-order mark (`U+FEFF`), stripped from the first non-empty chunk of an SSE stream (a leading mark on later chunks is ordinary content). |
+ 
+ ```ts
+ import { BOM, NUL } from '@orkestrel/sse'
+@@ -65,10 +65,10 @@ BOM.charCodeAt(0) // 0xfeff
+ 
+ ### Errors
+ 
+-| API          | Kind     | Summary                                         |
+-| ------------ | -------- | ----------------------------------------------- |
+-| `SSEError`   | class    | Carries an `SSEErrorCode` + optional `context`. |
+-| `isSSEError` | function | Narrow a caught value to an `SSEError`.         |
++| API          | Kind     | Summary                                                                                                                                                       |
++| ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `SSEError`   | class    | Represents an error the SSE parser throws, carrying the machine-readable `SSEErrorCode` a `catch` branches on and an optional `context` of diagnostic detail. |
++| `isSSEError` | function | Narrows an unknown caught value to an `SSEError`.                                                                                                             |
+ 
+ ```ts
+ import { isSSEError, SSEError } from '@orkestrel/sse'
+@@ -85,9 +85,9 @@ try {
+ 
+ ### Factories
+ 
+-| API               | Kind     | Builds…                                                |
+-| ----------------- | -------- | ------------------------------------------------------ |
+-| `createSSEParser` | function | A working `SSEParserInterface`, backed by `SSEParser`. |
++| API               | Kind     | Summary                                                                                                                                                                                |
++| ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `createSSEParser` | function | Creates a Server-Sent-Events (SSE) stream parser — a stateful `SSEParserInterface` handle, backed by `SSEParser`, that turns string chunks into the complete events dispatched so far. |
+ 
+ ```ts
+ import { createSSEParser } from '@orkestrel/sse'
+@@ -98,11 +98,11 @@ parser.parse('event: ping\ndata: 1') // [] - buffered until its blank line
+ parser.parse('\n\n') // [{ data: '1', event: 'ping' }]
+ ```
+ 
+-### Entities
++### Classes
+ 
+-| API         | Kind  | Summary                                                                                             |
+-| ----------- | ----- | --------------------------------------------------------------------------------------------------- |
+-| `SSEParser` | class | The stateful SSE stream parser — implements `SSEParserInterface`, reassembles events across chunks. |
++| API         | Kind  | Summary                                                                                                                                                                                                                         |
++| ----------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `SSEParser` | class | Implements `SSEParserInterface` over one internal line buffer, reassembling an event split across chunk boundaries once its blank line arrives and holding the sticky `id` / `retry` connection state until `clear()` drops it. |
+ 
+ ## Methods
+ 
+@@ -113,11 +113,11 @@ after it.
+ 
+ #### `SSEParserInterface`
+ 
+-| Method  | Returns               | Behavior                                                                                                                                                                                                                                                 |
+-| ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `parse` | `readonly SSEEvent[]` | Append `chunk`, then return every event a blank line has dispatched so far; a trailing partial line / in-progress event is buffered for the next call. Throws `SSEError('OVERFLOW')` when a configured `limit` would be exceeded — state left unchanged. |
+-| `flush` | `readonly SSEEvent[]` | Treat any remaining buffered partial line as terminated, then dispatch the in-progress event if its data buffer is non-empty. Returns a single-element array, or `[]` when nothing was pending.                                                          |
+-| `clear` | `void`                | Drop any buffered partial line, in-progress event, and persisted `id` / `retry`, leaving the parser ready for a fresh stream.                                                                                                                            |
++| Method  | Returns               | Summary                                                                                                                                                                                                                                                                                                                                                                    |
++| ------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `parse` | `readonly SSEEvent[]` | Appends `chunk`, then returns every event a blank line has dispatched — each event's `data:` fields concatenated with `\n`, plus the last `event:` / `id:` / `retry:` field it carried. An in-progress event and a trailing partial line are retained for the next call, and a call that would exceed a configured `limit` throws instead, leaving parser state unchanged. |
++| `flush` | `readonly SSEEvent[]` | Treats any remaining buffered partial line as if it had been terminated, then dispatches the in-progress event when its data buffer is non-empty.                                                                                                                                                                                                                          |
++| `clear` | `void`                | Drops any buffered partial line, in-progress event, and persisted `id` / `retry`, leaving the parser ready for a fresh stream.                                                                                                                                                                                                                                             |
+ 
+ ```ts
+ import { SSEParser } from '@orkestrel/sse'
+diff --git a/src/core/SSEParser.ts b/src/core/SSEParser.ts
+index 7ae52bc..dd5307a 100644
+--- a/src/core/SSEParser.ts
++++ b/src/core/SSEParser.ts
+@@ -3,8 +3,9 @@ import { BOM, NUL } from './constants.js'
+ import { SSEError } from './errors.js'
+ 
+ /**
+- * Represents a stateful Server-Sent-Events (SSE) stream parser - feed it string chunks, get
+- * back the complete events dispatched so far.
++ * Implements {@link SSEParserInterface} over one internal line buffer, reassembling an event
++ * split across chunk boundaries once its blank line arrives and holding the sticky `id` /
++ * `retry` connection state until `clear()` drops it.
+  *
+  * @remarks
+  * - **The wire format.** SSE is a UTF-8 text stream of events separated by a blank
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 63d1b4b..f291739 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -1,13 +1,17 @@
+ /**
+- * Names the null byte (`U+0000`). The SSE spec voids an `id:` field whose value contains
+- * it, so an `id` carrying a NUL is never surfaced. Spelled as a codepoint so the
+- * wire content is unambiguous in source.
++ * Names the null byte (`U+0000`). The SSE spec voids an `id:` field whose value contains it,
++ * so an `id` carrying a NUL is never surfaced.
++ *
++ * @remarks
++ * Spelled as a codepoint so the wire content is unambiguous in source.
+  */
+ export const NUL = String.fromCharCode(0)
+ 
+ /**
+  * Names the byte-order mark (`U+FEFF`), stripped from the first non-empty chunk of an SSE
+- * stream (a leading mark on later chunks is ordinary content). Spelled as a
+- * codepoint so the wire content is unambiguous in source.
++ * stream (a leading mark on later chunks is ordinary content).
++ *
++ * @remarks
++ * Spelled as a codepoint so the wire content is unambiguous in source.
+  */
+ export const BOM = String.fromCharCode(0xfeff)
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 80097fb..aa5650a 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -7,7 +7,8 @@ import type { SSEErrorCode } from './types.js'
+ // throws.
+ 
+ /**
+- * Represents an error thrown by the SSE parser.
++ * Represents an error the SSE parser throws, carrying the machine-readable
++ * {@link SSEErrorCode} a `catch` branches on and an optional `context` of diagnostic detail.
+  *
+  * @remarks
+  * Thrown for: a `parse(chunk)` call whose resulting buffered total (un-consumed
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index bf68a40..6ad4857 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,8 +2,9 @@ import type { SSEParserInterface, SSEParserOptions } from './types.js'
+ import { SSEParser } from './SSEParser.js'
+ 
+ /**
+- * Creates a Server-Sent-Events (SSE) stream parser - a stateful handle that turns
+- * string chunks into the complete events dispatched so far.
++ * Creates a Server-Sent-Events (SSE) stream parser — a stateful {@link SSEParserInterface}
++ * handle, backed by {@link SSEParser}, that turns string chunks into the complete events
++ * dispatched so far.
+  *
+  * @param options - See {@link SSEParserOptions}.
+  * @remarks
+@@ -22,19 +23,14 @@ import { SSEParser } from './SSEParser.js'
+  *
+  * @returns A working {@link SSEParserInterface}
+  *
+- * @example
++ * @example Factories
+  * ```ts
+- * import { createSSEParser, isSSEError } from '@src/core'
++ * import { createSSEParser } from '@orkestrel/sse'
+  *
+  * const parser = createSSEParser({ limit: 1_000_000 })
+  * parser.parse('data: a\ndata: b\n\n') // [{ data: 'a\nb' }] - the two data lines joined
+  * parser.parse('event: ping\ndata: 1') // [] - buffered until its blank line
+- * parser.parse('\n\n')                  // [{ data: '1', event: 'ping' }]
+- * try {
+- * 	parser.parse('x'.repeat(2_000_000))
+- * } catch (error) {
+- * 	if (isSSEError(error) && error.code === 'OVERFLOW') parser.clear()
+- * }
++ * parser.parse('\n\n') // [{ data: '1', event: 'ping' }]
+  * ```
+  */
+ export function createSSEParser(options?: SSEParserOptions): SSEParserInterface {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index b0e3e35..a6328b9 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,18 +1,19 @@
+ /**
+- * Represents one dispatched Server-Sent Event - the value a blank line flushes from an
+- * {@link SSEParserInterface}.
++ * Represents one dispatched Server-Sent Event — the value a blank line flushes from an
++ * {@link SSEParserInterface}. Its `data` holds every `data:` field of that event joined by
++ * `\n` with no trailing newline, and `event` / `id` / `retry` hold the last field of each
++ * name the event carried.
+  *
+  * @remarks
+- * - `data` is the concatenation of every `data:` field in the event, joined by a
+- *   single `\n` (the SSE rule: `data: a` + `data: b` → `"a\nb"`), with NO trailing
+- *   newline. An event is dispatched only when its data buffer is non-empty, so `data`
+- *   is always a string (possibly empty when an explicit empty `data:` line was sent).
+- * - `event` is the last `event:` field seen before the blank line (the event type);
+- *   absent when no `event:` field appeared.
+- * - `id` is the last `id:` field seen (the last-event-id); absent when none appeared.
+- *   A spec NUL inside an `id` voids it, so it is never surfaced.
+- * - `retry` is the `retry:` reconnection time in milliseconds - present only when the
+- *   field's value was an integer (a non-integer `retry:` is ignored).
++ * - The SSE join rule is `data: a` + `data: b` → `"a\nb"`. An event is dispatched only when
++ *   its data buffer is non-empty, so `data` is always a string (possibly empty when an
++ *   explicit empty `data:` line was sent).
++ * - `event` is read before the blank line (the event type); absent when no `event:` field
++ *   appeared.
++ * - `id` is the last-event-id; absent when none appeared. A spec NUL inside an `id` voids
++ *   it, so it is never surfaced.
++ * - `retry` is the reconnection time in milliseconds - present only when the field's value
++ *   was an integer (a non-integer `retry:` is ignored).
+  */
+ export interface SSEEvent {
+ 	/** Holds the event's concatenated data - each `data:` field joined by `\n`, no trailing newline. */
+@@ -26,26 +27,21 @@ export interface SSEEvent {
+ }
+ 
+ /**
+- * Names the machine-readable codes carried by an {@link import('./errors.js').SSEError}.
+- *
+- * @remarks
+- * `'OVERFLOW'` - a `parse(chunk)` call would push the buffered total over a
+- * configured {@link SSEParserOptions.limit}.
++ * Names the machine-readable code an `SSEError` carries — `'OVERFLOW'` alone, thrown when a
++ * `parse(chunk)` call would push the buffered total over a configured `limit`.
+  */
+ export type SSEErrorCode = 'OVERFLOW'
+ 
+ /**
+- * Configures {@link import('./factories.js').createSSEParser} / the
+- * {@link import('./SSEParser.js').SSEParser} constructor.
++ * Configures the parser `createSSEParser` builds and the `SSEParser` constructor accepts —
++ * `limit` caps the total buffered characters held at once, and leaving it unset keeps the
++ * buffering unbounded.
+  *
+  * @remarks
+- * `limit` - the maximum total buffered characters the parser will hold at once (the
+- * un-consumed line buffer plus the in-progress event's accumulated field lengths -
+- * data segments + event type + pending id). Unset → unbounded, the default and
+- * existing behavior: the parser then never throws. When set, a `parse(chunk)` call
+- * that would push the buffered total over `limit` throws an
+- * {@link import('./errors.js').SSEError} with code `'OVERFLOW'` instead of appending
+- * the chunk.
++ * The bounded total is the un-consumed line buffer plus the in-progress event's accumulated
++ * field lengths (data segments + event type + pending id). With no `limit` the parser never
++ * throws. When set, a `parse(chunk)` call that would push the buffered total over `limit`
++ * throws an `SSEError` with code `'OVERFLOW'` instead of appending the chunk.
+  */
+ export interface SSEParserOptions {
+ 	readonly limit?: number
+@@ -53,14 +49,17 @@ export interface SSEParserOptions {
+ 
+ /**
+  * Represents a stateful Server-Sent-Events (SSE) stream parser: feed it string chunks, get
+- * back the complete events dispatched so far. A trailing partial line / in-progress
+- * event is buffered until the rest arrives.
++ * back the complete events dispatched so far. A trailing partial line / in-progress event is
++ * buffered until the rest arrives, and the sticky `id` / `retry` getters carry the connection
++ * state a dispatch leaves in place.
+  */
+ export interface SSEParserInterface {
+ 	/**
+-	 * Appends `chunk`, then returns every event a blank line has DISPATCHED (its `data:`
+-	 * fields concatenated with `\n`, plus the last `event:` / `id:` / `retry:`); an
+-	 * in-progress event and a trailing partial line are retained for the next call.
++	 * Appends `chunk`, then returns every event a blank line has dispatched — each event's
++	 * `data:` fields concatenated with `\n`, plus the last `event:` / `id:` / `retry:` field
++	 * it carried. An in-progress event and a trailing partial line are retained for the next
++	 * call, and a call that would exceed a configured `limit` throws instead, leaving parser
++	 * state unchanged.
+ 	 *
+ 	 * @param chunk - Stream text appended to the internal buffer before the line split
+ 	 * @returns Every event a blank line dispatched during this call, in arrival order
+@@ -69,11 +68,13 @@ export interface SSEParserInterface {
+ 	 */
+ 	parse(chunk: string): readonly SSEEvent[]
+ 	/**
+-	 * Treats any remaining buffered partial line as if it had been terminated, then
+-	 * dispatches the in-progress event if its data buffer is non-empty. A convenience
+-	 * beyond the WHATWG algorithm, which discards an unterminated final event at EOF
+-	 * - without calling `flush()`, that spec-faithful discard is this parser's
+-	 * default behavior.
++	 * Treats any remaining buffered partial line as if it had been terminated, then dispatches
++	 * the in-progress event when its data buffer is non-empty.
++	 *
++	 * @remarks
++	 * A convenience beyond the WHATWG algorithm, which discards an unterminated final event at
++	 * EOF - without calling `flush()`, that spec-faithful discard is this parser's default
++	 * behavior.
+ 	 *
+ 	 * @returns The dispatched event as a single-element array, or `[]` when there was
+ 	 * nothing to dispatch.
+@@ -86,7 +87,9 @@ export interface SSEParserInterface {
+ 	/** Holds the last valid `retry:` reconnection time seen, in ms; `undefined` until the
+ 	 * first valid `retry:` field arrives, or after `clear()`. */
+ 	readonly retry: number | undefined
+-	/** Drops any buffered partial line, in-progress event, and persisted id/retry,
+-	 * leaving the parser ready for a fresh stream. */
++	/**
++	 * Drops any buffered partial line, in-progress event, and persisted `id` / `retry`, leaving
++	 * the parser ready for a fresh stream.
++	 */
+ 	clear(): void
+ }
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 51db4a6..a44ac98 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -11,6 +11,7 @@ import {
+ 	createSource,
+ 	createSourceManager,
+ 	extractFenceImports,
++	findDrift,
+ 	findMissing,
+ 	findMissingSymbols,
+ 	findUnexampled,
+@@ -41,11 +42,14 @@ const MODULES = Object.freeze({ '@orkestrel/sse': 'src/core', '@src/core': 'src/
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])
+ 
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md'])
++/** Root-level files these checks read. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+-/** The guide whose flagship fences the executed cases at the end of this file transcribe. */
+-const CORE_GUIDE = 'guides/sse.md'
++/**
++ * The one guide this package sources: its tagline the README pitch equals, and its flagship
++ * fences the executed cases at the end of this file transcribe.
++ */
++const GUIDE_SPEC = 'guides/sse.md'
+ 
+ const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+@@ -57,11 +61,61 @@ const manifest = parseManifest(
+ 	'guides',
+ )
+ const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
+ 
+ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -123,6 +177,24 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
++		// The equality gate: a `Summary` cell against its export's description paragraph, a
++		// titled fence against the `@example` of that title. `findDrift` owns the comparison
++		// and names both sides; converge the two sides with `npm run docs`, never by
++		// weakening this assertion. `findDrift` pairs an example only where a title is
++		// present on both sides, so an untitled `@example` block is outside this case. Each
++		// collected line is the spec, the key, and each side's text or `absent` — the same
++		// worklist `npm run docs` prints, so a failure here is read the way that command's
++		// output is.
++		it('keeps every compared summary and example equal to its source', () => {
++			const disagreeing: string[] = []
++			for (const drift of findDrift(guide, source)) {
++				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
++				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
++				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
++			}
++			expect(disagreeing).toEqual([])
++		})
++
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()
+@@ -200,7 +272,7 @@ for (const entry of manifest) {
+ // body, so a line one fence shares with another cannot stand in for it. Change a
+ // fence, change the transcription beside it.
+ describe('flagship fences', () => {
+-	const guideText = requireValue(files[CORE_GUIDE], `Missing file: ${CORE_GUIDE}`)
++	const guideText = requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`)
+ 	const readmeText = readFileSync(new URL('README.md', root), 'utf8')
+ 
+ 	it('returns the Surface fence values and clears back to a fresh stream', () => {
