@@ -1,0 +1,20 @@
+== test p2 landing 2026-09-07T15:37:44Z over 8f0aa71
+== status
+ M README.md
+ M guides/test.md
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/server/factories.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts      |   4 +-
+ tests/guides.test.ts     |  80 ++++++-
+ 10 files changed, 486 insertions(+), 308 deletions(-)
+== stage by path
+ 10 files changed, 486 insertions(+), 308 deletions(-)
+== committed
+92a50c9 Converge test under the equality gate
+(status end)
