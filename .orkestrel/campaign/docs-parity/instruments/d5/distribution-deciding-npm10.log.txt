@@ -1,0 +1,56 @@
+
+> @orkestrel/scaffold@0.0.63 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+x···x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > stages exactly the declared vendored host inventory
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/distribution.test.ts:293:6
+    291|    expect(
+    292|     expanded.some((destination) => destination === path || destination…
+    293|    ).toBe(true)
+       |      ^
+    294|   }
+    295|   for (const destination of expanded) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > installs the packed scaffold and passes one generated core/server workspace through prepublish [requires a reachable npm registry]
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/distribution.test.ts:908:33
+    906|      { cwd: target, encoding: 'utf8', env: environment, windowsHide: t…
+    907|     )
+    908|     expect(dependencies.status).toBe(0)
+       |                                 ^
+    909|     const lock: unknown = JSON.parse(
+    910|      requireValue(workspace.read('generated/package-lock.json')),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  07:15:15
+   Duration  21.37s (transform 986ms, setup 704ms, import 966ms, tests 19.47s, environment 0ms)
+
+EXIT 1

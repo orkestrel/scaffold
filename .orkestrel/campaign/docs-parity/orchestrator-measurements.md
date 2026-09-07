@@ -82,3 +82,23 @@ $ npm run test:src:server            (scaffold, the tree as D5 left it; instrume
  FAIL  tests/src/server/helpers.test.ts:200  expect(imported).toEqual([])  — received ["scripts/docs.ts"]
  Test Files  1 failed | 4 passed (5)   Tests  1 failed | 431 passed (432)   Duration 4.32s   EXIT 1
 ```
+
+## M8 — the distribution proof's install red is npm 10.9.7's, not this tree's (2026-09-07, after the D5 audit round)
+
+```text
+$ npm run test:distribution                         (default path: npm 10.9.7; instruments/d5/distribution-deciding-npm10.log.txt)
+ FAIL  stages exactly the declared vendored host inventory        tests/distribution.test.ts:293  expected false to be true
+ FAIL  installs the packed scaffold and passes one generated core/server workspace through prepublish   :908  expected 1 to be +0
+ Tests  2 failed | 3 passed (5)   Duration 21.37s   EXIT 1
+$ bash instruments/d5/install-reproduce.sh          (pack, materialize the proof workspace from dist/, point @orkestrel/scaffold at the tarball, npm install)
+npm error Cannot read properties of null (reading 'edgesOut')      at #loadPeerSet (@npmcli/arborist/lib/arborist/build-ideal-tree.js:1289)   idealTree:node_modules/vitest
+bisect A  registry @orkestrel/scaffold ^0.0.63 instead of the tarball        → the same crash
+bisect B  the tarball, @orkestrel/guide removed                              → the same crash
+bisect C  the tarball, --legacy-peer-deps                                    → exit 0
+bisect D  an empty package with devDependencies { vitest: ^4.1.11 } alone    → the same crash
+bisect E  an empty package with devDependencies { vite: ^8.2.2 } alone       → exit 0
+$ which -a npm → /opt/node22/bin/npm (10.9.7), /usr/local/bin/npm (10.8.2); /opt/npm11/bin/npm → 11.19.1
+instruments/d3/d3-gates-probe.sh:10  export PATH=/opt/npm11/bin:$PATH         (the last green distribution run: npm 11.19.1)
+```
+
+Reading: the first red is the hand-pinned vendored list at `tests/distribution.test.ts:250-285`, which lacks `scripts/docs.ts` — a file D5's brief failed to scope as one the change makes false; D5-fix-2 adds the row. The second red reproduces with the registry scaffold, without the guide dependency, and on a bare `vitest ^4.1.11` install, and clears with peer resolution disabled: it is npm 10.9.7's `#loadPeerSet` crash on `vitest`'s peer set, not this change's. The D3 probe ran the proof under npm 11.19.1 from `/opt/npm11/bin`, and the D5 verify brief had dropped that standing condition; it is restored, and the deciding run under npm 11 (`instruments/d5/distribution-deciding-npm11.log.txt`) rules the case.
