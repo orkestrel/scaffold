@@ -1,0 +1,32 @@
+== source tip
+c86f7fd
+0
+== before
+1dfe3282bec2d9c8
+553
+== after copy
+1a572acf6b97c9ab
+841
+byte-equal to the guide's tip
+== npm run build
+build-host: staged 122 file(s) into dist/host
+> node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+build-inventory: staged 122 file(s) into host.json
+EXIT 0
+== git status
+ M guides/guide.md
+ M host.json
+(status end)
+== format:check
+All matched files use the correct format.
+Finished in 13457ms on 223 files using 4 threads.
+EXIT 0
+== test:guides
+      Tests  20 passed (20)
+EXIT 0
+== test:policy
+      Tests  91 passed (91)
+EXIT 0
+== test:src:server (stageHost)
+      Tests  432 passed (432)
+EXIT 0
