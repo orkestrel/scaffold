@@ -249,7 +249,7 @@ after the last edit to any staged path, and every reading in this report is post
 
 ## Shared-file patches, report-only
 
-The rename leaves four stale prose references in files this brief puts off-limits. None breaks a
+The rename leaves stale prose references in files this brief puts off-limits. None breaks a
 gate — each is a plain code span in a doc block, not a `{@link}` — so each is drift a reader meets
 rather than a diagnostic.
 
@@ -390,3 +390,14 @@ $ git diff --stat        (whole tree)
 No deviation stopped the unit. Every K is done. The two departures — the audit's exit status and
 the `selectHostPaths` signature — are recorded under § Flagged claims with the off-limits file each
 would need, and each was carried rather than stopped on because neither touches the objective.
+
+## Citations this round renumbered (added by the Orchestrator after the audit round)
+
+The fix round moved lines under D5's citations and none of the D5 report's `file:line` values were re-based in it. At the tree's state after D5-fix:
+
+| D5 citation | Site | Now |
+| --- | --- | --- |
+| `tests/src/core/compilers.test.ts:611-631` | `emits the documentation seed beside the guides proof` | `:619` opens the case |
+| `tests/src/core/compilers.test.ts:1806-2114` | the fixture constants, `buildSeedWorkspace`, `runSeed`, `describe('the documentation seed')` | the `describe` opens at `:2071` and the file ends at `:2188` |
+| `guides/scaffold.md:1025-1044` | the equality-gate paragraphs | `:1025-1051`, with this round's paragraph at `:1035-1041` |
+| this report's K5 `:1371-1380` | the root tsconfig paragraph | `:1371-1378` |

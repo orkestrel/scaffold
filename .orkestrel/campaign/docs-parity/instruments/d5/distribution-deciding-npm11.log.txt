@@ -1,0 +1,38 @@
+npm 11.19.1 node v22.22.2
+
+> @orkestrel/scaffold@0.0.63 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+x····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > stages exactly the declared vendored host inventory
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/distribution.test.ts:293:6
+    291|    expect(
+    292|     expanded.some((destination) => destination === path || destination…
+    293|    ).toBe(true)
+       |      ^
+    294|   }
+    295|   for (const destination of expanded) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  07:19:59
+   Duration  75.16s (transform 935ms, setup 730ms, import 943ms, tests 73.27s, environment 0ms)
+
+EXIT 1

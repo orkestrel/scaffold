@@ -1,0 +1,26 @@
+# D5 scaffold-seed with D5-fix seed-rule — audit verdict
+
+## Round 1 (2026-09-07)
+
+Lanes: subjective `reviewer` (Opus 5), objective `reviewer` (Opus 5, the recorded substitution for the dark Sol bench), `checker` (Sonnet), `verifier` (Sonnet); Workflow `wf_e83c8713-ed1`, blind, clean contexts, one brief (`d5-audit-brief.md`, `d5-verify-brief.md`). Every lane ran and returned verdicts. Records: `d5-audit-subjective.md` (FAIL 11, 13), `d5-audit-objective.md` (FAIL 5, 10, 13), `d5-audit-checker.md` (FAIL 13), `d5-verify-report.md` (`GATES: RED npm run test:distribution`).
+
+### Reconciled per claim
+
+- 1, 2, 3, 4, 6, 7, 8, 9, 12 — PASS in every lane that could rule; the objective lane read the seed whole, the gate's allowlist and its red-first log, and the own-specifier emission against `srcToExports`; the checker confirmed the wiring, the rule bullet, the gate, and the status set.
+- 5 — FAIL (objective): `writeSource` re-seeds its texts from the frozen inventory per row and flushes against it, so two index rows over one source file clobber each other's rewrites and the file is written twice. Carrier: D5-fix-2 L1.
+- 10 — FAIL (objective): the `--to guide` case proves "every other byte" by sampling. Carrier: D5-fix-2 L2.
+- 11 — FAIL (subjective): a count in the guide's exit-code sentence (`guides/scaffold.md:1033`). Carrier: D5-fix-2 L8.
+- 13 — FAIL (subjective, objective, checker): counts of growable sets in both reports; D5's citations not re-based after D5-fix; the Orchestrator's integration note claimed `tests/setupServer.ts` is staged, which is false. The reports and the note are corrected in the retained records (this commit); `d5-fix-report.md` gained the renumbering table.
+
+### The verifier's red, ruled by the deciding runs (M8)
+
+`npm run test:distribution` under the shell's default npm 10.9.7 fails two cases. The first, `stages exactly the declared vendored host inventory` (`tests/distribution.test.ts:293`), is D5's: the file pins the vendored set by hand at `:250-285` and lacks `scripts/docs.ts`; D5's brief failed to scope that file as one the change makes false. Carrier: D5-fix-2 L12. The second, the packed-scaffold install (`:908`), reproduces with the registry scaffold, without the guide dependency, and on a bare `vitest ^4.1.11` install, and clears with peer resolution disabled: it is npm 10.9.7's `#loadPeerSet` crash on `vitest`'s peer set (`instruments/d5/install-npm10.err.txt`), not this tree's. Under npm 11.19.1 from `/opt/npm11/bin`, the way the last green run reached it, the install case is green and only `:293` is red (`instruments/d5/distribution-deciding-npm11.log.txt`, 75.16 s). The verify brief carries that standing condition again.
+
+### Findings outside the claims, with carriers
+
+- Objective: a no-op replacement counts as `written` (L3); a missing `guides/README.md` or an unindexed spec throws outside the documented exit codes (L4); `'scripts/docs.ts'` written twice in `src/core/compilers.ts` (L7, `DOCS_SEED_PATH`); the process-spawning cases sit in `src:core` at the default timeout (observation, the placement recorded by D5 and carried as a finding for the next change: a `scripts/`-axis project); no gate ran between the integration patches and the audit (closed: the verifier's round ran over the patched tree).
+- Subjective: F1 `Outcome.left`/`formatLeft`/`reported:` are one quantity in three words (L5); F2 `buildSummaries` gathers, so `collectSummaries` (L6); F3 `DOCS_SEED_PATH` (L7); F4 the guide names which guide's tagline the pitch compares against and the silent skip (L8); F5 counts in the seed's own doc comment (L9); F6 `run npm run format` stutters, `next: npm run format` (L10); F7 the rule bullet repeats "for every workspace" (L11).
+- Checker: the integration note's false sentence (corrected).
+- Dropped on the record: none.
+
+VERDICT: FAIL 5, 10, 11, 13 — D5-fix-2 briefed; the round re-runs its checker and verifier on the fix, and the objective lane on L1.
