@@ -1,0 +1,31 @@
+tmp/d7n-brief-prep/baseline/src/core/BriefManager.ts:103:3: error policy(no-banned-term): Replace just in this comment: delete.
+tmp/d7n-brief-prep/baseline/src/core/helpers.ts:494:1: error policy(no-banned-term): Replace simply in this comment: delete.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:32:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:39:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:46:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:51:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:61:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:74:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:84:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:118:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:157:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:204:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:256:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:324:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:387:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:409:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:468:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:479:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:497:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:552:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:575:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:590:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:627:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:650:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:662:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/setup.ts:667:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tmp/d7n-brief-prep/baseline/tests/src/core/helpers.test.ts:393:3: error policy(no-banned-term): Replace just in this comment: delete.
+tmp/d7n-brief-prep/baseline/tests/src/core/helpers.test.ts:536:3: error policy(no-banned-term): Replace simply in this comment: delete.
+tmp/d7n-brief-prep/baseline/src/core/types.ts:136:1: error policy(no-banned-term): Replace leverage in this comment: use.
+tmp/d7n-brief-prep/baseline/src/core/types.ts:346:1: error policy(no-banned-term): Replace just in this comment: delete.
+tmp/d7n-brief-prep/baseline/src/core/constants.ts:86:1: error policy(no-banned-term): Replace just in this comment: delete.

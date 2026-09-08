@@ -1,0 +1,14 @@
+
+> @orkestrel/brief@0.0.8 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/brief
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  21:18:14
+   Duration  663ms (transform 216ms, setup 204ms, import 83ms, tests 247ms, environment 0ms)
+

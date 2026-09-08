@@ -1,0 +1,67 @@
+
+> @orkestrel/brief@0.0.7 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/brief
+
+·················································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace
+AssertionError: expected [ { rule: 'prose', …(3) }, …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "line": 100,
++     "message": "prose carries no banned term: leverage (use)",
++     "path": "guides/brief.md",
++     "rule": "prose",
++   },
++   {
++     "line": 552,
++     "message": "prose carries no banned term: simply (delete)",
++     "path": "guides/brief.md",
++     "rule": "prose",
++   },
++   {
++     "line": 1119,
++     "message": "prose carries no banned term: via (through, by using)",
++     "path": "guides/brief.md",
++     "rule": "prose",
++   },
++   {
++     "line": 1119,
++     "message": "prose carries no banned term: via (through, by using)",
++     "path": "guides/brief.md",
++     "rule": "prose",
++   },
++   {
++     "line": 1120,
++     "message": "prose carries no banned term: via (through, by using)",
++     "path": "guides/brief.md",
++     "rule": "prose",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:472:49
+    470| describe('repository policy', () => {
+    471|  it('enforces the mirror, suppression, skill, bridge, and portability …
+    472|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    473|  })
+    474|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 89 passed | 1 skipped (91)
+   Start at  16:59:19
+   Duration  1.32s (transform 633ms, setup 505ms, import 250ms, tests 348ms, environment 0ms)
+

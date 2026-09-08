@@ -1,0 +1,12 @@
+
+> @orkestrel/brief@0.0.8 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/brief@0.0.8 check:src
+> npm run check:src:core
+
+
+> @orkestrel/brief@0.0.8 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+

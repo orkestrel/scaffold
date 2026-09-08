@@ -101,6 +101,10 @@ A package converged after the final tarball is installed takes the idiom in its 
 - markdown's `tests/guides.test.ts` lines 3 to 4 carry a header sentence the pilot's drop-in does not; the closing unit converges the header on the pilot's bytes.
 - router's Constants convention sentence carries Ruling 15's interface sentence beside the constants sentence, while template, test, table, websocket, browser, and database carry the constants sentence alone; the closing unit takes the template's form.
 
+### The drop-in's summary pin (2026-09-08, brief's audit, objective F4)
+
+The equality case asserts `findDrift` returns nothing, and nothing pins that it compared a non-empty summary population: renaming `Summary` in every table would retire that half of the gate with every case green (P23b's control G reddens the gate only because one table is renamed). A successor unit `d7n-pilot-pin` (Opus `implementer` in `/home/user/fleet/abort`) adds a companion pin in the pilot's drop-in — the compared-summary population non-empty, in the guard-and-continue form with the both-sides failure line — after the closing sweep lands, so the sweep's byte-for-byte checks are not invalidated mid-flight; a mechanical propagation pass (`builder` per package, the region re-copied from the pilot, `docs` and `test:guides` green) then carries it fleet-wide, and the verifier re-runs per package.
+
 ### Findings carried to scaffold's next vendored release (2026-09-07)
 
 - The prose sweep in `tests/setupPolicy.ts` matches `in order to` unconditionally, so "in order" followed by "to" in the ordering sense (reason's `README.md:50`, `guides/reason.md:47`) forces a reword the rule does not owe. The row moves to the judged set beside `now`, `new`, `latest`, `once`, `since`, and `master`, or the pattern excludes the ordering sense.

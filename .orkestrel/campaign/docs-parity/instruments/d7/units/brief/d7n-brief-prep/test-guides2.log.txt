@@ -1,0 +1,14 @@
+
+> @orkestrel/brief@0.0.8 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/brief
+
+····················
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  20:39:50
+   Duration  621ms (transform 190ms, setup 224ms, import 127ms, tests 147ms, environment 0ms)
+

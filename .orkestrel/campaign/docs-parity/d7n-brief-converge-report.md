@@ -439,3 +439,7 @@ Every citation in this report was re-read against the tree left behind.
 ## Wall clock
 
 First command 2026-09-07T20:59:05Z, last command 2026-09-07T21:20:31Z — 21 minutes 26 seconds.
+
+---
+
+Orchestrator's annotation (2026-09-08, from `d7n-brief-audit-verdict.md`): this report states counts in prose, and the P.2 report names a README runtime line the file does not carry and omits the file-scope `reads a real inventory` case from its Ruling 13 departure list; the tree is authoritative. The unit's instruments are retained under `instruments/d7/units/brief/`.
