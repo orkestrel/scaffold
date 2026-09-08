@@ -109,7 +109,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `1d5afa3` | reader candidate returned; focused red and green recorded; review corrections remain; config failure traced to file-URL versus relative-path comparison; candidate retained, not committed or packed | authorized canonical scaffold correction is in flight; resolve the gate and retained review findings, then pack and revalidate the aligned fleet |
+| guide | `1d5afa3` | reader candidate returned; focused red and green recorded; review corrections remain; canonical scaffold path fix closed on main at c90089c9 but not propagated; candidate retained, not committed or packed | propagate the canonical correction, resolve retained reader review findings, then pack and revalidate the aligned fleet |
 
 ## The tail, after every package closes
 
@@ -154,9 +154,11 @@ after bootstrap guide installation and host/inventory regeneration. Read
 d7n-scaffold-path-audit-verdict.md and d7n-scaffold-path-fix-3-verdict.md. Final isolated
 clean/build staging passed under d7n-scaffold-path-final-prepare-2-run-verdict.md.
 The independent verifier and root's subsequent acceptance chain each passed under
-d7n-scaffold-path-closure-verdict.md. The tested canonical source awaits exact integration
-and scoped landing; no consumer propagation has run. Prioritize that landing and supported
-propagation independently of the inventory audit.
+d7n-scaffold-path-closure-verdict.md. The tested canonical source landed as
+c90089c99b03c692e8eda3935af592601a5e87e3 and is pushed to the campaign branch, main and
+designated session branch. Read d7n-scaffold-path-landing-verdict.md for exact integration,
+owner preservation and the non-gating CLI audit. No consumer propagation has run.
+Prioritize supported propagation independently of the inventory audit.
 
 The live layer inventory has not run. Its instrument predecessors failed independent
 checking and actual-mechanism controls. The bounded implementation successor returned
