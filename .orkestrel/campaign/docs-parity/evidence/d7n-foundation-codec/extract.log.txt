@@ -1,0 +1,2 @@
++ tar -xzf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-codec.eyQ8Pi/orkestrel-codec-0.0.3.tgz -C /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-codec.eyQ8Pi/extract.9RdSYj
+exit=0

@@ -1,0 +1,2 @@
++ tar -xzf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-msg.N3AAAA/orkestrel-msg-0.0.10.tgz -C /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-msg.N3AAAA/extract.3DV5Rx
+exit=0

@@ -1,0 +1,5 @@
+{
+	"name": "contract-abort-stage-consumer",
+	"private": true,
+	"type": "module"
+}

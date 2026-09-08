@@ -225,9 +225,17 @@ describe the historical sequence, not current state. Guide main remains pending.
 Contract's visit exited 0 with the corrected Guide and selected scaffold path repair.
 Its 0.0.17 tarball exists under tmp/pass/packed/d7n-foundation-contract.ZjPTS5/.
 The package manifest and lock stayed unchanged. Independent evidence verification and
-selected-path landing closed as 1e235c0 on the campaign branch and main. Codec, Msg and
-SSE packed with exit 0; Test is running. The remaining bottom-layer visits follow
-the existing prepare-foundation.sh carrier.
+selected-path landing closed as 1e235c0 on the campaign branch and main. The bottom
+layer visits exited 0 and their independent artifact receipts are GREEN. Use the
+retained evidence/d7n-foundation-<package>/ metadata for their exact tarball paths.
+
+| Foundation package | Version | Latest source | State |
+| --- | --- | --- | --- |
+| contract | 0.0.17 | 1e235c053e27b6f3f6075367312dfddc75bc3d6b | accepted artifact; clean on branch and main |
+| codec | 0.0.3 | a492e90fc68c64b29a82ec69181ed69e8c72beb1 | accepted artifact; clean on branch and main |
+| msg | 0.0.10 | 57128e98372d2bc94307236886beb5166d172664 | accepted artifact; selected-path landing pending |
+| sse | 0.0.7 | 7778cff15ca587fdb12404a31737dc7a91225e1d | accepted artifact; selected-path landing pending |
+| test | 0.0.14 | 1b6ce0468d40c676d1e544cd004c0a5aa09730f0 | accepted artifact; selected-path landing pending |
 
 Ruling 30 records the owner's development-pin clarification. Prepare lower runtime
 layers with tooling tarballs now. Update development pins after tooling publication;

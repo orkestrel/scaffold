@@ -1,0 +1,2 @@
++ tar -xzf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-test.ufR41o/orkestrel-test-0.0.14.tgz -C /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-test.ufR41o/extract.flm2l9
+exit=0

@@ -1,0 +1,25 @@
++ npm pack --ignore-scripts --pack-destination /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-sse.zb8CDG
+npm notice
+npm notice 📦  @orkestrel/sse@0.0.7
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.4kB README.md
+npm notice 12.5kB dist/src/core/index.cjs
+npm notice 21.2kB dist/src/core/index.cjs.map
+npm notice 14.3kB dist/src/core/index.d.cts
+npm notice 14.3kB dist/src/core/index.d.ts
+npm notice 12.3kB dist/src/core/index.js
+npm notice 21.2kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/sse
+npm notice version: 0.0.7
+npm notice filename: orkestrel-sse-0.0.7.tgz
+npm notice package size: 15.9 kB
+npm notice unpacked size: 103.0 kB
+npm notice shasum: af6c41cc74fa33d9817e4987d1861732d88a0977
+npm notice integrity: sha512-i4BxU2NXaXV5A[...]iH+9eShv1/JSQ==
+npm notice total files: 9
+npm notice
+orkestrel-sse-0.0.7.tgz
+exit=0

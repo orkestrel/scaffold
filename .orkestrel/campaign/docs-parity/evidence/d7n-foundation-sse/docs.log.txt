@@ -1,0 +1,5 @@
++ npm run docs
+npm notice run @orkestrel/sse@0.0.7 docs
+npm notice run node --experimental-strip-types scripts/docs.ts
+rows read: 1, disagreements found: 0
+exit=0

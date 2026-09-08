@@ -68,6 +68,9 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-foundation-codec | root execution | Codec 8c20e15, version 0.0.3 | tmp/pass/d7n-foundation-codec.sYfIas | exec 45155 exited 0 | packed; landing pending |
 | d7n-foundation-msg | root execution | Msg 57128e9, version 0.0.10 | tmp/pass/d7n-foundation-msg.njodFP | exec 62560 exited 0 | packed; landing pending |
 | d7n-foundation-sse | root execution | SSE 7778cff, version 0.0.7 | tmp/pass/d7n-foundation-sse.P4pdtt | exec 5801 exited 0 | packed; landing pending |
+| d7n-foundation-test | root execution | Test 1b6ce04, version 0.0.14 | tmp/pass/d7n-foundation-test.uR3sHv | exec 8389 exited 0 | packed; independent receipt and landing pending |
+| d7n-foundation-receipts-verify | native verifier, Terra | completed Codec, Msg, SSE and Test visits | native foundation_receipts_verify | native task | running; actual receipts only |
+| d7n-contract-abort-stage | native builder, Terra | accepted Contract artifact and clean Abort 3dad185 | native contract_abort_stage | native task | authoring isolated npm proof; campaign path lookup corrected; no package execution |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes

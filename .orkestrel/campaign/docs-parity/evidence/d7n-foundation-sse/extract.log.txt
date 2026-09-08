@@ -1,0 +1,2 @@
++ tar -xzf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-sse.zb8CDG/orkestrel-sse-0.0.7.tgz -C /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-sse.zb8CDG/extract.GeEvDR
+exit=0

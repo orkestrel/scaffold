@@ -1,0 +1,2 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/path-artifact-pilot/foundation.mjs test /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-foundation-test.uR3sHv/repair
+exit=0

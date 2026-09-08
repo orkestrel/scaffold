@@ -1,0 +1,25 @@
++ npm pack --ignore-scripts --pack-destination /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-msg.N3AAAA
+npm notice
+npm notice 📦  @orkestrel/msg@0.0.10
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.8kB README.md
+npm notice 95.6kB dist/src/core/index.cjs
+npm notice 164.6kB dist/src/core/index.cjs.map
+npm notice 55.9kB dist/src/core/index.d.cts
+npm notice 55.9kB dist/src/core/index.d.ts
+npm notice 92.6kB dist/src/core/index.js
+npm notice 164.6kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/msg
+npm notice version: 0.0.10
+npm notice filename: orkestrel-msg-0.0.10.tgz
+npm notice package size: 152.4 kB
+npm notice unpacked size: 637.0 kB
+npm notice shasum: ef15d2cd417f51d578a4a67efde4a19fcac91eab
+npm notice integrity: sha512-92PeTW2+ePVyt[...]Pd1eCX2eeoFqQ==
+npm notice total files: 9
+npm notice
+orkestrel-msg-0.0.10.tgz
+exit=0

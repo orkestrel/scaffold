@@ -70,6 +70,12 @@ before visiting the bottom runtime layer. A changed final tool artifact invalida
 affected provisional readings. Do not create a runtime cycle by treating a dev edge as
 a runtime edge.
 
+Apply Ruling 30 to later development pins. Use identified tooling tarballs while
+preparing lower layers. Do not hold a lower-layer publication for Guide or scaffold's
+later development-pin update. After that update, rebuild and compare material output
+with the artifact already published. An unchanged distributable needs no version bump
+or repeated publication. A material change follows its own release obligations.
+
 Version bumps during local preparation do not authorize publication. The owner's
 latest direction, recorded as Ruling 29, replaces guide-first publication with measured
 dependency-layer order. Prepare the fleet with tarballs, then present that order and

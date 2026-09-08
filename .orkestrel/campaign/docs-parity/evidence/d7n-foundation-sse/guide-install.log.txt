@@ -1,0 +1,9 @@
++ npm install --no-save --ignore-scripts --package-lock=false C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-bootstrap.47Q7XT/orkestrel-guide-0.0.18.tgz
+
+changed 13 packages, and audited 121 packages in 10s
+
+28 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+exit=0
