@@ -1,0 +1,15 @@
+1d5afa3c637ea280c54649d8661856de05f22eaf
+probe 5b0800cc-bc44-4901-a45a-8f15ee5436d6 (751 ms)
+claim 3e7d91fbd8f8771e3d029fafea15c171
+toolchain typescript 6.0.3, oxlint 1.81.0, vitest 4.1.11
+project configs/src/tsconfig.core.json ffc6382b7365dd2800ee4756927e298b
+reason Flattening drops code-token boundaries and admits an extra whitespace-only code span beside the entity name.
+case type: 0 issues (397 ms)
+case lint: 0 issues (402 ms)
+case runtime: 0 issues (548 ms)
+control type: 0 issues (106 ms)
+control lint: 0 issues (116 ms)
+control runtime: 1 issue (190 ms)
+  [claimant] tmp/probe/d7n-heading.test.ts:16 expected 'Widget' to be undefined // Object.is equality
+receipt probe:3e7d91fbd8f8771e3d029fafea15c171:runtime:typescript@6.0.3:oxlint@1.81.0:vitest@4.1.11:configs/src/tsconfig.core.json@ffc6382b7365dd2800ee4756927e298b
+exit=0

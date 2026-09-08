@@ -1,0 +1,9 @@
+HEAD 54e71991c6189b8fd1e5895421f3f3723407bf1b
+guide sha256 2b76b363f4b93b8017d42d5fd2de68ab55f2d0b01bad851f9b68fd4e80604d17
+constants: FAIL
+validators: FAIL
+methods-only: FAIL
+topic-headings: FAIL
+tallies: FAIL
+endings: FAIL
+exit=1

@@ -1,0 +1,241 @@
+fabbd6f5-c285-4dbf-b5d3-680126b8f9dc
+I'll read the scout brief first, then collect only the bounded evidence it asks for.The brief names a specific evidence slice. Next I’ll load the required rules, skill, campaign files, then the guide package at that commit.Required campaign files are in. Next I’ll verify the guide tip and map extractSurface, types, tests, and installed Markdown contracts.The guide manifest is loaded. I’ll map extractSurface in source and hunt heading/Markdown contracts plus any probe coverage.Checkout `C:/Users/mikes/WebstormProjects/guide` is at `1d5afa3c637ea280c54649d8661856de05f22eaf` (`claude/orkestrel-npm-audit-deps-14ibta`). Package `@orkestrel/guide` `0.0.18`. Declared runtime deps: `@orkestrel/markdown` `^0.0.13` and `@orkestrel/contract` `^0.0.16`; lockfile resolves markdown `0.0.13` and contract `0.0.16`. `extractSurface` imports markdown types and guards; it does not call `@orkestrel/contract` (`isNonEmptyString` is used on other helpers in the same file).
+
+No condition designed. Missing coverage named unknown.
+
+---
+
+### Markdown heading and inline-node contracts (installed `@orkestrel/markdown` `0.0.13`)
+
+`HeadingNode` is an ATX heading whose `children` are an inline list. There is no heading-only-code helper in the installed declarations.
+
+```496:502:C:/Users/mikes/WebstormProjects/guide/node_modules/@orkestrel/markdown/dist/src/core/index.d.ts
+export declare interface HeadingNode {
+    readonly element: 'heading';
+    /** Holds the heading level, 1 (`#`) through 6 (`######`). */
+    readonly level: number;
+    /** Holds the inline content of the heading text. */
+    readonly children: readonly InlineNode[];
+}
+```
+
+Inline population and code-span leaf:
+
+```562:563:C:/Users/mikes/WebstormProjects/guide/node_modules/@orkestrel/markdown/dist/src/core/index.d.ts
+/** Represents a node that can appear inside inline content (a heading / paragraph / cell / list item / link text). */
+export declare type InlineNode = TextNode | EmphasisNode | CodeSpanNode | LineBreakNode | LinkNode | ImageNode;
+```
+
+```92:96:C:/Users/mikes/WebstormProjects/guide/node_modules/@orkestrel/markdown/dist/src/core/index.d.ts
+export declare interface CodeSpanNode {
+    readonly element: 'codeSpan';
+    /** Holds the verbatim code text (no inner markdown; HTML-escaped at render). */
+    readonly value: string;
+}
+```
+
+`TextNode.value` is decoded literal text. `EmphasisNode` / `LinkNode` / `ImageNode` nest `readonly InlineNode[]`.
+
+Guards and helpers on this seam:
+
+| Symbol | Role |
+| --- | --- |
+| `isHeadingNode` | Narrows to `HeadingNode` |
+| `isCodeSpanNode` | Narrows to `CodeSpanNode` |
+| `isEmphasisNode` / `isLinkNode` / `isImageNode` / `isTextNode` | Nested inline discriminants `findFirstCode` walks |
+| `isInlineNode` | Total `Guard<InlineNode>` |
+| `isBlockNode` | Total `Guard<BlockNode>` (`HeadingNode` is one member; a heading missing `level`/`children` fails) |
+| `flattenText` | Concatenates descendant text/code; mixed heading `a ` + `` `b` `` flattens to `'a b'` |
+| `parseInline` | Parses mixed inline; documented example `'a *b*'` yields text then emphasis |
+| `trimInlines` / `coalesceText` | Edge-trim and adjacent-text join after parse |
+| `createCodeSpanContract` / `codeSpanShape` | Contract for a code-span node |
+
+No `headingShape` / `createHeadingContract` export in that declaration file. No exported predicate that a heading’s children are a lone code span.
+
+`extractSurface` consumes that AST through:
+
+```27:40:C:/Users/mikes/WebstormProjects/guide/src/core/helpers.ts
+import {
+	coalesceText,
+	createMarkdown,
+	flattenText,
+	isBlockquoteNode,
+	isCodeBlockNode,
+	isCodeSpanNode,
+	isEmphasisNode,
+	isHeadingNode,
+	isImageNode,
+	isLinkNode,
+	isParagraphNode,
+	isTableNode,
+	renderMarkdown,
+	walkNodes,
+} from '@orkestrel/markdown'
+```
+
+`findFirstCode` returns the first nested code-span value and does not require the list to be code-only:
+
+```919:927:C:/Users/mikes/WebstormProjects/guide/src/core/helpers.ts
+export function findFirstCode(nodes: readonly InlineNode[]): string | undefined {
+	for (const node of nodes) {
+		if (isCodeSpanNode(node)) return node.value
+		if (isEmphasisNode(node) || isLinkNode(node) || isImageNode(node)) {
+			const value = findFirstCode(node.children)
+			if (value !== undefined) return value
+		}
+	}
+	return undefined
+}
+```
+
+`normalizeIdentifier` strips a generic suffix and trims; used after `findFirstCode` on both table names and H3 names:
+
+```965:967:C:/Users/mikes/WebstormProjects/guide/src/core/helpers.ts
+export function normalizeIdentifier(code: string): string {
+	const index = code.indexOf('<')
+	return (index < 0 ? code : code.slice(0, index)).trim()
+}
+```
+
+---
+
+### `extractSurface` admission, de-duplication, Summary reading
+
+Scope: `selectSectionBlocks(document, SURFACE)` with `SURFACE === 'Surface'`. Walks tables then H3s in document order.
+
+Admission:
+
+- Table row: `extractRowSymbol` — column 0 via `findFirstCode` + `normalizeIdentifier`; `Kind` via `findColumnIndex(table, KIND)` + `isExportKeyword`; skip if no name or unrecognized Kind.
+- H3: `isHeadingNode(block) && block.level === 3`, then `findFirstCode(block.children)` + `normalizeIdentifier`. Any H3 whose children contain a code span (including nested in emphasis/link/image) is admitted as `{ name, keyword: 'class' }` with **no** `summary`. Surrounding text is not inspected.
+
+De-duplication: shared `seen` set keyed by `computeSymbolKey` (`\`${keyword} ${name}\``). First encounter wins; a later same key is skipped.
+
+```1508:1537:C:/Users/mikes/WebstormProjects/guide/src/core/helpers.ts
+export function extractSurface(document: MarkdownDocument): readonly SurfaceSymbol[] {
+	const symbols: SurfaceSymbol[] = []
+	const seen = new Set<string>()
+
+	for (const block of selectSectionBlocks(document, SURFACE)) {
+		if (isTableNode(block)) {
+			for (let row = 0; row < block.rows.length; row += 1) {
+				const symbol = extractRowSymbol(block, row)
+				if (symbol === undefined) continue
+				const key = computeSymbolKey(symbol)
+				if (seen.has(key)) continue
+				seen.add(key)
+				symbols.push(symbol)
+			}
+			continue
+		}
+
+		if (isHeadingNode(block) && block.level === 3) {
+			const rawName = findFirstCode(block.children)
+			const name = rawName === undefined ? undefined : normalizeIdentifier(rawName)
+			if (name === undefined) continue
+			const symbol: SurfaceSymbol = { name, keyword: 'class' }
+			const key = computeSymbolKey(symbol)
+			if (seen.has(key)) continue
+			seen.add(key)
+			symbols.push(symbol)
+		}
+	}
+
+	return symbols
+}
+```
+
+Summary reading is table-only (`extractRowSummary` → `findColumnIndex(table, SUMMARY)` with `SUMMARY === 'Summary'`, then `normalizeSummary(extractCellText(cell))`). Empty cell and missing column both leave `summary` absent.
+
+```1482:1487:C:/Users/mikes/WebstormProjects/guide/src/core/helpers.ts
+export function extractRowSummary(table: TableNode, row: number): string | undefined {
+	const described = findColumnIndex(table, SUMMARY)
+	const cells = table.rows[row]
+	const cell = described === undefined || cells === undefined ? undefined : cells[described]
+	const summary = cell === undefined ? '' : normalizeSummary(extractCellText(cell))
+	return summary.length === 0 ? undefined : summary
+}
+```
+
+Cache and comparison sites:
+
+- `Guide` constructor stores `extractSurface(document)`; `surface()` returns that array (`C:/Users/mikes/WebstormProjects/guide/src/core/Guide.ts:50`, `:66-68`).
+- `findDrift` iterates `guide.surface()` and compares `symbol.summary` to the matching source symbol (`C:/Users/mikes/WebstormProjects/guide/src/core/helpers.ts:2386-2391`). An H3-admitted class with no `summary` that shadows a later table row of the same key never reaches that later cell.
+
+`SurfaceSymbol.summary` is optional and “absent when this side carries none”; `computeSymbolKey` never reads it (`C:/Users/mikes/WebstormProjects/guide/src/core/types.ts:21-27`).
+
+---
+
+### Existing tests (present vs unknown)
+
+**Intentional entity headings (code-only H3 `### \`Widget\``):**
+
+- Fixture: `C:/Users/mikes/WebstormProjects/guide/tests/fixtures/good/guides/src/widget.md:22` (`### \`Widget\`` after tables that do not list `Widget`).
+- `extractSurface` — `'unions a backticked H3 entity heading as a class symbol'` (`helpers.test.ts:1066-1069`) expects `{ name: 'Widget', keyword: 'class' }` with no summary.
+- Same fixture in `Guide.test.ts:18-27` (`extracts the exact documented surface from the good fixture guide`).
+- `replaceCell` control `'returns undefined for a symbol the guide documents outside a table'` (`helpers.test.ts:3816-3828`) inserts `### \`Compiler\`` and expects `{ name: 'Compiler', keyword: 'class' }` with no summary.
+
+**Table Summary retention (no preceding embedding H3):**
+
+- `'reads the Summary cell wherever the column sits'` (`helpers.test.ts:2661-2665`) — table-only document.
+- `'leaves the summary absent when the table carries no Summary column'` (`helpers.test.ts:2667-2670`).
+- `'returns undefined for a table carrying no Summary column'` (`helpers.test.ts:3810-3813`).
+
+**Heading formatting (generic / emphasis / link / whitespace):**
+
+- Generic **table** row: `'normalizes a generic-annotated table row to its bare identifier'` (`helpers.test.ts:1059-1063`) against `` `WidgetInterface<T>` `` in the fixture table, not an H3.
+- Emphasis **table** cell: `'reports no row whose name is a code span inside emphasis'` (`helpers.test.ts:1146-1157`) — `| **\`Widget\`** | class |`.
+- `findFirstCode` unit cases: plain code span; nested in emphasis, link, image; undefined on text-only (`helpers.test.ts:661-704`). None construct a heading node.
+- Whitespace: `normalizeIdentifier` trims; **unknown** whether an H3 with padding text, a lone code span plus sibling text, or a generic-annotated H3 is covered as a heading.
+
+**Unknown (no matching test found in `tests/`):**
+
+- Demonstration H3 that embeds a class code token among surrounding words (`Bind a \`Widget\` to a transport`) then a later Summary-bearing class row of the same key.
+- First-seen skip when an H3 admits `class Widget` before a table row that carries `summary`.
+- H3 whose only inline is an emphasized or linked code span treated as an entity heading.
+
+Campaign runtime instrument (not a package test): `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/campaign/docs-parity/instruments/d7/windows/guide-heading-probe.mjs:13-34` asserts that embedded heading and neutral heading yield the same summary-bearing row.
+
+---
+
+### Source / guide wording sites if admission is clarified
+
+These currently say “backticked H3 entity heading” / “backticked entity headings” and do not distinguish a code-only heading from a heading that merely contains a code span:
+
+| Site | Text |
+| --- | --- |
+| `src/core/helpers.ts:1490-1498` | `extractSurface` TSDoc: “unioned with every backticked H3 entity heading … (`{name: <codeSpan>, keyword: 'class'}`), deduped by `computeSymbolKey`” plus Summary-column clause |
+| `src/core/helpers.ts:906-909` | `findFirstCode` TSDoc: “the extraction rule behind a Surface or Methods table row's first-column identifier” (implementation also used for H3 children) |
+| `src/core/types.ts:192-194` | `GuideInterface.surface`: “table rows union backticked entity headings. Each row carries its `Summary` cell…” |
+| `src/core/Guide.ts:25-29` | Class example is a table-only surface |
+| `guides/guide.md:110` | Surface table Summary for `extractSurface` (same wording as the TSDoc) |
+| `guides/guide.md:121` | `findFirstCode` row: table first-column identifier |
+| `guides/guide.md:269` | `GuideInterface.surface` Methods cell |
+| `guides/guide.md:320-323` | Extraction model: “every backticked H3 entity heading (a class documented outside a table, keyword fixed to `'class'`)” |
+| `guides/guide.md:348-349` | Summary column located by header text |
+| `guides/guide.md:539-545` | RN check: backticked H3 entity headings with no Surface table |
+
+Parity law: a guide `Summary` cell equals the export’s description paragraph (`C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/documentation.md:35-38`). `tests/guides.test.ts` includes the `extractSurface` round-trip fence claim around line 467.
+
+---
+
+### Narrow test command, config, probe coverage
+
+Guide scripts (`C:/Users/mikes/WebstormProjects/guide/package.json:59-60`):
+
+```text
+npm run test:src
+npm run test:src:core
+```
+
+Both are:
+
+```text
+vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+```
+
+`src:core` includes `tests/src/core/**/*.test.ts` (`C:/Users/mikes/WebstormProjects/guide/vite.config.ts:32-47`). `extractSurface` / `findFirstCode` live in `tests/src/core/helpers.test.ts` (and `Guide.test.ts` for the cached surface). Guide-parity wording is `npm run test:guides` → `--project guides` → `tests/guides.test.ts`.
+
+Workbench `probe` project (`vite.config.ts:112-128`, `package.json:69`): `tmp/probe/**/*.test.ts`. That directory does not exist in the guide checkout. No Vitest probe case file for this edit.
+
+Probe MCP: registered in scaffold `.mcp.json` as `node node_modules/@orkestrel/probe/dist/bin/main.js`. In this Cursor session `GetDynamicTools` reports namespace `probe` not found (live namespaces: `cursor` only). Whether a `prove` project/case already names this TypeScript edit boundary: **unknown / not reachable here**. The retained heading instrument is a Node assert script, not a probe MCP case.
+

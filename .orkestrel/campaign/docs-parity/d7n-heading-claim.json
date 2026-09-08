@@ -1,0 +1,29 @@
+{
+  "project": "configs/src/tsconfig.core.json",
+  "case": {
+    "files": [
+      {
+        "path": "src/core/d7n-heading/helpers.ts",
+        "text": "import type { InlineNode } from '@orkestrel/markdown'\nimport { createMarkdown, flattenText, isCodeSpanNode, isEmphasisNode, isHeadingNode, isImageNode, isLinkNode } from '@orkestrel/markdown'\nimport { findFirstCode, normalizeIdentifier } from '@orkestrel/guide'\n\n/** Extracts compared inline content while preserving code-token boundaries. */\nexport function extractCellText(cell: readonly InlineNode[]): string {\n\tlet text = ''\n\tfor (const node of cell) {\n\t\tif (isCodeSpanNode(node)) text += `\\`${node.value}\\``\n\t\telse if (isEmphasisNode(node) || isLinkNode(node) || isImageNode(node)) {\n\t\t\ttext += extractCellText(node.children)\n\t\t} else text += flattenText(node)\n\t}\n\treturn text\n}\n\n/** Extracts an entity name from the proposed heading admission rule. */\nexport function extractHeading(input: string): string | undefined {\n\tconst block = createMarkdown(input).document.children.find(isHeadingNode)\n\tif (block === undefined || block.level !== 3) return undefined\n\tconst rawName = findFirstCode(block.children)\n\tconst text = extractCellText(block.children).trim()\n\tif (rawName === undefined || text !== `\\`${rawName}\\``) return undefined\n\treturn normalizeIdentifier(rawName)\n}\n"
+      }
+    ],
+    "test": {
+      "path": "tmp/probe/d7n-heading.test.ts",
+      "text": "import { expect, it } from 'vitest'\nimport { extractHeading } from '../../src/core/d7n-heading/helpers.js'\n\nit.each([\n\t['### `Widget`', 'Widget'],\n\t['### `Widget<T>`', 'Widget'],\n\t['###   `Widget`   ', 'Widget'],\n\t['### **`Widget`**', 'Widget'],\n\t['### [`Widget`](target)', 'Widget'],\n\t['### Bind a `Widget` to a transport', undefined],\n\t['### `Widget` and `Alias`', undefined],\n\t['### `Widget` ` `', undefined],\n\t['### Classes', undefined],\n])('reads the entity boundary in %s', (input, expected) => {\n\tif (input === undefined) throw new Error('heading input is required')\n\texpect(extractHeading(input)).toBe(expected)\n})\n"
+    }
+  },
+  "control": {
+    "files": [
+      {
+        "path": "src/core/d7n-heading/helpers.ts",
+        "text": "import type { InlineNode } from '@orkestrel/markdown'\nimport { createMarkdown, flattenText, isCodeSpanNode, isEmphasisNode, isHeadingNode, isImageNode, isLinkNode } from '@orkestrel/markdown'\nimport { findFirstCode, normalizeIdentifier } from '@orkestrel/guide'\n\n/** Extracts compared inline content while preserving code-token boundaries. */\nexport function extractCellText(cell: readonly InlineNode[]): string {\n\tlet text = ''\n\tfor (const node of cell) {\n\t\tif (isCodeSpanNode(node)) text += `\\`${node.value}\\``\n\t\telse if (isEmphasisNode(node) || isLinkNode(node) || isImageNode(node)) {\n\t\t\ttext += extractCellText(node.children)\n\t\t} else text += flattenText(node)\n\t}\n\treturn text\n}\n\n/** Extracts an entity name from the proposed heading admission rule. */\nexport function extractHeading(input: string): string | undefined {\n\tconst block = createMarkdown(input).document.children.find(isHeadingNode)\n\tif (block === undefined || block.level !== 3) return undefined\n\tconst rawName = findFirstCode(block.children)\n\tconst text = flattenText(block).trim()\n\tif (rawName === undefined || text !== rawName.trim()) return undefined\n\treturn normalizeIdentifier(rawName)\n}\n"
+      }
+    ],
+    "test": {
+      "path": "tmp/probe/d7n-heading.test.ts",
+      "text": "import { expect, it } from 'vitest'\nimport { extractHeading } from '../../src/core/d7n-heading/helpers.js'\n\nit.each([\n\t['### `Widget`', 'Widget'],\n\t['### `Widget<T>`', 'Widget'],\n\t['###   `Widget`   ', 'Widget'],\n\t['### **`Widget`**', 'Widget'],\n\t['### [`Widget`](target)', 'Widget'],\n\t['### Bind a `Widget` to a transport', undefined],\n\t['### `Widget` and `Alias`', undefined],\n\t['### `Widget` ` `', undefined],\n\t['### Classes', undefined],\n])('reads the entity boundary in %s', (input, expected) => {\n\tif (input === undefined) throw new Error('heading input is required')\n\texpect(extractHeading(input)).toBe(expected)\n})\n"
+    },
+    "stage": "runtime",
+    "reason": "Flattening drops code-token boundaries and admits an extra whitespace-only code span beside the entity name."
+  }
+}

@@ -1,0 +1,15 @@
+93fc01d9931b876c4ae86dabbe13168112c48847
+npm run test:src:server -- tests/src/server/Probe.test.ts -t "replaces a type stage its deadline destroyed|serializes project resolution against a live type inspection"
+npm notice run @orkestrel/probe@0.0.13 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/Probe.test.ts -t replaces a type stage its deadline destroyed|serializes project resolution against a live type inspection
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/probe
+
+---------·-·--------------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 24 skipped (26)
+   Start at  10:24:43
+   Duration  51.72s (transform 300ms, setup 90ms, import 485ms, tests 50.99s, environment 0ms)
+
+exit=0
