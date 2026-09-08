@@ -105,6 +105,8 @@ A package converged after the final tarball is installed takes the idiom in its 
 
 The equality case asserts `findDrift` returns nothing, and nothing pins that it compared a non-empty summary population: renaming `Summary` in every table would retire that half of the gate with every case green (P23b's control G reddens the gate only because one table is renamed). A successor unit `d7n-pilot-pin` (Opus `implementer` in `/home/user/fleet/abort`) adds a companion pin in the pilot's drop-in — the compared-summary population non-empty, in the guard-and-continue form with the both-sides failure line — after the closing sweep lands, so the sweep's byte-for-byte checks are not invalidated mid-flight; a mechanical propagation pass (`builder` per package, the region re-copied from the pilot, `docs` and `test:guides` green) then carries it fleet-wide, and the verifier re-runs per package.
 
+The same successor pins the methods population: a `## Methods` table with no ``#### `Interface` `` heading is silently outside `guide.methods()` and its rows never compare (worker's converge report, decision 1), so the pin asserts `guide.methods()` is non-empty wherever the guide carries a `## Methods` section, in the same guard-and-continue form.
+
 ### Findings carried to scaffold's next vendored release (2026-09-07)
 
 - The prose sweep in `tests/setupPolicy.ts` matches `in order to` unconditionally, so "in order" followed by "to" in the ordering sense (reason's `README.md:50`, `guides/reason.md:47`) forces a reword the rule does not owe. The row moves to the judged set beside `now`, `new`, `latest`, `once`, `since`, and `master`, or the pattern excludes the ordering sense.

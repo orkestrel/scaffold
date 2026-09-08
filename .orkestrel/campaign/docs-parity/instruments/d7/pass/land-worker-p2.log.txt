@@ -1,0 +1,16 @@
+== worker p2 landing 2026-09-08T01:48:10Z over f5ddbd0
+== status
+ M README.md
+ M guides/worker.md
+ M src/core/factories.ts
+ M src/core/types.ts
+ M src/server/factories.ts
+ M tests/guides.test.ts
+ src/server/factories.ts |  10 +--
+ tests/guides.test.ts    |  85 +++++++++++++++++--
+ 6 files changed, 253 insertions(+), 142 deletions(-)
+== stage by path
+ 6 files changed, 253 insertions(+), 142 deletions(-)
+== committed
+5d1fd14 Converge worker under the equality gate
+(status end)

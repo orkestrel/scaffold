@@ -1,0 +1,75 @@
+
+> @orkestrel/worker@0.0.12 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/worker
+
+(node:13226) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+················x·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > Worker > keeps every compared summary and example equal to its source
+AssertionError: expected [ …(10) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/worker.md WorkerInterface.enqueue: guide \"Submit a job (FIFO); the handler runs against an acquired resource, released when the job settles.\" source \"Submits one job in FIFO order; the handler runs against an acquired resource, released when the job settles.\"",
++   "guides/worker.md WorkerInterface.restore: guide \"Re-run the store's outstanding jobs (delegated to the queue); no-op without a store.\" source \"Re-enqueues the store's outstanding entries through the underlying queue; no-op without a store.\"",
++   "guides/worker.md WorkerInterface.start: guide \"(Re)start the underlying queue's worker loops.\" source \"Starts or restarts the underlying queue's worker loops.\"",
++   "guides/worker.md WorkerInterface.stop: guide \"Stop the queue, reject pending work, and await current-loop and durable cleanup quiescence.\" source \"Stops the queue, rejects pending work, and awaits current-loop and durable cleanup quiescence.\"",
++   "guides/worker.md WorkerInterface.pause: guide \"Suspend dequeuing (delegated to the queue).\" source \"Suspends dequeuing through the underlying queue, leaving in-flight jobs untouched.\"",
++   "guides/worker.md WorkerInterface.resume: guide \"Continue a paused worker (delegated to the queue).\" source \"Continues a paused worker through the underlying queue.\"",
++   "guides/worker.md WorkerInterface.abort: guide \"Cancel in-flight jobs, reject pending work, and await the queue's owned cleanup; never retried.\" source \"Cancels in-flight work, rejects pending work, and awaits queue-owned cleanup.\"",
++   "guides/worker.md WorkerInterface.clear: guide \"Drop pending jobs and await their durable cleanup; in-flight jobs are untouched.\" source \"Drops pending jobs and awaits their durable cleanup, leaving in-flight jobs untouched.\"",
++   "guides/worker.md WorkerInterface.destroy: guide \"Return one stable barrier for serial queue → pool cleanup and emitter-last teardown.\" source \"Tears down the queue, then the pool, and finally the worker emitter, behind one stable barrier.\"",
++   "guides/worker.md A resource-backed worker: guide \"ts\\nimport { createWorker } from '@orkestrel/worker'\\n\\n// A Queue whose handler runs each job against a pooled resource (acquired before the\\n// handler, released after it — even on throw). The pool's `max` defaults to `concurrency`.\\nconst worker = createWorker<Query, Connection, Rows>({\\n\\tpool: { create: () => connect(), destroy: (connection) => connection.close() },\\n\\thandler: (query, connection, { signal }) => connection.run(query, signal),\\n\\tconcurrency: 4,\\n\\tretries: 1,\\n})\\n\\nconst rows = await worker.enqueue(query)\\nawait worker.destroy() // awaits queue cleanup, pool cleanup, then emitter teardown\" source \"ts\\nimport { createWorker } from '@orkestrel/worker'\\n\\nconst worker = createWorker<Query, Connection, Rows>({\\n\\tpool: { create: () => connect(), destroy: (connection) => connection.close() },\\n\\thandler: (query, connection, { signal }) => connection.run(query, signal),\\n\\tconcurrency: 4,\\n\\tretries: 1,\\n})\\n\\nconst rows = await worker.enqueue(query)\"",
++ ]
+
+ ❯ tests/guides.test.ts:208:24
+    206|     disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source…
+    207|    }
+    208|    expect(disagreeing).toEqual([])
+       |                        ^
+    209|   })
+    210|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |guides| tests/guides.test.ts > Worker > WorkerInterface examples > documents an example for every method
+AssertionError: expected [ 'start', 'stop', 'pause', …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "start",
++   "stop",
++   "pause",
++   "resume",
++   "abort",
++   "clear",
++ ]
+
+ ❯ tests/guides.test.ts:245:59
+    243|       .filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+    244|       .map((fence) => fence.code)
+    245|      expect(findUnexampled(documented, fences, examples)).toEqual([])
+       |                                                           ^
+    246|     })
+    247|    })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 24 passed (26)
+   Start at  01:36:22
+   Duration  779ms (transform 132ms, setup 26ms, import 262ms, tests 350ms, environment 0ms)
+

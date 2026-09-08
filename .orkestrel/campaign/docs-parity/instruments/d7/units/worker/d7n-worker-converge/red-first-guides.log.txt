@@ -1,0 +1,88 @@
+
+> @orkestrel/worker@0.0.12 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/worker
+
+(node:5190) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+·xx·········x········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/worker.md pairs: guide [\"Surface\",\"Threads\",\"NodeWorker\",\"NodeWorker\",\"Persistence\",\"Observing\",\"A resource-backed worker\",\"CPU-parallel jobs over threads\",\"Durable jobs across restarts\"] source []",
++ ]
+
+ ❯ tests/guides.test.ts:107:19
+    105|      `${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${…
+    106|     ]
+    107|  expect(unpaired).toEqual([])
+       |                   ^
+    108| })
+    109|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+AssertionError: expected undefined not to be undefined
+ ❯ tests/guides.test.ts:121:20
+    119|  ).tagline()
+    120|
+    121|  expect(pitch).not.toBeUndefined()
+       |                    ^
+    122|  expect(tagline).not.toBeUndefined()
+    123|  expect(pitch).toBe(tagline)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > Worker > keeps every compared summary and example equal to its source
+AssertionError: expected [ …(16) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/worker.md function createWorker: guide \"Create a `WorkerInterface` — a `Queue` ⨉ `Pool`; each job runs against an acquired resource.\" source \"Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) marrying a `Pool` (`@orkestrel/pool`). Each enqueued input runs through the handler against an automatically acquired pooled resource (released when the job settles), with the queue's bounded concurrency, retries, and per-attempt timeout / abort.\"",
++   "guides/worker.md function createJSONQueueStore: guide \"Create a JSON-file `QueueStoreInterface` (`@orkestrel/worker/server`) — durable across restarts.\" source \"Creates a persistent JSON-file `QueueStoreInterface` — the core `createDatabaseQueueStore` over a server `createJSONDriver`.\"",
++   "guides/worker.md function createNodeWorker: guide \"Create a `WorkerInterface` over `node:worker_threads` (`@orkestrel/worker/server`) — CPU parallelism.\" source \"Creates a CPU-parallel worker over `node:worker_threads` — a thin specialization of the core `createWorker` whose pooled resource is a worker THREAD.\"",
++   "guides/worker.md function serveWorker: guide \"The worker-side entry (`@orkestrel/worker/server`) — a thread script registers its handler with it.\" source \"Registers a worker-thread handler — the worker-side half of `createNodeWorker`.\"",
++   "guides/worker.md function createThread: guide \"Create one worker thread and resolve a live `NodeThread` after it comes `online` (an earlier death rejects).\" source \"Creates one live worker thread and resolves it as a `NodeThread` after it comes online.\"",
++   "guides/worker.md function isReply: guide \"Narrow an inbound message to a `Reply` for a correlation id (total, correlated) — a `Dispatch`'s message filter.\" source \"Narrows an inbound `message` to a `Reply` for a given job `id` — no assertion.\"",
++   "guides/worker.md class Dispatch: guide \"One job posted to a leased `NodeThread`; its `promise` settles with the narrowed reply.\" source \"Represents one dispatched worker-thread job — the lifecycle entity behind a job posted to a leased `NodeThread`, whose `promise` settles with the narrowed reply.\"",
++   "guides/worker.md class Worker: guide \"A resource-backed job worker — a `Queue` composed with a `Pool`.\" source \"Represents a resource-backed job worker — a thin facade composing a `Queue` (`@orkestrel/queue`) with a `Pool` (`@orkestrel/pool`).\"",
++   "guides/worker.md type WorkerHandler: guide absent source \"Runs one worker job with a leased pool resource.\"",
++   "guides/worker.md interface WorkerOptions: guide absent source \"Configures `createWorker`.\"",
++   "guides/worker.md interface WorkerInterface: guide absent source \"Represents a resource-backed job worker — a Queue whose handler runs against a pooled resource.\"",
++   "guides/worker.md type WorkerEventMap: guide absent source \"Represents the push observation surface of a `WorkerInterface` — the job lifecycle a fire-and-forget observer subscribes to, surfacing the underlying queue's moments so a Worker consumer never reaches through to the internal `Queue`.\"",
++   "guides/worker.md interface NodeWorkerOptions: guide absent source \"Configures `createNodeWorker` — a CPU-parallel worker over `node:worker_threads`.\"",
++   "guides/worker.md interface ServeWorkerOptions: guide absent source \"Configures `serveWorker` — the worker-side entry a thread script registers.\"",
++   "guides/worker.md interface NodeThread: guide absent source \"Represents a live worker thread plus its latched liveness state — the pooled resource a `createNodeWorker` leases per job.\"",
++   "guides/worker.md type Reply: guide absent source \"Represents a thread→main reply envelope — a success carrying an opaque `value`, or a failure with a message — the reply half of the wire protocol `createNodeWorker` posts and `serveWorker` answers.\"",
++ ]
+
+ ❯ tests/guides.test.ts:208:24
+    206|     disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source…
+    207|    }
+    208|    expect(disagreeing).toEqual([])
+       |                        ^
+    209|   })
+    210|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 18 passed (21)
+   Start at  01:25:50
+   Duration  3.99s (transform 1.00s, setup 75ms, import 3.33s, tests 354ms, environment 0ms)
+

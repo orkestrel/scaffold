@@ -1,0 +1,14 @@
+
+> @orkestrel/worker@0.0.12 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/fleet/worker
+
+·····································
+
+ Test Files  2 passed (2)
+      Tests  37 passed (37)
+   Start at  01:39:56
+   Duration  795ms (transform 361ms, setup 44ms, import 468ms, tests 396ms, environment 0ms)
+

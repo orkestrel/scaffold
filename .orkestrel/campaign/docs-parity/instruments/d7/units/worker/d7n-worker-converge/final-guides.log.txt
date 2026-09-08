@@ -1,0 +1,16 @@
+
+> @orkestrel/worker@0.0.12 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/worker
+
+(node:23112) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  01:42:02
+   Duration  844ms (transform 171ms, setup 35ms, import 321ms, tests 356ms, environment 0ms)
+

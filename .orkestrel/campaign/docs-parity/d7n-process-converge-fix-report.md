@@ -402,3 +402,7 @@ Under the git-ignored `tmp/d7n-process-converge-fix/`: `rebuild-region.mjs`, `as
 `pilot-region-exact.txt`, `ours-region.txt`, `refusals.txt`, `faces.txt`, `own.txt`,
 `before-fmt.ts`. No lint control was planted. The two red-first controls were guide-text edits,
 each undone by editing and re-run green, and the tree carries neither.
+
+---
+
+Orchestrator's annotation (2026-09-08, from `d7n-process-closure-checker-process.md`): the report states a diffstat and a line count in prose; the members are named in the same sentences and the tree is authoritative.
