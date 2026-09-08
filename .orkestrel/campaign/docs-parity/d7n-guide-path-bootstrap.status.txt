@@ -1,0 +1,15 @@
+M  package-lock.json
+ M package.json
+?? .orkestrel/campaign/docs-parity/d7n-guide-bootstrap-gates-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-path-bootstrap-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-path-bootstrap-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-path-bootstrap.diff.txt
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot-check-report.md
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot-closure-verdict.md
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot-verify-report.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-path-bootstrap/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-path-artifact-pilot-independent/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/path-artifact-pilot/guide-constants.mjs
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/path-artifact-pilot/guide.mjs
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/path-artifact-pilot/guide.sh
+

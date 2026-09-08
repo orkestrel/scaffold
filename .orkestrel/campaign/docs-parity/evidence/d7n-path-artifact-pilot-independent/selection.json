@@ -1,0 +1,6 @@
+{
+	"paths": [
+		"tests/setupPolicy.ts",
+		"tests/config.test.ts"
+	]
+}

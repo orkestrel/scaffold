@@ -109,7 +109,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `1d5afa3` | reader candidate returned; focused red and green recorded; review corrections remain; canonical scaffold path fix closed on main at c90089c9 but not propagated; candidate retained, not committed or packed | propagate the canonical correction, resolve retained reader review findings, then pack and revalidate the aligned fleet |
+| guide | `1d5afa3` | reader candidate retained; packed scaffold path correction applied through the public API; configured-policy case changed from red to green; source and dependency files preserved | run full gates, checkpoint the candidate, resolve retained reader review findings, then pack and revalidate the aligned fleet |
 
 ## The tail, after every package closes
 
@@ -180,8 +180,12 @@ returned under d7n-layer-graph-report.md. Its runtime/peer/optional graph is acy
 Guide, scaffold, Probe and Test require a development-tool bootstrap. Read
 d7n-layer-wave-design-reading.md for the reconciled design and held lockfile choice.
 No final layer artifact exists yet. The path bootstrap pack is accepted under
-d7n-path-bootstrap-pack-reading.md; the disposable repair pilot ran green under root
-and is undergoing independent closure. No fleet repair has run from it.
+d7n-path-bootstrap-pack-reading.md. The disposable repair pilot is closed under
+d7n-path-artifact-pilot-closure-verdict.md after root and independent verification.
+The Guide bootstrap visit applied tests/setupPolicy.ts and tests/config.test.ts through
+the installed public API. Its configured-policy baseline exited 1 and its repeated
+post-repair case exited 0. Source and dependency bytes stayed unchanged. Read
+evidence/d7n-guide-path-bootstrap/; the full Guide gates and driver check follow.
 Root's initial Contract reading finds registry 0.0.16 and prepared source 0.0.17;
 that candidate does not require an automatic repeat bump merely to resume the pass.
 Read d7n-layer-contract-reading.md. No accepted layer tarball or new pin exists yet.
@@ -198,7 +202,12 @@ the original verified survey remains the graph evidence. The owner was asked whe
 future release pins remain isolated until registry locks can be generated or land on
 main with an explicit pending lock. Root recommends isolated preparation and has not
 changed canonical future pins while that choice is open. Source corrections and
-disposable mechanism proofs remain authorized.
+disposable mechanism proofs remain authorized. The owner directed preparation to
+continue without additional broad checking rounds. Reuse accepted evidence and keep
+the package gates and real downstream artifact proofs. Prepare future pins in isolated
+state; do not make main uninstallable while registry lock generation is unavailable.
+The publish skill and its wave reference have been read for preparation. Registry-final
+visits still follow publication availability; no upload is authorized by preparation.
 
 ## Pending owner decisions carried from the container
 

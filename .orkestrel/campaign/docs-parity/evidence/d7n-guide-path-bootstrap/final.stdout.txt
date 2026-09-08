@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------·-----------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 172 skipped (173)
+   Start at  16:03:04
+   Duration  1.05s (transform 200ms, setup 58ms, import 431ms, tests 407ms, environment 0ms)
+

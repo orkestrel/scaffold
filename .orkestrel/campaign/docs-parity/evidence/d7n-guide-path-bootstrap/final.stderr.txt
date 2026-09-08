@@ -1,0 +1,2 @@
+npm notice run @orkestrel/guide@0.0.18 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config tests/config.test.ts -t loads every configured policy rule through the real binary

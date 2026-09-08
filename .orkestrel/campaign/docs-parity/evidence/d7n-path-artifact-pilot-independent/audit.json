@@ -1,0 +1,19 @@
+{
+	"findings": [
+		{
+			"path": "tests/setupPolicy.ts",
+			"group": "tests",
+			"ownership": "content",
+			"drift": "stale",
+			"observed": "6578706f727420636f6e7374207374616c65203d20227365747570220a"
+		},
+		{
+			"path": "tests/config.test.ts",
+			"group": "tests",
+			"ownership": "content",
+			"drift": "stale",
+			"observed": "6578706f727420636f6e7374207374616c65203d2022636f6e666967220a"
+		}
+	],
+	"questions": []
+}

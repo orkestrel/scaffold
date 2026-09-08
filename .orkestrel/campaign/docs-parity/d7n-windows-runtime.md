@@ -46,12 +46,21 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-layer-capture-check | mechanical checker, Cursor Grok | same brief and evidence | tmp/cursor/d7n-layer-capture-audit.jsonl; 59ad5b23-ccf5-4afc-89cc-92c69010743b | exec 61081 exited 0 | returned; missing cached label and row discriminant confirmed |
 | d7n-layer-survey-diagnostic | root read-only production measurement | frozen carrier awaiting audit closure | tmp/pass/d7n-layer-survey-diagnostic | exec 48329 exited 0 | independent receipt accepted for graph reconciliation; cached remote limitation retained |
 | d7n-layer-survey-verify | independent verifier, Terra | immutable raw survey | native layer_capture_verify | native task | GREEN; before/after identity and command/file evidence agree |
-| d7n-layer-graph | ecosystem reconciler, Terra | verified raw manifests, locks and registry responses | native layer_graph | native task | dispatched; installed closure remains per-visit evidence |
+| d7n-layer-graph | ecosystem reconciler, Terra | verified raw manifests, locks and registry responses | native layer_graph | native task | returned; acyclic runtime/peer/optional graph retained; installed closure remains per-visit evidence |
 | d7n-scaffold-path-verify | independent verifier, Terra | final isolated candidate after preparation | no journal | launch refused at thread limit | not run; wait for final source and regenerated host inventory |
 | d7n-layer-inventory-instrument | native builder, Terra | scratch instrument only | native layer_inventory_instrument | native task | predecessor and successor returned; incomplete-state and actual-control gaps rejected; no collection ran |
 | d7n-layer-inventory-instrument-3 | native implementer, Sol | preserved scratch predecessors | native layer_inventory_fix | native task | frozen candidate returned; actual-mechanism controls and root independent run passed; installed process primitive reused; collection not run |
 | d7n-layer-inventory-instrument-3-audit | objective analyst, Sol | frozen returned instrument | native layer_inventory_audit_objective | native task | returned findings; report retained; reconciliation pending |
 | d7n-layer-inventory-instrument-3-audit | subjective reviewer, Opus | frozen returned instrument | tmp/claude/d7n-layer-inventory-instrument-3-audit-subjective.jsonl; 05ced4cf-c73e-4e82-8fe8-24d23dc66323 | terminal result read without error or denials | returned findings; projection retained; reconciliation pending |
+
+| d7n-layer-tools-check | mechanical checker, Cursor Grok | carrier successor and bootstrap pack script | tmp/cursor/d7n-layer-tools-check.jsonl; 6e0aed4e-16a5-4ed3-9c18-f827585f8fde | exec 43179 exited 0 | PASS; carrier closed |
+| d7n-layer-wave-design | objective analyst, Sol | measured graph and accepted mechanism map | native layer_wave_objective | native task | returned; root reading retained |
+| d7n-layer-wave-design | subjective planner, Opus | same graph and mechanism brief | tmp/claude/d7n-layer-wave-subjective.jsonl; c7594958-303f-4ceb-b9d0-fb429f80cad8 | exec 77507 exited 0 | returned; reconciled design retained |
+| d7n-path-artifact-pilot-check | mechanical checker, Cursor Grok | frozen installed pilot and actual root receipt | tmp/cursor/d7n-path-artifact-pilot-check.jsonl; 6225e4d0-7f29-4eda-b7b4-21667b759e7f | exec 95859 exited 0 | PASS; empty-file lookup error annotated |
+| d7n-path-artifact-pilot-verify | independent verifier, Terra | frozen installed pilot | native path_artifact_pilot_verify | direct host command exited 0 | GREEN; pilot closed |
+| d7n-guide-path-bootstrap | builder, Terra | accepted selected-path pilot | native layer_capture_fix | author returned; root guide.sh exited 0 | repair applied; configured-policy red became green; full gates pending |
+| d7n-guide-bootstrap-gates | builder, Terra | existing Guide validation script | native layer_capture_fix | native task | authoring allowlist successor; no Guide writes |
+| d7n-guide-path-bootstrap-check | mechanical checker, Cursor Grok | driver diff and actual repair receipt | tmp/cursor/d7n-guide-path-bootstrap-check.jsonl; session pending | bridge preparation | launch pending |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes
