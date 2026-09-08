@@ -301,3 +301,5 @@ Bench state at start (2026-09-06, 22:5x UTC): Codex bench unavailable (Sol dark;
 | 2026-09-08T02:06Z | relation closure: checker PASS, verifier GREEN; closed and pushed to the branch and `main` at `d6945c9` | `d7n-relation-closure-verdict.md` |
 | 2026-09-08T02:07Z | `d7n-brief-close-2` returned green and landed; brief's and queue's closures and the landed closings' checkers dispatched (`wf_5edb472e-223`), brief's and queue's closures in `wf_40299b93-5ee` | |
 | 2026-09-08T02:12Z | `d7n-server-caps` returned green and landed; the final tarball reinstalled; server's closure (checker + verifier, Sonnet) dispatched | `d7n-server-caps-report.md` |
+| 2026-09-08T02:15Z | brief closure: checker PASS, verifier GREEN; closed and pushed to the branch and `main` at `3849b1d` | `d7n-brief-closure-verdict.md` |
+| 2026-09-08T02:15Z | queue closure: checker PASS, verifier GREEN; closed and pushed to the branch and `main` at `1ae3fa1` | `d7n-queue-closure-verdict.md` |
