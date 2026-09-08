@@ -251,6 +251,10 @@ The publish skill's window reference has been read. Windows uploads are operator
 in a real terminal; root prepares the commands and confirms the registry. No login,
 credential change or auth-file inspection has run.
 
+Read d7n-foundation-ready.md for the prepared wave, fresh registry evidence and the
+operator script. It is authored and syntax-checked but unrun. The author and verifier
+tasks have returned; no package writer or shell session remains active for this wave.
+
 Ruling 30 records the owner's development-pin clarification. Prepare lower runtime
 layers with tooling tarballs now. Update development pins after tooling publication;
 do not bump or republish when the material distributable is unchanged. Keep future
