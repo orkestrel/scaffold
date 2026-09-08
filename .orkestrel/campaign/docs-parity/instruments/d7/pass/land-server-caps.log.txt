@@ -1,0 +1,14 @@
+== server caps landing 2026-09-08T02:10:34Z over 935b856
+== status
+ M src/server/Negotiator.ts
+ M src/server/Server.ts
+ M src/server/Stream.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/helpers.ts
+ 6 files changed, 56 insertions(+), 56 deletions(-)
+(non-comment changed lines end)
+== stage by path
+== committed
+9d35664 Lower the all-caps emphasis left in server's comments
+(status end)

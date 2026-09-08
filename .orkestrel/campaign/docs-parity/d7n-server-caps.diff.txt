@@ -1,0 +1,397 @@
+diff --git a/src/server/Negotiator.ts b/src/server/Negotiator.ts
+index c966111..9493a2b 100644
+--- a/src/server/Negotiator.ts
++++ b/src/server/Negotiator.ts
+@@ -73,7 +73,7 @@ export class Negotiator implements NegotiatorInterface {
+ 	 * answering 406 when none matches.
+ 	 *
+ 	 * @remarks
+-	 * Errors thrown by the negotiated handler propagate UNMODIFIED — the
++	 * Errors thrown by the negotiated handler propagate unmodified — the
+ 	 * server boundary classifies them, never this negotiator.
+ 	 */
+ 	async format<TState>(
+diff --git a/src/server/Server.ts b/src/server/Server.ts
+index 13337b4..d8ca888 100644
+--- a/src/server/Server.ts
++++ b/src/server/Server.ts
+@@ -256,8 +256,8 @@ export class Server<TState> implements ServerInterface<TState> {
+ 		this.#emitter.destroy()
+ 	}
+ 
+-	// Track the request for draining FIRST — before anything that can throw —
+-	// so the sync listener itself never throws; the rest of setup (which CAN
++	// Track the request for draining first — before anything that can throw —
++	// so the sync listener itself never throws; the rest of setup (which can
+ 	// throw on a malformed request) is deferred into the async `#accept`
+ 	// entry, kept behind the built-in boundary.
+ 	#handle(message: IncomingMessage, response: ServerResponse): void {
+@@ -270,7 +270,7 @@ export class Server<TState> implements ServerInterface<TState> {
+ 	// Build the fetch `Request` + `MiddlewareContext`, run the composed onion,
+ 	// and write the result back — every escaping throw is caught so the
+ 	// process can never crash on an unhandled handler (or malformed request)
+-	// error. `buildRequest` runs behind its OWN inner boundary: a throw there
++	// error. `buildRequest` runs behind its own inner boundary: a throw there
+ 	// (for example, a malformed `Host` header) maps to a silent `400`, never
+ 	// `error`.
+ 	async #accept(message: IncomingMessage, response: ServerResponse): Promise<void> {
+@@ -356,8 +356,8 @@ export class Server<TState> implements ServerInterface<TState> {
+ 	}
+ 
+ 	// Fan a raw protocol-upgrade out to the registered handlers in
+-	// registration order: the FIRST to return `true` CLAIMS the socket. A
+-	// throwing handler is treated as DECLINED — surfaced on `error` — and the
++	// registration order: the first to return `true` claims the socket. A
++	// throwing handler is treated as declined — surfaced on `error` — and the
+ 	// fan-out continues so a later handler can still claim. Unclaimed ⇒ the
+ 	// socket is destroyed so an unhandled upgrade never leaks a connection.
+ 	#onUpgrade(request: IncomingMessage, socket: Duplex, head: Buffer): void {
+@@ -452,14 +452,14 @@ export class Server<TState> implements ServerInterface<TState> {
+ 	}
+ 
+ 	// Close the underlying server, resolving once it stops accepting
+-	// connections. A keep-alive client leaves its socket IDLE after a
++	// connections. A keep-alive client leaves its socket idle after a
+ 	// response, which would hang a plain `close()` — so idle sockets are
+ 	// always dropped (an in-flight request is untouched); when `force` is set
+ 	// (the drain deadline fired with work still in flight, or `destroy`)
+ 	// every open socket is destroyed so the callback fires promptly.
+ 	//
+ 	// A protocol-upgraded socket needs the extra loop: node detaches it from
+-	// the connection set BOTH `closeIdleConnections()` and
++	// the connection set both `closeIdleConnections()` and
+ 	// `closeAllConnections()` walk, so neither reaches it while
+ 	// `server.close()` still waits on it. Without destroying the tracked set
+ 	// here, a force close hangs exactly as hard as a graceful one.
+@@ -481,7 +481,7 @@ export class Server<TState> implements ServerInterface<TState> {
+ 	}
+ 
+ 	// Arm a fresh drain wakeup when the server goes from settled to busy.
+-	// Called BEFORE the new unit is counted, so a zero here means nothing was
++	// Called before the new unit is counted, so a zero here means nothing was
+ 	// in flight yet. The invariant this pair holds — `#wakeup` is un-aborted
+ 	// whenever `#inflight` is positive — is what lets `#drainPending` park on
+ 	// it without racing a wakeup that already fired.
+@@ -489,8 +489,8 @@ export class Server<TState> implements ServerInterface<TState> {
+ 		if (this.#inflight === 0) this.#wakeup = createAbort()
+ 	}
+ 
+-	// Fire the current drain wakeup once the LAST unit of drainable work has
+-	// left. Called AFTER that unit is uncounted — event-driven, never a
++	// Fire the current drain wakeup once the last unit of drainable work has
++	// left. Called after that unit is uncounted — event-driven, never a
+ 	// busy-loop.
+ 	#settle(): void {
+ 		if (this.#inflight === 0) this.#wakeup.abort()
+@@ -510,7 +510,7 @@ export class Server<TState> implements ServerInterface<TState> {
+ 	}
+ 
+ 	// Track one claimed upgraded socket for the duration of its life. The
+-	// claiming handler still OWNS the socket — this only watches it, so the
++	// claiming handler still owns the socket — this only watches it, so the
+ 	// stop path can drain it like a request and cut it if the deadline wins.
+ 	// An already-dead socket never enters (nothing would ever untrack it).
+ 	#trackSocket(socket: Duplex): void {
+diff --git a/src/server/Stream.ts b/src/server/Stream.ts
+index 3744b45..95039fd 100644
+--- a/src/server/Stream.ts
++++ b/src/server/Stream.ts
+@@ -9,7 +9,7 @@ import { SSE_HEADERS } from './constants.js'
+  * @remarks
+  * Builds the `Response` at construction from
+  * {@link import('./constants.js').SSE_HEADERS} with any `options.headers`
+- * merged OVER them, at `options.status` (default `200`). A caller repeating one
++ * merged over them, at `options.status` (default `200`). A caller repeating one
+  * of those keys therefore replaces the seam's value, in any casing. The
+  * instance owns the stream's
+  * controller, its text encoder, the closed flag, and the parked producer's
+@@ -21,7 +21,7 @@ import { SSE_HEADERS } from './constants.js'
+  * receiving `false` awaits `drain()`; that promise resolves on the next
+  * consumer pull restoring capacity, or on stream closure. `comment` writes a
+  * `: text` keep-alive line a conforming SSE parser ignores; `end` closes the
+- * stream. Every method is a SAFE NO-OP once `closed` (ended by `end()`, or
++ * stream. Every method is a safe no-op once `closed` (ended by `end()`, or
+  * the consumer cancelled the stream), so a late write never throws.
+  *
+  * The readiness signal reflects only the process-local `ReadableStream`
+@@ -119,7 +119,7 @@ export class Stream implements StreamInterface {
+ 		this.#settle()
+ 	}
+ 
+-	// The CONSUMER cancelled the stream: the handle is closed from the far end,
++	// The consumer cancelled the stream: the handle is closed from the far end,
+ 	// so a parked producer settles rather than waiting for a pull that cannot come.
+ 	#cancel(): void {
+ 		this.#closed = true
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 00a7569..a301cbd 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -1,11 +1,11 @@
+ import type { Encoding } from './types.js'
+ 
+ // The substrate's tunable defaults — only the constants with a real consumer
+-// inside THIS package: a capability arrives with its first real consumer,
++// inside this package: a capability arrives with its first real consumer,
+ // never speculatively. Each is frozen or declared
+ // readonly, so a consumer reads but never mutates the shared default. The
+ // defaults only `@orkestrel/middleware` needs (rate limiting, CSRF, sessions,
+-// static serving, multipart) stay OUT of this file; they belong to that
++// static serving, multipart) stay out of this file; they belong to that
+ // package's own `constants.ts`.
+ 
+ /**
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 29c89bd..e2e4b49 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -1,13 +1,13 @@
+ // A handler signals a client-facing fault by throwing an `HTTPError` carrying
+ // the HTTP `status` to send; the server's error boundary turns it into a
+-// response of that status. Any OTHER throw is a programmer/runtime error → a
++// response of that status. Any other throw is a programmer/runtime error → a
+ // 500 (its message hidden unless `expose`). The machine-readable field here is
+ // the numeric `status` (plus an optional `context` bag) — `MultipartError` is
+-// NOT declared here: it belongs to `@orkestrel/middleware` with its owner
++// not declared here: it belongs to `@orkestrel/middleware` with its owner
+ // (`createMultipart`).
+ //
+ // Dual-package hazard: `instanceof HTTPError` fails when the thrown value was
+-// constructed by a DIFFERENT copy of this package (version skew, a linked
++// constructed by a different copy of this package (version skew, a linked
+ // workspace) — the two copies' `HTTPError` constructors are distinct objects
+ // even though they are structurally identical. `isHTTPError` therefore tries
+ // `instanceof` first (the common, cheap case) and falls back to a total
+@@ -18,7 +18,7 @@
+ // the boundary that trusts it.
+ //
+ // `ServerError` is the other half of the vocabulary: it reports a call the
+-// CALLER programmed wrong, so it keys on a `ServerErrorCode` rather than a
++// caller programmed wrong, so it keys on a `ServerErrorCode` rather than a
+ // `status`, and `isServerError` narrows it with a plain `instanceof`. A
+ // `'STATUS'` lifecycle refusal is raised to the caller that invoked the
+ // lifecycle method; a `'NEXT'` double-`next` refusal escapes its middleware
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 7dc9a2a..ae16a73 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -26,7 +26,7 @@ import { isAddressInfo } from './validators.js'
+ 
+ // The middleware seam's composition engine — a pure function, not a class:
+ // `compose` has no instance state, so it lives here rather than as an entity.
+-// The RETURNING onion: each middleware may
++// The returning onion: each middleware may
+ // transform the request (`next(newRequest)`), transform the response (`await
+ // next()` then mutate the result), or short-circuit (return without calling
+ // `next`) — no mutable framework object anywhere. The double-`next` guard
+@@ -117,12 +117,12 @@ export function wrapMiddleware<TState>(
+ 
+ // The cookie machinery (module-scope helpers) — `parseCookies`
+ // decodes a raw `Cookie:` header into a name→value lookup; `serializeCookie`
+-// builds a spec-shaped `Set-Cookie` value with its attributes. The SIGNED
++// builds a spec-shaped `Set-Cookie` value with its attributes. The signed
+ // pair reuses the shipped HMAC token primitives rather than a second HMAC
+ // scheme: `writeSignedCookie` is `serializeCookie(name, await signToken(value,
+ // { secret }))` appended to a `Headers`, and `readSignedCookie` is `await
+ // verifyToken(parseCookies(...)[name], secret)` — so a cookie is a
+-// `signToken` value in a `Set-Cookie`, with the SAME secret rotation + tamper
++// `signToken` value in a `Set-Cookie`, with the same secret rotation + tamper
+ // rejection. Every reader narrows untrusted request input with `typeof`,
+ // never `as`, and remains total on hostile input.
+ 
+@@ -130,13 +130,13 @@ export function wrapMiddleware<TState>(
+  * Parses a raw `Cookie:` request header into a `name → value` lookup.
+  *
+  * @remarks
+- * Splits on `;`; the FIRST segment keeps any leading whitespace (a genuine
++ * Splits on `;`; the first segment keeps any leading whitespace (a genuine
+  * cookie-pair separator never precedes it), while every later segment has its
+  * inter-pair separator (ASCII space/tab) stripped before parsing — so a
+- * whitespace-PADDED name (`'  __Host-x=evil'`) is rejected by
++ * whitespace-padded name (`'  __Host-x=evil'`) is rejected by
+  * {@link isCookieName} rather than silently reconciling into a
+  * prefix-protected `__Host-` name. A pair without `=`, or with an invalid
+- * name, is skipped; a later duplicate name wins. TOTAL — an absent/empty/
++ * name, is skipped; a later duplicate name wins. Total — an absent/empty/
+  * malformed header yields an empty record, never throws.
+  *
+  * @param header - The raw `Cookie` header value (possibly `undefined`)
+@@ -243,11 +243,11 @@ export function isCookieAttribute(value: string): boolean {
+  * URL-encodes the value (the inverse of {@link parseCookies}'s decode) and
+  * appends the present {@link CookieOptions} attributes in canonical order:
+  * `Domain`, `Path` (default `/`), `Max-Age`, `HttpOnly` (default ON), `Secure`
+- * (default OFF), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+- * with {@link isCookieAttribute} and THROW an {@link HTTPError} on an
+- * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is ALWAYS `Secure` regardless of
++ * (default off), `SameSite` (default `Lax`). `Domain` / `Path` are validated
++ * with {@link isCookieAttribute} and throw an {@link HTTPError} on an
++ * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is always `Secure` regardless of
+  * the `secure` option (the spec requires it); an un-resolved `undefined`
+- * `secure` here falls to OFF — request-aware callers resolve it first through
++ * `secure` here falls to off — request-aware callers resolve it first through
+  * {@link resolveSecure}.
+  *
+  * @param name - The cookie name
+@@ -377,7 +377,7 @@ export async function readSignedCookie(
+  * @remarks
+  * Writes an empty-valued cookie of the same `name` with `Max-Age=0` plus the
+  * same `path`/`domain`/`sameSite`/`secure` attributes (the browser only drops
+- * a cookie when those MATCH the one it set).
++ * a cookie when those match the one it set).
+  *
+  * @param headers - The response `Headers` to write into
+  * @param name - The cookie name to clear
+@@ -396,10 +396,10 @@ export function clearCookie(headers: Headers, name: string, options?: CookieOpti
+ // The stateless signed-token primitives over WebCrypto (module-scope
+ // helpers). A token is `<payload>.<signature>`: the
+ // payload a base64url JSON `{ value, exp? }`, the signature an HMAC-SHA256 of
+-// the payload under the secret. Signing always uses the FIRST secret (a
+-// rotation list's current head); verifying accepts ANY secret in the list,
++// the payload under the secret. Signing always uses the first secret (a
++// rotation list's current head); verifying accepts any secret in the list,
+ // through `crypto.subtle.verify` — constant-time internally, so the old
+-// `safeCompare` is RETIRED, never ported. `verifyToken` is TOTAL (never
++// `safeCompare` is retired, never ported. `verifyToken` is total (never
+ // throws — adversarial input returns `undefined`); only
+ // `signToken` throws, and only on a misconfigured (empty) secret.
+ 
+@@ -410,10 +410,10 @@ export function clearCookie(headers: Headers, name: string, options?: CookieOpti
+  * The payload is a base64url-encoded JSON `{ value, exp }` (`exp` is the
+  * absolute expiry instant `Date.now() + ttl` when `options.ttl` is set, so
+  * the expiry is HMAC-COVERED — a client cannot extend it without invalidating
+- * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the FIRST
++ * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the first
+  * {@link TokenSecret} (the current secret, or the head of a rotation list).
+- * Blank/whitespace-only secrets are IGNORED ({@link normalizeSecret}); a
+- * misconfigured secret with no usable entry THROWS an {@link HTTPError}
++ * Blank/whitespace-only secrets are ignored ({@link normalizeSecret}); a
++ * misconfigured secret with no usable entry throws an {@link HTTPError}
+  * (`500`) — fail-closed, a programmer error. Verify with
+  * {@link verifyToken}. Omitting `ttl` mints a token that never expires.
+  *
+@@ -554,7 +554,7 @@ export function normalizeSecret(secret: TokenSecret): readonly string[] {
+ 	return list.filter((entry) => entry.trim().length > 0)
+ }
+ 
+-// The content-negotiation helpers (module-scope) — the ONE shared q-value
++// The content-negotiation helpers (module-scope) — the one shared q-value
+ // parser behind the `Negotiator` and any compression middleware's
+ // `Accept-Encoding` pick.
+ 
+@@ -566,10 +566,10 @@ export function normalizeSecret(secret: TokenSecret): readonly string[] {
+  * Splits on `,`; for each part takes the token before the first `;`
+  * (lower-cased + trimmed) as `value`, and reads a `;q=<n>` parameter as the
+  * quality (default `1`, clamped to `[0, 1]`; a non-finite/malformed `q` falls
+- * back to `1`). A `;q=0` entry is KEPT (an explicit rejection a caller must
+- * honor). The result is sorted by `q` DESCENDING, a STABLE sort preserving
++ * back to `1`). A `;q=0` entry is kept (an explicit rejection a caller must
++ * honor). The result is sorted by `q` descending, a stable sort preserving
+  * the header's own order within a tie — a single pass with no backtracking,
+- * so parsing stays linear in the header length (ReDoS-safe). TOTAL — an
++ * so parsing stays linear in the header length (ReDoS-safe). Total — an
+  * empty/malformed header yields `[]`/best-effort entries, never throws.
+  *
+  * @param header - The raw weighted header value
+@@ -611,7 +611,7 @@ export function parseAcceptHeader(header: string): readonly AcceptEntry[] {
+  * each offered coding.
+  *
+  * @remarks
+- * Prefers an EXACT named match (including an explicit `;q=0` rejection);
++ * Prefers an exact named match (including an explicit `;q=0` rejection);
+  * failing that, a bare `*` wildcard's q applies. A coding that is neither
+  * named nor covered by `*` scores `0` (not acceptable). A named `;q=0` wins
+  * over a `*` (a specific rejection beats the wildcard), so it scores `0`.
+@@ -683,7 +683,7 @@ export function resolveCoding<T extends string>(
+  * Parses the header ({@link parseAcceptHeader}) and hands the entries to
+  * {@link resolveCoding}, the same selection leaf `Negotiator.encoding` runs, so
+  * the two doors onto this axis cannot drift. Returns `undefined` when the
+- * client accepts none of `available` (identity — no compression). TOTAL on
++ * client accepts none of `available` (identity — no compression). Total on
+  * hostile input.
+  *
+  * @typeParam T - The coding string type (so a `readonly Encoding[]` returns an `Encoding`)
+@@ -803,8 +803,8 @@ export function computeLanguageQuality(entries: readonly AcceptEntry[], candidat
+  * Strips any `; charset=…` parameter (lower-cased), then accepts a `text/*`
+  * type, a `+json`/`+xml` structured suffix, or one of the explicit
+  * {@link import('./constants.js').COMPRESSIBLE_TYPES}. An already-compressed
+- * binary (`image/png`, `application/zip`) is NOT compressible. An
+- * absent/empty type is not compressible. TOTAL.
++ * binary (`image/png`, `application/zip`) is not compressible. An
++ * absent/empty type is not compressible. Total.
+  *
+  * @param type - The response `Content-Type` header value (with or without parameters)
+  * @returns True if the type is text-shaped and worth compressing; false otherwise
+@@ -825,7 +825,7 @@ export function isCompressibleType(type: string): boolean {
+ }
+ 
+ // The conditional-request helpers (module-scope) — ETag
+-// compute/compare (RFC 7232 §2.3.2 WEAK comparison) and the TOTAL `Range`
++// compute/compare (RFC 7232 §2.3.2 weak comparison) and the total `Range`
+ // parser.
+ 
+ /**
+@@ -969,9 +969,9 @@ export function parseRange(header: string | undefined, size: number): RangeSpec
+  * @remarks
+  * `'*'` and a single origin string pass straight through. An allow-list
+  * echoes the request's `Origin` only when it is present in the list, else
+- * `undefined` (no header set). SECURITY: the literal `'null'` origin — sent
++ * `undefined` (no header set). Security: the literal `'null'` origin — sent
+  * by a sandboxed iframe, a `file://` document, an opaque-origin redirect — is
+- * NEVER reflected even if `'null'` were listed, closing the hostile-context
++ * never reflected even if `'null'` were listed, closing the hostile-context
+  * cross-origin-access hole.
+  *
+  * @param origin - The configured origin policy — `'*'`, a single origin, or an allow-list
+@@ -1086,7 +1086,7 @@ export function isValidRequestId(value: string): boolean {
+  * Returns `undefined` for an IPv4-mapped `::ffff:a.b.c.d` (the embedded IPv4
+  * is the identity) or any string that does not expand to exactly eight
+  * hextets. Expands a single `::` into the missing zero hextets, takes the
+- * first FOUR (the `/64` prefix), normalizes each (lower-case, no leading
++ * first four (the `/64` prefix), normalizes each (lower-case, no leading
+  * zeros), and joins with a trailing `::/64`. A zone id (`%eth0`) is stripped
+  * first. Total — a malformed address returns `undefined`.
+  *
+@@ -1161,7 +1161,7 @@ export function computeClientKey(address: string): string {
+  * Serializes one {@link SSEMessage} to the SSE wire.
+  *
+  * @remarks
+- * Emits an `event:`/`id:`/`retry:` line for each present field, then ONE
++ * Emits an `event:`/`id:`/`retry:` line for each present field, then one
+  * `data:` line per CRLF-aware-split (`\r\n` / `\r` / `\n`) segment of `data`
+  * (so a consuming parser's multi-`data` concat reproduces the original
+  * `data` exactly, and no raw `\r` or `\n` can ever ride onto the wire inside
+@@ -1188,9 +1188,9 @@ export function serializeEvent(message: SSEMessage): string {
+ // The body pipeline (module-scope) —
+ // `readBody` collects a request body capped at `limit` bytes (413 over),
+ // transparently decompresses a `gzip`/`deflate` `Content-Encoding` body
+-// through a byte-counting `TransformStream` that ABORTS the instant
++// through a byte-counting `TransformStream` that aborts the instant
+ // decompressed output exceeds `decompression` (the zip-bomb defense — fail
+-// BEFORE materializing the bomb, since `DecompressionStream` has no
++// before materializing the bomb, since `DecompressionStream` has no
+ // `maxOutputLength` knob), then decodes by content type. `scrubPrototype` /
+ // `isDangerousKey` are the prototype-pollution scrub `readBody` applies to a
+ // parsed JSON body, ported verbatim (pure value-walking logic, unaffected by
+@@ -1259,7 +1259,7 @@ export function scrubPrototype(value: unknown): unknown {
+  * @remarks
+  * Reads `request.body` (a `ReadableStream<Uint8Array>`) chunk by chunk,
+  * throwing a {@link ContentTooLargeError} (413) the instant the running total
+- * exceeds `limit` — BEFORE the rest of the stream is buffered — rather than
++ * exceeds `limit` — before the rest of the stream is buffered — rather than
+  * collecting an unbounded body. A bodyless request (`request.body === null`)
+  * resolves an empty array. A non-positive `limit` means unbounded.
+  *
+@@ -1306,11 +1306,11 @@ export async function collectRequestBody(
+  * whether a request body needs transparent decompression.
+  *
+  * @remarks
+- * Lower-cases + trims and returns the matching {@link Encoding} ONLY for
++ * Lower-cases + trims and returns the matching {@link Encoding} only for
+  * `gzip` / `deflate` (the two `DecompressionStream`-supported codings). An
+  * absent header, `identity`, an unknown value, or a
+  * comma-joined multi-coding all yield `undefined` (the body is read as-is).
+- * TOTAL — never asserts the loose `string | null` header.
++ * Total — never asserts the loose `string | null` header.
+  *
+  * @param header - The raw `Content-Encoding` header value
+  * @returns The single decompressible {@link Encoding}, or `undefined` when none applies
