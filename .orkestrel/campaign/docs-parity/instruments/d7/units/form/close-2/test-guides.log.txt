@@ -1,0 +1,14 @@
+
+> @orkestrel/form@0.0.6 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/form
+
+···················································
+
+ Test Files  1 passed (1)
+      Tests  51 passed (51)
+   Start at  02:51:38
+   Duration  853ms (transform 274ms, setup 279ms, import 219ms, tests 172ms, environment 0ms)
+

@@ -1,0 +1,87 @@
+diff --git a/README.md b/README.md
+index 8dbf4b6..8af1561 100644
+--- a/README.md
++++ b/README.md
+@@ -23,8 +23,6 @@ npm install @orkestrel/table
+ 
+ ## Usage
+ 
+-Declare the columns, hold the rows, and read the ones to draw:
+-
+ ```ts
+ import { createTable } from '@orkestrel/table'
+ 
+diff --git a/guides/table.md b/guides/table.md
+index b35687a..05da339 100644
+--- a/guides/table.md
++++ b/guides/table.md
+@@ -107,13 +107,13 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ 
+ The entity, its managers, its factory, its contract, and the error it raises.
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. A function row's `Shape` cell holds its signature, and a guard row's the type it narrows to. A class row's `Shape` cell holds the interface it implements, or its constructor signature where it implements none.
+ 
+ | API                          | Kind      | Shape                                                                                                                   | Summary                                                                                                                                                                                           |
+ | ---------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Table`                      | class     |                                                                                                                         | Holds a schema, its rows, and the lens through which they are read, implementing `TableInterface` exactly.                                                                                        |
++| `Table`                      | class     | `TableInterface`                                                                                                        | Holds a schema, its rows, and the lens through which they are read, implementing `TableInterface` exactly.                                                                                        |
+ | `TableInterface`             | interface | `{ emitter, schema, rows, sort, filter, selection, expansion, pagination, view, count, destroyed } plus clear, destroy` | Represents a table: what it declares, the rows it holds, and the lens it reads them through.                                                                                                      |
+-| `createTable`                | function  |                                                                                                                         | Opens a table against a schema. The schema is copied, and the copy is what the table declares.                                                                                                    |
++| `createTable`                | function  | `(schema: TableSchema, options?: TableOptions) => TableInterface`                                                       | Opens a table against a schema. The schema is copied, and the copy is what the table declares.                                                                                                    |
+ | `TableOptions`               | interface | `{ on?, error?, rows?, comparators?, matchers?, limit? }`                                                               | Describes how to open a table — the listeners wired at construction and where a throw from one goes, the rows seeded into it, the per-column comparison and test replacements, and the page size. |
+ | `TableEventMap`              | type      | `{ write, remove, sort, filter, select, expand, paginate, clear }`                                                      | Lists everything a table announces, mapping each event to the payload its listeners receive.                                                                                                      |
+ | `RowManagerInterface`        | interface | `{} plus row, rows, add, update, move, remove`                                                                          | Manages the rows a table holds, in the order it holds them.                                                                                                                                       |
+@@ -122,9 +122,9 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `SelectionManagerInterface`  | interface | `{ keys } plus select, clear, toggle`                                                                                   | Manages the rows somebody has picked.                                                                                                                                                             |
+ | `ExpansionManagerInterface`  | interface | `{ keys } plus expand, clear, toggle`                                                                                   | Manages the rows somebody has opened up.                                                                                                                                                          |
+ | `PaginationManagerInterface` | interface | `{ page, limit, offset, count } plus move, resize`                                                                      | Manages which stretch of the filtered rows the view shows.                                                                                                                                        |
+-| `TableError`                 | class     |                                                                                                                         | Represents an error raised by the table domain — a machine-readable `code` and optional structured `context`.                                                                                     |
++| `TableError`                 | class     | `new (code: TableErrorCode, message: string, context?: JSONRecord) => TableError`                                       | Represents an error raised by the table domain — a machine-readable `code` and optional structured `context`.                                                                                     |
+ | `TableErrorCode`             | type      | `'SCHEMA' \| 'COLUMN' \| 'KEY' \| 'CELL' \| 'DESTROYED'`                                                                | Names the reason a `TableError` carries — the machine-readable code a `catch` branches on.                                                                                                        |
+-| `isTableError`               | function  |                                                                                                                         | Determines whether a caught value is a table error, so a `catch` branches on `code` without an assertion.                                                                                         |
++| `isTableError`               | function  | `TableError`                                                                                                            | Determines whether a caught value is a table error, so a `catch` branches on `code` without an assertion.                                                                                         |
+ 
+ `TableInterface`'s readonly data members stay here, in its `Shape` cell, rather than in
+ `## Methods`, and each manager's own readonly members sit in that manager's cell. Every
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 02fc189..a8cf729 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -108,7 +108,10 @@ const own = requireValue(
+ 	manifest.find((entry) => entry.spec === GUIDE_SPEC),
+ 	`Missing manifest row: ${GUIDE_SPEC}`,
+ )
+-const readme = createGuide(requireValue(files['README.md'], 'Missing file: README.md'))
++
++it('manifest lists at least one guide', () => {
++	expect(manifest.length).toBeGreaterThan(0)
++})
+ 
+ // The example half of the equality case is silent over an empty population: with no
+ // title on both sides `findDrift` compares no pair and the case passes on the summaries
+@@ -146,7 +149,7 @@ it('pairs at least one example title across the guide and the source', () => {
+ // against `undefined` first, so a file that lost its blockquote reports that rather
+ // than reporting two absences as agreement.
+ it('opens the README with the guide tagline', () => {
+-	const pitch = readme.tagline()
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
+ 	const tagline = createGuide(
+ 		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
+ 	).tagline()
+@@ -157,6 +160,7 @@ it('opens the README with the guide tagline', () => {
+ })
+ 
+ it('imports only real exports in every root README ```ts fence', () => {
++	const readme = createGuide(requireValue(files['README.md'], 'Missing file: README.md'))
+ 	const fences = readme.fences().filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+ 	for (const fence of fences) {
+ 		for (const { specifier, names } of extractFenceImports(fence.code)) {
+@@ -169,7 +173,6 @@ it('imports only real exports in every root README ```ts fence', () => {
+ })
+ 
+ it('parses manifest rows that point at real files', () => {
+-	expect(manifest.length).toBeGreaterThan(0)
+ 	for (const entry of manifest) {
+ 		expect(files[entry.spec]).toBeDefined()
+ 		const modules = typeof entry.source === 'string' ? [entry.source] : entry.source

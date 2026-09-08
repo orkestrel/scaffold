@@ -1,0 +1,10 @@
+== contract close-2 landing 2026-09-08T02:55:00Z over c519a4b
+== status
+ M guides/contract.md
+ guides/contract.md | 179 +++++++++++++++++++++++++++++------------------------
+ 1 file changed, 98 insertions(+), 81 deletions(-)
+== stage by path
+ 1 file changed, 98 insertions(+), 81 deletions(-)
+== committed
+2320ccd Close contract under the final guide tarball
+(status end)

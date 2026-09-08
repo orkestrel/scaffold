@@ -1,0 +1,10 @@
+== console close-2 landing 2026-09-08T02:55:00Z over 36ae1b6
+== status
+ M guides/console.md
+ guides/console.md | 212 +++++++++++++++++++++++++++---------------------------
+ 1 file changed, 106 insertions(+), 106 deletions(-)
+== stage by path
+ 1 file changed, 106 insertions(+), 106 deletions(-)
+== committed
+4687fe7 Close console under the final guide tarball
+(status end)

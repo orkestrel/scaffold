@@ -1,0 +1,13 @@
+== table close-2 landing 2026-09-08T02:55:00Z over af9a526
+== status
+ M README.md
+ M guides/table.md
+ M tests/guides.test.ts
+ guides/table.md      | 10 +++++-----
+ tests/guides.test.ts |  9 ++++++---
+ 3 files changed, 11 insertions(+), 10 deletions(-)
+== stage by path
+ 3 files changed, 11 insertions(+), 10 deletions(-)
+== committed
+e82fe9b Close table under the final guide tarball
+(status end)

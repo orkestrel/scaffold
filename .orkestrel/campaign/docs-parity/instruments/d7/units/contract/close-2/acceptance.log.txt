@@ -1,0 +1,34 @@
+$ git status --short
+ M guides/contract.md
+
+$ grep -nE '^\| `[^`]+` +\| (function|const|class) +\| +\| ' guides/contract.md
+(no output)
+
+$ awk '/^#/{h=NR; blank=0; next} /^[[:space:]]*$/{if(h)blank=1; next} /^```/{ if(h && blank) print h" -> "NR; h=0; next } {h=0}' guides/contract.md
+(no output)
+
+$ diff <(sed -n 1,3p /home/user/fleet/abort/tests/guides.test.ts) <(sed -n 1,3p tests/guides.test.ts)
+(no output, exit 0)
+
+$ npx oxfmt --config .oxfmtrc.json --check guides/contract.md tests/guides.test.ts
+Checking formatting...
+All matched files use the correct format.
+Finished in 1279ms on 2 files using 4 threads.
+(exit 0)
+
+$ npx oxlint --config .oxlintrc.json --deny-warnings tests/guides.test.ts
+(exit 0)
+
+$ PATH=/opt/npm11/bin:$PATH npm run docs
+rows read: 1, disagreements found: 0
+(exit 0)
+
+$ PATH=/opt/npm11/bin:$PATH npm run docs -- --to guide
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+
+$ PATH=/opt/npm11/bin:$PATH npm run docs -- --to source
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+
+$ PATH=/opt/npm11/bin:$PATH npm run test:guides
+ Test Files  1 passed (1)
+      Tests  70 passed (70)

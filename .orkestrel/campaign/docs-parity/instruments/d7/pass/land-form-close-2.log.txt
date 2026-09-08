@@ -1,0 +1,10 @@
+== form close-2 landing 2026-09-08T02:55:01Z over 1892ad1
+== status
+ M guides/form.md
+ guides/form.md | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+== stage by path
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+== committed
+2f1ceaf Close form under the final guide tarball
+(status end)

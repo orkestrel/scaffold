@@ -207,3 +207,7 @@ The cell was then written by hand to its declaration's description paragraph, so
 No deviation. Nothing in the deviation contract fired: every cell the seed had to locate was located after the header changes, the titled body fits its block, no test outside `tests/guides.test.ts` went red, no vendored file needed an edit, the readers returned the shapes the brief describes, and no residual disagreement survived a doc-block rewrite.
 
 Ancillary matters decided and recorded in the sections above: the Constants `Shape` column and its widened declared types, the `### Shapers` and `### Validators — core` tables keeping three columns, the titled declaration being `createBoundary` rather than the brief's mechanical parenthetical, `### Mount a battery` as the Ruling 9 heading and its position after the section's intro sentence, and the node-face `createCompression` cell being written by hand to its block's description.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): the audit ruled claim 12 FAIL on counts in this report's prose; every citation was verified against the tree except as the verdict names, and the tree is authoritative.

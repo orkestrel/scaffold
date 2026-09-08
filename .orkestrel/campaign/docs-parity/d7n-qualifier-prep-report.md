@@ -228,3 +228,7 @@ rows read: 1, disagreements found: 63
 ```
 
 No deviation. Every instrument for this unit is under `/home/user/fleet/qualifier/tmp/d7n-qualifier-prep/`.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): the rewritten-block table omits the `tests/setup.ts:228` rewrite and tallies rows; the tree is authoritative. The retained P.1 diff was captured as a working-tree diff and so omits the newly tracked `scripts/docs.ts`; `d7n-qualifier-prep.show.txt` re-captures the commit whole (objective F2).

@@ -326,3 +326,8 @@ deleted.
 
 Instruments: `/home/user/fleet/qualifier/tmp/d7n-qualifier-converge/` (`cells.mjs`,
 `guide-before.md`).
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): the audit ruled claim 12 FAIL on counts in this report's prose; every citation was verified against the tree except as the verdict names, and the tree is authoritative.
+Further: the byte-identity proof's `sed` range ends at the first column-zero brace and compared a handful of lines; the region equality holds by the objective lane's own reading (objective F3).

@@ -1,0 +1,14 @@
+
+> @orkestrel/ndjson@0.0.10 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/ndjson
+
+·······························
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  02:50:49
+   Duration  425ms (transform 117ms, setup 38ms, import 209ms, tests 26ms, environment 0ms)
+
