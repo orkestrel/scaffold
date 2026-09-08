@@ -1,0 +1,25 @@
+# Scout brief — D4 terrain: where the parity gate runs and where the equality checks slot in
+
+## Role and engine
+
+`grok`, the Cursor Grok bench, through the Claude-side `grok` driver. Read-only. Return distilled evidence with `file:line` pointers, never a design and never a recommendation. The driver carries this brief across unaltered and returns the journal path and session id with the distillate; the engine behind the CLI performs the reading directly and spawns nothing.
+
+## Question
+
+The docs-parity campaign adds equality checks between a guide and its source's TSDoc: SQ (a Surface row's `Summary` cell equals the export's doc-block description paragraph), MQ (the same for a Methods row), EQ (a titled `@example` body equals the guide fence under the heading of that title), and RQ (the README pitch equals the guide's H1 blockquote). `@orkestrel/guide` already reads both sides and names every disagreement through `findDrift(guide, source): readonly Drift[]` and `Guide.tagline()` (landed in `/home/user/fleet/guide` at commit `37d6cf8`). D4 has to put the assertion into every package's parity test and amend the rules that describe parity. Map the terrain D4 writes into. Answer each numbered question with pointers and short quotations; state "not found" where a search returns nothing, with the pattern and the paths it covered.
+
+1. **How scaffold's own parity test runs its checks.** In `/home/user/scaffold/tests/guides.test.ts`: where `createGuide` and `createSource` are built (the file list the source reads, the guide path), how each existing check is asserted (`findMissingSymbols`, `findMissing`, `findUnlisted`, the fence execution, the link checks), whether checks are named by an id anywhere (SB, MB, EX, or others) or only by `it(...)` titles, and where an empty-array assertion over `findDrift` would sit. Quote the `it(...)` titles in order.
+2. **How two fleet packages' parity tests are shaped.** The same reading over `/home/user/fleet/database/tests/guides.test.ts` and `/home/user/fleet/lsp/tests/guides.test.ts`: what they share with scaffold's byte-for-byte (helper names, the source file list construction, the fence execution), what differs per package, and whether any of the three imports a shared runner from `@orkestrel/guide` or `@orkestrel/test` that runs several checks at once. If `/home/user/fleet` holds more packages with a `tests/guides.test.ts`, list every path and say which of the two shapes each follows (a one-line reading per file is enough).
+3. **Whether anything generates `tests/guides.test.ts` for a new target.** Search `/home/user/scaffold/src/core/templates.ts`, `src/core/constants.ts` (`GUIDES_TEST_PATH` at `:308`), `src/core/compilers.ts`, and `src/core/artifacts.ts` if it exists, for a template or seed that writes `tests/guides.test.ts`; quote what `guides/scaffold.md` § Ownership and drift says about who owns the file (near `:1004-1012`); and say whether a target that lacks the file gets one from any verb.
+4. **How a `scripts/*` seed reaches a target.** For D5's `scripts/docs.ts` seed: find how the existing scripts a target receives (`scripts/codex.sh`, `scripts/deps.sh`, any other) are declared — in `host.json`, `HOST_PATHS`, `CANON_PATHS`, a template, or the manifest's `scripts` block — with the pointer for each, and whether a `.ts` script run by `npm run <name>` has a precedent in the vendored manifest scripts (quote the `package.json` `scripts` entries that run a TypeScript file, if any, in scaffold and in one fleet package).
+5. **The rule sentences D4 amends.** Every line in `/home/user/scaffold/AGENTS.md`, `/home/user/scaffold/.claude/rules/documentation.md`, `/home/user/scaffold/.claude/rules/tests.md`, `/home/user/scaffold/.claude/rules/typescript.md`, and `/home/user/scaffold/.claude/rules/writing.md` that names a guide `Summary` cell, a Surface-row description, a tagline or H1 blockquote, a README pitch, an `@example` title, "noun phrase", or parity between a guide and TSDoc; quote each with its line.
+6. **What `guides/guide.md` at the guide checkout's tip says about the check catalog.** In `/home/user/fleet/guide/guides/guide.md`: the § The check catalog rows (ids, names, one line each) and any row D1 added for SQ, MQ, EQ, or TQ; and the § Patterns or § Tests prose that says how a consumer asserts the catalog (quote it).
+7. **The README pitch.** In `/home/user/scaffold/README.md`: the first paragraph after the H1 (quote it) and the H1 blockquote of `/home/user/scaffold/guides/scaffold.md` (quote it), so RQ's two sides are on record; the same pair for `/home/user/fleet/database`.
+
+## Scope
+
+Read-only over `/home/user/scaffold` and `/home/user/fleet/**`, excluding `node_modules`, `dist`, `tmp`, and `.orkestrel`. No command beyond reading and searching. No edits.
+
+## Output
+
+A distillate under headings 1 to 7, each answer with `file:line` pointers and quotations no longer than needed; a closing list of the paths every search covered. No design, no recommendation, no process diary.

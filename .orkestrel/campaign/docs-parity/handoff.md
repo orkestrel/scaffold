@@ -1,6 +1,6 @@
 # Handoff — the docs-parity fleet pass (D7.n)
 
-Written 2026-09-08T03:35Z at the owner's request, for a session on a fresh container. Read in this order: this file, `d7-fleet-plan.md`, `rulings.md` (Rulings 8 to 28), `ledger.md` (the last rows), then `/home/user/scaffold/AGENTS.md` and `.agents/orchestration.md`. Every artifact this file names sits in `.orkestrel/campaign/docs-parity/` in the scaffold repository unless a path says otherwise.
+Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, for a session on a fresh Windows host that starts with scaffold alone. Read in this order: this file, `d7-fleet-plan.md`, `rulings.md` (Rulings 8 to 28), `ledger.md` (the last rows), then `/home/user/scaffold/AGENTS.md` and `.agents/orchestration.md`. Every artifact this file names sits in `.orkestrel/campaign/docs-parity/` in the scaffold repository unless a path says otherwise.
 
 ## Where everything is pushed
 
@@ -24,18 +24,54 @@ Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude
 - When an owner commit moves a package's `main` under the branch, merge `origin/main` into the branch (never rewrite history), regenerate a conflicted lockfile with `PATH=/opt/npm11/bin:$PATH npm install --package-lock-only`, re-check, then push.
 - Orchestration: one writer per checkout; every brief is a file under `tmp/units/` before launch and is retained here; Sol (Codex) is dark, so the objective lane runs on the Opus `reviewer` and every round records the substitution; a fix round closes with a `checker` over its diff and a `verifier` over the whole chain against the final tarball; a whole-suite or timing red is re-run alone by the Orchestrator; Ultracode is on (Workflows for fan-outs, two concurrent agents per workflow on the four-CPU container); no role installs.
 
-## Recreating the working environment
+## Recreating the working environment on the next host
 
-1. Clone the fleet: for each package in the table, `git clone -b claude/orkestrel-npm-audit-deps-14ibta https://github.com/orkestrel/<pkg> /home/user/fleet/<pkg>`, then `PATH=/opt/npm11/bin:$PATH npm ci --ignore-scripts` inside it. Clone the guide the same way. Supervisor is outside the pass and needs no clone.
-2. npm 11 lives at `/opt/npm11/bin` (`npm install --prefix /opt/npm11 -g npm@11`); every `npm test`, `npm run docs`, and install in the fleet ran under `PATH=/opt/npm11/bin:$PATH`.
-3. Pack the final guide tarball: in the guide checkout at `1d5afa3`, `npm ci --ignore-scripts && npm run build && npm pack --pack-destination <SCR>/packed`, giving `orkestrel-guide-0.0.18.tgz`. Confirm `sha256sum dist/src/core/index.js | cut -c1-8` reads `2b76b363`; that hash identifies the final pack in every checkout.
-4. Pack probe's tip for database: in the probe checkout, `npm run build && npm pack`, giving `orkestrel-probe-0.0.12.tgz`; `head-start.sh` installs it beside the guide tarball for database only (its `EXTRA` variable names the path).
-5. The pass instruments are retained under `instruments/d7/pass/`. Copy them to a scratchpad directory, set the `SCR=` line in each script to that directory, and `mkdir -p $SCR/{land,headstart,packed,lanes,p23}`. Scripts and their jobs:
-   - `head-start.sh <pkg>` installs the tarball `--no-save` and logs to `$SCR/headstart/<pkg>.log.txt`.
-   - `land-p1.sh <pkg>` commits a prep unit ("Prepare"); `land-p2.sh <pkg> [fix]` commits a converge or fix unit by path; `land-close.sh <pkg> [n]` commits a closing unit. Each writes `$SCR/land/<pkg>-<stage>.{log,diff,status}.txt`, which are copied here as `d7n-<pkg>-<unit>.{diff,status}.txt`.
-   - `gen-verify.sh <pkg>` writes `tmp/units/d7n-<pkg>-verify-brief.md`; `gen-close-check.sh <pkg>` writes the checker brief over a closing unit; `gen-audit.sh <slice> <pkgs…>` writes audit briefs; `gen-close2.sh <pkg>` lists a package's closing items; `gen-close-succ.py` wrote the `close-2`/`close-3` briefs.
-   - `extract-lanes.mjs <journal> <outdir> <prefix>` splits a Workflow journal into one file per returned lane; `p23b-parity-controls.sh` runs the parity controls (A to H) against a package.
-6. Workflows used: an audit workflow runs, per package, a subjective `reviewer` lane and an objective `reviewer` lane (Opus, the recorded substitution) plus a `checker` (Sonnet), blind and clean, on `d7n-<pkg>-audit-brief.md`; a closure workflow runs a `checker` on `d7n-<pkg>-check-brief.md` (or the `close-2-check` brief) and a `verifier` on `d7n-<pkg>-verify-brief.md` in parallel. Fix rounds are single `implementer` (Opus) dispatches on `d7n-<pkg>-converge-fix-brief.md`. Every launch prompt names the role, the engine, the brief path, the checkout and its tip, the `PATH` rule, the standing conditions, and the report path `tmp/units/<unit>-report.md`.
+The next session starts on a Windows host with only scaffold cloned under a `WebstormProjects` folder, and nothing from this container survives: no fleet checkouts, no `node_modules`, no `tmp/`, no scratchpad, no tarballs, no journals. Everything the pass needs is either committed in this campaign folder or rebuilt by the scripts below. Run every multi-step command as a script file, one plain command per shell call, because heredocs, `&&` chains, and `${…}` arguments trip the Windows approval classifier (`.agents/orchestration.md` § Launching). Use Git Bash and forward-slash paths throughout (`/c/Users/NAME/WebstormProjects/…`).
+
+### Layout and variables
+
+| Variable | Meaning | Example |
+| --- | --- | --- |
+| `SCAFFOLD` | the scaffold checkout | `/c/Users/NAME/WebstormProjects/scaffold` |
+| `FLEET` | the folder holding every package checkout as `$FLEET/<pkg>`; the `WebstormProjects` folder itself | `/c/Users/NAME/WebstormProjects` |
+| `SCR` | the pass scratch directory, outside every repository or under scaffold's git-ignored `tmp/` | `/c/Users/NAME/WebstormProjects/scaffold/tmp/pass` |
+
+Export the three in the shell that runs each script (a `pass-env.sh` under `$SCR` that the session sources is the simplest carrier).
+
+### The record's paths are container-form
+
+Every retained brief, report, verdict, and instrument names this container's paths: `/home/user/scaffold`, `/home/user/fleet/<pkg>`, the scratchpad under `/tmp/claude-0/…`, and the npm prefix `PATH=/opt/npm11/bin:$PATH`. Never edit the retained copies. `instruments/d7/pass/port-paths.mjs` rewrites one file's paths from those variables (longest prefix first, the npm prefix dropped); `port-instruments.sh` ports every instrument into `$SCR`; `port-brief.sh <unit>` ports a retained brief into `$SCAFFOLD/tmp/units/` for dispatch. Dispatch only ported briefs, and check the ported copy before launching (the executor rules on what it opens).
+
+| Container form | Host form |
+| --- | --- |
+| `/home/user/scaffold` | `$SCAFFOLD` |
+| `/home/user/fleet/<pkg>` | `$FLEET/<pkg>` |
+| `/tmp/claude-0/…/scratchpad/docs/d7/pass` | `$SCR` |
+| `/tmp/claude-0/…/scratchpad/ts6/pack/orkestrel-probe-0.0.12.tgz` | `$SCR/packed/orkestrel-probe-0.0.12.tgz` |
+| `PATH=/opt/npm11/bin:$PATH npm …` | `npm …` with npm 11 or later on `PATH` |
+| `/home/user/scaffold/tmp/units/<unit>-brief.md` | the retained `.orkestrel/campaign/docs-parity/<unit>-brief.md`, ported by `port-brief.sh` into `$SCAFFOLD/tmp/units/` |
+
+### Bootstrap, in order
+
+1. Confirm the toolchain: `node --version` (22.13 or later), `npm --version` (11 or later; upgrade with `npm install -g npm@11` if older), `git --version`, `python3 --version` or `py -3 --version` (`gen-close-succ.py` is the one Python instrument; the rest are Bash and Node). Probe bench liveness per `.agents/orchestration.md` § Execution loop and record the result; Codex was dark all campaign and the objective lane ran on the Opus `reviewer`.
+2. Export `SCAFFOLD`, `FLEET`, `SCR`; run `bash $SCAFFOLD/.orkestrel/campaign/docs-parity/instruments/d7/pass/port-instruments.sh` (creates `$SCR/{land,headstart,packed,lanes,p23}` and `$SCAFFOLD/tmp/units`, and writes every ported instrument into `$SCR`).
+3. Run `bash $SCR/clone-fleet.sh`: clones every package of the pass and the guide beside scaffold on `claude/orkestrel-npm-audit-deps-14ibta` and runs `npm ci --ignore-scripts` in each (each install log lands in `$SCR/clone/<pkg>.log.txt`, outside every checkout). Supervisor is outside the pass and is not cloned. Verify each tip against the state table.
+4. Run `bash $SCR/pack-heads.sh`: builds and packs the guide (`0.0.18` from `1d5afa3`) and probe (`0.0.12`, database's second head start) into `$SCR/packed`, and prints the guide's `dist/src/core/index.js` hash, which must read `2b76b363`. A different hash means the guide checkout is not at `1d5afa3` or its install differs; stop and diagnose before installing anything.
+5. Run `bash $SCR/head-start.sh <pkg>` in every package that is not yet closed, and confirm `sha256sum $FLEET/<pkg>/node_modules/@orkestrel/guide/dist/src/core/index.js | cut -c1-8` reads `2b76b363` there.
+6. In every unclosed package run `git -C $FLEET/<pkg> merge-base --is-ancestor origin/main HEAD`; where it fails, `main` moved under the branch: merge `origin/main` into the branch first (the lockfile rule in § Owner rulings). mcp is known to have moved.
+7. Record the new session's designated scaffold branch in this file's first table and in the ledger, and push scaffold to it beside the working branch and `main`.
+
+### Instruments (ported copies in `$SCR`)
+
+- `head-start.sh <pkg>` installs the tarballs `--no-save` and logs to `$SCR/headstart/<pkg>.log.txt`.
+- `land-p1.sh <pkg>` commits a prep unit; `land-p2.sh <pkg> [fix]` commits a converge or fix unit by path; `land-close.sh <pkg> [n]` commits a closing unit. Each writes `$SCR/land/<pkg>-<stage>.{log,diff,status}.txt`, copied into this folder as `d7n-<pkg>-<unit>.{diff,status}.txt`.
+- `gen-verify.sh <pkg>` writes `tmp/units/d7n-<pkg>-verify-brief.md`; `gen-close-check.sh <pkg>` writes the checker brief over a closing unit; `gen-audit.sh <slice> <pkgs…>` writes audit briefs; `gen-close2.sh <pkg>` lists a package's closing items; `gen-close-succ.py` wrote the `close-2`/`close-3` briefs.
+- `extract-lanes.mjs <journal> <outdir> <prefix>` splits a Workflow journal (under the session's `subagents/workflows/<runId>/journal.jsonl`) into one file per returned lane; `p23b-parity-controls.sh` runs the parity controls (A to H) against a package.
+- `port-paths.mjs`, `port-instruments.sh`, `port-brief.sh`, `clone-fleet.sh`, `pack-heads.sh`: the porting and bootstrap set described earlier.
+
+### Dispatch shapes
+
+An audit workflow runs, per package, a subjective `reviewer` lane and an objective `reviewer` lane (Opus, the recorded substitution) plus a `checker` (Sonnet), blind and clean, on the ported `d7n-<pkg>-audit-brief.md`; a closure workflow runs a `checker` on the ported check brief and a `verifier` on the ported `d7n-<pkg>-verify-brief.md` in parallel; a fix round is one `implementer` (Opus) dispatch on the ported `d7n-<pkg>-converge-fix-brief.md`. Every launch prompt names the role, the engine, the ported brief path, the checkout and its tip, the standing conditions, and the report path `$SCAFFOLD/tmp/units/<unit>-report.md`; every returned report, diff, and status is copied into this folder before the next lane opens it.
 
 ## The loop per package
 
@@ -50,8 +86,8 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | abort, browser, budget, codec, console, contract, csv, emitter, form, html, indexeddb, interpret, markdown, msg, ndjson, pool, process, qualifier, queue, rater, reason, relation, router, sea, server, sqlite, sse, table, template, test, timeout, tool, websocket, worker, workspace | see `ledger.md` | closed, on `main`, closure verdict written | nothing until the closing sweep's tail |
 | middleware | `5747e3f` | closed, on `main` (`d7n-middleware-closure-verdict.md`) | nothing |
 | brief | `2660b0a` | closed on `main` at `3849b1d`; `close-3` landed after it; its re-closure lanes were terminated by the usage limit | dispatch the closure again: checker on `d7n-brief-close-3-check-brief.md`, verifier on `d7n-brief-verify-brief.md`; then push `main` |
-| toolbox | `f8175e9` | fix round and `close-2` landed; closure checker PASS (`d7n-toolbox-closure-checker-toolbox.md`); verifier terminated | run the verifier on `d7n-toolbox-verify-brief.md`; write the closure verdict; push `main` |
-| lsp | `c4842c8` | fix round and `close-2` landed; both closure lanes terminated | dispatch the closure: checker on `d7n-lsp-close-2-check-brief.md`, verifier on `d7n-lsp-verify-brief.md`; verdict; push `main` |
+| toolbox | `f8175e9` | fix round and `close-2` landed; closure checker PASS (`d7n-toolbox-closure-checker-toolbox.md`); verifier terminated | run the verifier on `d7n-toolbox-verify-brief.md` (head-start first); write the closure verdict; push `main` |
+| lsp | `c4842c8` | fix round and `close-2` landed; both closure lanes terminated | dispatch the closure: checker on `d7n-lsp-check-brief.md` (the fix round's check brief, which carries the closing items; `d7n-lsp-close-2-brief.md` is the successor it covers), verifier on `d7n-lsp-verify-brief.md`; verdict; push `main` |
 | database | `cdbf66a` | `close-2` landed; owner's `57eb898` merged; verifier GREEN; checker FAIL 2,3 (`d7n-database-closure-checker-database.md`) | rule on claim 3: database's `tests/guides.test.ts` carries `entrySurfaces`, `requireDirectorySurface`, and a loop-scoped `surface` between `const root` and the manifest loop, deriving per-entry surfaces the single-barrel pilot has no need of. Decide whether Ruling 20's canon admits a multi-entry derivation (write it as Ruling 29 if so) or the file must fold the derivation into cases; then re-run the checker on the ruling; verdict; push `main` |
 | probe | `135aab7` | fix round landed; owner's `b816749` merged; the `d7n-probe-tests` builder was terminated and left a clean tree | dispatch `d7n-probe-tests-brief.md` (builder, Sonnet) again; land by path with a "Replace the suite's candidate drafts…" message; head-start; write `d7n-probe-check-brief.md` (items from `d7n-probe-audit-verdict.md`) and `gen-verify.sh probe`; closure; push `main` |
 | agent | `54e7199` | audit reconciled (`d7n-agent-audit-verdict.md`, items A1 to A9); the fix unit was terminated before editing (clean tree) | dispatch `d7n-agent-converge-fix-brief.md` (implementer, Opus); land with `land-p2.sh agent fix`; head-start; check brief + verify brief; closure; push `main` |

@@ -1,0 +1,35 @@
+# Design brief — D7.guide: the guide package under its own equality gate
+
+## Lanes
+
+Two adversarial lanes, blind to each other, clean contexts, one brief: the subjective lane (`planner`, Opus 5 — the shape of the guide's own tables under `Summary`, the tagline and the pitch, the unit plan and its order) and the objective lane (`reviewer`, Opus 5, the recorded substitution for the dark Sol bench — what the readers, the gate, the head-start mechanics, and the release order permit and forbid; the missing measurements; numbered falsifiable claims). The dispatch names which lane you hold. Read only this brief and the evidence it names; run no command; edit nothing; perform the assignment directly and spawn nothing.
+
+## The goal
+
+`@orkestrel/guide` (checkout `/home/user/fleet/guide`, branch `claude/orkestrel-npm-audit-deps-14ibta`, tip `b7dc578`, clean, `dist/` built) passes the equality gate scaffold's D4 landed — every `Summary` cell equals its doc-block description paragraph, every titled `@example` equals its guide fence, the README pitch equals the guide's tagline, a population pin over titled pairs — runs `npm run docs` in its own checkout, and publishes as the next patch (`0.0.18`) ahead of scaffold, whose distribution proof is red until this package publishes the readers (`plan.md` § Re-baseline after D6-fix-2 returned). Ruling 5: one republish per package, after convergence.
+
+## The evidence
+
+- The distillate: `/home/user/scaffold/.orkestrel/campaign/docs-parity/d7-guide-absorb-distillate.md` (every heading; `file:line` pointers into the guide checkout and the fleet).
+- The contract: `/home/user/scaffold/.claude/rules/documentation.md` § Parity; `/home/user/scaffold/tests/guides.test.ts:160-215` (the equality case, the pin, the README case, as landed); `/home/user/scaffold/scripts/docs.ts` (the seed); `/home/user/scaffold/.orkestrel/campaign/docs-parity/rulings.md` (Ruling 5, Ruling 6); `plan.md` § Exit criterion and the re-baselines after D6's audit round, after D6-fix-2 returned, and after the joint landing; `orchestrator-measurements.md` § P12, § P13, § M8.
+- The guide checkout: `/home/user/fleet/guide/guides/guide.md` (the tables and § Patterns), `README.md`, `package.json`, `tests/guides.test.ts`, `tsconfig.json`, `src/core/helpers.ts:2086-2113` and `:2340-2383` (`extractExamples`, `collectTitles`), `src/core/Source.ts:117-147`, `:212-217`, `src/core/types.ts:364-388`, `src/core/Guide.ts:24-30`, `src/core/SourceManager.ts:12-22`.
+- The head-start mechanics: `/home/user/scaffold/.agents/orchestration.md` § Fixing a dependency before it publishes; `/home/user/scaffold/.orkestrel/campaign/docs-parity/instruments/d4/head-start-guide.sh` (how scaffold received the guide's tip); scaffold's `dist/host` and `dist/bin/main.js` at `a0a47058` (the vendored seed, the `docs` script emission, the root-tsconfig own-specifier entries, the vendored rule); `/home/user/fleet/guide/package.json` `devDependencies` (`@orkestrel/scaffold` at the registry's 0.0.63, which vendors none of that).
+- The findings carried here: `d6-audit-objective.md` § Findings A, B, D; `d6-audit-subjective.md` § Findings C; `plan.md` § Re-baseline (after D6's audit round).
+
+## Decisions the plan must take, each with its rationale and its cost
+
+1. **The compared columns.** Every `## Surface` and `## Methods` table in `guides/guide.md` heads a `Summary` column whose cells adopt the doc-block description paragraph (the seed's `--to guide` after the header rename), while `Signature`, `Returns`, and `Narrows to / Tests` stay as further columns or go. Decide which extra columns survive and where the information the `Shape`, `Builds`, and `Behavior` cells carry beyond the doc block goes (into the block first, verb-first, then propagated — the direction Ruling 6 fixes — or into prose). The distillate § 1 lists every table.
+2. **The gate.** `tests/guides.test.ts` (package-owned, readers from `@src/core`) gains the equality case over the concept index, the population pin, and the README case, in the shape scaffold landed — and decide whether the pin asserts in a form whose failure names both title sets (D6 finding D), which then becomes the form D7.n propagates.
+3. **The tagline and the pitch.** The guide's H1 blockquote becomes one noun phrase in plain text and code spans; the README gains the same blockquote under its H1. Decide what happens to the blockquote's present sentences (the `Source:` link, the "Published through" sentence, the check list) and to the README's opening paragraph.
+4. **The class head's `@example`.** Decide whether the readers collect a class or interface declaration's own `@example` (a change to `extractExamples`, the `examples()` contract, `collectTitles`, their guide rows and tests, per the distillate § 4) so a class fence enters the comparison when titled, or whether the guide states the limit where a reader meets it (D6 finding C). Weigh the fleet's class fences (scaffold holds `Compiler`, `Materializer`, `Upstream`, `WriteTransaction`, `ScaffoldError` equal by hand today).
+5. **Titles.** Which function `@example` blocks in `src/core` duplicate a § Patterns fence and take its heading as their title (the pin needs at least one pair), and which fences are concept illustrations that stay unpaired.
+6. **Running the seed here.** The order and mechanics: install scaffold's packed tip (`a0a47058`) into the guide checkout with `--no-save` (the head start), `repair` from the installed scaffold's built entry so the checkout receives `scripts/docs.ts`, the `docs` script, the root `tsconfig.json` own-specifier entry, and the vendored rule; `npm run build` before `npm run docs`; the registry copy restored before any release gate. State what `repair` writes into a package-owned file and what it refuses.
+7. **The version and the catalog.** The bump to `0.0.18` at the unit's start so the head start and the registry copy stop sharing a number (D6 finding B); the catalog row `.claude/agents/orkestrel.md` regenerates through `scaffold catalog` at release, not by hand.
+8. **Units and order.** Bound the work into units with owned files, engine (`implementer` Opus 5 for the voice and shape units; `sol` dark, substitution recorded; `builder` for a fully specified mechanical unit), acceptance criteria, and dependencies; name the exit criterion for D7.guide; name what the owner must decide (the publish itself is theirs).
+
+## Output
+
+- **Subjective lane:** the plan — per decision the shape with one paragraph of rationale, the units (owned files, engine, acceptance criteria, order, dependencies), the exit criterion, the risks, what the owner must decide.
+- **Objective lane:** per decision what the readers, the gate, and the mechanics permit and forbid with `file:line`; the measurements missing before a unit can be briefed, each with the command that takes it; numbered falsifiable claims the plan must survive; the risks the subjective lane is likely to understate.
+
+No process diary. Perform the assignment directly and spawn nothing.

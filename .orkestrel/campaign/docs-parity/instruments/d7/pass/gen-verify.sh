@@ -14,7 +14,7 @@ cat > "$OUT" <<B
 ## Standing conditions
 
 - \`node_modules/@orkestrel/guide\` is the packed tip \`0.0.18\` installed \`--no-save\` (the registry serves \`0.0.17\`); record \`node -p "require('$d/node_modules/@orkestrel/guide/package.json').version"\` first. \`package.json\` declares \`$range\`; that is the recorded head-start state, not a defect.
-- \`npm test\` runs under \`PATH=/opt/npm11/bin:\$PATH\`.
+- \`npm test\` runs with the npm on \`PATH\`, which must be 11 or later (\`npm --version\`).
 - Every command runs from \`$d\`; each exit code is read from \`\$?\` after the command. A timing failure in a whole-suite run is reported as read, with the failing file named; the Orchestrator re-runs it alone.
 
 ## Commands, in order, each with its exit code and last lines
