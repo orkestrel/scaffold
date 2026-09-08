@@ -158,7 +158,10 @@ d7n-scaffold-path-closure-verdict.md. The tested canonical source landed as
 c90089c99b03c692e8eda3935af592601a5e87e3 and is pushed to the campaign branch, main and
 designated session branch. Read d7n-scaffold-path-landing-verdict.md for exact integration,
 owner preservation and the non-gating CLI audit. No consumer propagation has run.
-Prioritize supported propagation independently of the inventory audit.
+The owner's following instruction folds propagation into dependency-layer tarball visits.
+Do not run the standalone propagation sweep described by the earlier landing handoff.
+Each layer visit also settles and applies its required package version bump before its
+accepted tarball moves upward. Follow d7n-layer-alignment-plan.md for this re-baseline.
 
 The live layer inventory has not run. Its instrument predecessors failed independent
 checking and actual-mechanism controls. The bounded implementation successor returned
@@ -167,6 +170,8 @@ also passed. Blind objective and subjective reviews returned findings; reconcili
 is pending under d7n-layer-inventory-instrument-3-audit-return-status.md. Do not
 derive versions or order from an unaccepted inventory result. The owner-directed
 layered closure remains the release-preparation prerequisite.
+The supported layer mechanism map is dispatched under d7n-layer-supported-map-brief.md.
+It maps public scaffold APIs and retained instrument reuse, not live fleet state.
 
 ## Pending owner decisions carried from the container
 

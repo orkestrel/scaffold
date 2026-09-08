@@ -14,11 +14,11 @@ an older dependency does not satisfy this gate.
 | Capability | Required end state |
 | --- | --- |
 | Live package registry | pass repositories, source tips, cached and refreshed main relation, dirty owners, registry versions, declarations, lock resolutions, and installed artifact hashes are recorded |
-| Artifact provenance | accepted source commit, planned version, tarball hash, packed manifest, and gate evidence identify each artifact; stale artifacts invalidate dependent readings |
+| Artifact provenance | accepted source commit, chosen release version, tarball hash, packed manifest, and gate evidence identify each artifact; stale artifacts invalidate dependent readings |
 | Dependency closure | runtime, development, peer, optional, and bundled declarations are inspected; every intended Orkestrel resolution matches the accepted artifact, including nested consumers |
 | Dependency ordering | runtime, peer, and optional edges order release; development-tool edges order verification separately; cycles are reported and receive an explicit bootstrap plan |
 | Consumer compatibility | actual built packages pass targeted integration and the final gate chain; peer metadata and optional installation semantics remain intact |
-| Release preparation | final semantic ranges and version decisions are recorded, no local-path dependency leaks into a release artifact, and registry-resolvable lockfile preparation is sequenced without pretending unpublished versions exist |
+| Release preparation | each layer visit settles and applies its required package version bump before its accepted tarball moves upward; final semantic ranges target the chosen release versions; no local-path dependency leaks into a release artifact; registry lockfile preparation never pretends an unpublished version exists |
 | Existing parity work | retained audit findings, canonical path repair, guide-reader repair, pilot pin, main closures, and final artifact revalidation remain required |
 
 Supervisor remains outside this pass under the owner's existing application-adoption
@@ -28,9 +28,15 @@ untouched by install, staging, and landing automation.
 
 ## Re-baseline
 
-The canonical scaffold path unit is unchanged and remains in its isolated checkout.
-The guide-reader unit is unchanged in substance; its final artifact participates in the
-layered closure. The independent MCP package test passed on the merged source, while
+The canonical scaffold path source unit is satisfied at c90089c9 on main. The owner
+transformed propagation on 2026-09-08: apply that correction through scaffold's supported
+mechanism during each package's dependency-layer tarball visit. Do not run a separate
+fleet-wide repair sweep. The accepted scaffold host artifact identifies the bytes used
+at each visit; a source-checkout copy is not a packed-artifact proof.
+
+The guide-reader unit is unchanged in substance. Its final artifact participates in the
+layered closure, and its remaining source corrections stay inside their retained scope.
+The independent MCP package test passed on the merged source, while
 the registered Probe and Probe's fleet install still resolve the older MCP artifact.
 The packed real-transport proof is now part of the MCP-to-Probe acceptance seam.
 
@@ -43,14 +49,43 @@ The remaining documentation fixes keep their owned scope. Their execution order 
 follow the measured dependency graph and tooling prerequisites. Do not install into a
 checkout while its writer is active. Do not publish to solve local package resolution.
 
+## Layer visit and version decision
+
+The owner requires package bumps inside the layer pass. Refresh the package's remote
+relation and registry metadata before choosing its release version. Keep an already
+prepared unpublished version when it covers the accepted change; do not increment it
+again solely because this pass resumed. Apply a required bump before the final build
+and pack, and verify the packed manifest carries that version.
+
+During a visit, reconcile the owner main fixes, select the accepted lower-layer artifacts,
+apply the canonical scaffold correction through its public mechanism, align dependency
+categories, finish the retained package findings, settle the version, and run the gates.
+Only an accepted tarball can become the next layer's input. Inspect nested resolutions,
+peer metadata and optional installation behavior, not only root package versions.
+
+Keep the runtime/peer/optional graph distinct from the development-tool prerequisites.
+Any tooling bootstrap is provisional, recorded by artifact identity, and cannot certify
+the final aligned closure. The wave design must resolve guide/scaffold tooling cycles
+before visiting the bottom runtime layer. A changed final tool artifact invalidates the
+affected provisional readings. Do not create a runtime cycle by treating a dev edge as
+a runtime edge.
+
+Version bumps during local preparation do not authorize publication or silently repeal
+Ruling 8. If the measured guide dependencies conflict with its publication hold, carry
+the exact conflict to the owner before freezing the release sequence. Preserve primary
+scaffold's owner package and staged lock edits; prepare overlapping release changes in
+isolation and integrate only the authorized non-conflicting fields.
+
 ## Next units and routing
 
 | Unit | Role and engine | Prerequisite |
 | --- | --- | --- |
-| live inventory instrument | builder, Terra; root execution and independent checker | exact pass population and read-only collection contract |
+| supported layer mechanism map | Grok through Cursor, read-only | accepted path source, retained instruments, and public scaffold contracts |
+| live reading boundary ruling | analyst, Sol; planner, Opus; blind | retained inventory audit findings and supported mechanism map; no further blind collector repair |
+| bounded live evidence capture | builder, Terra; root execution and independent checker | accepted reading boundary, exact population and fields; prefer existing public mechanisms and raw CLI evidence |
 | package graph reconciliation | orkestrel, Terra | supplied live manifest, lock, installed, and registry evidence |
 | artifact-wave design | analyst, Sol; planner, Opus; blind | measured graph and unresolved tooling cycles |
-| local artifact preparation | bounded implementer or mechanical builder; root installs and packs | accepted design, clean source baseline, chosen version and dependency closure |
+| local artifact preparation | bounded implementer or mechanical builder; root installs and packs | accepted design, clean source baseline, per-layer canonical propagation, applied version decision and dependency closure |
 | package acceptance | independent objective and subjective lanes where source changes; checker and verifier | actual diff, artifact receipt, resolved graph, and final gates |
 
 The publication sequence remains unapproved. Reconcile the local alignment plan with
