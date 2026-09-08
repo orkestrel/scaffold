@@ -170,8 +170,20 @@ also passed. Blind objective and subjective reviews returned findings; reconcili
 is pending under d7n-layer-inventory-instrument-3-audit-return-status.md. Do not
 derive versions or order from an unaccepted inventory result. The owner-directed
 layered closure remains the release-preparation prerequisite.
-The supported layer mechanism map is dispatched under d7n-layer-supported-map-brief.md.
-It maps public scaffold APIs and retained instrument reuse, not live fleet state.
+The supported layer mechanism map returned under d7n-layer-supported-map-report.md.
+Read d7n-layer-supported-map-reading.md beside it for root's acceptance limits and
+the sibling-path correction. It maps public scaffold APIs and retained instrument
+reuse, not live fleet state. The blind reading-boundary design lanes are running under
+d7n-layer-reading-boundary-brief.md before another capture instrument is authorized.
+Root's initial Contract reading finds registry 0.0.16 and prepared source 0.0.17;
+that candidate does not require an automatic repeat bump merely to resume the pass.
+Read d7n-layer-contract-reading.md. No accepted layer tarball or new pin exists yet.
+
+The requested latest dependency pins conflict with the old guide-first publication
+sequence if Guide consumes the prepared Contract and Markdown releases. Root asked
+the owner whether publication may instead follow dependency order after fleet main
+closure, while all publishing still waits for explicit approval. The response is
+pending; no release-order ruling changed. Read d7n-layer-guide-release-reading.md.
 
 ## Pending owner decisions carried from the container
 

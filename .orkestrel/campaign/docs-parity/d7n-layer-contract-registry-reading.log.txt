@@ -1,0 +1,58 @@
+Command: & 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe' 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js' view '@orkestrel/contract' name version dist-tags versions dependencies devDependencies peerDependencies peerDependenciesMeta optionalDependencies bundleDependencies bundledDependencies overrides engines dist --json
+Exit: 0
+
+{
+  "name": "@orkestrel/contract",
+  "version": "0.0.16",
+  "dist-tags": {
+    "latest": "0.0.16"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13",
+    "0.0.14",
+    "0.0.15",
+    "0.0.16"
+  ],
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.16",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.61",
+    "@orkestrel/test": "^0.0.12",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dist": {
+    "integrity": "sha512-wGCzaS39iq2kApv8WU1IfHZVDCzRlLat6VM31HxN3tSeRFtZ3bxvW1ZJzVqIu7r8vHasD+zptEufKG2sZv522w==",
+    "shasum": "37bb9e31ba5e068d134751df8a4abfd55990a746",
+    "tarball": "https://registry.npmjs.org/@orkestrel/contract/-/contract-0.0.16.tgz",
+    "fileCount": 9,
+    "unpackedSize": 2858226,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEQCIELH3c7/NCoIt76BbMnHujEpN2pkYwGlIdPDnm88m84dAiBdSX4rPqmSdfcTLZqU32BEE6FsCLANMzG+dQd/PiYwbw=="
+      }
+    ]
+  }
+}
