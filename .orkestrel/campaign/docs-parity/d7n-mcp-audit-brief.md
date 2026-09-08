@@ -25,6 +25,10 @@ You run no command and edit nothing. Read the actual diffs and status files firs
 - The tree at `/home/user/fleet/mcp` (read files, run no command): `guides/mcp.md`, `README.md`, the `src/**` faces the manifest names, `tests/guides.test.ts`, `package.json`, `package-lock.json`.
 - The expected P.1 readings: the P21 section in the P.1 brief.
 
+## Standing condition found at P23b
+
+Control H (another declaration's description altered) left the gate green: the control edited `src/browser/factories.ts`'s `createWebSocketClientTransport`, a name the server face also exports (`src/server/factories.ts:402`), and the reader keys the guide's surface by name alone, so the browser-face row (`guides/mcp.md:3149`) is outside the comparison and only the server-face row (`:2828`) is compared. The Orchestrator reproduced it in the checkout (`npm run docs` at zero with the browser description altered) and carries the reader limitation to the guide package. Rule the browser-face row's cell against its block by reading, and record a disagreement as a finding for the fix round rather than as a gate failure.
+
 ## Numbered falsifiable claims
 
 ### mcp
