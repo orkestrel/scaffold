@@ -259,3 +259,7 @@ Taken inside this unit's own exec while sibling units ran in other checkouts; th
 ## Deviation state
 
 No deviation. Every acceptance criterion is closed and green. No `Shape` cell needed an expression Ruling 12 cannot hold, and no gate outside the owned files reddened.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone: "the two domain rules" at the touched-files list and at § Item 2 is a count; the members are the `LineResult` `amount` rule and the `RatingResult` `success` rule. Every citation was verified against the tree and every RT1 to RT7 correction was found present; the tree is authoritative.

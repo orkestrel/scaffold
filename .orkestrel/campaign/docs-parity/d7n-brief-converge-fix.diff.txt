@@ -1,0 +1,284 @@
+diff --git a/README.md b/README.md
+index 7e69aa5..a49689d 100644
+--- a/README.md
++++ b/README.md
+@@ -11,10 +11,19 @@ subagent dispatch. A brief with blocking gaps never emits: the readiness gate is
+ `@orkestrel/reason` `LogicalDefinition`, so every verdict carries a traceable account of which
+ check missed. Part of the `@orkestrel` line.
+ 
++## Install
++
+ ```sh
+ npm install @orkestrel/brief
+ ```
+ 
++## Requirements
++
++- Node.js >= 22.12.0, matching the `engines` field in `package.json`
++- ESM and CommonJS entry points, selected by the `exports` field in `package.json`
++
++## Usage
++
+ ```ts
+ import {
+ 	createBriefCompiler,
+@@ -39,6 +48,8 @@ if (briefing.brief !== undefined) {
+ compiler.destroy()
+ ```
+ 
++## Guide
++
+ Full documentation: [`guides/brief.md`](guides/brief.md). The guides index lives at
+ [`guides/README.md`](guides/README.md).
+ 
+diff --git a/guides/brief.md b/guides/brief.md
+index 60943f7..fbfa6b1 100644
+--- a/guides/brief.md
++++ b/guides/brief.md
+@@ -38,10 +38,10 @@ Source: [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+ 
+ ## Surface
+ 
+-Compile a request into a `Briefing`, then project the brief it carries:
+-
+ ### Compile and project a brief
+ 
++Compile a request into a `Briefing`, then project the brief it carries:
++
+ ```ts
+ import {
+ 	briefToGoal,
+@@ -139,18 +139,20 @@ check, met or missed, narrated by the reasoner.
+ 
+ ### Constants
+ 
+-| API                      | Kind  | Summary                                                                    |
+-| ------------------------ | ----- | -------------------------------------------------------------------------- |
+-| `TASK_OPERATIONS`        | const | Lists the `TaskOperation` values, frozen.                                  |
+-| `TASK_DOMAINS`           | const | Lists the `TaskDomain` values, frozen.                                     |
+-| `OUTPUT_FORMATS`         | const | Lists the `OutputFormat` values, frozen.                                   |
+-| `RISK_SEVERITIES`        | const | Lists the `RiskSeverity` values, frozen.                                   |
+-| `INTERPRETATION_MEMBERS` | const | Lists every published `Interpretation` member name, frozen.                |
+-| `DEFAULT_BRIEF_TURNS`    | const | Holds `16` — the default turn cap `briefToGoal` renders.                   |
+-| `GATE_ID`                | const | Holds `'gate'` — the id of the `buildGateDefinition()` logical definition. |
+-| `LINE_BREAK_PATTERN`     | const | Matches every line terminator a brief field refuses.                       |
+-| `SINGLE_LINE_PATTERN`    | const | Holds the positive form of `LINE_BREAK_PATTERN`, for the shape DSL.        |
+-| `BLANK_PATTERN`          | const | Matches a string of one or more spaces and nothing else.                   |
++A `Shape` cell holds the constant's declared type.
++
++| API                      | Kind  | Shape                               | Summary                                                                         |
++| ------------------------ | ----- | ----------------------------------- | ------------------------------------------------------------------------------- |
++| `TASK_OPERATIONS`        | const | `readonly TaskOperation[]`          | Lists the `TaskOperation` values, frozen.                                       |
++| `TASK_DOMAINS`           | const | `readonly TaskDomain[]`             | Lists the `TaskDomain` values, frozen.                                          |
++| `OUTPUT_FORMATS`         | const | `readonly OutputFormat[]`           | Lists the `OutputFormat` values, frozen.                                        |
++| `RISK_SEVERITIES`        | const | `readonly RiskSeverity[]`           | Lists the `RiskSeverity` values, frozen.                                        |
++| `INTERPRETATION_MEMBERS` | const | `readonly (keyof Interpretation)[]` | Lists every published `Interpretation` member name, frozen.                     |
++| `DEFAULT_BRIEF_TURNS`    | const | `number`                            | Holds `16` — the default turn cap `briefToGoal` renders.                        |
++| `GATE_ID`                | const | `string`                            | Holds `'gate'` — the id of the `buildGateDefinition()` logical definition.      |
++| `LINE_BREAK_PATTERN`     | const | `RegExp`                            | Matches every line terminator a brief field refuses.                            |
++| `SINGLE_LINE_PATTERN`    | const | `RegExp`                            | Holds the positive form of `LINE_BREAK_PATTERN`, for a `stringShape` `pattern`. |
++| `BLANK_PATTERN`          | const | `RegExp`                            | Matches a string of one or more spaces and nothing else.                        |
+ 
+ An interpretation the compiler reads is foreign data, and a class instance carries its contract
+ on the prototype, so `BriefCompiler` materializes the members `INTERPRETATION_MEMBERS` names into
+@@ -1000,11 +1002,11 @@ const stopped = blocked.compile({
+ })
+ 
+ stopped.brief // undefined — the gate failed closed, and that absence is the signal
+-stopped.brief // undefined — nothing to project, deliberately
+ stopped.questions // [{ field: 'output', question: 'Does the result need…', blocking: true, … }]
++stopped.questions.length // 1 — one question to answer, then re-compile
+ stopped.failures // [{ stage: 'gate', code: 'BLOCKED', message: '1 blocking gap(s)' }]
+ stopped.verdict?.rules.filter((entry) => !entry.applied) // exactly which rules missed
+-stopped.verdict?.trace // the reasoner's narration of the rules that DERIVED, not the misses
++stopped.verdict?.trace // the reasoner's narration of the rules that derived, not the misses
+ blocked.destroy()
+ ```
+ 
+@@ -1046,11 +1048,11 @@ measures // { operation: 'refactor', blocking: 0, outcomes: 2, required: 2, proo
+ const ruling = engine.reason(measures, buildGateDefinition())
+ if (ruling.reasoning === 'logical') {
+ 	ruling.conclusion // true — ready to emit
+-	ruling.rules.filter((entry) => !entry.applied) // the rules that MISSED
++	ruling.rules.filter((entry) => !entry.applied) // the rules that missed
+ }
+ engine.destroy()
+ 
+-// A house gate: this package's readiness UNCHANGED, plus one rule of your own, on your engine.
++// A house gate: this package's readiness unchanged, plus one rule of your own, on your engine.
+ const house = createLogicalDefinition('house', 'House readiness', [
+ 	...buildGateDefinition().rules,
+ 	createRule(
+@@ -1176,6 +1178,9 @@ briefToMarkdown(boundary.generate(seededRandom(7))) // a reproducible fixture, r
+ 
+ ### Storing briefs by their own identity
+ 
++A record's id is its brief's own content hash, so re-adding identical content mints no second
++record and moves no version:
++
+ ```ts
+ import {
+ 	buildBrief,
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 3d0c06c..e3e89f6 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -102,7 +102,7 @@ export const GATE_ID = 'gate'
+ export const LINE_BREAK_PATTERN = /\r\n|[\n\r\u2028\u2029]/
+ 
+ /**
+- * Holds the positive form of {@link LINE_BREAK_PATTERN}, for the shape DSL.
++ * Holds the positive form of {@link LINE_BREAK_PATTERN}, for a `stringShape` `pattern`.
+  *
+  * @remarks
+  * `stringShape`'s `pattern` must MATCH an accepted value, so the guard's refusal regex
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index ec368ef..f3f61fa 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -4,6 +4,9 @@ import type { BriefErrorCode } from './types.js'
+  * Represents the one error class this package throws.
+  *
+  * @remarks
++ * Extends `Error` with a readonly `code` on the `BriefErrorCode` vocabulary and an optional
++ * readonly `context` record carrying whatever the raising site can supply.
++ *
+  * Throws are reserved for caller misuse: `assertBrief`, `snapshotBrief`, and `pinBrief` on
+  * off-contract data throw `INVALID`; any method after `destroy()` throws `DESTROYED`; and `BriefCompiler.gate` throws
+  * `GATE_FAILED` when a borrowed reasoner returns a non-logical result. A stage that fails
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 3d7cd2d..ee9f9c8 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -412,7 +412,13 @@ export interface BriefRecord {
+ 	readonly hash: string
+ }
+ 
+-/** Declares the `BriefCompiler`'s push observation surface. */
++/**
++ * Declares the `BriefCompiler`'s push observation surface.
++ *
++ * @remarks
++ * `compile` carries the `Briefing` the call produced, `block` carries the blocking `Gap` list
++ * that stopped emission, `error` carries the thrown value, and `destroy` carries nothing.
++ */
+ export type BriefCompilerEventMap = {
+ 	readonly compile: readonly [briefing: Briefing]
+ 	readonly block: readonly [questions: readonly Gap[]]
+@@ -506,7 +512,13 @@ export interface BriefCompilerInterface {
+ 	destroy(): void
+ }
+ 
+-/** Declares the `BriefManager`'s push observation surface. */
++/**
++ * Declares the `BriefManager`'s push observation surface.
++ *
++ * @remarks
++ * `add` and `remove` each carry the record id the store minted from the brief's content hash,
++ * and `destroy` carries nothing.
++ */
+ export type BriefManagerEventMap = {
+ 	readonly add: readonly [id: string]
+ 	readonly remove: readonly [id: string]
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 5a51e0c..43c10df 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes.
++// package's own, as is the executed section that closes the file.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -41,6 +41,7 @@ import {
+ 	buildRisk,
+ 	buildTask,
+ 	createBriefCompiler,
++	createBriefManager,
+ 	findBlockingGaps,
+ 	findManifestOverlaps,
+ 	findUngrantedAuthority,
+@@ -114,13 +115,6 @@ it('manifest lists at least one guide', () => {
+ 	expect(manifest.length).toBeGreaterThan(0)
+ })
+ 
+-it('reads a real inventory covering the documented source', () => {
+-	expect(Object.keys(files)).toContain('src/core/index.ts')
+-	expect(Object.keys(files)).toContain(GUIDE_SPEC)
+-	// The instrument must be able to report absence, not only presence.
+-	expect(Object.keys(files)).not.toContain('src/core/absent.ts')
+-})
+-
+ // The example half of the equality case is silent over an empty population: with no
+ // title on both sides `findDrift` compares no pair and the case passes on the summaries
+ // alone. This pins the population this repository's own guide contributes, so removing
+@@ -167,6 +161,13 @@ it('opens the README with the guide tagline', () => {
+ 	expect(pitch).toBe(tagline)
+ })
+ 
++it('reads a real inventory covering the documented source', () => {
++	expect(Object.keys(files)).toContain('src/core/index.ts')
++	expect(Object.keys(files)).toContain(GUIDE_SPEC)
++	// The instrument must be able to report absence, not only presence.
++	expect(Object.keys(files)).not.toContain('src/core/absent.ts')
++})
++
+ for (const entry of manifest) {
+ 	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+ 	const source = createSource({ files, module: entry.source })
+@@ -630,4 +631,53 @@ describe('flagship fences', () => {
+ 		expect(briefToDispatch(pinned).edit).toStrictEqual(['src/browser/composables/useForm.ts'])
+ 		expect(briefToDispatch(pinned).authority).toStrictEqual(['AGENTS.md'])
+ 	})
++
++	it('runs the blocking path fence and yields the readings its comments claim', () => {
++		const blocked = createBriefCompiler()
++		const stopped = blocked.compile({
++			task: buildTask('refactor', 'code', 'Refactor the session store to the async seam.'),
++			outcomes: [buildOutcome(1, 'the store implements the async seam')],
++			gaps: [
++				buildGap('output', 'Does the result need to land as a diff or as full files?', {
++					blocking: true,
++					candidates: ['diff', 'code'],
++				}),
++			],
++			proofs: [buildProof('checks pass', 'npm run check')],
++		})
++		// Each assertion following is a documented `// value` comment from the blocking path fence.
++		expect(stopped.brief).toBeUndefined()
++		// `toEqual`, not `toStrictEqual`: a gap the compiler emits carries a null prototype, so a
++		// prototype-sensitive matcher reports two records with no visual difference as unequal.
++		expect(stopped.questions).toEqual([
++			{
++				field: 'output',
++				question: 'Does the result need to land as a diff or as full files?',
++				blocking: true,
++				candidates: ['diff', 'code'],
++			},
++		])
++		expect(stopped.questions.length).toBe(1)
++		expect(stopped.failures).toEqual([
++			{ stage: 'gate', code: 'BLOCKED', message: '1 blocking gap(s)' },
++		])
++		expect(stopped.verdict?.rules.filter((entry) => !entry.applied).length).toBeGreaterThan(0)
++		blocked.destroy()
++	})
++
++	it('runs the identity fence and mints one record for repeated content', () => {
++		const store = createBriefManager()
++		const first = store.add(
++			buildBrief(buildTask('plan', 'ops', 'Plan the 0.1 release.'), {
++				outcomes: [buildOutcome(1, 'the layer order is written down')],
++				proofs: [buildProof('the catalog regenerates', 'npx @orkestrel/scaffold catalog')],
++			}),
++		)
++		// The section's own claim: the same content mints the same id and moves no version.
++		const again = store.add(first.brief)
++		expect(again.id).toBe(first.id)
++		expect(again.version).toBe(1)
++		expect(store.count).toBe(1)
++		store.destroy()
++	})
+ })

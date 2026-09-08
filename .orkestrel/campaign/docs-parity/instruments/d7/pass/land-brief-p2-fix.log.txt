@@ -1,0 +1,16 @@
+== brief p2-fix landing 2026-09-08T02:03:07Z over db926ac
+== status
+ M README.md
+ M guides/brief.md
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     | 16 +++++++++++--
+ tests/guides.test.ts  | 66 ++++++++++++++++++++++++++++++++++++++++++++-------
+ 6 files changed, 110 insertions(+), 29 deletions(-)
+== stage by path
+ 6 files changed, 110 insertions(+), 29 deletions(-)
+== committed
+950e0a7 Refine brief's convergence on the audit's findings
+(status end)
