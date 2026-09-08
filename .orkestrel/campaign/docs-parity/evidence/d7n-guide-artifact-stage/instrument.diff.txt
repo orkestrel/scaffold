@@ -1,0 +1,212 @@
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\consumer-package.json" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\consumer-package.json"
+new file mode 100644
+index 00000000..7e134354
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\consumer-package.json"
+@@ -0,0 +1,5 @@
++{
++	"name": "guide-artifact-stage-consumer",
++	"private": true,
++	"type": "module"
++}
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\functions.cjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\functions.cjs"
+new file mode 100644
+index 00000000..49d9cfd2
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\functions.cjs"
+@@ -0,0 +1,8 @@
++const { createHash } = require('node:crypto')
++const { readFileSync } = require('node:fs')
++
++function hashFile(path) {
++	return createHash('sha256').update(readFileSync(path)).digest('hex')
++}
++
++exports.hashFile = hashFile
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\inspect.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\inspect.mjs"
+new file mode 100644
+index 00000000..41a6d405
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\inspect.mjs"
+@@ -0,0 +1,23 @@
++import { readFile, realpath } from 'node:fs/promises'
++import { createRequire } from 'node:module'
++
++const [manifest] = process.argv.slice(2)
++if (manifest === undefined) throw new Error('Expected a Guide manifest path.')
++const require = createRequire(manifest)
++for (const name of ['@orkestrel/guide', '@orkestrel/markdown', '@orkestrel/html', '@orkestrel/contract', '@orkestrel/test']) {
++	const path = require.resolve(`${name}/package.json`)
++	const value = JSON.parse(await readFile(path, 'utf8'))
++	console.log(`${name}\t${value.version}\t${path}`)
++}
++const guide = JSON.parse(await readFile(manifest, 'utf8'))
++const markdownManifest = require.resolve('@orkestrel/markdown/package.json')
++const htmlManifest = require.resolve('@orkestrel/html/package.json')
++const contractManifest = require.resolve('@orkestrel/contract/package.json')
++const markdown = JSON.parse(await readFile(markdownManifest, 'utf8'))
++if (guide.dependencies['@orkestrel/markdown'] !== '^0.0.14' || guide.dependencies['@orkestrel/contract'] !== '^0.0.17' || markdown.version !== '0.0.14') throw new Error('Guide does not resolve the staged runtime versions.')
++const markdownRequire = createRequire(markdownManifest)
++for (const [name, path] of [['@orkestrel/contract', contractManifest], ['@orkestrel/html', htmlManifest]]) {
++	if ((await realpath(markdownRequire.resolve(`${name}/package.json`))) !== (await realpath(path))) throw new Error(`Markdown resolves a different ${name} package from Guide.`)
++}
++console.log(`markdown-entry\t${require.resolve('@orkestrel/markdown')}`)
++console.log(`manifest\t${manifest}`)
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\metadata.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\metadata.mjs"
+new file mode 100644
+index 00000000..99e799c9
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\metadata.mjs"
+@@ -0,0 +1,8 @@
++import { writeFile } from 'node:fs/promises'
++import { resolve } from 'node:path'
++import { hashFile } from './functions.cjs'
++
++const [output, commit, artifact, contract, html, markdown, test, contractHash, htmlHash, markdownHash, testHash] = process.argv.slice(2)
++if ([output, commit, artifact, contract, html, markdown, test, contractHash, htmlHash, markdownHash, testHash].some((value) => value === undefined)) throw new Error('Expected metadata output and staging inputs.')
++const value = { artifact: { path: resolve(artifact), sha256: hashFile(artifact) }, manifest: { dependencies: { contract: { from: '^0.0.16', to: '^0.0.17' }, markdown: { from: '^0.0.13', to: '^0.0.14' } }, version: '0.0.18' }, pending: ['parity-entry consolidation', 'material comparison', 'registry-final test:distribution'], source: { branch: 'claude/orkestrel-npm-audit-deps-14ibta', commit }, tooling: { contract: { path: resolve(contract), sha256: contractHash }, html: { path: resolve(html), sha256: htmlHash }, markdown: { path: resolve(markdown), sha256: markdownHash }, test: { path: resolve(test), sha256: testHash } } }
++await writeFile(output, `${JSON.stringify(value, undefined, '\t')}\n`)
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\mutate.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\mutate.mjs"
+new file mode 100644
+index 00000000..c8101f35
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\mutate.mjs"
+@@ -0,0 +1,11 @@
++import { readFile, writeFile } from 'node:fs/promises'
++
++const [manifest, view] = process.argv.slice(2)
++if (manifest === undefined || view === undefined) throw new Error('Expected Guide manifest and registry view paths.')
++const value = JSON.parse(await readFile(manifest, 'utf8'))
++const served = await readFile(view, 'utf8')
++if (typeof value !== 'object' || value === null || Array.isArray(value) || value.name !== '@orkestrel/guide' || value.version !== '0.0.18' || typeof value.dependencies !== 'object' || value.dependencies === null || Array.isArray(value.dependencies) || value.dependencies['@orkestrel/contract'] !== '^0.0.16' || value.dependencies['@orkestrel/markdown'] !== '^0.0.13') throw new Error('Guide manifest does not match the measured runtime dependencies.')
++if (served.includes('"0.0.18"')) throw new Error('Prepared Guide version 0.0.18 is already registry-served.')
++value.dependencies['@orkestrel/contract'] = '^0.0.17'
++value.dependencies['@orkestrel/markdown'] = '^0.0.14'
++await writeFile(manifest, `${JSON.stringify(value, undefined, '\t')}\n`)
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\run.sh" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\run.sh"
+new file mode 100644
+index 00000000..91691548
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\run.sh"
+@@ -0,0 +1,41 @@
++#!/usr/bin/env bash
++source /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pass-env.sh
++set -euo pipefail
++
++GUIDE="$FLEET/guide"
++EXPECTED='ef6ada9975d71ce97ac20239f473c02b77e84cd9'
++BRANCH='claude/orkestrel-npm-audit-deps-14ibta'
++CONTRACT_TARBALL="$SCR/packed/d7n-foundation-contract.ZjPTS5/orkestrel-contract-0.0.17.tgz"
++CONTRACT_HASH='88ef71a590f33edd9dc28bbdf65dc30ce9e2251fd9805807bb94bef0adcbca5a'
++HTML_TARBALL="$SCR/d7n-html-stage.FBOpkx/packed/orkestrel-html-0.0.9.tgz"
++HTML_HASH='970077f8671a978c271e7a790b78a6b44772d1f60d4e944fc381526c916c334b'
++MARKDOWN_TARBALL="$SCAFFOLD/tmp/pass/d7n-markdown-stage.87s5ja/packed/orkestrel-markdown-0.0.14.tgz"
++MARKDOWN_HASH='02c46ebab1a401365ba73aafc9b644b7d21cf8924ee104364138dada2b10f9c3'
++TEST_TARBALL="$SCR/packed/d7n-foundation-test.ufR41o/orkestrel-test-0.0.14.tgz"
++TEST_HASH='d6ae5e57126d370b3316b528a8bd6dafaf2b64d9bdf52e73fead78065f7c5002'
++ROOT="$SCAFFOLD/tmp/pass/guide-artifact-stage"
++STAGE=$(mktemp -d "$SCAFFOLD/tmp/pass/d7n-guide-stage.XXXXXX")
++LOGS="$STAGE/logs" COPY="$STAGE/guide" CONSUMER="$STAGE/consumer" PACKED="$STAGE/packed" EXTRACTED="$STAGE/extracted" CONTRACT_EXTRACT="$STAGE/contract" HTML_EXTRACT="$STAGE/html-artifact" MARKDOWN_EXTRACT="$STAGE/markdown-artifact"
++mkdir -p "$LOGS" "$COPY" "$PACKED" "$EXTRACTED" "$CONSUMER" "$CONTRACT_EXTRACT" "$HTML_EXTRACT" "$MARKDOWN_EXTRACT"
++printf '%s\n' "$STAGE"
++run() { local name=$1; shift; local status; { printf '+'; printf ' %q' "$@"; printf '\n'; if "$@"; then status=0; else status=$?; fi; printf 'exit=%s\n' "$status"; } >"$LOGS/$name.log.txt" 2>&1; return "$status"; }
++finish() { local status=$1; set +e; git -C "$GUIDE" status --porcelain=v1 --untracked-files=all >"$LOGS/status-after.txt"; git -C "$GUIDE" diff --binary >"$LOGS/diff-after.txt"; sha256sum "$GUIDE/package.json" >"$LOGS/manifest-after.sha256"; sha256sum "$GUIDE/package-lock.json" >"$LOGS/lock-after.sha256"; if [ "$status" -eq 0 ]; then cmp "$LOGS/status-before.txt" "$LOGS/status-after.txt" || status=1; cmp "$LOGS/diff-before.txt" "$LOGS/diff-after.txt" || status=1; cmp "$LOGS/manifest-before.sha256" "$LOGS/manifest-after.sha256" || status=1; cmp "$LOGS/lock-before.sha256" "$LOGS/lock-after.sha256" || status=1; fi; printf 'logs: %s\n' "$LOGS"; exit "$status"; }
++trap 'finish "$?"' EXIT
++[ -d "$GUIDE/.git" ] || { printf '%s\n' 'Missing Guide checkout.' >&2; exit 1; }
++[ -z "$(git -C "$GUIDE" status --porcelain=v1 --untracked-files=all)" ] || { printf '%s\n' 'Guide checkout is dirty.' >&2; exit 1; }
++[ "$(git -C "$GUIDE" branch --show-current)" = "$BRANCH" ] || { printf '%s\n' 'Guide branch differs from the campaign branch.' >&2; exit 1; }
++[ "$(git -C "$GUIDE" rev-parse HEAD)" = "$EXPECTED" ] || { printf '%s\n' 'Guide HEAD differs from the measured commit.' >&2; exit 1; }
++git -C "$GUIDE" status --porcelain=v1 --untracked-files=all >"$LOGS/status-before.txt"; git -C "$GUIDE" diff --binary >"$LOGS/diff-before.txt"; sha256sum "$GUIDE/package.json" >"$LOGS/manifest-before.sha256"; sha256sum "$GUIDE/package-lock.json" >"$LOGS/lock-before.sha256"
++run fetch git -C "$GUIDE" fetch origin
++git -C "$GUIDE" merge-base --is-ancestor origin/main HEAD || { printf '%s\n' 'origin/main is not an ancestor of Guide HEAD.' >&2; exit 1; }
++[ "$(git -C "$GUIDE" branch --show-current)" = "$BRANCH" ] || { printf '%s\n' 'Guide branch changed after fetch.' >&2; exit 1; }
++[ "$(git -C "$GUIDE" rev-parse HEAD)" = "$EXPECTED" ] || { printf '%s\n' 'Guide HEAD changed after fetch.' >&2; exit 1; }
++run view npm view @orkestrel/guide version versions --json
++printf '%s  %s\n' "$CONTRACT_HASH" "$CONTRACT_TARBALL" | sha256sum --check --status; printf '%s  %s\n' "$HTML_HASH" "$HTML_TARBALL" | sha256sum --check --status; printf '%s  %s\n' "$MARKDOWN_HASH" "$MARKDOWN_TARBALL" | sha256sum --check --status; printf '%s  %s\n' "$TEST_HASH" "$TEST_TARBALL" | sha256sum --check --status
++run archive git -C "$GUIDE" archive --format=tar -o "$STAGE/guide.tar" "$EXPECTED"; run extract tar -xf "$STAGE/guide.tar" -C "$COPY"; run repository git -C "$COPY" init; run contract-extract tar -xzf "$CONTRACT_TARBALL" -C "$CONTRACT_EXTRACT"; run html-extract tar -xzf "$HTML_TARBALL" -C "$HTML_EXTRACT"; run markdown-extract tar -xzf "$MARKDOWN_TARBALL" -C "$MARKDOWN_EXTRACT"
++run ci npm --prefix "$COPY" ci --ignore-scripts; run mutate node "$ROOT/mutate.mjs" "$COPY/package.json" "$LOGS/view.log.txt"; sha256sum "$COPY/package.json" >"$LOGS/copy-manifest.sha256"; sha256sum "$COPY/package-lock.json" >"$LOGS/copy-lock.sha256"
++run install npm --prefix "$COPY" install --no-save --ignore-scripts --package-lock=false "$CONTRACT_TARBALL" "$HTML_TARBALL" "$MARKDOWN_TARBALL" "$TEST_TARBALL"; sha256sum --check "$LOGS/copy-manifest.sha256"; sha256sum --check "$LOGS/copy-lock.sha256"; run installed node "$ROOT/inspect.mjs" "$COPY/package.json"
++run nested npm --prefix "$COPY" ls --all || true
++run format npm --prefix "$COPY" run format:check; run lint npm --prefix "$COPY" run lint:check; run check npm --prefix "$COPY" run check; run build npm --prefix "$COPY" run build; run test npm --prefix "$COPY" test; sha256sum --check "$LOGS/copy-manifest.sha256"; sha256sum --check "$LOGS/copy-lock.sha256"
++cd "$COPY"; run pack npm pack --ignore-scripts --pack-destination "$PACKED"; GUIDE_TARBALL="$PACKED/orkestrel-guide-0.0.18.tgz"; [ -f "$GUIDE_TARBALL" ] || { printf '%s\n' 'Guide staging tarball is missing.' >&2; exit 1; }; sha256sum "$GUIDE_TARBALL" >"$LOGS/guide-artifact.sha256"; run artifact-extract tar -xzf "$GUIDE_TARBALL" -C "$EXTRACTED"; cmp "$EXTRACTED/package/package.json" "$COPY/package.json"; diff -qr "$EXTRACTED/package/dist" "$COPY/dist" >"$LOGS/dist-diff.txt"; node "$ROOT/metadata.mjs" "$LOGS/metadata.json" "$EXPECTED" "$GUIDE_TARBALL" "$CONTRACT_TARBALL" "$HTML_TARBALL" "$MARKDOWN_TARBALL" "$TEST_TARBALL" "$CONTRACT_HASH" "$HTML_HASH" "$MARKDOWN_HASH" "$TEST_HASH"
++cp "$ROOT/consumer-package.json" "$CONSUMER/package.json"; cp "$ROOT/smoke.mjs" "$CONSUMER/smoke.mjs"; cp "$ROOT/smoke.cjs" "$CONSUMER/smoke.cjs"; cp "$ROOT/functions.cjs" "$CONSUMER/functions.cjs"; run consumer-install npm --prefix "$CONSUMER" install --no-save --ignore-scripts --package-lock=false --no-audit --no-fund "$CONTRACT_TARBALL" "$HTML_TARBALL" "$MARKDOWN_TARBALL" "$GUIDE_TARBALL"; cd "$CONSUMER"; run smoke-esm node smoke.mjs "$CONTRACT_EXTRACT/package" "$HTML_EXTRACT/package" "$MARKDOWN_EXTRACT/package" "$EXTRACTED/package"; run smoke-cjs node smoke.cjs "$CONTRACT_EXTRACT/package" "$HTML_EXTRACT/package" "$MARKDOWN_EXTRACT/package" "$EXTRACTED/package"; printf '%s\n' 'test:distribution not run: staged runtime versions are not registry-served.' >"$LOGS/registry-final.txt"
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\smoke.cjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\smoke.cjs"
+new file mode 100644
+index 00000000..f40c92fc
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\smoke.cjs"
+@@ -0,0 +1,34 @@
++const { createRequire } = require('node:module')
++const { deepEqual } = require('node:assert/strict')
++const { realpathSync } = require('node:fs')
++const { join } = require('node:path')
++const { createGuide, createSource, createSurfaceSymbolContract, findDrift } = require('@orkestrel/guide')
++const { hashFile } = require('./functions.cjs')
++
++const [contractArchive, htmlArchive, markdownArchive, guideArchive] = process.argv.slice(2)
++if ([contractArchive, htmlArchive, markdownArchive, guideArchive].some((value) => value === undefined)) throw new Error('Expected extracted package paths.')
++const markdown = '## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |'
++const files = { 'src/core/helpers.ts': '/**\n * Walks a tree.\n */\nexport function walk(): void {}\n', 'src/core/index.ts': "export * from './helpers.js'\n" }
++const drift = findDrift(createGuide(markdown), createSource({ files, module: 'src/core' }))
++deepEqual(drift, [{ guide: 'Walks the tree.', key: 'function walk', source: 'Walks a tree.' }], 'Guide did not report the documented findDrift disagreement.')
++if (!createSurfaceSymbolContract().is({ name: 'Markdown', keyword: 'class' })) throw new Error('Guide surface-symbol contract did not accept the Markdown surface symbol.')
++const consumer = createRequire(join(process.cwd(), 'package.json'))
++const guideManifest = consumer.resolve('@orkestrel/guide/package.json')
++const markdownManifest = consumer.resolve('@orkestrel/markdown/package.json')
++const htmlManifest = consumer.resolve('@orkestrel/html/package.json')
++const contractManifest = consumer.resolve('@orkestrel/contract/package.json')
++const guideRequire = createRequire(guideManifest)
++const markdownRequire = createRequire(markdownManifest)
++const htmlRequire = createRequire(htmlManifest)
++for (const [name, path] of [['@orkestrel/contract', contractManifest], ['@orkestrel/markdown', markdownManifest], ['@orkestrel/html', htmlManifest]]) {
++	if (realpathSync(guideRequire.resolve(`${name}/package.json`)) !== realpathSync(path)) throw new Error(`Guide resolves a different ${name} package from the consumer.`)
++}
++for (const [name, path] of [['@orkestrel/contract', contractManifest], ['@orkestrel/html', htmlManifest]]) {
++	if (realpathSync(markdownRequire.resolve(`${name}/package.json`)) !== realpathSync(path)) throw new Error(`Markdown resolves a different ${name} package from the consumer.`)
++}
++if (realpathSync(htmlRequire.resolve('@orkestrel/contract/package.json')) !== realpathSync(contractManifest)) throw new Error('HTML resolves a different Contract package from the consumer.')
++for (const [name, archive] of [['@orkestrel/contract', contractArchive], ['@orkestrel/html', htmlArchive], ['@orkestrel/markdown', markdownArchive], ['@orkestrel/guide', guideArchive]]) {
++	const manifest = require(`${name}/package.json`)
++	if (hashFile(join(archive, manifest.main)) !== hashFile(require.resolve(name))) throw new Error(`Installed ${name} CommonJS entry differs from the accepted archive.`)
++}
++console.log('behavior=guide-drift-and-contract-composition')
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\smoke.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\smoke.mjs"
+new file mode 100644
+index 00000000..7fde598c
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-artifact-stage\\smoke.mjs"
+@@ -0,0 +1,34 @@
++import { readFile, realpath } from 'node:fs/promises'
++import { deepEqual } from 'node:assert/strict'
++import { createRequire } from 'node:module'
++import { join } from 'node:path'
++import { fileURLToPath } from 'node:url'
++import { createGuide, createSource, createSurfaceSymbolContract, findDrift } from '@orkestrel/guide'
++import { hashFile } from './functions.cjs'
++
++const [contractArchive, htmlArchive, markdownArchive, guideArchive] = process.argv.slice(2)
++if ([contractArchive, htmlArchive, markdownArchive, guideArchive].some((value) => value === undefined)) throw new Error('Expected extracted package paths.')
++const consumer = createRequire(join(process.cwd(), 'package.json'))
++const guideManifest = consumer.resolve('@orkestrel/guide/package.json')
++const markdownManifest = consumer.resolve('@orkestrel/markdown/package.json')
++const htmlManifest = consumer.resolve('@orkestrel/html/package.json')
++const contractManifest = consumer.resolve('@orkestrel/contract/package.json')
++const guide = JSON.parse(await readFile(guideManifest, 'utf8'))
++if (guide.dependencies['@orkestrel/contract'] !== '^0.0.17' || guide.dependencies['@orkestrel/markdown'] !== '^0.0.14') throw new Error('Guide does not declare the expected runtime pins.')
++for (const [name, path] of [['@orkestrel/contract', contractManifest], ['@orkestrel/markdown', markdownManifest], ['@orkestrel/html', htmlManifest]]) {
++	if ((await realpath(createRequire(guideManifest).resolve(`${name}/package.json`))) !== (await realpath(path))) throw new Error(`Guide resolves a different ${name} package from the consumer.`)
++}
++if ((await realpath(createRequire(markdownManifest).resolve('@orkestrel/contract/package.json'))) !== (await realpath(contractManifest))) throw new Error('Markdown resolves a different Contract package from the consumer.')
++if ((await realpath(createRequire(markdownManifest).resolve('@orkestrel/html/package.json'))) !== (await realpath(htmlManifest))) throw new Error('Markdown resolves a different HTML package from the consumer.')
++if ((await realpath(createRequire(htmlManifest).resolve('@orkestrel/contract/package.json'))) !== (await realpath(contractManifest))) throw new Error('HTML resolves a different Contract package from the consumer.')
++const markdown = '## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `walk` | function | Walks the tree. |'
++const files = { 'src/core/helpers.ts': '/**\n * Walks a tree.\n */\nexport function walk(): void {}\n', 'src/core/index.ts': "export * from './helpers.js'\n" }
++const drift = findDrift(createGuide(markdown), createSource({ files, module: 'src/core' }))
++deepEqual(drift, [{ guide: 'Walks the tree.', key: 'function walk', source: 'Walks a tree.' }], 'Guide did not report the documented findDrift disagreement.')
++if (!createSurfaceSymbolContract().is({ name: 'Markdown', keyword: 'class' })) throw new Error('Guide surface-symbol contract did not accept the Markdown surface symbol.')
++for (const [name, archive] of [['@orkestrel/contract', contractArchive], ['@orkestrel/html', htmlArchive], ['@orkestrel/markdown', markdownArchive], ['@orkestrel/guide', guideArchive]]) {
++	const manifest = JSON.parse(await readFile(consumer.resolve(`${name}/package.json`), 'utf8'))
++	const installed = fileURLToPath(await import.meta.resolve(name))
++	if (hashFile(join(archive, manifest.module)) !== hashFile(installed)) throw new Error(`Installed ${name} ESM entry differs from the accepted archive.`)
++}
++console.log('behavior=guide-drift-and-contract-composition')

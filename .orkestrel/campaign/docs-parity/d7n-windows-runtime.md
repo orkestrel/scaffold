@@ -86,12 +86,17 @@ are not active units.
 | d7n-guides-cli-probe | root execution | tmp/pass/guides-cli-probe/run.log.txt | exit 0; public launch and provided direction received in a real fixture |
 | d7n-markdown-artifact-stage | native builder, Terra; root execution | native markdown_artifact_stage; tmp/pass/d7n-markdown-stage.87s5ja | exec 75536 exited 0; local prerequisite accepted; canonical Markdown unchanged |
 | d7n-markdown-artifact-stage-verify | native verifier, Terra | native foundation_receipts_verify, bounded successor task | GREEN; installed consumers rerun; revised-parity and registry-final work pending |
-| d7n-guides-entry-design-objective | native analyst, Sol | native guides_entry_design_objective; base and host briefs | running; file retrieval allowed, no subject execution |
-| d7n-guides-entry-design-subjective | planner, Opus | tmp/claude/d7n-guides-entry-design-subjective.jsonl and .err; root exec 12884 | running under 1800s cap; same base and host briefs |
+| d7n-guides-entry-design-objective | native analyst, Sol | native guides_entry_design_objective; base and host briefs | returned; reconciled design retained |
+| d7n-guides-entry-design-subjective | planner, Opus | tmp/claude/d7n-guides-entry-design-subjective.jsonl and .err; session f5121f15-0e43-43c8-8532-12bd9ad06047; root exec 12884 | exit 0; reconciled design retained |
 | d7n-parity-route-map | Cursor Grok, read-only | tmp/cursor/d7n-parity-route-map.jsonl and .err; session 8584e515-b1a4-43b8-b880-255cfaa38028; root exec 27416 | returned exit 0; evidence map retained with provenance and prose annotations; no product writes |
 | d7n-html-artifact-stage | native builder, Terra; root execution | native html_artifact_stage; tmp/pass/d7n-html-stage.7nT1Vx | exec 31751 exited 1 after formatter exit 2; inherited tmp ignore rule identified; canonical HTML preserved |
 | d7n-html-artifact-stage-boundary | root execution | tmp/pass/d7n-html-stage.FBOpkx | exec 81669 exited 0; accepted local prerequisite artifact; canonical HTML unchanged |
 | d7n-html-artifact-stage-verify | native verifier, Terra | native html_artifact_stage_verify | GREEN; installed consumers rerun successfully; root carrier boundary accepted; revised parity and registry-final work pending |
+| d7n-guide-artifact-stage | native builder, Terra; root execution | tmp/pass/d7n-guide-stage.jREDPY and MQbCaa; exec 18496 and 42201 | exit 1 preserved for pre-build inspector and post-pack smoke-driver failures; ordered gates and pack passed in successor |
+| d7n-guide-artifact-stage-resume | root execution | tmp/pass/resume-guide-consumer.sh; tmp/pass/compare-guide-baseline.sh | exit 0; corrected installed consumers pass; non-map dist unchanged |
+| d7n-guide-artifact-stage-verify | native verifier, Terra | foundation_receipts_verify, Guide follow-up | GREEN; local artifact accepted; revised-entry and registry-final work pending |
+| d7n-scaffold-guides-prepare | native builder, Terra; root execution | scaffold_guides_prepare; tmp/pass/d7n-scaffold-guides-prepare.ddZJDD; exec 79006 | exit 0; clean isolated baseline prepared; owner files preserved |
+| d7n-guides-entry-fix | native implementer, Sol | guides_entry_fix; tmp/units/d7n-guides-entry-fix-brief.md | running in isolated scaffold-guides-entry checkout |
 
 Native Monitor and task-registry tools are not exposed in this harness. Root tracks
 the capped command by its exec session and reads terminal results without raw thinking

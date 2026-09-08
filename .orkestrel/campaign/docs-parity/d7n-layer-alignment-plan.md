@@ -87,8 +87,9 @@ the authorized non-conflicting fields.
 ## Next units and routing
 
 Ruling 31 fixes the owner choice: finish whole-fleet tarball preparation before any
-publication. Consolidate parity checking under tests/guides.test.ts and test:guides;
-resolve the runner's rewrite behavior before retiring it. Prepare the Guide prerequisite
+publication. Ruling 32 selects reporting and automatic --to guide / --to source
+rewriting inside test:guides, with tests/guides.test.ts retaining its package assertions.
+Retire docs and scripts/docs.ts only after the replacement is proved. Prepare the Guide prerequisite
 chain from accepted tarballs, then pack the revised tooling and compare rebuilt lower
 packages with their preserved accepted artifacts. Include emitted declarations and
 documentation in the comparison. Keep ordinary parity tests non-mutating.

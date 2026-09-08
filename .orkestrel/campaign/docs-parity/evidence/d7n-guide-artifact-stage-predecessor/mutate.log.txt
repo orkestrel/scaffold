@@ -1,0 +1,2 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-artifact-stage/mutate.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.jREDPY/guide/package.json /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.jREDPY/logs/view.log.txt
+exit=0

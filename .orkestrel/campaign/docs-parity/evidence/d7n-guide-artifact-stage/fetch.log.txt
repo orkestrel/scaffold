@@ -1,0 +1,2 @@
++ git -C /c/Users/mikes/WebstormProjects/guide fetch origin
+exit=0

@@ -1,0 +1,26 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-artifact-stage/inspect.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.jREDPY/guide/package.json
+@orkestrel/guide	0.0.18	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-guide-stage.jREDPY\guide\package.json
+@orkestrel/markdown	0.0.14	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-guide-stage.jREDPY\guide\node_modules\@orkestrel\markdown\package.json
+@orkestrel/html	0.0.9	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-guide-stage.jREDPY\guide\node_modules\@orkestrel\html\package.json
+@orkestrel/contract	0.0.17	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-guide-stage.jREDPY\guide\node_modules\@orkestrel\contract\package.json
+@orkestrel/test	0.0.14	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-guide-stage.jREDPY\guide\node_modules\@orkestrel\test\package.json
+node:internal/modules/cjs/loader:1611
+  const err = new Error(`Cannot find module '${request}'`);
+              ^
+
+Error: Cannot find module 'C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-guide-stage.jREDPY\guide\dist\src\core\index.cjs'
+    at createEsmNotFoundErr (node:internal/modules/cjs/loader:1611:15)
+    at finalizeEsmResolution (node:internal/modules/cjs/loader:1600:9)
+    at resolveExpansion (node:internal/modules/cjs/loader:719:12)
+    at trySelf (node:internal/modules/cjs/loader:676:10)
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1548:24)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+    at require.resolve (node:internal/modules/helpers:175:31)
+    at file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-artifact-stage/inspect.mjs:22:37 {
+  code: 'MODULE_NOT_FOUND',
+  path: '\\\\?\\C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-guide-stage.jREDPY\\guide'
+}
+
+Node.js v24.20.0
+exit=1

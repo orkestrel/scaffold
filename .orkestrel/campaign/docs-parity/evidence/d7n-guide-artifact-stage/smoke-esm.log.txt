@@ -1,0 +1,12 @@
++ node smoke.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.MQbCaa/contract/package /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.MQbCaa/html-artifact/package /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.MQbCaa/markdown-artifact/package /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.MQbCaa/extracted/package
+file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.MQbCaa/consumer/smoke.mjs:5
+import { createSurfaceSymbolContract } from '@orkestrel/contract'
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module '@orkestrel/contract' does not provide an export named 'createSurfaceSymbolContract'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:455:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:553:5)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.20.0
+exit=1

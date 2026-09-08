@@ -109,7 +109,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `ef6ada9` | reader and path corrections accepted; gates and installed distribution passed; branch pushed; replacement bootstrap packed with dist hash prefix 6455f6f9 | use corrected tooling for layer visits; final runtime pins and main closure remain pending |
+| guide | `ef6ada9` | reader and path corrections accepted; branch pushed; runtime-aligned 0.0.18 artifact accepted with unchanged non-map dist in d7n-guide-artifact-stage-verdict.md | adopt the absorbed test:guides entry; final runtime pins and main closure remain pending |
 
 ## The tail, after every package closes
 
@@ -274,8 +274,11 @@ Read d7n-guides-cli-reading.md for the real unknown-option failure and the passi
 public Vitest launch/provide probe. The bounded design uses
 d7n-guides-entry-design-brief.md with d7n-guides-entry-design-host-brief.md. The latter
 permits native file retrieval only; no lane runs product commands or edits source.
-The native objective lane and journaled Opus subjective lane are running blind.
-No Guide/scaffold product change from this entry consolidation is accepted yet.
+The native objective lane and journaled Opus subjective lane returned independently.
+Read d7n-guides-entry-design-verdict.md for the reconciled design. The native Sol
+implementation is running in tmp/pass/scaffold-guides-entry from baseline 9b3003d.
+Its bounded brief is d7n-guides-entry-fix-brief.md. No product change from this entry
+consolidation is accepted yet.
 
 HTML's isolated prerequisite artifact is accepted in d7n-html-artifact-stage-verdict.md.
 Its version is 0.0.9 with staged Contract ^0.0.17, at
@@ -296,6 +299,23 @@ chain and installed consumer passed; independent verification is GREEN. Canonica
 Markdown remains clean at ac33037b46b751fb1e25ca929556e9d5f107852a. Prepare Guide
 with this accepted Contract/HTML/Markdown chain. Preserve these archives for the
 revised-parity comparison. No runtime pin has been represented as registry-served.
+
+Guide's runtime-aligned prerequisite artifact is accepted in
+d7n-guide-artifact-stage-verdict.md. Its version is 0.0.18 with staged Contract
+^0.0.17 and Markdown ^0.0.14, at
+tmp/pass/d7n-guide-stage.MQbCaa/packed/orkestrel-guide-0.0.18.tgz, SHA256
+8828ee3dfecc15d72d863f82c938c95a64d4323aa4d674a2f620735e62c61afc.
+The ordered gates and corrected installed consumers passed; independent verification
+is GREEN. Non-map runtime and declarations equal the prior Guide bootstrap. Preserve
+the original staging exit failures described by the verdict; they were driver errors,
+not product fixes. Canonical Guide remains unchanged and main closure is pending.
+
+Scaffold's isolated entry implementation environment is prepared in
+tmp/pass/scaffold-guides-entry on claude/docs-parity-guides-entry-unit. Root's capped
+preparation exited 0; installed tarball identities and nested resolution agree with
+the accepted Contract/HTML/Markdown/Guide/Test chain. Primary owner manifest and staged
+lock hashes are unchanged. The preparation evidence is retained under
+evidence/d7n-scaffold-guides-prepare. Do not reuse the dirty scaffold-path worktree.
 
 ## Pending owner decisions carried from the container
 

@@ -1,0 +1,2 @@
++ git -C /c/Users/mikes/WebstormProjects/guide archive --format=tar -o /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.jREDPY/guide.tar ef6ada9975d71ce97ac20239f473c02b77e84cd9
+exit=0

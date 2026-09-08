@@ -1,0 +1,46 @@
+{
+	"artifact": {
+		"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-guide-stage.MQbCaa\\packed\\orkestrel-guide-0.0.18.tgz",
+		"sha256": "8828ee3dfecc15d72d863f82c938c95a64d4323aa4d674a2f620735e62c61afc"
+	},
+	"manifest": {
+		"dependencies": {
+			"contract": {
+				"from": "^0.0.16",
+				"to": "^0.0.17"
+			},
+			"markdown": {
+				"from": "^0.0.13",
+				"to": "^0.0.14"
+			}
+		},
+		"version": "0.0.18"
+	},
+	"pending": [
+		"parity-entry consolidation",
+		"material comparison",
+		"registry-final test:distribution"
+	],
+	"source": {
+		"branch": "claude/orkestrel-npm-audit-deps-14ibta",
+		"commit": "ef6ada9975d71ce97ac20239f473c02b77e84cd9"
+	},
+	"tooling": {
+		"contract": {
+			"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-foundation-contract.ZjPTS5\\orkestrel-contract-0.0.17.tgz",
+			"sha256": "88ef71a590f33edd9dc28bbdf65dc30ce9e2251fd9805807bb94bef0adcbca5a"
+		},
+		"html": {
+			"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-html-stage.FBOpkx\\packed\\orkestrel-html-0.0.9.tgz",
+			"sha256": "970077f8671a978c271e7a790b78a6b44772d1f60d4e944fc381526c916c334b"
+		},
+		"markdown": {
+			"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-markdown-stage.87s5ja\\packed\\orkestrel-markdown-0.0.14.tgz",
+			"sha256": "02c46ebab1a401365ba73aafc9b644b7d21cf8924ee104364138dada2b10f9c3"
+		},
+		"test": {
+			"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-foundation-test.ufR41o\\orkestrel-test-0.0.14.tgz",
+			"sha256": "d6ae5e57126d370b3316b528a8bd6dafaf2b64d9bdf52e73fead78065f7c5002"
+		}
+	}
+}

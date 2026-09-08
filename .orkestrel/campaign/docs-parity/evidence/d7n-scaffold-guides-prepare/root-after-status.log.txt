@@ -1,0 +1,23 @@
+ M .orkestrel/campaign/docs-parity/d7n-layer-alignment-plan.md
+M  package-lock.json
+ M package.json
+?? .orkestrel/campaign/docs-parity/d7n-guide-artifact-stage-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-artifact-stage-fix-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-artifact-stage-fix-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-artifact-stage-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-artifact-stage-smoke-fix-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-artifact-stage-smoke-fix-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-artifact-stage-verify-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-entry-design-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-entry-design-return-status.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-entry-design-subjective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-entry-design-verdict.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-retirement-probe.log.txt
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-guides-prepare-brief.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-artifact-stage-predecessor/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-artifact-stage/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/d7n-guide-artifact-stage-inspect-predecessor.mjs
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/d7n-guide-artifact-stage-smoke-predecessor.cjs
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/d7n-guide-artifact-stage-smoke-predecessor.mjs
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/guide-artifact-stage/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/retirement-probe/

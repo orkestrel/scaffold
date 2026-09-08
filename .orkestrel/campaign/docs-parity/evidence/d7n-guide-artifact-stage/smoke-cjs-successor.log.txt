@@ -1,0 +1,2 @@
+behavior=guide-drift-and-contract-composition
+exit=0

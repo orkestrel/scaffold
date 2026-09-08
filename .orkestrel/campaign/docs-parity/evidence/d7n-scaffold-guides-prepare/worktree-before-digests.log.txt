@@ -1,0 +1,2 @@
+C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry/package.json: OK
+C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry/package-lock.json: OK

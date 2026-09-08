@@ -1,0 +1,2 @@
++ tar -xf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.jREDPY/guide.tar -C /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.jREDPY/guide
+exit=0

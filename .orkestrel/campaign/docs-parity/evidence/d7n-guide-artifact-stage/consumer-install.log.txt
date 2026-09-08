@@ -1,0 +1,4 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.MQbCaa/consumer install --no-save --ignore-scripts --package-lock=false --no-audit --no-fund /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-contract.ZjPTS5/orkestrel-contract-0.0.17.tgz /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/packed/orkestrel-html-0.0.9.tgz /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/packed/orkestrel-markdown-0.0.14.tgz /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-stage.MQbCaa/packed/orkestrel-guide-0.0.18.tgz
+
+added 4 packages in 709ms
+exit=0
