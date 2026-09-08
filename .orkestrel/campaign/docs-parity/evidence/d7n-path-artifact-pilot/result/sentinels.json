@@ -1,0 +1,14 @@
+{
+	"after": {
+		"package.json": "eyJzZW50aW5lbCI6InBhY2thZ2UifQo=",
+		"package-lock.json": "eyJzZW50aW5lbCI6ImxvY2sifQo=",
+		"tests/policy.test.ts": "ZXhwb3J0IGNvbnN0IHNlbnRpbmVsID0gInBvbGljeSIK",
+		"outside.txt": "c2VudGluZWwgb3V0c2lkZSBzZWxlY3RlZCBwYXRocwo="
+	},
+	"before": {
+		"package.json": "eyJzZW50aW5lbCI6InBhY2thZ2UifQo=",
+		"package-lock.json": "eyJzZW50aW5lbCI6ImxvY2sifQo=",
+		"tests/policy.test.ts": "ZXhwb3J0IGNvbnN0IHNlbnRpbmVsID0gInBvbGljeSIK",
+		"outside.txt": "c2VudGluZWwgb3V0c2lkZSBzZWxlY3RlZCBwYXRocwo="
+	}
+}

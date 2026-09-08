@@ -1,0 +1,241 @@
+diff --git a/tmp/pass/path-artifact-pilot/package.json b/tmp/pass/path-artifact-pilot/package.json
+new file mode 100644
+index 00000000..29b4e650
+--- /dev/null
++++ b/tmp/pass/path-artifact-pilot/package.json
+@@ -0,0 +1,5 @@
++{
++	"name": "path-artifact-pilot",
++	"private": true,
++	"type": "module"
++}
+
+diff --git a/tmp/pass/path-artifact-pilot/constants.mjs b/tmp/pass/path-artifact-pilot/constants.mjs
+new file mode 100644
+index 00000000..6e4fcf5f
+--- /dev/null
++++ b/tmp/pass/path-artifact-pilot/constants.mjs
+@@ -0,0 +1,13 @@
++export const PATHS = Object.freeze(['tests/setupPolicy.ts', 'tests/config.test.ts'])
++
++export const SENTINELS = Object.freeze([
++	Object.freeze({ path: 'package.json', value: '{"sentinel":"package"}\n' }),
++	Object.freeze({ path: 'package-lock.json', value: '{"sentinel":"lock"}\n' }),
++	Object.freeze({ path: 'tests/policy.test.ts', value: 'export const sentinel = "policy"\n' }),
++	Object.freeze({ path: 'outside.txt', value: 'sentinel outside selected paths\n' }),
++])
++
++export const STALE = Object.freeze([
++	Object.freeze({ path: 'tests/setupPolicy.ts', value: 'export const stale = "setup"\n' }),
++	Object.freeze({ path: 'tests/config.test.ts', value: 'export const stale = "config"\n' }),
++])
+
+diff --git a/tmp/pass/path-artifact-pilot/functions.mjs b/tmp/pass/path-artifact-pilot/functions.mjs
+new file mode 100644
+index 00000000..d17bf40d
+--- /dev/null
++++ b/tmp/pass/path-artifact-pilot/functions.mjs
+@@ -0,0 +1,122 @@
++import { mkdir, readFile, writeFile } from 'node:fs/promises'
++import { createRequire } from 'node:module'
++import { dirname, isAbsolute, join, resolve } from 'node:path'
++import { Compiler, createBlueprint } from '@orkestrel/scaffold'
++import { Materializer } from '@orkestrel/scaffold/server'
++import { PATHS, SENTINELS, STALE } from './constants.mjs'
++
++export function assertSelection(plan) {
++	const paths = plan.artifacts.map((artifact) => artifact.path).toSorted()
++	const expected = [...PATHS].toSorted()
++	if (JSON.stringify(paths) !== JSON.stringify(expected)) throw new Error('Selected plan paths differ from the required paths.')
++}
++
++export async function createOutput(output) {
++	if (!isAbsolute(output)) throw new Error('Output path must be absolute.')
++	try {
++		await mkdir(output)
++	} catch (error) {
++		if (error instanceof Error && 'code' in error && error.code === 'EEXIST') throw new Error('Output path is occupied.')
++		throw error
++	}
++}
++
++export function createPlan(plan) {
++	return {
++		artifacts: plan.artifacts.filter((artifact) => PATHS.includes(artifact.path)),
++		blueprint: plan.blueprint,
++		groups: plan.groups,
++	}
++}
++
++export async function readBytes(root, paths) {
++	const readings = {}
++	for (const path of paths) readings[path] = (await readFile(join(root, path))).toString('base64')
++	return readings
++}
++
++export async function writeFixtures(root, entries) {
++	for (const entry of entries) {
++		const path = join(root, entry.path)
++		await mkdir(dirname(path), { recursive: true })
++		await writeFile(path, entry.value)
++	}
++}
++
++export async function assertHost(root, host, paths) {
++	for (const path of paths) {
++		const actual = await readFile(join(root, path))
++		const expected = await readFile(join(host, path))
++		if (!actual.equals(expected)) throw new Error(`Written path differs from packed host: ${path}`)
++	}
++}
++
++export async function assertBytes(root, expected) {
++	for (const [path, value] of Object.entries(expected)) {
++		if ((await readFile(join(root, path))).toString('base64') !== value) throw new Error(`Sentinel changed: ${path}`)
++	}
++}
++
++export async function writeReceipt(output, name, value) {
++	await writeFile(join(output, name), `${JSON.stringify(value, undefined, '\t')}\n`)
++}
++
++export async function run(output) {
++	await createOutput(output)
++	const require = createRequire(import.meta.url)
++	const manifestPath = require.resolve('@orkestrel/scaffold/package.json')
++	const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
++	const installed = dirname(manifestPath)
++	const host = resolve(installed, 'dist', 'host')
++	const target = join(output, 'target')
++	const occupied = join(output, 'occupied')
++	const blueprint = createBlueprint('contract', { src: ['core'] })
++	const compiler = new Compiler()
++	const materializer = new Materializer({ host })
++	try {
++		const scaffolding = compiler.compile(blueprint, ['tests'])
++		if (scaffolding.plan === undefined) throw new Error('Compiler returned no plan.')
++		let rejected = false
++		try {
++			assertSelection(scaffolding.plan)
++		} catch (error) {
++			rejected = error instanceof Error
++		}
++		if (!rejected) throw new Error('Unfiltered plan was accepted by the selection control.')
++		const plan = createPlan(scaffolding.plan)
++		assertSelection(plan)
++		await writeFixtures(target, STALE)
++		await writeFixtures(target, SENTINELS)
++		await writeFile(occupied, 'occupied sentinel\n')
++		const occupiedBefore = await readFile(occupied, 'utf8')
++		let occupiedRejected = false
++		try {
++			await createOutput(occupied)
++		} catch (error) {
++			occupiedRejected = error instanceof Error
++		}
++		if (!occupiedRejected) throw new Error('Occupied output was accepted.')
++		if ((await readFile(occupied, 'utf8')) !== occupiedBefore) throw new Error('Occupied output changed.')
++		const sentinelsBefore = await readBytes(target, SENTINELS.map((entry) => entry.path))
++		const audit = materializer.audit(plan, target)
++		const repair = materializer.repair(plan, audit, target)
++		assertSelection({ artifacts: repair.written.map((path) => ({ path })) })
++		await assertHost(target, host, PATHS)
++		await assertBytes(target, sentinelsBefore)
++		const settled = materializer.audit(plan, target)
++		const repeat = materializer.repair(plan, settled, target)
++		if (settled.findings.some((finding) => finding.drift === 'stale' || finding.drift === 'missing')) throw new Error('Settled audit retains selected drift.')
++		if (repeat.written.length !== 0) throw new Error('Settled repair wrote selected paths.')
++		const sentinelsAfter = await readBytes(target, SENTINELS.map((entry) => entry.path))
++		await writeReceipt(output, 'installed.json', { path: installed, version: manifest.version })
++		await writeReceipt(output, 'selection.json', { paths: PATHS })
++		await writeReceipt(output, 'audit.json', audit)
++		await writeReceipt(output, 'repair.json', repair)
++		await writeReceipt(output, 'sentinels.json', { after: sentinelsAfter, before: sentinelsBefore })
++		await writeReceipt(output, 'controls.json', { occupied: occupiedRejected, selection: rejected })
++		await writeReceipt(output, 'settled.json', { audit: settled, repair: repeat })
++	} finally {
++		materializer.destroy()
++		compiler.destroy()
++	}
++}
+
+diff --git a/tmp/pass/path-artifact-pilot/main.mjs b/tmp/pass/path-artifact-pilot/main.mjs
+new file mode 100644
+index 00000000..4c897fa7
+--- /dev/null
++++ b/tmp/pass/path-artifact-pilot/main.mjs
+@@ -0,0 +1,7 @@
++import { run } from './functions.mjs'
++
++const [output] = process.argv.slice(2)
++
++if (output === undefined) throw new Error('Expected an absent absolute output path.')
++
++await run(output)
+
+diff --git a/tmp/pass/path-artifact-pilot/run.sh b/tmp/pass/path-artifact-pilot/run.sh
+new file mode 100644
+index 00000000..020430c7
+--- /dev/null
++++ b/tmp/pass/path-artifact-pilot/run.sh
+@@ -0,0 +1,59 @@
++#!/usr/bin/env bash
++source /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pass-env.sh
++set -euo pipefail
++
++PILOT="$SCR/path-artifact-pilot"
++ARCHIVE="$SCR/packed/path-bootstrap.4ppVCf/orkestrel-scaffold-0.0.63.tgz"
++EXPECTED="94cb80312c6ed57d78a0c67930d6c153fe2355be8c93df4f8429bd13306fed3b"
++
++if [[ ! -f "$PILOT/package.json" ]]; then
++	echo "Missing pilot manifest: $PILOT/package.json" >&2
++	exit 1
++fi
++
++if [[ -e "$PILOT/node_modules" ]]; then
++	echo "Pilot node_modules already exists: $PILOT/node_modules" >&2
++	exit 1
++fi
++
++if [[ -e "$PILOT/package-lock.json" ]]; then
++	echo "Pilot package-lock.json already exists: $PILOT/package-lock.json" >&2
++	exit 1
++fi
++
++printf '%s  %s\n' "$EXPECTED" "$ARCHIVE" | sha256sum --check --status
++EVIDENCE="$(mktemp -d "$SCR/path-artifact-pilot.XXXXXX")"
++RESULT="$EVIDENCE/result"
++
++printf '%s\n' "$EVIDENCE"
++sha256sum "$PILOT/package.json" > "$EVIDENCE/package-before.sha256"
++(
++	cd "$PILOT"
++	npm install --no-save --ignore-scripts --package-lock=false --no-audit --no-fund "$ARCHIVE" > "$EVIDENCE/install.stdout.txt" 2> "$EVIDENCE/install.stderr.txt"
++)
++sha256sum --check "$EVIDENCE/package-before.sha256"
++
++if [[ -e "$PILOT/package-lock.json" ]]; then
++	echo "Pilot installation created package-lock.json: $PILOT/package-lock.json" >&2
++	exit 1
++fi
++
++set +e
++(
++	cd "$PILOT"
++	node main.mjs "$RESULT" > "$EVIDENCE/pilot.stdout.txt" 2> "$EVIDENCE/pilot.stderr.txt"
++)
++STATUS=$?
++set -e
++printf '%s\n' "$STATUS" > "$EVIDENCE/pilot.exit.txt"
++
++if [[ "$STATUS" -ne 0 ]]; then
++	exit "$STATUS"
++fi
++
++printf '%s\n' "$EVIDENCE/package-before.sha256"
++printf '%s\n' "$EVIDENCE/install.stdout.txt"
++printf '%s\n' "$EVIDENCE/install.stderr.txt"
++printf '%s\n' "$EVIDENCE/pilot.stdout.txt"
++printf '%s\n' "$EVIDENCE/pilot.stderr.txt"
++printf '%s\n' "$EVIDENCE/pilot.exit.txt"
+

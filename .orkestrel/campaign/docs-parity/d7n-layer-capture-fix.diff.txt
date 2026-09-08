@@ -1,0 +1,233 @@
+diff --git a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/Capture.mjs b/tmp/pass/layer-capture/Capture.mjs
+index 8a740fdb..715cc42f 100644
+--- a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/Capture.mjs
++++ b/tmp/pass/layer-capture/Capture.mjs
+@@ -2,7 +2,7 @@ import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+ import { join, resolve } from 'node:path'
+ import { execute } from '@orkestrel/process/server'
+ import { GIT, LIMIT, REGISTRY, TIMEOUT } from './constants.mjs'
+-import { digestBytes, stamp } from './helpers.mjs'
++import { digestBytes } from './helpers.mjs'
+ 
+ export class Capture {
+ 	#git
+@@ -21,34 +21,35 @@ export class Capture {
+ 		await mkdir(this.#output, { recursive: true })
+ 		await writeFile(join(this.#output, 'run.json'), `${JSON.stringify({
+ 			...input,
+-			encoding: 'Command streams are returned as decoded strings by execute and saved as UTF-8 bytes.',
++			encoding: 'utf8',
+ 			limit: LIMIT,
++			note: 'Command streams are returned as decoded strings by execute and saved as UTF-8 bytes; this carrier does not retain raw native command bytes.',
++			origin: 'cached',
+ 			platform: process.platform,
+-			population: input.population,
+ 			registry: REGISTRY,
+ 			timeout: TIMEOUT,
+-			timestamp: stamp(),
++			timestamp: new Date().toISOString(),
+ 			version: process.version
+ 		}, undefined, '\t')}\n`)
+ 	}
+ 
+ 	async file(packageName, source, saved) {
+-		const started = stamp()
++		const started = new Date().toISOString()
+ 		try {
+ 			const bytes = await readFile(source)
+ 			await writeFile(saved, bytes)
+-			const row = { digest: digestBytes(bytes), finish: stamp(), package: packageName, saved, source, started, type: 'file' }
++			const row = { digest: digestBytes(bytes), finish: new Date().toISOString(), package: packageName, saved, source, started, type: 'record' }
+ 			await this.#row(row)
+ 			return row
+ 		} catch (error) {
+-			const row = { error: error instanceof Error ? error.message : String(error), finish: stamp(), package: packageName, saved, source, started, type: 'file' }
++			const row = { error: error instanceof Error ? error.message : String(error), finish: new Date().toISOString(), package: packageName, saved, source, started, type: 'record' }
+ 			await this.#row(row)
+ 			return row
+ 		}
+ 	}
+ 
+ 	async command(packageName, source, file, arguments_, workspace) {
+-		const started = stamp()
++		const started = new Date().toISOString()
+ 		let result
+ 		let error
+ 		try {
+@@ -69,21 +70,20 @@ export class Capture {
+ 			command: result?.command,
+ 			cwd: workspace,
+ 			executable: file,
+-			finish: stamp(),
++			finish: new Date().toISOString(),
+ 			package: packageName,
+-			requested: packageName === 'scaffold' ? '@orkestrel/scaffold' : `@orkestrel/${packageName}`,
+-			source,
++			requested: `@orkestrel/${packageName}`,
++			label: source,
+ 			started,
+ 			stderr: { digest: digestBytes(Buffer.from(diagnostics, 'utf8')), path: stderr },
+ 			stdout: { digest: digestBytes(Buffer.from(output, 'utf8')), path: stdout },
+-			type: 'command',
++			type: 'record',
+ 			...(result === undefined ? { error: error instanceof Error ? error.message : String(error) } : {
+ 				aborted: result.aborted,
+ 				code: result.code,
+ 				expired: result.expired,
+ 				failed: result.failed,
+ 				signal: result.signal,
+-				settlement: result,
+ 				truncated: result.truncated
+ 			})
+ 		}
+diff --git a/tmp/pass/layer-capture/functions.mjs b/tmp/pass/layer-capture/functions.mjs
+new file mode 100644
+index 00000000..34df63a2
+--- /dev/null
++++ b/tmp/pass/layer-capture/functions.mjs
+@@ -0,0 +1,27 @@
++import { lstat, mkdir, stat } from 'node:fs/promises'
++import { isAbsolute, resolve } from 'node:path'
++import { Capture } from './Capture.mjs'
++import { PACKAGES } from './constants.mjs'
++
++export async function run(root, output, npm, git) {
++	if (!isAbsolute(root) || !isAbsolute(output) || !isAbsolute(npm) || !isAbsolute(git)) throw new Error('Input paths must be absolute.')
++	if (!(await stat(root)).isDirectory()) throw new Error('Fleet root must be a directory.')
++	if (!(await stat(npm)).isFile()) throw new Error('npm CLI path must be a file.')
++	if (!(await stat(git)).isFile()) throw new Error('Git path must be a file.')
++	for (const packageName of PACKAGES) {
++		if (resolve(output) === resolve(root, packageName)) throw new Error('Output path must not equal a checkout root.')
++	}
++	try {
++		await lstat(output)
++		throw new Error('Output path is occupied.')
++	} catch (error) {
++		if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error
++	}
++	await mkdir(output)
++	const capture = new Capture({ git, npm, output })
++	await capture.begin({ git, npm, output, population: PACKAGES, root })
++	for (const packageName of PACKAGES) {
++		const row = await capture.package(root, packageName)
++		if (row.expired || row.aborted) break
++	}
++}
+diff --git a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/helpers.mjs b/tmp/pass/layer-capture/helpers.mjs
+index 68c137d4..b80475ee 100644
+--- a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/helpers.mjs
++++ b/tmp/pass/layer-capture/helpers.mjs
+@@ -1,15 +1,5 @@
+ import { createHash } from 'node:crypto'
+-import { relative, resolve } from 'node:path'
+ 
+ export function digestBytes(bytes) {
+ 	return createHash('sha256').update(bytes).digest('hex')
+ }
+-
+-export function isInside(root, target) {
+-	const path = relative(resolve(root), resolve(target))
+-	return path === '' || (!path.startsWith('..') && !path.includes(':'))
+-}
+-
+-export function stamp() {
+-	return new Date().toISOString()
+-}
+diff --git a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/main.mjs b/tmp/pass/layer-capture/main.mjs
+index 126a3c7c..b559023d 100644
+--- a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/main.mjs
++++ b/tmp/pass/layer-capture/main.mjs
+@@ -1,33 +1,6 @@
+-import { lstat, mkdir, stat } from 'node:fs/promises'
+-import { isAbsolute, resolve } from 'node:path'
++import { resolve } from 'node:path'
+ import { fileURLToPath } from 'node:url'
+-import { Capture } from './Capture.mjs'
+-import { PACKAGES } from './constants.mjs'
+-import { isInside } from './helpers.mjs'
+-
+-export async function run(root, output, npm, git) {
+-	if (!isAbsolute(root) || !isAbsolute(output) || !isAbsolute(npm) || !isAbsolute(git)) throw new Error('Input paths must be absolute.')
+-	if (!(await stat(root)).isDirectory()) throw new Error('Fleet root must be a directory.')
+-	if (!(await stat(npm)).isFile()) throw new Error('npm CLI path must be a file.')
+-	if (!(await stat(git)).isFile()) throw new Error('Git path must be a file.')
+-	for (const packageName of PACKAGES) {
+-		if (resolve(output) === resolve(root, packageName)) throw new Error('Output path must not equal a checkout root.')
+-	}
+-	if (!isInside(resolve(root, 'scaffold', 'tmp', 'pass'), output)) throw new Error('Output path must remain beneath scaffold/tmp/pass.')
+-	try {
+-		await lstat(output)
+-		throw new Error('Output path is occupied.')
+-	} catch (error) {
+-		if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error
+-	}
+-	await mkdir(output)
+-	const capture = new Capture({ git, npm, output })
+-	await capture.begin({ git, npm, output, population: PACKAGES, root })
+-	for (const packageName of PACKAGES) {
+-		const row = await capture.package(root, packageName)
+-		if (row.expired || row.aborted) break
+-	}
+-}
++import { run } from './functions.mjs'
+ 
+ if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+ 	const [root, output, npm, git] = process.argv.slice(2)
+diff --git a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/test.mjs b/tmp/pass/layer-capture/test.mjs
+index adfa7a3d..1db73d32 100644
+--- a/.orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture/test.mjs
++++ b/tmp/pass/layer-capture/test.mjs
+@@ -2,10 +2,11 @@ import assert from 'node:assert/strict'
+ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
++import { fileURLToPath } from 'node:url'
+ import test from 'node:test'
+ import { Capture } from './Capture.mjs'
+ import { digestBytes } from './helpers.mjs'
+-import { run } from './main.mjs'
++import { run } from './functions.mjs'
+ 
+ async function createTemporary() {
+ 	return mkdtemp(join(tmpdir(), 'layer-capture-'))
+@@ -23,6 +24,12 @@ test('copies file bytes and records their digest', async () => {
+ 		const row = await capture.file('fixture', source, saved)
+ 		assert.deepEqual(await readFile(saved), bytes)
+ 		assert.equal(row.digest, digestBytes(bytes))
++		assert.equal(row.type, 'record')
++		assert.equal(row.source, source)
++		assert.deepEqual(
++			JSON.parse(await readFile(join(directory, 'output', 'rows.jsonl'), 'utf8').then((rows) => rows.trim())),
++			row
++		)
+ 	} finally { await rm(directory, { force: true, recursive: true }) }
+ })
+ 
+@@ -57,7 +64,8 @@ test('retains unicode malformed output and a nonzero settlement', async () => {
+ 		await capture.begin({ population: [] })
+ 		const stdout = '{ malformed: ☃ }'
+ 		const stderr = 'érror'
+-		const row = await capture.command('fixture', 'child', process.execPath, [join(process.cwd(), 'tmp/pass/layer-capture/child.mjs'), stdout, stderr, '7'], directory)
++		const child = fileURLToPath(new URL('./child.mjs', import.meta.url))
++		const row = await capture.command('fixture', 'child', process.execPath, [child, stdout, stderr, '7'], directory)
+ 		assert.equal(row.code, 7)
+ 		assert.equal(row.failed, true)
+ 		assert.equal(await readFile(row.stdout.path, 'utf8'), stdout)
+@@ -65,5 +73,16 @@ test('retains unicode malformed output and a nonzero settlement', async () => {
+ 		assert.equal(typeof row.expired, 'boolean')
+ 		assert.equal(typeof row.aborted, 'boolean')
+ 		assert.equal(typeof row.truncated, 'boolean')
++		assert.equal(row.type, 'record')
++		assert.equal(row.label, 'child')
++		assert.equal(row.source, undefined)
++		assert.deepEqual(
++			JSON.parse(await readFile(join(output, 'rows.jsonl'), 'utf8').then((rows) => rows.trim())),
++			row
++		)
++		const metadata = JSON.parse(await readFile(join(output, 'run.json'), 'utf8'))
++		assert.equal(metadata.origin, 'cached')
++		assert.equal(metadata.encoding, 'utf8')
++		assert.match(metadata.note, /decoded strings/)
+ 	} finally { await rm(directory, { force: true, recursive: true }) }
+ })
+

@@ -1,0 +1,1 @@
+sentinel outside selected paths

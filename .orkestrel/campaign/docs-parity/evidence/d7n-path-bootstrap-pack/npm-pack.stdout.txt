@@ -1,0 +1,716 @@
+{
+  "@orkestrel/scaffold": {
+    "id": "@orkestrel/scaffold@0.0.63",
+    "name": "@orkestrel/scaffold",
+    "version": "0.0.63",
+    "size": 1174044,
+    "unpackedSize": 4535839,
+    "shasum": "3e537e6dfd59b74849776468a0327c748f22d761",
+    "integrity": "sha512-QRDBdWK29lr2qLL/y3HYbDHtFf1P/aI044z5FopiM21rNSSx3pNsCiWt1OVWUkKufGH217zJg4K8qAVVXzJO+Q==",
+    "filename": "orkestrel-scaffold-0.0.63.tgz",
+    "files": [
+      {
+        "path": "LICENSE",
+        "size": 1066,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 2525,
+        "mode": 420
+      },
+      {
+        "path": "dist/bin/main.js",
+        "size": 82831,
+        "mode": 420
+      },
+      {
+        "path": "dist/bin/main.js.map",
+        "size": 151055,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/AGENTS.md",
+        "size": 18043,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/orchestration.md",
+        "size": 66555,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/agents/openai.yaml",
+        "size": 249,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
+        "size": 39508,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/references/components.md",
+        "size": 40566,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/references/frontend-design.md",
+        "size": 8436,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/references/inputs.md",
+        "size": 22504,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/references/inspection.md",
+        "size": 11276,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/references/utilities.md",
+        "size": 14718,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/enterprise-bootstrap/SKILL.md",
+        "size": 22835,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-align-packages/agents/openai.yaml",
+        "size": 230,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-align-packages/references/fleet.md",
+        "size": 2183,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-align-packages/references/integration.md",
+        "size": 2920,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-align-packages/SKILL.md",
+        "size": 4036,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-build-application/agents/openai.yaml",
+        "size": 231,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-build-application/SKILL.md",
+        "size": 6542,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-debrief/agents/openai.yaml",
+        "size": 295,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-debrief/references/field-testing.md",
+        "size": 5368,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-debrief/references/instruction-audit.md",
+        "size": 6726,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-debrief/references/retention.md",
+        "size": 7506,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-debrief/SKILL.md",
+        "size": 6672,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-falsify/agents/openai.yaml",
+        "size": 314,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-falsify/references/brief.md",
+        "size": 7413,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-falsify/references/reconcile.md",
+        "size": 8866,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-falsify/SKILL.md",
+        "size": 15614,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-harden-package/agents/openai.yaml",
+        "size": 242,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-harden-package/references/centralization.md",
+        "size": 4694,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-harden-package/references/contract.md",
+        "size": 2882,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-harden-package/references/hardening.md",
+        "size": 5626,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-harden-package/references/research.md",
+        "size": 2872,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-harden-package/SKILL.md",
+        "size": 7098,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-polish-surface/agents/openai.yaml",
+        "size": 263,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-polish-surface/references/capture-harness.md",
+        "size": 6426,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-polish-surface/SKILL.md",
+        "size": 7082,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-prove-journey/agents/openai.yaml",
+        "size": 353,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-prove-journey/references/captures.md",
+        "size": 5947,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-prove-journey/references/decide.md",
+        "size": 3754,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-prove-journey/references/layer.md",
+        "size": 12249,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-prove-journey/references/statechart.md",
+        "size": 5423,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-prove-journey/references/styles.md",
+        "size": 5284,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-prove-journey/SKILL.md",
+        "size": 13072,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-publish/agents/openai.yaml",
+        "size": 328,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-publish/references/wave.md",
+        "size": 9877,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-publish/references/window.md",
+        "size": 12867,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/skills/orkestrel-publish/SKILL.md",
+        "size": 4784,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/templates/brief.md",
+        "size": 7700,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/transports/claude.md",
+        "size": 2104,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/agents/transports/codex.md",
+        "size": 9745,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/CLAUDE.md",
+        "size": 3688,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/analyst.md",
+        "size": 3795,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/application.md",
+        "size": 2070,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/builder.md",
+        "size": 2693,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/checker.md",
+        "size": 3030,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/grok.md",
+        "size": 4878,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/implementer.md",
+        "size": 2308,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/orkestrel.md",
+        "size": 28416,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/planner.md",
+        "size": 2632,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/researcher.md",
+        "size": 1691,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/reviewer.md",
+        "size": 5418,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/scout.md",
+        "size": 1399,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/sol.md",
+        "size": 3381,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/agents/verifier.md",
+        "size": 2244,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/application.md",
+        "size": 3415,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/architecture.md",
+        "size": 21416,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/browser.md",
+        "size": 1058,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/documentation.md",
+        "size": 8085,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/names.md",
+        "size": 11868,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/patterns.md",
+        "size": 7368,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/portability.md",
+        "size": 4957,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/quality.md",
+        "size": 18837,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/styles.md",
+        "size": 3870,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/tests.md",
+        "size": 23260,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/typescript.md",
+        "size": 4992,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/workspace.md",
+        "size": 21554,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/rules/writing.md",
+        "size": 8668,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/settings.json",
+        "size": 37081,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/enterprise-bootstrap/SKILL.md",
+        "size": 1389,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-align-packages/SKILL.md",
+        "size": 877,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-build-application/SKILL.md",
+        "size": 719,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-debrief/SKILL.md",
+        "size": 816,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-falsify/SKILL.md",
+        "size": 866,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-harden-package/SKILL.md",
+        "size": 1115,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-polish-surface/SKILL.md",
+        "size": 883,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-prove-journey/SKILL.md",
+        "size": 1365,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/claude/skills/orkestrel-publish/SKILL.md",
+        "size": 730,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/analyst.toml",
+        "size": 1999,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/application.toml",
+        "size": 1526,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/builder.toml",
+        "size": 1616,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/checker.toml",
+        "size": 1740,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/grok.toml",
+        "size": 2149,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/implementer.toml",
+        "size": 1336,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/opus.toml",
+        "size": 1725,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/orkestrel.toml",
+        "size": 1607,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/planner.toml",
+        "size": 1702,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/researcher.toml",
+        "size": 1350,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/reviewer.toml",
+        "size": 1689,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/scout.toml",
+        "size": 1166,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/agents/verifier.toml",
+        "size": 874,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/codex/config.toml",
+        "size": 1799,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/configs/helpers.ts",
+        "size": 39653,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/configs/policy.ts",
+        "size": 49566,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/cursor/mcp.json",
+        "size": 263,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/cursor/rules/orchestration.mdc",
+        "size": 1511,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/editorconfig",
+        "size": 249,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/gitattributes",
+        "size": 95,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/gitignore",
+        "size": 678,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/mcp.json",
+        "size": 192,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/oxfmtrc.json",
+        "size": 358,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/oxlintignore",
+        "size": 157,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/oxlintrc.json",
+        "size": 17169,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/dotfiles/prettierignore",
+        "size": 499,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/guides/guide.md",
+        "size": 138077,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/guides/scaffold.md",
+        "size": 152285,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/LICENSE",
+        "size": 1066,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/manifest.json",
+        "size": 29254,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/scripts/codex.sh",
+        "size": 1270,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/scripts/cursor.sh",
+        "size": 1381,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/scripts/deps.sh",
+        "size": 1819,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/scripts/docs.ts",
+        "size": 16056,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/scripts/ollama.sh",
+        "size": 591,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/tests/config.test.ts",
+        "size": 95339,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/tests/policy.test.ts",
+        "size": 21066,
+        "mode": 420
+      },
+      {
+        "path": "dist/host/tests/setupPolicy.ts",
+        "size": 85056,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/index.cjs",
+        "size": 269942,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/index.cjs.map",
+        "size": 355335,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/index.d.cts",
+        "size": 235148,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/index.d.ts",
+        "size": 235148,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/index.js",
+        "size": 261758,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/index.js.map",
+        "size": 352908,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/server/index.cjs",
+        "size": 183790,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/server/index.cjs.map",
+        "size": 287586,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/server/index.d.cts",
+        "size": 137657,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/server/index.d.ts",
+        "size": 137657,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/server/index.js",
+        "size": 175045,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/server/index.js.map",
+        "size": 281960,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 5390,
+        "mode": 420
+      }
+    ],
+    "entryCount": 140,
+    "bundled": []
+  }
+}

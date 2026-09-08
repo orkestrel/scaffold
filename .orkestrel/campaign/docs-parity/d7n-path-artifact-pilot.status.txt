@@ -1,0 +1,34 @@
+M  package-lock.json
+ M package.json
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-close-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-closure-verdict.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-final-verify-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-final.diff.txt
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-final.status.txt
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-fix-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-fix-successor-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-fix-successor-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-fix.diff.txt
+?? .orkestrel/campaign/docs-parity/d7n-layer-graph-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-tools-check-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-tools-check-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-wave-design-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-wave-subjective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot-report.md
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot-run-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot-run-report.md
+?? .orkestrel/campaign/docs-parity/d7n-path-artifact-pilot.diff.txt
+?? .orkestrel/campaign/docs-parity/d7n-path-bootstrap-pack-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-path-bootstrap-pack-reading.md
+?? .orkestrel/campaign/docs-parity/d7n-path-bootstrap-pack-report.md
+?? .orkestrel/campaign/docs-parity/d7n-path-bootstrap-pack.diff.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-path-artifact-pilot/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-path-bootstrap-pack/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture-final/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/layer-capture-fix/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/pack-path-bootstrap.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/path-artifact-pilot/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/run-d7n-layer-tools-check.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/run-d7n-layer-wave-subjective.sh
+

@@ -176,7 +176,12 @@ d7n-layer-reading-boundary-verdict.md. The raw carrier returned under
 d7n-layer-capture-brief.md; focused independent controls passed. Audits returned and
 were reconciled in d7n-layer-capture-audit-verdict.md. The bounded source successor
 does not block use of the independently verified raw survey. The graph reconciliation
-is dispatched under d7n-layer-graph-brief.md. No accepted layer artifact exists yet.
+returned under d7n-layer-graph-report.md. Its runtime/peer/optional graph is acyclic;
+Guide, scaffold, Probe and Test require a development-tool bootstrap. Read
+d7n-layer-wave-design-reading.md for the reconciled design and held lockfile choice.
+No final layer artifact exists yet. The path bootstrap pack is accepted under
+d7n-path-bootstrap-pack-reading.md; the disposable repair pilot ran green under root
+and is undergoing independent closure. No fleet repair has run from it.
 Root's initial Contract reading finds registry 0.0.16 and prepared source 0.0.17;
 that candidate does not require an automatic repeat bump merely to resume the pass.
 Read d7n-layer-contract-reading.md. No accepted layer tarball or new pin exists yet.
@@ -186,6 +191,14 @@ alignment with tarballs, applying required bumps before accepted packing, then p
 the measured publishing layer order. Use orkestrel-publish when ready. The owner may
 choose incremental publication after an accepted layer; no upload is authorized now.
 The old guide-first sequence is superseded. Keep parity closures and artifact checks.
+
+The raw carrier correction is closed under d7n-layer-capture-closure-verdict.md.
+Use instruments/d7/windows/layer-capture-final/ if another raw capture is required;
+the original verified survey remains the graph evidence. The owner was asked whether
+future release pins remain isolated until registry locks can be generated or land on
+main with an explicit pending lock. Root recommends isolated preparation and has not
+changed canonical future pins while that choice is open. Source corrections and
+disposable mechanism proofs remain authorized.
 
 ## Pending owner decisions carried from the container
 
