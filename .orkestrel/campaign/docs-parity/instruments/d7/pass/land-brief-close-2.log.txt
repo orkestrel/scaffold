@@ -1,0 +1,10 @@
+== brief close-2 landing 2026-09-08T02:06:34Z over 950e0a7
+== status
+ M guides/brief.md
+ guides/brief.md | 34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+== stage by path
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+== committed
+3849b1d Close brief under the final guide tarball
+(status end)
