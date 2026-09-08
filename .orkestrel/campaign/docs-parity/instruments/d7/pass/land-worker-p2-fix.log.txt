@@ -1,0 +1,20 @@
+== worker p2-fix landing 2026-09-08T02:50:35Z over 5d1fd14
+== status
+ M guides/worker.md
+ M src/core/Worker.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M src/server/Dispatch.ts
+ M src/server/factories.ts
+ M src/server/handlers.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts     |  6 ++--
+ tests/guides.test.ts    | 77 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 10 files changed, 160 insertions(+), 75 deletions(-)
+== stage by path
+ 10 files changed, 160 insertions(+), 75 deletions(-)
+== committed
+021c8ad Refine worker's convergence on the audit's findings
+(status end)

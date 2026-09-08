@@ -1,0 +1,50 @@
+src/server/Thread.ts:26:	constructor(script: string | URL, workerData: unknown) {
+src/server/NodeWorker.ts:21:	readonly #script: string | URL
+src/server/factories.ts:37: * const thread = await createThread(new URL('./double.js', import.meta.url))
+src/server/factories.ts:41:export function createThread(script: string | URL, workerData?: unknown): Promise<NodeThread> {
+src/server/factories.ts:46: * Creates a persistent JSON-file {@link QueueStoreInterface} — the core
+src/server/factories.ts:50: * A queue's durable state is a database table, so JSON persistence reuses the
+src/server/factories.ts:51: * existing JSON-file driver rather than a bespoke store: the entries are written to
+src/server/factories.ts:54: * driver changes where the bytes live. The `input` shape must be JSON-serializable
+src/server/factories.ts:55: * (the JSON driver round-trips it as JSON). Build a second store over the same `path` to
+src/server/factories.ts:59: * @param path - The JSON file the entries are loaded from and flushed to
+src/server/factories.ts:61: * @returns A JSON-file-backed {@link QueueStoreInterface}, typed by `input`
+src/server/factories.ts:83: * Creates a CPU-parallel worker over `node:worker_threads` — a thin specialization of the
+src/server/factories.ts:98: * terminates the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+src/server/factories.ts:114: * 	script: new URL('./double.js', import.meta.url),
+src/server/Dispatch.ts:26: * settlement because CPU-bound work cannot honour the signal.
+src/server/Dispatch.ts:47: * const thread = await createThread(new URL('./double.js', import.meta.url))
+src/server/types.ts:54: * Configures `createNodeWorker` — a CPU-parallel worker over `node:worker_threads`.
+src/server/types.ts:88:	readonly script: string | URL
+src/core/types.ts:101:	 * Submits one job in FIFO order; the handler runs against an acquired resource, released
+guides/worker.md:8:resource lifecycle (idle reuse, `max` backpressure, FIFO waiting) is the Pool's; the facade
+guides/worker.md:16:The worker is observable through its own `emitter` — see [Observing](#observing). For CPU
+guides/worker.md:49:| API                    | Kind     | Summary                                                                                                                                                                                                                                               |
+guides/worker.md:52:| `createJSONQueueStore` | function | Creates a persistent JSON-file `QueueStoreInterface` — the core `createDatabaseQueueStore` over a server `createJSONDriver`.                                                                                                                          |
+guides/worker.md:53:| `createNodeWorker`     | function | Creates a CPU-parallel worker over `node:worker_threads` — a thin specialization of the core `createWorker` whose pooled resource is a worker thread.                                                                                                 |
+guides/worker.md:68:const thread = await createThread(new URL('./double.ts', import.meta.url))
+guides/worker.md:82:| API            | Kind     | Summary                                                                                 |
+guides/worker.md:91:| API        | Kind  | Summary                                                                                                                                                           |
+guides/worker.md:108:| `NodeWorkerOptions`  | interface | `{ on?, error?, script, input, result, workerData?, concurrency?, retries?, timeout?, store? }`                        | Configures `createNodeWorker` — a CPU-parallel worker over `node:worker_threads`.                                                                                                                     |
+guides/worker.md:129:| `enqueue` | `Promise<TResult>` | Submits one job in FIFO order; the handler runs against an acquired resource, released when the job settles.       |
+guides/worker.md:209:6. **Abort terminates and evicts the thread without losing its cause.** Because CPU-bound
+guides/worker.md:252:    server JSON driver.** A queue's durable state is a `@orkestrel/database` table,
+guides/worker.md:253:    so JSON persistence reuses the existing driver rather than a bespoke store — see
+guides/worker.md:259:true CPU parallelism for work that would otherwise block the event loop. It is a thin
+guides/worker.md:275:	script: new URL('./double.js', import.meta.url), // built JavaScript works across supported Node
+guides/worker.md:312:Because CPU-bound work cannot honour its signal, an `abort` or a per-attempt `timeout`
+guides/worker.md:330:`createJSONQueueStore` (`@orkestrel/worker/server`) builds a `QueueStoreInterface` over a JSON file —
+guides/worker.md:408:### CPU-parallel jobs over threads
+guides/worker.md:418:	script: new URL('./double.ts', import.meta.url),
+guides/worker.md:493:- **CPU-parallel work needs `createNodeWorker`** — the core `createWorker` runs its
+guides/worker.md:495:  `createNodeWorker` only when the work is genuinely CPU-bound and would otherwise
+guides/worker.md:507:  the titled pair cannot be retired silently), and the README pitch against this guide's
+guides/worker.md:508:  tagline. It also transcribes the Threads, NodeWorker, Persistence, and CPU-parallel
+guides/worker.md:538:  the JSON round-trip, and a `remove` is reflected across a reopen; `createThread` resolving
+guides/worker.md:609:  backpressure, FIFO abort-able wait).
+guides/worker.md:613:- [`README.md`](README.md) — the guides index.
+README.md:11:`createNodeWorker` where the work is CPU-bound: it specializes `createWorker`
+README.md:30:- ESM and CommonJS builds ship for both the core and server entry points
+README.md:48:CPU-parallel jobs over `node:worker_threads`:
+README.md:56:	script: new URL('./double.js', import.meta.url),
+README.md:80:MIT © [Orkestrel](https://github.com/orkestrel) — see [LICENSE](./LICENSE).
