@@ -1,0 +1,11 @@
+npm notice run @orkestrel/probe@0.0.13 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/probe@0.0.13 check:src
+npm notice run npm run check:src:core && npm run check:src:server && npm run check:src:bin
+npm notice run @orkestrel/probe@0.0.13 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/probe@0.0.13 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+npm notice run @orkestrel/probe@0.0.13 check:src:bin
+npm notice run tsc --noEmit -p configs/src/tsconfig.bin.json
+exit=0

@@ -1,0 +1,16 @@
+npm notice run @orkestrel/probe@0.0.13 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/probe
+
+····························································································-··············-···················-·····-···stderr | tests/src/server/stages/RuntimeStage.test.ts > runtime stage > recycles the resident runner after 64 written specifications, evicts disk caches, and strips the replacement warm's termination listeners
+failed to load config from C:\Users\mikes\AppData\Local\Temp\orkestrel-test-JxtoQc\vite.config.ts
+
+······················································-······
+
+ Test Files  8 passed (8)
+      Tests  193 passed | 5 skipped (198)
+   Start at  09:25:31
+   Duration  395.34s (transform 2.44s, setup 780ms, import 4.21s, tests 580.24s, environment 1ms)
+
+exit=0

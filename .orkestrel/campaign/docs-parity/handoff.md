@@ -101,15 +101,15 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | toolbox | `f8175e9` | fix round and `close-2` landed; closure checker PASS (`d7n-toolbox-closure-checker-toolbox.md`); verifier terminated | run the verifier on `d7n-toolbox-verify-brief.md` (head-start first); write the closure verdict; push `main` |
 | lsp | `c4842c8` | fix round and `close-2` landed; both closure lanes terminated | dispatch the closure: checker on `d7n-lsp-check-brief.md` (the fix round's check brief, which carries the closing items; `d7n-lsp-close-2-brief.md` is the successor it covers), verifier on `d7n-lsp-verify-brief.md`; verdict; push `main` |
 | database | `cdbf66a` | `close-2` landed; owner main merged; prior verifier green; the canon finding remains open; Ruling 20 stays unchanged | dispatch `d7n-database-canon-brief.md` to move the compiler-derived surface into its consuming package case; then checker and verifier; verdict; push `main` |
-| probe | `135aab7` | fix round landed; owner's `b816749` merged; the `d7n-probe-tests` builder was terminated and left a clean tree | dispatch `d7n-probe-tests-brief.md` (builder, Sonnet) again; land by path with a "Replace the suite's candidate drafts…" message; head-start; write `d7n-probe-check-brief.md` (items from `d7n-probe-audit-verdict.md`) and `gen-verify.sh probe`; closure; push `main` |
+| probe | `93fc01d` | resumed test-draft correction landed and branch pushed; scoped gates green; head start reinstalled at 2b76b363; clean; main still b816749 | rule the type-load fixture wording in `d7n-probe-tests-landing-verdict.md`; write the audit-item check brief and generate verification; full closure and main push remain pending |
 | agent | `54e7199` | audit reconciled (`d7n-agent-audit-verdict.md`, items A1 to A9); the fix unit was terminated before editing (clean tree) | dispatch `d7n-agent-converge-fix-brief.md` (implementer, Opus); land with `land-p2.sh agent fix`; head-start; check brief + verify brief; closure; push `main` |
 | ollama | `98e9c34` | audit reconciled (items O1 to O10); the fix unit was terminated at item 3 with partial edits, retained as `d7n-ollama-converge-fix.partial.diff.txt` and not applied | dispatch `d7n-ollama-converge-fix-brief.md` again from the clean tip (the partial diff is evidence of the first two items' wording, not a patch to apply); then as agent |
 | workflow | `1151786` | audit reconciled (`d7n-workflow-audit-verdict.md`, items WF1 to WF7); fix brief written | dispatch `d7n-workflow-converge-fix-brief.md` (implementer, Opus); head-start first (its installed guide is the older pack); then as agent |
 | program | `a60327f` | audit reconciled (`d7n-program-audit-verdict.md`, items PF1 to PF8); fix brief written | dispatch `d7n-program-converge-fix-brief.md` (implementer, Opus); head-start first; then as agent |
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
-| mcp | `a01d5e8` | owner main `292c966` merged without conflicts; check, docs, guide tests, and the focused legacy test passed; branch pushed; retained audit lanes await reconciliation; checker not run | reconcile; fix brief (its browser-face `createWebSocketClientTransport` row is uncompared by the reader, a standing condition); closure; push `main` |
+| mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `1d5afa3` | branch pushed; `main` waits | see the tail |
+| guide | `1d5afa3` | branch pushed; main waits; embedded demonstration-heading reader defect reproduced and independently confirmed; owner directed continuation | bounded reader correction under Ruling 8; review, pack, record the replacement hash, and revalidate the fleet; see `d7n-guide-heading-referral.md` |
 
 ## The tail, after every package closes
 
@@ -119,6 +119,16 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 4. Scaffold re-pins the guide; each package `npm ci`, re-pins `^0.0.18`, bumps; scaffold releases; `scaffold catalog` sweep; publishes in catalog layer order (`.claude/agents/orkestrel.md`) on the owner's go-ahead, through the `orkestrel-publish` skill.
 5. Sweep `tmp/units` and the journals; prune the campaign folder per `orkestrel-debrief` § retention.
 
-## Pending owner decisions
+## Reader correction in the Windows continuation
+
+Read `d7n-guide-heading-referral.md` and `d7n-guide-heading-objective-report.md`.
+The runtime reproduction on installed hash `2b76b363` loses a class table's Summary
+when a preceding demonstration heading embeds its class code token. The owner directed
+continuation after the referral and owner-main reconciliation. Follow Ruling 8: correct
+the reader, review the change, record the replacement packed artifact and its measured
+hash, then revalidate the fleet. Do not reuse an old-artifact closure as proof of the
+replacement. No replacement is installed yet. Publication still needs an explicit go-ahead.
+
+## Pending owner decisions carried from the container
 
 Listed in `d7-fleet-plan.md` § For the owner: supervisor's API-adoption campaign; template's missing sections; implementing-class member blocks; the `--to source` seed guard; timeout's Contract shape; the scaffold findings carried in `d7-fleet-plan.md` § Findings carried (the voice rule's hyphenated-token and noun-opener cases, `land-p1.sh`'s omission of newly tracked files, the seed's trailing empty comment line and empty-cell write, the config test's shared temp-dir cross-talk, the `in order to` sweep sense); the reader limitations carried to the guide package (both-absent pairs, a name exported by more than one face collapsing to one row, underscore identifiers, inherited-member duplication, the line-end hyphen, overload collapse).

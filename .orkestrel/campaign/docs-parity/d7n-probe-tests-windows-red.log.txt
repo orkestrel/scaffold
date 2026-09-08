@@ -1,0 +1,274 @@
+npm notice run @orkestrel/probe@0.0.13 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/probe
+
+·····························································································-·············-··················-······-···stderr | tests/src/server/stages/RuntimeStage.test.ts > runtime stage > recycles the resident runner after 64 written specifications, evicts disk caches, and strips the replacement warm's termination listeners
+failed to load config from C:\Users\mikes\AppData\Local\Temp\orkestrel-test-SwDXMI\vite.config.ts
+
+·········x························x········xx·········-··xxxx
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > mints receipts only when every stage executes cleanly, including for a control that shares no path with its case, and returns admitted path issues
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ tests/src/server/Probe.test.ts:182:28
+    180|      context: { stage: 'runtime', path: 'tests/unmapped.test.ts' },
+    181|     })
+    182|     expect(minted.receipt).toMatch(/^probe:/)
+       |                            ^
+    183|     expect(minted.reason).toBe('the source assigns a string to a numbe…
+    184|     // The control shares neither path with the case, so the receipt i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > retains all stage checks when the runtime stage cannot write its specification
+AssertionError: expected [ { origin: 'claimant', …(3) } ] to strictly equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "Move this module data to constants.ts or another data-kind file.",
++     "origin": "claimant",
++     "path": "src/core/missing-runtime.ts",
++     "range": {
++       "end": {
++         "character": 25,
++         "line": 0,
++       },
++       "start": {
++         "character": 13,
++         "line": 0,
++       },
++     },
++   },
++ ]
+
+ ❯ tests/src/server/Probe.test.ts:429:74
+    427|     expect(verdict.case.map((check) => check.stage)).toStrictEqual(['t…
+    428|     expect(verdict.case.find((check) => check.stage === 'type')?.issue…
+    429|     expect(verdict.case.find((check) => check.stage === 'lint')?.issue…
+       |                                                                          ^
+    430|     expect(verdict.case.find((check) => check.stage === 'runtime')?.is…
+    431|      expect.objectContaining({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > expires only the active inspection, cleans its revision, and serves a queued claim
+AssertionError: expected { Object (status, value) } to match object { status: 'fulfilled', …(1) }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "status": "fulfilled",
+    "value": {
+-     "receipt": Any<String>,
++     "case": [
++       {
++         "elapsed": 1432,
++         "issues": [],
++         "stage": "type",
++       },
++       {
++         "elapsed": 9,
++         "issues": [
++           {
++             "message": "Move this module data to constants.ts or another data-kind file.",
++             "origin": "claimant",
++             "path": "src/core/after-expiry.ts",
++             "range": {
++               "end": {
++                 "character": 25,
++                 "line": 0,
++               },
++               "start": {
++                 "character": 13,
++                 "line": 0,
++               },
++             },
++           },
++         ],
++         "stage": "lint",
++       },
++       {
++         "elapsed": 216,
++         "issues": [],
++         "stage": "runtime",
++       },
++     ],
++     "control": [
++       {
++         "elapsed": 1401,
++         "issues": [
++           {
++             "message": "Type 'string' is not assignable to type 'number'.",
++             "origin": "claimant",
++             "path": "src/core/after-expiry.ts",
++             "range": {
++               "end": {
++                 "character": 13,
++                 "line": 0,
++               },
++               "start": {
++                 "character": 13,
++                 "line": 0,
++               },
++             },
++           },
++         ],
++         "stage": "type",
++       },
++       {
++         "elapsed": 35,
++         "issues": [
++           {
++             "message": "Move this module data to constants.ts or another data-kind file.",
++             "origin": "claimant",
++             "path": "src/core/after-expiry.ts",
++             "range": {
++               "end": {
++                 "character": 34,
++                 "line": 0,
++               },
++               "start": {
++                 "character": 13,
++                 "line": 0,
++               },
++             },
++           },
++         ],
++         "stage": "lint",
++       },
++       {
++         "elapsed": 173,
++         "issues": [],
++         "stage": "runtime",
++       },
++     ],
++     "digest": "56d1de918e77a5f14bf18f6861f5fb3e",
++     "elapsed": 31636,
++     "id": "110b6d87-1a06-4553-a0c0-fc2125375838",
++     "project": {
++       "digest": "434f59254d58cf2683d453a26bd0d837",
++       "path": "configs/src/tsconfig.core.json",
++     },
++     "reason": "the source assigns a string to a number",
++     "toolchain": {
++       "oxlint": "1.81.0",
++       "typescript": "6.0.3",
++       "vitest": "4.1.11",
++     },
+    },
+  }
+
+ ❯ tests/src/server/Probe.test.ts:704:25
+    702|      ),
+    703|     ).toStrictEqual([])
+    704|     expect(outcomes[1]).toMatchObject({
+       |                         ^
+    705|      status: 'fulfilled',
+    706|      value: expect.objectContaining({ receipt: expect.any(String) }),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > replaces a type stage its deadline destroyed
+AssertionError: expected undefined to be type of 'string'
+
+Expected: "string"
+Received: "undefined"
+
+ ❯ tests/src/server/Probe.test.ts:768:27
+    766|     },
+    767|    })
+    768|    expect(served.receipt).toBeTypeOf('string')
+       |                           ^
+    769|    expect(served.case.flatMap((check) => check.issues)).toStrictEqual(…
+    770|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > binds the project into the token and holds the claim digest across projects
+AssertionError: expected [] to have a length of 7 but got +0
+
+- Expected
++ Received
+
+- 7
++ 0
+
+ ❯ tests/src/server/Probe.test.ts:1696:25
+    1694|     expect(repeated.digest).toBe(honest.digest)
+    1695|
+    1696|     expect(honestToken).toHaveLength(7)
+       |                         ^
+    1697|     expect(chosenToken).toHaveLength(7)
+    1698|     expect(honestToken.slice(0, 6)).toStrictEqual(chosenToken.slice(0,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > names the caller-chosen project in the token the workspace project refuses
+AssertionError: expected undefined to be 'probe:2143ed8164c367366d1c8aad2ed3685…' // Object.is equality
+
+- Expected:
+"probe:2143ed8164c367366d1c8aad2ed36857:type:typescript@6.0.3:oxlint@1.81.0:vitest@4.1.11:tmp/probe/probe-forgery-ac25d1a4-af0a-4f3c-8e3d-775d7d31e481.json@5a75d223528bcadbc50f699f4f99d64b"
+
++ Received:
+undefined
+
+ ❯ tests/src/server/Probe.test.ts:1758:28
+    1756|     })
+    1757|
+    1758|     expect(forged.receipt).toBe(
+       |                            ^
+    1759|      `probe:${forged.digest}:type:typescript@${forged.toolchain.typesc…
+    1760|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > separates two claims answered under one project
+AssertionError: expected [] to have a length of 7 but got +0
+
+- Expected
++ Received
+
+- 7
++ 0
+
+ ❯ tests/src/server/Probe.test.ts:1811:23
+    1809|    expect(first.digest).not.toBe(second.digest)
+    1810|    expect(first.project).toStrictEqual(second.project)
+    1811|    expect(firstToken).toHaveLength(7)
+       |                       ^
+    1812|    expect(secondToken).toHaveLength(7)
+    1813|    expect(firstToken[1]).toBe(first.digest)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |src:server| tests/src/server/Probe.test.ts > probe > mints one token for one claim in two separate processes
+AssertionError: expected undefined to be type of 'string'
+
+Expected: "string"
+Received: "undefined"
+
+ ❯ tests/src/server/Probe.test.ts:1900:26
+    1898|    }
+    1899|
+    1900|    expect(local.receipt).toBeTypeOf('string')
+       |                          ^
+    1901|    expect(reported).toBe(local.receipt)
+    1902|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  8 failed | 185 passed | 5 skipped (198)
+   Start at  09:05:43
+   Duration  385.41s (transform 2.51s, setup 866ms, import 4.21s, tests 559.17s, environment 1ms)
+
+exit=1

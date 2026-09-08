@@ -1,0 +1,13 @@
+npm notice run @orkestrel/probe@0.0.13 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/probe
+
+························································
+
+ Test Files  1 passed (1)
+      Tests  56 passed (56)
+   Start at  09:32:07
+   Duration  11.75s (transform 172ms, setup 28ms, import 498ms, tests 11.07s, environment 0ms)
+
+exit=0
