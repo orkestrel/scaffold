@@ -1,0 +1,121 @@
+diff --git a/guides/table.md b/guides/table.md
+index 34f6f5a..b35687a 100644
+--- a/guides/table.md
++++ b/guides/table.md
+@@ -67,7 +67,7 @@ table.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest firs
+ 
+ The document itself — what a table declares and what one row of it holds. All data, no behavior.
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
+ 
+ | API            | Kind      | Shape                                                      | Summary                                                                                                                                                                                     |
+ | -------------- | --------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -77,10 +77,10 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `ColumnCell`   | type      | `'text' \| 'number' \| 'flag' \| 'choice'`                 | Names what a column's cells hold — the discriminant that fixes the column's options, its comparison, and the filters that apply to it.                                                      |
+ | `ColumnChoice` | interface | `{ value, label, help? }`                                  | Represents one value a `choice` column offers — `value` is stored, `label` is read, and `help` explains.                                                                                    |
+ | `ColumnBase`   | interface | `{ key, label?, help?, hidden?, meta? }`                   | Describes what every column carries, whatever its cells hold — the name a row's cell uses, the text a reader sees, whether a host draws the column, and the metadata a host attaches to it. |
+-| `TextColumn`   | interface | `{ cell, key, label?, help?, hidden?, meta? }`             | Represents a column of text, compared lexically. Carries a date, a time, and a timestamp as ISO strings.                                                                                    |
+-| `NumberColumn` | interface | `{ cell, key, label?, help?, hidden?, meta? }`             | Represents a column of numbers, compared by magnitude.                                                                                                                                      |
+-| `FlagColumn`   | interface | `{ cell, key, label?, help?, hidden?, meta? }`             | Represents a column of yes-or-no answers, compared false before true.                                                                                                                       |
+-| `ChoiceColumn` | interface | `{ cell, choices, key, label?, help?, hidden?, meta? }`    | Represents a column drawn from a declared list, compared by the order that list declares. It requires `choices`.                                                                            |
++| `TextColumn`   | interface | `ColumnBase plus { cell }`                                 | Represents a column of text, compared lexically. Carries a date, a time, and a timestamp as ISO strings.                                                                                    |
++| `NumberColumn` | interface | `ColumnBase plus { cell }`                                 | Represents a column of numbers, compared by magnitude.                                                                                                                                      |
++| `FlagColumn`   | interface | `ColumnBase plus { cell }`                                 | Represents a column of yes-or-no answers, compared false before true.                                                                                                                       |
++| `ChoiceColumn` | interface | `ColumnBase plus { cell, choices }`                        | Represents a column drawn from a declared list, compared by the order that list declares. It requires `choices`.                                                                            |
+ | `TableColumn`  | type      | `TextColumn \| NumberColumn \| FlagColumn \| ChoiceColumn` | Represents any column a schema can declare — the union discriminated on `cell`.                                                                                                             |
+ | `TableSchema`  | interface | `{ name?, label?, help?, key, columns }`                   | Holds everything a table declares about itself — how the table is described, which column carries row identity, and the columns it declares, in the order it declares them.                 |
+ 
+@@ -162,15 +162,17 @@ A `Shape` cell holds the constant's declared type.
+ Total `is*` guards over unknown input. None throws, none coerces, and each returns `false` for
+ anything off-shape — including a hostile prototype, a symbol key, or a cyclic value.
+ 
+-| API                       | Kind     | Summary                                                                                                                                  |
+-| ------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+-| `isTableCell`             | function | Determines whether an unknown value has a table cell shape — a string, a finite number, or a boolean.                                    |
+-| `isTableRow`              | function | Determines whether an unknown value is a record whose every own key is a string and every value a `TableCell`.                           |
+-| `isColumnCell`            | function | Determines whether an unknown value is a declared column cell.                                                                           |
+-| `isColumnChoice`          | function | Determines whether an unknown value is one exact `ColumnChoice` record; an unknown member refuses it.                                    |
+-| `isTableColumn`           | function | Determines whether an unknown value is one exact discriminated `TableColumn`, checked against its cell's own options.                    |
+-| `isStructuralTableSchema` | function | Determines whether an unknown value has the exact shape of a `TableSchema` — the shape alone, with no domain check.                      |
+-| `isTableSchema`           | function | Determines whether an unknown value is a `TableSchema` a table can be opened against — the exact shape, and an audit that finds nothing. |
++In a guard table a `Shape` cell holds the type the guard narrows to.
++
++| API                       | Kind     | Shape          | Summary                                                                                                                                  |
++| ------------------------- | -------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
++| `isTableCell`             | function | `TableCell`    | Determines whether an unknown value has a table cell shape — a string, a finite number, or a boolean.                                    |
++| `isTableRow`              | function | `TableRow`     | Determines whether an unknown value is a record whose every own key is a string and every value a `TableCell`.                           |
++| `isColumnCell`            | function | `ColumnCell`   | Determines whether an unknown value is a declared column cell.                                                                           |
++| `isColumnChoice`          | function | `ColumnChoice` | Determines whether an unknown value is one exact `ColumnChoice` record; an unknown member refuses it.                                    |
++| `isTableColumn`           | function | `TableColumn`  | Determines whether an unknown value is one exact discriminated `TableColumn`, checked against its cell's own options.                    |
++| `isStructuralTableSchema` | function | `TableSchema`  | Determines whether an unknown value has the exact shape of a `TableSchema` — the shape alone, with no domain check.                      |
++| `isTableSchema`           | function | `TableSchema`  | Determines whether an unknown value is a `TableSchema` a table can be opened against — the exact shape, and an audit that finds nothing. |
+ 
+ The schema guards answer about a schema, and which one to reach for is which question you are asking.
+ `isStructuralTableSchema` asks whether the shape is exact: every declared member present and typed,
+@@ -275,6 +277,8 @@ accepts.
+ 
+ ### text
+ 
++This fence declares a `text` column.
++
+ ```ts
+ import type { TextColumn } from '@orkestrel/table'
+ 
+@@ -288,6 +292,8 @@ own string order, not a locale-aware collator.
+ 
+ ### number
+ 
++This fence declares a `number` column.
++
+ ```ts
+ import type { NumberColumn } from '@orkestrel/table'
+ 
+@@ -299,6 +305,8 @@ write carrying one raises `TableError` coded `CELL`.
+ 
+ ### flag
+ 
++This fence declares a `flag` column.
++
+ ```ts
+ import type { FlagColumn } from '@orkestrel/table'
+ 
+@@ -311,6 +319,8 @@ raises `TableError` coded `CELL`.
+ 
+ ### choice
+ 
++This fence declares a `choice` column with its ordered choices.
++
+ ```ts
+ import type { ChoiceColumn } from '@orkestrel/table'
+ 
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index f1b1cca..02fc189 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes.
++// package's own, as is the executed section that closes the file.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -19,7 +19,7 @@ import {
+ 	resolveLink,
+ } from '@orkestrel/guide'
+ import { readFileSync } from 'node:fs'
+-import { requireValue, resolveRoot } from '@orkestrel/test'
++import { requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
+ import type {
+ 	BetweenFilter,
+@@ -94,7 +94,7 @@ const INTERNAL: readonly string[] = Object.freeze([
+ /** Root-level files these checks read. `readInventory` walks directories only. */
+ const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+ 
+-const root = resolveRoot(import.meta)
++const root = new URL('../', import.meta.url)
+ const files: Record<string, string> = {
+ 	...readInventory(root, ['src', 'guides', 'tests'], { extensions: ['.ts', '.md'] }),
+ }

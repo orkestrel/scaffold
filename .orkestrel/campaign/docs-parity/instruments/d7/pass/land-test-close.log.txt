@@ -1,0 +1,12 @@
+== test close landing 2026-09-08T02:05:03Z over ac44bd4
+== status
+ M guides/test.md
+ M tests/guides.test.ts
+ guides/test.md       |  54 ++++--
+ tests/guides.test.ts | 459 ++++++++++++++++++++++++++++++---------------------
+ 2 files changed, 307 insertions(+), 206 deletions(-)
+== stage by path
+ 2 files changed, 307 insertions(+), 206 deletions(-)
+== committed
+997499c Close test under the final guide tarball
+(status end)

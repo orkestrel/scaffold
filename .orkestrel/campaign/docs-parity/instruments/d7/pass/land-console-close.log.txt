@@ -1,0 +1,12 @@
+== console close landing 2026-09-08T02:05:05Z over a115456
+== status
+ M guides/console.md
+ M tests/guides.test.ts
+ guides/console.md    | 156 ++++++++++++++++++++++++++++++++-------------------
+ tests/guides.test.ts |   6 +-
+ 2 files changed, 100 insertions(+), 62 deletions(-)
+== stage by path
+ 2 files changed, 100 insertions(+), 62 deletions(-)
+== committed
+36ae1b6 Close console under the final guide tarball
+(status end)

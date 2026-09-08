@@ -1,0 +1,40 @@
+=== C1 ===
+ M README.md
+ M guides/queue.md
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+=== C2 oxfmt ===
+All matched files use the correct format.
+Finished in 448ms on 12 files using 4 threads.
+oxfmt exit=0
+=== C2 oxlint ===
+oxlint exit=0
+=== C2 check ===
+check exit=0
+=== C3 docs ===
+rows read: 1, disagreements found: 0
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+rows read: 1, disagreements found: 0, written: 0, reported: 0
+=== C4 ===
+In a guard table: 1
+92:| API                  | Kind     | Shape ...
+QueueOption: 6
+stay Surface rows: 0
+hands back (README): 1
+header diff: empty
+BROAD: 0
+awk: empty above
+=== C5 ===
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+test:guides exit=0
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+test:policy exit=0
+ Test Files  6 passed (6)
+      Tests  151 passed (151)
+   Duration  1.28s (transform 815ms, setup 674ms, import 475ms, tests 932ms, environment 1ms)
+test:src:core exit=0
+=== drop-in region ===
+region diff: empty

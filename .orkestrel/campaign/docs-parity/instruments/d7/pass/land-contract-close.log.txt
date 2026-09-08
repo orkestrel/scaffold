@@ -1,0 +1,12 @@
+== contract close landing 2026-09-08T02:05:04Z over 6e9942a
+== status
+ M guides/contract.md
+ M tests/guides.test.ts
+ guides/contract.md   | 214 +++++++++++++++++++++++++++++----------------------
+ tests/guides.test.ts |  10 +--
+ 2 files changed, 125 insertions(+), 99 deletions(-)
+== stage by path
+ 2 files changed, 125 insertions(+), 99 deletions(-)
+== committed
+c519a4b Close contract under the final guide tarball
+(status end)

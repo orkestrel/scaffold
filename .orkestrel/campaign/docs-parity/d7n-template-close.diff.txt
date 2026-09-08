@@ -1,0 +1,57 @@
+diff --git a/guides/template.md b/guides/template.md
+index dd25bd0..ba0bdfd 100644
+--- a/guides/template.md
++++ b/guides/template.md
+@@ -33,7 +33,7 @@ escaped `\{{` always emits a literal `{{`, regardless of policy.
+ 
+ ### Types
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
+ 
+ | Type                       | Kind      | Shape                                                                                                                       | Summary                                                                                                                                                                                  |
+ | -------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -44,7 +44,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `TemplatePlaceholder`      | interface | `{ name, path?, required?, fallback?, description? }`                                                                       | Represents one placeholder a `TemplateDefinition`'s `content` declares — its lookup name, an optional field path into the values record, whether it is required, and a literal fallback. |
+ | `TemplateDefinition`       | interface | `{ id, name, content, placeholders, summary?, description?, category?, tags? }`                                             | Represents a named, versionable template record — pure data, no behavior.                                                                                                                |
+ | `TemplateFillOptions`      | interface | `{ missing?, locale? }`                                                                                                     | Carries the per-call options for `TemplateInterface#fill` / `TemplateManagerInterface#fill`.                                                                                             |
+-| `TemplateFillContext`      | interface | `{ missing?, locale?, placeholders? }`                                                                                      | Carries the full option bag `fillTemplate` takes — the per-call `TemplateFillOptions` plus the declared placeholders tokens resolve against.                                             |
++| `TemplateFillContext`      | interface | `TemplateFillOptions plus { placeholders? }`                                                                                | Carries the full option bag `fillTemplate` takes — the per-call `TemplateFillOptions` plus the declared placeholders tokens resolve against.                                             |
+ | `TemplateTokenResolution`  | interface | `{ value, declared, required }`                                                                                             | Represents one `{{name}}` token's resolution — the single token rule `fillTemplate` and `TemplateInterface#validate` share.                                                              |
+ | `TemplateRegisterOptions`  | interface | `{ replace? }`                                                                                                              | Carries the options for `TemplateManagerInterface#register`.                                                                                                                             |
+ | `TemplateValidationResult` | interface | `{ valid, missing, extra }`                                                                                                 | Reports the outcome of `TemplateInterface#validate` — which required placeholders are unresolved, and which supplied values are unused.                                                  |
+@@ -145,6 +145,8 @@ placeholderShape([{ name: 'city' }]) // an object ContractShape with a `city` st
+ 
+ #### Create a template and a registry
+ 
++Builds a template and fills it directly, then seeds a registry with several templates and queries them by category and id.
++
+ ```ts
+ import { createTemplate, createTemplateManager } from '@orkestrel/template'
+ 
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 9d3b187..f4725d7 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,10 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest. The constants below are this
+-// package's own, and are the only part a sibling package changes. Every flagship fence
+-// in `guides/template.md` is transcribed at the end of this file and asserted against what
+-// its comments claim: name resolution is not a behavioural proof, so a fence documenting a
+-// value the code contradicts is exactly what the transcriptions catch. Change a fence,
+-// change its transcription.
++// this repo's own `guides/README.md` manifest. The constants that follow are this
++// package's own, as is the executed section that closes the file.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -55,7 +51,7 @@ const MODULES = Object.freeze({ '@orkestrel/template': 'src/core', '@src/core':
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the second assertion below fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])

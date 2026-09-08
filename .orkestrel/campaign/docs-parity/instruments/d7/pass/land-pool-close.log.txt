@@ -1,0 +1,12 @@
+== pool close landing 2026-09-08T02:05:05Z over 8d9594d
+== status
+ M guides/pool.md
+ M tests/guides.test.ts
+ guides/pool.md       | 18 +++++++++++++-----
+ tests/guides.test.ts |  5 ++---
+ 2 files changed, 15 insertions(+), 8 deletions(-)
+== stage by path
+ 2 files changed, 15 insertions(+), 8 deletions(-)
+== committed
+3c9e926 Close pool under the final guide tarball
+(status end)

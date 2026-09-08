@@ -1,0 +1,13 @@
+== markdown close landing 2026-09-08T02:05:05Z over 2f16fdd
+== status
+ M guides/markdown.md
+ M src/core/constants.ts
+ M tests/guides.test.ts
+ src/core/constants.ts |  2 +-
+ tests/guides.test.ts  |  3 +--
+ 3 files changed, 31 insertions(+), 8 deletions(-)
+== stage by path
+ 3 files changed, 31 insertions(+), 8 deletions(-)
+== committed
+40f63bb Close markdown under the final guide tarball
+(status end)

@@ -1,0 +1,13 @@
+== msg close landing 2026-09-08T02:05:03Z over 8da702f
+== status
+ M guides/msg.md
+ M src/core/constants.ts
+ M tests/guides.test.ts
+ src/core/constants.ts |  70 +++++++++----------
+ tests/guides.test.ts  |  13 ++--
+ 3 files changed, 137 insertions(+), 135 deletions(-)
+== stage by path
+ 3 files changed, 137 insertions(+), 135 deletions(-)
+== committed
+57128e9 Close msg under the final guide tarball
+(status end)

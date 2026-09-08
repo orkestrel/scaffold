@@ -1,0 +1,15 @@
+== queue p2-fix landing 2026-09-08T02:06:01Z over bb89ae0
+== status
+ M README.md
+ M guides/queue.md
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     |  4 ++++
+ tests/guides.test.ts  |  2 +-
+ 5 files changed, 38 insertions(+), 16 deletions(-)
+== stage by path
+ 5 files changed, 38 insertions(+), 16 deletions(-)
+== committed
+1ae3fa1 Refine queue's convergence on the audit's findings
+(status end)

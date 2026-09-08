@@ -1,0 +1,12 @@
+== budget close landing 2026-09-08T02:05:03Z over d3147bb
+== status
+ M guides/budget.md
+ M tests/guides.test.ts
+ guides/budget.md     | 14 ++++++++------
+ tests/guides.test.ts |  6 +++---
+ 2 files changed, 11 insertions(+), 9 deletions(-)
+== stage by path
+ 2 files changed, 11 insertions(+), 9 deletions(-)
+== committed
+37ada20 Close budget under the final guide tarball
+(status end)
