@@ -222,3 +222,7 @@ The full worklist (159 disagreements, the guide/source pairs for every factory, 
 ## Deviations
 
 None. `repair` wrote exactly the P21 list, every before-text in item 2 and item 3 was found verbatim, no voice diagnostic named an off-limits file, `test:policy` stayed green with no off-scope hit, and no gate other than `docs` read red.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): the per-file parentheticals at the voice-rule paragraph ("nine", "one", "one") are counts the writer tallied, not readings the run printed; the per-diagnostic list that follows names every site, and the tree is authoritative (objective claim 12).

@@ -1,0 +1,27 @@
+== interpret p2-fix landing 2026-09-08T02:15:59Z over a0303e5
+== status
+ M guides/interpret.md
+ M src/core/Interpret.ts
+ M src/core/InterpretContext.ts
+ M src/core/Narrator.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/managers/RecordManager.ts
+ M src/core/managers/SubjectManager.ts
+ M src/core/managers/TemplateManager.ts
+ M src/core/stages/Clarifier.ts
+ M src/core/stages/Extractor.ts
+ M src/core/stages/Generator.ts
+ M src/core/stages/Normalizer.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ src/core/validators.ts               |  26 ++++----
+ tests/guides.test.ts                 |   2 +-
+ 17 files changed, 160 insertions(+), 159 deletions(-)
+== stage by path
+ 17 files changed, 160 insertions(+), 159 deletions(-)
+== committed
+714b889 Refine interpret's convergence on the audit's findings
+(status end)

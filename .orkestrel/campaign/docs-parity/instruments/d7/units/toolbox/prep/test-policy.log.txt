@@ -1,0 +1,14 @@
+
+> @orkestrel/toolbox@0.0.12 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/toolbox
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  21:29:09
+   Duration  802ms (transform 185ms, setup 100ms, import 165ms, tests 317ms, environment 0ms)
+

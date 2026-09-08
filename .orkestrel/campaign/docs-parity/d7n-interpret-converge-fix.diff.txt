@@ -1,0 +1,930 @@
+diff --git a/guides/interpret.md b/guides/interpret.md
+index 7b20387..2d024aa 100644
+--- a/guides/interpret.md
++++ b/guides/interpret.md
+@@ -19,11 +19,11 @@ than `kind` or `type`: `stage` splits the pipeline phases, `category` splits pro
+ 
+ ## Surface
+ 
++### Interpret text against an added template
++
+ Add a template, interpret text through the normalize, extract, clarify, format, and generate
+ pipeline, then render the result back to prose:
+ 
+-### Interpret text against an added template
+-
+ ```ts
+ import { createExtractor, createInterpret } from '@orkestrel/interpret'
+ import {
+@@ -107,21 +107,21 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `InterpretContextEventMap`   | type      | `{ add, clear, destroy }`                                                                                                                                | Represents the push observation surface of an `InterpretContextInterface`.                                                                                                                                                   |
+ | `NarratorFormatter`          | type      | `(value: unknown) => string`                                                                                                                             | Represents a pure formatting function for one lexicon `value()` unit.                                                                                                                                                        |
+ | `Lexicon`                    | interface | `{ phrases?, labels?, templates? }`                                                                                                                      | Represents caller-injected wording data for the reverse direction — mechanism, never policy. Every phrase, label, and template string a `Narrator` renders is data supplied here, never a core literal.                      |
+-| `NarratorOptions`            | interface | `{ lexicon?, formatters? }`                                                                                                                              | Represents the options for `createNarrator` / the `Narrator` constructor.                                                                                                                                                    |
+-| `NormalizerOptions`          | interface | `{ contractions?, abbreviations?, corrections? }`                                                                                                        | Represents the options for `createNormalizer` / the `Normalizer` constructor.                                                                                                                                                |
+-| `ExtractorOptions`           | interface | `{ actions?, domains? }`                                                                                                                                 | Represents the options for `createExtractor` / the `Extractor` constructor.                                                                                                                                                  |
+-| `ClarifierOptions`           | interface | `{ floor?, narrator? }`                                                                                                                                  | Represents the options for `createClarifier` / the `Clarifier` constructor.                                                                                                                                                  |
+-| `FormatterOptions`           | interface | `{ verbs?, narrator? }`                                                                                                                                  | Represents the options for `createFormatter` / the `Formatter` constructor.                                                                                                                                                  |
+-| `TemplateManagerOptions`     | interface | `{ templates?, on?, error? }`                                                                                                                            | Represents the options for `createTemplateManager` / the `TemplateManager` constructor — the initial seed collection.                                                                                                        |
+-| `SubjectManagerOptions`      | interface | `{ subjects?, on?, error? }`                                                                                                                             | Represents the options for `createSubjectManager` / the `SubjectManager` constructor — the initial seed collection.                                                                                                          |
+-| `DefinitionManagerOptions`   | interface | `{ definitions?, on?, error? }`                                                                                                                          | Represents the options for `createDefinitionManager` / the `DefinitionManager` constructor — the initial seed collection.                                                                                                    |
++| `NarratorOptions`            | interface | `{ lexicon?, formatters? }`                                                                                                                              | Represents the options for `createNarrator` and the `Narrator` constructor.                                                                                                                                                  |
++| `NormalizerOptions`          | interface | `{ contractions?, abbreviations?, corrections? }`                                                                                                        | Represents the options for `createNormalizer` and the `Normalizer` constructor.                                                                                                                                              |
++| `ExtractorOptions`           | interface | `{ actions?, domains? }`                                                                                                                                 | Represents the options for `createExtractor` and the `Extractor` constructor.                                                                                                                                                |
++| `ClarifierOptions`           | interface | `{ floor?, narrator? }`                                                                                                                                  | Represents the options for `createClarifier` and the `Clarifier` constructor.                                                                                                                                                |
++| `FormatterOptions`           | interface | `{ verbs?, narrator? }`                                                                                                                                  | Represents the options for `createFormatter` and the `Formatter` constructor.                                                                                                                                                |
++| `TemplateManagerOptions`     | interface | `{ templates?, on?, error? }`                                                                                                                            | Represents the options for `createTemplateManager` and the `TemplateManager` constructor — the initial seed collection.                                                                                                      |
++| `SubjectManagerOptions`      | interface | `{ subjects?, on?, error? }`                                                                                                                             | Represents the options for `createSubjectManager` and the `SubjectManager` constructor — the initial seed collection.                                                                                                        |
++| `DefinitionManagerOptions`   | interface | `{ definitions?, on?, error? }`                                                                                                                          | Represents the options for `createDefinitionManager` and the `DefinitionManager` constructor — the initial seed collection.                                                                                                  |
+ | `RecordStamp`                | interface | `{ id, version, hash }`                                                                                                                                  | Represents the identity, version, and content hash a `RecordManagerInterface` derives for one record before its concrete shape is built.                                                                                     |
+ | `RecordFunction`             | type      | `(stamp: RecordStamp, value: TValue) => TRecord`                                                                                                         | Builds one concrete record from the `RecordStamp` its registry derived and the value that record holds.                                                                                                                      |
+ | `RecordManagerOptions`       | interface | `{ entity, on?, error? }`                                                                                                                                | Represents the options for the `RecordManager` constructor.                                                                                                                                                                  |
+ | `RecordManagerInterface`     | interface | `{ emitter, count } plus has, record, records, add, remove, destroy`                                                                                     | Represents the shared registry engine every record manager composes — the `Map`, the content-hash and version rule, the batch `remove` overloads, and teardown.                                                              |
+ | `RecordOptions`              | interface | `{ id? }`                                                                                                                                                | Represents the per-call options for the record a manager's `add` mints.                                                                                                                                                      |
+-| `InterpretContextOptions`    | interface | `{ session?, history?, on?, error? }`                                                                                                                    | Represents the options for `createInterpretContext` / the `InterpretContext` constructor.                                                                                                                                    |
+-| `InterpretOptions`           | interface | `{ templates?, context?, normalizer?, extractor?, clarifier?, formatter?, generator?, similarity?, floor?, history?, narrator?, on?, error? }`           | Represents the options for `createInterpret` / the `Interpret` constructor.                                                                                                                                                  |
++| `InterpretContextOptions`    | interface | `{ session?, history?, on?, error? }`                                                                                                                    | Represents the options for `createInterpretContext` and the `InterpretContext` constructor.                                                                                                                                  |
++| `InterpretOptions`           | interface | `{ templates?, context?, normalizer?, extractor?, clarifier?, formatter?, generator?, similarity?, floor?, history?, narrator?, on?, error? }`           | Represents the options for `createInterpret` and the `Interpret` constructor.                                                                                                                                                |
+ | `NormalizerInterface`        | interface | `normalize`                                                                                                                                              | Represents the `Normalizer` stage contract: raw text in, cleaned text + applied changes out.                                                                                                                                 |
+ | `ExtractorInterface`         | interface | `extract`                                                                                                                                                | Represents the `Extractor` stage contract: template-agnostic intent classification + raw number mining.                                                                                                                      |
+ | `ClarifierInterface`         | interface | `clarify`                                                                                                                                                | Represents the `Clarifier` stage contract: resolve carry-over, defaults, and computed fields against a set of already-assigned entities, surfacing ambiguities for anything required that stays unresolved.                  |
+@@ -216,7 +216,7 @@ try {
+ Total guards composed from `@orkestrel/contract` combinators and `@orkestrel/reason` guards —
+ adversarial input (junk, cycles, hostile prototypes) returns `false`, never throws.
+ 
+-Two postures, split by who produces the value. An input-record guard is exact: an extra key
++The posture splits by who produces the value. An input-record guard is exact: an extra key
+ fails, because an input this package owns that drifted from its declared shape is rejected
+ loudly. A result guard is open: an unknown member and a class instance pass when every
+ published member conforms, because a foreign engine's return is not this package's to narrow.
+@@ -226,20 +226,20 @@ published member conforms, because a foreign engine's return is not this package
+ 
+ A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. In a guard table a `Shape` cell holds the type the guard narrows to.
+ 
+-| API                | Kind     | Shape            | Summary                                                                                                                        |
+-| ------------------ | -------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+-| `isEntityMapping`  | function | `EntityMapping`  | Determines whether a value is an `EntityMapping` — a literal alias-phrase extraction rule pointing at a subject field.         |
+-| `isFieldDefault`   | function | `FieldDefault`   | Determines whether a value is a `FieldDefault` — a fallback value a `Template` fills onto an unresolved field.                 |
+-| `isComputedField`  | function | `ComputedField`  | Determines whether a value is a `ComputedField` — a declaratively computed field carrying a reasons `SymbolicExpression` tree. |
+-| `isTemplate`       | function | `Template`       | Determines whether a value is a `Template` — a named, versionable interpretation template.                                     |
+-| `isProvenance`     | function | `Provenance`     | Determines whether a value is an open `Provenance` result record.                                                              |
+-| `isIntent`         | function | `Intent`         | Determines whether a value is an open `Intent` result record.                                                                  |
+-| `isEntity`         | function | `Entity`         | Determines whether a value is an open `Entity` result record.                                                                  |
+-| `isFieldMapping`   | function | `FieldMapping`   | Determines whether a value is an open `FieldMapping` result record.                                                            |
+-| `isAmbiguity`      | function | `Ambiguity`      | Determines whether a value is an open `Ambiguity` result record.                                                               |
+-| `isStageRecord`    | function | `StageRecord`    | Determines whether a value is an open `StageRecord` result record.                                                             |
+-| `isStageFailure`   | function | `StageFailure`   | Determines whether a value is an open `StageFailure` result record.                                                            |
+-| `isInterpretation` | function | `Interpretation` | Determines whether a value is an open `Interpretation` result record.                                                          |
++| API                | Kind     | Shape            | Summary                                                                                                                                            |
++| ------------------ | -------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `isEntityMapping`  | function | `EntityMapping`  | Determines whether a value is an exact `EntityMapping` input record — a literal alias-phrase extraction rule pointing at a subject field.          |
++| `isFieldDefault`   | function | `FieldDefault`   | Determines whether a value is an exact `FieldDefault` input record — a fallback value a `Template` fills onto an unresolved field.                 |
++| `isComputedField`  | function | `ComputedField`  | Determines whether a value is an exact `ComputedField` input record — a declaratively computed field carrying a reasons `SymbolicExpression` tree. |
++| `isTemplate`       | function | `Template`       | Determines whether a value is an exact `Template` input record — a named, versionable interpretation template.                                     |
++| `isProvenance`     | function | `Provenance`     | Determines whether a value is an open `Provenance` result record.                                                                                  |
++| `isIntent`         | function | `Intent`         | Determines whether a value is an open `Intent` result record.                                                                                      |
++| `isEntity`         | function | `Entity`         | Determines whether a value is an open `Entity` result record.                                                                                      |
++| `isFieldMapping`   | function | `FieldMapping`   | Determines whether a value is an open `FieldMapping` result record.                                                                                |
++| `isAmbiguity`      | function | `Ambiguity`      | Determines whether a value is an open `Ambiguity` result record.                                                                                   |
++| `isStageRecord`    | function | `StageRecord`    | Determines whether a value is an open `StageRecord` result record.                                                                                 |
++| `isStageFailure`   | function | `StageFailure`   | Determines whether a value is an open `StageFailure` result record.                                                                                |
++| `isInterpretation` | function | `Interpretation` | Determines whether a value is an open `Interpretation` result record.                                                                              |
+ 
+ ```ts
+ import {
+@@ -531,7 +531,7 @@ createDefinitionManager({
+ The public methods of each behavioral interface — one table per type, keyed
+ by its backticked name, every call-signature member listed (the `readonly`
+ data members — `emitter` on every stage-adjacent manager and `Interpret`;
+-`count` on every record registry; `session` / `subjects` / `definitions` on
++`count` on every record registry; `session`, `subjects`, and `definitions` on
+ `InterpretContext` — stay off the method tables). Each implementing class
+ exposes exactly its interface's methods, so this doubles as the per-instance
+ method surface.
+@@ -759,14 +759,14 @@ manager names its own value field. `count` is the registry's lone tally. `remove
+ is all-or-nothing. A call after `destroy()` throws `InterpretError('DESTROYED', …)` naming the
+ configured `entity`.
+ 
+-| Method    | Returns                | Summary                                                                                                        |
+-| --------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
+-| `has`     | `boolean`              | Reports whether a record with the given id is held.                                                            |
+-| `record`  | `TRecord \| undefined` | Looks up one held record by id — the singular accessor.                                                        |
+-| `records` | `readonly TRecord[]`   | Lists every held record — the plural accessor.                                                                 |
+-| `add`     | `TRecord`              | Stamps a value with its id, version, and content hash, builds the record, holds it, and emits `add`.           |
+-| `remove`  | `boolean` (or `void`)  | Removes the listed records by id, one record by id, or every record, and emits `remove` per removed id.        |
+-| `destroy` | `void`                 | Tears the registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last. |
++| Method    | Returns                | Summary                                                                                                               |
++| --------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
++| `has`     | `boolean`              | Reports whether a record with the given id is held.                                                                   |
++| `record`  | `TRecord \| undefined` | Looks up one held record by id — the singular accessor.                                                               |
++| `records` | `readonly TRecord[]`   | Lists every held record — the plural accessor.                                                                        |
++| `add`     | `TRecord`              | Stamps a value with its id, version, and content hash, builds the record, holds it, and emits `add`.                  |
++| `remove`  | `boolean` (or `void`)  | Removes the listed records by id, one record by id, or every record, and emits `remove` per removed id.               |
++| `destroy` | `void`                 | Tears the record registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last. |
+ 
+ ```ts
+ import { RecordManager } from '@orkestrel/interpret'
+@@ -800,14 +800,14 @@ The self-owning, ordered registry over templates. `add` derives each record's `h
+ template's content and bumps `version` only when that hash changes. `remove`'s array form is
+ all-or-nothing. A call after `destroy()` throws `InterpretError('DESTROYED', …)`.
+ 
+-| Method      | Returns                       | Summary                                                                                                        |
+-| ----------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+-| `has`       | `boolean`                     | Reports whether a template with the given id has been added.                                                   |
+-| `template`  | `TemplateRecord \| undefined` | Looks up one added template record by id — the singular accessor.                                              |
+-| `templates` | `readonly TemplateRecord[]`   | Lists every added template record — the plural accessor.                                                       |
+-| `add`       | `TemplateRecord`              | Adds, or re-adds, one template from its data, and emits `add`.                                                 |
+-| `remove`    | `boolean` (or `void`)         | Removes the listed templates by id, one template by id, or every template, and emits `remove` per removed id.  |
+-| `destroy`   | `void`                        | Tears the registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last. |
++| Method      | Returns                       | Summary                                                                                                                 |
++| ----------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
++| `has`       | `boolean`                     | Reports whether a template with the given id has been added.                                                            |
++| `template`  | `TemplateRecord \| undefined` | Looks up one added template record by id — the singular accessor.                                                       |
++| `templates` | `readonly TemplateRecord[]`   | Lists every added template record — the plural accessor.                                                                |
++| `add`       | `TemplateRecord`              | Adds, or re-adds, one template from its data, and emits `add`.                                                          |
++| `remove`    | `boolean` (or `void`)         | Removes the listed templates by id, one template by id, or every template, and emits `remove` per removed id.           |
++| `destroy`   | `void`                        | Tears the template registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last. |
+ 
+ ```ts
+ import { createTemplateManager } from '@orkestrel/interpret'
+@@ -845,14 +845,14 @@ Mirrors `TemplateManagerInterface`, minting its own record ids (a `Subject`
+ carries no `id` field of its own) unless the caller overrides through
+ `RecordOptions.id`.
+ 
+-| Method     | Returns                      | Summary                                                                                                        |
+-| ---------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+-| `has`      | `boolean`                    | Reports whether a subject with the given id has been added.                                                    |
+-| `subject`  | `SubjectRecord \| undefined` | Looks up one added subject record by id — the singular accessor.                                               |
+-| `subjects` | `readonly SubjectRecord[]`   | Lists every added subject record — the plural accessor.                                                        |
+-| `add`      | `SubjectRecord`              | Adds one subject, minting a fresh record id when the caller supplies none, and emits `add`.                    |
+-| `remove`   | `boolean` (or `void`)        | Removes the listed subjects by id, one subject by id, or every subject, and emits `remove` per removed id.     |
+-| `destroy`  | `void`                       | Tears the registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last. |
++| Method     | Returns                      | Summary                                                                                                                |
++| ---------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
++| `has`      | `boolean`                    | Reports whether a subject with the given id has been added.                                                            |
++| `subject`  | `SubjectRecord \| undefined` | Looks up one added subject record by id — the singular accessor.                                                       |
++| `subjects` | `readonly SubjectRecord[]`   | Lists every added subject record — the plural accessor.                                                                |
++| `add`      | `SubjectRecord`              | Adds one subject, minting a fresh record id when the caller supplies none, and emits `add`.                            |
++| `remove`   | `boolean` (or `void`)        | Removes the listed subjects by id, one subject by id, or every subject, and emits `remove` per removed id.             |
++| `destroy`  | `void`                       | Tears the subject registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last. |
+ 
+ ```ts
+ import { createSubjectManager } from '@orkestrel/interpret'
+@@ -872,14 +872,14 @@ subjects.destroy()
+ Mirrors `TemplateManagerInterface`, defaulting each record id to the
+ definition's own `id`.
+ 
+-| Method        | Returns                         | Summary                                                                                                             |
+-| ------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+-| `has`         | `boolean`                       | Reports whether a definition with the given id has been added.                                                      |
+-| `definition`  | `DefinitionRecord \| undefined` | Looks up one added definition record by id — the singular accessor.                                                 |
+-| `definitions` | `readonly DefinitionRecord[]`   | Lists every added definition record — the plural accessor.                                                          |
+-| `add`         | `DefinitionRecord`              | Adds, or re-adds, one definition, and emits `add`.                                                                  |
+-| `remove`      | `boolean` (or `void`)           | Removes the listed definitions by id, one definition by id, or every definition, and emits `remove` per removed id. |
+-| `destroy`     | `void`                          | Tears the registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last.      |
++| Method        | Returns                         | Summary                                                                                                                   |
++| ------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
++| `has`         | `boolean`                       | Reports whether a definition with the given id has been added.                                                            |
++| `definition`  | `DefinitionRecord \| undefined` | Looks up one added definition record by id — the singular accessor.                                                       |
++| `definitions` | `readonly DefinitionRecord[]`   | Lists every added definition record — the plural accessor.                                                                |
++| `add`         | `DefinitionRecord`              | Adds, or re-adds, one definition, and emits `add`.                                                                        |
++| `remove`      | `boolean` (or `void`)           | Removes the listed definitions by id, one definition by id, or every definition, and emits `remove` per removed id.       |
++| `destroy`     | `void`                          | Tears the definition registry down idempotently — clears the collection, emits `destroy`, then destroys the emitter last. |
+ 
+ ```ts
+ import { createDefinitionManager } from '@orkestrel/interpret'
+@@ -907,8 +907,8 @@ definitions.destroy()
+ 
+ `previous()` returns the ring buffer newest-last, capped at the configured
+ `history`. `entities()` flattens every entity across the buffered history,
+-most recent last. `clear()` resets the history and both registries WITHOUT
+-tearing the context down.
++most recent last. `clear()` resets the history, the subject registry, and the
++definition registry without tearing the context down.
+ 
+ | Method     | Returns                     | Summary                                                                                                          |
+ | ---------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+diff --git a/src/core/Interpret.ts b/src/core/Interpret.ts
+index 5df05e0..28630af 100644
+--- a/src/core/Interpret.ts
++++ b/src/core/Interpret.ts
+@@ -46,18 +46,16 @@ import { Normalizer } from './stages/Normalizer.js'
+  * registry and the context, and exposes the reverse direction.
+  *
+  * @remarks
+- * `interpret()` is genuinely SYNCHRONOUS — it returns its
+- * {@link Interpretation} directly, never a `Promise` — and runs the fixed
+- * pipeline
+- * `[normalize, extract, clarify, format, generate]` — each producing one
+- * {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
++ * `interpret()` is genuinely synchronous — it returns its
++ * {@link Interpretation} directly, never a `Promise` — each phase producing
++ * one {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+  * the classified {@link Intent} against its added {@link Template}s and,
+  * on a match, assigns the extracted numbers to that template's mappings
+  * (`assignEntities`) — a template-owned step, not a sixth stage. No match, or a
+  * matched template whose intent confidence falls below the configured `floor`,
+- * yields an explicit, auditable INCOMPLETE result (a `field: 'intent'`
++ * yields an explicit, auditable incomplete result (a `field: 'intent'`
+  * ambiguity, absent subject/definition) rather than an arbitrary fallback
+- * template. A stage THROW is caught, marked on its record AND on
++ * template. A stage throw is caught, marked on its record and on
+  * `failures`, emitted as `error`, and still yields a visible incomplete result
+  * — never a silent fallback. Every result carries a `digest` over its original
+  * text plus the matched template id/version and the built subject/definition,
+@@ -66,7 +64,7 @@ import { Normalizer } from './stages/Normalizer.js'
+  * direction (structure → prose). `destroy()` is idempotent, tears down the
+  * registry and the context it constructed itself — a context supplied through
+  * `options.context` is shared, so it stays alive for whoever else holds it —
+- * then destroys the emitter LAST; every method afterwards except the
++ * then destroys the emitter last; every method afterwards except the
+  * {@link emitter} getter throws `InterpretError('DESTROYED', …)`.
+  *
+  * @example
+@@ -417,7 +415,7 @@ export class Interpret implements InterpretInterface {
+ 		)
+ 	}
+ 
+-	// A stage THROW — mark the failed stage's record, emit `error` with the raw
++	// A stage throw — mark the failed stage's record, emit `error` with the raw
+ 	// thrown value, and assemble a visible incomplete result. The one site the
+ 	// thrown value is rendered to a message (folded here, its sole use).
+ 	#fail(
+@@ -455,7 +453,7 @@ export class Interpret implements InterpretInterface {
+ 	// Assemble a visible incomplete result: pad the un-run stages with skipped
+ 	// records so `stages` always holds one record per phase, digest over the known
+ 	// pre-image, record the result in context, and emit `interpret` (an
+-	// incomplete run is still a completed CALL — visibility is the point).
++	// incomplete run is still a completed call — visibility is the point).
+ 	#assemble(
+ 		text: string,
+ 		normalized: string,
+diff --git a/src/core/InterpretContext.ts b/src/core/InterpretContext.ts
+index a1f9825..83eaec2 100644
+--- a/src/core/InterpretContext.ts
++++ b/src/core/InterpretContext.ts
+@@ -25,9 +25,10 @@ import { SubjectManager } from './managers/SubjectManager.js'
+  * preserves the carry-over pin), never an unbounded array.
+  * `entities()` flattens every entity across the buffered history, most recent
+  * last — the read a `Clarifier`'s same-domain carry-over consults. `add` pushes
+- * one result and trims to the cap; `clear` resets the history and both
+- * registries WITHOUT tearing the context down; `destroy()` is idempotent and
+- * every method afterwards throws `InterpretError('DESTROYED', …)`.
++ * one result and trims to the cap; `clear` resets the history, the subject
++ * registry, and the definition registry without tearing the context down;
++ * `destroy()` is idempotent and every method afterwards throws
++ * `InterpretError('DESTROYED', …)`.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/Narrator.ts b/src/core/Narrator.ts
+index 8c8fdb0..a007412 100644
+--- a/src/core/Narrator.ts
++++ b/src/core/Narrator.ts
+@@ -11,8 +11,8 @@ import { DEFAULT_LEXICON } from './constants.js'
+  * `verbs` seam, supplying mechanism rather than wording policy.
+  *
+  * @remarks
+- * Every wording decision is DATA — a caller-supplied `Lexicon` merged, per
+- * sub-record (`phrases` / `labels` / `templates`), OVER `DEFAULT_LEXICON`.
++ * Every wording decision is data — a caller-supplied `Lexicon` merged, per
++ * sub-record (`phrases`, `labels`, and `templates`), over `DEFAULT_LEXICON`.
+  * Stateless and holds no resources: no emitter, no `destroy()` (deliberate —
+  * there is nothing to release). Every method is total (never throws); a
+  * lexicon or formatter miss degrades to its documented fallback rather than
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 26f6a5f..f8242a5 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -2,7 +2,7 @@ import type { InterpretErrorCode, InterpretStage, Lexicon, ProvenanceCategory }
+ 
+ // Frozen default data for the interprets module — the sole home for its
+ // module-scope literal defaults. Every vocabulary map here is intentionally
+-// NEUTRAL and small: domain worldview (insurance verbs, en-US misspelling
++// neutral and small: domain worldview (insurance verbs, en-US misspelling
+ // corrections, business domains) is the caller's business, supplied through
+ // options rather than baked in here.
+ 
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 5ca1547..9858a08 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -104,7 +104,7 @@ export function createInterpret(options?: InterpretOptions): InterpretInterface
+  *
+  * @example
+  * ```ts
+- * import { createNormalizer } from '@src/core'
++ * import { createNormalizer } from '@orkestrel/interpret'
+  *
+  * createNormalizer().normalize("it's  cold") // { text: 'it is cold', changes: [{ from: "it's", to: 'it is' }] }
+  * ```
+@@ -122,7 +122,7 @@ export function createNormalizer(options?: NormalizerOptions): NormalizerInterfa
+  *
+  * @example
+  * ```ts
+- * import { createExtractor } from '@src/core'
++ * import { createExtractor } from '@orkestrel/interpret'
+  *
+  * const extractor = createExtractor({
+  * 	actions: { calculate: 'calculate' },
+@@ -144,7 +144,7 @@ export function createExtractor(options?: ExtractorOptions): ExtractorInterface
+  *
+  * @example
+  * ```ts
+- * import { createClarifier } from '@src/core'
++ * import { createClarifier } from '@orkestrel/interpret'
+  *
+  * const clarifier = createClarifier({ floor: 0.5 })
+  * ```
+@@ -161,7 +161,7 @@ export function createClarifier(options?: ClarifierOptions): ClarifierInterface
+  *
+  * @example
+  * ```ts
+- * import { createFormatter } from '@src/core'
++ * import { createFormatter } from '@orkestrel/interpret'
+  *
+  * const formatter = createFormatter({ verbs: { calculate: 'Calculate' } })
+  * ```
+@@ -178,7 +178,7 @@ export function createFormatter(options?: FormatterOptions): FormatterInterface
+  *
+  * @example
+  * ```ts
+- * import { createGenerator } from '@src/core'
++ * import { createGenerator } from '@orkestrel/interpret'
+  *
+  * const generator = createGenerator()
+  * ```
+@@ -196,7 +196,7 @@ export function createGenerator(): GeneratorInterface {
+  * @example
+  * ```ts
+  * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+- * import { createTemplateManager } from '@src/core'
++ * import { createTemplateManager } from '@orkestrel/interpret'
+  *
+  * const templates = createTemplateManager({
+  * 	templates: [{
+@@ -224,7 +224,7 @@ export function createTemplateManager(options?: TemplateManagerOptions): Templat
+  *
+  * @example
+  * ```ts
+- * import { createSubjectManager } from '@src/core'
++ * import { createSubjectManager } from '@orkestrel/interpret'
+  *
+  * const subjects = createSubjectManager({ subjects: [{ value: 1 }] })
+  * subjects.count // 1
+@@ -244,7 +244,7 @@ export function createSubjectManager(options?: SubjectManagerOptions): SubjectMa
+  * @example
+  * ```ts
+  * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+- * import { createDefinitionManager } from '@src/core'
++ * import { createDefinitionManager } from '@orkestrel/interpret'
+  *
+  * const definitions = createDefinitionManager({
+  * 	definitions: [createQuantitativeDefinition('d1', 'D1', [createFactorGroup('total', 'sum', [createFieldFactor('value', 'value')])])],
+@@ -267,7 +267,7 @@ export function createDefinitionManager(
+  *
+  * @example
+  * ```ts
+- * import { createInterpretContext } from '@src/core'
++ * import { createInterpretContext } from '@orkestrel/interpret'
+  *
+  * const context = createInterpretContext({ session: 'turn-1', history: 4 })
+  * context.previous() // []
+@@ -293,7 +293,7 @@ export function createInterpretContext(
+  *
+  * @example
+  * ```ts
+- * import { createNarrator } from '@src/core'
++ * import { createNarrator } from '@orkestrel/interpret'
+  *
+  * const narrator = createNarrator({ lexicon: { templates: { 'subject.empty': 'nothing here' } } })
+  * narrator.line('subject.empty', {}) // 'nothing here'
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 0b38854..3beba4e 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -48,7 +48,7 @@ export function escapeRegExp(text: string): string {
+  * Never mutates `subject` — every level a `field` array descends through is
+  * freshly copied, so the input and every intermediate record stay untouched.
+  * Prototype-pollution-safe: a `field` containing `__proto__`,
+- * `prototype`, or `constructor` at ANY segment (checked against
++ * `prototype`, or `constructor` at any segment (checked against
+  * `UNSAFE_FIELD_SEGMENTS`) is refused as a no-op, returning `subject`
+  * unchanged. A non-record value already sitting at an intermediate segment is
+  * replaced by a fresh record rather than descended into.
+@@ -200,7 +200,7 @@ export function extractNumbers(text: string): readonly number[] {
+  * Assigns already-extracted numbers to a matched template's entity mappings.
+  *
+  * @remarks
+- * Strategy, in order: (1) a SINGLE mapping collects every number (an array
++ * Strategy, in order: (1) a single mapping collects every number (an array
+  * when more than one, a scalar otherwise) at `CONFIDENCE_COLLECT`. Otherwise,
+  * per mapping, the rightmost token in the text that equals the entity name
+  * (`CONFIDENCE_EXACT`), an alias exactly (`CONFIDENCE_ALIAS`), or an alias
+@@ -210,7 +210,7 @@ export function extractNumbers(text: string): readonly number[] {
+  * next unused number positionally, at `CONFIDENCE_POSITIONAL`. Every entity
+  * carries provenance `category: 'extracted'` with `detail` naming the
+  * strategy that filled it (`'collect' | 'keyword' | 'alias' | 'positional'`).
+- * Runs ONLY after a template has matched (an orchestrator-owned step, never
++ * Runs only after a template has matched (an orchestrator-owned step, never
+  * inside `Extractor`, which stays template-agnostic).
+  *
+  * @param numbers - The numbers already extracted from `text` through `extractNumbers`
+@@ -384,13 +384,13 @@ export function assignEntities(
+  * name to its keyword list — the domain with the most matching tokens wins
+  * (ties keep the earliest-declared domain), also at `CONFIDENCE_EXACT`. An
+  * unmatched axis is left `undefined` rather than an empty string, so an
+- * unclassified intent is visibly absent. Combined confidence (PINNED): both
+- * fire → their average; exactly one fires → its value times `0.5`; neither →
+- * `0`. There is no built-in worldview and no auto-classification from an
+- * added template's own `domain` name — a caller MUST list a template's
+- * domain among `domains` for it to classify. No `floor` parameter: the
+- * confidence floor gate lives at the orchestrator's `matchTemplate` step,
+- * never inside classification itself.
++ * unclassified intent is visibly absent. Combined confidence (pinned): the
++ * action and the domain both fire → their average; exactly one fires → its
++ * value times `0.5`; neither → `0`. There is no built-in worldview and no
++ * auto-classification from an added template's own `domain` name — a caller
++ * must list a template's domain among `domains` for it to classify. No
++ * `floor` parameter: the confidence floor gate lives at the orchestrator's
++ * `matchTemplate` step, never inside classification itself.
+  *
+  * @param text - The (normalized) text to classify
+  * @param actions - The caller's token → action-name vocabulary
+@@ -532,7 +532,7 @@ export function matchAlias(token: string, aliases: readonly string[], threshold:
+  * the one place `ancestors` is a real parameter rather than a seeded default.
+  * Record keys sort before serialization, so a re-ordered object canonicalizes
+  * identically; arrays keep position order, because position is meaningful.
+- * `ancestors` tracks the objects along the CURRENT recursion path rather than
++ * `ancestors` tracks the objects along the current recursion path rather than
+  * a global "seen" set, so the same object reachable twice through non-cyclic
+  * sibling branches still canonicalizes normally; a node already on the path
+  * renders as the literal string `'[cycle]'` instead of recursing —
+@@ -740,10 +740,10 @@ export function variablesOf(expression: SymbolicExpression): readonly string[] {
+  * Evaluates a symbolic expression tree against resolved bindings.
+  *
+  * @remarks
+- * THE critical leaf (design-pinned, engine-parity semantics): an absent
++ * The critical leaf (design-pinned, engine-parity semantics): an absent
+  * `right` operand on a binary operation defaults to `0` — matching
+  * `SymbolicReasoner`'s internal `#evaluate` — and is always passed as an
+- * EXPLICIT numeric operand, so the same tree evaluates identically here and
++ * explicit numeric operand, so the same tree evaluates identically here and
+  * inside the engine. Each arithmetic step delegates to the reasons
+  * `applyOperation` pure function, mapping the node's `.operator` field onto
+  * its `operator` parameter. An unresolved input variable, or a non-finite
+@@ -790,7 +790,7 @@ export function resolveExpression(
+  *
+  * @remarks
+  * Complements — never duplicates — the raters `describe*` family (which
+- * describes RATERS artifacts); this describes REASONS artifacts. Every field
++ * describes raters artifacts); this describes reasons artifacts. Every field
+  * renders through `narrator.label` + `narrator.value` (looked up under the
+  * `'units'` phrase table, falling back to `'plain'`) — the wording is fully
+  * lexicon-driven, mechanism rather than policy; `Definition` /
+diff --git a/src/core/managers/RecordManager.ts b/src/core/managers/RecordManager.ts
+index a0462a6..a4b5afb 100644
+--- a/src/core/managers/RecordManager.ts
++++ b/src/core/managers/RecordManager.ts
+@@ -21,10 +21,10 @@ import { digestValue } from '../helpers.js'
+  * {@link DefinitionManager} each compose one instance rather than repeating
+  * the same registry. A concrete manager keeps only what actually differs: its
+  * accessor noun pair, its id source, and the {@link RecordFunction} that names
+- * its record's value field. `add` derives `hash` from the value's CONTENT
+- * (id-independent) and bumps `version` ONLY when that hash changes at a reused
++ * its record's value field. `add` derives `hash` from the value's content
++ * (id-independent) and bumps `version` only when that hash changes at a reused
+  * id, so an identical re-add keeps its version. The batch `remove(ids)` form
+- * is ALL-OR-NOTHING — any id absent from the registry leaves the collection
++ * is all-or-nothing — any id absent from the registry leaves the collection
+  * untouched and returns `false`. `destroy()` is idempotent, and every method
+  * afterwards throws `InterpretError('DESTROYED', …)` naming the configured
+  * `entity`.
+diff --git a/src/core/managers/SubjectManager.ts b/src/core/managers/SubjectManager.ts
+index cb32f10..950bd9b 100644
+--- a/src/core/managers/SubjectManager.ts
++++ b/src/core/managers/SubjectManager.ts
+@@ -20,7 +20,7 @@ import { RecordManager } from './RecordManager.js'
+  * `RecordOptions.id`, so successive same-domain turns never overwrite one
+  * shared subject. A composed {@link RecordManager} owns the collection, the
+  * content-derived `hash` (id-independent), and the version rule, so `version`
+- * bumps ONLY when the hash changes at a reused id and the batch `remove(ids)`
++ * bumps only when the hash changes at a reused id and the batch `remove(ids)`
+  * form stays all-or-nothing. `destroy()` is idempotent and every method
+  * afterwards throws `InterpretError('DESTROYED', …)`.
+  *
+diff --git a/src/core/managers/TemplateManager.ts b/src/core/managers/TemplateManager.ts
+index e78b528..f6bf5c6 100644
+--- a/src/core/managers/TemplateManager.ts
++++ b/src/core/managers/TemplateManager.ts
+@@ -19,7 +19,7 @@ import { RecordManager } from './RecordManager.js'
+  * pair (`template` / `templates`) and the batch `remove` overloads.
+  * A composed {@link RecordManager} owns the collection, the content-derived
+  * `hash`, and the version rule, so an identical re-add keeps its version and
+- * the batch `remove(ids)` form stays ALL-OR-NOTHING. This class adds what is
++ * the batch `remove(ids)` form stays all-or-nothing. This class adds what is
+  * template-specific: the accessor nouns, the record id defaulting to
+  * `template.id`, and the `template` field on each record. `destroy()` is
+  * idempotent; every method afterwards throws `InterpretError('DESTROYED', …)`.
+diff --git a/src/core/stages/Clarifier.ts b/src/core/stages/Clarifier.ts
+index b17ea7b..8c1933c 100644
+--- a/src/core/stages/Clarifier.ts
++++ b/src/core/stages/Clarifier.ts
+@@ -29,7 +29,7 @@ import { Narrator } from '../Narrator.js'
+  *
+  * @remarks
+  * Resolution order: fresh (already-assigned) entities always win; carry-over
+- * fills a mapping only from the SAME domain's most recent prior turn (a
++ * fills a mapping only from the same domain's most recent prior turn (a
+  * domain change drops carry-over entirely) and never overwrites a fresh
+  * value; template defaults fill any field still unresolved after carry-over;
+  * computed fields resolve in dependency (topological) order through
+@@ -37,7 +37,7 @@ import { Narrator } from '../Narrator.js'
+  * dependency cycle leaves the field a gap, never landing an entity. A
+  * computation reads every resolved numeric field by name, and can address one
+  * numeric element of an array-valued field as `{field}.{index}`, so an
+- * aggregate over a collection of KNOWN length is declarable while a collection
++ * aggregate over a collection of known length is declarable while a collection
+  * whose length varies per turn has none — an unbound element abandons the
+  * whole expression. `floor` comes from {@link ClarifierOptions} rather than a
+  * hardcoded constant, and gates whether a resolved entity's confidence counts
+diff --git a/src/core/stages/Extractor.ts b/src/core/stages/Extractor.ts
+index 8127de9..d0ae2d9 100644
+--- a/src/core/stages/Extractor.ts
++++ b/src/core/stages/Extractor.ts
+@@ -8,7 +8,7 @@ import { classifyIntent, extractNumbers } from '../helpers.js'
+  * @remarks
+  * Deliberately never named `Parser` — the `contracts` module already owns
+  * `Parser<T>`, so a class of that name would collide in type space.
+- * `extract` never sees a `Template`: numbers → entity ASSIGNMENT is a
++ * `extract` never sees a `Template`: numbers → entity assignment is a
+  * separate orchestrator-owned step that runs only after a template has
+  * matched (`assignEntities` in `helpers.ts`), never inside this stage, so
+  * extraction stays template-agnostic.
+diff --git a/src/core/stages/Generator.ts b/src/core/stages/Generator.ts
+index bac9de0..af689cd 100644
+--- a/src/core/stages/Generator.ts
++++ b/src/core/stages/Generator.ts
+@@ -15,7 +15,7 @@ import { setField } from '../helpers.js'
+  * @remarks
+  * `entity → field` through `template.mappings` (an `EntityMapping.entity` name
+  * lookup); an entity whose name matches no mapping lands on the field named
+- * by its OWN `name` — the shape `Clarifier` uses for its synthesized
++ * by its own `name` — the shape `Clarifier` uses for its synthesized
+  * default/computed entities, so one lookup rule serves both extraction-
+  * mapped and template-data-derived fields. A single-element array value
+  * unwraps to its scalar; every other value lands as it stands, so a
+@@ -23,7 +23,7 @@ import { setField } from '../helpers.js'
+  * an aggregate over an array-valued entity is a `ComputedField` the template
+  * author declares, resolved by `Clarifier` before this stage runs.
+  * `confidence` is the mean of the input entities' own confidences (`0` for
+- * an empty entity set). A `FieldMapping` is emitted for EVERY field that
++ * an empty entity set). A `FieldMapping` is emitted for every field that
+  * lands on the subject, including defaults and computed fields. The stage
+  * takes no options, so construction takes no arguments.
+  *
+diff --git a/src/core/stages/Normalizer.ts b/src/core/stages/Normalizer.ts
+index c497bb8..d4a9e3a 100644
+--- a/src/core/stages/Normalizer.ts
++++ b/src/core/stages/Normalizer.ts
+@@ -12,11 +12,11 @@ import { applyReplacements, collapseWhitespace, escapeRegExp } from '../helpers.
+  * substitutions in order, then collapses whitespace.
+  *
+  * @remarks
+- * The caller's `contractions` map is merged OVER `DEFAULT_CONTRACTIONS`;
++ * The caller's `contractions` map is merged over `DEFAULT_CONTRACTIONS`;
+  * `abbreviations` and `corrections` carry no built-in vocabulary, so each is
+  * exactly what the caller supplied. `text` is never mutated, and every
+  * substitution actually applied
+- * (one entry per matching map KEY, not per occurrence) is recorded on the
++ * (one entry per matching map key, not per occurrence) is recorded on the
+  * result's `changes`, in `contractions → abbreviations → corrections` order,
+  * so the audit trail explains every character difference between `text` and
+  * `NormalizeResult.text` (the final whitespace collapse carries no entry of
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 89adb8c..5c43d3d 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -4,14 +4,14 @@ import type { Definition, ReasonResult, Subject, SymbolicExpression } from '@ork
+ 
+ // Interprets — a synchronous, deterministic bidirectional
+ // bridge between natural language and the reasons engine, plus the manager
+-// that owns the interpretation lifecycle. FORWARD: raw text is normalized,
++// that owns the interpretation lifecycle. Forward: raw text is normalized,
+ // classified into an intent, matched against an added `Template`, mined
+ // for numeric entities, clarified (carry-over / defaults / computed fields),
+ // formatted into a refined prompt, then generated into a `Subject` +
+-// `Definition` pair ready for `Reason.reason`. REVERSE: `Definition` /
++// `Definition` pair ready for `Reason.reason`. Reverse: `Definition` /
+ // `Subject` / `ReasonResult` render to display-neutral prose, complementing
+ // (never duplicating) raters' `describe*` family. Nothing here is an LLM,
+-// provider, or agent — the `prompt` a result carries is FOR an external
++// provider, or agent — the `prompt` a result carries is written for an external
+ // model, never consumed internally. Types are the source of truth, and every
+ // discriminant names its axis, never `kind` / `type`: `stage` splits pipeline
+ // phases, `category` splits provenance, `code` splits coded errors.
+@@ -36,7 +36,7 @@ export type ProvenanceCategory = 'extracted' | 'carried' | 'default' | 'computed
+  * produces one {@link StageRecord} for, in order.
+  *
+  * @remarks
+- * Deliberately NOT named `Stage` — raters already owns that identifier for
++ * Deliberately not named `Stage` — raters already owns that identifier for
+  * its worksheet derivation axis (`'factor' | 'group' | 'total'`); the two are
+  * unrelated concepts on the shared `@src/core` barrel.
+  */
+@@ -102,7 +102,7 @@ export interface FieldDefault {
+  * derives every dependency from the tree. A `Variable` names a resolved field,
+  * or one numeric element of an array-valued field as `{field}.{index}`, so a
+  * computation addressing each element in turn declares an aggregate over a
+- * collection of KNOWN length; a collection whose length varies per turn has no
++ * collection of known length; a collection whose length varies per turn has no
+  * declarable aggregate, because `resolveExpression` returns `undefined` for an
+  * unbound variable and abandons the whole expression. When a scalar field's
+  * path formats to the same binding key as an array element's — the `FieldPath`
+@@ -183,7 +183,7 @@ export interface Ambiguity {
+  * and confidence.
+  *
+  * @remarks
+- * Emitted for EVERY field that lands in the generated subject, including
++ * Emitted for every field that lands in the generated subject, including
+  * defaults and computed fields.
+  */
+ export interface FieldMapping {
+@@ -238,7 +238,7 @@ export interface NormalizeResult {
+  *
+  * @remarks
+  * Template-agnostic by design — extraction never sees a `Template`, only the
+- * text. `numbers`, not template-named entities; entity ASSIGNMENT is a
++ * text. `numbers`, not template-named entities; entity assignment is a
+  * separate orchestrator step run only after a template has matched (see
+  * `assignEntities` in `helpers.ts`).
+  */
+@@ -320,7 +320,7 @@ export interface TemplateRecord {
+  * {@link SubjectManagerInterface}.
+  *
+  * @remarks
+- * `id` is the manager's OWN minted identity — never `definition.id` — so
++ * `id` is the manager's own minted identity — never `definition.id` — so
+  * successive turns never silently overwrite one shared subject.
+  */
+ export interface SubjectRecord {
+@@ -436,7 +436,7 @@ export interface Lexicon {
+ 	readonly templates?: Readonly<Record<string, string>>
+ }
+ 
+-/** Represents the options for `createNarrator` / the `Narrator` constructor. */
++/** Represents the options for `createNarrator` and the `Narrator` constructor. */
+ export interface NarratorOptions {
+ 	readonly lexicon?: Lexicon
+ 	readonly formatters?: Readonly<Record<string, NarratorFormatter>>
+@@ -445,11 +445,11 @@ export interface NarratorOptions {
+ // === Options records
+ 
+ /**
+- * Represents the options for `createNormalizer` / the `Normalizer` constructor.
++ * Represents the options for `createNormalizer` and the `Normalizer` constructor.
+  *
+  * @remarks
+  * The maps apply in order — contractions → abbreviations → corrections —
+- * before whitespace collapse. `contractions` merges OVER
++ * before whitespace collapse. `contractions` merges over
+  * `DEFAULT_CONTRACTIONS`; `abbreviations` and `corrections` carry no built-in
+  * vocabulary, because an abbreviation or a misspelling set is domain worldview
+  * rather than mechanism.
+@@ -461,7 +461,7 @@ export interface NormalizerOptions {
+ }
+ 
+ /**
+- * Represents the options for `createExtractor` / the `Extractor` constructor.
++ * Represents the options for `createExtractor` and the `Extractor` constructor.
+  *
+  * @remarks
+  * `actions` / `domains` are the caller's intent vocabulary — there is no
+@@ -475,7 +475,7 @@ export interface ExtractorOptions {
+ }
+ 
+ /**
+- * Represents the options for `createClarifier` / the `Clarifier` constructor.
++ * Represents the options for `createClarifier` and the `Clarifier` constructor.
+  *
+  * @remarks
+  * `floor` is the confidence axis honored when raising ambiguities — the
+@@ -491,7 +491,7 @@ export interface ClarifierOptions {
+ }
+ 
+ /**
+- * Represents the options for `createFormatter` / the `Formatter` constructor.
++ * Represents the options for `createFormatter` and the `Formatter` constructor.
+  *
+  * @remarks
+  * `verbs` maps an `Intent.action` to its display verb. `narrator` supplies the
+@@ -505,21 +505,21 @@ export interface FormatterOptions {
+ 	readonly narrator?: NarratorInterface
+ }
+ 
+-/** Represents the options for `createTemplateManager` / the `TemplateManager` constructor — the initial seed collection. */
++/** Represents the options for `createTemplateManager` and the `TemplateManager` constructor — the initial seed collection. */
+ export interface TemplateManagerOptions {
+ 	readonly templates?: readonly Template[]
+ 	readonly on?: EmitterHooks<TemplateManagerEventMap>
+ 	readonly error?: EmitterErrorHandler
+ }
+ 
+-/** Represents the options for `createSubjectManager` / the `SubjectManager` constructor — the initial seed collection. */
++/** Represents the options for `createSubjectManager` and the `SubjectManager` constructor — the initial seed collection. */
+ export interface SubjectManagerOptions {
+ 	readonly subjects?: readonly Subject[]
+ 	readonly on?: EmitterHooks<SubjectManagerEventMap>
+ 	readonly error?: EmitterErrorHandler
+ }
+ 
+-/** Represents the options for `createDefinitionManager` / the `DefinitionManager` constructor — the initial seed collection. */
++/** Represents the options for `createDefinitionManager` and the `DefinitionManager` constructor — the initial seed collection. */
+ export interface DefinitionManagerOptions {
+ 	readonly definitions?: readonly Definition[]
+ 	readonly on?: EmitterHooks<DefinitionManagerEventMap>
+@@ -531,7 +531,7 @@ export interface DefinitionManagerOptions {
+  * derives for one record before its concrete shape is built.
+  *
+  * @remarks
+- * `hash` is derived from the held value's CONTENT alone (id-independent), and
++ * `hash` is derived from the held value's content alone (id-independent), and
+  * `version` bumps only when that hash changes at a reused id — so an
+  * identical re-add keeps its version. Every record type in this module
+  * (`TemplateRecord` / `SubjectRecord` / `DefinitionRecord`) carries `id`,
+@@ -584,7 +584,7 @@ export interface RecordManagerOptions {
+  * {@link RecordFunction}; everything else lives here. `remove`'s batch form is
+  * all-or-nothing: any missing id in the list leaves the collection untouched
+  * and returns `false`. `destroy()` is idempotent and tears the emitter down
+- * LAST; every method afterwards throws `InterpretError('DESTROYED', …)`.
++ * last; every method afterwards throws `InterpretError('DESTROYED', …)`.
+  */
+ export interface RecordManagerInterface<TValue, TRecord extends RecordStamp> {
+ 	readonly emitter: EmitterInterface<RecordEventMap>
+@@ -630,8 +630,8 @@ export interface RecordManagerInterface<TValue, TRecord extends RecordStamp> {
+ 	remove(id: string): boolean
+ 	remove(): void
+ 	/**
+-	 * Tears the registry down idempotently — clears the collection, emits `destroy`, then
+-	 * destroys the emitter last.
++	 * Tears the record registry down idempotently — clears the collection, emits
++	 * `destroy`, then destroys the emitter last.
+ 	 */
+ 	destroy(): void
+ }
+@@ -649,7 +649,7 @@ export interface RecordOptions {
+ 	readonly id?: string
+ }
+ 
+-/** Represents the options for `createInterpretContext` / the `InterpretContext` constructor. */
++/** Represents the options for `createInterpretContext` and the `InterpretContext` constructor. */
+ export interface InterpretContextOptions {
+ 	readonly session?: string
+ 	readonly history?: number
+@@ -658,14 +658,14 @@ export interface InterpretContextOptions {
+ }
+ 
+ /**
+- * Represents the options for `createInterpret` / the `Interpret` constructor.
++ * Represents the options for `createInterpret` and the `Interpret` constructor.
+  *
+  * @remarks
+  * `templates` seeds the registry. `context` supplies a shared
+  * {@link InterpretContextInterface} (a fresh one is constructed when
+  * omitted); a supplied context stays the caller's to tear down, and
+  * `destroy()` leaves it alive for the other orchestrators sharing it. Each
+- * stage slot is BRING-YOUR-OWN — a supplied implementation is
++ * stage slot is bring-your-own — a supplied implementation is
+  * used as-is, else the built-in stage is constructed with its own defaults,
+  * so a caller who wants a configured stage constructs that stage and supplies
+  * the instance. There are no per-stage option keys here: `floor` is the one
+@@ -912,8 +912,8 @@ export interface TemplateManagerInterface {
+ 	remove(id: string): boolean
+ 	remove(): void
+ 	/**
+-	 * Tears the registry down idempotently — clears the collection, emits `destroy`, then
+-	 * destroys the emitter last.
++	 * Tears the template registry down idempotently — clears the collection, emits
++	 * `destroy`, then destroys the emitter last.
+ 	 */
+ 	destroy(): void
+ }
+@@ -965,8 +965,8 @@ export interface SubjectManagerInterface {
+ 	remove(id: string): boolean
+ 	remove(): void
+ 	/**
+-	 * Tears the registry down idempotently — clears the collection, emits `destroy`, then
+-	 * destroys the emitter last.
++	 * Tears the subject registry down idempotently — clears the collection, emits
++	 * `destroy`, then destroys the emitter last.
+ 	 */
+ 	destroy(): void
+ }
+@@ -1014,8 +1014,8 @@ export interface DefinitionManagerInterface {
+ 	remove(id: string): boolean
+ 	remove(): void
+ 	/**
+-	 * Tears the registry down idempotently — clears the collection, emits `destroy`, then
+-	 * destroys the emitter last.
++	 * Tears the definition registry down idempotently — clears the collection, emits
++	 * `destroy`, then destroys the emitter last.
+ 	 */
+ 	destroy(): void
+ }
+@@ -1071,7 +1071,7 @@ export interface InterpretContextInterface {
+  * `reasons`' `Reason` orchestrator shape.
+  *
+  * @remarks
+- * `interpret` is genuinely SYNCHRONOUS — it returns its
++ * `interpret` is genuinely synchronous — it returns its
+  * {@link Interpretation} directly, never a `Promise`. `add` / `remove` /
+  * `template` / `templates` name the same acts as the
+  * {@link TemplateManagerInterface} they delegate to, and expose plain
+@@ -1085,7 +1085,7 @@ export interface InterpretContextInterface {
+  * `InterpretError('DESTROYED', …)`; `destroy()` is idempotent, tears down the
+  * template registry and the context it constructed itself — never a `context`
+  * the caller supplied, which outlives this orchestrator — and tears the
+- * emitter down LAST.
++ * emitter down last.
+  */
+ export interface InterpretInterface {
+ 	readonly emitter: EmitterInterface<InterpretEventMap>
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index a234166..f4ffc7c 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -26,21 +26,22 @@ import {
+ import { isDefinition, isFieldPath, isSymbolicExpression } from '@orkestrel/reason'
+ import { INTERPRET_ERROR_CODES, INTERPRET_STAGES, PROVENANCE_CATEGORIES } from './constants.js'
+ 
+-// Every guard here is a TOTAL function — adversarial input (junk, hostile
++// Every guard here is a total function — adversarial input (junk, hostile
+ // prototypes, cyclic/deep nesting) returns `false`, never throws.
+-// Input-record guards are EXACT (`recordOf`): an extra key fails. Foreign
+-// result guards are OPEN (`objectOf`): unknown members, class instances, and
++// Input-record guards are exact (`recordOf`): an extra key fails. Foreign
++// result guards are open (`objectOf`): unknown members, class instances, and
+ // prototype accessors pass when the published members conform. `isTemplate`
+ // composes reasons' exported `isSymbolicExpression` (already recursive
+ // through `lazyOf`) and `isDefinition` rather than minting local duplicates —
+ // a second `isSymbolicExpression` would collide under the shared `@src/core`
+-// barrel's `export *` (TypeScript silently drops BOTH conflicting star
++// barrel's `export *` (TypeScript silently drops both conflicting star
+ // re-exports), breaking reasons' own guard and failing the guides-parity
+ // gate. `interprets` therefore owns no recursive expression guard of its own.
+ 
+ /**
+- * Determines whether a value is an {@link EntityMapping} — a literal
+- * alias-phrase extraction rule pointing at a subject field.
++ * Determines whether a value is an exact {@link EntityMapping} input
++ * record — a literal alias-phrase extraction rule pointing at a subject
++ * field.
+  *
+  * @param value - The value to test
+  * @returns True if `value` is a well-formed entity mapping; false otherwise
+@@ -66,8 +67,8 @@ export function isEntityMapping(value: unknown): value is EntityMapping {
+ }
+ 
+ /**
+- * Determines whether a value is a {@link FieldDefault} — a fallback value a
+- * {@link Template} fills onto an unresolved field.
++ * Determines whether a value is an exact {@link FieldDefault} input record —
++ * a fallback value a {@link Template} fills onto an unresolved field.
+  *
+  * @remarks
+  * `value` is unconstrained (any value, including `null` or `undefined`) as
+@@ -90,8 +91,9 @@ export function isFieldDefault(value: unknown): value is FieldDefault {
+ }
+ 
+ /**
+- * Determines whether a value is a {@link ComputedField} — a declaratively
+- * computed field carrying a reasons {@link SymbolicExpression} tree.
++ * Determines whether a value is an exact {@link ComputedField} input record —
++ * a declaratively computed field carrying a reasons
++ * {@link SymbolicExpression} tree.
+  *
+  * @param value - The value to test
+  * @returns True if `value` is a well-formed computed field; false otherwise
+@@ -113,8 +115,8 @@ export function isComputedField(value: unknown): value is ComputedField {
+ }
+ 
+ /**
+- * Determines whether a value is a {@link Template} — a named, versionable
+- * interpretation template.
++ * Determines whether a value is an exact {@link Template} input record — a
++ * named, versionable interpretation template.
+  *
+  * @remarks
+  * `definition` is validated with reasons' `isDefinition` — a `Template`'s
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 4ca9f7c..4752fe7 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes.
++// package's own, as is the executed section that closes the file.
+ 
+ import type { Template } from '@src/core'
+ import { describe, expect, it } from 'vitest'

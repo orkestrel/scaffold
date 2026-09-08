@@ -1,0 +1,9 @@
+0 of 40 planned paths drifted from the plan. Audit compared bytes at 26, existence at 5, and nothing at 9.
+tsconfig.json replaced (2 lines added).
+configs/helpers.ts replaced (9 lines added).
+configs/policy.ts replaced (372 lines added).
+.oxlintrc.json replaced (2 lines added).
+tests/setupPolicy.ts replaced (412 lines added).
+tests/policy.test.ts replaced (126 lines added).
+tests/config.test.ts replaced (419 lines added).
+9 written, 32 unchanged, 0 removed in ..

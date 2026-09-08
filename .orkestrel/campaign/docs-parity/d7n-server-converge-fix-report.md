@@ -439,3 +439,7 @@ Under `/home/user/fleet/server/tmp/d7n-server-converge-fix/`: `edit-guide.py`,
 
 First edit 2026-09-08T01:45Z to last command 2026-09-08T01:53Z, with the preceding reading of the
 brief, the bound rules, the rulings, and the pilot from about 2026-09-08T01:30Z.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone: § Criterion 5's sentence tallies the guides suite before and after the presence-guard case; the run's own summaries are quoted beside it and the tree is authoritative. Every citation and every SV1 to SV9 correction was verified against the diff and the tree.

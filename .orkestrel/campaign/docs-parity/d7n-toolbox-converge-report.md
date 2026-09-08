@@ -323,3 +323,7 @@ None. Every reader behaviour I met matched the brief:
 None. Nothing in the deviation contract fired: every cell the seed located after the header change,
 the titled body fit its block, no test outside `tests/guides.test.ts` went red, no vendored file
 needed an edit, and no residual disagreement survived a doc-block rewrite.
+
+---
+
+Orchestrator's annotations (2026-09-08, the audit): (1) § 1's `npm run docs` reading at 158 disagreements exited 1, not 0 — the seed sets the exit code from the reported count (objective F1); (2) § 1's "before any of my edits" means after the gate cases were added and before the sides converged (objective F5); (3) two hand rewrites in `src/core/shapers.ts` are absent from § 3's list: `rowShape`'s description lost the clause describing `rowsShape`, a sentence the code falsified, and `orderShape`'s regained the `column` and `direction` clause the pre-P.2 cell carried (subjective F2); (4) two cell facts landed in prose rather than in the row's own block: `createDescribeTool`'s naming of the workflow, workspace, and agent tools in the guide's opening prose and § Patterns, and `TerminalToken`'s re-validation cadence, revocation window, and fail-closed rule under `TerminalRoutesOptions` in `src/server/types.ts` (objective F7); (5) § 3's cell comparison excluded the `Shape` column and the header rows (objective F3).
