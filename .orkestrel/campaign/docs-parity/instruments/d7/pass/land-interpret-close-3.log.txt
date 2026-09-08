@@ -1,0 +1,10 @@
+== interpret close-3 landing 2026-09-08T02:23:49Z over 6f3ba38
+== status
+ M guides/interpret.md
+ guides/interpret.md | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+== stage by path
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+== committed
+1b11d3e Close interpret under the final guide tarball
+(status end)

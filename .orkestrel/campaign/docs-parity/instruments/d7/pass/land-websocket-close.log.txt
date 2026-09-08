@@ -1,0 +1,12 @@
+== websocket close landing 2026-09-08T02:23:01Z over d8ff4ee
+== status
+ M guides/websocket.md
+ M tests/guides.test.ts
+ guides/websocket.md  | 10 ++++++++++
+ tests/guides.test.ts |  2 +-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+== stage by path
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+== committed
+52aebd1 Close websocket under the final guide tarball
+(status end)

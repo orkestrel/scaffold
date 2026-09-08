@@ -1,62 +1,39 @@
 Lane held: verifier websocket
 
-**Command 1** — `git rev-parse --short HEAD && git status --short` — exit 0
-```
-d8ff4ee
-```
-(no untracked or modified files — clean tree)
+# Gate Report — websocket (`d7n-websocket-verify`)
 
-**Command 2** — `node -p "require('./node_modules/@orkestrel/guide/package.json').version"` — exit 0
+**Working tree status (as read, expected dirty from closing unit's uncommitted edits):**
+`git rev-parse --short HEAD` → `d8ff4ee`
+`git status --short`:
 ```
-0.0.18
-```
-(head start `0.0.18`, matching the brief's recorded state against `package.json`'s declared `^0.0.17`)
-
-**Command 3** — `npm run format:check` — exit 0
-```
-All matched files use the correct format.
-Finished in 2916ms on 48 files using 4 threads.
+ M guides/websocket.md
+ M tests/guides.test.ts
 ```
 
-**Command 4** — `npm run lint:check` — exit 0
-```
-> oxlint --config .oxlintrc.json --deny-warnings .
-```
-(no violations reported)
+**Installed guide version:** `0.0.18` (packed tip, per standing conditions; registry serves `0.0.17`, `package.json` declares `^0.0.17` — recorded head-start state, not a defect).
 
-**Command 5** — `npm run check` — exit 0
-```
-> tsc --noEmit -p configs/src/tsconfig.server.json
-```
-(no diagnostics)
+## Commands
 
-**Command 6** — `npm run build` — exit 0
-```
-dist/src/server/index.js  32.56 kB │ gzip: 9.52 kB │ map: 58.78 kB
-dist/src/server/index.cjs  33.79 kB │ gzip: 9.71 kB │ map: 58.82 kB
-✓ built in 93ms
-Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
-```
+1. `git rev-parse --short HEAD && git status --short` — PASS (exit 0). See preceding output.
+2. `node -p "require('./node_modules/@orkestrel/guide/package.json').version"` — PASS (exit 0). Output: `0.0.18`.
+3. `npm run format:check` — PASS (exit 0). Last lines: `All matched files use the correct format.` / `Finished in 2523ms on 48 files using 4 threads.`
+4. `npm run lint:check` — PASS (exit 0). No warnings or errors reported.
+5. `npm run check` — PASS (exit 0). `tsc --noEmit --project tsconfig.json` and `check:src:server` both completed with no diagnostics.
+6. `npm run build` — PASS (exit 0). Last lines: `Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts`. Vite built `dist/src/server/index.js` and `.cjs` successfully.
+7. `npm run docs` — PASS (exit 0). Output line: `rows read: 1, disagreements found: 0` (matches expected shape).
+8. `PATH=/opt/npm11/bin:$PATH npm test` — PASS (exit 0). Per-project totals:
+   - `src:server`: 4 test files passed, 120 tests passed
+   - `policy`: 1 test file passed, 90 passed | 1 skipped (91)
+   - `config`: 1 test file passed, 172 passed | 1 skipped (173)
+   - `setup`: 3 test files passed, 21 passed
+   - `guides`: 1 test file passed, 25 passed
+   - `integration`: 1 test file passed, 14 passed
+9. `PATH=/opt/npm11/bin:$PATH npm run test:distribution` — script present (`package.json:66`). PASS (exit 0). 1 test file passed, 9 passed. Duration 10.56s.
 
-**Command 7** — `npm run docs` — exit 0
-```
-rows read: 1, disagreements found: 0
-```
+## Anomalies
 
-**Command 8** — `PATH=/opt/npm11/bin:$PATH npm test` — exit 0. Per-project totals:
-- `test:src` — Test Files 4 passed (4); Tests 120 passed (120)
-- `test:policy` — Test Files 1 passed (1); Tests 90 passed | 1 skipped (91)
-- `test:config` — Test Files 1 passed (1); Tests 172 passed | 1 skipped (173)
-- `test:setup` — Test Files 3 passed (3); Tests 21 passed (21)
-- `test:guides` — Test Files 1 passed (1); Tests 25 passed (25)
-- `test:integration` — Test Files 1 passed (1); Tests 14 passed (14)
+- `npm run build` and `npm run docs` each emit an API Extractor notice: "The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor." Non-fatal, exit codes unaffected.
+- `test:config` project prints the same API Extractor notice twice mid-run (from a test exercising the same tool); non-fatal, exit code 0.
+- Two skipped tests recorded (`policy` project: 1 skipped; `config` project: 1 skipped); not failures, and not investigated per this dispatch's scope (report exit codes and totals only).
 
-No timing red on this run.
-
-**Command 9** — `PATH=/opt/npm11/bin:$PATH npm run test:distribution` — declared in `package.json` (`test:distribution` script, `/home/user/fleet/websocket/package.json:66`) — exit 0
-```
-Test Files  1 passed (1)
-     Tests  9 passed (9)
-```
-
-GATES: GREEN
+**GATES: GREEN**

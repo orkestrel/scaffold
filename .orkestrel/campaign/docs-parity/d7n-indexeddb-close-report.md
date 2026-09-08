@@ -46,3 +46,7 @@ Ran, in order: `npx oxfmt --write guides/indexeddb.md tests/guides.test.ts` (ref
 None. All items closed as briefed; no `Shape` cell that Ruling 12 could not express, no equality-case red, no gate outside the owned files went red, no disagreement `--to guide` failed to close.
 
 Instruments under `/home/user/fleet/indexeddb/tmp/d7n-indexeddb-close/`: `oxfmt-write.log`, `oxfmt-check.log`, `oxlint.log`, `docs.log`, `docs-to-guide.log`, `docs-to-source.log`, `test-guides.log`, `test-policy.log`, `final.diff`.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set); every citation was verified against the tree, and the tree is authoritative.

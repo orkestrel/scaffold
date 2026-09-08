@@ -128,3 +128,7 @@ exit 0
 
 Wall clock for the full sequence (edits plus every command in this report): under 20 seconds
 measured wall time across the individual command timings above.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set); every citation was verified against the tree, and the tree is authoritative.

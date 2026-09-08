@@ -91,3 +91,7 @@ sentence between them; it is a titled fence (`@example Standalone emitter`,
 
 None. Every named site converged as the brief predicted; the one open finding (item 1's flagged
 `EmitterOptions` row) resolved to no edit because the declaration carries no call-signature member.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set); every citation was verified against the tree, and the tree is authoritative.

@@ -1,0 +1,13 @@
+== csv close landing 2026-09-08T02:23:00Z over 715aed6
+== status
+ M guides/csv.md
+ M src/core/constants.ts
+ M tests/guides.test.ts
+ src/core/constants.ts | 27 ++++++++++++--------
+ tests/guides.test.ts  | 10 +++-----
+ 3 files changed, 68 insertions(+), 40 deletions(-)
+== stage by path
+ 3 files changed, 68 insertions(+), 40 deletions(-)
+== committed
+b806d9c Close csv under the final guide tarball
+(status end)

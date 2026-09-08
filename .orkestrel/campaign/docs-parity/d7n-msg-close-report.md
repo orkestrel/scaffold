@@ -49,3 +49,7 @@ Wall clock for this unit's work: approximately 25 minutes.
 - `/home/user/fleet/msg/guides/msg.md`
 - `/home/user/fleet/msg/src/core/constants.ts`
 - `/home/user/fleet/msg/tests/guides.test.ts`
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set); every citation was verified against the tree, and the tree is authoritative.

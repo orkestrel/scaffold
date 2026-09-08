@@ -1,0 +1,843 @@
+diff --git a/guides/database.md b/guides/database.md
+index 13a13cc..0063560 100644
+--- a/guides/database.md
++++ b/guides/database.md
+@@ -36,6 +36,8 @@ table — fully typed, no annotations — with `table(name)`.
+ 
+ ### Create a database
+ 
++Declares two tables, opens a memory-backed database over them, and runs a keyed write, a keyed read, and a fluent query:
++
+ ```ts
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { integerShape, stringShape } from '@orkestrel/contract'
+@@ -244,7 +246,7 @@ A `Shape` cell holds the constant's declared type.
+ 
+ ### Types
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
+ 
+ | Type                       | Kind      | Shape                                                                                                                                                                                                                                                                 | Summary                                                                                                                                                                                                                                                                                                                                                                                                         |
+ | -------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -278,7 +280,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `MigrationInput`           | interface | `{ plan, metadata? }`                                                                                                                                                                                                                                                 | Represents one atomic migration request.                                                                                                                                                                                                                                                                                                                                                                        |
+ | `StorageInterface`         | interface | `{} plus read, write, insert, delete, keys, scan, clear, records?, aggregate?, stream?, migrate?, metadata?, stamp?`                                                                                                                                                  | Declares the storage operations available only inside a driver's transaction scope.                                                                                                                                                                                                                                                                                                                             |
+ | `DriverMetadata`           | interface | `{ version, schema }`                                                                                                                                                                                                                                                 | Represents persisted schema metadata a versioning driver owns as an immutable snapshot.                                                                                                                                                                                                                                                                                                                         |
+-| `DriverInterface`          | interface | `{} plus open, close, snapshot, read, write, insert, delete, keys, scan, clear, records?, aggregate?, stream?, migrate?, metadata?, stamp?, transaction?`                                                                                                             | Declares the storage primitive every backend implements — the whole of the bridge.                                                                                                                                                                                                                                                                                                                              |
++| `DriverInterface`          | interface | `StorageInterface plus {} plus open, close, snapshot, transaction?`                                                                                                                                                                                                   | Declares the storage primitive every backend implements — the whole of the bridge.                                                                                                                                                                                                                                                                                                                              |
+ | `DatabaseOptions`          | interface | `{ on?, error?, driver, tables, primary?, indexes?, name?, generator?, version? }`                                                                                                                                                                                    | Options for `createDatabase`.                                                                                                                                                                                                                                                                                                                                                                                   |
+ | `CompiledSQL`              | interface | `{ sql, parameters }`                                                                                                                                                                                                                                                 | Represents a parameterized SQL fragment or statement plus its bind values. The `@orkestrel/database/server` entry point exports this type.                                                                                                                                                                                                                                                                      |
+ | `SQLiteDriverOptions`      | interface | `{ path?, readonly?, timeout?, references?, pragmas? }`                                                                                                                                                                                                               | Configures `createSQLiteDriver`. The `@orkestrel/database/server` entry point exports this type.                                                                                                                                                                                                                                                                                                                |
+@@ -295,7 +297,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ The public methods of each behavioral interface — one table per type, keyed
+ by its backticked name, every call-signature member listed (its `readonly`
+ data members, for example `emitter` / `name` / `status` / `primary` / `contract` /
+-`value` / `index` / `done`, stay in the Surface rows above — `emitter` is the
++`value` / `index` / `done`, stay in the preceding Surface rows — `emitter` is the
+ typed push observation surface, see [Observing](#observing)). The database and
+ driver classes in `### Classes` implement their interfaces exactly, so this
+ doubles as the per-instance method surface; `DriverIterator` is the internal
+@@ -895,6 +897,8 @@ primitive (the observation lives in the core layer above it).
+ 
+ ### Declaring tables in options
+ 
++Declares two tables with per-column contracts, a non-default primary key, and a secondary index, then reads back each table's resolved primary column:
++
+ ```ts
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { integerShape, literalShape, optionalShape, stringShape } from '@orkestrel/contract'
+@@ -964,6 +968,8 @@ about where the bytes live, never about behavior.
+ 
+ ### Keyed CRUD
+ 
++Runs every keyed operation — `set`, `add`, `update`, `get`, `resolve`, `has`, `remove`, and `clear` — against one table:
++
+ ```ts
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { integerShape, optionalShape, stringShape } from '@orkestrel/contract'
+@@ -1154,6 +1160,8 @@ when it must be atomic.
+ 
+ ### Coercion through the contract
+ 
++Parses a numeric string against the table's contract, stores the coerced number, and reads it back:
++
+ ```ts
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { integerShape, stringShape } from '@orkestrel/contract'
+@@ -1181,6 +1189,8 @@ await users.set(normalized)
+ 
+ ### Fluent queries
+ 
++Chains conditions, an order, and a limit through the query builder and collects the matching rows:
++
+ ```ts
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { integerShape, stringShape } from '@orkestrel/contract'
+@@ -1421,6 +1431,8 @@ publish cursor state or restore `value` after close.
+ 
+ ### Transactions
+ 
++Runs a scoped callback across two tables that commits on success and rolls every table back when the scope throws:
++
+ ```ts
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { integerShape, stringShape } from '@orkestrel/contract'
+@@ -1943,6 +1955,8 @@ exported.primary // 'id'
+ 
+ ### Introspection & seeding
+ 
++Reads a table's contract schema, generates a reproducible seed row, and guards an unknown value against it:
++
+ ```ts
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { stringShape } from '@orkestrel/contract'
+@@ -2076,6 +2090,8 @@ equalsValue({ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] }) // true — structural,
+ 
+ ### Persistence with the JSON driver
+ 
++Opens a database over the JSON driver and writes one row, persisted to the backing file:
++
+ ```ts
+ import { createDatabase } from '@orkestrel/database'
+ import { createJSONDriver } from '@orkestrel/database/server'
+@@ -2247,6 +2263,8 @@ matchesQueryExactly(
+ 
+ ### Persistence with the SQLite driver
+ 
++Opens a database over the SQLite driver, writes one row, and runs a query compiled to native SQL:
++
+ ```ts
+ import { createDatabase } from '@orkestrel/database'
+ import { createSQLiteDriver } from '@orkestrel/database/server'
+@@ -2311,6 +2329,8 @@ point, so there is no post-check that could relabel a completed commit.
+ 
+ ### Persistence with the IndexedDB driver
+ 
++Feature-detects `indexedDB`, opens a database over the IndexedDB driver, writes one row, and runs a query pushed down to a key range:
++
+ ```ts
+ import { createDatabase } from '@orkestrel/database'
+ import { createIndexedDBDriver } from '@orkestrel/database/browser'
+diff --git a/src/browser/drivers/IndexedDBDriver.ts b/src/browser/drivers/IndexedDBDriver.ts
+index f69d848..35d6674 100644
+--- a/src/browser/drivers/IndexedDBDriver.ts
++++ b/src/browser/drivers/IndexedDBDriver.ts
+@@ -81,22 +81,22 @@ import { METADATA_STORE } from '../constants.js'
+  * {@link Migration} plan natively: IndexedDB schema DDL (creating/dropping a
+  * store, creating/dropping an index) is legal only inside a versionchange
+  * transaction (`onupgradeneeded`), so `migrate` closes the current connection
+- * and opens a FRESH one at `version + 1` with an `upgrade` hook that walks the
++ * and opens a fresh one at `version + 1` with an `upgrade` hook that walks the
+  * plan's steps — dropping stores, adding/removing indexes on the raw
+  * `IDBTransaction`, and rewriting rows for `column.remove` through a cursor walk
+  * (the one step needing to touch existing data; `column.add` is a no-op — this
+  * driver stores whatever a row carries, so there is nothing to backfill). A
+- * step referencing an unknown table is validated BEFORE the reconnect, so a
++ * step referencing an unknown table is validated before the reconnect, so a
+  * `MIGRATION` `DatabaseError` never wastes a version bump.
+  *
+  * @remarks
+- * This unit deliberately OMITS `aggregate` / `transaction`. There is no native
++ * This unit deliberately omits `aggregate` / `transaction`. There is no native
+  * `aggregate` (IndexedDB has no native SUM/AVG); the engine over the narrowed
+  * `records` covers it. `transaction` is impossible here: the wrapper
+  * auto-commits an `IDBTransaction` when control yields outside its request
+  * chain, so arbitrary callback awaits cannot remain inside one native
+  * transaction. Every atomic multi-operation sequence in this driver
+- * (`snapshot`'s rollback) instead runs entirely inside ONE `db.write(...)`
++ * (`snapshot`'s rollback) instead runs entirely inside one `db.write(...)`
+  * scope.
+  */
+ export class IndexedDBDriver implements DriverInterface {
+@@ -128,8 +128,8 @@ export class IndexedDBDriver implements DriverInterface {
+ 			// Reconnect cleanly so the auto-managed bootstrap can ensure the
+ 			// metadata store exists without being blocked by this driver's own
+ 			// open handle. The final persisted open is version-pinned below.
+-			// Build the new schema into a LOCAL map first — never mutate `#schema`
+-			// in place — so a reopen with a REDUCED schema replaces the map
++			// Build the new schema into a local map first — never mutate `#schema`
++			// in place — so a reopen with a reduced schema replaces the map
+ 			// wholesale instead of retaining ghost tables the caller no longer
+ 			// declared.
+ 			const bootstrap = createIndexedDBDatabase({
+@@ -410,11 +410,11 @@ export class IndexedDBDriver implements DriverInterface {
+ 	 *
+ 	 * @remarks
+ 	 * IndexedDB schema DDL is legal only inside `onupgradeneeded`, so this closes
+-	 * the current connection and opens a FRESH one at `version + 1`, declaring
++	 * the current connection and opens a fresh one at `version + 1`, declaring
+ 	 * every store known at that point (plus {@link METADATA_STORE}) so nothing is
+ 	 * lost, and applying `table.remove` / `index.add` / `index.remove` /
+ 	 * `column.remove` inside `upgrade`. Every step's `table` is validated against
+-	 * the driver's own `#schema` BEFORE the reconnect — an unknown-table step
++	 * the driver's own `#schema` before the reconnect — an unknown-table step
+ 	 * throws `DatabaseError` `MIGRATION` without ever bumping the version.
+ 	 * `table.add` / `column.add` need no upgrade-time action: `table.add` is
+ 	 * created by the wrapper's built-in create-missing-stores pass (its
+@@ -460,7 +460,7 @@ export class IndexedDBDriver implements DriverInterface {
+ 			}
+ 			return
+ 		}
+-		// Project the post-migration shape into a LOCAL copy first — `#schema`
++		// Project the post-migration shape into a local copy first — `#schema`
+ 		// stays untouched until the upgrade actually commits, so a mid-upgrade
+ 		// failure never leaves the driver's bookkeeping ahead of the real database.
+ 		try {
+@@ -662,7 +662,7 @@ export class IndexedDBDriver implements DriverInterface {
+ 		return stores
+ 	}
+ 
+-	// Reconnect at the CURRENT `#schema` with no version bump (auto-managed
++	// Reconnect at the current `#schema` with no version bump (auto-managed
+ 	// mode, mirroring `open`) — used to restore a working connection after a
+ 	// failed `migrate` left the prior connection closed.
+ 	async #reopen(): Promise<void> {
+@@ -705,12 +705,12 @@ export class IndexedDBDriver implements DriverInterface {
+ 		return schema
+ 	}
+ 
+-	// Mirror a migration plan's steps onto a LOCAL schema map — the same
++	// Mirror a migration plan's steps onto a local schema map — the same
+ 	// bookkeeping `open` does for a freshly declared schema — without touching
+ 	// `#schema`, so a failed migrate never leaves the driver's bookkeeping ahead
+ 	// of the real database. The caller commits the map into `#schema` only after
+ 	// the upgrade connects successfully.
+-	// Runs INSIDE the wrapper's versionchange transaction (see `migrate`
++	// Runs inside the wrapper's versionchange transaction (see `migrate`
+ 	// @remarks). `table.add` / `column.add` are no-ops here — see `migrate`
+ 	// @remarks for why. `column.remove` is the one step touching existing rows:
+ 	// it walks a live cursor and rewrites each row through the core
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 71a3c9e..1143641 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -8,7 +8,7 @@ import { INDEXABLE_STORAGE } from './constants.js'
+ 
+ // The IndexedDB driver's pushdown planner. A pure function over the portable
+ // `QueryInput`: it decides which index (or the primary key) a read can narrow on
+-// and the `IDBKeyRange` to use, so the driver fetches a candidate SUPERSET rather
++// and the `IDBKeyRange` to use, so the driver fetches a candidate superset rather
+ // than every row. The core engine then refines that superset to the exact result
+ // — so a plan is only ever allowed to over-fetch, never to drop a matching row.
+ // Anything it cannot prove range-exact (a non-comparison operator, a non-orderable
+@@ -23,14 +23,14 @@ import { INDEXABLE_STORAGE } from './constants.js'
+  * Only the comparison operators (`equals`/`above`/`below`/`from`/`to`/`between`)
+  * translate to a key range that a typed (string/number) column can back with an
+  * IndexedDB store/index read — see {@link selectPlan} for the caveats that
+- * decide WHICH of `below`/`to` may drive a SECONDARY-index read versus the
++ * decide which of `below`/`to` may drive a secondary-index read versus the
+  * primary store only (a column-type / absent-row concern, not a range-shape
+  * one). `starts` is excluded — its prefix range can miss strings past U+FFFF;
+  * the membership / negation / pattern / existence operators (`not`/`like`/`glob`/
+  * `ends`/`any`/`none`/`absent`/`present`) have no single exact range. The operand
+  * guard (`typeof` string/number) rejects a non-scalar value (for example an array, a
+  * boolean) that is not a usable key. `between` additionally guards against a
+- * REVERSED pair (`first > second`): native `IDBKeyRange.bound` throws a raw
++ * reversed pair (`first > second`): native `IDBKeyRange.bound` throws a raw
+  * `DataError` `DOMException` for a lower bound above the upper bound, so a
+  * reversed pair returns `undefined` here (falls back to a full scan, which the
+  * engine then correctly resolves to an empty result) rather than letting a
+@@ -84,7 +84,7 @@ export function conditionToRange(condition: Condition): IDBKeyRange | undefined
+  * store) and {@link IDBKeyRange} to narrow by, falling back to a full scan.
+  *
+  * @remarks
+- * Pushdown is sound ONLY when every condition is `and`-joined: the engine folds
++ * Pushdown is sound only when every condition is `and`-joined: the engine folds
+  * conditions left-to-right (`c1 && c2 && … && cn`), so the result is a subset of
+  * each — narrowing on any one is then a valid superset. A single `or` breaks that
+  * (a row can match through a later condition the range would exclude), so any `or`
+@@ -98,21 +98,21 @@ export function conditionToRange(condition: Condition): IDBKeyRange | undefined
+  * type (`boolean`/`json`/`blob`), uses a non-comparison operator, or has a
+  * non-scalar operand cannot push and is skipped.
+  *
+- * **`below`/`to` may drive a SECONDARY-index range only when the column has NO
++ * **`below`/`to` may drive a secondary-index range only when the column has no
+  * absent/null rows to lose — which this planner cannot verify from the schema
+- * alone, so it restricts them to the PRIMARY store, where that is always true.**
++ * alone, so it restricts them to the primary store, where that is always true.**
+  * The engine's total order (`compareValues`, see `@src/core`) ranks
+- * `undefined` (absent) and `null` BELOW every number/string, so
+- * `matchesCondition('below' | 'to', …)` is TRUE for a row whose field is absent
+- * or `null` — but a secondary IndexedDB index has NO ENTRY for a row whose
++ * `undefined` (absent) and `null` below every number/string, so
++ * `matchesCondition('below' | 'to', …)` is true for a row whose field is absent
++ * or `null` — but a secondary IndexedDB index has no entry for a row whose
+  * indexed field is absent/`null`, so a `below`/`to` range read against that
+- * index would SILENTLY DROP those rows (they can never be over-fetched, only
++ * index would silently drop those rows (they can never be over-fetched, only
+  * missed — the one shape of lossiness this planner must never produce). The
+- * table's PRIMARY key is exempt: a row's primary-key value is always present
++ * table's primary key is exempt: a row's primary-key value is always present
+  * and never `null` (it is the row's identity, enforced at write time), so a
+  * `below`/`to` range against the primary store can never exclude an
+  * absent/null-keyed row because no such row exists. `equals`/`above`/`from`/
+- * `between` stay index-eligible on ANY orderable column, primary or secondary:
++ * `between` stay index-eligible on any orderable column, primary or secondary:
+  * each is bounded below by a scalar (`equals`/`between`'s lower bound, `above`/
+  * `from`'s lower bound), and every scalar strictly out-ranks `undefined`/`null`
+  * in the total order, so an absent/null-valued row can never satisfy them — the
+@@ -126,7 +126,7 @@ export function conditionToRange(condition: Condition): IDBKeyRange | undefined
+  * metadata.
+  *
+  * When no condition qualifies the plan is a full scan (`{}`) and the engine
+- * does everything. The plan is always a SUPERSET of the
++ * does everything. The plan is always a superset of the
+  * matching rows — the only correctness contract — so the driver may safely run
+  * the exact engine over it.
+  *
+@@ -150,7 +150,7 @@ export function selectPlan(
+ 	available: readonly string[],
+ ): QueryPlan {
+ 	const conditions = input?.conditions ?? []
+-	// A single condition's range is a SUPERSET of the result only when the result
++	// A single condition's range is a superset of the result only when the result
+ 	// implies that condition — which holds iff every condition is `and`-joined (the
+ 	// fold is `c1 && c2 && … && cn`, so the result is a subset of each). A single
+ 	// `or` breaks that (a row can match through a later condition the range excludes),
+@@ -169,7 +169,7 @@ export function selectPlan(
+ 		const range = conditionToRange(condition)
+ 		if (range === undefined) continue
+ 		if (condition.column === schema.primary) return { range }
+-		// `below`/`to` can silently drop an absent/null-valued row from a SECONDARY
++		// `below`/`to` can silently drop an absent/null-valued row from a secondary
+ 		// index (see @remarks) — only the primary store (handled above) is safe.
+ 		// Keep scanning: a later condition may still qualify.
+ 		if (condition.operator === 'below' || condition.operator === 'to') continue
+@@ -257,14 +257,14 @@ export function mapMigrationError(error: IndexedDBError): DatabaseError {
+  *
+  * @remarks
+  * Naming a compound index by joining its columns with `_` (`['a', 'b'] →
+- * 'a_b'`) collides with a single-column index over a column LITERALLY named
++ * 'a_b'`) collides with a single-column index over a column literally named
+  * `'a_b'` — the same name, two different key paths (`'a_b'` vs `['a', 'b']`),
+  * which either throws a native `ConstraintError` from a duplicate
+  * `createIndex` call at open, or (worse) lets {@link selectPlan}'s name-based
+- * lookup match the wrong index. A single-column index keeps the BARE column
++ * lookup match the wrong index. A single-column index keeps the bare column
+  * name — {@link selectPlan} matches `available.includes(condition.column)` by
+  * that exact name, so a single-column index must stay named after its column
+- * verbatim. A compound index instead encodes each column as a LENGTH-PREFIXED
++ * verbatim. A compound index instead encodes each column as a length-prefixed
+  * segment (`'2#1:a1:b'`), so the boundary between columns is self-describing
+  * and cannot be reconstructed by any other column list — including one
+  * containing a column that happens to look like an encoded segment.
+diff --git a/src/core/Table.ts b/src/core/Table.ts
+index 3f7d1fe..1b20ae6 100644
+--- a/src/core/Table.ts
++++ b/src/core/Table.ts
+@@ -46,10 +46,10 @@ import { ScopedIterator } from './ScopedIterator.js'
+  * @remarks
+  * - **Observable.** The owned {@link emitter} ({@link TableEventMap}) carries the
+  *   per-row mutation moments — `write` (set / add / update), `remove`, `clear` — for
+- *   fire-and-forget observers (cache invalidation, sync, an audit log), ALONGSIDE the
+- *   database-level lifecycle. Events carry the affected KEY only (no value payload, to
++ *   fire-and-forget observers (cache invalidation, sync, an audit log), alongside the
++ *   database-level lifecycle. Events carry the affected key only (no value payload, to
+  *   keep fan-out lean); reads / queries / counts are not emitted. Every event is emitted
+- *   directly, strictly AFTER the driver write / delete / clear completes; the emitter
++ *   directly, strictly after the driver write / delete / clear completes; the emitter
+  *   isolates a listener throw and routes it to its `error` handler (the `error` option),
+  *   so a buggy observer can never corrupt a write or perturb a transaction.
+  */
+@@ -63,7 +63,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	readonly #generate: KeyFunction | undefined
+ 	readonly #context: DatabaseContext | undefined
+ 	readonly #scope: TransactionScope | undefined
+-	// The PUSH observation surface — owned, never inherited. The emitter isolates a
++	// The push observation surface — owned, never inherited. The emitter isolates a
+ 	// listener throw (routing it to the `error` handler), so it can never escape into a write
+ 	// or a transaction.
+ 	readonly #emitter: Emitter<TableEventMap>
+@@ -203,7 +203,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	 * conditions.
+ 	 *
+ 	 * @remarks
+-	 * Unlike {@link count}, `aggregate` operates on STORED rows WITHOUT the
++	 * Unlike {@link count}, `aggregate` operates on stored rows without the
+ 	 * contract guard {@link records} / {@link scan} apply — a non-conforming
+ 	 * stored row still contributes to the computed aggregate when it matches
+ 	 * the conditions, even though it would never appear in `records()`'s
+@@ -321,7 +321,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 		return this.#track(async () => {
+ 			await this.#ready()
+ 			await this.#driver.clear(this.#name)
+-			// Observe the cleared table — AFTER the driver emptied it, so a swallowed listener
++			// Observe the cleared table — after the driver emptied it, so a swallowed listener
+ 			// throw can never alter the clear (no value payload — `clear` is a pure signal).
+ 			this.#emitter.emit('clear')
+ 		})
+@@ -392,7 +392,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	// Run a single-item operation across each item in order — the batch overloads
+ 	// loop one item at a time (sequential, so writes never race) rather than
+ 	// pushing batch logic into the thin driver. `signal` (write batches only) is
+-	// checked before EVERY item, so an abort mid-batch stops before the next
++	// checked before every item, so an abort mid-batch stops before the next
+ 	// item runs — already-applied items stay applied (no rollback).
+ 	async #each<I, R>(
+ 		elements: readonly I[],
+@@ -435,7 +435,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 		const key = this.#resolveKey(validated)
+ 		if (insert) await this.#driver.insert(this.#name, key, validated, options)
+ 		else await this.#driver.write(this.#name, key, validated, options)
+-		// Observe the written row — AFTER the driver write succeeded; carries the KEY only
++		// Observe the written row — after the driver write succeeded; carries the key only
+ 		// (set / add / update all emit one `write`, the consumer re-reads if it needs the
+ 		// value). A swallowed listener throw can't perturb the write (or its transaction).
+ 		this.#emitter.emit('write', key)
+@@ -463,7 +463,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 			this.#validate(Object.assign({}, existing, changes)),
+ 			options,
+ 		)
+-		// Observe the updated row — AFTER the driver write, and only on the path that wrote
++		// Observe the updated row — after the driver write, and only on the path that wrote
+ 		// (an absent key returned `false` above, emitting nothing).
+ 		this.#emitter.emit('write', key)
+ 		return true
+@@ -475,7 +475,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	}
+ 
+ 	// Delete one row, emitting `remove` only when a row was actually removed (a delete of
+-	// an absent key returns `false` and emits nothing) — AFTER the driver delete completes.
++	// an absent key returns `false` and emits nothing) — after the driver delete completes.
+ 	async #delete(key: Key, options?: OperationOptions): Promise<boolean> {
+ 		const removed = await this.#driver.delete(this.#name, key, options)
+ 		if (removed) this.#emitter.emit('remove', key)
+@@ -572,7 +572,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	}
+ 
+ 	// Coerce *and* validate through the contract in one step: the contract's `parse`
+-	// now coerces types (`'36'` → `36`) AND enforces every leaf refinement (`min` /
++	// now coerces types (`'36'` → `36`) and enforces every leaf refinement (`min` /
+ 	// `max` / `pattern`), so a non-`undefined` result already satisfies the guard
+ 	// (parse↔guard soundness) — no separate `is` re-check is needed.
+ 	// `isRecord` is kept solely to narrow the parsed `T` back to a storable `Row`
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index e12d3e2..c86a2be 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -17,7 +17,7 @@ export const DEFAULT_PRIMARY = 'id'
+  * @remarks
+  * A `LIKE` / `GLOB` pattern is a caller-supplied operand, so
+  * `matchesLikePattern` / `matchesGlobPattern` run patterns this package cannot
+- * trust. The matcher is the LINEAR greedy two-pointer wildcard match — never a
++ * trust. The matcher is the linear greedy two-pointer wildcard match — never a
+  * backtracking regex (`.*`-segments-separated-by-literals against a long input is the
+  * catastrophic shape JS cannot bound without atomic groups), so it is O(value ×
+  * pattern). Capping the pattern length bounds that pattern factor, leaving a match
+diff --git a/src/core/drivers/MemoryDriver.ts b/src/core/drivers/MemoryDriver.ts
+index 1a842c7..b41f5b3 100644
+--- a/src/core/drivers/MemoryDriver.ts
++++ b/src/core/drivers/MemoryDriver.ts
+@@ -31,7 +31,7 @@ import { isKey } from '../validators.js'
+  * @remarks
+  * The in-between made concrete: it runs identically in a browser or on a server,
+  * so it is the storage behind tests, ephemeral caches, and any code that wants
+- * the database API without a persistent backend. Rows are DEEP-copied (through
++ * the database API without a persistent backend. Rows are deep-copied (through
+  * `structuredClone`) in and out — at `write`, `read`, `scan`, `stream`, and both
+  * snapshot capture and restore — so a caller mutating a nested field of an input
+  * row, a returned row, or a row mutated in place between snapshot and rollback
+@@ -119,7 +119,7 @@ export class MemoryDriver implements DriverInterface {
+ 	 * toward `offset` / `limit`. Both are applied lazily as matches are found —
+ 	 * `offset` matches are skipped without being yielded, and iteration stops the
+ 	 * instant `limit` yields have been produced, so a large table is never fully
+-	 * walked for a small page. `input.order` is IGNORED (the same contract as
++	 * walked for a small page. `input.order` is ignored (the same contract as
+ 	 * `TableInterface.scan` and `QueryInterface.stream`): streaming yields key
+ 	 * order, sorted output is `records()`'s job. Rows yield copy-out, and an
+ 	 * unknown table mirrors `scan`'s empty-yield behavior.
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index dcf9f84..7a06ba1 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -130,9 +130,9 @@ export function compareValues(left: unknown, right: unknown): number {
+  * @remarks
+  * Primitives compare by SameValueZero (`NaN` equals itself; `+0` equals `-0`).
+  * Arrays compare by index (same length, every element `equalsValue`). Plain
+- * records (through `isRecord`) compare by their OWN enumerable keys: same key
+- * COUNT and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+- * with a `equalsValue` value — so a key present with value `undefined` is NOT
++ * records (through `isRecord`) compare by their own enumerable keys: same key
++ * count and, for every key in `left`, `right` has that key (`Object.hasOwn`)
++ * with a `equalsValue` value — so a key present with value `undefined` is not
+  * equal to that key being absent (both differ in `Object.keys` membership).
+  * Anything else (functions, class instances, mismatched shapes) falls through
+  * to `false`. Container pairs are tracked iteratively, so self-referential and
+@@ -217,12 +217,12 @@ export function equalsValue(left: unknown, right: unknown): boolean {
+  * engine behind {@link matchesLikePattern} and {@link matchesGlobPattern}.
+  *
+  * @remarks
+- * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is CATASTROPHIC on a hostile pattern:
++ * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is catastrophic on a hostile pattern:
+  * `.*` segments separated by literals, matched against a long non-matching input, blow
+  * up super-linearly — and JS has no atomic groups / possessive quantifiers to bound it,
+  * while a `LIKE` / `GLOB` pattern is a caller-supplied operand this package cannot
+- * trust. So this builds NO regex. It runs the classic GREEDY TWO-POINTER wildcard match:
+- * the `any` wildcard records its position and, on a later mismatch, backtracks ONLY to
++ * trust. So this builds no regex. It runs the classic greedy two-pointer wildcard match:
++ * the `any` wildcard records its position and, on a later mismatch, backtracks only to
+  * that last `any` (letting it absorb one more char) — so the work is O(value × pattern),
+  * never the exponential / polynomial backtracking a regex would do. The pattern length
+  * is capped at {@link MAX_PATTERN_LENGTH} (a `VALIDATION` {@link DatabaseError} over it),
+@@ -230,16 +230,16 @@ export function equalsValue(left: unknown, right: unknown): boolean {
+  * pattern.
+  *
+  * The `any` wildcard matches any run (including empty); `single` matches exactly one
+- * char; every other pattern char matches itself LITERALLY (a pattern `.` / `(` / `\` is
++ * char; every other pattern char matches itself literally (a pattern `.` / `(` / `\` is
+  * a literal — the regex-metacharacter hazard is gone with the regex). `any` is tested
+- * BEFORE a literal match, so a value that literally contains the wildcard char never
+- * shadows the wildcard. Case folding is applied to BOTH sides when `fold` is set.
++ * before a literal match, so a value that literally contains the wildcard char never
++ * shadows the wildcard. Case folding is applied to both sides when `fold` is set.
+  *
+  * @param value - The value to test
+  * @param pattern - The wildcard pattern
+  * @param any - The any-run wildcard char (`%` for `LIKE`, `*` for `GLOB`)
+  * @param single - The single-char wildcard char (`_` for `LIKE`, `?` for `GLOB`)
+- * @param fold - Whether to match case-INSENSITIVELY (`LIKE` folds; `GLOB` does not)
++ * @param fold - Whether to match case-insensitively (`LIKE` folds; `GLOB` does not)
+  * @returns True if `value` matches `pattern`; false otherwise
+  * @throws A `VALIDATION` {@link DatabaseError} when `pattern` exceeds {@link MAX_PATTERN_LENGTH}
+  */
+@@ -261,7 +261,7 @@ export function matchesWildcardPattern(
+ 	const needle = fold ? pattern.toLowerCase() : pattern
+ 	let vi = 0
+ 	let pi = 0
+-	// The greedy backtrack point: the pattern index of the LAST `any` wildcard + the value
++	// The greedy backtrack point: the pattern index of the last `any` wildcard + the value
+ 	// index it was taken at. On a mismatch the walk resumes immediately past it and lets it absorb one more
+ 	// char (`mark += 1`) — O(value × pattern), never a regex's exponential backtracking.
+ 	let star = -1
+@@ -320,7 +320,7 @@ export function matchesLikePattern(value: string, pattern: string): boolean {
+  * @remarks
+  * `*` matches any run of characters (including none) and `?` matches exactly one
+  * character; every other pattern character matches itself literally, so a
+- * character class such as `[a-z]` is NOT interpreted. Runs on
++ * character class such as `[a-z]` is not interpreted. Runs on
+  * {@link matchesWildcardPattern}, so the match is linear in the value length and
+  * the pattern is capped at {@link MAX_PATTERN_LENGTH}.
+  *
+@@ -349,7 +349,7 @@ export function matchesGlobPattern(value: string, pattern: string): boolean {
+  * string is one column; an array descends a nested value) — and applies the
+  * operator. Range operators (`above` / `below` / `from` / `to` / `between`) use
+  * {@link compareValues}, the total order; the equality family (`equals` / `not`
+- * / `any` / `none`) uses {@link equalsValue} — STRUCTURAL equality, not the total
++ * / `any` / `none`) uses {@link equalsValue} — structural equality, not the total
+  * order's rank-5-collapses-all-objects behavior, so `equals` on an object/array
+  * operand only matches a structurally-equal value, never every row holding any
+  * object. This is a semantics change from ranking: `equalsValue` is SameValueZero
+@@ -774,10 +774,10 @@ export function checkAbort(signal: AbortSignal | undefined): void {
+  * plan labels only; versioning drivers persist and reconcile them through
+  * {@link DriverMetadata}.
+  *
+- * A column present in BOTH schemas under the same name but with a different
++ * A column present in both schemas under the same name but with a different
+  * `storage`, `optional`, or `nullable` value throws a `MIGRATION`
+  * {@link DatabaseError} naming the table, the column, and the from→to
+- * difference — a name-only diff would otherwise silently produce NO step for
++ * difference — a name-only diff would otherwise silently produce no step for
+  * the drift, and versioned reconciliation would stamp over it. There is no
+  * automatic in-place type-change step: the manual path is to add a new column,
+  * copy/convert the data at the application layer, then remove the old column —
+@@ -1114,14 +1114,14 @@ export function migrateRows(rows: readonly Row[], steps: readonly MigrationStep[
+  * default `id`, `posts` keyed by a non-id `slug`) and, calling `factory()`
+  * fresh for each phase so failures stay isolated, verifies: `open`/`close`;
+  * `read` of a missing key returns `undefined`; `write`/`read` round-trip
+- * with DEEP copy-in/copy-out isolation (mutating the caller's row —
+- * including a NESTED field — after `write`, or a row `read` returns, never
++ * with deep copy-in/copy-out isolation (mutating the caller's row —
++ * including a nested field — after `write`, or a row `read` returns, never
+  * perturbs stored state) and upsert-overwrite; simultaneous same-key
+  * `insert` calls produce exactly one commit and one `CONFLICT`; pre-aborted
+  * `write`, `insert`, and `delete` calls leave storage unchanged; `delete`
+  * returns `true` then `false`; `keys`/`scan` yield in ascending key order;
+  * `clear` empties only its target table; `snapshot`'s rollback thunk
+- * restores pre-snapshot state, including a NESTED field mutated in place on
++ * restores pre-snapshot state, including a nested field mutated in place on
+  * a read-back row between capture and restore; a scoped
+  * `snapshot(['users'])` rolls back only the named table, leaving a
+  * concurrent mutation to another table intact; a non-`id` primary key
+@@ -1135,12 +1135,12 @@ export function migrateRows(rows: readonly Row[], steps: readonly MigrationStep[
+  * store's `metadata()` is `undefined`, and after
+  * `stamp({ version, schema })`, `metadata()` returns the exact stamped value.
+  *
+- * Each phase runs within a `try`/`catch`: an EXPECTED mismatch yields a
+- * finding built from the assertion, while an UNEXPECTED throw (a driver
++ * Each phase runs within a `try`/`catch`: an expected mismatch yields a
++ * finding built from the assertion, while an unexpected throw (a driver
+  * crash mid-phase) is caught and yielded as a finding too, naming the phase
+  * as `check` and carrying the caught error in `context.error` — a broken
+  * driver can never escape the battery as an unhandled rejection. Within a
+- * phase, the FIRST violated assertion yields and the phase stops (matching
++ * phase, the first violated assertion yields and the phase stops (matching
+  * the historical fail-fast shape at phase granularity); the generator then
+  * moves on to the next phase regardless. Because this is a **generator**,
+  * consuming only the first yielded value reproduces true fail-fast (later
+@@ -1195,7 +1195,7 @@ export async function* scanDriver(
+ 		}
+ 	}
+ 
+-	// c. write/read round-trip, copy-in/copy-out isolation (including NESTED
++	// c. write/read round-trip, copy-in/copy-out isolation (including nested
+ 	// fields, not only top-level ones), upsert-overwrite.
+ 	writeRead: {
+ 		try {
+@@ -1835,7 +1835,7 @@ export async function* scanDriver(
+  *
+  * @remarks
+  * Consumes only the first value {@link scanDriver} yields: because that
+- * generator is lazy, every LATER phase never runs — true fail-fast, not
++ * generator is lazy, every later phase never runs — true fail-fast, not
+  * merely "report only the first". The
+  * thrown error is byte-compatible with the historical shape: a
+  * `CONFORMANCE` {@link DatabaseError} whose `message` is the finding's
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 980b3cd..97a6c9a 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -81,7 +81,7 @@ export type ConditionConnector = 'and' | 'or'
+  * `present`, one for most, two for `between`, a list for `any` / `none`.
+  * `connector` folds this condition into the accumulated result left-to-right;
+  * the first condition's connector seeds the fold and is otherwise ignored.
+- * `column` is a {@link FieldPath}: a single string is ONE column (never split on
++ * `column` is a {@link FieldPath}: a single string is one column (never split on
+  * `.`), an array descends into a nested (object/`json`) value.
+  */
+ export interface Condition {
+@@ -205,11 +205,11 @@ export interface ConformanceFinding {
+  * Pure signals carrying no row data — these are the database-level (not per-row)
+  * moments, so a non-generic map stays lean (per-row writes are {@link TableEventMap}).
+  * Listener isolation is the emitter's: every event is emitted directly and a
+- * listener throw is routed to the emitter's OWN `error` handler (the `error` option), never
++ * listener throw is routed to the emitter's own `error` handler (the `error` option), never
+  * onto this domain map and never into the snapshot / commit / rollback flow — so a buggy
+- * observer can never reorder, throw into, or corrupt a transaction. Every emit sits AFTER the
++ * observer can never reorder, throw into, or corrupt a transaction. Every emit sits after the
+  * relevant transition: `commit` only after the scope succeeds, `rollback` only after the
+- * rollback operation completes (it OBSERVES the propagated scope error; that exact reason
++ * rollback operation completes (it observes the propagated scope error; that exact reason
+  * still propagates). A rollback failure propagates instead and emits no misleading
+  * `rollback` event. Subscribe through `database.emitter.on(...)`.
+  *
+@@ -239,14 +239,14 @@ export type DatabaseEventMap = {
+  * subscribes to, alongside the database-level {@link DatabaseEventMap}.
+  *
+  * @remarks
+- * Events carry the affected KEY only — never the row value — to keep fan-out lean and
++ * Events carry the affected key only — never the row value — to keep fan-out lean and
+  * avoid leaking row data through the observation channel; a consumer that needs the
+  * value re-reads it by key. Any row put — `set`, `add`, or `update` — emits a single
+  * `write` (the consumer re-reads if it needs to know what changed); a delete emits
+- * `remove`; emptying the table emits `clear`. Reads / queries / counts are NOT emitted
++ * `remove`; emptying the table emits `clear`. Reads / queries / counts are not emitted
+  * (too hot, and a reader does not mutate). Listener isolation is the emitter's:
+  * every event is emitted directly and a listener throw is routed to the emitter's `error`
+- * handler (the `error` option), never onto this map, and sits AFTER the driver write / delete
++ * handler (the `error` option), never onto this map, and sits after the driver write / delete
+  * / clear has completed — so a throwing observer can never corrupt a write or perturb a
+  * transaction. Subscribe through `table.emitter.on(...)`. Declared as a `type` alias (
+  * `EventMap` is a `type` kind).
+@@ -439,7 +439,7 @@ export interface StorageInterface {
+  * Declares the storage primitive every backend implements — the whole of the bridge.
+  *
+  * @remarks
+- * The REQUIRED surface is deliberately minimal: keyed read / write / atomic
++ * The required surface is deliberately minimal: keyed read / write / atomic
+  * insert / delete, an ordered `scan`, a key listing, and a `snapshot` that
+  * backs transactions — the irreducible primitive. There is **no** required
+  * query, count, or aggregate here: all of that is one query engine in the core
+@@ -596,7 +596,7 @@ export interface DatabaseOptions<T extends TableMap = TableMap> {
+ 	 * Holds the declared schema version.
+ 	 *
+ 	 * @remarks
+-	 * Only meaningful when the driver implements BOTH {@link DriverInterface.metadata}
++	 * Only meaningful when the driver implements both {@link DriverInterface.metadata}
+ 	 * and {@link DriverInterface.stamp} (a versioning driver); unset, or a
+ 	 * non-versioning driver, leaves `open()` unchanged from today's behavior.
+ 	 * When set and the driver versions, `open()` reconciles against the driver's
+@@ -801,7 +801,7 @@ export interface TableInterface<T = Row> {
+ 	 * conditions.
+ 	 *
+ 	 * @remarks
+-	 * Unlike {@link TableInterface.count}, `aggregate` operates on STORED rows
++	 * Unlike {@link TableInterface.count}, `aggregate` operates on stored rows
+ 	 * without the contract guard that `records()` / `scan()` apply — a
+ 	 * non-conforming stored row still contributes to the aggregate (or to the
+ 	 * `count` operation's tally) when it matches the conditions, even though
+@@ -818,7 +818,7 @@ export interface TableInterface<T = Row> {
+ 	 *
+ 	 * @remarks
+ 	 * `input`'s `conditions` / `offset` / `limit` are honored lazily as rows
+-	 * stream; `order` is intentionally IGNORED — streaming yields driver
++	 * stream; `order` is intentionally ignored — streaming yields driver
+ 	 * key-order, sorted output is `records()`'s job. Breaking out of the
+ 	 * iteration early closes the underlying source. The signal (if any) is
+ 	 * checked before each yield.
+@@ -979,7 +979,7 @@ export interface QueryInterface<T = Row> {
+ 	 * by row.
+ 	 *
+ 	 * @remarks
+-	 * `order` and its comparators are IGNORED (streaming yields unsorted, as
++	 * `order` and its comparators are ignored (streaming yields unsorted, as
+ 	 * rows are evaluated one at a time). Same abort semantics as
+ 	 * {@link TableInterface.scan}: the signal (if any) is checked before each
+ 	 * yield, and breaking out early closes the underlying source.
+diff --git a/src/server/compilers.ts b/src/server/compilers.ts
+index cc94edf..7cfcd55 100644
+--- a/src/server/compilers.ts
++++ b/src/server/compilers.ts
+@@ -105,7 +105,7 @@ export function compileJSONTypeSQL(path: readonly string[]): string {
+ // The `QueryInput` → parameterized SQL compiler — the native-query payoff. It turns
+ // a portable `QueryInput` (the same one the core engine's `applyQuery` folds)
+ // into the `WHERE` / `ORDER BY` / `LIMIT` tail of a `SELECT`, with bound `?`
+-// parameters in clause order. Its WHERE fold parenthesizes LEFT-TO-RIGHT to match the
++// parameters in clause order. Its WHERE fold parenthesizes left-to-right to match the
+ // engine's `matchesQuery` exactly (NOT SQL's AND-over-OR precedence), so a
+ // native read and an engine read agree on every query (the parity test). Branches
+ // are centralized and public — no operator logic buried in closures.
+@@ -118,20 +118,20 @@ export function compileJSONTypeSQL(path: readonly string[]): string {
+  *
+  * @remarks
+  * Every operand is run through `encodeValue`, so a bound value matches the SQL
+- * the column side compiles to. A flat column encodes operands with its DECLARED
++ * the column side compiles to. A flat column encodes operands with its declared
+  * schema type (a flat `json` column → `JSON.stringify`); a nested `FieldPath`
+- * encodes each operand as the NATIVE scalar `json_extract` returns, derived from
++ * encodes each operand as the native scalar `json_extract` returns, derived from
+  * the operand's runtime type (per-operand, since `between` / `any` / `none` can
+  * mix types). `any` / `none` collapse an empty list to a constant (`0` matches
+  * nothing, `1` matches all) with no parameters.
+  *
+- * The core engine's total order ranks `undefined` (rank 0) BELOW `null`
+- * (rank 1) (see `compareValues`), so a MISSING/`NULL` column MATCHES
++ * The core engine's total order ranks `undefined` (rank 0) below `null`
++ * (rank 1) (see `compareValues`), so a missing/`NULL` column matches
+  * `below` / `to` / a scalar `not` / `none` — the opposite of raw SQL, where a
+  * comparison against `NULL` is `NULL` (excluded). This fragment replicates the
+  * engine exactly. Truth table (`value` = the engine's decoded field read; a
+- * FLAT column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+- * flat `value` is NEVER a present `null` — only a NESTED path can be
++ * flat column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
++ * flat `value` is never a present `null` — only a nested path can be
+  * present-but-`null`):
+  *
+  * ```text
+@@ -157,15 +157,15 @@ export function compileJSONTypeSQL(path: readonly string[]): string {
+  * refines every optional or nullable scalar comparison through the core engine.
+  * This compiler still emits a total SQL fragment for direct consumers.
+  *
+- * A NESTED path can be present-but-`null` (a stored JSON `null`), which
+- * `json_extract` reads back as SQL `NULL` — indistinguishable from an ABSENT
++ * A nested path can be present-but-`null` (a stored JSON `null`), which
++ * `json_extract` reads back as SQL `NULL` — indistinguishable from an absent
+  * path. `json_type(col, path)` disambiguates them (`'null'` for present-null,
+  * SQL `NULL` for absent), so nested `equals` / `not` against a `null` operand
+  * compile through `json_type` instead of `IS NULL` / `IS NOT NULL`.
+  *
+  * Every other MATCH-on-null-or-absent row is expressed uniformly (flat and
+  * nested alike) as `(<column> <op> ? OR <column> IS NULL)` — for a nested
+- * path, `json_extract` already collapses BOTH absent and present-null to SQL
++ * path, `json_extract` already collapses both absent and present-null to SQL
+  * `NULL`, so `IS NULL` catches both in one clause; for a flat column there is
+  * only the absent case to catch.
+  *
+@@ -211,7 +211,7 @@ export function compileConditionSQL(condition: Condition, schema: TableSchema):
+ 					}
+ 				}
+ 				// A flat column's decoded value is never a present null, so
+-				// `compareValues(value, null)` is nonzero for EVERY row (absent or
++				// `compareValues(value, null)` is nonzero for every row (absent or
+ 				// scalar) — the engine's `not null` matches unconditionally.
+ 				return { sql: '1', parameters: [] }
+ 			}
+@@ -249,7 +249,7 @@ export function compileConditionSQL(condition: Condition, schema: TableSchema):
+ 		case 'starts': {
+ 			// Case-sensitive, exact compile (replaces the old LIKE-based one, which
+ 			// was ASCII-only case-INsensitive — a mismatch with the engine's
+-			// case-sensitive `String.startsWith`). `substr` counts CODE POINTS, so
++			// case-sensitive `String.startsWith`). `substr` counts code points, so
+ 			// the length is a code-point count (`Array.from`), not `.length`. An
+ 			// empty operand matches every text-column value (the engine: every
+ 			// string starts with '').
+@@ -312,7 +312,7 @@ export function compileConditionSQL(condition: Condition, schema: TableSchema):
+  * @remarks
+  * The first condition's connector is ignored, per the {@link Condition} types.
+  * Every fragment (see {@link compileConditionSQL}'s truth table) replicates the core
+- * engine's total order EXACTLY under SQL's three-valued NULL logic, so this
++ * engine's total order exactly under SQL's three-valued NULL logic, so this
+  * clause matches `applyQuery` row-for-row over the same table — a native
+  * `records` / `count` read never disagrees with a scan-and-filter fallback.
+  *
+@@ -425,7 +425,7 @@ export function compilePageSQL(limit: number | undefined, offset: number | undef
+  * `FieldPath` (a `json_extract` read) encodes each operand as the native scalar
+  * the extract returns — derived from the operand's runtime type — so it compares.
+  * Every operator maps per the databases guide's operator table, with
+- * `starts` / `ends` compiling to a CODE-POINT `substr` slice guarded by
++ * `starts` / `ends` compiling to a code-point `substr` slice guarded by
+  * `typeof(<column>) = 'text'` (case-sensitive, matching the engine's
+  * `String.prototype.startsWith` / `endsWith`) and an empty `any` / `none` list
+  * collapsing to a constant. An `undefined` input (or one with no parts)
+diff --git a/src/server/drivers/JSONDriver.ts b/src/server/drivers/JSONDriver.ts
+index 94661ff..4758dad 100644
+--- a/src/server/drivers/JSONDriver.ts
++++ b/src/server/drivers/JSONDriver.ts
+@@ -585,7 +585,7 @@ export class JSONDriver implements DriverInterface {
+ 	// whose parent is not a directory. The second is absence in the stronger sense —
+ 	// no file can exist at that name — and hosts disagree on which of the two they
+ 	// return for it, so reading only ENOENT made the same tree open on one host and
+-	// fail closed on another. Every EXISTING unreadable or syntactically invalid file
++	// fail closed on another. Every existing unreadable or syntactically invalid file
+ 	// still fails closed, which is what this branch is for.
+ 	async #document(): Promise<unknown> {
+ 		let raw: string
+@@ -777,7 +777,7 @@ export class JSONDriver implements DriverInterface {
+ 	// mid-flush can no longer truncate or corrupt the previous good file — POSIX
+ 	// `rename` replaces the destination in one indivisible step, so a reader always
+ 	// sees either the old file or the fully-written new one, never a partial write.
+-	// `#enqueue` serializes calls to this method through `#chain` — each job AWAITS
++	// `#enqueue` serializes calls to this method through `#chain` — each job awaits
+ 	// its predecessor before draining `#memory` and writing, so the payload always
+ 	// reflects the latest memory state. Without this, overlapping flushes triggered
+ 	// by non-awaited concurrent mutations could serialize out of order and persist a
+diff --git a/src/server/drivers/SQLiteDriver.ts b/src/server/drivers/SQLiteDriver.ts
+index db6f156..5298f1f 100644
+--- a/src/server/drivers/SQLiteDriver.ts
++++ b/src/server/drivers/SQLiteDriver.ts
+@@ -243,10 +243,10 @@ export class SQLiteDriver implements DriverInterface {
+ 		await this.#clear(table)
+ 	}
+ 
+-	// A QueryInput whose compiled SQL is PROVABLY identical to the core engine's
++	// A QueryInput whose compiled SQL is provably identical to the core engine's
+ 	// semantics (see `matchesConditionExactly` / `matchesOrderExactly` /
+ 	// `matchesQueryExactly`) runs the fast native path; otherwise this driver
+-	// fetches a full scan and refines it through the SAME core engine that
++	// fetches a full scan and refines it through the same core engine that
+ 	// answers every query for `MemoryDriver` and `JSONDriver` — exact → native,
+ 	// otherwise → refine, never a silent semantics drift between backends.
+ 	async records(table: string, input: QueryInput): Promise<readonly Row[]> {
+@@ -311,7 +311,7 @@ export class SQLiteDriver implements DriverInterface {
+ 		return computeAggregate(filterRows(rows, conditions), operation, column)
+ 	}
+ 
+-	// `order` is intentionally IGNORED (per DriverInterface.stream — streaming
++	// `order` is intentionally ignored (per DriverInterface.stream — streaming
+ 	// yields unsorted), so the native gate checks only `conditions`; `offset` /
+ 	// `limit` are always engine-identical under either path.
+ 	stream(table: string, input: QueryInput): AsyncIterable<Row> {
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 1980aa1..c7f392d 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,7 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+-// this repo's own `guides/README.md` manifest — one row (Database) spanning the
+-// core/browser/server faces as a multi-dir `GuideModule` (`.claude/rules/documentation.md`
+-// § Parity — one guide per package). The constants that follow are this package's own.
++// this repo's own `guides/README.md` manifest. The constants that follow are this
++// package's own, as is the executed section that closes the file.
+ 
+ import type { SurfaceSymbol } from '@orkestrel/guide'
+ import type { AdmissionInterface, Condition, TableSchema } from '@src/core'
